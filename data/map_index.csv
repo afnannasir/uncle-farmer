@@ -1,0 +1,376 @@
+﻿map_id,map_name,rect_count,x_min,x_max,y_min,y_max,solid_rects,safe_labels,dropped_labels
+3,wild tribe,57,1,60,1,100,13,4,1
+5,underground base,58,1,60,1,100,13,3,1
+7,Hunter Canyon,63,1,60,1,100,16,3,2
+9,Magical Guild,64,1,60,1,100,16,3,3
+11,Fire Tribe,63,1,60,1,100,16,4,1
+13,bright land,62,1,60,1,100,16,4,2
+15,Soul Realm,62,1,60,1,100,13,3,1
+16,"101,102,103,104",1,108,110,109,111,0,0,0
+201,Practice secret room,8,1,200,1,200,4,1,0
+202,secret room,9,1,200,1,200,4,1,0
+203,Wetlands secret room,9,1,200,1,200,4,1,0
+204,Snowfield Secret Room,17,1,200,1,200,4,1,0
+205,Cats secret room,17,1,200,1,200,4,1,0
+206,Hole secret room,17,1,200,1,200,4,1,0
+207,UFO secret room,17,1,200,1,200,4,1,0
+208,UFO secret room,17,1,200,1,200,4,1,0
+209,Ocean secret room,17,1,200,1,200,4,1,0
+210,demon secret room,17,1,200,1,200,4,1,0
+211,Witch Chamber secret room,17,1,200,1,200,4,1,0
+212,Witch Chamber secret room,17,1,200,1,200,4,1,0
+213,Ghost secret room,17,1,200,1,200,4,1,0
+400,test copy,21,1,200,1,200,0,0,0
+401,Boss test,24,1,40,1,40,4,1,0
+500,highland,187,1,60,1,130,87,4,5
+506,滑梯,59,1,60,1,100,13,3,2
+1000,迷雾之家,46,1,73,1,46,14,3,0
+1001,Karon Village,170,1,200,1,150,32,8,6
+1002,Folk house,14,1,40,1,20,4,4,0
+1003,granary,12,1,60,1,40,1,1,0
+1004,well,182,1,100,1,60,69,5,0
+1010,Karon Village,142,1,200,1,150,34,8,6
+1021,Mario Basin,784,1,320,1,400,311,16,13
+1022,Shrine,14,1,32,1,63,2,2,0
+1023,mist stone Barrier,13,1,60,1,60,2,2,0
+1024,Central Kingdom,7,1,5,1,5,4,0,1
+1041,central plains,1418,1,400,1,400,91,9,16
+1042,Underground of Giant rock City,29,1,60,1,60,11,5,0
+1043,Cable Car No. 1,13,1,16,1,16,2,2,0
+1044,dimensional space,63,1,70,1,160,6,4,0
+1046,Tiger Mountain (tutor and pupil),157,1,200,1,360,12,3,4
+1047,rolling Mountain (tutor and pupil),194,1,200,1,400,10,1,1
+1048,Trial Fantasy,440,1,400,1,200,180,36,2
+1049,"You and tutor are separated. From now on, you will face the world by your own. In the bleak cold wind, you watched tutor depart  across the ruined landscape, gradually disappear from sight. ",11,1,3,1,3,0,0,0
+1050,"The pupil separated from you. you watched him go into the distance. Behind him, the dawn of dawn brightens the boundless wasteland. ",11,1,3,1,3,0,0,0
+1051,royal training ground,148,1,200,1,200,86,2,2
+1052,Fighting training Gym,12,1,100,1,100,4,1,0
+1053,Central Kingdom,7,1,5,1,5,4,0,1
+1054,Central Kingdom,7,1,5,1,5,4,0,1
+1055,cable car,9,1,16,1,16,1,1,0
+1056,cable car,9,1,16,1,16,1,1,0
+1061,Fertile Wilds,699,1,400,1,300,210,11,14
+1062,Fertile Wilds,45,1,150,1,60,2,2,0
+1063,Gale Mountain,115,1,120,1,220,5,1,1
+1064,Gale Mountain,16,1,40,1,30,3,1,1
+1065,explosive base,346,1,200,1,200,21,3,0
+1066,cellar,26,1,68,1,52,9,1,0
+1067,Tiger Mountain,70,1,100,1,300,3,1,2
+1068,Snow base,70,1,60,1,100,10,3,1
+1069,Central Kingdom,7,1,5,1,5,4,0,1
+1081,Tuneful Wetland,511,1,400,1,320,58,9,15
+1082,Underground of Tulip City,23,1,60,1,60,8,5,0
+1083,Cable Car No. 2,13,1,16,1,16,2,2,0
+1084,fighting training ground,236,1,200,1,200,178,2,3
+1085,Loki Union,7,1,5,1,5,4,0,1
+1086,Loki Union,7,1,5,1,5,4,0,1
+1087,cable car,9,1,16,1,16,1,1,0
+1101,Glorious Grassland,519,1,300,1,300,86,5,16
+1102,rolling mountain,43,1,100,1,100,8,3,1
+1103,North Mountain Plantation,81,1,63,1,42,8,4,0
+1104,Glorious Ranch,62,1,63,1,60,9,1,3
+1106,Loki Union,7,1,5,1,5,4,0,1
+1121,High climbing grassland,547,1,400,1,320,67,9,17
+1122,underground of holy blood city,25,1,60,1,60,8,5,0
+1123,Cable Car No. 3,13,1,16,1,16,2,2,0
+1124,Stone Cliff Village,11,1,24,1,12,3,2,0
+1125,Infernal Trial Ground,42,1,200,1,200,14,1,1
+1126,Garth Empire,7,1,5,1,5,4,0,1
+1127,Garth Empire,7,1,5,1,5,4,0,1
+1128,cable car,9,1,16,1,16,1,1,0
+1141,hilly terrain,816,1,300,1,300,144,6,14
+1142,Garth Empire,7,1,5,1,5,4,0,1
+1143,exotic space,7,1,60,1,60,4,1,0
+1144,gouging  knife  Dungeon,25,1,60,1,60,7,1,1
+1145,defense base,25,1,20,1,30,9,2,3
+1146,gouging  knife  Dungeon,25,1,60,1,60,1,1,0
+1161,secluded valley,531,1,300,1,300,115,5,14
+1162,Loki Union,7,1,5,1,5,4,0,1
+1163,Knight Proving Ground,13,1,32,1,22,6,2,0
+1164,alibaba village,53,1,150,1,160,2,2,0
+1165,quiet   Lake,7,1,60,1,50,4,1,0
+1166,knight camp,9,1,16,1,16,5,0,1
+1181,black wasteland,488,1,300,1,300,65,8,13
+1182,Garth Empire,7,1,5,1,5,4,0,1
+1183,black wasteland,38,1,40,1,40,4,1,0
+1184,black wasteland,11,1,40,1,40,4,1,0
+1185,dimensional space,12,1,60,1,60,4,1,0
+1501,beauty of river and mountain,1248,1,600,1,200,115,2,1
+1502,water curtained cave,55,1,80,1,50,2,2,0
+1503,Spider cave,199,1,180,1,180,2,2,0
+1504,graceful mountain,184,1,270,1,240,10,2,1
+1531,thousand miles of rivers,858,1,300,1,500,102,5,6
+1532,thousand miles of rivers,16,1,50,1,20,2,2,0
+1533,Cathy Manor,178,1,55,1,255,26,6,3
+1534,Mount Bear's Paw,126,1,200,1,200,9,3,0
+1535,Elemental Maze,91,1,200,1,200,4,1,0
+1536,Baru Grottoe,73,1,62,1,200,8,2,1
+1537,dark river cave,16,1,64,1,44,4,1,0
+1538,thousand miles of rivers,137,1,200,1,180,2,1,1
+1539,Scorpion Cave,49,1,180,1,180,1,1,0
+1561,far off regions,897,1,400,1,400,150,5,3
+1562,Machining plant,75,1,112,1,190,2,1,1
+1563,fully mountain,439,1,400,1,400,25,6,2
+1564,open sea,103,1,300,1,30,38,3,1
+1565,space battleship,86,1,280,1,100,5,3,0
+1566,Treasure pavilion,49,1,130,1,170,17,3,1
+1567,far off regions,49,1,100,1,150,1,1,0
+1568,Beast Mountain,137,1,330,1,330,68,2,1
+1569,dark night camp,213,1,300,1,250,15,4,0
+1601,Abundant green hills,996,1,600,1,200,542,4,1
+1602,hidden water cave,150,1,120,1,150,10,2,1
+1603,death wormhole,151,1,210,1,300,1,1,0
+1604,wolf head mountain,162,1,300,1,300,2,1,1
+1605,bubble cube,205,1,93,1,93,14,5,1
+1606,ice maze,136,1,200,1,200,2,1,1
+1607,Herbal Mountain,341,1,400,1,320,31,13,3
+1631,Valley of Luxuriant forests,767,1,300,1,320,353,9,3
+1632,Dryad Jungle,149,1,200,1,60,87,2,0
+1633,zagrama canyon,150,1,310,1,200,32,1,1
+1634,Lisa's Ukulele,37,1,236,1,36,5,2,1
+1635,Machine Fortress,66,1,49,1,141,9,3,1
+1636,bottomless pit,42,1,180,1,180,1,1,0
+1637,Silver Peak,194,1,200,1,200,45,2,0
+1661,forest in the deep mountain,412,1,220,1,220,131,4,1
+1662,base,155,1,240,1,100,11,5,1
+1663,ghost house,75,1,112,1,81,2,2,0
+1664,ghost hotel,317,1,146,1,325,6,3,1
+1665,Zombie Village,121,1,250,1,190,12,4,2
+1701,underground mine,494,1,400,1,320,4,0,4
+1702,Lifting Platform No. 1,60,1,140,1,80,12,6,3
+1703,Lifting Platform No. 2,41,1,80,1,120,3,3,0
+1704,Lifting Platform No. 3,41,1,80,1,120,3,3,0
+1705,Cable Car No. 1,12,1,16,1,16,2,2,0
+1706,Cable Car No. 2,12,1,16,1,16,2,2,0
+1707,Cable Car No. 3,12,1,16,1,16,2,2,0
+1708,mine tunnel,141,1,120,1,120,28,0,2
+1709,Black Gate Prison,148,1,100,1,300,40,6,7
+1710,Crimson Mausoleum,76,1,140,1,210,5,1,3
+1711,underground power plant,56,1,100,1,210,5,2,1
+1712,monster factory,85,1,300,1,200,10,2,3
+1731,Ancient Ruins,689,1,300,1,400,183,12,3
+1732,Ancient Ruins,20,1,20,1,80,1,1,0
+1733,Plague Abyss,93,1,120,1,120,4,0,2
+1734,Guardian Stronghold,256,1,280,1,340,58,4,2
+1735,bloody cave,336,1,220,1,200,2,2,0
+1736,amazing old city,110,1,100,1,300,8,3,1
+1737,Gnome excavation plant,158,1,300,1,300,7,2,0
+1738,Marshall's artillery,278,1,200,1,300,54,8,3
+1739,Ancient Ruins,50,1,80,1,80,1,1,0
+1740,silver flying saucer,236,1,450,1,400,51,3,1
+1741,Demon's Prison,262,1,366,1,200,27,3,5
+1742,Gomez manor,250,1,70,1,300,13,4,1
+1743,Centralia,252,1,440,1,100,44,7,3
+1744,Spiral Grottoe,2266,1,300,1,300,1,1,0
+1745,active volcano,306,1,400,1,450,31,2,0
+1760,ancient Sealed Land,48,1,100,1,100,11,3,2
+1761,ancient Sealed Land,774,1,500,1,200,133,3,2
+1762,portal of the demon world,204,1,100,1,130,16,3,1
+1763,Great Dragon Valley,148,1,150,1,300,32,9,3
+1764,Great Dragon Valley,162,1,150,1,300,30,10,2
+1765,Great Dragon Valley,145,1,150,1,300,28,7,3
+1766,dark monastery,946,1,240,1,370,408,15,0
+1767,dark monastery,905,1,240,1,370,402,14,0
+1768,dark monastery,929,1,240,1,370,405,14,1
+1769,Crusader Barracks,506,1,60,1,300,244,3,2
+1770,red house,372,1,80,1,333,69,7,0
+1771,demon Cave,263,1,300,1,200,21,2,1
+1772,Central Barracks,50,1,60,1,100,12,2,2
+1773,demon Mountains,164,1,370,1,285,2,1,1
+1774,wild tribe,44,1,60,1,100,12,3,1
+1775,killer camp,220,1,370,1,200,16,3,0
+1776,underground base,45,1,60,1,100,13,4,1
+1777,demon Canyon,181,1,370,1,340,3,2,1
+1778,Hunter Canyon,50,1,60,1,100,14,2,2
+1779,silver canyon,398,1,370,1,290,60,2,0
+1780,Magical Guild,51,1,60,1,100,15,3,2
+1781,big cave,392,1,330,1,150,20,2,0
+1782,Fire Tribe,50,1,60,1,100,15,4,1
+1783,Dawn Village,315,1,337,1,116,14,3,2
+1784,bright land,50,1,60,1,100,15,3,2
+1785,ancient mausoleum,214,1,400,1,210,23,2,1
+1786,Soul Realm,50,1,60,1,100,12,3,1
+1787,Fantasy of dreams,480,1,300,1,300,129,11,2
+1788,skull  mountain,134,1,300,1,270,2,1,0
+1789,Dark Demon Tower,101,1,300,1,365,11,4,0
+1790,Deep underground,411,1,192,1,345,2,1,0
+1791,Calabash Mountain,283,1,400,1,260,34,6,1
+1792,White bone cave,120,1,180,1,180,67,1,0
+1793,Demon Castle,441,1,249,1,400,44,4,5
+1794,The Lost Yard,391,1,350,1,400,145,4,3
+1801,Wraith Cave,21,1,80,1,40,5,3,0
+1802,Wraith Cave,20,1,80,1,40,4,2,0
+1806,Wraith Cave,135,1,200,1,40,34,28,1
+1807,Wraith Cave,231,1,200,1,40,41,1,27
+1811,Wraith Cave,23,1,80,1,40,7,2,0
+1831,Nether Cave,21,1,80,1,40,5,3,0
+1832,Nether Cave,20,1,80,1,40,4,2,0
+1836,Nether Cave,135,1,200,1,40,34,28,1
+1837,Nether Cave,231,1,200,1,40,41,1,27
+1861,Demon  Cave,21,1,80,1,40,5,3,0
+1862,Demon  Cave,20,1,80,1,40,4,2,0
+1866,Demon  Cave,135,1,200,1,40,34,28,1
+1867,Demon  Cave,231,1,200,1,40,41,1,27
+1901,Demon Sealing Tower,21,1,50,1,90,6,1,1
+2000,Competing Square,208,1,200,1,200,4,1,0
+2001,fighting arena,13,1,100,1,100,8,2,0
+2002,sunshine Beach,60,1,100,1,100,8,2,0
+2003,volcanic cave,88,1,100,1,100,8,2,0
+2004,Starlight Martial Arts Hall,18,1,100,1,100,8,2,0
+2005,tropical wetlands,99,1,100,1,100,8,2,0
+2006,Prairie arena,22,1,100,1,100,8,2,0
+2007,island in the sea,69,1,100,1,100,8,2,0
+2008,small town,16,1,100,1,100,8,2,0
+2009,garden,18,1,100,1,100,8,2,0
+2010,dark cave,29,1,100,1,100,8,2,0
+2011,barren land,32,1,100,1,100,8,2,0
+2012,Mysterious Alchemy Tower,58,1,100,1,100,8,2,0
+2013,Cloud and Mist Peak,626,1,100,1,100,10,3,0
+2014,Ice Cave,76,1,100,1,100,8,2,0
+2015,woods,17,1,100,1,100,8,2,0
+2016,Underwater World,27,1,100,1,100,8,2,0
+2017,pyramid,14,1,100,1,100,8,2,0
+3001,water town,868,1,200,1,200,251,3,6
+3002,Misty Canyon,361,1,200,1,200,127,0,3
+3003,Ancient Ruins,841,1,200,1,200,283,1,3
+3004,Elven Forest,352,1,200,1,200,100,2,3
+3101,water town,774,1,150,1,201,276,3,4
+3401,hunting map,856,1,200,1,200,232,4,0
+3402,hunting map,283,1,200,1,200,64,2,0
+3403,Darkness Ancient city,197,1,300,1,300,132,7,2
+3404,hunting map,633,1,300,1,300,175,2,0
+3601,Stone Pits in battle array,782,1,240,1,210,44,1,1
+3701,highland,189,1,60,1,130,87,4,5
+3801,Water Cave,147,1,300,1,200,1,1,0
+3802,Ice and Snow Cave,255,1,400,1,400,2,1,1
+3803,Pirate Ship,325,1,265,1,265,143,4,3
+3804,Blood Mountain Villa,373,1,220,1,320,111,5,8
+3805,giant puppet,130,1,400,1,400,1,1,0
+3806,rolling mountain,197,1,400,1,400,3,1,0
+4001,Fragrance of Grass (Gang),276,1,80,1,120,26,5,8
+4002,water under bridge (gang),276,1,80,1,120,41,4,8
+4003,Fallen Leaves (Gang),367,1,80,1,120,27,5,8
+4004,Blizzard Fortress (Gang),315,1,80,1,120,27,5,8
+4005,Charming nights (Gang),212,1,80,1,120,26,5,8
+4006,Sunshine Coast (Gang),213,1,80,1,120,23,4,8
+4201,industrial mine valley,950,1,300,1,200,5,2,1
+4202,Construction Mine Valley,917,1,300,1,200,5,2,1
+4203,military mine valley,928,1,300,1,200,5,2,1
+4211,spring garden,1714,1,300,1,200,188,3,0
+4212,summer garden,1583,1,300,1,200,188,3,0
+4213,autumn garden,1883,1,300,1,200,188,3,0
+4221,East Fishing Lake,934,1,300,1,200,16,2,0
+4222,South Fishing Lake,947,1,300,1,200,31,2,0
+4223,West Fishing Lake,917,1,300,1,200,16,2,0
+4401,church (wedding),38,1,60,1,60,7,2,0
+4402,Spring in the Garden (Wedding),48,1,60,1,60,7,3,0
+4403,Gurgling water (wedding),24,1,60,1,60,6,3,0
+4404,Romantic Starry Sky (Wedding),18,1,60,1,60,3,3,0
+4411,church (wedding),38,1,60,1,60,7,3,0
+4412,Spring in the Garden (Wedding),48,1,60,1,60,7,3,0
+4413,Gurgling water (wedding),24,1,60,1,60,6,3,0
+4414,Romantic Starry Sky (Wedding),18,1,60,1,60,3,3,0
+4421,church (wedding),39,1,60,1,60,7,3,0
+4422,Spring in the Garden (Wedding),49,1,60,1,60,7,3,0
+4423,Gurgling water (wedding),25,1,60,1,60,6,3,0
+4424,Romantic Starry Sky (Wedding),20,1,60,1,60,3,3,0
+4501,Mutant village,143,1,100,1,120,78,2,3
+4511,hidden cult,73,1,120,1,80,31,2,6
+4521,river gangster,109,1,80,1,180,30,3,1
+4531,Demon Barracks,135,1,100,1,140,48,1,6
+4601,mist god Valley ,42,1,75,1,35,2,2,0
+4602,rain of purple grass,7,1,22,1,25,0,0,0
+4603,dodge the shells,11,1,22,1,50,0,0,0
+4604,listen to notes,17,1,31,1,12,0,0,0
+4605,Maintenance of ancient buildings,64,1,42,1,40,0,0,0
+4606,ghost vacuum cleaner,19,1,22,1,102,1,1,0
+4607,space invaders,23,1,32,1,60,0,0,0
+4608,Dangerous mountain forest,28,1,100,1,22,10,2,0
+4609,Seven Treasures,123,1,140,1,25,8,1,0
+4631,black domain,31,1,60,1,200,11,3,1
+4661,Rosha Continent,476,1,200,1,200,82,12,1
+4691,Demon Domain,3461,1,400,1,400,351,2,0
+4692,Demon Realm Pass,10,1,60,1,60,4,2,0
+4701,happy farm,172,1,300,1,300,25,2,0
+4702,Sky,23,1,200,1,200,3,2,0
+4703,cattles Mountain,310,1,300,1,300,183,7,0
+4704,Courtyard Dwelling,221,1,114,1,359,34,6,1
+4705,central plains,433,1,300,1,300,111,5,0
+4706,land of ice and snow,162,1,300,1,300,30,1,1
+4708,land of ice and snow,135,1,300,1,300,30,1,1
+4709,Courtyard Dwelling,374,1,114,1,359,8,6,0
+4710,circus,802,1,202,1,402,237,3,2
+4711,restaurant,1165,1,300,1,300,196,1,2
+4712,Autumn Moon Pond,44,1,300,1,300,4,1,0
+4713,Continental frontier,427,1,300,1,300,104,2,1
+4714,Field of hope,195,1,400,1,400,29,1,1
+4715,Field of hope,150,1,400,1,400,29,1,1
+4716,Lucky Island,12,1,25,1,25,3,1,0
+4717,A port full of turquoise waves,12,1,300,1,300,6,1,0
+4718,Coiled Dragon Mountain,580,1,300,1,300,239,9,9
+4719,land of ice and snow,187,1,300,1,300,30,1,1
+4720,Spring Village,578,1,300,1,300,13,2,0
+4721,Elven Forest,142,1,300,1,300,40,1,1
+4722,Fairy Garden,152,1,300,1,300,49,1,1
+4723,Autumn Moon Pond,42,1,300,1,300,4,1,0
+4724,Vanilla Village,152,1,300,1,300,31,3,1
+5000,Alien space,8,1,10,1,10,0,0,0
+5041,Brute Valley,752,1,400,1,300,105,4,0
+5042,Pull Cave,19,1,160,1,160,1,1,0
+5061,Karst cave,280,1,400,1,400,47,2,0
+5062,Karst cave,20,1,160,1,160,1,1,0
+5081,Fred Forest,1518,1,400,1,400,634,3,1
+5082,Fred Forest,50,1,160,1,160,8,0,1
+5121,Wolf Prairie,231,1,400,1,400,27,4,0
+5122,wolf head mountain,48,1,160,1,160,1,1,0
+5141,Polson Wetland,597,1,400,1,400,109,3,0
+5142,Underground Water Cave,41,1,160,1,160,1,1,0
+5143,sailing port,70,1,50,1,100,13,3,0
+5181,Carter Plain,345,1,400,1,400,92,2,0
+5182,Carter tribe,68,1,74,1,124,26,3,2
+5183,Villa of the cat king,55,1,74,1,120,7,2,0
+5201,Domi Wasteland,511,1,400,1,400,74,6,0
+5202,abandoned factory,599,1,154,1,154,200,2,0
+5203,abandoned factory,13,1,100,1,100,2,2,0
+5221,corpse cave,1068,1,500,1,300,206,4,1
+5222,mysterious tomb,81,1,120,1,120,4,2,0
+5223,mysterious tomb,24,1,80,1,62,7,1,1
+5241,Flaming Mountain,351,1,400,1,400,38,3,0
+5242,volcanic cave,79,1,160,1,180,4,2,0
+5243,Flame Cave,13,1,70,1,80,3,3,0
+5261,Marion Sea,756,1,400,1,400,211,9,3
+5262,finger hill,80,1,200,1,200,1,1,0
+5263,finger hill,22,1,120,1,120,1,1,0
+5264,Marion Sea,36,1,100,1,100,1,0,1
+5281,Margit Rainforest,2257,1,400,1,400,618,8,0
+5282,Great Eucalyptus House,42,1,90,1,90,1,1,0
+5283,big eucalyptus,46,1,90,1,90,1,1,0
+5301,Orcus Tribe,1982,1,400,1,400,372,4,1
+5302,turkey cave,70,1,120,1,120,9,2,0
+5303,turkey mountain,49,1,190,1,80,12,3,1
+5321,skeleton basin,504,1,300,1,500,135,1,0
+5322,Skull Cave,59,1,210,1,150,17,1,0
+5341,spectre wilderness,287,1,400,1,400,50,6,2
+5342,old house,24,1,180,1,180,1,1,0
+5361,Underwater World,118,1,400,1,400,15,3,0
+5362,Crystal Palace,252,1,310,1,300,1,1,0
+5381,Blood Wasteland,281,1,400,1,400,25,4,1
+5382,blood red castle,61,1,160,1,120,1,1,0
+5601,takama desert,435,1,400,1,400,52,3,0
+5602,takama desert,32,1,160,1,160,1,1,0
+5661,Vincent Snowfields,519,1,400,1,400,63,3,0
+5662,Ice Cave,179,1,160,1,260,2,2,0
+5721,Dark pit City,701,1,400,1,400,31,4,1
+5722,Earles Palace,35,1,62,1,144,2,1,1
+5761,Magnet Hill,253,1,400,1,400,23,3,1
+5762,secret laboratory,147,1,120,1,120,56,5,16
+5763,main control room,11,1,60,1,80,2,2,0
+5801,Devil's Valley,465,1,400,1,400,38,6,0
+5802,Thunder Cave,74,1,160,1,160,1,1,0
+5803,Thunder Mountain,67,1,100,1,110,6,2,0
+5841,night sky plain,677,1,400,1,400,155,3,0
+5842,Blackfall Palace,43,1,80,1,81,3,1,1
+5843,Blackfall Palace,29,1,80,1,80,6,1,2
+5881,black forest,1114,1,400,1,400,458,8,0
+5882,dark shrine,588,1,300,1,300,101,3,1
+10000,框架图,41,1,600,1,600,1,1,0

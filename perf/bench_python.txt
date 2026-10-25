@@ -1,0 +1,83 @@
+searches: Python (turned off (UNCLEFARMER_NO_NATIVE))
+map 1041: 400x400, 153290 walkable cells
+
+=== atlaslib routing (map 1041) ===
+dijkstra, full, 1 target                       med=  176.773 ms  p95=  195.414  p99=  198.715  min= 167.933  max=  198.715
+dijkstra, full, 3 targets                      med=  298.754 ms  p95=  315.067  p99=  319.394  min= 278.765  max=  319.394
+dijkstra, limit 150, 3 targets                 med=   90.234 ms  p95=  100.146  p99=  100.417  min=  82.150  max=  100.417
+dijkstra, limit 25, 3 targets                  med=    2.208 ms  p95=    3.405  p99=    3.520  min=   1.947  max=    3.520
+steps dict, full                               med=   66.775 ms  p95=   74.122  p99=   77.830  min=  58.226  max=   77.830
+steps dict, limit 150                          med=   20.080 ms  p95=   24.268  p99=   24.680  min=  17.367  max=   24.680
+steps_arr, full                                med=   22.644 ms  p95=   27.475  p99=   35.415  min=  19.491  max=   35.415
+steps_arr, limit 150                           med=    7.562 ms  p95=    8.887  p99=    9.281  min=   6.178  max=    9.281
+steps_arr, limit 40                            med=    1.585 ms  p95=    1.833  p99=    2.080  min=   1.395  max=    2.080
+astar_rect, 1 target                           med=   78.141 ms  p95=   86.385  p99=   87.157  min=  71.382  max=   87.157
+nearest_walkable, 40                           med=    0.002 ms  p95=    0.002  p99=    0.002  min=   0.002  max=    0.002
+nearest_floor, 3                               med=    0.002 ms  p95=    0.002  p99=    0.002  min=   0.002  max=    0.002
+two_way                                        med=    0.001 ms  p95=    0.002  p99=    0.039  min=   0.001  max=    0.039
+diag_ok                                        med=    0.196 ms  p95=    0.209  p99=    0.224  min=   0.185  max=    0.224
+line                                           med=    0.040 ms  p95=    0.131  p99=    0.216  min=   0.039  max=    0.216
+
+=== route cache (map 1041) ===
+route near, cold                               med=   15.190 ms  p95=   18.266  p99=   31.065  min=  12.130  max=   31.065
+route far, cold                                med=  571.328 ms  p95=  586.111  p99=  604.303  min= 540.540  max=  604.303
+route far x2, miss then hit                    med=    0.005 ms  p95=    0.005  p99=    0.006  min=   0.005  max=    0.006
+
+=== target selection (walk_dist, the farm loop's question) ===
+      30 monsters within 30 cells on map 1503 (180x180, 11020 walkable), 7 behind walls
+walk_dist x30, cold BFS (limit 75)             med=    7.095 ms  p95=    8.683  p99=    8.683  min=   6.539  max=    8.683
+walk_dist x30, warm field                      med=    1.162 ms  p95=    3.934  p99=    4.009  min=   0.862  max=    4.009
+walk_dist one walled mob                       med=    0.015 ms  p95=    0.030  p99=    0.111  min=   0.015  max=    0.111
+      30 monsters within 30 cells on map 1041 (400x400, 153290 walkable), 5 behind walls
+walk_dist x30, cold BFS (limit 75)             med=   10.027 ms  p95=   11.281  p99=   11.281  min=   8.720  max=   11.281
+walk_dist x30, warm field                      med=    1.486 ms  p95=    2.023  p99=    2.181  min=   1.272  max=    2.181
+walk_dist one walled mob                       med=    0.046 ms  p95=    0.050  p99=    0.098  min=   0.045  max=    0.098
+
+=== travel planning ===
+plan cross map, all caches cold                med=  579.695 ms  p95=  609.553  p99=  609.553  min= 566.676  max=  609.553
+plan cross map, replan (new start cell)        med=    0.477 ms  p95=    0.769  p99=    0.769  min=   0.451  max=    0.769
+plan cross map, same question cached           med=    0.014 ms  p95=    0.020  p99=    0.177  min=   0.013  max=    0.177
+plan far, replan (new start cell)              med=    1.082 ms  p95=    1.958  p99=    1.958  min=   0.983  max=    1.958
+plan far, same question cached                 med=    0.032 ms  p95=    0.060  p99=    0.148  min=   0.031  max=    0.148
+steps_from 1 target, cold                      med=  199.500 ms  p95=  218.885  p99=  218.885  min= 190.113  max=  218.885
+steps_from 1 target, cached                    med=    0.004 ms  p95=    0.004  p99=    0.004  min=   0.003  max=    0.004
+plan same map, 1 leg                           med=    0.007 ms  p95=    0.007  p99=    0.008  min=   0.007  max=    0.008
+
+=== walk planning (route + diag_hops, cold) ===
+map 5302 (turkey cave), 12 walks               med=  196.924 ms  p95=  209.235  p99=  209.235  min= 192.040  max=  209.235
+map 1503 (Spider cave), 12 walks               med=   65.209 ms  p95=   70.316  p99=   70.316  min=  61.766  max=   70.316
+map 1001 (Karon Village), 12 walks             med=  184.730 ms  p95=  190.778  p99=  190.778  min= 175.773  max=  190.778
+map 1041 (central plains), 12 walks            med=  742.697 ms  p95=  765.622  p99=  765.622  min= 709.886  max=  765.622
+
+=== map load (what a map change costs before the first decision) ===
+model 1041, rows read + built                  med=  122.181 ms  p95=  134.975  p99=  134.975  min= 112.581  max=  134.975
+model 5302, rows read + built                  med=    8.127 ms  p95=    9.261  p99=    9.261  min=   7.555  max=    9.261
+model 1001, rows read + built                  med=   18.988 ms  p95=   20.580  p99=   20.580  min=  18.846  max=   20.580
+geometry index scan                              103.752 ms  (once, at start)
+
+=== agent reply parsing ===
+      reply: 3221 bytes
+decode + parse (old send/json path)            med=    0.020 ms  p95=    0.023  p99=    0.052  min=   0.019  max=    0.194
+parse bytes (new _ask/json path)               med=    0.021 ms  p95=    0.024  p99=    0.061  min=   0.019  max=    0.200
+
+=== cache containers: dict vs cachebox (ns/op, best of 3) ===
+dict, hit                         59.3 ns
+dict, set + evict oldest         108.6 ns
+cachebox Cache, hit               77.8 ns
+cachebox LRUCache, hit            86.1 ns
+cachebox LRUCache, set (auto-evict)    88.5 ns
+dict working set, skew trace      8.5 %
+cachebox working set, skew trace    8.5 %
+
+=== memory (what the map data holds) ===
+map names + line index (kept)                      0.02 MiB       0.0 ms  (375 maps)
+rows_for(1041), one map (kept up to 4)             1.39 MiB      16.3 ms  (1418 rows)
+flat routing caches of one map, bytes              0.92 MiB
+the same six as lists (if they were)               7.40 MiB
+traced total                                       1.39 MiB  (names + one painted map)
+
+=== shortloop build (offline data generator, not on the bot's path) ===
+small cave 1047 build                          med=   83.083 ms  p95=   93.227  p99=   93.227  min=  77.087  max=   93.227
+large cave 1503 build                          med= 2082.099 ms  p95= 2493.148  p99= 2493.148  min=1950.922  max= 2493.148
+
+[capped] exit 0, peak job memory 474 MB (cap 4000 MB)

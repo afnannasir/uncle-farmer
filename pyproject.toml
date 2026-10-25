@@ -1,0 +1,47 @@
+# Tools for working on Uncle Farmer. The app itself needs only requirements.txt;
+# these are for checking it: pip install -r requirements-dev.txt
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["build", "dist", "survey"]
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle errors and warnings, bugbear (likely bugs), and McCabe complexity (C901)
+select = ["E", "F", "W", "B", "C90"]
+ignore = [
+    "E501",   # a few lines run long on purpose (tables, long messages); 120 is the aim
+    "E741",   # short names like l for a line are fine here
+    "E731",   # small lambdas assigned to names
+    "E401",   # two stdlib imports on one line inside a function
+    "B007",   # loop variables kept for readability
+    "B904",   # `raise ... from` would only change tracebacks; the messages are what players read
+    "B905",   # zip() without strict=: the lengths match by construction
+    "B023",   # closures called within the same loop turn, never later
+]
+
+[tool.ruff.lint.mccabe]
+# How many ways a function can go (each if, loop, try, and/or adds one) before ruff warns.
+# 10, ruff's default, flags plain lookups and checklists too; past 15 a function has too many
+# paths to read or test, and it is split into named steps instead.
+max-complexity = 15
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: takes a second or more of real time (CPU measurements, fights, route searches)",
+           "soak: hours of game time against tests/simgame.py; skipped unless --soak is given"]
+addopts = "-ra -n auto"
+
+[tool.coverage.run]
+source = ["unclefarmer"]
+branch = true
+omit = ["*/__main__.py"]
+
+[tool.coverage.report]
+# The whole app, GUI included. check.py also gates the engine on its own (90%): the GUI has no
+# tests, so a single total would let the engine rot while the number stayed respectable.
+fail_under = 70
+skip_covered = true

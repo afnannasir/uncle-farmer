@@ -1,0 +1,27 @@
+# Your own data. It lives next to the program and must never be committed.
+/profiles/
+/plans/
+/scripts/
+/logs/
+/results/
+/messages/
+/survey/
+/settings.json
+/agent/run/
+/data/game_texts.json
+
+# Build output
+/agent/build/
+/agent/*.jar
+/build/
+/dist/
+__pycache__/
+*.pyc
+*.spec
+
+# Tool caches (they hold local paths)
+.ruff_cache/
+.pytest_cache/
+coverage.xml
+.coverage
+*.prof

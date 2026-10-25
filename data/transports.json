@@ -1,0 +1,1344 @@
+{
+ "format": 1,
+ "transports": [
+  {
+   "kind": "cable_car",
+   "map": 1042,
+   "npc": "Cable Car manager",
+   "at": [
+    31,
+    57
+   ],
+   "ride": 1043,
+   "verified": "survey 2026-10-11 09:38",
+   "cost": 0,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to lifting platform no\\.? ?1"
+   ],
+   "stand": [
+    30,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 88,
+    "1": 80,
+    "2": 0,
+    "3": 122,
+    "4": 124
+   },
+   "dest": 1702,
+   "lands": {
+    "map": 1043,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 16,
+     "2": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1042,
+   "npc": "Cable Car manager",
+   "at": [
+    4,
+    57
+   ],
+   "ride": 1055,
+   "verified": "survey 2026-10-11 09:38",
+   "cost": 2000,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to tulip city.*costs"
+   ],
+   "choose_vip": [
+    "go to tulip city.*(vip|members) are free"
+   ],
+   "stand": [
+    3,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 130,
+    "1": 122,
+    "2": 125,
+    "3": 5,
+    "4": 166
+   },
+   "dest": 1082,
+   "lands": {
+    "map": 1055,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1042,
+   "npc": "Cable Car manager",
+   "at": [
+    57,
+    57
+   ],
+   "ride": 1056,
+   "verified": "survey 2026-10-11 09:38",
+   "cost": 2000,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to holy blood.*costs"
+   ],
+   "choose_vip": [
+    "go to holy blood.*(vip|members) are free"
+   ],
+   "stand": [
+    56,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 127,
+    "1": 120,
+    "2": 122,
+    "3": 162,
+    "4": 5
+   },
+   "dest": 1122,
+   "lands": {
+    "map": 1056,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1082,
+   "npc": "Cable Car manager",
+   "at": [
+    30,
+    57
+   ],
+   "ride": 1083,
+   "verified": "survey 2026-10-11 10:38",
+   "cost": 0,
+   "note": "",
+   "team": false,
+   "choose": [
+    "lifting platform no\\.? ?2"
+   ],
+   "stand": [
+    29,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 87,
+    "1": 84,
+    "2": 5,
+    "3": 125
+   },
+   "dest": 1703,
+   "lands": {
+    "map": 1083,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 16,
+     "2": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1082,
+   "npc": "Cable Car manager",
+   "at": [
+    4,
+    57
+   ],
+   "ride": 1087,
+   "verified": "survey 2026-10-11 10:38",
+   "cost": 2000,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to giant rock.*costs"
+   ],
+   "choose_vip": [
+    "go to giant rock.*(vip|members) are free"
+   ],
+   "stand": [
+    3,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 126,
+    "1": 124,
+    "2": 125,
+    "3": 5
+   },
+   "dest": 1042,
+   "lands": {
+    "map": 1087,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1122,
+   "npc": "Cable Car manager",
+   "at": [
+    31,
+    57
+   ],
+   "ride": 1123,
+   "verified": "survey 2026-10-11 11:21",
+   "cost": "unknown",
+   "note": "the atlas also has a walk-in exit 1122 -> 1123 at the shaft door",
+   "team": false,
+   "choose": [
+    "lifting platform no\\.? ?3"
+   ],
+   "stand": [
+    30,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 88,
+    "1": 0,
+    "2": 122,
+    "3": 80,
+    "4": 0,
+    "5": 124
+   },
+   "dest": 1704,
+   "lands": {
+    "map": 1123,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 16,
+     "2": 5,
+     "3": 0
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1122,
+   "npc": "Cable Car manager",
+   "at": [
+    57,
+    57
+   ],
+   "ride": 1128,
+   "verified": "survey 2026-10-11 11:21",
+   "cost": 2000,
+   "note": "the atlas also has a walk-in exit 1122 -> 1128 at the east door",
+   "team": false,
+   "choose": [
+    "giant rock"
+   ],
+   "stand": [
+    56,
+    57
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 127,
+    "1": 122,
+    "2": 0,
+    "3": 120,
+    "4": 122,
+    "5": 5
+   },
+   "dest": 1042,
+   "lands": {
+    "map": 1128,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5,
+     "2": 0
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1702,
+   "npc": "Cable Car manager",
+   "at": [
+    36,
+    5
+   ],
+   "ride": 1705,
+   "verified": "survey 2026-10-11 11:37",
+   "cost": 0,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to giant rock city"
+   ],
+   "stand": [
+    35,
+    5
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 144,
+    "1": 0,
+    "2": 142
+   },
+   "dest": 1042,
+   "lands": {
+    "map": 1705,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1703,
+   "npc": "Cable Car manager",
+   "at": [
+    41,
+    5
+   ],
+   "ride": 1706,
+   "verified": "survey 2026-10-11 11:41",
+   "cost": "unknown",
+   "note": "",
+   "team": false,
+   "choose": [
+    "tulip"
+   ],
+   "stand": [
+    40,
+    5
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 120,
+    "1": 5,
+    "2": 117
+   },
+   "dest": 1082,
+   "lands": {
+    "map": 1706,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "cable_car",
+   "map": 1704,
+   "npc": "Cable Car manager",
+   "at": [
+    41,
+    5
+   ],
+   "ride": 1707,
+   "verified": "survey 2026-10-11 11:26",
+   "cost": "unknown",
+   "note": "",
+   "team": false,
+   "choose": [
+    "holy blood"
+   ],
+   "stand": [
+    40,
+    5
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 120,
+    "1": 0,
+    "2": 117
+   },
+   "dest": 1122,
+   "lands": {
+    "map": 1707,
+    "cell": [
+     8,
+     4
+    ],
+    "known": true,
+    "ports": {
+     "0": 9,
+     "1": 5
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1041,
+   "npc": "Airship Administrator",
+   "at": [
+    139,
+    194
+   ],
+   "ride": null,
+   "verified": "player 2026-10-11",
+   "cost": "unknown",
+   "note": "Giant Rock City has two administrators: the west one (west, x 139) flies to Sunset City, the east one (x 262) to White Sand City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to Sunset.*costs"
+   ],
+   "choose_vip": [
+    "go to Sunset.*(vip|members) are free"
+   ],
+   "stand": [
+    138,
+    194
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 306,
+    "1": 422,
+    "2": 105,
+    "3": 285,
+    "4": 426,
+    "5": 75,
+    "6": 298,
+    "7": 420,
+    "8": 262,
+    "9": 402,
+    "10": 102
+   },
+   "dest": 1021,
+   "lands": {
+    "map": 1021,
+    "cell": [
+     123,
+     276
+    ],
+    "known": false,
+    "ports": {
+     "0": 330,
+     "1": 132,
+     "2": 360,
+     "3": 281,
+     "4": 125,
+     "5": 323,
+     "6": 360,
+     "7": 278
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1041,
+   "npc": "Airship Administrator",
+   "at": [
+    262,
+    194
+   ],
+   "ride": null,
+   "verified": "player 2026-10-11",
+   "cost": "unknown",
+   "note": "Giant Rock City has two administrators: the east one (west, x 139) flies to Sunset City, the east one (x 262) to White Sand City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to White Sand.*costs"
+   ],
+   "choose_vip": [
+    "go to White Sand.*(vip|members) are free"
+   ],
+   "stand": [
+    261,
+    194
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 413,
+    "1": 299,
+    "2": 199,
+    "3": 400,
+    "4": 313,
+    "5": 72,
+    "6": 406,
+    "7": 296,
+    "8": 378,
+    "9": 288,
+    "10": 196
+   },
+   "dest": 1061,
+   "lands": {
+    "map": 1061,
+    "cell": [
+     72,
+     83
+    ],
+    "known": false,
+    "ports": {
+     "0": 172,
+     "1": 458,
+     "2": 404,
+     "3": 268,
+     "4": 60,
+     "5": 165,
+     "6": 456,
+     "7": 401,
+     "8": 266,
+     "9": 345
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1061,
+   "npc": "Airship Administrator",
+   "at": [
+    72,
+    83
+   ],
+   "ride": null,
+   "verified": true,
+   "cost": 1000,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to giant rock.*costs"
+   ],
+   "choose_vip": [
+    "go to giant rock.*(vip|members) are free"
+   ],
+   "stand": [
+    71,
+    83
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 170,
+    "1": 458,
+    "2": 404,
+    "3": 270,
+    "4": 58,
+    "5": 163,
+    "6": 457,
+    "7": 402,
+    "8": 268,
+    "9": 346
+   },
+   "dest": 1041,
+   "lands": {
+    "map": 1041,
+    "cell": [
+     262,
+     194
+    ],
+    "known": false,
+    "ports": {
+     "0": 414,
+     "1": 300,
+     "2": 200,
+     "3": 402,
+     "4": 314,
+     "5": 74,
+     "6": 407,
+     "7": 298,
+     "8": 379,
+     "9": 290,
+     "10": 198
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1021,
+   "npc": "Airship Administrator",
+   "at": [
+    123,
+    276
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "position from our own packet logs",
+   "team": false,
+   "choose": [
+    "go to giant rock.*costs"
+   ],
+   "choose_vip": [
+    "go to giant rock.*(vip|members) are free"
+   ],
+   "stand": [
+    122,
+    276
+   ],
+   "comp": 2,
+   "ports": {
+    "0": 329,
+    "1": 131,
+    "2": 359,
+    "3": 280,
+    "4": 124,
+    "5": 322,
+    "6": 358,
+    "7": 277
+   },
+   "dest": 1041,
+   "lands": {
+    "map": 1041,
+    "cell": [
+     262,
+     194
+    ],
+    "known": false,
+    "ports": {
+     "0": 414,
+     "1": 300,
+     "2": 200,
+     "3": 402,
+     "4": 314,
+     "5": 74,
+     "6": 407,
+     "7": 298,
+     "8": 379,
+     "9": 290,
+     "10": 198
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1081,
+   "npc": "Airship Administrator",
+   "at": [
+    332,
+    102
+   ],
+   "ride": null,
+   "verified": true,
+   "cost": 1000,
+   "note": "Tulip City: the north administrator (y 102) flies to Moon City, the south one (y 219) to Violet City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to moon city.*costs"
+   ],
+   "choose_vip": [
+    "go to moon city.*(vip|members) are free"
+   ],
+   "stand": [
+    331,
+    102
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 69,
+    "1": 200,
+    "2": 406,
+    "3": 502,
+    "4": 406,
+    "5": 197,
+    "6": 62,
+    "7": 399,
+    "8": 499,
+    "9": 398
+   },
+   "dest": 1101,
+   "lands": {
+    "map": 1101,
+    "cell": [
+     195,
+     246
+    ],
+    "known": false,
+    "ports": {
+     "0": 66,
+     "1": 346,
+     "3": 64,
+     "4": 343,
+     "5": 232,
+     "6": 156
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1081,
+   "npc": "Airship Administrator",
+   "at": [
+    345,
+    219
+   ],
+   "ride": null,
+   "verified": "player 2026-10-11",
+   "cost": 1000,
+   "note": "Tulip City: the north administrator (y 102) flies to Moon City, the south one (y 219) to Violet City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to violet.*costs"
+   ],
+   "choose_vip": [
+    "go to violet.*(vip|members) are free"
+   ],
+   "stand": [
+    344,
+    219
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 195,
+    "1": 82,
+    "2": 520,
+    "3": 402,
+    "4": 520,
+    "5": 78,
+    "6": 188,
+    "7": 513,
+    "8": 398,
+    "9": 512
+   },
+   "dest": 1161,
+   "lands": {
+    "map": 1161,
+    "cell": [
+     243,
+     54
+    ],
+    "known": false,
+    "ports": {
+     "0": 70,
+     "1": 292,
+     "2": 62,
+     "3": 290
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1101,
+   "npc": "Airship Administrator",
+   "at": [
+    195,
+    246
+   ],
+   "ride": null,
+   "verified": true,
+   "cost": 1000,
+   "note": "",
+   "team": false,
+   "choose": [
+    "go to tulip city.*costs"
+   ],
+   "choose_vip": [
+    "go to tulip city.*(vip|members) are free"
+   ],
+   "stand": [
+    194,
+    246
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 67,
+    "1": 347,
+    "3": 66,
+    "4": 344,
+    "5": 234,
+    "6": 158
+   },
+   "dest": 1081,
+   "lands": {
+    "map": 1081,
+    "cell": [
+     345,
+     219
+    ],
+    "known": false,
+    "ports": {
+     "0": 196,
+     "1": 84,
+     "2": 522,
+     "3": 404,
+     "4": 522,
+     "5": 80,
+     "6": 189,
+     "7": 514,
+     "8": 400,
+     "9": 514
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1161,
+   "npc": "Airship Administrator",
+   "at": [
+    243,
+    54
+   ],
+   "ride": null,
+   "verified": true,
+   "cost": 1000,
+   "note": "lands on Loki Union (1162), on its exit to Tuneful Wetland (live 2026-10-23)",
+   "team": false,
+   "choose": [
+    "go to tulip.*costs"
+   ],
+   "choose_vip": [
+    "go to tulip.*(vip|members) are free"
+   ],
+   "stand": [
+    242,
+    54
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 71,
+    "1": 294,
+    "2": 64,
+    "3": 292
+   },
+   "dest": 1162,
+   "lands": {
+    "map": 1162,
+    "cell": [
+     3,
+     3
+    ],
+    "known": true,
+    "ports": {
+     "0": 0
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1121,
+   "npc": "Airship Administrator",
+   "at": [
+    69,
+    102
+   ],
+   "ride": null,
+   "verified": "player 2026-10-11",
+   "cost": "unknown",
+   "note": "holy blood city: the north administrator (y 102) flies to dark night City, the south one (y 219) to Gouging Knife City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to dark night.*costs"
+   ],
+   "choose_vip": [
+    "go to dark night.*(vip|members) are free"
+   ],
+   "stand": [
+    68,
+    102
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 506,
+    "1": 393,
+    "2": 398,
+    "3": 66,
+    "4": 156,
+    "5": 488,
+    "6": 147,
+    "7": 64,
+    "8": 503,
+    "9": 386,
+    "10": 396,
+    "11": 486
+   },
+   "dest": 1181,
+   "lands": {
+    "map": 1181,
+    "cell": [
+     150,
+     150
+    ],
+    "known": false,
+    "ports": {
+     "0": 225,
+     "1": 248,
+     "2": 248,
+     "3": 225,
+     "4": 222,
+     "5": 240,
+     "6": 240,
+     "7": 222
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1121,
+   "npc": "Airship Administrator",
+   "at": [
+    56,
+    219
+   ],
+   "ride": null,
+   "verified": "player 2026-10-11",
+   "cost": "unknown",
+   "note": "holy blood city: the north administrator (y 102) flies to dark night City, the south one (y 219) to Gouging Knife City (checked live 2026-10-11)",
+   "team": false,
+   "choose": [
+    "go to goug.*costs"
+   ],
+   "choose_vip": [
+    "go to goug.*(vip|members) are free"
+   ],
+   "stand": [
+    55,
+    219
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 405,
+    "1": 514,
+    "2": 520,
+    "3": 194,
+    "4": 271,
+    "5": 387,
+    "6": 262,
+    "7": 192,
+    "8": 402,
+    "9": 506,
+    "10": 517,
+    "11": 386
+   },
+   "dest": 1141,
+   "lands": {
+    "map": 1141,
+    "cell": [
+     150,
+     150
+    ],
+    "known": false,
+    "ports": {
+     "0": 221,
+     "1": 253,
+     "2": 212,
+     "3": 246
+    }
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1531,
+   "npc": "Cathy Manor Teleportation circle",
+   "at": [
+    133,
+    142
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    132,
+    142
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 358,
+    "1": 542,
+    "2": 453,
+    "3": 218,
+    "4": 350,
+    "5": 540,
+    "6": 446,
+    "7": 212
+   },
+   "dest": 1533,
+   "lands": {
+    "map": 1533,
+    "cell": [
+     27,
+     127
+    ],
+    "known": false,
+    "ports": {
+     "0": 135
+    }
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1531,
+   "npc": "Mount Bear's Paw Teleportation circle",
+   "at": [
+    150,
+    142
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    149,
+    142
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 357,
+    "1": 541,
+    "2": 452,
+    "3": 218,
+    "4": 350,
+    "5": 538,
+    "6": 444,
+    "7": 211
+   },
+   "dest": 1534,
+   "lands": {
+    "map": 1534,
+    "cell": [
+     100,
+     100
+    ],
+    "known": false,
+    "ports": {
+     "0": 192
+    }
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1733,
+   "npc": "amazing old city Teleportation circle",
+   "at": [
+    113,
+    29
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    112,
+    29
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 200,
+    "1": 122,
+    "2": 219,
+    "3": 145,
+    "4": 106,
+    "5": 180,
+    "6": 0,
+    "7": 154,
+    "8": 110,
+    "9": 198,
+    "10": 115
+   },
+   "dest": 1736,
+   "lands": {
+    "map": 1736,
+    "cell": [
+     50,
+     150
+    ],
+    "known": false,
+    "ports": {}
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1733,
+   "npc": "Marshall's artillery Teleportation circle",
+   "at": [
+    113,
+    78
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    112,
+    78
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 138,
+    "1": 185,
+    "2": 192,
+    "3": 82,
+    "4": 0,
+    "5": 159,
+    "6": 106,
+    "7": 180,
+    "8": 88,
+    "9": 136,
+    "10": 178
+   },
+   "dest": 1738,
+   "lands": {
+    "map": 1738,
+    "cell": [
+     98,
+     150
+    ],
+    "known": false,
+    "ports": {}
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1733,
+   "npc": "Gnome excavation plant Teleportation circle",
+   "at": [
+    9,
+    78
+   ],
+   "ride": null,
+   "verified": "survey 2026-10-11 11:59",
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    8,
+    78
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 138,
+    "1": 184,
+    "2": 84,
+    "3": 192,
+    "4": 159,
+    "5": 0,
+    "6": 180,
+    "7": 108,
+    "8": 88,
+    "9": 135,
+    "10": 177
+   },
+   "dest": 1737,
+   "lands": {
+    "map": 1737,
+    "cell": [
+     150,
+     150
+    ],
+    "known": false,
+    "ports": {}
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1733,
+   "npc": "Guardian Stronghold Teleportation circle",
+   "at": [
+    113,
+    104
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    112,
+    104
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 99,
+    "1": 224,
+    "2": 154,
+    "3": 0,
+    "4": 82,
+    "5": 192,
+    "6": 145,
+    "7": 219,
+    "8": 128,
+    "9": 96,
+    "10": 216
+   },
+   "dest": 1734,
+   "lands": {
+    "map": 1734,
+    "cell": [
+     140,
+     167
+    ],
+    "known": false,
+    "ports": {}
+   }
+  },
+  {
+   "kind": "circle",
+   "map": 1733,
+   "npc": "bloody cave Teleportation circle",
+   "at": [
+    8,
+    104
+   ],
+   "ride": null,
+   "verified": false,
+   "cost": "unknown",
+   "note": "",
+   "team": true,
+   "choose": [
+    "."
+   ],
+   "stand": [
+    7,
+    104
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 100,
+    "1": 224,
+    "2": 1,
+    "3": 155,
+    "4": 194,
+    "5": 85,
+    "6": 220,
+    "7": 148,
+    "8": 128,
+    "9": 97,
+    "10": 217
+   },
+   "dest": 1735,
+   "lands": {
+    "map": 1735,
+    "cell": [
+     108,
+     103
+    ],
+    "known": false,
+    "ports": {
+     "0": 171
+    }
+   }
+  },
+  {
+   "kind": "secret_room",
+   "map": 1041,
+   "npc": "Instructor Hargard",
+   "at": [
+    192,
+    192
+   ],
+   "ride": null,
+   "verified": true,
+   "cost": "unknown",
+   "note": "3 hours a day; other rooms on the same list: L70 UFO equipment, L60 tomb shard, L60 Hole equipment, L50 Fierce cat shard, L45 Snowfield equipment, L40 Wetlands shard, L30 desert equipment (their map ids not confirmed yet)",
+   "team": false,
+   "choose": [
+    "^secret room training",
+    "enter the secret room to practice",
+    "level 70 ocean shard secret room"
+   ],
+   "stand": [
+    191,
+    192
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 353,
+    "1": 369,
+    "2": 133,
+    "3": 332,
+    "4": 369,
+    "5": 22,
+    "6": 346,
+    "7": 366,
+    "8": 310,
+    "9": 344,
+    "10": 130
+   },
+   "dest": 209,
+   "lands": {
+    "map": 209,
+    "cell": [
+     100,
+     100
+    ],
+    "known": false,
+    "ports": {
+     "0": 0
+    }
+   }
+  }
+ ]
+}

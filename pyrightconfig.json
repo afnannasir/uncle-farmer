@@ -1,0 +1,20 @@
+{
+  "include": [
+    "unclefarmer",
+    "tests",
+    "UncleFarmer.pyw",
+    "build_exe.py",
+    "release.py",
+    "docs_html.py"
+  ],
+  "exclude": [
+    "build",
+    "dist",
+    "survey",
+    "**/__pycache__"
+  ],
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "standard",
+  "reportMissingImports": "error",
+  "reportUnusedExpression": "error"
+}

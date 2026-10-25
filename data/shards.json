@@ -1,0 +1,98 @@
+{
+ "shards": {
+  "Weapon Enhance Crystal Shard": {
+   "price": 4000,
+   "makes": ""
+  },
+  "Equipment Enhance Crystal Shard": {
+   "price": 1000,
+   "makes": ""
+  },
+  "Level 1 Ruby Shard": {
+   "price": 1780,
+   "makes": "can make Ruby that increase maximum HP"
+  },
+  "Level 1 Sapphire Shard": {
+   "price": 20,
+   "makes": "can make Sapphire that increase maximum mana"
+  },
+  "Level 1 Tiger Eye Stone Shard": {
+   "price": 2180,
+   "makes": "can make Tiger Eye Stone that increase physical attack"
+  },
+  "Level 1 Opal Shard": {
+   "price": 2145,
+   "makes": "can make Opal that increase magic attack"
+  },
+  "Level 1 Spinel Shard": {
+   "price": 20,
+   "makes": "can make Spinel that increase physical defense"
+  },
+  "Level 1 Aquamarine Shard": {
+   "price": 20,
+   "makes": "can make Aquamarine that increase magic defense"
+  },
+  "Level 1 Garnet Shard": {
+   "price": 5040,
+   "makes": "can make Garnet that increase hit chance"
+  },
+  "Level 1 Blond Jade Shard": {
+   "price": 5005,
+   "makes": "can make Blond Jade that increase dodge chance"
+  },
+  "Level 1 Grape Stone Shard": {
+   "price": 56,
+   "makes": "can make Grape Stone that increase defense break chance"
+  },
+  "Level 1 Olivine Shard": {
+   "price": 20,
+   "makes": "can make Olivine that increase defense break damage"
+  },
+  "Level 1 Topaz Shard": {
+   "price": 20,
+   "makes": "can make Topaz that increase toughness"
+  },
+  "Level 1 Obsidian Shard": {
+   "price": 3970,
+   "makes": "can make Obsidian that increase critical hit chance"
+  },
+  "Level 1 Sunlight Stone Shard": {
+   "price": 21,
+   "makes": "can make Sunlight Stone that increase critical hit damage"
+  },
+  "Level 1 Moonstone Shard": {
+   "price": 2460,
+   "makes": "can make Moonstone that increase critical hit resistance"
+  },
+  "Level 1 Turquoise Shard": {
+   "price": 1925,
+   "makes": "can make Turquoise that increase movement speed"
+  }
+ },
+ "markets": {
+  "1041": [
+   245.0,
+   212.0
+  ],
+  "1061": [
+   38.0,
+   125.0
+  ],
+  "1081": [
+   364.0,
+   171.0
+  ],
+  "1101": [
+   229.0,
+   202.0
+  ],
+  "1141": [
+   113.0,
+   76.0
+  ],
+  "1161": [
+   220.0,
+   96.0
+  ]
+ }
+}

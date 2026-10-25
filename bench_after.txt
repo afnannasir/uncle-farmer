@@ -1,0 +1,47 @@
+﻿map 1041: 400x400, 153290 walkable cells
+
+=== atlaslib routing (map 1041) ===
+dijkstra, full, 1 target                       med=  254.783 ms  p95=  261.730  p99=  272.464  min= 200.682  max=  272.464
+dijkstra, full, 3 targets                      med=  432.863 ms  p95=  464.527  p99=  499.447  min= 364.353  max=  499.447
+dijkstra, limit 150, 3 targets                 med=  131.594 ms  p95=  133.533  p99=  133.666  min=  77.871  max=  133.666
+dijkstra, limit 25, 3 targets                  med=    3.494 ms  p95=    3.568  p99=    3.619  min=   3.388  max=    3.619
+steps dict, full                               med=   87.902 ms  p95=   94.166  p99=   94.300  min=  68.237  max=   94.300
+steps dict, limit 150                          med=   26.190 ms  p95=   26.810  p99=   27.153  min=  21.147  max=   27.153
+steps_arr, full                                med=   24.318 ms  p95=   24.606  p99=   24.682  min=  23.627  max=   24.682
+steps_arr, limit 150                           med=    7.778 ms  p95=    7.841  p99=    7.887  min=   7.668  max=    7.887
+steps_arr, limit 40                            med=    1.492 ms  p95=    1.530  p99=    1.534  min=   1.432  max=    1.534
+astar_rect, 1 target                           med=  113.704 ms  p95=  143.372  p99=  155.552  min=  84.838  max=  155.552
+nearest_walkable, 40                           med=    0.003 ms  p95=    0.004  p99=    0.004  min=   0.003  max=    0.004
+nearest_floor, 3                               med=    0.004 ms  p95=    0.004  p99=    0.004  min=   0.004  max=    0.004
+two_way                                        med=    0.001 ms  p95=    0.001  p99=    0.002  min=   0.001  max=    0.002
+diag_ok                                        med=    0.387 ms  p95=    0.406  p99=    0.410  min=   0.367  max=    0.410
+line                                           med=    0.086 ms  p95=    0.099  p99=    0.099  min=   0.085  max=    0.099
+
+=== route cache (map 1041) ===
+route near, cold                               med=   22.744 ms  p95=   23.029  p99=   23.193  min=  22.605  max=   23.193
+route far, cold                                med=  748.872 ms  p95=  834.179  p99=  896.816  min= 573.267  max=  896.816
+route far x2, miss then hit                    med=    0.004 ms  p95=    0.004  p99=    0.014  min=   0.004  max=    0.014
+
+=== target selection (walk_dist, the farm loop's question) ===
+      30 monsters within 30 cells on map 1503 (180x180, 11020 walkable), 7 behind walls
+walk_dist x30, cold BFS (limit 75)             med=    6.887 ms  p95=    6.993  p99=    6.993  min=   6.711  max=    6.993
+walk_dist x30, warm field                      med=    1.543 ms  p95=    1.575  p99=    1.580  min=   1.507  max=    1.580
+walk_dist one walled mob                       med=    0.031 ms  p95=    0.033  p99=    0.043  min=   0.030  max=    0.043
+      30 monsters within 30 cells on map 1041 (400x400, 153290 walkable), 5 behind walls
+walk_dist x30, cold BFS (limit 75)             med=    9.891 ms  p95=   10.448  p99=   10.448  min=   9.418  max=   10.448
+walk_dist x30, warm field                      med=    1.917 ms  p95=    1.953  p99=    1.956  min=   1.849  max=    1.956
+walk_dist one walled mob                       med=    0.062 ms  p95=    0.075  p99=    0.075  min=   0.061  max=    0.075
+
+=== travel planning ===
+plan cross map, all caches cold                med=  777.606 ms  p95=  805.846  p99=  805.846  min= 730.817  max=  805.846
+plan cross map, replan (new start cell)        med=    0.651 ms  p95=    0.661  p99=    0.661  min=   0.640  max=    0.661
+plan cross map, same question cached           med=    0.022 ms  p95=    0.032  p99=    0.032  min=   0.021  max=    0.032
+plan far, replan (new start cell)              med=    0.965 ms  p95=    1.407  p99=    1.407  min=   0.959  max=    1.407
+plan far, same question cached                 med=    0.060 ms  p95=    0.061  p99=    0.063  min=   0.060  max=    0.063
+steps_from 1 target, cold                      med=  258.568 ms  p95=  269.844  p99=  269.844  min= 230.037  max=  269.844
+steps_from 1 target, cached                    med=    0.003 ms  p95=    0.003  p99=    0.003  min=   0.002  max=    0.003
+plan same map, 1 leg                           med=    0.006 ms  p95=    0.009  p99=    0.010  min=   0.005  max=    0.010
+
+=== shortloop build (offline data generator, not on the bot's path) ===
+small cave 1047 build                          med=  104.623 ms  p95=  124.180  p99=  124.180  min=  88.462  max=  124.180
+large cave 1503 build                          med= 2662.827 ms  p95= 2682.440  p99= 2682.440  min=2620.997  max= 2682.440

@@ -1,0 +1,21 @@
+# What the agent writes and what the bot reads, one example per line: AgentTests.java checks that
+# the agent produces exactly this, tests/test_ask_vitals.py that the bot reads it as meant
+# (the packets are the agent's alone: AgentTests checks them against what the game's code sends).
+# key=value; values are what the agent sends, the inputs are fixed in both tests.
+
+# Vitals hp=91000 mp=82000 buffs=2 debuffs=1, answered 1500 ms ago: the `vitals` part of `mem self`
+vitals={"hp":91000,"mp":82000,"buffs":2,"debuffs":1,"age_ms":1500}
+
+# `ask vitals` for our id 1234567: what goes to the server (the own-HP key's request, op 22)
+ask_packet=22 0 18 214 135
+
+# `ask sheet` for our id 1234567: the sheet key's request (op 37, info kind 13, the int 1, the id)
+sheet_packet=37 13 0 0 0 1 0 18 214 135
+
+# Another player (4152) casts Mind Whip, striking monsters -17 and -6 (op 41, the packet's first
+# section: the cast line, the caster's HP, then each target's HP after it): the cast's `targets`
+cast_packet=4152,7,Mind Whip\n4152,64200\n-17,43248\n-6,0\r\n0\r\n0
+cast_targets=[[-17,43248],[-6,0]]
+
+# `use 1234567` (a bag item's uid): what the use key and hotkeys send (op 18, bag panel 0, uid, 0)
+use_packet=18 0 0 18 214 135 0 0 0 0

@@ -1,0 +1,22 @@
+map 1041: 400x400, 153290 walkable cells
+
+=== atlaslib routing ===
+dijkstra single target                             med= 232.586 ms  p95= 265.015  p99= 277.705  min= 153.473  max= 277.705
+dijkstra multi target                              med= 448.942 ms  p95= 482.932  p99= 504.642  min= 270.733  max= 504.642
+steps BFS                                          med= 235.797 ms  p95= 244.189  p99= 254.301  min= 189.554  max= 254.301
+astar_rect single                                  med= 115.485 ms  p95= 127.943  p99= 151.633  min=  95.811  max= 151.633
+dijkstra_rect                                      med=1768.030 ms  p95=1857.289  p99=1864.006  min=1663.462  max=1864.006
+nearest_walkable                                   med=   0.002 ms  p95=   0.002  p99=   0.003  min=   0.002  max=   0.003
+nearest_floor                                      med=   0.002 ms  p95=   0.002  p99=   0.004  min=   0.002  max=   0.004
+two_way                                            med=   0.001 ms  p95=   0.001  p99=   0.001  min=   0.001  max=   0.001
+route                                              med= 117.960 ms  p95= 127.524  p99= 149.701  min=  84.256  max= 149.701
+diag_ok                                            med=   0.406 ms  p95=   0.423  p99=   0.436  min=   0.245  max=   0.436
+line                                               med=   0.044 ms  p95=   0.046  p99=   0.054  min=   0.043  max=   0.054
+
+=== travel planning ===
+travel.plan same map                               med=   0.001 ms  p95=   0.001  p99=   0.001  min=   0.001  max=   0.001
+travel.plan cross map                              med= 789.162 ms  p95= 818.022  p99= 830.575  min= 656.983  max= 830.575
+travel.plan far                                    med= 682.721 ms  p95= 715.223  p99= 737.601  min= 598.039  max= 737.601
+
+=== shortloop build ===
+shortloop.build                                    med= 569.965 ms  p95= 615.828  p99= 615.828  min= 491.494  max= 615.828

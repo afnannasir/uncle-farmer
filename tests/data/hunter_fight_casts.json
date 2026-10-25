@@ -1,0 +1,3067 @@
+{
+"about": "A Hunter's own casts in a real fight, as agent v28 reports them (hit results included). Player ids are made up; monster ids are the game's runtime ids.",
+"me": 1001,
+"casts": [
+{
+"t": 1000000,
+"caster": 1001,
+"seq": 28731,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+4,
+138364
+]
+]
+},
+{
+"t": 1001237,
+"caster": 1001,
+"seq": 28732,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+4,
+138167
+]
+]
+},
+{
+"t": 1002001,
+"caster": -6,
+"seq": 12,
+"skill": "Tear and Bite"
+},
+{
+"t": 1002466,
+"caster": 1001,
+"seq": 28733,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+2002,
+4,
+167264
+]
+]
+},
+{
+"t": 1003669,
+"caster": 1001,
+"seq": 28734,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1004005,
+"caster": -6,
+"seq": 13,
+"skill": "Tear and Bite"
+},
+{
+"t": 1004902,
+"caster": 1001,
+"seq": 28735,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+141128
+]
+]
+},
+{
+"t": 1005883,
+"caster": -3,
+"seq": 2,
+"skill": "Tear and Bite",
+"hits": [
+[
+1001,
+3,
+19
+]
+]
+},
+{
+"t": 1006124,
+"caster": 1001,
+"seq": 28736,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-3,
+4,
+136998
+]
+]
+},
+{
+"t": 1007342,
+"caster": 1001,
+"seq": 28737,
+"skill": "Level 2 Rapid Arrows",
+"hits": [
+[
+-6,
+3,
+146613
+],
+[
+-3,
+3,
+146613
+]
+]
+},
+{
+"t": 1007907,
+"caster": -3,
+"seq": 3,
+"skill": "Tear and Bite",
+"hits": [
+[
+1001,
+3,
+19
+]
+]
+},
+{
+"t": 1008583,
+"caster": 1001,
+"seq": 28738,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+4,
+137044
+]
+]
+},
+{
+"t": 1010614,
+"caster": 1001,
+"seq": 28739,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+136766
+]
+]
+},
+{
+"t": 1027665,
+"caster": 1001,
+"seq": 28740,
+"skill": "Escape"
+},
+{
+"t": 1041522,
+"caster": 1001,
+"seq": 28741,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-3,
+4,
+162696
+]
+]
+},
+{
+"t": 1042766,
+"caster": 1001,
+"seq": 28742,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+4,
+138337
+]
+]
+},
+{
+"t": 1044023,
+"caster": 1001,
+"seq": 28743,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+3,
+133422
+]
+]
+},
+{
+"t": 1045836,
+"caster": 1001,
+"seq": 28744,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+3,
+135271
+]
+]
+},
+{
+"t": 1047070,
+"caster": 1001,
+"seq": 28745,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+3,
+133765
+]
+]
+},
+{
+"t": 1076542,
+"caster": 1001,
+"seq": 28746,
+"skill": "Escape"
+},
+{
+"t": 1092407,
+"caster": -32,
+"seq": 0,
+"skill": "Wind Blade"
+},
+{
+"t": 1122353,
+"caster": 1001,
+"seq": 28747,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+207034
+]
+]
+},
+{
+"t": 1123578,
+"caster": 1001,
+"seq": 28748,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+204900
+]
+]
+},
+{
+"t": 1124846,
+"caster": 1001,
+"seq": 28749,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1128873,
+"caster": 1001,
+"seq": 28750,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+207297
+]
+]
+},
+{
+"t": 1130118,
+"caster": 1001,
+"seq": 28751,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+205509
+]
+]
+},
+{
+"t": 1130337,
+"caster": -61,
+"seq": 0,
+"skill": "Vine Trap",
+"hits": [
+[
+1001,
+0,
+0
+]
+]
+},
+{
+"t": 1136344,
+"caster": 1001,
+"seq": 28752,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+3,
+149552
+]
+]
+},
+{
+"t": 1137552,
+"caster": 1001,
+"seq": 28753,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1138818,
+"caster": 1001,
+"seq": 28754,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+3,
+151023
+]
+]
+},
+{
+"t": 1140023,
+"caster": 1001,
+"seq": 28755,
+"skill": "Level 7 Aimed Shot",
+"hits": []
+},
+{
+"t": 1141248,
+"caster": 1001,
+"seq": 28756,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+207518
+]
+]
+},
+{
+"t": 1146990,
+"caster": 1001,
+"seq": 28757,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+205658
+]
+]
+},
+{
+"t": 1148219,
+"caster": 1001,
+"seq": 28758,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1149415,
+"caster": 1001,
+"seq": 28759,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1150661,
+"caster": 1001,
+"seq": 28760,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1151893,
+"caster": 1001,
+"seq": 28761,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+207027
+]
+]
+},
+{
+"t": 1153119,
+"caster": 1001,
+"seq": 28762,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1154078,
+"caster": -18,
+"seq": 11,
+"skill": "Tear and Bite"
+},
+{
+"t": 1157479,
+"caster": -18,
+"seq": 12,
+"skill": "Tear and Bite"
+},
+{
+"t": 1159080,
+"caster": -15,
+"seq": 12,
+"skill": "Tear and Bite"
+},
+{
+"t": 1159489,
+"caster": -18,
+"seq": 13,
+"skill": "Tear and Bite"
+},
+{
+"t": 1159647,
+"caster": -17,
+"seq": 7,
+"skill": "Tear and Bite"
+},
+{
+"t": 1161222,
+"caster": -15,
+"seq": 13,
+"skill": "Tear and Bite"
+},
+{
+"t": 1163174,
+"caster": -18,
+"seq": 14,
+"skill": "Tear and Bite"
+},
+{
+"t": 1164682,
+"caster": -17,
+"seq": 8,
+"skill": "Tear and Bite"
+},
+{
+"t": 1165098,
+"caster": -15,
+"seq": 14,
+"skill": "Tear and Bite"
+},
+{
+"t": 1165099,
+"caster": -18,
+"seq": 15,
+"skill": "Tear and Bite"
+},
+{
+"t": 1165100,
+"caster": -17,
+"seq": 9,
+"skill": "Tear and Bite"
+},
+{
+"t": 1165298,
+"caster": 1001,
+"seq": 28763,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+205561
+]
+]
+},
+{
+"t": 1165707,
+"caster": -15,
+"seq": 15,
+"skill": "Tear and Bite"
+},
+{
+"t": 1165892,
+"caster": -17,
+"seq": 10,
+"skill": "Tear and Bite"
+},
+{
+"t": 1166469,
+"caster": 1001,
+"seq": 28764,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+204659
+]
+]
+},
+{
+"t": 1167638,
+"caster": 1001,
+"seq": 28765,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1169704,
+"caster": 1001,
+"seq": 28766,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+3,
+114420
+]
+]
+},
+{
+"t": 1170851,
+"caster": 1001,
+"seq": 28767,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+205675
+]
+]
+},
+{
+"t": 1172067,
+"caster": 1001,
+"seq": 28768,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+162954
+]
+]
+},
+{
+"t": 1172836,
+"caster": 1001,
+"seq": 28769,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1174053,
+"caster": 1001,
+"seq": 28770,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+162885
+]
+]
+},
+{
+"t": 1187158,
+"caster": 1001,
+"seq": 28771,
+"skill": "Escape"
+},
+{
+"t": 1196527,
+"caster": 1001,
+"seq": 28772,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+208833
+]
+]
+},
+{
+"t": 1197903,
+"caster": 1001,
+"seq": 28773,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1199111,
+"caster": 1001,
+"seq": 28774,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+208120
+]
+]
+},
+{
+"t": 1200318,
+"caster": 1001,
+"seq": 28775,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+210008
+]
+]
+},
+{
+"t": 1230749,
+"caster": 1001,
+"seq": 28776,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1233847,
+"caster": 1001,
+"seq": 28777,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1235060,
+"caster": 1001,
+"seq": 28778,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+206695
+]
+]
+},
+{
+"t": 1236293,
+"caster": 1001,
+"seq": 28779,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+208111
+]
+]
+},
+{
+"t": 1237504,
+"caster": 1001,
+"seq": 28780,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1267766,
+"caster": 1001,
+"seq": 28781,
+"skill": "Strong-Arm Aura"
+},
+{
+"t": 1273826,
+"caster": 1001,
+"seq": 28782,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1275452,
+"caster": 1001,
+"seq": 28783,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1276798,
+"caster": 1001,
+"seq": 28784,
+"skill": "Level 7 Aimed Shot",
+"hits": []
+},
+{
+"t": 1278423,
+"caster": 1001,
+"seq": 28785,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+306907
+]
+]
+},
+{
+"t": 1279673,
+"caster": 1001,
+"seq": 28786,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+306205
+]
+]
+},
+{
+"t": 1280882,
+"caster": 1001,
+"seq": 28787,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+310244
+]
+]
+},
+{
+"t": 1299233,
+"caster": -20,
+"seq": 25,
+"skill": "Tear and Bite"
+},
+{
+"t": 1300206,
+"caster": -16,
+"seq": 24,
+"skill": "Tear and Bite"
+},
+{
+"t": 1301243,
+"caster": -20,
+"seq": 26,
+"skill": "Tear and Bite"
+},
+{
+"t": 1302216,
+"caster": -16,
+"seq": 25,
+"skill": "Tear and Bite"
+},
+{
+"t": 1302624,
+"caster": -37,
+"seq": 0,
+"skill": "Peck"
+},
+{
+"t": 1304225,
+"caster": -16,
+"seq": 26,
+"skill": "Tear and Bite"
+},
+{
+"t": 1304633,
+"caster": -37,
+"seq": 1,
+"skill": "Peck"
+},
+{
+"t": 1306232,
+"caster": -16,
+"seq": 27,
+"skill": "Tear and Bite"
+},
+{
+"t": 1306647,
+"caster": -37,
+"seq": 2,
+"skill": "Peck"
+},
+{
+"t": 1310861,
+"caster": 1001,
+"seq": 28788,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1311659,
+"caster": -40,
+"seq": 0,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1311660,
+"caster": -42,
+"seq": 0,
+"skill": "Magic Cannon"
+},
+{
+"t": 1311661,
+"caster": -43,
+"seq": 0,
+"skill": "Magic Cannon"
+},
+{
+"t": 1312112,
+"caster": 1001,
+"seq": 28789,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1313363,
+"caster": 1001,
+"seq": 28790,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1314608,
+"caster": 1001,
+"seq": 28791,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1315687,
+"caster": -40,
+"seq": 1,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1315688,
+"caster": -42,
+"seq": 1,
+"skill": "Magic Cannon"
+},
+{
+"t": 1315688,
+"caster": -43,
+"seq": 1,
+"skill": "Magic Cannon"
+},
+{
+"t": 1315849,
+"caster": 1001,
+"seq": 28792,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1317053,
+"caster": 1001,
+"seq": 28793,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1318328,
+"caster": 1001,
+"seq": 28794,
+"skill": "Level 7 Aimed Shot"
+},
+{
+"t": 1319596,
+"caster": 1001,
+"seq": 28795,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1319718,
+"caster": -40,
+"seq": 2,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1319718,
+"caster": -42,
+"seq": 2,
+"skill": "Magic Cannon"
+},
+{
+"t": 1319719,
+"caster": -43,
+"seq": 2,
+"skill": "Magic Cannon"
+},
+{
+"t": 1323767,
+"caster": -40,
+"seq": 3,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+0
+]
+]
+},
+{
+"t": 1323768,
+"caster": -42,
+"seq": 3,
+"skill": "Magic Cannon"
+},
+{
+"t": 1323768,
+"caster": -43,
+"seq": 3,
+"skill": "Magic Cannon"
+},
+{
+"t": 1327449,
+"caster": 1001,
+"seq": 28796,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1327785,
+"caster": -40,
+"seq": 4,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1327786,
+"caster": -42,
+"seq": 4,
+"skill": "Magic Cannon"
+},
+{
+"t": 1327786,
+"caster": -43,
+"seq": 4,
+"skill": "Magic Cannon"
+},
+{
+"t": 1328683,
+"caster": 1001,
+"seq": 28797,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1329884,
+"caster": 1001,
+"seq": 28798,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1331092,
+"caster": 1001,
+"seq": 28799,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+2002,
+4,
+311475
+]
+]
+},
+{
+"t": 1331826,
+"caster": -40,
+"seq": 5,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1331827,
+"caster": -42,
+"seq": 5,
+"skill": "Magic Cannon"
+},
+{
+"t": 1331827,
+"caster": -43,
+"seq": 5,
+"skill": "Magic Cannon"
+},
+{
+"t": 1332314,
+"caster": 1001,
+"seq": 28800,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+259102
+]
+]
+},
+{
+"t": 1333527,
+"caster": 1001,
+"seq": 28801,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+259678
+]
+]
+},
+{
+"t": 1334786,
+"caster": 1001,
+"seq": 28802,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+259190
+]
+]
+},
+{
+"t": 1336808,
+"caster": -40,
+"seq": 6,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1336872,
+"caster": -43,
+"seq": 6,
+"skill": "Magic Cannon"
+},
+{
+"t": 1337791,
+"caster": 1001,
+"seq": 28803,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1339003,
+"caster": 1001,
+"seq": 28804,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1340236,
+"caster": 1001,
+"seq": 28805,
+"skill": "Escape",
+"hits": [
+[
+2003,
+0,
+0
+]
+]
+},
+{
+"t": 1340484,
+"caster": 1001,
+"seq": 28806,
+"skill": "Level 7 Arcane Shot"
+},
+{
+"t": 1340828,
+"caster": -40,
+"seq": 7,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1340890,
+"caster": -43,
+"seq": 7,
+"skill": "Magic Cannon"
+},
+{
+"t": 1343880,
+"caster": 1001,
+"seq": 28807,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+255964
+]
+]
+},
+{
+"t": 1344865,
+"caster": -40,
+"seq": 8,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+29152
+]
+]
+},
+{
+"t": 1345104,
+"caster": 1001,
+"seq": 28808,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+3,
+189064
+]
+]
+},
+{
+"t": 1346350,
+"caster": 1001,
+"seq": 28809,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2003,
+4,
+257033
+]
+]
+},
+{
+"t": 1347626,
+"caster": 1001,
+"seq": 28810,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1348873,
+"caster": -40,
+"seq": 9,
+"skill": "Crystal Light Wave",
+"hits": [
+[
+1001,
+6,
+0
+]
+]
+},
+{
+"t": 1361570,
+"caster": -64,
+"seq": 0,
+"skill": "Vine Trap",
+"hits": [
+[
+1001,
+0,
+0
+]
+]
+},
+{
+"t": 1370505,
+"caster": 1001,
+"seq": 28811,
+"skill": "Escape"
+},
+{
+"t": 1389403,
+"caster": -65,
+"seq": 0,
+"skill": "Tar Trap",
+"hits": [
+[
+1001,
+0,
+0
+]
+]
+},
+{
+"t": 1390585,
+"caster": -65,
+"seq": 1,
+"skill": "Tar Trap"
+},
+{
+"t": 1391362,
+"caster": -18,
+"seq": 17,
+"skill": "Tear and Bite"
+},
+{
+"t": 1392129,
+"caster": -16,
+"seq": 28,
+"skill": "Tear and Bite"
+},
+{
+"t": 1393436,
+"caster": 1001,
+"seq": 28812,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1394046,
+"caster": -20,
+"seq": 27,
+"skill": "Tear and Bite"
+},
+{
+"t": 1394141,
+"caster": -16,
+"seq": 29,
+"skill": "Tear and Bite"
+},
+{
+"t": 1395301,
+"caster": 1001,
+"seq": 28813,
+"skill": "Level 7 Arcane Shot",
+"hits": []
+},
+{
+"t": 1396049,
+"caster": -20,
+"seq": 28,
+"skill": "Tear and Bite"
+},
+{
+"t": 1396507,
+"caster": 1001,
+"seq": 28814,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+397822
+]
+]
+},
+{
+"t": 1397736,
+"caster": 1001,
+"seq": 28815,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2002,
+4,
+396383
+]
+]
+},
+{
+"t": 1398056,
+"caster": -20,
+"seq": 29,
+"skill": "Tear and Bite"
+},
+{
+"t": 1704682,
+"caster": 1001,
+"seq": 28816,
+"skill": "Escape"
+},
+{
+"t": 1711013,
+"caster": 1001,
+"seq": 28817,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+60771
+]
+]
+},
+{
+"t": 1712227,
+"caster": 1001,
+"seq": 28818,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+62498
+]
+]
+},
+{
+"t": 1713452,
+"caster": 1001,
+"seq": 28819,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+61653
+]
+]
+},
+{
+"t": 1713999,
+"caster": -6,
+"seq": 0,
+"skill": "Whip",
+"hits": [
+[
+1001,
+3,
+21
+]
+]
+},
+{
+"t": 1714716,
+"caster": 1001,
+"seq": 28820,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+62098
+]
+]
+},
+{
+"t": 1715993,
+"caster": 1001,
+"seq": 28821,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+60992
+]
+]
+},
+{
+"t": 1715998,
+"caster": -6,
+"seq": 1,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1717185,
+"caster": 1001,
+"seq": 28822,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-6,
+3,
+71050
+]
+]
+},
+{
+"t": 1718001,
+"caster": -6,
+"seq": 2,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1718411,
+"caster": 1001,
+"seq": 28823,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+62675
+]
+]
+},
+{
+"t": 1719677,
+"caster": 1001,
+"seq": 28824,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+3,
+57214
+]
+]
+},
+{
+"t": 1720008,
+"caster": -6,
+"seq": 3,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1720897,
+"caster": 1001,
+"seq": 28825,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+61324
+]
+]
+},
+{
+"t": 1731552,
+"caster": 1001,
+"seq": 28826,
+"skill": "Escape",
+"hits": [
+[
+-2,
+0,
+0
+]
+]
+},
+{
+"t": 1731975,
+"caster": -5,
+"seq": 0,
+"skill": "Whip"
+},
+{
+"t": 1732499,
+"caster": 1001,
+"seq": 28827,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-2,
+4,
+61085
+]
+]
+},
+{
+"t": 1733975,
+"caster": -5,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1734103,
+"caster": -2,
+"seq": 0,
+"skill": "Whip"
+},
+{
+"t": 1734291,
+"caster": -4,
+"seq": 0,
+"skill": "Whip"
+},
+{
+"t": 1736108,
+"caster": -2,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1736299,
+"caster": -4,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1736303,
+"caster": -5,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1738116,
+"caster": -2,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1738301,
+"caster": -4,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1738302,
+"caster": -5,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1740118,
+"caster": -2,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1740313,
+"caster": -4,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1740313,
+"caster": -5,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1742139,
+"caster": -2,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1744142,
+"caster": -2,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1745478,
+"caster": -5,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1745913,
+"caster": -4,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1746166,
+"caster": -2,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1748170,
+"caster": -2,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1749912,
+"caster": -3,
+"seq": 0,
+"skill": "Whip"
+},
+{
+"t": 1751493,
+"caster": 1001,
+"seq": 28828,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-12,
+4,
+80575
+]
+]
+},
+{
+"t": 1751883,
+"caster": -10,
+"seq": 0,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1752709,
+"caster": 1001,
+"seq": 28829,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-12,
+3,
+73438
+]
+]
+},
+{
+"t": 1752982,
+"caster": -3,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1753890,
+"caster": -10,
+"seq": 1,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1753952,
+"caster": -12,
+"seq": 0,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1754018,
+"caster": 1001,
+"seq": 28830,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-12,
+3,
+73708
+]
+]
+},
+{
+"t": 1756184,
+"caster": 1001,
+"seq": 28831,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-12,
+3,
+73607
+]
+]
+},
+{
+"t": 1756307,
+"caster": -3,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1756367,
+"caster": -5,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1756776,
+"caster": -10,
+"seq": 2,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1757191,
+"caster": -12,
+"seq": 1,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1757439,
+"caster": 1001,
+"seq": 28832,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-12,
+4,
+80393
+]
+]
+},
+{
+"t": 1757530,
+"caster": -4,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1758375,
+"caster": -5,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1759042,
+"caster": 1001,
+"seq": 28833,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-12,
+3,
+73888
+]
+]
+},
+{
+"t": 1759192,
+"caster": -12,
+"seq": 2,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1760229,
+"caster": -10,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1760343,
+"caster": 1001,
+"seq": 28834,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-10,
+3,
+73578
+]
+]
+},
+{
+"t": 1761108,
+"caster": -3,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1761168,
+"caster": -4,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1761199,
+"caster": -12,
+"seq": 3,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1761554,
+"caster": 1001,
+"seq": 28835,
+"skill": "Level 2 Rapid Arrows",
+"hits": [
+[
+-5,
+3,
+82572
+],
+[
+-4,
+3,
+82572
+],
+[
+-3,
+4,
+87664
+],
+[
+-10,
+3,
+82572
+]
+]
+},
+{
+"t": 1762329,
+"caster": -5,
+"seq": 8,
+"skill": "Whip"
+},
+{
+"t": 1762834,
+"caster": 1001,
+"seq": 28836,
+"skill": "Level 5 Marked Shot",
+"hits": [
+[
+-10,
+4,
+81001
+],
+[
+-12,
+4,
+81001
+]
+]
+},
+{
+"t": 1763127,
+"caster": -3,
+"seq": 4,
+"skill": "Whip",
+"hits": [
+[
+1001,
+3,
+21
+]
+]
+},
+{
+"t": 1763188,
+"caster": -4,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1763218,
+"caster": -12,
+"seq": 4,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1763531,
+"caster": -10,
+"seq": 4,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1764763,
+"caster": 1001,
+"seq": 28837,
+"skill": "Escape",
+"hits": [
+[
+-3,
+0,
+0
+]
+]
+},
+{
+"t": 1766603,
+"caster": -5,
+"seq": 9,
+"skill": "Whip"
+},
+{
+"t": 1767131,
+"caster": -4,
+"seq": 8,
+"skill": "Whip"
+},
+{
+"t": 1768607,
+"caster": -5,
+"seq": 10,
+"skill": "Whip"
+},
+{
+"t": 1769163,
+"caster": -4,
+"seq": 9,
+"skill": "Whip"
+},
+{
+"t": 1770632,
+"caster": -5,
+"seq": 11,
+"skill": "Whip"
+},
+{
+"t": 1771168,
+"caster": -4,
+"seq": 10,
+"skill": "Whip"
+},
+{
+"t": 1772497,
+"caster": -10,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1772653,
+"caster": -5,
+"seq": 12,
+"skill": "Whip"
+},
+{
+"t": 1772781,
+"caster": -12,
+"seq": 5,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1773115,
+"caster": 1001,
+"seq": 28838,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-10,
+3,
+80325
+],
+[
+-4,
+4,
+85416
+],
+[
+-5,
+3,
+80325
+]
+]
+},
+{
+"t": 1773187,
+"caster": -4,
+"seq": 11,
+"skill": "Whip"
+},
+{
+"t": 1774188,
+"caster": -3,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1774312,
+"caster": 1001,
+"seq": 28839,
+"skill": "Level 5 Marked Shot",
+"hits": [
+[
+-5,
+4,
+85195
+]
+]
+},
+{
+"t": 1775186,
+"caster": -4,
+"seq": 12,
+"skill": "Whip"
+},
+{
+"t": 1775523,
+"caster": 1001,
+"seq": 28840,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-4,
+4,
+86408
+]
+]
+},
+{
+"t": 1776190,
+"caster": -3,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1776760,
+"caster": 1001,
+"seq": 28841,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+3,
+82209
+]
+]
+},
+{
+"t": 1778001,
+"caster": 1001,
+"seq": 28842,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-3,
+3,
+81680
+]
+]
+},
+{
+"t": 1792868,
+"caster": 1001,
+"seq": 28843,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+3,
+116419
+]
+]
+},
+{
+"t": 1794071,
+"caster": 1001,
+"seq": 28844,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-7,
+4,
+123332
+]
+]
+},
+{
+"t": 1795396,
+"caster": 1001,
+"seq": 28845,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-7,
+4,
+123924
+]
+]
+},
+{
+"t": 1796600,
+"caster": 1001,
+"seq": 28846,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-6,
+4,
+122207
+]
+]
+},
+{
+"t": 1796780,
+"caster": -7,
+"seq": 0,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1797563,
+"caster": -6,
+"seq": 4,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1798059,
+"caster": 1001,
+"seq": 28847,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-2,
+3,
+116514
+]
+]
+},
+{
+"t": 1798808,
+"caster": -7,
+"seq": 1,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1799868,
+"caster": -6,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1799956,
+"caster": 1001,
+"seq": 28848,
+"skill": "Level 2 Rapid Arrows",
+"hits": [
+[
+-6,
+4,
+135356
+],
+[
+-7,
+4,
+135356
+]
+]
+},
+{
+"t": 1800811,
+"caster": -7,
+"seq": 2,
+"skill": "Whip",
+"hits": [
+[
+1001,
+3,
+21
+]
+]
+},
+{
+"t": 1801214,
+"caster": 1001,
+"seq": 28849,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-2,
+4,
+121040
+]
+]
+},
+{
+"t": 1802500,
+"caster": 1001,
+"seq": 28850,
+"skill": "Level 5 Marked Shot"
+},
+{
+"t": 1803178,
+"caster": -7,
+"seq": 3,
+"skill": "Whip",
+"hits": [
+[
+1001,
+3,
+21
+]
+]
+},
+{
+"t": 1803868,
+"caster": -2,
+"seq": 8,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1804172,
+"caster": 1001,
+"seq": 28851,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-7,
+4,
+121624
+]
+]
+},
+{
+"t": 1805876,
+"caster": 1001,
+"seq": 28852,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-2,
+5,
+209686
+]
+]
+},
+{
+"t": 1806236,
+"caster": -2,
+"seq": 9,
+"skill": "Whip",
+"hits": [
+[
+1001,
+3,
+21
+]
+]
+},
+{
+"t": 1809344,
+"caster": 1001,
+"seq": 28853,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-9,
+3,
+117743
+]
+]
+},
+{
+"t": 1810573,
+"caster": 1001,
+"seq": 28854,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-9,
+4,
+123698
+]
+]
+},
+{
+"t": 1811807,
+"caster": 1001,
+"seq": 28855,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-9,
+3,
+116073
+]
+]
+},
+{
+"t": 1812786,
+"caster": -9,
+"seq": 0,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1813040,
+"caster": 1001,
+"seq": 28856,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-9,
+4,
+145260
+]
+]
+},
+{
+"t": 1814552,
+"caster": 1001,
+"seq": 28857,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-4,
+3,
+116837
+]
+]
+},
+{
+"t": 1815823,
+"caster": 1001,
+"seq": 28858,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-4,
+4,
+123748
+]
+]
+},
+{
+"t": 1817078,
+"caster": 1001,
+"seq": 28859,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-5,
+3,
+116691
+]
+]
+},
+{
+"t": 1818290,
+"caster": 1001,
+"seq": 28860,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-4,
+4,
+123148
+],
+[
+-5,
+3,
+118058
+]
+]
+},
+{
+"t": 1818512,
+"caster": -4,
+"seq": 13,
+"skill": "Whip",
+"hits": []
+},
+{
+"t": 1819508,
+"caster": 1001,
+"seq": 28861,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-4,
+4,
+146751
+]
+]
+},
+{
+"t": 1820753,
+"caster": 1001,
+"seq": 28862,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-5,
+3,
+117899
+]
+]
+},
+{
+"t": 1822392,
+"caster": -5,
+"seq": 13,
+"skill": "Whip"
+},
+{
+"t": 1822396,
+"caster": 1001,
+"seq": 28863,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-5,
+3,
+93454
+]
+]
+},
+{
+"t": 1823736,
+"caster": -12,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1825757,
+"caster": -12,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1825852,
+"caster": 1001,
+"seq": 28864,
+"skill": "Escape"
+},
+{
+"t": 1827777,
+"caster": -12,
+"seq": 8,
+"skill": "Whip"
+},
+{
+"t": 1829799,
+"caster": -12,
+"seq": 9,
+"skill": "Whip"
+},
+{
+"t": 1836536,
+"caster": -6,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1838559,
+"caster": -6,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1841172,
+"caster": -6,
+"seq": 8,
+"skill": "Whip"
+},
+{
+"t": 1843190,
+"caster": -6,
+"seq": 9,
+"skill": "Whip"
+},
+{
+"t": 1848666,
+"caster": -9,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1856288,
+"caster": -11,
+"seq": 0,
+"skill": "Whip"
+},
+{
+"t": 1857103,
+"caster": -7,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1857293,
+"caster": -2,
+"seq": 10,
+"skill": "Whip"
+},
+{
+"t": 1858136,
+"caster": -4,
+"seq": 14,
+"skill": "Whip"
+},
+{
+"t": 1858296,
+"caster": -11,
+"seq": 1,
+"skill": "Whip"
+},
+{
+"t": 1859111,
+"caster": -7,
+"seq": 5,
+"skill": "Whip"
+},
+{
+"t": 1859298,
+"caster": -2,
+"seq": 11,
+"skill": "Whip"
+},
+{
+"t": 1860142,
+"caster": -4,
+"seq": 15,
+"skill": "Whip"
+},
+{
+"t": 1860302,
+"caster": -11,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1861116,
+"caster": -7,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1861306,
+"caster": -2,
+"seq": 12,
+"skill": "Whip"
+},
+{
+"t": 1862150,
+"caster": -4,
+"seq": 16,
+"skill": "Whip"
+},
+{
+"t": 1862487,
+"caster": 1001,
+"seq": 28865,
+"skill": "Escape"
+},
+{
+"t": 1862494,
+"caster": -11,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1863120,
+"caster": -7,
+"seq": 7,
+"skill": "Whip"
+},
+{
+"t": 1863162,
+"caster": 1001,
+"seq": 28866,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+-4,
+3,
+172662
+],
+[
+-2,
+4,
+176736
+],
+[
+-7,
+4,
+176736
+]
+]
+},
+{
+"t": 1864385,
+"caster": 1001,
+"seq": 28867,
+"skill": "Level 2 Rapid Arrows",
+"hits": [
+[
+-2,
+3,
+187412
+],
+[
+-7,
+4,
+191485
+],
+[
+-4,
+3,
+187412
+]
+]
+},
+{
+"t": 1864500,
+"caster": -11,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1865620,
+"caster": 1001,
+"seq": 28868,
+"skill": "Level 5 Marked Shot",
+"hits": [
+[
+-2,
+4,
+174895
+],
+[
+-7,
+3,
+170821
+]
+]
+},
+{
+"t": 1883150,
+"caster": -9,
+"seq": 2,
+"skill": "Whip"
+},
+{
+"t": 1885171,
+"caster": -9,
+"seq": 3,
+"skill": "Whip"
+},
+{
+"t": 1887176,
+"caster": -9,
+"seq": 4,
+"skill": "Whip"
+},
+{
+"t": 1899048,
+"caster": 1001,
+"seq": 28869,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-10,
+4,
+259597
+]
+]
+},
+{
+"t": 1900257,
+"caster": 1001,
+"seq": 28870,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-10,
+4,
+220050
+]
+]
+},
+{
+"t": 1900996,
+"caster": -44,
+"seq": 0,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+3,
+94019
+]
+]
+},
+{
+"t": 1901614,
+"caster": 1001,
+"seq": 28871,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-10,
+4,
+220569
+]
+]
+},
+{
+"t": 1902828,
+"caster": 1001,
+"seq": 28872,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-10,
+3,
+216118
+]
+]
+},
+{
+"t": 1905007,
+"caster": -44,
+"seq": 1,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+3,
+93947
+]
+]
+},
+{
+"t": 1909039,
+"caster": -44,
+"seq": 2,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+154741
+]
+]
+},
+{
+"t": 1913080,
+"caster": -44,
+"seq": 3,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+151662
+]
+]
+},
+{
+"t": 1949607,
+"caster": -10,
+"seq": 6,
+"skill": "Whip"
+},
+{
+"t": 1951560,
+"caster": -44,
+"seq": 4,
+"skill": "Magic Cannon"
+},
+{
+"t": 1953673,
+"caster": -40,
+"seq": 0,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1954172,
+"caster": -42,
+"seq": 0,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+3,
+79347
+]
+]
+},
+{
+"t": 1957199,
+"caster": 1001,
+"seq": 28873,
+"skill": "Level 6 Multi Shot",
+"hits": [
+[
+2004,
+4,
+300410
+],
+[
+2005,
+3,
+297262
+],
+[
+2006,
+4,
+301463
+],
+[
+2007,
+3,
+291635
+]
+]
+},
+{
+"t": 1957682,
+"caster": -40,
+"seq": 1,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1957743,
+"caster": -43,
+"seq": 0,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+151722
+]
+]
+},
+{
+"t": 1958184,
+"caster": -42,
+"seq": 1,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+3,
+79672
+]
+]
+},
+{
+"t": 1959014,
+"caster": 1001,
+"seq": 28874,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+2008,
+4,
+301336
+]
+]
+},
+{
+"t": 1960383,
+"caster": 1001,
+"seq": 28875,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-40,
+4,
+304558
+]
+]
+},
+{
+"t": 1961690,
+"caster": -40,
+"seq": 2,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1961754,
+"caster": -43,
+"seq": 1,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+151860
+]
+]
+},
+{
+"t": 1962193,
+"caster": -42,
+"seq": 2,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+151898
+]
+]
+},
+{
+"t": 1963621,
+"caster": -44,
+"seq": 7,
+"skill": "Magic Cannon"
+},
+{
+"t": 1963706,
+"caster": 1001,
+"seq": 28876,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-40,
+4,
+334619
+]
+]
+},
+{
+"t": 1965143,
+"caster": 1001,
+"seq": 28877,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-42,
+5,
+338722
+]
+]
+},
+{
+"t": 1965701,
+"caster": -40,
+"seq": 3,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1965766,
+"caster": -43,
+"seq": 2,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+3,
+70967
+]
+]
+},
+{
+"t": 1966202,
+"caster": -42,
+"seq": 3,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+150106
+]
+]
+},
+{
+"t": 1966377,
+"caster": 1001,
+"seq": 28878,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-42,
+4,
+294389
+]
+]
+},
+{
+"t": 1967635,
+"caster": 1001,
+"seq": 28879,
+"skill": "Level 7 Arcane Shot",
+"hits": [
+[
+-42,
+3,
+226270
+]
+]
+},
+{
+"t": 1968535,
+"caster": 1001,
+"seq": 28880,
+"skill": "Escape",
+"hits": [
+[
+-42,
+0,
+0
+]
+]
+},
+{
+"t": 1969729,
+"caster": -40,
+"seq": 4,
+"skill": "Crystal Light Wave"
+},
+{
+"t": 1970233,
+"caster": -42,
+"seq": 4,
+"skill": "Magic Cannon",
+"hits": [
+[
+1001,
+4,
+150226
+]
+]
+},
+{
+"t": 1972488,
+"caster": 1001,
+"seq": 28881,
+"skill": "Level 7 Aimed Shot",
+"hits": [
+[
+-42,
+5,
+424382
+]
+]
+}
+]
+}
