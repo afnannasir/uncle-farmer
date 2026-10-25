@@ -13,6 +13,9 @@ import subprocess
 import sys
 
 CORE_FLOOR = 90              # unclefarmer/engine, the bot itself
+# Every step runs in the repository, wherever check.py was started from: ruff and pyright check
+# "this folder", and release.py run from the folder above once linted every project in it.
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 def have_jdk():
@@ -44,12 +47,12 @@ def main(argv=None):
     failed = []
     for name, cmd in steps:
         print("== %s" % name, flush=True)
-        if subprocess.call(cmd) != 0:
+        if subprocess.call(cmd, cwd=ROOT) != 0:
             failed.append(name)
-    if os.path.exists(".coverage"):
+    if os.path.exists(os.path.join(ROOT, ".coverage")):
         # The engine on its own: the GUI is untested and must not hide an engine regression.
         print("== core coverage (%d%%)" % CORE_FLOOR, flush=True)
-        if subprocess.call(core) != 0:
+        if subprocess.call(core, cwd=ROOT) != 0:
             failed.append("core coverage")
     print("\n" + ("failed: " + ", ".join(failed) if failed else "all checks passed"))
     return 1 if failed else 0
