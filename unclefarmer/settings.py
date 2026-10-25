@@ -1,0 +1,519 @@
+"""App settings (settings.json) and character profiles (profiles/<character>.json)."""
+
+import copy
+import os
+import shutil
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, ValidationError
+
+from . import filelock, jsonio as json, paths
+
+APP_DEFAULTS = {
+    "language": "en",
+    "game_folder": "",
+    "speak": True,            # announce important events through NVDA when it is running
+    "last_run": "",           # what was selected to run last time
+    "last_runs": {},          # character -> what it ran last ("plan:name"), for several games at once
+    "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never"
+    "results_speak": "end",   # speak a run's results: "end" (once, when it stops) or "never"
+    "results_every": 0,       # minutes between spoken progress lines while running (0 = never)
+    "daily_stop": True,       # every run ends at the daily stop time, before the game's day turns over
+    "daily_stop_at": "",      # "HH:MM" on this computer's clock; empty = the drop reset (00:00 GMT) - 10 min
+    "after_stop": "nothing",  # when farming stops by itself (never after Stop): nothing | close_game | shutdown
+    "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
+    "check_updates": True,    # look for a new release on GitHub when the app starts
+    "skip_version": "",       # a release the player said no to: not offered again at start
+    "log_level": "INFO",      # DEBUG | INFO | WARNING | ERROR: what the files in logs/ get
+    "log_max_mb": 5,          # start a new log file after this many megabytes (0: never rotate)
+    "log_backups": 5,         # old log files kept as name.1 ... name.N
+}
+
+# One per character. Everything the bot needs to know about how YOU play.
+PROFILE_DEFAULTS = {
+    "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
+    # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
+    # the one pointing at the monster it chose, then checks the game selected that monster.
+    "target_keys": {"west": "k", "north": "o", "south": "l", "east": ";"},
+    "attack_keys": ["j", "y", ".", "h"],
+    "attack_gap": 0.35,
+    "attack_range": "auto",   # "auto": the base attack's range from the skill texts, less 2 (a number: fixed)
+    "attack_style": "auto",   # "auto": melee classes walk to the enemy, ranged ones stand still; "follow"/"stationary"
+    "pull_range": 0.0,        # yards past our reach to open fire on a monster that is closing in (0: walk all the way)
+    "end_safe": True,         # when a run finishes, go to the nearest map where no monsters spawn
+    "fight_timeout": 45.0,
+    "no_damage_timeout": 6.0,     # seconds a target may go without losing HP (a kill takes ~2-4 s)
+    "no_damage_casts": 3,     # or this many of our own casts landing with no damage
+    "press_burst": True,      # press a skill again and again until the game casts it (most casts per cooldown)
+    "hp_potion": "auto",      # "auto": the strongest red potion on the hotkeys; or a potion's name
+    "hp_key": "auto",         # old profiles: a key typed by hand; "auto" = the slot holding hp_potion
+    "hp_below": "auto",       # percent, or "auto": as soon as one potion's worth is missing (engine/potions.py)
+    "hp_cooldown": "auto",    # seconds, or "auto": the potion's own cooldown from the game's text
+    "mp_use": True,           # MP comes from the character sheet
+    "mp_potion": "auto",
+    "mp_key": "auto",
+    "mp_below": "auto",
+    "mp_cooldown": "auto",
+    "sheet_key": "",          # key that opens the character sheet (MP, bag load, fusion power); the scan fills it in
+    "bag_full_at": 100,       # percent of the bag's load limit that counts as full (100: really full)
+    "when_bag_full": "stop",  # after throwing what the rules say: "stop" go somewhere safe and stop; "unload" sell/store and come back; "nothing"
+    "stop_on_drop_time": True,  # end the run when the day's drop time is down to drop_keep_minutes
+    "drop_keep_minutes": 0,   # drop time to leave unused (minutes)
+    "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
+    "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
+    "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
+    "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
+    "discard_key": "shift+delete",  # the game's "discard item" key
+    "sheet_every": 600,       # seconds between character sheet readings (bag load, drop time); sooner near a full bag
+    "vitals_key": "",         # the game's "own HP" key (W_SELF_HP, R): the server answers HP and MP, no window
+    "points_key": "",         # the game's "accumulation points" key (W_SELF_LJ, T): rage, marks or
+                              # combos, then fusion power and the pet's amiability
+    "points_every": 1.5,      # seconds between those readings in fights, for classes whose skills spend them
+    "mp_check_every": 10,     # seconds between MP readings with that key when MP is near the potion mark (30 otherwise)
+    "close_popups": True,     # close windows the game opens on its own (team invites...) with Escape
+    "end_with_hearthstone": True,   # end a run with the hearthstone when one is at hand, else walk
+    "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
+    "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
+    "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
+    "use_key": "rctrl",       # uses the item under the cursor
+    "category_key": "lctrl+alt+down",   # next category in a panel (the bag needs category 0)
+    "panic_below": 25,        # percent: with stop_on_panic, stop if HP stays under this...
+    "stop_on_panic": False,   # stop the run when HP stays under panic_below (off: keep fighting; deaths are handled)
+    "respawn": "city",        # after dying: back to the city; "map" exists but isn't offered
+    "use_resurrection_crystal": False,  # respawn with Resurrection Crystals (bag items: only if allowed)
+    "stop_on_deaths": True,   # stop the run after dying max_deaths times (off: farm on, however often)
+    "max_deaths": 3,          # stop the run after dying this many times (0 also means never)
+    "panic_after": 10.0,      # ...for this many seconds
+    "stop_when_out_of_potions": True,  # the last red (or blue) potion is gone: end the run (restocked ones excepted)
+    "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
+    "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
+    "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
+    "rest_until": 90,         # HP % a rest waits for
+    "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
+    "stop_when_gear_broken": True,  # gear broke and nothing can repair it: go somewhere safe and stop
+    "stuck_limit": 6,         # stop after this many stuck walks in a row
+    "fight_back": True,       # when hit while walking or travelling, fight back, then go on
+    "nearest_monster": True,  # always fight the nearest monster (off: melee picks a calm one beside a pack)
+    "fight_locked": False,    # fight monsters another player (or their pet) is already killing, while a hit can still land in time (off: leave the close calls too)
+    "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
+    "set_modes": True,        # before farming, set the game's modes below
+    "pk_key": "b",            # cycles the PK mode
+    "pk_mode": 1,             # PK_MODES index: pacifist mode with counterattack
+    "target_mode_key": "v",   # cycles who the target key picks
+    "target_mode": 2,         # TARGET_MODES index: enemies
+    # Talking to NPCs (cable cars, airships, teleport circles). Inside a dialog the game moves the
+    # cursor with the walking keys (W/S rows, A/D columns), Enter chooses, Esc closes.
+    "enter_key": "enter",
+    "esc_key": "esc",
+    "prefer_walking": False,  # True: walk whenever the maps connect on foot (off: shortest way, cable cars and airships included)
+    "use_transport": True,    # cable cars and teleport circles when travelling
+    "speed_beast": "auto",    # fusion beast to travel on: "auto" the fastest Swift one, "none", or its name
+    "fight_beast": "none",    # fusion beast to fight as: "none" (most players, for long farms), "auto", or its name
+    "pets": [],               # pets in order, [{"name", "use"}]: the first ticked one that is ready comes out
+    "pet_hp_below": "auto",   # pet HP % under which a pet red potion is used ("auto": as soon as one potion's worth is missing)
+    "pet_mp_below": "auto",   # the same for the pet's MP and a pet blue potion
+    "pet_hp_cooldown": "auto",  # seconds between pet red potions at least ("auto": the potion's own cooldown)
+    "pet_mp_cooldown": "auto",
+    "pet_hp_key": "auto",     # "auto": the hotkey slot holding a Pet ... Red Potion, else the bag
+    "pet_food": "Pet Rice Roll",  # fed when the pet's amiability is low (the game: "Increase 30% Amiability")
+    "pet_food_below": 70,     # amiability under which the pet is fed (0: never)
+    "pet_vitals_key": "",     # the game's pet HP key (W_PET_HP, Shift+R): the server answers the pet's HP and MP
+    "pet_recall_at_end": False,  # put the pet away when a run finishes
+    "pet_heal_with_skill": True,  # a class with a quick heal (Priest, Sorceress) heals the pet with it
+    "pet_heal_below": 85,     # the pet's HP (%) under which it is healed with the skill
+    "team_heal": True,        # while following, a class with a quick heal heals teammates with it
+    "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
+    "smart_skills": True,     # pick skills from the game's own skill list and texts (off: cycle attack_keys)
+    # The player's say over each skill on the keys, by name (engine/combat.py SKILL_USES):
+    #   auto       the bot decides when (the default)
+    #   never      never pressed
+    #   emergency  only when HP is low (under emergency_below or defend_below)
+    #   ready      pressed whenever it is ready in a fight, before the bot's own choice
+    "skill_use": {},
+    "skill_use_others": "auto",   # skills skill_use doesn't name (learned or put on a key later): auto or never
+    "defend_below": 40,       # HP % under which the class's defensive skill is used
+    "heal_with_skill": True,  # a class with its own quick heal (Healing Wave, Heal) heals with it
+    "heal_below": 85,         # HP % under which that heal is cast, in fights and between them
+    "heal_potion_below": 50,  # with that heal, red potions only under this HP %
+    "fill_empty_keys": True,  # put the heals, shields, buffs, dispels and items the bot uses on EMPTY keys
+    "fill_empty_phrases": True,  # put useful quick phrase codes (/6 /5 /4, /7 for healers) on EMPTY phrase slots
+    "teleport_key": "shift+p",   # the game's "teleport to the team leader" key (W_AMOVE): same map, 50 s cooldown
+    "emergency_below": 50,    # HP % that (or a pack on us under 75%) calls for shields and big heals
+    "use_buffs": True,        # keep the class's long buffs up; short ones at the start of hard fights
+    "use_dispel": True,       # remove debuffs from ourselves with the class's dispel
+    "use_combos": True,       # skill combos from the activated talents and the skill texts (engine/combos.py)
+    "use_airships": True,     # airships too (they may cost Arnebia)
+    "vip": False,             # VIPs ride cable cars and airships free (the menu's free entry)
+    "use_travel_items": False, # teleport stones / hearthstone from the bag: only when the player allows (off: never)
+    "hearth_home": "",        # the square the hearthstone takes this character to (learned)
+    "action_menu_key": "lctrl+enter",   # the game's Action menu (W_LOCAL_OPTION): has "leave" in instances
+    # Restock: [{"item": "Large Red Potion", "min": 20, "stock": 200, "storage_first": true, "buy": true}]
+    # A run starts by filling every item to its stock; while farming, a trip is made when one drops
+    # below its min (and then everything short is topped up). Storehouse first (free), then the shop.
+    "restock": [],
+    "restock_check_every": 30,   # seconds between bag checks while farming
+}
+
+# The shape of each file, checked by Pydantic when it is read (see _read below). A value of the
+# wrong type - a hand-edited file, or one an older version wrote differently - falls back to its
+# default on its own; the rest of the file is kept, and a copy of it is kept aside. Unknown keys are kept, so the markers the
+# app adds itself (_upgrade) and any key a newer version wrote are never lost. On many fields "auto"
+# and a number mean the same, hence Auto.
+Auto = str | float | int
+
+
+class AppSettings(BaseModel):
+    """settings.json."""
+    model_config = ConfigDict(extra="allow")
+
+    language: str = APP_DEFAULTS["language"]
+    game_folder: str = APP_DEFAULTS["game_folder"]
+    speak: bool = APP_DEFAULTS["speak"]
+    last_run: str = APP_DEFAULTS["last_run"]
+    last_runs: dict[str, str] = APP_DEFAULTS["last_runs"]
+    game_speech: str = APP_DEFAULTS["game_speech"]
+    results_speak: str = APP_DEFAULTS["results_speak"]
+    results_every: int = APP_DEFAULTS["results_every"]
+    daily_stop: bool = APP_DEFAULTS["daily_stop"]
+    daily_stop_at: str = APP_DEFAULTS["daily_stop_at"]
+    after_stop: str = APP_DEFAULTS["after_stop"]
+    shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
+    check_updates: bool = APP_DEFAULTS["check_updates"]
+    skip_version: str = APP_DEFAULTS["skip_version"]
+    log_level: str = APP_DEFAULTS["log_level"]
+    log_max_mb: int = APP_DEFAULTS["log_max_mb"]
+    log_backups: int = APP_DEFAULTS["log_backups"]
+
+
+class Profile(BaseModel):
+    """profiles/<character>.json."""
+    model_config = ConfigDict(extra="allow")
+
+    move_keys: dict[str, str] = PROFILE_DEFAULTS["move_keys"]
+    target_keys: dict[str, str] = PROFILE_DEFAULTS["target_keys"]
+    attack_keys: list[str] = PROFILE_DEFAULTS["attack_keys"]
+    attack_gap: float = PROFILE_DEFAULTS["attack_gap"]
+    attack_range: Auto = PROFILE_DEFAULTS["attack_range"]
+    attack_style: str = PROFILE_DEFAULTS["attack_style"]
+    pull_range: float = PROFILE_DEFAULTS["pull_range"]
+    end_safe: bool = PROFILE_DEFAULTS["end_safe"]
+    fight_timeout: float = PROFILE_DEFAULTS["fight_timeout"]
+    no_damage_timeout: float | None = PROFILE_DEFAULTS["no_damage_timeout"]
+    no_damage_casts: int = PROFILE_DEFAULTS["no_damage_casts"]
+    press_burst: bool = PROFILE_DEFAULTS["press_burst"]
+    hp_potion: str = PROFILE_DEFAULTS["hp_potion"]
+    hp_key: str = PROFILE_DEFAULTS["hp_key"]
+    hp_below: Auto | None = PROFILE_DEFAULTS["hp_below"]
+    hp_cooldown: Auto | None = PROFILE_DEFAULTS["hp_cooldown"]
+    mp_use: bool = PROFILE_DEFAULTS["mp_use"]
+    mp_potion: str = PROFILE_DEFAULTS["mp_potion"]
+    mp_key: str = PROFILE_DEFAULTS["mp_key"]
+    mp_below: Auto | None = PROFILE_DEFAULTS["mp_below"]
+    mp_cooldown: Auto | None = PROFILE_DEFAULTS["mp_cooldown"]
+    sheet_key: str = PROFILE_DEFAULTS["sheet_key"]
+    bag_full_at: int | None = PROFILE_DEFAULTS["bag_full_at"]
+    when_bag_full: str = PROFILE_DEFAULTS["when_bag_full"]
+    stop_on_drop_time: bool = PROFILE_DEFAULTS["stop_on_drop_time"]
+    drop_keep_minutes: int = PROFILE_DEFAULTS["drop_keep_minutes"]
+    drop_tail_seconds: int = PROFILE_DEFAULTS["drop_tail_seconds"]
+    gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
+    bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
+    only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]
+    discard_key: str = PROFILE_DEFAULTS["discard_key"]
+    sheet_every: int | None = PROFILE_DEFAULTS["sheet_every"]
+    vitals_key: str = PROFILE_DEFAULTS["vitals_key"]
+    points_key: str = PROFILE_DEFAULTS["points_key"]
+    points_every: float = PROFILE_DEFAULTS["points_every"]
+    mp_check_every: int = PROFILE_DEFAULTS["mp_check_every"]
+    close_popups: bool = PROFILE_DEFAULTS["close_popups"]
+    end_with_hearthstone: bool = PROFILE_DEFAULTS["end_with_hearthstone"]
+    hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
+    hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
+    bag_up: str = PROFILE_DEFAULTS["bag_up"]
+    bag_down: str = PROFILE_DEFAULTS["bag_down"]
+    bag_left: str = PROFILE_DEFAULTS["bag_left"]
+    bag_right: str = PROFILE_DEFAULTS["bag_right"]
+    use_key: str = PROFILE_DEFAULTS["use_key"]
+    category_key: str = PROFILE_DEFAULTS["category_key"]
+    panic_below: int = PROFILE_DEFAULTS["panic_below"]
+    stop_on_panic: bool = PROFILE_DEFAULTS["stop_on_panic"]
+    respawn: str = PROFILE_DEFAULTS["respawn"]
+    use_resurrection_crystal: bool = PROFILE_DEFAULTS["use_resurrection_crystal"]
+    stop_on_deaths: bool = PROFILE_DEFAULTS["stop_on_deaths"]
+    max_deaths: int = PROFILE_DEFAULTS["max_deaths"]
+    panic_after: float = PROFILE_DEFAULTS["panic_after"]
+    stop_when_out_of_potions: bool = PROFILE_DEFAULTS["stop_when_out_of_potions"]
+    walk_diagonal: bool = PROFILE_DEFAULTS["walk_diagonal"]
+    chase_range: int = PROFILE_DEFAULTS["chase_range"]
+    rest_below: int = PROFILE_DEFAULTS["rest_below"]
+    rest_until: int = PROFILE_DEFAULTS["rest_until"]
+    repair_with: str = PROFILE_DEFAULTS["repair_with"]
+    stop_when_gear_broken: bool = PROFILE_DEFAULTS["stop_when_gear_broken"]
+    stuck_limit: int = PROFILE_DEFAULTS["stuck_limit"]
+    fight_back: bool = PROFILE_DEFAULTS["fight_back"]
+    nearest_monster: bool = PROFILE_DEFAULTS["nearest_monster"]
+    fight_locked: bool = PROFILE_DEFAULTS["fight_locked"]
+    skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
+    set_modes: bool = PROFILE_DEFAULTS["set_modes"]
+    pk_key: str = PROFILE_DEFAULTS["pk_key"]
+    pk_mode: int = PROFILE_DEFAULTS["pk_mode"]
+    target_mode_key: str = PROFILE_DEFAULTS["target_mode_key"]
+    target_mode: int = PROFILE_DEFAULTS["target_mode"]
+    enter_key: str = PROFILE_DEFAULTS["enter_key"]
+    esc_key: str = PROFILE_DEFAULTS["esc_key"]
+    prefer_walking: bool = PROFILE_DEFAULTS["prefer_walking"]
+    use_transport: bool = PROFILE_DEFAULTS["use_transport"]
+    speed_beast: str | bool = PROFILE_DEFAULTS["speed_beast"]
+    fight_beast: str | bool = PROFILE_DEFAULTS["fight_beast"]
+    pets: list[Any] = PROFILE_DEFAULTS["pets"]
+    pet_hp_below: Auto | None = PROFILE_DEFAULTS["pet_hp_below"]
+    pet_hp_cooldown: Auto | None = PROFILE_DEFAULTS["pet_hp_cooldown"]
+    pet_hp_key: str = PROFILE_DEFAULTS["pet_hp_key"]
+    pet_recall_at_end: bool = PROFILE_DEFAULTS["pet_recall_at_end"]
+    pet_heal_with_skill: bool = PROFILE_DEFAULTS["pet_heal_with_skill"]
+    pet_heal_below: Auto = PROFILE_DEFAULTS["pet_heal_below"]
+    team_heal: bool = PROFILE_DEFAULTS["team_heal"]
+    team_heal_below: Auto = PROFILE_DEFAULTS["team_heal_below"]
+    smart_skills: bool = PROFILE_DEFAULTS["smart_skills"]
+    skill_use: dict[str, str] = PROFILE_DEFAULTS["skill_use"]
+    skill_use_others: str = PROFILE_DEFAULTS["skill_use_others"]
+    defend_below: int = PROFILE_DEFAULTS["defend_below"]
+    heal_with_skill: bool = PROFILE_DEFAULTS["heal_with_skill"]
+    heal_below: int = PROFILE_DEFAULTS["heal_below"]
+    heal_potion_below: int = PROFILE_DEFAULTS["heal_potion_below"]
+    fill_empty_keys: bool = PROFILE_DEFAULTS["fill_empty_keys"]
+    fill_empty_phrases: bool = PROFILE_DEFAULTS["fill_empty_phrases"]
+    teleport_key: str = PROFILE_DEFAULTS["teleport_key"]
+    emergency_below: int = PROFILE_DEFAULTS["emergency_below"]
+    use_buffs: bool = PROFILE_DEFAULTS["use_buffs"]
+    use_dispel: bool = PROFILE_DEFAULTS["use_dispel"]
+    use_combos: bool = PROFILE_DEFAULTS["use_combos"]
+    use_airships: bool = PROFILE_DEFAULTS["use_airships"]
+    vip: bool = PROFILE_DEFAULTS["vip"]
+    use_travel_items: bool = PROFILE_DEFAULTS["use_travel_items"]
+    hearth_home: str = PROFILE_DEFAULTS["hearth_home"]
+    action_menu_key: str = PROFILE_DEFAULTS["action_menu_key"]
+    restock: list[Any] = PROFILE_DEFAULTS["restock"]
+    restock_check_every: int = PROFILE_DEFAULTS["restock_check_every"]
+
+
+# The game's own order (game.i.l(int) and k(int), read 2026-10-01). The bot reads the current value
+# from the game and presses the key until it matches.
+PK_MODES = ["pacifist mode", "pacifist mode with counterattack", "Moral Mode", "gang mode", "team mode",
+            "all mode"]
+TARGET_MODES = ["all", "own side", "enemies", "NPCs"]
+
+
+_unreadable = set()          # files that exist but could not be read: never overwrite them blindly
+
+
+def _keep_aside(path):
+    """Move a file we could not read to <name>.corrupt, when the file system lets us."""
+    try:
+        filelock.move(path, path + ".corrupt")
+        return True
+    except OSError:
+        return False
+
+
+def _copy_aside(path):
+    """A copy of a file with values we could not use, as <name>.corrupt; the file itself stays."""
+    try:
+        shutil.copyfile(path, path + ".corrupt")
+    except OSError:
+        pass
+
+
+def _read(path, defaults, model):
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                raw = json.load(f)
+            if not isinstance(raw, dict):
+                raise ValueError("not a JSON object")
+            # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
+            merged = {**copy.deepcopy(defaults), **raw}
+            try:
+                data = model.model_validate(merged).model_dump()
+            except ValidationError as e:
+                # One value of the wrong type cost the player the whole profile (live 2026-10-22: two
+                # pet settings typed as numbers held "auto", so every profile fell back to the
+                # defaults). Only those values go back to their defaults; a copy keeps the originals.
+                _copy_aside(path)
+                for err in e.errors():
+                    if err["loc"]:
+                        key = err["loc"][0]
+                        merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
+                data = model.model_validate(merged).model_dump()
+            _unreadable.discard(path)
+            return data
+        except ValueError:
+            # Unreadable: the defaults are used, and the next save would overwrite the player's
+            # file with them. Keep the broken one aside so nothing is lost for good.
+            _keep_aside(path)
+        except OSError:
+            # There but unreadable right now (another program holding it): defaults for this
+            # reading, and _write will not save over it until it can be moved aside.
+            if not _keep_aside(path):
+                _unreadable.add(path)
+    return copy.deepcopy(defaults)
+
+
+def _write(path, data):
+    if path in _unreadable:
+        if not _keep_aside(path):
+            raise OSError("can't read or move aside %s - close whatever holds it and try again" % path)
+        _unreadable.discard(path)
+    json.save(path, data, indent=2)
+
+
+def load_app():
+    return _read(paths.SETTINGS, APP_DEFAULTS, AppSettings)
+
+
+def save_app(data):
+    _write(paths.SETTINGS, data)
+
+
+def profile_path(character):
+    return os.path.join(paths.PROFILES, paths.safe_name(character) + ".json")
+
+
+def profiles():
+    return sorted(n[:-5] for n in os.listdir(paths.PROFILES) if n.endswith(".json"))
+
+
+def load_profile(character):
+    """The character's profile; a new one from the defaults if there is none yet."""
+    return _upgrade(_read(profile_path(character), PROFILE_DEFAULTS, Profile))
+
+
+def _upgrade(p):
+    """A profile saved by an older version, brought up to date: each step below once, in order."""
+    for step in UPGRADES:
+        step(p)
+    return p
+
+
+def _upgrade_choices(p):
+    """Profiles saved before 2026-10-04's choices: on/off beasts, a single pet name, shard lists."""
+    shards = p.pop("sell_shards", None)
+    if shards:
+        rules = p.setdefault("bag_rules", {})
+        for n in shards:
+            rules.setdefault(n.lower(), {"action": "sell", "keep": 0})
+    for k in ("sell_shards_on_trip", "sell_loot", "store_loot"):
+        p.pop(k, None)
+    if isinstance(p.get("fight_beast"), bool):
+        p["fight_beast"] = "auto" if p["fight_beast"] else "none"
+    if p.pop("fusion_beasts", True) is False:
+        p["speed_beast"] = "none"
+    old = p.pop("pet", None)
+    if old and not p.get("pets"):
+        p["pets"] = [] if old == "auto" else [{"name": old, "use": True}]
+        p["pets_any"] = old == "auto"
+    for k in ("hp_key", "mp_key"):
+        if p.get(k) in ("num1", "num2"):      # the old default pressed the keypad, which does nothing
+            p[k] = "auto"
+    if isinstance(p.get("attack_range"), (int, float)) and p["attack_range"] == 5.0:
+        p["attack_range"] = "auto"
+
+
+def _upgrade_shard_lists(p):
+    """2026-10-06: the player sorts shards into throw / keep / sell lists. Before, a shard with no
+    rule was thrown when the Shard Market paid under 1000. A profile saved before gets that as its
+    lists once, so nothing changes until the player moves a shard; a new profile starts with all
+    kept. The "Make into gems" list went out of the bag (gem making is the Gem Maker's job): shards
+    that were in it stay in the bag."""
+    if not p.get("shard_lists"):
+        if p.get("potions_auto"):
+            from .engine.town import shard_catalog
+            rules = p.setdefault("bag_rules", {})
+            for n, v in shard_catalog()[0].items():
+                if n.lower() not in rules and (v.get("price") or 0) < 1000:
+                    rules[n.lower()] = {"action": "throw", "keep": 0}
+        p["shard_lists"] = True
+    for name, r in list((p.get("bag_rules") or {}).items()):
+        if r.get("action") == "gem":
+            del p["bag_rules"][name]
+
+
+def _upgrade_potions(p):
+    """Potions before 2026-10-04 evening: fixed 80% / 3 s, MP off at 0. The bot now works the mark
+    and cooldown out from the potion itself; old defaults become "auto" once (marker saved with
+    the profile), numbers a player changed stay as they are."""
+    if p.get("potions_auto"):
+        return
+    if p.get("hp_below") == 80:
+        p["hp_below"] = "auto"
+    if p.get("mp_below") in (0, 40, None):
+        p["mp_below"] = "auto"
+    for k in ("hp_cooldown", "mp_cooldown"):
+        if p.get(k) == 3.0:
+            p[k] = "auto"
+    p["mp_use"] = True
+    p.pop("mp_checked", None)
+    p["potions_auto"] = True
+
+
+def _upgrade_pet_potions(p):
+    """Pet potions before 2026-10-21: red only, at a fixed 50% with 10 s between. Pets died with
+    potions in the bag; the marks now work like our own. A number the player chose stays."""
+    if p.get("pet_potions_auto"):
+        return
+    if p.get("pet_hp_below") in (50, None):
+        p["pet_hp_below"] = "auto"
+    if p.get("pet_hp_cooldown") in (10, 10.0, None):
+        p["pet_hp_cooldown"] = "auto"
+    p["pet_potions_auto"] = True
+
+
+def _upgrade_once(marker, key, old, new):
+    """A default that changed: the old one becomes the new once (the marker is saved with the
+    profile); a number the player chose stays."""
+    def step(p):
+        if not p.get(marker):
+            if p.get(key) in old:
+                p[key] = new
+            p[marker] = True
+    return step
+
+
+def _upgrade_dropped(p):
+    """Pulling back from a pack is gone: the monsters followed at our own speed and kept hitting a
+    character that had stopped attacking, so every pull-back cost potions and most ended in death."""
+    for k in ("retreat", "retreat_below", "retreat_pack", "retreats_warn"):
+        p.pop(k, None)
+
+
+def _upgrade_class_reach(p):
+    """Every class fights from its own base attack's distance (Bot.reach, "auto"): a range typed in
+    by hand before that became the rule goes back to auto, once. One set after this is kept."""
+    if not p.get("class_reach"):
+        p["attack_range"] = "auto"
+        p["class_reach"] = True
+
+
+UPGRADES = [
+    _upgrade_choices, _upgrade_shard_lists, _upgrade_potions, _upgrade_pet_potions,
+    # Before 2026-10-04 night the sheet was the only way to read MP and opened every minute (every
+    # 15 s near the potion mark). MP now comes from the own-HP key; the sheet is for load and drop time.
+    _upgrade_once("sheet_quiet", "sheet_every", (60, None), 600),
+    # Before 2026-10-07 a target could go 15 s without losing HP before we left it; a whole kill
+    # takes 2-4 s, so that was standing still for several kills' time.
+    _upgrade_once("no_damage_quick", "no_damage_timeout", (15, 15.0, None), 6.0),
+    # Before 2026-10-08 the bag counted as full at 90% of its load: a run went home with a tenth
+    # of the bag still free. Full now means full.
+    _upgrade_once("bag_really_full", "bag_full_at", (90, None), 100),
+    _upgrade_dropped,
+    _upgrade_class_reach,
+]
+
+
+def save_profile(character, data):
+    _write(profile_path(character), data)
+
+
+def has_profile(character):
+    return os.path.exists(profile_path(character))

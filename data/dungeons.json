@@ -1,0 +1,1353 @@
+{
+ "format": 2,
+ "note": "Dungeon entrances from the game's map table, map list and NPC list (built by a dev tool).",
+ "entrances": [
+  {
+   "name": "active volcano",
+   "dungeon_maps": [
+    1745
+   ],
+   "map": 1731,
+   "npc": "active volcano Teleportation circle",
+   "at": [
+    216,
+    25
+   ],
+   "spots": [
+    [
+     216,
+     25,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "amazing old city",
+   "dungeon_maps": [
+    1736
+   ],
+   "map": 1733,
+   "npc": "amazing old city Teleportation circle",
+   "at": [
+    113,
+    29
+   ],
+   "spots": [
+    [
+     10,
+     105,
+     "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+    ],
+    [
+     111,
+     105,
+     "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+    ],
+    [
+     111,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+    ],
+    [
+     10,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+    ],
+    [
+     111,
+     30,
+     "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+  },
+  {
+   "name": "Baru Grottoe",
+   "dungeon_maps": [
+    1536
+   ],
+   "map": 1531,
+   "npc": "Baru Grottoe Teleportation circle",
+   "at": null,
+   "spots": [
+    [
+     180,
+     80,
+     "dungeon entrance: level 65, solo, easy"
+    ],
+    [
+     176,
+     100,
+     "dungeon entrance: level 65, solo, hard"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Black Gate Prison",
+   "dungeon_maps": [
+    1709
+   ],
+   "map": 1708,
+   "npc": "Black Gate Prison Teleportation circle",
+   "at": [
+    61,
+    6
+   ],
+   "spots": [
+    [
+     60,
+     8,
+     "stone room (north)"
+    ],
+    [
+     60,
+     113,
+     "stone room (south)"
+    ],
+    [
+     8,
+     61,
+     "stone room (west)"
+    ],
+    [
+     113,
+     61,
+     "stone room (east)"
+    ]
+   ],
+   "team": null,
+   "about": "stone room (north)"
+  },
+  {
+   "name": "Blood Mountain Villa",
+   "dungeon_maps": [
+    3804
+   ],
+   "map": 5221,
+   "npc": "Blood Mountain Villa Teleportation circle",
+   "at": [
+    26,
+    270
+   ],
+   "spots": [
+    [
+     26,
+     270,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "bloody cave",
+   "dungeon_maps": [
+    1735
+   ],
+   "map": 1733,
+   "npc": "bloody cave Teleportation circle",
+   "at": [
+    8,
+    104
+   ],
+   "spots": [
+    [
+     10,
+     105,
+     "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+    ],
+    [
+     111,
+     105,
+     "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+    ],
+    [
+     111,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+    ],
+    [
+     10,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+    ],
+    [
+     111,
+     30,
+     "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+  },
+  {
+   "name": "bottomless pit",
+   "dungeon_maps": [
+    1636
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "bubble cube",
+   "dungeon_maps": [
+    1605
+   ],
+   "map": 1602,
+   "npc": "Bubble Cube Teleportation Circle",
+   "at": null,
+   "spots": [
+    [
+     25,
+     47,
+     "stone room (north-west)"
+    ],
+    [
+     60,
+     47,
+     "stone room (north)"
+    ],
+    [
+     95,
+     47,
+     "stone room (north-east)"
+    ],
+    [
+     31,
+     107,
+     "stone room (south-west)"
+    ],
+    [
+     90,
+     107,
+     "stone room (south-east)"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Cathy Manor",
+   "dungeon_maps": [
+    1533
+   ],
+   "map": 1531,
+   "npc": "Cathy Manor Teleportation circle",
+   "at": [
+    133,
+    142
+   ],
+   "spots": [
+    [
+     169,
+     184,
+     "dungeon entrance: level 65, experience"
+    ],
+    [
+     135,
+     142,
+     "dungeon entrance: level 60, solo"
+    ],
+    [
+     148,
+     142,
+     "dungeon entrance: level 60, 2 players"
+    ],
+    [
+     180,
+     80,
+     "dungeon entrance: level 65, solo, easy"
+    ],
+    [
+     176,
+     100,
+     "dungeon entrance: level 65, solo, hard"
+    ]
+   ],
+   "team": null,
+   "about": "dungeon entrance: level 60, solo"
+  },
+  {
+   "name": "Centralia",
+   "dungeon_maps": [
+    1743
+   ],
+   "map": 1731,
+   "npc": "Centralia Teleportation circle",
+   "at": [
+    154,
+    25
+   ],
+   "spots": [
+    [
+     154,
+     25,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Crimson Mausoleum",
+   "dungeon_maps": [
+    1710
+   ],
+   "map": 1708,
+   "npc": "Crimson Mausoleum Teleportation circle",
+   "at": [
+    7,
+    61
+   ],
+   "spots": [
+    [
+     60,
+     8,
+     "stone room (north)"
+    ],
+    [
+     60,
+     113,
+     "stone room (south)"
+    ],
+    [
+     8,
+     61,
+     "stone room (west)"
+    ],
+    [
+     113,
+     61,
+     "stone room (east)"
+    ]
+   ],
+   "team": null,
+   "about": "stone room (west)"
+  },
+  {
+   "name": "death wormhole",
+   "dungeon_maps": [
+    1603
+   ],
+   "map": 1602,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     25,
+     47,
+     "stone room (north-west)"
+    ],
+    [
+     60,
+     47,
+     "stone room (north)"
+    ],
+    [
+     95,
+     47,
+     "stone room (north-east)"
+    ],
+    [
+     31,
+     107,
+     "stone room (south-west)"
+    ],
+    [
+     90,
+     107,
+     "stone room (south-east)"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Demon Cave",
+   "dungeon_maps": [
+    1771,
+    1861,
+    1862,
+    1866,
+    1867
+   ],
+   "map": 1702,
+   "npc": "Demon Cave",
+   "at": [
+    10,
+    6
+   ],
+   "spots": [
+    [
+     10,
+     6,
+     "entrance"
+    ]
+   ],
+   "team": true
+  },
+  {
+   "name": "Demon Sealing Tower",
+   "dungeon_maps": [
+    1901
+   ],
+   "map": 1041,
+   "npc": "King William III",
+   "at": [
+    225,
+    166
+   ],
+   "spots": [
+    [
+     225,
+     166,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Demon's Prison",
+   "dungeon_maps": [
+    1741
+   ],
+   "map": 1731,
+   "npc": "Demon's Prison Teleportation circle",
+   "at": [
+    216,
+    87
+   ],
+   "spots": [
+    [
+     216,
+     87,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Dryad Jungle",
+   "dungeon_maps": [
+    1632
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Elemental Maze",
+   "dungeon_maps": [
+    1535
+   ],
+   "map": 1531,
+   "npc": "Elemental Maze Teleportation circle",
+   "at": null,
+   "spots": [
+    [
+     180,
+     80,
+     "dungeon entrance: level 65, solo, easy"
+    ],
+    [
+     176,
+     100,
+     "dungeon entrance: level 65, solo, hard"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "fully mountain",
+   "dungeon_maps": [
+    1563
+   ],
+   "map": 1561,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     153,
+     16,
+     "dungeon entrance: level 80, 2 players, harder"
+    ],
+    [
+     95,
+     26,
+     "dungeon entrance: level 80, 3 players, 15 minutes, harder"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Gnome excavation plant",
+   "dungeon_maps": [
+    1737
+   ],
+   "map": 1733,
+   "npc": "Gnome excavation plant Teleportation circle",
+   "at": [
+    9,
+    78
+   ],
+   "spots": [
+    [
+     10,
+     105,
+     "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+    ],
+    [
+     111,
+     105,
+     "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+    ],
+    [
+     111,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+    ],
+    [
+     10,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+    ],
+    [
+     111,
+     30,
+     "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+  },
+  {
+   "name": "Gomez manor",
+   "dungeon_maps": [
+    1742
+   ],
+   "map": 1731,
+   "npc": "Gomez manor Teleportation circle",
+   "at": [
+    185,
+    81
+   ],
+   "spots": [
+    [
+     185,
+     81,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "graceful mountain",
+   "dungeon_maps": [
+    1504
+   ],
+   "map": 1502,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     54,
+     4,
+     "near Spider cave"
+    ],
+    [
+     34,
+     37,
+     "stone cave"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Guardian Stronghold",
+   "dungeon_maps": [
+    1734
+   ],
+   "map": 1733,
+   "npc": "Guardian Stronghold Teleportation circle",
+   "at": [
+    113,
+    104
+   ],
+   "spots": [
+    [
+     10,
+     105,
+     "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+    ],
+    [
+     111,
+     105,
+     "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+    ],
+    [
+     111,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+    ],
+    [
+     10,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+    ],
+    [
+     111,
+     30,
+     "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+  },
+  {
+   "name": "Herbal Mountain",
+   "dungeon_maps": [
+    1607
+   ],
+   "map": 1602,
+   "npc": "Herbal Mountain Teleportation Circle",
+   "at": null,
+   "spots": [
+    [
+     25,
+     47,
+     "stone room (north-west)"
+    ],
+    [
+     60,
+     47,
+     "stone room (north)"
+    ],
+    [
+     95,
+     47,
+     "stone room (north-east)"
+    ],
+    [
+     31,
+     107,
+     "stone room (south-west)"
+    ],
+    [
+     90,
+     107,
+     "stone room (south-east)"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "ice maze",
+   "dungeon_maps": [
+    1606
+   ],
+   "map": 1602,
+   "npc": "Ice maze Teleportation Circle",
+   "at": null,
+   "spots": [
+    [
+     25,
+     47,
+     "stone room (north-west)"
+    ],
+    [
+     60,
+     47,
+     "stone room (north)"
+    ],
+    [
+     95,
+     47,
+     "stone room (north-east)"
+    ],
+    [
+     31,
+     107,
+     "stone room (south-west)"
+    ],
+    [
+     90,
+     107,
+     "stone room (south-east)"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Lisa's Ukulele",
+   "dungeon_maps": [
+    1634
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Machine Fortress",
+   "dungeon_maps": [
+    1635
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Machining plant",
+   "dungeon_maps": [
+    1562
+   ],
+   "map": 1561,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     153,
+     16,
+     "dungeon entrance: level 80, 2 players, harder"
+    ],
+    [
+     95,
+     26,
+     "dungeon entrance: level 80, 3 players, 15 minutes, harder"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Marshall's artillery",
+   "dungeon_maps": [
+    1738
+   ],
+   "map": 1733,
+   "npc": "Marshall's artillery Teleportation circle",
+   "at": [
+    113,
+    78
+   ],
+   "spots": [
+    [
+     10,
+     105,
+     "dungeon entrance: level 70, 3 players, 15 minutes, easy"
+    ],
+    [
+     111,
+     105,
+     "dungeon entrance: level 70, 3 players, 30 minutes, hard"
+    ],
+    [
+     111,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+    ],
+    [
+     10,
+     79,
+     "dungeon entrance: level 75, 3 players, 30 minutes, easy"
+    ],
+    [
+     111,
+     30,
+     "dungeon entrance: level 75, 2 players, 15 minutes, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 75, 3 players, 30 minutes, hard"
+  },
+  {
+   "name": "monster factory",
+   "dungeon_maps": [
+    1712
+   ],
+   "map": 1708,
+   "npc": "monster factory Teleportation circle",
+   "at": [
+    114,
+    61
+   ],
+   "spots": [
+    [
+     60,
+     8,
+     "stone room (north)"
+    ],
+    [
+     60,
+     113,
+     "stone room (south)"
+    ],
+    [
+     8,
+     61,
+     "stone room (west)"
+    ],
+    [
+     113,
+     61,
+     "stone room (east)"
+    ]
+   ],
+   "team": null,
+   "about": "stone room (east)"
+  },
+  {
+   "name": "Mount Bear's Paw",
+   "dungeon_maps": [
+    1534
+   ],
+   "map": 1531,
+   "npc": "Mount Bear's Paw Teleportation circle",
+   "at": [
+    150,
+    142
+   ],
+   "spots": [
+    [
+     169,
+     184,
+     "dungeon entrance: level 65, experience"
+    ],
+    [
+     135,
+     142,
+     "dungeon entrance: level 60, solo"
+    ],
+    [
+     148,
+     142,
+     "dungeon entrance: level 60, 2 players"
+    ],
+    [
+     180,
+     80,
+     "dungeon entrance: level 65, solo, easy"
+    ],
+    [
+     176,
+     100,
+     "dungeon entrance: level 65, solo, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 60, 2 players"
+  },
+  {
+   "name": "Nether Cave",
+   "dungeon_maps": [
+    1831,
+    1832,
+    1836,
+    1837
+   ],
+   "map": 1702,
+   "npc": "Nether Cave",
+   "at": [
+    10,
+    75
+   ],
+   "spots": [
+    [
+     10,
+     75,
+     "entrance"
+    ]
+   ],
+   "team": true
+  },
+  {
+   "name": "open sea",
+   "dungeon_maps": [
+    1564
+   ],
+   "map": 1561,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     153,
+     16,
+     "dungeon entrance: level 80, 2 players, harder"
+    ],
+    [
+     95,
+     26,
+     "dungeon entrance: level 80, 3 players, 15 minutes, harder"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Scorpion Cave",
+   "dungeon_maps": [
+    1539
+   ],
+   "map": 1531,
+   "npc": "Scorpion Cave",
+   "at": [
+    171,
+    184
+   ],
+   "spots": [
+    [
+     169,
+     184,
+     "dungeon entrance: level 65, experience"
+    ],
+    [
+     135,
+     142,
+     "dungeon entrance: level 60, solo"
+    ],
+    [
+     148,
+     142,
+     "dungeon entrance: level 60, 2 players"
+    ],
+    [
+     180,
+     80,
+     "dungeon entrance: level 65, solo, easy"
+    ],
+    [
+     176,
+     100,
+     "dungeon entrance: level 65, solo, hard"
+    ]
+   ],
+   "team": true,
+   "about": "dungeon entrance: level 65, experience"
+  },
+  {
+   "name": "silver flying saucer",
+   "dungeon_maps": [
+    1740
+   ],
+   "map": 1731,
+   "npc": "silver flying saucer Teleportation circle",
+   "at": [
+    153,
+    87
+   ],
+   "spots": [
+    [
+     153,
+     87,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Silver Peak",
+   "dungeon_maps": [
+    1637
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "space battleship",
+   "dungeon_maps": [
+    1565
+   ],
+   "map": 1561,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     153,
+     16,
+     "dungeon entrance: level 80, 2 players, harder"
+    ],
+    [
+     95,
+     26,
+     "dungeon entrance: level 80, 3 players, 15 minutes, harder"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Spider cave",
+   "dungeon_maps": [
+    1503
+   ],
+   "map": 1502,
+   "npc": "Spider cave",
+   "at": null,
+   "spots": [
+    [
+     54,
+     4,
+     "near Spider cave"
+    ],
+    [
+     34,
+     37,
+     "stone cave"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Spiral Grottoe",
+   "dungeon_maps": [
+    1744
+   ],
+   "map": 1731,
+   "npc": "Spiral Grottoe Teleportation circle",
+   "at": [
+    185,
+    31
+   ],
+   "spots": [
+    [
+     185,
+     31,
+     "entrance"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Treasure pavilion",
+   "dungeon_maps": [
+    1566
+   ],
+   "map": 1561,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     153,
+     16,
+     "dungeon entrance: level 80, 2 players, harder"
+    ],
+    [
+     95,
+     26,
+     "dungeon entrance: level 80, 3 players, 15 minutes, harder"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "underground power plant",
+   "dungeon_maps": [
+    1711
+   ],
+   "map": 1708,
+   "npc": "underground power plant Teleportation circle",
+   "at": [
+    60,
+    114
+   ],
+   "spots": [
+    [
+     60,
+     8,
+     "stone room (north)"
+    ],
+    [
+     60,
+     113,
+     "stone room (south)"
+    ],
+    [
+     8,
+     61,
+     "stone room (west)"
+    ],
+    [
+     113,
+     61,
+     "stone room (east)"
+    ]
+   ],
+   "team": null,
+   "about": "stone room (south)"
+  },
+  {
+   "name": "wolf head mountain",
+   "dungeon_maps": [
+    1604
+   ],
+   "map": 1602,
+   "npc": "Wolf head mountain teleportation circle",
+   "at": null,
+   "spots": [
+    [
+     25,
+     47,
+     "stone room (north-west)"
+    ],
+    [
+     60,
+     47,
+     "stone room (north)"
+    ],
+    [
+     95,
+     47,
+     "stone room (north-east)"
+    ],
+    [
+     31,
+     107,
+     "stone room (south-west)"
+    ],
+    [
+     90,
+     107,
+     "stone room (south-east)"
+    ]
+   ],
+   "team": null
+  },
+  {
+   "name": "Wraith Cave",
+   "dungeon_maps": [
+    1801,
+    1802,
+    1806,
+    1807,
+    1811
+   ],
+   "map": 1702,
+   "npc": "The Wraith Cave",
+   "at": [
+    35,
+    75
+   ],
+   "spots": [
+    [
+     35,
+     75,
+     "entrance"
+    ]
+   ],
+   "team": true
+  },
+  {
+   "name": "zagrama canyon",
+   "dungeon_maps": [
+    1633
+   ],
+   "map": 1631,
+   "npc": null,
+   "at": null,
+   "spots": [
+    [
+     172,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, harder"
+    ],
+    [
+     129,
+     155,
+     "dungeon entrance: level 70, 2 players, 15 minutes, hard"
+    ],
+    [
+     178,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, easy"
+    ],
+    [
+     123,
+     126,
+     "dungeon entrance: level 75, solo, 15 minutes, harder"
+    ],
+    [
+     151,
+     194,
+     "dungeon entrance: level 80, solo, 15 minutes, easy"
+    ]
+   ],
+   "team": null
+  }
+ ],
+ "not_found": [
+  {
+   "name": "gouging knife Dungeon",
+   "maps": [
+    1144,
+    1146
+   ]
+  },
+  {
+   "name": "Ice and Snow Cave",
+   "maps": [
+    3802
+   ]
+  },
+  {
+   "name": "Pirate Ship",
+   "maps": [
+    3803
+   ]
+  },
+  {
+   "name": "rolling Mountain (tutor and pupil)",
+   "maps": [
+    1047
+   ]
+  },
+  {
+   "name": "Tiger Mountain (tutor and pupil)",
+   "maps": [
+    1046
+   ]
+  },
+  {
+   "name": "Water Cave",
+   "maps": [
+    3801
+   ]
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+pytest>=8
+pytest-cov>=5
+pytest-randomly>=3.15
+pytest-xdist>=3.6
+ruff>=0.17
+pyright>=1.1.400
+numpy
+yappi
+py-spy
+cachebox
+pip-audit>=2.10

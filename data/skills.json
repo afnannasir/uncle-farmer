@@ -1,0 +1,6072 @@
+{
+ "classes": {
+  "Warrior": [
+   {
+    "text": "Base attack, strike 1 enemy within 5 yards, gain 10 rage, increase 5600 points of physical attack, cost 500 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": 10,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 500,
+    "mana_pct": null,
+    "attack": 5600,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Bash",
+    "order": 0,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 100,
+      "mana": 10
+     },
+     "2": {
+      "attack": 230,
+      "mana": 20
+     },
+     "3": {
+      "attack": 380,
+      "mana": 40
+     },
+     "4": {
+      "attack": 630,
+      "mana": 60
+     },
+     "5": {
+      "attack": 940,
+      "mana": 90
+     },
+     "6": {
+      "attack": 1440,
+      "mana": 140
+     },
+     "7": {
+      "attack": 2380,
+      "mana": 220
+     },
+     "8": {
+      "attack": 3500,
+      "mana": 320
+     },
+     "9": {
+      "attack": 5600,
+      "mana": 500
+     }
+    }
+   },
+   {
+    "text": "Slash 1 enemy within 5 yards from top to bottom, 4 seconds CD, gain 3 rage, increase 6800 points of physical attack, 20% attack bonus, cost 2100 mana",
+    "range": 5.0,
+    "cd": 4.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": 3,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 2100,
+    "mana_pct": null,
+    "attack": 6800,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [],
+    "role": "single_target",
+    "name": "Cleave",
+    "order": 1,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 230,
+      "mana": 40
+     },
+     "2": {
+      "attack": 350,
+      "mana": 100
+     },
+     "3": {
+      "attack": 560,
+      "mana": 150
+     },
+     "4": {
+      "attack": 960,
+      "mana": 250
+     },
+     "5": {
+      "attack": 1400,
+      "mana": 380
+     },
+     "6": {
+      "attack": 2400,
+      "mana": 750
+     },
+     "7": {
+      "attack": 3800,
+      "mana": 1200
+     },
+     "8": {
+      "attack": 6800,
+      "mana": 2100
+     }
+    }
+   },
+   {
+    "text": "Deal a final blow against 1 enemy within 5 yards, cost 100 rage, increase 18000 points of physical attack, 50% attack bonus, cost 6400 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 100,
+    "combo_cost": null,
+    "mana": 6400,
+    "mana_pct": null,
+    "attack": 18000,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [],
+    "role": "finisher",
+    "name": "Execute",
+    "order": 2,
+    "max_level": 6,
+    "when": "100+ rage; best on a target that's nearly dead",
+    "by_level": {
+     "1": {
+      "attack": 1150,
+      "mana": 300
+     },
+     "2": {
+      "attack": 2840,
+      "mana": 800
+     },
+     "3": {
+      "attack": 4000,
+      "mana": 1300
+     },
+     "4": {
+      "attack": 8000,
+      "mana": 2250
+     },
+     "5": {
+      "attack": 12000,
+      "mana": 3800
+     },
+     "6": {
+      "attack": 18000,
+      "mana": 6400
+     }
+    }
+   },
+   {
+    "text": "Sweep through 2 enemies 5 yards ahead, 4 seconds CD, gain 6 rage, increase 5600 points of physical attack, cost 3000 mana",
+    "range": 5.0,
+    "cd": 4.0,
+    "cast": null,
+    "targets": 2,
+    "rage_gain": 6,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 3000,
+    "mana_pct": null,
+    "attack": 5600,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Sweep Attack",
+    "order": 3,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 250,
+      "mana": 100
+     },
+     "2": {
+      "attack": 380,
+      "mana": 180
+     },
+     "3": {
+      "attack": 660,
+      "mana": 380
+     },
+     "4": {
+      "attack": 970,
+      "mana": 550
+     },
+     "5": {
+      "attack": 1500,
+      "mana": 750
+     },
+     "6": {
+      "attack": 2380,
+      "mana": 1150
+     },
+     "7": {
+      "attack": 3600,
+      "mana": 1850
+     },
+     "8": {
+      "attack": 5600,
+      "mana": 3000
+     }
+    }
+   },
+   {
+    "text": "Deal a powerful strike to 4 enemies within a 5-yard radius, cost 200 rage, increase 16000 points of physical attack, 50% attack bonus, cost 10000 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 4,
+    "rage_gain": null,
+    "rage_cost": 200,
+    "combo_cost": null,
+    "mana": 10000,
+    "mana_pct": null,
+    "attack": 16000,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Whirlwind Slash",
+    "order": 4,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 3000,
+      "mana": 2600
+     },
+     "2": {
+      "attack": 7000,
+      "mana": 4000
+     },
+     "3": {
+      "attack": 10000,
+      "mana": 6000
+     },
+     "4": {
+      "attack": 16000,
+      "mana": 10000
+     }
+    }
+   },
+   {
+    "text": "Increase 50% movement speed for 10 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "mobility",
+    "name": "Wind Step",
+    "order": 5,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 50% movement speed for 10 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "mobility",
+    "name": "Swallow Dance",
+    "order": 6,
+    "max_level": 1
+   },
+   {
+    "text": "Reduce 40% damage taken for 10 seconds, 60 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "defensive",
+    "name": "Formless",
+    "order": 7,
+    "max_level": 1
+   },
+   {
+    "text": "Single-target skill, jump to the target's side and slash down, stun the target for 2.5 seconds, 10 yards of effective range, 30 seconds CD, gain 10 rage, increase 5600 points of physical attack, cost 500 mana",
+    "range": 10.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": 10,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 500,
+    "mana_pct": null,
+    "attack": 5600,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "stun"
+    ],
+    "role": "engage",
+    "name": "Leap Slash",
+    "order": 8,
+    "max_level": 7,
+    "when": "gap closer: jump to a target up to 10 yards away and stun it",
+    "by_level": {
+     "1": {
+      "attack": 500,
+      "mana": 50
+     },
+     "2": {
+      "attack": 650,
+      "mana": 60
+     },
+     "3": {
+      "attack": 940,
+      "mana": 90
+     },
+     "4": {
+      "attack": 1440,
+      "mana": 140
+     },
+     "5": {
+      "attack": 2380,
+      "mana": 220
+     },
+     "6": {
+      "attack": 3500,
+      "mana": 320
+     },
+     "7": {
+      "attack": 5600,
+      "mana": 500
+     }
+    }
+   },
+   {
+    "text": "Restrain 1 enemy within 5 yards for 3.5 seconds, 30 seconds CD, gain 6 rage, increase 5000 points of physical attack, cost 480 mana",
+    "range": 5.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": 6,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 480,
+    "mana_pct": null,
+    "attack": 5000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "control",
+    "name": "Rip and Tear",
+    "order": 9,
+    "max_level": 3,
+    "when": "restrain a melee target for 3.5 s",
+    "by_level": {
+     "1": {
+      "attack": 2300,
+      "mana": 220
+     },
+     "2": {
+      "attack": 3500,
+      "mana": 320
+     },
+     "3": {
+      "attack": 5000,
+      "mana": 480
+     }
+    }
+   },
+   {
+    "text": "Used when the target dodged the last attack, 100% hit chance, 5 yards of effective range, cost 50 rage, increase 6400 points of physical attack, 50% attack bonus, cost 1600 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": 50,
+    "combo_cost": null,
+    "mana": 1600,
+    "mana_pct": null,
+    "attack": 6400,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [],
+    "role": "reactive",
+    "name": "Suppress",
+    "order": 10,
+    "max_level": 5,
+    "when": "only right after the target dodged your last attack",
+    "by_level": {
+     "1": {
+      "attack": 1440,
+      "mana": 420
+     },
+     "2": {
+      "attack": 2000,
+      "mana": 550
+     },
+     "3": {
+      "attack": 2750,
+      "mana": 680
+     },
+     "4": {
+      "attack": 4250,
+      "mana": 1060
+     },
+     "5": {
+      "attack": 6400,
+      "mana": 1600
+     }
+    }
+   },
+   {
+    "text": "Injure 1 enemy's hamstring within 5 yards, deal physical damage and decrease its movement speed by 50% for 6 seconds, cost 60 rage, increase 4500 points of physical attack, cost 400 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 60,
+    "combo_cost": null,
+    "mana": 400,
+    "mana_pct": null,
+    "attack": 4500,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "control",
+    "name": "Hamstring",
+    "order": 11,
+    "max_level": 6,
+    "when": "slow a target that runs away",
+    "by_level": {
+     "1": {
+      "attack": 660,
+      "mana": 60
+     },
+     "2": {
+      "attack": 850,
+      "mana": 80
+     },
+     "3": {
+      "attack": 1200,
+      "mana": 120
+     },
+     "4": {
+      "attack": 1600,
+      "mana": 160
+     },
+     "5": {
+      "attack": 2600,
+      "mana": 250
+     },
+     "6": {
+      "attack": 4500,
+      "mana": 400
+     }
+    }
+   },
+   {
+    "text": "Decrease 4% physical defense of 1 enemy within 5 yards for 30 seconds; 100% hit chance, can be stacked to up to 20% physical defense decrease. Cost 150 rage, gain substantial Threat from the target, increase 7000 points of physical attack, 20% attack bonus, cost 2100 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 150,
+    "combo_cost": null,
+    "mana": 2100,
+    "mana_pct": null,
+    "attack": 7000,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "taunt",
+     "armor_break"
+    ],
+    "role": "debuff",
+    "name": "Armor Break",
+    "order": 12,
+    "max_level": 7,
+    "when": "stack on a long fight (boss/elite) before the big hits",
+    "by_level": {
+     "1": {
+      "attack": 400,
+      "mana": 120
+     },
+     "2": {
+      "attack": 600,
+      "mana": 160
+     },
+     "3": {
+      "attack": 1000,
+      "mana": 250
+     },
+     "4": {
+      "attack": 1400,
+      "mana": 380
+     },
+     "5": {
+      "attack": 2400,
+      "mana": 750
+     },
+     "6": {
+      "attack": 3800,
+      "mana": 1200
+     },
+     "7": {
+      "attack": 7000,
+      "mana": 2100
+     }
+    }
+   },
+   {
+    "text": "Bleed 1 enemy within 5 yards, dealing continuous damage for 15 seconds, cost 50 rage, Increase 6400 points of physical attack, 50% attack bonus, cost 1600 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 50,
+    "combo_cost": null,
+    "mana": 1600,
+    "mana_pct": null,
+    "attack": 6400,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "dot",
+    "name": "Rupture",
+    "order": 13,
+    "max_level": 5,
+    "when": "bleed on a target that will live 15 s+",
+    "by_level": {
+     "1": {
+      "attack": 1500,
+      "mana": 450
+     },
+     "2": {
+      "attack": 2000,
+      "mana": 550
+     },
+     "3": {
+      "attack": 2750,
+      "mana": 680
+     },
+     "4": {
+      "attack": 4250,
+      "mana": 1060
+     },
+     "5": {
+      "attack": 6400,
+      "mana": 1600
+     }
+    }
+   },
+   {
+    "text": "Increase 10% attack damage for all allies within 20 yards for 2 minutes, cost 200 rage and 1% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": 200,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Battle Cry",
+    "order": 14,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 20% defense for all allies within 20 yards for 2 minutes, cost 200 rage and 1% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": 200,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Command Cry",
+    "order": 15,
+    "max_level": 1
+   },
+   {
+    "text": "Damage and force 1 target within 8 yards to attack you for 6 seconds, 2 minutes CD. Gain substantial Threat from the target. Increase 4500 points of physical attack, cost 450 mana",
+    "range": 8.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 450,
+    "mana_pct": null,
+    "attack": 4500,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "taunt"
+    ],
+    "role": "taunt",
+    "name": "Taunt Attack",
+    "order": 16,
+    "max_level": 5,
+    "when": "party: pull a monster off an ally",
+    "by_level": {
+     "1": {
+      "attack": 1000,
+      "mana": 100
+     },
+     "2": {
+      "attack": 1400,
+      "mana": 140
+     },
+     "3": {
+      "attack": 2000,
+      "mana": 200
+     },
+     "4": {
+      "attack": 2800,
+      "mana": 280
+     },
+     "5": {
+      "attack": 4500,
+      "mana": 450
+     }
+    }
+   },
+   {
+    "text": "Force all targets within 10 yards to attack you for 6 seconds, 5 minutes CD, cost 1% mana.",
+    "range": 10.0,
+    "cd": 300.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "taunt"
+    ],
+    "role": "taunt",
+    "name": "Challenge Cry",
+    "order": 17,
+    "max_level": 1
+   },
+   {
+    "text": "Deal damage to 1 enemy within 5 yards and reduce 50% of all healing effects on the target for 10 seconds. Cost 100 rage, increase 12000 points of physical attack, 30% attack bonus, cost 6000 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 100,
+    "combo_cost": null,
+    "mana": 6000,
+    "mana_pct": null,
+    "attack": 12000,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [
+     "anti_heal"
+    ],
+    "role": "anti_heal",
+    "name": "Lethal Strike",
+    "order": 18,
+    "max_level": 3,
+    "when": "PvP or self-healing monsters",
+    "by_level": {
+     "1": {
+      "attack": 5000,
+      "mana": 3200
+     },
+     "2": {
+      "attack": 8000,
+      "mana": 4000
+     },
+     "3": {
+      "attack": 12000,
+      "mana": 6000
+     }
+    }
+   }
+  ],
+  "Orc": [
+   {
+    "text": "Base attack, 5 yards of effective range, gain 15 rage, increase 6200 points of physical attack, 10% attack bonus, cost 600 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": 15,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 600,
+    "mana_pct": null,
+    "attack": 6200,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Valiant Strike",
+    "order": 19,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 120,
+      "mana": 10
+     },
+     "2": {
+      "attack": 270,
+      "mana": 20
+     },
+     "3": {
+      "attack": 480,
+      "mana": 40
+     },
+     "4": {
+      "attack": 750,
+      "mana": 70
+     },
+     "5": {
+      "attack": 1080,
+      "mana": 100
+     },
+     "6": {
+      "attack": 1680,
+      "mana": 160
+     },
+     "7": {
+      "attack": 2500,
+      "mana": 250
+     },
+     "8": {
+      "attack": 3600,
+      "mana": 400
+     },
+     "9": {
+      "attack": 6200,
+      "mana": 600
+     }
+    }
+   },
+   {
+    "text": "Powerful single-target attack, 5 yards of effective range, 4.8 seconds CD, gain 5 rage, increase 6400 points of physical attack, 30% attack bonus, cost 2400 mana",
+    "range": 5.0,
+    "cd": 4.8,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": 5,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 2400,
+    "mana_pct": null,
+    "attack": 6400,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [],
+    "role": "single_target",
+    "name": "Reckless Strike",
+    "order": 20,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 250,
+      "mana": 50
+     },
+     "2": {
+      "attack": 500,
+      "mana": 120
+     },
+     "3": {
+      "attack": 750,
+      "mana": 200
+     },
+     "4": {
+      "attack": 1150,
+      "mana": 350
+     },
+     "5": {
+      "attack": 1680,
+      "mana": 550
+     },
+     "6": {
+      "attack": 2600,
+      "mana": 900
+     },
+     "7": {
+      "attack": 4000,
+      "mana": 1500
+     },
+     "8": {
+      "attack": 6400,
+      "mana": 2400
+     }
+    }
+   },
+   {
+    "text": "Attack 1 enemy within 5 yards and recover 30% of damage as HP. Always increase 20% damage of the next attack even if the skill missed. Cost 80 rage, increase 9800 points of physical attack, 50% attack bonus, cost 3500 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 80,
+    "combo_cost": null,
+    "mana": 3500,
+    "mana_pct": null,
+    "attack": 9800,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [
+     "lifesteal_or_heal"
+    ],
+    "role": "lifesteal",
+    "name": "Bloodthirsty",
+    "order": 21,
+    "max_level": 6,
+    "when": "heals 30% of damage dealt: the Orc's self-heal",
+    "by_level": {
+     "1": {
+      "attack": 1400,
+      "mana": 500
+     },
+     "2": {
+      "attack": 1860,
+      "mana": 660
+     },
+     "3": {
+      "attack": 2400,
+      "mana": 850
+     },
+     "4": {
+      "attack": 5000,
+      "mana": 1800
+     },
+     "5": {
+      "attack": 7400,
+      "mana": 2650
+     },
+     "6": {
+      "attack": 9800,
+      "mana": 3500
+     }
+    }
+   },
+   {
+    "text": "Attack 3 enemies within 5 yards ahead, 4.8 seconds CD, gain 10 rage, increase 2880 points of physical attack, 10% attack bonus, cost 2500 mana",
+    "range": 5.0,
+    "cd": 4.8,
+    "cast": null,
+    "targets": 3,
+    "rage_gain": 10,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 2500,
+    "mana_pct": null,
+    "attack": 2880,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Flesh Cleave",
+    "order": 22,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 160,
+      "mana": 100
+     },
+     "2": {
+      "attack": 240,
+      "mana": 180
+     },
+     "3": {
+      "attack": 350,
+      "mana": 320
+     },
+     "4": {
+      "attack": 500,
+      "mana": 450
+     },
+     "5": {
+      "attack": 770,
+      "mana": 700
+     },
+     "6": {
+      "attack": 1150,
+      "mana": 1040
+     },
+     "7": {
+      "attack": 1750,
+      "mana": 1600
+     },
+     "8": {
+      "attack": 2880,
+      "mana": 2500
+     }
+    }
+   },
+   {
+    "text": "Deal a powerful strike to 6 enemies within 5 yards ahead, cost 200 rage, increase 9000 points of physical attack, 50% attack bonus, cost 3300 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 6,
+    "rage_gain": null,
+    "rage_cost": 200,
+    "combo_cost": null,
+    "mana": 3300,
+    "mana_pct": null,
+    "attack": 9000,
+    "bonus_pct": 50,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Rampage Hack",
+    "order": 23,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 3000,
+      "mana": 1000
+     },
+     "2": {
+      "attack": 4400,
+      "mana": 1500
+     },
+     "3": {
+      "attack": 6800,
+      "mana": 2400
+     },
+     "4": {
+      "attack": 9000,
+      "mana": 3300
+     }
+    }
+   },
+   {
+    "text": "Increase 30% movement speed for 10 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "mobility",
+    "name": "Haste",
+    "order": 24,
+    "max_level": 1
+   },
+   {
+    "text": "Reduce 40% physical damage taken and 20% magic damage taken for 10 seconds, 60 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "defensive",
+    "name": "Ignore the Pain",
+    "order": 25,
+    "max_level": 1
+   },
+   {
+    "text": "Reduce 30% physical damage taken and 15% magic damage taken, recover 20% more HP with Bloodthirsty. Lasts for 8 seconds. Share CD with Ignore the Pain, cost 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "lifesteal_or_heal"
+    ],
+    "role": "defensive",
+    "name": "Furious Recovery",
+    "order": 26,
+    "max_level": 1
+   },
+   {
+    "text": "Stun the target for 4 seconds from a distance, 15 yards of effective range, 30 seconds CD, increase 6200 points of physical attack, 10% attack bonus, cost 600 mana",
+    "range": 15.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 600,
+    "mana_pct": null,
+    "attack": 6200,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "stun"
+    ],
+    "role": "control",
+    "name": "Ancestral Hammer",
+    "order": 27,
+    "max_level": 7,
+    "when": "ranged stun 4 s, 15 yards",
+    "by_level": {
+     "1": {
+      "attack": 650,
+      "mana": 60
+     },
+     "2": {
+      "attack": 850,
+      "mana": 80
+     },
+     "3": {
+      "attack": 1100,
+      "mana": 100
+     },
+     "4": {
+      "attack": 1680,
+      "mana": 160
+     },
+     "5": {
+      "attack": 2500,
+      "mana": 250
+     },
+     "6": {
+      "attack": 3600,
+      "mana": 400
+     },
+     "7": {
+      "attack": 6200,
+      "mana": 600
+     }
+    }
+   },
+   {
+    "text": "Shatter the ground, Transfix 1 target within 8 yards for 5 seconds, 30 seconds CD, cost 1% mana",
+    "range": 8.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "control",
+    "name": "Earthshaking Stomp",
+    "order": 28,
+    "max_level": 1
+   },
+   {
+    "text": "Deal a vengeful strike to 1 target within 5 yards after dodging an enemy attack, 3 seconds CD, increase 6000 points of physical attack, 20% attack bonus, cost 1500 mana",
+    "range": 5.0,
+    "cd": 3.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 1500,
+    "mana_pct": null,
+    "attack": 6000,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [],
+    "role": "reactive",
+    "name": "Vengeance",
+    "order": 29,
+    "max_level": 3,
+    "when": "only right after you dodged",
+    "by_level": {
+     "1": {
+      "attack": 3000,
+      "mana": 700
+     },
+     "2": {
+      "attack": 4000,
+      "mana": 1000
+     },
+     "3": {
+      "attack": 6000,
+      "mana": 1500
+     }
+    }
+   },
+   {
+    "text": "Attack 1 target within 8 range and decrease its movement speed by 30% for 5 seconds, cost 100 rage, increase 6200 points of physical attack, 10% attack bonus, cost 600 mana",
+    "range": 8.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 100,
+    "combo_cost": null,
+    "mana": 600,
+    "mana_pct": null,
+    "attack": 6200,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "control",
+    "name": "Thunderous Blow",
+    "order": 30,
+    "max_level": 7,
+    "when": "slow a target at 8 yards",
+    "by_level": {
+     "1": {
+      "attack": 750,
+      "mana": 70
+     },
+     "2": {
+      "attack": 950,
+      "mana": 90
+     },
+     "3": {
+      "attack": 1360,
+      "mana": 130
+     },
+     "4": {
+      "attack": 1800,
+      "mana": 180
+     },
+     "5": {
+      "attack": 2500,
+      "mana": 250
+     },
+     "6": {
+      "attack": 3600,
+      "mana": 400
+     },
+     "7": {
+      "attack": 6200,
+      "mana": 600
+     }
+    }
+   },
+   {
+    "text": "Attack 1 target within 5 yards, and decrease its physical defense by 5% for 40 seconds, 100% hit chance, can be stacked to up to 20% physical defense decrease. Cost 220 rage, gain substantial Threat from the target, increase 6400 points of physical attack, 30% attack bonus, cost 2400 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": 220,
+    "combo_cost": null,
+    "mana": 2400,
+    "mana_pct": null,
+    "attack": 6400,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [
+     "taunt",
+     "armor_break"
+    ],
+    "role": "debuff",
+    "name": "Giant Strike",
+    "order": 31,
+    "max_level": 7,
+    "when": "stack -5% physical defense on a long fight",
+    "by_level": {
+     "1": {
+      "attack": 650,
+      "mana": 180
+     },
+     "2": {
+      "attack": 800,
+      "mana": 220
+     },
+     "3": {
+      "attack": 1150,
+      "mana": 350
+     },
+     "4": {
+      "attack": 1680,
+      "mana": 550
+     },
+     "5": {
+      "attack": 2600,
+      "mana": 900
+     },
+     "6": {
+      "attack": 4000,
+      "mana": 1500
+     },
+     "7": {
+      "attack": 6400,
+      "mana": 2400
+     }
+    }
+   },
+   {
+    "text": "Increase 30 points of Critical Hit for all allies within 20 yards for 2 minutes, cost 250 rage and 1% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": 250,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Berserk Roar",
+    "order": 32,
+    "max_level": 1
+   },
+   {
+    "text": "Decrease 20% of all damage taken for all allies within 20 yards for 2 minutes, cost 250 rage and 1% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": 250,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Battle Roar",
+    "order": 33,
+    "max_level": 1
+   },
+   {
+    "text": "Force 1 target within 8 yards to attack you for 6 seconds, 2 minutes CD, cost 1% mana.",
+    "range": 8.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "taunt"
+    ],
+    "role": "taunt",
+    "name": "Taunt",
+    "order": 34,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 100% Critical Hit and reduce 30% defense for 5 seconds, 30 seconds CD, cost 1% mana",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "self_buff",
+    "name": "Reckless",
+    "order": 35,
+    "max_level": 1
+   }
+  ],
+  "Assassin": [
+   {
+    "text": "Base single-target attack, 5 yards and 180 degrees of effective range, increase 4000 points of physical attack, cost 420 mana",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Blade Strike",
+    "order": 36,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 100,
+      "mana": 10
+     },
+     "2": {
+      "attack": 220,
+      "mana": 20
+     },
+     "3": {
+      "attack": 350,
+      "mana": 40
+     },
+     "4": {
+      "attack": 550,
+      "mana": 60
+     },
+     "5": {
+      "attack": 930,
+      "mana": 90
+     },
+     "6": {
+      "attack": 1400,
+      "mana": 150
+     },
+     "7": {
+      "attack": 1800,
+      "mana": 200
+     },
+     "8": {
+      "attack": 2600,
+      "mana": 280
+     },
+     "9": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Powerful single-target attack, 5 yards of effective range, cost 0-8 combos, 6 seconds CD, increase 7000 points of physical attack, 10% attack bonus, cost 280 mana",
+    "range": 5.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 8,
+    "mana": 280,
+    "mana_pct": null,
+    "attack": 7000,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "finisher",
+    "name": "Rapid Sting",
+    "order": 37,
+    "max_level": 8,
+    "when": "spends combos; strongest with a full bar",
+    "by_level": {
+     "1": {
+      "attack": 240,
+      "mana": 60
+     },
+     "2": {
+      "attack": 500,
+      "mana": 140
+     },
+     "3": {
+      "attack": 720,
+      "mana": 220
+     },
+     "4": {
+      "attack": 1300,
+      "mana": 400
+     },
+     "5": {
+      "attack": 1920,
+      "mana": 620
+     },
+     "6": {
+      "attack": 2900,
+      "mana": 1160
+     },
+     "7": {
+      "attack": 4500,
+      "mana": 1700
+     },
+     "8": {
+      "attack": 7000,
+      "mana": 280
+     }
+    }
+   },
+   {
+    "text": "Attack 3 targets within 5 yards and 180 degrees, 6 seconds CD, increase 5800 points of physical attack, cost 4000 mana",
+    "range": 5.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 3,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 5800,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Fan of Knives",
+    "order": 38,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 400,
+      "mana": 140
+     },
+     "2": {
+      "attack": 560,
+      "mana": 240
+     },
+     "3": {
+      "attack": 850,
+      "mana": 500
+     },
+     "4": {
+      "attack": 1200,
+      "mana": 700
+     },
+     "5": {
+      "attack": 1720,
+      "mana": 980
+     },
+     "6": {
+      "attack": 2250,
+      "mana": 1350
+     },
+     "7": {
+      "attack": 3600,
+      "mana": 2000
+     },
+     "8": {
+      "attack": 5800,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Attack 5 enemies within a 5-yard radius. Cost 0-20 combos, 20 seconds CD, increase 2400 points of physical attack, cost 4000 mana",
+    "range": 5.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 5,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 20,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 2400,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Blade Fury Dance",
+    "order": 39,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 1200,
+      "mana": 1200
+     },
+     "2": {
+      "attack": 1800,
+      "mana": 2000
+     },
+     "3": {
+      "attack": 2200,
+      "mana": 3600
+     },
+     "4": {
+      "attack": 2400,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Increase 50% movement speed for 5 seconds, and increase 100% dodge for 10 seconds, 30 seconds CD, cost 1% mana",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "mobility",
+    "name": "Shadow Steps",
+    "order": 40,
+    "max_level": 1
+   },
+   {
+    "text": "20 yards of effective range, 2.5 seconds of channeling time. When channeling, the effective range is 30 yards. After the skill is cast, increase 100% Critical Hit for 10 seconds, then teleport to the target and attack, stunning the target for 1.5 seconds and decreasing its movement speed by 30% for 10 seconds, 30 seconds CD, share CD with Kidney Strike. Increase 4000 points of physical attack, cost 420 mana",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": 2.5,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "stun",
+     "slow",
+     "teleport"
+    ],
+    "role": "engage",
+    "name": "Leap Gouge",
+    "order": 41,
+    "max_level": 7,
+    "when": "teleport to a target up to 20-30 yards and stun it",
+    "by_level": {
+     "1": {
+      "attack": 450,
+      "mana": 50
+     },
+     "2": {
+      "attack": 650,
+      "mana": 70
+     },
+     "3": {
+      "attack": 950,
+      "mana": 90
+     },
+     "4": {
+      "attack": 1400,
+      "mana": 150
+     },
+     "5": {
+      "attack": 1800,
+      "mana": 200
+     },
+     "6": {
+      "attack": 2600,
+      "mana": 280
+     },
+     "7": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Attack 1 target within 5 yards and stun it for 1.5 seconds, cost 8 combos, recover 8 combos on critical hits. Every Relentless Slash increases 30% damage of the next Relentless Slash, stacks 4 times at max. Increase 6500 points of physical attack, 10% attack bonus, cost 2800 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 8,
+    "mana": 2800,
+    "mana_pct": null,
+    "attack": 6500,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "stun",
+     "lifesteal_or_heal"
+    ],
+    "role": "finisher",
+    "name": "Relentless Slash",
+    "order": 42,
+    "max_level": 6,
+    "when": "8 combos; ramps 30% per cast, 4 stacks",
+    "by_level": {
+     "1": {
+      "attack": 700,
+      "mana": 220
+     },
+     "2": {
+      "attack": 1200,
+      "mana": 400
+     },
+     "3": {
+      "attack": 1800,
+      "mana": 600
+     },
+     "4": {
+      "attack": 2700,
+      "mana": 1100
+     },
+     "5": {
+      "attack": 4200,
+      "mana": 1700
+     },
+     "6": {
+      "attack": 6500,
+      "mana": 2800
+     }
+    }
+   },
+   {
+    "text": "Attack 1 target within 5 yards and Knock-Out it for 5 seconds, 30 seconds CD, increase 4000 points of physical attack, cost 420 mana",
+    "range": 5.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "knockout"
+    ],
+    "role": "control",
+    "name": "Sap",
+    "order": 43,
+    "max_level": 4,
+    "when": "knock out 1 target for 5 s (take one out of a pack)",
+    "by_level": {
+     "1": {
+      "attack": 1800,
+      "mana": 200
+     },
+     "2": {
+      "attack": 2300,
+      "mana": 250
+     },
+     "3": {
+      "attack": 2800,
+      "mana": 300
+     },
+     "4": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Attack 1 target within 5 yards, and decrease its physical defense for 30 seconds. Cost 4-20 combos, decrease 1% physical defense for every 4 combos, 100% hit chance, can be stacked to up to 20% physical defense decrease. Increase 7000 points of physical attack, 10% attack bonus, cost 2800 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 20,
+    "mana": 2800,
+    "mana_pct": null,
+    "attack": 7000,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "armor_break"
+    ],
+    "role": "debuff",
+    "name": "Puncture",
+    "order": 44,
+    "max_level": 7,
+    "when": "spend combos to lower physical defense on a long fight",
+    "by_level": {
+     "1": {
+      "attack": 600,
+      "mana": 180
+     },
+     "2": {
+      "attack": 750,
+      "mana": 230
+     },
+     "3": {
+      "attack": 1300,
+      "mana": 400
+     },
+     "4": {
+      "attack": 1920,
+      "mana": 620
+     },
+     "5": {
+      "attack": 2900,
+      "mana": 1160
+     },
+     "6": {
+      "attack": 4500,
+      "mana": 1700
+     },
+     "7": {
+      "attack": 7000,
+      "mana": 2800
+     }
+    }
+   },
+   {
+    "text": "Increase 50% critical hit for all allies for 2 minutes, cost 20 combos and 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 20,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Piercing Shriek",
+    "order": 45,
+    "max_level": 1
+   },
+   {
+    "text": "Partially shift all allies into the Void Dimension, increase 50% dodge for all allies for 2 minutes, cost 20 combos and 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 20,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Void Shift",
+    "order": 46,
+    "max_level": 1
+   },
+   {
+    "text": "Force 1 target within 8 yards to attack you for 3 seconds, gain substantial Threat from the target, 2 minutes CD, cost 1% mana.",
+    "range": 8.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "taunt"
+    ],
+    "role": "taunt",
+    "name": "Scorn",
+    "order": 47,
+    "max_level": 1
+   },
+   {
+    "text": "Force all targets within 10 yards to attack you for 3 seconds, gain substantial Threat from all targets, 5 minutes CD, cost 1% mana.",
+    "range": 10.0,
+    "cd": 300.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "taunt"
+    ],
+    "role": "taunt",
+    "name": "Dark Quake",
+    "order": 48,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 100% Critical Hit for 10 seconds. Attack 1 target within 5 yards and stun it for 1.5 seconds, 30 seconds CD, share CD with Leap Gouge. Increase 4000 points of physical attack, cost 420 mana",
+    "range": 5.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "stun"
+    ],
+    "role": "control",
+    "name": "Kidney Strike",
+    "order": 49,
+    "max_level": 6,
+    "when": "stun 1.5 s + 100% crit for 10 s; shares CD with Leap Gouge",
+    "by_level": {
+     "1": {
+      "attack": 850,
+      "mana": 80
+     },
+     "2": {
+      "attack": 1150,
+      "mana": 120
+     },
+     "3": {
+      "attack": 1500,
+      "mana": 160
+     },
+     "4": {
+      "attack": 1800,
+      "mana": 200
+     },
+     "5": {
+      "attack": 2600,
+      "mana": 280
+     },
+     "6": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Remove and gain immunity to all magic debuffs (all non-posion debuffs and non-curse debuffs), reduce 50% magic damage taken for 5 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "defensive",
+    "name": "Shadow Cloak",
+    "order": 50,
+    "max_level": 1
+   },
+   {
+    "text": "Deal damage to 1 enemy within 5 yards and reduce its healing skill effect by 40% for 15 seconds, 20 seconds CD. Increase 4000 points of physical attack, cost 420 mana",
+    "range": 5.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "anti_heal"
+    ],
+    "role": "anti_heal",
+    "name": "Shattering Moon",
+    "order": 51,
+    "max_level": 3,
+    "when": "PvP or self-healing monsters",
+    "by_level": {
+     "1": {
+      "attack": 2500,
+      "mana": 280
+     },
+     "2": {
+      "attack": 3200,
+      "mana": 340
+     },
+     "3": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Attack 1 enemy within 5 yards and inflict Bleeding for 18 seconds, the target cannot cast channeling skills for 8 seconds. Costs 8 combos. Increase 4000 points of physical attack, cost 420 mana",
+    "range": 5.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": 8,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "dot",
+    "name": "Slit Throat",
+    "order": 52,
+    "max_level": 5,
+    "when": "bleed 18 s + stop the target's channelled casts",
+    "by_level": {
+     "1": {
+      "attack": 1300,
+      "mana": 150
+     },
+     "2": {
+      "attack": 1600,
+      "mana": 180
+     },
+     "3": {
+      "attack": 2000,
+      "mana": 220
+     },
+     "4": {
+      "attack": 2800,
+      "mana": 280
+     },
+     "5": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   },
+   {
+    "text": "Attack 1 enemy within 5 yards and inflict poison, reduce 50% of all healing effects on the target for 12 seconds, 2 minutes CD. Increase 4000 points of physical attack, cost 420 mana",
+    "range": 5.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 420,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dot",
+     "anti_heal"
+    ],
+    "role": "anti_heal",
+    "name": "Poison Blade",
+    "order": 53,
+    "max_level": 5,
+    "when": "PvP or self-healing monsters",
+    "by_level": {
+     "1": {
+      "attack": 1200,
+      "mana": 120
+     },
+     "2": {
+      "attack": 1500,
+      "mana": 160
+     },
+     "3": {
+      "attack": 1800,
+      "mana": 200
+     },
+     "4": {
+      "attack": 2600,
+      "mana": 280
+     },
+     "5": {
+      "attack": 4000,
+      "mana": 420
+     }
+    }
+   }
+  ],
+  "Hunter": [
+   {
+    "text": "Base attack, 20 yards of effective range, have a chance to mark the enemy when the attack hits. Increase 4000 points of physical attack, 20% attack bonus, cost 400 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 400,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "base_attack",
+    "name": "Arcane Shot",
+    "order": 54,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 120,
+      "mana": 10
+     },
+     "2": {
+      "attack": 250,
+      "mana": 20
+     },
+     "3": {
+      "attack": 360,
+      "mana": 40
+     },
+     "4": {
+      "attack": 550,
+      "mana": 60
+     },
+     "5": {
+      "attack": 860,
+      "mana": 90
+     },
+     "6": {
+      "attack": 1350,
+      "mana": 140
+     },
+     "7": {
+      "attack": 1800,
+      "mana": 180
+     },
+     "8": {
+      "attack": 2400,
+      "mana": 240
+     },
+     "9": {
+      "attack": 4000,
+      "mana": 400
+     }
+    }
+   },
+   {
+    "text": "Powerful single-target attack, 20 yards of effective range, have a chance to mark the enemy when the attack hits, 6 seconds CD. Increase 4800 points of physical attack, 40% attack bonus, cost 280 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 280,
+    "mana_pct": null,
+    "attack": 4800,
+    "bonus_pct": 40,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "single_target",
+    "name": "Aimed Shot",
+    "order": 55,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 340,
+      "mana": 70
+     },
+     "2": {
+      "attack": 500,
+      "mana": 160
+     },
+     "3": {
+      "attack": 700,
+      "mana": 240
+     },
+     "4": {
+      "attack": 1200,
+      "mana": 400
+     },
+     "5": {
+      "attack": 1800,
+      "mana": 600
+     },
+     "6": {
+      "attack": 2200,
+      "mana": 1000
+     },
+     "7": {
+      "attack": 2800,
+      "mana": 1400
+     },
+     "8": {
+      "attack": 4800,
+      "mana": 280
+     }
+    }
+   },
+   {
+    "text": "Attack 4 targets within 20 yards and 90 degrees, have a chance to mark the enemy when the attack hits, 6 seconds CD. Increase 3650 points of physical attack, 20% attack bonus, cost 3000 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 4,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 3000,
+    "mana_pct": null,
+    "attack": 3650,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "aoe",
+    "name": "Multi Shot",
+    "order": 56,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 250,
+      "mana": 140
+     },
+     "2": {
+      "attack": 350,
+      "mana": 260
+     },
+     "3": {
+      "attack": 520,
+      "mana": 400
+     },
+     "4": {
+      "attack": 820,
+      "mana": 520
+     },
+     "5": {
+      "attack": 1280,
+      "mana": 720
+     },
+     "6": {
+      "attack": 1600,
+      "mana": 1050
+     },
+     "7": {
+      "attack": 2200,
+      "mana": 1800
+     },
+     "8": {
+      "attack": 3650,
+      "mana": 3000
+     }
+    }
+   },
+   {
+    "text": "Attack 8 targets within 15 yards and 180 degrees, have a chance to mark the enemy when the attack hits, 30 seconds CD. Increase 5600 points of physical attack, 30% attack bonus, cost 5000 mana",
+    "range": 15.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 8,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 5000,
+    "mana_pct": null,
+    "attack": 5600,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "aoe",
+    "name": "Rapid Arrows",
+    "order": 57,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 2000,
+      "mana": 1750
+     },
+     "2": {
+      "attack": 2500,
+      "mana": 1200
+     },
+     "3": {
+      "attack": 4500,
+      "mana": 4000
+     },
+     "4": {
+      "attack": 5600,
+      "mana": 5000
+     }
+    }
+   },
+   {
+    "text": "Attack all marked targets within 30 yards. The marks disappear after the attack. Increase 3900 points of physical attack, 20% attack bonus, cost 4000 mana",
+    "range": 30.0,
+    "cd": null,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 3900,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "aoe",
+    "name": "Marked Shot",
+    "order": 58,
+    "max_level": 7,
+    "when": "when 2+ targets are marked (Arcane/Aimed/Multi Shot mark on hit)",
+    "by_level": {
+     "1": {
+      "attack": 360,
+      "mana": 120
+     },
+     "2": {
+      "attack": 540,
+      "mana": 350
+     },
+     "3": {
+      "attack": 840,
+      "mana": 650
+     },
+     "4": {
+      "attack": 1320,
+      "mana": 1100
+     },
+     "5": {
+      "attack": 1700,
+      "mana": 1500
+     },
+     "6": {
+      "attack": 2320,
+      "mana": 2300
+     },
+     "7": {
+      "attack": 3900,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Attack all marked targets within 30 yards. The marks disappear after the attack. 2 minutes CD. Increase 5000 points of physical attack, 40% attack bonus, cost 6000 mana",
+    "range": 30.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 6000,
+    "mana_pct": null,
+    "attack": 5000,
+    "bonus_pct": 40,
+    "no_gcd": false,
+    "effects": [
+     "mark"
+    ],
+    "role": "aoe",
+    "name": "Burst Shot",
+    "order": 59,
+    "max_level": 3,
+    "when": "when several targets are marked; 2 min CD - save for packs",
+    "by_level": {
+     "1": {
+      "attack": 2500,
+      "mana": 2500
+     },
+     "2": {
+      "attack": 3500,
+      "mana": 4500
+     },
+     "3": {
+      "attack": 5000,
+      "mana": 6000
+     }
+    }
+   },
+   {
+    "text": "Increase 100 points of Accuracy for 10 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "self_buff",
+    "name": "Bull's Eye",
+    "order": 60,
+    "max_level": 1,
+    "when": "when you keep missing"
+   },
+   {
+    "text": "Attack 1 enemy within 20 yards and 180 degrees, stun it for 5 seconds if it is a beast, have a chance to mark the enemy when the attack hits, 30 seconds CD. Increase 3800 points of physical attack, 20% attack bonus, cost 380 mana",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 380,
+    "mana_pct": null,
+    "attack": 3800,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "stun",
+     "mark"
+    ],
+    "role": "control",
+    "name": "Concussive Shot",
+    "order": 61,
+    "max_level": 6,
+    "when": "stuns BEASTS only (5 s)",
+    "by_level": {
+     "1": {
+      "attack": 550,
+      "mana": 60
+     },
+     "2": {
+      "attack": 860,
+      "mana": 90
+     },
+     "3": {
+      "attack": 1300,
+      "mana": 130
+     },
+     "4": {
+      "attack": 1700,
+      "mana": 170
+     },
+     "5": {
+      "attack": 2300,
+      "mana": 230
+     },
+     "6": {
+      "attack": 3800,
+      "mana": 380
+     }
+    }
+   },
+   {
+    "text": "Trap the target with a hooked hunting net, deal continuous damage and reduce the target's movement speed by 25% for 8 seconds, 60 seconds CD. Increase 4000 points of physical attack, 20% attack bonus, cost 400 mana",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 400,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": 20,
+    "no_gcd": false,
+    "effects": [
+     "slow",
+     "dot"
+    ],
+    "role": "control",
+    "name": "Throw Hunting Net",
+    "order": 62,
+    "max_level": 7,
+    "when": "slow + damage over time on a runner",
+    "by_level": {
+     "1": {
+      "attack": 550,
+      "mana": 60
+     },
+     "2": {
+      "attack": 750,
+      "mana": 80
+     },
+     "3": {
+      "attack": 1050,
+      "mana": 110
+     },
+     "4": {
+      "attack": 1400,
+      "mana": 140
+     },
+     "5": {
+      "attack": 1800,
+      "mana": 180
+     },
+     "6": {
+      "attack": 2400,
+      "mana": 240
+     },
+     "7": {
+      "attack": 4000,
+      "mana": 400
+     }
+    }
+   },
+   {
+    "text": "Place a trap of a 4-yard radius. When the first 3 enemies approach, they will knock down the tar barrel and stick with tar, reducing 50% movement speed for 5 seconds. The Trap exists for 1 minute, 1 minute CD, cost 1% mana.",
+    "range": 4.0,
+    "cd": 60.0,
+    "cast": null,
+    "targets": 3,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "control",
+    "name": "Tar Trap",
+    "order": 63,
+    "max_level": 1,
+    "when": "place before a pack arrives: slows the first 3"
+   },
+   {
+    "text": "Place a trap of a 3-yard radius. When the first enemy approaches, he will be Ensnared with vines and cannot attack or use items for 6 seconds. The Trap exists for 1 minute, 1 minute CD, cost 1% mana.",
+    "range": 3.0,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "control",
+    "name": "Vine Trap",
+    "order": 64,
+    "max_level": 1,
+    "when": "place before an enemy arrives: ensnares the first one 6 s"
+   },
+   {
+    "text": "Deflect all attacks, reducing 30% of all damage taken for 8 seconds, but you cannot attack. 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "defensive",
+    "name": "Turtle Guardian",
+    "order": 65,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 25% attack damage for all allies within 30 yards for 2 minutes, 5 minutes CD, cost 1% mana.",
+    "range": 30.0,
+    "cd": 300.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Strong-Arm Aura",
+    "order": 66,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 100% Accuracy for all allies within 30 yards for 2 minutes, 5 minutes CD, cost 1% mana.",
+    "range": 30.0,
+    "cd": 300.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Tranquility Aura",
+    "order": 67,
+    "max_level": 1
+   },
+   {
+    "text": "15 yards of effective range, the target will take 10% more damage when being attacked for 1 minute, 2 minutes CD, cost 1% mana.",
+    "range": 15.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "debuff",
+    "name": "Viper Sting",
+    "order": 68,
+    "max_level": 1,
+    "when": "target takes 10% more damage for 1 min: long fights"
+   },
+   {
+    "text": "15 yards of effective range, the target will take 30% more Bleeding damage for 2 minutes, 2 minutes CD. Share CD with Viper Sting, cost 1% mana.",
+    "range": 15.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "debuff",
+    "name": "Adder Sting",
+    "order": 69,
+    "max_level": 1,
+    "when": "more bleeding damage; shares CD with Viper Sting"
+   },
+   {
+    "text": "15 yards of effective range, reduce 50% Accuracy of the target for 30 seconds, 2 minutes CD. Share CD with Viper Sting, cost 1% mana.",
+    "range": 15.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "debuff",
+    "name": "Scorpion Sting",
+    "order": 70,
+    "max_level": 1,
+    "when": "halves the target's accuracy: a hard-hitting enemy"
+   },
+   {
+    "text": "Jump backward by 12 yards, 20 seconds CD, not affected by global CD. Cost 1% Mana.",
+    "range": null,
+    "cd": 20.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "mobility",
+    "name": "Escape",
+    "order": 71,
+    "max_level": 1
+   }
+  ],
+  "Mage": [
+   {
+    "text": "Base Attack, throw a water-elemental Magic Sphere at 1 enemy within 20 yards, increase 4000 points of magic attack, 10% attack bonus, cost 400 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 400,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Magic Sphere",
+    "order": 72,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 185,
+      "mana": 20
+     },
+     "2": {
+      "attack": 390,
+      "mana": 40
+     },
+     "3": {
+      "attack": 600,
+      "mana": 60
+     },
+     "4": {
+      "attack": 680,
+      "mana": 70
+     },
+     "5": {
+      "attack": 820,
+      "mana": 80
+     },
+     "6": {
+      "attack": 1200,
+      "mana": 120
+     },
+     "7": {
+      "attack": 1550,
+      "mana": 150
+     },
+     "8": {
+      "attack": 2400,
+      "mana": 240
+     },
+     "9": {
+      "attack": 4000,
+      "mana": 400
+     }
+    }
+   },
+   {
+    "text": "Powerful single-target attack, fire a high-speed ice shard at 1 enemy within 20 yards, deal frost damage. Ice Lance deals 3x damage to frozen or condensed targets. 6 seconds CD. In addition, if you have Ice Spike, each Ice Spike deals 20% extra damage to the target. Increase 4200 points of magic attack, 30% attack bonus, cost 3000 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 3000,
+    "mana_pct": null,
+    "attack": 4200,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [
+     "freeze"
+    ],
+    "role": "single_target",
+    "name": "Ice Lance",
+    "order": 73,
+    "max_level": 8,
+    "when": "3x damage on a frozen or condensed target (after Frost Nova)",
+    "by_level": {
+     "1": {
+      "attack": 540,
+      "mana": 70
+     },
+     "2": {
+      "attack": 700,
+      "mana": 140
+     },
+     "3": {
+      "attack": 1000,
+      "mana": 230
+     },
+     "4": {
+      "attack": 1300,
+      "mana": 500
+     },
+     "5": {
+      "attack": 1800,
+      "mana": 900
+     },
+     "6": {
+      "attack": 2200,
+      "mana": 1330
+     },
+     "7": {
+      "attack": 2800,
+      "mana": 2000
+     },
+     "8": {
+      "attack": 4200,
+      "mana": 3000
+     }
+    }
+   },
+   {
+    "text": "Base wide-range attack, attack 6 targets within 20 yards and 180 degrees, 6 seconds CD. Increase 3800 points of magic attack, 10% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 6,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 3800,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Ice Storm",
+    "order": 74,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 360,
+      "mana": 200
+     },
+     "2": {
+      "attack": 580,
+      "mana": 400
+     },
+     "3": {
+      "attack": 660,
+      "mana": 550
+     },
+     "4": {
+      "attack": 800,
+      "mana": 700
+     },
+     "5": {
+      "attack": 1150,
+      "mana": 1100
+     },
+     "6": {
+      "attack": 1500,
+      "mana": 1320
+     },
+     "7": {
+      "attack": 2300,
+      "mana": 2000
+     },
+     "8": {
+      "attack": 3800,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Powerful wide-range attack, attack 4 targets within 20 yards and 90 degrees, 15 seconds CD. Increase 3500 points of magic attack, 30% attack bonus, cost 3800 mana",
+    "range": 20.0,
+    "cd": 15.0,
+    "cast": null,
+    "targets": 4,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 3800,
+    "mana_pct": null,
+    "attack": 3500,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Ice Orb",
+    "order": 75,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 1200,
+      "mana": 1000
+     },
+     "2": {
+      "attack": 1800,
+      "mana": 1750
+     },
+     "3": {
+      "attack": 2600,
+      "mana": 2800
+     },
+     "4": {
+      "attack": 3500,
+      "mana": 3800
+     }
+    }
+   },
+   {
+    "text": "Continuous single-target damage, 15 yards of effective range, cast a jet of ice-cold water toward the target, deal frost damage for 6 seconds. 20 seconds CD. Increase 4800 points of magic attack, 30% attack bonus, cost 5000 mana",
+    "range": 15.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 5000,
+    "mana_pct": null,
+    "attack": 4800,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [],
+    "role": "dot",
+    "name": "Aqua Jet",
+    "order": 76,
+    "max_level": 5,
+    "when": "channelled; Ice Arrow on an Aqua Jet target condenses it",
+    "by_level": {
+     "1": {
+      "attack": 1500,
+      "mana": 800
+     },
+     "2": {
+      "attack": 2200,
+      "mana": 1200
+     },
+     "3": {
+      "attack": 2800,
+      "mana": 2800
+     },
+     "4": {
+      "attack": 3500,
+      "mana": 3600
+     },
+     "5": {
+      "attack": 4800,
+      "mana": 5000
+     }
+    }
+   },
+   {
+    "text": "Continuous AOE damage, summon ice shards to fall from the sky in an area of 10-yard radius, deal frost damage for 8 seconds. 30 seconds CD, cost 2% mana.",
+    "range": 10.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Blizzard",
+    "order": 77,
+    "max_level": 1,
+    "when": "ground AoE 10-yard radius for 8 s: a pack that stays put"
+   },
+   {
+    "text": "1.5 seconds of channeling time, fire an ice arrow at 1 enemy within 20 yards, deal frost damage and slow the target's movement speed by 30% for 5 seconds. Every time Ice Arrow hits the target, you will generate 1 Ice Spike, up to a maximum of 5. Increase 4000 points of magic attack, 10% attack bonus, cost 800 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": 1.5,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 800,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "control",
+    "name": "Ice Arrow",
+    "order": 78,
+    "max_level": 7,
+    "when": "1.5 s cast, slows 30%",
+    "by_level": {
+     "1": {
+      "attack": 600,
+      "mana": 120
+     },
+     "2": {
+      "attack": 680,
+      "mana": 140
+     },
+     "3": {
+      "attack": 820,
+      "mana": 160
+     },
+     "4": {
+      "attack": 1200,
+      "mana": 240
+     },
+     "5": {
+      "attack": 1550,
+      "mana": 300
+     },
+     "6": {
+      "attack": 2400,
+      "mana": 480
+     },
+     "7": {
+      "attack": 4000,
+      "mana": 800
+     }
+    }
+   },
+   {
+    "text": "Attack 5 targets within 12 yards and 90 degrees, decrease the targets' movement speed by 50% for 6 seconds. 20 seconds CD, cost 1% mana.",
+    "range": 12.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 5,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "aoe",
+    "name": "Icicle",
+    "order": 79,
+    "max_level": 1
+   },
+   {
+    "text": "Impact all enemies within an 8-yard radius, deal frost damage and freeze them where they are for 5 seconds, 20 seconds CD. Dealing damage to the target will break its Frozen effect. Increase 4000 points of magic attack, 10% attack bonus, cost 5000 mana",
+    "range": 8.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 5000,
+    "mana_pct": null,
+    "attack": 4000,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "freeze"
+    ],
+    "role": "aoe",
+    "name": "Frost Nova",
+    "order": 80,
+    "max_level": 7,
+    "when": "freeze everything within 8 yards for 5 s; then Ice Lance",
+    "by_level": {
+     "1": {
+      "attack": 500,
+      "mana": 500
+     },
+     "2": {
+      "attack": 600,
+      "mana": 650
+     },
+     "3": {
+      "attack": 800,
+      "mana": 900
+     },
+     "4": {
+      "attack": 1550,
+      "mana": 1300
+     },
+     "5": {
+      "attack": 1600,
+      "mana": 1800
+     },
+     "6": {
+      "attack": 2400,
+      "mana": 2900
+     },
+     "7": {
+      "attack": 4000,
+      "mana": 5000
+     }
+    }
+   },
+   {
+    "text": "Increase 20% attack speed for 15 seconds, 30 seconds CD. Not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "self_buff",
+    "name": "Cold Winter",
+    "order": 81,
+    "max_level": 1
+   },
+   {
+    "text": "Cover yourself with an ice barrier, immune to all damage for 10 seconds, during which you cannot attack, move, or cast skills. It will also trigger Hypothermia, which causes you to be unable to cast Ice Barrier again for 30 seconds, cost 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "immune"
+    ],
+    "role": "defensive",
+    "name": "Ice Barrier",
+    "order": 82,
+    "max_level": 1
+   },
+   {
+    "text": "Cast a shield that absorbs 38000 damage and lasts for 30 seconds. As long as the shield exists, you won't be interrupted by damage when casting skills. 30 seconds CD, cost 2% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "shield"
+    ],
+    "role": "defensive",
+    "name": "Ice Shield",
+    "order": 83,
+    "max_level": 3,
+    "by_level": {
+     "1": {
+      "attack": null,
+      "mana": null
+     },
+     "2": {
+      "attack": null,
+      "mana": null
+     },
+     "3": {
+      "attack": null,
+      "mana": null
+     }
+    }
+   },
+   {
+    "text": "Increase 30% magic damage for all allies within 20 yards for 30 seconds, 2 minutes CD, cost 1% mana.",
+    "range": 20.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Winter Horn",
+    "order": 84,
+    "max_level": 1
+   },
+   {
+    "text": "Wrap 1 enemy within 20 yards with crushed ice, decrease 50% critical hit resist of the target for 15 seconds, 30 seconds CD, cost 1% mana.",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "debuff",
+    "name": "Crushed Ice Fetters",
+    "order": 85,
+    "max_level": 1,
+    "when": "halve a target's crit resist before big hits"
+   },
+   {
+    "text": "Cast Chilling Frost to 1 enemy within 20 yards, reduce 25% of all healing effects on the target for 15 seconds, 30 seconds CD, cost 1% mana.",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "anti_heal"
+    ],
+    "role": "anti_heal",
+    "name": "Chilling Frost",
+    "order": 86,
+    "max_level": 1,
+    "when": "PvP or self-healing monsters"
+   },
+   {
+    "text": "15 yards of effective range, remove a magic debuff or curse debuff from 1 ally, or remove a buff from 1 enemy. Cost 1% Mana.",
+    "range": 15.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "dispel",
+    "name": "Dispel Magic",
+    "order": 87,
+    "max_level": 1
+   },
+   {
+    "text": "10 seconds of channeling time, Teleport to several cities. Cost 30% mana.",
+    "range": null,
+    "cd": null,
+    "cast": 10.0,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 30,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "teleport"
+    ],
+    "role": "teleport",
+    "name": "Teleportation",
+    "order": 88,
+    "max_level": 7,
+    "when": "10 s cast: to a city (travel!)",
+    "by_level": {
+     "1": {
+      "attack": null,
+      "mana": null
+     },
+     "2": {
+      "attack": null,
+      "mana": null
+     },
+     "3": {
+      "attack": null,
+      "mana": null
+     },
+     "4": {
+      "attack": null,
+      "mana": null
+     },
+     "5": {
+      "attack": null,
+      "mana": null
+     },
+     "6": {
+      "attack": null,
+      "mana": null
+     },
+     "7": {
+      "attack": null,
+      "mana": null
+     }
+    }
+   },
+   {
+    "text": "10 seconds of channeling time, summon a City Teleportation Portal for your allies. The portal lasts for 1 minute. Cost 30% mana.",
+    "range": null,
+    "cd": null,
+    "cast": 10.0,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 30,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "teleport"
+    ],
+    "role": "teleport",
+    "name": "Teleportation Portal",
+    "order": 89,
+    "max_level": 5,
+    "when": "portal for allies",
+    "by_level": {
+     "1": {
+      "attack": null,
+      "mana": null
+     },
+     "2": {
+      "attack": null,
+      "mana": null
+     },
+     "3": {
+      "attack": null,
+      "mana": null
+     },
+     "4": {
+      "attack": null,
+      "mana": null
+     },
+     "5": {
+      "attack": null,
+      "mana": null
+     }
+    }
+   },
+   {
+    "text": "Retract the Ice Barrier, Cost 1% Mana, not affected by global CD.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "defensive",
+    "name": "Retract the Barrier",
+    "order": 90,
+    "max_level": 1
+   }
+  ],
+  "Elf": [
+   {
+    "text": "Base Attack, throw a fireball at 1 enemy within 20 yards, increase 7800 points of magic attack, 10% attack bonus, cost 580 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 580,
+    "mana_pct": null,
+    "attack": 7800,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Fireball",
+    "order": 91,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 180,
+      "mana": 20
+     },
+     "2": {
+      "attack": 420,
+      "mana": 40
+     },
+     "3": {
+      "attack": 700,
+      "mana": 70
+     },
+     "4": {
+      "attack": 1120,
+      "mana": 100
+     },
+     "5": {
+      "attack": 1760,
+      "mana": 150
+     },
+     "6": {
+      "attack": 2550,
+      "mana": 220
+     },
+     "7": {
+      "attack": 3780,
+      "mana": 300
+     },
+     "8": {
+      "attack": 5100,
+      "mana": 380
+     },
+     "9": {
+      "attack": 7800,
+      "mana": 580
+     }
+    }
+   },
+   {
+    "text": "Impact 1 enemy within 20 yards, dealing fire damage. Always Critical Hit. 6 seconds CD. Increase 9400 points of magic attack, 30% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 9400,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [],
+    "role": "single_target",
+    "name": "Fire Impact",
+    "order": 92,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 560,
+      "mana": 70
+     },
+     "2": {
+      "attack": 800,
+      "mana": 150
+     },
+     "3": {
+      "attack": 1250,
+      "mana": 260
+     },
+     "4": {
+      "attack": 1950,
+      "mana": 650
+     },
+     "5": {
+      "attack": 2800,
+      "mana": 900
+     },
+     "6": {
+      "attack": 4400,
+      "mana": 1600
+     },
+     "7": {
+      "attack": 6200,
+      "mana": 2500
+     },
+     "8": {
+      "attack": 9400,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Base wide-range attack, attack 6 targets within 20 yards and 90 degrees, 6 seconds CD. Increase 7200 points of magic attack, 10% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 6,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 7200,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Fire Surge",
+    "order": 93,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 400,
+      "mana": 180
+     },
+     "2": {
+      "attack": 640,
+      "mana": 350
+     },
+     "3": {
+      "attack": 1050,
+      "mana": 500
+     },
+     "4": {
+      "attack": 1660,
+      "mana": 800
+     },
+     "5": {
+      "attack": 2400,
+      "mana": 1200
+     },
+     "6": {
+      "attack": 3570,
+      "mana": 1800
+     },
+     "7": {
+      "attack": 4800,
+      "mana": 2300
+     },
+     "8": {
+      "attack": 7200,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Powerful single-target attack, 1.5 seconds of channeling time, Sear 1 enemy within 20 yards and deal fire damage, the target will take 20% more magic damage for 15 seconds, 30 seconds CD. Increase 9400 points of magic attack, 30% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": 1.5,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 9400,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [],
+    "role": "debuff",
+    "name": "Sear",
+    "order": 94,
+    "max_level": 2,
+    "when": "target takes 20% more magic damage 15 s: open with it",
+    "by_level": {
+     "1": {
+      "attack": 6200,
+      "mana": 2500
+     },
+     "2": {
+      "attack": 9400,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Attack 1 enemy within 20 yards, 4.5 seconds of channeling time, deal fire damage and inflict burn for 12 seconds. Every time Pyroblast hits the target, you will generate 1 fire element, up to a maximum of 5. Increase 7800 points of magic attack, 10% attack bonus, cost 14500 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": 4.5,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 14500,
+    "mana_pct": null,
+    "attack": 7800,
+    "bonus_pct": 10,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "single_target",
+    "name": "Pyroblast",
+    "order": 95,
+    "max_level": 6,
+    "when": "4.5 s cast; builds fire elements for Ignition",
+    "by_level": {
+     "1": {
+      "attack": 1200,
+      "mana": 2500
+     },
+     "2": {
+      "attack": 1760,
+      "mana": 3750
+     },
+     "3": {
+      "attack": 2550,
+      "mana": 5600
+     },
+     "4": {
+      "attack": 3780,
+      "mana": 7500
+     },
+     "5": {
+      "attack": 5100,
+      "mana": 9500
+     },
+     "6": {
+      "attack": 7800,
+      "mana": 14500
+     }
+    }
+   },
+   {
+    "text": "Powerful wide-range attack, 3 seconds of channeling time, attack 8 targets within 20 yards and 180 degrees, dealing fire damage and inflict burn for 8 seconds. Every time Blazing Storm hits the target, you will generate 1 fire element, up to a maximum of 5. Increase 10800 points of magic attack, 30% attack bonus, cost 15000 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": 3.0,
+    "targets": 8,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 15000,
+    "mana_pct": null,
+    "attack": 10800,
+    "bonus_pct": 30,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "aoe",
+    "name": "Blazing Storm",
+    "order": 96,
+    "max_level": 4,
+    "by_level": {
+     "1": {
+      "attack": 4000,
+      "mana": 3500
+     },
+     "2": {
+      "attack": 6000,
+      "mana": 4800
+     },
+     "3": {
+      "attack": 8100,
+      "mana": 9000
+     },
+     "4": {
+      "attack": 10800,
+      "mana": 15000
+     }
+    }
+   },
+   {
+    "text": "Fire-trap the target with magma, the target cannot move for 2 seconds, 3 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 3.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "control",
+    "name": "Magma",
+    "order": 97,
+    "max_level": 1,
+    "when": "root 2 s, 3 s CD"
+   },
+   {
+    "text": "Decrease 50% movement speed of all enemies within 11 yards and 90 degrees for 8 seconds, 30 seconds CD, cost 1% mana.",
+    "range": 11.0,
+    "cd": 30.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "control",
+    "name": "Dragon's Breath",
+    "order": 98,
+    "max_level": 1,
+    "when": "slow everything in a 90-degree cone 11 yards"
+   },
+   {
+    "text": "Remove Stunned effect and gain Stun immunity for 10 seconds, not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [
+     "stun"
+    ],
+    "role": "defensive",
+    "name": "Elven Ascension",
+    "order": 99,
+    "max_level": 1
+   },
+   {
+    "text": "Increase 15% Critical Hit and reduce 30% physical damage taken for 10 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "defensive",
+    "name": "Lava Armor",
+    "order": 100,
+    "max_level": 1
+   },
+   {
+    "text": "Wrap yourself in flames, increase 50% Critical Hit for 10 seconds. Not affected by global CD. Can be cast when casting other spells. 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "self_buff",
+    "name": "Scorch",
+    "order": 101,
+    "max_level": 1
+   },
+   {
+    "text": "15 yards of effective range, remove a magic debuff or curse debuff from 1 ally, or remove a buff from 1 enemy, cost 1% mana.",
+    "range": 15.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "dispel",
+    "name": "Purification",
+    "order": 102,
+    "max_level": 1
+   },
+   {
+    "text": "Ignite your Fire Elements and release them in your next attack. Cause 1 enemy to burn and take additional continuous damage equal to 6% of direct damage. With each additional Fire Element, you deal continuous damage 1 more time, and each continuous damage will spread the Ignition effect to another enemy nearby. The skill is not affected by global CD and costs 1% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": null,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [
+     "dot"
+    ],
+    "role": "self_buff",
+    "name": "Ignition",
+    "order": 103,
+    "max_level": 1,
+    "when": "release fire elements (from Pyroblast) into the next attack; spreads"
+   },
+   {
+    "text": "Cast a shield that absorbs all attack damage and lasts for 10 seconds. As long as the shield exists, you won't be interrupted by damage when casting skills. 1 minute CD, cost 1% mana.",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "shield"
+    ],
+    "role": "defensive",
+    "name": "Magic Shield",
+    "order": 104,
+    "max_level": 1
+   },
+   {
+    "text": "Gain invisibility for 10 seconds, 1 minute CD. During invisibility, you cannot be targeted by enemies. Any action will end the invisibility effect, cost 1% mana.",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "stealth"
+    ],
+    "role": "defensive",
+    "name": "Invisibility",
+    "order": 105,
+    "max_level": 1
+   },
+   {
+    "text": "Attach flame nets to all allies and increase their magic Critical Hit by 50% for 30 seconds, 2 minutes CD, cost 1% mana.",
+    "range": null,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Critical Blaze",
+    "order": 106,
+    "max_level": 1,
+    "when": "allies +50% magic crit 30 s"
+   },
+   {
+    "text": "10 seconds of channeling time, teleport to The Land of Reiki. Cost 30% mana.",
+    "range": null,
+    "cd": null,
+    "cast": 10.0,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 30,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "teleport"
+    ],
+    "role": "teleport",
+    "name": "Elven Teleportation",
+    "order": 107,
+    "max_level": 9,
+    "when": "10 s cast: to The Land of Reiki",
+    "by_level": {
+     "1": {
+      "attack": null,
+      "mana": null
+     },
+     "2": {
+      "attack": null,
+      "mana": null
+     },
+     "3": {
+      "attack": null,
+      "mana": null
+     },
+     "4": {
+      "attack": null,
+      "mana": null
+     },
+     "5": {
+      "attack": null,
+      "mana": null
+     },
+     "6": {
+      "attack": null,
+      "mana": null
+     },
+     "7": {
+      "attack": null,
+      "mana": null
+     },
+     "8": {
+      "attack": null,
+      "mana": null
+     },
+     "9": {
+      "attack": null,
+      "mana": null
+     }
+    }
+   },
+   {
+    "text": "10 seconds of channeling time, summon an Elven Teleportation Portal for your allies. The portal lasts for 1 minute. Cost 30% mana.",
+    "range": null,
+    "cd": null,
+    "cast": 10.0,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 30,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "teleport"
+    ],
+    "role": "teleport",
+    "name": "Elven Teleportation Portal",
+    "order": 108,
+    "max_level": 6,
+    "when": "portal for allies",
+    "by_level": {
+     "1": {
+      "attack": null,
+      "mana": null
+     },
+     "2": {
+      "attack": null,
+      "mana": null
+     },
+     "3": {
+      "attack": null,
+      "mana": null
+     },
+     "4": {
+      "attack": null,
+      "mana": null
+     },
+     "5": {
+      "attack": null,
+      "mana": null
+     },
+     "6": {
+      "attack": null,
+      "mana": null
+     }
+    }
+   }
+  ],
+  "Priest": [
+   {
+    "text": "Basic skill, deal divine damage to 1 enemy within 20 yards, increase 5600 points of magic attack, 15% attack bonus, cost 600 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 600,
+    "mana_pct": null,
+    "attack": 5600,
+    "bonus_pct": 15,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Retribution",
+    "order": 109,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 190,
+      "mana": 20
+     },
+     "2": {
+      "attack": 400,
+      "mana": 40
+     },
+     "3": {
+      "attack": 600,
+      "mana": 60
+     },
+     "4": {
+      "attack": 1000,
+      "mana": 100
+     },
+     "5": {
+      "attack": 1600,
+      "mana": 160
+     },
+     "6": {
+      "attack": 2000,
+      "mana": 200
+     },
+     "7": {
+      "attack": 2600,
+      "mana": 270
+     },
+     "8": {
+      "attack": 4000,
+      "mana": 420
+     },
+     "9": {
+      "attack": 5600,
+      "mana": 600
+     }
+    }
+   },
+   {
+    "text": "Attack 6 targets within 20 yards and 180 degrees, 4.5 seconds CD. Increase 5280 points of magic attack, 15% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": 4.5,
+    "cast": null,
+    "targets": 6,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 5280,
+    "bonus_pct": 15,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Holy Light Wave",
+    "order": 110,
+    "max_level": 8,
+    "by_level": {
+     "1": {
+      "attack": 360,
+      "mana": 180
+     },
+     "2": {
+      "attack": 540,
+      "mana": 320
+     },
+     "3": {
+      "attack": 900,
+      "mana": 550
+     },
+     "4": {
+      "attack": 1440,
+      "mana": 900
+     },
+     "5": {
+      "attack": 1800,
+      "mana": 1100
+     },
+     "6": {
+      "attack": 2400,
+      "mana": 1800
+     },
+     "7": {
+      "attack": 3700,
+      "mana": 2500
+     },
+     "8": {
+      "attack": 5280,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Powerful wide-range skill, create a holy light blast around your, dealing divine damage to all enemy targets within a 12-yard radius. If Critical Hit, reset the CD of Divine Fire. 12 seconds CD. Increase 4200 points of magic attack, 35% attack bonus, cost 4800 mana",
+    "range": 12.0,
+    "cd": 12.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4800,
+    "mana_pct": null,
+    "attack": 4200,
+    "bonus_pct": 35,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Divine Nova",
+    "order": 111,
+    "max_level": 5,
+    "by_level": {
+     "1": {
+      "attack": 1250,
+      "mana": 700
+     },
+     "2": {
+      "attack": 1500,
+      "mana": 1200
+     },
+     "3": {
+      "attack": 2000,
+      "mana": 1800
+     },
+     "4": {
+      "attack": 3000,
+      "mana": 2800
+     },
+     "5": {
+      "attack": 4200,
+      "mana": 4800
+     }
+    }
+   },
+   {
+    "text": "Reduce 20% of all damage taken for 15 seconds. 40 seconds CD, not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": 40.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "defensive",
+    "name": "Concentrated Will",
+    "order": 112,
+    "max_level": 1
+   },
+   {
+    "text": "Continuous single-target attack, 20 yards of effective range, 3 seconds of channeling time, devour the target with Divine fire, dealing divine damage and continuous damage for 10 seconds, 30 seconds CD. Increase 50000 points of magic attack, 35% attack bonus, cost 6000 mana",
+    "range": 20.0,
+    "cd": 30.0,
+    "cast": 3.0,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 6000,
+    "mana_pct": null,
+    "attack": 50000,
+    "bonus_pct": 35,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "dot",
+    "name": "Divine Fire",
+    "order": 113,
+    "max_level": 7,
+    "when": "3 s cast, big damage + burn",
+    "by_level": {
+     "1": {
+      "attack": 3600,
+      "mana": 300
+     },
+     "2": {
+      "attack": 5000,
+      "mana": 450
+     },
+     "3": {
+      "attack": 7200,
+      "mana": 700
+     },
+     "4": {
+      "attack": 10000,
+      "mana": 1000
+     },
+     "5": {
+      "attack": 16000,
+      "mana": 1800
+     },
+     "6": {
+      "attack": 30000,
+      "mana": 3500
+     },
+     "7": {
+      "attack": 50000,
+      "mana": 6000
+     }
+    }
+   },
+   {
+    "text": "Base single-target healing skill, cost 2% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Heal",
+    "order": 114,
+    "max_level": 1
+   },
+   {
+    "text": "Continuous single-target healing skill, last for 15 seconds. 1.5x healing effect of Heal. Cost 3% mana.",
+    "range": null,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 3,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Recover",
+    "order": 115,
+    "max_level": 1
+   },
+   {
+    "text": "Powerful single-target healing skill, 2 seconds of channeling time, 4x healing effect of Heal. Cost 6% mana.",
+    "range": null,
+    "cd": null,
+    "cast": 2.0,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 6,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Prayers",
+    "order": 116,
+    "max_level": 1
+   },
+   {
+    "text": "Wide-range healing skill, heal up to 6 allies within 10 yards. Cost 4% mana.",
+    "range": 10.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 4,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Light of Miracles",
+    "order": 117,
+    "max_level": 1
+   },
+   {
+    "text": "Powerful Wide-range healing skill, heal up to 5 wounded allies within 15 yards, 3 seconds of channeling time, 6x healing effect of Light of Miracles, increase 20% of all healing effects on allies for 8 seconds. Cost 16% mana.",
+    "range": 15.0,
+    "cd": null,
+    "cast": 3.0,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 16,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Divine Anthem",
+    "order": 118,
+    "max_level": 1
+   },
+   {
+    "text": "Resurrect 1 target within 5 yards, the resurrected target will have 35% HP and MP. 10 minutes CD, cost 60% mana.",
+    "range": 5.0,
+    "cd": 600.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 60,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "resurrect"
+    ],
+    "role": "resurrect",
+    "name": "Resurrection",
+    "order": 119,
+    "max_level": 1
+   },
+   {
+    "text": "15 yards of effective range, remove all magic debuffs and curse debuffs from 1 ally, or remove 1 magic buff from 1 enemy. 6 seconds CD, cost 1% mana.",
+    "range": 15.0,
+    "cd": 6.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "dispel",
+    "name": "Holy Light",
+    "order": 120,
+    "max_level": 1
+   },
+   {
+    "text": "Dispel all magic within a 10-yard radius, remove all magic debuffs and curse debuffs from up to 5 allies, and remove 1 magic buff from 5 enemies. 15 seconds CD, cost 10% mana.",
+    "range": 10.0,
+    "cd": 15.0,
+    "cast": null,
+    "targets": 5,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 10,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "dispel",
+    "name": "Group Dispel",
+    "order": 121,
+    "max_level": 1
+   },
+   {
+    "text": "Push the target 18 yards away, and decrease its movement speed by 30% for 8 seconds. 15 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 15.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "slow",
+     "knockback"
+    ],
+    "role": "control",
+    "name": "Spiral Blast",
+    "order": 122,
+    "max_level": 1
+   },
+   {
+    "text": "Remove and gain immunity to Restrained and Transfixed effects for 10 seconds. 30 seconds CD, not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [
+     "root",
+     "dispel"
+    ],
+    "role": "defensive",
+    "name": "Divine Protection",
+    "order": 123,
+    "max_level": 1
+   },
+   {
+    "text": "The Priest transforms into a Soul of Redemption for 10 seconds. The Soul of Redemption cannot move, attack, be attacked, or be targeted by spells and effects. In this form, the Priest can cast healing skills without costing mana. 60 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "defensive",
+    "name": "Soul of Redemption",
+    "order": 124,
+    "max_level": 1,
+    "when": "untouchable 10 s and heals cost no mana"
+   },
+   {
+    "text": "Bless all allies with divine energy within 20 yards and reduce their physical damage taken by 20% for 2 minutes, cost 1% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Requiem",
+    "order": 125,
+    "max_level": 1,
+    "when": "allies take 20% less physical damage for 2 min"
+   },
+   {
+    "text": "Mental attack 1 enemy within 20 yards, deal continuous damage and decrease 30% dodge of the target for 15 seconds. Increase 18000 points of magic attack, 35% attack bonus, cost 4000 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 18000,
+    "bonus_pct": 35,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "dot",
+    "name": "Mind Whip",
+    "order": 126,
+    "max_level": 8,
+    "when": "damage over time and -30% dodge on the target",
+    "by_level": {
+     "1": {
+      "attack": 800,
+      "mana": 70
+     },
+     "2": {
+      "attack": 1600,
+      "mana": 140
+     },
+     "3": {
+      "attack": 2400,
+      "mana": 200
+     },
+     "4": {
+      "attack": 4000,
+      "mana": 350
+     },
+     "5": {
+      "attack": 6000,
+      "mana": 700
+     },
+     "6": {
+      "attack": 8000,
+      "mana": 1200
+     },
+     "7": {
+      "attack": 10500,
+      "mana": 2200
+     },
+     "8": {
+      "attack": 18000,
+      "mana": 4000
+     }
+    }
+   }
+  ],
+  "Witcher": [
+   {
+    "text": "Base Attack, form a shadow arrow with dark power and fire it at 1 enemy within 20 yards, Increase 6000 points of magic attack, 15% attack bonus, cost 580 mana",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 580,
+    "mana_pct": null,
+    "attack": 6000,
+    "bonus_pct": 15,
+    "no_gcd": false,
+    "effects": [],
+    "role": "base_attack",
+    "name": "Shadow Arrow",
+    "order": 127,
+    "max_level": 9,
+    "by_level": {
+     "1": {
+      "attack": 190,
+      "mana": 20
+     },
+     "2": {
+      "attack": 400,
+      "mana": 40
+     },
+     "3": {
+      "attack": 620,
+      "mana": 60
+     },
+     "4": {
+      "attack": 1030,
+      "mana": 100
+     },
+     "5": {
+      "attack": 1650,
+      "mana": 160
+     },
+     "6": {
+      "attack": 1800,
+      "mana": 180
+     },
+     "7": {
+      "attack": 2700,
+      "mana": 270
+     },
+     "8": {
+      "attack": 4200,
+      "mana": 420
+     },
+     "9": {
+      "attack": 6000,
+      "mana": 580
+     }
+    }
+   },
+   {
+    "text": "Wide-range attack, throw a skeleton at 1 enemy within 10 yards and cause an explosion on contact. The explosion deals damage to up to 5 additional targets within an 8-yard radius, 4.5 seconds CD. Increase 4100 points of magic attack, 15% attack bonus, cost 4000 mana",
+    "range": 10.0,
+    "cd": 4.5,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4000,
+    "mana_pct": null,
+    "attack": 4100,
+    "bonus_pct": 15,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Skeleton Explosion",
+    "order": 128,
+    "max_level": 8,
+    "when": "1 target + up to 5 more within 8 yards of it",
+    "by_level": {
+     "1": {
+      "attack": 350,
+      "mana": 180
+     },
+     "2": {
+      "attack": 530,
+      "mana": 300
+     },
+     "3": {
+      "attack": 870,
+      "mana": 540
+     },
+     "4": {
+      "attack": 1400,
+      "mana": 780
+     },
+     "5": {
+      "attack": 1500,
+      "mana": 900
+     },
+     "6": {
+      "attack": 2250,
+      "mana": 1600
+     },
+     "7": {
+      "attack": 3250,
+      "mana": 2400
+     },
+     "8": {
+      "attack": 4100,
+      "mana": 4000
+     }
+    }
+   },
+   {
+    "text": "Powerful wide-range attack. Dead Toxin spreads out on the ground and deals damage in a 12-yard radius, 12 seconds CD. Increase 5400 points of magic attack, 35% attack bonus, cost 5400 mana",
+    "range": 12.0,
+    "cd": 12.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 5400,
+    "mana_pct": null,
+    "attack": 5400,
+    "bonus_pct": 35,
+    "no_gcd": false,
+    "effects": [],
+    "role": "aoe",
+    "name": "Dead Toxin",
+    "order": 129,
+    "max_level": 5,
+    "when": "ground AoE 12-yard radius",
+    "by_level": {
+     "1": {
+      "attack": 1540,
+      "mana": 1000
+     },
+     "2": {
+      "attack": 1850,
+      "mana": 1800
+     },
+     "3": {
+      "attack": 2500,
+      "mana": 2500
+     },
+     "4": {
+      "attack": 3800,
+      "mana": 3500
+     },
+     "5": {
+      "attack": 5400,
+      "mana": 5400
+     }
+    }
+   },
+   {
+    "text": "Continuous single-target damage, 20 yards of effective range, corrode the target, dealing damage and decrease its toughness by 10% for 15 seconds, 10 seconds CD. Toughness decrease can be stacked up to 5 times. Increase 25000 points of magic attack, 35% attack bonus, cost 4600 mana",
+    "range": 20.0,
+    "cd": 10.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 4600,
+    "mana_pct": null,
+    "attack": 25000,
+    "bonus_pct": 35,
+    "no_gcd": false,
+    "effects": [
+     "armor_break"
+    ],
+    "role": "dot",
+    "name": "Corrosion Spell",
+    "order": 130,
+    "max_level": 8,
+    "when": "-10% toughness; Skeleton Explosion always crits on it (talent)",
+    "by_level": {
+     "1": {
+      "attack": 1000,
+      "mana": 100
+     },
+     "2": {
+      "attack": 2000,
+      "mana": 200
+     },
+     "3": {
+      "attack": 3200,
+      "mana": 400
+     },
+     "4": {
+      "attack": 5000,
+      "mana": 700
+     },
+     "5": {
+      "attack": 7000,
+      "mana": 1100
+     },
+     "6": {
+      "attack": 10000,
+      "mana": 1500
+     },
+     "7": {
+      "attack": 14000,
+      "mana": 2500
+     },
+     "8": {
+      "attack": 25000,
+      "mana": 4600
+     }
+    }
+   },
+   {
+    "text": "Continuous single-target damage, 20 yards of effective range, deal continuous damage to the target for 8 seconds. Can accumulate higher damage when cast to the same target multiple times doesn't need to be cast in succession. The damage can be stacked up to 10 times. 20 seconds CD. Increase 6000 points of magic attack, 15% attack bonus, cost 580 mana",
+    "range": 20.0,
+    "cd": 20.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": 580,
+    "mana_pct": null,
+    "attack": 6000,
+    "bonus_pct": 15,
+    "no_gcd": false,
+    "effects": [
+     "dot"
+    ],
+    "role": "dot",
+    "name": "Incessant Pain",
+    "order": 131,
+    "max_level": 7,
+    "when": "stacks up to 10 times on the same target: long fights",
+    "by_level": {
+     "1": {
+      "attack": 620,
+      "mana": 60
+     },
+     "2": {
+      "attack": 1030,
+      "mana": 100
+     },
+     "3": {
+      "attack": 1650,
+      "mana": 160
+     },
+     "4": {
+      "attack": 1800,
+      "mana": 180
+     },
+     "5": {
+      "attack": 2700,
+      "mana": 270
+     },
+     "6": {
+      "attack": 4200,
+      "mana": 420
+     },
+     "7": {
+      "attack": 6000,
+      "mana": 580
+     }
+    }
+   },
+   {
+    "text": "Base single-target healing skill, 20 yards of effective range, cost 2% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Wave",
+    "order": 132,
+    "max_level": 1
+   },
+   {
+    "text": "Continuous single-target healing skill, 20 yards of effective range, 1.5 seconds of channeling time, continuous healing for 18 seconds. 6x healing effect of Healing Wave, 20 yards of effective range, cost 6% mana.",
+    "range": 20.0,
+    "cd": null,
+    "cast": 1.5,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 6,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Surge",
+    "order": 133,
+    "max_level": 1
+   },
+   {
+    "text": "Summon a totem at your location for 15 seconds. The totem heals some HP for 1 wounded team or party member within 25 yards every 2 seconds. 1 minute CD. Cost 8% mana.",
+    "range": 25.0,
+    "cd": 60.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 8,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Fountain Totem",
+    "order": 134,
+    "max_level": 1
+   },
+   {
+    "text": "2 seconds of channeling time, heal HP for 1 ally within 12 yards, then the healing effect jumps to the team or party member with the least HP every 2 seconds. The healing effect is reduced by 30% with each jump. A total of 4 targets can be healed. 12 yards of effective range, 8 yards of healing effect jump range, cost 5% mana.",
+    "range": 12.0,
+    "cd": null,
+    "cast": 2.0,
+    "targets": 4,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 5,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Chain",
+    "order": 135,
+    "max_level": 1
+   },
+   {
+    "text": "Summon a totem at your location for 10 seconds. The totem heals some HP for all team or party members within 20 yards every 2 seconds. 2 minutes CD, cost 16% mana.",
+    "range": 20.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 16,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "heal",
+    "name": "Healing Tide Totem",
+    "order": 136,
+    "max_level": 1
+   },
+   {
+    "text": "Resurrect 1 target within 5 yards, the resurrected target will have 60% HP and 15% MP. 10 minutes CD, cost 60% mana.",
+    "range": 5.0,
+    "cd": 600.0,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 60,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "resurrect"
+    ],
+    "role": "resurrect",
+    "name": "Soul Returnal",
+    "order": 137,
+    "max_level": 1
+   },
+   {
+    "text": "15 yards of effective range, remove all magic debuffs and curse debuffs from 1 ally, or remove 1 buff from 1 enemy, cost 1% mana.",
+    "range": 15.0,
+    "cd": null,
+    "cast": null,
+    "targets": 1,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "dispel",
+    "name": "Soul Purify",
+    "order": 138,
+    "max_level": 1
+   },
+   {
+    "text": "Summon a spirit to protect you, reduce 30% of all damage taken for 15 seconds. 40 seconds CD, not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": 40.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [],
+    "role": "defensive",
+    "name": "Summon Spirit",
+    "order": 139,
+    "max_level": 1
+   },
+   {
+    "text": "Summon hands of the undead from underground to decrease 50% movement speed and 20% attack speed of the enemy for 8 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "slow"
+    ],
+    "role": "control",
+    "name": "Undead Grip",
+    "order": 140,
+    "max_level": 1,
+    "when": "slow 50% and -20% attack speed"
+   },
+   {
+    "text": "Remove and gain immunity to Knock-Outed and Fire-Trapped effects for 10 seconds. 30 seconds CD, not affected by global CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": true,
+    "effects": [
+     "knockout",
+     "dispel"
+    ],
+    "role": "defensive",
+    "name": "Break the Chain",
+    "order": 141,
+    "max_level": 1
+   },
+   {
+    "text": "Harden your skin, reduce 40% of all damage taken, as well as remove and gain immunity to Silenced effect for 8 seconds, 30 seconds CD, cost 1% mana.",
+    "range": null,
+    "cd": 30.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 1,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "dispel"
+    ],
+    "role": "defensive",
+    "name": "Undying Resolve",
+    "order": 142,
+    "max_level": 1
+   },
+   {
+    "text": "Summon a totem at your location for 30 seconds. The totem increases 100% magic accuracy on all allies within 20 yards for 2.5 seconds every 2 seconds. 2 minutes CD, cost 2% mana.",
+    "range": 20.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": null,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [],
+    "role": "party_buff",
+    "name": "Spiritual Totem",
+    "order": 143,
+    "max_level": 1
+   },
+   {
+    "text": "Summon undeads to ensnare all enemies within 15 yards and reduce 50% critical hit resist of the targets for 30 seconds, 2 minutes CD, cost 2% mana.",
+    "range": 15.0,
+    "cd": 120.0,
+    "cast": null,
+    "targets": 99,
+    "rage_gain": null,
+    "rage_cost": null,
+    "combo_cost": null,
+    "mana": null,
+    "mana_pct": 2,
+    "attack": null,
+    "bonus_pct": null,
+    "no_gcd": false,
+    "effects": [
+     "root"
+    ],
+    "role": "debuff",
+    "name": "Undead Ensnare",
+    "order": 144,
+    "max_level": 1,
+    "when": "all enemies within 15 yards lose 50% crit resist"
+   }
+  ]
+ },
+ "talents": {
+  "General": [
+   {
+    "name": "Snuggle",
+    "order": 0,
+    "text": "A married couple can use Snuggle on each other to slowly recover HP for themselves.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Blood Transfusion",
+    "order": 1,
+    "text": "Transfer your HP to your Pupil. The pupil must be within 20 yards of the tutor.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Mining",
+    "order": 2,
+    "text": "Use the Mining Skill to mine ores in the specified Mining Area.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Collect Herbs",
+    "order": 3,
+    "text": "Use the Collect Herbs Skill to collect herbs in the specified Herbal Garden.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Fishing",
+    "order": 4,
+    "text": "Use the Fishing Skill to catch fish in the specified Water area.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Draw Blood",
+    "order": 5,
+    "text": "Use the Draw Blood Skill to draw blood from the creature that has just been killed.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Cut Flesh",
+    "order": 6,
+    "text": "Use the Cut Flesh Skill to Cut meat of different qualities on the creature that has just been killed.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Skinning",
+    "order": 7,
+    "text": "Use the Skinning Skill to collect pelt from the creature that has just been killed.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Turtle Breath",
+    "order": 8,
+    "text": "Immune to breath-holding terrain damage",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anti-Corrosion",
+    "order": 9,
+    "text": "Immune to corrosive terrain effect damage",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Poison Immunity",
+    "order": 10,
+    "text": "Immune to Poisoned Terrain Effect Damage",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Imperious",
+    "order": 91,
+    "text": "Increase 2% attack damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus",
+    "order": 92,
+    "text": "Increase 4 points of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage",
+    "order": 93,
+    "text": "Increase 49 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc",
+    "order": 94,
+    "text": "Increase 25 points of Defense Break Chance and 40 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger",
+    "order": 95,
+    "text": "Increase 7 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal",
+    "order": 96,
+    "text": "Increase 5 points of Critical Hit and 11 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Shielded",
+    "order": 97,
+    "text": "Reduce 3% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous",
+    "order": 98,
+    "text": "Increase 6 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough",
+    "order": 99,
+    "text": "Increase 30 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi",
+    "order": 100,
+    "text": "Increase 10 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)",
+    "order": 101,
+    "text": "Increase 2% attack damage. Increase 2 points of Defense Break Chance and 10 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)",
+    "order": 102,
+    "text": "Increase 2% attack damage. Increase 5 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Aggressive)",
+    "order": 103,
+    "text": "Increase 2% attack damage. Increase 1 point of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Defensive)",
+    "order": 104,
+    "text": "Reduce 2% of all damage taken. Increase 2 points of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)",
+    "order": 105,
+    "text": "Reduce 2% of all damage taken. Increase 16 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)",
+    "order": 106,
+    "text": "Reduce 2% of all damage taken. Increase 12 points of Defense Break Chance and 17 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Defensive)",
+    "order": 107,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)",
+    "order": 108,
+    "text": "Reduce 2% of all damage taken. Increase 2 points of Critical Hit and 6 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)",
+    "order": 109,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)",
+    "order": 110,
+    "text": "Reduce 3% of all damage taken. Increase 5 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)",
+    "order": 111,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Aggressive)",
+    "order": 112,
+    "text": "Increase 2% attack damage and 1 point of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)",
+    "order": 113,
+    "text": "Increase 2% attack damage and 7 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Aggressive)",
+    "order": 114,
+    "text": "Increase 2% attack damage. Increase 1 points of Critical Hit and 2 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Aggressive)",
+    "order": 125,
+    "text": "Increase 2% attack damage and 2 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-2",
+    "order": 116,
+    "text": "Increase 2% attack damage. Increase 9 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-2",
+    "order": 117,
+    "text": "Reduce 2% of all damage taken. Increase 19 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-2",
+    "order": 118,
+    "text": "Reduce 2% of all damage taken. Increase 15 points of Defense Break Chance and 21 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)-2",
+    "order": 119,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit and 5 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-2",
+    "order": 120,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-2",
+    "order": 121,
+    "text": "Reduce 3% of all damage taken. Increase 9 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)-2",
+    "order": 122,
+    "text": "Reduce 2% of all damage taken. Increase 5 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)-2",
+    "order": 123,
+    "text": "Increase 2% attack damage and 10 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)-3",
+    "order": 124,
+    "text": "Increase 2% attack damage. Increase 8 points of Defense Break Chance and 18 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-3",
+    "order": 126,
+    "text": "Increase 2% attack damage. Increase 14 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Aggressive)-2",
+    "order": 127,
+    "text": "Increase 2% attack damage. Increase 3 point of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-3",
+    "order": 128,
+    "text": "Reduce 2% of all damage taken. Increase 22 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-3",
+    "order": 129,
+    "text": "Reduce 2% of all damage taken. Increase 18 points of Defense Break Chance and 25 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Defensive)-2",
+    "order": 130,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-3",
+    "order": 131,
+    "text": "Reduce 2% of all damage taken. Increase 5 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-3",
+    "order": 132,
+    "text": "Reduce 3% of all damage taken. Increase 14 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)-3",
+    "order": 133,
+    "text": "Reduce 2% of all damage taken. Increase 6 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Aggressive)-2",
+    "order": 134,
+    "text": "Increase 2% attack damage and 5 point of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)-3",
+    "order": 135,
+    "text": "Increase 2% attack damage and 14 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)-4",
+    "order": 136,
+    "text": "Increase 2% attack damage. Increase 11 points of Defense Break Chance and 20 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-4",
+    "order": 137,
+    "text": "Increase 2% attack damage. Increase 18 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-4",
+    "order": 138,
+    "text": "Reduce 2% of all damage taken. Increase 26 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-4",
+    "order": 139,
+    "text": "Reduce 2% of all damage taken. Increase 21 points of Defense Break Chance and 28 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)-3",
+    "order": 140,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit and 6 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-4",
+    "order": 141,
+    "text": "Reduce 2% of all damage taken. Increase 6 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-4",
+    "order": 142,
+    "text": "Reduce 3% of all damage taken. Increase 18 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Warrior": [
+   {
+    "name": "Combat Stance",
+    "order": 11,
+    "text": "Increase 4% damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Cleave Combo",
+    "order": 12,
+    "text": "When you use Sweep Attack after Cleave, increase 15% damage of Sweep Attack. Require Combat Stance.",
+    "requires": "Combat Stance",
+    "excludes": []
+   },
+   {
+    "name": "Powerful Leap Attack",
+    "order": 13,
+    "text": "After you use Leap Slash, global CD will be reduced to 50%. Increase 33% attack damage for 1 second. Require Combat Stance.",
+    "requires": "Combat Stance",
+    "excludes": []
+   },
+   {
+    "name": "Fighting Expert",
+    "order": 14,
+    "text": "Increase 4% physical attack. Require Combat Stance.",
+    "requires": "Combat Stance",
+    "excludes": []
+   },
+   {
+    "name": "Precise Block",
+    "order": 18,
+    "text": "Increase 8% physical defense and 10% magic defense, require defensive stance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Severe Wound",
+    "order": 19,
+    "text": "When Cleave deals a critical hit, it increases 40% Bleeding effect on target for 15 seconds.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Sixth Sense",
+    "order": 20,
+    "text": "Increase 4% dodge.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Orc": [
+   {
+    "name": "Defensive Stance",
+    "order": 25,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 additional rage for each additional 1% damage taken. Combat Stance and Defensive Stance cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Combat Stance"
+    ]
+   },
+   {
+    "name": "Sturdy Sentry",
+    "order": 26,
+    "text": "Give several buffs to Defensive Stance. Increase 10 points of dodge. Reduce 2% chance of taking physical critical hit. Reduce 3% chance of taking Defense Break. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
+    "name": "Defensive Barrier",
+    "order": 27,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 more additional rage for each 2% damage taken. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
+    "name": "Rampage Stance",
+    "order": 21,
+    "text": "Increase 6% damage and 2% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Cruel",
+    "order": 22,
+    "text": "Each time you hit the target, Increase 10 Critical Hit of the next attack. Reset After Triggering Critical Hit. Require Rampage Stance.",
+    "requires": "Rampage Stance",
+    "excludes": []
+   },
+   {
+    "name": "Enrage",
+    "order": 23,
+    "text": "Enrage is triggered when Bloodthirsty deals a critical hit. Increase 100% attack speed and 30% of all damage taken for 2 seconds. Require Rampage Stance.",
+    "requires": "Rampage Stance",
+    "excludes": []
+   },
+   {
+    "name": "Unruly Rage",
+    "order": 24,
+    "text": "Increase 20% damage during Enrage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ancestral Protection",
+    "order": 28,
+    "text": "Reduce 3% attack damage and increase 8% healing effect. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
+    "name": "Ruthless",
+    "order": 29,
+    "text": "Each attack gives you 1 additional rage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Strength of Giant",
+    "order": 30,
+    "text": "Increase 4% damage.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Assassin": [
+   {
+    "name": "Assassin's Determination",
+    "order": 31,
+    "text": "Increase 3% damage. Increase Maximum Combo by 2.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Mental Barrier",
+    "order": 32,
+    "text": "Increase 12% physical defense and 10% magic defense. Require Assassin's Determination.",
+    "requires": "Assassin's Determination",
+    "excludes": []
+   },
+   {
+    "name": "Seal Fate",
+    "order": 33,
+    "text": "When your attack deals a critical hit on a target, each critical hit gives you 1 additional combo. Require Assassin's Determination.",
+    "requires": "Assassin's Determination",
+    "excludes": []
+   },
+   {
+    "name": "Executioner",
+    "order": 34,
+    "text": "Increase 22% Rapid Sting Damage. Require Assassin's Determination.",
+    "requires": "Assassin's Determination",
+    "excludes": []
+   },
+   {
+    "name": "Blind Faith",
+    "order": 35,
+    "text": "Increase 4% attack damage, reduce 2% attack damage taken. Blind Faith and Assassin's Determination cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Assassin's Determination"
+    ]
+   },
+   {
+    "name": "Shadow Blade",
+    "order": 36,
+    "text": "Absorb nearby shadow to strengthen your weapon, increasing 12% Blade Strike damage. Require Blind Faith.",
+    "requires": "Blind Faith",
+    "excludes": []
+   },
+   {
+    "name": "Shadow of Erosion",
+    "order": 37,
+    "text": "Each time you spend 1 combo, reduce the remaining CD of Blade Fury Dance by 1 second. Require Blind Faith.",
+    "requires": "Blind Faith",
+    "excludes": []
+   },
+   {
+    "name": "Hatred",
+    "order": 38,
+    "text": "\"Each time you spend 1 combo, you have a 20% chance to gain 1 extra combo. Require Blind Faith.\"",
+    "requires": "Blind Faith",
+    "excludes": []
+   },
+   {
+    "name": "Deadly Attack",
+    "order": 39,
+    "text": "Increase 3% attack damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ruthless Strike",
+    "order": 40,
+    "text": "Increase 30 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Hunter": [
+   {
+    "name": "Aspect of the Wild",
+    "order": 41,
+    "text": "Increase 4% attack damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Survival Expert",
+    "order": 42,
+    "text": "When you hit the target, recover HP equal to 5% damage dealt. Require Aspect of the Wild",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Wild Rage",
+    "order": 43,
+    "text": "Increase 5% attack damage. Require Aspect of the Wild",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Call of the Wilderness",
+    "order": 44,
+    "text": "When Arcane Shot deals a critical hit, resets the CD of the next Rapid Arrows. Require Aspect of the Wild",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Aspect of the Monkey",
+    "order": 45,
+    "text": "Increase 2% attack damage and 3% dodge. Aspect of the Wild and Aspect of the Monkey cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Aspect of the Wild"
+    ]
+   },
+   {
+    "name": "Sniper Training",
+    "order": 46,
+    "text": "Increase 11% Defense Break Chance. Require Aspect of the Monkey.",
+    "requires": "Aspect of the Monkey",
+    "excludes": []
+   },
+   {
+    "name": "Steady Hands",
+    "order": 47,
+    "text": "When you cast Aimed Shot, increase 22% damage of the next attack. Require Aspect of the Monkey.",
+    "requires": "Aspect of the Monkey",
+    "excludes": []
+   },
+   {
+    "name": "Hunter's Mark",
+    "order": 48,
+    "text": "Increases the chance of marking a target when attacks hit. Require Aspect of the Monkey.",
+    "requires": "Aspect of the Monkey",
+    "excludes": []
+   },
+   {
+    "name": "Aspect of the Cheetah",
+    "order": 49,
+    "text": "Increase 5% movement speed.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Aspect of the Hawk",
+    "order": 50,
+    "text": "Increase 11 points of Critical Hit, 12 points of Critical Damage and 1% attack damage.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Mage": [
+   {
+    "name": "Ice Lineage",
+    "order": 51,
+    "text": "Increase 2% attack damage, reduce 2% attack damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Desolate Winter",
+    "order": 52,
+    "text": "Increase 22% Ice Lance Damage, require Ice Lineage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ice Finger",
+    "order": 53,
+    "text": "When Ice Arrow and Ice Orb deal Critical Hits, or when Ice Arrow hits a target affected by Aqua Jet, the target will be Condensed. Dealing damage to the target will break its Condensed effect. Require Ice Lineage.",
+    "requires": "Ice Lineage",
+    "excludes": []
+   },
+   {
+    "name": "Chilling Cold",
+    "order": 54,
+    "text": "Every time your attack hits the target, your attack damage is increased by 1% for 15 seconds. Require Ice Lineage.",
+    "requires": "Ice Lineage",
+    "excludes": []
+   },
+   {
+    "name": "Cold Lineage",
+    "order": 55,
+    "text": "Increase 4% attack damage, reduce 2% attack damage taken. Ice Lineage and Cold Lineage cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Ice Lineage"
+    ]
+   },
+   {
+    "name": "Freezing Cold",
+    "order": 56,
+    "text": "Increase cast speed and reduce the CD of Ice Storm by 1.5 seconds. Require Cold Lineage.",
+    "requires": "Cold Lineage",
+    "excludes": []
+   },
+   {
+    "name": "Crisp Wisdom",
+    "order": 57,
+    "text": "When your attack deals a Critical Hit, resets the CD of Ice Orb. Require Cold Lineage.",
+    "requires": "Cold Lineage",
+    "excludes": []
+   },
+   {
+    "name": "Ice Spirit",
+    "order": 58,
+    "text": "Increase 2% attack damage and 9% Defense Break Chance. Require Cold Lineage.",
+    "requires": "Cold Lineage",
+    "excludes": []
+   },
+   {
+    "name": "Frost Armor",
+    "order": 59,
+    "text": "Increase 20 points of Toughness and 5 points of Critical Hit Resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Frost Lineage",
+    "order": 60,
+    "text": "Increase 4% damage.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Elf": [
+   {
+    "name": "Elven Fire",
+    "order": 61,
+    "text": "Increase 3% attack damage, reduce 2% attack damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Enhanced Fireworks",
+    "order": 62,
+    "text": "Every time Fireball doesn't deal a Critical Hit to the target, it increases 10 points of Critical Hit. The effect ends when Fireball deals a Critical Hit. Require Elven Fire.",
+    "requires": "Elven Fire",
+    "excludes": []
+   },
+   {
+    "name": "Blazing Combo",
+    "order": 63,
+    "text": "When your direct damage spell deals a critical hit and two consecutive damage spells deal critical hits, your next Pyroblast or Blazing Storm can be cast instantaneously. Require Elven Fire.",
+    "requires": "Elven Fire",
+    "excludes": []
+   },
+   {
+    "name": "Blessing of Flame",
+    "order": 64,
+    "text": "Increase 12% Blazing Storm Damage. Require Elven Fire.",
+    "requires": "Elven Fire",
+    "excludes": []
+   },
+   {
+    "name": "Hellfire",
+    "order": 65,
+    "text": "Increase 5% attack damage. Elven Fire and Hellfire cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Elven Fire"
+    ]
+   },
+   {
+    "name": "Energized Fireball",
+    "order": 66,
+    "text": "When you have over 80% MP, casting Fireball will activate Energized Fireball. Whenever you cast Fireball, Energized Fireball will cost 20% mana to increase 40% damage of your next Fireball, stacks 5 times at max. The effect ends when you don't have enough mana. Require Hellfire.",
+    "requires": "Hellfire",
+    "excludes": []
+   },
+   {
+    "name": "Mana Expert",
+    "order": 67,
+    "text": "When your MP is below 20%, recover 70% MP automatically. This Skill can only be activated once every 3 minutes. Require Hellfire.",
+    "requires": "Hellfire",
+    "excludes": []
+   },
+   {
+    "name": "Heart of Heat",
+    "order": 68,
+    "text": "Increase 28% Fire Impact damage. Require Hellfire.",
+    "requires": "Hellfire",
+    "excludes": []
+   },
+   {
+    "name": "Elven Dance",
+    "order": 69,
+    "text": "Increase 11 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Flame Combo",
+    "order": 70,
+    "text": "When your Fireball deals a Critical Hit, resets the CD of Fire Impact.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Priest": [
+   {
+    "name": "Justice",
+    "order": 71,
+    "text": "Increase 5% attack damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Holy Light Echo",
+    "order": 72,
+    "text": "Your direct healing spells will have an additional 8% healing effect. Require Justice.",
+    "requires": "Justice",
+    "excludes": []
+   },
+   {
+    "name": "Wisdom",
+    "order": 73,
+    "text": "When your attack deals a Critical Hit, resets the CD of Divine Nova. Require Justice.",
+    "requires": "Justice",
+    "excludes": []
+   },
+   {
+    "name": "Skilled Healer",
+    "order": 74,
+    "text": "When you cast Light of Miracles after Healing Prayers, increase 22% healing effect of Light of Miracles. Require Justice.",
+    "requires": "Justice",
+    "excludes": []
+   },
+   {
+    "name": "Shelter",
+    "order": 75,
+    "text": "Increase 3% attack damage, reduce 4% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Divine Whip",
+    "order": 76,
+    "text": "Increase 24% Divine Whip Damage. Targets attacked by Divine Whip will suffer an additional 8% damage from Divine Nova. Require Shelter.",
+    "requires": "Shelter",
+    "excludes": []
+   },
+   {
+    "name": "Confession",
+    "order": 77,
+    "text": "Increase 12% of all healing effects transformed through Redemption. Require Shelter.",
+    "requires": "Shelter",
+    "excludes": []
+   },
+   {
+    "name": "Divine Reincarnation",
+    "order": 78,
+    "text": "When you resurrect an ally using Resurrection, your damage is increased by 30% and all your damage taken is reduced by 30% for 20 seconds. Require Shelter.",
+    "requires": "Shelter",
+    "excludes": []
+   },
+   {
+    "name": "Holy Light Protection",
+    "order": 79,
+    "text": "Increase 5 points of Dodge and 5 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ring of Life",
+    "order": 80,
+    "text": "When your HP is below 30%, Ring of Life can cost 1% mana to recover 1% HP per second.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Witcher": [
+   {
+    "name": "Soul Link",
+    "order": 81,
+    "text": "Reduce 4% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Enhanced Explosion",
+    "order": 82,
+    "text": "If the target is suffering from corrosion damage of Corrosion Spell, then Skeleton Explosion always Critical Hit. Require Soul Link.",
+    "requires": "Soul Link",
+    "excludes": []
+   },
+   {
+    "name": "Rushing Tide",
+    "order": 83,
+    "text": "Casting Healing Chain will increase 15% healing effect of the next Healing Surge. Require Soul Link.",
+    "requires": "Soul Link",
+    "excludes": []
+   },
+   {
+    "name": "Dead Toxin Surge",
+    "order": 84,
+    "text": "When your Shadow Arrow deals a Critical Hit, resets the CD of Dead Toxin. Require Soul Link.",
+    "requires": "Soul Link",
+    "excludes": []
+   },
+   {
+    "name": "Soul Harmony",
+    "order": 85,
+    "text": "Increase 3% attack damage, reduce 3% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Spiritual Concentration",
+    "order": 86,
+    "text": "When your direct damage spells deal critical hit, increase 30% of spell damage and healing effect for 4 seconds. Require Soul Harmony.",
+    "requires": "Soul Harmony",
+    "excludes": []
+   },
+   {
+    "name": "Extensive Heal",
+    "order": 87,
+    "text": "Increase up to 20% spell healing effect depending on the target's current HP. The lower the target HP, the higher the healing effect. Require Soul Harmony.",
+    "requires": "Soul Harmony",
+    "excludes": []
+   },
+   {
+    "name": "Soul Insight",
+    "order": 88,
+    "text": "Reduce the CD of Soul Returnal by 5 minutes. When you resurrect an ally with Soul Returnal, reset the CD of all Totem Skills. Require Soul Harmony.",
+    "requires": "Soul Harmony",
+    "excludes": []
+   },
+   {
+    "name": "Wrath of Wraith",
+    "order": 89,
+    "text": "Increase 150 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Jungle Perseverance",
+    "order": 90,
+    "text": "Increase 10 points of Toughness and 10 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   }
+  ]
+ }
+}

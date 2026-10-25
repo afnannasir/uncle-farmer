@@ -1,0 +1,15 @@
+#!/bin/sh
+# UncleFarmer's pre-commit checks: exactly what CI and check.py run (ruff, pyright, pytest with
+# coverage, and the engine's own coverage floor). Install once with:
+#
+#     git config core.hooksPath .githooks
+#
+# Skip for one commit with:  git commit --no-verify
+#
+# The full suite runs (nothing is deselected), so a commit takes about a minute. Coverage must
+# stay at 70% overall and 90% for unclefarmer/engine: the GUI has no tests, so the engine is
+# gated on its own in check.py.
+set -e
+cd "$(git rev-parse --show-toplevel)"
+PY=${PYTHON:-python}
+"$PY" check.py

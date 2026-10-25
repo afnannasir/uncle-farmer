@@ -1,0 +1,126 @@
+# Uncle Farmer translation catalog. Edit the msgstr lines; keep the {placeholders}.
+msgid ""
+msgstr ""
+"Project-Id-Version: Uncle Farmer\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: ur\n"
+"Language-Team: Urdu (Roman)\n"
+"X-Language-Name: Urdu (Roman)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgid "&Abort"
+msgstr "&Rok dein"
+
+msgid "&Add"
+msgstr "&Shamil karein"
+
+msgid "&Apply"
+msgstr "&Lagao"
+
+msgid "&Browse..."
+msgstr "&Dekhein..."
+
+msgid "&Cancel"
+msgstr "&Mansookh"
+
+msgid "&Close"
+msgstr "&Band karein"
+
+msgid "&Continue"
+msgstr "&Jari rakhein"
+
+msgid "&Delete"
+msgstr "&Hataayein"
+
+msgid "&Help"
+msgstr "&Madad"
+
+msgid "&Ignore"
+msgstr "&Nazar andaz karein"
+
+msgid "&No"
+msgstr "&Nahi"
+
+msgid "&OK"
+msgstr "&Theek hai"
+
+msgid "&Open"
+msgstr "&Kholain"
+
+msgid "&Remove"
+msgstr "&Hataayein"
+
+msgid "&Retry"
+msgstr "&Dobara koshish"
+
+msgid "&Save"
+msgstr "&Mahfooz"
+
+msgid "&Yes"
+msgstr "&Haan"
+
+msgid "Abort"
+msgstr "Rok dein"
+
+msgid "Add"
+msgstr "Shamil karein"
+
+msgid "Apply"
+msgstr "Lagao"
+
+msgid "Browse..."
+msgstr "Dekhein..."
+
+msgid "Cancel"
+msgstr "Mansookh"
+
+msgid "Close"
+msgstr "Band karein"
+
+msgid "Continue"
+msgstr "Jari rakhein"
+
+msgid "Delete"
+msgstr "Hataayein"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Help"
+msgstr "Madad"
+
+msgid "Ignore"
+msgstr "Nazar andaz karein"
+
+msgid "Information"
+msgstr "Maloomat"
+
+msgid "No"
+msgstr "Nahi"
+
+msgid "OK"
+msgstr "Theek hai"
+
+msgid "Open"
+msgstr "Kholain"
+
+msgid "Question"
+msgstr "Sawal"
+
+msgid "Remove"
+msgstr "Hataayein"
+
+msgid "Retry"
+msgstr "Dobara koshish"
+
+msgid "Save"
+msgstr "Mahfooz"
+
+msgid "Warning"
+msgstr "Tanbeeh"
+
+msgid "Yes"
+msgstr "Haan"
