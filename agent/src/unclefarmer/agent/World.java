@@ -110,6 +110,8 @@ final class World {
                 GameChat.roomNamed(m);
             } else if (op == 59) {
                 Team.inbound(m);
+            } else if (op == 17) {
+                Profession.inbound(m);
             }
         } catch (Throwable t) {
             Log.error("world in", t);

@@ -20,6 +20,10 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     enhance [check]                  run the Equipment Enhancer as set in Tools (check: only look)
     chores [check] [only=a,b]        the day's chores as set in Tools, Daily chores, each once a game
                                      day: bank, bounty, pet_rebirth, donation, construction, secret_room
+    gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
+                                     gang's area once a day, then outside; sells the collection
+    sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
+                                     and Herb Buyers (all of them, if no kind is given)
     survey [cities|all|everything|here|<map>]   learn NPCs and their menus from the game itself (only looks)
     follow <player>                  stay with that player and help with their fights, until stopped
     come <player> [<map>]            walk up to that player (on their map, if it is given)
@@ -67,7 +71,7 @@ from typing import Any
 from .. import atlas, dungeons, knowledge, stats
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
-from . import chores, crafting, follow, survey, town
+from . import chores, crafting, follow, gathering, survey, town
 from .bot import Respawned, Stopped
 
 def _at(rest, n):
@@ -80,7 +84,7 @@ def _at(rest, n):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "sell_collection", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
@@ -537,6 +541,14 @@ def _prep_chores(node, rest, n):
     node.opts["only"] = only
 
 
+def _prep_sell_collection(node, rest, n):
+    w = rest.strip().lower() or "all"
+    kinds = tuple(town.COLLECTION_BUYERS)
+    if w not in kinds + ("all",):
+        raise ScriptError(n, _("write it as: sell_collection  or  sell_collection fish (fish, ore or herb)"))
+    node.opts["kinds"] = kinds if w == "all" else (w,)
+
+
 def _prep_visit(node, rest, n):
     if not rest.strip():
         raise ScriptError(n, _("visit what? write: visit storehouse  or  visit Grocer John"))
@@ -665,6 +677,7 @@ PREPARE = {
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
+    "gather": _prep_check_only, "sell_collection": _prep_sell_collection,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
@@ -872,6 +885,15 @@ class Runner:
     def _do_chores(self, node, b, o):
         with stats.doing(b, "chores"):
             chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
+
+    def _do_gather(self, node, b, o):
+        with stats.doing(b, "gather"):     # the catch and its sale are no farming loot
+            gathering.run(b, gathering.config(b.p), o.get("check", False))
+
+    def _do_sell_collection(self, node, b, o):
+        with stats.doing(b, "sell_collection"):
+            if not town.sell_collection(b, o["kinds"]):
+                b.log(_("nothing of the collection was sold"))
 
     def _do_visit(self, node, b, o):
         w = o["what"]

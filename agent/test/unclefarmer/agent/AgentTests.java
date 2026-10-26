@@ -37,6 +37,7 @@ public final class AgentTests {
         usePacketIsTheUseKeysRequest(contract);
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
         everyCastSaysWhomItStruck(contract);
+        professionRanksAreKeptFromTheLoginList();
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
@@ -217,6 +218,7 @@ public final class AgentTests {
         eq(World.inbound(sheet(us, 1200)), true, "the sheet that answers ask sheet is kept from the game");
         eq(Sheet.contribution, 1200L, "and read all the same");
         eq(Sheet.dropSeconds, 3 * 3600 + 25 * 60, "the drop time with it");
+        check(Sheet.vitality == 44.7, "and the Vitality left: " + Sheet.vitality);
         eq(World.inbound(sheet(us, 1300)), false, "one request, one sheet: the next is the player's");
 
         Sheet.expectQuiet(now - Sheet.QUIET_WAIT_MS - 1000);
@@ -230,7 +232,7 @@ public final class AgentTests {
     private static byte[] sheet(int id, long contribution) {
         String text = "(1(Someone)1)|||((," + id + ";))|||Hunter|||;|||male |||. level 79|||; Contribution "
                 + contribution + "|||HP 40000/50000|||MP 30000/45000|||marked targets 0|||fusion power 99.8|||"
-                + "load 2000/4000|||public area drop 3 hours 25 minutes  remaining";
+                + "load 2000/4000|||Vitality 44.7; Press to buy|||public area drop 3 hours 25 minutes  remaining";
         return concat(new byte[] {62}, text.getBytes(Protocol.UTF8));
     }
 
@@ -446,6 +448,22 @@ public final class AgentTests {
         check(!got.contains("\"hits\""), "and no hits section, which this packet doesn't have: " + got);
         check(got.contains("[-6,"), "the one struck to 0 died: " + got);
         eq(World.targets(new String[] {"4152,8,Buff\n4152,64200"}), null, "a cast with no target line has none");
+    }
+
+    /** IN op=17 lists the profession skills as "id,rank,name"; the client drops the rank (agent 49). */
+    private static void professionRanksAreKeptFromTheLoginList() {
+        byte[] body = "\n21,5,Draw Blood\n13,3,Fishing\n1,0,Snuggle".getBytes(Protocol.UTF8);
+        byte[] m = new byte[body.length + 1];
+        m[0] = 17;
+        System.arraycopy(body, 0, m, 1, body.length);
+        World.inbound(m);
+        StringBuilder sb = new StringBuilder();
+        Profession.json(sb);
+        eq(sb.toString(), "{\"21\":5,\"13\":3,\"1\":0}", "each skill's rank, by its id");
+        World.inbound(new byte[] {17, 'x', ','});
+        sb.setLength(0);
+        Profession.json(sb);
+        eq(sb.toString(), "{\"21\":5,\"13\":3,\"1\":0}", "a list with no skill in it changes nothing");
     }
 
     /** Stand-ins for game.i: the one method of the attack keys' shape is found whatever its name. */

@@ -30,6 +30,8 @@ final class Sheet {
     /** "load 2904/4000": the bag's weight against its limit. */
     private static final Pattern LOAD = Pattern.compile("\\bload (\\d+)/(\\d+)");
     private static final Pattern FUSION = Pattern.compile("\\bfusion power ([\\d.]+)");
+    /** "Vitality 44.7; Press to buy": what the profession skills (gathering, corpse harvesting) use. */
+    private static final Pattern VITALITY = Pattern.compile("\\bVitality ([\\d.]+)");
     /** "level 50|||; Contribution 100000" -- not "Gang Contributions 50000", which has an s. */
     private static final Pattern CONTRIBUTION = Pattern.compile("\\bContribution (\\d+)");
     /** Below the top level: "level 50|||; upgrading requires 30000 experience". */
@@ -53,6 +55,7 @@ final class Sheet {
     static volatile int load = -1;
     static volatile int maxLoad = -1;
     static volatile double fusion = -1;
+    static volatile double vitality = -1;
     static volatile int dropSeconds = -1;
     static volatile long contribution = -1;
     static volatile long xpNeeded = -1;      // -1: at the top level (the sheet has no such line)
@@ -125,6 +128,8 @@ final class Sheet {
         merit = mr.find() ? Long.parseLong(mr.group(1)) : -1;
         Matcher fp = FUSION.matcher(text);
         if (fp.find()) fusion = Double.parseDouble(fp.group(1));
+        Matcher vt = VITALITY.matcher(text);
+        if (vt.find()) vitality = Double.parseDouble(vt.group(1));
         Matcher ct = COUNTER.matcher(text);
         if (ct.find()) {
             counterName = ct.group(1).trim();

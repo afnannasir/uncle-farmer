@@ -1,0 +1,223 @@
+{
+ "format": 1,
+ "source": "players seen gathering in the game's own traffic",
+ "places": [
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 123,
+   "y": 229,
+   "casts": 4359
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 131,
+   "y": 220,
+   "casts": 3404
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 135,
+   "y": 180,
+   "casts": 2038
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 134,
+   "y": 194,
+   "casts": 1512
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 130,
+   "y": 259,
+   "casts": 1365
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 132,
+   "y": 189,
+   "casts": 1319
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 135,
+   "y": 169,
+   "casts": 1171
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 131,
+   "y": 206,
+   "casts": 930
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 124,
+   "y": 209,
+   "casts": 802
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 123,
+   "y": 164,
+   "casts": 784
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 262,
+   "y": 123,
+   "casts": 499
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 131,
+   "y": 213,
+   "casts": 457
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 131,
+   "y": 239,
+   "casts": 224
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 222,
+   "y": 132,
+   "casts": 216
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 133,
+   "y": 248,
+   "casts": 168
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 128,
+   "y": 156,
+   "casts": 134
+  },
+  {
+   "skill": "Fishing",
+   "map": 1041,
+   "x": 126,
+   "y": 280,
+   "casts": 108
+  },
+  {
+   "skill": "Fishing",
+   "map": 1531,
+   "x": 40,
+   "y": 9,
+   "casts": 107
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 287,
+   "y": 397,
+   "casts": 7200
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 59,
+   "y": 396,
+   "casts": 5952
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 23,
+   "y": 397,
+   "casts": 3640
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 8,
+   "y": 388,
+   "casts": 1857
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 13,
+   "y": 387,
+   "casts": 1638
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 15,
+   "y": 397,
+   "casts": 1245
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 64,
+   "y": 392,
+   "casts": 844
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 386,
+   "y": 4,
+   "casts": 643
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 18,
+   "y": 387,
+   "casts": 254
+  },
+  {
+   "skill": "Fishing",
+   "map": 1561,
+   "x": 15,
+   "y": 392,
+   "casts": 251
+  },
+  {
+   "skill": "Mining",
+   "map": 1702,
+   "x": 62,
+   "y": 37,
+   "casts": 73
+  },
+  {
+   "skill": "Mining",
+   "map": 1702,
+   "x": 74,
+   "y": 79,
+   "casts": 72
+  },
+  {
+   "skill": "Mining",
+   "map": 1731,
+   "x": 50,
+   "y": 223,
+   "casts": 233
+  }
+ ]
+}

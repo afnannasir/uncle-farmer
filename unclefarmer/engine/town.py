@@ -245,6 +245,91 @@ def sell(b, item, n=None):
     return sold
 
 
+# ---------------------------------------------------------------------------------------- the collection
+# What gathering brings in, and who buys it. The buyers stand side by side in the capitals.
+COLLECTION_BUYERS = {"fish": "fish_buyer", "ore": "ore_buyer", "herb": "herb_buyer"}
+# A buyer's row for one kind in the bag: "101 Milkfish; Unit price 670 arnebia"
+BUYER_ROW = re.compile(r"^\s*(\d+)\s+(.+?)\s*;\s*Unit price\s+(\d+)\s+arnebia", re.I)
+
+
+def buyer_rows(b):
+    """[(count, item, price)] of the open buyer's menu."""
+    d = b.dialog()
+    out = []
+    for row in ((d.get("top") or {}).get("rows", []) if d.get("open") else []):
+        for e in row:
+            for t in (b.entry_texts(e) if e else []):
+                m = BUYER_ROW.match(t)
+                if m:
+                    out.append((int(m.group(1)), m.group(2).strip(), int(m.group(3))))
+    return out
+
+
+def collection_left(p, rows):
+    """[(item, how many to sell)] of a buyer's rows: everything it lists, but never what the player
+    told the bag manager to keep, and never below the number they keep of an item."""
+    out = []
+    for count, item, _price in rows:
+        r = bagrules.rule(p, item)
+        if r["chosen"] and r["action"] == "keep":
+            continue
+        n = count - (r["keep"] if r["chosen"] else 0)
+        if n > 0:
+            out.append((item, n))
+    return out
+
+
+def sell_collection(b: Any, kinds: tuple[str, ...] = ("fish", "ore", "herb")) -> int:
+    """Sell what gathering brought in to the nearest Aquaculture, Ore or Herb Buyer: each lists
+    what of its kind the bag holds ("101 Milkfish; Unit price 670 arnebia"), and every row is sold
+    (the bag manager's keep rules apart) until it says there is nothing left of its kind. A kind no
+    buyer is known for is said and passed over. Returns the arnebia it brought in."""
+    earned = 0
+    for kind in kinds:
+        role = COLLECTION_BUYERS[kind]
+        if not knowledge.service_npcs(role):
+            b.log(_("I don't know where a {role} is", role=role.replace("_", " ")))
+            continue
+        before = counts(b).get("arnebia", 0)
+        npc = None
+        sold_any = 0
+        for _round in range(60):
+            # a row at a time, the menu opened afresh each time: after a sale its rows are old
+            b.close_dialogs()
+            if npc is None:
+                npc = visit(b, role)
+            elif not b.talk(npc):
+                break
+            b.wait_dialog(3.0)
+            rows = buyer_rows(b)
+            if not rows:
+                break                         # "You have no fish and shrimp to sell"
+            todo = collection_left(b.p, rows)
+            if not todo:
+                break
+            item, n = todo[0]
+            have = counts(b).get(item.lower(), 0)
+            if not pick(b, r"^\s*\d+\s+" + re.escape(item) + r"\s*;\s*Unit price", n):
+                b.log(_("the {role} didn't take {item}", role=role.replace("_", " "), item=item))
+                break
+            gone = have - counts(b).get(item.lower(), 0)
+            if gone <= 0:
+                break
+            sold_any += 1
+            b.log(_("sold {n} {item}", n=gone, item=item))
+            stats.moved(b, "sold", item, gone)
+        b.close_dialogs()
+        got = counts(b).get("arnebia", 0) - before
+        if sold_any:
+            earned += max(0, got)
+            b.log(_("sold the {kind} for {n} arnebia", kind=_collection_word(kind), n=max(0, got)), speak=True)
+    return earned
+
+
+def _collection_word(kind):
+    return {"fish": _("fish"), "ore": _("ore"), "herb": _("herbs")}[kind]
+
+
 # ---------------------------------------------------------------------------------------- restock
 def needs(b, rules, start=False):
     """[(rule, have, want)] for every rule that should be topped up now. While farming a rule

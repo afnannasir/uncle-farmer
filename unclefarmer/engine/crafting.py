@@ -117,6 +117,22 @@ def _pick_gang(b, gang):
     return False
 
 
+def pick_at_entrance(b, gang):
+    """At an open Gang Entrance menu: the gang named `gang`, through "all gangs" (or "Allied
+    gangs"), chosen. Its own menu (which hall to enter) is what opens next. False, said, when no
+    list has it."""
+    b.log(_("looking for the gang {gang} at the Gang Entrance", gang=gang))
+    top = b.dialog().get("top") or {}
+    for listing in (r"(?i)all\s+gangs", r"(?i)allied\s+gangs"):
+        if b.find_entry(top, listing) is not None and b.choose(listing) is not None and _pick_gang(b, gang):
+            return True
+        b.close_dialogs()
+        town.visit(b, "gang_entrance")
+        top = b.dialog().get("top") or {}
+    b.log(_("the Gang Entrance lists no gang called {gang}", gang=gang), speak=True)
+    return False
+
+
 def enter_gang(b, gang=None, role="gem_craftsman"):
     """Into a gang base's OUTER hall, where the craftsmen are: your own gang's through the nearest
     Gang Entrance, or the gang named `gang` through its "all gangs" list. Already in a gang base
@@ -127,19 +143,7 @@ def enter_gang(b, gang=None, role="gem_craftsman"):
     town.visit(b, "gang_entrance")          # (leaves a gang base first when we are in one)
     mid = b.map_id()
     if gang:
-        b.log(_("looking for the gang {gang} at the Gang Entrance", gang=gang))
-        d = b.dialog()
-        top = d.get("top") or {}
-        picked = False
-        for listing in (r"(?i)all\s+gangs", r"(?i)allied\s+gangs"):
-            if b.find_entry(top, listing) is not None and b.choose(listing) is not None and _pick_gang(b, gang):
-                picked = True
-                break
-            b.close_dialogs()
-            town.visit(b, "gang_entrance")
-            top = b.dialog().get("top") or {}
-        if not picked:
-            b.log(_("the Gang Entrance lists no gang called {gang}", gang=gang), speak=True)
+        if not pick_at_entrance(b, gang):
             return False
         d = b.wait_dialog(2.0)
         if d and d.get("top") and b.find_entry(d["top"], r"(?i)outer\s+hall") is not None:

@@ -359,6 +359,20 @@ class ShardsFile(Strict):
     markets: dict[str, tuple[float, float]]
 
 
+class GatheringPlace(Strict):
+    skill: Literal["Fishing", "Mining", "Collect Herbs"]
+    map: int
+    x: int = Field(ge=0)
+    y: int = Field(ge=0)
+    casts: int = Field(ge=1)
+
+
+class GatheringFile(Strict):
+    format: Literal[1]
+    source: str
+    places: list[GatheringPlace]
+
+
 class ShortLoop(Strict):
     covered: float | None
     from_: str | None = Field(default=None, alias="from")
@@ -455,6 +469,7 @@ MODELS: dict[str, type[BaseModel]] = {
     "dungeons.json": DungeonsFile,
     "farms.json": FarmsFile,
     "game_texts.json": GameTextsFile,
+    "gathering.json": GatheringFile,
     "knowledge.json": KnowledgeFile,
     "map_kinds.json": MapKindsFile,
     "shards.json": ShardsFile,
