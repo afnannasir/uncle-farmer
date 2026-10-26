@@ -569,7 +569,7 @@ never changed. Pick the language in the game as usual; after changing it, restar
 - Your character settings, plans, scripts and logs are stored in this folder (profiles, plans,
   scripts, logs). Copy them to keep a backup.
 - Translations: copy `lang\unclefarmer.pot` to `lang\<language code>.po`, fill in the `msgstr`
-  lines and run `python -m unclefarmer --strings` to compile it. It then appears under Language in
+  lines and run `uv run python -m unclefarmer --strings` to compile it. It then appears under Language in
   Settings.
 - Urdu is provided as Roman Urdu in `lang\ur.po`: write it in Latin letters, not Nastaliq or other
   Arabic script. Uncle Farmer keeps wx in its English, left-to-right mode for it.

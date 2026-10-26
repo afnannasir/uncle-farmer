@@ -2,7 +2,7 @@
 
     python build_exe.py
 
-Needs Nuitka (pip install nuitka) and UPX: the UPX_DIR environment variable, else the upx found on
+Needs Nuitka (uv sync installs it) and UPX: the UPX_DIR environment variable, else the upx found on
 PATH (winget install UPX.UPX puts it there), else the folder in UPX_DIR below. Builds its own copy
 of the game agent every time, never over the one a running game has loaded. The result needs
 nothing installed: zip "dist\\Uncle Farmer" and share it. Character settings, plans, scripts,

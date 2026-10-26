@@ -138,7 +138,7 @@ def cache_bench():
     try:
         from cachebox import Cache, LRUCache
     except ImportError:
-        print("      cachebox not installed - python -m pip install cachebox (skipped)")
+        print("      cachebox not installed - uv sync installs it (skipped)")
         return
 
     n = 300_000

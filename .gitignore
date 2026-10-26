@@ -25,3 +25,6 @@ __pycache__/
 coverage.xml
 .coverage
 *.prof
+
+# uv's environment (made by uv sync)
+/.venv/

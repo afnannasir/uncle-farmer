@@ -288,7 +288,7 @@ def watch(out, hours, every, rate):
 def start(hours, every, rate):
     """Start the watcher detached, so it outlives this console."""
     if not os.path.exists(py_spy()):
-        sys.exit("py-spy isn't installed: python -m pip install py-spy")
+        sys.exit("py-spy isn't installed: uv sync installs it")
     running = newest()
     if running and _alive(running):
         sys.exit("a watch is already running: %s" % running)

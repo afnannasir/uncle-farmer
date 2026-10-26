@@ -1,9 +1,49 @@
-# Tools for working on Uncle Farmer. The app itself needs only requirements.txt;
-# these are for checking it: pip install -r requirements-dev.txt
+# Everything Uncle Farmer needs, in one place. uv.lock pins the exact versions; `uv sync` installs
+# them into .venv (the app, the checking tools and Nuitka), and CI's `uv sync --locked` fails when
+# this file changed without `uv lock`.
+
+[project]
+name = "unclefarmer"
+version = "0.5.0"            # release.py sets this together with unclefarmer/__init__.py
+description = "A farming bot for Mist World."
+readme = "README.md"
+license = "GPL-3.0-only"
+requires-python = ">=3.11"
+# What the built app ships: the only packages a player's copy carries.
+dependencies = [
+    "wxPython>=4.2",
+    "orjson>=3.10",
+    "pydantic>=2.6",
+    "numpy>=2",
+]
+
+[dependency-groups]
+# Checking the code: check.py, the benchmarks, nightwatch.py and profile_bot.py.
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pytest-randomly>=3.15",
+    "pytest-xdist>=3.6",
+    "ruff>=0.17",
+    "pyright>=1.1.400",
+    "yappi",
+    "py-spy",
+    "cachebox",
+    "pip-audit>=2.10",
+]
+# Building the shareable folder: build_exe.py and release.py.
+build = ["nuitka"]
+
+[tool.uv]
+# An app run from its folder, not a package to install: uv installs only the dependencies.
+package = false
+default-groups = ["dev", "build"]
+# The game and the bot run on Windows only, so the lock resolves for Windows only.
+environments = ["sys_platform == 'win32'"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 extend-exclude = ["build", "dist", "survey"]
 
 [tool.ruff.lint]
