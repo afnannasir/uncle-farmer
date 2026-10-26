@@ -12,7 +12,7 @@ player's own choices (a beast or pet they picked stays picked while they still o
 import time
 
 from . import gamekeys, phrases, settings
-from .engine import beasts, combat, combos
+from .engine import beasts, combat, combos, gathering
 
 RESCAN_AFTER = 30 * 60      # the main window rescans a logged-in character this often
 
@@ -53,6 +53,9 @@ def scan(link, game_folder=""):
         on_keys.append({"slot": i, "page": page + 1, "key": key, "skill": names.get(sid, str(sid))})
     out["skill_keys"] = on_keys
     out["talents"] = [r["name"] for r in sk.get("talents", [])]
+    ranks = sk.get("profession_ranks") or {}     # agent 49; an older one leaves the rank out
+    out["profession"] = [{"name": r["name"], "rank": ranks.get(str(r.get("id")))}
+                         for r in sk.get("profession", []) if r.get("name")]
     active = combos.active_talents(sk)
     out["active_talents"] = sorted(active)
     out["combos"] = [combos.describe(r) for r in combos.rules_for(active, {x["skill"] for x in on_keys})]
@@ -145,6 +148,10 @@ def summary(s):
                 lines.append("Skills, page %d: %s" % (page, ", ".join(row)))
     if s.get("active_talents"):
         lines.append("Activated talents: " + ", ".join(s["active_talents"]))
+    if s.get("profession"):
+        lines.append("Profession skills: " + ", ".join(
+            r["name"] + ("" if r.get("rank") is None else " (%s)" % gathering.rank_name(r["rank"]))
+            for r in s["profession"]))
     if s.get("combos"):
         lines.append("Combos used in fights: " + "; ".join(s["combos"]))
     if s.get("hotkeys"):

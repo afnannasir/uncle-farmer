@@ -58,7 +58,7 @@ gang's craftsmen (cheaper) or the nearest city's, never spend below your arnebia
 
 | # | Task | Value | Effort | What the bot would do | What's still needed |
 |---|---|---|---|---|---|
-| 7 | **Gathering** | High | Medium | Mine, fish or collect herbs in the gathering areas (or the gang's production area, once a day), holding the profession key, then sell to the ore, fish and herb buyers | Watch: where the gathering spots are and how long each takes |
+| 7 | **Gathering** (built: Tools, Gathering) | High | Medium | Mine, fish or collect herbs in the gang's production area (once a day), then at the player's own or known places, and sell to the ore, fish and herb buyers | A live run: the start's confirm box, the gang's Mining Area and Herbal Garden entrances, more known places |
 | 8 | **Crafting potions and food** | Medium | Medium | Turn harvested blood, pelts and jerky into potions and food at the Pharmacist and Chef, instead of buying them | The recipes are listed in the menu itself when it opens |
 | 9 | **Gang missions** | Medium | Large | Take and complete the two daily gang missions from the Head of the Inner Hall | The mission texts are in the game's files (deliveries, watering crops, collecting materials); each kind needs its own routine |
 | 10 | **Hunting bounties** | Medium | Small | Collect hunting bounties from the city officers on a town trip | Nothing: the menu texts are in the game's files |

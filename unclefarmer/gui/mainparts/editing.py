@@ -122,7 +122,7 @@ class EditingMixin(FrameParts):
         self.run_errand(text, title, walk=True)
 
     def open_tool(self, which):
-        """Tools, Gem Maker / Equipment Enhancer / Daily chores: set up for the logged-in character,
+        """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering: set up for the logged-in character,
         then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
         s = self.snapshot()
@@ -136,10 +136,13 @@ class EditingMixin(FrameParts):
             with wx.BusyCursor():
                 self.auto_scan(name)          # a fresh look at the bag and gear first
         from ..chores import ChoresDialog
+        from ..gathering import GatheringDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
-                           "chores": (ChoresDialog, "chores", _("Daily chores"))}[which]
-        with cls(self, name) as d:
+                           "chores": (ChoresDialog, "chores", _("Daily chores")),
+                           "gather": (GatheringDialog, "gather", _("Gathering"))}[which]
+        extra = (self.snapshot,) if which == "gather" else ()     # "Add where I stand" reads the game
+        with cls(self, name, *extra) as d:
             code = d.ShowModal()
         if code == CHECK:
             self.run_errand(cmd + " check\n", _("{tool} check", tool=title))

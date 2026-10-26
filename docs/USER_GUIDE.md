@@ -305,6 +305,50 @@ Check only walks to each NPC and reads the menus without collecting, spending or
 "at the start of the first farming run" and the first farming run of each game day does the chores
 first. In a script: `chores`, `chores check`, or `chores only=bank,donation`.
 
+### Gathering
+
+Tools, Gathering (Ctrl+Shift+F) fishes, mines or collects herbs: whichever of the three the
+character has learned (a character learns one, at the gang's Guru Elder or Master Pepper). The
+window says which skill the last scan found and its rank, from Newbie to Grand Master.
+
+- **Gangs' areas first:** a gang's Lake, Mining Area or Herbal Garden gives more than the open
+  world, the higher its level and saturation. On the Gangs tab, list the gangs to gather in, in
+  order: your own gang ("Add our own gang") and any other gang by its name ("Add a gang by name",
+  as the Gang Entrance's list shows it), for players who gather in a friend's or an allied gang.
+  The bot goes to each in turn: into the gang's base (another gang is found through the Gang
+  Entrance's "all gangs" list), talks to the entrance for your skill, reads its level, saturation
+  and fee, and goes in, for a fee up to the limit you set and never below your arnebia reserve.
+  Each gang's area once a game day. After half an hour the game puts you back outside and the bot
+  goes on to the next gang. It sells what you carry before each one, since that half hour can't
+  be left and taken up again.
+- **Then outside:** at one of your own places, or one where the game has been seen letting players
+  gather. To add a place, stand where you fish, mine or collect herbs by hand and press "Add where
+  I stand": the bot stands on that very spot. With "The best for this character" it takes the
+  highest-level area whose monsters are at most a few levels above you (5 by default). A place
+  where the game never starts gathering is remembered and left alone until the skill's rank rises.
+- **Starting and while gathering:** the bot does what you do: Right Ctrl on the skill in the bag's
+  Profession skills panel, "Start", then "Confirm". From then on the game gathers by itself every
+  two seconds until it is stopped or another skill or item is used. In a gang's area the bot
+  leaves it to the game for the half hour. Outside, monsters come, so it looks after you the whole
+  time: potions and heals as in any fight, fighting whatever attacks you, then back onto the spot
+  and starting again.
+- **The bag's load first:** before it sets out to a gang's area or a place, the bot looks at the
+  bag's load. With less than 1,000 left (900 to 1,000 is safe; Selling tab) it says the bag is
+  full, sells first if you let it, and only goes when there is room. No gang's area is entered
+  without that room, since its half hour can't be left to sell.
+- **Selling:** when the bag is full outside it walks to the nearest Aquaculture, Ore or Herb Buyer,
+  sells, and comes back (or stops, if you choose). Everything the buyer lists is sold, except what
+  you keep in Bag and supplies (an item set to Keep, or the number you keep of it). It sells once
+  more at the end.
+- **When it stops:** when Vitality runs out for the day (more costs diamonds, which the bot never
+  spends), or after the minutes you set. Outside you can also keep some Vitality for later: "stop
+  when Vitality is down to" (When to stop tab) reads the Vitality on the character sheet while it
+  gathers, and doesn't set out at all when it is already that low.
+
+Check only reads the gang area's entrance and says where it would gather. Tools, Sell the
+collection now sells to all three buyers from wherever you are. In a script: `gather`,
+`gather check`, `sell_collection` or `sell_collection fish`.
+
 ## Walking
 
 Bot, Walk to a dungeon or map (Ctrl+W):

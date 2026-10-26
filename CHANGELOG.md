@@ -1,5 +1,26 @@
 # What's new
 
+## Next version
+
+**Gathering** (Tools, Gathering, Ctrl+Shift+F)
+
+- Fishing, mining or collecting herbs, whichever the character has learned: gangs' Lakes,
+  Mining Areas or Herbal Gardens first - your own gang's and other gangs' by name, in the order you
+  choose, each once a game day - then outside at your own places ("Add where I
+  stand") or ones the bot knows, the best area for your level and the skill's rank.
+- Before setting out it looks at the bag's load and says when the bag is full (less than 1,000
+  left; you can change it), sells first if you let it, and never enters a gang's area without room.
+- It starts the skill as players do (Right Ctrl, Start, Confirm). In a gang's area it leaves it
+  to the game for the half hour; outside it drinks, heals and fights back, then starts again.
+- It fights whatever attacks it and starts again on its spot, sells the collection to the
+  Aquaculture, Ore or Herb Buyer when the bag fills and comes back, and stops when Vitality runs out.
+- Tools, Sell the collection now: sells fish, ore and herbs from wherever you are, keeping what
+  Bag and supplies says to keep. Scripts: `gather`, `sell_collection`.
+- Outside it gathers until Vitality runs out, or until it is down to the mark you set (read from
+  the character sheet).
+- The game agent (version 50) reads each profession skill's rank and the sheet's Vitality. Restart Mist World after the
+  update so it loads the new agent.
+
 ## 0.5.0
 
 Uncle Farmer's first release in its new home. Everything below is new since 0.4.0.

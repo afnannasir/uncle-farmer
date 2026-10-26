@@ -336,6 +336,7 @@ final class Memory {
                     .append(",\"hp\":").append(Sheet.hp).append(",\"maxhp\":").append(Sheet.maxHp)
                     .append(",\"load\":").append(Sheet.load).append(",\"maxload\":").append(Sheet.maxLoad)
                     .append(",\"fusion\":").append(Sheet.fusion)
+                    .append(",\"vitality\":").append(Sheet.vitality)
                     .append(",\"drop_seconds\":").append(Sheet.dropSeconds)
                     .append(",\"counter\":").append(Sheet.counter).append(",\"counter_name\":\"")
                     .append(Protocol.jsonEscape(Sheet.counterName)).append('"')
@@ -555,7 +556,8 @@ final class Memory {
         sb.append('}');
     }
 
-    /** {"combat":[..],"talents":[..],"profession":[..],"attack_keys":{key:id},"profession_keys":{..}} */
+    /** {"combat":[..],"talents":[..],"profession":[..],"attack_keys":{key:id},"profession_keys":{..},
+     *  "profession_ranks":{id:rank}} */
     private static void skills(Object world, StringBuilder sb) throws Unavailable {
         sb.append("{\"combat\":");
         rows(world, W_COMBAT, COMBAT_ROW, sb);
@@ -567,6 +569,8 @@ final class Memory {
         keyMap(world, W_ATTACK_KEYS, sb);
         sb.append(",\"profession_keys\":");
         keyMap(world, W_PROFESSION_KEYS, sb);
+        sb.append(",\"profession_ranks\":");
+        Profession.json(sb);
         sb.append(",\"now\":").append(System.currentTimeMillis());
         sb.append('}');
     }

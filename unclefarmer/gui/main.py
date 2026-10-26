@@ -206,7 +206,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                                (_("&Another character..."), lambda e: self.edit_other_profile())])
         menu(_("&Tools"), [(_("&Gem Maker...\tCtrl+G"), lambda e: self.open_tool("gem")),
                            (_("&Equipment Enhancer...\tCtrl+Shift+E"), lambda e: self.open_tool("enhance")),
-                           (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores"))])
+                           (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores")),
+                           (_("Gathe&ring...\tCtrl+Shift+F"), lambda e: self.open_tool("gather")),
+                           (_("&Sell the collection now"),
+                            lambda e: self.run_errand("sell_collection\n", _("Selling the collection")))])
         menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
                            (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
@@ -272,6 +275,7 @@ Main window
   Ctrl+G              Gem Maker
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
+  Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -329,6 +333,12 @@ every place the gang has to build (the inner and outer halls, the highland). Sha
 secret room: once in each half hour, 5 a day; the bot goes in just before a half hour, shares, shares
 again as it starts, and leaves, and while farming it leaves for that and comes back by itself. Tick
 "at the start of the first farming run" and a farming run does the chores first.
+Tools, Gathering (Ctrl+Shift+F): fishing, mining or collecting herbs, whichever skill the character
+has. First gangs' Lakes, Mining Areas or Herbal Gardens: your own gang's and other gangs' by name,
+in the order you list them (each once a game day, half an hour inside), then outside: at a place of your own (stand where you gather by hand and press "Add where I stand")
+or one the bot knows, the best area for your level. It fights whatever attacks it, starts again,
+sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full and comes back, and
+stops when Vitality runs out. Tools, Sell the collection now: sells it from wherever you are.
 
 UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and
