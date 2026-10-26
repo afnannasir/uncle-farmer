@@ -121,20 +121,23 @@ Install adds one line to the game's `mw.exe.vmoptions` and keeps the original as
 
 ### Running from source
 
-You need Windows, Python 3.10 or newer (3.14 is what we use), and a JDK 9 or newer (for the game
-agent).
+You need Windows, [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`), and a JDK 9 or
+newer (for the game agent). uv brings the right Python itself: 3.11 or newer (3.14 is what we use).
 
 ```
-pip install -r requirements.txt
-python agent/build_agent.py
-python agent/java_tests.py       # the agent's own tests, then the random-byte parser check
-python UncleFarmer.pyw
+uv sync
+uv run python agent/build_agent.py
+uv run python agent/java_tests.py       # the agent's own tests, then the random-byte parser check
+uv run UncleFarmer.pyw
 ```
 
-`python build_exe.py` builds the shareable folder `dist\Uncle Farmer` with Nuitka (from
-`requirements.txt`); it also needs UPX (`winget install UPX.UPX`), found on PATH, in `UPX_DIR`, or in `F:\upx-5.2.1-win64`.
-`python build_native.py` builds the optional C module that makes map searches 10-24 times faster;
-without it the same searches run in Python.
+`uv sync` installs the exact versions pinned in `uv.lock` into `.venv`: the app's packages, the
+checking tools and Nuitka. Every dependency is listed in `pyproject.toml`.
+
+`uv run python build_exe.py` builds the shareable folder `dist\Uncle Farmer` with Nuitka; it also
+needs UPX (`winget install UPX.UPX`), found on PATH, in `UPX_DIR`, or in `F:\upx-5.2.1-win64`.
+`uv run python build_native.py` builds the optional C module that makes map searches 10-24 times
+faster; without it the same searches run in Python.
 
 ## How it works
 

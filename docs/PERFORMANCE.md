@@ -8,8 +8,8 @@ travel between them the rest, so link and routing micro-costs do not drive kills
 
 `benchmark.py` is the rerunnable harness behind every number below.
 
-    python benchmark.py            # about a minute, all sections
-    python benchmark.py --quick    # skip the shortloop builds
+    uv run python benchmark.py            # about a minute, all sections
+    uv run python benchmark.py --quick    # skip the shortloop builds
 
 Each line is the median / p95 / p99 of N repeats after a warmup. "Cold" means the caches named
 in the line were emptied first (first visit); "warm" means the bot's own cache answered. Raw
@@ -21,7 +21,7 @@ Environment: Windows, CPython 3.14.8, numpy 2.5.4, Intel Xeon E5-1650 v3 @ 3.50 
 ## 2026-10-23: the map searches in C
 
 Every map search the bot waits on now runs in C (`unclefarmer/native/routing.c`, built by
-`python build_native.py` into `unclefarmer/native/_routing-<hash>.dll`, loaded with ctypes). Each
+`uv run python build_native.py` into `unclefarmer/native/_routing-<hash>.dll`, loaded with ctypes). Each
 C function is a copy of a Python method in `atlaslib.py` and gives exactly its answer: the heaps
 order entries as Python compares the tuples `heapq` holds, and every cost is the same sum of
 doubles in the same order (built with `-ffp-contract=off`), so even ties between equal routes go
@@ -203,7 +203,7 @@ threads routing on one model; fractional and off-grid inputs; out-of-memory retu
 stale/missing/turned-off cases; LRU order; shortloop's matrix cover and travel's array distances
 against the dict code, the bucket route search against the heap one state for state, costs off the
 half-step grid, and the targets-only search. Full suite: 2430 passed, plus the agent's 86 Java
-tests, ruff and pyright clean (`python check.py`).
+tests, ruff and pyright clean (`uv run python check.py`).
 
 A bug found on the way: `diag_steps` walked one cell at a time towards a fractional target and
 never reached it, so `diag_ok(p, (x + 0.5, y))` grew its list of steps until the PC ran out of
@@ -318,17 +318,17 @@ Ranked by what a run actually pays:
 thread, a private-message thread that long-polls the agent, and the wx main loop), so only
 thread-aware, process-wide tools are useful:
 
-    python profile_bot.py --tool yappi --minutes 5          # wall clock, split by thread
-    python profile_bot.py --tool tracemalloc --minutes 30   # allocations, per line and per file
-    python profile_bot.py --tool all --minutes 5            # both
+    uv run python profile_bot.py --tool yappi --minutes 5          # wall clock, split by thread
+    uv run python profile_bot.py --tool tracemalloc --minutes 30   # allocations, per line and per file
+    uv run python profile_bot.py --tool all --minutes 5            # both
     py-spy record -p <pid> -d 60 -f speedscope -o %TEMP%\unclefarmer.json   # attach, no restart
 
 For a whole night, on every character at once, `nightwatch.py` does it from outside and then
 reads it all together:
 
-    python nightwatch.py watch --hours 8     # detached, low priority; then start farming
-    python nightwatch.py status
-    python nightwatch.py report              # logs\nights\<start>\report.md and summary.json
+    uv run python nightwatch.py watch --hours 8     # detached, low priority; then start farming
+    uv run python nightwatch.py status
+    uv run python nightwatch.py report              # logs\nights\<start>\report.md and summary.json
 
 The watcher samples CPU, memory, handles and threads of the bot and every game every 30 s, and
 keeps py-spy attached in 15-minute pieces (`--nonblocking --idle --threads`, raw format). The app
@@ -495,12 +495,12 @@ there. Verdict: no `cachebox` dependency; the hand-rolled caches stay.
 
 ## Checking a change
 
-    python -m pytest -q -m "not slow" -p no:cacheprovider
-    python -m ruff check unclefarmer tests benchmark.py profile_bot.py
-    python benchmark.py --quick
-    python build_native.py                 # after any edit of unclefarmer/native/routing.c
-    python -m pytest -q tests/test_native.py    # the C searches against the Python ones
-    set UNCLEFARMER_NO_NATIVE=1 && python benchmark.py   # the Python searches, for comparison
+    uv run pytest -q -m "not slow" -p no:cacheprovider
+    uv run ruff check unclefarmer tests benchmark.py profile_bot.py
+    uv run python benchmark.py --quick
+    uv run python build_native.py                 # after any edit of unclefarmer/native/routing.c
+    uv run pytest -q tests/test_native.py    # the C searches against the Python ones
+    set UNCLEFARMER_NO_NATIVE=1 && uv run python benchmark.py   # the Python searches, for comparison
 
 The suite (2180 tests) covers the caches and the array field: `test_steps_arr_is_the_same_search_as_steps`,
 `test_steps_arr_matches_the_plain_bfs_on_a_real_cave`, `test_route_is_cached_but_callers_get_their_own_list`,

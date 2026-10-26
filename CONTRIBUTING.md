@@ -32,14 +32,15 @@ Open an issue and include:
 4. Run the checks:
 
    ```
-   pip install -r requirements-dev.txt
-   python check.py
+   uv sync
+   uv run python check.py
    ```
 
-   check.py runs ruff, pyright and pytest with coverage, and says "all checks passed" or which
-   failed. Coverage must stay at 70% overall and at 90% for `unclefarmer/engine` (the GUI has no
-   tests, so it must not be able to hide an engine regression). `python check.py --quick` leaves
-   out the slow real-time tests. pytest runs in parallel (`pytest-xdist`) and in random order
+   `uv sync` installs the exact versions in `uv.lock` into `.venv`; the tools can also run on their
+   own (`uv run pytest`, `uv run ruff check .`, `uv run pyright`). check.py runs ruff, pyright and
+   pytest with coverage, and says "all checks passed" or which failed. Coverage must stay at 70%
+   overall and at 90% for `unclefarmer/engine` (the GUI has no tests, so it must not be able to
+   hide an engine regression). `uv run python check.py --quick` leaves out the slow real-time tests. pytest runs in parallel (`pytest-xdist`) and in random order
    (`pytest-randomly`); use `-n0` and `--randomly-seed=<number>` when reproducing a failure.
 
    The same checks run before every commit once you install the hook:
@@ -58,7 +59,7 @@ Open an issue and include:
    running the tests is what checks them. Add the hints a changed function needs rather than
    loosening `pyrightconfig.json`.
    The tests need no game: they fight, walk and follow against a pretend game, replay a recorded
-   fight (`tests/data`), and check the map data, translations and CPU use. `python -m pytest -m "not
+   fight (`tests/data`), and check the map data, translations and CPU use. `uv run pytest -m "not
    slow"` skips the tests that measure CPU use or search real map routes. Bot fights and waits use
    an injected clock, so they are deterministic and fast. Test data must stay anonymous: made-up players and ids.
 
@@ -70,8 +71,8 @@ Open an issue and include:
    every normal test run. The soak tests run hours of it and are skipped unless asked for:
 
    ```
-   python -m pytest --soak -m soak -n 0 -s tests/test_soak.py
-   set UNCLEFARMER_SOAK_HOURS=8 && python -m pytest --soak -m soak -n 0 -s tests/test_soak.py
+   uv run pytest --soak -m soak -n 0 -s tests/test_soak.py
+   set UNCLEFARMER_SOAK_HOURS=8 && uv run pytest --soak -m soak -n 0 -s tests/test_soak.py
    ```
 
    They measure as they go: the memory the app holds (start, middle, end - it must level off),
@@ -85,10 +86,30 @@ Open an issue and include:
    few minutes each, a few hundred MB of memory.
 5. Open a pull request that says what it changes and how you tested it.
 
+## Dependencies
+
+Every package is listed in `pyproject.toml`: what the app ships under `dependencies`, the checking
+tools in the `dev` group, Nuitka in the `build` group. `uv.lock` pins the exact version of each,
+and CI's `uv sync --locked` fails when the two disagree, so commit them together:
+
+```
+uv add <package>                 # a package the app needs
+uv add --group dev <package>     # a tool for checking it
+uv lock --upgrade                # move every pin to the newest allowed version
+uv lock --upgrade-package numpy  # just one
+```
+
+To check the pinned versions for known vulnerabilities, the way CI does:
+
+```
+uv export --locked --all-groups --no-emit-project --format requirements-txt --output-file locked.txt
+uv run pip-audit --requirement locked.txt --require-hashes --disable-pip
+```
+
 ## Releasing
 
 Write the version's changes at the top of `CHANGELOG.md`, commit and push, then
-`python release.py 0.5.1 --notes-file notes.md` (the new section as the notes). It runs check.py,
+`uv run python release.py 0.5.1 --notes-file notes.md` (the new section as the notes). It runs check.py,
 sets the version, builds the folder, zips it as `dist/UncleFarmer-0.5.1.zip` and makes the GitHub
 release v0.5.1 with it, using the GitHub CLI (`gh`, logged in). Every copy's updater finds it there:
 the notes are what it shows under "What's new". Commit the version change afterwards.
@@ -101,7 +122,7 @@ notes inside as "What's new.txt" and beside it as `UncleFarmer-0.5.1.txt`.
 Copy `lang/unclefarmer.pot` to `lang/<language code>.po`. In its header set `Language` to the code
 and `X-Language-Name` to the language's own name (that is what Settings shows), then fill in the
 `msgstr` lines. An empty `msgstr` stays in English, and the `{placeholders}` must stay as they are.
-When new strings are added, `python -m unclefarmer --strings` refreshes the template, merges your
+When new strings are added, `uv run python -m unclefarmer --strings` refreshes the template, merges your
 file (translations of strings that are gone are kept as `#~` lines) and compiles
 `lang/<code>/LC_MESSAGES/unclefarmer.mo`, which the app loads with gettext; wx loads the same
 catalog, plus its own `wxstd` one for standard buttons and menus.

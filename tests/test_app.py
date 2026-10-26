@@ -6,9 +6,11 @@ are paced, and the bot is light on the CPU."""
 
 import importlib
 import json
+import os
 import pkgutil
 import threading
 import time
+import tomllib
 
 import pytest
 from conftest import ROOT, Clock, data
@@ -35,6 +37,12 @@ def test_module_imports(name):
     if (".gui" in name or name == "unclefarmer.__main__") and not HAVE_WX:
         pytest.skip("wxPython not installed")
     importlib.import_module(name)
+
+
+def test_pyproject_has_the_apps_version():
+    # release.py sets both; uv.lock records the pyproject one, so a mismatch also means a stale lock.
+    with open(os.path.join(ROOT, "pyproject.toml"), "rb") as f:
+        assert tomllib.load(f)["project"]["version"] == unclefarmer.__version__
 
 
 def test_the_bot_keeps_its_old_names():

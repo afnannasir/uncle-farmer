@@ -248,7 +248,7 @@ def main():
             tools.append(Tracemalloc(out, args.minutes))
     except ImportError as e:
         print("cannot profile with %s: %s" % (args.tool, e))
-        print("install it with: python -m pip install yappi")
+        print("install it with: uv sync")
         return 2
 
     finished = threading.Event()

@@ -6,9 +6,9 @@
     python release.py 0.2.0 --local --notes-file notes.md   (build and zip only, no GitHub)
     python release.py 0.2.0 --local --full ...              (every core, normal priority: faster)
 
-It sets the version in unclefarmer/__init__.py, builds the folder (build_exe.py), zips it as
-dist/UncleFarmer-<version>.zip and makes the GitHub release v<version> with that zip, using the
-GitHub CLI (gh, logged in). The release notes are what the app shows under "What's new". Commit
+It sets the version in unclefarmer/__init__.py and pyproject.toml (and refreshes uv.lock), builds
+the folder (build_exe.py), zips it as dist/UncleFarmer-<version>.zip and makes the GitHub release
+v<version> with that zip, using the GitHub CLI (gh, logged in). The release notes are what the app shows under "What's new". Commit
 and push first: the release's tag points at what GitHub has.
 
 --local builds and zips without GitHub: the notes go into the zip as "What's new.txt" and next to
@@ -28,17 +28,27 @@ sys.path.insert(0, ROOT)
 from unclefarmer import updater  # noqa: E402
 
 INIT = os.path.join(ROOT, "unclefarmer", "__init__.py")
+PYPROJECT = os.path.join(ROOT, "pyproject.toml")
 OUT = os.path.join(ROOT, "dist", "Uncle Farmer")
 
 
-def set_version(v):
-    with open(INIT, encoding="utf-8") as f:
+def _replace_once(path, pattern, new):
+    with open(path, encoding="utf-8") as f:
         text = f.read()
-    text, n = re.subn(r'__version__ = "[^"]*"', '__version__ = "%s"' % v, text)
+    text, n = re.subn(pattern, new, text, count=1, flags=re.M)
     if n != 1:
-        sys.exit("couldn't find __version__ in " + INIT)
-    with open(INIT, "w", encoding="utf-8", newline="\n") as f:
+        sys.exit("couldn't find the version in " + path)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
+
+
+def set_version(v):
+    """The version in unclefarmer/__init__.py and pyproject.toml, and uv.lock to match: the lock
+    records the project's version, and CI's `uv sync --locked` fails when the two disagree."""
+    _replace_once(INIT, r'__version__ = "[^"]*"', '__version__ = "%s"' % v)
+    _replace_once(PYPROJECT, r'^version = "[^"]*"', 'version = "%s"' % v)
+    if subprocess.call(["uv", "lock"], cwd=ROOT) != 0:
+        sys.exit("uv lock failed: uv.lock no longer matches pyproject.toml")
 
 
 def make_zip(v):
@@ -80,7 +90,7 @@ def main():
         if notes:
             with open(os.path.join(ROOT, "dist", "UncleFarmer-%s.txt" % v), "w", encoding="utf-8") as f:
                 f.write("Uncle Farmer %s\n\n%s\n" % (v, notes.strip()))
-        print("built v%s locally. Commit the version change in unclefarmer/__init__.py." % v)
+        print("built v%s locally. Commit the version change (unclefarmer/__init__.py, pyproject.toml, uv.lock)." % v)
         return
     _publish(a, v, zip_path)
 
@@ -142,7 +152,7 @@ def _publish(a, v, zip_path):
     if a.draft:
         cmd.append("--draft")
     subprocess.check_call(cmd, cwd=ROOT)
-    print("released v%s. Commit the version change in unclefarmer/__init__.py." % v)
+    print("released v%s. Commit the version change (unclefarmer/__init__.py, pyproject.toml, uv.lock)." % v)
 
 
 if __name__ == "__main__":

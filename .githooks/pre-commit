@@ -11,5 +11,10 @@
 # gated on its own in check.py.
 set -e
 cd "$(git rev-parse --show-toplevel)"
-PY=${PYTHON:-python}
-"$PY" check.py
+# Through uv when it is installed, so the commit is checked against the versions in uv.lock;
+# PYTHON=... still picks an interpreter by hand.
+if [ -z "$PYTHON" ] && command -v uv >/dev/null 2>&1; then
+    uv run --locked python check.py
+else
+    "${PYTHON:-python}" check.py
+fi
