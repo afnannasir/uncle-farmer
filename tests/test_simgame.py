@@ -76,3 +76,34 @@ def test_drop_time_to_save_is_left_unused(sim_env):
     # the sheet is read every few seconds (agent 43) and checked between fights: the stop comes
     # within one fight of the mark
     assert 60 * 60 + tail - 30 <= at_stop[0] <= 60 * 60 + tail, at_stop
+
+
+@pytest.mark.slow
+def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env, monkeypatch):
+    # Tools, Dungeons on Spider cave: the entrance and the supplies are tested on their own
+    # (test_dungeon.py); here the visit itself runs - the farming fight in dungeon mode for the
+    # cave's 15 minutes, no trips out, then out through the Action menu when the game doesn't
+    # move us (the pretend game has no timer of its own).
+    from unclefarmer import settings
+    from unclefarmer.engine import dungeon
+    from unclefarmer.engine.bot import Bot
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, dungeon={"caves": ["Spider cave"]}))
+    monkeypatch.setattr(dungeon, "get_supplies", lambda b, cfg, check_only=False: [])
+    monkeypatch.setattr(dungeon, "level_of", lambda b: 80)
+    monkeypatch.setattr(dungeon, "enter", lambda b, cave: True)
+    left = []
+    monkeypatch.setattr(Bot, "leave_instance", lambda self: left.append(self.clock.time()) or True)
+    game = sim_env()
+    began = game.clock.time()
+    s = simgame.Soak(game, "end_at here\ndungeon", watchdog=120).go()
+    assert s.reason == "finished", list(s.lines)[-15:]
+    assert not s.timed_out and not game.errors and not game.unknown
+    assert len(left) == 1
+    inside = (left[0] - began) / 60
+    assert dungeon.MINUTES + dungeon.OVERTIME <= inside <= dungeon.MINUTES + dungeon.OVERTIME + 1, inside
+    assert game.world.truth["kills"] >= 15
+    said = [line for line in s.lines if "Spider cave: " in line and " kills in " in line]
+    assert said, [line for line in s.lines if "Spider cave" in line]
+    assert not [line for line in s.lines if "resting before" in line or "restocking" in line]
+    assert dungeon.done_today(simgame.NAME) == ["Spider cave"]
+    assert errors_logged() == ""

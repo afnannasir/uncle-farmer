@@ -32,6 +32,8 @@ class FarmingMixin(Parts):
     farmed: bool
     bag_start: dict[str, int] | None
     said_drop: bool
+    in_instance: bool = False     # farm(instance=True) sets these for its own run
+    pack_min: int = 3
 
     def set_modes(self) -> None:
         """Press the mode keys until the game's PK mode and target mode are the profile's."""
@@ -62,16 +64,22 @@ class FarmingMixin(Parts):
                          speak=True)
 
     def farm(self, map_id: int, area: Sequence[float] | None = None, minutes: float = 0, kills: int = 0, only: str = "", skip: str = "", patrol: str = "random",
-             avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None) -> None:
-        """Farm a map until minutes or kills are reached (0 = no limit) or until() is true."""
+             avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None,
+             instance: bool = False, pack: int | None = None) -> None:
+        """Farm a map until minutes or kills are reached (0 = no limit) or until() is true.
+        instance: a dungeon we are standing in (engine/dungeon.py) - its visit can't be left and
+        taken up again, so no trip out (restocking, a full bag, the secret room), no resting
+        (potions instead: the timer runs), and being moved off the map ends it. pack: area skills
+        from this many monsters close together (else 3)."""
         map_id = int(map_id)
-        if not self.restocked_once:
+        if not self.restocked_once and not instance:
             self.restocked_once = True
             self.restock_now(start=True)
         if getattr(self, "bag_start", None) is None:
             from .. import town
             self.bag_start = town.counts(self)   # what was ours before the run: never sold or stored
-        self.travel(map_id)
+        if not instance:
+            self.travel(map_id)
         self.farmed = True        # only a run that got to its map closes the game or the PC when it ends
         area = list(area) if area else atlas.monster_area(map_id)
         avoid: list[tuple[float, float, float, float]] = []
@@ -103,9 +111,12 @@ class FarmingMixin(Parts):
             return bool(self.targets(cast(dict[str, Any], self.snap()), area, only, skip, avoid, limit=chase))
 
         last_supply_check = self.clock.time()
+        was = (self.in_instance, self.pack_min)
+        self.in_instance, self.pack_min = instance, int(pack or 3)
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
+            self.in_instance, self.pack_min = was
             self.farm_filter = None
             self.timing_report(final=True)
             self.timing = None
@@ -116,26 +127,15 @@ class FarmingMixin(Parts):
         while not done():
             try:
                 self.timing_report()
-                if self.clock.time() - last_supply_check > self.p.get("restock_check_every", 30):
-                    last_supply_check = self.clock.time()
-                    with self.timed("town"):
-                        if self.restock_now():
-                            self.log(_("back to {map}", map=atlas.label(map_id)))
-                            self.travel(map_id)
-                            self.set_modes()
-                if self.map_id() != map_id:
-                    self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
-                    with self.timed("town"):
-                        self.travel(map_id)
-                    self.set_modes()
+                last_supply_check = self._restock_check(map_id, last_supply_check)
+                if self.map_id() != map_id and self._off_map(map_id):
+                    break
                 snap = self.snap()
                 self.count_kills(snap)     # what died of our hits since (area skills, damage over time)
                 self.look_after(snap["self"])
                 pets.keep_out(self)
                 pets.look_after(self, snap)
-                with self.timed("town"):
-                    went = self.bag_check() or self.share_trip(map_id)
-                if went:
+                if self._between_fights(map_id):
                     continue          # we went to town: the loop travels back first
                 if keyslots.refill(self):
                     continue
@@ -144,7 +144,7 @@ class FarmingMixin(Parts):
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
                 if mobs:
                     mob = self.next_target(snap, mobs)
-                    if mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
+                    if not self.in_instance and mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
                         continue
                     self.note_pick(snap, mob, mobs)
                     self.fight(mob)
@@ -167,13 +167,63 @@ class FarmingMixin(Parts):
                 self.note_search(map_id, me, cell, started, result)
             except Respawned:
                 loop_i = None
-                self.log(_("going back to {map}", map=atlas.label(map_id)))
-                try:
-                    with self.timed("town"):
-                        self.travel(map_id)   # a no-op after a map respawn there
-                except Respawned:
-                    continue              # died again on the way: the next round handles it
+                if self._respawned(map_id):
+                    break
+
+    def _restock_check(self, map_id: int, last: float) -> float:
+        """Every restock_check_every seconds, top up the restock rules and come back. Never in a
+        dungeon: its visit can't be left and taken up again. Returns when it last looked."""
+        if self.in_instance or self.clock.time() - last <= self.p.get("restock_check_every", 30):
+            return last
+        with self.timed("town"):
+            if self.restock_now():
+                self.log(_("back to {map}", map=atlas.label(map_id)))
+                self.travel(map_id)
                 self.set_modes()
+        return self.clock.time()
+
+    def _off_map(self, map_id: int) -> bool:
+        """We are no longer on the farm's map. A dungeon is over (True: stop); elsewhere go back."""
+        if self.in_instance:
+            self.log(_("moved out of {map}", map=atlas.label(map_id)))
+            return True
+        self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
+        with self.timed("town"):
+            self.travel(map_id)
+        self.set_modes()
+        return False
+
+    def _between_fights(self, map_id: int) -> bool:
+        """The bag, the sheet and the secret room between fights. True when a trip to town was made."""
+        if self.in_instance:
+            self.instance_reads()
+            return False
+        with self.timed("town"):
+            return self.bag_check() or self.share_trip(map_id)
+
+    def _respawned(self, map_id: int) -> bool:
+        """After a death: back to the map. In a dungeon there is no going back once outside (True:
+        stop); back on its spawn point inside, it goes on."""
+        if self.in_instance:
+            if self.map_id() != map_id:
+                self.log(_("died and came back outside {map}", map=atlas.label(map_id)), speak=True)
+                return True
+            return False
+        self.log(_("going back to {map}", map=atlas.label(map_id)))
+        try:
+            with self.timed("town"):
+                self.travel(map_id)   # a no-op after a map respawn there
+        except Respawned:
+            return False          # died again on the way: the next round handles it
+        self.set_modes()
+        return False
+
+    def instance_reads(self) -> None:
+        """What bag_check reads between fights, without what it may do about it: inside a dungeon
+        a full bag or the day's drop time can't send us out - the visit would be lost."""
+        self.refresh_sheet()
+        if self.tally:
+            self.tally.update(self)
 
     def share_trip(self, map_id: int) -> bool:
         """Leave the farm for a short secret room visit when one is due (chores.trip_due: just

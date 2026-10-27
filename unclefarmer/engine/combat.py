@@ -848,7 +848,7 @@ class SkillBook:
             choice = (max(worth, key=lambda x: (self.debuff_worth(x, v.hp_share), x["page"] == up), default=None)
                       or v.first("dot", lambda s: not v.running(s)))
         # 4. a pack: the widest area skill; a Hunter spends its marks with Marked Shot
-        if not choice and v.pack >= 3:
+        if not choice and v.pack >= getattr(self.b, "pack_min", 3):
             if self.cls == "Hunter" and (marks >= 2 if marks is not None else now - self.marked_at < 8):
                 choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
             if not choice:

@@ -6,7 +6,7 @@ import subprocess
 import wx
 
 from ... import filelock, gameinstall, i18n, paths, settings
-from ...engine import plan as plans, script
+from ...engine import dungeon, plan as plans, script
 from ...i18n import _
 from ..common import ask, error, info, save_file, show_text
 from ..plan import PlanDialog
@@ -122,8 +122,8 @@ class EditingMixin(FrameParts):
         self.run_errand(text, title, walk=True)
 
     def open_tool(self, which):
-        """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering: set up for the logged-in character,
-        then check or start it as a job on that game."""
+        """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
+        logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
         s = self.snapshot()
         name = ((s or {}).get("self") or {}).get("name")
@@ -136,16 +136,22 @@ class EditingMixin(FrameParts):
             with wx.BusyCursor():
                 self.auto_scan(name)          # a fresh look at the bag and gear first
         from ..chores import ChoresDialog
+        from ..dungeon import DungeonDialog
         from ..gathering import GatheringDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
-                           "gather": (GatheringDialog, "gather", _("Gathering"))}[which]
-        extra = (self.snapshot,) if which == "gather" else ()     # "Add where I stand" reads the game
+                           "gather": (GatheringDialog, "gather", _("Gathering")),
+                           "dungeon": (DungeonDialog, "dungeon", _("Dungeons"))}[which]
+        # "Add where I stand" and "Use where I stand now" read the game
+        extra = (self.snapshot,) if which in ("gather", "dungeon") else ()
         with cls(self, name, *extra) as d:
             code = d.ShowModal()
+            cfg = getattr(d, "cfg", None)
         if code == CHECK:
             self.run_errand(cmd + " check\n", _("{tool} check", tool=title))
+        elif code == START and which == "dungeon":
+            self.run_errand(dungeon.script(cfg or {}), title)     # its end place, then the caves
         elif code == START:
             self.run_errand(cmd + "\n", title)
 

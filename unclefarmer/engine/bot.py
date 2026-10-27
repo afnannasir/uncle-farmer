@@ -102,5 +102,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.walk_only = False            # the walking assistant (go): Swift beast all the way, no fights
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target
+        self.in_instance = False          # farming a dungeon: no trips out, no resting, leaving ends it
+        self.pack_min = 3                 # monsters close together that make an area skill worth it
         self.timing = None                # phase -> seconds this hour (farm sets it up; see timed())
         self._phases = []                 # [phase, started, seconds of inner phases] of the phases running

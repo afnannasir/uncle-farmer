@@ -349,6 +349,35 @@ Check only reads the gang area's entrance and says where it would gather. Tools,
 collection now sells to all three buyers from wherever you are. In a script: `gather`,
 `gather check`, `sell_collection` or `sell_collection fish`.
 
+### Dungeons
+
+Tools, Dungeons (Ctrl+Shift+G) runs the caves that can be entered once a game day: Scorpion Cave
+(level 60, entered at thousand miles of rivers) and Spider cave (level 40, entered at water
+curtained cave). Each gives 15 minutes inside; the aim is as many kills as those minutes give.
+
+- **Caves tab:** tick the caves to go to and put them in order. Each line says whether the cave is
+  done today. A cave above your level is left out.
+- **Supplies tab:** what to have before setting out: the pet's blue potions (25 by default), Pet
+  Rice Rolls (3), your own blue potions (50) and red potions (30). Each row uses the potion on your
+  hotkey (else the strongest in the bag) unless you choose one; 0 means don't look. What is short
+  is taken from the storehouse, then bought, before the bot sets out, and again between two caves.
+  If something is still short it doesn't go (or goes anyway, if you choose). The pet's rows count
+  only with a pet ticked in Character, Settings.
+- **Inside:** the bot rides to the entrance, chooses "Enter the dungeon", and from the cave's
+  safe landing it never stops: it goes round the whole cave (the quick loop by default), fights
+  whatever is in reach, and uses area skills as soon as two monsters are close together (you can
+  raise that). Monsters come back about 30 seconds after they die, at random anywhere in the
+  cave, so going round beats waiting in one place. It drinks instead of resting, keeps the pet
+  out, its HP and MP up, and its amiability up with Rice Rolls. Nothing sends it out early: no
+  restocking trip, no full-bag trip, no secret room visit, since a visit can't be taken up again.
+- **The end:** after 15 minutes the game moves you out by itself (if it ever doesn't, the bot
+  leaves through the Action menu). Then the next cave, and at the end the place on the Where to
+  end tab: back where you started it (the default), a place you choose, home with the hearthstone,
+  or where it is.
+
+Check only says what is short and which caves it would go to. In a script: `dungeon` or
+`dungeon check` (put `end_at` first to choose where it ends).
+
 ## Walking
 
 Bot, Walk to a dungeon or map (Ctrl+W):

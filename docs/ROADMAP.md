@@ -64,7 +64,7 @@ gang's craftsmen (cheaper) or the nearest city's, never spend below your arnebia
 | 10 | **Hunting bounties** | Medium | Small | Collect hunting bounties from the city officers on a town trip | Nothing: the menu texts are in the game's files |
 | 11 | **Enhancing and sockets** (Equipment Enhancer built; sockets to do) | Medium | Medium | Enhance gear at the Forger and insert gems at the Artificer, only with protection runes and only when the player asks; read out the success chance first | The rules are in the game's files and the chance is shown in the menu. Enhancing is a gamble, so the bot advises and the player confirms |
 | 12 | **Recycling** | Low | Small | Sell or recycle equipment you've outgrown on a town trip (a new list in Bag and supplies); recycled things can be bought back within 48 hours | Nothing: the menu texts are in the game's files |
-| 13 | **Experience dungeons** | Medium | Large | The daily solo experience dungeon: go in, fight as many as possible in the time, come out | Each dungeon is its own map; the bot can already fight anywhere |
+| 13 | **Experience dungeons** (Scorpion Cave and Spider cave built: Tools, Dungeons) | Medium | Large | The daily solo experience dungeon: go in, fight as many as possible in the time, come out | A live run of each; the other once-a-day dungeons, each from one hand run with the recorder |
 | 14 | **New skills** | Low | Small | Say when a new combat skill becomes learnable at your level, and where | Masters and levels are in the help |
 
 

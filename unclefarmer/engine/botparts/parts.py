@@ -45,6 +45,8 @@ class Parts:
     daily_reset: str
     daily_done: bool
     end_place: tuple[Any, ...]
+    in_instance: bool
+    pack_min: int
     start_place: tuple[Any, ...] | None
     drop_keep: int | None
     agent_state: Any

@@ -65,6 +65,9 @@ msgstr "Unhein unke &naam se pukarein"
 msgid "&Cancel the shutdown"
 msgstr "Shutdown &mansookh karein"
 
+msgid "&Caves (tick the ones to go to):"
+msgstr "&Ghaar (jin mein jaana hai unhein tick karein):"
+
 msgid "&Change key..."
 msgstr "&Key tabdeel karein..."
 
@@ -150,6 +153,9 @@ msgstr "&Gem Maker...\tCtrl+G"
 msgid "&Gem:"
 msgstr "&Gem:"
 
+msgid "&Get it:"
+msgstr "&Kahan se lein:"
+
 msgid "&Get more from:"
 msgstr "&Mazeed kahan se:"
 
@@ -158,6 +164,9 @@ msgstr "Ladai kitne second baad &chhor dein:"
 
 msgid "&Go"
 msgstr "&Jayein"
+
+msgid "&Going round:"
+msgstr "&Chakkar:"
 
 msgid "&Goodbyes, one per line:"
 msgstr "&Rukhsati, har line mein ek:"
@@ -691,6 +700,9 @@ msgstr "Battlefield merit"
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Agli jagah par jane se pehle (sirf jab ek se zyada jagah ho)"
 
+msgid "Before setting out, have at least (0: don't look)"
+msgstr "Nikalne se pehle kam az kam itna ho (0: na dekhein)"
+
 msgid ""
 "Before setting out, the bag is full with less than this much load &left (900 to 1000 is safe):"
 msgstr ""
@@ -738,6 +750,12 @@ msgstr "C&opy"
 
 msgid "Cancel"
 msgstr "Mansookh"
+
+msgid "Caves"
+msgstr "Ghaar"
+
+msgid "Caves, each once a game day, in this order"
+msgstr "Ghaar, har ek game ke din mein ek baar, isi tarteeb se"
 
 msgid "Cell x:"
 msgstr "Khanah x:"
@@ -937,6 +955,9 @@ msgstr ""
 msgid "Crystals"
 msgstr "Crystals"
 
+msgid "D&ungeons...\tCtrl+Shift+G"
+msgstr "D&ungeons...\tCtrl+Shift+G"
+
 msgid "D&uplicate..."
 msgstr "N&aqal..."
 
@@ -983,6 +1004,9 @@ msgstr "Har game din ke &pehle farming run ke shuru mein din ke kaam karein"
 msgid "Don't donate"
 msgstr "Chanda na dein"
 
+msgid "Don't go"
+msgstr "Na jaayein"
+
 msgid "Done this game day (it starts at 00:00 GMT):"
 msgstr "Is game din mein ho chuka (din 00:00 GMT par shuru hota hai):"
 
@@ -1018,6 +1042,9 @@ msgstr "Drop time:"
 
 msgid "Dungeon entrance"
 msgstr "Dungeon ka daakhla"
+
+msgid "Dungeons"
+msgstr "Dungeons"
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
@@ -1195,11 +1222,23 @@ msgstr "Ek level se aage"
 msgid "From everyone"
 msgstr "Sab se"
 
+msgid "From the shop only"
+msgstr "Sirf dukaan se"
+
+msgid "From the storehouse only"
+msgstr "Sirf storehouse se"
+
+msgid "From the storehouse, then the shop"
+msgstr "Pehle storehouse se, phir dukaan se"
+
 msgid "From trusted players"
 msgstr "Bharosemand khilariyon se"
 
 msgid "Full bag"
 msgstr "Bhara basta"
+
+msgid "Full loop (every lane, a longer lap)"
+msgstr "Poora chakkar (har raasta, lamba chakkar)"
 
 msgid "Full patrol loop"
 msgstr "Poora patrol loop"
@@ -1296,6 +1335,9 @@ msgstr "Global"
 
 msgid "Go &on"
 msgstr "Jari &rakho"
+
+msgid "Go anyway"
+msgstr "Phir bhi jaayein"
 
 msgid "Go round them in turn until the plan stops"
 msgstr "Jab tak mansooba rukta hai, unke ird gird baari baari jate rahein"
@@ -1423,6 +1465,9 @@ msgid ""
 msgstr ""
 "mujhe nahi pata {role} kahan milega - pehle agent chalu karke kisi se mil kar aayein"
 
+msgid "I don't know where {cave} is entered"
+msgstr "Mujhe nahi pata {cave} mein kahan se daakhil hote hain"
+
 msgid "I don't know which shop sells {item}"
 msgstr "mujhe nahi pata kaunsi dukaan {item} bechti hai"
 
@@ -1492,6 +1537,14 @@ msgstr "Andarune hall"
 
 msgid "Insert command"
 msgstr "Command shamil karein"
+
+msgid "Inside"
+msgstr "Andar"
+
+msgid ""
+"Inside, the bot never stops: it goes round the whole cave, fights whatever is in reach, drinks instead of resting, keeps the pet out and fed, and stays until the game moves it out after 15 minutes. Monsters come back about 30 seconds after they die, anywhere in the cave."
+msgstr ""
+"Andar bot kabhi nahi rukta: poore ghaar ka chakkar lagata hai, jo pohanch mein ho us se larta hai, aaraam ke bajaye potion peeta hai, pet ko bahar aur khilaya hua rakhta hai, aur tab tak rehta hai jab tak game 15 minute baad use bahar na nikaal de. Monsters marne ke takreeban 30 second baad ghaar mein kahin bhi wapas aa jaate hain."
 
 msgid ""
 "Installed. If the game was running when you installed it, restart the game."
@@ -2021,8 +2074,14 @@ msgstr "Doosri cheezein"
 msgid "Other items picked up:"
 msgstr "Doosri cheezein mili:"
 
+msgid "Our blue potions"
+msgstr "Hamare neele potions"
+
 msgid "Our own gang"
 msgstr "Hamara apna gang"
+
+msgid "Our red potions"
+msgstr "Hamare laal potions"
 
 msgid "Outside"
 msgstr "Bahar"
@@ -2073,6 +2132,15 @@ msgstr "Pet HP potions"
 
 msgid "Pet MP potions"
 msgstr "Pet MP potions"
+
+msgid "Pet Rice Roll, or the pet food in Character, Settings"
+msgstr "Pet Rice Roll, ya Kirdaar, Tarteeb mein chuna hua pet ka khana"
+
+msgid "Pet Rice Rolls"
+msgstr "Pet Rice Rolls"
+
+msgid "Pet blue potions"
+msgstr "Pet ke neele potions"
 
 msgid "Pet food"
 msgstr "Pet ka khana"
@@ -2168,6 +2236,9 @@ msgstr "Run khatam hone par pet ko &wapas bhej dein"
 
 msgid "Quick guide"
 msgstr "Mukhtasar guide"
+
+msgid "Quick loop (the whole cave, lanes further apart)"
+msgstr "Tez chakkar (poora ghaar, raaste door door)"
 
 msgid "Quick patrol loop"
 msgstr "Tez patrol loop"
@@ -2314,6 +2385,9 @@ msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
 msgid "Scan complete."
 msgstr "Scan mukammal."
 
+msgid "Scorpion Cave"
+msgstr "Scorpion Cave"
+
 msgid "Script &guide"
 msgstr "Script &guide"
 
@@ -2418,6 +2492,9 @@ msgstr "Dikha&o:"
 msgid "Shop:"
 msgstr "Dukaan:"
 
+msgid "Short loop (the middle of the cave)"
+msgstr "Chhota chakkar (ghaar ka darmiyan)"
+
 msgid "Short patrol loop (fights what comes near it)"
 msgstr "Chhota patrol loop (jo qareeb aaye us se larta hai)"
 
@@ -2488,6 +2565,9 @@ msgstr "Awaaz"
 msgid "Speech and language"
 msgstr "Awaaz aur zaban"
 
+msgid "Spider cave"
+msgstr "Spider cave"
+
 msgid "St&ore:"
 msgstr "Jama &karein:"
 
@@ -2521,6 +2601,9 @@ msgstr ""
 
 msgid "Steps to keep from a boss:"
 msgstr "Boss se itne qadam door rahein:"
+
+msgid "Still short &after that:"
+msgstr "Us ke &baad bhi kam ho:"
 
 msgid "Stop"
 msgstr "Rukein"
@@ -2796,6 +2879,11 @@ msgstr "Sab se qareebi shehar ka"
 msgid "The nearest map where no monsters spawn."
 msgstr "Sab se qareebi map jahan koi monster paida nahi hota."
 
+msgid ""
+"The pet's rows count only with a pet ticked in Character, Settings, and the blue potions only for a character that uses MP. Between two caves the bot tops up again."
+msgstr ""
+"Pet wali qataarein sirf tab ginti hain jab Kirdaar, Tarteeb mein koi pet tick ho, aur neele potions sirf us kirdaar ke liye jo MP istemaal karta hai. Do ghaaron ke darmiyan bot phir se poora karta hai."
+
 msgid "The plan as a script"
 msgstr "Mansooba bator Script"
 
@@ -2900,6 +2988,9 @@ msgstr "Phen&kein:"
 
 msgid "Thrown away:"
 msgstr "Phenke gaye:"
+
+msgid "Tick a cave to go to."
+msgstr "Jaane ke liye koi ghaar tick karein."
 
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
@@ -3023,6 +3114,9 @@ msgstr "Basta se &teleport stones aur hearthstone istemal karein"
 msgid "Use Gem &Protection Runes (a failure breaks no gem)"
 msgstr "Gem &Protection Runes istemal karein (nakami par koi gem nahi tootta)"
 
+msgid "Use area &skills on this many monsters close together:"
+msgstr "Itne monsters paas paas hon to area &skills chalayein:"
+
 msgid "Use item"
 msgstr "Cheez istemal karein"
 
@@ -3127,6 +3221,12 @@ msgstr ""
 msgid "West edge (x):"
 msgstr "Maghribi kinara (x):"
 
+msgid "What is on the hotkey (else the strongest in the bag)"
+msgstr "Jo hotkey par hai (warna basta mein sab se taqatwar)"
+
+msgid "What is short"
+msgstr "Jo kam hai"
+
 msgid "What the bot knows about this character:"
 msgstr "Bot is kirdaar ke baare mein kya jaanta hai:"
 
@@ -3152,6 +3252,9 @@ msgstr "Jab uski amiability is se kam ho:"
 
 msgid "When the bag is &full outside:"
 msgstr "Bahar basta &bhar jaye to:"
+
+msgid "When the last cave is done"
+msgstr "Jab aakhri ghaar ho jaaye"
 
 msgid "When to stop"
 msgstr "Kab rokna hai"
@@ -3576,6 +3679,9 @@ msgstr ""
 msgid "defence break"
 msgstr "defence break"
 
+msgid "died and came back outside {map}"
+msgstr "mar kar {map} se bahar wapas aaya"
+
 msgid "died on {map} ({n} so far)"
 msgstr "{map} par mar gaye ({n} ab tak)"
 
@@ -3585,6 +3691,9 @@ msgstr "{n} dafa mar gaye - rok rahe hain; yeh jagah shayad bohot mushkil hai"
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr ""
 "yahan kaam khatam - {map} ja rahe hain, jahan koi monster paida nahi hota"
+
+msgid "done today"
+msgstr "aaj ho gaya"
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "ho gaya: {n} {gem} banaye; basta mein {have}"
@@ -3617,6 +3726,12 @@ msgid ""
 "end_at takes start, safe, hearthstone, here, or a map (and 'at x,y'): {what}"
 msgstr ""
 "end_at start, safe, hearthstone, here, ya koi map leta hai (aur 'at x,y'): {what}"
+
+msgid "entrance unknown"
+msgstr "daakhla maloom nahi"
+
+msgid "every chosen dungeon is done for today"
+msgstr "har chuna hua dungeon aaj ke liye ho gaya"
 
 msgid "everything"
 msgstr "sab kuch"
@@ -3812,6 +3927,9 @@ msgstr "hunting bounty"
 msgid "in the city"
 msgstr "shehar mein"
 
+msgid "in {cave}: {n} minutes to kill all we can"
+msgstr "{cave} mein: jitne maar sakein, {n} minute"
+
 msgid "in {room}; practice time left: {m} minutes"
 msgstr "{room} mein; mashq ka baqi waqt: {m} minute"
 
@@ -3974,6 +4092,9 @@ msgstr "mode set: {mode}"
 msgid "moved off {place} too often"
 msgstr "{place} se bohot baar hatna para"
 
+msgid "moved out of {map}"
+msgstr "{map} se bahar nikaal diya gaya"
+
 msgid "movement"
 msgstr "movement"
 
@@ -4122,8 +4243,14 @@ msgstr "{gem} banane ke liye itni extra arnebia nahi hai (fee {fee} har ek)"
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 
+msgid "not enough supplies for the dungeon"
+msgstr "dungeon ke liye saamaan kaafi nahi"
+
 msgid "not set"
 msgstr "set nahi"
+
+msgid "not yet today"
+msgstr "aaj abhi nahi"
 
 msgid "nothing can follow 'else' in the same if"
 msgstr "isi if mein 'else' ke baad kuch nahi aa sakta"
@@ -4371,6 +4498,9 @@ msgstr "mukhtasar"
 msgid "short loop"
 msgstr "mukhtasar loop"
 
+msgid "short of supplies for the dungeon: {what}"
+msgstr "dungeon ke liye saamaan kam hai: {what}"
+
 msgid "skills go by keys again: {why}"
 msgstr "skills ab phir keys se: {why}"
 
@@ -4451,6 +4581,9 @@ msgstr "stun ya slow"
 
 msgid "summoned {pet}"
 msgstr "{pet} bula liya"
+
+msgid "supplies for the dungeon: {what}"
+msgstr "dungeon ke liye saamaan: {what}"
 
 msgid ""
 "survey cities, survey all, survey everything, survey here, or survey <map>"
@@ -4985,6 +5118,9 @@ msgstr ""
 msgid "would enter {room}"
 msgstr "{room} mein jayenge"
 
+msgid "would go to: {caves}"
+msgstr "yahan jaata: {caves}"
+
 msgid "would {what}"
 msgstr "yeh karenge: {what}"
 
@@ -5029,6 +5165,21 @@ msgstr ""
 
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
+
+msgid "{cave} - level {n} - {where} - {today}"
+msgstr "{cave} - level {n} - {where} - {today}"
+
+msgid "{cave} needs level {n}"
+msgstr "{cave} ke liye level {n} chahiye"
+
+msgid "{cave}: still inside after the timer - leaving"
+msgstr "{cave}: timer ke baad bhi andar - nikal raha hai"
+
+msgid "{cave}: the game didn't let us in (once a day)"
+msgstr "{cave}: game ne andar nahi aane diya (din mein ek baar)"
+
+msgid "{cave}: {n} kills in {m} minutes"
+msgstr "{cave}: {m} minute mein {n} kills"
 
 msgid "{cell} can't be reached on {map}"
 msgstr "{map} par {cell} tak nahi pohanch sakte"
@@ -5303,6 +5454,9 @@ msgstr "{npc} ne jawab nahi diya"
 msgid "{npc} isn't in sight - looking for it"
 msgstr "{npc} nazar nahi aa raha - dhoond rahe hain"
 
+msgid "{npc} offered no \"Enter the dungeon\""
+msgstr "{npc} ne \"Enter the dungeon\" nahi diya"
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} har ek"
 
@@ -5450,6 +5604,17 @@ msgstr "{what} number hona chahiye, {value} nahi"
 
 msgid "{what} potion: {item} on key {key}"
 msgstr "{what} potion: {item} key {key} par"
+
+msgid "{what}, at least:"
+msgstr "{what}, kam az kam:"
+
+msgid "{what}:"
+msgstr "{what}:"
+
+msgid ""
+"{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
+msgstr ""
+"{what}: basta mein koi nahi aur Tools, Dungeons mein koi chuna nahi - dekha nahi gaya"
 
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr ""
