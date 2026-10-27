@@ -78,8 +78,22 @@ def entity(b, snap):
 
 
 def chosen(b):
-    """The pets the player ticked, in their order (profile "pets": [{"name", "use"}])."""
-    return [x["name"] for x in b.p.get("pets", []) if x.get("use")]
+    """The pets the player ticked, in their order (profile "pets": [{"name", "use"}]); with none
+    ticked, the one a dungeon run took on for itself (adopt)."""
+    return [x["name"] for x in b.p.get("pets", []) if x.get("use")] or list(getattr(b, "run_pets", None) or [])
+
+
+def adopt(b) -> str | None:
+    """No pet ticked, but one is out: look after that one for this run (b.run_pets, never saved).
+    In a dungeon the pet is a good part of the kills - the game counts its kills as ours - and it
+    needs its potions and Rice Rolls whether or not the player ticked it. Its name, or None."""
+    if chosen(b):
+        return None
+    out = next((r for r in owned(b) if r.get("name") and state(r, clock_for(b)) == "out"), None)
+    if out is None:
+        return None
+    b.run_pets = [out["name"]]
+    return out["name"]
 
 
 def wanted(b, rows):

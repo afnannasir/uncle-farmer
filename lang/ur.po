@@ -4152,9 +4152,18 @@ msgstr ""
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "{pet} naam ka koi pet nahi (pets: {pets})"
 
+msgid "no pet out and none ticked in Character, Settings - going without one"
+msgstr ""
+"na koi pet bahar hai na Kirdaar, Tarteeb mein tick - pet ke baghair ja raha hai"
+
 msgid "no pet ready to summon yet (cooldown); farming on without one"
 msgstr ""
 "abhi bulane ke liye koi pet tayyar nahi (cooldown); iske baghair kheti jari hai"
+
+msgid ""
+"no pet ticked in Character, Settings - looking after {pet}, the one out now"
+msgstr ""
+"Kirdaar, Tarteeb mein koi pet tick nahi - {pet} ka khayal rakh raha hai, jo abhi bahar hai"
 
 msgid "no potions"
 msgstr "koi potion nahi"

@@ -65,12 +65,13 @@ class FarmingMixin(Parts):
 
     def farm(self, map_id: int, area: Sequence[float] | None = None, minutes: float = 0, kills: int = 0, only: str = "", skip: str = "", patrol: str = "random",
              avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None,
-             instance: bool = False, pack: int | None = None) -> None:
+             instance: bool = False, pack: int | None = None, chase: int | None = None) -> None:
         """Farm a map until minutes or kills are reached (0 = no limit) or until() is true.
         instance: a dungeon we are standing in (engine/dungeon.py) - its visit can't be left and
         taken up again, so no trip out (restocking, a full bag, the secret room), no resting
         (potions instead: the timer runs), and being moved off the map ends it. pack: area skills
-        from this many monsters close together (else 3)."""
+        from this many monsters close together (else 3). chase: on a patrol loop, chase what is
+        within this many walking steps (else the profile's chase_range)."""
         map_id = int(map_id)
         if not self.restocked_once and not instance:
             self.restocked_once = True
@@ -91,7 +92,8 @@ class FarmingMixin(Parts):
         # On a patrol loop, only what is within chase_range walking steps is chased: the loop
         # passes near the rest (a short loop keeps nearly the whole map that close). Wandering at
         # random, the nearest is taken however far.
-        chase = self.p.get("chase_range", 40) if loop else None
+        steps = chase or self.p.get("chase_range", 40)
+        chase = steps if loop else None
         self.farm_filter = (area, only, skip, avoid)
         if self.timing is None:
             self.timing = {"_since": self.clock.time(), "_kills": self.kills, "_contribution": self.contribution_now()}

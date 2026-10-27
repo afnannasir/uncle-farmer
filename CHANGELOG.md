@@ -10,9 +10,12 @@
 - Before setting out it tops up the pet's blue potions, Pet Rice Rolls and your own blue and red
   potions (25, 3, 50 and 30 by default) from the storehouse or the shop, and doesn't go if they
   are still short, unless you say go anyway.
-- Inside it never stops: it goes round the whole cave, fights whatever is in reach, uses area
-  skills on two monsters close together, drinks instead of resting, and keeps the pet out, healed
-  and fed. Nothing sends it out early.
+- Inside it never stops: it takes the nearest monster within 90 steps (simulated visits showed
+  the chase range, not the loop, decides the kills: 5 to 13% more for a caster than farming's
+  40), uses area skills on two monsters close together, drinks instead of resting, and keeps the
+  pet out, healed and fed - the pet that is out, when none is ticked. Nothing sends it out early.
+- Kills now include the pet's, as the game counts them: in the first Scorpion Cave run the game
+  said 298 and the bot 286, the pet having struck the last blow on 22.
 - Then the next cave, and at the end back where you started it, or the place you choose.
   Scripts: `dungeon`, `dungeon check`.
 
