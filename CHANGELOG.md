@@ -2,6 +2,20 @@
 
 ## Next version
 
+**Dungeons** (Tools, Dungeons, Ctrl+Shift+G)
+
+- Scorpion Cave and Spider cave, each once a game day, for as many kills as their 15 minutes give.
+  Learned from a hand run of each: where they are entered, the menu, the timer, and how the game
+  moves you out at the end.
+- Before setting out it tops up the pet's blue potions, Pet Rice Rolls and your own blue and red
+  potions (25, 3, 50 and 30 by default) from the storehouse or the shop, and doesn't go if they
+  are still short, unless you say go anyway.
+- Inside it never stops: it goes round the whole cave, fights whatever is in reach, uses area
+  skills on two monsters close together, drinks instead of resting, and keeps the pet out, healed
+  and fed. Nothing sends it out early.
+- Then the next cave, and at the end back where you started it, or the place you choose.
+  Scripts: `dungeon`, `dungeon check`.
+
 **Gathering** (Tools, Gathering, Ctrl+Shift+F)
 
 - Fishing, mining or collecting herbs, whichever the character has learned: gangs' Lakes,

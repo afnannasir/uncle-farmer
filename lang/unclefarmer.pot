@@ -65,6 +65,9 @@ msgstr ""
 msgid "&Cancel the shutdown"
 msgstr ""
 
+msgid "&Caves (tick the ones to go to):"
+msgstr ""
+
 msgid "&Change key..."
 msgstr ""
 
@@ -150,6 +153,9 @@ msgstr ""
 msgid "&Gem:"
 msgstr ""
 
+msgid "&Get it:"
+msgstr ""
+
 msgid "&Get more from:"
 msgstr ""
 
@@ -157,6 +163,9 @@ msgid "&Give up a fight after (seconds):"
 msgstr ""
 
 msgid "&Go"
+msgstr ""
+
+msgid "&Going round:"
 msgstr ""
 
 msgid "&Goodbyes, one per line:"
@@ -682,6 +691,9 @@ msgstr ""
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr ""
 
+msgid "Before setting out, have at least (0: don't look)"
+msgstr ""
+
 msgid ""
 "Before setting out, the bag is full with less than this much load &left (900 to 1000 is safe):"
 msgstr ""
@@ -726,6 +738,12 @@ msgid "C&opy"
 msgstr ""
 
 msgid "Cancel"
+msgstr ""
+
+msgid "Caves"
+msgstr ""
+
+msgid "Caves, each once a game day, in this order"
 msgstr ""
 
 msgid "Cell x:"
@@ -923,6 +941,9 @@ msgstr ""
 msgid "Crystals"
 msgstr ""
 
+msgid "D&ungeons...\tCtrl+Shift+G"
+msgstr ""
+
 msgid "D&uplicate..."
 msgstr ""
 
@@ -969,6 +990,9 @@ msgstr ""
 msgid "Don't donate"
 msgstr ""
 
+msgid "Don't go"
+msgstr ""
+
 msgid "Done this game day (it starts at 00:00 GMT):"
 msgstr ""
 
@@ -1003,6 +1027,9 @@ msgid "Drop time:"
 msgstr ""
 
 msgid "Dungeon entrance"
+msgstr ""
+
+msgid "Dungeons"
 msgstr ""
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
@@ -1176,10 +1203,22 @@ msgstr ""
 msgid "From everyone"
 msgstr ""
 
+msgid "From the shop only"
+msgstr ""
+
+msgid "From the storehouse only"
+msgstr ""
+
+msgid "From the storehouse, then the shop"
+msgstr ""
+
 msgid "From trusted players"
 msgstr ""
 
 msgid "Full bag"
+msgstr ""
+
+msgid "Full loop (every lane, a longer lap)"
 msgstr ""
 
 msgid "Full patrol loop"
@@ -1274,6 +1313,9 @@ msgid "Global"
 msgstr ""
 
 msgid "Go &on"
+msgstr ""
+
+msgid "Go anyway"
 msgstr ""
 
 msgid "Go round them in turn until the plan stops"
@@ -1396,6 +1438,9 @@ msgid ""
 "I don't know where to find a {role} - visit one with the agent running first"
 msgstr ""
 
+msgid "I don't know where {cave} is entered"
+msgstr ""
+
 msgid "I don't know which shop sells {item}"
 msgstr ""
 
@@ -1460,6 +1505,13 @@ msgid "Inner hall"
 msgstr ""
 
 msgid "Insert command"
+msgstr ""
+
+msgid "Inside"
+msgstr ""
+
+msgid ""
+"Inside, the bot never stops: it goes round the whole cave, fights whatever is in reach, drinks instead of resting, keeps the pet out and fed, and stays until the game moves it out after 15 minutes. Monsters come back about 30 seconds after they die, anywhere in the cave."
 msgstr ""
 
 msgid ""
@@ -1974,7 +2026,13 @@ msgstr ""
 msgid "Other items picked up:"
 msgstr ""
 
+msgid "Our blue potions"
+msgstr ""
+
 msgid "Our own gang"
+msgstr ""
+
+msgid "Our red potions"
 msgstr ""
 
 msgid "Outside"
@@ -2024,6 +2082,15 @@ msgid "Pet HP potions"
 msgstr ""
 
 msgid "Pet MP potions"
+msgstr ""
+
+msgid "Pet Rice Roll, or the pet food in Character, Settings"
+msgstr ""
+
+msgid "Pet Rice Rolls"
+msgstr ""
+
+msgid "Pet blue potions"
 msgstr ""
 
 msgid "Pet food"
@@ -2117,6 +2184,9 @@ msgid "Put the pet &away when the run ends"
 msgstr ""
 
 msgid "Quick guide"
+msgstr ""
+
+msgid "Quick loop (the whole cave, lanes further apart)"
 msgstr ""
 
 msgid "Quick patrol loop"
@@ -2262,6 +2332,9 @@ msgstr ""
 msgid "Scan complete."
 msgstr ""
 
+msgid "Scorpion Cave"
+msgstr ""
+
 msgid "Script &guide"
 msgstr ""
 
@@ -2363,6 +2436,9 @@ msgstr ""
 msgid "Shop:"
 msgstr ""
 
+msgid "Short loop (the middle of the cave)"
+msgstr ""
+
 msgid "Short patrol loop (fights what comes near it)"
 msgstr ""
 
@@ -2432,6 +2508,9 @@ msgstr ""
 msgid "Speech and language"
 msgstr ""
 
+msgid "Spider cave"
+msgstr ""
+
 msgid "St&ore:"
 msgstr ""
 
@@ -2463,6 +2542,9 @@ msgid "Stays where it is when it stops (monsters may still attack)."
 msgstr ""
 
 msgid "Steps to keep from a boss:"
+msgstr ""
+
+msgid "Still short &after that:"
 msgstr ""
 
 msgid "Stop"
@@ -2726,6 +2808,10 @@ msgstr ""
 msgid "The nearest map where no monsters spawn."
 msgstr ""
 
+msgid ""
+"The pet's rows count only with a pet ticked in Character, Settings, and the blue potions only for a character that uses MP. Between two caves the bot tops up again."
+msgstr ""
+
 msgid "The plan as a script"
 msgstr ""
 
@@ -2819,6 +2905,9 @@ msgid "Throw awa&y:"
 msgstr ""
 
 msgid "Thrown away:"
+msgstr ""
+
+msgid "Tick a cave to go to."
 msgstr ""
 
 msgid "Tick the monsters to fight:"
@@ -2933,6 +3022,9 @@ msgstr ""
 msgid "Use Gem &Protection Runes (a failure breaks no gem)"
 msgstr ""
 
+msgid "Use area &skills on this many monsters close together:"
+msgstr ""
+
 msgid "Use item"
 msgstr ""
 
@@ -3030,6 +3122,12 @@ msgstr ""
 msgid "West edge (x):"
 msgstr ""
 
+msgid "What is on the hotkey (else the strongest in the bag)"
+msgstr ""
+
+msgid "What is short"
+msgstr ""
+
 msgid "What the bot knows about this character:"
 msgstr ""
 
@@ -3053,6 +3151,9 @@ msgid "When its amiability is below:"
 msgstr ""
 
 msgid "When the bag is &full outside:"
+msgstr ""
+
+msgid "When the last cave is done"
 msgstr ""
 
 msgid "When to stop"
@@ -3460,6 +3561,9 @@ msgstr ""
 msgid "defence break"
 msgstr ""
 
+msgid "died and came back outside {map}"
+msgstr ""
+
 msgid "died on {map} ({n} so far)"
 msgstr ""
 
@@ -3467,6 +3571,9 @@ msgid "died {n} times - stopping; this place may be too hard"
 msgstr ""
 
 msgid "done here - going to {map}, where no monsters spawn"
+msgstr ""
+
+msgid "done today"
 msgstr ""
 
 msgid "done: made {n} {gem}; {have} in the bag"
@@ -3496,6 +3603,12 @@ msgstr ""
 
 msgid ""
 "end_at takes start, safe, hearthstone, here, or a map (and 'at x,y'): {what}"
+msgstr ""
+
+msgid "entrance unknown"
+msgstr ""
+
+msgid "every chosen dungeon is done for today"
 msgstr ""
 
 msgid "everything"
@@ -3687,6 +3800,9 @@ msgstr ""
 msgid "in the city"
 msgstr ""
 
+msgid "in {cave}: {n} minutes to kill all we can"
+msgstr ""
+
 msgid "in {room}; practice time left: {m} minutes"
 msgstr ""
 
@@ -3843,6 +3959,9 @@ msgstr ""
 msgid "moved off {place} too often"
 msgstr ""
 
+msgid "moved out of {map}"
+msgstr ""
+
 msgid "movement"
 msgstr ""
 
@@ -3980,7 +4099,13 @@ msgstr ""
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr ""
 
+msgid "not enough supplies for the dungeon"
+msgstr ""
+
 msgid "not set"
+msgstr ""
+
+msgid "not yet today"
 msgstr ""
 
 msgid "nothing can follow 'else' in the same if"
@@ -4222,6 +4347,9 @@ msgstr ""
 msgid "short loop"
 msgstr ""
 
+msgid "short of supplies for the dungeon: {what}"
+msgstr ""
+
 msgid "skills go by keys again: {why}"
 msgstr ""
 
@@ -4298,6 +4426,9 @@ msgid "stun or slow"
 msgstr ""
 
 msgid "summoned {pet}"
+msgstr ""
+
+msgid "supplies for the dungeon: {what}"
 msgstr ""
 
 msgid ""
@@ -4808,6 +4939,9 @@ msgstr ""
 msgid "would enter {room}"
 msgstr ""
 
+msgid "would go to: {caves}"
+msgstr ""
+
 msgid "would {what}"
 msgstr ""
 
@@ -4849,6 +4983,21 @@ msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 
 msgid "{buffer} ({n} new)"
+msgstr ""
+
+msgid "{cave} - level {n} - {where} - {today}"
+msgstr ""
+
+msgid "{cave} needs level {n}"
+msgstr ""
+
+msgid "{cave}: still inside after the timer - leaving"
+msgstr ""
+
+msgid "{cave}: the game didn't let us in (once a day)"
+msgstr ""
+
+msgid "{cave}: {n} kills in {m} minutes"
 msgstr ""
 
 msgid "{cell} can't be reached on {map}"
@@ -5116,6 +5265,9 @@ msgstr ""
 msgid "{npc} isn't in sight - looking for it"
 msgstr ""
 
+msgid "{npc} offered no \"Enter the dungeon\""
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr ""
 
@@ -5258,6 +5410,16 @@ msgid "{what} must be a number, not {value}"
 msgstr ""
 
 msgid "{what} potion: {item} on key {key}"
+msgstr ""
+
+msgid "{what}, at least:"
+msgstr ""
+
+msgid "{what}:"
+msgstr ""
+
+msgid ""
+"{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr ""
 
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"

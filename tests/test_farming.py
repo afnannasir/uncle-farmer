@@ -931,3 +931,84 @@ def test_a_plans_drop_time_to_save_beats_the_characters():
     with pytest.raises(Stopped):
         b.drop_time_check({"drop_seconds": 60 * 60 + 300 - 10, "age": 0})
     assert finished == [True]
+
+
+# ================================================================== a dungeon (instance=True)
+def instance_loop(bot, passes=1, map_id=1, loop=None, last_supply_check=None):
+    bot.in_instance = True
+    try:
+        run_loop(bot, passes=passes, map_id=map_id, loop=loop, last_supply_check=last_supply_check)
+    finally:
+        bot.in_instance = False
+
+
+def test_in_a_dungeon_being_moved_out_ends_the_loop_without_going_back(monkeypatch):
+    labels(monkeypatch)
+    b = Farm()
+    b.map = 2
+    instance_loop(b, passes=5, map_id=1)
+    assert b.travels == []
+    assert any("moved out of Map 1 (1)" in line for line in b.lines)
+
+
+def test_in_a_dungeon_no_trip_out_and_no_resting(monkeypatch):
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Farm()
+    b.restock_now = lambda start=False: (b.restock_calls.append(start), True)[1]
+    b.bag_check = lambda: pytest.fail("bag_check would leave the dungeon")
+    b.share_trip = lambda map_id: pytest.fail("the secret room would leave the dungeon")
+    reads = []
+    b.instance_reads = lambda: reads.append(True)
+    b.rest_up_result = True
+    mob = {"id": -5, "name": "Scorpion", "x": 6, "y": 5}
+    b.targets_result = [mob]
+    monkeypatch.setattr(farming.pets, "keep_out", lambda bot: None)
+    monkeypatch.setattr(farming.pets, "look_after", lambda bot, snap: None)
+    monkeypatch.setattr(farming.keyslots, "refill", lambda bot: False)
+    monkeypatch.setattr(farming.bosses, "keep_away", lambda *a: False)
+    instance_loop(b, passes=1, last_supply_check=clock.now - 100)    # a restock check is due
+    assert b.restock_calls == []
+    assert reads == [True]
+    assert b.fights == [mob]                    # rest_up said rest: in a dungeon it fights on
+
+
+def test_in_a_dungeon_a_death_outside_ends_it_and_inside_goes_on(monkeypatch):
+    labels(monkeypatch)
+    for outside, ends in ((True, True), (False, False)):
+        b = Farm()
+        n = {"i": 0}
+
+        def reads(b=b, n=n, outside=outside):
+            n["i"] += 1
+            if n["i"] == 1:
+                if outside:
+                    b.map = 7
+                raise Respawned()
+
+        b.instance_reads = reads
+        instance_loop(b, passes=3, loop=[(5, 5)])
+        assert b.travels == []
+        assert any("died and came back outside" in line for line in b.lines) == ends
+        assert n["i"] == (1 if ends else 3)
+
+
+def test_farm_in_a_dungeon_neither_restocks_nor_travels_and_sets_the_pack(monkeypatch):
+    zone_stub(monkeypatch)
+    monkeypatch.setattr(farming.atlas, "monster_area", lambda mid: None)
+    monkeypatch.setattr(farming.atlas, "patrol_loop", lambda mid, p: [(1, 1)])
+    monkeypatch.setattr(farming.atlas, "label", lambda mid: str(mid))
+    b = Farm()
+    b.map = 1539
+    seen = {}
+
+    def loop(*args):
+        seen.update(instance=b.in_instance, pack=b.pack_min)
+
+    b._farm_loop = loop
+    b.restock_now = lambda start=False: pytest.fail("no restock inside a dungeon")
+    b.set_modes = lambda: None
+    b.farm(1539, patrol="quick", instance=True, pack=2)
+    assert seen == {"instance": True, "pack": 2}
+    assert b.travels == []
+    assert (b.in_instance, b.pack_min) == (False, 3)        # back to farming's own afterwards

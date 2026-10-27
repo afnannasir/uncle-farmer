@@ -208,6 +208,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            (_("&Equipment Enhancer...\tCtrl+Shift+E"), lambda e: self.open_tool("enhance")),
                            (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores")),
                            (_("Gathe&ring...\tCtrl+Shift+F"), lambda e: self.open_tool("gather")),
+                           (_("D&ungeons...\tCtrl+Shift+G"), lambda e: self.open_tool("dungeon")),
                            (_("&Sell the collection now"),
                             lambda e: self.run_errand("sell_collection\n", _("Selling the collection")))])
         menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
@@ -276,6 +277,7 @@ Main window
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
+  Ctrl+Shift+G        Dungeons: Scorpion Cave and Spider cave, once a day
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -339,6 +341,12 @@ in the order you list them (each once a game day, half an hour inside), then out
 or one the bot knows, the best area for your level. It fights whatever attacks it, starts again,
 sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full and comes back, and
 stops when Vitality runs out. Tools, Sell the collection now: sells it from wherever you are.
+Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
+kills as their 15 minutes give. Before setting out it tops up what you set on the Supplies tab (the
+pet's blue potions and Rice Rolls, your blue and red potions) from the storehouse or the shop; then
+it rides to the entrance, goes in, goes round the whole cave fighting whatever is in reach (area
+skills on two or more close together, potions instead of resting, the pet kept out and fed) until
+the game moves it out, and ends where the Where to end tab says, as a plan does.
 
 UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and
