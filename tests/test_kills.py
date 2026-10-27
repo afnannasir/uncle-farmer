@@ -215,6 +215,19 @@ def test_our_pets_strikes_are_ours():
     assert not k.pets_alone(-8) and k.claimed(-8)
 
 
+def test_a_monster_our_pet_finished_alone_is_our_kill():
+    # the game counts the pet's kills as the player's (Scorpion Cave: 298 said the game, 22 of
+    # them the pet's last blow on monsters we never hit)
+    a = Link()
+    k = KillTracker(a)
+    k.own = {10008112}
+    strike(a, 1000, 10008112, [[-8, 0]])
+    a.die(1100, -8)
+    strike(a, 1000, 4152, [[-9, 0]])                         # someone else's alone: not ours
+    a.die(1100, -9)
+    assert k.update(ME) == [-8]
+
+
 def test_old_strikes_are_forgotten():
     a = Link()
     k = KillTracker(a)

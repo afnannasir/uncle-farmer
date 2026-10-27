@@ -364,12 +364,17 @@ curtained cave). Each gives 15 minutes inside; the aim is as many kills as those
   If something is still short it doesn't go (or goes anyway, if you choose). The pet's rows count
   only with a pet ticked in Character, Settings.
 - **Inside:** the bot rides to the entrance, chooses "Enter the dungeon", and from the cave's
-  safe landing it never stops: it goes round the whole cave (the quick loop by default), fights
-  whatever is in reach, and uses area skills as soon as two monsters are close together (you can
-  raise that). Monsters come back about 30 seconds after they die, at random anywhere in the
-  cave, so going round beats waiting in one place. It drinks instead of resting, keeps the pet
-  out, its HP and MP up, and its amiability up with Rice Rolls. Nothing sends it out early: no
-  restocking trip, no full-bag trip, no secret room visit, since a visit can't be taken up again.
+  safe landing it never stops: it takes the nearest monster it can walk to within 90 steps, and
+  only walks its loop round the cave when there is none. It uses area skills as soon as two
+  monsters are close together (you can raise that). Monsters come back about 30 seconds after
+  they die, at random anywhere in the cave. In simulated visits on the caves' real walls, which
+  loop it walks hardly mattered, but chasing 90 steps instead of farming's 40 gave a caster 5
+  to 13% more kills. It drinks instead of resting, keeps the pet out, its HP and MP up, and its
+  amiability up with Rice Rolls. With no pet ticked in Character, Settings, it looks after the
+  pet that is out for the visit. Nothing sends it out early: no restocking trip, no full-bag
+  trip, no secret room visit, since a visit can't be taken up again.
+- **Kills:** the bot counts your pet's kills as yours, as the game does in the report it shows
+  when you come out ("Monsters Killed").
 - **The end:** after 15 minutes the game moves you out by itself (if it ever doesn't, the bot
   leaves through the Action menu). Then the next cave, and at the end the place on the Where to
   end tab: back where you started it (the default), a place you choose, home with the hearthstone,

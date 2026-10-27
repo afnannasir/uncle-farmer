@@ -4014,7 +4014,14 @@ msgstr ""
 msgid "no pet called {pet} (pets: {pets})"
 msgstr ""
 
+msgid "no pet out and none ticked in Character, Settings - going without one"
+msgstr ""
+
 msgid "no pet ready to summon yet (cooldown); farming on without one"
+msgstr ""
+
+msgid ""
+"no pet ticked in Character, Settings - looking after {pet}, the one out now"
 msgstr ""
 
 msgid "no potions"

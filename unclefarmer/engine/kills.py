@@ -2,7 +2,9 @@
 
 A monster is ours when it dies after one of our hits landed on it, whoever struck last: the game
 shares a kill among everyone who hurt the monster, so one killed by two players counts for both.
-The area skills' kills count too, though the bot never selected those monsters. Counting only the
+The area skills' kills count too, though the bot never selected those monsters, and so do our
+pet's: the game's own count is the player's and the pet's together (Scorpion Cave 2026-10-27: the
+game said 298, the pet struck the last blow on 22, and the bot without them said 286). Counting only the
 selected target's death, the bot was 5-7% short of the game over a night (Oct 14-15 packets: 166,
 342 and 235 kills an hour against 157, 325 and 226 counted).
 
@@ -70,9 +72,9 @@ class KillTracker:
                 continue
             self.died.append(mid)
             self.struck.pop(mid, None)          # monster ids are reused: the next life starts clean
-            self.pet_struck.pop(mid, None)
+            pet = self.pet_struck.pop(mid, None)
             last = self.hit.pop(mid, None)
-            if last is not None and t - last <= KEEP * 1000:
+            if any(s is not None and t - s <= KEEP * 1000 for s in (last, pet)):
                 out.append(mid)
         self.since = newest
         self.seen = {k for k in seen if k[-1] == newest}

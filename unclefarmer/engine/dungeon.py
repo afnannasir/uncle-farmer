@@ -20,7 +20,9 @@ So a visit is: the supplies topped up before setting out (the pet's blue potions
 our own blues and reds - a pet that fights and a lower character's potions are a good part of the
 damage), the walk to the entrance, "Enter the dungeon", then the farming fight in dungeon mode:
 no trips out (the visit can't be taken up again), no resting (drink instead), area skills from two
-monsters together, until the game moves us out. Each cave once a game day, written down in the
+monsters together, chasing whatever is within 90 steps (caveloops.py: the chase range, not the
+loop, is what decides the kills here), until the game moves us out. With no pet ticked, the pet
+that is out is looked after for the run - the game counts its kills as ours. Each cave once a game day, written down in the
 chores' done list. Where the run ends is the script's end_at, as for farming.
 """
 
@@ -39,6 +41,9 @@ CAVES: dict[str, dict[str, Any]] = {
 CAVE_NAMES = (N_("Scorpion Cave"), N_("Spider cave"))     # CAVES' names, for translators
 MINUTES = 15              # the game's timer inside
 OVERTIME = 2.0            # minutes past the timer before leaving through the Action menu ourselves
+CHASE = 90                # walking steps to chase a monster from the loop: farming's 40 left a
+                          # caster 10-13% short in simulated visits (caveloops.py); the loop itself
+                          # hardly matters with a monster nearly always that close
 ENTER = r"^\s*Enter the dungeon"
 LANDING = 10.0            # seconds the game has to move us in after "Enter the dungeon"
 SUPPLIES = ("pet_mp", "pet_food", "mp", "hp")
@@ -55,6 +60,7 @@ DEFAULTS: dict[str, Any] = {
     "when_short": "stop",     # still short after topping up: "stop", or "go" anyway
     "patrol": "quick",        # the loop through the cave: quick, full or short
     "pack": 2,                # area skills on this many monsters close together
+    "chase": CHASE,           # walking steps to chase a monster from the loop
     "end": {"how": "start"},  # where the run ends, as a plan's end (plan.end_line)
 }
 PATROLS = ("quick", "full", "short")
@@ -200,7 +206,7 @@ def visit(b: Any, cfg: dict[str, Any], cave: str) -> str:
     def out() -> bool:
         return b.map_id() != mid or b.clock.time() - began >= (MINUTES + OVERTIME) * 60
 
-    b.farm(mid, patrol=cfg["patrol"], until=out, instance=True, pack=int(cfg["pack"]))
+    b.farm(mid, patrol=cfg["patrol"], until=out, instance=True, pack=int(cfg["pack"]), chase=int(cfg["chase"]))
     if b.map_id() == mid:              # the timer didn't move us: leave as players do
         b.log(_("{cave}: still inside after the timer - leaving", cave=cave))
         b.leave_instance()
@@ -225,6 +231,11 @@ def run(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
             b.log(_("{cave} needs level {n}", cave=c, n=CAVES[c]["level"]))
     if not able:
         return []
+    pet = pets.adopt(b)
+    if pet:
+        b.log(_("no pet ticked in Character, Settings - looking after {pet}, the one out now", pet=pet))
+    elif not pets.chosen(b):
+        b.log(_("no pet out and none ticked in Character, Settings - going without one"), speak=True)
     get_supplies(b, cfg, check_only)
     if check_only:
         return [_("would go to: {caves}", caves=", ".join(able))]

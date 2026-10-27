@@ -19,11 +19,24 @@ class Clock:
         return self.now
 
 
+class Agent:
+    """The agent's pet list: one pet out (usable_at -1), or none."""
+
+    def __init__(self, pet_out):
+        self.pet_out = pet_out
+
+    def json(self, line):
+        if line == "mem pets":
+            return [{"id": 77, "name": "Wild Eagle>><< Sparky", "usable_at": -1}] if self.pet_out else []
+        return {"error": "unknown"}
+
+
 class Game:
     """What a dungeon run uses of the Bot."""
 
-    def __init__(self, level=80, bag=None, pets=True, menu=True, lets_in=True, moves_out=True):
+    def __init__(self, level=80, bag=None, pets=True, menu=True, lets_in=True, moves_out=True, pet_out=False):
         self.clock = Clock()
+        self.a = Agent(pet_out)
         self.p: dict[str, Any] = {"mp_use": True, "pets": [{"name": "Pixie Sparky", "use": pets}]}
         self.character = "Hero"
         self.stop_event = threading.Event()
@@ -166,7 +179,7 @@ def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop):
     g._enter()
     notes = dungeon.run(g, dungeon.config({"dungeon": {"caves": ["Scorpion Cave"]}}))
     assert g.walked == ["Scorpion Cave"]
-    assert g.farmed == [{"map": 1539, "patrol": "quick", "instance": True, "pack": 2}]
+    assert g.farmed == [{"map": 1539, "patrol": "quick", "instance": True, "pack": 2, "chase": 90}]
     assert g.mid == 1531 and g.left == 0
     assert notes and "Scorpion Cave" in notes[0] and "kills" in notes[0]
     assert dungeon.done_today("Hero") == ["Scorpion Cave"]
@@ -240,3 +253,18 @@ def test_the_supply_choices_are_the_games_items():
     assert dungeon.known_items("pet_food") == ["Pet Rice Roll"]
     assert "Large Red Potion" in dungeon.known_items("hp")
     assert not [n for n in dungeon.known_items("mp") if "Pet" in n]
+
+
+def test_with_no_pet_ticked_the_pet_out_is_looked_after(shop):
+    g = Game(pets=False, pet_out=True)
+    dungeon.run(g, dungeon.config({}), check_only=True)
+    assert vars(g)["run_pets"] == ["Wild Eagle>><< Sparky"]
+    rules, _u = dungeon.supply_rules(g, dungeon.config({}))
+    assert "Pet Large Blue Potion" in [r["item"] for r in rules]
+    assert g.p["pets"] == [{"name": "Pixie Sparky", "use": False}]     # nothing saved in the profile
+
+
+def test_no_pet_at_all_is_said(shop):
+    g = Game(pets=False)
+    dungeon.run(g, dungeon.config({}), check_only=True)
+    assert any("going without one" in line for line in g.lines)
