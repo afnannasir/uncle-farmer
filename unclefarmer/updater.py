@@ -43,7 +43,7 @@ from . import __version__, jsonio as json, paths
 # app never asks the network for one. Only ever a repository the project controls: a name nobody
 # controls any more could be taken by someone else, whose "release" every copy would then offer
 # and install.
-REPO = "askunclefarmer/uncle-farmer"
+REPO = ""
 LATEST = "https://api.github.com/repos/%s/releases/latest" % REPO
 ASSET = re.compile(r"^UncleFarmer-[\w.\-]+\.zip$", re.I)
 EXE = "UncleFarmer.exe"
