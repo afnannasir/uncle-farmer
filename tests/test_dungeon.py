@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from unclefarmer.engine import chores, dungeon, script, town
+from unclefarmer.engine import chores, dungeon, pets, script, town
 from unclefarmer.engine.bot import Stopped
 from conftest import as_bot, as_kind, stand_in
 from collections.abc import Callable
@@ -268,6 +268,40 @@ def test_with_no_pet_ticked_the_pet_out_is_looked_after(shop: None) -> None:
     rules, _u = dungeon.supply_rules(as_bot(g), dungeon.config({}))
     assert "Pet Large Blue Potion" in [r["item"] for r in rules]
     assert g.p["pets"] == [{"name": "Pixie Sparky", "use": False}]     # nothing saved in the profile
+
+
+class PetGame(Game):
+    """Notes which pets the run looks after while it farms inside."""
+
+    def __init__(self, character: str) -> None:
+        super().__init__(pets=True, pet_out=True)
+        self.character = character        # its own done list: other tests' visits don't count
+        self.inside: list[list[str]] = []
+        self._enter()
+
+    def farm(self, map_id: int, until: Callable[[], bool] | None=None, **kw: Any) -> None:
+        self.inside.append(pets.chosen(as_bot(self)))
+        super().farm(map_id, until, **kw)
+
+
+def test_the_pet_chosen_for_the_dungeons_goes_over_the_ticked_ones(shop: None) -> None:
+    g = PetGame("Chosen pet")
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Scorpion Cave"], "pet": "Wild Eagle>><< Sparky"}}))
+    assert g.inside and g.inside[0] == ["Wild Eagle>><< Sparky"]
+    assert any("taking Wild Eagle>><< Sparky into the dungeons" in line for line in g.lines)
+    assert pets.chosen(as_bot(g)) == ["Pixie Sparky"]     # afterwards: Character, Settings again
+    assert g.p["pets"] == [{"name": "Pixie Sparky", "use": True}]     # nothing saved in the profile
+
+
+def test_no_pet_chosen_for_the_dungeons_takes_none_and_no_pet_supplies(shop: None) -> None:
+    g = PetGame("No pet")
+    cfg = dungeon.config({"dungeon": {"caves": ["Scorpion Cave"], "pet": dungeon.NO_PET}})
+    dungeon.run(as_bot(g), cfg)
+    assert g.inside and g.inside[0] == []
+    assert any("without a pet" in line for line in g.lines)
+    assert "run_pets" not in vars(g)                      # the pet out isn't adopted either
+    shopped = [r["item"] for rules in g.restocks for r in rules]
+    assert shopped and not [i for i in shopped if i.startswith("Pet ")]
 
 
 def test_no_pet_at_all_is_said(shop: None) -> None:

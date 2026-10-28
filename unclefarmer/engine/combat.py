@@ -326,6 +326,7 @@ class SkillBook:
                 return True
             self.b.wait_keys_free()
             self._page_at = 0           # the page is about to change: read it again
+            self.b.note_page_turn()
             r = self.b.a.send("key capslock 60")
             if not r.startswith("tapped"):
                 self.can_flip = False   # an agent older than v8: no Caps Lock key

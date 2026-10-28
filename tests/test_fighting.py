@@ -180,6 +180,11 @@ class Bot(FightingMixin, WalkingMixin):
     _link = KeysMixin._link
     slot_command = KeysMixin.slot_command
     press_slot = KeysMixin.press_slot
+    attack_slot = KeysMixin.attack_slot
+    switch_wait = KeysMixin.switch_wait
+    note_page_turn = KeysMixin.note_page_turn
+    last_attack: tuple[str, float] | None = None
+    in_instance = False
 
     def __init__(self, link: Link | None=None, prof: dict[str, Any] | None=None, entities: list[dict[str, Any]] | None=None, me: dict[str, Any] | None=None, map_id: int=5121) -> None:
         self.link = link or Link()
@@ -1033,6 +1038,35 @@ def test_an_agent_that_refuses_a_slot_goes_back_to_keys_and_says_so(clock: Clock
     assert b.agent_slots is False and any("skills go by keys again" in ln for ln in b.lines)
 
 
+def test_a_switch_to_another_attack_key_waits_out_the_games_switch_gap(clock: Clock) -> None:
+    # the game drops a press within 80-90 ms of a press on another attack key (OUT op=17)
+    b = slot_bot()
+    clock.now = 10.0
+    b.press_slot("j")
+    clock.now = 10.05
+    b.press_slot("j")
+    assert b.slept == []                                 # the same key again is never dropped
+    b.press_slot("u")
+    assert b.slept == [pytest.approx(0.12)]              # 0.12 s after the last press, not the first
+    b.slept.clear()
+    clock.now = 10.5
+    b.press_slot("shift+u")                              # the self-attack path is another slot...
+    assert b.slept == []                                 # ...but long enough after
+    clock.now = 10.52
+    b.press_slot("r")                                    # not an attack key: no wait, not counted
+    b.press_slot("alt+u")                                # Alt presses u's own slot
+    assert b.slept == [pytest.approx(0.10)]
+
+
+def test_a_page_turn_makes_the_next_attack_press_wait(clock: Clock) -> None:
+    b = slot_bot()
+    clock.now = 5.0
+    b.press_slot("j")
+    b.note_page_turn()                                   # Caps Lock: j is on another slot now
+    b.press_slot("j")
+    assert b.slept == [pytest.approx(0.12)]
+
+
 def test_a_good_slot_answer_forgives_the_odd_refusal(clock: Clock) -> None:
     answers = iter(["error: busy", "error: busy", "pressed 4", "error: busy", "error: busy"])
     b = slot_bot(send=lambda line: next(answers) if line.startswith("slot") else "tapped")
@@ -1321,6 +1355,21 @@ def test_hit_until_down_leaves_a_monster_that_takes_no_damage(clock: Clock) -> N
     assert b.skip[-1] == clock.now + 120
     assert any("takes no damage, leaving it" in line for line in b.lines)
     assert any("leaving every Wolf here alone" in line for line in b.lines)
+
+
+def test_in_a_dungeon_a_monster_with_no_damage_never_writes_off_its_kind(clock: Clock) -> None:
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99))
+    b.in_instance = True          # its one kind of monster is what the visit is for
+    mob = monster(-1, x=105.0)
+
+    def snap():
+        clock.advance(0.5)
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert b.skip[-1] == clock.now + 120            # this one is still left for a while
+    assert b.skip_names == {}
+    assert not any("leaving every Wolf here alone" in line for line in b.lines)
 
 
 def test_hit_until_down_blames_our_mp_when_it_is_empty(clock: Clock) -> None:

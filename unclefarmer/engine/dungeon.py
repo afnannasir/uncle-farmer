@@ -21,8 +21,9 @@ our own blues and reds - a pet that fights and a lower character's potions are a
 damage), the walk to the entrance, "Enter the dungeon", then the farming fight in dungeon mode:
 no trips out (the visit can't be taken up again), no resting (drink instead), area skills from two
 monsters together, chasing whatever is within 90 steps (caveloops.py: the chase range, not the
-loop, is what decides the kills here), until the game moves us out. With no pet ticked, the pet
-that is out is looked after for the run - the game counts its kills as ours. Each cave once a game day, written down in the
+loop, is what decides the kills here), until the game moves us out. The pet is the one chosen in
+Tools, Dungeons, or none; by default the ones ticked in Character, Settings, and with none ticked
+the pet that is out is looked after for the run - the game counts its kills as ours. Each cave once a game day, written down in the
 chores' done list. Where the run ends is the script's end_at, as for farming.
 """
 
@@ -63,8 +64,11 @@ DEFAULTS: dict[str, Any] = {
     "patrol": "quick",        # the loop through the cave: quick, full or short
     "pack": 2,                # area skills on this many monsters close together
     "chase": CHASE,           # walking steps to chase a monster from the loop
+    "pet": "",                # "": the pets ticked in Character, Settings (else the one out);
+                              # NO_PET: none; else that pet, for the dungeons only
     "end": {"how": "start"},  # where the run ends, as a plan's end (plan.end_line)
 }
+NO_PET = "none"
 PATROLS = ("quick", "full", "short")
 
 
@@ -236,20 +240,39 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
             b.log(_("{cave} needs level {n}", cave=c, n=CAVES[c]["level"]))
     if not able:
         return []
+    was = getattr(b, "pets_for_run", None)
+    try:
+        choose_pet(b, cfg)
+        get_supplies(b, cfg, check_only)
+        if check_only:
+            return [_("would go to: {caves}", caves=", ".join(able))]
+        notes: list[str] = []
+        for i, cave in enumerate(able):
+            if i:
+                get_supplies(b, cfg)        # the first cave used some: top up again between them
+            notes.append(visit(b, cfg, cave))
+        return notes
+    finally:
+        b.pets_for_run = was            # the rest of the run goes by Character, Settings again
+
+
+def choose_pet(b: Bot, cfg: dict[str, Any]) -> None:
+    """The pet for the caves: the one chosen in Tools, Dungeons, none, or (by default) the ones
+    ticked in Character, Settings - with none ticked, the one that is out now."""
+    pick = str(cfg.get("pet") or "").strip()
+    if pick == NO_PET:
+        b.pets_for_run = []
+        b.log(_("going into the dungeons without a pet (Tools, Dungeons)"))
+        return
+    if pick:
+        b.pets_for_run = [pick]
+        b.log(_("taking {pet} into the dungeons (Tools, Dungeons)", pet=pick))
+        return
     pet = pets.adopt(b)
     if pet:
         b.log(_("no pet ticked in Character, Settings - looking after {pet}, the one out now", pet=pet))
     elif not pets.chosen(b):
         b.log(_("no pet out and none ticked in Character, Settings - going without one"), speak=True)
-    get_supplies(b, cfg, check_only)
-    if check_only:
-        return [_("would go to: {caves}", caves=", ".join(able))]
-    notes: list[str] = []
-    for i, cave in enumerate(able):
-        if i:
-            get_supplies(b, cfg)        # the first cave used some: top up again between them
-        notes.append(visit(b, cfg, cave))
-    return notes
 
 
 def cave_of(map_id: int | None) -> str | None:

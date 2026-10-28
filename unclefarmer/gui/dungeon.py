@@ -51,6 +51,14 @@ class DungeonDialog(Dialog):
         self.patrol = f.choice(_("&Going round:"), [_(t) for _k, t in PATROL_LABELS],
                                [k for k, _t in PATROL_LABELS].index(c["patrol"]) if c["patrol"] in dungeon.PATROLS else 0)
         self.pack = f.number(_("Use area &skills on this many monsters close together:"), c["pack"], 2, 6)
+        known: list[dict[str, Any]] = self.p.get("pets") or []
+        self.pet_names = [str(x["name"]) for x in known if x.get("name")]
+        pet = str(c.get("pet") or "")
+        if pet and pet != dungeon.NO_PET and pet not in self.pet_names:
+            self.pet_names.append(pet)
+        self.pet = f.choice(_("&Pet:"), [_("The pets ticked in Character, Settings (else the one out)"), _("No pet")]
+                            + self.pet_names,
+                            1 if pet == dungeon.NO_PET else self.pet_names.index(pet) + 2 if pet else 0)
         box.Add(wx.StaticText(panel, label=_(
             "Inside, the bot never stops: it goes round the whole cave, fights whatever is in reach, "
             "drinks instead of resting, keeps the pet out and fed, and stays until the game moves it "
@@ -191,6 +199,8 @@ class DungeonDialog(Dialog):
         for kind, (choice, count, names) in self.rows.items():
             i = choice.GetSelection()
             supplies[kind] = {"item": names[i - 1] if i > 0 else "", "min": count.GetValue()}
+        i = self.pet.GetSelection()
+        pet = dungeon.NO_PET if i == 1 else self.pet_names[i - 2] if i >= 2 else ""
         how = END_CHOICES[max(0, self.end_how.GetSelection())]
         end: dict[str, Any] = {"how": how}
         if how == "place":
@@ -199,7 +209,8 @@ class DungeonDialog(Dialog):
             end["cell"] = [x, y] if x or y else None
         self.cfg.update(caves=caves, supplies=supplies, source=SOURCE_LABELS[self.source.GetSelection()][0],
                         when_short=WHEN_SHORT[self.short.GetSelection()],
-                        patrol=PATROL_LABELS[self.patrol.GetSelection()][0], pack=self.pack.GetValue(), end=end)
+                        patrol=PATROL_LABELS[self.patrol.GetSelection()][0], pack=self.pack.GetValue(), pet=pet,
+                        end=end)
         self.p["dungeon"] = self.cfg
         if save_file(self, settings.save_profile, self.character, self.p):
             self.EndModal(code)
