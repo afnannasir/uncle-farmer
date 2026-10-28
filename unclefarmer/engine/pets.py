@@ -88,7 +88,11 @@ def entity(b: Bot, snap: dict[str, Any]) -> dict[str, Any] | None:
 
 def chosen(b: Bot) -> list[str]:
     """The pets the player ticked, in their order (profile "pets": [{"name", "use"}]); with none
-    ticked, the one a dungeon run took on for itself (adopt)."""
+    ticked, the one a dungeon run took on for itself (adopt). A dungeon run's own choice in Tools,
+    Dungeons (b.pets_for_run: one pet, or [] for none) goes before both."""
+    only: list[str] | None = getattr(b, "pets_for_run", None)
+    if only is not None:
+        return list(only)
     ticked: list[dict[str, Any]] = b.p.get("pets", [])
     run_pets: list[str] = getattr(b, "run_pets", None) or []
     return [x["name"] for x in ticked if x.get("use")] or list(run_pets)

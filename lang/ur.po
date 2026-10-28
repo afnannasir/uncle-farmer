@@ -1901,6 +1901,9 @@ msgstr "Koi maloom kharidaar nahi, is liye ise store kar diya jayega"
 msgid "No monsters near you right now."
 msgstr "Abhi aap ke qareeb koi monster nahi."
 
+msgid "No pet"
+msgstr "Koi pet nahi"
+
 msgid "No pet out"
 msgstr "Koi pet bahar nahi"
 
@@ -2884,6 +2887,9 @@ msgid ""
 msgstr ""
 "Pet wali qataarein sirf tab ginti hain jab Kirdaar, Tarteeb mein koi pet tick ho, aur neele potions sirf us kirdaar ke liye jo MP istemaal karta hai. Do ghaaron ke darmiyan bot phir se poora karta hai."
 
+msgid "The pets ticked in Character, Settings (else the one out)"
+msgstr "Kirdaar, Tarteeb mein tick kiye pet (warna jo bahar hai)"
+
 msgid "The plan as a script"
 msgstr "Mansooba bator Script"
 
@@ -3854,6 +3860,9 @@ msgstr "{map} par wapas ja rahe hain{at}"
 msgid "going home with the hearthstone"
 msgstr "hearthstone se ghar ja rahe hain"
 
+msgid "going into the dungeons without a pet (Tools, Dungeons)"
+msgstr "pet ke baghair dungeons mein ja raha hai (Tools, Dungeons)"
+
 msgid "going on"
 msgstr "jari hai"
 
@@ -4610,6 +4619,9 @@ msgstr "{n} maps ka survey"
 
 msgid "surveying {map}: {n} stops"
 msgstr "{map} ka survey: {n} stops"
+
+msgid "taking {pet} into the dungeons (Tools, Dungeons)"
+msgstr "{pet} ko dungeons mein le ja raha hai (Tools, Dungeons)"
 
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr "kis se baat karein? likhein: talk Cable Car manager"

@@ -64,6 +64,11 @@ class TB:
     def ui(self) -> dict[str, Any]:
         return {"attack_page": 0}
 
+    page_turns = 0
+
+    def note_page_turn(self) -> None:
+        self.page_turns += 1
+
     def wait_keys_free(self) -> None:
         pass
 

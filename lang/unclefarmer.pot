@@ -1861,6 +1861,9 @@ msgstr ""
 msgid "No monsters near you right now."
 msgstr ""
 
+msgid "No pet"
+msgstr ""
+
 msgid "No pet out"
 msgstr ""
 
@@ -2812,6 +2815,9 @@ msgid ""
 "The pet's rows count only with a pet ticked in Character, Settings, and the blue potions only for a character that uses MP. Between two caves the bot tops up again."
 msgstr ""
 
+msgid "The pets ticked in Character, Settings (else the one out)"
+msgstr ""
+
 msgid "The plan as a script"
 msgstr ""
 
@@ -3729,6 +3735,9 @@ msgstr ""
 msgid "going home with the hearthstone"
 msgstr ""
 
+msgid "going into the dungeons without a pet (Tools, Dungeons)"
+msgstr ""
+
 msgid "going on"
 msgstr ""
 
@@ -4452,6 +4461,9 @@ msgid "survey of {n} maps"
 msgstr ""
 
 msgid "surveying {map}: {n} stops"
+msgstr ""
+
+msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr ""
 
 msgid "talk to whom? write: talk Cable Car manager"

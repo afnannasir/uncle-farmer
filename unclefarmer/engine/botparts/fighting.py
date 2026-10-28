@@ -799,12 +799,14 @@ class FightingMixin(Parts):
         self.log(_("{name} takes no damage, leaving it", name=mob["name"]))
         self.skip[mid] = self.clock.time() + 120
         kind = (snap_map(f.snap), mob["name"].strip().lower())
-        if not f.hit_us and f.last_hp >= mob["hp"] and kind not in self.killed_kinds:
+        if not f.hit_us and f.last_hp >= mob["hp"] and kind not in self.killed_kinds and not self.in_instance:
             # Not a scratch and it never attacked: a town critter (ducks, hens) the server
             # won't let anyone attack. Leave every one of its kind on this map alone, or
             # the next one along starts the same chase. Not a kind we have killed here: one
             # walking back to where it spawns takes no damage on the way, and that wrote
-            # off a dungeon's commonest monster for half an hour at a time.
+            # off a dungeon's commonest monster for half an hour at a time. Never inside a
+            # dungeon: its one kind of monster is what the visit is for, and one fight lost
+            # at its start (out of reach, presses the game dropped) left a whole cave alone.
             self.skip_names[(snap_map(f.snap), mob["name"].strip().lower())] = self.clock.time() + 1800
             self.log(_("leaving every {name} here alone - it can't be attacked", name=mob["name"]))
         return True
