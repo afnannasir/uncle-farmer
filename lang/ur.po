@@ -2349,6 +2349,9 @@ msgstr "Runs: {n}"
 msgid "S&can now"
 msgstr "Abhi sc&an karein"
 
+msgid "S&hoot while walking (a character that fights from afar)"
+msgstr "Chalte hue &nishaana lagaayein (door se larne wala kirdaar)"
+
 msgid "S&how:"
 msgstr "&Dikhayein:"
 

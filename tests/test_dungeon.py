@@ -56,6 +56,12 @@ class Game:
         self.farmed: list[dict[str, Any]] = []
         self.restocks: list[list[dict[str, Any]]] = []
         self.left = 0
+        self.slept: list[float] = []
+        self.move_shots = False
+
+    def sleep(self, seconds: float) -> None:
+        self.slept.append(seconds)
+        self.clock.now += seconds
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -93,6 +99,7 @@ class Game:
 
     def farm(self, map_id: int, until: Callable[[], bool] | None=None, **kw: Any) -> None:
         self.farmed.append(dict(kw, map=map_id))
+        self.shot_moving = self.move_shots
         for _i in range(100):
             self.clock.now += 10
             self.kills += 1
@@ -187,6 +194,8 @@ def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop: Non
     assert g.walked == ["Scorpion Cave"]
     assert g.farmed == [{"map": 1539, "patrol": "quick", "instance": True, "pack": 2, "chase": 90}]
     assert g.mid == 1531 and g.left == 0
+    assert g.slept == [dungeon.SETTLE]          # the game's move out finishes before the end place
+    assert vars(g)["shot_moving"] is True and g.move_shots is False    # inside only
     assert notes and "Scorpion Cave" in notes[0] and "kills" in notes[0]
     assert dungeon.done_today("Hero") == ["Scorpion Cave"]
     assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Scorpion Cave"]}})) == []

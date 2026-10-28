@@ -15,6 +15,7 @@ from unclefarmer import paths
 from conftest import stand_in
 from unclefarmer.engine.runner import Run
 from collections.abc import Callable
+from typing import Any
 
 
 def errors_logged():
@@ -111,4 +112,36 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[...
     assert said, [line for line in s.lines if "Spider cave" in line]
     assert not [line for line in s.lines if "resting before" in line or "restocking" in line]
     assert dungeon.done_today(simgame.NAME) == ["Spider cave"]
+    assert errors_logged() == ""
+
+
+@pytest.mark.slow
+def test_a_ranged_character_shoots_on_the_way_in_a_dungeon(sim_env: Callable[..., simgame.SimGame], monkeypatch: pytest.MonkeyPatch):
+    # the same visit with a character that hits from 20 tiles: shots go off while it walks
+    from unclefarmer import settings
+    from unclefarmer.engine import dungeon
+    from unclefarmer.engine.bot import Bot
+    from unclefarmer.engine.botparts.fighting import FightingMixin
+    monkeypatch.setattr(simgame, "SKILLS", [("Arcane Shot", 0.0, 2600, 20.0), ("Aimed Shot", 6.0, 5200, 20.0)])
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, attack_range=19.5,
+                                             dungeon={"caves": ["Spider cave"]}))
+    monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
+    monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
+    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
+    monkeypatch.setattr(Bot, "leave_instance", stand_in(Bot.leave_instance, lambda self: True))
+    shots: list[bool] = []
+    real = FightingMixin.move_shot
+
+    def counted(self: FightingMixin, snap: dict[str, Any], me: dict[str, Any]) -> bool:
+        shot = real(self, snap, me)
+        if shot:
+            shots.append(shot)
+        return shot
+    monkeypatch.setattr(FightingMixin, "move_shot", counted)
+    game = sim_env()
+    s = simgame.Soak(game, "end_at here\ndungeon", watchdog=120).go()
+    assert s.reason == "finished", list(s.lines)[-15:]
+    assert not s.timed_out and not game.errors and not game.unknown
+    assert shots, [line for line in s.lines if "Spider cave" in line]
+    assert game.world.truth["kills"] >= 15
     assert errors_logged() == ""

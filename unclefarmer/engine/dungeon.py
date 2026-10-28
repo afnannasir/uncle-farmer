@@ -49,6 +49,7 @@ CHASE = 90                # walking steps to chase a monster from the loop: farm
                           # hardly matters with a monster nearly always that close
 ENTER = r"^\s*Enter the dungeon"
 LANDING = 10.0            # seconds the game has to move us in after "Enter the dungeon"
+SETTLE = 5.0              # seconds to let the game finish moving us out before going on
 SUPPLIES = ("pet_mp", "pet_food", "mp", "hp")
 SUPPLY_NAMES = {"pet_mp": N_("Pet blue potions"), "pet_food": N_("Pet Rice Rolls"),
                 "mp": N_("Our blue potions"), "hp": N_("Our red potions")}
@@ -64,6 +65,7 @@ DEFAULTS: dict[str, Any] = {
     "patrol": "quick",        # the loop through the cave: quick, full or short
     "pack": 2,                # area skills on this many monsters close together
     "chase": CHASE,           # walking steps to chase a monster from the loop
+    "move_shots": True,       # a character that fights from afar shoots on the way, never stopping
     "pet": "",                # "": the pets ticked in Character, Settings (else the one out);
                               # NO_PET: none; else that pet, for the dungeons only
     "end": {"how": "start"},  # where the run ends, as a plan's end (plan.end_line)
@@ -215,10 +217,19 @@ def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     def out() -> bool:
         return b.map_id() != mid or b.clock.time() - began >= (MINUTES + OVERTIME) * 60
 
-    b.farm(mid, patrol=cfg["patrol"], until=out, instance=True, pack=int(cfg["pack"]), chase=int(cfg["chase"]))
+    was = b.move_shots
+    b.move_shots = bool(cfg.get("move_shots", True))
+    try:
+        b.farm(mid, patrol=cfg["patrol"], until=out, instance=True, pack=int(cfg["pack"]), chase=int(cfg["chase"]))
+    finally:
+        b.move_shots = was
     if b.map_id() == mid:              # the timer didn't move us: leave as players do
         b.log(_("{cave}: still inside after the timer - leaving", cave=cave))
         b.leave_instance()
+    else:
+        # The game is still moving us out (its end-of-dungeon report comes a moment after the
+        # map changes): a hearthstone used then was spent and took us nowhere.
+        b.sleep(SETTLE)
     made = b.kills - kills
     minutes = max(1.0, (b.clock.time() - began) / 60.0)
     line = _("{cave}: {n} kills in {m} minutes", cave=cave, n=made, m=int(round(minutes)))

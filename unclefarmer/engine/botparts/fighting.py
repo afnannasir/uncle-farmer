@@ -38,6 +38,8 @@ class FightingMixin(Parts):
     UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone
     REFUSED_RUN = 3       # bursts in a row with no cast, at a monster we never hurt, before leaving it
     SELECT_RANGE = 20.0   # how far the game's target keys pick a monster at most, as far as we can
+    MOVE_SHOT_REACH = 8.0   # shooting on the way only for a character that hits from this far
+    move_shots: bool = False   # Tools, Dungeons' "shoot while walking", for the visit
     _speech: str
     select_refused: str = ""   # agent 41's reason the last `select` was refused ("" when it wasn't)
     _attackers: set[int]
@@ -164,6 +166,41 @@ class FightingMixin(Parts):
         self.log(_("bag items and targets go by keys again: {why}", why=reply))
         return None
 
+    def shoots_moving(self) -> bool:
+        """Shoot on the way: in a dungeon (Tools, Dungeons' "shoot while walking"), a character
+        that fights from afar shoots whatever comes into reach while it walks up to its target,
+        instead of stopping for each one. Hand runs cast 98% of their shots on the move, the bot
+        stood for a third of its; simulated visits (caveloops) gave half as many kills again."""
+        sb = self.skillbook
+        return (getattr(self, "move_shots", False) and self.in_instance and getattr(self, "agent_act", False)
+                and sb is not None and sb.ok and sb.confirm and self.reach() >= self.MOVE_SHOT_REACH
+                and not self.follows())
+
+    def move_shot(self, snap: dict[str, Any], me: dict[str, Any]) -> bool:
+        """One shot on the way, without stopping: at the nearest monster in reach with a clear line,
+        when the global cooldown allows. The press goes while the walking keys stay held; the next
+        look confirms it (or presses again). True when a skill was pressed."""
+        sb = self.skillbook
+        if sb is None:
+            return False
+        rng = self.reach()
+        here = snap_map(snap)
+        area, only, skip, rects = self.farm_filter or (None, "", "", [])
+        near = [e for e in self.targets(snap, area, only, skip, rects, limit=rng + 2)
+                if math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= rng and self.clear_shot(me, e, here)]
+        if not near:
+            return False
+        e = min(near, key=lambda e: math.hypot(e["x"] - me["x"], e["y"] - me["y"]))
+        if sb.gcd_wait(self.clock.time()):
+            return False
+        if self.ui().get("target") != e["id"] and not self._select_by_id(e):
+            return False
+        picked = sb.pick(snap, e)
+        if not isinstance(picked, tuple):
+            return False
+        self.key(picked[0])
+        return True
+
     def hit(self, me: dict[str, Any]) -> bool:
         """True when HP fell since the last step of a walk and fighting back is on."""
         hp = me.get("hp")
@@ -277,7 +314,10 @@ class FightingMixin(Parts):
         dead = self.kill_tracker.update(me["id"])
         tally = getattr(self, "tally", None)
         if tally is not None:
-            tally.combat.observe(self.kill_tracker.fresh, me["id"], self.mob_names)
+            # The agent keeps the game's casts from before the run (a fight played by hand an
+            # hour earlier came into a run's results): only this run's go into its damage.
+            begun = 1000 * tally.started
+            tally.combat.observe([c for c in self.kill_tracker.fresh if c["t"] >= begun], me["id"], self.mob_names)
         now = self.clock.time()
         for mid in dead:
             self.kills += 1
@@ -967,10 +1007,14 @@ class _Approach:
     def stop(self, me: dict[str, Any]) -> bool:
         """Stop walking: it is in reach, gone (another player took it), about to die to someone
         else, or another one is in reach on the way (the farm loop takes that one - walking on
-        past it wasted the trip)."""
+        past it wasted the trip). Shooting on the way (shoots_moving), that one is shot without
+        stopping and the walk goes on."""
         b = self.b
         snap = b.snap()
         m = self.find(snap)
+        moving = b.shoots_moving()
+        if moving:
+            b.move_shot(snap, me)
         if m is None or m["hp"] <= 0 or self.reachable(me, m, self.engage):
             return True
         b.watch_hp(snap)
@@ -979,7 +1023,7 @@ class _Approach:
             return True
         if self.pull and self._closing_in(me, m):
             return True
-        if b.farm_filter is not None:
+        if b.farm_filter is not None and not moving:
             return any(e["id"] != self.mid and self.reachable(me, e)
                        for e in b.targets(snap, *b.farm_filter, limit=self.rng + 2))
         return False
