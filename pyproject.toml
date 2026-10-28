@@ -4,7 +4,7 @@
 
 [project]
 name = "unclefarmer"
-version = "0.5.0"            # release.py sets this together with unclefarmer/__init__.py
+version = "0.6.0"            # release.py sets this together with unclefarmer/__init__.py
 description = "A farming bot for Mist World."
 readme = "README.md"
 license = "GPL-3.0-only"

@@ -1,6 +1,6 @@
 # What's new
 
-## Next version
+## 0.6.0
 
 **Dungeons** (Tools, Dungeons, Ctrl+Shift+G)
 
@@ -16,8 +16,23 @@
   pet out, healed and fed - the pet that is out, when none is ticked. Nothing sends it out early.
 - Kills now include the pet's, as the game counts them: in the first Scorpion Cave run the game
   said 298 and the bot 286, the pet having struck the last blow on 22.
-- Then the next cave, and at the end back where you started it, or the place you choose.
+- Shoot while walking (on by default): a character that fights from afar shoots whatever comes
+  into reach on its way to the next monster, instead of stopping for each one. One hit kills a
+  Scorpion, and simulated visits made about half as many kills again this way.
+- Pet: the pets ticked in Character, Settings (else the one that is out), no pet, or one pet just
+  for the caves.
+- Then the next cave, and at the end back where you started it, or the place you choose. It waits
+  for the game to finish moving it out first (a hearthstone used during the move was lost).
   Scripts: `dungeon`, `dungeon check`.
+
+**Fighting**
+
+- Attack keys are never switched faster than the game takes them: it throws away a press that
+  comes within about 80 ms of a press on another attack key, and a cave fight once cast nothing
+  for five seconds that way.
+- Inside a dungeon a monster that takes no damage is only skipped itself; its whole kind is never
+  written off (that left a whole cave alone after one lost fight).
+- The fight results count only the run's own fighting, not a fight played earlier.
 
 **Gathering** (Tools, Gathering, Ctrl+Shift+F)
 
