@@ -9,11 +9,15 @@ health and potions, walking, the bag, travel, NPC dialogs, fighting and farming.
 calls the others through self.
 """
 
+from __future__ import annotations
+
 import queue
 import threading
+from typing import Any
 
 from .. import trust
-from ..clock import CLOCK, Clock
+from ..clock import CLOCK, Clock, StopFlag
+from ..link import GameLink
 from . import repair
 from .kills import KillTracker
 from .botparts.base import (CONFIRM, DIRECTIONS, NPC_HP, Respawned, Stopped, potion_kind, skill_things,
@@ -27,6 +31,7 @@ from .botparts.travel import TravelMixin
 from .botparts.dialogs import DialogsMixin
 from .botparts.fighting import FightingMixin
 from .botparts.farming import FarmingMixin
+from .botparts.parts import Log
 
 __all__ = ["Bot", "CONFIRM", "DIRECTIONS", "NPC_HP", "Respawned", "Stopped", "potion_kind", "skill_things",
            "snap_map"]
@@ -36,7 +41,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
           FightingMixin, FarmingMixin):
     """One character's bot: everything it does to the game goes through link (the agent)."""
 
-    def __init__(self, link, profile, log, stop_event, clock: Clock | None = None):
+    def __init__(self, link: GameLink, profile: dict[str, Any], log: Log, stop_event: StopFlag,
+                 clock: Clock | None = None) -> None:
         self.clock = clock or CLOCK
         self.a = link
         self.p = profile
@@ -76,6 +82,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.beasts_refused = {}      # fusion beast id -> don't try again before (time)
         self.last_combat = 0.0        # end of the last fight (the server keeps us "in combat" a while)
         self.pets_refused = {}        # pet id -> don't try to summon before (time)
+        self.following: str | None = None   # the player a follow run stays with
+        self.team_ask_at = 0.0            # when follow next asks the team phrase where its player is
         self.deaths = 0
         self.skillbook = None         # combat.SkillBook, read from the game at the first fight
         self.last_vitals_key = 0.0    # the own-HP key (R): HP and MP from the server, no window

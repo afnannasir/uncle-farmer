@@ -7,6 +7,8 @@ its sound and world timer dies (the character freezes where it stands). Reading 
 during a run shows how close a game is to that.
 """
 
+from __future__ import annotations
+
 import ctypes
 import ctypes.wintypes as wt
 import struct
@@ -21,13 +23,13 @@ class _MBI(ctypes.Structure):
                 ("State", wt.DWORD), ("Protect", wt.DWORD), ("Type", wt.DWORD)]
 
 
-def _image(kernel, h):
+def _image(kernel: ctypes.WinDLL, h: int) -> str | None:
     buf = ctypes.create_unicode_buffer(1024)
     size = wt.DWORD(1024)
     return buf.value if kernel.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(size)) else None
 
 
-def large_address_aware(exe):
+def large_address_aware(exe: str) -> bool:
     """True when the program may use addresses above 2 GB (IMAGE_FILE_LARGE_ADDRESS_AWARE)."""
     with open(exe, "rb") as f:
         head = f.read(4096)

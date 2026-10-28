@@ -1,5 +1,7 @@
 """profile_bot: the thread-aware profiler harness writes its report files (no GUI is started)."""
 
+from __future__ import annotations
+
 import os
 import re
 import threading
@@ -7,14 +9,15 @@ import threading
 import pytest
 
 import profile_bot
+from pathlib import Path
 
 
-def test_yappi_splits_the_report_by_thread(tmp_path):
+def test_yappi_splits_the_report_by_thread(tmp_path: Path):
     pytest.importorskip("yappi")
     tool = profile_bot.Yappi(str(tmp_path), 0)
     tool.MIN_SECONDS = 0.0                        # keep the per-thread sections whatever the timing
 
-    def work(n=400000):
+    def work(n: int = 400000) -> int:
         return sum(i * i for i in range(n))
 
     worker = threading.Thread(target=work, name="unclefarmer-run-7")
@@ -32,7 +35,7 @@ def test_yappi_splits_the_report_by_thread(tmp_path):
 
 
 class Fn:
-    def __init__(self, name, module, total=0.0):
+    def __init__(self, name: str, module: str, total: float = 0.0) -> None:
         self.name, self.module, self.ttot, self.ncall = name, module, total, 1
 
 
@@ -45,15 +48,15 @@ def test_wait_frames_are_recognised_across_modules():
     assert not profile_bot.is_wait(Fn("Bot.fight", r"F:\work\unclefarmer\unclefarmer\engine\botparts\fighting.py"))
 
 
-def test_the_main_thread_is_not_given_other_threads_work(tmp_path):
+def test_the_main_thread_is_not_given_other_threads_work(tmp_path: Path):
     pytest.importorskip("yappi")
     tool = profile_bot.Yappi(str(tmp_path), 0)
     tool.MIN_SECONDS = 0.0
 
-    def main_only(n=300000):
+    def main_only(n: int = 300000) -> int:
         return sum(i * i for i in range(n))
 
-    def worker_only(n=300000):
+    def worker_only(n: int = 300000) -> int:
         return sum(i * i for i in range(n))
 
     worker = threading.Thread(target=worker_only, name="worker")
@@ -67,7 +70,7 @@ def test_the_main_thread_is_not_given_other_threads_work(tmp_path):
     assert "main_only" not in worker_part
 
 
-def _calls(text, section, name):
+def _calls(text: str, section: str, name: str) -> list[int]:
     """The call counts a section of the report gives a function (the line is 'total_s calls
     path:line name (module:lineno)')."""
     part = text.split("=== %s" % section)[1].split("=== ")[0]
@@ -75,7 +78,7 @@ def _calls(text, section, name):
             re.findall(r"\s+[\d.]+\s+(\d+)\s+[^\n]*?%s \(" % re.escape(name), part)]
 
 
-def test_a_shared_function_is_split_by_the_calls_each_thread_made(tmp_path):
+def test_a_shared_function_is_split_by_the_calls_each_thread_made(tmp_path: Path):
     # get_func_stats() with no argument merges a function that several threads call into one stat
     # tagged with one context: the wx thread was once credited with the farm thread's 66,463
     # AgentLink.send calls, and the main thread with another thread's Tally.result.
@@ -83,7 +86,7 @@ def test_a_shared_function_is_split_by_the_calls_each_thread_made(tmp_path):
     tool = profile_bot.Yappi(str(tmp_path), 0)
     tool.MIN_SECONDS = 0.0
 
-    def shared(n=60000):
+    def shared(n: int = 60000) -> int:
         return sum(i * i for i in range(n))
 
     def worker():
@@ -101,7 +104,7 @@ def test_a_shared_function_is_split_by_the_calls_each_thread_made(tmp_path):
     assert _calls(text, "MainThread", "shared") == [2]      # the left-over, not the sum
 
 
-def test_names_are_captured_for_threads_that_override_run(tmp_path):
+def test_names_are_captured_for_threads_that_override_run(tmp_path: Path):
     # The app's own threads subclass threading.Thread and override run(): a patch on Thread.run
     # never sees them, which is why every one of them printed as "thread 2556".
     pytest.importorskip("yappi")
@@ -120,7 +123,7 @@ def test_names_are_captured_for_threads_that_override_run(tmp_path):
     assert "=== unclefarmer-run-42 (tid" in text
 
 
-def test_the_harness_timer_thread_is_left_out(tmp_path):
+def test_the_harness_timer_thread_is_left_out(tmp_path: Path):
     # threading.Timer also overrides run(), so the timer that stops the profile used to appear in
     # the report as an unnamed thread whose wall clock was the whole run.
     pytest.importorskip("yappi")
@@ -146,9 +149,9 @@ def test_nested_event_and_condition_waits_are_counted_once():
     assert sum(fn.ttot for fn in waits) == 120.0
 
 
-def test_tracemalloc_reports_size_and_growth(tmp_path):
+def test_tracemalloc_reports_size_and_growth(tmp_path: Path) -> None:
     tool = profile_bot.Tracemalloc(str(tmp_path), 0)
-    held = [bytearray(4096) for _ in range(20)]   # noqa: F841 - kept alive for the snapshot
+    _held = [bytearray(4096) for _ in range(20)]   # kept alive for the snapshot
     tool.dump()
     text = open(os.path.join(str(tmp_path), "tracemalloc.txt"), encoding="utf-8").read()
     assert "top 60 lines" in text and "growth since start" in text

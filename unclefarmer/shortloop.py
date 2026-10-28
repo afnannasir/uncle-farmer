@@ -13,14 +13,19 @@ Built offline into data/short_loops.json (python -m unclefarmer.shortloop); maps
 MAX_CELLS walkable cells are left out - open ground is farmed better by wandering.
 """
 
+from __future__ import annotations
+
 import math
 import os
 import sys
 import time
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from . import atlas, jsonio as json, paths
+from .atlaslib import Cell, MapModel
 
 CHASE = 40          # bot.farm's default chase_range: the lap must keep the map this close
 COVER = 0.95        # share of the map's walkable cells that must be within CHASE of the lap
@@ -29,11 +34,11 @@ MAX_CELLS = 30000
 OUT = os.path.join(paths.DATA, "short_loops.json")
 
 
-def build(mid):
+def build(mid: int) -> dict[str, Any] | None:
     """{"loop": ["x|y", ...], "steps": n, "covered": pct} for the map, or None."""
     m = atlas.model(mid)
-    f = atlas.farms().get(int(mid), {}).get("variants") or {}
-    start, walkable, cells = _ground(m, mid, f)
+    f: dict[str, dict[str, Any]] = atlas.farms().get(int(mid), {}).get("variants") or {}
+    start, walkable, cells = ground(m, mid, f)
     if len(cells) < 50 or len(walkable) > MAX_CELLS:
         return None
     lb = _Laps(m, cells)
@@ -47,7 +52,7 @@ def build(mid):
     if path is None:
         return None
     pts = m.waypoints(path, max_hop=20)
-    out = {"loop": ["%d|%d" % p for p in pts], "steps": len(path) - 1,
+    out: dict[str, Any] = {"loop": ["%d|%d" % p for p in pts], "steps": len(path) - 1,
            "covered": round(100 * lb.covered(path), 1), "stops": len(order)}
     # a ready loop that is shorter still (small maps) is the short one
     for name, v in sorted(f.items(), key=lambda kv: kv[1].get("steps") or 1e9):
@@ -56,12 +61,12 @@ def build(mid):
     return out
 
 
-def _ground(m, mid, f):
+def ground(m: MapModel, mid: int, f: dict[str, dict[str, Any]]) -> tuple[Cell, list[Cell], list[Cell]]:
     """(start, walkable, cells): where the lap starts, the ground we can wander and always walk
     back from (one-way doors), off every exit, and the part of it that must be kept near - where
     monsters spawn (as for the full and quick loops)."""
     W = m.W
-    start = next((tuple(v["start"]) for v in f.values() if v.get("start")), None)
+    start: Cell | None = next(((v["start"][0], v["start"][1]) for v in f.values() if v.get("start")), None)
     ys, xs = np.nonzero(m.walk)
     if start is None or not m.ok(*start):
         sizes = m.comp_sizes
@@ -70,13 +75,13 @@ def _ground(m, mid, f):
     ground = m.two_way(*start)
     walkable = [(int(x), int(y)) for x, y in zip(xs, ys)
                 if y * W + x in ground and not m.portal[y, x]]
-    rects = [z["rect"] for z in atlas.zones(mid, ("monster",))]
+    rects: list[list[int]] = [z["rect"] for z in atlas.zones(mid, ("monster",))]
     cells = [c for c in walkable if not rects
              or any(r[0] <= c[0] <= r[2] and r[1] <= c[1] <= r[3] for r in rects)] or walkable
     return start, walkable, cells
 
 
-def _cover(m, cells, walkable):
+def _cover(m: MapModel, cells: list[Cell], walkable: list[Cell]) -> list[Cell]:
     """Greedy cover: stops until every cell is within STOP_R steps of one. It only needs what is
     within STOP_R of a stop: a search bounded to that radius costs 1-2 ms where the whole-map
     search costs 70 ms on a big cave (299 candidates there, 21 s of the build). The distances are
@@ -89,7 +94,7 @@ def _cover(m, cells, walkable):
     need = {y * W + x for x, y in cells}
     near = {c: {k for k, d in m.dijkstra(c, limit=STOP_R)[0].items() if d <= STOP_R} & need
             for c in cand}
-    stops = []
+    stops: list[Cell] = []
     while need:
         best = max(cand, key=lambda c: len(near[c] & need))
         got = near[best] & need
@@ -100,7 +105,7 @@ def _cover(m, cells, walkable):
     return stops
 
 
-def _cover_matrix(m, cells, cand):
+def _cover_matrix(m: MapModel, cells: list[Cell], cand: list[Cell]) -> list[Cell]:
     """_cover's greedy cover as one boolean matrix, candidates by cells: each round's "which
     candidate covers the most of what is still needed" is one matrix-vector product instead of a
     set intersection per candidate. The same stops in the same order: argmax takes the first
@@ -116,7 +121,7 @@ def _cover_matrix(m, cells, cand):
         near[i, hit[hit >= 0]] = True
     counts_of = near.astype(np.int32)
     need = np.ones(ids.size, dtype=bool)
-    stops = []
+    stops: list[Cell] = []
     while need.any():
         counts = counts_of @ need.astype(np.int32)
         best = int(np.argmax(counts))
@@ -132,20 +137,21 @@ class _Laps:
     per chosen stop, about 20-40 of them, not one per candidate), routes obeying one-way doors,
     and how much of the map a lap keeps within CHASE."""
 
-    def __init__(self, m, cells):
+    def __init__(self, m: MapModel, cells: list[Cell]) -> None:
         self.m, self.W, self.cells = m, m.W, cells
-        self.dists = {}
-        self.routes = {}
+        self.dists: dict[tuple[Cell, Cell], float] = {}
+        self.routes: dict[tuple[Cell, Cell], list[Cell] | None] = {}
         self.cell_ids = np.array([y * m.W + x for x, y in cells], dtype=np.intp)
         self.walk_flat = m.walk.ravel()
 
-    def measure(self, stops):
+    def measure(self, stops: list[Cell]) -> None:
         """Walking distances between every two stops (1e9: no way), from one whole-map search per
         stop. Only stop-to-stop distances are ever asked for, so they are kept as a plain dict
         instead of the searches themselves."""
         W = self.W
         self.dists = {}
         for a in stops:
+            row: dict[Cell, float]
             if hasattr(self.m, "dijkstra_arr"):
                 dist = self.m.dijkstra_arr(a)[0]
                 row = {b: float(dist[b[1] * W + b[0]]) for b in stops}
@@ -156,15 +162,15 @@ class _Laps:
             for b, d in row.items():
                 self.dists[a, b] = d
 
-    def wd(self, a, b):
+    def wd(self, a: Cell, b: Cell) -> float:
         return self.dists[a, b]
 
-    def route(self, a, b):
+    def route(self, a: Cell, b: Cell) -> list[Cell] | None:
         if (a, b) not in self.routes:
-            self.routes[a, b] = self.m._route(a, b)       # obeying one-way doors: no fallback
+            self.routes[a, b] = self.m.gated_route(a, b)       # obeying one-way doors: no fallback
         return self.routes[a, b]
 
-    def two_opt(self, o):
+    def two_opt(self, o: list[Cell]) -> list[Cell]:
         wd = self.wd
         better = True
         while better:
@@ -177,8 +183,8 @@ class _Laps:
                         better = True
         return o
 
-    def lap(self, o):
-        path = []
+    def lap(self, o: list[Cell]) -> list[Cell] | None:
+        path: list[Cell] = []
         for a, b in zip(o, o[1:] + o[:1]):
             p = self.route(a, b)
             if not p:
@@ -186,7 +192,7 @@ class _Laps:
             path += p[1:] if path else p
         return path
 
-    def covered(self, path):
+    def covered(self, path: list[tuple[int, int]]) -> float:
         """The share of the spawn cells within CHASE steps of the lap. Layered BFS over numpy
         arrays from every lap cell at once: the pruning loop asks this 50-100 times, and a Python
         BFS each time was a third of the build."""
@@ -203,7 +209,7 @@ class _Laps:
         d = 0
         while frontier.size and d < CHASE:
             d += 1
-            rings = []
+            rings: list[npt.NDArray[np.intp]] = []
             for off in (1, -1, W, -W):
                 nb = frontier + off
                 nb = nb[walk_flat[nb] & (seen[nb] < 0)]
@@ -212,7 +218,7 @@ class _Laps:
             frontier = np.concatenate(rings)
         return float((seen[self.cell_ids] >= 0).sum()) / len(self.cells)
 
-    def nearest_first(self, stops, start):
+    def nearest_first(self, stops: list[Cell], start: Cell) -> list[Cell]:
         """Nearest neighbour from the stop nearest the start, then 2-opt."""
         left = list(stops)
         order = [min(left, key=lambda c: abs(c[0] - start[0]) + abs(c[1] - start[1]))]
@@ -223,11 +229,11 @@ class _Laps:
             order.append(n)
         return self.two_opt(order)
 
-    def saving(self, o, i):
+    def saving(self, o: list[Cell], i: int) -> float:
         a, s, b = o[i - 1], o[i], o[(i + 1) % len(o)]
         return self.wd(a, s) + self.wd(s, b) - self.wd(a, b)
 
-    def prune(self, order):
+    def prune(self, order: list[Cell]) -> list[Cell]:
         """Drop the stop that saves the most walking while the lap still covers COVER, again and
         again."""
         pruned = True
@@ -242,9 +248,9 @@ class _Laps:
         return order
 
 
-def main(argv):
+def main(argv: list[str]) -> None:
     only = [int(a) for a in argv if a.isdigit()]
-    out = {}
+    out: dict[str, Any] = {}
     if os.path.exists(OUT):
         with open(OUT, encoding="utf-8") as f:
             out = json.load(f)
@@ -264,8 +270,9 @@ def main(argv):
             out[str(mid)] = r
             # An id given on the command line need not be in farms.json (a map nobody farms yet):
             # say the full loop is unknown instead of raising KeyError and stopping the run.
-            farm = atlas.farms().get(mid) or {}
-            full = (farm.get("variants") or {}).get("full", {}).get("steps")
+            farm: dict[str, Any] = atlas.farms().get(mid) or {}
+            variants: dict[str, dict[str, Any]] = farm.get("variants") or {}
+            full = variants.get("full", {}).get("steps")
             print("%d %s: %d steps (full loop %s), %s%% covered, %.0fs %s" % (
                 mid, atlas.name(mid), r["steps"], full, r["covered"], time.perf_counter() - t,
                 r.get("from", "")), flush=True)

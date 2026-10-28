@@ -20,16 +20,21 @@ Each character keeps its own: <game>/users/<character id>/phrase, "slot,text" li
 game writes the moment one is changed. The agent (v27) sets one the way the window does.
 """
 
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
 
 from . import gamekeys
-
 from .engine.botparts.base import STOPPING
 from .errors import carry_on
 from .i18n import _
 
+if TYPE_CHECKING:
+    from .engine.bot import Bot
 
-def what(code):
+
+def what(code: str | None) -> str:
     """What a code does, in the player's language ('' for none)."""
     return {
         "/0": _("set yourself as the team's navigation target"),
@@ -42,21 +47,21 @@ def what(code):
         "/7": _("target the weakest teammate within 20 yards"),
         "/8": _("target the weakest teammate within 30 yards"),
         "/9": _("view the enemy in the arena"),
-    }.get(code, "")
+    }.get(code or "", "")
 
 # What goes on an EMPTY phrase slot when no slot does it yet, in this order (slots already in use
 # are never touched). /6 the bot uses itself to find teammates; the rest are targeting shortcuts
 # for the player, and /7 only for classes that heal others.
 WANTED = ("/6", "/5", "/4", "/7")
 HEALERS = ("priest", "sorceress", "witcher")
-_told = set()       # characters whose phrases were listed in the log this session
+_told: set[int | None] = set()       # characters whose phrases were listed in the log this session
 
 
-def path(game_folder, char_id):
+def path(game_folder: str, char_id: int | None) -> str:
     return os.path.join(game_folder or "", "users", str(char_id), "phrase")
 
 
-def known(game_folder, char_id):
+def known(game_folder: str, char_id: int | None) -> bool:
     """Whether this character's phrases can be seen: the game folder is a real one and the game
     has made the character's own folder in it (users/<id>). Without the game folder, or in another
     copy of the game than the one this character plays in, there is no file to read - which is
@@ -66,14 +71,14 @@ def known(game_folder, char_id):
     return bool(game_folder) and os.path.isfile(os.path.join(game_folder, "mw.exe")) and os.path.isdir(folder)
 
 
-def read(game_folder, char_id):
+def read(game_folder: str, char_id: int | None) -> dict[int, str]:
     """{slot: text} of this character's phrases ({} when it has none or the file can't be read)."""
     try:
         with open(path(game_folder, char_id), encoding="utf-8", errors="replace") as f:
             lines = f.read().splitlines()
     except OSError:
         return {}
-    out = {}
+    out: dict[int, str] = {}
     for line in lines:
         slot, sep, text = line.partition(",")
         if sep and slot.strip().isdigit() and 1 <= int(slot) <= 12 and text.strip():
@@ -81,13 +86,13 @@ def read(game_folder, char_id):
     return out
 
 
-def code_of(text):
+def code_of(text: str | None) -> str | None:
     """"/0" .. "/9" when the phrase starts with a code, else None."""
     t = (text or "").strip()
     return t[:2] if len(t) >= 2 and t[0] == "/" and t[1].isdigit() else None
 
 
-def slot_of(phrases, code):
+def slot_of(phrases: dict[int, str], code: str) -> int | None:
     """The slot whose phrase starts with code, or None (a code from /3 up ignores what follows it;
     /0 /1 /2 only count when they carry no chat text)."""
     for slot in sorted(phrases):
@@ -97,10 +102,10 @@ def slot_of(phrases, code):
     return None
 
 
-def describe(phrases):
+def describe(phrases: dict[int, str]) -> list[str]:
     """One line per set phrase: 'Shift+1: /6 - target the next teammate ...' or the plain text."""
     keys = gamekeys.phrase_key_list()
-    out = []
+    out: list[str] = []
     for slot in sorted(phrases):
         text, code = phrases[slot], code_of(phrases[slot])
         does = what(code)
@@ -113,12 +118,12 @@ def describe(phrases):
     return out
 
 
-def wanted(class_name):
+def wanted(class_name: str | None) -> list[str]:
     cls = (class_name or "").strip().lower()
     return [c for c in WANTED if c != "/7" or cls in HEALERS]
 
 
-def arrange(bot, game_folder, char_id, class_name, can_set):
+def arrange(bot: Bot, game_folder: str, char_id: int | None, class_name: str | None, can_set: bool) -> dict[int, str]:
     """Log this character's phrases, then put each WANTED code no slot has yet on an empty slot
     (lowest first) - only empty ones, never the player's own. can_set: the agent can set phrases
     (v27). Returns the phrases as they are afterwards."""

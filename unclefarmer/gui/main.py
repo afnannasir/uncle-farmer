@@ -7,6 +7,8 @@ game selected in the Games list; the Pause key is about the game window in front
 ours.
 """
 
+from __future__ import annotations
+
 import os
 
 import wx
@@ -14,7 +16,7 @@ import wx
 from .. import __version__, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
-from .common import ask, buttons, group, guide_text, info, labeled, show_text, tabs
+from .common import Handler, ask, buttons, group, guide_text, info, labeled, show_text, tabs
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -35,7 +37,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
-    def __init__(self, clock: Clock = CLOCK):
+    def __init__(self, clock: Clock = CLOCK) -> None:
         super().__init__(None, title=_("Uncle Farmer"), size=wx.Size(860, 640))
         self.clock = clock
         self.s = settings.load_app()
@@ -85,7 +87,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         wx.CallAfter(self.first_run)
 
     # ------------------------------------------------------------ tabs
-    def bot_page(self):
+    def bot_page(self) -> None:
         panel = wx.Panel(self.nb)
         box = wx.BoxSizer(wx.VERTICAL)
         self.game_list = labeled(panel, box, _("&Games:"), lambda w: wx.ListCtrl(
@@ -122,7 +124,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         panel.SetSizer(outer)
         self.nb.AddPage(panel, _("Bot"))
 
-    def plans_page(self):
+    def plans_page(self) -> None:
         panel = wx.Panel(self.nb)
         box = wx.BoxSizer(wx.VERTICAL)
         row = wx.BoxSizer(wx.HORIZONTAL)
@@ -147,7 +149,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         panel.SetSizer(outer)
         self.nb.AddPage(panel, _("Plans"))
 
-    def log_page(self):
+    def log_page(self) -> None:
         panel = wx.Panel(self.nb)
         box = wx.BoxSizer(wx.VERTICAL)
         row = wx.BoxSizer(wx.HORIZONTAL)
@@ -168,10 +170,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.nb.AddPage(panel, _("Log"))
 
     # ------------------------------------------------------------ menus
-    def build_menu(self):
+    def build_menu(self) -> None:
         bar = wx.MenuBar()
 
-        def menu(title, entries):
+        def menu(title: str, entries: list[tuple[str, Handler]]) -> None:
             # No separator lines: a screen reader counts each one as an entry, so a menu of four
             # read "1 of 5".
             m = wx.Menu()
@@ -224,17 +226,17 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           (_("Script &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
                           (_("&Script commands"), lambda e: self.script_help()),
                           (_("&Commands for trusted players"),
-                           lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__)),
+                           lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
                           (_("Check for &updates..."), lambda e: self.check_updates()),
                           (_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
 
-    def go_tab(self, i):
+    def go_tab(self, i: int) -> None:
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
 
-    def on_close(self, evt):
+    def on_close(self, evt: wx.CloseEvent) -> None:
         if self.runs:
             if not ask(self, _("A bot is running. Stop it and quit?")):
                 evt.Veto()
@@ -252,7 +254,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.Destroy()
 
 
-def _logs():
+def _logs() -> str:
     return paths.LOGS
 
 

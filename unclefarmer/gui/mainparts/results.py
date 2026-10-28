@@ -1,10 +1,13 @@
 """Results, and the game's own voice (muting it while the bot runs)."""
 
+from __future__ import annotations
+
 import os
 import threading
 
 
 from ... import speech, stats
+from ...stats import Tally
 from ...i18n import _
 from ...link import AgentError, AgentLink
 from ..results import ResultsDialog
@@ -13,25 +16,25 @@ from .base import FrameParts, foreground_pid
 
 class ResultsMixin(FrameParts):
     # ------------------------------------------------------------ results and the game's voice
-    def live_tally(self, character):
+    def live_tally(self, character: str) -> Tally | None:
         run = next((r for r in self.runs.values() if r.character == character and r.tally), None)
         return run.tally if run else None
 
-    def show_results(self):
+    def show_results(self) -> None:
         with ResultsDialog(self, self.selected_character(), self.live_tally) as d:
             d.ShowModal()
 
-    def open_results_folder(self):
+    def open_results_folder(self) -> None:
         os.makedirs(stats.RESULTS, exist_ok=True)
         os.startfile(stats.RESULTS)
 
-    def speak_results(self, front=False):
+    def speak_results(self, front: bool = False) -> None:
         """Shift+Pause from anywhere (the game in front, else the selected one), or the menu."""
         pid = foreground_pid() if front else None
         if pid not in {g[0] for g in self.games}:
             pid = self.selected_pid()
         name = next((g[1] for g in self.games if g[0] == pid), None)
-        run = self.runs.get(pid)
+        run = self.runs.get(pid) if pid is not None else None
         if run and run.tally:
             speech.speak(_("{name}: {results}", name=run.character or name, results=stats.short(run.tally.result())))
             return
@@ -41,7 +44,7 @@ class ResultsMixin(FrameParts):
         else:
             speech.speak(_("No results yet."))
 
-    def progress(self):
+    def progress(self) -> None:
         """A short spoken line per running bot every results_every minutes (0 = never)."""
         every = self.s.get("results_every", 0) or 0
         if every <= 0:
@@ -52,7 +55,7 @@ class ResultsMixin(FrameParts):
                 t.spoken = self.clock.time()
                 speech.speak(_("{name}: {results}", name=run.character, results=stats.short(t.result())))
 
-    def keep_silent(self):
+    def keep_silent(self) -> None:
         """game_speech "always": silence every game with the agent, each time one starts. On a
         worker: a slow game must not hold the status fields up."""
         if self.s.get("game_speech") != "always":
@@ -62,7 +65,7 @@ class ResultsMixin(FrameParts):
             return
         self.silenced.update(todo)          # once per game (an older agent can't, and isn't asked again)
 
-        def work():
+        def work() -> None:
             for pid in todo:
                 try:
                     with AgentLink(pid=pid, timeout=3) as a:
@@ -72,7 +75,7 @@ class ResultsMixin(FrameParts):
                     pass
         threading.Thread(target=work, daemon=True).start()
 
-    def set_game_speech(self, talk, every=False):
+    def set_game_speech(self, talk: bool, every: bool = False) -> None:
         """Mute (talk False) or unmute the selected game - each game on its own, so muting one that
         is botting leaves the one being played talking - or, with every, all of them. Two commands,
         not a toggle: a run mutes its game when it starts, so a toggle pressed "to mute" turned the

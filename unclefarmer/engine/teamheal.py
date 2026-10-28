@@ -1,4 +1,5 @@
 """Healing teammates while following (the `follow` message): a Priest or a Sorceress keeps the
+
 player it follows, and the rest of the team in sight, alive with the class's quick heal.
 
 Who is on the team: the player we follow, and everyone the game named in answer to the quick
@@ -9,14 +10,19 @@ the same way the pet is healed. A heal that raised nobody's HP TEAM_MISSES times
 landing (or the game isn't telling us their HP): then no more teammate heals this run.
 """
 
+from __future__ import annotations
+
 import math
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from .. import gamekeys
 from .. import phrases as phrase_book
 from ..clock import clock_for
 from ..i18n import _
 from . import combat, potions
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 HEAL_GAP = 2.0        # seconds between two teammate heals: the global cooldown paces the rest
 HEAL_CHECK = 2.5      # seconds after a heal before its effect counts as in
@@ -27,7 +33,7 @@ LEARN_EVERY = 45.0    # seconds between two "/6" rounds that learn who is on the
 LEARN_PRESSES = 5     # "/6" presses per round: each names the next teammate on the map
 
 
-def cast_on(b: Any, sb: Any, h: dict[str, Any], eid: int, now: float) -> bool:
+def cast_on(b: Bot, sb: Any, h: dict[str, Any], eid: int, now: float) -> bool:
     """Select eid, press the heal h, select our own target again. The game heals the ally that is
     selected (with a monster selected the same heal lands on us). True when the heal was pressed."""
     ours = b.ui().get("target")
@@ -41,15 +47,16 @@ def cast_on(b: Any, sb: Any, h: dict[str, Any], eid: int, now: float) -> bool:
     return bool(pressed)
 
 
-def _names(b: Any) -> set[str]:
+def _names(b: Bot) -> set[str]:
     """Lower-case names of the teammates: the player we follow, and the team the game named."""
     out: set[str] = set(getattr(b, "team_names", ()))
-    if getattr(b, "following", None):
-        out.add(b.following.strip().lower())
+    following: str | None = getattr(b, "following", None)
+    if following:
+        out.add(following.strip().lower())
     return out
 
 
-def mates(b: Any, snap: dict[str, Any]) -> list[dict[str, Any]]:
+def mates(b: Bot, snap: dict[str, Any]) -> list[dict[str, Any]]:
     """The teammates in view, alive, with their HP known."""
     want = _names(b)
     me = snap["self"]
@@ -59,25 +66,25 @@ def mates(b: Any, snap: dict[str, Any]) -> list[dict[str, Any]]:
             and (e.get("maxhp") or 0) > 0 and 0 < (e.get("hp") or 0) <= e["maxhp"]]
 
 
-def learn(b: Any) -> None:
+def learn(b: Bot) -> None:
     """Every LEARN_EVERY seconds outside fights, a round of "/6" presses: the game names each
     teammate on this map, so the ones we don't follow get healed too. Needs the "/6" phrase on a
     key (the run start puts it on an empty one)."""
     now = clock_for(b).time()
-    if getattr(b, "agent_version", 0) < 27 or b.in_fight or now < getattr(b, "_team_learn_at", 0.0):
+    if getattr(b, "agent_version", 0) < 27 or b.in_fight or now < getattr(b, "team_learn_at", 0.0):
         return
-    b._team_learn_at = now + LEARN_EVERY
+    b.team_learn_at = now + LEARN_EVERY
     slot = phrase_book.slot_of(getattr(b, "phrases", None) or {}, "/6")
     if not slot or not _healer(b):
         return
     key = gamekeys.phrase_key_list()[slot - 1]
     t0 = b.a.json("team").get("now", 0)
-    seen = set(getattr(b, "team_names", ()))
+    seen: set[str] = set(getattr(b, "team_names", ()))
     for _press in range(LEARN_PRESSES):
         b.key(key)
         b.sleep(0.35)
         if any("no team" in (s.get("text") or "").lower() for s in b.a.json("said %d" % t0).get("said", [])):
-            b._team_learn_at = now + 5 * LEARN_EVERY
+            b.team_learn_at = now + 5 * LEARN_EVERY
             break
     for m in b.a.json("team").get("members", []):
         if m.get("name") and m.get("age_ms", 1e9) < 60000:
@@ -85,14 +92,14 @@ def learn(b: Any) -> None:
     b.team_names = seen
 
 
-def _healer(b: Any) -> dict[str, Any] | None:
+def _healer(b: Bot) -> dict[str, Any] | None:
     sb = getattr(b, "skillbook", None)
     if sb is None or not getattr(sb, "ok", False):
         return None
     return sb.healer()
 
 
-def look_after(b: Any, snap: dict[str, Any]) -> bool:
+def look_after(b: Bot, snap: dict[str, Any]) -> bool:
     """While following: heal the weakest teammate in reach whose HP is under the mark. Not when
     our own HP is in danger (that heal goes to us first). True when a heal was pressed."""
     if not getattr(b, "following", None) or not b.p.get("team_heal", True) or getattr(b, "team_heal_off", False):
@@ -131,7 +138,7 @@ def look_after(b: Any, snap: dict[str, Any]) -> bool:
     if not low or now - getattr(b, "team_healed_at", 0.0) < HEAL_GAP:
         return False
     sb = b.skillbook
-    if sb.gcd_wait(now) or not sb.ready(h, now):
+    if sb is None or sb.gcd_wait(now) or not sb.ready(h, now):      # (_healer found one in it)
         return False
     mate = min(low, key=lambda e: e["hp"] / e["maxhp"])
     if not cast_on(b, sb, h, mate["id"], now):

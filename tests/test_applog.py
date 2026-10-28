@@ -1,4 +1,8 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The log files: the level, the day's file name, rotation, and the best-effort promises."""
+
+from __future__ import annotations
 
 import os
 import time
@@ -6,16 +10,18 @@ import time
 import pytest
 
 from unclefarmer import applog
+from pathlib import Path
+from collections.abc import Iterator
 
 
 @pytest.fixture(autouse=True)
-def fresh(monkeypatch):
+def fresh(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     monkeypatch.setattr(applog, "_warned", False)
     yield
     applog.configure()
 
 
-def test_write_appends_to_the_days_file(tmp_path, monkeypatch):
+def test_write_appends_to_the_days_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.write("first")
     applog.write("second")
@@ -23,7 +29,7 @@ def test_write_appends_to_the_days_file(tmp_path, monkeypatch):
     assert path.read_text(encoding="utf-8") == "first\nsecond\n"
 
 
-def test_the_level_hides_lines_but_never_a_crash(tmp_path, monkeypatch):
+def test_the_level_hides_lines_but_never_a_crash(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_level": "ERROR"})
     applog.write("quiet")
@@ -35,7 +41,7 @@ def test_the_level_hides_lines_but_never_a_crash(tmp_path, monkeypatch):
     assert "ValueError: boom" in (tmp_path / "errors.log").read_text(encoding="utf-8")
 
 
-def test_warnings_pass_a_warning_level(tmp_path, monkeypatch):
+def test_warnings_pass_a_warning_level(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_level": "WARNING"})
     applog.write("info line")
@@ -45,7 +51,7 @@ def test_warnings_pass_a_warning_level(tmp_path, monkeypatch):
     assert "info line" not in text
 
 
-def test_rotation_keeps_the_set_number_of_old_files(tmp_path, monkeypatch):
+def test_rotation_keeps_the_set_number_of_old_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_max_mb": 0.00001, "log_backups": 2})     # about ten bytes
     for n in range(5):
@@ -59,7 +65,7 @@ def test_rotation_keeps_the_set_number_of_old_files(tmp_path, monkeypatch):
     assert "line number 3" in (tmp_path / (base.name + ".1")).read_text(encoding="utf-8")
 
 
-def test_no_rotation_when_the_size_is_zero(tmp_path, monkeypatch):
+def test_no_rotation_when_the_size_is_zero(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_max_mb": 0, "log_backups": 2})
     for n in range(50):
@@ -67,7 +73,7 @@ def test_no_rotation_when_the_size_is_zero(tmp_path, monkeypatch):
     assert len(list(tmp_path.glob("*.log*"))) == 1
 
 
-def test_bad_settings_fall_back_to_the_defaults(tmp_path, monkeypatch):
+def test_bad_settings_fall_back_to_the_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_level": "nonsense", "log_max_mb": "big", "log_backups": None})
     assert applog._level == applog.LEVELS.index(applog.DEFAULT_LEVEL)
@@ -76,7 +82,7 @@ def test_bad_settings_fall_back_to_the_defaults(tmp_path, monkeypatch):
     applog.write("still written")
 
 
-def test_dialog_respects_the_level_and_returns_the_error(tmp_path, monkeypatch):
+def test_dialog_respects_the_level_and_returns_the_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     applog.configure({"log_level": "ERROR"})
     assert applog.dialog("ignored\n") is None
@@ -92,7 +98,7 @@ def test_dialog_respects_the_level_and_returns_the_error(tmp_path, monkeypatch):
     assert applog._warned
 
 
-def test_a_broken_log_never_raises_and_warns_once(tmp_path, monkeypatch):
+def test_a_broken_log_never_raises_and_warns_once(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     broken = tmp_path / "broken"
     broken.write_text("not a folder", encoding="utf-8")
     monkeypatch.setattr(applog.paths, "LOGS", str(broken))

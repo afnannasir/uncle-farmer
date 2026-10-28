@@ -1,7 +1,8 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins in this file replace real methods and attributes with fakes on purpose;
-# what they do is checked by running the tests, not by their types.
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """Coming to a player, following one, and the team menu - against a pretend map and players."""
+
+from __future__ import annotations
 
 import queue
 import time
@@ -11,45 +12,58 @@ import pytest
 from unclefarmer import atlas, messages
 from unclefarmer.engine import follow, script, team
 from unclefarmer.engine.bot import Bot, Stopped
+from collections.abc import Callable
+from conftest import as_bot, as_kind, stand_in
+from unclefarmer.engine.botparts.parts import Sighting, Where
+from typing import Any, TypeVar, TypeVarTuple
+
+from unclefarmer.engine.runner import Run
+
+T = TypeVar("T")
+Ts = TypeVarTuple("Ts")
 
 
 class FlatMap:
-    def nearest_walkable(self, x, y, r):
+    def nearest_walkable(self, x: int, y: int, r: int) -> tuple[int, int]:
         return (x, y + 1)
 
 
 @pytest.fixture(autouse=True)
-def flat_maps(monkeypatch):
-    monkeypatch.setattr(atlas, "model", lambda mid: FlatMap())
-    monkeypatch.setattr(messages, "config", lambda: dict(messages.DEFAULTS, pm_trusted=["Friend"]))
+def flat_maps(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FlatMap()))
+    monkeypatch.setattr(messages, "config", stand_in(messages.config, lambda: dict(messages.DEFAULTS, pm_trusted=["Friend"])))
 
 
 class WalkingBot:
     """A bot on a flat map: walks one tile a step, sees players within 30 tiles."""
 
-    def __init__(self, world):
-        self.w, self.logs, self.walks, self.travels = world, [], [], []
-        self.locate = lambda name: None
-        self.last_seen = lambda name: None
+    def __init__(self, world: dict[str, Any]) -> None:
+        self.w = world
+        self.logs: list[str] = []
+        self.walks: list[tuple[float, float]] = []
+        self.travels: list[tuple[int, tuple[float, float] | None]] = []
+        self.locate: Callable[[str], Where | None] = lambda name: None
+        self.last_seen: Callable[[str], Sighting | None] = lambda name: None
 
-    def check(self):
+    def check(self) -> None:
         pass
 
-    def log(self, line, speak=False):
+    def log(self, line: str, speak: bool=False) -> None:
         self.logs.append(line)
 
-    def map_id(self):
+    def map_id(self) -> int:
         return self.w["map"]
 
-    def me(self):
+    def me(self) -> dict[str, Any]:
         return dict(self.w["me"])
 
-    def snap(self):
+    def snap(self) -> dict[str, Any]:
         me = self.w["me"]
         seen = [dict(e) for e in self.w.get("ents", []) if abs(e["x"] - me["x"]) < 30 and abs(e["y"] - me["y"]) < 30]
         return {"self": self.me(), "map": {"id": self.w["map"]}, "entities": seen}
 
-    def walk_to(self, cell, near=None, **kw):
+    def walk_to(self, cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         self.walks.append(cell)
         for _ in range(400):
             m = self.w["me"]
@@ -63,17 +77,17 @@ class WalkingBot:
                 return "near"
         return "arrived"
 
-    def travel(self, mid, cell=None):
+    def travel(self, mid: int, cell: tuple[float, float] | None=None) -> None:
         self.travels.append((mid, cell))
         self.w["map"] = mid
         if cell:
             self.w["me"].update(x=cell[0] + 5, y=cell[1])
 
-    def sleep(self, seconds):
+    def sleep(self, seconds: float) -> None:
         pass
 
 
-def friend(x, y):
+def friend(x: float, y: float) -> dict[str, Any]:
     return {"kind": "player", "name": "Friend", "x": x, "y": y, "id": 9}
 
 
@@ -86,66 +100,66 @@ def friend(x, y):
     ("xyz;abc;10;20;qqq", (None, (10, 20))),
     ("", (None, None)),
 ])
-def test_parse_location(text, want):
+def test_parse_location(text: str, want: tuple[int, None] | tuple[None, None] | tuple[int, tuple[int, int]] | tuple[None, tuple[int, int]]) -> None:
     assert follow.parse_location(text) == want
 
 
-def test_parse_location_with_empty_parts():
+def test_parse_location_with_empty_parts() -> None:
     assert follow.parse_location(" ; ;55;60;Wolf Prairie")[1] == (55, 60)
 
 
-def test_script_come_keeps_map_and_cell():
+def test_script_come_keeps_map_and_cell() -> None:
     assert script.check('come "Friend" 1042 at 31,8\n') is None
     opts = script.parse('come "Friend" 1042 at 31,8\n')[0][0].opts
     assert opts.get("map") == 1042 and opts.get("cell") == (31, 8)
 
 
 # ---------------------------------------------------------------- come
-def test_come_walks_to_the_last_sighting():
+def test_come_walks_to_the_last_sighting() -> None:
     w = {"map": 1041, "me": {"x": 196.0, "y": 199.0}, "ents": [friend(150.0, 210.0)]}
     b = WalkingBot(w)
     b.last_seen = lambda name: (1041, 152.0, 205.0, 70.0)
-    assert follow.come_to(b, "Friend") == "Here, next to you."
+    assert follow.come_to(as_bot(b), "Friend") == "Here, next to you."
     assert any("last seen" in line for line in b.logs)
     assert follow._dist(b.me(), friend(150.0, 210.0)) <= follow.NEAR
 
 
-def test_come_to_a_stale_sighting_looks_once():
+def test_come_to_a_stale_sighting_looks_once() -> None:
     b = WalkingBot({"map": 1041, "me": {"x": 196.0, "y": 199.0}, "ents": []})
     b.last_seen = lambda name: (1041, 152.0, 205.0, 70.0)
-    assert follow.come_to(b, "Friend").startswith("I went to where I last saw you")
+    assert follow.come_to(as_bot(b), "Friend").startswith("I went to where I last saw you")
     assert len(b.walks) == 1
 
 
-def test_come_with_nothing_known():
+def test_come_with_nothing_known() -> None:
     b = WalkingBot({"map": 1041, "me": {"x": 1.0, "y": 1.0}, "ents": []})
-    assert follow.come_to(b, "Friend").startswith("I can't see you")
+    assert follow.come_to(as_bot(b), "Friend").startswith("I can't see you")
 
 
-def test_come_travels_to_the_sightings_map():
+def test_come_travels_to_the_sightings_map() -> None:
     b = WalkingBot({"map": 1041, "me": {"x": 1.0, "y": 1.0}, "ents": []})
     b.last_seen = lambda name: (1042, 30.0, 40.0, 20.0)
-    follow.come_to(b, "Friend")
+    follow.come_to(as_bot(b), "Friend")
     assert b.travels and b.travels[0][0] == 1042
 
 
-def test_come_to_the_pasted_spot():
+def test_come_to_the_pasted_spot() -> None:
     w = {"map": 1042, "me": {"x": 100.0, "y": 100.0}, "ents": [friend(31.0, 8.0)]}
     b = WalkingBot(w)
-    assert follow.come_to(b, "Friend", 1042, (31, 8)) == "Here, next to you."
+    assert follow.come_to(as_bot(b), "Friend", 1042, (31, 8)) == "Here, next to you."
     assert any("said they are" in line for line in b.logs)
     w["ents"], w["me"] = [friend(500.0, 8.0)], {"x": 100.0, "y": 100.0}
-    assert "Press E again" in follow.come_to(WalkingBot(w), "Friend", 1042, (31, 8))
+    assert "Press E again" in follow.come_to(as_bot(WalkingBot(w)), "Friend", 1042, (31, 8))
 
 
-def test_walk_up_aims_again_when_the_player_moves_on():
+def test_walk_up_aims_again_when_the_player_moves_on() -> None:
     mover = friend(20.0, 0.0)
     w = {"map": 1, "me": {"x": 0.0, "y": 0.0}, "ents": [mover], "tick": lambda: mover.update(x=mover["x"] + 1.0)}
-    assert follow._walk_up(WalkingBot(w), "Friend", (20, 0)) == "near"
+    assert follow._walk_up(as_bot(WalkingBot(w)), "Friend", (20, 0)) == "near"
 
 
 # ---------------------------------------------------------------- MP with no character sheet
-def test_mp_without_a_sheet():
+def test_mp_without_a_sheet() -> None:
     b = object.__new__(Bot)
     b.maxmp = b.mp_peak = 0
     b.mp_seen = b.mp_added = 0.0
@@ -158,50 +172,74 @@ def test_mp_without_a_sheet():
 
 # ---------------------------------------------------------------- the messenger's come
 class FakeHost:
-    def __init__(self, run=None):
-        self.run, self.calls = run, []
+    """The window's side of a Messenger: records what it is asked to run, starts nothing."""
 
-    def run_for(self, pid):
-        return self.run
+    def __init__(self, run: FakeRun | None = None) -> None:
+        self.run = run
+        self.calls: list[tuple[object, ...]] = []
 
-    def call(self, fn, *args):
+    def run_for(self, pid: int) -> Run | None:
+        return None if self.run is None else as_kind(Run, self.run)
+
+    def call(self, fn: Callable[[*Ts], T], *args: *Ts) -> T | str | None:
         self.calls.append(args)
+        return None
 
-    def errand_for(self, *args):
+    def start_bot(self, pid: int, plan: str | None) -> str | None:
+        return None
+
+    def stop_bot(self, pid: int) -> None:
         pass
 
-    def character(self, pid):
+    def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None:
+        pass
+
+    def character(self, pid: int) -> str | None:
         return "me"
 
-    def log(self, *args):
-        pass
+    def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
+                   follows: str | None = None) -> str | None:
+        return None
+
+    def follow_for(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str | None:
+        return None
+
+    def unfollow(self, pid: int) -> str | None:
+        return None
 
 
-class Run:
-    def __init__(self, follows):
+class RunBot:
+    """The part of a running Bot a command hands work to."""
+
+    def __init__(self) -> None:
+        self.requests: queue.Queue[Callable[[Bot], object]] = queue.Queue()
+
+
+class FakeRun:
+    def __init__(self, follows: str | None) -> None:
         self.follows = follows
-        self.bot = type("B", (), {"requests": queue.Queue()})()
+        self.bot = RunBot()
 
 
-def test_come_while_following_keeps_following(monkeypatch):
-    run = Run("friend")
+def test_come_while_following_keeps_following(monkeypatch: pytest.MonkeyPatch) -> None:
+    run = FakeRun("friend")
     m = messages.Messenger(1, FakeHost(run))
     assert m.cmd_come(5, "Friend", "") == "Coming."
-    monkeypatch.setattr(follow, "come_to", lambda *a: "Here, next to you.")
-    run.bot.requests.get_nowait()(run.bot)           # no Stopped: the follow goes on
+    monkeypatch.setattr(follow, "come_to", stand_in(follow.come_to, lambda bot, name, map_id=None, cell=None: "Here, next to you."))
+    run.bot.requests.get_nowait()(as_bot(run.bot))           # no Stopped: the follow goes on
     assert m.outbox[0][2] == "Here, next to you."
 
 
-def test_come_during_a_farming_run_ends_it_there(monkeypatch):
-    run = Run(None)
+def test_come_during_a_farming_run_ends_it_there(monkeypatch: pytest.MonkeyPatch) -> None:
+    run = FakeRun(None)
     messages.Messenger(2, FakeHost(run)).cmd_come(5, "Friend", "")
-    monkeypatch.setattr(follow, "come_to", lambda *a: "Here.")
+    monkeypatch.setattr(follow, "come_to", stand_in(follow.come_to, lambda bot, name, map_id=None, cell=None: "Here."))
     with pytest.raises(Stopped) as e:
-        run.bot.requests.get_nowait()(run.bot)
+        run.bot.requests.get_nowait()(as_bot(run.bot))
     assert e.value.stay
 
 
-def test_come_when_idle_starts_an_errand_with_the_cell():
+def test_come_when_idle_starts_an_errand_with_the_cell() -> None:
     h = FakeHost()
     m = messages.Messenger(1, h)
     assert m.cmd_come(5, "Friend", "north;woods;31;8;Underground of Giant rock City") == "Coming."
@@ -209,11 +247,17 @@ def test_come_when_idle_starts_an_errand_with_the_cell():
     assert "Press E" in (m.cmd_come(5, "Friend", "nonsense words here") or "")
 
 
-def test_trusted_players_in_view_are_remembered():
+def test_trusted_players_in_view_are_remembered() -> None:
     m = messages.Messenger(1, FakeHost())
 
     class Link:
-        def json(self, line):
+        def send(self, line: str) -> str:
+            return "ok"
+
+        def close(self) -> None:
+            pass
+
+        def json(self, line: str) -> Any:
             return {"ok": True, "map": {"id": 1041}, "self": {"name": "me"},
                     "entities": [{"kind": "player", "name": "Friend", "x": 1.5, "y": 2.0},
                                  {"kind": "player", "name": "Stranger", "x": 3, "y": 4}]}
@@ -230,21 +274,24 @@ class MenuBot:
     find_entry = Bot.find_entry
     entry_texts = staticmethod(Bot.entry_texts)
 
-    def __init__(self):
-        self.p, self.keys, self.chosen, self.state = {}, [], [], "closed"
-
-    def close_dialogs(self):
+    def __init__(self) -> None:
+        self.p: dict[str, Any] = {}
+        self.keys: list[str] = []
+        self.chosen: list[tuple[tuple[int, int], Any]] = []    # (row, col) chosen, and its options
         self.state = "closed"
 
-    def key(self, k):
+    def close_dialogs(self) -> None:
+        self.state = "closed"
+
+    def key(self, k: str, ms: int = 60) -> None:
         self.keys.append(k)
         if k == "lctrl+enter":
             self.state = "action"
 
-    def wait_dialog(self, seconds=3.0):
+    def wait_dialog(self, seconds: float=3.0) -> dict[str, Any] | None:
         return {"open": 1, "top": self.top()} if self.state != "closed" else None
 
-    def top(self):
+    def top(self) -> dict[str, Any] | None:
         if self.state == "action":
             return {"row": 0, "col": 0, "rows": [
                 [{"options": ["Action menu; lag 224"]}],
@@ -255,7 +302,7 @@ class MenuBot:
             return {"row": 0, "col": 0, "rows": [[{"options": ["yes"]}, {"options": ["no"]}]]}
         return None
 
-    def choose(self, pattern):
+    def choose(self, pattern: str) -> dict[str, Any] | None:
         top = self.top()
         if top is None:
             return None
@@ -267,12 +314,12 @@ class MenuBot:
         self.state = "confirm" if e.get("options") == ["quit"] and self.state == "action" else "closed"
         return e
 
-    def sleep(self, seconds):
+    def sleep(self, seconds: float) -> None:
         pass
 
 
-def test_leave_picks_the_teams_quit_not_the_guilds():
+def test_leave_picks_the_teams_quit_not_the_guilds() -> None:
     b = MenuBot()
-    ok, _msg = team.leave(b)
+    ok, _msg = team.leave(as_bot(b))
     assert ok and b.chosen[0][0] == (2, 1)
     assert b.chosen[1][1] == ["yes"]

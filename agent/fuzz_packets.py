@@ -18,7 +18,7 @@ TEST = os.path.join(HERE, "test")
 MAIN = "unclefarmer.agent.PacketFuzz"
 
 
-def tool(name):
+def tool(name: str) -> str:
     home = os.environ.get("JAVA_HOME")
     if home:
         exe = os.path.join(home, "bin", name + (".exe" if os.name == "nt" else ""))
@@ -30,7 +30,7 @@ def tool(name):
     return exe
 
 
-def main():
+def main() -> None:
     iterations = sys.argv[1] if len(sys.argv) > 1 else "100000"
     seed = sys.argv[2] if len(sys.argv) > 2 else "0x5EED"
     sources = [os.path.join(folder, n) for folder, _d, names in os.walk(SRC) for n in names if n.endswith(".java")]

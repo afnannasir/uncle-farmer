@@ -20,7 +20,7 @@ JAR = os.path.join(HERE, "unclefarmer-agent.jar")
 PREMAIN = "unclefarmer.agent.BotAgent"
 
 
-def javac():
+def javac() -> str:
     home = os.environ.get("JAVA_HOME")
     if home:
         exe = os.path.join(home, "bin", "javac.exe" if os.name == "nt" else "javac")
@@ -32,7 +32,7 @@ def javac():
     return exe
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
     argv = sys.argv[1:] if argv is None else argv
     jar_path = os.path.abspath(argv[0]) if argv else JAR
     shutil.rmtree(BUILD, ignore_errors=True)

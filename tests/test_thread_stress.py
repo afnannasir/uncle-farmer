@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins here deliberately replace wx objects and the agent with fakes.
 """Concurrency stress for the shared state around a run: the GUI pause/stop path, the run's
 fight loop, and the messenger's private-message commands.
 
@@ -8,10 +6,12 @@ threads deadlock or leave an error behind. A faulthandler watchdog dumps every t
 exits if the test hangs, instead of leaving CI to time out with no clue where.
 """
 
+from __future__ import annotations
+
 import faulthandler
 import threading
 import time
-from typing import Any, cast
+from typing import Any
 
 import pytest
 
@@ -19,18 +19,23 @@ from unclefarmer import messages, settings
 from unclefarmer.engine import runner
 from unclefarmer.engine.bot import Bot
 from unclefarmer.engine.botparts.base import Stopped
+from conftest import as_kind, stand_in
+from unclefarmer.engine import combat
+from collections.abc import Callable, Iterator
+from unclefarmer.engine.runner import Run
+from unclefarmer.messages import T, Ts
 
 
 class Link:
     """The agent, shared by the fight loop and the messenger. Every method is locked: the test is
     checking the app's threads, not the fake's."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lock = threading.Lock()
-        self.sent = []
+        self.sent: list[str] = []
         self.speech = "on"
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         with self.lock:
             self.sent.append(line)
             if line == "speech":
@@ -50,8 +55,11 @@ class Link:
                 return "sent"
             return "ok"
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         return {"ok": True, "open": 0} if line == "input" else {}
+
+    def close(self) -> None:
+        pass
 
 
 class SkillBook:
@@ -62,46 +70,59 @@ class SkillBook:
     press_confirmed = True
     casts_done = 0
 
-    def read_casts(self, me_id):
+    def read_casts(self, me_id: int | None) -> None:
         pass
 
 
 class Host:
     """The window's side of the messenger: run_for/call/log/stop_bot."""
 
-    def __init__(self, run):
+    def __init__(self, run: Run) -> None:
         self.run = run
-        self.stop_calls = []
-        self.logs = []
+        self.stop_calls: list[int] = []
+        self.logs: list[tuple[str, bool, str | None, bool]] = []
 
-    def run_for(self, pid):
+    def run_for(self, pid: int) -> Run | None:
         return self.run
 
-    def call(self, fn, *a):
-        return fn(*a)
+    def call(self, fn: Callable[[*Ts], T], *args: *Ts) -> T | str | None:
+        return fn(*args)
 
-    def stop_bot(self, pid):
+    def start_bot(self, pid: int, plan: str | None) -> str | None:
+        return None
+
+    def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
+                   follows: str | None = None) -> str | None:
+        return None
+
+    def follow_for(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str | None:
+        return None
+
+    def unfollow(self, pid: int) -> str | None:
+        return None
+
+    def stop_bot(self, pid: int) -> None:
         self.stop_calls.append(pid)
         self.run.stop()
 
-    def log(self, line, speak=False, who=None, private=False):
+    def log(self, line: str, speak: bool=False, who: str | None=None, private: bool=False) -> None:
         self.logs.append((line, speak, who, private))
 
-    def character(self, pid):
+    def character(self, pid: int) -> str | None:
         return "Hero"
 
 
 class Frame:
     """Just the MainFrame attributes toggle_pause()/stop() use."""
 
-    def __init__(self, run):
+    def __init__(self, run: Run) -> None:
         self.runs = {1: run}
-        self.said = []
+        self.said: list[str] = []
         self.syncs = 0
         self.labels = 0
 
-    def say(self, *a):
-        self.said.append(a)
+    def say(self, text: str, run: Run | None = None) -> None:
+        self.said.append(text)
 
     def sync_pause(self):
         self.syncs += 1
@@ -110,29 +131,29 @@ class Frame:
         self.labels += 1
 
 
-def make_run(monkeypatch):
+def make_run(monkeypatch: pytest.MonkeyPatch) -> tuple[Run, Bot, Link, list[str], threading.Event]:
     link = Link()
-    lines = []
+    lines: list[str] = []
     paused = threading.Event()
 
-    def log(line, speak=False):
+    def log(line: str, speak: bool=False) -> None:
         lines.append(line)
         if "paused" in line:
             paused.set()
 
-    run = runner.Run("", "Stress", 1, lambda *a: None, lambda *a: None)
+    run = runner.Run("", "Stress", 1, lambda line, speak, run: None, lambda reason, run: None)
     bot = Bot(link, settings.load_profile("_test_"), log, run.stop_event)
     bot.held = {"d"}                 # a walk in progress, so pause has keys to let go
     bot.guarding = True
-    bot.skillbook = SkillBook()
+    bot.skillbook = as_kind(combat.SkillBook, SkillBook())
     run.bot = bot
     return run, bot, link, lines, paused
 
 
-def start_fight(bot, errors):
+def start_fight(bot: Bot, errors: list[BaseException]) -> threading.Thread:
     started = threading.Event()
 
-    def fight():
+    def fight() -> None:
         started.set()
         try:
             while True:
@@ -148,7 +169,7 @@ def start_fight(bot, errors):
     return thread
 
 
-def finish(threads, run, bot, errors=None):
+def finish(threads: list[threading.Thread], run: Run, bot: Bot, errors: list[BaseException] | None = None) -> None:
     for thread in threads:
         thread.join(5.0)
     if run.stop_event.is_set():
@@ -159,7 +180,7 @@ def finish(threads, run, bot, errors=None):
 
 
 @pytest.fixture(autouse=True)
-def _deadlock_watchdog():
+def _deadlock_watchdog() -> Iterator[None]:
     """A deadlock dumps all thread stacks and fails the test instead of hanging CI."""
     faulthandler.dump_traceback_later(20, exit=True)
     try:
@@ -168,13 +189,13 @@ def _deadlock_watchdog():
         faulthandler.cancel_dump_traceback_later()
 
 
-def test_gui_pause_and_stop_race_a_fake_fight(monkeypatch):
+def test_gui_pause_and_stop_race_a_fake_fight(monkeypatch: pytest.MonkeyPatch):
     pytest.importorskip("wx")
     from unclefarmer.gui.main import MainFrame
 
     run, bot, link, _lines, paused = make_run(monkeypatch)
     frame = Frame(run)
-    errors = []
+    errors: list[BaseException] = []
     fight = start_fight(bot, errors)
     toggles = 0
 
@@ -183,7 +204,7 @@ def test_gui_pause_and_stop_race_a_fake_fight(monkeypatch):
         try:
             # Pause once and wait until the fight has actually entered the pause branch.
             while not run.stop_event.is_set():
-                MainFrame.toggle_pause(cast(Any, frame), 1)
+                MainFrame.toggle_pause(as_kind(MainFrame, frame), 1)
                 toggles += 1
                 if paused.wait(0.5):
                     break
@@ -191,10 +212,10 @@ def test_gui_pause_and_stop_race_a_fake_fight(monkeypatch):
             for _ in range(20):
                 if run.stop_event.is_set():
                     break
-                MainFrame.toggle_pause(cast(Any, frame), 1)
+                MainFrame.toggle_pause(as_kind(MainFrame, frame), 1)
                 toggles += 1
                 time.sleep(0.001)
-            MainFrame.stop(cast(Any, frame), 1)
+            MainFrame.stop(as_kind(MainFrame, frame), 1)
         except BaseException as e:      # noqa: BLE001
             errors.append(e)
 
@@ -210,15 +231,15 @@ def test_gui_pause_and_stop_race_a_fake_fight(monkeypatch):
     assert any(line == "guardmods off" for line in link.sent)
 
 
-def test_private_message_pause_resume_stop_race_a_fake_fight(monkeypatch):
+def test_private_message_pause_resume_stop_race_a_fake_fight(monkeypatch: pytest.MonkeyPatch):
     run, bot, link, _lines, paused = make_run(monkeypatch)
     host = Host(run)
-    cfg = dict(messages.DEFAULTS)
+    cfg: dict[str, Any] = dict(messages.DEFAULTS)
     cfg.update(pm_trusted=["Boss"], pm_commands=True, pm_replies="never", pm_speak="never")
-    monkeypatch.setattr(messages, "config", lambda: cfg)
+    monkeypatch.setattr(messages, "config", stand_in(messages.config, lambda: cfg))
     messenger = messages.Messenger(1, host)
     messenger.link = link
-    errors = []
+    errors: list[BaseException] = []
     fight = start_fight(bot, errors)
 
     def private_messages():

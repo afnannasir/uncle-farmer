@@ -14,25 +14,32 @@ From agent 44 every cast also names its targets with their HP after it, other pl
 else is on a monster, and how fast it goes down (fighting.doomed).
 """
 
+from __future__ import annotations
+
+from typing import Any
+
+from .. import jsonio
+from ..link import JsonLink
+
 KEEP = 60.0         # seconds one of our hits keeps a monster ours (a fight is far shorter)
 DODGED = 2
 STRUCK_KEEP = 10.0  # seconds someone else's strikes on a monster are remembered (agent 44 "targets")
 
 
 class KillTracker:
-    def __init__(self, link):
+    def __init__(self, link: JsonLink) -> None:
         self.a = link
         self.since = 0          # agent clock (ms) of the newest cast or death read
-        self.hit = {}           # monster id -> agent ms of our last hit on it
-        self.live = None        # None until read; False: the agent reports no deaths (before v30)
-        self.seen = set()       # (kind, id, ms) read at the newest millisecond, so a reread skips them
-        self.fresh = []         # casts read for the first time by the last update (all casters)
-        self.died = []          # every monster death the last update read, ours or not (spawns.py)
-        self.own = set()        # our pets' ids: their strikes are ours, not someone else's
-        self.struck = {}        # monster id -> [(agent ms, HP after it)] of someone else's strikes
-        self.pet_struck = {}    # monster id -> agent ms of our pet's last strike
+        self.hit: dict[int, int] = {}       # monster id -> agent ms of our last hit on it
+        self.live: bool | None = None       # None until read; False: the agent reports no deaths (before v30)
+        self.seen: set[tuple[Any, ...]] = set()   # (kind, id, ms) read at the newest millisecond, so a reread skips them
+        self.fresh: list[dict[str, Any]] = []     # casts read for the first time by the last update (all casters)
+        self.died: list[int] = []           # every monster death the last update read, ours or not (spawns.py)
+        self.own: set[int] = set()          # our pets' ids: their strikes are ours, not someone else's
+        self.struck: dict[int, list[tuple[int, float]]] = {}   # monster id -> [(agent ms, HP after it)] of someone else's strikes
+        self.pet_struck: dict[int, int] = {}   # monster id -> agent ms of our pet's last strike
 
-    def update(self, me_id):
+    def update(self, me_id: int) -> list[int]:
         """Read what happened since the last call: the ids of monsters that died with a hit of
         ours on them, each once. [] while the agent can't tell (self.live False). Someone else's
         strikes (agent 44) go to self.struck, our pets' to self.pet_struck."""
@@ -41,11 +48,12 @@ class KillTracker:
         # from one millisecond back: a cast or death noted in the same millisecond as the newest one
         # read, but just after that read, would otherwise be skipped for good
         r = self.a.json("casts %d" % (self.since - 1))
-        if not isinstance(r, dict) or "error" in r:
+        if not jsonio.is_object(r) or "error" in r:
             return []
         newest = self.since
-        seen = set()
-        for c in r.get("casts", []):
+        seen: set[tuple[Any, ...]] = set()
+        casts: list[dict[str, Any]] = r.get("casts", [])
+        for c in casts:
             newest = max(newest, c["t"])
             key = ("c", c.get("caster"), c.get("seq"), c["t"])
             seen.add(key)
@@ -64,8 +72,9 @@ class KillTracker:
             self.seen = {k for k in seen if k[-1] == newest}
             return []
         self.live = True
-        out = []
-        for mid, t in r.get("deaths", []):
+        out: list[int] = []
+        deaths: list[list[int]] = r.get("deaths", [])
+        for mid, t in deaths:
             newest = max(newest, t)
             seen.add(("d", mid, t))
             if ("d", mid, t) in self.seen:
@@ -88,12 +97,13 @@ class KillTracker:
             del self.pet_struck[mid]
         return out
 
-    def _note_struck(self, c):
+    def _note_struck(self, c: dict[str, Any]) -> None:
         """A cast by someone else (or our pet) at monsters: who is on which one, and its HP after."""
         caster = c.get("caster")
         if not isinstance(caster, int) or caster < 0:
             return              # a monster's own cast
-        for row in c.get("targets") or []:
+        targets: list[list[Any]] = c.get("targets") or []
+        for row in targets:
             if len(row) < 2 or not isinstance(row[0], int) or row[0] >= 0:
                 continue
             mid, hp = row[0], row[1]
@@ -102,15 +112,15 @@ class KillTracker:
             elif isinstance(hp, (int, float)) and hp > 0:
                 self.struck.setdefault(mid, []).append((c["t"], hp))
 
-    def claimed(self, mid):
+    def claimed(self, mid: int) -> bool:
         """Someone else (another player or their pet) struck this monster lately."""
         return mid in self.struck
 
-    def pets_alone(self, mid):
+    def pets_alone(self, mid: int) -> bool:
         """Only our pet has been at it lately: its HP going down is our own doing."""
         return mid in self.pet_struck and mid not in self.struck
 
-    def struck_rate(self, mid):
+    def struck_rate(self, mid: int) -> float | None:
         """HP a second it is losing to someone else, from their strikes' HP readings (two at
         least, half a second apart), or None. The server's own numbers, timed to the
         millisecond: known from the second strike on, where the world's readings need a while."""
@@ -120,7 +130,7 @@ class KillTracker:
         drop = rows[0][1] - rows[-1][1]
         return 1000.0 * drop / (rows[-1][0] - rows[0][0]) if drop > 0 else None
 
-    def tagged(self, mid):
+    def tagged(self, mid: int) -> bool:
         """We have hurt this monster lately: it's partly ours, and finishing it gets the kill."""
         return mid in self.hit
 

@@ -7,35 +7,44 @@ Ctrl+9 between the channels. Everything lives in memory only (chat.py) and is go
 Farmer closes.
 """
 
+from __future__ import annotations
+
 import threading
 import time
-from typing import Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import wx
 
 from .. import chat, nearby, settings, tones
 from ..i18n import _
-from .common import labeled, ok_cancel, page, tabs
+from .common import Dialog, Handler, labeled, ok_cancel, page, tabs
+
+if TYPE_CHECKING:
+    from .mainparts.base import FrameParts
 
 ALL = "all"
 CLOCKS = ("24", "12")
 READ = ("open", "always", "never")       # when new channel messages are read out
+# where a voice message goes: a private chat (player id), a channel (its key), or nowhere (why not)
+VoiceTarget = (tuple[Literal["pm"], int, str] | tuple[Literal["channel"], str, str]
+               | tuple[None, str, Literal[""]])
 
 
-def channel_buffers():
+def channel_buffers() -> list[tuple[str, str]]:
     """(key, name) of the channel buffers, in the order Ctrl+1 .. Ctrl+9 reach them."""
     return [(ALL, _("All")), ("4", _("Team")), ("3", _("Gang")), ("2", _("Nearby")), ("1", _("Map")),
             ("0", _("Global")), ("5", _("International")), ("6", _("Private channel")),
             (chat.NOTICE, _("Notices"))]
 
 
-def stamp(when, clock):
+def stamp(when: float, clock: str | None) -> str:
     """The time a line came: "16:05" or "4:05 PM"."""
     t = time.localtime(when)
     return time.strftime("%I:%M %p", t).lstrip("0") if clock == "12" else time.strftime("%H:%M", t)
 
 
-def line_text(line, where=True, clock=None):
+def line_text(line: chat.Line, where: bool = True, clock: str | None = None) -> str:
     """"Team, Ali: hello, 16:05" - the time after the words, so a screen reader starts with who and
     what; clock None leaves it out (speech, or the player turned it off). where=False inside a
     channel's own buffer or a conversation: "Ali: hello, 16:05", and our own lines read "you: ..."."""
@@ -53,14 +62,14 @@ def line_text(line, where=True, clock=None):
     return "%s, %s" % (text, stamp(line["when"], clock)) if clock else text
 
 
-def clock_of(s):
+def clock_of(s: dict[str, Any]) -> str | None:
     """The clock the times are shown in, or None when the player turned the times off."""
     if not s.get("chat_time", True):
         return None
     return s.get("chat_clock") if s.get("chat_clock") in CLOCKS else "24"
 
 
-def set_label(label_ctrl, ctrl, text):
+def set_label(label_ctrl: wx.StaticText, ctrl: wx.Window, text: str) -> None:
     if label_ctrl.GetLabel() != text:
         label_ctrl.SetLabel(text)
         ctrl.SetName(text.replace("&", "").rstrip(":"))
@@ -69,20 +78,20 @@ def set_label(label_ctrl, ctrl, text):
 class ChatFrame(wx.Frame):
     """host: the main window (its feeds, messengers, snapshot, say and settings)."""
 
-    def __init__(self, host, pid, character):
+    def __init__(self, host: "FrameParts", pid: int, character: str | None) -> None:
         super().__init__(host, title=_("Chat - {name}", name=character or _("game")), size=wx.Size(640, 600))
         self.host, self.pid, self.character = host, pid, character
         self.s = host.s
         self.ch_keys = [k for k, _n in channel_buffers()]
         self.ch_names = dict(channel_buffers())
         self.unread = {k: 0 for k in self.ch_keys}
-        self.ch_lines = []
-        self.pm_unread = {}            # conversation key -> new messages not looked at
-        self.started = {}              # conversations begun here before any message: key -> {...}
-        self.convs = []
-        self.pm_lines = []
+        self.ch_lines: list[chat.Line] = []
+        self.pm_unread: dict[str, int] = {}            # conversation key -> new messages not looked at
+        self.started: dict[str, dict[str, Any]] = {}   # conversations begun here before any message
+        self.convs: list[dict[str, Any]] = []
+        self.pm_lines: list[chat.Line] = []
         self.recording = False         # a voice message is being recorded (the game's microphone)
-        self.record_buttons = []
+        self.record_buttons: list[wx.Button] = []
 
         root = wx.BoxSizer(wx.VERTICAL)
         self.nb = tabs(self)
@@ -132,13 +141,14 @@ class ChatFrame(wx.Frame):
         self.refresh_people()
         self.ch_text.SetFocus()
 
-    def buttons(self, panel, box):
+    def buttons(self, panel: wx.Window, box: wx.Sizer) -> None:
         row = wx.BoxSizer(wx.HORIZONTAL)
-        for label, handler in ((_("&Send"), lambda e: self.send()),
-                               (_("Record &voice"), lambda e: self.record()),
-                               (_("Pla&y"), lambda e: self.play()),
-                               (_("Se&ttings..."), lambda e: self.settings()),
-                               (_("Close"), lambda e: self.Close())):
+        specs: list[tuple[str, Handler]] = [(_("&Send"), lambda e: self.send()),
+                                            (_("Record &voice"), lambda e: self.record()),
+                                            (_("Pla&y"), lambda e: self.play()),
+                                            (_("Se&ttings..."), lambda e: self.settings()),
+                                            (_("Close"), lambda e: self.Close())]
+        for label, handler in specs:
             b = wx.Button(panel, label=label)
             b.Bind(wx.EVT_BUTTON, handler)
             row.Add(b, 0, wx.RIGHT, 8)
@@ -146,17 +156,17 @@ class ChatFrame(wx.Frame):
                 self.record_buttons.append(b)
         box.Add(row, 0, wx.TOP, 10)
 
-    def feed(self):
+    def feed(self) -> chat.Feed | None:
         return self.host.chats.get(self.pid)
 
-    def on_private(self):
+    def on_private(self) -> bool:
         return self.nb.GetSelection() == 1
 
     # ---------------------------------------------------------------- channels
-    def channel_key(self):
+    def channel_key(self) -> str:
         return self.ch_keys[self.channel.GetSelection()]
 
-    def show_channel(self):
+    def show_channel(self) -> None:
         k = self.channel_key()
         f = self.feed()
         self.ch_lines = f.buffer(k) if f else []
@@ -168,14 +178,14 @@ class ChatFrame(wx.Frame):
         self.label_channel_message()
         self.s["chat_buffer"] = k
 
-    def label_channels(self):
+    def label_channels(self) -> None:
         for i, k in enumerate(self.ch_keys):
             n = self.unread[k]
             text = self.ch_names[k] if not n else _("{buffer} ({n} new)", buffer=self.ch_names[k], n=n)
             if self.channel.GetString(i) != text:
                 self.channel.SetString(i, text)
 
-    def channel_target(self):
+    def channel_target(self) -> str:
         """The channel a line typed on the Channels tab goes to: the buffer's own, or in All the
         selected line's channel, else the last one used."""
         k = self.channel_key()
@@ -185,10 +195,10 @@ class ChatFrame(wx.Frame):
         line = self.ch_lines[i] if 0 <= i < len(self.ch_lines) else None
         if k == ALL and line and line["channel"] in chat.CHANNEL_KEYS:
             return line["channel"]
-        last = self.s.get("chat_channel", "4")
+        last: str = self.s.get("chat_channel", "4")
         return last if last in chat.CHANNEL_KEYS else "4"
 
-    def label_channel_message(self):
+    def label_channel_message(self) -> None:
         set_label(self.ch_label, self.ch_text,
                   _("Messa&ge to {where}:", where=chat.channel_name(self.channel_target())))
 
@@ -201,15 +211,15 @@ class ChatFrame(wx.Frame):
         # the latest activity first: a message, or a chat just started here
         return sorted(extra + convs, key=lambda c: (-c["last"], -c.get("order", -1)))
 
-    def refresh_people(self, select_key=None):
+    def refresh_people(self, select_key: str | None = None) -> None:
         """The People list: one row per conversation, the latest first, with its new messages."""
         keep = select_key or self.peer_key()
         self.convs = self.conversations()
-        rows = []
+        rows: list[str] = []
         for c in self.convs:
             n = self.pm_unread.get(c["key"], 0)
             rows.append(c["name"] if not n else _("{name} ({n} new)", name=c["name"], n=n))
-        if self.people.GetItems() != rows:
+        if self.people.GetStrings() != rows:
             self.people.Set(rows)
         keys = [c["key"] for c in self.convs]
         if keep in keys:
@@ -218,17 +228,17 @@ class ChatFrame(wx.Frame):
             self.people.SetSelection(0)
         self.show_conversation()
 
-    def peer(self):
+    def peer(self) -> dict[str, Any] | None:
         i = self.people.GetSelection()
         return self.convs[i] if 0 <= i < len(self.convs) else None
 
-    def peer_key(self):
+    def peer_key(self) -> str | None:
         c = self.peer()
         return c["key"] if c else None
 
-    def show_conversation(self):
+    def show_conversation(self) -> None:
         c = self.peer()
-        lines = list(c["lines"]) if c else []
+        lines: list[chat.Line] = list(c["lines"]) if c else []
         old = self.pm_lines
         if old and lines[:len(old)] == old and self.pm_list.GetCount() == len(old):
             # the same conversation, with new lines: add them and leave the reader where they are
@@ -248,15 +258,15 @@ class ChatFrame(wx.Frame):
         set_label(self.pm_label, self.pm_text,
                   _("Messa&ge to {where}:", where=c["name"]) if c else _("Messa&ge:"))
 
-    def on_tab(self, evt):
+    def on_tab(self, evt: wx.BookCtrlEvent) -> None:
         if self.on_private():
             self.fill_names()
         evt.Skip()
 
-    def fill_names(self):
+    def fill_names(self) -> None:
         """The New chat list: the people talked with and the players in sight (the last reading the
         window already has - no new one is asked for). What is typed in it stays."""
-        names = [c["name"] for c in self.conversations() if not c["name"].isdigit()]
+        names: list[str] = [c["name"] for c in self.conversations() if not c["name"].isdigit()]
         s = self.host.cached(self.pid, 60.0)
         if s:
             names += [n for n, _d in nearby.players(s)]
@@ -267,7 +277,7 @@ class ChatFrame(wx.Frame):
             self.new_chat.Set(names)
             self.new_chat.ChangeValue(typed)
 
-    def start_chat(self):
+    def start_chat(self) -> None:
         """New chat with a name or an id: a conversation of its own, ready to type into."""
         who = self.new_chat.GetValue().strip()
         f = self.feed()
@@ -276,7 +286,8 @@ class ChatFrame(wx.Frame):
         pid = f.id_of(who)
         if not pid:
             s = self.host.snapshot(self.pid)
-            hit = next((e for e in (s or {}).get("entities", []) if e.get("kind") == "player"
+            entities: list[dict[str, Any]] = (s or {}).get("entities", [])
+            hit = next((e for e in entities if e.get("kind") == "player"
                         and (e.get("name") or "").strip().lower() == who.lower()), None)
             pid = hit["id"] if hit else None
         if not pid:
@@ -291,7 +302,7 @@ class ChatFrame(wx.Frame):
         self.pm_text.SetFocus()
 
     # ---------------------------------------------------------------- arriving
-    def add(self, line):
+    def add(self, line: chat.Line) -> None:
         """A new line from the feed (on the window's thread)."""
         if line["channel"] == chat.PRIVATE:
             key = chat.Feed.peer_key(line)
@@ -318,7 +329,7 @@ class ChatFrame(wx.Frame):
             self.label_channels()
 
     # ---------------------------------------------------------------- sending
-    def send(self):
+    def send(self) -> None:
         private = self.on_private()
         box = self.pm_text if private else self.ch_text
         text = " ".join(box.GetValue().split())
@@ -344,7 +355,7 @@ class ChatFrame(wx.Frame):
                             "one every 2 seconds (3 on Global), as fast as the game allows.", n=n))
         box.SetValue("")
 
-    def send_private(self, f, text):
+    def send_private(self, f: chat.Feed, text: str) -> str | None:
         c = self.peer()
         if c is None:
             return _("Pick someone in People, or type a name or id in New chat first.")
@@ -359,7 +370,7 @@ class ChatFrame(wx.Frame):
         return None
 
     # ---------------------------------------------------------------- voice messages
-    def voice_target(self):
+    def voice_target(self) -> VoiceTarget:
         """Where a voice message from this tab goes: ("pm", id, name) in a private chat, ("channel",
         key, name) on Team or Gang, or (None, why, "") where the game doesn't take one."""
         f = self.feed()
@@ -377,7 +388,7 @@ class ChatFrame(wx.Frame):
             return None, _("The game sends voice messages only to Team, Gang and private chats."), ""
         return "channel", k, chat.channel_name(k)
 
-    def record(self):
+    def record(self) -> None:
         """The voice button: the first press records from the game's microphone, the next sends it."""
         f = self.feed()
         if f is None:
@@ -399,29 +410,30 @@ class ChatFrame(wx.Frame):
             f.cancel_voice()
             self.host.say(where[1])
             return
-        kind, target, name = where
+        name = where[2]
+        feed = f
 
-        def go():
+        def go() -> None:
             # stopping waits for the recorder to finish: off the window's thread
-            why = f.send_voice(to=target) if kind == "pm" else f.send_voice(channel=target)
-            n = getattr(f, "voice_parts", 1)
+            why = feed.send_voice(to=where[1]) if where[0] == "pm" else feed.send_voice(channel=where[1])
+            n: int = getattr(feed, "voice_parts", 1)
             done = (_("Voice message sent to {where}.", where=name) if n <= 1
                     else _("Voice message sent to {where} in {n} parts.", where=name, n=n))
             wx.CallAfter(self.host.say, why or done)
         threading.Thread(target=go, daemon=True, name="unclefarmer-voice-send").start()
 
-    def set_recording(self, on):
+    def set_recording(self, on: bool) -> None:
         self.recording = on
         for b in self.record_buttons:
             b.SetLabel(_("Stop and send &voice") if on else _("Record &voice"))
 
-    def cancel_recording(self):
+    def cancel_recording(self) -> None:
         f = self.feed()
         if self.recording and f is not None:
             f.cancel_voice()
         self.set_recording(False)
 
-    def play(self):
+    def play(self) -> None:
         """Plays the voice message selected in this tab's Messages list."""
         lst, lines = (self.pm_list, self.pm_lines) if self.on_private() else (self.ch_list, self.ch_lines)
         i = lst.GetSelection()
@@ -435,7 +447,7 @@ class ChatFrame(wx.Frame):
             self.host.say(why)
 
     # ---------------------------------------------------------------- keys and settings
-    def on_key(self, evt):
+    def on_key(self, evt: wx.KeyEvent) -> None:
         code = evt.GetKeyCode()
         if code == wx.WXK_ESCAPE:
             if self.recording:
@@ -459,24 +471,24 @@ class ChatFrame(wx.Frame):
             return
         evt.Skip()
 
-    def settings(self):
+    def settings(self) -> None:
         with ChatSettings(self, self.s) as d:
             if d.ShowModal() == wx.ID_OK:
                 settings.save_app(self.s)
                 self.show_channel()          # the times as now chosen
                 self.show_conversation()
 
-    def on_close(self, _evt):
+    def on_close(self, _evt: wx.Event) -> None:
         self.cancel_recording()
         settings.save_app(self.s)
         self.host.chat_windows.pop(self.pid, None)
         self.Destroy()
 
 
-class ChatSettings(wx.Dialog):
+class ChatSettings(Dialog):
     """When and which channels are read out, the private message tones, and the times."""
 
-    def __init__(self, parent, app_settings):
+    def __init__(self, parent: wx.Window, app_settings: dict[str, Any]) -> None:
         super().__init__(parent, title=_("Chat settings"))
         self.s = app_settings
         box = wx.BoxSizer(wx.VERTICAL)
@@ -489,7 +501,7 @@ class ChatSettings(wx.Dialog):
         self.read.SetSelection(READ.index(self.s.get("chat_read", "open")) if self.s.get("chat_read") in READ else 0)
         read.Add(self.read, 0, wx.ALL, 4)
         speak = set(self.s.get("chat_speak", chat.SPEAK_DEFAULT))
-        self.checks = {}
+        self.checks: dict[str, wx.CheckBox] = {}
         for k, name in channel_buffers():
             if k == ALL:
                 continue
@@ -501,7 +513,7 @@ class ChatSettings(wx.Dialog):
 
         pm = wx.StaticBoxSizer(wx.VERTICAL, self, _("Private messages to you"))
         sb = pm.GetStaticBox()
-        self.tones = {}
+        self.tones: dict[str, wx.Choice] = {}
         for key, label, default in (("chat_tone_trusted", _("Tone from &trusted players:"), "chime"),
                                     ("chat_tone_others", _("Tone from &everyone else:"), "ding")):
             pm.Add(wx.StaticText(sb, label=label), 0, wx.LEFT | wx.TOP, 4)
@@ -509,7 +521,7 @@ class ChatSettings(wx.Dialog):
             c.SetName(label.replace("&", "").rstrip(":"))
             have = self.s.get(key, default)
             c.SetSelection(tones.ORDER.index(have) if have in tones.ORDER else 0)
-            c.Bind(wx.EVT_CHOICE, lambda e, c=c: tones.play(tones.ORDER[c.GetSelection()]))   # hear it
+            c.Bind(wx.EVT_CHOICE, _hear(c))
             pm.Add(c, 0, wx.ALL, 4)
             self.tones[key] = c
         pm.Add(wx.StaticText(sb, label=_("Trusted players are the names and ids in Private messages (Ctrl+Shift+M), "
@@ -534,7 +546,7 @@ class ChatSettings(wx.Dialog):
         self.SetSizerAndFit(box)
         self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         self.s["chat_read"] = READ[self.read.GetSelection()]
         self.s["chat_speak"] = [k for k, c in self.checks.items() if c.GetValue()]
         for key, c in self.tones.items():
@@ -542,3 +554,10 @@ class ChatSettings(wx.Dialog):
         self.s["chat_time"] = self.show_time.GetValue()
         self.s["chat_clock"] = CLOCKS[self.clock.GetSelection()]
         self.EndModal(wx.ID_OK)
+
+
+def _hear(choice: wx.Choice) -> Callable[[wx.CommandEvent], None]:
+    """A tone choice's handler: play the tone chosen, so the player hears it."""
+    def play(_evt: wx.CommandEvent) -> None:
+        tones.play(tones.ORDER[choice.GetSelection()])
+    return play

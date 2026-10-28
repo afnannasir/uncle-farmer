@@ -26,6 +26,8 @@ covered:
   pack      several monsters at once (overnight deaths, 2026-10-07)
 """
 
+from __future__ import annotations
+
 import collections
 import gc
 import os
@@ -35,6 +37,8 @@ import tracemalloc
 import pytest
 
 import simgame
+from collections.abc import Callable
+
 from unclefarmer import paths
 
 pytestmark = pytest.mark.soak
@@ -46,11 +50,11 @@ APP_CODE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__
 
 
 @pytest.fixture
-def soak_env(sim_env):
+def soak_env(sim_env: Callable[..., simgame.SimGame]) -> Callable[..., simgame.SimGame]:
     return sim_env           # conftest.sim_env: a pretend game maker, the app as the player runs it
 
 
-def errors_logged():
+def errors_logged() -> str:
     path = os.path.join(paths.LOGS, "errors.log")
     if not os.path.exists(path):
         return ""
@@ -58,11 +62,11 @@ def errors_logged():
         return f.read()
 
 
-def farm(minutes):
+def farm(minutes: float) -> str:
     return "end_at here\nfarm minutes=%g" % minutes
 
 
-def assert_clean(s, game, dropped=False):
+def assert_clean(s: simgame.Soak, game: simgame.SimGame, dropped: bool = False) -> None:
     """What every run must leave behind, however it ended."""
     assert not s.timed_out, "the run never ended: last lines %s" % s.lines[-10:]
     assert not game.errors, game.errors
@@ -74,12 +78,12 @@ def assert_clean(s, game, dropped=False):
     assert errors_logged() == ""
 
 
-def assert_no_drift(s, game):
+def assert_no_drift(s: simgame.Soak, game: simgame.SimGame) -> None:
     r, truth = s.results(), game.world.truth
     assert (r["kills"], r["contribution"], r["deaths"]) == (truth["kills"], truth["contribution"], truth["deaths"])
 
 
-def settle(baseline_threads, seconds=3.0):
+def settle(baseline_threads: int, seconds: float=3.0) -> int:
     """Threads the run started (the game's connection threads among them) take a moment to end."""
     import time
     end = time.monotonic() + seconds
@@ -89,7 +93,7 @@ def settle(baseline_threads, seconds=3.0):
     return threading.active_count()
 
 
-def settled_handles():
+def settled_handles() -> int:
     """Open handles once closed sockets and finished threads have been let go of."""
     import time
     time.sleep(0.3)
@@ -98,7 +102,7 @@ def settled_handles():
 
 
 # ---------------------------------------------------------------- a night
-def test_a_night_of_farming_levels_off(soak_env, monkeypatch):
+def test_a_night_of_farming_levels_off(soak_env: Callable[..., simgame.SimGame], monkeypatch: pytest.MonkeyPatch):
     # The bounded caches fill slowly: 512 routes take longer than a test night. Small bounds fill
     # in minutes, so whatever still grows in the second half is a leak, not a cache filling up.
     from unclefarmer import atlaslib
@@ -106,11 +110,11 @@ def test_a_night_of_farming_levels_off(soak_env, monkeypatch):
     game = soak_env()
     s = simgame.Soak(game, farm(60 * HOURS), watchdog=1800)
     s.lines = collections.deque(maxlen=200)
-    readings = {}
+    readings: dict[str, tuple[int, tracemalloc.Snapshot, int, int]] = {}
     threads0, handles0 = threading.active_count(), simgame.handles()
     tracemalloc.start(15)
 
-    def measure(name):
+    def measure(name: str):
         def take():
             gc.collect()
             snap = tracemalloc.take_snapshot().filter_traces([tracemalloc.Filter(True, APP_CODE)])
@@ -135,7 +139,7 @@ def test_a_night_of_farming_levels_off(soak_env, monkeypatch):
     assert game.world.truth["kills"] > 60 * HOURS, "a working night kills more than one a minute"
     # Memory levels off: with the caches full early, the second half of the night may add next
     # to nothing to what the app holds.
-    start, middle, end = (readings[k][0] for k in ("start", "middle", "end"))
+    _start, middle, end = (readings[k][0] for k in ("start", "middle", "end"))
     assert end - middle < 192 * 1024, "memory still climbing: +%.0f KiB in the second half" % (
         (end - middle) / 1024)
     assert readings["end"][2] <= readings["start"][2], "threads grew during the night"
@@ -145,11 +149,11 @@ def test_a_night_of_farming_levels_off(soak_env, monkeypatch):
 
 
 # ---------------------------------------------------------------- starting and stopping
-def test_start_and_stop_again_and_again(soak_env):
+def test_start_and_stop_again_and_again(soak_env: Callable[..., simgame.SimGame]):
     """The player starts and stops runs all evening: each must give back its threads, its
     connection and its handles."""
     threads0, handles0 = threading.active_count(), simgame.handles()
-    seen = []
+    seen: list[tuple[int, int]] = []
     for i in range(8):
         game = soak_env(seed=20 + i)
         s = simgame.Soak(game, farm(3), watchdog=120).go()
@@ -171,7 +175,7 @@ def test_start_and_stop_again_and_again(soak_env):
     ("kill", 0.00003),         # our character dies
     ("fill_bag", 0.0002),      # the bag suddenly full
 ])
-def test_a_fault_stops_or_recovers_safely(soak_env, fault, chance):
+def test_a_fault_stops_or_recovers_safely(soak_env: Callable[..., simgame.SimGame], fault: str, chance: float):
     game = soak_env(seed=31)
     setattr(game.faults, fault, chance)
     threads0 = threading.active_count()
@@ -199,7 +203,7 @@ def test_a_fault_stops_or_recovers_safely(soak_env, fault, chance):
 
 
 # ---------------------------------------------------------------- the game's own surprises
-def test_a_night_of_the_games_surprises(soak_env):
+def test_a_night_of_the_games_surprises(soak_env: Callable[..., simgame.SimGame]):
     game = soak_env(seed=41)
     ev = game.world.events
     ev.critter, ev.popup, ev.chatbox, ev.busy, ev.pack = 0.3, 0.15, 0.15, 0.3, 0.1
@@ -217,7 +221,7 @@ def test_a_night_of_the_games_surprises(soak_env):
     assert w.truth["kills"] > 60, "the surprises must not stop the farming"
 
 
-def test_a_frozen_game_ends_the_run_as_frozen(soak_env):
+def test_a_frozen_game_ends_the_run_as_frozen(soak_env: Callable[..., simgame.SimGame]):
     game = soak_env(seed=51)
     game.world.events.freeze = 0.05
     s = simgame.Soak(game, farm(240), watchdog=300).go()

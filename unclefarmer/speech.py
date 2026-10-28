@@ -4,6 +4,8 @@ Uses NV Access's nvdaControllerClient64.dll (LGPL 2.1, part of NVDA's controller
 beside the exe. Without NVDA, or without the DLL, speaking does nothing.
 """
 
+from __future__ import annotations
+
 import ctypes
 import os
 
@@ -26,7 +28,7 @@ def _load():
     return _dll
 
 
-def speak(text, interrupt=False):
+def speak(text: str, interrupt: bool = False) -> bool:
     dll = _load()
     if not dll:
         return False

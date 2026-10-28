@@ -5,12 +5,14 @@ Plain beeps (winsound.Beep) rather than Windows' sound scheme: the same on every
 silenced by a sound theme.
 """
 
+from __future__ import annotations
+
 import threading
 
 from .i18n import N_, _
 
 # name -> [(frequency in Hz, milliseconds)]; a frequency of 0 is a pause
-TONES = {
+TONES: dict[str, list[tuple[int, int]]] = {
     "chime": [(880, 70), (1320, 110)],
     "ding": [(1047, 120)],
     "double": [(988, 60), (0, 50), (988, 60)],
@@ -23,11 +25,11 @@ NAMES = {"": N_("No tone"), "chime": N_("Chime"), "ding": N_("Ding"), "double": 
          "rising": N_("Rising"), "falling": N_("Falling"), "low": N_("Low beep")}
 
 
-def label(name):
+def label(name: str) -> str:
     return _(NAMES.get(name, NAMES[""]))
 
 
-def _play(steps):
+def _play(steps: list[tuple[int, int]]) -> None:
     try:
         import time
         import winsound
@@ -40,7 +42,7 @@ def _play(steps):
         pass                       # no sound device: nothing to play on
 
 
-def play(name):
+def play(name: str) -> None:
     """Play a tone by name ("" or an unknown name: nothing) without waiting for it."""
     steps = TONES.get(name)
     if steps:

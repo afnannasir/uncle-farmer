@@ -1,9 +1,12 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The shared pieces every bot part uses (engine/botparts/base.py) and the key press/hold helpers
 (engine/botparts/keys.py): the evenly-spaced _steps helper, potion_kind's branches, Stopped's
 `final` flag, and how key()/hold()/let_go()/move_key() talk to the agent."""
 
+from __future__ import annotations
+
 import re
-from typing import cast
 
 import pytest
 
@@ -11,31 +14,32 @@ from unclefarmer import settings
 from unclefarmer.engine.botparts.base import (CONFIRM, DIRECTIONS, NPC_HP, Respawned, Stopped,
                                               _steps, potion_kind, skill_things, snap_map)
 from unclefarmer.engine.botparts.keys import KeysMixin
+from typing import Any
 
 
 # ------------------------------------------------------------------ base: _steps
-def test_steps_a_span_between_two_points():
+def test_steps_a_span_between_two_points() -> None:
     assert _steps(0, 10, 5) == [0, 5, 10]
     assert _steps(0, 10, 4) == [0, 3, 7, 10]
     assert _steps(0, 10, 3) == [0, 2, 5, 8, 10]
 
 
-def test_steps_both_ends_are_kept():
+def test_steps_both_ends_are_kept() -> None:
     got = _steps(3, 17, 6)
     assert got[0] == 3 and got[-1] == 17
 
 
-def test_steps_at_most_most_apart():
+def test_steps_at_most_most_apart() -> None:
     got = _steps(0, 100, 7)
     assert max(b - a for a, b in zip(got, got[1:])) <= 7
 
 
-def test_steps_of_a_single_point_is_that_point():
+def test_steps_of_a_single_point_is_that_point() -> None:
     assert _steps(5, 5, 10) == [5]
     assert _steps(1, 2, 10) == [1, 2]
 
 
-def test_steps_when_hi_is_below_lo_is_the_midpoint():
+def test_steps_when_hi_is_below_lo_is_the_midpoint() -> None:
     assert _steps(9, 3, 4) == [6]
     assert _steps(-1, -9, 2) == [-5]
 
@@ -50,70 +54,70 @@ def test_steps_when_hi_is_below_lo_is_the_midpoint():
     ("Pet Large Blue Potion", "pet_mp"),
     ("PET SMALL MAGIC POTION", "pet_mp"),
 ])
-def test_potion_kind_reads_the_kind(name, kind):
+def test_potion_kind_reads_the_kind(name: str, kind: str) -> None:
     assert potion_kind(name) == kind
 
 
 @pytest.mark.parametrize("name", [None, "", "Sword", "Red Herb", "Mystery Potion", "Red Wine"])
-def test_potion_kind_none_when_it_is_not_a_potion_of_ours(name):
+def test_potion_kind_none_when_it_is_not_a_potion_of_ours(name: str) -> None:
     assert potion_kind(name) is None
 
 
-def test_potion_kind_is_case_insensitive():
+def test_potion_kind_is_case_insensitive() -> None:
     assert potion_kind("large red potion") == "hp"
     assert potion_kind("Large Magic Potion") == "mp"
 
 
 # ------------------------------------------------------------------ base: Stopped / Respawned
-def test_stopped_is_an_exception_by_default_not_final():
+def test_stopped_is_an_exception_by_default_not_final() -> None:
     e = Stopped("stopped by you")
     assert isinstance(e, Exception)
     assert str(e) == "stopped by you"
     assert e.final is False
 
 
-def test_stopped_can_be_final():
+def test_stopped_can_be_final() -> None:
     e = Stopped("keys refused", final=True)
     assert e.final is True
 
 
-def test_respawned_is_an_exception():
+def test_respawned_is_an_exception() -> None:
     assert issubclass(Respawned, Exception)
 
 
 # ------------------------------------------------------------------ base: snap_map / constants
-def test_snap_map_reads_the_map_dict_id():
+def test_snap_map_reads_the_map_dict_id() -> None:
     assert snap_map({"map": {"id": 5121}}) == 5121
 
 
-def test_snap_map_accepts_a_bare_number():
+def test_snap_map_accepts_a_bare_number() -> None:
     assert snap_map({"map": 5302}) == 5302
     assert snap_map({}) is None
 
 
-def test_the_game_text_constants():
+def test_the_game_text_constants() -> None:
     assert NPC_HP == 20000000
     assert DIRECTIONS == {(1, 0): "right", (-1, 0): "left", (0, 1): "down", (0, -1): "up"}
 
 
 @pytest.mark.parametrize("text", ["ok", "ok then", "yes", "yes please", "  confirm", "sure!", "确定"])
-def test_confirm_accepts_an_agreement(text):
+def test_confirm_accepts_an_agreement(text: str) -> None:
     assert re.match(CONFIRM, text)
 
 
 @pytest.mark.parametrize("text", ["Yes", "OK", "Confirm", "  Sure"])
-def test_confirm_takes_a_capitalised_agreement(text):
+def test_confirm_takes_a_capitalised_agreement(text: str) -> None:
     # The game capitalises its buttons ("Yes", "OK"): case must not decide whether we answer.
     assert re.match(CONFIRM, text)
 
 
 @pytest.mark.parametrize("text", ["no", "nope", "", "okay no"])
-def test_confirm_refuses_anything_else(text):
+def test_confirm_refuses_anything_else(text: str) -> None:
     assert not re.match(CONFIRM, text)
 
 
 # ------------------------------------------------------------------ base: skill_things
-def test_skill_things_are_lower_case_names_and_cached():
+def test_skill_things_are_lower_case_names_and_cached() -> None:
     things = skill_things()
     assert things
     assert all(name and name == name.lower() for name in things)
@@ -122,11 +126,11 @@ def test_skill_things_are_lower_case_names_and_cached():
 
 # ------------------------------------------------------------------ keys
 class Link:
-    def __init__(self, replies=None):
-        self.sent = []
+    def __init__(self, replies: dict[str, str] | None=None) -> None:
+        self.sent: list[str] = []
         self.replies = replies or {}
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         self.sent.append(line)
         if line in self.replies:
             return self.replies[line]
@@ -134,43 +138,43 @@ class Link:
             return "down " + line.split()[1]
         return "tapped"
 
+    def json(self, line: str) -> Any:
+        return {}
+
 
 class Keys(KeysMixin):
     """Only the key helpers, with check()/wait_keys_free() recorded instead of talking to a game."""
 
-    @property
-    def link(self) -> Link:
-        return cast(Link, self.a)
-
-    def __init__(self, replies=None, profile=None):
-        self.a = Link(replies)
+    def __init__(self, replies: dict[str, str] | None=None, profile: dict[str, Any] | None=None) -> None:
+        self.link = Link(replies)
+        self.a = self.link
         self.p = dict(settings.PROFILE_DEFAULTS)
         self.p.update(profile or {})
         self.held = set()
         self.checked = 0
         self.waited = 0
 
-    def check(self):
+    def check(self) -> None:
         self.checked += 1
 
-    def wait_keys_free(self):
+    def wait_keys_free(self) -> None:
         self.waited += 1
 
 
-def test_key_presses_through_the_agent():
+def test_key_presses_through_the_agent() -> None:
     b = Keys()
     b.key("w")
     assert b.link.sent == ["key w 60"]
     assert (b.checked, b.waited) == (1, 1)
 
 
-def test_key_takes_a_hold_time():
+def test_key_takes_a_hold_time() -> None:
     b = Keys()
     b.key("5", 120)
     assert b.link.sent == ["key 5 120"]
 
 
-def test_key_refused_stops_the_run_for_good():
+def test_key_refused_stops_the_run_for_good() -> None:
     b = Keys({"key w 60": "busy: noworld"})
     with pytest.raises(Stopped) as caught:
         b.key("w")
@@ -178,7 +182,7 @@ def test_key_refused_stops_the_run_for_good():
     assert "key w didn't work: busy: noworld" in str(caught.value)
 
 
-def test_hold_presses_down_and_remembers_the_key():
+def test_hold_presses_down_and_remembers_the_key() -> None:
     b = Keys()
     b.hold("d")
     assert b.link.sent == ["keydown d"]
@@ -186,7 +190,7 @@ def test_hold_presses_down_and_remembers_the_key():
     assert b.waited == 1
 
 
-def test_hold_refused_stops_the_run_and_holds_nothing():
+def test_hold_refused_stops_the_run_and_holds_nothing() -> None:
     b = Keys({"keydown d": "no"})
     with pytest.raises(Stopped) as caught:
         b.hold("d")
@@ -195,7 +199,7 @@ def test_hold_refused_stops_the_run_and_holds_nothing():
     assert b.held == set()
 
 
-def test_let_go_one_key():
+def test_let_go_one_key() -> None:
     b = Keys()
     b.held = {"d", "s"}
     b.let_go("d")
@@ -203,7 +207,7 @@ def test_let_go_one_key():
     assert b.held == {"s"}
 
 
-def test_let_go_everything():
+def test_let_go_everything() -> None:
     b = Keys()
     b.held = {"d", "s"}
     b.let_go()
@@ -211,7 +215,7 @@ def test_let_go_everything():
     assert b.held == set()
 
 
-def test_let_go_everything_on_a_new_agent_uses_the_connection_keysup():
+def test_let_go_everything_on_a_new_agent_uses_the_connection_keysup() -> None:
     b = Keys()
     b.agent_keys = True
     b.held = {"d", "s"}
@@ -220,7 +224,7 @@ def test_let_go_everything_on_a_new_agent_uses_the_connection_keysup():
     assert b.held == set()
 
 
-def test_move_key_reads_the_profile():
+def test_move_key_reads_the_profile() -> None:
     b = Keys()
     assert [b.move_key(d) for d in ("up", "down", "left", "right")] == ["w", "s", "a", "d"]
     b2 = Keys(profile={"move_keys": {"up": "i", "down": "k", "left": "j", "right": "l"}})

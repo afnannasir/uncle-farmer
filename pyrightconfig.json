@@ -5,7 +5,13 @@
     "UncleFarmer.pyw",
     "build_exe.py",
     "release.py",
-    "docs_html.py"
+    "docs_html.py",
+    "check.py",
+    "benchmark.py",
+    "build_native.py",
+    "nightwatch.py",
+    "profile_bot.py",
+    "agent"
   ],
   "exclude": [
     "build",
@@ -13,8 +19,7 @@
     "survey",
     "**/__pycache__"
   ],
-  "pythonVersion": "3.11",
-  "typeCheckingMode": "standard",
+  "typeCheckingMode": "strict",
   "reportMissingImports": "error",
   "reportUnusedExpression": "error"
 }

@@ -18,7 +18,7 @@ CORE_FLOOR = 90              # unclefarmer/engine, the bot itself
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
-def have_jdk():
+def have_jdk() -> bool:
     """javac from JAVA_HOME or PATH: the agent's tests need a JDK, the app itself doesn't."""
     home = os.environ.get("JAVA_HOME")
     if home and os.path.exists(os.path.join(home, "bin", "javac.exe" if os.name == "nt" else "javac")):
@@ -26,7 +26,7 @@ def have_jdk():
     return shutil.which("javac") is not None
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     tests = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
              "--cov=unclefarmer", "--cov-report=term-missing"]
@@ -44,7 +44,7 @@ def main(argv=None):
         steps.append(("agent java tests", [sys.executable, os.path.join("agent", "java_tests.py")]))
     else:
         print("== agent java tests: skipped, no JDK (install one, or set JAVA_HOME)", flush=True)
-    failed = []
+    failed: list[str] = []
     for name, cmd in steps:
         print("== %s" % name, flush=True)
         if subprocess.call(cmd, cwd=ROOT) != 0:

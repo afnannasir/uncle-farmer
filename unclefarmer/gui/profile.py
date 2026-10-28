@@ -5,14 +5,18 @@ only for real decisions (how to fight, which potion, which beast, which pets). K
 live behind Advanced, for the rare player who needs them.
 """
 
+from __future__ import annotations
+
+from typing import Any, TypedDict
+
 import wx
 
 from .. import gamekeys, scan, settings
 from ..engine import combat, potions
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
-from .common import (Form, KeyDialog, buttons, enable_label, error, group, info, key_ok, labeled, ok_cancel,
-                     page, pick, read_decimal, save_file, tabs)
+from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
+                     labeled, ok_cancel, page, pick, read_decimal, save_file, select_row, tabs)
 
 STYLES = ("auto", "follow", "stationary")
 
@@ -49,7 +53,33 @@ REQUIRED = {"move.up", "move.down", "move.left", "move.right", "target.west", "t
             "use_key", "category_key"}
 
 
-def get_key(p, k):
+class PotionTiming(TypedDict):
+    """potion_timing's fields: when to drink and how often, each "auto" unless ticked."""
+    below_on: wx.CheckBox
+    below: wx.SpinCtrl
+    gap_on: wx.CheckBox
+    gap: wx.TextCtrl
+
+
+class PetCare(TypedDict):
+    """pet_care's fields."""
+    pet_heal: wx.CheckBox
+    pet_heal_below: wx.SpinCtrl
+    team_heal: wx.CheckBox
+    team_heal_below: wx.SpinCtrl
+    potions: dict[str, PotionTiming]
+    food_on: wx.CheckBox
+    food_below: wx.SpinCtrl
+
+
+class PotionPick(TypedDict):
+    """The character window's potion choice: its control, the plan line, and the choice's values."""
+    choice: wx.Choice
+    about: wx.TextCtrl
+    values: list[str]
+
+
+def get_key(p: dict[str, Any], k: str) -> str:
     if k.startswith("move."):
         return p["move_keys"].get(k[5:], "")
     if k.startswith("target."):
@@ -57,7 +87,7 @@ def get_key(p, k):
     return p.get(k, "") or ""
 
 
-def set_key(p, k, v):
+def set_key(p: dict[str, Any], k: str, v: str) -> None:
     if k.startswith("move."):
         p["move_keys"][k[5:]] = v
     elif k.startswith("target."):
@@ -66,55 +96,55 @@ def set_key(p, k, v):
         p[k] = v
 
 
-def potion_timing(f, p, kind):
+def potion_timing(f: Form, p: dict[str, Any], kind: str) -> PotionTiming:
     """When to drink a kind of potion ("hp", "mp", "pet_hp", "pet_mp") and how often, each "auto"
     unless set by hand: {"below_on", "below", "gap_on", "gap"} for save_potion_timing."""
     below, gap = p.get(kind + "_below", "auto"), p.get(kind + "_cooldown", "auto")
     auto_below, auto_gap = below in (None, "", "auto"), gap in (None, "", "auto")
-    ui = {}
-    ui["below_on"], ui["below"] = f.optional(
+    below_on, below_ctrl = f.optional(
         _("Set when to drink myself"), not auto_below, _("Drink below (%):"), 80 if auto_below else below, 1, 99)
-    ui["gap_on"], ui["gap"] = f.optional(
+    gap_on, gap_ctrl = f.optional(
         _("Set the time between potions myself"), not auto_gap, _("Time between potions (seconds):"),
         3 if auto_gap else gap, 0.5, 120, decimal=True)
-    return ui
+    return {"below_on": below_on, "below": below_ctrl, "gap_on": gap_on, "gap": gap_ctrl}
 
 
-def save_potion_timing(p, kind, ui):
+def save_potion_timing(p: dict[str, Any], kind: str, ui: PotionTiming) -> None:
     """The values of a potion_timing pair into the profile (ValueError on a bad number)."""
     gap = read_decimal(ui["gap"]) if ui["gap_on"].GetValue() else None
     p[kind + "_below"] = ui["below"].GetValue() if ui["below_on"].GetValue() else "auto"
     p[kind + "_cooldown"] = gap if gap is not None else "auto"
 
 
-def _mark(v, default):
-    return default if v in (None, "", "auto") else v
+def _mark(v: object, default: float) -> float:
+    """The profile's number, or default where it says auto (or nothing)."""
+    return default if v in (None, "", "auto") else float(str(v))
 
 
-def pet_care(panel, box, p):
+def pet_care(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> PetCare:
     """Healing the pet, healing teammates while following, the pet's potions and its food. The
     same fields are on the character window's Travel and pets tab and on Advanced settings' Pets
     page: both edit one profile, and the character window reloads its copy when Advanced closes."""
-    ui = {}
     f = group(panel, box, _("Healing the pet"))
-    ui["pet_heal"] = f.check(_("Heal the pet with my healing &skill (Priest, Sorceress)"),
-                             p.get("pet_heal_with_skill", True))
-    ui["pet_heal_below"] = f.number(_("Heal it when its HP is below (%):"), _mark(p.get("pet_heal_below"), 85), 1, 99)
+    pet_heal = f.check(_("Heal the pet with my healing &skill (Priest, Sorceress)"),
+                       p.get("pet_heal_with_skill", True))
+    pet_heal_below = f.number(_("Heal it when its HP is below (%):"), _mark(p.get("pet_heal_below"), 85), 1, 99)
     f = group(panel, box, _("Healing teammates while following"))
-    ui["team_heal"] = f.check(_("Heal the player I follow and our &teammates with my healing skill "
-                                "(Priest, Sorceress)"), p.get("team_heal", True))
-    ui["team_heal_below"] = f.number(_("Heal a teammate when their HP is below (%):"),
-                                     _mark(p.get("team_heal_below"), 70), 1, 99)
-    ui["potions"] = {kind: potion_timing(group(panel, box, title), p, kind)
-                     for kind, title in (("pet_hp", _("Pet HP potions")), ("pet_mp", _("Pet MP potions")))}
+    team_heal = f.check(_("Heal the player I follow and our &teammates with my healing skill "
+                          "(Priest, Sorceress)"), p.get("team_heal", True))
+    team_heal_below = f.number(_("Heal a teammate when their HP is below (%):"),
+                               _mark(p.get("team_heal_below"), 70), 1, 99)
+    potions = {kind: potion_timing(group(panel, box, title), p, kind)
+               for kind, title in (("pet_hp", _("Pet HP potions")), ("pet_mp", _("Pet MP potions")))}
     f = group(panel, box, _("Pet food"))
     food = p.get("pet_food_below", 70)
-    ui["food_on"], ui["food_below"] = f.optional(
+    food_on, food_below = f.optional(
         _("Feed the pet a Rice Roll"), bool(food), _("When its amiability is below:"), food or 70, 1, 99)
-    return ui
+    return {"pet_heal": pet_heal, "pet_heal_below": pet_heal_below, "team_heal": team_heal,
+            "team_heal_below": team_heal_below, "potions": potions, "food_on": food_on, "food_below": food_below}
 
 
-def save_pet_care(p, ui):
+def save_pet_care(p: dict[str, Any], ui: PetCare) -> None:
     """pet_care's fields into the profile (ValueError on a bad number, with nothing changed)."""
     staged = dict(p)
     for kind, pui in ui["potions"].items():
@@ -127,7 +157,7 @@ def save_pet_care(p, ui):
     p.update(staged)
 
 
-def _set_optional(box, ctrl, on, value):
+def _set_optional(box: wx.CheckBox, ctrl: wx.SpinCtrl | wx.TextCtrl, on: bool, value: float) -> None:
     box.SetValue(bool(on))
     if isinstance(ctrl, wx.SpinCtrl):
         ctrl.SetValue(int(value))
@@ -137,7 +167,7 @@ def _set_optional(box, ctrl, on, value):
     enable_label(ctrl, bool(on))
 
 
-def load_pet_care(ui, p):
+def load_pet_care(ui: PetCare, p: dict[str, Any]) -> None:
     """Show the profile's values again (after Advanced settings changed them)."""
     ui["pet_heal"].SetValue(bool(p.get("pet_heal_with_skill", True)))
     ui["pet_heal_below"].SetValue(int(_mark(p.get("pet_heal_below"), 85)))
@@ -151,11 +181,11 @@ def load_pet_care(ui, p):
     _set_optional(ui["food_on"], ui["food_below"], bool(food), food or 70)
 
 
-def _tiles(v):
+def _tiles(v: float) -> str:
     return ("%.1f" % v).rstrip("0").rstrip(".")
 
 
-def pull_label(p):
+def pull_label(p: dict[str, Any]) -> str:
     """The early-fire setting says what it adds to: the bot already fights from the class's base
     attack range (Bot.reach: just inside the base attack's range, or the range set by hand), so 0
     is "fire from there", not "walk into melee" as the old wording read."""
@@ -163,7 +193,8 @@ def pull_label(p):
     if isinstance(r, (int, float)) and r != 5.0:
         return _("Open fire up to this many tiles &early, beyond the {reach} tiles set above, while a monster "
                  "comes at you (0: wait until it is within {reach}):", reach=_tiles(r))
-    cls = (p.get("scan") or {}).get("class")
+    scanned: dict[str, Any] = p.get("scan") or {}
+    cls: str = scanned.get("class") or ""
     base = [x for x in combat.knowledge().get(cls, []) if x.get("role") == "base_attack" and x.get("range")]
     if base:
         skill = min(base, key=lambda x: x["range"])
@@ -175,8 +206,8 @@ def pull_label(p):
              "at you (0: wait until it is in range):")
 
 
-class ProfileDialog(wx.Dialog):
-    def __init__(self, parent, character, game_folder=""):
+class ProfileDialog(Dialog):
+    def __init__(self, parent: wx.Window, character: str, game_folder: str = "") -> None:
         super().__init__(parent, title=_("Character settings - {name}", name=character),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
@@ -189,7 +220,7 @@ class ProfileDialog(wx.Dialog):
         self.potions_page(nb)
         self.travel_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
-        ok_cancel(self, root, _("Save"), extra=(_("Ad&vanced..."), self.on_advanced))
+        ok_cancel(self, root, _("Save"), extra=[(_("Ad&vanced..."), self.on_advanced)])
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 520))
         # Bound on the dialog, not the button: Enter in a text box sends OK to the dialog directly,
@@ -198,13 +229,13 @@ class ProfileDialog(wx.Dialog):
         self.fill_from_scan()
 
     # ------------------------------------------------------------ pages
-    def overview_page(self, nb):
+    def overview_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Overview"))
         self.known = labeled(panel, box, _("What the bot knows about this character:"),
                              lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 200)), 1)
         buttons(panel, box, (_("S&can now"), self.on_scan))
 
-    def fighting_page(self, nb):
+    def fighting_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Fighting"))
         f = group(panel, box, _("Combat"))
@@ -244,27 +275,27 @@ class ProfileDialog(wx.Dialog):
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
 
-    def potions_page(self, nb):
+    def potions_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Potions"))
-        self.potion_ui = {}
+        self.potion_ui: dict[str, PotionPick] = {}
         for kind, title in (("hp", _("HP")), ("mp", _("MP"))):
             f = group(panel, box, title)
-            ui = self.potion_ui[kind] = {}
             if kind == "mp":
                 self.mp_use = f.check(_("Use &MP potions"), p.get("mp_use", True))
                 self.mp_use.Bind(wx.EVT_CHECKBOX, lambda e: self.enable_mp())
-            ui["choice"] = f.choice(_("&HP potion:") if kind == "hp" else _("M&P potion:"), [""])
+            choice = f.choice(_("&HP potion:") if kind == "hp" else _("M&P potion:"), [""])
             if kind == "hp":
                 self.heal_skill = f.check(_("Heal with the class's o&wn heal skill (Sorceress, Priest); "
                                             "red potions only under half HP"), p.get("heal_with_skill", True))
-            ui["about"] = f.readonly(_("Plan:"), lines=2)
-            ui["choice"].Bind(wx.EVT_CHOICE, lambda e, k=kind: self.show_potion(k))
+            about = f.readonly(_("Plan:"), lines=2)
+            self.potion_ui[kind] = {"choice": choice, "about": about, "values": []}
+            choice.Bind(wx.EVT_CHOICE, self.potion_shower(kind))
         f = group(panel, box, _("Running out"))
         self.potions_out = f.check(_("Stop when the potions run &out (unless a restock rule brings more)"),
                                    p.get("stop_when_out_of_potions", True))
 
-    def travel_page(self, nb):
+    def travel_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Travel and pets"))
         f = group(panel, box, _("Travel"))
@@ -280,17 +311,22 @@ class ProfileDialog(wx.Dialog):
         self.pet_care = pet_care(panel, box, p)
 
     # ------------------------------------------------------------ from the scan
-    def fill_from_scan(self):
+    def potion_shower(self, kind: str) -> Handler:
+        """A potion choice's handler: the plan line for what is chosen now."""
+        return lambda e: self.show_potion(kind)
+
+    def fill_from_scan(self) -> None:
         p = self.p
-        s = p.get("scan") or {}
+        s: dict[str, Any] = p.get("scan") or {}
         self.known.ChangeValue(scan.summary(s) or _("Not scanned yet. Log in to this character in the game "
                                                    "and press Scan now. The bot also scans when a run starts."))
-        swift = [b for b in s.get("beasts", []) if b["kind"] == "swift"]
-        fierce = [b for b in s.get("beasts", []) if b["kind"] == "fierce"]
+        beasts: list[dict[str, Any]] = s.get("beasts", [])
+        swift = [b for b in beasts if b["kind"] == "swift"]
+        fierce = [b for b in beasts if b["kind"] == "fierce"]
         self.speed_values = ["auto", "none"] + [b["name"] for b in swift]
         self.speed_labels = [_("The fastest one"), _("None")] + \
                             [_("{name} (speed +{speed}, level {level})", **b) for b in swift]
-        sel = p["speed_beast"]
+        sel: str = p["speed_beast"]
         if sel not in self.speed_values:      # a beast the latest scan didn't see: keep the choice
             self.speed_values.append(sel)
             self.speed_labels.append(sel)
@@ -305,29 +341,34 @@ class ProfileDialog(wx.Dialog):
             self.fight_labels.append(sel)
         self.fight_beast.Set(self.fight_labels)
         self.fight_beast.SetSelection(self.fight_values.index(sel))
-        self.pets = [dict(x) for x in p.get("pets", [])]
-        for name in s.get("pets", []):
+        chosen: list[dict[str, Any]] = p.get("pets", [])
+        self.pets = [dict(x) for x in chosen]
+        scanned_pets: list[str] = s.get("pets", [])
+        for name in scanned_pets:
             if name not in {x["name"] for x in self.pets}:
                 self.pets.append({"name": name, "use": False})
         self.show_pets()
         self.fill_potions()
 
-    def fill_potions(self):
+    def fill_potions(self) -> None:
         """Potion choices from the last scan: what is on the hotkeys and in the bag."""
         p = self.p
-        s = p.get("scan") or {}
-        have = {}
-        for h in s.get("hotkeys", []):
+        s: dict[str, Any] = p.get("scan") or {}
+        have: dict[str, list[str | None]] = {}
+        hotkeys: list[dict[str, Any]] = s.get("hotkeys", [])
+        for h in hotkeys:
             if h.get("item") and h.get("count"):
                 have.setdefault(h["item"], []).append(h.get("key"))
-        bag = {b["name"]: b.get("count", 0) for b in s.get("bag", []) if "potion" in b["name"].lower()}
-        for n in s.get("potions_in_bag", []):      # older scans: names only
+        rows: list[dict[str, Any]] = s.get("bag", [])
+        bag: dict[str, int] = {b["name"]: b.get("count", 0) for b in rows if "potion" in b["name"].lower()}
+        older: list[str] = s.get("potions_in_bag", [])
+        for n in older:      # older scans: names only
             bag.setdefault(n, 0)
         for kind, colour in (("hp", ("red",)), ("mp", ("blue", "magic"))):
             ui = self.potion_ui[kind]
             names = sorted({n for n in list(have) + list(bag) if "potion" in n.lower() and "pet" not in n.lower()
                             and any(c in n.lower() for c in colour)})
-            want = p.get(kind + "_potion", "auto") or "auto"
+            want: str = p.get(kind + "_potion", "auto") or "auto"
             if want != "auto" and want not in names:
                 names.append(want)
             ui["values"] = ["auto"] + names
@@ -341,19 +382,21 @@ class ProfileDialog(wx.Dialog):
             self.show_potion(kind)
         self.enable_mp()
 
-    def enable_mp(self):
+    def enable_mp(self) -> None:
         on = self.mp_use.GetValue()
-        for c in (self.potion_ui["mp"]["choice"], self.potion_ui["mp"]["about"]):
+        mp = self.potion_ui["mp"]
+        for c in (mp["choice"], mp["about"]):
             c.Enable(on)
             enable_label(c, on)
 
-    def show_potion(self, kind):
+    def show_potion(self, kind: str) -> None:
         ui = self.potion_ui[kind]
         what = kind.upper()
-        s = self.p.get("scan") or {}
-        name = ui["values"][max(0, ui["choice"].GetSelection())]
+        s: dict[str, Any] = self.p.get("scan") or {}
+        name: str | None = ui["values"][max(0, ui["choice"].GetSelection())]
         if name == "auto":
-            hot = [h["item"] for h in s.get("hotkeys", []) if h.get("item") and h.get("count")
+            hotkeys: list[dict[str, Any]] = s.get("hotkeys", [])
+            hot: list[str] = [h["item"] for h in hotkeys if h.get("item") and h.get("count")
                    and "pet" not in h["item"].lower()
                    and any(c in h["item"].lower() for c in (("red",) if kind == "hp" else ("blue", "magic")))]
             rank = ("small", "medium", "large", "super", "potent")
@@ -371,18 +414,18 @@ class ProfileDialog(wx.Dialog):
                             pct="%.0f" % potions.mark(inf, top))
         ui["about"].ChangeValue(text)
 
-    def show_pets(self, select=0):
+    def show_pets(self, select: int = 0) -> None:
         self.pet_list.Set([x["name"] for x in self.pets])
         for i, x in enumerate(self.pets):
             self.pet_list.Check(i, bool(x["use"]))
         if self.pets:
             self.pet_list.SetSelection(max(0, min(select, len(self.pets) - 1)))
 
-    def read_pets(self):
+    def read_pets(self) -> None:
         for i, x in enumerate(self.pets):
             x["use"] = self.pet_list.IsChecked(i)
 
-    def move_pet(self, step):
+    def move_pet(self, step: int) -> None:
         i = self.pet_list.GetSelection()
         j = i + step
         if i < 0 or not 0 <= j < len(self.pets):
@@ -393,7 +436,7 @@ class ProfileDialog(wx.Dialog):
         self.pet_list.SetFocus()
 
     # ------------------------------------------------------------ buttons
-    def on_scan(self, _evt):
+    def on_scan(self, _evt: wx.Event) -> None:
         pid = next((g[0] for g in games() if g[1] == self.character), None)
         if pid is None:
             error(self, _("{name} isn't logged in to a game that has the agent.", name=self.character))
@@ -410,14 +453,14 @@ class ProfileDialog(wx.Dialog):
         self.fill_from_scan()
         info(self, _("Scan complete."))
 
-    def on_advanced(self, _evt):
+    def on_advanced(self, _evt: wx.Event) -> None:
         with AdvancedDialog(self, self.character, self.p, self.game_folder) as d:
             if d.ShowModal() == wx.ID_OK:
                 for kind in ("hp", "mp"):
                     self.show_potion(kind)
                 load_pet_care(self.pet_care, self.p)
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         p = self.p
         p["attack_style"] = STYLES[max(0, self.attack_style.GetSelection())]
         p["fight_beast"] = self.fight_values[max(0, self.fight_beast.GetSelection())]
@@ -463,10 +506,10 @@ class ProfileDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
 
 
-class AdvancedDialog(wx.Dialog):
+class AdvancedDialog(Dialog):
     """Keys and fine tuning. Changes go into the profile dict; the character window saves it."""
 
-    def __init__(self, parent, character, profile, game_folder=""):
+    def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any], game_folder: str = "") -> None:
         super().__init__(parent, title=_("Advanced settings - {name}", name=character),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.p = profile
@@ -488,7 +531,7 @@ class AdvancedDialog(wx.Dialog):
         self.SetMinSize(wx.Size(620, 500))
         self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
 
-    def keys_page(self, nb):
+    def keys_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Keys"))
         self.key_list = labeled(panel, box, _("&Keys the bot presses:"),
                                 lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 260)), 1)
@@ -497,8 +540,7 @@ class AdvancedDialog(wx.Dialog):
         for i, (k, label) in enumerate(KEYS):
             self.key_list.InsertItem(i, _(label))
             self.key_list.SetItem(i, 1, self.keys[k] or _("none"))
-        self.key_list.Select(0)
-        self.key_list.Focus(0)
+        select_row(self.key_list, 0)
         self.key_list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.change_key())
         buttons(panel, box, (_("&Change key..."), lambda e: self.change_key()),
                 (_("&Read keys from the game"), self.on_read))
@@ -506,8 +548,8 @@ class AdvancedDialog(wx.Dialog):
         self.attack_keys = f.text(_("&Attack keys when skills can't be read:"), " ".join(self.p["attack_keys"]))
         box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 10)
 
-    def change_key(self):
-        i = self.key_list.GetFirstSelected()
+    def change_key(self) -> None:
+        i = first_selected(self.key_list)
         if i < 0:
             return
         k, label = KEYS[i]
@@ -517,26 +559,28 @@ class AdvancedDialog(wx.Dialog):
                 self.key_list.SetItem(i, 1, d.value)
         self.key_list.SetFocus()
 
-    def on_read(self, _evt):
+    def on_read(self, _evt: wx.Event) -> None:
         binds = gamekeys.read(self.game_folder)
         if not binds:
             error(self, _("The game's key settings weren't found. Set the game folder in Settings first."))
             return
         got = gamekeys.profile_keys(binds)
+        move, turn = got.get("move_keys"), got.get("target_keys")
         for d in ("up", "down", "left", "right"):
-            if "move_keys" in got:
-                self.keys["move." + d] = got["move_keys"][d]
+            if isinstance(move, dict):
+                self.keys["move." + d] = move[d] or ""
         for d in ("west", "north", "south", "east"):
-            if "target_keys" in got:
-                self.keys["target." + d] = got["target_keys"][d]
+            if isinstance(turn, dict):
+                self.keys["target." + d] = turn[d] or ""
         for k, _l in KEYS:
-            if k in got:
-                self.keys[k] = got[k]
+            key = got.get(k)
+            if isinstance(key, str):
+                self.keys[k] = key
         for i, (k, _l) in enumerate(KEYS):
             self.key_list.SetItem(i, 1, self.keys[k] or _("none"))
         info(self, _("Keys read from the game."))
 
-    def skills_page(self, nb):
+    def skills_page(self, nb: wx.Notebook) -> None:
         """Each skill on the keys (and each learned one) with the player's say over it."""
         p = self.p
         panel, box = page(nb, _("Skills"))
@@ -548,21 +592,24 @@ class AdvancedDialog(wx.Dialog):
                                   lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 200)), 1)
         for i, (title, width) in enumerate(((_("Skill"), 190), (_("Key"), 80), (_("Kind"), 150), (_("Use"), 170))):
             self.skill_list.InsertColumn(i, title, width=width)
-        scanned = p.get("scan") or {}
-        info = {x["name"]: x for x in combat.knowledge().get(scanned.get("class"), [])}
+        scanned: dict[str, Any] = p.get("scan") or {}
+        info = {x["name"]: x for x in combat.knowledge().get(scanned.get("class") or "", [])}
         self.skill_info = info
-        keys = {}
-        for x in scanned.get("skill_keys", []):
+        keys: dict[str, list[str]] = {}
+        skill_keys: list[dict[str, Any]] = scanned.get("skill_keys", [])
+        for x in skill_keys:
             if str(x["skill"]).isdigit():
                 continue          # an empty key: the scan names it by its skill id, 0
             keys.setdefault(x["skill"], []).append(
                 x["key"] if x.get("page", 1) == 1 else _("{key} (page {page})", key=x["key"], page=x["page"]))
         self.skill_rows = list(keys)
-        for name in scanned.get("skills", []) + sorted(p.get("skill_use") or {}):
+        learned: list[str] = scanned.get("skills", [])
+        set_uses: dict[str, str] = p.get("skill_use") or {}
+        for name in learned + sorted(set_uses):
             if name not in self.skill_rows:
                 self.skill_rows.append(name)
-        others = p.get("skill_use_others", "auto")
-        self.uses = {n: (p.get("skill_use") or {}).get(n) or others for n in self.skill_rows}
+        others: str = p.get("skill_use_others", "auto")
+        self.uses = {n: set_uses.get(n) or others for n in self.skill_rows}
         for i, name in enumerate(self.skill_rows):
             role = info.get(name, {}).get("role")
             self.skill_list.InsertItem(i, name)
@@ -580,25 +627,24 @@ class AdvancedDialog(wx.Dialog):
                                            "the character window."))
             self.skill_use.Enable(False)
         else:
-            self.skill_list.Select(0)
-            self.skill_list.Focus(0)
+            select_row(self.skill_list, 0)
             self.show_skill()
         self.skill_list.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: self.show_skill())
         self.skill_use.Bind(wx.EVT_CHOICE, lambda e: self.set_skill_use())
 
     @staticmethod
-    def use_label(use):
+    def use_label(use: str) -> str:
         return _(USE_LABELS[combat.SKILL_USES.index(use)] if use in combat.SKILL_USES else USE_LABELS[0])
 
-    def show_skill(self):
-        i = self.skill_list.GetFirstSelected()
+    def show_skill(self) -> None:
+        i = first_selected(self.skill_list)
         if i < 0:
             return
         name = self.skill_rows[i]
         use = self.uses[name]
         self.skill_use.SetSelection(combat.SKILL_USES.index(use) if use in combat.SKILL_USES else 0)
         x = self.skill_info.get(name, {})
-        bits = []
+        bits: list[str] = []
         if x.get("role") in ROLE_WORDS:
             bits.append(_(ROLE_WORDS[x["role"]]).capitalize())
         if x.get("cd"):
@@ -610,15 +656,15 @@ class AdvancedDialog(wx.Dialog):
             text = (text + ". " if text else "") + x["text"]
         self.skill_about.ChangeValue(text or _("The game's skill texts don't describe this one."))
 
-    def set_skill_use(self):
-        i = self.skill_list.GetFirstSelected()
+    def set_skill_use(self) -> None:
+        i = first_selected(self.skill_list)
         if i < 0:
             return
         use = combat.SKILL_USES[max(0, self.skill_use.GetSelection())]
         self.uses[self.skill_rows[i]] = use
         self.skill_list.SetItem(i, 3, self.use_label(use))
 
-    def fighting_page(self, nb):
+    def fighting_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Fighting"))
         f = group(panel, box, _("Fighting"))
@@ -644,7 +690,7 @@ class AdvancedDialog(wx.Dialog):
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)
 
-    def health_page(self, nb):
+    def health_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Low HP"))
         f = group(panel, box, _("Between fights"))
@@ -657,7 +703,7 @@ class AdvancedDialog(wx.Dialog):
         self.heal_potion_below = f.number(_("With a heal skill, red &potions only below HP (%):"),
                                           p.get("heal_potion_below", 50), 1, 100)
 
-    def travel_page(self, nb):
+    def travel_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Travel"))
         f = group(panel, box, _("Getting there"))
@@ -670,18 +716,18 @@ class AdvancedDialog(wx.Dialog):
         f = group(panel, box, _("Ending a run"))
         self.end_safe = f.check(_("End on a map &without monsters"), p.get("end_safe", True))
 
-    def potions_page(self, nb):
+    def potions_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Potions"))
-        self.potion_ui = {}
+        self.potion_ui: dict[str, PotionTiming] = {}
         for kind, title in (("hp", _("HP")), ("mp", _("MP"))):
             self.potion_ui[kind] = potion_timing(group(panel, box, title), p, kind)
 
-    def pets_page(self, nb):
+    def pets_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Pets"))
         self.pet_care = pet_care(panel, box, self.p)
 
-    def other_page(self, nb):
+    def other_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Other"))
         f = group(panel, box, _("Going home"))
@@ -700,7 +746,7 @@ class AdvancedDialog(wx.Dialog):
         self.restock_every = f.number(_("Check the bag for restocking every (seconds):"),
                                       p.get("restock_check_every", 30), 5, 600)
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         for k, label in KEYS:
             v = (self.keys[k] or "").strip().lower()
             if (k in REQUIRED or v not in ("", "auto")) and not key_ok(v):

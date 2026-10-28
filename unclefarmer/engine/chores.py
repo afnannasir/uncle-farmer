@@ -42,16 +42,19 @@ Menus as the game shows them (logged sessions and the survey, 2026-10-11):
                                         and comes back.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import re
 import time
+from collections.abc import Callable, Collection, Iterable
 from typing import Any
 
 from .. import atlas, daily, knowledge, paths
 from ..i18n import _
 from . import crafting, town
-from .bot import CONFIRM, Stopped
+from .bot import CONFIRM, Bot, Stopped
 
 CHORES = ("bank", "bounty", "pet_rebirth", "donation", "construction", "secret_room")
 DEFAULTS: dict[str, Any] = {
@@ -91,7 +94,7 @@ PLAYER = re.compile(r"^\s*([^;]+?)\s*;\s*[A-Za-z]+\s*;\s*(?:male|female)\b", re.
 FREE_REBIRTH = r"free Pet Rebirth times today"
 
 
-def label(chore):
+def label(chore: str) -> str:
     return {"bank": _("bank income"), "bounty": _("hunting bounty"), "pet_rebirth": _("pet rebirth"),
             "donation": _("gang donation"), "construction": _("gang construction"),
             "secret_room": _("secret room")}[chore]
@@ -99,10 +102,11 @@ def label(chore):
 
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's chores, with every setting filled in."""
-    return dict(DEFAULTS, **(p.get("chores") or {}))
+    own: dict[str, Any] = p.get("chores") or {}
+    return dict(DEFAULTS, **own)
 
 
-def wanted(cfg, chore):
+def wanted(cfg: dict[str, Any], chore: str) -> bool:
     if chore == "donation":
         return cfg.get("donation", "off") in DONATIONS
     if chore == "construction":
@@ -113,26 +117,27 @@ def wanted(cfg, chore):
 
 
 # ---------------------------------------------------------------------------------------- the done list
-def _ledger(name):
+def _ledger(name: str | None) -> str:
     return os.path.join(paths.LOGS, "chores", paths.safe_name(name or "unknown") + ".json")
 
 
-def done_today(name, day=None):
+def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
     """{chore: {"at", "note"}} of what is done this game day."""
     day = day or daily.game_day()
     try:
         with open(_ledger(name), encoding="utf-8") as f:
-            data = json.load(f)
+            data: dict[str, Any] = json.load(f)
     except (OSError, ValueError):
         return {}
-    return dict(data.get("done") or {}) if data.get("day") == day else {}
+    done: dict[str, Any] = data.get("done") or {}
+    return dict(done) if data.get("day") == day else {}
 
 
-def mark(name, chore, note, day=None):
+def mark(name: str | None, chore: str, note: str, day: str | None = None) -> None:
     put(name, chore, {"at": time.strftime("%Y-%m-%d %H:%M:%S"), "note": note}, day)
 
 
-def put(name, key, value, day=None):
+def put(name: str | None, key: str, value: object, day: str | None = None) -> None:
     """One entry of this game day's list (a chore, or "_shares": the half hours shared in)."""
     day = day or daily.game_day()
     done = done_today(name, day)
@@ -145,18 +150,18 @@ def put(name, key, value, day=None):
     os.replace(tmp, path)
 
 
-def due(name, cfg):
+def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
     """The chores cfg turns on that aren't done this game day."""
     done = done_today(name)
     return [c for c in CHORES if wanted(cfg, c) and c not in done and not c.startswith("_")]
 
 
 # ---------------------------------------------------------------------------------------- running them
-def run(b, cfg, check_only=False, only=None):
+def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[str] | None = None) -> list[tuple[str, str]]:
     """Every chore cfg turns on (only: just those) that isn't done today. [(chore, what happened)]."""
-    name = getattr(b, "character", None)
+    name = b.character
     done = done_today(name)
-    out = []
+    out: list[tuple[str, str]] = []
     for chore in CHORES:
         if (only and chore not in only) or not wanted(cfg, chore):
             continue
@@ -183,34 +188,37 @@ def run(b, cfg, check_only=False, only=None):
 
 
 # ---------------------------------------------------------------------------------------- menu helpers
-def _has(b, pattern):
+def _has(b: Bot, pattern: str) -> bool:
     d = b.dialog()
     return bool(d["open"]) and b.find_entry(d.get("top"), pattern) is not None
 
 
-def _texts(b, pattern):
+def _texts(b: Bot, pattern: str) -> list[str]:
     """The texts of the open menu's entries that match pattern, in order."""
     d = b.dialog()
-    top = d.get("top") or {}
+    top: dict[str, Any] = d.get("top") or {}
     rx = re.compile(pattern, re.I)
-    out = []
-    for row in top.get("rows", []):
+    out: list[str] = []
+    rows: list[list[Any]] = top.get("rows", [])
+    for row in rows:
         for e in row:
             if e:
                 out += [t for t in b.entry_texts(e) if rx.search(t) and t not in out]
     return out
 
 
-def _count(b, pattern):
+def _count(b: Bot, pattern: str) -> int:
     """How many of the open menu's entries match pattern: each card's "get income" is its own
     entry, worded the same."""
     d = b.dialog()
     rx = re.compile(pattern, re.I)
-    return sum(1 for row in (d.get("top") or {}).get("rows", []) for e in row
+    top: dict[str, Any] = d.get("top") or {}
+    rows: list[list[Any]] = top.get("rows", [])
+    return sum(1 for row in rows for e in row
                if e and any(rx.search(t) for t in b.entry_texts(e)))
 
 
-def _confirm(b):
+def confirm(b: Bot) -> None:
     """Answer the game's "are you sure?" when it asks (twice at most)."""
     for _i in range(2):
         d = b.wait_dialog(1.0)
@@ -219,17 +227,17 @@ def _confirm(b):
         b.choose(CONFIRM)
 
 
-def _arnebia(b):
+def _arnebia(b: Bot) -> int:
     return town.counts(b).get("arnebia", 0)
 
 
-def _talk(b, npc, cell=None):
+def _talk(b: Bot, npc: str, cell: tuple[float, float] | None = None) -> None:
     if not b.talk(npc, cell):
         raise Stopped(_("couldn't talk to {npc}", npc=npc))
     b.wait_dialog(3.0)
 
 
-def _inner_hall(b):
+def inner_hall(b: Bot) -> None:
     """Into our gang base's inner hall (Head of inner hall, Guru Elder, the construction posts),
     through the nearest Gang Entrance."""
     if crafting.in_gang(b) and crafting.reachable_cell(b, HEAD[1]):
@@ -239,24 +247,24 @@ def _inner_hall(b):
     mid = b.map_id()
     if b.choose(r"inner\s+hall") is None:
         raise Stopped(_("the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"))
-    _confirm(b)
+    confirm(b)
     if not b.wait_map_change(mid, 15) or not crafting.in_gang(b):
         b.close_dialogs()
         raise Stopped(_("couldn't get into the gang's inner hall"))
 
 
 # ---------------------------------------------------------------------------------------- the chores
-def bank(b, cfg, check_only):
+def bank(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """Deposit income, then each Value Product card's daily income, at the nearest bank."""
     town.visit(b, "bank")
     b.wait_dialog(3.0)
-    got = []
+    got: list[str] = []
     if _has(b, r"^\s*get deposit income"):
         if check_only:
             got.append(_("the deposit income can be collected"))
         else:
             b.choose(r"^\s*get deposit income")
-            _confirm(b)
+            confirm(b)
             got.append(_("collected the deposit income"))
             b.close_dialogs()
             town.visit(b, "bank")
@@ -272,7 +280,7 @@ def bank(b, cfg, check_only):
             if not _has(b, r"^\s*get income"):
                 break
             b.choose(r"^\s*get income")
-            _confirm(b)
+            confirm(b)
             n += 1
             b.sleep(0.5)
             if b.wait_dialog(1.5) is None:
@@ -282,7 +290,7 @@ def bank(b, cfg, check_only):
     return ("; ".join(got) or _("nothing to collect today")), not check_only
 
 
-def bounty(b, cfg, check_only):
+def bounty(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """Hunting bounties from the nearest city officer who pays them."""
     officers = [knowledge.describe_npc(n) for n in BOUNTY_OFFICERS]
     cands = [(o["map"], o["name"], o["x"], o["y"]) for o in officers if o]
@@ -293,22 +301,22 @@ def bounty(b, cfg, check_only):
     if check_only:
         return _("hunting bounties can be collected here"), False
     b.choose(r"Collect Hunting Bounty")
-    _confirm(b)
+    confirm(b)
     for _i in range(10):                  # a list of bounties to take, if the game shows one
         d = b.wait_dialog(1.0)
         if d is None or not d.get("top") or b.find_entry(d["top"], r"^\s*(collect|claim|receive|get)\b") is None:
             break
         b.choose(r"^\s*(collect|claim|receive|get)\b")
-        _confirm(b)
+        confirm(b)
     return _("collected the hunting bounty"), True
 
 
-def _assets(b):
-    m = re.search(r"Current assets\s+(\d+)", town._menu_text(b))
+def _assets(b: Bot) -> int | None:
+    m = re.search(r"Current assets\s+(\d+)", town.menu_text(b))
     return int(m.group(1)) if m else None
 
 
-def same_pet(entry, pet):
+def same_pet(entry: str, pet: str) -> bool:
     """The Pet Trainer's "Pixie>><< mimi" is the pet the player chose as "Pixie mimi" (the scan's
     name), "mimi" (the name they gave it) or "Pixie" (its kind)."""
     kind, _sep, given = entry.partition(">><<")
@@ -316,7 +324,7 @@ def same_pet(entry, pet):
     return bool(pet) and pet in ((kind + " " + given).strip(), given, kind)
 
 
-def pet_rebirth(b, cfg, check_only):
+def pet_rebirth(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """The day's free rebirths of the pet the player chose (by the name they gave it, or its kind)."""
     pet = (cfg.get("pet") or "").strip()
     town.visit(b, "pet_trainer")
@@ -341,7 +349,7 @@ def pet_rebirth(b, cfg, check_only):
         if not _has(b, FREE_REBIRTH):     # what is left costs diamonds: never
             break
         b.choose(FREE_REBIRTH)
-        _confirm(b)
+        confirm(b)
         n += 1
         b.sleep(0.6)
         b.wait_dialog(3.0)
@@ -351,13 +359,13 @@ def pet_rebirth(b, cfg, check_only):
              after=_assets(b)), True
 
 
-def donation(b, cfg, check_only):
+def donation(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """The once-a-day gang donation the player chose, never below the arnebia reserve."""
     kind = cfg.get("donation", "off")
     pattern, cost = DONATIONS[kind]
     if cost and not check_only and crafting.spare_arnebia(b) < cost:
         return _("not enough arnebia above your reserve for a {n} arnebia donation", n=cost), False
-    _inner_hall(b)
+    inner_hall(b)
     _talk(b, *HEAD)
     if b.choose(r"^\s*Donation") is None:
         return _("the Head of the inner hall offers no donation"), False
@@ -369,34 +377,36 @@ def donation(b, cfg, check_only):
         return _("would {what}", what=what), False
     before = _arnebia(b)
     b.choose(pattern)
-    _confirm(b)
+    confirm(b)
     b.sleep(1.0)
     if cost and _arnebia(b) >= before:
         return _("the donation didn't go through - already donated today?"), True
     return _("done: {what}", what=what), True
 
 
-def is_site(name):
+def is_site(name: str) -> bool:
     """A place to build: "West encampment reinforced construction", "Pharmacy room Construction",
     "Level 2 Supply Camp Construction", "Highland Construction"..."""
     return bool(re.search(r"\bconstruction\s*$", name or "", re.I))
 
 
-def sites_in_view(b):
+def sites_in_view(b: Bot) -> list[tuple[str, float, float]]:
     """[(name, x, y)] of the places to build the game shows round us."""
-    out = []
-    for e in b.snap().get("entities", []):
+    out: list[tuple[str, float, float]] = []
+    entities: list[dict[str, Any]] = b.snap().get("entities", [])
+    for e in entities:
         name = " ".join((e.get("name") or "").split())
         if e.get("kind") in ("npc", "other") and is_site(name):
             out.append((name, float(e["x"]), float(e["y"])))
     return out
 
 
-def _sweep(b, cells):
+def _sweep(b: Bot, cells: Iterable[tuple[int, int]]) -> dict[str, tuple[float, float]]:
     """Walk round this part of the map and note every place to build (and the Information Board,
     when we pass it): {name: (x, y)}, the board under BOARD."""
-    found = {}
-    for cell in [None] + list(cells):
+    found: dict[str, tuple[float, float]] = {}
+    stops: list[tuple[int, int] | None] = [None, *cells]
+    for cell in stops:
         if cell is not None:
             b.walk_to(cell)
         for name, x, y in sites_in_view(b):
@@ -407,7 +417,7 @@ def _sweep(b, cells):
     return found
 
 
-def board_constructions(b, cell):
+def board_constructions(b: Bot, cell: tuple[float, float]) -> list[str]:
     """What the Information Board says is being built: its "... construction started" lines and
     its list of supply camps and facilities. Read only, for the log and to know what to look for."""
     b.talk(BOARD, cell)
@@ -418,7 +428,7 @@ def board_constructions(b, cell):
     return lines
 
 
-def _build_at(b, name, cell, left, check_only):
+def _build_at(b: Bot, name: str, cell: tuple[float, float], left: int, check_only: bool) -> tuple[int, bool]:
     """Build at one place, up to left times. (builds, can't afford more)."""
     n = 0
     while n < left:
@@ -435,7 +445,7 @@ def _build_at(b, name, cell, left, check_only):
             return 1, False
         before = _arnebia(b)
         b.choose(r"^\s*build\b")
-        _confirm(b)
+        confirm(b)
         b.sleep(1.0)
         b.close_dialogs()
         if _arnebia(b) >= before:
@@ -445,9 +455,9 @@ def _build_at(b, name, cell, left, check_only):
     return n, False
 
 
-def _to_highland(b):
+def _to_highland(b: Bot) -> bool:
     """From the inner hall into our gang's highland (the Highland Entrance's "Gang Highlands")."""
-    _inner_hall(b)
+    inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
     if b.choose(r"^\s*Gang Highlands") is None:
@@ -467,7 +477,7 @@ def _to_highland(b):
     return b.wait_map_change(mid, 15)
 
 
-def _go_to(b, where, go):
+def _go_to(b: Bot, where: str, go: Callable[[], bool]) -> bool:
     """Into one part of the gang (go() does it): True when there, else said why."""
     try:
         if go():
@@ -480,7 +490,7 @@ def _go_to(b, where, go):
     return False
 
 
-def _whole_map(b):
+def _whole_map(b: Bot) -> list[tuple[int, int]]:
     """Stops a sweep of this whole map (a highland) takes, 40 tiles apart."""
     try:
         m = atlas.model(b.map_id())
@@ -489,7 +499,7 @@ def _whole_map(b):
         return []
 
 
-def _places(b, cells, board):
+def _places(b: Bot, cells: Iterable[tuple[int, int]] | None, board: list[str]) -> list[tuple[str, tuple[float, float]]]:
     """The places to build in this part, the reinforced posts first; the Information Board is read
     (once) when we pass it."""
     found = _sweep(b, cells if cells is not None else _whole_map(b))
@@ -501,13 +511,15 @@ def _places(b, cells, board):
     return sorted(found.items(), key=lambda kv: kv[0] not in dict(POSTS))
 
 
-def construction(b, cfg, check_only):
+def construction(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """Up to the chosen number of builds a day, over every place to build: the inner hall's two
     reinforced constructions and whatever a leader has started there, in the outer hall and in the
     gang's highland, which the Information Board lists."""
     want = int(cfg.get("construction") or 0)
-    built, places, board = 0, [], []
-    areas = [(_("the inner hall"), lambda: (_inner_hall(b), True)[1], INNER_SWEEP),
+    built = 0
+    places: list[str] = []
+    board: list[str] = []
+    areas: list[tuple[str, Callable[[], bool], Iterable[tuple[int, int]] | None]] = [(_("the inner hall"), lambda: (inner_hall(b), True)[1], INNER_SWEEP),
              (_("the outer hall"), lambda: crafting.enter_gang(b, None, "forger"), OUTER_SWEEP)]
     if cfg.get("build_highland", True):
         areas.append((_("the highland"), lambda: _to_highland(b), None))
@@ -533,14 +545,18 @@ def construction(b, cfg, check_only):
 
 
 # ---------------------------------------------------------------------------------------- the secret room
-def _level(b):
-    sheet = b.refresh_sheet() or {}
-    return int(sheet.get("level") or ((b.me().get("sheet") or {}).get("level")) or 0)
+def char_level(b: Bot) -> int:
+    sheet: dict[str, Any] = b.refresh_sheet() or {}
+    seen: dict[str, Any] = b.me().get("sheet") or {}
+    return int(sheet.get("level") or seen.get("level") or 0)
 
 
-def rooms(texts):
+Room = tuple[int, str, int, int, int, str]       # (level, name, number, people, places, text)
+
+
+def rooms(texts: Iterable[str]) -> list[Room]:
     """[(level, name, number, people, places, text)] of the room list's entries."""
-    out = []
+    out: list[Room] = []
     for t in texts:
         m = ROOM.search(t)
         if m:
@@ -548,7 +564,7 @@ def rooms(texts):
     return out
 
 
-def pick_room(found, level, want=""):
+def pick_room(found: Iterable[Room], level: int, want: str = "") -> Room | None:
     """The room to enter: one whose name has want in it (the player's choice) or else the highest
     level the character can take, the emptier first among equals; only rooms with a free place."""
     free = [r for r in found if r[3] < r[4] and (not level or r[0] <= level)]
@@ -558,11 +574,11 @@ def pick_room(found, level, want=""):
     return max(free, key=lambda r: (r[0], -r[3]), default=None)
 
 
-def _manager(b):
+def _manager(b: Bot) -> None:
     _talk(b, MANAGER)
 
 
-def practice_left(text):
+def practice_left(text: str) -> int | None:
     """Seconds of practice time the Manager says are left, or None."""
     m = re.search(r"(?:still have|remaining practice time for today is)\s+(?:(\d+)\s*hours?)?\s*(?:(\d+)\s*minutes?)?"
                   r"\s*(?:(\d+)\s*seconds?)?", text, re.I)
@@ -572,7 +588,7 @@ def practice_left(text):
     return h * 3600 + mi * 60 + s
 
 
-def _summon(b, cfg):
+def _summon(b: Bot, cfg: dict[str, Any]):
     """The assistant that practises for us: the player's choice (1-10), once per entry."""
     _manager(b)
     choices = _texts(b, r"^\s*Summoned\b")
@@ -580,12 +596,12 @@ def _summon(b, cfg):
         return _has(b, r"assistant has killed")       # one is out already
     i = min(max(1, int(cfg.get("assistant") or 1)), len(choices)) - 1
     b.choose(r"^\s*%s\s*$" % re.escape(choices[i]))
-    _confirm(b)
+    confirm(b)
     b.log(_("secret room: {who}", who=choices[i]))
     return True
 
 
-def _share(b, cfg):
+def _share(b: Bot, cfg: dict[str, Any]):
     """Share arnebia once, with the first of the player's names in the room (or anyone, if they
     allow it). (the shares made today as the game counts them, or None when it didn't say; whether
     this one was made)."""
@@ -593,7 +609,7 @@ def _share(b, cfg):
     if b.choose(r"^\s*Share Arnebia") is None:
         return None, False
     b.wait_dialog(3.0)
-    m = re.search(r"Choose a player;\s*(\d+)\s*/\s*(\d+)", town._menu_text(b))
+    m = re.search(r"Choose a player;\s*(\d+)\s*/\s*(\d+)", town.menu_text(b))
     made = int(m.group(1)) if m else None
     if m and int(m.group(1)) >= int(m.group(2)):
         return made, False
@@ -609,12 +625,12 @@ def _share(b, cfg):
         b.log(_("secret room: nobody to share arnebia with yet"))
         return made, False
     b.choose(r"^\s*%s\s*;" % re.escape(pick[0]))
-    _confirm(b)
+    confirm(b)
     b.log(_("secret room: shared arnebia with {name}", name=pick[0]), speak=False)
     return (made or 0) + 1, True
 
 
-def _enter_room(b, cfg, check_only):
+def _enter_room(b: Bot, cfg: dict[str, Any], check_only: bool):
     """From an instructor into the chosen secret room. (entered, what to say)."""
     town.visit(b, "instructor")
     if b.choose(r"^\s*Secret room training") is None:
@@ -623,10 +639,10 @@ def _enter_room(b, cfg, check_only):
     if b.choose(r"^\s*Enter the secret room to practice") is None:
         return False, _("the instructor offers no secret room now")
     b.wait_dialog(3.0)
-    text = town._menu_text(b)
+    text = town.menu_text(b)
     today = re.search(r"training time is ([^,|]+), and you can enter (\d+) more times", text, re.I)
     found = rooms(_texts(b, r"secret room"))
-    room = pick_room(found, _level(b), (cfg.get("room") or "").strip())
+    room = pick_room(found, char_level(b), (cfg.get("room") or "").strip())
     say = today.group(0) if today else ""
     if check_only:
         return False, "; ".join(x for x in (say, _("would enter {room}", room="%s %d" % (room[1], room[2]))
@@ -639,37 +655,38 @@ def _enter_room(b, cfg, check_only):
     mid = b.map_id()
     # the number runs straight into stray characters ("room 2ï¿½ï¿½ Number of people"): no \b
     b.choose(r"Level\s+%d\s+%s\s+secret room\s+%d(?!\d)" % (room[0], re.escape(room[1]), room[2]))
-    _confirm(b)
+    confirm(b)
     if not b.wait_map_change(mid, 15):
         b.close_dialogs()
         return False, _("couldn't get into the secret room")
     return True, "%s %d" % (room[1], room[2])
 
 
-def slot(t):
+def slot(t: float) -> int:
     """Which half hour of the clock t is in: each takes one share."""
     return int(t // SLOT)
 
 
-def to_next_slot(t):
+def to_next_slot(t: float) -> float:
     return SLOT - t % SLOT
 
 
-def shares(name):
+def shares(name: str | None) -> tuple[int, set[int]]:
     """(shares made today, the half hours they were made in)."""
-    s = done_today(name).get("_shares") or {}
-    return int(s.get("count", 0)), set(s.get("slots", []))
+    s: dict[str, Any] = done_today(name).get("_shares") or {}
+    slots: list[int] = s.get("slots", [])
+    return int(s.get("count", 0)), set(slots)
 
 
-def _note_share(name, count, t):
+def _note_share(name: str | None, count: int, t: float) -> None:
     made, used = shares(name)
     used.add(slot(t))
     put(name, "_shares", {"count": max(made, count), "slots": sorted(used)})
 
 
-def _share_here(b, cfg):
+def _share_here(b: Bot, cfg: dict[str, Any]) -> int:
     """One share in this half hour, unless today's are made or this half hour's is. The day's count."""
-    name = getattr(b, "character", None)
+    name = b.character
     made, used = shares(name)
     now = b.clock.time()
     if made >= SHARES_A_DAY or slot(now) in used:
@@ -683,7 +700,7 @@ def _share_here(b, cfg):
     return shares(name)[0]
 
 
-def _wait_slot(b):
+def _wait_slot(b: Bot):
     """Wait in the room for the next half hour to start (and a few seconds more)."""
     end = b.clock.time() + to_next_slot(b.clock.time()) + 5
     while b.clock.time() < end:
@@ -696,7 +713,7 @@ def _wait_slot(b):
     return True
 
 
-def share_visit(b: Any, cfg: dict[str, Any], practise: int = 0) -> tuple[int, str]:
+def share_visit(b: Bot, cfg: dict[str, Any], practise: int = 0) -> tuple[int, str]:
     """One visit: into a room, an assistant out (the game lets us share only then), a share in this
     half hour, another as the next one starts when that is near (or every half hour while
     practising for `practise` minutes), then out. (shares made today, where)."""
@@ -732,7 +749,7 @@ def share_visit(b: Any, cfg: dict[str, Any], practise: int = 0) -> tuple[int, st
     return shares(name)[0], where
 
 
-def trip_due(b: Any) -> bool:
+def trip_due(b: Bot) -> bool:
     """A farming run should leave for the secret room now: sharing is on, today's shares aren't all
     made, this half hour's isn't, and the next half hour starts within trip_lead minutes - so one
     short visit shares in both. Looked at every TRIP_CHECK seconds, once per half hour."""
@@ -750,13 +767,13 @@ def trip_due(b: Any) -> bool:
             and to_next_slot(now) <= 60 * max(1, int(cfg.get("trip_lead") or 10)))
 
 
-def secret_room(b, cfg, check_only):
+def secret_room(b: Bot, cfg: dict[str, Any], check_only: bool):
     """A visit to share arnebia (and practise, when practice_minutes is set). Done for the day once
     the day's five shares are made."""
     if check_only:
         if atlas.kind(b.map_id()) == "secret_room":
             _manager(b)
-            left = practice_left(town._menu_text(b))
+            left = practice_left(town.menu_text(b))
             return _("in {room}; practice time left: {m} minutes", room=atlas.label(b.map_id()),
                      m="?" if left is None else left // 60), False
         return _enter_room(b, cfg, True)[1], False

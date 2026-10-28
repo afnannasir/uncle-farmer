@@ -1,9 +1,10 @@
-# pyright: strict
 """Walking on a map: key walks, getting unstuck, exits, monsters in the way, walking distances.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
+
+from __future__ import annotations
 
 import math
 import random
@@ -14,7 +15,7 @@ from ... import atlas
 from ...i18n import _
 from .. import beasts
 from .base import (DIRECTIONS, NPC_HP, STOPPING, Respawned, Stopped, note_failure, snap_map)
-from .parts import Parts
+from .parts import as_bot, Parts
 
 
 class WalkingMixin(Parts):
@@ -183,7 +184,7 @@ class WalkingMixin(Parts):
         plan = m          # after a stuck: the map with the NPCs standing about made walls
         while attempt < 4:
             if getattr(self, "traveling", False) and not self.in_fight:
-                beasts.ensure(self, beasts.TRAVEL)   # back on the mount once a fight is behind us
+                beasts.ensure(as_bot(self), beasts.TRAVEL)   # back on the mount once a fight is behind us
             me = self.me()
             here = (int(me["x"]), int(me["y"]))
             if not m.ok(*here):
@@ -258,7 +259,7 @@ class WalkingMixin(Parts):
         False (all walked). leave: the map id when the walk is meant to leave it."""
         for hop in hops:
             if self.walk_only:
-                beasts.keep_riding(self)   # thrown off or refused earlier: back on between hops
+                beasts.keep_riding(as_bot(self))   # thrown off or refused earlier: back on between hops
             if diagonal:
                 results: Any = [self.walk_diag(hop, leave, near=near)]
             else:

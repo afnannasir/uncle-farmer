@@ -10,6 +10,8 @@ mw.exe.vmoptions.bak-unclefarmer. Some other tools (mwMod) delete every -javaage
 the game; if the agent stops answering after using one, install it again.
 """
 
+from __future__ import annotations
+
 import ctypes
 import ctypes.wintypes as wt
 import os
@@ -24,21 +26,21 @@ MARKER = "unclefarmer-agent.jar"
 LEGACY = ("mwfarmer-agent.jar",)
 
 
-def _ours(line):
+def _ours(line: str) -> bool:
     return MARKER in line or any(m in line for m in LEGACY)
 
 
-def agent_line():
+def agent_line() -> str:
     return "-javaagent:%s=%s" % (paths.AGENT_JAR, paths.AGENT_RUN)
 
 
-def is_game_folder(folder):
-    return bool(folder) and os.path.isfile(os.path.join(folder, "mw.exe"))
+def is_game_folder(folder: str | None) -> bool:
+    return bool(folder) and os.path.isfile(os.path.join(folder or "", "mw.exe"))
 
 
-def running_game_folders():
+def running_game_folders() -> list[str]:
     """Folders of every running mw.exe (so the user rarely has to browse)."""
-    out = []
+    out: list[str] = []
     psapi, kernel = ctypes.windll.psapi, ctypes.windll.kernel32
     pids = (wt.DWORD * 4096)()
     got = wt.DWORD()
@@ -61,7 +63,7 @@ def running_game_folders():
     return out
 
 
-def _read_lines(folder):
+def _read_lines(folder: str) -> tuple[str, list[str], str]:
     path = os.path.join(folder, VMOPTIONS)
     if not os.path.exists(path):
         return path, [], "\r\n"
@@ -72,11 +74,11 @@ def _read_lines(folder):
     return path, [l for l in text.splitlines() if l.strip()], newline
 
 
-def status(folder):
+def status(folder: str | None) -> str:
     """'installed', 'other' (an older Uncle Farmer path), 'missing', or 'nogame'."""
     if not is_game_folder(folder):
         return "nogame"
-    _path, lines, _nl = _read_lines(folder)
+    _path, lines, _nl = _read_lines(folder or "")
     ours = [l for l in lines if _ours(l)]
     if not ours:
         return "missing"
@@ -86,7 +88,7 @@ def status(folder):
 FOLDER_FILE = "game_folder.txt"     # the agent writes the folder of the game it runs in here
 
 
-def agent_folder():
+def agent_folder() -> str:
     """The game folder the agent last ran in (agent/run/game_folder.txt, written as the game
     starts), or ""."""
     try:
@@ -96,10 +98,12 @@ def agent_folder():
         return ""
 
 
-def folder_of(pid, fallback=""):
+def folder_of(pid: int | None, fallback: str = "") -> str:
     """The folder of the game running as pid (agent 48 writes agent.<pid>.folder as it starts),
     else fallback (the settings' game folder). Several copies of the game can run at once, and a
     character's phrases and key settings are in the copy it runs from."""
+    if pid is None:
+        return fallback
     try:
         with open(os.path.join(paths.AGENT_RUN, "agent.%d.folder" % int(pid)), encoding="utf-8") as f:
             folder = f.read().strip()
@@ -108,7 +112,7 @@ def folder_of(pid, fallback=""):
     return folder if is_game_folder(folder) else fallback
 
 
-def find_installed(remembered=""):
+def find_installed(remembered: str | None = "") -> str | None:
     """The game folder our agent is installed in: the remembered one while it still is, else a
     running game's, else the one the agent last ran in. None when there is none. The setting can
     be empty while the agent is in the game (the line was added by hand, or Settings was saved with
@@ -122,7 +126,7 @@ def find_installed(remembered=""):
     return None
 
 
-def install(folder):
+def install(folder: str) -> None:
     path, lines, nl = _read_lines(folder)
     backup = path + ".bak-unclefarmer"
     if os.path.exists(path) and not os.path.exists(backup):
@@ -133,7 +137,7 @@ def install(folder):
     os.makedirs(paths.AGENT_RUN, exist_ok=True)
 
 
-def uninstall(folder):
+def uninstall(folder: str) -> None:
     path, lines, nl = _read_lines(folder)
     if not os.path.exists(path):
         return

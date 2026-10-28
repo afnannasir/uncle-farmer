@@ -19,8 +19,11 @@ token: set UNCLEFARMER_GITHUB_TOKEN (a read-only token) to test updates before i
 Without one, a private repository simply has no update to offer.
 """
 
+from __future__ import annotations
+
 import ctypes
 import hashlib
+import http.client
 import os
 import re
 import shutil
@@ -31,6 +34,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from collections.abc import Callable
+from typing import IO, TypedDict
 
 from . import __version__, jsonio as json, paths
 
@@ -58,21 +63,39 @@ class UpdateError(Exception):
     pass
 
 
-def frozen():
+class Release(TypedDict):
+    """The newest release, as latest() reads it from GitHub."""
+    version: str
+    tag: str | None
+    notes: str
+    asset: str          # the zip's file name
+    size: int
+    url: str
+    sha256: str         # "" when GitHub gives no digest
+
+
+class UpdateResult(TypedDict):
+    """What the update copier reports to the restarted app (update/result.json)."""
+    version: str
+    ok: bool
+    error: str
+
+
+def frozen() -> bool:
     """True in the built exe; from source, updating is git's job."""
     return bool(getattr(sys, "frozen", False))
 
 
-def version_tuple(v):
+def version_tuple(v: str | None) -> tuple[int, ...]:
     return tuple(int(n) for n in re.findall(r"\d+", v or "")[:4]) or (0,)
 
 
-def is_newer(v, than=__version__):
+def is_newer(v: str, than: str = __version__) -> bool:
     return version_tuple(v) > version_tuple(than)
 
 
 # ---------------------------------------------------------------------------------------- GitHub
-def _token():
+def _token() -> str:
     return os.environ.get("UNCLEFARMER_GITHUB_TOKEN", "").strip()
 
 
@@ -80,21 +103,22 @@ class _NoAuthElsewhere(urllib.request.HTTPRedirectHandler):
     """An asset download redirects to GitHub's file storage, which refuses a second login: the
     token goes to api.github.com only."""
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(self, req: urllib.request.Request, fp: IO[bytes], code: int, msg: str,
+                         headers: http.client.HTTPMessage, newurl: str) -> urllib.request.Request | None:
         new = super().redirect_request(req, fp, code, msg, headers, newurl)
         if new is not None and urllib.parse.urlparse(newurl).hostname != "api.github.com":
             new.remove_header("Authorization")
         return new
 
 
-def _open(url, accept, timeout):
+def _open(url: str, accept: str, timeout: float) -> http.client.HTTPResponse:
     req = urllib.request.Request(url, headers={"Accept": accept, "User-Agent": "UncleFarmer/" + __version__})
     if _token():
         req.add_header("Authorization", "Bearer " + _token())
     return urllib.request.build_opener(_NoAuthElsewhere).open(req, timeout=timeout)
 
 
-def latest(timeout=10):
+def latest(timeout: float=10) -> Release | None:
     """The newest release: {"version", "tag", "notes", "asset", "size", "url", "sha256"}, or None
     when there is none to see (no release yet, or a private repository). UpdateError when GitHub
     can't be reached. None, without asking anyone, while no repository is set."""
@@ -122,7 +146,7 @@ def latest(timeout=10):
             "sha256": digest[7:].lower() if digest.startswith("sha256:") else ""}
 
 
-def check(timeout=10):
+def check(timeout: float=10) -> Release | None:
     """The newest release if it is newer than this copy, else None (errors too: None)."""
     try:
         rel = latest(timeout)
@@ -132,7 +156,7 @@ def check(timeout=10):
 
 
 # ---------------------------------------------------------------------------------------- download
-def download(rel, progress=None):
+def download(rel: Release, progress: Callable[[int, int], object] | None = None) -> str:
     """Download the release's zip into update/; progress(done, total) -> False cancels. Returns
     the zip's path. Checks the size and, when GitHub gives one, the SHA-256."""
     os.makedirs(UPDATE, exist_ok=True)
@@ -160,7 +184,7 @@ def download(rel, progress=None):
     return path
 
 
-def unpack(zip_path):
+def unpack(zip_path: str) -> str:
     """Unpack the release into update/new and return the folder holding the new exe."""
     shutil.rmtree(NEW, ignore_errors=True)
     os.makedirs(NEW)
@@ -180,7 +204,7 @@ def unpack(zip_path):
     raise UpdateError("the update has no %s" % EXE)
 
 
-def start_apply(new_folder, version):
+def start_apply(new_folder: str, version: str) -> None:
     """Start the new copy's --apply-update; the caller then closes the app at once."""
     args = [os.path.join(new_folder, EXE), "--apply-update", paths.APP, str(os.getpid()), version]
     subprocess.Popen(args, cwd=new_folder, close_fds=True,
@@ -189,7 +213,7 @@ def start_apply(new_folder, version):
 
 
 # ---------------------------------------------------------------------------------------- applying
-def _wait_for_exit(pid, seconds=120):
+def _wait_for_exit(pid: int, seconds: float=120) -> None:
     kernel = ctypes.windll.kernel32
     h = kernel.OpenProcess(0x00100000, False, pid)          # SYNCHRONIZE
     if h:
@@ -200,7 +224,7 @@ def _wait_for_exit(pid, seconds=120):
     time.sleep(1.0)                     # OS wait in the update helper, not the app clock: let Windows let go of the files
 
 
-def _copy(src, dst, log, tries=30):
+def _copy(src: str, dst: str, log: Callable[[str], None], tries: int = 30) -> None:
     """Copy one file, waiting a while for one still in use (an antivirus scan, a closing game)."""
     for i in range(tries):
         try:
@@ -214,7 +238,7 @@ def _copy(src, dst, log, tries=30):
             time.sleep(2)                 # OS wait in the update helper, not the app clock
 
 
-def apply(app, src, log):
+def apply(app: str, src: str, log: Callable[[str], None]) -> None:
     """Copy the release in src over the app folder (see the module notes)."""
     for name in sorted(os.listdir(src)):
         if name.lower() in NEVER:
@@ -250,28 +274,28 @@ def apply(app, src, log):
             log("updated %s" % name)
 
 
-def run_apply(argv):
+def run_apply(argv: list[str]) -> None:
     """`UncleFarmer.exe --apply-update <app folder> <old pid> <version>`, run from update/new."""
     app, pid, version = argv[0], int(argv[1]), argv[2]
     src = os.path.dirname(os.path.abspath(sys.executable))
     update = os.path.join(app, "update")
     os.makedirs(update, exist_ok=True)
-    lines = []
+    lines: list[str] = []
 
-    def log(text):
+    def log(text: str) -> None:
         lines.append(time.strftime("%H:%M:%S ") + text)
         with open(os.path.join(update, "update.log"), "a", encoding="utf-8") as f:
             f.write(lines[-1] + "\n")
 
     log("updating %s to %s" % (app, version))
     _wait_for_exit(pid)
-    result = {"version": version, "ok": True, "error": ""}
+    result: UpdateResult = {"version": version, "ok": True, "error": ""}
     try:
         apply(app, src, log)
     except Exception as e:                    # report it in the app, which starts again either way
         # Not carry_on(): silently continuing would leave a half-applied release. The update
         # worker records the failure for the restarted app instead.
-        result.update(ok=False, error="%s: %s" % (type(e).__name__, e))
+        result["ok"], result["error"] = False, "%s: %s" % (type(e).__name__, e)
         log("FAILED " + result["error"])
     with open(os.path.join(update, "result.json"), "w", encoding="utf-8") as f:
         json.dump(result, f)
@@ -279,12 +303,12 @@ def run_apply(argv):
                      creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
 
 
-def take_result():
+def take_result() -> UpdateResult | None:
     """After an update: {"version", "ok", "error"}, once (the update folder is cleared when it
     worked). None when there was no update."""
     try:
         with open(RESULT, encoding="utf-8") as f:
-            result = json.load(f)
+            result: UpdateResult = json.load(f)
     except (OSError, ValueError):
         return None
     try:
@@ -296,7 +320,7 @@ def take_result():
     return result
 
 
-def clean():
+def clean() -> None:
     """Remove the downloaded zip and the unpacked copy (the copier may still be closing: then the
     next start does it)."""
     for name in os.listdir(UPDATE) if os.path.isdir(UPDATE) else ():

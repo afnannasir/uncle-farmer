@@ -20,7 +20,10 @@ flushed to the disk, then renamed over the target. A crash mid-write, or a secon
 same, leaves the old file whole instead of a half-written one.
 """
 
-from typing import Any
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import IO, Any, TypeGuard
 
 import os
 import tempfile
@@ -33,12 +36,25 @@ from . import filelock
 _save_lock = threading.RLock()       # serializes release/replace/reacquire for one open file
 
 
-def loads(text):
-    """Text or bytes to Python objects."""
+def is_object(value: object) -> TypeGuard[dict[str, Any]]:
+    """A JSON object (a dict): isinstance(value, dict), told to the type checker as the dict JSON
+    gives - string keys, values to check where they are used."""
+    return isinstance(value, dict)
+
+
+def is_array(value: object) -> TypeGuard[list[Any]]:
+    """A JSON array (a list), as is_object() is for objects."""
+    return isinstance(value, list)
+
+
+def loads(text: str | bytes) -> Any:
+    """Text or bytes to Python objects. Any: JSON holds whatever the file or the agent wrote; the
+    callers check its shape (or validate it with Pydantic) where they use it."""
     return orjson.loads(text)
 
 
-def dumps(obj: Any, indent: Any = None, sort_keys: bool = False, ensure_ascii: bool = True, default: Any = None) -> str:
+def dumps(obj: Any, indent: int | None = None, sort_keys: bool = False, ensure_ascii: bool = True,
+          default: Callable[[Any], Any] | None = None) -> str:
     """Python objects to JSON text. indent: any truthy value means orjson's two spaces.
 
     String keys stay on orjson's fast path; only a dict with a non-string key pays for
@@ -57,22 +73,23 @@ def dumps(obj: Any, indent: Any = None, sort_keys: bool = False, ensure_ascii: b
         return orjson.dumps(obj, default=default, option=option).decode("utf-8")
 
 
-def load(f):
-    """The file object's whole contents, parsed."""
+def load(f: IO[str] | IO[bytes]) -> Any:
+    """The file object's whole contents, parsed (Any: see loads)."""
     return orjson.loads(f.read())
 
 
-def dump(obj, f, **kwargs):
+def dump(obj: Any, f: IO[str], indent: int | None = None, sort_keys: bool = False,
+         ensure_ascii: bool = True) -> None:
     """dumps(), written to the file object."""
-    f.write(dumps(obj, **kwargs))
+    f.write(dumps(obj, indent=indent, sort_keys=sort_keys, ensure_ascii=ensure_ascii))
 
 
-def save(path, obj, indent=2, sort_keys=False):
+def save(path: str, obj: Any, indent: int | None = 2, sort_keys: bool = False) -> None:
     """dumps(obj) into path atomically. See save_text()."""
     save_text(path, dumps(obj, indent=indent, sort_keys=sort_keys))
 
 
-def save_text(path, text, encoding="utf-8"):
+def save_text(path: str, text: str, encoding: str = "utf-8") -> None:
     """Write text to path atomically: the new file is complete before the old one is replaced.
 
     The temporary file is unique (mkstemp) so two writers - the GUI and a run, say - cannot

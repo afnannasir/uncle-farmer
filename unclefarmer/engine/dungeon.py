@@ -26,12 +26,14 @@ that is out is looked after for the run - the game counts its kills as ours. Eac
 chores' done list. Where the run ends is the script's end_at, as for farming.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
-from .. import atlas, dungeons, knowledge
+from .. import atlas, dungeons, jsonio, knowledge
 from ..i18n import N_, _
 from . import chores, pets, town
-from .bot import Stopped
+from .bot import Bot, Stopped
 from .botparts.base import potion_kind
 
 CAVES: dict[str, dict[str, Any]] = {
@@ -68,10 +70,12 @@ PATROLS = ("quick", "full", "short")
 
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's dungeon settings, with every setting filled in."""
-    cfg = dict(DEFAULTS, **(p.get("dungeon") or {}))
-    supplies = {k: dict(v) for k, v in DEFAULTS["supplies"].items()}
-    for k, v in (cfg.get("supplies") or {}).items():
-        if k in supplies and isinstance(v, dict):
+    mine: dict[str, Any] = p.get("dungeon") or {}
+    cfg: dict[str, Any] = {**DEFAULTS, **mine}
+    supplies: dict[str, dict[str, Any]] = {k: dict(v) for k, v in DEFAULTS["supplies"].items()}
+    chosen: dict[str, Any] = cfg.get("supplies") or {}
+    for k, v in chosen.items():
+        if k in supplies and jsonio.is_object(v):
             supplies[k].update(v)
     cfg["supplies"] = supplies
     return cfg
@@ -97,8 +101,8 @@ def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
 def known_items(kind: str) -> list[str]:
     """The game's items a supply row can name (its potions of that kind, or the pet foods that
     raise amiability), weakest first as the shop lists them."""
-    rows = list((knowledge.data().get("_items") or {}).values())
-    names = [r["name"] for r in rows if r.get("name")]
+    items: dict[str, dict[str, Any]] = knowledge.data().get("_items") or {}
+    names: list[str] = [r["name"] for r in items.values() if r.get("name")]
     if kind == "pet_food":
         return [n for n in names if "amiability" in ((knowledge.item(n) or {}).get("description") or "").lower()
                 or n.lower() == "pet rice roll"]
@@ -111,7 +115,7 @@ def script(cfg: dict[str, Any]) -> str:
     return end_line(cfg.get("end")) + "\ndungeon\n"
 
 
-def supply_item(b: Any, kind: str, cfg: dict[str, Any]) -> str | None:
+def supply_item(b: Bot, kind: str, cfg: dict[str, Any]) -> str | None:
     """The item a supply row stands for: the player's choice, else the pet food the profile names
     (a Pet Rice Roll), else the potion the character drinks (on a hotkey, else the strongest in the
     bag); None when there is none to go by."""
@@ -123,12 +127,13 @@ def supply_item(b: Any, kind: str, cfg: dict[str, Any]) -> str | None:
     return b.potion(kind)[1]
 
 
-def supply_rules(b: Any, cfg: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
+def supply_rules(b: Bot, cfg: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
     """Restock rules for the supplies to have before going ([{"item", "min", "stock", "source"}]),
     and what can't be looked at (a potion the character has none of and the player named none).
     The pet's rows only with a pet ticked in the profile, the blues only for a character that uses
     MP."""
-    rules, unknown = [], []
+    rules: list[dict[str, Any]] = []
+    unknown: list[str] = []
     for kind in SUPPLIES:
         want = int(cfg["supplies"][kind].get("min") or 0)
         if want <= 0:
@@ -146,7 +151,7 @@ def supply_rules(b: Any, cfg: dict[str, Any]) -> tuple[list[dict[str, Any]], lis
     return rules, unknown
 
 
-def get_supplies(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
+def get_supplies(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     """Top up the supplies before setting out (check_only: only say what is short). What is still
     short afterwards, as "Pet Large Blue Potion 12/25"; with when_short "stop" that ends the run."""
     rules, unknown = supply_rules(b, cfg)
@@ -167,12 +172,12 @@ def get_supplies(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[
 
 
 # ------------------------------------------------------------------------------------- a visit
-def level_of(b: Any) -> int:
-    sheet = b.refresh_sheet() or {}
+def level_of(b: Bot) -> int:
+    sheet: dict[str, Any] = b.refresh_sheet() or {}
     return int(sheet.get("level") or b.me().get("level") or 0)
 
 
-def enter(b: Any, cave: str) -> bool:
+def enter(b: Bot, cave: str) -> bool:
     """Walk to the cave's entrance, talk, choose "Enter the dungeon" and wait to land inside. True
     when inside; False when the game didn't let us in (the day's entry used, a level too low)."""
     entry = dungeons.find(cave)
@@ -192,7 +197,7 @@ def enter(b: Any, cave: str) -> bool:
     return True
 
 
-def visit(b: Any, cfg: dict[str, Any], cave: str) -> str:
+def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     """One cave: in, the fight until the game moves us out, then a line about it."""
     name = getattr(b, "character", None)
     if not enter(b, cave):
@@ -217,7 +222,7 @@ def visit(b: Any, cfg: dict[str, Any], cave: str) -> str:
     return line
 
 
-def run(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
+def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     """Each of the player's caves not yet visited today, supplies first. [what happened]."""
     name = getattr(b, "character", None)
     todo = due(name, cfg)
@@ -239,7 +244,7 @@ def run(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     get_supplies(b, cfg, check_only)
     if check_only:
         return [_("would go to: {caves}", caves=", ".join(able))]
-    notes = []
+    notes: list[str] = []
     for i, cave in enumerate(able):
         if i:
             get_supplies(b, cfg)        # the first cave used some: top up again between them

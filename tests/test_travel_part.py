@@ -1,6 +1,5 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins in this file replace real methods and attributes with fakes on purpose;
-# what they do is checked by running the tests, not by their types.
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """engine/botparts/travel.py: the Bot's traveling part - choosing and riding a transport,
 paying/confirming its menu, using a travel item (teleport stone, hearthstone), leaving an instance
 through the Action menu, crossing a map exit, and the walking assistant (go / go_dungeon).
@@ -11,11 +10,12 @@ carries only the few methods TravelMixin calls (log, map_id, me, walk_to, choose
 with the slow/outside pieces monkeypatched: beasts.ensure, atlas.label/name, travel.plan.
 """
 
-import types
+from __future__ import annotations
+
 import threading
 
 import pytest
-from conftest import Clock
+from conftest import as_kind, failing, returning, stand_in, Clock
 
 from unclefarmer.clock import CLOCK
 from unclefarmer import atlas, dungeons, knowledge
@@ -23,163 +23,179 @@ from unclefarmer import travel as travel_mod
 from unclefarmer.engine import beasts
 from unclefarmer.engine.botparts.base import CONFIRM, Stopped
 from unclefarmer.engine.botparts.travel import TravelMixin
+from collections.abc import Callable, Collection
+from typing import Any
+from unclefarmer.atlaslib import Cell, MapModel
+import typing
 
 
 # ---------------------------------------------------------------- the pretend bot
-def entry(text, cmd=0):
+def entry(text: str, cmd: int=0) -> dict[str, int | list[str] | list[int]]:
     return {"flags": 12, "options": [text], "cmd": [cmd]}
+
+
+class Ground:
+    """A map whose walkable cells are the ones is_ok(x, y) says."""
+
+    def __init__(self, is_ok: Callable[[int, int], bool]) -> None:
+        self.is_ok = is_ok
+
+    def ok(self, x: int, y: int) -> bool:
+        return self.is_ok(x, y)
 
 
 class Bot(TravelMixin):
     """Only the methods TravelMixin reaches for; every outside one is overridable per test."""
 
-    def __init__(self, clock=None):
-        self.clock = clock or Clock()
-        self.p = {"hearthstone_item": "Hearthstone", "action_menu_key": "lctrl+enter", "target_mode": 2}
-        self.lines = []
-        self.keys = []
-        self.sleeps = []
-        self.walked = []
-        self.held = []
-        self.released = []
-        self.used = []
-        self.chosen = []
-        self.notes = []
-        self.target_modes = []
-        self.saved = []
+    def __init__(self, clock: Clock | None=None) -> None:
+        self.test_clock = clock or Clock()   # the pretend clock, under its own type
+        self.clock = self.test_clock
+        self.p: dict[str, Any] = {"hearthstone_item": "Hearthstone", "action_menu_key": "lctrl+enter", "target_mode": 2}
+        self.lines: list[str] = []
+        self.keys: list[str] = []
+        self.sleeps: list[float] = []
+        self.walked: list[tuple[float, ...]] = []
+        self.held: set[str] = set()
+        self.released: list[str | None] = []
+        self.used: list[str] = []
+        self.chosen: list[str] = []
+        self.notes: list[str] = []
+        self.target_modes: list[int] = []
+        self.saved: list[dict[str, Any]] = []
         self.closed = 0
         self._map = 1001
-        self._me = {"x": 0.0, "y": 0.0, "hp": 100}
-        self.settled = None
-        self.entities = []
+        self._me: dict[str, Any] = {"x": 0.0, "y": 0.0, "hp": 100}
+        self.settled: int | None = None
+        self.entities: list[dict[str, Any]] = []
         self.stop_event = threading.Event()
         self.hit_value = False
-        self.dialog_value = {"open": 0, "top": None}
-        self.wait_dialog_value = None
-        self.approach_value = None
+        self.dialog_value: dict[str, Any] = {"open": 0, "top": None}
+        self.wait_dialog_value: dict[str, Any] | None = None
+        self.approach_value: dict[str, Any] | None = None
         self.talk_value = True
         self.walk_result = "arrived"
         self.choose_ok = True
         self.use_item_result = True
-        self.bag = []
-        self.hotkeys = {}
+        self.bag: list[dict[str, Any]] = []
+        self.hotkeys: dict[str, str] = {}
         self.walk_only = False
         self.traveling = False
         self.save_profile = lambda p: self.saved.append(dict(p))
 
-    def log(self, line, speak=False):
+    def log(self, line: str, speak: bool=False):
         self.lines.append(line)
 
-    def map_id(self):
+    def map_id(self) -> int:
         return self._map
 
-    def me(self):
+    def me(self) -> dict[str, Any]:
         return dict(self._me)
 
-    def snap(self):
+    def snap(self) -> dict[str, Any]:
         return {"map": {"id": self._map}, "self": self.me(), "entities": list(self.entities)}
 
-    def sleep(self, seconds):
+    def sleep(self, seconds: float) -> None:
         self.sleeps.append(seconds)
-        if self.clock:
-            self.clock.advance(seconds)
+        self.test_clock.advance(seconds)
 
-    def check(self):
+    def check(self) -> None:
         pass
 
-    def key(self, k, ms=None):
+    def key(self, k: str, ms: int | None=None) -> None:
         self.keys.append(k)
 
-    def hold(self, k):
-        self.held.append(k)
+    def hold(self, k: str) -> None:
+        self.held.add(k)
 
-    def let_go(self, k):
+    def let_go(self, k: str | None = None) -> None:
         self.released.append(k)
 
-    def move_key(self, direction):
+    def move_key(self, direction: str) -> str:
         return direction
 
-    def hit(self, me):
+    def hit(self, me: dict[str, Any]) -> bool:
         return self.hit_value
 
-    def fight_back(self):
+    def fight_back(self) -> None:
         self.lines.append("fight_back")
 
-    def settled_map(self):
+    def settled_map(self, seconds: float = 15) -> int:
         return self.settled if self.settled is not None else self._map
 
-    def walk_to(self, cell, near=None, map_change=False, **kw):
+    def walk_to(self, cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         self.walked.append(tuple(cell))
         return self.walk_result
 
-    def use_item(self, item):
-        self.used.append(item)
+    def use_item(self, name: str) -> bool:
+        self.used.append(name)
         return self.use_item_result
 
-    def bag_rows(self):
+    def bag_rows(self) -> list[dict[str, Any]]:
         return self.bag
 
-    def hotkey_of(self, name):
+    def hotkey_of(self, name: str) -> str | None:
         return self.hotkeys.get(name)
 
-    def set_target_mode(self, mode):
-        self.target_modes.append(mode)
+    def set_target_mode(self, want: int) -> bool:
+        self.target_modes.append(want)
+        return False
 
-    def close_dialogs(self):
+    def close_dialogs(self) -> None:
         self.closed += 1
 
-    def dialog(self):
+    def dialog(self) -> dict[str, Any]:
         return self.dialog_value
 
-    def wait_dialog(self, seconds=3.0):
+    def wait_dialog(self, seconds: float = 3.0, want_open: bool = True) -> dict[str, Any] | None:
         return self.wait_dialog_value
 
-    def choose(self, pattern):
+    def choose(self, pattern: str) -> dict[str, Any] | None:
         self.chosen.append(pattern)
         return {"options": ["x"]} if self.choose_ok else None
 
-    def find_entry(self, top, pattern):
+    def find_entry(self, top: dict[str, Any] | None, pattern: str) -> tuple[int, int] | None:
         return (0, 0)
 
-    def note_dialog(self, d, why):
+    def note_dialog(self, d: dict[str, Any], why: str) -> None:
         self.notes.append(why)
 
-    def approach(self, npc, at=None, stand=None):
+    def approach(self, name: str, at: tuple[float, float] | None=None, stand: tuple[float, float] | None=None) -> dict[str, Any] | None:
         return self.approach_value
 
-    def talk(self, npc, at=None, stand=None):
+    def talk(self, name: str, at: tuple[float, float] | None=None, stand: tuple[float, float] | None=None) -> bool:
         return self.talk_value
 
 
 @pytest.fixture
-def clock(monkeypatch):
+def clock(monkeypatch: pytest.MonkeyPatch) -> Clock:
     c = Clock()
     monkeypatch.setattr(CLOCK, "time", c.time)
     return c
 
 
 @pytest.fixture(autouse=True)
-def quiet(monkeypatch):
+def quiet(monkeypatch: pytest.MonkeyPatch) -> None:
     """No mounting, and readable map names instead of loading the atlas."""
-    monkeypatch.setattr(beasts, "ensure", lambda b, purpose: None)
-    monkeypatch.setattr(atlas, "label", lambda mid: "map%d" % int(mid))
-    monkeypatch.setattr(atlas, "name", lambda mid: "map%d" % int(mid))
+    monkeypatch.setattr(beasts, "ensure", stand_in(beasts.ensure, lambda b, purpose: None))
+    monkeypatch.setattr(atlas, "label", stand_in(atlas.label, lambda mid: "map%d" % int(mid)))
+    monkeypatch.setattr(atlas, "name", stand_in(atlas.name, lambda mid: "map%d" % int(mid)))
 
 
 # ---------------------------------------------------------------- has_hearthstone
-def test_has_hearthstone_by_the_hotkey_setting():
+def test_has_hearthstone_by_the_hotkey_setting() -> None:
     b = Bot()
     b.p["hearthstone_key"] = "h"
     assert b.has_hearthstone() is True
 
 
-def test_has_hearthstone_by_a_bag_hotkey():
+def test_has_hearthstone_by_a_bag_hotkey() -> None:
     b = Bot()
     b.hotkeys["Hearthstone"] = "h"
     assert b.has_hearthstone() is True
 
 
-def test_has_hearthstone_in_the_bag_case_insensitively():
+def test_has_hearthstone_in_the_bag_case_insensitively() -> None:
     b = Bot()
     b.bag = [{"name": "hearthstone", "count": 1}]
     assert b.has_hearthstone() is True
@@ -187,7 +203,7 @@ def test_has_hearthstone_in_the_bag_case_insensitively():
     assert b.has_hearthstone() is False
 
 
-def test_has_hearthstone_does_not_trim_the_bag_row():
+def test_has_hearthstone_does_not_trim_the_bag_row() -> None:
     # OBSERVED: has_hearthstone() compares the raw, lower-cased name, so a padded row is missed;
     # travel.item_options() does strip its names. Pinned, not fixed.
     b = Bot()
@@ -195,7 +211,7 @@ def test_has_hearthstone_does_not_trim_the_bag_row():
     assert b.has_hearthstone() is False
 
 
-def test_has_hearthstone_swallows_an_unreadable_bag(allow_ignored_failures):
+def test_has_hearthstone_swallows_an_unreadable_bag(allow_ignored_failures: None) -> None:
     b = Bot()
 
     def boom():
@@ -206,7 +222,7 @@ def test_has_hearthstone_swallows_an_unreadable_bag(allow_ignored_failures):
 
 
 # ---------------------------------------------------------------- learn_hearth_home
-def test_learn_hearth_home_remembers_the_nearest_square():
+def test_learn_hearth_home_remembers_the_nearest_square() -> None:
     b = Bot()
     b._map, b._me = 1021, {"x": 73.0, "y": 286.0, "hp": 1}
     b.learn_hearth_home()
@@ -214,7 +230,7 @@ def test_learn_hearth_home_remembers_the_nearest_square():
     assert b.saved and any("sunset square" in line for line in b.lines)
 
 
-def test_learn_hearth_home_leaves_a_known_home_alone():
+def test_learn_hearth_home_leaves_a_known_home_alone() -> None:
     b = Bot()
     b._map, b._me = 1021, {"x": 73.0, "y": 286.0, "hp": 1}
     b.p["hearth_home"] = "sunset square"
@@ -222,7 +238,7 @@ def test_learn_hearth_home_leaves_a_known_home_alone():
     assert b.saved == [] and b.lines == []
 
 
-def test_learn_hearth_home_needs_a_square_close_by():
+def test_learn_hearth_home_needs_a_square_close_by() -> None:
     b = Bot()
     b._map, b._me = 1021, {"x": 0.0, "y": 0.0, "hp": 1}       # ~295 steps from sunset square
     b.learn_hearth_home()
@@ -230,7 +246,7 @@ def test_learn_hearth_home_needs_a_square_close_by():
     assert b.saved == []
 
 
-def test_learn_hearth_home_on_a_map_with_no_square():
+def test_learn_hearth_home_on_a_map_with_no_square() -> None:
     b = Bot()
     b._map, b._me = 9999, {"x": 0.0, "y": 0.0, "hp": 1}
     b.learn_hearth_home()
@@ -238,39 +254,39 @@ def test_learn_hearth_home_on_a_map_with_no_square():
 
 
 # ---------------------------------------------------------------- spawns_at
-def test_spawns_at_a_town_is_not_a_spawn_zone(monkeypatch):
-    monkeypatch.setattr(knowledge, "cities", lambda: [{"map": 1001, "town_rect": [0, 0, 10, 10]}])
-    monkeypatch.setattr(atlas, "zones", lambda mid: [{"kind": "monster"}])
+def test_spawns_at_a_town_is_not_a_spawn_zone(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(knowledge, "cities", stand_in(knowledge.cities, lambda: [{"map": 1001, "town_rect": [0, 0, 10, 10]}]))
+    monkeypatch.setattr(atlas, "zones", stand_in(atlas.zones, lambda mid: [{"kind": "monster"}]))
     assert Bot.spawns_at(1001, (5, 5)) is False
 
 
-def test_spawns_at_a_field_holds_monsters(monkeypatch):
-    monkeypatch.setattr(knowledge, "cities", lambda: [])
-    monkeypatch.setattr(atlas, "zones", lambda mid: [{"kind": "monster"}])
+def test_spawns_at_a_field_holds_monsters(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(knowledge, "cities", stand_in(knowledge.cities, lambda: []))
+    monkeypatch.setattr(atlas, "zones", stand_in(atlas.zones, lambda mid: [{"kind": "monster"}]))
     assert Bot.spawns_at(1001, (5, 5)) is True
 
 
-def test_spawns_at_a_quiet_map(monkeypatch):
-    monkeypatch.setattr(knowledge, "cities", lambda: [])
-    monkeypatch.setattr(atlas, "zones", lambda mid: [])
+def test_spawns_at_a_quiet_map(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(knowledge, "cities", stand_in(knowledge.cities, lambda: []))
+    monkeypatch.setattr(atlas, "zones", stand_in(atlas.zones, lambda mid: []))
     assert Bot.spawns_at(1001, (5, 5)) is False
 
 
-def test_spawns_at_ignores_a_town_on_another_map(monkeypatch):
-    monkeypatch.setattr(knowledge, "cities", lambda: [{"map": 2, "town_rect": [0, 0, 10, 10]}])
-    monkeypatch.setattr(atlas, "zones", lambda mid: [{"kind": "monster"}])
+def test_spawns_at_ignores_a_town_on_another_map(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(knowledge, "cities", stand_in(knowledge.cities, lambda: [{"map": 2, "town_rect": [0, 0, 10, 10]}]))
+    monkeypatch.setattr(atlas, "zones", stand_in(atlas.zones, lambda mid: [{"kind": "monster"}]))
     assert Bot.spawns_at(1001, (5, 5)) is True
 
 
 # ---------------------------------------------------------------- travel() wrapper
-def test_travel_avoids_airships_when_switched_off(monkeypatch):
+def test_travel_avoids_airships_when_switched_off(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.p["use_airships"] = False
     monkeypatch.setattr(travel_mod, "transports",
-                        lambda: [{"id": 0, "kind": "airship"}, {"id": 1, "kind": "cable_car"}])
-    seen = {}
+                        stand_in(travel_mod.transports, lambda: [{"id": 0, "kind": "airship"}, {"id": 1, "kind": "cable_car"}]))
+    seen: dict[str, object] = {}
 
-    def fake_travel(dst, cell, avoid):
+    def fake_travel(dst: int, cell: tuple[float, float] | list[float] | None, avoid: set[Any]) -> None:
         seen.update(dst=dst, cell=cell, avoid=set(avoid), traveling=b.traveling)
         raise RuntimeError("stop here")
 
@@ -282,22 +298,22 @@ def test_travel_avoids_airships_when_switched_off(monkeypatch):
     assert b.traveling is False               # cleared even when a leg blows up
 
 
-def test_travel_keeps_airships_by_default(monkeypatch):
+def test_travel_keeps_airships_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     monkeypatch.setattr(travel_mod, "transports",
-                        lambda: [{"id": 0, "kind": "airship"}])
-    seen = {}
+                        stand_in(travel_mod.transports, lambda: [{"id": 0, "kind": "airship"}]))
+    seen: dict[str, object] = {}
     b._travel = lambda dst, cell, avoid: seen.update(avoid=set(avoid))
     b.travel(1041)
     assert seen["avoid"] == set()
 
 
 # ---------------------------------------------------------------- _travel: the leg loop
-def plan_seq(legs):
+def plan_seq(legs: list[list[dict[str, Any]]]) -> Callable[..., list[dict[str, Any]]]:
     """A travel.plan that returns each list in turn, then []."""
     it = iter(legs)
 
-    def fake(*a, **kw):
+    def fake(*a: object, **kw: object) -> list[dict[str, Any]]:
         try:
             return next(it)
         except StopIteration:
@@ -306,39 +322,39 @@ def plan_seq(legs):
     return fake
 
 
-def test_travel_returns_at_once_when_already_on_the_goal_with_no_cell(monkeypatch):
+def test_travel_returns_at_once_when_already_on_the_goal_with_no_cell(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 1041
-    monkeypatch.setattr(travel_mod, "plan", lambda *a, **kw: pytest.fail("plan() should not run"))
+    monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, failing("plan() should not run")))
     b._travel(1041, None, set())
 
 
-def test_travel_walks_the_last_stretch_and_stops(monkeypatch):
+def test_travel_walks_the_last_stretch_and_stops(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     monkeypatch.setattr(travel_mod, "plan",
-                        lambda *a, **kw: [{"do": "walk", "map": 1041, "cell": [7, 8]}])
+                        stand_in(travel_mod.plan, returning([{"do": "walk", "map": 1041, "cell": [7, 8]}])))
     b._travel(1041, None, set())
     assert b.walked == [(7, 8)]
 
 
-def test_travel_returns_on_an_empty_plan(monkeypatch):
+def test_travel_returns_on_an_empty_plan(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(travel_mod, "plan", lambda *a, **kw: [])
+    monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, returning([])))
     b._travel(1041, None, set())
     assert b.walked == []
 
 
-def test_travel_gives_up_when_there_is_no_way(monkeypatch):
+def test_travel_gives_up_when_there_is_no_way(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(travel_mod, "plan", lambda *a, **kw: None)
+    monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, returning(None)))
     with pytest.raises(Stopped) as e:
         b._travel(1041, None, set())
     assert "no way from map1001 to map1041" in str(e.value)
 
 
-def test_travel_crosses_an_exit_then_replans(monkeypatch):
+def test_travel_crosses_an_exit_then_replans(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    crossed = []
+    crossed: list[dict[str, Any]] = []
     b.cross_exit = lambda leg: crossed.append(leg)
     monkeypatch.setattr(travel_mod, "plan", plan_seq([
         [{"do": "exit", "map": 1001, "exit": 0, "stand": [3, 3], "rect": [1, 1, 5, 5], "dest": 1041}]]))
@@ -346,17 +362,17 @@ def test_travel_crosses_an_exit_then_replans(monkeypatch):
     assert len(crossed) == 1 and crossed[0]["dest"] == 1041
 
 
-def test_travel_leaves_out_a_transport_that_did_not_ride(monkeypatch):
+def test_travel_leaves_out_a_transport_that_did_not_ride(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.ride = lambda leg: False
     b.map_id = lambda: 1001
-    seen = []
+    seen: list[set[str]] = []
     leg = {"do": "npc", "map": 1001, "npc": "Cable Car manager", "kind": "cable_car", "dest": 2222, "id": 3,
            "choose": ["go"]}
     results = iter([[leg], [leg], []])
 
-    def fake(*a, **kw):
-        seen.append(set(kw.get("avoid", ())))
+    def fake(*a: object, avoid: Collection[str] = (), **kw: object) -> list[dict[str, Any]]:
+        seen.append(set(avoid))
         return next(results)
 
     monkeypatch.setattr(travel_mod, "plan", fake)
@@ -367,35 +383,42 @@ def test_travel_leaves_out_a_transport_that_did_not_ride(monkeypatch):
     assert any("leaving out the Cable Car manager" in line for line in b.lines)
 
 
-def test_travel_leaves_out_a_travel_item_that_failed(monkeypatch):
+def test_travel_leaves_out_a_travel_item_that_failed(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.teleport = lambda leg: False
-    seen = []
+    seen: list[set[str]] = []
     results = iter([[{"do": "item", "item": "Sunset City Teleportation stone", "choose": [],
                       "dest": 1021, "lands": [73, 286]}], []])
-    monkeypatch.setattr(travel_mod, "plan",
-                        lambda *a, **kw: (seen.append(set(kw.get("avoid", ()))), next(results))[1])
+    def plan(*a: object, avoid: Collection[str] = (), **kw: object) -> list[dict[str, Any]]:
+        seen.append(set(avoid))
+        return next(results)
+    monkeypatch.setattr(travel_mod, "plan", plan)
     b._travel(1041, None, set())
     assert seen[1] == {"Sunset City Teleportation stone"}
 
 
-def test_travel_leaves_out_leaving_an_instance_that_failed(monkeypatch):
+def test_travel_leaves_out_leaving_an_instance_that_failed(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.leave_instance = lambda: False
-    seen = []
+    seen: list[set[str]] = []
     results = iter([[{"do": "leave", "map": 201}], []])
-    monkeypatch.setattr(travel_mod, "plan",
-                        lambda *a, **kw: (seen.append(set(kw.get("avoid", ()))), next(results))[1])
+    def plan(*a: object, avoid: Collection[str] = (), **kw: object) -> list[dict[str, Any]]:
+        seen.append(set(avoid))
+        return next(results)
+    monkeypatch.setattr(travel_mod, "plan", plan)
     b._travel(1041, None, set())
     assert seen[1] == {"leave"}
 
 
-def test_travel_passes_over_the_bag_only_when_travel_items_are_on(monkeypatch):
+def test_travel_passes_over_the_bag_only_when_travel_items_are_on(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.bag = [{"name": "Hearthstone", "count": 1}]
-    seen = []
-    monkeypatch.setattr(travel_mod, "plan",
-                        lambda *a, **kw: (seen.append(kw.get("bag")), [])[1])
+    seen: list[object | None] = []
+
+    def plan(*a: object, **kw: object) -> list[dict[str, Any]]:
+        seen.append(kw.get("bag"))
+        return []
+    monkeypatch.setattr(travel_mod, "plan", plan)
     b._travel(1041, None, set())
     assert seen == [[]]
     b.p["use_travel_items"] = True
@@ -403,43 +426,47 @@ def test_travel_passes_over_the_bag_only_when_travel_items_are_on(monkeypatch):
     assert seen[-1] == b.bag
 
 
-def test_travel_prefer_walking_plans_on_foot_and_without_items(monkeypatch):
+def test_travel_prefer_walking_plans_on_foot_and_without_items(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.p["prefer_walking"] = True
-    seen = {}
-    monkeypatch.setattr(travel_mod, "plan",
-                        lambda *a, **kw: (seen.update(kw), [])[1])
+    seen: dict[str, object] = {}
+
+    def plan(*a: object, **kw: object) -> list[dict[str, Any]]:
+        seen.update(kw)
+        return []
+    monkeypatch.setattr(travel_mod, "plan", plan)
     b._travel(1041, None, set())
     assert seen["transport"] is False and seen["items"] is False and seen["bag"] == []
 
 
-def test_travel_gives_up_after_forty_legs(monkeypatch):
+def test_travel_gives_up_after_forty_legs(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.ride = lambda leg: True
-    monkeypatch.setattr(travel_mod, "plan", lambda *a, **kw: [
+    monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, lambda *a, **kw: [
         {"do": "npc", "map": 1001, "npc": "Manager", "kind": "menu", "dest": 2000,
          "id": 1, "choose": ["go"]},
-        {"do": "walk", "map": 2000, "cell": [1, 1]}])
+        {"do": "walk", "map": 2000, "cell": [1, 1]}]))
     with pytest.raises(Stopped) as e:
         b._travel(1041, None, set())
     assert "travel to map1041 didn't arrive" in str(e.value)
 
 
-def test_travel_logs_a_multileg_route_once_per_new_route(monkeypatch):
+def test_travel_logs_a_multileg_route_once_per_new_route(monkeypatch: pytest.MonkeyPatch) -> None:
     # `said` holds the legs still to come, so taking one leg (the map changes and plan() answers
     # the rest of the same route) must not print the route again. An older version of this test
     # used a plan() that never advanced - a bot that never moves re-plans the same route, which
     # is what printed the line forty times and looked like a fault in the source.
     b = Bot()
-    legs = [{"do": "npc", "map": 1001, "npc": "Manager", "kind": "menu", "dest": 2000,
+    legs: list[dict[str, Any]] = [{"do": "npc", "map": 1001, "npc": "Manager", "kind": "menu", "dest": 2000,
              "id": 1, "choose": ["go"]},
             {"do": "npc", "map": 2000, "npc": "Captain", "kind": "menu", "dest": 2001,
              "id": 2, "choose": ["go"]},
             {"do": "walk", "map": 2001, "cell": [1, 1]}]
-    monkeypatch.setattr(travel_mod, "plan",
-                        lambda mid, *a, **kw: {1001: legs, 2000: legs[1:], 2001: legs[2:]}.get(mid, []))
+    def plan(here_map: int, *a: object, **kw: object) -> list[dict[str, Any]]:
+        return {1001: legs, 2000: legs[1:], 2001: legs[2:]}.get(here_map, [])
+    monkeypatch.setattr(travel_mod, "plan", plan)
 
-    def ride(leg):
+    def ride(leg: dict[str, Any]) -> bool:
         b._map = leg["dest"]           # the ride lands us on the next map
         return True
 
@@ -451,21 +478,21 @@ def test_travel_logs_a_multileg_route_once_per_new_route(monkeypatch):
 
 
 # ---------------------------------------------------------------- wait_map_change
-def test_wait_map_change_true_when_the_map_changes(clock):
+def test_wait_map_change_true_when_the_map_changes(clock: Clock) -> None:
     b = Bot(clock)
     b._map = 2
     assert b.wait_map_change(1, 5.0) is True
     assert 1.0 in b.sleeps
 
 
-def test_wait_map_change_false_when_attacked(clock):
+def test_wait_map_change_false_when_attacked(clock: Clock) -> None:
     b = Bot(clock)
     b._map = 1
     b.hit_value = True
     assert b.wait_map_change(1, 5.0) is False
 
 
-def test_wait_map_change_times_out(clock):
+def test_wait_map_change_times_out(clock: Clock) -> None:
     b = Bot(clock)
     b._map = 1
     assert b.wait_map_change(1, 0.5) is False
@@ -473,11 +500,11 @@ def test_wait_map_change_times_out(clock):
 
 
 # ---------------------------------------------------------------- teleport
-def test_teleport_uses_the_item_and_lands(monkeypatch):
+def test_teleport_uses_the_item_and_lands(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 1001
 
-    def lands(mid, seconds):
+    def lands(mid: int, seconds: float):
         b._map = 1021
         return True
 
@@ -490,15 +517,15 @@ def test_teleport_uses_the_item_and_lands(monkeypatch):
     assert any("using Sunset City Teleportation stone" in line for line in b.lines)
 
 
-def test_teleport_feeds_the_pick_and_learns_home_on_a_hearthstone():
+def test_teleport_feeds_the_pick_and_learns_home_on_a_hearthstone() -> None:
     b = Bot()
     b.p["hearthstone_item"] = "Hearthstone"
     b.wait_dialog_value = {"open": 1, "top": {}}
     b.p["hearthstone_key"] = "h"
-    learned = []
+    learned: list[bool] = []
     b.learn_hearth_home = lambda: learned.append(True)
 
-    def lands(mid, seconds):
+    def lands(mid: int, seconds: float):
         b._map = 1021
         return True
 
@@ -509,11 +536,11 @@ def test_teleport_feeds_the_pick_and_learns_home_on_a_hearthstone():
     assert learned == [True]
 
 
-def test_teleport_chooses_the_destination_from_a_menu():
+def test_teleport_chooses_the_destination_from_a_menu() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {}}
 
-    def lands(mid, seconds):
+    def lands(mid: int, seconds: float):
         b._map = 1021
         return True
 
@@ -524,7 +551,7 @@ def test_teleport_chooses_the_destination_from_a_menu():
     assert b.chosen == ["sunset square"]
 
 
-def test_teleport_gives_up_when_the_menu_never_opens():
+def test_teleport_gives_up_when_the_menu_never_opens() -> None:
     b = Bot()
     b.wait_dialog_value = None
     leg = {"do": "item", "item": "Platinum Teleportation stone", "choose": ["sunset square"],
@@ -534,7 +561,7 @@ def test_teleport_gives_up_when_the_menu_never_opens():
     assert b.closed == 1                        # the try/finally still closes the doomed menu
 
 
-def test_teleport_gives_up_when_the_wrong_entry_is_there():
+def test_teleport_gives_up_when_the_wrong_entry_is_there() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {}}
     b.choose_ok = False
@@ -544,7 +571,7 @@ def test_teleport_gives_up_when_the_wrong_entry_is_there():
     assert b.closed == 1                        # still on the map: the dialog is closed
 
 
-def test_teleport_gives_up_when_the_item_wont_use():
+def test_teleport_gives_up_when_the_item_wont_use() -> None:
     b = Bot()
     b.use_item_result = False
     leg = {"do": "item", "item": "Sunset City Teleportation stone", "choose": [],
@@ -553,7 +580,7 @@ def test_teleport_gives_up_when_the_item_wont_use():
     assert b.used == ["Sunset City Teleportation stone"] and b.closed == 0
 
 
-def test_teleport_says_so_when_it_lands_nowhere():
+def test_teleport_says_so_when_it_lands_nowhere() -> None:
     b = Bot()
     b.wait_map_change = lambda mid, seconds: False
     leg = {"do": "item", "item": "Sunset City Teleportation stone", "choose": [],
@@ -564,7 +591,7 @@ def test_teleport_says_so_when_it_lands_nowhere():
 
 
 # ---------------------------------------------------------------- leave_instance
-def test_leave_instance_presses_the_action_menu_and_leaves():
+def test_leave_instance_presses_the_action_menu_and_leaves() -> None:
     b = Bot()
     b._map = 201
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
@@ -575,14 +602,14 @@ def test_leave_instance_presses_the_action_menu_and_leaves():
     assert b.closed == 1                        # once before opening the menu
 
 
-def test_leave_instance_gives_up_when_no_menu_opens():
+def test_leave_instance_gives_up_when_no_menu_opens() -> None:
     b = Bot()
     b.wait_dialog_value = None
     assert b.leave_instance() is False
     assert b.closed == 1
 
 
-def test_leave_instance_gives_up_when_there_is_no_leave_row():
+def test_leave_instance_gives_up_when_there_is_no_leave_row() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("something else")]]}}
     b.choose_ok = False
@@ -590,7 +617,7 @@ def test_leave_instance_gives_up_when_there_is_no_leave_row():
     assert b.closed == 1
 
 
-def test_leave_instance_answers_the_are_you_sure_prompt():
+def test_leave_instance_answers_the_are_you_sure_prompt() -> None:
     b = Bot()
     b._map = 201
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
@@ -601,7 +628,7 @@ def test_leave_instance_answers_the_are_you_sure_prompt():
     assert CONFIRM in b.chosen
 
 
-def test_leave_instance_closes_the_dialog_when_it_did_not_leave():
+def test_leave_instance_closes_the_dialog_when_it_did_not_leave() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave")]]}}
     b.dialog_value = {"open": 0, "top": None}
@@ -610,7 +637,7 @@ def test_leave_instance_closes_the_dialog_when_it_did_not_leave():
     assert b.closed == 2                        # once before, once after the failure
 
 
-def test_leave_instance_leaves_when_there_is_nothing_to_confirm():
+def test_leave_instance_leaves_when_there_is_nothing_to_confirm() -> None:
     b = Bot()
     b._map = 201
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
@@ -621,17 +648,17 @@ def test_leave_instance_leaves_when_there_is_nothing_to_confirm():
 
 
 # ---------------------------------------------------------------- cross_exit
-def test_cross_exit_walking_onto_it_is_enough(monkeypatch):
+def test_cross_exit_walking_onto_it_is_enough(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.walk_result = "map"
     b.cross_exit({"do": "exit", "map": 1001, "dest": 1041, "stand": [3, 3], "rect": [1, 1, 5, 5]})
-    assert b.walked == [(3, 3)] and b.held == []
+    assert b.walked == [(3, 3)] and b.held == set()
     assert b.sleeps == [1.0]
 
 
-def test_cross_exit_pushes_off_the_edge_when_walking_short(monkeypatch):
+def test_cross_exit_pushes_off_the_edge_when_walking_short(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(atlas, "edge_direction", lambda mid, rect: "left")
+    monkeypatch.setattr(atlas, "edge_direction", stand_in(atlas.edge_direction, lambda mid, rect: "left"))
     b.walk_result = "arrived"
     calls = {"n": 0}
 
@@ -641,41 +668,41 @@ def test_cross_exit_pushes_off_the_edge_when_walking_short(monkeypatch):
 
     b.map_id = map_id
     b.cross_exit({"do": "exit", "map": 1001, "dest": 1041, "stand": [3, 3], "rect": [1, 1, 5, 5]})
-    assert b.held == ["left"] and b.released == ["left"]
+    assert b.held == {"left"} and b.released == ["left"]
     assert b.sleeps == [1.0]
 
 
-def test_cross_exit_sleeps_when_the_exit_is_inside_the_map_with_no_room_to_step(monkeypatch):
+def test_cross_exit_sleeps_when_the_exit_is_inside_the_map_with_no_room_to_step(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(atlas, "edge_direction", lambda mid, rect: None)
-    monkeypatch.setattr(atlas, "model", lambda mid: types.SimpleNamespace(ok=lambda x, y: False))
+    monkeypatch.setattr(atlas, "edge_direction", stand_in(atlas.edge_direction, lambda mid, rect: None))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: as_kind(MapModel, Ground(lambda x, y: False))))
     b.walk_result = "arrived"
     b.cross_exit({"do": "exit", "map": 1001, "dest": 1041, "stand": [3, 3], "rect": [1, 1, 5, 5]})
-    assert b.held == [] and b.sleeps == [2.0, 1.0]
+    assert b.held == set() and b.sleeps == [2.0, 1.0]
 
 
-def test_cross_exit_inside_the_map_steps_off_and_back_on(monkeypatch):
+def test_cross_exit_inside_the_map_steps_off_and_back_on(monkeypatch: pytest.MonkeyPatch) -> None:
     # live 2026-10-23: the secluded valley airship lands on Loki Union's exit itself, and standing
     # there the bot re-planned every 4 s for 20 s
     b = Bot()
-    monkeypatch.setattr(atlas, "edge_direction", lambda mid, rect: None)
-    monkeypatch.setattr(atlas, "model", lambda mid: types.SimpleNamespace(ok=lambda x, y: (x, y) == (3, 4)))
+    monkeypatch.setattr(atlas, "edge_direction", stand_in(atlas.edge_direction, lambda mid, rect: None))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: as_kind(MapModel, Ground(lambda x, y: (x, y) == (3, 4)))))
     b.walk_result = "arrived"
     b.cross_exit({"do": "exit", "map": 1162, "dest": 1081, "stand": [3, 3], "rect": [3, 3, 3, 3]})
     assert b.walked == [(3, 3), (3, 4), (3, 3)]
     assert b.sleeps == [1.0]
 
 
-def test_the_secluded_valley_airship_lands_on_loki_union():
+def test_the_secluded_valley_airship_lands_on_loki_union() -> None:
     t = next(t for t in travel_mod.transports() if t["kind"] == "airship" and t["map"] == 1161)
     assert t["dest"] == 1162 and t["lands"]["map"] == 1162
 
 
 # ---------------------------------------------------------------- go (walking assistant)
-def test_go_to_a_cell_says_when_there_is_no_swift_beast(monkeypatch):
+def test_go_to_a_cell_says_when_there_is_no_swift_beast(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    calls = []
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    calls: list[tuple[int | str, tuple[float, float] | None]] = []
     b.travel = lambda dst, cell=None: calls.append((dst, cell))
     b.go(1041, (5, 6))
     assert calls == [(1041, (5, 6))]
@@ -684,37 +711,37 @@ def test_go_to_a_cell_says_when_there_is_no_swift_beast(monkeypatch):
     assert any(line.startswith("arrived on ") for line in b.lines)
 
 
-def test_go_to_an_npc_walks_then_talks(monkeypatch):
+def test_go_to_an_npc_walks_then_talks(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [{"kind": "swift"}])
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: [{"kind": "swift"}]))
     b.approach_value = {"name": "Guard", "x": 4.0, "y": 4.0}
-    approached = []
-    b.approach = lambda npc, at=None, stand=None: approached.append((npc, at)) or b.approach_value
-    talked = []
-    b.talk = lambda npc, at=None, stand=None: talked.append((npc, at)) or True
-    b.travel = lambda *a, **kw: None
+    approached: list[tuple[str, tuple[float, float] | None]] = []
+    b.approach = lambda name, at=None, stand=None: approached.append((name, at)) or b.approach_value
+    talked: list[tuple[str, tuple[float, float] | None]] = []
+    b.talk = lambda name, at=None, stand=None: talked.append((name, at)) or True
+    b.travel = lambda dst, cell=None: None
     b.go(1041, (4, 5), npc="Guard", talk=True)
     assert approached == [("Guard", (4, 5))]
     assert talked == [("Guard", (4, 5))]
 
 
-def test_go_gives_up_when_the_npc_cannot_be_reached(monkeypatch):
+def test_go_gives_up_when_the_npc_cannot_be_reached(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
     b.approach_value = None
-    b.travel = lambda *a, **kw: None
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go(1041, (4, 5), npc="Guard")
     assert "couldn't get to Guard" in str(e.value)
     assert b.walk_only is False                 # restored in the finally
 
 
-def test_go_gives_up_when_the_npc_will_not_talk(monkeypatch):
+def test_go_gives_up_when_the_npc_will_not_talk(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
     b.approach_value = {"name": "Guard"}
     b.talk_value = False
-    b.travel = lambda *a, **kw: None
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go(1041, (4, 5), npc="Guard", talk=True)
     assert "couldn't talk to Guard" in str(e.value)
@@ -722,144 +749,146 @@ def test_go_gives_up_when_the_npc_will_not_talk(monkeypatch):
 
 # ---------------------------------------------------------------- go_dungeon
 class FakeModel:
-    def ok(self, x, y):
+    def ok(self, x: int, y: int) -> bool:
         return True
 
-    def nearest_walkable(self, x, y, r, comp=None):
+    def nearest_walkable(self, x: int, y: int, r: int, comp: int | None=None) -> Cell | None:
         return (int(x), int(y))
 
 
-def test_go_dungeon_to_a_known_entrance_is_just_go(monkeypatch):
+def test_go_dungeon_to_a_known_entrance_is_just_go(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    calls = []
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    calls: list[tuple[int, tuple[float, float] | None, str | None, bool]] = []
     b.go = lambda dst, cell=None, npc=None, talk=False: calls.append((dst, cell, npc, talk))
     b.go_dungeon({"name": "Cave", "map": 5, "npc": "Guard", "at": [3, 4]}, talk=True)
     assert calls == [(5, (3, 4), "Guard", True)]
 
 
-def test_go_dungeon_finds_remembers_and_approaches_the_circle(monkeypatch):
+def test_go_dungeon_finds_remembers_and_approaches_the_circle(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: True)
-    learned = []
-    monkeypatch.setattr(dungeons, "learn", lambda e, name, x, y: learned.append((name, x, y)))
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: True))
+    learned: list[tuple[str, float, float]] = []
+    monkeypatch.setattr(dungeons, "learn", stand_in(dungeons.learn, lambda e, npc_name, x, y: learned.append((npc_name, x, y))))
     b.entities = [{"id": -1, "name": "Cave circle", "x": 10.2, "y": 10.9}]
-    b.approach = lambda npc, at=None, stand=None: {"name": npc}
-    b.talk = lambda npc, at=None, stand=None: True
-    b.travel = lambda *a, **kw: None
+    b.approach = lambda name, at=None, stand=None: {"name": name}
+    b.talk = lambda name, at=None, stand=None: True
+    b.travel = lambda dst, cell=None: None
     b.go_dungeon({"name": "Cave", "map": 5, "spots": [[10, 11]]}, talk=True)
     assert learned == [("Cave circle", 10.2, 10.9)]
     assert any("found it" in line for line in b.lines)
 
 
-def test_go_dungeon_walks_each_marked_spot_until_the_circle_shows(monkeypatch):
+def test_go_dungeon_walks_each_marked_spot_until_the_circle_shows(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 5
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: True)
-    monkeypatch.setattr(dungeons, "learn", lambda *a: None)
-    walked = []
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: True))
+    monkeypatch.setattr(dungeons, "learn", stand_in(dungeons.learn, lambda e, npc_name, x, y: None))
+    walked: list[tuple[float, ...]] = []
 
-    def walk_to(cell, near=None, **kw):
+    def walk_to(cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         walked.append(tuple(cell))
         b.entities = [{"id": -1, "name": "Cave circle", "x": 30.0, "y": 30.0}]
+        return "arrived"
 
     b.walk_to = walk_to
-    b.approach = lambda npc, at=None, stand=None: {"name": npc}
-    b.talk = lambda npc, at=None, stand=None: True
-    b.travel = lambda *a, **kw: None
+    b.approach = lambda name, at=None, stand=None: {"name": name}
+    b.talk = lambda name, at=None, stand=None: True
+    b.travel = lambda dst, cell=None: None
     b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
     assert walked == [(31, 31)]
 
 
-def test_go_dungeon_gives_up_when_no_spot_is_the_circle(monkeypatch):
+def test_go_dungeon_gives_up_when_no_spot_is_the_circle(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 5
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: False)
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: False))
     b.entities = []
-    b.travel = lambda *a, **kw: None
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
     assert "none of the entrances marked on map5 is the Cave circle" in str(e.value)
 
 
-def test_go_dungeon_stops_if_it_leaves_the_map_while_looking(monkeypatch):
+def test_go_dungeon_stops_if_it_leaves_the_map_while_looking(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: False)
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: False))
     b.entities = []
-    b.travel = lambda *a, **kw: setattr(b, "_map", 999)
+    b.travel = lambda dst, cell=None: setattr(b, "_map", 999)
     with pytest.raises(Stopped) as e:
         b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
     assert "left map5 while looking for the Cave circle" in str(e.value)
     assert b.walk_only is False
 
 
-def test_go_dungeon_skips_a_spot_it_cannot_even_reach(monkeypatch):
+def test_go_dungeon_skips_a_spot_it_cannot_even_reach(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 5
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: NoWalkModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: False)
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: NoWalkModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: False))
     b.entities = []
-    b.travel = lambda *a, **kw: None
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
     assert "none of the entrances marked on map5 is the Cave circle" in str(e.value)
 
 
 class NoWalkModel:
-    def ok(self, x, y):
+    def ok(self, x: int, y: int) -> bool:
         return False
 
-    def nearest_walkable(self, x, y, r, comp=None):
+    def nearest_walkable(self, x: int, y: int, r: int, comp: int | None=None) -> Cell | None:
         return None
 
 
-def test_go_dungeon_gives_up_when_it_cannot_approach_the_circle(monkeypatch):
+def test_go_dungeon_gives_up_when_it_cannot_approach_the_circle(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 5
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: True)
-    monkeypatch.setattr(dungeons, "learn", lambda *a: None)
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: True))
+    monkeypatch.setattr(dungeons, "learn", stand_in(dungeons.learn, lambda e, npc_name, x, y: None))
     b.entities = [{"id": -1, "name": "Cave circle", "x": 1.0, "y": 1.0}]
-    b.approach = lambda npc, at=None, stand=None: None
-    b.travel = lambda *a, **kw: None
+    b.approach = lambda name, at=None, stand=None: None
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go_dungeon({"name": "Cave", "map": 5, "spots": [[1, 1]]})
     assert "couldn't get to Cave circle" in str(e.value)
 
 
-def test_go_dungeon_gives_up_when_the_circle_will_not_talk(monkeypatch):
+def test_go_dungeon_gives_up_when_the_circle_will_not_talk(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b._map = 5
-    monkeypatch.setattr(beasts, "owned", lambda b: [])
-    monkeypatch.setattr(atlas, "model", lambda mid: FakeModel())
-    monkeypatch.setattr(dungeons, "is_entrance", lambda e, name: True)
-    monkeypatch.setattr(dungeons, "learn", lambda *a: None)
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    monkeypatch.setattr(dungeons, "is_entrance", stand_in(dungeons.is_entrance, lambda e, name: True))
+    monkeypatch.setattr(dungeons, "learn", stand_in(dungeons.learn, lambda e, npc_name, x, y: None))
     b.entities = [{"id": -1, "name": "Cave circle", "x": 1.0, "y": 1.0}]
-    b.approach = lambda npc, at=None, stand=None: {"name": npc}
-    b.talk = lambda npc, at=None, stand=None: False
-    b.travel = lambda *a, **kw: None
+    b.approach = lambda name, at=None, stand=None: {"name": name}
+    b.talk = lambda name, at=None, stand=None: False
+    b.travel = lambda dst, cell=None: None
     with pytest.raises(Stopped) as e:
         b.go_dungeon({"name": "Cave", "map": 5, "spots": [[1, 1]]}, talk=True)
     assert "couldn't talk to Cave circle" in str(e.value)
 
 
 # ---------------------------------------------------------------- ride
-def npc_leg(choose=("destination",), npc="Cable Car manager", kind="cable_car", dest=2000):
+def npc_leg(choose: tuple[str, str] | tuple[str]=("destination",), npc: str="Cable Car manager", kind: str="cable_car", dest: int=2000) -> dict[str, typing.Any]:
     return {"do": "npc", "map": 1001, "npc": npc, "kind": kind, "dest": dest, "id": 3,
             "choose": list(choose), "at": None, "stand": None}
 
 
-def test_ride_talks_chooses_and_lands():
+def test_ride_talks_chooses_and_lands() -> None:
     b = Bot()
     b.talk_value = True
     state = {"changed": False}
@@ -868,9 +897,9 @@ def test_ride_talks_chooses_and_lands():
         return 2000 if state["changed"] else 1001
 
     b.map_id = map_id
-    b.settled_map = lambda: 2000
+    b.settled_map = lambda seconds=15: 2000
 
-    def choose(pattern):
+    def choose(pattern: str):
         b.chosen.append(pattern)
         state["changed"] = True
         return {"options": ["x"]}
@@ -882,21 +911,21 @@ def test_ride_talks_chooses_and_lands():
     assert any("now on map2000" in line for line in b.lines)
 
 
-def test_ride_gives_up_when_the_npc_will_not_talk():
+def test_ride_gives_up_when_the_npc_will_not_talk() -> None:
     b = Bot()
     b.talk_value = False
     assert b.ride(npc_leg()) is False
     assert b.closed == 1 and b.target_modes == [2]
 
 
-def test_ride_gives_up_when_the_destination_row_is_missing():
+def test_ride_gives_up_when_the_destination_row_is_missing() -> None:
     b = Bot()
     b.choose_ok = False
     assert b.ride(npc_leg()) is False
     assert b.chosen == ["destination"]
 
 
-def test_ride_gives_up_when_the_next_menu_does_not_open():
+def test_ride_gives_up_when_the_next_menu_does_not_open() -> None:
     b = Bot()
     b.wait_dialog_value = None
     assert b.ride(npc_leg(choose=("first", "second"))) is False
@@ -904,7 +933,7 @@ def test_ride_gives_up_when_the_next_menu_does_not_open():
     assert any("next menu didn't open" in line for line in b.lines)
 
 
-def test_ride_refuses_a_follow_up_that_is_not_a_confirmation():
+def test_ride_refuses_a_follow_up_that_is_not_a_confirmation() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {}}
     b.dialog_value = {"open": 1, "top": {"rows": [[entry("no chance")]]}}
@@ -914,7 +943,7 @@ def test_ride_refuses_a_follow_up_that_is_not_a_confirmation():
     assert b.closed == 2                        # _ride closes, then ride()'s finally closes again
 
 
-def test_ride_accepts_a_confirm_prompt():
+def test_ride_accepts_a_confirm_prompt() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {}}
     dialogs = iter([{"open": 1, "top": {"rows": [[entry("yes")]]}}, {"open": 0, "top": None}])
@@ -925,9 +954,9 @@ def test_ride_accepts_a_confirm_prompt():
         return 2000 if state["changed"] else 1001
 
     b.map_id = map_id
-    b.settled_map = lambda: 2000
+    b.settled_map = lambda seconds=15: 2000
 
-    def choose(pattern):
+    def choose(pattern: str):
         b.chosen.append(pattern)
         if pattern == CONFIRM:                  # only the confirm moves us on
             state["changed"] = True
@@ -938,9 +967,9 @@ def test_ride_accepts_a_confirm_prompt():
     assert CONFIRM in b.chosen
 
 
-def test_ride_waits_for_the_cable_car_to_carry_us(clock, monkeypatch):
+def test_ride_waits_for_the_cable_car_to_carry_us(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot(clock)
-    b.settled_map = lambda: 2000
+    b.settled_map = lambda seconds=15: 2000
     state = {"changed": False}
 
     def map_id():
@@ -948,7 +977,7 @@ def test_ride_waits_for_the_cable_car_to_carry_us(clock, monkeypatch):
 
     b.map_id = map_id
 
-    def choose(pattern):
+    def choose(pattern: str):
         state["changed"] = True
         return {"options": ["x"]}
 
@@ -956,7 +985,7 @@ def test_ride_waits_for_the_cable_car_to_carry_us(clock, monkeypatch):
     b.wait_map_change = lambda mid, seconds: True
     calls = {"n": 0}
 
-    def name(mid):
+    def name(mid: int):
         calls["n"] += 1
         return "Cable Car Station" if calls["n"] == 1 else "map%d" % int(mid)
 
@@ -966,7 +995,7 @@ def test_ride_waits_for_the_cable_car_to_carry_us(clock, monkeypatch):
     assert any(line.startswith("arrived on ") for line in b.lines)
 
 
-def test_ride_gives_up_when_the_transport_never_moves_us(clock):
+def test_ride_gives_up_when_the_transport_never_moves_us(clock: Clock) -> None:
     b = Bot(clock)
     b.dialog_value = {"open": 0, "top": None}
     assert b.ride(npc_leg()) is False
@@ -974,7 +1003,7 @@ def test_ride_gives_up_when_the_transport_never_moves_us(clock):
     assert 0.3 in b.sleeps
 
 
-def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map():
+def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map() -> None:
     b = Bot()
     state = {"changed": False}
 
@@ -984,13 +1013,13 @@ def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map():
     b.map_id = map_id
     settled = {"n": 0}
 
-    def settled_map():                          # first reading: still the old map, then the new one
+    def settled_map(seconds: float = 15) -> int:      # first reading: still the old map, then the new one
         settled["n"] += 1
         return 1001 if settled["n"] == 1 else 2000
 
     b.settled_map = settled_map
 
-    def choose(pattern):
+    def choose(pattern: str):
         state["changed"] = True
         return {"options": ["x"]}
 
@@ -1000,7 +1029,7 @@ def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map():
 
 
 # ---------------------------------------------------------------- go_home
-def test_go_home_uses_the_key_and_learns_the_square(clock):
+def test_go_home_uses_the_key_and_learns_the_square(clock: Clock) -> None:
     b = Bot(clock)
     b.p["hearthstone_key"] = "h"
     calls = {"n": 0}
@@ -1011,14 +1040,14 @@ def test_go_home_uses_the_key_and_learns_the_square(clock):
 
     b.map_id = map_id
     b.settled = 999
-    learned = []
+    learned: list[bool] = []
     b.learn_hearth_home = lambda: learned.append(True)
     assert b.go_home() is True
     assert b.keys == ["h"] and learned == [True]
     assert any("home: map2" in line for line in b.lines)
 
 
-def test_go_home_falls_back_to_the_bag(clock):
+def test_go_home_falls_back_to_the_bag(clock: Clock) -> None:
     b = Bot(clock)
     calls = {"n": 0}
 
@@ -1032,14 +1061,14 @@ def test_go_home_falls_back_to_the_bag(clock):
     assert b.used == ["Hearthstone"]
 
 
-def test_go_home_gives_up_when_the_item_will_not_use(clock):
+def test_go_home_gives_up_when_the_item_will_not_use(clock: Clock) -> None:
     b = Bot(clock)
     b.use_item_result = False
     assert b.go_home() is False
     assert b.keys == []
 
 
-def test_go_home_fights_back_when_hit_and_gives_up(clock):
+def test_go_home_fights_back_when_hit_and_gives_up(clock: Clock) -> None:
     b = Bot(clock)
     b.hit_value = True
     b.map_id = lambda: 1
@@ -1048,7 +1077,7 @@ def test_go_home_fights_back_when_hit_and_gives_up(clock):
     assert any("didn't take me home" in line for line in b.lines)
 
 
-def test_go_home_ignores_a_reload_on_the_same_square(clock):
+def test_go_home_ignores_a_reload_on_the_same_square(clock: Clock) -> None:
     b = Bot(clock)
     b.p["hearthstone_key"] = "h"
     calls = {"n": 0}

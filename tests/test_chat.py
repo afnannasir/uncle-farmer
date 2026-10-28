@@ -1,22 +1,28 @@
-# pyright: reportAttributeAccessIssue=false, reportIncompatibleMethodOverride=false
-# The stand-ins in this file replace real methods and attributes with fakes on purpose;
-# what they do is checked by running the tests, not by their types.
 """Game chat while farming: every channel read and written through the agent, kept in memory only."""
+
+from __future__ import annotations
 
 import threading
 
 from unclefarmer import chat
 from unclefarmer.gui.chat import line_text
+import pytest
+from conftest import stand_in
+from unclefarmer.chat import Feed
+from typing import Any, ClassVar
 
 
 class Agent:
     """A pretend game: two chat lines, one private message, and whatever `say` is sent."""
 
-    def __init__(self, pid=None, **_kw):
-        self.sent = []
+    said: ClassVar[list[str]] = []                     # every `say`, across the instances a test makes
+    done: ClassVar[threading.Event] = threading.Event()   # set once the feed has read past the lines
+
+    def __init__(self, pid: int | None=None, **_kw: object) -> None:
+        self.sent: list[str] = []
         self.calls = 0
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         if line == "version":
             return "mwagent 32"
         if line.startswith("say "):
@@ -24,7 +30,7 @@ class Agent:
             return "sent"
         return "armed" if line == "arm" else "ok"
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         self.calls += 1
         if line == "chat 0":
             return {"ok": True, "last": 7, "chat": []}
@@ -41,20 +47,20 @@ class Agent:
             return {"ok": True, "last": 3, "pms": [{"n": 3, "id": 2001, "name": "Kim", "text": "hi"}]}
         return {"ok": True, "last": 3, "pms": []}
 
-    def close(self):
+    def close(self) -> None:
         pass
 
 
-def test_channels_arrive_as_three_times_their_number():
+def test_channels_arrive_as_three_times_their_number() -> None:
     assert chat.channel_of(0) == "0" and chat.channel_of(12) == "4" and chat.channel_of(15) == "5"
     assert chat.channel_of(18) == "6"                 # the private channel, not private messages
     assert chat.channel_of(33) == chat.NOTICE
 
 
-def test_the_feed_reads_every_channel_and_private_messages(monkeypatch):
+def test_the_feed_reads_every_channel_and_private_messages(monkeypatch: pytest.MonkeyPatch) -> None:
     Agent.said, Agent.done = [], threading.Event()
     monkeypatch.setattr(chat, "AgentLink", Agent)
-    got = []
+    got: list[dict[str, Any]] = []
     feed = chat.Feed(77, lambda f, line: got.append(line))
     feed.start()
     assert Agent.done.wait(5)
@@ -68,7 +74,7 @@ def test_the_feed_reads_every_channel_and_private_messages(monkeypatch):
     assert [x["text"] for x in feed.buffer(chat.NOTICE)] == ["Sara looted a gem"]
 
 
-def test_saying_a_line_goes_through_the_game_s_sender(monkeypatch):
+def test_saying_a_line_goes_through_the_game_s_sender(monkeypatch: pytest.MonkeyPatch) -> None:
     Agent.said = []
     monkeypatch.setattr(chat, "AgentLink", Agent)
     feed = chat.Feed(77)
@@ -77,20 +83,20 @@ def test_saying_a_line_goes_through_the_game_s_sender(monkeypatch):
     assert feed.say(3, "   ") is not None          # nothing to send
 
 
-def test_a_sending_connection_left_quiet_is_replaced_before_it_is_used(monkeypatch):
+def test_a_sending_connection_left_quiet_is_replaced_before_it_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
     # The agent drops a connection quiet for 120 s: the next line sent into it failed with
     # WinError 10053. One quiet past SENDER_IDLE is opened afresh first, and nothing goes twice.
     Agent.said = []
-    opened = []
+    opened: list[Agent] = []
 
     class Counted(Agent):
-        def __init__(self, pid=None, **kw):
+        def __init__(self, pid: int | None=None, **kw: object) -> None:
             super().__init__(pid, **kw)
             opened.append(self)
 
     clock = [1000.0]
     monkeypatch.setattr(chat, "AgentLink", Counted)
-    monkeypatch.setattr(chat.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(chat.time, "monotonic", stand_in(chat.time.monotonic, lambda: clock[0]))
     feed = chat.Feed(77)
     assert feed.say(3, "one") is None
     clock[0] += chat.SENDER_IDLE - 1
@@ -102,7 +108,7 @@ def test_a_sending_connection_left_quiet_is_replaced_before_it_is_used(monkeypat
     assert Agent.said == ["say 3 one", "say 3 two", "say 3 three"]
 
 
-def test_a_line_reads_well_for_a_screen_reader():
+def test_a_line_reads_well_for_a_screen_reader() -> None:
     import time
     when = time.mktime((2026, 10, 21, 16, 5, 0, 0, 0, -1))
     line = {"when": when, "channel": "4", "name": "Ali", "text": "need heals"}
@@ -119,20 +125,20 @@ def test_a_line_reads_well_for_a_screen_reader():
 class Talk(Agent):
     """Private messages both ways: one from Kim, one this character sent to Kim (agent v34)."""
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         if line == "pms 2":
             return {"ok": True, "last": 4, "pms": [
                 {"n": 3, "id": 2001, "name": "Kim", "text": "hi"},
                 {"n": 4, "id": 2001, "name": "Kim", "text": "hello back", "mine": True}]}
         return super().json(line)
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         if line.startswith("idof "):
             return "3005" if line[5:].lower() == "sara" else "0"
         return super().send(line)
 
 
-def test_a_conversation_shows_both_sides(monkeypatch):
+def test_a_conversation_shows_both_sides(monkeypatch: pytest.MonkeyPatch) -> None:
     Agent.said, Agent.done = [], threading.Event()
     monkeypatch.setattr(chat, "AgentLink", Talk)
     feed = chat.Feed(77)
@@ -147,7 +153,7 @@ def test_a_conversation_shows_both_sides(monkeypatch):
     assert line_text(pm[1], where=False) == "you: hello back"
 
 
-def test_a_private_message_goes_to_an_id_or_a_name_the_game_has_shown(monkeypatch):
+def test_a_private_message_goes_to_an_id_or_a_name_the_game_has_shown(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(chat, "AgentLink", Talk)
     feed = chat.Feed(77)
     feed.ids["kim"] = 2001
@@ -157,14 +163,14 @@ def test_a_private_message_goes_to_an_id_or_a_name_the_game_has_shown(monkeypatc
     assert feed.id_of("Nobody") is None
 
 
-def test_the_messenger_never_answers_our_own_lines():
+def test_the_messenger_never_answers_our_own_lines() -> None:
     import inspect
 
     from unclefarmer import messages
     assert 'if not pm.get("mine")' in inspect.getsource(messages.Messenger.run)
 
 
-def test_private_messages_make_one_conversation_per_person():
+def test_private_messages_make_one_conversation_per_person() -> None:
     feed = chat.Feed(77)
     feed.ids["kim"] = 2001
     feed.add(chat.PRIVATE, "Kim", "hi", peer_id=2001)
@@ -178,14 +184,14 @@ def test_private_messages_make_one_conversation_per_person():
     assert [line_text(x, where=False) for x in kim["lines"]] == ["Kim: hi", "you: hello back"]
 
 
-def test_a_tone_name_nobody_knows_plays_nothing():
+def test_a_tone_name_nobody_knows_plays_nothing() -> None:
     from unclefarmer import tones
     tones.play("")
     tones.play("no such tone")
     assert set(tones.ORDER) - {""} == set(tones.TONES)
 
 
-def test_a_long_text_is_cut_where_the_agent_cuts_it():
+def test_a_long_text_is_cut_where_the_agent_cuts_it() -> None:
     text = " ".join("word%d" % i for i in range(60))
     got = chat.parts(text)
     assert [len(p) for p in got] == [199, 195, 13]          # the agent's own cut (checked in Java)
@@ -201,10 +207,13 @@ VOICE = "0123456789abcdef0123456789abcdef"
 class VoiceAgent:
     """A game whose agent does voice messages (42): records, sends and decodes into a WAV."""
 
-    def __init__(self, pid=None, **_kw):
+    sent: ClassVar[list[str]] = []
+    send_reply: ClassVar[str] = ""
+
+    def __init__(self, pid: int | None=None, **_kw: object) -> None:
         pass
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         VoiceAgent.sent.append(line)
         if line == "arm":
             return "armed"
@@ -216,11 +225,11 @@ class VoiceAgent:
             return VoiceAgent.send_reply
         return "ok"
 
-    def close(self):
+    def close(self) -> None:
         pass
 
 
-def voice_feed(monkeypatch, version=42):
+def voice_feed(monkeypatch: pytest.MonkeyPatch, version: int=42) -> Feed:
     VoiceAgent.sent, VoiceAgent.send_reply = [], "sent 1 1760"
     monkeypatch.setattr(chat, "AgentLink", VoiceAgent)
     feed = chat.Feed(77)
@@ -228,15 +237,17 @@ def voice_feed(monkeypatch, version=42):
     return feed
 
 
-def test_a_voice_message_is_played_through_the_game_s_codec(monkeypatch):
+def test_a_voice_message_is_played_through_the_game_s_codec(monkeypatch: pytest.MonkeyPatch) -> None:
     feed = voice_feed(monkeypatch)
-    played = []
-    monkeypatch.setattr(chat.winsound, "PlaySound", lambda path, flags: played.append(path))
+    played: list[str | None] = []
+    def play(sound: str | None, flags: int) -> None:     # PlaySound is overloaded: stand_in can't take it
+        played.append(sound)
+    monkeypatch.setattr(chat.winsound, "PlaySound", play)
     assert feed.play_voice(VOICE) is None
     assert VoiceAgent.sent[-1] == "voice play " + VOICE and played == ["C:/tmp/%s.wav" % VOICE]
 
 
-def test_a_voice_message_is_recorded_and_sent_to_team_or_a_player(monkeypatch):
+def test_a_voice_message_is_recorded_and_sent_to_team_or_a_player(monkeypatch: pytest.MonkeyPatch) -> None:
     feed = voice_feed(monkeypatch)
     assert feed.record_voice() is None
     assert feed.send_voice(channel="4") is None
@@ -249,17 +260,20 @@ def test_a_voice_message_is_recorded_and_sent_to_team_or_a_player(monkeypatch):
     assert "too short" in (feed.send_voice(channel="3") or "")
 
 
-def test_an_older_agent_says_the_game_needs_restarting_for_voice(monkeypatch):
+def test_an_older_agent_says_the_game_needs_restarting_for_voice(monkeypatch: pytest.MonkeyPatch) -> None:
     feed = voice_feed(monkeypatch, version=41)
     assert "restart the game" in (feed.play_voice(VOICE) or "")
     assert "restart the game" in (feed.record_voice() or "")
     assert VoiceAgent.sent == []
 
 
-def test_a_voice_line_reads_as_a_voice_message():
+def test_a_voice_line_reads_as_a_voice_message() -> None:
     feed = chat.Feed(77)
-    got = []
-    feed.on_line = lambda f, line: got.append(line)
+    got: list[chat.Line] = []
+
+    def on_line(f: chat.Feed, line: chat.Line) -> None:
+        got.append(line)
+    feed.on_line = on_line
     feed.add("4", "Ali", "", voice=VOICE)
     assert got[0]["voice"] == VOICE
     assert line_text(got[0]) == "Team, Ali: voice message"

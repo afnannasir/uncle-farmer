@@ -10,19 +10,25 @@ at worst both compute a missing answer: the answers depend only on the key, neve
 thread got there first.
 """
 
-_MISSING = object()
+from __future__ import annotations
+
+from typing import TypeVar
+
+K = TypeVar("K")
+V = TypeVar("V")
 
 
-def get(cache, key, default=None):
+def get(cache: dict[K, V], key: K, default: V | None = None) -> V | None:
     """cache[key], now the most recently used, or default."""
-    value = cache.pop(key, _MISSING)
-    if value is _MISSING:
+    try:
+        value = cache.pop(key)          # one dict operation, as before: a miss is a KeyError
+    except KeyError:
         return default
     cache[key] = value
     return value
 
 
-def put(cache, key, value, most):
+def put(cache: dict[K, V], key: K, value: V, most: int) -> None:
     """cache[key] = value, dropping the least recently used entries past most."""
     cache[key] = value
     while len(cache) > most:

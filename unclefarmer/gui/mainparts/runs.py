@@ -1,5 +1,7 @@
 """What to run (the Plans and scripts list) and running it: start, stop, pause, errands, follow."""
 
+from __future__ import annotations
+
 
 import wx
 
@@ -10,21 +12,22 @@ from ...engine.script import check as check_script
 from ...i18n import _
 from ..common import error, save_file
 from ..plan import plan_text
-from .base import FrameParts, foreground_pid
+from .base import FrameParts, Item, foreground_pid, saved_item
+from collections.abc import Callable
 
 
 class RunsMixin(FrameParts):
     # ------------------------------------------------------------ what to run
-    def item_label(self, item):
+    def item_label(self, item: Item) -> str:
         kind, name = item
         return name if kind == "plan" else _("{name} (script)", name=name)
 
-    def fill_runs(self, select=None):
+    def fill_runs(self, select: Item | None = None) -> None:
         self.items = [("plan", n) for n in plans.names()] + [("script", n) for n in plans.script_names()]
         labels = [self.item_label(it) for it in self.items]
         self.what.Set(labels or [_("No plans yet")])
         self.plan_list.Set(labels)
-        want = select or (tuple(self.s.get("last_run", "").split(":", 1)) if self.s.get("last_run") else None)
+        want = select or (saved_item(self.s.get("last_run", "")) if self.s.get("last_run") else None)
         i = self.items.index(want) if want in self.items else 0
         self.what.SetSelection(i)
         if self.items:
@@ -32,17 +35,17 @@ class RunsMixin(FrameParts):
                                         max(0, min(self.plan_list.GetSelection(), len(self.items) - 1)))
         self.show_summary()
 
-    def selected_item(self):
+    def selected_item(self) -> Item | None:
         """The plan chosen to run on the Bot tab."""
         i = self.what.GetSelection()
         return self.items[i] if 0 <= i < len(self.items) else None
 
-    def listed_item(self):
+    def listed_item(self) -> Item | None:
         """The plan or script selected on the Plans tab."""
         i = self.plan_list.GetSelection()
         return self.items[i] if 0 <= i < len(self.items) else None
 
-    def show_summary(self):
+    def show_summary(self) -> None:
         item = self.listed_item()
         if not item:
             self.summary.ChangeValue(_("No plans yet. Press New plan to make one."))
@@ -57,7 +60,7 @@ class RunsMixin(FrameParts):
             text = _("Couldn't open it: {err}", err=e)
         self.summary.ChangeValue(text)
 
-    def on_plan_key(self, evt):
+    def on_plan_key(self, evt: wx.KeyEvent) -> None:
         k = evt.GetKeyCode()
         if k in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
             self.edit_selected()
@@ -66,7 +69,7 @@ class RunsMixin(FrameParts):
         else:
             evt.Skip()
 
-    def item_text(self, item):
+    def item_text(self, item: Item) -> str:
         kind, name = item
         if kind == "plan":
             return plans.to_script(plans.load(name))
@@ -74,7 +77,7 @@ class RunsMixin(FrameParts):
             return f.read()
 
     # ------------------------------------------------------------ running
-    def update_buttons(self):
+    def update_buttons(self) -> None:
         """The buttons follow the selected game: another game can be started while one runs."""
         pid = self.selected_pid()
         on = pid in self.runs
@@ -82,30 +85,30 @@ class RunsMixin(FrameParts):
         self.stop_btn.Enable(on)
         self.sync_pause()
         self.what.Enable(not on and bool(self.items))
-        if on:
+        if pid is not None and on:
             item = ("plan" if self.runs[pid].kind == "plan" else "script", self.runs[pid].title)
             if item in self.items:
                 self.what.SetSelection(self.items.index(item))
 
-    def is_paused(self, pid):
-        run = self.runs.get(pid)
+    def is_paused(self, pid: int | None) -> bool:
+        run = self.runs.get(pid) if pid is not None else None
         return bool(run and run.bot is not None and run.bot.paused.is_set())
 
-    def sync_pause(self):
+    def sync_pause(self) -> None:
         """The Pause button follows the selected game's run: Pause while it runs, Go on while paused
         (a private message can pause and resume it too)."""
         pid = self.selected_pid()
-        run = self.runs.get(pid)
+        run = self.runs.get(pid) if pid is not None else None
         label = _("Go &on") if self.is_paused(pid) else _("&Pause")
         if self.pause_btn.GetLabel() != label:
             self.pause_btn.SetLabel(label)
         self.pause_btn.Enable(bool(run and run.bot is not None))
 
-    def toggle_pause(self, pid=None):
+    def toggle_pause(self, pid: int | None = None) -> None:
         """Pause the run where it is - keys let go, the run not ended - or let a paused one go on.
         While paused the game is the player's: their own Shift, Ctrl and Alt work in it again."""
         pid = self.selected_pid() if pid is None else pid
-        run = self.runs.get(pid)
+        run = self.runs.get(pid) if pid is not None else None
         if not run or run.bot is None:
             self.say(_("The bot isn't running."))
             return
@@ -118,7 +121,7 @@ class RunsMixin(FrameParts):
         self.sync_pause()
         self.label_games()
 
-    def toggle(self):
+    def toggle(self) -> None:
         """The Pause key: the game window in front if it is one of ours, else the selected game."""
         pid = foreground_pid()
         if pid not in {g[0] for g in self.games}:
@@ -128,12 +131,13 @@ class RunsMixin(FrameParts):
         else:
             self.start(pid)
 
-    def start(self, pid=None, item=None, remote=False):
+    def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False) -> str | None:
         """Start a bot. remote: asked by private message - no message boxes; returns what to answer."""
-        def fail(text):
+        def fail(text: str) -> str | None:
             if remote:
                 return text
             error(self, text)
+            return None
         given = item
         item = item or self.selected_item()
         if pid is None:
@@ -143,15 +147,15 @@ class RunsMixin(FrameParts):
                 pid = self.selected_pid()
         if pid is None:
             self.say(_("No game with the agent is running."))
-            return
+            return None
         if pid in self.runs:
             return _("Already running.")
         if pid != self.selected_pid() and not given:
             # started from inside a game window: run what that character ran last, if anything
             name = next((g[1] for g in self.games if g[0] == pid), None)
             last = self.s.get("last_runs", {}).get(name or "")
-            if last and tuple(last.split(":", 1)) in self.items:
-                item = tuple(last.split(":", 1))
+            if last and saved_item(last) in self.items:
+                item = saved_item(last)
         if not item:
             self.say(_("Make a plan first, in the Plans tab."))
             return _("There's no plan to run.")
@@ -180,7 +184,7 @@ class RunsMixin(FrameParts):
         self.poll()
         return _("Starting {what}.", what=item[1])
 
-    def run_errand(self, text, title, walk=False):
+    def run_errand(self, text: str, title: str, walk: bool = False) -> None:
         """A one-off job for the selected game, run like a script: a tool from the Tools menu, or
         the walking assistant (walk)."""
         pid = self.selected_pid()
@@ -201,7 +205,8 @@ class RunsMixin(FrameParts):
         self.update_buttons()
         run.start()
 
-    def errand_for(self, pid, text, title, tell=None, follows=None):
+    def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
+                   follows: str | None = None) -> str | None:
         """A job asked for by private message, run like the walking assistant (stays where it ends);
         tell(text) answers the player when it ends by itself."""
         if pid in self.runs:
@@ -220,7 +225,7 @@ class RunsMixin(FrameParts):
         run.start()
         return None
 
-    def follow_for(self, pid, leader, tell=None):
+    def follow_for(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str | None:
         """'follow' from a trusted player: this game's character follows them. A run already going
         is stopped first, and following starts once it has ended. Returns what to answer."""
         run = self.runs.get(pid)
@@ -232,7 +237,7 @@ class RunsMixin(FrameParts):
             return _("Stopping {what}, then following you.", what=run.title)
         return self._start_follow(pid, leader, tell)
 
-    def _when_stopped(self, pid, then, tries=0):
+    def _when_stopped(self, pid: int, then: Callable[[], object], tries: int = 0) -> None:
         if self.destroyed:
             return
         if pid in self.runs and tries < 240:          # a run can take a while to end safely
@@ -242,26 +247,27 @@ class RunsMixin(FrameParts):
         else:
             self.say(_("The bot didn't stop in time, so it isn't following you."))
 
-    def _start_follow(self, pid, leader, tell=None):
+    def _start_follow(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str:
         # an errand that stays where it ends: no daily stop, no results, no end place
         busy = self.errand_for(pid, 'follow "%s"' % leader, _("following {name}", name=leader), tell,
                                follows=leader.lower())
         return busy or _("Following you.")
 
-    def unfollow(self, pid):
+    def unfollow(self, pid: int) -> str | None:
         run = self.runs.get(pid)
         if not run or not getattr(run, "follows", None):
             return _("I'm not following anyone.")
         run.stop()
         return _("Stopped following.")
 
-    def stop(self, pid=None):
-        run = self.runs.get(self.selected_pid() if pid is None else pid)
+    def stop(self, pid: int | None = None) -> None:
+        which = self.selected_pid() if pid is None else pid
+        run = self.runs.get(which) if which is not None else None
         if run:
             self.say(_("Stopping"), run)
             run.stop()
 
-    def stop_all(self):
+    def stop_all(self) -> None:
         if not self.runs:
             self.say(_("No bot is running."))
             return
@@ -269,6 +275,6 @@ class RunsMixin(FrameParts):
         for run in list(self.runs.values()):
             run.stop()
 
-    def tagged(self):
+    def tagged(self) -> bool:
         """With more than one game, every log line says which character it is about."""
         return len(self.games) > 1 or len(self.runs) > 1

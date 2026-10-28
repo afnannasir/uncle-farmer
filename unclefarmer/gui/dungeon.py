@@ -7,6 +7,8 @@ Check only says what is short and which caves are left today; Start tops up, goe
 can until the game moves it out, and ends at the end place.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 import wx
@@ -14,7 +16,7 @@ import wx
 from .. import atlas, settings, travel
 from ..engine import dungeon
 from ..i18n import N_, _
-from .common import buttons, enable_label, error, group, info, labeled, page, save_file, tabs
+from .common import Dialog, Reader, buttons, standing, with_code, enable_label, error, group, info, labeled, page, save_file, tabs, modal
 from .crafting import CHECK, START
 from .plan import END_CHOICES, NOT_SEEN
 
@@ -26,8 +28,8 @@ PATROL_LABELS = (("quick", N_("Quick loop (the whole cave, lanes further apart)"
                  ("short", N_("Short loop (the middle of the cave)")))
 
 
-class DungeonDialog(wx.Dialog):
-    def __init__(self, parent, character, game):
+class DungeonDialog(Dialog):
+    def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
         super().__init__(parent, title=_("{tool} - {name}", tool=_("Dungeons"), name=character),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
@@ -58,12 +60,12 @@ class DungeonDialog(wx.Dialog):
 
         panel, box = page(nb, _("Supplies"))
         f = group(panel, box, _("Before setting out, have at least (0: don't look)"), 1)
-        self.rows = {}
+        self.rows: dict[str, tuple[wx.Choice, wx.SpinCtrl, list[str]]] = {}
         auto = _("What is on the hotkey (else the strongest in the bag)")
         for kind in dungeon.SUPPLIES:
             row = c["supplies"][kind]
             names = dungeon.known_items(kind)
-            item = row.get("item") or ""
+            item: str = row.get("item") or ""
             if item and item not in names:
                 names.append(item)
             label = _(dungeon.SUPPLY_NAMES[kind])
@@ -103,7 +105,7 @@ class DungeonDialog(wx.Dialog):
         row = wx.BoxSizer(wx.HORIZONTAL)
         for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
             btn = wx.Button(self, label=label)
-            btn.Bind(wx.EVT_BUTTON, lambda e, c=code: self.finish(c))
+            btn.Bind(wx.EVT_BUTTON, with_code(self.finish, code))
             row.Add(btn, 0, wx.RIGHT, 8)
         row.Add(wx.Button(self, wx.ID_CANCEL, _("Cancel")), 0)
         root.Add(row, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
@@ -112,13 +114,13 @@ class DungeonDialog(wx.Dialog):
         self.sync_end()
 
     # ------------------------------------------------------------ caves
-    def cave_line(self, cave):
+    def cave_line(self, cave: str) -> str:
         v = dungeon.CAVES[cave]
         today = _("done today") if cave in self.done else _("not yet today")
         return _("{cave} - level {n} - {where} - {today}", cave=_(cave), n=v["level"],
                  where=dungeon.entrance_text(cave), today=today)
 
-    def fill_caves(self, select=None):
+    def fill_caves(self, select: int | None = None) -> None:
         self.keep_ticks()
         self.caves.Set([self.cave_line(x) for x in self.order])
         for i, x in enumerate(self.order):
@@ -126,11 +128,11 @@ class DungeonDialog(wx.Dialog):
         if select is not None and self.order:
             self.caves.SetSelection(max(0, min(select, len(self.order) - 1)))
 
-    def keep_ticks(self):
+    def keep_ticks(self) -> None:
         if self.caves.GetCount() == len(self.order):
             self.ticked = {x for i, x in enumerate(self.order) if self.caves.IsChecked(i)}
 
-    def move(self, step):
+    def move(self, step: int) -> None:
         i = self.caves.GetSelection()
         j = i + step
         if i < 0 or not 0 <= j < len(self.order):
@@ -140,7 +142,7 @@ class DungeonDialog(wx.Dialog):
         self.fill_caves(j)
 
     # ------------------------------------------------------------ the end
-    def sync_end(self):
+    def sync_end(self) -> None:
         on = END_CHOICES[max(0, self.end_how.GetSelection())] == "place"
         for c in (self.end_map, self.end_x, self.end_y):
             c.Enable(on)
@@ -148,27 +150,26 @@ class DungeonDialog(wx.Dialog):
         for b in self.end_buttons:
             b.Enable(on)
 
-    def on_end_here(self, _evt):
-        snap = self.game()
-        me = (snap or {}).get("self") or {}
-        mid = ((snap or {}).get("map") or {}).get("id")
-        if not me or mid is None:
+    def on_end_here(self, _evt: wx.Event) -> None:
+        here = standing(self.game())
+        if here is None:
             error(self, NOT_SEEN)
             return
+        mid, x, y = here
         ids = [m for m, _l in self.all_maps]
         if mid not in ids:
             error(self, _("This map can't be an end place. Choose one on the open world, or another end."))
             return
         self.end_map.SetSelection(ids.index(mid))
-        self.end_x.SetValue(int(me["x"]))
-        self.end_y.SetValue(int(me["y"]))
+        self.end_x.SetValue(int(x))
+        self.end_y.SetValue(int(y))
         info(self, _("The end place is now where you stand: {map} ({x},{y}).", map=atlas.label(mid),
-                     x=int(me["x"]), y=int(me["y"])))
+                     x=int(x), y=int(y)))
 
-    def on_end_square(self, _evt):
+    def on_end_square(self, _evt: wx.Event) -> None:
         names = sorted(travel.SQUARES)
-        with wx.SingleChoiceDialog(self, _("Choose a city square:"), _("City squares"),
-                                   [n[:1].upper() + n[1:] for n in names]) as d:
+        with modal(wx.SingleChoiceDialog(self, _("Choose a city square:"), _("City squares"),
+                                   [n[:1].upper() + n[1:] for n in names])) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             mid, x, y = travel.SQUARES[names[d.GetSelection()]]
@@ -179,14 +180,14 @@ class DungeonDialog(wx.Dialog):
         self.end_y.SetValue(y)
 
     # ------------------------------------------------------------ saving
-    def finish(self, code):
+    def finish(self, code: int) -> None:
         self.keep_ticks()
         caves = [x for x in self.order if x in self.ticked]
         if code != wx.ID_OK and not caves:
             error(self, _("Tick a cave to go to."))
             self.caves.SetFocus()
             return
-        supplies = {}
+        supplies: dict[str, dict[str, Any]] = {}
         for kind, (choice, count, names) in self.rows.items():
             i = choice.GetSelection()
             supplies[kind] = {"item": names[i - 1] if i > 0 else "", "min": count.GetValue()}

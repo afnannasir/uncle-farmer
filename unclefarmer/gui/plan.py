@@ -1,6 +1,9 @@
 """The plan editor: farming plans built from forms, no scripting needed."""
 
+from __future__ import annotations
+
 import re
+from collections.abc import Sequence
 from typing import Any
 
 import wx
@@ -9,25 +12,26 @@ from .. import atlas, jsonio, travel
 from ..engine import plan as plans
 from ..engine.script import check as check_script
 from ..i18n import _
-from .common import Form, ask, buttons, enable_label, error, group, info, labeled, ok_cancel, page, pick, \
-    save_file, show_text, tabs
+from .common import (Dialog, Form, Reader, ask, buttons, enable_label, error, group, info, labeled, modal,
+                     ok_cancel, page, pick, save_file, show_text, standing, tabs)
 
 PATROLS = ("random", "full", "quick", "short")
 NOT_SEEN = _("The game isn't readable. Is it running, with a character logged in?")
 
 
-def patrol_names():
+def patrol_names() -> list[str]:
     return [_("Wander at random"), _("Full patrol loop"), _("Quick patrol loop"),
             _("Short patrol loop (fights what comes near it)")]
 
 
-class StepDialog(wx.Dialog):
+class StepDialog(Dialog):
     """One farming spot: which map, how to move, what to fight, and - with several spots - how long
     before moving on."""
 
-    def __init__(self, parent, step, game):
+    def __init__(self, parent: wx.Window, step: dict[str, Any], game: Reader) -> None:
         super().__init__(parent, title=_("Farming spot"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.step = dict(step)
+        self.items: list[tuple[int, str, str]] = []
         self.game = game
         self.all_farming = atlas.farming_maps()
         root = wx.BoxSizer(wx.VERTICAL)
@@ -51,7 +55,7 @@ class StepDialog(wx.Dialog):
                                                _("Kills:"), step.get("kills") or 100, 1, 1000000)
         f = group(panel, box, _("Where"))
         self.patrol = f.choice(_("&Movement:"), patrol_names(), pick(PATROLS, step.get("patrol", "random")))
-        area = step.get("area") or [0, 0, 0, 0]
+        area: list[int] = step.get("area") or [0, 0, 0, 0]
         self.whole = f.check(_("Use the map's whole monster &area"), not step.get("area"))
         self.x1 = f.number(_("West edge (x):"), area[0], 0, 2000)
         self.y1 = f.number(_("North edge (y):"), area[1], 0, 2000)
@@ -82,13 +86,13 @@ class StepDialog(wx.Dialog):
         self.enable_area()
         self.maps.SetFocus()
 
-    def shown(self):
+    def shown(self) -> list[tuple[int, str, str]]:
         items = self.all_farming if not self.show_all.GetValue() else \
             [(mid, lab, "") for mid, lab in atlas.all_maps()]
         q = self.search.GetValue().strip().lower()
         return [t for t in items if not q or q in t[1].lower()]
 
-    def fill(self, select=None):
+    def fill(self, select: int | None = None) -> None:
         current = select if select is not None else self.selected()
         self.items = self.shown()
         self.maps.Set(["%s%s" % (lab, (", " + extra) if extra else "") for _m, lab, extra in self.items])
@@ -99,11 +103,11 @@ class StepDialog(wx.Dialog):
             self.maps.SetSelection(0)
         self.describe()
 
-    def selected(self):
-        i = self.maps.GetSelection() if hasattr(self, "items") else -1
+    def selected(self) -> int | None:
+        i = self.maps.GetSelection()
         return self.items[i][0] if 0 <= i < len(self.items) else None
 
-    def describe(self):
+    def describe(self) -> None:
         mid = self.selected()
         if mid is None:
             self.about.SetValue("")
@@ -117,20 +121,21 @@ class StepDialog(wx.Dialog):
                            y1=z["rect"][1], x2=z["rect"][2], y2=z["rect"][3]))
         if m["spawn"].get("levels"):
             lines.append(_("Monster levels: {lv}", lv=", ".join(str(v) for v in m["spawn"]["levels"])))
-        loops = [{"full": _("full"), "quick": _("quick"), "short": _("short")}[v] for v in ("full", "quick", "short")
+        loops: list[str] = [{"full": _("full"), "quick": _("quick"), "short": _("short")}[v] for v in ("full", "quick", "short")
                  if atlas.patrol_loop(mid, v)]
         lines.append(_("Patrol loops: {loops}", loops=", ".join(loops) or _("none")))
         self.about.SetValue("\n".join(lines))
 
-    def enable_area(self):
+    def enable_area(self) -> None:
         on = not self.whole.GetValue()
         for c in (self.x1, self.y1, self.x2, self.y2):
             c.Enable(on)
             enable_label(c, on)
 
-    def on_here(self, _evt):
-        snap = self.game()
-        mid = ((snap or {}).get("map") or {}).get("id")
+    def on_here(self, _evt: wx.Event) -> None:
+        snap = self.game() or {}
+        where: dict[str, Any] = snap.get("map") or {}
+        mid: int | None = where.get("id")
         if mid is None:
             error(self, NOT_SEEN)
             return
@@ -140,9 +145,9 @@ class StepDialog(wx.Dialog):
         self.fill(select=mid)
         self.maps.SetFocus()
 
-    def on_around(self, _evt):
+    def on_around(self, _evt: wx.Event) -> None:
         snap = self.game()
-        me = (snap or {}).get("self") or {}
+        me: dict[str, Any] = (snap or {}).get("self") or {}
         if not me:
             error(self, NOT_SEEN)
             return
@@ -155,23 +160,24 @@ class StepDialog(wx.Dialog):
         self.y2.SetValue(y + 40)
         info(self, _("The area is now 40 tiles around you."))
 
-    def on_mobs(self, _evt):
+    def on_mobs(self, _evt: wx.Event) -> None:
         snap = self.game()
         if not snap:
             error(self, NOT_SEEN)
             return
-        names = sorted({e["name"] for e in snap.get("entities") or []
+        entities: list[dict[str, Any]] = snap.get("entities") or []
+        names: list[str] = sorted({e["name"] for e in entities
                         if e.get("kind") == "monster" and e.get("name") and 1 < e.get("maxhp", 0) < 20000000})
         if not names:
             info(self, _("No monsters near you right now."))
             return
-        with wx.MultiChoiceDialog(self, _("Tick the monsters to fight:"), _("Monsters near you"), names) as d:
+        with modal(wx.MultiChoiceDialog(self, _("Tick the monsters to fight:"), _("Monsters near you"), names)) as d:
             if d.ShowModal() == wx.ID_OK:
                 old = names_list(self.only.GetValue())
                 picked = [names[i] for i in d.GetSelections()]
                 self.only.SetValue(", ".join(old + [p for p in picked if p not in old]))
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         mid = self.selected()
         if mid is None:
             error(self, _("Choose a map."))
@@ -180,7 +186,7 @@ class StepDialog(wx.Dialog):
         if patrol != "random" and not atlas.patrol_loop(mid, patrol):
             error(self, _("This map has no patrol loop. Choose Wander at random."))
             return
-        area = None
+        area: list[int] | None = None
         if not self.whole.GetValue():
             area = [self.x1.GetValue(), self.y1.GetValue(), self.x2.GetValue(), self.y2.GetValue()]
             if area[0] >= area[2] or area[1] >= area[3]:
@@ -195,27 +201,27 @@ class StepDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
 
-def _literal(name):
+def _literal(name: str) -> str:
     """A monster name as a pattern that matches only itself (escapes just the special characters)."""
     return "".join("\\" + c if c in ".^$*+?{}[]\\|()" else c for c in name)
 
 
-def names_list(text):
+def names_list(text: str) -> list[str]:
     return [n.strip() for n in text.replace("|", ",").split(",") if n.strip()]
 
 
-def names_text(pattern):
+def names_text(pattern: str | None) -> str:
     """A saved name pattern ("Wolf|Fox \\(Elite\\)") as the comma list the player edits."""
     parts = re.split(r"(?<!\\)\|", pattern or "")
     return ", ".join(re.sub(r"\\(.)", r"\1", p).strip() for p in parts if p.strip())
 
 
-def names_pattern(text):
+def names_pattern(text: str) -> str:
     """The comma list back as a pattern that matches each name (or part of one) literally."""
     return "|".join(_literal(n) for n in names_list(text))
 
 
-def step_text(s, several=True):
+def step_text(s: dict[str, Any], several: bool = True) -> str:
     bits = [atlas.label(s["map"])]
     if several:
         if s.get("minutes"):
@@ -233,26 +239,27 @@ def step_text(s, several=True):
     return ", ".join(bits)
 
 
-def end_text(end):
-    how = (end or {}).get("how", "start")
+def end_text(end: dict[str, Any] | None) -> str:
+    end = end or {}
+    how = end.get("how", "start")
     if how == "place" and end.get("map"):
-        cell = end.get("cell")
-        return _("Ends at {map}{at}.", map=atlas.label(end["map"]), at=(" (%d,%d)" % tuple(cell)) if cell else "")
+        cell: list[int] | None = end.get("cell")
+        return _("Ends at {map}{at}.", map=atlas.label(end["map"]), at=(" (%d,%d)" % (cell[0], cell[1])) if cell else "")
     return {"start": _("Ends back where the run started."),
             "hearthstone": _("Ends at home, with the hearthstone."),
             "safe": _("Ends on the nearest map without monsters."),
             "here": _("Ends where it is.")}.get(how, "")
 
 
-def plan_text(p):
+def plan_text(p: dict[str, Any]) -> str:
     """A plan in a few lines for the Plans tab's summary."""
-    spots = p.get("spots", [])
+    spots: list[dict[str, Any]] = p.get("spots", [])
     several = len(spots) > 1
     lines = ["%d. %s" % (i + 1, step_text(s, several)) for i, s in enumerate(spots)] or [_("No farming spots yet.")]
     if several:
         lines.append(_("Goes round the spots in turn.") if p.get("rotation", "round") == "round"
                      else _("Goes through the spots once."))
-    stops = []
+    stops: list[str] = []
     if p.get("stop_after_minutes"):
         stops.append(_("after {n} minutes", n=p["stop_after_minutes"]))
     if p.get("stop_at_clock"):
@@ -273,15 +280,16 @@ ROTATIONS = ("round", "once")
 END_CHOICES = ("start", "place", "hearthstone", "safe", "here")
 
 
-class PlanDialog(wx.Dialog):
+class PlanDialog(Dialog):
     """A plan in three questions: where to farm, when to stop, where to end."""
 
-    def __init__(self, parent, plan, game):
+    def __init__(self, parent: wx.Window, plan: dict[str, Any], game: Reader) -> None:
         super().__init__(parent, title=_("Farming plan"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        self.plan = dict(plan)
-        self.plan["spots"] = [dict(s) for s in plan.get("spots", [])]
+        self.plan: dict[str, Any] = dict(plan)
+        spots: list[dict[str, Any]] = plan.get("spots", [])
+        self.plan["spots"] = [dict(s) for s in spots]
         self.plan["end"] = dict(plan.get("end") or {"how": "start"})
-        self.original_name = plan.get("name", "")
+        self.original_name: str = plan.get("name", "")
         self.game = game
         p = self.plan
         root = wx.BoxSizer(wx.VERTICAL)
@@ -321,9 +329,8 @@ class PlanDialog(wx.Dialog):
         self.keep_drop_on, self.keep_drop = f.optional(
             _("&Save some of the day's drop time (instead of the character's setting)"), bool(keep),
             _("Drop time to save (minutes):"), keep or 60, 1, 1440)
-        for check, ctrls in ((self.clock_on, (self.limit_clock,)), (self.item_on, (self.item, self.item_below))):
-            check.Bind(wx.EVT_CHECKBOX, lambda e, c=check, w=ctrls: self.sync(c, w))
-            self.sync(check, ctrls)
+        self.watch(self.clock_on, (self.limit_clock,))
+        self.watch(self.item_on, (self.item, self.item_below))
         labeled(panel, box, _("It also stops by itself:"),
                 lambda w: wx.TextCtrl(w, value=_(
                     "when the day's drop time is used up; when the bag is full of things you keep; after "
@@ -334,7 +341,7 @@ class PlanDialog(wx.Dialog):
         # 3. where to end
         panel, box = page(nb, _("Where to end"))
         f = group(panel, box, _("Every end goes here - time up, drop time, a full bag, the last death"))
-        end = p["end"]
+        end: dict[str, Any] = p["end"]
         self.end_how = f.choice(_("&End:"), [_("Back where the run started"), _("At a place I choose"),
                                              _("Home, with the hearthstone"), _("On the nearest map without monsters"),
                                              _("Where it is")],
@@ -343,7 +350,7 @@ class PlanDialog(wx.Dialog):
         ids = [m for m, _l in self.all_maps]
         self.end_map = f.choice(_("&Map:"), [lab for _m, lab in self.all_maps],
                                 ids.index(end["map"]) if end.get("map") in ids else 0)
-        cell = end.get("cell") or [0, 0]
+        cell: list[int] = end.get("cell") or [0, 0]
         self.end_x = f.number(_("X:"), cell[0], 0, 2000)
         self.end_y = f.number(_("Y:"), cell[1], 0, 2000)
         self.end_buttons = buttons(f.parent, f.box, (_("Use where I &stand now"), self.on_end_here),
@@ -372,13 +379,18 @@ class PlanDialog(wx.Dialog):
         self.sync_end()
         self.name.SetFocus()
 
+    def watch(self, check: wx.CheckBox, ctrls: Sequence[wx.Window]) -> None:
+        """Fields that are on only while their check box is ticked."""
+        check.Bind(wx.EVT_CHECKBOX, lambda e: self.sync(check, ctrls))
+        self.sync(check, ctrls)
+
     @staticmethod
-    def sync(check, ctrls):
+    def sync(check: wx.CheckBox, ctrls: Sequence[wx.Window]) -> None:
         for c in ctrls:
             c.Enable(check.GetValue())
             enable_label(c, check.GetValue())
 
-    def sync_end(self):
+    def sync_end(self) -> None:
         how = END_CHOICES[max(0, self.end_how.GetSelection())]
         on = how == "place"
         for c in (self.end_map, self.end_x, self.end_y):
@@ -396,27 +408,26 @@ class PlanDialog(wx.Dialog):
         }[how])
         self.end_note.Wrap(520)
 
-    def on_end_here(self, _evt):
-        snap = self.game()
-        me = (snap or {}).get("self") or {}
-        mid = ((snap or {}).get("map") or {}).get("id")
-        if not me or mid is None:
+    def on_end_here(self, _evt: wx.Event) -> None:
+        here = standing(self.game())
+        if here is None:
             error(self, NOT_SEEN)
             return
+        mid, x, y = here
         ids = [m for m, _l in self.all_maps]
         if mid not in ids:
             error(self, _("This map can't be an end place. Choose one on the open world, or another end."))
             return
         self.end_map.SetSelection(ids.index(mid))
-        self.end_x.SetValue(int(me["x"]))
-        self.end_y.SetValue(int(me["y"]))
+        self.end_x.SetValue(int(x))
+        self.end_y.SetValue(int(y))
         info(self, _("The end place is now where you stand: {map} ({x},{y}).", map=atlas.label(mid),
-                     x=int(me["x"]), y=int(me["y"])))
+                     x=int(x), y=int(y)))
 
-    def on_end_square(self, _evt):
+    def on_end_square(self, _evt: wx.Event) -> None:
         names = sorted(travel.SQUARES)
-        with wx.SingleChoiceDialog(self, _("Choose a city square:"), _("City squares"),
-                                   [n[:1].upper() + n[1:] for n in names]) as d:
+        with modal(wx.SingleChoiceDialog(self, _("Choose a city square:"), _("City squares"),
+                                   [n[:1].upper() + n[1:] for n in names])) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             mid, x, y = travel.SQUARES[names[d.GetSelection()]]
@@ -426,18 +437,19 @@ class PlanDialog(wx.Dialog):
         self.end_x.SetValue(x)
         self.end_y.SetValue(y)
 
-    def on_steps_key(self, evt):
+    def on_steps_key(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_DELETE:
-            self.on_remove(None)
+            self.on_remove(evt)
         else:
             evt.Skip()
 
-    def bag_items(self):
-        snap = self.game()
-        return sorted({r["name"] for r in (snap or {}).get("bag", []) if r.get("name")})
+    def bag_items(self) -> list[str]:
+        snap = self.game() or {}
+        rows: list[dict[str, Any]] = snap.get("bag", [])
+        return sorted({r["name"] for r in rows if r.get("name")})
 
-    def refresh(self, select=None):
-        spots = self.plan["spots"]
+    def refresh(self, select: int | None = None) -> None:
+        spots: list[dict[str, Any]] = self.plan["spots"]
         several = len(spots) > 1
         self.steps.Set(["%d. %s" % (i + 1, step_text(s, several)) for i, s in enumerate(spots)])
         if spots:
@@ -447,9 +459,10 @@ class PlanDialog(wx.Dialog):
         self.one_note.SetLabel(_("With one spot, the bot farms there until the plan stops (When to stop).")
                                if len(spots) == 1 else "")
 
-    def on_add(self, _evt):
-        snap = self.game()
-        mid = ((snap or {}).get("map") or {}).get("id")
+    def on_add(self, _evt: wx.Event) -> None:
+        snap = self.game() or {}
+        where: dict[str, Any] = snap.get("map") or {}
+        mid: int | None = where.get("id")
         default = plans.new_step(mid if mid is not None and atlas.zones(mid) else None)
         with StepDialog(self, default, self.game) as d:
             if d.ShowModal() == wx.ID_OK:
@@ -457,7 +470,7 @@ class PlanDialog(wx.Dialog):
                 self.refresh(len(self.plan["spots"]) - 1)
         self.steps.SetFocus()
 
-    def on_edit(self, _evt):
+    def on_edit(self, _evt: wx.Event) -> None:
         i = self.steps.GetSelection()
         if i < 0:
             return
@@ -467,24 +480,24 @@ class PlanDialog(wx.Dialog):
                 self.refresh(i)
         self.steps.SetFocus()
 
-    def on_remove(self, _evt):
+    def on_remove(self, _evt: wx.Event) -> None:
         i = self.steps.GetSelection()
         if i >= 0:
             del self.plan["spots"][i]
             self.refresh(min(i, len(self.plan["spots"]) - 1) if self.plan["spots"] else None)
             self.steps.SetFocus()
 
-    def move(self, d):
+    def move(self, d: int) -> None:
         i = self.steps.GetSelection()
         j = i + d
         if i < 0 or not 0 <= j < len(self.plan["spots"]):
             return
-        s = self.plan["spots"]
+        s: list[dict[str, Any]] = self.plan["spots"]
         s[i], s[j] = s[j], s[i]
         self.refresh(j)
         self.steps.SetFocus()
 
-    def collect(self):
+    def collect(self) -> dict[str, Any] | None:
         clock = self.limit_clock.GetValue().strip() if self.clock_on.GetValue() else ""
         if self.clock_on.GetValue() and not re.match(r"^([01]\d|2[0-3]):[0-5]\d$", clock):
             error(self, _("Enter the time as HH:MM, for example 22:30."))
@@ -509,23 +522,23 @@ class PlanDialog(wx.Dialog):
                  end=end)
         return p
 
-    def on_view(self, _evt):
+    def on_view(self, _evt: wx.Event) -> None:
         p = self.collect()
         if p:
             show_text(self, _("The plan as a script"), plans.to_script(p))
 
-    def on_export(self, _evt):
+    def on_export(self, _evt: wx.Event) -> None:
         p = self.collect()
         if not p:
             return
-        with wx.TextEntryDialog(self, _("Script name:"), _("Save as script"), p["name"]) as d:
+        with modal(wx.TextEntryDialog(self, _("Script name:"), _("Save as script"), p["name"])) as d:
             if d.ShowModal() != wx.ID_OK or not d.GetValue().strip():
                 return
             path = plans.script_path(d.GetValue().strip())
         if save_file(self, jsonio.save_text, path, plans.to_script(p)):
             info(self, _("Saved. It's in the Plans tab as a script."))
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         p = self.collect()
         if not p:
             return

@@ -47,8 +47,10 @@ MOVEMENT MODEL
 4-way steps (the character moves N/E/S/W). A cell is walkable if the
 winning terrain is not solid. Unpainted cells are treated as void.
 """
-from collections.abc import Mapping
-from typing import Any
+
+from __future__ import annotations
+from collections.abc import Callable, Collection, Generator, Iterable, Iterator, Mapping, Sequence
+from typing import Any, SupportsIndex, TypeVar
 import contextlib
 import copy
 import ctypes
@@ -62,6 +64,7 @@ import re
 import threading
 
 import numpy as np
+import numpy.typing as npt
 
 from . import lru, native as _native
 # The map data lives in the app's data folder.
@@ -86,8 +89,13 @@ _PEN_C = (ctypes.c_double * 16)(*[PEN.get(i, 0.0) for i in range(16)])   # for t
 _RETRY = -3              # routing.c: a cost its buckets can't hold (search again with the heap)
 _NO_ROUTE = object()      # a route cache miss (None is a cached "no way")
 
+Cell = tuple[int, int]            # a whole cell, x east and y south
+Point = tuple[float, float]       # a cell or a point between cells (a fractional target)
+PointT = TypeVar("PointT", bound=Point)
+Row = dict[str, str]              # one row of the geometry file
 
-def blocks(t):
+
+def blocks(t: int) -> bool:
     return 200 <= t <= 226 or t == 299
 
 
@@ -95,7 +103,7 @@ def blocks(t):
 GEOMETRY_CACHE = 4      # maps whose parsed rows are kept; the rest are re-read from the file
 
 
-class _Geometry(Mapping):
+class _Geometry(Mapping[int, tuple[Row, ...]]):
     """The geometry file as {map id: rows}, streaming it instead of holding every row.
 
     Keeping every parsed row of every map alive costs about 87 MiB (measured 2026-10-20), while
@@ -105,10 +113,15 @@ class _Geometry(Mapping):
 
     _names: dict[int, str] | None = None
     _index: dict[int, tuple[int, int]] | None = None      # map id -> (byte offset, byte length)
-    _header: list[str] | None = None
+    header: list[str] | None = None          # the file's column names, once scan() has read them
 
     @classmethod
-    def _scan(cls) -> dict[int, tuple[int, int]]:
+    def rescan(cls) -> None:
+        cls._index = None
+        cls.scan()
+
+    @classmethod
+    def scan(cls) -> dict[int, tuple[int, int]]:
         """One pass over the file in bytes: where each map's rows start and how long they run, so
         rows_for() can seek straight to them. map_id is read off the front of each line without the
         csv module (it is a bare number); only a map's first row is parsed, for its name. 4x faster
@@ -133,62 +146,67 @@ class _Geometry(Mapping):
                         index[mid] = [offset, len(raw), row[name_col].strip()]
                         last = mid
                     offset += len(raw)
-            cls._header = header
+            cls.header = header
             cls._names = {mid: v[2] for mid, v in index.items()}
             cls._index = {mid: (v[0], v[1]) for mid, v in index.items()}
-        assert cls._index is not None       # _scan() just filled it
+        assert cls._index is not None       # scan() just filled it
         return cls._index
 
     @classmethod
     def names(cls) -> dict[int, str]:
         """id -> map name, from the one streaming pass (no rows kept)."""
-        cls._scan()
-        assert cls._names is not None       # _scan() just filled it
+        cls.scan()
+        assert cls._names is not None       # scan() just filled it
         return cls._names
 
-    def __getitem__(self, mid):
+    def __getitem__(self, mid: int) -> tuple[Row, ...]:
         rows = rows_for(int(mid))
         if not rows:
             raise KeyError(mid)
         return rows
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[int]:
         return iter(self.names())
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.names())
 
-    def __contains__(self, mid):
-        return int(mid) in self.names()
+    def __contains__(self, mid: object) -> bool:
+        return isinstance(mid, (int, str)) and int(mid) in self.names()
 
 
 _GEOMETRY = _Geometry()
 _names: dict[int, str] | None = None
 
 
+def scan_geometry() -> None:
+    """Index the geometry file afresh: what the first map load pays (benchmark.py times it)."""
+    _Geometry.rescan()
+
+
 @functools.lru_cache(maxsize=GEOMETRY_CACHE)
-def rows_for(mid):
+def rows_for(mid: int) -> tuple[Row, ...]:
     """The geometry rows of one map, read from its byte range and parsed.
 
     Rows come back as a tuple, so a caller cannot edit the cache."""
-    index = _Geometry._scan()
+    index = _Geometry.scan()
     start, length = index.get(int(mid), (0, 0))
     if not length:
         return ()
     with GEOMETRY.open("rb") as fh:
         fh.seek(start)
         chunk = fh.read(length).decode("utf-8")
-    header = _Geometry._header
-    assert header is not None          # _scan() read it, above
+    header = _Geometry.header
+    assert header is not None          # scan() read it, above
     return tuple(dict(zip(header, row)) for row in csv.reader(chunk.splitlines()))
 
 
-def all_rows() -> Any:
+def all_rows() -> Mapping[int, Sequence[Row]]:
     """{map id: rows}; use rows_for(mid) for a single map (kept, bounded)."""
     return _GEOMETRY
 
 
-def map_names():
+def map_names() -> dict[int, str]:
     """id -> name, for every map that has geometry."""
     global _names
     if _names is None:
@@ -203,11 +221,11 @@ def map_names():
 BAD = re.compile(r'[<>:"/\\|?*]')
 
 
-def safe(name):
+def safe(name: str) -> str:
     return BAD.sub("_", name).strip() or "unnamed"
 
 
-def resolve(query):
+def resolve(query: object) -> list[int]:
     """Map id or (case-insensitive) name -> list of matching ids."""
     q = str(query).strip()
     if q.isdigit():
@@ -290,7 +308,7 @@ _CREATURE = ("怪", "幽灵", "玉兔", "年兽", "巨蟒", "飞蛾", "狗", "�
              "白蚁", "幻影", "元素", "教徒", "丛林", "矿工")
 
 
-def marker_kind(label):
+def marker_kind(label: str) -> str:
     """monster / elite / boss / chest / npc / player / trap / other."""
     s = label.lower()
     if not s:
@@ -318,14 +336,14 @@ def marker_kind(label):
 
 
 # ---------------------------------------------------------------- model
-def _astar_guess(W, turn, targets):
+def _astar_guess(W: int, turn: float, targets: Sequence[Point]) -> Callable[[int, int], float]:
     """A*'s guess of the cost still to pay from cell c heading d: the steps to the targets'
     bounding box (each costs at least 1) plus a TURN for each turn still needed. Never more than
     the real cost, so the first target reached is the cheapest."""
     bx1, bx2 = min(t[0] for t in targets), max(t[0] for t in targets)
     by1, by2 = min(t[1] for t in targets), max(t[1] for t in targets)
 
-    def guess(c, d):
+    def guess(c: int, d: int) -> float:
         x, y = c % W, c // W
         togo, hx, hy = 0, -1, -1          # headings 0 east, 1 west, 2 south, 3 north
         if x < bx1:
@@ -351,7 +369,7 @@ class _Workspace:
 
     STAMP_MAX = 2 ** 31 - 2          # 2 * stamp + 1 must fit in 32 bits
 
-    def __init__(self, n):
+    def __init__(self, n: int) -> None:
         self.n = n
         self.dist = np.empty(4 * n, dtype=np.float64)
         self.prev = np.empty(4 * n, dtype=np.int32)
@@ -365,7 +383,7 @@ class _Workspace:
         self.cprev = np.empty(n, dtype=np.int32)
         self.cmark = np.zeros(n, dtype=np.uint32)
 
-    def next_stamp(self):
+    def next_stamp(self) -> int:
         self.stamp += 1
         if self.stamp > self.STAMP_MAX:          # every stamp used: start over on clean marks
             self.mark.fill(0)
@@ -375,7 +393,7 @@ class _Workspace:
         return self.stamp
 
 
-def _flat_ids(cells, W):
+def _flat_ids(cells: Iterable[Point], W: int) -> npt.NDArray[np.int32] | None:
     """The flat indices of cells as int32 for the C searches, or None when a cell is not a whole
     cell (the Python searches then run: they never match a fractional index)."""
     ids = [c[1] * W + c[0] for c in cells]
@@ -392,7 +410,39 @@ class MapModel(object):
     are a void border so neighbour lookups need no bounds checks.
     """
 
-    def __init__(self, mid, layer_aware=False):
+    # filled in by __init__ and the steps it calls
+    markers: list[dict[str, Any]]           # marker rows: type, x1..y2, label, z
+    transitions: list[dict[str, Any]]       # map transition rows: code, x1..y2, label, z
+    exits: list[dict[str, Any]]             # real exits, with dest, marker, side, stand...
+    towns: list[dict[str, Any]]             # town and village zones
+    npc_cells: dict[Cell, str]
+    labels: list[str]
+    comp: list[int]                         # each cell's 4-connected region, by flat index
+    comp_sizes: list[int]
+    t: npt.NDArray[np.int32]
+    lab: npt.NDArray[np.int32]
+    zmask: npt.NDArray[np.int32]
+    solid: npt.NDArray[np.bool_]
+    walk: npt.NDArray[np.bool_]
+    directional: npt.NDArray[np.bool_]
+    oneway: npt.NDArray[np.bool_]
+    gate: npt.NDArray[np.int32]
+    clear: npt.NDArray[np.int8]
+    portal: npt.NDArray[np.bool_]
+    town: npt.NDArray[np.bool_]
+    _two_way: list[frozenset[int]]
+    _walk_list: bytes
+    _clear_list: bytes
+    _gate_list: bytes
+    _portal_list: bytes
+    _oneway_list: bytes
+    _zero_list: bytes
+    _direc_list: bytes
+    _step_offs: tuple[tuple[int, int], ...]
+    _pen_arr: list[float]
+    _gates_off: bool
+
+    def __init__(self, mid: int, layer_aware: bool = False) -> None:
         self._route_cache: dict[Any, Any] = {}
         self._route_loose: dict[Any, Any] = {}
         rows = all_rows().get(int(mid))
@@ -412,7 +462,8 @@ class MapModel(object):
         self.labels = [""]
         lab_ix = {"": 0}
 
-        self.markers, self.transitions = [], []
+        self.markers = []
+        self.transitions = []
         for r in rows:
             self._paint(r, lab_ix, floor_z)
 
@@ -457,7 +508,7 @@ class MapModel(object):
                 self.portal[ya:yb + 1, xa:xb + 1] = True
         self._cache_flat()
 
-    def _paint(self, r, lab_ix, floor_z):
+    def _paint(self, r: Row, lab_ix: dict[str, int], floor_z: npt.NDArray[np.float64]) -> None:
         """One row of the map table: a marker, a map transition, or an area painted onto the grid
         (a wall over a floor of another height is left out when layer_aware)."""
         t = int(r["type_id"])
@@ -498,7 +549,7 @@ class MapModel(object):
             if t in DOORS or t in DIRECTIONAL:
                 self.zmask[sl] = int(z) if z > 0 else 0
 
-    def _cache_flat(self):
+    def _cache_flat(self) -> None:
         """Cache flat bytes for the routing loops (called once at init).
 
         bytes, not lists: indexing gives the same int per cell, at an eighth of the memory
@@ -514,7 +565,7 @@ class MapModel(object):
         self._step_offs = ((1, 4), (-1, 1), (W, 8), (-W, 2))
         self._pen_arr = [PEN.get(i, 0.0) for i in range(16)]
 
-    def _c(self):
+    def _c(self) -> ctypes.CDLL | None:
         """The C searches when they can run on this model, else None (no DLL, or a stand-in model
         a test made without the flat bytes)."""
         if NATIVE is None or "_walk_list" not in self.__dict__ or "_direc_list" not in self.__dict__:
@@ -522,10 +573,10 @@ class MapModel(object):
         return NATIVE
 
     # --------------------------------------------------------- basics
-    def ok(self, x, y):
+    def ok(self, x: int, y: int) -> bool:
         return 1 <= x <= self.w and 1 <= y <= self.h and bool(self.walk[y, x])
 
-    def without(self, cells):
+    def without(self, cells: Iterable[Cell]) -> "MapModel":
         """A copy of the map that treats these cells as walls - NPCs standing in the way, which the
         map itself doesn't know about - for planning a walk around them."""
         mm = copy.copy(self)
@@ -538,7 +589,7 @@ class MapModel(object):
         mm._walk_list = mm.walk.ravel().tobytes()
         return mm
 
-    def _oneway(self):
+    def _oneway(self) -> None:
         """Ledge/climb cells with no partner for the way back.
 
         The direction mask pairs up: horizontal strips carry 2 or 8,
@@ -563,7 +614,7 @@ class MapModel(object):
         has |= d & ((zm & opp) != 0)
         self.oneway = d & ~has
 
-    def _gates(self):
+    def _gates(self) -> None:
         """One-way gates: the direction you can NOT step off each door cell (0 = none).
 
         Measured live 2026-10-05 on turkey cave's "Stone Gate" strips (tile
@@ -588,7 +639,7 @@ class MapModel(object):
     # stepping by these flat-index offsets moves east, west, south, north
     STEP_BITS = (4, 1, 8, 2)
 
-    def gate_blocks(self, a, b):
+    def gate_blocks(self, a: Cell, b: Cell) -> bool:
         """True when a one-way gate on cell a forbids the single step a -> b."""
         g = self.gate[a[1], a[0]]
         if not g:
@@ -597,7 +648,7 @@ class MapModel(object):
         bit = 4 if dx > 0 else 1 if dx < 0 else 8 if dy > 0 else 2
         return bool(g & bit)
 
-    def _clear(self):
+    def _clear(self) -> None:
         """Chebyshev distance to the nearest non-walkable cell, capped at 15."""
         cur = self.walk.copy()
         clear = np.zeros(cur.shape, dtype=np.int8)
@@ -619,7 +670,7 @@ class MapModel(object):
             cur = e
         self.clear = clear
 
-    def _components(self):
+    def _components(self) -> None:
         """comp: each cell's 4-connected region (1, 2, ... in order of their first cell, 0 = not
         walkable), as a list by flat index; comp_sizes: each region's size, from index 1."""
         if NATIVE is not None:
@@ -655,10 +706,10 @@ class MapModel(object):
         self.comp = comp
         self.comp_sizes = sizes
 
-    def comp_of(self, x, y):
+    def comp_of(self, x: int, y: int) -> int:
         return self.comp[y * self.W + x]
 
-    def two_way(self, x, y):
+    def two_way(self, x: int, y: int) -> frozenset[int]:
         """Flat indices of every cell reachable from (x, y) AND able to walk back to it, obeying
         one-way gates: ground the bot can wander without being trapped behind a gate. Cached per
         such area. On a map without gates this is just the cell's region."""
@@ -669,7 +720,7 @@ class MapModel(object):
                 return area
         lib = self._c()
         if lib is not None and 0 <= c0 < len(self._walk_list):
-            area = frozenset()
+            area: frozenset[int] = frozenset()
             if self._walk_list[c0]:
                 fwd, back = self._bfs(lib, [c0], gates=True), self._bfs(lib, [c0], gates=True, reverse=True)
                 area = frozenset(np.flatnonzero((fwd >= 0) & (back >= 0)).tolist())
@@ -680,7 +731,7 @@ class MapModel(object):
         # (offset to the neighbour n, bit of the step c -> n, bit of the step n -> c)
         steps = ((1, 4, 1), (-1, 1, 4), (W, 8, 2), (-W, 2, 8))
 
-        def spread(forward):
+        def spread(forward: bool) -> set[int]:
             seen = {c0}
             todo = [c0]
             while todo:
@@ -703,9 +754,10 @@ class MapModel(object):
         self._two_way = getattr(self, "_two_way", []) + [area]
         return area
 
-    def nearest_walkable(self, x, y, radius=40, comp=None):
+    def nearest_walkable(self, x: int, y: int, radius: int = 40, comp: int | None = None) -> Cell | None:
         for r in range(radius + 1):
-            best, bd = None, None
+            best: Cell | None = None
+            bd: int | None = None
             for dx in range(-r, r + 1):
                 for dy in ((-r, r) if r else (0,)):
                     for px, py in ((x + dx, y + dy), (x + dy, y + dx)):
@@ -720,13 +772,14 @@ class MapModel(object):
                 return best
         return None
 
-    def nearest_floor(self, x, y, radius=3, comp=None):
+    def nearest_floor(self, x: int, y: int, radius: int = 3, comp: int | None = None) -> Cell | None:
         """The nearest walkable cell that is not a ledge (directional) cell, or None. A ledge is
         crossed, never walked along or stood on: in corpse cave the survey's stops on the ledge
         strips round the raised stone tables held it for half an hour (2026-10-11) - on one,
         only the step across it moves the character."""
         for r in range(radius + 1):
-            best, bd = None, None
+            best: Cell | None = None
+            bd: int | None = None
             for dx in range(-r, r + 1):
                 for dy in ((-r, r) if r else (0,)):
                     for px, py in ((x + dx, y + dy), (x + dy, y + dx)):
@@ -742,8 +795,8 @@ class MapModel(object):
         return None
 
     # ------------------------------------------------------- features
-    def side_of(self, x1, y1, x2, y2):
-        s = []
+    def side_of(self, x1: int, y1: int, x2: int, y2: int) -> str:
+        s: list[str] = []
         if y1 <= 3:
             s.append("north")
         if y2 >= self.h - 2:
@@ -754,11 +807,14 @@ class MapModel(object):
             s.append("west")
         return (" ".join(s) + " edge") if s else "inside the map"
 
-    def _exits(self):
+    def _exits(self) -> None:
         """Real exits (z=-1 and the gang exit) and town zones (z=-3, own map)."""
-        self.exits, self.towns = [], []
+        self.exits = []
+        self.towns = []
         for tr in self.transitions:
             code = tr["code"]
+            dest: int | None
+            mark: int | None
             if code == EXIT_GANG:
                 dest, mark = None, None
             else:
@@ -785,7 +841,7 @@ class MapModel(object):
             else:
                 self.exits.append(e)
 
-    def _nearest_in_rect(self, x1, y1, x2, y2, cx, cy):
+    def _nearest_in_rect(self, x1: int, y1: int, x2: int, y2: int, cx: int, cy: int) -> Cell | None:
         """The walkable cell of the rectangle nearest (cx, cy) by steps, the first in x-then-y order
         on a tie (as min() over [(x, y) for x ... for y ...] picks it), or None. One numpy pass
         over the rectangle: exits are painted over whole strips, and a cell-by-cell walk of every
@@ -802,7 +858,8 @@ class MapModel(object):
         return (int(xs[i]), int(ys[i]))
 
     # -------------------------------------------------------- routing
-    def dijkstra(self, src, targets=(), avoid_directional=False, limit=None):
+    def dijkstra(self, src: Cell, targets: Collection[Point] = (), avoid_directional: bool = False,
+                 limit: float | None = None) -> tuple[dict[int, float], dict[int, int]]:
         """Wall-avoiding shortest paths from src. Stops once every target
         (set of (x,y)) is settled, or past limit steps. Returns (dist dict by
         flat index, prev). dijkstra_arr() is the same search as two arrays, without building
@@ -815,7 +872,8 @@ class MapModel(object):
         keys = idx.tolist()
         return dict(zip(keys, dist[idx].tolist())), dict(zip(keys, prev[idx].tolist()))
 
-    def dijkstra_arr(self, src, targets=(), avoid_directional=False, limit=None):
+    def dijkstra_arr(self, src: Cell, targets: Collection[Point] = (), avoid_directional: bool = False,
+                     limit: float | None = None) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.int32]]:
         """dijkstra() as flat arrays: dist (float64, inf where the search never got) and prev
         (int32: -1 at src, -2 where never got)."""
         arrs = self._dijkstra_c(src, targets, avoid_directional, limit)
@@ -830,7 +888,7 @@ class MapModel(object):
         prev[keys] = np.fromiter((p[k] for k in d), dtype=np.int32, count=len(d))
         return dist, prev
 
-    def dijkstra_targets(self, src, targets, avoid_directional=False):
+    def dijkstra_targets(self, src: Cell, targets: Sequence[Point], avoid_directional: bool = False) -> npt.NDArray[np.float64]:
         """dijkstra(src, targets)'s distance to each target, as a float64 array (inf where the
         search never got): the same search without whole-map arrays. On the C search's kept
         workspace, a search that stops after a few hundred cells costs only those."""
@@ -842,7 +900,7 @@ class MapModel(object):
         if lib is None or want is None or s != int(s) or not 0 <= s < n:
             dist = self.dijkstra_arr(src, targets, avoid_directional)[0]
             ids = [t[1] * W + t[0] for t in targets]
-            return np.array([dist[k] if 0 <= k < dist.size and k == int(k) else np.inf for k in ids],
+            return np.array([dist[int(k)] if 0 <= k < dist.size and k == int(k) else np.inf for k in ids],
                             dtype=np.float64)
         ws = self._workspace(n)
         out = np.empty(len(want), dtype=np.float64)
@@ -855,7 +913,8 @@ class MapModel(object):
             raise MemoryError("map search")
         return out
 
-    def _dijkstra_c(self, src, targets, avoid_directional, limit):
+    def _dijkstra_c(self, src: Cell, targets: Collection[Point], avoid_directional: bool,
+                    limit: float | None) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.int32]] | None:
         """The C search's (dist, prev), or None when it can't run here."""
         lib = self._c()
         if lib is None:
@@ -876,7 +935,8 @@ class MapModel(object):
             raise MemoryError("map search")
         return dist, prev
 
-    def _dijkstra_py(self, src, targets=(), avoid_directional=False, limit=None):
+    def _dijkstra_py(self, src: Cell, targets: Collection[Point] = (), avoid_directional: bool = False,
+                     limit: float | None = None) -> tuple[dict[int, float], dict[int, int]]:
         """dijkstra() in Python: the reference the C search is checked against."""
         W = self.W
         walk = self._walk_list
@@ -890,7 +950,7 @@ class MapModel(object):
         dist = {s: 0.0}
         prev = {s: -1}
         heap = [(0.0, s)]
-        done = set()
+        done: set[int] = set()
         while heap:
             d, c = heapq.heappop(heap)
             if c in done:
@@ -915,7 +975,7 @@ class MapModel(object):
                     heapq.heappush(heap, (nd, nb))
         return dist, prev
 
-    def steps_arr(self, src, limit=None):
+    def steps_arr(self, src: Cell, limit: float | None = None) -> npt.NDArray[np.int32]:
         """steps() as a flat int32 array: distance by cell index, -1 where not reached. Layered
         BFS over numpy arrays (one vector step per ring) instead of a Python deque: 6-7x faster,
         same numbers (checked cell for cell on the big maps). The C search is a plain queue BFS:
@@ -926,7 +986,8 @@ class MapModel(object):
             return self._bfs(lib, [s], gates=True, limit=limit)
         return self._steps_arr_py(src, limit)
 
-    def _bfs(self, lib, srcs, gates, limit=None, reverse=False):
+    def _bfs(self, lib: ctypes.CDLL, srcs: Sequence[int], gates: bool, limit: float | None = None,
+             reverse: bool = False) -> npt.NDArray[np.int32]:
         """The C BFS's int32 field from the flat cells srcs (-1 = not reached): one-way gates
         obeyed when gates (backwards when reverse: who can walk onto the cell), out to limit."""
         n = len(self._walk_list)
@@ -939,7 +1000,7 @@ class MapModel(object):
             raise MemoryError("map search")
         return dist
 
-    def multi_steps(self, cells, limit=None):
+    def multi_steps(self, cells: Iterable[Cell], limit: float | None = None) -> npt.NDArray[np.int32]:
         """Steps from the nearest of cells to every cell, IGNORING one-way gates, out to limit:
         int32 by flat index, -1 = not reached (shortloop's 'how close is the lap')."""
         lib = self._c()
@@ -954,7 +1015,7 @@ class MapModel(object):
         d = 0
         while frontier.size and (limit is None or d < limit):
             d += 1
-            rings = []
+            rings: list[npt.NDArray[np.intp]] = []
             for off in (1, -1, W, -W):
                 nb = frontier + off
                 nb = nb[walk_flat[nb] & (seen[nb] < 0)]
@@ -963,7 +1024,7 @@ class MapModel(object):
             frontier = np.concatenate(rings)
         return seen
 
-    def _steps_arr_py(self, src, limit=None):
+    def _steps_arr_py(self, src: Cell, limit: float | None = None) -> npt.NDArray[np.int32]:
         """steps_arr() with numpy: the reference the C search is checked against."""
         W = self.W
         walk = self.walk.ravel()
@@ -977,7 +1038,7 @@ class MapModel(object):
         bits = self.STEP_BITS
         while frontier.size and (limit is None or d < limit):
             d += 1
-            rings = []
+            rings: list[npt.NDArray[np.intp]] = []
             for off, bit in zip(offs, bits):
                 nb = frontier[(gate[frontier] & bit) == 0] + off
                 nb = nb[walk[nb] & (dist[nb] < 0)]
@@ -986,65 +1047,65 @@ class MapModel(object):
             frontier = np.concatenate(rings)
         return dist
 
-    def steps(self, src, limit=None):
+    def steps(self, src: Cell, limit: float | None = None) -> dict[int, int]:
         """Walking steps from src to every cell it can reach, obeying one-way gates: dict by flat
         index. Real steps, with none of dijkstra's extra cost for walking beside walls - in a
         corridor that cost counted a monster 15 steps away as more than 40."""
         dist = self.steps_arr(src, limit)
         return {int(k): int(dist[k]) for k in np.nonzero(dist >= 0)[0]}
 
-    def path(self, prev, dst):
+    def path(self, prev: Mapping[int, int], dst: Cell) -> list[Cell] | None:
         W = self.W
         c = dst[1] * W + dst[0]
         if c not in prev:
             return None
-        out = []
+        out: list[Cell] = []
         while c != -1:
             out.append((c % W, c // W))
             c = prev[c]
         return out[::-1]
 
     # ------------------------------------------------ the bot's own walk
-    def diag_steps(self, p, q):
+    def diag_steps(self, p: Point, q: Point) -> list[tuple[Cell, Cell]]:
         """The steps (a, b) walking from p to q with both direction keys held: a 45-degree run while
         both axes still have ground to cover, then straight on along the longer one. A diagonal step
         is counted as both ways round its corner, so no wall corner is clipped. Whole cells only
         (a fractional one is cut down to its cell): stepping one cell at a time never lands on
         x.5, and the walk once ran on until it had taken all the memory there was."""
         x, y = int(p[0]), int(p[1])
-        q = (int(q[0]), int(q[1]))
-        sx = 1 if q[0] > x else -1
-        sy = 1 if q[1] > y else -1
-        steps = []
-        while x != q[0] and y != q[1]:
+        to = (int(q[0]), int(q[1]))
+        sx = 1 if to[0] > x else -1
+        sy = 1 if to[1] > y else -1
+        steps: list[tuple[Cell, Cell]] = []
+        while x != to[0] and y != to[1]:
             a, h, v, d = (x, y), (x + sx, y), (x, y + sy), (x + sx, y + sy)
             steps += [(a, h), (h, d), (a, v), (v, d)]
             x, y = d
-        while x != q[0]:
+        while x != to[0]:
             steps.append(((x, y), (x + sx, y)))
             x += sx
-        while y != q[1]:
+        while y != to[1]:
             steps.append(((x, y), (x, y + sy)))
             y += sy
         return steps
 
-    def diag_ok(self, p, q):
+    def diag_ok(self, p: Point, q: Point) -> bool:
         """The two-key walk from p to q stays on open ground: walkable, through no one-way gate the
         wrong way, onto no ledge, and over no exit before q itself. Whole cells (see diag_steps)."""
-        p, q = (int(p[0]), int(p[1])), (int(q[0]), int(q[1]))
+        a0, b0 = (int(p[0]), int(p[1])), (int(q[0]), int(q[1]))
         lib = self._c()
         if lib is not None:
             return bool(lib.uf_diag_ok(self.W, len(self._walk_list), self.w, self.h, self._walk_list,
                                        self._gate_list, self._portal_list, self._direc_list,
-                                       p[0], p[1], q[0], q[1]))
-        for a, b in self.diag_steps(p, q):
+                                       a0[0], a0[1], b0[0], b0[1]))
+        for a, b in self.diag_steps(a0, b0):
             if not self.ok(*b) or self.directional[b[1], b[0]] or self.gate_blocks(a, b):
                 return False
-            if b != q and self.portal[b[1], b[0]]:
+            if b != b0 and self.portal[b[1], b[0]]:
                 return False
         return True
 
-    def diag_hops(self, path, reach=300, stride=4):
+    def diag_hops(self, path: Sequence[PointT], reach: int = 300, stride: int = 4) -> list[PointT]:
         """A path cut into as few two-key walks as it can be: from each point, the furthest point
         along the path (at most reach cells on, looked at stride cells apart, then one by one)
         that diag_ok walks straight to. Corridors stay as they are; open ground is crossed on
@@ -1061,7 +1122,7 @@ class MapModel(object):
                                      self._gate_list, self._portal_list, self._direc_list,
                                      pts.ctypes.data, len(path), int(reach), int(stride), out.ctypes.data)
                 return [path[j] for j in out[:k].tolist()]
-        hops = []
+        hops: list[PointT] = []
         i = 0
         while i < len(path) - 1:
             j = min(len(path) - 1, i + reach)
@@ -1073,15 +1134,17 @@ class MapModel(object):
 
     TURN = 12.0
 
-    def exit_at(self, c):
+    def exit_at(self, c: Point) -> dict[str, Any] | None:
         return next((e for e in self.exits
                      if e["x1"] <= c[0] <= e["x2"] and e["y1"] <= c[1] <= e["y2"]), None)
 
-    def exit_cells_of(self, e):
+    def exit_cells_of(self, e: dict[str, Any]) -> list[Cell]:
         return [(x, y) for x in range(max(1, e["x1"]), min(self.w, e["x2"]) + 1)
                 for y in range(max(1, e["y1"]), min(self.h, e["y2"]) + 1) if self.ok(x, y)]
 
-    def dijkstra_rect(self, src, targets=(), avoid_directional=False, any_target=False, groups=None):
+    def dijkstra_rect(self, src: Cell, targets: Collection[Point] = (), avoid_directional: bool = False,
+                      any_target: bool = False, groups: Iterable[Iterable[float]] | None = None,
+                      ) -> tuple[dict[int, float], dict[int, int], dict[int, int]]:
         """Wall-avoiding paths that also pay for every turn, so they come
         out as long straight east-west / north-south lanes down the middle
         of corridors - the shape of every hop in WhaleUnified1.0, which
@@ -1101,21 +1164,23 @@ class MapModel(object):
         # Stepping on ANY exit cell crosses it, so an exit cell can only be
         # the last step of a route, and only if it is one of the targets.
         # The one exception is the exit a route starts in: it may walk out.
-        own = set()
+        own: set[int] = set()
         e0 = self.exit_at(src)
         if e0 is not None:
             own = {y * W + x for x, y in self.exit_cells_of(e0)}
         # groups: each target may be a set of cells (a whole exit); the
         # search is done when every group has one cell reached
-        pending = [set(g) for g in groups] if groups is not None else [{t} for t in want]
-        reached = {}
-        dist, prev, heap = {}, {}, []
+        pending: list[set[float]] = [set(g) for g in groups] if groups is not None else [{t} for t in want]
+        reached: dict[int, int] = {}
+        dist: dict[int, float] = {}
+        prev: dict[int, int] = {}
+        heap: list[tuple[float, int]] = []
         for d in range(4):
             dist[s * 4 + d] = 0.0
             prev[s * 4 + d] = -1
             heap.append((0.0, s * 4 + d))
         heapq.heapify(heap)
-        done = set()
+        done: set[int] = set()
         while heap:
             cost, st = heapq.heappop(heap)
             if st in done:
@@ -1149,7 +1214,8 @@ class MapModel(object):
             reached[s] = s * 4
         return dist, prev, reached
 
-    def astar_rect(self, src, targets, avoid_directional=False):
+    def astar_rect(self, src: Cell, targets: Sequence[Point], avoid_directional: bool = False,
+                   ) -> tuple[dict[int, float], dict[int, int], dict[int, int]]:
         """dijkstra_rect's route to the nearest of targets (same states, step costs and exit rules),
         found by A*: the search is pointed at the targets by a guess of the cost still to pay that
         never overestimates - the steps to the targets' bounding box (each costs at least 1) plus a
@@ -1167,23 +1233,25 @@ class MapModel(object):
         turn = self.TURN
         s = src[1] * W + src[0]
         want = {t[1] * W + t[0] for t in targets}
-        reached = {}
+        reached: dict[int, int] = {}
         if not want:
             return {}, {}, reached
-        own = set()
+        own: set[int] = set()
         e0 = self.exit_at(src)
         if e0 is not None:
             own = {y * W + x for x, y in self.exit_cells_of(e0)}
         guess = _astar_guess(W, turn, targets)
 
-        dist, prev, heap = {}, {}, []
+        dist: dict[int, float] = {}
+        prev: dict[int, int] = {}
+        heap: list[tuple[float, float, int]] = []
         for d in range(4):
             dist[s * 4 + d] = 0.0
             prev[s * 4 + d] = -1
             g = guess(s, d)
             heap.append((g, g, s * 4 + d))
         heapq.heapify(heap)
-        done = set()
+        done: set[int] = set()
         while heap:
             _f, _g, st = heapq.heappop(heap)
             if st in done:
@@ -1215,7 +1283,7 @@ class MapModel(object):
                     heapq.heappush(heap, (nc + g, g, ns))
         return dist, prev, reached
 
-    def _astar_path(self, src, targets, avoid_directional=False):
+    def _astar_path(self, src: Cell, targets: Sequence[Point], avoid_directional: bool = False) -> list[Cell] | None:
         """path_rect(astar_rect(src, targets)) for the target reached, by the C search: the same
         route, without the dicts of every state it looked at. None when no target is reached."""
         lib = self._c()
@@ -1254,7 +1322,7 @@ class MapModel(object):
         cells = ws.out[:k]
         return list(zip((cells % W).tolist(), (cells // W).tolist()))
 
-    def _workspace(self, n):
+    def _workspace(self, n: int) -> _Workspace:
         """This thread's buffers for the C route search on this map (see _Workspace). Kept per thread,
         so the farm and message threads never share one, and freed with the thread."""
         local = self.__dict__.get("_ws_local")
@@ -1266,13 +1334,13 @@ class MapModel(object):
             ws = local.ws = _Workspace(n)
         return ws
 
-    def path_rect(self, prev, reached, dst):
+    def path_rect(self, prev: Mapping[int, int], reached: Mapping[int, int], dst: Cell) -> list[Cell] | None:
         W = self.W
         k = dst[1] * W + dst[0]
         if k not in reached:
             return None
         st = reached[k]
-        out = []
+        out: list[Cell] = []
         while st != -1:
             c = st // 4
             if not out or out[-1] != (c % W, c // W):
@@ -1281,7 +1349,7 @@ class MapModel(object):
         return out[::-1]
 
     @contextlib.contextmanager
-    def no_gates(self):
+    def no_gates(self) -> Generator[None, None, None]:
         """Plan as if every door were two-way (the reading before one-way gates)."""
         saved, self.gate = self.gate, np.zeros_like(self.gate)
         saved_list, self._gate_list = self._gate_list, self._zero_list
@@ -1297,7 +1365,7 @@ class MapModel(object):
 
     _route_lock_guard = threading.Lock()
 
-    def _route_mutex(self):
+    def _route_mutex(self) -> "threading.RLock":
         """One lock per model, made on first use (a copy from without() shares it)."""
         lock = self.__dict__.get("_route_lock")
         if lock is None:
@@ -1305,7 +1373,7 @@ class MapModel(object):
                 lock = self.__dict__.setdefault("_route_lock", threading.RLock())
         return lock
 
-    def route(self, a, b, avoid_directional=False):
+    def route(self, a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
         """Path a -> b, obeying one-way gates. On the few maps where the gate
         reading cuts ground off (9 of 149, unverified), a target it can't
         reach is planned the old way, ignoring the gates - that path is
@@ -1320,10 +1388,10 @@ class MapModel(object):
 
         no_gates() swaps the model's gate arrays, so the search runs under the
         model's lock: the farm thread and the message thread share a model."""
-        a, b = tuple(a), tuple(b)
+        a, b = (a[0], a[1]), (b[0], b[1])       # a list cell too: the cache key must be a tuple
         with self._route_mutex():
             if self.__dict__.get("_gates_off"):
-                return self._route(a, b, avoid_directional)   # already planned gate-less
+                return self.gated_route(a, b, avoid_directional)   # already planned gate-less
             key = (a, b, avoid_directional)
             cache = self.__dict__.setdefault("_route_cache", {})
             loose = self.__dict__.setdefault("_route_loose", {})
@@ -1331,17 +1399,17 @@ class MapModel(object):
                 hit: Any = lru.get(kept, key, _NO_ROUTE)
                 if hit is not _NO_ROUTE:
                     return list(hit) if hit is not None else None
-            p = self._route(a, b, avoid_directional)
+            p = self.gated_route(a, b, avoid_directional)
             if p is None and self.gate.any():
                 with self.no_gates():
-                    p = self._route(a, b, avoid_directional)
+                    p = self.gated_route(a, b, avoid_directional)
                 # kept apart: the gate-less answer is only ever handed out for this same question
                 lru.put(loose, key, tuple(p) if p is not None else None, self.ROUTE_CACHE_MAX)
                 return list(p) if p is not None else None
             lru.put(cache, key, tuple(p) if p is not None else None, self.ROUTE_CACHE_MAX)
             return list(p) if p is not None else None
 
-    def _route(self, a, b, avoid_directional=False):
+    def gated_route(self, a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
         """Path a -> b. If b is inside an exit, the path ends on whichever
         cell of that exit it reaches first - that step is the crossing."""
         e = self.exit_at(b)
@@ -1359,7 +1427,7 @@ class MapModel(object):
         _d, prev, reached = self.astar_rect(a, [b], avoid_directional)
         return self.path_rect(prev, reached, b)
 
-    def line(self, a, b):
+    def line(self, a: Cell, b: Point) -> list[Cell]:
         """4-connected supercover line from a to b (the cells a 4-way
         walker would touch following the straight line)."""
         x, y = a
@@ -1380,21 +1448,23 @@ class MapModel(object):
             cells.append((x, y))
         return cells
 
-    def line_ok(self, a, b, min_clear=1, allow_directional=False):
+    def line_ok(self, a: Cell, b: Point, min_clear: int = 1, allow_directional: bool = False) -> bool:
         """Every cell of line(a, b) walkable, at least min_clear from a wall, off ledges (unless
         allow_directional) and through no one-way gate the wrong way."""
         lib = self._c()
-        if lib is not None:
+        bx, by = b
+        # fractional cells: the Python walk below handles them
+        if lib is not None and isinstance(bx, SupportsIndex) and isinstance(by, SupportsIndex):
             try:
-                ax, ay, bx, by = (operator.index(v) for v in (a[0], a[1], b[0], b[1]))
-                mc = operator.index(min_clear)
+                ax, ay, mc = operator.index(a[0]), operator.index(a[1]), operator.index(min_clear)
             except TypeError:
-                pass                    # fractional cells: the Python walk below handles them
+                pass
             else:
                 return bool(lib.uf_line_ok(self.W, len(self._walk_list), self.w, self.h, self._walk_list,
                                            self._clear_list, self._gate_list, self._direc_list,
-                                           ax, ay, bx, by, max(-128, min(127, mc)), bool(allow_directional)))
-        prev = None
+                                           ax, ay, operator.index(bx), operator.index(by), max(-128, min(127, mc)),
+                                           bool(allow_directional)))
+        prev: Cell | None = None
         for x, y in self.line(a, b):
             if not self.ok(x, y) or self.clear[y, x] < min_clear:
                 return False
@@ -1405,21 +1475,22 @@ class MapModel(object):
             prev = (x, y)
         return True
 
-    def waypoints(self, path, max_hop=None):
+    def waypoints(self, path: Sequence[Cell], max_hop: int | None = None) -> list[Cell]:
         """The corners of a path: every hop between consecutive points is a
         pure east-west or north-south line, so the bot's one-axis-at-a-time
         walk follows it exactly whichever axis it would pick. The start
         cell is not included; the last cell always is."""
         if not path or len(path) < 2:
             return list(path[1:])
-        out = []
+        out: list[Cell] = []
         for i in range(1, len(path) - 1):
             a, b, c = path[i - 1], path[i], path[i + 1]
             if (b[0] - a[0], b[1] - a[1]) != (c[0] - b[0], c[1] - b[1]):
                 out.append(b)
         out.append(path[-1])
         if max_hop:
-            split, prev = [], path[0]
+            split: list[Cell] = []
+            prev = path[0]
             for p in out:
                 n = abs(p[0] - prev[0]) + abs(p[1] - prev[1])
                 k = (n + max_hop - 1) // max_hop

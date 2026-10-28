@@ -4004,6 +4004,9 @@ msgstr "level {level}, saturation {sat}%, dakhla {fee} arnebia"
 msgid "line {n} again after respawning"
 msgstr "respawn ke baad dobara line {n}"
 
+msgid "line {n}: a condition or value is missing"
+msgstr "line {n}: koi condition ya value missing hai"
+
 msgid "line {n}: died every time I tried it"
 msgstr "line {n}: jitni baar koshish ki maut hui"
 

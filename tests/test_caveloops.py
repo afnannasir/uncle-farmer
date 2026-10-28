@@ -5,21 +5,24 @@ from unclefarmer import atlas, caveloops
 from unclefarmer.engine import dungeon
 
 
-def test_a_visit_is_the_same_for_the_same_seed_and_kills():
+def test_a_visit_is_the_same_for_the_same_seed_and_kills() -> None:
     loop = atlas.patrol_loop(1539, "quick")
+    assert loop is not None
     a = caveloops.Visit(1539, loop, 19.5, 1.36, 40, seed=5).run(minutes=2)
     b = caveloops.Visit(1539, loop, 19.5, 1.36, 40, seed=5).run(minutes=2)
     assert a == b and a > 10
 
 
-def test_the_time_goes_where_the_logged_run_said():
+def test_the_time_goes_where_the_logged_run_said() -> None:
     # the real run: most of the 15 minutes walking up to monsters and killing them, little on the lap
-    v = caveloops.Visit(1539, atlas.patrol_loop(1539, "quick"), 19.5, 1.36, 40, seed=1)
+    loop = atlas.patrol_loop(1539, "quick")
+    assert loop is not None
+    v = caveloops.Visit(1539, loop, 19.5, 1.36, 40, seed=1)
     v.run(minutes=5)
     assert v.spent["walk_up"] + v.spent["kill"] > 3 * v.spent["lap"]
 
 
-def test_every_cave_has_its_landing_and_monsters():
+def test_every_cave_has_its_landing_and_monsters() -> None:
     for mid in caveloops.CAVES:
         m = atlas.model(mid)
         assert m.ok(*caveloops.LANDINGS[mid])

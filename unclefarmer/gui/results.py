@@ -6,27 +6,32 @@ aren't farming (Gem Maker, Equipment Enhancer, chores) are shown apart: shards m
 no loot, and the time a job takes is no farming time.
 """
 
+from __future__ import annotations
+
 import os
 import time
+from collections.abc import Callable
+from typing import Any
 
 import wx
 
 from .. import speech, stats
-from ..clock import CLOCK
+from ..clock import CLOCK, Clock
 from ..i18n import _
-from .common import Form
+from ..stats import Tally
+from .common import Dialog, Form, copy_text
 
 PERIODS = ("run", "today", "week", "month", "all")
 SHOW = (stats.FARMING, stats.TOOL)
 
 
-class ResultsDialog(wx.Dialog):
-    def __init__(self, parent, character, live):
+class ResultsDialog(Dialog):
+    def __init__(self, parent: wx.Window, character: str | None, live: Callable[[str], Tally | None]) -> None:
         """live(character) -> the stats.Tally of a bot running as that character, or None."""
         super().__init__(parent, title=_("Results"), size=wx.Size(640, 560),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.live = live
-        self.clock = getattr(parent, "clock", CLOCK)
+        self.clock: Clock = getattr(parent, "clock", CLOCK)
         names = stats.characters()
         if character and character not in names:
             names.insert(0, character)
@@ -67,16 +72,16 @@ class ResultsDialog(wx.Dialog):
         self.show()
         self.text.SetFocus()
 
-    def result(self):
+    def result(self) -> tuple[str | None, str]:
         """(text, what to speak) for the chosen character, period and kind."""
         name = self.names[max(0, self.who.GetSelection())]
         period = PERIODS[max(0, self.when.GetSelection())]
         kind = SHOW[max(0, self.what.GetSelection())]
         tally = self.live(name)
-        live = [r for r in tally.results() if r["kind"] == kind] if tally else []
+        live: list[dict[str, Any]] = [r for r in tally.results() if r["kind"] == kind] if tally else []
         now = self.clock.time()
         if period == "run":
-            if live:
+            if tally and live:
                 title = _("{name}, this run ({what}, running)", name=name, what=tally.title)
                 return self.texts(kind, live, title, single=True)
             past = stats.runs(name, kind=kind)
@@ -95,7 +100,7 @@ class ResultsDialog(wx.Dialog):
         return self.texts(kind, results, _("{name}, {period}", name=name, period=label))
 
     @staticmethod
-    def texts(kind, results, title, single=False):
+    def texts(kind: str, results: list[dict[str, Any]], title: str, single: bool = False) -> tuple[str, str]:
         """(the report, a line to speak). Farming adds up into one text; the jobs get one each."""
         if kind == stats.FARMING:
             r = results[-1] if single else stats.add_up(results)
@@ -103,7 +108,7 @@ class ResultsDialog(wx.Dialog):
         return (stats.report_tools(results, title),
                 title + ". " + "; ".join(stats.short(r) for r in results[-3:]))
 
-    def show(self, keep_place=False):
+    def show(self, keep_place: bool = False) -> None:
         text, _spoken = self.result()
         text = text or _spoken
         if text == self.text.GetValue():
@@ -113,18 +118,14 @@ class ResultsDialog(wx.Dialog):
         # a live refresh must not throw the reader back to the top
         self.text.SetInsertionPoint(min(where, self.text.GetLastPosition()) if keep_place else 0)
 
-    def on_speak(self, _evt):
+    def on_speak(self, _evt: wx.Event) -> None:
         _text, spoken = self.result()
         speech.speak(spoken)
 
-    def on_copy(self, _evt):
-        if wx.TheClipboard.Open():
-            try:
-                wx.TheClipboard.SetData(wx.TextDataObject(self.text.GetValue()))
-            finally:
-                wx.TheClipboard.Close()          # never leave the clipboard open on a failure
+    def on_copy(self, _evt: wx.Event) -> None:
+        if copy_text(self.text.GetValue()):
             speech.speak(_("Copied"))
 
-    def on_folder(self, _evt):
+    def on_folder(self, _evt: wx.Event) -> None:
         os.makedirs(stats.RESULTS, exist_ok=True)
         os.startfile(stats.RESULTS)

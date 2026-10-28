@@ -1,5 +1,6 @@
 """Bosses: the named field bosses, which the bot keeps away from.
 
+
 The game describes every monster as "<name>; level <n> <ordinary | elite | super> monster; ...".
 Not every super monster is a field boss: most are dungeon bosses and event monsters. The field
 bosses (Pig-Face Bat King, Man-wolf Caesar, Monkey King, Lich King...) are the super monsters the
@@ -13,48 +14,54 @@ sight is never a target, nor is anything close to it, and the bot walks off when
 boss_distance steps (0: off).
 """
 
+from __future__ import annotations
+
 import json
 import math
 import os
 import re
-from typing import Any
+from collections.abc import Sequence
+from typing import Any, TYPE_CHECKING
 
-from .. import paths
+from .. import jsonio, paths
 from ..i18n import _
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 DESCRIPTION = re.compile(r"^([^;]{2,60}); level (\d+) super monster;")
 FILE = os.path.join(paths.DATA, "bosses.json")
-_names = None
+_names: dict[str, int] | None = None
 
 
-def _from_texts(path):
+def _from_texts(path: str) -> dict[str, int]:
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except (OSError, ValueError):
         return {}
-    out = {}
+    out: dict[str, int] = {}
 
-    def walk(x):
+    def walk(x: object) -> None:
         if isinstance(x, str):
             m = DESCRIPTION.match(x)
             if m:
                 out.setdefault(" ".join(m.group(1).split()).lower(), int(m.group(2)))
-        elif isinstance(x, dict):
+        elif jsonio.is_object(x):
             for v in x.values():
                 walk(v)
-        elif isinstance(x, list):
+        elif jsonio.is_array(x):
             for v in x:
                 walk(v)
     walk(data.get("texts", data))
     return out
 
 
-def names():
+def names() -> dict[str, int]:
     """{boss name in lower case: level}."""
     global _names
     if _names is None:
-        got = {}
+        got: dict[str, int] = {}
         try:
             with open(FILE, encoding="utf-8") as f:
                 got = json.load(f).get("bosses", {})
@@ -78,7 +85,7 @@ def too_close(e: dict[str, Any], bosses: list[dict[str, Any]], keep: float) -> b
     return any(math.hypot(e["x"] - b["x"], e["y"] - b["y"]) < keep for b in bosses)
 
 
-def keep_away(bot: Any, snap: dict[str, Any], map_id: Any, area: Any) -> bool:
+def keep_away(bot: Bot, snap: dict[str, Any], map_id: int, area: Sequence[float] | None) -> bool:
     """A boss within boss_distance of us: walk to the reachable spot furthest from every boss in
     sight (the farm area first). True when we moved, so the farm loop looks again."""
     keep = bot.p.get("boss_distance", 40)
@@ -96,7 +103,7 @@ def keep_away(bot: Any, snap: dict[str, Any], map_id: Any, area: Any) -> bool:
         bot.log(_("{boss} (a boss) is {n} steps away - keeping {keep} steps from it",
                   boss=b["name"], n=int(math.hypot(b["x"] - me["x"], b["y"] - me["y"])), keep=keep), speak=True)
 
-    def spacing(c):
+    def spacing(c: tuple[float, float]) -> float:
         return min(math.hypot(c[0] - x["x"], c[1] - x["y"]) for x in bosses)
     cells = [c for c in (bot.random_cell(map_id, area, me, radius=keep + 20) for _i in range(12)) if c]
     if area:
@@ -107,7 +114,7 @@ def keep_away(bot: Any, snap: dict[str, Any], map_id: Any, area: Any) -> bool:
     if spacing(best) <= spacing((me["x"], me["y"])):
         return False                 # nowhere further off within reach: farm on, away from it
 
-    def far_enough(_me):
+    def far_enough(_me: dict[str, Any]) -> bool:
         s = bot.snap()
         here = s["self"]
         return not any(math.hypot(x["x"] - here["x"], x["y"] - here["y"]) < keep for x in in_sight(s))

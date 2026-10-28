@@ -25,11 +25,15 @@ Micro-benchmarks (perf_counter_ns) live in benchmark.py.
 import argparse
 import atexit
 import collections
+import importlib
 import os
 import sys
 import threading
 import time
 import traceback
+import types
+from collections.abc import Sequence
+from typing import Protocol, TypeVar
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
@@ -44,7 +48,43 @@ SOCKET_WAITS = {"recv", "recv_into", "recvfrom", "sendall", "send", "accept", "c
 THREAD_WAITS = {"wait", "acquire", "join"}
 
 
-def is_wait(fn):
+class Called(Protocol):
+    """A function, as the wait checks see it: its name and the file it is in."""
+
+    @property
+    def name(self) -> str: ...
+    @property
+    def module(self) -> str: ...
+
+
+class FuncStat(Called, Protocol):
+    """What the report reads of one of yappi's function stats (yappi ships no type information)."""
+
+    @property
+    def lineno(self) -> int: ...
+    @property
+    def ncall(self) -> float: ...
+    @property
+    def ttot(self) -> float: ...
+    @property
+    def full_name(self) -> str: ...
+
+
+C = TypeVar("C", bound=Called)
+
+
+class ThreadStat(Protocol):
+    """What the report reads of one of yappi's thread stats."""
+
+    @property
+    def id(self) -> int: ...
+    @property
+    def tid(self) -> int: ...
+    @property
+    def ttot(self) -> float: ...
+
+
+def is_wait(fn: Called) -> bool:
     """True for the blocking calls a thread parks in: sockets, locks, wx's loop, sleep."""
     path = (fn.module or "").lower().replace("/", "\\")
     base = path.rsplit("\\", 1)[-1]
@@ -64,7 +104,7 @@ def is_wait(fn):
     return False
 
 
-def outer_waits(stats):
+def outer_waits(stats: Sequence[C]) -> list[C]:
     """Waits without counting a nested one twice (Event.wait wraps Condition.wait; a queue wraps
     a condition). Socket reads and the wx loop are separate, so they stay alongside."""
     waits = [fn for fn in stats if is_wait(fn)]
@@ -77,9 +117,9 @@ def outer_waits(stats):
 class Left:
     """A function stat with what the other threads made of it taken out (see Yappi._stats_for)."""
 
-    def __init__(self, fn, ncall, ttot):
+    def __init__(self, fn: FuncStat, ncall: float, ttot: float) -> None:
         self.name, self.module, self.lineno = fn.name, fn.module, fn.lineno
-        self.full_name = getattr(fn, "full_name", "%s:%s %s" % (fn.module, fn.lineno, fn.name))
+        self.full_name: str = getattr(fn, "full_name", "%s:%s %s" % (fn.module, fn.lineno, fn.name))
         self.ncall, self.ttot = ncall, ttot
 
 
@@ -89,57 +129,60 @@ class Yappi:
     TOP_PER_THREAD = 25
     MIN_SECONDS = 0.5        # threads below this are listed in the table only
 
-    def __init__(self, out, minutes):
-        import yappi
-
-        self.yappi = yappi
+    def __init__(self, out: str, minutes: float) -> None:
+        # yappi has no type information: its calls come back as Any and are typed where they land
+        self.yappi: types.ModuleType = importlib.import_module("yappi")
+        yappi = self.yappi
         self.out = out
         self.done = False
         self.lock = threading.Lock()
         self.started = time.time()
-        self.names = {threading.get_ident(): threading.current_thread().name}
+        self.names: dict[int, str] = {threading.get_ident(): threading.current_thread().name}
         self._orig_start = threading.Thread.start
         names, orig = self.names, self._orig_start
 
-        def start(thread, *a, **kw):
+        def start(self: threading.Thread) -> None:
             # Thread.start, not Thread.run: the app's own threads subclass threading.Thread and
             # override run(), so a patch on run() never sees them (they printed as "thread 2556").
-            done = orig(thread, *a, **kw)
-            if thread.ident is not None:
-                names[thread.ident] = thread.name
-            return done
+            orig(self)
+            if self.ident is not None:
+                names[self.ident] = self.name
 
         threading.Thread.start = start
         yappi.set_clock_type("wall")
         yappi.start(profile_threads=True, builtins=False)
 
-    def _thread_name(self, st):
+    def _thread_name(self, st: ThreadStat) -> str:
         return self.names.get(st.tid) or ("thread %s" % st.tid)
 
-    def _stats_for(self, st):
+    def _stats_for(self, st: ThreadStat) -> list[FuncStat]:
         """This thread's own function stats. get_func_stats() with no argument merges a function
         that several threads call into ONE stat tagged with one context - that is how the wx thread
         once appeared to have made the farm thread's 66,463 AgentLink.send calls. The ctx_id filter
         does work, except for ctx_id 0, which yappi reads as "no filter", so the main thread gets
         whatever no other context claimed."""
         if st.id:
-            return list(self.yappi.get_func_stats(ctx_id=st.id))
-        claimed = collections.defaultdict(lambda: [0, 0.0])
-        for other in self.yappi.get_thread_stats():
+            own: list[FuncStat] = list(self.yappi.get_func_stats(ctx_id=st.id))
+            return own
+        claimed: collections.defaultdict[tuple[str, str, int], list[float]] = collections.defaultdict(lambda: [0, 0.0])
+        others: list[ThreadStat] = list(self.yappi.get_thread_stats())
+        for other in others:
             if not other.id:
                 continue
-            for fn in self.yappi.get_func_stats(ctx_id=other.id):
+            theirs: list[FuncStat] = list(self.yappi.get_func_stats(ctx_id=other.id))
+            for fn in theirs:
                 key = (fn.name, fn.module, fn.lineno)
                 claimed[key][0] += fn.ncall
                 claimed[key][1] += fn.ttot
-        left = []
-        for fn in self.yappi.get_func_stats():
+        left: list[FuncStat] = []
+        every: list[FuncStat] = list(self.yappi.get_func_stats())
+        for fn in every:
             calls, total = claimed[(fn.name, fn.module, fn.lineno)]
             if fn.ncall > calls or fn.ttot - total > 1e-9:
                 left.append(Left(fn, fn.ncall - calls, fn.ttot - total))
         return left
 
-    def dump(self):
+    def dump(self) -> None:
         with self.lock:
             if self.done:
                 return
@@ -147,8 +190,9 @@ class Yappi:
             threading.Thread.start = self._orig_start
             self.yappi.stop()
             elapsed = time.time() - self.started
-            threads = []
-            for st in self.yappi.get_thread_stats():
+            threads: list[tuple[float, str, int, list[FuncStat]]] = []
+            stats_all: list[ThreadStat] = list(self.yappi.get_thread_stats())
+            for st in stats_all:
                 name = self._thread_name(st)
                 if name in SKIP_THREADS:
                     continue
@@ -188,7 +232,7 @@ class Yappi:
 class Tracemalloc:
     """Every thread's allocations: top lines, per file, and what grew since the start."""
 
-    def __init__(self, out, minutes):
+    def __init__(self, out: str, minutes: float) -> None:
         import tracemalloc
 
         self.tracemalloc = tracemalloc
@@ -200,7 +244,7 @@ class Tracemalloc:
             tracemalloc.start(25)
         self.base = tracemalloc.take_snapshot()
 
-    def dump(self):
+    def dump(self) -> None:
         with self.lock:
             if self.done:
                 return
@@ -230,7 +274,7 @@ class Tracemalloc:
             print("tracemalloc: %s" % path)
 
 
-def main():
+def main() -> int:
     parser = argparse.ArgumentParser(description="Profile Uncle Farmer from source.")
     parser.add_argument("--tool", choices=["yappi", "tracemalloc", "all"], default="yappi")
     parser.add_argument("--minutes", type=float, default=0.0,
@@ -240,7 +284,7 @@ def main():
 
     out = args.out or os.path.join(ROOT, "logs", "profiles", time.strftime("%Y%m%d-%H%M%S"))
     os.makedirs(out, exist_ok=True)
-    tools = []
+    tools: list[Yappi | Tracemalloc] = []
     try:
         if args.tool in ("yappi", "all"):
             tools.append(Yappi(out, args.minutes))
@@ -253,7 +297,7 @@ def main():
 
     finished = threading.Event()
 
-    def dump_all(*_):
+    def dump_all(*_: object) -> None:
         if finished.is_set():
             return
         finished.set()

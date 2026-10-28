@@ -17,12 +17,18 @@ What the game showed in testing:
 Kinds, speeds and levels come from data/beasts.json, built from the game's fusion beast texts.
 """
 
-from typing import Any
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TYPE_CHECKING
 import os
 
 from .. import jsonio as json, paths
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 FIGHT, TRAVEL = "fight", "travel"
 GAP = 6.4          # seconds the server wants between two fusion changes (measured 6.2)
@@ -34,42 +40,48 @@ WALK_REFUSED_FOR = 15   # the walking assistant asks again sooner: riding is all
 RIDE_CHECK = 4.0   # seconds between "still on the Swift beast?" checks while walking
 MIN_POWER = 15     # fusion power under which only "costs no fusion power" beasts are used
 POWER_EVERY = 20.0 # while riding, read fusion power with the T key this often (it costs nothing)
-_KNOWN = None
+_known: dict[str, dict[str, Any]] | None = None
 
 
-def known():
-    global _KNOWN
-    if _KNOWN is None:
+def known() -> dict[str, dict[str, Any]]:
+    """{beast kind: what the game texts say about it (kind, speed, free...)}, from data/beasts.json."""
+    global _known
+    if _known is None:
+        found: dict[str, dict[str, Any]]
         try:
             with open(os.path.join(paths.DATA, "beasts.json"), encoding="utf-8") as f:
-                _KNOWN = json.load(f)["beasts"]
+                found = json.load(f)["beasts"]
         except (OSError, ValueError, KeyError):
-            _KNOWN = {}
-    return _KNOWN
+            found = {}
+        _known = found
+    return _known
 
 
-def owned(b: Any) -> list[dict[str, Any]]:
+def owned(b: Bot) -> list[dict[str, Any]]:
     """The character's beasts in panel order, each with what the game texts say about its kind."""
     rows = b.a.json("mem beasts")
-    if not isinstance(rows, list):
+    if not json.is_array(rows):
         return []
     info = known()
     for r in rows:
-        r.update({k: v for k, v in info.get(r["name"], {}).items() if k != "text"})
+        about: dict[str, Any] = info.get(r["name"], {})
+        r.update({k: v for k, v in about.items() if k != "text"})
         r.setdefault("kind", "unknown")
     return rows
 
 
-def usable(r, refused, clock: Clock = CLOCK):
+def usable(r: dict[str, Any], refused: Mapping[int, float], clock: Clock = CLOCK) -> bool:
     now = clock.time() * 1000
     return (refused.get(r["id"], 0) < clock.time()
             and not (r.get("usable_at") and r["usable_at"] > now)
             and not (r.get("expires_at") and r["expires_at"] < now))
 
 
-def choose(rows, purpose, refused=(), clock: Clock = CLOCK):
+def choose(rows: list[dict[str, Any]], purpose: str, refused: Mapping[int, float] | None = None,
+           clock: Clock = CLOCK) -> dict[str, Any] | None:
     """The beast that fits: fastest Swift for travel; strongest Fierce for a fight (by level, then
     HP). None when nothing fits - then travel goes on foot and a fight goes without a beast."""
+    refused = refused or {}
     if purpose == TRAVEL:
         pool = [r for r in rows if r["kind"] == "swift" and usable(r, refused, clock)]
         return max(pool, key=lambda r: (r.get("speed", 0), r.get("free", False)), default=None)
@@ -77,19 +89,19 @@ def choose(rows, purpose, refused=(), clock: Clock = CLOCK):
     return max(pool, key=lambda r: (r.get("level", 0), r.get("hp", 0)), default=None)
 
 
-def power(me):
+def power(me: dict[str, Any]) -> int | None:
     """Fusion power now, or None when no recent reading: the T key's answer (agent v24) if under a
     minute old, else the character sheet if under five."""
-    pts = me.get("points") or {}
+    pts: dict[str, Any] = me.get("points") or {}
     if pts.get("fusion", -1) >= 0 and pts.get("age_ms", 1e9) < 60000:
         return pts["fusion"]
-    sheet = me.get("sheet") or {}
+    sheet: dict[str, Any] = me.get("sheet") or {}
     if sheet.get("fusion", -1) >= 0 and sheet.get("age", 999) < 300:
         return sheet["fusion"]
     return None
 
 
-def ensure(b: Any, purpose: Any = None) -> None:
+def ensure(b: Bot, purpose: Any = None) -> None:
     """Get into the right beast for purpose (or out of a Swift one before a fight). Quiet and
     cheap when it is already right; never stops the run if the panel can't be worked."""
     rows = owned(b)
@@ -136,7 +148,7 @@ def ensure(b: Any, purpose: Any = None) -> None:
         b.log(_("the game wouldn't take {beast} now; trying again later", beast=want["name"]))
 
 
-def keep_riding(b: Any) -> None:
+def keep_riding(b: Bot) -> None:
     """While the walking assistant walks: back onto the Swift beast if we came off it (or the
     game refused it a moment ago), checked every few seconds so it costs almost nothing. Fusion
     power is read with the T key every POWER_EVERY, so once it runs out, ensure() waits on foot
@@ -153,7 +165,7 @@ def keep_riding(b: Any) -> None:
     ensure(b, TRAVEL)
 
 
-def off(b: Any) -> None:
+def off(b: Bot) -> None:
     """Get off whatever beast is on (the end of a run, somewhere safe)."""
     rows = owned(b)
     active = next((r for r in rows if r["active"]), None)
@@ -161,7 +173,7 @@ def off(b: Any) -> None:
         b.log(_("got off {beast}", beast=active["name"]))
 
 
-def _press(b, rows, beast):
+def _press(b: Bot, rows: list[dict[str, Any]], beast: dict[str, Any]) -> bool:
     """Put the fusion beast panel's cursor on beast and press the use key. True once the game
     shows the change (the beast became active, or stopped being active)."""
     index = next(i for i, r in enumerate(rows) if r["id"] == beast["id"])

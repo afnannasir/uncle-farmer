@@ -14,17 +14,23 @@ cast from a skill key - the game's use key does nothing in the skills panel - so
 is missing and which keys hold a skill that is also on another key, for the player to decide.
 """
 
-from typing import Any
+from __future__ import annotations
 
-from .. import gamekeys
+from collections.abc import Callable
+from typing import Any, TYPE_CHECKING
+
+from .. import gamekeys, jsonio as json
 from ..i18n import _
 from . import combat, pets, repair
 from .botparts.base import STOPPING
 from ..errors import carry_on
 
+if TYPE_CHECKING:
+    from .bot import Bot
 
 
-def arrange(bot):
+
+def arrange(bot: Bot):
     """At the start of a run, standing somewhere quiet: fill empty keys. Never raises."""
     if not bot.p.get("fill_empty_keys", True) or bot.in_fight:
         return
@@ -44,18 +50,18 @@ def arrange(bot):
         bot.log(_("couldn't put things on empty keys: {err}", err=e))
 
 
-def refill(bot: Any) -> bool:
+def refill(bot: Bot) -> bool:
     """During a run, between fights: a red or blue potion lost its hotkey (used up, or the game
     put something else there) while the bag still holds some - put them on an empty hotkey, or
     the bot can only drink them between fights. True when it did something. Never raises."""
-    if not getattr(bot, "_keys_to_fill", False):
+    if not getattr(bot, "keys_to_fill", False):
         return False
     if not bot.p.get("fill_empty_keys", True) or bot.in_fight or bot.attackers():
         return False             # (asked again next time round)
-    bot._keys_to_fill = False
+    bot.keys_to_fill = False
     try:
         if bot.dialog().get("open"):
-            bot._keys_to_fill = True
+            bot.keys_to_fill = True
             return False
         if items(bot):
             bot.goto_panel(0)
@@ -71,13 +77,19 @@ def refill(bot: Any) -> bool:
 
 
 # ------------------------------------------------------------ skills
-def wanted_skills(cls):
+def wanted_skills(cls: str) -> list[str]:
     """The class's skills the bot uses for itself, most needed first."""
     S = combat.SkillBook
-    order = (S.quick_heal, lambda x: S.shield(x) == "free", S.big_heal, S.self_dispel,
-             lambda x: S.shield(x) in ("attack", "move"), S.long_buff, S.fight_buff)
+
+    def free_shield(x: combat.Skill) -> bool:
+        return S.shield(x) == "free"
+
+    def other_shield(x: combat.Skill) -> bool:
+        return S.shield(x) in ("attack", "move")
+    order: tuple[Callable[[combat.Skill], bool], ...] = (
+        S.quick_heal, free_shield, S.big_heal, S.self_dispel, other_shield, S.long_buff, S.fight_buff)
     know = combat.knowledge().get(cls, [])
-    out = []
+    out: list[str] = []
     for test in order:
         for x in know:
             if x["name"] not in out and test(x):
@@ -85,17 +97,18 @@ def wanted_skills(cls):
     return out
 
 
-def skills(bot):
+def skills(bot: Bot):
     """Put the class's heals, shields, dispels and buffs that are on no key onto empty skill keys.
     True when anything was placed."""
     sb = bot.skillbook or combat.SkillBook(bot)
     bot.skillbook = sb
     sk = bot.a.json("mem skills")
-    if not isinstance(sk, dict) or "combat" not in sk or not sb.cls:
+    if not json.is_object(sk) or "combat" not in sk or not sb.cls:
         return False
-    rows = sk["combat"]
-    ids = {r["name"]: r["id"] for r in rows}
-    keyed = {int(i): sid for i, sid in sk.get("attack_keys", {}).items() if sid}
+    rows: list[dict[str, Any]] = sk["combat"]
+    ids: dict[str, int] = {r["name"]: r["id"] for r in rows}
+    attack_keys: dict[str, int] = sk.get("attack_keys", {})
+    keyed = {int(i): sid for i, sid in attack_keys.items() if sid}
     on = {sid for sid in keyed.values()}
     # a skill the player set to "never" stays off the keys
     want = [n for n in wanted_skills(sb.cls) if n in ids and ids[n] not in on and sb.use_of(n) != "never"]
@@ -122,7 +135,8 @@ def skills(bot):
         bot.key("lctrl+alt+" + keys[n])
         bot.sleep(0.6)
         now = bot.a.json("mem skills")
-        got = (now.get("attack_keys") or {}).get(str(slot)) if isinstance(now, dict) else None
+        keys_now: dict[str, int] = (now.get("attack_keys") or {}) if json.is_object(now) else {}
+        got = keys_now.get(str(slot))
         if got != ids[name]:
             bot.log(_("the game didn't put {skill} on key {key} - leaving the keys as they are",
                       skill=name, key=keys[n]), speak=True)
@@ -138,15 +152,16 @@ def skills(bot):
     return placed
 
 
-def tell_no_room(bot, want, keyed, rows):
+def tell_no_room(bot: Bot, want: list[str], keyed: dict[int, int], rows: list[dict[str, Any]]) -> None:
     """No empty skill key: say what the bot can't use, and which keys hold a skill that is also on
     another key (one of those could make room), once a run."""
-    if getattr(bot, "_told_no_skill_room", False):
+    if getattr(bot, "told_no_skill_room", False):
         return
-    bot._told_no_skill_room = True
+    bot.told_no_skill_room = True
     names = {r["id"]: r["name"] for r in rows}
     keys = gamekeys.attack_key_list()
-    seen, twice = {}, []
+    seen: dict[int, int] = {}
+    twice: list[str] = []
     for slot in sorted(keyed):
         sid = keyed[slot]
         if sid in seen:
@@ -161,11 +176,11 @@ def tell_no_room(bot, want, keyed, rows):
 
 
 # ------------------------------------------------------------ items
-def wanted_items(bot):
+def wanted_items(bot: Bot) -> list[str]:
     """Items the bot uses that are in the backpack but on no hotkey, most needed first: the
     chosen HP and MP potions, the pet's (with a pet ticked: in a fight only a hotkey can give the
     pet a potion, and pets died with plenty in the bag), the toolbox that fits, the hearthstone."""
-    out = []
+    out: list[str] = []
     kinds = ("hp", "mp") + (("pet_hp", "pet_mp") if pets.chosen(bot) else ())
     for kind in kinds:
         key, name = bot.potion(kind)
@@ -181,13 +196,13 @@ def wanted_items(bot):
     return out
 
 
-def items(bot):
+def items(bot: Bot) -> bool:
     """Put those items on empty hotkeys (1 .. =). True when anything was placed."""
     want = wanted_items(bot)
     if not want:
         return False
     slots = bot.a.json("mem slots")
-    if not isinstance(slots, dict):
+    if not json.is_object(slots):
         return False
     keys = gamekeys.slot_key_list()
     empty = [i for i in range(1, 13) if str(i) not in slots]
@@ -204,7 +219,7 @@ def items(bot):
         bot.key("lctrl+" + keys[slot - 1])
         bot.sleep(0.5)
         now = bot.a.json("mem slots")
-        if not isinstance(now, dict) or str(slot) not in now:
+        if not json.is_object(now) or str(slot) not in now:
             bot.log(_("the game didn't put {item} on hotkey {key} - leaving the hotkeys as they are",
                       item=name, key=keys[slot - 1]), speak=True)
             break
@@ -212,5 +227,5 @@ def items(bot):
         placed = True
         bot.log(_("{item} put on the empty hotkey {key}", item=row, key=keys[slot - 1]), speak=True)
     if placed:
-        bot._potion_keys = None       # read the hotkeys again
+        bot.potion_slots = None       # read the hotkeys again
     return placed

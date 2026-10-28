@@ -1,6 +1,10 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The exception policy: a best-effort action may ignore a failure, but never a Stopped, a
 Respawned or an AgentError - the run has to stop, start over, or report the lost agent. And an
 ignored failure is logged once per kind: silence is what let the old broad catches hide corners."""
+
+from __future__ import annotations
 
 import os
 import threading
@@ -15,24 +19,29 @@ from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.travel import TravelMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
 from unclefarmer.link import AgentError
+from pathlib import Path
+from conftest import as_bot, stand_in
+from conftest import raising_with
+from unclefarmer.engine.botparts import walking
+from typing import Any
 
 
 class Bot(FightingMixin, WalkingMixin, TravelMixin):
-    def __init__(self):
-        self.lines = []
+    def __init__(self) -> None:
+        self.lines: list[str] = []
         self.p = {}
         self.failure_notes = set()
 
-    def log(self, message, speak=False):
+    def log(self, message: str, speak: bool=False) -> None:
         self.lines.append(message)
 
 
-def test_note_failure_re_raises_in_test_mode():
+def test_note_failure_re_raises_in_test_mode() -> None:
     with pytest.raises(ValueError, match="hidden bug"):
         note_failure(Bot(), "reading", ValueError("hidden bug"))
 
 
-def test_note_failure_logs_once_per_kind(allow_ignored_failures):
+def test_note_failure_logs_once_per_kind(allow_ignored_failures: None) -> None:
     b = Bot()
     note_failure(b, "reading", ValueError("x"))
     note_failure(b, "reading", ValueError("y"))
@@ -42,10 +51,10 @@ def test_note_failure_logs_once_per_kind(allow_ignored_failures):
 
 
 @pytest.mark.parametrize("exc", [Stopped("stop"), Respawned(), AgentError("gone")])
-def test_a_control_exception_is_never_swallowed_by_clear_shot(monkeypatch, exc):
+def test_a_control_exception_is_never_swallowed_by_clear_shot(monkeypatch: pytest.MonkeyPatch, exc: Respawned | AgentError | Stopped) -> None:
     b = Bot()
 
-    def boom(mid):
+    def boom(mid: int):
         raise exc
 
     monkeypatch.setattr("unclefarmer.engine.botparts.fighting.atlas.model", boom)
@@ -53,10 +62,10 @@ def test_a_control_exception_is_never_swallowed_by_clear_shot(monkeypatch, exc):
         b.clear_shot({"x": 1, "y": 1}, {"x": 2, "y": 2}, mid=5)
 
 
-def test_clear_shot_logs_an_unknown_map_once_and_still_shoots(monkeypatch, allow_ignored_failures):
+def test_clear_shot_logs_an_unknown_map_once_and_still_shoots(monkeypatch: pytest.MonkeyPatch, allow_ignored_failures: None) -> None:
     b = Bot()
 
-    def boom(mid):
+    def boom(mid: int):
         raise KeyError("no geometry")
 
     monkeypatch.setattr("unclefarmer.engine.botparts.fighting.atlas.model", boom)
@@ -65,7 +74,7 @@ def test_clear_shot_logs_an_unknown_map_once_and_still_shoots(monkeypatch, allow
     assert len(b.lines) == 1
 
 
-def test_has_hearthstone_re_raises_a_lost_agent():
+def test_has_hearthstone_re_raises_a_lost_agent() -> None:
     b = Bot()
     b.hotkey_of = lambda name: None
 
@@ -77,7 +86,7 @@ def test_has_hearthstone_re_raises_a_lost_agent():
         b.has_hearthstone()
 
 
-def test_npc_cells_re_raises_a_stopped():
+def test_npc_cells_re_raises_a_stopped() -> None:
     b = Bot()
 
     def boom():
@@ -88,81 +97,80 @@ def test_npc_cells_re_raises_a_stopped():
         b.npc_cells((1, 1))
 
 
-def test_walk_dist_re_raises_a_stopped(monkeypatch):
+def test_walk_dist_re_raises_a_stopped(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr("unclefarmer.engine.botparts.walking.atlas.model",
-                        lambda mid: (_ for _ in ()).throw(Stopped("stop")))
+    monkeypatch.setattr(walking.atlas, "model", stand_in(walking.atlas.model, raising_with(Stopped("stop"))))
     snap = {"self": {"x": 1, "y": 1}, "map": {"id": 5}}
     with pytest.raises(Stopped):
         b.walk_dist(snap, {"x": 2, "y": 2})
 
 
-def test_keyslots_arrange_re_raises_a_stopped_even_without_the_stop_event():
+def test_keyslots_arrange_re_raises_a_stopped_even_without_the_stop_event() -> None:
     class KB:
         p = {"fill_empty_keys": True}
         in_fight = False
         stop_event = threading.Event()
 
-        def dialog(self):
+        def dialog(self) -> dict[str, Any]:
             raise Stopped("the game can't be read", final=True)
 
-        def log(self, message, speak=False):
+        def log(self, message: str, speak: bool = False) -> None:
             pass
 
     with pytest.raises(Stopped):
-        keyslots.arrange(KB())
+        keyslots.arrange(as_bot(KB()))
 
 
-def test_follow_locate_re_raises_a_lost_agent():
+def test_follow_locate_re_raises_a_lost_agent() -> None:
     class FB:
-        def locate(self, name):
+        def locate(self, name: str):
             raise AgentError("gone")
 
-        def log(self, message, speak=False):
+        def log(self, message: str, speak: bool = False) -> None:
             pass
 
     with pytest.raises(AgentError):
-        follow._locate(FB(), "Friend")
+        follow._locate(as_bot(FB()), "Friend")
 
 
-def test_follow_locate_logs_a_shape_error_and_says_not_found(allow_ignored_failures):
-    lines = []
+def test_follow_locate_logs_a_shape_error_and_says_not_found(allow_ignored_failures: None) -> None:
+    lines: list[str] = []
 
     class FB:
-        def locate(self, name):
+        def locate(self, name: str):
             raise ValueError("odd reply")
 
-        def log(self, message, speak=False):
+        def log(self, message: str, speak: bool = False) -> None:
             lines.append(message)
 
-    assert follow._locate(FB(), "Friend") is None
+    assert follow._locate(as_bot(FB()), "Friend") is None
     assert len(lines) == 1 and "not found" not in lines[0]
 
 
-def test_a_lost_agent_while_setting_phrases_is_not_swallowed(monkeypatch):
+def test_a_lost_agent_while_setting_phrases_is_not_swallowed(monkeypatch: pytest.MonkeyPatch) -> None:
     from unclefarmer import gamekeys, phrases
-    monkeypatch.setattr(phrases, "read", lambda *a: {})
-    monkeypatch.setattr(phrases, "known", lambda *a: True)
-    monkeypatch.setattr(phrases, "wanted", lambda cls: ["/6"])
-    monkeypatch.setattr(phrases, "what", lambda code: "x")
-    monkeypatch.setattr(gamekeys, "phrase_key_list", lambda: ["Shift+%d" % i for i in range(1, 13)])
+    monkeypatch.setattr(phrases, "read", stand_in(phrases.read, lambda game_folder, char_id: {}))
+    monkeypatch.setattr(phrases, "known", stand_in(phrases.known, lambda game_folder, char_id: True))
+    monkeypatch.setattr(phrases, "wanted", stand_in(phrases.wanted, lambda class_name: ["/6"]))
+    monkeypatch.setattr(phrases, "what", stand_in(phrases.what, lambda code: "x"))
+    monkeypatch.setattr(gamekeys, "phrase_key_list", stand_in(gamekeys.phrase_key_list, lambda: ["Shift+%d" % i for i in range(1, 13)]))
 
     class B:
         p = {}
 
-        def log(self, message, speak=False):
+        def log(self, message: str, speak: bool = False) -> None:
             pass
 
         class a:
             @staticmethod
-            def send(line):
+            def send(line: str) -> str:
                 raise AgentError("gone")
 
     with pytest.raises(AgentError):
-        phrases.arrange(B(), "folder", 1, "Hunter", True)
+        phrases.arrange(as_bot(B()), "folder", 1, "Hunter", True)
 
 
-def test_stats_re_raise_a_stopped_reading():
+def test_stats_re_raise_a_stopped_reading() -> None:
     from unclefarmer import stats
     b = Bot()
     b.bag_rows = lambda: []
@@ -172,7 +180,7 @@ def test_stats_re_raise_a_stopped_reading():
         stats.Tally("Hero", "Wolves").update(b, force=True)
 
 
-def test_applog_write_does_not_raise_on_a_broken_log(monkeypatch, tmp_path):
+def test_applog_write_does_not_raise_on_a_broken_log(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     broken = tmp_path / "logs"
     broken.write_text("not a folder", encoding="utf-8")
     monkeypatch.setattr(applog.paths, "LOGS", str(broken))
@@ -180,7 +188,7 @@ def test_applog_write_does_not_raise_on_a_broken_log(monkeypatch, tmp_path):
     applog.write("line")                 # must not raise
 
 
-def test_applog_crash_keeps_the_traceback(monkeypatch, tmp_path):
+def test_applog_crash_keeps_the_traceback(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     try:
         raise ValueError("boom")
@@ -191,7 +199,7 @@ def test_applog_crash_keeps_the_traceback(monkeypatch, tmp_path):
     assert "Traceback" in text and "ValueError: boom" in text
 
 
-def test_note_dialog_rotates_the_log(monkeypatch, tmp_path):
+def test_note_dialog_rotates_the_log(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
     monkeypatch.setattr(applog, "_max_bytes", 10)
     monkeypatch.setattr(applog, "_backups", 1)
@@ -202,10 +210,10 @@ def test_note_dialog_rotates_the_log(monkeypatch, tmp_path):
     class DB(dialogs.DialogsMixin):
         character = "Hero"
 
-        def map_id(self):
+        def map_id(self) -> int:
             return 5
 
-        def log(self, message, speak=False):
+        def log(self, message: str, speak: bool = False) -> None:
             pass
 
     dialogs.DialogsMixin.note_dialog(
@@ -214,19 +222,19 @@ def test_note_dialog_rotates_the_log(monkeypatch, tmp_path):
     assert "hi" in open(path, encoding="utf-8").read()
 
 
-def test_guard_logs_a_failed_finish(monkeypatch, tmp_path, allow_ignored_failures):
+def test_guard_logs_a_failed_finish(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None) -> None:
     monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
-    logs = []
-    run = R.Run("", "Test", 1, lambda line, speak, who: logs.append(line), lambda *a: None)
+    logs: list[str] = []
+    run = R.Run("", "Test", 1, lambda line, speak, who: logs.append(line), lambda reason, run: None)
     run.character = "Hero"
 
     class B:
-        def defend(self):
+        def defend(self) -> None:
             raise RuntimeError("stuck")
 
-        def finish(self):
+        def finish(self) -> None:
             raise RuntimeError("stuck")
 
-    run.guard(B())
+    run.guard(as_bot(B()))
     assert any("couldn't finish safely" in line for line in logs)
     assert any("couldn't stay on guard either" in line for line in logs)

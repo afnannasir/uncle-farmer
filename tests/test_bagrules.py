@@ -2,87 +2,94 @@
 weights the bot learns on its own, and how a rule turns into keep / store / sell / throw on a bag
 trip or a restock."""
 
+from __future__ import annotations
+
 import json
 
-from unclefarmer.engine import bagrules
+from typing import Any
+
+from unclefarmer.engine import bagrules, town
+from pathlib import Path
+import pytest
+from conftest import stand_in
 
 
 # ---------------------------------------------------------------- shard prices
-def test_shard_price_reads_the_market_catalog():
+def test_shard_price_reads_the_market_catalog() -> None:
     assert bagrules.shard_price("Level 1 Sapphire Shard") == 20
 
 
-def test_shard_price_is_case_insensitive_and_none_for_other_items():
+def test_shard_price_is_case_insensitive_and_none_for_other_items() -> None:
     assert bagrules.shard_price("level 1 sapphire shard") == 20
     assert bagrules.shard_price("Long-age Turtle") is None
 
 
-def test_shard_price_none_when_the_catalog_is_empty(monkeypatch):
-    monkeypatch.setattr("unclefarmer.engine.town.shard_catalog", lambda: ({}, {}))
+def test_shard_price_none_when_the_catalog_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(town, "shard_catalog", stand_in(town.shard_catalog, lambda: ({}, {})))
     assert bagrules.shard_price("Level 1 Sapphire Shard") is None
 
 
 # ---------------------------------------------------------------- buyers and sellers
-def test_buyer_picks_the_best_price(monkeypatch):
-    monkeypatch.setattr(bagrules.knowledge, "traders", lambda name, they: [
+def test_buyer_picks_the_best_price(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bagrules.knowledge, "traders", stand_in(bagrules.knowledge.traders, lambda item, they: [
         ("m1", "Cheap", 1, 2, 100, "arnebia"),
         ("m2", "Rich", 3, 4, 900, "arnebia"),
-    ])
+    ]))
     assert bagrules.buyer("Thing") == ("Rich", 900, "arnebia")
 
 
-def test_buyer_and_seller_on_real_data():
+def test_buyer_and_seller_on_real_data() -> None:
     # a fish buyer in the game's own knowledge; nothing sells an unknown name
     assert bagrules.buyer("Long-age Turtle") == ("Aquaculture Buyer Luffy", 850, "arnebia")
     assert bagrules.buyer("No Such Item") is None
     assert bagrules.seller("No Such Item") is None
 
 
-def test_seller_returns_the_cheapest_shop(monkeypatch):
-    monkeypatch.setattr(bagrules.knowledge, "traders", lambda name, they: [
+def test_seller_returns_the_cheapest_shop(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bagrules.knowledge, "traders", stand_in(bagrules.knowledge.traders, lambda item, they: [
         ("m1", "Cheap", 1, 2, 100, "arnebia"),
         ("m2", "Pricey", 3, 4, 900, "arnebia"),
-    ])
+    ]))
     assert bagrules.seller("Thing") == ("Cheap", 100, "arnebia")
 
 
-def test_can_sell_covers_shards_buyers_and_roles(monkeypatch):
-    monkeypatch.setattr(bagrules, "shard_price", lambda name: None)
-    monkeypatch.setattr(bagrules, "buyer", lambda name: None)
-    monkeypatch.setattr(bagrules.knowledge, "buyer_role", lambda name: None)
+def test_can_sell_covers_shards_buyers_and_roles(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bagrules, "shard_price", stand_in(bagrules.shard_price, lambda name: None))
+    monkeypatch.setattr(bagrules, "buyer", stand_in(bagrules.buyer, lambda name: None))
+    monkeypatch.setattr(bagrules.knowledge, "buyer_role", stand_in(bagrules.knowledge.buyer_role, lambda name: None))
     assert bagrules.can_sell("Thing") is False
 
-    monkeypatch.setattr(bagrules, "shard_price", lambda name: 5)
+    monkeypatch.setattr(bagrules, "shard_price", stand_in(bagrules.shard_price, lambda name: 5))
     assert bagrules.can_sell("Thing") is True
 
-    monkeypatch.setattr(bagrules, "shard_price", lambda name: None)
-    monkeypatch.setattr(bagrules, "buyer", lambda name: ("npc", 1, "arnebia"))
+    monkeypatch.setattr(bagrules, "shard_price", stand_in(bagrules.shard_price, lambda name: None))
+    monkeypatch.setattr(bagrules, "buyer", stand_in(bagrules.buyer, lambda name: ("npc", 1, "arnebia")))
     assert bagrules.can_sell("Thing") is True
 
-    monkeypatch.setattr(bagrules, "buyer", lambda name: None)
-    monkeypatch.setattr(bagrules.knowledge, "buyer_role", lambda name: "herb_buyer")
+    monkeypatch.setattr(bagrules, "buyer", stand_in(bagrules.buyer, lambda name: None))
+    monkeypatch.setattr(bagrules.knowledge, "buyer_role", stand_in(bagrules.knowledge.buyer_role, lambda name: "herb_buyer"))
     assert bagrules.can_sell("Thing") is True
 
 
-def test_can_sell_real_data():
+def test_can_sell_real_data() -> None:
     assert bagrules.can_sell("Long-age Turtle") is True
     assert bagrules.can_sell("Level 1 Sapphire Shard") is True
 
 
 # ---------------------------------------------------------------- learned weights
-def test_weights_empty_when_the_file_is_missing(monkeypatch, tmp_path):
+def test_weights_empty_when_the_file_is_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "missing.json"))
     assert bagrules.weights() == {}
 
 
-def test_weights_empty_when_the_file_is_broken(monkeypatch, tmp_path):
+def test_weights_empty_when_the_file_is_broken(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     path = tmp_path / "w.json"
     path.write_text("{not json", encoding="utf-8")
     monkeypatch.setattr(bagrules, "WEIGHTS", str(path))
     assert bagrules.weights() == {}
 
 
-def test_learn_weight_writes_and_reads_back(monkeypatch, tmp_path):
+def test_learn_weight_writes_and_reads_back(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
     assert bagrules.learn_weight("Wolf Pelt", 500, 480, 4) == 5.0
     assert bagrules.weights() == {"wolf pelt": 5.0}
@@ -92,14 +99,14 @@ def test_learn_weight_writes_and_reads_back(monkeypatch, tmp_path):
     assert raw == {"wolf pelt": 5.0}
 
 
-def test_learn_weight_updates_an_existing_entry(monkeypatch, tmp_path):
+def test_learn_weight_updates_an_existing_entry(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
     bagrules.learn_weight("Wolf Pelt", 500, 480, 4)
     assert bagrules.learn_weight("Wolf Pelt", 900, 800, 10) == 10.0
     assert bagrules.weights() == {"wolf pelt": 10.0}
 
 
-def test_learn_weight_rejects_bad_measurements(monkeypatch, tmp_path):
+def test_learn_weight_rejects_bad_measurements(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
     assert bagrules.learn_weight("x", 100, 90, 0) is None          # nothing left
     assert bagrules.learn_weight("x", None, 90, 1) is None         # no before reading
@@ -108,13 +115,13 @@ def test_learn_weight_rejects_bad_measurements(monkeypatch, tmp_path):
     assert not (tmp_path / "w.json").exists()
 
 
-def test_learn_weight_survives_an_unwritable_path(monkeypatch):
+def test_learn_weight_survives_an_unwritable_path(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", "Z:\\nope\\w.json")
     assert bagrules.learn_weight("Wolf Pelt", 500, 480, 4) == 5.0   # still returns the weight
 
 
 # ---------------------------------------------------------------- about
-def test_about_reports_what_is_known(monkeypatch, tmp_path):
+def test_about_reports_what_is_known(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
     bagrules.learn_weight("Long-age Turtle", 500, 480, 4)
     line = bagrules.about("Long-age Turtle", count=4, hotkey=True)
@@ -123,33 +130,33 @@ def test_about_reports_what_is_known(monkeypatch, tmp_path):
     assert "on a hotkey" in line
 
 
-def test_about_shard_price_and_role(monkeypatch, tmp_path):
+def test_about_shard_price_and_role(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
     # observed: a shard gets both the market price and its buyer role
     assert bagrules.about("Level 1 Sapphire Shard") == (
         "Shard Market pays about 20 arnebia each; a shard market buys it")
 
 
-def test_about_seller_and_role(monkeypatch, tmp_path):
+def test_about_seller_and_role(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
-    monkeypatch.setattr(bagrules, "shard_price", lambda n: None)
-    monkeypatch.setattr(bagrules, "buyer", lambda n: None)
-    monkeypatch.setattr(bagrules, "seller", lambda n: ("Shop", 12, "arnebia"))
-    monkeypatch.setattr(bagrules.knowledge, "buyer_role", lambda n: "herb_buyer")
+    monkeypatch.setattr(bagrules, "shard_price", stand_in(bagrules.shard_price, lambda name: None))
+    monkeypatch.setattr(bagrules, "buyer", stand_in(bagrules.buyer, lambda name: None))
+    monkeypatch.setattr(bagrules, "seller", stand_in(bagrules.seller, lambda name: ("Shop", 12, "arnebia")))
+    monkeypatch.setattr(bagrules.knowledge, "buyer_role", stand_in(bagrules.knowledge.buyer_role, lambda name: "herb_buyer"))
     assert bagrules.about("Odd Herb") == "a herb buyer buys it; Shop sells it for 12 arnebia"
 
 
-def test_about_nothing_known_yet(monkeypatch, tmp_path):
+def test_about_nothing_known_yet(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", str(tmp_path / "w.json"))
-    monkeypatch.setattr(bagrules, "shard_price", lambda n: None)
-    monkeypatch.setattr(bagrules, "buyer", lambda n: None)
-    monkeypatch.setattr(bagrules, "seller", lambda n: None)
-    monkeypatch.setattr(bagrules.knowledge, "buyer_role", lambda n: None)
+    monkeypatch.setattr(bagrules, "shard_price", stand_in(bagrules.shard_price, lambda name: None))
+    monkeypatch.setattr(bagrules, "buyer", stand_in(bagrules.buyer, lambda name: None))
+    monkeypatch.setattr(bagrules, "seller", stand_in(bagrules.seller, lambda name: None))
+    monkeypatch.setattr(bagrules.knowledge, "buyer_role", stand_in(bagrules.knowledge.buyer_role, lambda name: None))
     assert bagrules.about("Mystery") == "nothing known yet"
 
 
 # ---------------------------------------------------------------- suggestions and rules
-def test_suggest_keeps_supplies_hotkeys_and_unknowns():
+def test_suggest_keeps_supplies_hotkeys_and_unknowns() -> None:
     # observed: every suggestion today is "keep, 0" (the smart sell/throw lists were taken out)
     assert bagrules.suggest("Large Red Potion") == ("keep", 0)     # supply
     assert bagrules.suggest("Hearthstone") == ("keep", 0)          # supply
@@ -157,14 +164,14 @@ def test_suggest_keeps_supplies_hotkeys_and_unknowns():
     assert bagrules.suggest("Mystery Rock", hotkey=True) == ("keep", 0)
 
 
-def test_rule_uses_the_players_choice_first():
+def test_rule_uses_the_players_choice_first() -> None:
     p = {"bag_rules": {"wolf pelt": {"action": "sell", "keep": "2"}}}
     assert bagrules.rule(p, "Wolf Pelt") == {"action": "sell", "keep": 2, "chosen": True}
     # case-insensitive lookup of the rule
     assert bagrules.rule(p, "wolf pelt")["chosen"] is True
 
 
-def test_rule_falls_back_to_the_suggestion():
+def test_rule_falls_back_to_the_suggestion() -> None:
     assert bagrules.rule({}, "Mystery") == {"action": "keep", "keep": 0, "chosen": False}
     # observed: an empty rule dict is falsy, so it is treated as "no rule" (chosen False)
     assert bagrules.rule({"bag_rules": {"x": {}}}, "X") == {"action": "keep", "keep": 0, "chosen": False}
@@ -174,12 +181,12 @@ def test_rule_falls_back_to_the_suggestion():
 
 
 # ---------------------------------------------------------------- plan
-def test_plan_skips_kept_items():
-    p = {"bag_rules": {}, "only_this_run": True}
+def test_plan_skips_kept_items() -> None:
+    p: dict[str, Any] = {"bag_rules": {}, "only_this_run": True}
     assert bagrules.plan(p, {"Mystery": 5}) == []
 
 
-def test_plan_plans_store_sell_throw_with_keep():
+def test_plan_plans_store_sell_throw_with_keep() -> None:
     p = {"bag_rules": {
         "wolf pelt": {"action": "sell", "keep": 2},
         "old sword": {"action": "store", "keep": 1},
@@ -189,34 +196,34 @@ def test_plan_plans_store_sell_throw_with_keep():
         ("Junk", "throw", 4), ("Old Sword", "store", 2), ("Wolf Pelt", "sell", 3)]
 
 
-def test_plan_respects_the_keep_count():
+def test_plan_respects_the_keep_count() -> None:
     p = {"bag_rules": {"wolf pelt": {"action": "sell", "keep": 5}}, "only_this_run": False}
     assert bagrules.plan(p, {"Wolf Pelt": 5}) == []          # keep count wipes it out
     assert bagrules.plan(p, {"Wolf Pelt": 8}) == [("Wolf Pelt", "sell", 3)]
 
 
-def test_plan_only_this_run_limits_to_what_was_picked_up(monkeypatch):
+def test_plan_only_this_run_limits_to_what_was_picked_up(monkeypatch: pytest.MonkeyPatch) -> None:
     # an item with no player rule whose suggestion is to sell: limited to what this run picked up
-    monkeypatch.setattr(bagrules, "suggest", lambda name, hotkey=False: ("sell", 0))
-    p = {"bag_rules": {}, "only_this_run": True}
+    monkeypatch.setattr(bagrules, "suggest", stand_in(bagrules.suggest, lambda name, hotkey=False: ("sell", 0)))
+    p: dict[str, Any] = {"bag_rules": {}, "only_this_run": True}
     assert bagrules.plan(p, {"Wolf Pelt": 10}, gained={"wolf pelt": 3}) == [("Wolf Pelt", "sell", 3)]
 
 
-def test_plan_a_chosen_rule_ignores_only_this_run():
+def test_plan_a_chosen_rule_ignores_only_this_run() -> None:
     p = {"bag_rules": {"wolf pelt": {"action": "sell", "keep": 0}}, "only_this_run": True}
     assert bagrules.plan(p, {"Wolf Pelt": 10}, gained={"wolf pelt": 1}) == [("Wolf Pelt", "sell", 10)]
 
 
-def test_plan_gained_absent_counts_as_nothing_gained(monkeypatch):
-    monkeypatch.setattr(bagrules, "suggest", lambda name, hotkey=False: ("sell", 0))
-    p = {"bag_rules": {}, "only_this_run": True}
+def test_plan_gained_absent_counts_as_nothing_gained(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(bagrules, "suggest", stand_in(bagrules.suggest, lambda name, hotkey=False: ("sell", 0)))
+    p: dict[str, Any] = {"bag_rules": {}, "only_this_run": True}
     assert bagrules.plan(p, {"Wolf Pelt": 10}, gained={}) == []
     # with only_this_run off, the whole stack is touched
     p["only_this_run"] = False
     assert bagrules.plan(p, {"Wolf Pelt": 10}, gained={}) == [("Wolf Pelt", "sell", 10)]
 
 
-def test_plan_hotkey_items_are_kept():
+def test_plan_hotkey_items_are_kept() -> None:
     p = {"bag_rules": {"large red potion": {"action": "sell"}}, "only_this_run": False}
     # the player's own rule still wins over the hotkey protection
     assert bagrules.plan(p, {"Large Red Potion": 3}, hotkeys=["Large Red Potion"]) == [
@@ -227,11 +234,11 @@ def test_plan_hotkey_items_are_kept():
 
 
 # ---------------------------------------------------------------- supply rules
-def test_supply_rule_prefers_an_explicit_source():
+def test_supply_rule_prefers_an_explicit_source() -> None:
     assert bagrules.supply_rule({"source": "buy", "storage_first": True, "buy": True}) == "buy"
 
 
-def test_supply_rule_reads_the_old_flags():
+def test_supply_rule_reads_the_old_flags() -> None:
     assert bagrules.supply_rule({"storage_first": True, "buy": True}) == "both"
     assert bagrules.supply_rule({"storage_first": True, "buy": False}) == "storage"
     assert bagrules.supply_rule({"storage_first": False, "buy": True}) == "buy"
@@ -239,7 +246,7 @@ def test_supply_rule_reads_the_old_flags():
     assert bagrules.supply_rule({}) == "both"       # defaults are storage_first=True, buy=True
 
 
-def test_suggest_supplies_offers_only_matching_hotkey_items():
+def test_suggest_supplies_offers_only_matching_hotkey_items() -> None:
     scan = {"hotkeys": [
         {"item": "Large Red Potion"},
         {"item": "Large Blue Potion"},
@@ -257,7 +264,7 @@ def test_suggest_supplies_offers_only_matching_hotkey_items():
     ]
 
 
-def test_suggest_supplies_empty_scan():
+def test_suggest_supplies_empty_scan() -> None:
     assert bagrules.suggest_supplies(None) == []
     assert bagrules.suggest_supplies({}) == []
     assert bagrules.suggest_supplies({"hotkeys": []}) == []

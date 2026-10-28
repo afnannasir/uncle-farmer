@@ -1,20 +1,26 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """What the bot knows about the game: the item table, the category/shop/buyer mapping (the table
 plus name heuristics), cities and their NPCs, who trades what, and the fallback when the built file
 is missing."""
 
+from __future__ import annotations
+
 import pytest
 
 from unclefarmer import knowledge, paths
+from pathlib import Path
+from collections.abc import Iterator
 
 
 @pytest.fixture(autouse=True)
-def fresh_cache():
+def fresh_cache() -> Iterator[None]:
     knowledge._k = None
     yield
     knowledge._k = None
 
 
-def test_data_loads_once_and_indexes_items():
+def test_data_loads_once_and_indexes_items() -> None:
     d = knowledge.data()
     assert d is knowledge.data()                                   # cached
     assert d["_items"]["small red potion"]["category"] == "hp_potion"
@@ -22,13 +28,14 @@ def test_data_loads_once_and_indexes_items():
     assert d["npcs"]
 
 
-def test_item_is_case_and_space_insensitive():
-    assert knowledge.item("  SMALL RED POTION ")["name"] == "Small Red Potion"
+def test_item_is_case_and_space_insensitive() -> None:
+    item = knowledge.item("  SMALL RED POTION ")
+    assert item is not None and item["name"] == "Small Red Potion"
     assert knowledge.item("no such thing") is None
     assert knowledge.item(None) is None
 
 
-def test_category_uses_the_table_then_the_name():
+def test_category_uses_the_table_then_the_name() -> None:
     assert knowledge.category("Small Red Potion") == "hp_potion"
     assert knowledge.category("level 3 Ruby") == "gem"             # the table says "other"; the name decides
     assert knowledge.category("Wanderer shard") == "shard"
@@ -38,7 +45,7 @@ def test_category_uses_the_table_then_the_name():
     assert knowledge.category("Gold Coin") == "other"
 
 
-def test_shop_and_buyer_roles():
+def test_shop_and_buyer_roles() -> None:
     assert knowledge.shop_role("Small Red Potion") == "potions"
     assert knowledge.shop_role("Steak") == "grocer"
     assert knowledge.shop_role("Iron ore") is None
@@ -50,7 +57,7 @@ def test_shop_and_buyer_roles():
     assert knowledge.buyer_role("Gold Coin") is None
 
 
-def test_cities_and_service_npcs():
+def test_cities_and_service_npcs() -> None:
     by_map = {c["map"] for c in knowledge.cities()}
     potions = knowledge.service_npcs("potions")
     assert potions
@@ -59,7 +66,7 @@ def test_cities_and_service_npcs():
     assert knowledge.service_npcs("no such role") == []
 
 
-def test_traders_lists_who_trades_an_item():
+def test_traders_lists_who_trades_an_item() -> None:
     assert knowledge.traders("Small Blue Potion", "sell") == \
         [(1041, "Apothecary Phillips", 180, 220, 60, "arnebia")]
     assert knowledge.traders("Puffer Fish", "buy") == \
@@ -68,14 +75,14 @@ def test_traders_lists_who_trades_an_item():
     assert knowledge.traders("nothing at all", "buy") == []
 
 
-def test_describe_npc():
+def test_describe_npc() -> None:
     grocer = knowledge.describe_npc("grocer john")
     assert grocer is not None and grocer["role"] == "grocer"
     assert knowledge.describe_npc("nobody") is None
     assert knowledge.describe_npc(None) is None
 
 
-def test_a_missing_file_gives_the_empty_shape(tmp_path, monkeypatch):
+def test_a_missing_file_gives_the_empty_shape(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "DATA", str(tmp_path))
     knowledge._k = None
     d = knowledge.data()

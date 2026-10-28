@@ -1,4 +1,6 @@
 """One Uncle Farmer per Windows session; a second launch brings the open window forward."""
+
+from __future__ import annotations
 import ctypes
 import sys
 from typing import Any

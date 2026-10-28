@@ -5,15 +5,17 @@ key names the agent understands, so a profile can be filled in from the player's
 of guessed defaults.
 """
 
+from __future__ import annotations
+
 import os
 
 from . import settings
 
 ATTACK_DEFAULTS = ["y", "u", "h", "j", "n", "m", "i", ",", ".", "/"]               # input.ini as shipped
 SLOT_DEFAULTS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="]
-_read_cache = {}      # input.ini path -> (modified time, bindings): read again only when it changes
+_read_cache: dict[str, tuple[float, dict[str, str]]] = {}      # input.ini path -> (modified time, bindings): read again only when it changes
 
-_NAMES = {
+_NAMES: dict[str, str] = {
     "SEMICOLON": ";", "DOT": ".", "COMMA": ",", "SLASH": "/", "QUOTE": "'", "MINUS": "-", "EQUAL": "=",
     "LBRACKET": "[", "RBRACKET": "]", "BACKSLASH": "\\", "SPACE": "space", "ENTER": "enter", "ESC": "esc",
     "TAB": "tab", "DEL": "delete", "BACKSPACE": "backspace", "UP": "up", "DOWN": "down", "LEFT": "left",
@@ -22,7 +24,7 @@ _NAMES = {
 }
 
 
-def _key(token):
+def _key(token: str) -> str | None:
     t = token.strip().upper()
     if t in _NAMES:
         return _NAMES[t]
@@ -40,7 +42,7 @@ def _key(token):
     return None
 
 
-def read(game_folder):
+def read(game_folder: str | None) -> dict[str, str]:
     """{action: "key" or "mod+key"} for every binding we can express, or {} if there's no file."""
     path = os.path.join(game_folder or "", "config", "input.ini")
     try:
@@ -55,8 +57,8 @@ def read(game_folder):
     return dict(binds)
 
 
-def _read(path):
-    raw = {}
+def _read(path: str) -> dict[str, str]:
+    raw: dict[str, str] = {}
     with open(path, "rb") as f:
         for line in f.read().decode("latin-1").splitlines():
             line = line.strip()
@@ -64,10 +66,10 @@ def _read(path):
                 k, v = line.split("=", 1)
                 raw[k.strip()] = v.strip()
 
-    def resolve(action, depth=0):
+    def resolve(action: str, depth: int = 0) -> str | None:
         if action not in raw or depth > 5:
             return None
-        parts = []
+        parts: list[str] = []
         for tok in raw[action].split("+"):
             if tok.startswith("W_"):
                 sub = resolve(tok, depth + 1)
@@ -84,9 +86,10 @@ def _read(path):
     return {a: k for a in raw for k in [resolve(a)] if k}
 
 
-def profile_keys(binds):
-    """The profile settings these bindings give, for the ones that exist."""
-    out = {}
+def profile_keys(binds: dict[str, str]) -> dict[str, str | dict[str, str | None]]:
+    """The profile settings these bindings give, for the ones that exist: a key, or (move_keys,
+    target_keys) a key per direction."""
+    out: dict[str, str | dict[str, str | None]] = {}
     move = {d: binds.get("W_MOVE_" + a) for d, a in (("up", "NORTH"), ("down", "SOUTH"), ("left", "WEST"),
                                                     ("right", "EAST"))}
     if all(move.values()):
@@ -105,31 +108,31 @@ def profile_keys(binds):
     return out
 
 
-def slot_keys(binds):
+def slot_keys(binds: dict[str, str]) -> list[str | None]:
     """[key for hotkey slot 1..12] (None where unbound)."""
     return [binds.get("W_USE%d" % i) for i in range(1, 13)]
 
 
-def phrase_keys(binds):
+def phrase_keys(binds: dict[str, str]) -> list[str | None]:
     """[key for quick phrase 1..12] (W_MSG1..12, Shift + the number row)."""
     return [binds.get("W_MSG%d" % i) for i in range(1, 13)]
 
 
-def phrase_key_list():
+def phrase_key_list() -> list[str]:
     """The 12 quick phrase keys of the player's game, the default where one isn't bound."""
     return [k or "shift+" + d for k, d in zip(phrase_keys(_game()), SLOT_DEFAULTS)]
 
 
-def attack_keys(binds):
+def attack_keys(binds: dict[str, str]) -> list[str | None]:
     """[key for attack 1..10]."""
     return [binds.get("W_ATTACK%d" % i) for i in range(1, 11)]
 
 
-def _game():
+def _game() -> dict[str, str]:
     return read(settings.load_app().get("game_folder"))
 
 
-def attack_key_list():
+def attack_key_list() -> list[str]:
     """The 10 skill keys of the player's game, the game's own default where one isn't bound."""
     return [k or d for k, d in zip(attack_keys(_game()), ATTACK_DEFAULTS)]
 

@@ -1,38 +1,32 @@
-# pyright: strict
 """Reading the game, waiting, the stop flag, phase timing and the chores players ask for.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
+
 import contextlib
 import queue
 import time
 from collections.abc import Callable, Generator
-from typing import Any, Protocol, cast
+from typing import TYPE_CHECKING, Any
 
-from ... import gamemem
+from ... import gamemem, jsonio
 from ...errors import carry_on
 from ...i18n import _
 from .base import (GameBroken, Stopped)
-from .parts import Parts
+from ...clock import Flag, StopFlag
+from ...link import GameLink
+from .parts import as_bot, Parts
+
+if TYPE_CHECKING:
+    from ..bot import Bot
 
 AGENT_HEALTH = 36       # from here the agent counts the game's out-of-memory errors (`health`)
 HEALTH_EVERY = 10.0     # seconds between health reads while running
 MEMORY_EVERY = 1800.0   # seconds between the game-memory lines in the log
 MEMORY_LOW_MB = 200     # address space left when the game is close to freezing: said once
-
-
-class GameConnection(Protocol):
-    def send(self, line: str) -> str: ...
-
-    def json(self, line: str) -> Any: ...
-
-
-class EventLike(Protocol):
-    def is_set(self) -> bool: ...
-
-    def wait(self, timeout: float | None = None) -> bool: ...
 
 
 class ReadingMixin(Parts):
@@ -53,7 +47,7 @@ class ReadingMixin(Parts):
     kills: int
     started: float
     doing_request: bool
-    requests: queue.Queue[Callable[["ReadingMixin"], None]]
+    requests: "queue.Queue[Callable[[Bot], object]]"
     agent_state: bool
     resumed_at = 0.0      # when a pause last ended (check)
     broken = None         # why the game stopped working, once it has (GameBroken)
@@ -63,16 +57,16 @@ class ReadingMixin(Parts):
     _memory_warned = False
 
     @property
-    def _game(self) -> GameConnection:
-        return cast(GameConnection, self.a)
+    def _game(self) -> GameLink:
+        return self.a
 
     @property
-    def _pause(self) -> EventLike:
-        return cast(EventLike, self.paused)
+    def _pause(self) -> Flag:
+        return self.paused
 
     @property
-    def _stop(self) -> EventLike:
-        return cast(EventLike, self.stop_event)
+    def _stop(self) -> StopFlag:
+        return self.stop_event
 
     resumed_at: float = 0.0      # when a pause last ended (check)
 
@@ -127,7 +121,7 @@ class ReadingMixin(Parts):
         try:
             if not paused:
                 tracker = getattr(self, "kill_tracker", None)
-                me = cast(dict[str, Any], getattr(self, "last_me", None) or {})
+                me: dict[str, Any] = getattr(self, "last_me", None) or {}
                 if tracker is not None and "id" in me:
                     tracker.update(me["id"])
             if tally is not None:
@@ -220,8 +214,8 @@ class ReadingMixin(Parts):
         while True:
             r = self._game.json(line)
             if good(r):
-                return cast(dict[str, Any], r)
-            why = (cast(dict[str, Any], r).get("error") if isinstance(r, dict) else None) or "?"
+                return r
+            why = (r.get("error") if jsonio.is_object(r) else None) or "?"
             if not why.startswith(self.TRANSIENT) or self.clock.time() > end:
                 raise Stopped(_("the game can't be read: {why}", why=why), final=True)
             self.sleep(0.25)
@@ -232,7 +226,7 @@ class ReadingMixin(Parts):
         self._snap_at = self.clock.time()
         self._snap_self = s.get("self")
         map_info = s.get("map")
-        map_data = cast(dict[str, Any], map_info) if isinstance(map_info, dict) else {}
+        map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
         return s
 
@@ -279,7 +273,7 @@ class ReadingMixin(Parts):
                 return
             self.doing_request = True
             try:
-                job(self)
+                job(as_bot(self))
             finally:
                 self.doing_request = False
 
@@ -332,7 +326,7 @@ class ReadingMixin(Parts):
 
     def contribution_now(self) -> int:
         """The character sheet's contribution at its last reading, or -1 when there is none yet."""
-        sheet = cast(dict[str, Any], getattr(getattr(self, "tally", None), "sheet", None) or {})
+        sheet: dict[str, Any] = getattr(getattr(self, "tally", None), "sheet", None) or {}
         return int(sheet.get("contribution", -1))
 
     def ui(self) -> dict[str, Any]:

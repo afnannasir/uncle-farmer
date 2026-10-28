@@ -2,15 +2,19 @@
 resource samples into per-process numbers, py-spy's raw stacks into per-thread time, and the report
 from all of it. The watcher's process facts are checked on this test's own process."""
 
+from __future__ import annotations
+
 import datetime as dt
 import json
 import os
 import sys
 
 import pytest
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import nightwatch as nw  # noqa: E402
+from typing import Any
 
 LOG = """\
 23:59:58  Hero: fighting Old Wolf
@@ -32,7 +36,7 @@ LOG = """\
 
 
 @pytest.fixture
-def logs(tmp_path, monkeypatch):
+def logs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     d = tmp_path / "logs"
     d.mkdir()
     (d / "2026-10-22.log").write_text("23:59:00  Hero: starting a plan as Hero\n" + LOG.split("\n", 1)[0] + "\n",
@@ -47,7 +51,7 @@ T0 = dt.datetime(2026, 10, 22, 23, 0)
 T1 = dt.datetime(2026, 10, 23, 1, 0)
 
 
-def test_the_log_is_read_across_midnight_per_character(logs):
+def test_the_log_is_read_across_midnight_per_character(logs: Path) -> None:
     rows = nw.read_log(T0, T1)
     assert rows[0][0].date() == dt.date(2026, 10, 22) and rows[-1][0].date() == dt.date(2026, 10, 23)
     c = nw.characters(rows)
@@ -58,7 +62,7 @@ def test_the_log_is_read_across_midnight_per_character(logs):
     assert h["contribution"] == [(dt.datetime(2026, 10, 23, 0, 30, 1), 4000, 60)]
 
 
-def test_gaps_between_kills_and_what_the_wasted_targets_cost(logs):
+def test_gaps_between_kills_and_what_the_wasted_targets_cost(logs: Path) -> None:
     h = nw.characters(nw.read_log(T0, T1))["Hero"]
     assert h["gaps"] == [7.0, 91.0]
     assert h["gap_stats"]["over_60s"] == 1
@@ -69,7 +73,7 @@ def test_gaps_between_kills_and_what_the_wasted_targets_cost(logs):
     assert longest["seconds"] == 91.0 and any("wouldn't select" in ln for ln in longest["lines"])
 
 
-def test_resources_per_process_and_growth():
+def test_resources_per_process_and_growth() -> None:
     t = 1_000_000.0
     samples = [{"t": t + i * 1800, "system": {"free_mb": 9000 - i},
                 "bot": {"cpu_s": 18.0 * i, "private_mb": 100 + 10 * i, "handles": 300, "threads": 9},
@@ -82,7 +86,7 @@ def test_resources_per_process_and_growth():
     assert r["free_min_mb"] == 8998
 
 
-def test_profiles_split_by_thread_with_waiting_and_agent_time(tmp_path):
+def test_profiles_split_by_thread_with_waiting_and_agent_time(tmp_path: Path) -> None:
     raw = "\n".join([
         "thread (7);run (unclefarmer\\engine\\runner.py:120);fight (unclefarmer\\engine\\botparts\\fighting.py:500)"
         ";json (unclefarmer\\link.py:80);readinto (socket.py:720) 30",
@@ -99,7 +103,7 @@ def test_profiles_split_by_thread_with_waiting_and_agent_time(tmp_path):
     assert t["thread 9"]["waiting"] == 100
 
 
-def test_a_thread_blocked_on_the_agent_is_waiting(tmp_path):
+def test_a_thread_blocked_on_the_agent_is_waiting(tmp_path: Path) -> None:
     # socket.recv is C code: py-spy's innermost Python frame is link._ask itself
     raw = "thread (7);run (unclefarmer\\chat.py:60);json (unclefarmer\\link.py:89);_ask (unclefarmer\\link.py:78) 40"
     (tmp_path / "p.txt").write_text(raw + "\n", encoding="utf-8")
@@ -107,7 +111,8 @@ def test_a_thread_blocked_on_the_agent_is_waiting(tmp_path):
     assert t["thread 7"]["waiting"] == 40 and t["thread 7"]["agent_wait"] == 40
 
 
-def fight(at, me, mob, dist, reach_s=None, end_s=5.0, kills=1, in_reach=0, reach=10.0, **more):
+def fight(at: str, me: list[float], mob: list[float], dist: float, reach_s: float | None=None, end_s: float=5.0,
+          kills: int=1, in_reach: int=0, reach: float=10.0, **more: Any) -> dict[str, Any]:
     r = {"at": at, "kind": "fight", "who": "Hero", "map": 5302, "me": me, "mob": mob, "dist": dist,
          "reach": reach, "sight": 3, "in_reach": in_reach, "hurt": False, "attacking": False,
          "end_s": end_s, "kills": kills}
@@ -117,7 +122,7 @@ def fight(at, me, mob, dist, reach_s=None, end_s=5.0, kills=1, in_reach=0, reach
     return r
 
 
-def test_walking_from_the_field_log(logs):
+def test_walking_from_the_field_log(logs: Path) -> None:
     recs = [
         fight("2026-10-22 23:59:00", [100, 100], [105, 100], 5.0, reach_s=0.0),            # in reach
         fight("2026-10-23 00:00:10", [100, 100], [130, 100], 30.0, reach_s=5.0, in_reach=1),  # passed one by
@@ -135,28 +140,28 @@ def test_walking_from_the_field_log(logs):
     assert w["fights"] == 3 and w["kills"] == 2 and w["in_reach_at_pick"] == 1 and w["passed_by"] == 1
     assert w["walk_s"] == 5.0 and w["never"] == 1 and w["never_s"] == 4.0
     assert w["searches"] == 1 and w["search_s"] == 8.0 and w["search_results"] == {"near": 1}
-    mid, spot, share, actual, rows, reach = w["stand"]
+    mid, _spot, share, actual, rows, reach = w["stand"]
     # the monsters stood at 105, 130 and 160: no place we stood (100 or 130) had two within 10 tiles
     assert mid == 5302 and rows == 3 and reach == 10.0 and actual == pytest.approx(1 / 3)
     assert share == pytest.approx(1 / 3)
 
 
-def test_the_stand_point_finds_the_spot_with_the_most_in_reach():
+def test_the_stand_point_finds_the_spot_with_the_most_in_reach() -> None:
     rows = [fight("x", [100, 100], [125, 100], 25.0), fight("x", [120, 100], [128, 100], 8.0),
             fight("x", [100, 100], [130, 100], 30.0)]
     st = nw.stand_point(rows)
     assert st is not None
-    mid, spot, share, actual, n, reach = st
+    _mid, spot, share, actual, _n, _reach = st
     assert spot == (120, 100) and share == 1.0 and actual == pytest.approx(1 / 3)
 
 
-def test_thread_names_take_the_newest_record(logs):
+def test_thread_names_take_the_newest_record(logs: Path) -> None:
     (logs / "threads.log").write_text("2026-10-22 20:00:00  7  run 1 Old\n2026-10-22 23:30:00  7  run 2 Hero\n"
                                       "2026-10-23 05:00:00  7  run 3 Later\n", encoding="utf-8")
     assert nw.thread_names(T1) == {7: "run 2 Hero"}
 
 
-def test_the_report_puts_it_all_together(logs, tmp_path):
+def test_the_report_puts_it_all_together(logs: Path, tmp_path: Path) -> None:
     night = tmp_path / "night"
     night.mkdir()
     (night / "watch.json").write_text(json.dumps({"started": "2026-10-22 23:00:00", "ended": "2026-10-23 01:00:00",
@@ -175,14 +180,14 @@ def test_the_report_puts_it_all_together(logs, tmp_path):
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows process calls")
-def test_process_facts_of_our_own_process():
+def test_process_facts_of_our_own_process() -> None:
     u = nw.usage(os.getpid())
     assert u and u["private_mb"] > 1 and u["handles"] > 0 and u["cpu_s"] >= 0
     assert os.getpid() in nw.processes()
     assert nw.system_memory()["free_mb"] > 0
 
 
-def test_the_app_names_its_threads_for_the_watcher(tmp_path, monkeypatch):
+def test_the_app_names_its_threads_for_the_watcher(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import threading
 
     from unclefarmer import applog, paths
@@ -192,7 +197,7 @@ def test_the_app_names_its_threads_for_the_watcher(tmp_path, monkeypatch):
     assert int(tid) == threading.get_native_id() and what == "run 1234 Hero"
 
 
-def test_a_watch_cut_off_by_a_shutdown_ends_at_its_last_sample(logs, tmp_path):
+def test_a_watch_cut_off_by_a_shutdown_ends_at_its_last_sample(logs: Path, tmp_path: Path) -> None:
     night = tmp_path / "cut"
     night.mkdir()
     (night / "watch.json").write_text(json.dumps({"started": "2026-10-22 23:00:00", "ended": None,

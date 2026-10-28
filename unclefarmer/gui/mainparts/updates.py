@@ -1,5 +1,7 @@
 """Updates (updater.py): after one, checking, offering and installing."""
 
+from __future__ import annotations
+
 import threading
 
 import wx
@@ -12,7 +14,7 @@ from .base import FrameParts
 
 class UpdatesMixin(FrameParts):
     # ------------------------------------------------------------ updates (updater.py)
-    def after_update(self):
+    def after_update(self) -> None:
         """Say how an update went, and look for a newer one in the background."""
         result = updater.take_result()
         if result is None:
@@ -24,31 +26,33 @@ class UpdatesMixin(FrameParts):
                           "in {log}.", v=result.get("version"), why=result.get("error"), cur=__version__,
                           log=updater.LOG))
         if updater.frozen() and self.s.get("check_updates", True):
-            def look():
+            def look() -> None:
                 rel = updater.check()
                 if rel and rel["version"] != self.s.get("skip_version"):
                     wx.CallAfter(self.offer_update, rel, True)
             threading.Thread(target=look, daemon=True).start()
 
-    def check_updates(self):
+    def check_updates(self) -> None:
         """Help, Check for updates. The request goes to a worker: GitHub can take its time and the
         window must not freeze (a BusyCursor only hid that)."""
         if self.destroyed:
             return
         self._append(_("Looking for a new version..."), False)
 
-        def work():
+        def work() -> None:
+            rel: updater.Release | None = None
+            err: updater.UpdateError | None = None
             try:
-                rel, err = updater.latest(), None
+                rel = updater.latest()
             except updater.UpdateError as e:
-                rel, err = None, e
+                err = e
             try:
                 wx.CallAfter(self._checked_updates, rel, err)
             except RuntimeError:          # the window went away meanwhile
                 pass
         threading.Thread(target=work, daemon=True).start()
 
-    def _checked_updates(self, rel, err):
+    def _checked_updates(self, rel: updater.Release | None, err: updater.UpdateError | None) -> None:
         if self.destroyed:
             return
         self.SetStatusText("")
@@ -64,7 +68,7 @@ class UpdatesMixin(FrameParts):
         else:
             self.offer_update(rel, False)
 
-    def offer_update(self, rel, at_start):
+    def offer_update(self, rel: updater.Release, at_start: bool) -> None:
         if self.destroyed:
             return
         notes = rel.get("notes") or _("(no notes)")
@@ -80,7 +84,7 @@ class UpdatesMixin(FrameParts):
             return
         self.install_update(rel)
 
-    def install_update(self, rel):
+    def install_update(self, rel: updater.Release) -> None:
         if not updater.frozen():
             info(self, _("This copy runs from its source code: update it with git pull."))
             return
@@ -98,7 +102,7 @@ class UpdatesMixin(FrameParts):
                                 wx.PD_APP_MODAL | wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME)
         state = {"cancel": False}       # the worker asks this; the window's thread sets it
 
-        def progress(done, total):
+        def progress(done: int, total: int) -> bool:
             if self.destroyed:
                 return False
             try:
@@ -107,23 +111,26 @@ class UpdatesMixin(FrameParts):
                 return False
             return not state["cancel"]
 
-        def work():
+        def work() -> None:
+            folder: str | None = None
+            err: Exception | None = None
             try:
                 zip_path = updater.download(rel, progress)
                 try:
                     wx.CallAfter(self._update_progress, dlg, state, 99, 99, _("Unpacking..."))
                 except RuntimeError:
                     pass
-                folder, err = updater.unpack(zip_path), None
+                folder = updater.unpack(zip_path)
             except (updater.UpdateError, OSError) as e:
-                folder, err = None, e
+                err = e
             try:
                 wx.CallAfter(self._update_done, dlg, rel, folder, err)
             except RuntimeError:
                 pass
         threading.Thread(target=work, daemon=True).start()
 
-    def _update_progress(self, dlg, state, done, total, message=None):
+    def _update_progress(self, dlg: wx.ProgressDialog, state: dict[str, bool], done: int, total: int,
+                         message: str | None = None) -> None:
         if self.destroyed:
             state["cancel"] = True
             return
@@ -132,12 +139,13 @@ class UpdatesMixin(FrameParts):
         if not keep:
             state["cancel"] = True
 
-    def _update_done(self, dlg, rel, folder, err):
+    def _update_done(self, dlg: wx.ProgressDialog, rel: updater.Release, folder: str | None,
+                     err: Exception | None) -> None:
         self.updating = False
         if self.destroyed:
             return
         dlg.Destroy()
-        if err is not None:
+        if err is not None or folder is None:        # (no folder comes only with an error)
             if str(err) != "cancelled":
                 error(self, _("The update didn't download: {why}", why=err))
             updater.clean()

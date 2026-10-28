@@ -13,6 +13,8 @@ ctypes releases the GIL during each call, so a long search no longer holds up th
 message thread.
 """
 
+from __future__ import annotations
+
 import ctypes
 import glob
 import hashlib
@@ -24,17 +26,17 @@ SOURCE = os.path.join(HERE, "routing.c")
 EXT = ".dll" if os.name == "nt" else ".so"
 ABI = 3
 
-lib = None
+lib: ctypes.CDLL | None = None
 why_not = ""          # why lib is None, for the log and the benchmarks
 
 
-def source_hash(path=SOURCE):
+def source_hash(path: str = SOURCE) -> str:
     """sha256 of routing.c with its line endings made LF (a checkout may turn them to CRLF)."""
     with open(path, "rb") as f:
         return hashlib.sha256(f.read().replace(b"\r\n", b"\n")).hexdigest()
 
 
-def dll_path(source=SOURCE, folder=HERE):
+def dll_path(source: str = SOURCE, folder: str = HERE) -> str | None:
     """The DLL to load: the one built from routing.c when it is here, else (a release) the newest
     _routing-*.dll in the folder; None when there is none."""
     if os.path.exists(source):
@@ -43,7 +45,7 @@ def dll_path(source=SOURCE, folder=HERE):
     return built[-1] if built else None
 
 
-def _declare(dll):
+def _declare(dll: ctypes.CDLL) -> None:
     i32, f64, u32, p = ctypes.c_int32, ctypes.c_double, ctypes.c_uint32, ctypes.c_void_p
     b = ctypes.c_char_p             # the model's flat bytes: passed without a copy
     dll.uf_abi.restype = ctypes.c_int
@@ -70,7 +72,7 @@ def _declare(dll):
     dll.uf_line_ok.argtypes = [i32, i32, i32, i32, b, b, b, b, i32, i32, i32, i32, i32, i32]
 
 
-def load(path=None, source=SOURCE):
+def load(path: str | None = None, source: str = SOURCE) -> ctypes.CDLL | None:
     """The DLL (dll_path() unless given), checked and declared, or None (why_not says why)."""
     global why_not
     if os.environ.get("UNCLEFARMER_NO_NATIVE"):

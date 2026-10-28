@@ -4,22 +4,48 @@ The agent picks a free port in 17311..17330 and writes agent.<pid>.port ("port p
 agent\\run. A connection must start with `auth <secret>`. One request line, one reply line.
 """
 
+from __future__ import annotations
+
 import ctypes
 import glob
 import os
 import socket
 import threading
+from typing import Any, Protocol
 
 from . import gamelang, jsonio as json, paths
 
 HOST = "127.0.0.1"
 
 
+class JsonLink(Protocol):
+    """A link only read from: a request line and the agent's JSON answer (the scan, the kill count)."""
+
+    def json(self, line: str) -> Any: ...
+
+
+class SendLink(Protocol):
+    """A link only told things: a request line and the agent's answer as text (trust's `idof`)."""
+
+    def send(self, line: str) -> str: ...
+
+
+class GameLink(JsonLink, SendLink, Protocol):
+    """What the bot asks of its link to the game: a request line and its answer, as text or as
+    the agent's JSON. AgentLink is the real one; the tests hand the bot stand-ins of their own."""
+
+
+class OpenLink(GameLink, Protocol):
+    """A link its holder also closes when done (the private-message thread's own link)."""
+
+    def close(self) -> None: ...
+
+
 class AgentError(RuntimeError):
     pass
 
 
-def _alive(pid):
+def _alive(pid: int) -> bool:
     kernel = ctypes.windll.kernel32
     h = kernel.OpenProcess(0x1000, False, pid)
     if not h:
@@ -31,14 +57,14 @@ def _alive(pid):
         kernel.CloseHandle(h)
 
 
-def agents(run_dir=None):
+def agents(run_dir: str | None = None) -> list[tuple[int, int, str]]:
     """Every live agent as (port, pid, secret), newest first."""
-    found = []
+    found: list[tuple[float, int, int, str]] = []
     for path in glob.glob(os.path.join(run_dir or paths.AGENT_RUN, "agent.*.port")):
         try:
             with open(path, encoding="utf-8") as f:
-                port, pid, secret = f.read().split()
-            port, pid = int(port), int(pid)
+                port_text, pid_text, secret = f.read().split()
+            port, pid = int(port_text), int(pid_text)
         except (OSError, ValueError):
             continue
         if _alive(pid):
@@ -58,7 +84,7 @@ class AgentLink:
 
     broken: str | None = None       # why the link can no longer be used (a request failed half way)
 
-    def __init__(self, pid=None, run_dir=None, timeout=10.0):
+    def __init__(self, pid: int | None = None, run_dir: str | None = None, timeout: float = 10.0) -> None:
         live = agents(run_dir)
         if pid is not None:
             live = [a for a in live if a[1] == pid]
@@ -73,10 +99,10 @@ class AgentLink:
             self.close()
             raise AgentError("refused")
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         return self._ask(line).decode("utf-8")
 
-    def _ask(self, line):
+    def _ask(self, line: str) -> bytes:
         """The reply line to one request line, as bytes (json() hands them to orjson as they are)."""
         with self.lock:
             if self.broken:
@@ -100,7 +126,9 @@ class AgentLink:
             self.buf = buf[end + 1:]
             return buf[:end]
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
+        """The agent's JSON answer to one request line. Any: each command answers its own shape
+        (a dict, a list, {"error": ...}); the callers check what they use."""
         try:
             data = json.loads(self._ask(line))
         except ValueError:
@@ -111,24 +139,25 @@ class AgentLink:
             data = gamelang.english(data)      # the game's words back in English (another language pack)
         return data
 
-    def close(self):
+    def close(self) -> None:
         try:
             self.sock.close()
         except OSError:
             pass
 
-    def __enter__(self):
+    def __enter__(self) -> "AgentLink":
         return self
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc: object) -> None:
         self.close()
 
 
-def games():
+def games() -> list[tuple[int, str | None, str | None]]:
     """[(pid, character name or None, map name or None)] for every running game with the agent."""
-    out = []
-    for port, pid, _secret in agents():
-        name = where = None
+    out: list[tuple[int, str | None, str | None]] = []
+    for _port, pid, _secret in agents():
+        name: str | None = None
+        where: str | None = None
         try:
             with AgentLink(pid=pid, timeout=3) as a:
                 s = a.json("mem")

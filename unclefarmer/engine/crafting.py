@@ -43,43 +43,49 @@ Menus as the game shows them (from logged sessions):
                     not selected" + "start forging"
 """
 
+from __future__ import annotations
+
 import re
-from types import SimpleNamespace
-from typing import Any, Callable
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass, field
+from typing import Any, TypeVar
 
 from .. import atlas, knowledge
 from ..i18n import _
 from . import bagrules, town
-from .bot import Stopped
+from .bot import Bot, Stopped
 from .botparts.base import STOPPING, note_failure
 
 # The craftsmen in a gang's base: the same cells in every gang (seen in two gangs' bases).
 GANG_SPOTS = {"forger": ("Forger", (28, 94)), "gem_craftsman": ("Gem Craftsman", (59, 93)),
               "artificer": ("Artificer", (53, 94))}
+Entry = dict[str, Any]           # one entry of a game menu (link `dialog`)
+N = TypeVar("N")
+D = TypeVar("D")
 GEM = re.compile(r"^\s*Level (\d+) ([A-Za-z' ]+?)\s*$", re.I)
 
 
 # ---------------------------------------------------------------------------------------- getting there
-def in_gang(b):
+def in_gang(b: Bot) -> bool:
     mid = b.map_id()
     return atlas.kind(mid) == "gang" or "gang" in atlas.label(mid).lower()
 
 
-def place(cfg):
+def place(cfg: dict[str, Any]) -> str:
     """Where a tool's craftsman is: "gang" (your gang's), "gang:<name>" (that gang's) or "city"."""
-    where = cfg.get("where", "gang")
+    where: str = cfg.get("where", "gang")
     if where == "other_gang":
         name = (cfg.get("gang_name") or "").strip()
         return "gang:" + name if name else "gang"
     return where
 
 
-def _reachable(b, role):
+def _reachable(b: Bot, role: str) -> bool:
     """We stand in the half of the gang base where that craftsman is (see the module notes)."""
     return reachable_cell(b, GANG_SPOTS[role][1])
 
 
-def reachable_cell(b, cell):
+def reachable_cell(b: Bot, cell: tuple[int, int]) -> bool:
     """We stand in the part of this map that cell is in: a gang base's two halves are walled apart."""
     me = b.me()
     try:
@@ -92,7 +98,7 @@ def reachable_cell(b, cell):
         return True                       # no map data: let the walk find out
 
 
-def _pick_gang(b, gang):
+def _pick_gang(b: Bot, gang: str) -> bool:
     """After "all gangs" (or "Allied gangs"): find that gang by name - typing it when the game asks
     for a name, turning pages when there are pages - and choose it."""
     want = r"(?i)(^|[^a-z0-9])%s([^a-z0-9]|$)" % re.escape(gang)
@@ -117,12 +123,12 @@ def _pick_gang(b, gang):
     return False
 
 
-def pick_at_entrance(b, gang):
+def pick_at_entrance(b: Bot, gang: str) -> bool:
     """At an open Gang Entrance menu: the gang named `gang`, through "all gangs" (or "Allied
     gangs"), chosen. Its own menu (which hall to enter) is what opens next. False, said, when no
     list has it."""
     b.log(_("looking for the gang {gang} at the Gang Entrance", gang=gang))
-    top = b.dialog().get("top") or {}
+    top: dict[str, Any] = b.dialog().get("top") or {}
     for listing in (r"(?i)all\s+gangs", r"(?i)allied\s+gangs"):
         if b.find_entry(top, listing) is not None and b.choose(listing) is not None and _pick_gang(b, gang):
             return True
@@ -133,7 +139,7 @@ def pick_at_entrance(b, gang):
     return False
 
 
-def enter_gang(b, gang=None, role="gem_craftsman"):
+def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool:
     """Into a gang base's OUTER hall, where the craftsmen are: your own gang's through the nearest
     Gang Entrance, or the gang named `gang` through its "all gangs" list. Already in a gang base
     but in the walled-off inner hall (or the wrong gang's): out and in again."""
@@ -167,7 +173,7 @@ def enter_gang(b, gang=None, role="gem_craftsman"):
     return True
 
 
-def open_craftsman(b, role, where):
+def open_craftsman(b: Bot, role: str, where: str) -> str:
     """Open a craftsman's menu. where: "gang" (your gang's, cheaper), "gang:<name>" (that gang's) or
     "city" (the nearest city's). Falls back to a city when the gang's can't be reached. Returns
     where it went."""
@@ -193,17 +199,18 @@ def open_craftsman(b, role, where):
 
 
 # ---------------------------------------------------------------------------------------- menu helpers
-def menu_text(b):
-    return town._menu_text(b)
+def menu_text(b: Bot) -> str:
+    return town.menu_text(b)
 
 
-def entries(b):
+def entries(b: Bot) -> list[tuple[int, int, Entry]]:
     """[(row, col, entry)] of the open menu."""
-    top = b.dialog().get("top") or {}
-    return [(r, c, e) for r, row in enumerate(top.get("rows", [])) for c, e in enumerate(row) if e]
+    top: dict[str, Any] = b.dialog().get("top") or {}
+    rows: list[list[Entry | None]] = top.get("rows", [])
+    return [(r, c, e) for r, row in enumerate(rows) for c, e in enumerate(row) if e]
 
 
-def entry_like(b, pattern):
+def entry_like(b: Bot, pattern: str) -> Entry | None:
     rx = re.compile(pattern, re.I)
     for _r, _c, e in entries(b):
         if any(rx.search(t) for t in b.entry_texts(e)):
@@ -211,7 +218,7 @@ def entry_like(b, pattern):
     return None
 
 
-def is_ticked(e):
+def is_ticked(e: Entry) -> bool:
     """A checkbox entry's state: the Forger writes "selected" / "not selected"; others carry it in
     the last number of the entry's command."""
     text = " ".join(t for t in (e.get("text"), e.get("raw"), e.get("f"), e.get("g")) if t).lower()
@@ -219,11 +226,11 @@ def is_ticked(e):
         return False
     if "selected" in text:
         return True
-    cmd = e.get("cmd") or []
+    cmd: list[Any] = e.get("cmd") or []
     return bool(cmd and cmd[-1])
 
 
-def tick(b, pattern, want=True):
+def tick(b: Bot, pattern: str, want: bool = True) -> bool:
     """Set a checkbox entry. True when the game shows it set as wanted."""
     e = entry_like(b, pattern)
     if e is None:
@@ -243,19 +250,20 @@ def tick(b, pattern, want=True):
     return e is not None and is_ticked(e) == want
 
 
-def spare_arnebia(b):
+def spare_arnebia(b: Bot) -> int:
     return town.counts(b).get("arnebia", 0) - int(b.p.get("gem_keep_arnebia", 20000))
 
 
-def _num(rx, text, default=None, cast: Callable[[str], Any] = int):
+def _num(rx: str, text: str, default: D, cast: Callable[[str], N] = int) -> N | D:
+    """The first group of rx in text, through cast; default when rx isn't there."""
     m = re.search(rx, text, re.I)
     return cast(m.group(1)) if m else default
 
 
 # ---------------------------------------------------------------------------------------- gems
-def gem_levels(b, colour):
+def gem_levels(b: Bot, colour: str) -> dict[int, int]:
     """{level: count} of a gem colour in the bag."""
-    out = {}
+    out: dict[int, int] = {}
     for name, n in town.counts(b).items():
         m = GEM.match(name)
         if m and m.group(2).strip().lower() == colour.lower() and "shard" not in name:
@@ -263,7 +271,8 @@ def gem_levels(b, colour):
     return out
 
 
-def raise_gems(b, colour, level, k, boost, protect, where, check_only=False):
+def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bool, where: str,
+               check_only: bool=False) -> tuple[int, int]:
     """Combine 3 Level `level` gems into 1 a level higher, k times. With protect, one at a time
     (only single synthesis takes a protection rune); otherwise in one batch. Returns (made, lost)."""
     gem, nxt = "Level %d %s" % (level, colour), "Level %d %s" % (level + 1, colour)
@@ -314,7 +323,7 @@ def raise_gems(b, colour, level, k, boost, protect, where, check_only=False):
     return made, lost
 
 
-def _synthesize_one(b, want_boost, shard, section, where):
+def _synthesize_one(b: Bot, want_boost: bool, shard: str, section: str, where: str) -> bool:
     """One protected synthesis (the boost shard added when wanted). False: stop."""
     if not tick(b, r"add 1 .*Shard", want_boost) and want_boost:
         b.log(_("couldn't add the {shard}", shard=shard))
@@ -331,7 +340,7 @@ def _synthesize_one(b, want_boost, shard, section, where):
     return True
 
 
-def _synthesize_batch(b, want_boost, each):
+def _synthesize_batch(b: Bot, want_boost: bool, each: int) -> bool:
     """A batch synthesis of `each` (the boost shards used automatically when wanted). False: stop."""
     if want_boost:
         tick(b, r"Automatically use .*Shard", True)
@@ -343,7 +352,7 @@ def _synthesize_batch(b, want_boost, each):
 
 
 # ---------------------------------------------------------------------------------------- getting shards
-def storage_count(b, item):
+def storage_count(b: Bot, item: str) -> int:
     """How many of item the storehouse holds ("1; 20 Memory Butterfly"), with its list open."""
     for _r, _c, e in entries(b):
         for t in b.entry_texts(e):
@@ -353,7 +362,7 @@ def storage_count(b, item):
     return 0
 
 
-def take_from_storage(b, item, n, check_only=False):
+def take_from_storage(b: Bot, item: str, n: int, check_only: bool=False) -> int:
     """Take up to n of item out of the storehouse, never asking for more than it holds."""
     if n <= 0:
         return 0
@@ -377,21 +386,22 @@ def take_from_storage(b, item, n, check_only=False):
     return got
 
 
-def fee_per_shard(b, shard):
+def fee_per_shard(b: Bot, shard: str) -> float | None:
     """The Gem Craftsman's fee for making this shard's gem, per shard (a quarter of the gem's fee),
     as last seen; None if the bot hasn't seen it yet."""
     gem = town.gem_of(shard)
-    fee = (b.p.get("gem_fees") or {}).get(gem.lower()) if gem else None
+    fees: dict[str, int] = b.p.get("gem_fees") or {}
+    fee = fees.get(gem.lower()) if gem else None
     return None if fee is None else fee / float(town.SHARDS_PER_GEM)
 
 
-def fees_owed(b, shards):
+def fees_owed(b: Bot, shards: Iterable[str]) -> float:
     """The gem fees still to pay for the chosen shards already in the bag."""
     have = town.counts(b)
     return sum(have.get(s.lower(), 0) * (fee_per_shard(b, s) or 0) for s in shards)
 
 
-def buy_shards(b, shard, n, max_price=0, check_only=False, owed=0):
+def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=False, owed: float = 0) -> int:
     """Buy up to n of a shard at the nearest Shard Market, at no more than max_price each (0: any
     price), and never below the arnebia reserve. The market's own row gives the price. Shards are
     bought only as far as the gem fee for them can be paid too: a shard bought but never made into a
@@ -444,7 +454,8 @@ def buy_shards(b, shard, n, max_price=0, check_only=False, owed=0):
     return got
 
 
-def fetch_shards(b, shard, n, supply, max_price=0, check_only=False, chosen=()):
+def fetch_shards(b: Bot, shard: str, n: int, supply: str, max_price: int = 0, check_only: bool=False,
+                 chosen: Sequence[str] = ()) -> int:
     """Bring up to n of a shard into the bag: supply "both" (storehouse, then the market),
     "storage" or "buy". chosen: every shard the Gem Maker is working on, whose fees are kept back
     when buying. Returns how many arrived."""
@@ -456,11 +467,11 @@ def fetch_shards(b, shard, n, supply, max_price=0, check_only=False, chosen=()):
     return got
 
 
-def room_for(b, shard, share):
+def room_for(b: Bot, shard: str, share: float) -> int | None:
     """How many of a shard fit into `share` of the bag's free room (up to the profile's bag_full_at
     percent), from the character sheet's load and the shard's learned weight; None if its weight
     isn't known yet."""
-    sheet = b.refresh_sheet(force=True) or {}
+    sheet: dict[str, Any] = b.refresh_sheet(force=True) or {}
     if not sheet.get("maxload"):
         return None
     free = sheet["maxload"] * float(b.p.get("bag_full_at", 100)) / 100.0 - sheet.get("load", 0)
@@ -470,23 +481,23 @@ def room_for(b, shard, share):
     return max(0, min(2000, int(free * share // w)))
 
 
-def fill_with(b, shard, share, supply, max_price, chosen=()):
+def fill_with(b: Bot, shard: str, share: float, supply: str, max_price: int, chosen: Sequence[str] = ()) -> int:
     """Fill `share` of the bag's free room with a shard. Learns the shard's weight first if needed
     (the load before and after a small first batch)."""
     k = room_for(b, shard, share)
     got = 0
     if k is None:
-        before = town._load(b)
+        before = town.load_now(b)
         got = fetch_shards(b, shard, 20, supply, max_price, chosen=chosen)
         if got:
-            bagrules.learn_weight(shard, town._load(b), before, got)      # the load went up by got shards
+            bagrules.learn_weight(shard, town.load_now(b), before, got)      # the load went up by got shards
         k = room_for(b, shard, share)
         if k is None:
             return got
     return got + fetch_shards(b, shard, k, supply, max_price, chosen=chosen)
 
 
-def colour_of(name):
+def colour_of(name: str) -> str | None:
     """The gem colour of a gem or shard name ("Level 2 Topaz Shard" -> "Topaz"), or None."""
     m = re.match(r"^\s*Level \d+ ([A-Za-z' ]+?)(?: Shard)?\s*$", name or "", re.I)
     if not m or "crystal" in m.group(1).lower():
@@ -494,9 +505,9 @@ def colour_of(name):
     return m.group(1).strip()
 
 
-def shard_levels(b, colour):
+def shard_levels(b: Bot, colour: str) -> dict[int, int]:
     """{level: count} of a colour's shards in the bag."""
-    out = {}
+    out: dict[int, int] = {}
     for name, n in town.counts(b).items():
         m = town.GEM_SHARD.match(name)
         if m and m.group(2).strip().lower() == colour.lower():
@@ -504,14 +515,16 @@ def shard_levels(b, colour):
     return out
 
 
-def shortfall(gems, shards, level, missing, protect):
+def shortfall(gems: Mapping[int, int], shards: Mapping[int, int], level: int, missing: int,
+              protect: bool) -> tuple[dict[int, int], int]:
     """What making `missing` more Level `level` gems still needs, from the gems and shards of that
     colour ({level: count}): {lv: gems still to come at lv} for lv 1..level, and the Level 1 shards
     to get. 4 shards make a gem; a combine works half the time, so a gem a level up takes about 4
     gems below it (3 with protection runes: a failure then keeps all three). Boost shards are left
     out, so the estimate errs high; each round of the Gem Maker plans again from the real bag."""
     per = 3 if protect else 4
-    short, out = max(0, missing), {}
+    short = max(0, missing)
+    out: dict[int, int] = {}
     for lv in range(level, 0, -1):
         short = max(0, short - (gems.get(lv, 0) if lv < level else 0) - shards.get(lv, 0) // 4)
         out[lv] = short
@@ -520,7 +533,7 @@ def shortfall(gems, shards, level, missing, protect):
     return out, max(0, out.get(1, 0) * 4 - shards.get(1, 0) % 4)
 
 
-def make_most(b, cfg, check_only=False):
+def make_most(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     """Make the most of the gems and shards in the bag, colour by colour: shards into gems (4 make
     1), then gems up a level (3 make 1) as far as they go, again and again, because a failed combine
     leaves a shard that the next round turns back into a gem. Shards left over (fewer than four) are
@@ -528,11 +541,14 @@ def make_most(b, cfg, check_only=False):
     where = place(cfg)
     up_to, keep = int(cfg.get("up_to", 20)), int(cfg.get("keep", 0))
     boost, protect = cfg.get("boost", True), cfg.get("protect", False)
-    opener = lambda: open_craftsman(b, "gem_craftsman", where)       # noqa: E731
-    wanted_colours = {c.lower() for c in cfg.get("colours", [])}     # empty: every colour
+    def opener() -> str:
+        return open_craftsman(b, "gem_craftsman", where)
 
-    def colours_now():
-        out = {}
+    colours: list[str] = cfg.get("colours", [])
+    wanted_colours = {c.lower() for c in colours}     # empty: every colour
+
+    def colours_now() -> list[str]:
+        out: dict[str, str] = {}
         for name, n in town.counts(b).items():
             col = colour_of(name)
             if col and n > 0 and (not wanted_colours or col.lower() in wanted_colours):
@@ -575,7 +591,7 @@ def make_most(b, cfg, check_only=False):
     b.close_dialogs()
 
 
-def gem_maker(b, cfg, check_only=False):
+def gem_maker(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     """The Gem Maker. cfg["mode"] "bag" makes the most of the bag (make_most); otherwise cfg["count"] more Level cfg["level"] gems of cfg["colour"] ("most": as many as
     can be made). Each round: that colour's shards into gems (4 make 1), then gems a level up (3
     make 1, half the time) as far as the target needs, and when the bag runs short, Level 1 shards
@@ -608,20 +624,21 @@ def gem_maker(b, cfg, check_only=False):
 class _GemJob:
     """What the Gem Maker was asked for, read once from its settings."""
 
-    def __init__(self, b, cfg, colour):
+    def __init__(self, b: Bot, cfg: dict[str, Any], colour: str) -> None:
         self.colour, self.level = colour, int(cfg.get("level", 1))
         self.most = cfg.get("amount") == "most"
         self.where = place(cfg)
-        self.supply = cfg.get("supply", "none")
+        self.supply: str = cfg.get("supply", "none")
         self.max_price = int(cfg.get("max_price") or 0)
-        self.boost, self.protect = cfg.get("boost", True), cfg.get("protect", False)
-        self.opener = lambda: open_craftsman(b, "gem_craftsman", self.where)
+        self.boost: bool = cfg.get("boost", True)
+        self.protect: bool = cfg.get("protect", False)
+        self.opener: Callable[[], str] = lambda: open_craftsman(b, "gem_craftsman", self.where)
         self.gem, self.shard1 = "Level %d %s" % (self.level, colour), "Level 1 %s Shard" % colour
         self.start = gem_levels(b, colour).get(self.level, 0)
         self.target = self.start + max(1, int(cfg.get("count", 1)))
 
 
-def _gem_check(b, job):
+def _gem_check(b: Bot, job: _GemJob) -> None:
     """Check only: what there is, what it would take, the prices, and the craftsman open."""
     colour = job.colour
     gems, shards = gem_levels(b, colour), shard_levels(b, colour)
@@ -639,7 +656,7 @@ def _gem_check(b, job):
     b.close_dialogs()
 
 
-def _gem_round(b, job):
+def _gem_round(b: Bot, job: _GemJob) -> int:
     """One round of making: the colour's shards up to the target level into gems, then gems up a
     level at a time, only as many tries as the target still needs (all of them for "most").
     Returns how much was made or tried."""
@@ -664,7 +681,7 @@ def _gem_round(b, job):
     return did
 
 
-def _gem_refill(b, job):
+def _gem_refill(b: Bot, job: _GemJob) -> int:
     """More Level 1 shards for what the target still needs (a bagful at most). How many came;
     0 or None when it's no use going on."""
     colour, level = job.colour, job.level
@@ -682,7 +699,7 @@ def _gem_refill(b, job):
     return fetch_shards(b, job.shard1, need, job.supply, job.max_price, chosen=[job.shard1]) if need else 0
 
 
-def _gem_report(b, job):
+def _gem_report(b: Bot, job: _GemJob) -> None:
     have = gem_levels(b, job.colour).get(job.level, 0)
     if job.most:
         b.log(_("made {n} {gem}; {have} in the bag", n=have - job.start, gem=job.gem, have=have), speak=True)
@@ -694,7 +711,7 @@ def _gem_report(b, job):
 
 
 # ---------------------------------------------------------------------------------------- enhancing
-def _item_row(b, name):
+def _item_row(b: Bot, name: str) -> tuple[Entry | None, int | None]:
     """The Forger's list entry for an item whose name contains `name`, and its level."""
     rx = re.compile(re.escape(name.strip()), re.I)
     for _r, _c, e in entries(b):
@@ -713,16 +730,17 @@ CRYSTAL_LEVELS = ((100, 8), (90, 7), (80, 6), (70, 5), (60, 4), (45, 3), (30, 2)
 MAX_ENHANCE = 12          # +12 (Godbless) is the highest enhancement level
 
 
-def _crystals(b, kind, level):
+def _crystals(b: Bot, kind: str, level: int) -> int:
     return town.counts(b).get(("Level %d %s Enhance Crystal" % (level, kind)).lower(), 0)
 
 
-def _recipe(b, kind, level):
+def _recipe(b: Bot, kind: str, level: int) -> dict[str, int] | None:
     """{"shards", "fee"} for one crystal of that kind and level, as last read at the Gem Craftsman."""
-    return (b.p.get("crystal_recipes") or {}).get("%s %d" % (kind.lower(), level))
+    recipes: dict[str, dict[str, int]] = b.p.get("crystal_recipes") or {}
+    return recipes.get("%s %d" % (kind.lower(), level))
 
 
-def make_crystals(b, kind, level, n, where):
+def make_crystals(b: Bot, kind: str, level: int, n: int, where: str) -> int:
     """Make n Level `level` <kind> Enhance Crystals from shards at the Gem Craftsman. Remembers how
     many shards and how much arnebia one takes (the craftsman's own line), even when it makes none."""
     open_craftsman(b, "gem_craftsman", where)
@@ -759,7 +777,7 @@ def make_crystals(b, kind, level, n, where):
     return got
 
 
-def stock_crystals(b, cfg, kind, level, want, where):
+def stock_crystals(b: Bot, cfg: dict[str, Any], kind: str, level: int, want: int, where: str) -> int:
     """Bring the bag up to `want` Level `level` <kind> Enhance Crystals: crystal shards from the
     storehouse and/or the Shard Broker first when cfg allows (cfg["crystal_supply"], at no more than
     cfg["crystal_max_price"] each), then made into crystals at the Gem Craftsman. Returns the
@@ -768,7 +786,7 @@ def stock_crystals(b, cfg, kind, level, want, where):
     if short <= 0:
         return 0
     shard = "%s Enhance Crystal Shard" % kind
-    supply = cfg.get("crystal_supply", "both")
+    supply: str = cfg.get("crystal_supply", "both")
     max_price = int(cfg.get("crystal_max_price") or 0)
     if supply != "none":
         recipe = _recipe(b, kind, level)
@@ -789,23 +807,51 @@ def stock_crystals(b, cfg, kind, level, want, where):
     return make_crystals(b, kind, level, short, where)
 
 
-def enhance(b, cfg, check_only=False):
+@dataclass
+class _EnhanceJob:
+    """What the Equipment Enhancer was asked for, read once from its settings."""
+    where: str
+    target: int
+    protect_mode: str            # always | from | never
+    protect_from: int
+    max_fails: int
+    making: bool
+    stock: int
+    refill: int
+    stocked: set[tuple[str, int]] = field(default_factory=set[tuple[str, int]])   # (kind, level) stocked this run
+
+
+@dataclass
+class _Offer:
+    """The Forger's offer for an item's next level, as its menu words it."""
+    frm: int
+    need_n: int
+    need_lv: int
+    kind: str                    # Weapon | Equipment
+    cost: int
+    chance: float | None
+    runes: int
+    protect: bool = False
+    have_runes: int = 0
+
+
+def enhance(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     """The Equipment Enhancer: enhance each chosen item up to cfg["up_to"] (+12 at most). Before
     the first try at a crystal level the bag is stocked to cfg["crystal_stock"] crystals; when they
     run out, cfg["crystal_refill"] more are made. cfg is the profile's "enhancer" (see
     gui/crafting.py)."""
-    job = SimpleNamespace(where=place(cfg), target=min(MAX_ENHANCE, int(cfg.get("up_to", 10))),
-                          protect_mode=cfg.get("protect", "always"),          # always | from | never
-                          protect_from=int(cfg.get("protect_from", 8)), max_fails=int(cfg.get("max_fails", 5)),
-                          making=cfg.get("make_crystals", True), stock=int(cfg.get("crystal_stock", 0)),
-                          refill=int(cfg.get("crystal_refill", 10)),
-                          stocked=set())                                     # (kind, level) already stocked this run
-    for item in cfg.get("items", []):
+    job = _EnhanceJob(where=place(cfg), target=min(MAX_ENHANCE, int(cfg.get("up_to", 10))),
+                      protect_mode=cfg.get("protect", "always"),
+                      protect_from=int(cfg.get("protect_from", 8)), max_fails=int(cfg.get("max_fails", 5)),
+                      making=cfg.get("make_crystals", True), stock=int(cfg.get("crystal_stock", 0)),
+                      refill=int(cfg.get("crystal_refill", 10)))
+    items: list[str] = cfg.get("items", [])
+    for item in items:
         fails = 0
         while not b.stop_event.is_set():
             # each try ends in: "stop" (the whole job), "next" (the next item), "again" (this one)
             outcome, offer = _forger_offer(b, job, item)
-            if outcome is None:
+            if offer is not None:          # no outcome yet: there is a level to try
                 if check_only:
                     _enhance_check(b, cfg, job, item, offer)
                     outcome = "next"
@@ -818,7 +864,7 @@ def enhance(b, cfg, check_only=False):
     b.close_dialogs()
 
 
-def _forger_offer(b, job, item):
+def _forger_offer(b: Bot, job: _EnhanceJob, item: str) -> tuple[str, None] | tuple[None, _Offer]:
     """The Forger's offer for the item's next level: (None, what it takes), or ("stop" | "next",
     None) when there is nothing to try."""
     open_craftsman(b, "forger", job.where)
@@ -836,19 +882,19 @@ def _forger_offer(b, job, item):
     if not b.wait_dialog(3.0):
         return "next", None
     text = menu_text(b)
-    o = SimpleNamespace(frm=_num(r"from\s+(\d+)\s+to", text, level or 0),
-                        need_n=_num(r"requires\s+(\d+)\s+Level", text, 1),
-                        need_lv=_num(r"requires\s+\d+\s+Level\s+(\d+)", text, 1),
-                        kind="Weapon" if re.search(r"Weapon Enhance Crystal", text, re.I) else "Equipment",
-                        cost=_num(r"costs\s+(\d+)\s+arnebia", text, 0),
-                        chance=_num(r"([\d.]+)%\s*success rate", text, None, float),
-                        runes=_num(r"Use\s+(\d+)\s+\w+ Enhance Protection Rune", text, 0))
+    o = _Offer(frm=_num(r"from\s+(\d+)\s+to", text, level or 0),
+               need_n=_num(r"requires\s+(\d+)\s+Level", text, 1),
+               need_lv=_num(r"requires\s+\d+\s+Level\s+(\d+)", text, 1),
+               kind="Weapon" if re.search(r"Weapon Enhance Crystal", text, re.I) else "Equipment",
+               cost=_num(r"costs\s+(\d+)\s+arnebia", text, 0),
+               chance=_num(r"([\d.]+)%\s*success rate", text, None, float),
+               runes=_num(r"Use\s+(\d+)\s+\w+ Enhance Protection Rune", text, 0))
     o.protect = job.protect_mode == "always" or (job.protect_mode == "from" and o.frm >= job.protect_from)
     o.have_runes = town.counts(b).get(("%s Enhance Protection Rune" % o.kind).lower(), 0)
     return None, o
 
 
-def _enhance_check(b, cfg, job, item, o):
+def _enhance_check(b: Bot, cfg: dict[str, Any], job: _EnhanceJob, item: str, o: _Offer) -> None:
     """Check only: what the next level takes, what there is, and where crystal shards would come from."""
     b.log(_("{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), "
             "{cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})",
@@ -866,7 +912,7 @@ def _enhance_check(b, cfg, job, item, o):
                      int(cfg.get("crystal_max_price") or 0), check_only=True)
 
 
-def _enhance_try(b, cfg, job, item, o, fails):
+def _enhance_try(b: Bot, cfg: dict[str, Any], job: _EnhanceJob, item: str, o: _Offer, fails: int) -> tuple[str, int]:
     """One try at the next level: arnebia, crystals (stocked or refilled), runes, then forge.
     (outcome, failures in a row)."""
     if o.cost and spare_arnebia(b) < o.cost:
@@ -900,7 +946,7 @@ def _enhance_try(b, cfg, job, item, o, fails):
     return "again", fails
 
 
-def _crystals_for(b, cfg, job, o):
+def _crystals_for(b: Bot, cfg: dict[str, Any], job: _EnhanceJob, o: _Offer) -> str | None:
     """The crystals this level takes: stocked up the first time at a crystal level, refilled when
     they run out. None when there are enough; "again" (back to the Forger with them) or "stop"."""
     have = _crystals(b, o.kind, o.need_lv)
@@ -922,7 +968,7 @@ def _crystals_for(b, cfg, job, o):
     return "again"
 
 
-def _runes_ready(b, cfg, item, o):
+def _runes_ready(b: Bot, cfg: dict[str, Any], item: str, o: _Offer) -> bool:
     """The protection rune ticked when asked for (never forging without it), and the boost rune
     when wanted and there is one. False: stop."""
     if o.protect:

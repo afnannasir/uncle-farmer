@@ -7,13 +7,18 @@ windows ask wx to load the same file (plus wx's own catalog, for standard button
 the two agree. English needs no file; a missing or broken catalog falls back to English.
 """
 
+from __future__ import annotations
+
 import gettext
 import os
 import struct
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from . import paths
 from .catalog import DOMAIN, write_template as _write_template
+
+if TYPE_CHECKING:
+    import wx
 
 _translation: gettext.NullTranslations = gettext.NullTranslations()
 _wx_locale: Any = None          # wx.Locale, kept alive for the life of the app
@@ -67,6 +72,13 @@ def languages() -> list[tuple[str, str]]:
     return found
 
 
+def _current_translations() -> "wx.Translations | None":
+    """wx's current translations. The stubs say Get() always returns one; before the first Set()
+    it returns None."""
+    import wx
+    return wx.Translations.Get()
+
+
 def attach_wx(code: str) -> bool:
     """Let wx translate too: its standard buttons and menus from wx's catalog, ours from the same
     .mo gettext reads. Call after the wx.App exists; returns False when wx (or a catalog) is not
@@ -91,7 +103,7 @@ def attach_wx(code: str) -> bool:
         for folder in (os.path.join(os.path.dirname(os.path.abspath(wx.__file__)), "locale"), paths.LANG):
             if os.path.isdir(folder):
                 wx.FileTranslationsLoader.AddCatalogLookupPathPrefix(folder)
-        translations = wx.Translations.Get()
+        translations = _current_translations()
         if translations is None:
             translations = wx.Translations()
             wx.Translations.Set(translations)

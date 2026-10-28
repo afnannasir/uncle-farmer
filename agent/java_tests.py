@@ -18,11 +18,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CONTRACT = os.path.join(TEST, "contract.txt")
 
 
-def java_files(folder):
+def java_files(folder: str) -> list[str]:
     return [os.path.join(d, n) for d, _dirs, names in os.walk(folder) for n in names if n.endswith(".java")]
 
 
-def main():
+def main() -> int:
     build = tempfile.mkdtemp(prefix="unclefarmer-agent-tests-")
     try:
         subprocess.check_call([tool("javac"), "--release", "8", "-encoding", "UTF-8", "-Xlint:-options", "-d", build]

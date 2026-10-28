@@ -5,23 +5,38 @@ The main window (gui/main.py) is put together from one mixin per job, in this pa
 part calls the others through self. Pyright reads one file at a time, so without FrameParts each
 mixin would look like a class using attributes and methods it has never seen. FrameParts is
 type-only: it has no __init__, holds no state and changes nothing at run time; the window's
-widgets, its state (made in MainFrame.__init__ and the tab builders) and every part's methods are
-declared here as Any.
+widgets and its state (made in MainFrame.__init__ and the tab builders) are declared here with
+their types, and every part's methods under TYPE_CHECKING with their signatures.
 """
 
+from __future__ import annotations
+
 import ctypes
-from typing import Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, TypeVar, TypeVarTuple
 
 import wx
 
 from ...clock import CLOCK, Clock
 from ...i18n import _
 
+if TYPE_CHECKING:
+    from ... import chat, messages, updater
+    from ...engine.botparts.parts import Sighting, Where
+    from ...engine.runner import Run
+    from ...stats import Tally
+    from ..chat import ChatFrame
+
 LOG_LIMIT = 3000
 SNAP_FRESH = 5.0          # seconds a game reading may be reused (by the poll and by editors)
 
+Game = tuple[int, str | None, str | None]       # (pid, character or None, map name or None)
+Item = tuple[str, str]                          # ("plan" | "script", name)
+T = TypeVar("T")
+Ts = TypeVarTuple("Ts")
 
-def foreground_pid():
+
+def foreground_pid() -> int | None:
     """The process id of the window in front, or None."""
     user32 = ctypes.windll.user32
     hwnd = user32.GetForegroundWindow()
@@ -32,7 +47,19 @@ def foreground_pid():
     return pid.value or None
 
 
-def _of(now, top):
+def saved_item(saved: str) -> Item:
+    """A plan or script as the settings keep it: "plan:<name>" or "script:<name>"."""
+    kind, _sep, name = saved.partition(":")
+    return kind, name
+
+
+def character_of(snap: dict[str, Any] | None) -> str | None:
+    """The logged-in character's name in a game reading, or None."""
+    me: dict[str, Any] = (snap or {}).get("self") or {}
+    return me.get("name") or None
+
+
+def out_of(now: float | None, top: float | None) -> str:
     if now is None or now < 0:
         return _("Not read yet")
     if top and top > 0:
@@ -40,145 +67,161 @@ def _of(now, top):
     return str(int(now))
 
 
-def _duration(seconds):
+def duration_text(seconds: float) -> str:
     m = int(seconds // 60)
     return _("{h} h {m} min", h=m // 60, m=m % 60) if m >= 60 else _("{m} min", m=m)
 
 
 class FrameParts(wx.Frame):
     clock: Clock = CLOCK
-    # ---------------------------------------------------------------- state and widgets
-    chat_windows: Any
-    chats: Any
-    destroyed: Any
-    fields: Any
-    filling: Any
-    game_list: Any
-    games: Any
-    items: Any
-    last_line: Any
-    log_box: Any
-    log_filter: Any
-    log_lines: Any
-    messengers: Any
-    nb: Any
-    pause_btn: Any
-    plan_list: Any
-    runs: Any
-    farm_starts: Any
-    s: Any
-    scanned: Any
-    scanning: Any
-    shutdown_wanted: Any
-    silenced: Any
-    snap: Any
-    snap_busy: Any
-    start_btn: Any
-    stop_btn: Any
-    summary: Any
-    timer: Any
-    updating: Any
-    what: Any
+    # ---------------------------------------------------------------- state
+    s: dict[str, Any]                       # the app settings (settings.load_app)
+    runs: "dict[int, Run]"                  # pid -> its run, one per game client
+    farm_starts: "dict[int, Where]"         # pid -> where that game's last farming run started
+    messengers: "dict[int, messages.Messenger]"
+    chats: "dict[int, chat.Feed]"
+    chat_windows: "dict[int, ChatFrame]"
+    games: list[Game]
+    items: list[Item]
+    log_lines: list[tuple[str, bool]]       # (text, important)
+    last_line: dict[int, str]               # pid -> the latest log line of that game's run
+    silenced: set[int]
+    filling: bool
+    destroyed: bool
+    snap: tuple[int, dict[str, Any] | None, float] | None     # (pid, reading, when): the last reading
+    snap_busy: bool
+    scanning: set[str]
+    scanned: dict[str, float]               # character -> when it was last scanned
+    shutdown_wanted: bool
+    updating: bool
+    # ---------------------------------------------------------------- widgets
+    nb: wx.Notebook
+    game_list: wx.ListCtrl
+    what: wx.Choice
+    start_btn: wx.Button
+    pause_btn: wx.Button
+    stop_btn: wx.Button
+    fields: dict[str, wx.TextCtrl]
+    plan_list: wx.ListBox
+    summary: wx.TextCtrl
+    log_filter: wx.Choice
+    log_box: wx.TextCtrl
+    timer: wx.Timer
+
     # ---------------------------------------------------------------- every part's methods
-    _append: Any
-    _checked_updates: Any
-    _done: Any
-    _got_snapshot: Any
-    _note: Any
-    _snapshot_for: Any
-    _start_follow: Any
-    _update_done: Any
-    _update_progress: Any
-    _when_stopped: Any
-    after_update: Any
-    auto_scan: Any
-    auto_scan_async: Any
-    bot_page: Any
-    build_menu: Any
-    cached: Any
-    call: Any
-    character: Any
-    chat_line: Any
-    check_updates: Any
-    clear_log: Any
-    copy_log: Any
-    copy_plan: Any
-    delete_selected: Any
-    edit_bag: Any
-    edit_messages: Any
-    edit_other_profile: Any
-    edit_profile: Any
-    edit_selected: Any
-    errand_for: Any
-    fill_runs: Any
-    first_run: Any
-    follow_for: Any
-    forget_answered: Any
-    game_changed: Any
-    game_in_front: Any
-    game_row: Any
-    go_tab: Any
-    install_update: Any
-    is_paused: Any
-    item_label: Any
-    item_text: Any
-    keep_chats: Any
-    keep_messengers: Any
-    keep_silent: Any
-    label_games: Any
-    last_seen: Any
-    listed_item: Any
-    live_tally: Any
-    locate: Any
-    log: Any
-    log_page: Any
-    new_plan: Any
-    new_script: Any
-    offer_update: Any
-    on_close: Any
-    on_done: Any
-    on_log: Any
-    on_plan_key: Any
-    open_chat: Any
-    open_client: Any
-    open_results_folder: Any
-    open_setup: Any
-    open_tool: Any
-    open_user_guide: Any
-    pick_last_run: Any
-    plans_page: Any
-    poll: Any
-    progress: Any
-    refresh_games: Any
-    render: Any
-    request_snapshot: Any
-    run_errand: Any
-    run_for: Any
-    run_text: Any
-    say: Any
-    scan_now: Any
-    script_help: Any
-    selected_character: Any
-    selected_index: Any
-    selected_item: Any
-    selected_pid: Any
-    set_game_speech: Any
-    show_log: Any
-    show_results: Any
-    show_status: Any
-    show_summary: Any
-    shut_down: Any
-    snapshot: Any
-    speak_results: Any
-    start: Any
-    start_bot: Any
-    stop: Any
-    stop_all: Any
-    stop_bot: Any
-    sync_pause: Any
-    tagged: Any
-    toggle: Any
-    toggle_pause: Any
-    unfollow: Any
-    update_buttons: Any
-    walk: Any
+    if TYPE_CHECKING:
+        # main.py
+        def bot_page(self) -> None: ...
+        def plans_page(self) -> None: ...
+        def log_page(self) -> None: ...
+        def build_menu(self) -> None: ...
+        def go_tab(self, i: int) -> None: ...
+        def on_close(self, evt: wx.CloseEvent) -> None: ...
+        # editing.py
+        def open_client(self) -> None: ...
+        def new_plan(self) -> None: ...
+        def copy_plan(self) -> None: ...
+        def new_script(self) -> None: ...
+        def edit_selected(self) -> None: ...
+        def delete_selected(self) -> None: ...
+        def script_help(self) -> None: ...
+        def edit_profile(self) -> None: ...
+        def walk(self) -> None: ...
+        def open_tool(self, which: str) -> None: ...
+        def edit_bag(self) -> None: ...
+        def edit_other_profile(self) -> None: ...
+        def first_run(self) -> None: ...
+        def open_setup(self) -> None: ...
+        def open_user_guide(self) -> None: ...
+        # games.py
+        def selected_index(self) -> int | None: ...
+        def selected_pid(self) -> int | None: ...
+        def selected_character(self) -> str | None: ...
+        def game_row(self, game: Game) -> tuple[str, str, str]: ...
+        def label_games(self) -> None: ...
+        def refresh_games(self) -> None: ...
+        def game_changed(self) -> None: ...
+        def pick_last_run(self) -> None: ...
+        def snapshot(self, pid: int | None = None, max_age: float = SNAP_FRESH) -> dict[str, Any] | None: ...
+        def cached(self, pid: int | None, max_age: float = SNAP_FRESH) -> dict[str, Any] | None: ...
+        @staticmethod
+        def _snapshot_for(pid: int) -> dict[str, Any] | None: ...
+        def request_snapshot(self, pid: int | None) -> None: ...
+        def _got_snapshot(self, pid: int, s: dict[str, Any] | None) -> None: ...
+        def show_status(self, **values: str) -> None: ...
+        def poll(self) -> None: ...
+        def render(self, pid: int | None, s: dict[str, Any] | None, values: dict[str, str]) -> None: ...
+        def run_text(self, run: "Run | None") -> str: ...
+        def auto_scan(self, name: str, pid: int | None = None) -> None: ...
+        def auto_scan_async(self, name: str, pid: int) -> None: ...
+        def scan_now(self) -> None: ...
+        # logpane.py
+        def on_log(self, line: str, speak: bool = False, run: "Run | None" = None) -> None: ...
+        def _append(self, line: str, speak: bool, run: "Run | None" = None) -> None: ...
+        def show_log(self) -> None: ...
+        def copy_log(self) -> None: ...
+        def clear_log(self) -> None: ...
+        def on_done(self, reason: str, run: "Run | None" = None) -> None: ...
+        def _done(self, run: "Run | None") -> None: ...
+        def shut_down(self) -> None: ...
+        def say(self, text: str, run: "Run | None" = None) -> None: ...
+        # results.py
+        def live_tally(self, character: str) -> "Tally | None": ...
+        def show_results(self) -> None: ...
+        def open_results_folder(self) -> None: ...
+        def speak_results(self, front: bool = False) -> None: ...
+        def progress(self) -> None: ...
+        def keep_silent(self) -> None: ...
+        def set_game_speech(self, talk: bool, every: bool = False) -> None: ...
+        # runs.py
+        def item_label(self, item: Item) -> str: ...
+        def fill_runs(self, select: Item | None = None) -> None: ...
+        def selected_item(self) -> Item | None: ...
+        def listed_item(self) -> Item | None: ...
+        def show_summary(self) -> None: ...
+        def on_plan_key(self, evt: wx.KeyEvent) -> None: ...
+        def item_text(self, item: Item) -> str: ...
+        def update_buttons(self) -> None: ...
+        def is_paused(self, pid: int | None) -> bool: ...
+        def sync_pause(self) -> None: ...
+        def toggle_pause(self, pid: int | None = None) -> None: ...
+        def toggle(self) -> None: ...
+        def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False) -> str | None: ...
+        def run_errand(self, text: str, title: str, walk: bool = False) -> None: ...
+        def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
+                       follows: str | None = None) -> str | None: ...
+        def follow_for(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str | None: ...
+        def _when_stopped(self, pid: int, then: Callable[[], object], tries: int = 0) -> None: ...
+        def _start_follow(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str: ...
+        def unfollow(self, pid: int) -> str | None: ...
+        def stop(self, pid: int | None = None) -> None: ...
+        def stop_all(self) -> None: ...
+        def tagged(self) -> bool: ...
+        # talk.py
+        def game_in_front(self, pid: int | None) -> bool: ...
+        def run_for(self, pid: int) -> "Run | None": ...
+        def farm_start_for(self, pid: int) -> "Where | None": ...
+        def locate(self, name: str) -> "Where | None": ...
+        def last_seen(self, name: str) -> "Sighting | None": ...
+        def character(self, pid: int) -> str | None: ...
+        def call(self, fn: Callable[[*Ts], T], *args: *Ts) -> T | str | None: ...
+        def start_bot(self, pid: int, plan: str | None) -> str | None: ...
+        def stop_bot(self, pid: int) -> None: ...
+        def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None: ...
+        def _note(self, line: str, speak: bool, who: str | None, private: bool = False) -> None: ...
+        def keep_messengers(self) -> None: ...
+        def keep_chats(self) -> None: ...
+        def chat_line(self, pid: int, line: "chat.Line") -> None: ...
+        def open_chat(self) -> None: ...
+        def edit_messages(self) -> None: ...
+        def forget_answered(self) -> None: ...
+        # updates.py
+        def after_update(self) -> None: ...
+        def check_updates(self) -> None: ...
+        def _checked_updates(self, rel: "updater.Release | None", err: "updater.UpdateError | None") -> None: ...
+        def offer_update(self, rel: "updater.Release", at_start: bool) -> None: ...
+        def install_update(self, rel: "updater.Release") -> None: ...
+        def _update_progress(self, dlg: wx.ProgressDialog, state: dict[str, bool], done: int, total: int,
+                             message: str | None = None) -> None: ...
+        def _update_done(self, dlg: wx.ProgressDialog, rel: "updater.Release", folder: str | None,
+                         err: Exception | None) -> None: ...
