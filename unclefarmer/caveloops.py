@@ -25,6 +25,12 @@ What it showed (6 visits each; python -m unclefarmer.caveloops):
     walking past;
   - taking a monster already in reach before a nearer one that needs walking changes nothing.
 So dungeon visits chase 90 steps (dungeon.CHASE) on the quick loop.
+
+Later (a Hunter, 2026-10-28): one hit kills a Scorpion, and a hand run cast 98% of its shots while
+walking where the bot stood still for a third of its own - both made about 350. A visit that
+shoots whatever is in reach every global cooldown (1.22 s) on its walks, standing only for the
+monster it walked up to, came out at about 510 kills here against 304 for stopping each time: the
+reason for the fight's shoots_moving.
 """
 
 from __future__ import annotations

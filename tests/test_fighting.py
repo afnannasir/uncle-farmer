@@ -139,6 +139,9 @@ class Pick:
     def ready_in(self, now: float) -> float:
         return self._ready
 
+    def gcd_wait(self, now: float) -> bool:
+        return self._ready > 0
+
     def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
         self.picked.append(target["id"])
         return self._pick
@@ -1233,6 +1236,56 @@ def test_fight_stops_beside_another_monster_the_farm_filter_takes() -> None:
     b._fight(monster(-1, x=120.0))
     assert b.walked == []                    # the near() stop happened inside walk_to
     assert b.hit_calls == [] and b.selects == []
+
+
+def move_bot(ready: float = 0.0) -> tuple[Bot, Pick]:
+    """A dungeon visit with "shoot while walking", a character that hits from 10 tiles."""
+    b = fight_bot(attack_range=10.0)
+    b.link = Link(send=lambda line: "selected" if line.startswith("select") else "tapped")
+    b.a = b.link
+    sb = Pick(ready=ready, pick=("j", "Arcane Shot"), cls="Hunter")
+    b.skillbook = as_kind(SkillBook, sb)
+    b.in_instance, b.move_shots, b.agent_act = True, True, True
+    b.farm_filter = (None, "", "", [])
+    b.keys_pressed = []
+    return b, sb
+
+
+def test_shooting_on_the_way_is_only_for_a_dungeon_and_a_ranged_character() -> None:
+    b, _sb = move_bot()
+    assert b.shoots_moving()
+    b.move_shots = False                      # the window's choice
+    assert not b.shoots_moving()
+    b.move_shots, b.in_instance = True, False     # farming keeps its own way
+    assert not b.shoots_moving()
+    b.in_instance = True
+    b.p["attack_range"] = 3.0                 # melee walks up to every one
+    assert not b.shoots_moving()
+
+
+def test_a_shot_on_the_way_goes_at_the_nearest_in_reach(clock: Clock) -> None:
+    b, sb = move_bot()
+    near, far, out = monster(-2, x=106.0), monster(-3, x=109.0), monster(-4, x=125.0)
+    snap = {"map": {"id": 5121}, "self": dict(b.self_), "entities": [far, out, near]}
+    assert b.move_shot(snap, b.self_) is True
+    assert b.link.sent == ["select -2"] and sb.picked == [-2] and b.keys_pressed == ["j"]
+    sb._ready = 0.5                           # the global cooldown runs: no press at all
+    assert b.move_shot(snap, b.self_) is False and b.keys_pressed == ["j"]
+    sb._ready = 0.0
+    snap["entities"] = [out]                  # nothing in reach
+    assert b.move_shot(snap, b.self_) is False
+
+
+def test_walking_up_with_shots_on_the_way_does_not_stop_for_them(clock: Clock) -> None:
+    b, sb = move_bot()
+    target, other = monster(-1, x=140.0), monster(-2, x=106.0)
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(target), dict(other)]}
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    way = fighting._Approach(b, -1, 10.0, 10.0, 0.0)
+    assert way.stop(b.self_) is False          # walks on to its target...
+    assert sb.picked == [-2] and b.keys_pressed == ["j"]     # ...shooting the one in reach
+    b.move_shots = False
+    assert way.stop(b.self_) is True           # without: it stops there as before
 
 
 def test_pull_range_opens_fire_while_the_monster_closes_in(clock: Clock) -> None:

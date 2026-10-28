@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import time
 
-from conftest import ME
+from conftest import ME, Clock
 
 from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
@@ -171,10 +171,12 @@ def test_count_kills_feeds_the_tally_with_both_sides() -> None:
 
     a = Link()
     b = Fighter(a)
-    b.tally = stats.Tally("Hero", "Wolves")
+    b.tally = stats.Tally("Hero", "Wolves", clock=Clock(0.5))     # the run began at 500 ms
     me = {"id": ME, "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
     snap = {"map": {"id": 5121}, "self": me, "entities": [monster(-1, 103, 100, "Wolf")]}
     b.targets(snap)
+    a.cast(400, ME, [(-1, HIT)])             # before the run (a fight played by hand): not counted
+    a.cast(401, 4242, [(ME, HIT)])
     a.cast(1000, ME, [(-1, HIT)])            # our hit: 100 damage
     a.cast(1001, -1, [(ME, HIT)])            # the wolf's hit on us: 100 damage
     b.count_kills(snap)

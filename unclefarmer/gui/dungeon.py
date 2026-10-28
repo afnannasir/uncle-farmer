@@ -51,6 +51,8 @@ class DungeonDialog(Dialog):
         self.patrol = f.choice(_("&Going round:"), [_(t) for _k, t in PATROL_LABELS],
                                [k for k, _t in PATROL_LABELS].index(c["patrol"]) if c["patrol"] in dungeon.PATROLS else 0)
         self.pack = f.number(_("Use area &skills on this many monsters close together:"), c["pack"], 2, 6)
+        self.move_shots = f.check(_("S&hoot while walking (a character that fights from afar)"),
+                                  bool(c.get("move_shots", True)))
         known: list[dict[str, Any]] = self.p.get("pets") or []
         self.pet_names = [str(x["name"]) for x in known if x.get("name")]
         pet = str(c.get("pet") or "")
@@ -210,6 +212,7 @@ class DungeonDialog(Dialog):
         self.cfg.update(caves=caves, supplies=supplies, source=SOURCE_LABELS[self.source.GetSelection()][0],
                         when_short=WHEN_SHORT[self.short.GetSelection()],
                         patrol=PATROL_LABELS[self.patrol.GetSelection()][0], pack=self.pack.GetValue(), pet=pet,
+                        move_shots=self.move_shots.GetValue(),
                         end=end)
         self.p["dungeon"] = self.cfg
         if save_file(self, settings.save_profile, self.character, self.p):
