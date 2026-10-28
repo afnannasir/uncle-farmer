@@ -1,21 +1,25 @@
 """The Log tab, what the runs say, and a run that ends."""
 
+from __future__ import annotations
+
 import subprocess
 
 import wx
 
 from ... import speech
+from ...engine.botparts.parts import Where
+from ...engine.runner import Run
 from ...i18n import _
-from ..common import ask, error
+from ..common import ask, copy_text, error, modal
 from .base import LOG_LIMIT, FrameParts
 
 
 class LogMixin(FrameParts):
     # ------------------------------------------------------------ log
-    def on_log(self, line, speak=False, run=None):
+    def on_log(self, line: str, speak: bool = False, run: Run | None = None) -> None:
         wx.CallAfter(self._append, line, speak, run)
 
-    def _append(self, line, speak, run=None):
+    def _append(self, line: str, speak: bool, run: Run | None = None) -> None:
         if self.destroyed:
             return
         if run is not None:
@@ -35,20 +39,16 @@ class LogMixin(FrameParts):
         if speak and self.s.get("speak", True):
             speech.speak(line.split("  ", 1)[-1])
 
-    def show_log(self):
+    def show_log(self) -> None:
         important = self.log_filter.GetSelection() == 1
         self.log_box.ChangeValue("".join(t + "\n" for t, imp in self.log_lines if imp or not important))
         self.log_box.SetInsertionPointEnd()
 
-    def copy_log(self):
-        if wx.TheClipboard.Open():
-            try:
-                wx.TheClipboard.SetData(wx.TextDataObject(self.log_box.GetValue()))
-            finally:
-                wx.TheClipboard.Close()          # never leave the clipboard open on a failure
+    def copy_log(self) -> None:
+        if copy_text(self.log_box.GetValue()):
             speech.speak(_("Copied"))
 
-    def clear_log(self):
+    def clear_log(self) -> None:
         if not self.log_lines:
             return
         if not ask(self, _("Clear the log? This can't be undone.")):
@@ -56,15 +56,15 @@ class LogMixin(FrameParts):
         self.log_lines = []
         self.log_box.ChangeValue("")
 
-    def on_done(self, reason, run=None):
+    def on_done(self, reason: str, run: Run | None = None) -> None:
         wx.CallAfter(self._done, run)
 
-    def _done(self, run):
+    def _done(self, run: Run | None) -> None:
         if self.destroyed:
             return
         for pid, r in list(self.runs.items()):
             if r is run or (run is None and not r.is_alive()):
-                place = getattr(getattr(r, "bot", None), "start_place", None)
+                place: Where | None = getattr(getattr(r, "bot", None), "start_place", None)
                 if place and not getattr(r, "walk", False):
                     self.farm_starts[pid] = place      # where `home` goes once nothing runs
                 del self.runs[pid]
@@ -81,7 +81,7 @@ class LogMixin(FrameParts):
                 self.shutdown_wanted = False
                 self.shut_down()
 
-    def shut_down(self):
+    def shut_down(self) -> None:
         """Every bot has finished and the setting says shut down: Windows' own shutdown, forced
         (/f: no program can hold it up) after a countdown (/t), with the chance to cancel it
         (shutdown /a)."""
@@ -93,12 +93,12 @@ class LogMixin(FrameParts):
             error(self, _("Couldn't shut the computer down: {err}", err=e))
             return
         self.say(_("Farming is over. The computer shuts down in {n} seconds.", n=secs))
-        with wx.MessageDialog(self, _("The computer shuts down in {n} seconds. Cancel the shutdown?", n=secs),
-                              _("Shutting down"), wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING) as d:
+        with modal(wx.MessageDialog(self, _("The computer shuts down in {n} seconds. Cancel the shutdown?", n=secs),
+                              _("Shutting down"), wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING)) as d:
             d.SetYesNoLabels(_("&Cancel the shutdown"), _("&Let it shut down"))
             if d.ShowModal() == wx.ID_YES:
                 subprocess.run(["shutdown", "/a"], creationflags=flags)
                 self.say(_("Shutdown cancelled."))
 
-    def say(self, text, run=None):
+    def say(self, text: str, run: Run | None = None) -> None:
         self._append(text, True, run)

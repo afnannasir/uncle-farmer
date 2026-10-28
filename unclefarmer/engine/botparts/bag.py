@@ -1,16 +1,18 @@
-# pyright: strict
 """The panels and the backpack: cursors, using and throwing items, bag checks while farming.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
-from typing import Any, cast
+from __future__ import annotations
 
+from typing import Any
+
+from ... import jsonio
 from ...i18n import _
 from .. import bagrules
 from .base import (CONFIRM, Stopped, agent_strike)
-from .parts import Parts
+from .parts import as_bot, Parts
 
 
 class BagMixin(Parts):
@@ -76,8 +78,8 @@ class BagMixin(Parts):
     def _use_by_uid(self, name: str) -> bool | None:
         """`use <uid>` for the bag row of that name (an exact name first, as bag_cursor picks).
         True when used, False when the bag has none, None when the agent couldn't: the keys then."""
-        rows = self.a.json("mem bagfull")
-        rows = cast(list[dict[str, Any]], rows) if isinstance(rows, list) else []
+        got = self.a.json("mem bagfull")
+        rows: list[dict[str, Any]] = got if jsonio.is_array(got) else []
         want = name.strip().lower()
         named = [r for r in rows if r.get("count") and (r.get("name") or "").strip().lower() == want]
         named = named or [r for r in rows if r.get("count") and want in (r.get("name") or "").strip().lower()]
@@ -103,14 +105,14 @@ class BagMixin(Parts):
         sure". Only ever for items the player set to "throw away" in the bag manager. Returns how
         many left the bag."""
         from .. import town
-        before = town.counts(self).get(name.lower(), 0)
+        before = town.counts(as_bot(self)).get(name.lower(), 0)
         if before <= 0 or self.bag_cursor(name) is None:
             return 0
         self.log(_("throwing away {n} {item} (the bag manager says so)", n=n, item=name))
         self.key(self.p.get("discard_key", "shift+delete"))
         self.sleep(0.6)
-        if town.wait_input(self, True, 2.0):
-            town.type_number(self, n)
+        if town.wait_input(as_bot(self), True, 2.0):
+            town.type_number(as_bot(self), n)
         for _i in range(3):
             d = self.dialog()
             if d["open"] and d.get("top") and self.find_entry(d["top"], CONFIRM) is not None:
@@ -119,7 +121,7 @@ class BagMixin(Parts):
                 self.sleep(0.5)
             else:
                 break
-        gone = before - town.counts(self).get(name.lower(), 0)
+        gone = before - town.counts(as_bot(self)).get(name.lower(), 0)
         if gone <= 0:
             self.log(_("the game didn't throw {item} away - see logs\\dialogs.log", item=name), speak=True)
             return 0
@@ -134,7 +136,7 @@ class BagMixin(Parts):
 
         def bag() -> list[dict[str, Any]]:
             rows = self.a.json("mem bag")
-            return cast(list[dict[str, Any]], rows) if isinstance(rows, list) else []
+            return rows if jsonio.is_array(rows) else []
 
         want = name.strip().lower()
         rows = bag()
@@ -187,15 +189,15 @@ class BagMixin(Parts):
         else:
             self.log(_("couldn't reach {item} in the bag", item=name), speak=True)
             return None
-        cur = u["cursor"]
+        cur: int = u["cursor"]
         if not 0 <= cur < len(rows):
             self.log(_("the bag cursor is out of range"), speak=True)
             return None
-        return cast(str, rows[cur]["name"])
+        return rows[cur]["name"]
 
     def bag_rows(self) -> list[dict[str, Any]]:
         b = self.a.json("mem bag")
-        return cast(list[dict[str, Any]], b) if isinstance(b, list) else []
+        return b if jsonio.is_array(b) else []
 
     def bag_check(self) -> bool:
         """Between fights: read the sheet now and then; end the run when the drop time is used up;
@@ -236,8 +238,8 @@ class BagMixin(Parts):
         from .. import town
         self.log(_("the bag is {pct}% full - going to sell and store by the bag manager's rules", pct=int(share)),
                  speak=True)
-        moved = town.unload(self)
-        after = self.refresh_sheet(force=True) or {}
+        moved = town.unload(as_bot(self))
+        after: dict[str, Any] = self.refresh_sheet(force=True) or {}
         if after.get("maxload") and 100.0 * after.get("load", 0) / after["maxload"] >= full and not moved:
             self.finish()
             raise Stopped(_("the bag is still full and nothing could be sold or stored - stopping"))
@@ -265,13 +267,14 @@ class BagMixin(Parts):
     def throw_by_rules(self) -> bool:
         """Throw away, in place, everything the bag manager's rules say to throw (keeping the
         number the player set). True if anything left the bag."""
-        scan = cast(dict[str, Any], self.p.get("scan") or {})
-        hot = cast(list[str], [h["item"] for h in cast(list[dict[str, Any]], scan.get("hotkeys", [])) if h.get("item")])
+        scan: dict[str, Any] = self.p.get("scan") or {}
+        hotkeys: list[dict[str, Any]] = scan.get("hotkeys", [])
+        hot: list[str] = [h["item"] for h in hotkeys if h.get("item")]
         bag: dict[str, int] = {}
         for r in self.bag_rows():
             if r.get("name") and r.get("count"):
                 bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
-        start = self.bag_start or {}
+        start: dict[str, Any] = self.bag_start or {}
         gained = {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
         thrown = 0
         for name, action, n in bagrules.plan(self.p, bag, hot, gained):

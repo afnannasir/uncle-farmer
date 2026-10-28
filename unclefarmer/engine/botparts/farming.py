@@ -1,21 +1,22 @@
-# pyright: strict
 """Farming a map, the day's drop time, and ending a run (safe spot, end place, restock).
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
+
 import math
 import random
 from collections.abc import Callable, Sequence
-from typing import Any, cast
+from typing import Any
 
 from ... import atlas
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, keyslots, pets
 from .base import (Respawned, Stopped)
-from .parts import Parts
+from .parts import as_bot, EndPlace, Parts
 
 
 def _near(lo: int, hi: int, at: int, radius: int) -> tuple[int, int]:
@@ -78,17 +79,17 @@ class FarmingMixin(Parts):
             self.restock_now(start=True)
         if getattr(self, "bag_start", None) is None:
             from .. import town
-            self.bag_start = town.counts(self)   # what was ours before the run: never sold or stored
+            self.bag_start = town.counts(as_bot(self))   # what was ours before the run: never sold or stored
         if not instance:
             self.travel(map_id)
         self.farmed = True        # only a run that got to its map closes the game or the PC when it ends
         area = list(area) if area else atlas.monster_area(map_id)
         avoid: list[tuple[float, float, float, float]] = []
         if avoid_elites:
-            avoid += [cast(tuple[float, float, float, float], z["rect"]) for z in atlas.zones(map_id, ("elite",))]
+            avoid += [z["rect"] for z in atlas.zones(map_id, ("elite",))]
         if avoid_bosses:
-            avoid += [cast(tuple[float, float, float, float], z["rect"]) for z in atlas.zones(map_id, ("boss",))]
-        loop = cast(list[tuple[int, int]] | None, atlas.patrol_loop(map_id, patrol)) if patrol in ("full", "quick", "short") else None
+            avoid += [z["rect"] for z in atlas.zones(map_id, ("boss",))]
+        loop = atlas.patrol_loop(map_id, patrol) if patrol in ("full", "quick", "short") else None
         # On a patrol loop, only what is within chase_range walking steps is chased: the loop
         # passes near the rest (a short loop keeps nearly the whole map that close). Wandering at
         # random, the nearest is taken however far.
@@ -110,7 +111,7 @@ class FarmingMixin(Parts):
             return bool(until and until())
 
         def sighted(_me: dict[str, Any]) -> bool:
-            return bool(self.targets(cast(dict[str, Any], self.snap()), area, only, skip, avoid, limit=chase))
+            return bool(self.targets(self.snap(), area, only, skip, avoid, limit=chase))
 
         last_supply_check = self.clock.time()
         was = (self.in_instance, self.pack_min)
@@ -135,13 +136,13 @@ class FarmingMixin(Parts):
                 snap = self.snap()
                 self.count_kills(snap)     # what died of our hits since (area skills, damage over time)
                 self.look_after(snap["self"])
-                pets.keep_out(self)
-                pets.look_after(self, snap)
+                pets.keep_out(as_bot(self))
+                pets.look_after(as_bot(self), snap)
                 if self._between_fights(map_id):
                     continue          # we went to town: the loop travels back first
-                if keyslots.refill(self):
+                if keyslots.refill(as_bot(self)):
                     continue
-                if bosses.keep_away(self, snap, map_id, area):
+                if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
                 if mobs:
@@ -232,11 +233,11 @@ class FarmingMixin(Parts):
         before a half hour, so one visit shares arnebia in two of them), then go back. True when
         it went."""
         from .. import chores          # chores uses the town errands, which use the whole Bot
-        if not chores.trip_due(self):
+        if not chores.trip_due(as_bot(self)):
             return False
         self.log(_("off to the secret room to share arnebia"))
         try:
-            made, _where = chores.share_visit(self, chores.config(self.p))
+            made, _where = chores.share_visit(as_bot(self), chores.config(self.p))
             self.log(_("shared arnebia {n} of {all} times today", n=made, all=chores.SHARES_A_DAY))
         except Stopped as e:
             if self.stop_event.is_set() or getattr(e, "final", False):
@@ -316,7 +317,7 @@ class FarmingMixin(Parts):
           safe         the nearest map without monsters (the hearthstone first, if the profile says)
           here         stay
         If the way there fails, the nearest map without monsters."""
-        how: tuple[Any, ...] = self.end_place or ("start",)
+        how: EndPlace = self.end_place or ("start",)
         kind = how[0]
         try:
             if kind == "here":
@@ -328,12 +329,15 @@ class FarmingMixin(Parts):
                 if kind == "start":
                     if not self.start_place:
                         return self._finish_safe()
-                    mid, cell = self.start_place[0], tuple(self.start_place[1:3])
+                    mid, cell = self.start_place[0], (self.start_place[1], self.start_place[2])
                     if self.spawns_at(mid, cell):
                         self.log(_("the run started where monsters spawn - ending on the nearest map without them"))
                         return self._finish_safe()
                 else:
-                    mid, cell = how[1], (tuple(how[2]) if how[2] else None)
+                    if len(how) != 3:
+                        return self._finish_safe()      # a place with no map in it
+                    spot = how[2]
+                    mid, cell = how[1], ((spot[0], spot[1]) if spot else None)
                 here = self.me()
                 if self.map_id() != mid or not cell or math.hypot(here["x"] - cell[0], here["y"] - cell[1]) > 3:
                     self.log(_("going back to {map}{at}", map=atlas.label(mid),
@@ -351,9 +355,9 @@ class FarmingMixin(Parts):
         self._finish_off()
 
     def _finish_off(self) -> None:
-        beasts.off(self)
+        beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
-            pets.recall(self)
+            pets.recall(as_bot(self))
 
     def _finish_safe(self) -> None:
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there
@@ -369,11 +373,11 @@ class FarmingMixin(Parts):
 
     def restock_now(self, start: bool = False) -> bool:
         """Top up the profile's restock rules if they need it (storehouse first, then shops)."""
-        rules = cast(list[dict[str, Any]], self.p.get("restock") or [])
+        rules: list[dict[str, Any]] = self.p.get("restock") or []
         if not rules:
             return False
         from .. import town
-        return town.restock(self, rules, start)
+        return town.restock(as_bot(self), rules, start)
 
     def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
         """A walkable cell near us in the area that we can walk to: never on a map exit (stepping on

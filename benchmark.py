@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage=false
+# A benchmark of the engine's internals: it times the private searches and arrays themselves.
 """Benchmark the hot paths: routing, target selection, travel planning and shortloop building.
 
     python benchmark.py            # everything (about a minute)
@@ -9,39 +11,49 @@ Each line is the median / p95 / p99 over N repeats of one operation, in millisec
 with perf_counter_ns. Caches are cleared where the name says "cold"; "warm" lines measure the
 answer that comes out of the cache the bot itself keeps between decisions.
 """
+import importlib
 import os
 import random
 import statistics
 import sys
 import time
 import tracemalloc
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import numpy.typing as npt
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from unclefarmer import atlas, atlaslib, shortloop, travel
+from unclefarmer.atlaslib import Cell
 from unclefarmer.engine.botparts.walking import WalkingMixin
+
+if TYPE_CHECKING:
+    from cachebox import Cache, LRUCache
 
 MID = 1041            # Giant Rock: 400x400, open field, no gates worth caching around
 CAVE = 1503           # a big, walled cave: what walk_dist's BFS is for
 SMALL = 1047          # a small cave for shortloop's exact search
 LARGE = 1503          # biggest cave shortloop still takes (just under MAX_CELLS)
 
-RESULTS = []
+RESULTS: list[dict[str, Any]] = []
+Key = tuple[str, int, int, int]       # the route cache's key shape, for the cache container benchmarks
+Path = list[tuple[int, int]]
 
 
-def bench(name, fn, n=25, warmup=3):
+def bench(name: str, fn: Callable[[], object], n: int = 25, warmup: int = 3) -> float:
     for _ in range(warmup):
         fn()
-    times = []
+    times: list[float] = []
     for _ in range(n):
         t0 = time.perf_counter_ns()
         fn()
         times.append((time.perf_counter_ns() - t0) / 1e6)
     times.sort()
     med = statistics.median(times)
-    RESULT = {
+    RESULT: dict[str, Any] = {
         "name": name, "n": n, "med": med, "min": times[0], "max": times[-1],
         "p95": times[min(len(times) - 1, int(len(times) * 0.95))],
         "p99": times[min(len(times) - 1, int(len(times) * 0.99))],
@@ -52,7 +64,7 @@ def bench(name, fn, n=25, warmup=3):
     return med
 
 
-def clear_routes(m):
+def clear_routes(m: atlaslib.MapModel) -> None:
     m.__dict__.pop("_route_cache", None)
     m.__dict__.pop("_route_loose", None)
 
@@ -65,25 +77,25 @@ def clear_plan():
 class Walker(WalkingMixin):
     """The walking half of the bot, enough for walk_dist: no link, no map cache."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._dists = None
 
 
-def decision_bench(mid, src):
+def decision_bench(mid: int, src: Cell) -> None:
     m = atlas.model(mid)
     w = Walker()
     src = m.nearest_walkable(src[0], src[1], 80) or src
     me = {"id": 1, "x": float(src[0]), "y": float(src[1]), "hp": 100.0, "maxhp": 100.0}
-    snap = {"map": {"id": mid}, "self": me, "entities": []}
+    snap: dict[str, Any] = {"map": {"id": mid}, "self": me, "entities": []}
     near = [(x, y) for y in range(src[1] - 30, src[1] + 31)
             for x in range(src[0] - 30, src[0] + 31) if m.ok(x, y)]
     reach = random.Random(7).sample(near, min(30, len(near)))
-    mobs = [{"id": i, "x": float(x) + 0.4, "y": float(y) + 0.4} for i, (x, y) in enumerate(reach)]
+    mobs: list[dict[str, Any]] = [{"id": i, "x": float(x) + 0.4, "y": float(y) + 0.4} for i, (x, y) in enumerate(reach)]
     behind = sum(1 for mob in mobs if not m.line_ok(src, (int(mob["x"]), int(mob["y"]))))
     print("      %d monsters within 30 cells on map %d (%dx%d, %d walkable), %d behind walls" % (
         len(mobs), mid, m.w, m.h, int(m.walk.sum()), behind))
 
-    def select(reset):
+    def select(reset: bool) -> tuple[float, int]:
         if reset:
             w._dists = None
         return min((w.walk_dist(snap, mob, limit=75), mob["id"]) for mob in mobs)
@@ -151,20 +163,22 @@ def cache_bench():
     _cache_hit_rates(keys, skew, path, LRUCache)
 
 
-def _per_op(fn, n):
+def _per_op(fn: Callable[[], object], n: int) -> float:
     """ns per operation of fn's n operations, best of 3."""
-    best = None
+    best: int | None = None
     for _ in range(3):
         t0 = time.perf_counter_ns()
         fn()
         dt = time.perf_counter_ns() - t0
         best = dt if best is None else min(best, dt)
+    assert best is not None
     return best / n
 
 
-def _cache_speeds(keys, seq, path, n, Cache, LRUCache):
+def _cache_speeds(keys: list[Key], seq: list[Key], path: Path, n: int,
+                  Cache: type[Cache[Key, Path]], LRUCache: type[LRUCache[Key, Path]]) -> None:
     """ns per get or set: plain dicts against cachebox's containers."""
-    def per_op(fn):
+    def per_op(fn: Callable[[], object]) -> float:
         return _per_op(fn, n)
 
     def dict_hits():
@@ -174,7 +188,7 @@ def _cache_speeds(keys, seq, path, n, Cache, LRUCache):
             get(k)
 
     def dict_sets():
-        d = {}
+        d: dict[Key, Path] = {}
         for k in seq:
             d[k] = path
             if len(d) > len(keys):
@@ -208,9 +222,9 @@ def _cache_speeds(keys, seq, path, n, Cache, LRUCache):
     print("%-30s %7.1f ns" % ("cachebox LRUCache, set (auto-evict)", per_op(lru_sets)))
 
 
-def _cache_hit_rates(keys, skew, path, LRUCache):
+def _cache_hit_rates(keys: list[Key], skew: list[Key], path: Path, LRUCache: type[LRUCache[Key, Path]]) -> None:
     """How often a skewed trace finds its key: a dict working set against an LRU."""
-    def hit_rate(put, get):
+    def hit_rate(put: Callable[[Key, Path], object], get: Callable[[Key], Path | None]) -> float:
         for k in skew[:len(keys) // 2]:
             put(k, path)
         miss = 0
@@ -220,7 +234,7 @@ def _cache_hit_rates(keys, skew, path, LRUCache):
                 miss += 1
         return 100.0 * (len(skew) - miss) / len(skew)
 
-    d = {}
+    d: dict[Key, Path] = {}
     print("%-30s %6.1f %%" % ("dict working set, skew trace", hit_rate(
         lambda k, v: d.__setitem__(k, v), d.get)))
     c = LRUCache(len(keys))
@@ -260,8 +274,7 @@ def load_bench():
             return atlaslib.MapModel(mid)
         bench("model %d, rows read + built" % mid, load, n=5, warmup=1)
     t0 = time.perf_counter_ns()
-    atlaslib._Geometry._index = None
-    atlaslib._Geometry._scan()
+    atlaslib.scan_geometry()
     print("%-46s %9.3f ms  (once, at start)" % ("geometry index scan", (time.perf_counter_ns() - t0) / 1e6))
 
 
@@ -306,13 +319,13 @@ def route_cache_workload_bench():
         for jitter in (0, 1):
             clear_routes(m)
             asked = searched = 0
-            real = m._route
+            real = m.gated_route
 
-            def counting(a, b, avoid_directional=False):
+            def counting(a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
                 nonlocal searched
                 searched += 1
                 return real(a, b, avoid_directional)
-            m._route = counting
+            m.gated_route = counting
             t0 = time.perf_counter_ns()
             try:
                 for _lap in range(5):
@@ -322,10 +335,11 @@ def route_cache_workload_bench():
                         if not m.ok(*start):
                             start = here
                         asked += 1
-                        m.route(start, hop, avoid_directional=True) or m.route(start, hop)
+                        if not m.route(start, hop, avoid_directional=True):
+                            m.route(start, hop)
                         here = hop
             finally:
-                del m._route
+                del m.gated_route
             ms = (time.perf_counter_ns() - t0) / 1e6
             print("%-46s %5d hops, %5.1f %% cache hits, %8.2f ms in all" % (
                 "map %d, %s starts" % (mid, "real" if jitter else "exact"), asked,
@@ -355,7 +369,7 @@ def lru_cache_bench():
             lru.get(d, k)
 
     @functools.lru_cache(maxsize=512)
-    def cached(k):
+    def cached(k: tuple[tuple[int, int], tuple[int, int], bool]) -> tuple[tuple[int, int], ...]:
         return path
 
     for k in keys:
@@ -372,7 +386,7 @@ def numba_bench():
     """The same whole-map dijkstra JIT-compiled by numba, against the C one: compile time on the
     first call (every app start would pay it) and the steady run."""
     try:
-        import numba
+        numba = importlib.import_module("numba")      # optional: not a dependency, often absent
     except ImportError:
         print("\n(numba not installed: its comparison skipped)")
         return
@@ -381,7 +395,8 @@ def numba_bench():
     import heapq as hq
 
     @numba.njit(cache=False)
-    def nb_dijkstra(W, walk, clear, gate, pen, src, dist):
+    def nb_dijkstra(W: int, walk: npt.NDArray[np.uint8], clear: npt.NDArray[np.uint8], gate: npt.NDArray[np.uint8],
+                    pen: npt.NDArray[np.float64], src: int, dist: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         n = walk.size
         for i in range(n):
             dist[i] = np.inf
@@ -389,7 +404,7 @@ def numba_bench():
         offs = np.array([1, -1, W, -W])
         bits = np.array([4, 1, 8, 2])
         dist[src] = 0.0
-        heap = [(0.0, src)]
+        heap: list[tuple[float, Any]] = [(0.0, src)]     # cells come back as numpy integers
         while heap:
             d, c = hq.heappop(heap)
             if done[c]:
@@ -399,7 +414,7 @@ def numba_bench():
                 nb = c + offs[j]
                 if nb < 0 or nb >= n or not walk[nb] or done[nb] or (gate[c] & bits[j]):
                     continue
-                nd = d + 1.0 + pen[clear[nb]]
+                nd = d + 1.0 + float(pen[clear[nb]])
                 if nd < dist[nb]:
                     dist[nb] = nd
                     hq.heappush(heap, (nd, nb))
@@ -423,7 +438,7 @@ def numba_bench():
     bench("C dijkstra_arr, full", lambda: m.dijkstra_arr((200, 200)), n=10)
 
 
-def main():
+def main() -> None:
     quick = "--quick" in sys.argv
     try:
         from unclefarmer import native
@@ -458,13 +473,13 @@ def main():
     print("\n=== route cache (map %d) ===" % MID)
     near, far = (230, 225), (60, 60)
 
-    def cold_route(a, b):
+    def cold_route(a: Cell, b: Cell) -> Callable[[], list[Cell] | None]:
         def once():
             clear_routes(m)
             return m.route(a, b)
         return once
 
-    def hot_route(a, b):
+    def hot_route(a: Cell, b: Cell) -> Callable[[], list[Cell] | None]:
         def once():
             m.route(a, b)
             return m.route(a, b)

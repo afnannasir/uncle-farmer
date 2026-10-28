@@ -1,5 +1,3 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins here replace real methods and attributes with fakes on purpose.
 """Every way a run can end must leave the game safe, whatever the reason.
 
 test_runner.py checks the individual endings. This file checks what they have in common, as
@@ -14,12 +12,19 @@ can't quietly skip a cleanup step:
   * a failing cleanup step is logged and never takes the run thread down.
 """
 
+from __future__ import annotations
+
+from typing import Any, NoReturn
+
 import pytest
-from test_runner import FakeBot, FakeRunner, FakeTally, FarmingRunner, make
+from test_runner import FakeBot, FakeLink, FakeRunner, FakeTally, FarmingRunner, bot_of, make
+from conftest import as_kind
 
 from unclefarmer.engine import script as script_mod
 from unclefarmer.engine.bot import Stopped
 from unclefarmer.link import AgentError
+from pathlib import Path
+from unclefarmer.engine.botparts.parts import Parts
 
 
 class Raises(FakeRunner):
@@ -27,61 +32,64 @@ class Raises(FakeRunner):
 
     exc: BaseException = RuntimeError("never raised")
 
-    def run(self):
+    def run(self) -> None:
         super().run()
         raise self.exc
 
 
-def raising(exc):
-    return type("R", (Raises,), {"exc": exc})
+def raising(exc: BaseException) -> type[Raises]:
+    class Raising(Raises):
+        pass
+    Raising.exc = exc
+    return Raising
 
 
 class LetGoBot(FakeBot):
     """A bot that has let_go(): the run must prefer it to the blunt `keysup`."""
 
-    def __init__(self, *a, **k):
+    def __init__(self, *a: Any, **k: Any) -> None:
         super().__init__(*a, **k)
         self.let_go_calls = 0
 
-    def let_go(self):
+    def let_go(self) -> None:
         self.let_go_calls += 1
 
 
-ENDINGS = {
+STAY = Stopped("called away")
+STAY.stay = True
+ENDINGS: dict[str, type[FakeRunner]] = {
     "finished": FarmingRunner,
     "stopped": raising(Stopped("a stop rule")),
-    "stopped-and-stay": raising(_stay := Stopped("called away")),
+    "stopped-and-stay": raising(STAY),
     "script-error": raising(script_mod.ScriptError(2, "bad")),
     "agent-lost": raising(AgentError("closed")),
     "agent-missing": raising(AgentError("no_game")),
     "os-error": raising(OSError("pipe broke")),
     "bug": raising(ValueError("a bug in the bot")),
 }
-_stay.stay = True
 
 
 @pytest.mark.parametrize("ending", ENDINGS)
-def test_every_ending_closes_the_link_and_lets_go_of_the_keys(monkeypatch, tmp_path, ending, allow_ignored_failures):
-    run, links, _, done = make(monkeypatch, tmp_path, runner=ENDINGS[ending])
+def test_every_ending_closes_the_link_and_lets_go_of_the_keys(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, ending: str, allow_ignored_failures: None):
+    run, links, _, _done = make(monkeypatch, tmp_path, runner=ENDINGS[ending])
     run.run()
     assert links[0].closed is True
     assert "keysup" in links[0].sent       # FakeBot has no let_go: the blunt release is the fallback
 
 
 @pytest.mark.parametrize("ending", ENDINGS)
-def test_every_ending_prefers_letting_go_of_only_its_own_keys(monkeypatch, tmp_path, ending,
-                                                              allow_ignored_failures):
+def test_every_ending_prefers_letting_go_of_only_its_own_keys(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, ending: str,
+                                                              allow_ignored_failures: None):
     from unclefarmer.engine import runner as R
     run, links, _, _ = make(monkeypatch, tmp_path, runner=ENDINGS[ending])
     monkeypatch.setattr(R, "Bot", LetGoBot)
     run.run()
-    assert run.bot is not None
-    assert run.bot.let_go_calls == 1
+    assert as_kind(LetGoBot, run.bot).let_go_calls == 1
     assert "keysup" not in links[0].sent   # a `keysup` could drop another controller's keys
 
 
 @pytest.mark.parametrize("ending", ENDINGS)
-def test_every_ending_turns_the_game_speech_back_on(monkeypatch, tmp_path, ending, allow_ignored_failures):
+def test_every_ending_turns_the_game_speech_back_on(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, ending: str, allow_ignored_failures: None):
     run, links, _, _ = make(monkeypatch, tmp_path, runner=ENDINGS[ending], app={"game_speech": "running"})
     run.run()
     sent = links[0].sent
@@ -89,7 +97,7 @@ def test_every_ending_turns_the_game_speech_back_on(monkeypatch, tmp_path, endin
     assert sent.index("speech on") > sent.index("speech off")
 
 
-def test_speech_the_player_switched_off_by_hand_stays_off(monkeypatch, tmp_path):
+def test_speech_the_player_switched_off_by_hand_stays_off(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, links, _, _ = make(monkeypatch, tmp_path, app={"game_speech": "running"})
     run.speech_choice = "off"
     run.run()
@@ -104,9 +112,9 @@ def test_speech_the_player_switched_off_by_hand_stays_off(monkeypatch, tmp_path)
     ("agent-lost", False),          # the game is gone or broken: nothing to close
     ("os-error", False),
 ])
-def test_after_stop_only_closes_the_game_when_farming_ended_by_itself(monkeypatch, tmp_path, ending, closes):
+def test_after_stop_only_closes_the_game_when_farming_ended_by_itself(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, ending: str, closes: bool):
     class Farm(ENDINGS[ending]):
-        def run(self):
+        def run(self) -> None:
             self.bot.farmed = True
             super().run()
 
@@ -115,9 +123,9 @@ def test_after_stop_only_closes_the_game_when_farming_ended_by_itself(monkeypatc
     assert ("closegame" in links[0].sent) is closes
 
 
-def test_pressing_stop_never_closes_the_game(monkeypatch, tmp_path):
+def test_pressing_stop_never_closes_the_game(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     class StopPressed(FarmingRunner):
-        def run(self):
+        def run(self) -> None:
             super().run()
             self.bot.stop_event.set()
             raise Stopped("stopped by the player")
@@ -129,13 +137,13 @@ def test_pressing_stop_never_closes_the_game(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize("setting", ["nothing", "", "garbage"])
-def test_after_stop_nothing_means_nothing(monkeypatch, tmp_path, setting):
+def test_after_stop_nothing_means_nothing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, setting: str):
     run, links, _, _ = make(monkeypatch, tmp_path, runner=FarmingRunner, app={"after_stop": setting})
     run.run()
     assert "closegame" not in links[0].sent
 
 
-def test_a_shutdown_closes_the_game_too_and_arms_the_agent_first(monkeypatch, tmp_path):
+def test_a_shutdown_closes_the_game_too_and_arms_the_agent_first(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, links, _, _ = make(monkeypatch, tmp_path, runner=FarmingRunner, app={"after_stop": "shutdown"})
     run.run()
     sent = links[0].sent
@@ -143,70 +151,70 @@ def test_a_shutdown_closes_the_game_too_and_arms_the_agent_first(monkeypatch, tm
 
 
 # ---------------------------------------------------------------- guarding after an early stop
-def test_an_early_stop_leaves_the_character_somewhere_safe(monkeypatch, tmp_path):
+def test_an_early_stop_leaves_the_character_somewhere_safe(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, _, _, _ = make(monkeypatch, tmp_path, runner=raising(Stopped("stuck")))
     run.run()
     assert run.bot is not None
-    assert run.bot.defend_calls == 1 and run.bot.finish_calls == 1
+    assert bot_of(run).defend_calls == 1 and bot_of(run).finish_calls == 1
 
 
-def test_being_called_away_guards_but_stays_where_it_is(monkeypatch, tmp_path):
-    run, _, _, _ = make(monkeypatch, tmp_path, runner=raising(ENDINGS["stopped-and-stay"].exc))
+def test_being_called_away_guards_but_stays_where_it_is(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    run, _, _, _ = make(monkeypatch, tmp_path, runner=raising(STAY))
     run.run()
     assert run.bot is not None
-    assert run.bot.defend_calls == 1 and run.bot.finish_calls == 0
+    assert bot_of(run).defend_calls == 1 and bot_of(run).finish_calls == 0
 
 
-def test_a_bug_still_guards_the_character(monkeypatch, tmp_path, allow_ignored_failures):
+def test_a_bug_still_guards_the_character(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None):
     # "a bug is no reason to stand still while monsters hit us"
-    run, _, logs, done = make(monkeypatch, tmp_path, runner=raising(ValueError("boom")))
+    run, _, logs, _done = make(monkeypatch, tmp_path, runner=raising(ValueError("boom")))
     run.run()
     assert run.bot is not None
-    assert run.bot.defend_calls == 1
+    assert bot_of(run).defend_calls == 1
     assert any("unexpected error" in line for line, _ in logs)
 
 
-def test_the_walking_assistant_is_never_guarded(monkeypatch, tmp_path):
+def test_the_walking_assistant_is_never_guarded(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, _, _, _ = make(monkeypatch, tmp_path, walk=True, runner=raising(Stopped("stuck")))
     run.run()
     assert run.bot is not None
-    assert run.bot.defend_calls == 0 and run.bot.finish_calls == 0
+    assert bot_of(run).defend_calls == 0 and bot_of(run).finish_calls == 0
 
 
 # ---------------------------------------------------------------- telling the player
-def test_the_player_who_asked_is_told_why_the_run_stopped(monkeypatch, tmp_path):
+def test_the_player_who_asked_is_told_why_the_run_stopped(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, _, _, _ = make(monkeypatch, tmp_path, runner=raising(Stopped("lost sight of them")))
-    told = []
+    told: list[str] = []
     run.tell = told.append
     run.run()
     assert told == ["Stopped: lost sight of them"]
 
 
-def test_nobody_is_told_after_pressing_stop(monkeypatch, tmp_path):
+def test_nobody_is_told_after_pressing_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     class StopPressed(FakeRunner):
-        def run(self):
+        def run(self) -> None:
             self.bot.stop_event.set()
             raise Stopped("stopped by the player")
 
     run, _, _, _ = make(monkeypatch, tmp_path, runner=StopPressed)
-    told = []
+    told: list[str] = []
     run.tell = told.append
     run.run()
     assert told == []
 
 
-def test_nobody_is_told_about_a_normal_arrival(monkeypatch, tmp_path):
+def test_nobody_is_told_about_a_normal_arrival(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     run, _, _, _ = make(monkeypatch, tmp_path, walk=True)
-    told = []
+    told: list[str] = []
     run.tell = told.append
     run.run()
     assert told == []
 
 
-def test_a_failing_tell_does_not_kill_the_run_thread(monkeypatch, tmp_path, allow_ignored_failures):
+def test_a_failing_tell_does_not_kill_the_run_thread(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None):
     run, links, _, _ = make(monkeypatch, tmp_path, runner=raising(Stopped("x")))
 
-    def broken(_line):
+    def broken(_line: str) -> NoReturn:
         raise RuntimeError("the private message failed")
 
     run.tell = broken
@@ -215,16 +223,16 @@ def test_a_failing_tell_does_not_kill_the_run_thread(monkeypatch, tmp_path, allo
 
 
 # ---------------------------------------------------------------- cleanup that itself fails
-def test_a_dead_link_during_cleanup_is_logged_and_the_link_still_closed(monkeypatch, tmp_path):
+def test_a_dead_link_during_cleanup_is_logged_and_the_link_still_closed(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     from unclefarmer.engine import runner as R
     run, links, logs, _ = make(monkeypatch, tmp_path, runner=FarmingRunner, app={"after_stop": "close_game"})
     make_link = R.AgentLink
 
-    def dying_link(pid=None, **kw):
-        link = make_link(pid)
+    def dying_link(pid: int | None = None, **kw: object) -> FakeLink:
+        link = as_kind(FakeLink, make_link(pid))
         real_send = link.send
 
-        def send(line):
+        def send(line: str) -> str:
             if line == "keysup":
                 link.sent.append(line)
                 raise OSError("the game exited")
@@ -239,17 +247,17 @@ def test_a_dead_link_during_cleanup_is_logged_and_the_link_still_closed(monkeypa
     assert links[0].closed is True
 
 
-def test_results_are_saved_even_when_finishing_them_fails_twice(monkeypatch, tmp_path, allow_ignored_failures):
+def test_results_are_saved_even_when_finishing_them_fails_twice(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None):
     from unclefarmer import stats
     run, _, logs, _ = make(monkeypatch, tmp_path, runner=FarmingRunner)
 
     class BrokenTally(FakeTally):
         saved = False
 
-        def finish(self, bot=None):
+        def finish(self, bot: Parts | None=None) -> None:
             raise RuntimeError("bad sheet")
 
-        def save(self):
+        def save(self) -> None:
             type(self).saved = True
 
     monkeypatch.setattr(stats, "Tally", BrokenTally)

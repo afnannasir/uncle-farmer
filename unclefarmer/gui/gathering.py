@@ -7,21 +7,26 @@ player's own, added where they stand in the game, and the ones the bot knows. Ch
 gathers, fights what attacks, and sells the collection.
 """
 
+from __future__ import annotations
+
 import wx
 
 from .. import atlas, settings
 from ..engine import gathering
 from ..i18n import _
-from .common import Form, buttons, error, group, info, labeled, page, save_file, tabs
+from .common import Dialog, Reader, standing, with_code, Form, buttons, error, group, info, labeled, page, save_file, tabs, modal
 from .crafting import CHECK, START
 from .plan import NOT_SEEN
+from typing import Any
 
 WHEN_FULL = ("sell", "stop")
 
 
-def skill_line(p):
+def skill_line(p: dict[str, Any]) -> tuple[str | None, str]:
     """The character's gathering skill as the last scan saw it, for the window's first line."""
-    rows = [r for r in (p.get("scan") or {}).get("profession", []) if r.get("name") in gathering.SKILLS]
+    scan: dict[str, Any] = p.get("scan") or {}
+    profession: list[dict[str, Any]] = scan.get("profession", [])
+    rows = [r for r in profession if r.get("name") in gathering.SKILLS]
     if not rows:
         return None, _("The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs "
                        "(one of them) from the gang's Guru Elder or Master Pepper, then scan again.")
@@ -29,15 +34,16 @@ def skill_line(p):
     return r["name"], _("Gathering skill: {skill}, {rank}.", skill=_(r["name"]), rank=gathering.rank_name(r.get("rank")))
 
 
-class GatheringDialog(wx.Dialog):
-    def __init__(self, parent, character, game):
+class GatheringDialog(Dialog):
+    def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
         super().__init__(parent, title=_("{tool} - {name}", tool=_("Gathering"), name=character),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game = game
         self.p = settings.load_profile(character)
         c = self.cfg = gathering.config(self.p)
-        self.own = [dict(x) for x in c["places"]]
+        self.own: list[dict[str, Any]] = [dict(x) for x in c["places"]]
+        self.choices: list[str] = [""]
         self.skill, line = skill_line(self.p)
         root = wx.BoxSizer(wx.VERTICAL)
         nb = tabs(self)
@@ -46,7 +52,7 @@ class GatheringDialog(wx.Dialog):
         box.Add(wx.StaticText(panel, label=line), 0, wx.BOTTOM, 6)
         f = group(panel, box, _("Gangs' production areas (a Lake, Mining Area or Herbal Garden)"), 1)
         self.gang = f.check(_("Gather in &gangs' areas first, each once a game day (30 minutes inside)"), c["gang"])
-        self.gangs = list(gathering.gangs(c))
+        self.gangs: list[str] = list(gathering.gangs(c))
         self.gang_list = labeled(f.parent, f.box, _("Gangs, in &order (the bot goes to each in turn):"),
                                  lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
         buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own), (_("Add a gang by &name..."), self.on_add_gang),
@@ -99,7 +105,7 @@ class GatheringDialog(wx.Dialog):
         row = wx.BoxSizer(wx.HORIZONTAL)
         for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
             btn = wx.Button(self, label=label)
-            btn.Bind(wx.EVT_BUTTON, lambda e, c=code: self.done(c))
+            btn.Bind(wx.EVT_BUTTON, with_code(self.done, code))
             row.Add(btn, 0, wx.RIGHT, 8)
         row.Add(wx.Button(self, wx.ID_CANCEL, _("Cancel")), 0)
         root.Add(row, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
@@ -107,31 +113,31 @@ class GatheringDialog(wx.Dialog):
         self.SetMinSize(wx.Size(640, 560))
 
     # ------------------------------------------------------------ gangs
-    def fill_gangs(self, select=None):
+    def fill_gangs(self, select: int | None = None) -> None:
         self.gang_list.Set([g or _("Our own gang") for g in self.gangs])
         if self.gangs and select is not None:
             self.gang_list.SetSelection(max(0, min(select, len(self.gangs) - 1)))
 
-    def _add_gang(self, gang):
+    def _add_gang(self, gang: str) -> None:
         if gang.lower() in [g.lower() for g in self.gangs]:
             info(self, _("{gang} is in the list already.", gang=gathering.gang_name(gang)))
             return
         self.gangs.append(gang)
         self.fill_gangs(len(self.gangs) - 1)
 
-    def on_add_own(self, _evt):
+    def on_add_own(self, _evt: wx.Event) -> None:
         self._add_gang("")
 
-    def on_add_gang(self, _evt):
-        with wx.TextEntryDialog(self, _("The gang's name, as the Gang Entrance's list shows it:"),
-                                _("Add a gang")) as d:
+    def on_add_gang(self, _evt: wx.Event) -> None:
+        with modal(wx.TextEntryDialog(self, _("The gang's name, as the Gang Entrance's list shows it:"),
+                                _("Add a gang"))) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             name = " ".join(d.GetValue().split())
         if name:
             self._add_gang(name)
 
-    def move_gang(self, step):
+    def move_gang(self, step: int) -> None:
         i = self.gang_list.GetSelection()
         j = i + step
         if i < 0 or not 0 <= j < len(self.gangs):
@@ -139,7 +145,7 @@ class GatheringDialog(wx.Dialog):
         self.gangs[i], self.gangs[j] = self.gangs[j], self.gangs[i]
         self.fill_gangs(j)
 
-    def on_remove_gang(self, _evt):
+    def on_remove_gang(self, _evt: wx.Event) -> None:
         i = self.gang_list.GetSelection()
         if i < 0:
             return
@@ -147,12 +153,12 @@ class GatheringDialog(wx.Dialog):
         self.fill_gangs(i)
 
     # ------------------------------------------------------------ places
-    def fill_places(self, chosen=None):
+    def fill_places(self, chosen: str | None = None) -> None:
         """The place choice (the best one, or one of every place for the skill) and the own list."""
         if chosen is None:
             i = self.where.GetSelection()
             chosen = self.choices[i] if 0 < i < len(self.choices) else ""
-        cfg = dict(self.cfg, places=self.own, known_places=self.known.GetValue())
+        cfg: dict[str, Any] = {**self.cfg, "places": self.own, "known_places": self.known.GetValue()}
         found = gathering.places(cfg, self.skill) if self.skill else []
         self.choices = [""] + [p["label"] for p in found]
         names = [_("The best for this character")] + [
@@ -162,24 +168,23 @@ class GatheringDialog(wx.Dialog):
         self.where.SetSelection(self.choices.index(chosen) if chosen in self.choices else 0)
         self.list.Set(["%s - %s" % (gathering.label(p), _(p["skill"])) for p in self.own])
 
-    def on_add(self, _evt):
-        snap = self.game()
-        me = (snap or {}).get("self") or {}
-        mid = ((snap or {}).get("map") or {}).get("id")
-        if not me or mid is None:
+    def on_add(self, _evt: wx.Event) -> None:
+        here = standing(self.game())
+        if here is None:
             error(self, NOT_SEEN)
             return
+        mid, x, y = here
         if int(mid) in gathering.GANG_AREAS:
             error(self, _("The gang's area is used on its own, once a day: no need to add it."))
             return
         if not self.skill:
             error(self, _("This character has no gathering skill to add a place for."))
             return
-        p = {"skill": self.skill, "map": int(mid), "x": int(me["x"]), "y": int(me["y"])}
+        p: dict[str, Any] = {"skill": self.skill, "map": int(mid), "x": int(x), "y": int(y)}
         if any(gathering.place_key(p) == gathering.place_key(q) for q in self.own):
             info(self, _("That place is in your list already."))
             return
-        with wx.TextEntryDialog(self, _("A name for this place:"), _("Add a place"), gathering.label(p)) as d:
+        with modal(wx.TextEntryDialog(self, _("A name for this place:"), _("Add a place"), gathering.label(p))) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             name = d.GetValue().strip()
@@ -191,12 +196,12 @@ class GatheringDialog(wx.Dialog):
         info(self, _("Added {place} on {map}. Stand where you gather by hand: the bot stands on that very spot.",
                      place=gathering.label(p), map=atlas.label(int(mid))))
 
-    def on_rename(self, _evt):
+    def on_rename(self, _evt: wx.Event) -> None:
         i = self.list.GetSelection()
         if i < 0:
             return
         p = self.own[i]
-        with wx.TextEntryDialog(self, _("A name for this place:"), _("Rename"), gathering.label(p)) as d:
+        with modal(wx.TextEntryDialog(self, _("A name for this place:"), _("Rename"), gathering.label(p))) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             name = d.GetValue().strip()
@@ -206,7 +211,7 @@ class GatheringDialog(wx.Dialog):
         self.fill_places()
         self.list.SetSelection(i)
 
-    def on_remove(self, _evt):
+    def on_remove(self, _evt: wx.Event) -> None:
         i = self.list.GetSelection()
         if i < 0:
             return
@@ -216,7 +221,7 @@ class GatheringDialog(wx.Dialog):
             self.list.SetSelection(min(i, len(self.own) - 1))
 
     # ------------------------------------------------------------ saving
-    def done(self, code):
+    def done(self, code: int) -> None:
         i = self.where.GetSelection()
         if self.gang.GetValue() and not self.gangs:
             error(self, _("Add a gang to gather in, or untick gathering in gangs' areas."))

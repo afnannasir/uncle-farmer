@@ -4,12 +4,17 @@ The soak tests (test_soak.py, --soak) run it for hours of game time; this runs t
 in a couple of seconds, so a change that breaks the run end to end - the connection, the scan,
 the setup, the fights, the results, the end - shows up on every run of the suite."""
 
+from __future__ import annotations
+
 import os
 
 import pytest
 
 import simgame
 from unclefarmer import paths
+from conftest import stand_in
+from unclefarmer.engine.runner import Run
+from collections.abc import Callable
 
 
 def errors_logged():
@@ -18,7 +23,7 @@ def errors_logged():
 
 
 @pytest.mark.slow
-def test_ten_game_minutes_of_farming_end_to_end(sim_env):
+def test_ten_game_minutes_of_farming_end_to_end(sim_env: Callable[..., simgame.SimGame]):
     game = sim_env()
     s = simgame.Soak(game, "end_at here\nfarm minutes=10", watchdog=120).go()
     w = game.world
@@ -33,7 +38,7 @@ def test_ten_game_minutes_of_farming_end_to_end(sim_env):
 
 
 @pytest.mark.slow
-def test_a_chat_line_opening_mid_walk_costs_no_stuck(sim_env):
+def test_a_chat_line_opening_mid_walk_costs_no_stuck(sim_env: Callable[..., simgame.SimGame]):
     game = sim_env(seed=41)
     game.world.events.chatbox = 0.5
     s = simgame.Soak(game, "end_at here\nfarm minutes=20", watchdog=120).go()
@@ -44,7 +49,7 @@ def test_a_chat_line_opening_mid_walk_costs_no_stuck(sim_env):
 
 
 @pytest.mark.slow
-def test_a_lost_connection_ends_the_run_cleanly(sim_env):
+def test_a_lost_connection_ends_the_run_cleanly(sim_env: Callable[..., simgame.SimGame]):
     game = sim_env(seed=3)
     game.faults.drop = 0.001
     s = simgame.Soak(game, "end_at here\nfarm minutes=30", watchdog=120).go()
@@ -54,7 +59,7 @@ def test_a_lost_connection_ends_the_run_cleanly(sim_env):
 
 
 @pytest.mark.slow
-def test_drop_time_to_save_is_left_unused(sim_env):
+def test_drop_time_to_save_is_left_unused(sim_env: Callable[..., simgame.SimGame]):
     # Bag and supplies, Full bag: "Drop time to save (minutes)". With 60 saved, the run stops while
     # 60 minutes and the tail (the drop time keeps running for a while after we leave) are left.
     from unclefarmer import settings
@@ -62,10 +67,10 @@ def test_drop_time_to_save_is_left_unused(sim_env):
     game = sim_env()
     game.world.drop_seconds = 70 * 60
     s = simgame.Soak(game, "end_at here\nfarm minutes=60", watchdog=120)
-    at_stop = []
+    at_stop: list[float] = []
     log = s.run.on_log
 
-    def on_log(line, speak, run):
+    def on_log(line: str, speak: bool, run: Run) -> None:
         if "drop time is nearly used up" in line:
             at_stop.append(game.world.drop_seconds)      # what was left when the bot decided
         log(line, speak, run)
@@ -79,7 +84,7 @@ def test_drop_time_to_save_is_left_unused(sim_env):
 
 
 @pytest.mark.slow
-def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env, monkeypatch):
+def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[..., simgame.SimGame], monkeypatch: pytest.MonkeyPatch):
     # Tools, Dungeons on Spider cave: the entrance and the supplies are tested on their own
     # (test_dungeon.py); here the visit itself runs - the farming fight in dungeon mode for the
     # cave's 15 minutes, no trips out, then out through the Action menu when the game doesn't
@@ -88,11 +93,11 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env, monkeypatch)
     from unclefarmer.engine import dungeon
     from unclefarmer.engine.bot import Bot
     settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, dungeon={"caves": ["Spider cave"]}))
-    monkeypatch.setattr(dungeon, "get_supplies", lambda b, cfg, check_only=False: [])
-    monkeypatch.setattr(dungeon, "level_of", lambda b: 80)
-    monkeypatch.setattr(dungeon, "enter", lambda b, cave: True)
-    left = []
-    monkeypatch.setattr(Bot, "leave_instance", lambda self: left.append(self.clock.time()) or True)
+    monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
+    monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
+    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
+    left: list[float] = []
+    monkeypatch.setattr(Bot, "leave_instance", stand_in(Bot.leave_instance, lambda self: left.append(self.clock.time()) or True))
     game = sim_env()
     began = game.clock.time()
     s = simgame.Soak(game, "end_at here\ndungeon", watchdog=120).go()

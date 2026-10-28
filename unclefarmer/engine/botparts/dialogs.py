@@ -1,23 +1,21 @@
-# pyright: strict
 """NPCs and the game's menus: reading and choosing entries, finding and talking to NPCs, popups.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
+
 import math
 import time
-from typing import Any, Protocol, cast
+from typing import Any
 
 from ... import applog, atlas, jsonio as json, knowledge, travel
 from ...i18n import _
 from .. import team
 from .base import (Stopped, note_failure, steps)
-from .parts import Parts
-
-
-class DialogsLink(Protocol):
-    def json(self, line: str) -> Any: ...
+from ...link import GameLink
+from .parts import as_bot, Parts
 
 
 class DialogsMixin(Parts):
@@ -28,8 +26,8 @@ class DialogsMixin(Parts):
     modes_done: bool
 
     @property
-    def _game(self) -> DialogsLink:
-        return cast(DialogsLink, self.a)
+    def _game(self) -> GameLink:
+        return self.a
 
     def clear_popups(self, force: bool = False) -> bool:
         """A window the bot didn't open - a team or trade invite, a notice - turns the walking keys
@@ -45,13 +43,13 @@ class DialogsMixin(Parts):
         d = self.dialog()
         if not d.get("open"):
             return False
-        top = cast(dict[str, Any], d.get("top") or {})
-        rows = cast(list[list[dict[str, Any] | None]], top.get("rows", []))
+        top: dict[str, Any] = d.get("top") or {}
+        rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
         texts = [t for row in rows for e in row if e for t in self.entry_texts(e)[:1]]
         inv = team.invite_in(texts)
         if inv and self.trusted.has(inv[0], link=self.a):
             self.note_dialog(d, "team invite from a trusted player")
-            if team.accept_invite(self):
+            if team.accept_invite(as_bot(self)):
                 self.log(_("joined {who}'s team ({team}): {who} is trusted", who=inv[0], team=inv[1]), speak=True)
                 return True
         self.note_dialog(d, "popup closed")
@@ -126,13 +124,16 @@ class DialogsMixin(Parts):
         row per player, their name first and what can be done to them beside it)."""
         if not top:
             return None
-        rows = cast(list[list[dict[str, Any] | None]], top["rows"])
+        rows: list[list[dict[str, Any] | None]] = top["rows"]
         for r, cells in enumerate(rows):
             first = cells[0] if cells else None
             if not first or not any(travel.matches(row, t) for t in self.entry_texts(first)):
                 continue
             for c, e in enumerate(cells):
-                if c and e and any(travel.matches(pattern, t) for t in cast(list[str], e.get("options") or [])):
+                if not (c and e):
+                    continue
+                options: list[str] = e.get("options") or []
+                if any(travel.matches(pattern, t) for t in options):
                     return r, c
         return None
 
@@ -196,7 +197,7 @@ class DialogsMixin(Parts):
         across the whole town, stopping as soon as it comes into view."""
         mid = self.map_id()
         want = name.strip().lower()
-        npcs = cast(list[dict[str, Any]], knowledge.data().get("npcs", []))
+        npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
         spots: list[tuple[int, int]] = [(int(n["x"]), int(n["y"])) for n in npcs
                  if n.get("map") == mid and (n.get("name") or "").strip().lower() == want]
         sweep: list[tuple[int, int]] = []
@@ -227,7 +228,7 @@ class DialogsMixin(Parts):
             here = (int(me["x"]), int(me["y"]))
             here = here if m.ok(*here) else (m.nearest_walkable(here[0], here[1], 4) or here)
             cell = spot if m.ok(*spot) else m.nearest_walkable(spot[0], spot[1], 20)
-            if not cell or not m.route(here, tuple(cell)):
+            if not cell or not m.route(here, (cell[0], cell[1])):
                 continue
             self.walk_to(cell, near=seen)
             if self.map_id() != mid:
@@ -280,9 +281,10 @@ class DialogsMixin(Parts):
             # stop as soon as it comes into view: from there we walk to a cell beside it. Only the
             # one at that spot counts (the survey talked to Giant Rock's left airship administrator
             # twice, the right one never, 2026-10-11).
-            def in_view(_me: Any) -> bool:
+            def in_view(_me: dict[str, Any]) -> bool:
                 return self.find_npc(name, at, within) is not None
-            self.walk_to(tuple(stand or at), near=in_view)
+            spot = stand or at
+            self.walk_to((spot[0], spot[1]), near=in_view)
             npc = self.find_npc(name, at, within)
         if npc is None:
             npc = self.look_for_npc(name)
@@ -304,6 +306,6 @@ class DialogsMixin(Parts):
                 return False
             line = list(m.line((int(me["x"]), int(me["y"])), (int(round(npc["x"])), int(round(npc["y"])))))
             return all(m.ok(x, y) for x, y in line[:-1])   # the NPC's own cell may be a wall
-        if self.walk_to(tuple(stand), near=in_range) == "stuck":
+        if self.walk_to((stand[0], stand[1]), near=in_range) == "stuck":
             self.stuck_in_a_row = 0   # a near miss by a counter is not a lost bot
         return npc

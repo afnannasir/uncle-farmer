@@ -62,6 +62,8 @@ until they have been seen. What this run earned: arnebia_gained contribution_gai
 levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`.
 """
 
+from __future__ import annotations
+
 import ast
 import operator
 import random
@@ -70,13 +72,14 @@ import shlex
 import time
 from typing import Any
 
-from .. import atlas, dungeons, knowledge, stats
+from .. import atlas, dungeons, jsonio, knowledge, stats
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
 from . import chores, crafting, dungeon, follow, gathering, survey, town
-from .bot import Respawned, Stopped
+from .bot import Bot, Respawned, Stopped
+from collections.abc import Callable, Mapping
 
-def _at(rest, n):
+def _at(rest: str, n: int):
     """Split a trailing 'at x,y' (or 'at x y') off a command: (rest, (x, y) or None)."""
     m = re.match(r"^(.*?)\s+at\s+(\d+)\s*[, |]\s*(\d+)\s*$", rest.strip(), re.I)
     if not m:
@@ -95,7 +98,7 @@ VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "
 
 
 class ScriptError(Exception):
-    def __init__(self, line, message):
+    def __init__(self, line: int, message: str):
         super().__init__(_("line {n}: {msg}", n=line, msg=message))
         self.line = line
 
@@ -109,9 +112,11 @@ class _End(Exception):
 
 
 # ---------------------------------------------------------------- expressions
-_BIN = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv,
-        ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod}
-_CMP = {ast.Lt: operator.lt, ast.LtE: operator.le, ast.Gt: operator.gt, ast.GtE: operator.ge,
+# Any: a script's values are numbers or text, worked out as it runs (see evaluate)
+_BIN: dict[type[ast.operator], Callable[[Any, Any], Any]] = {
+    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+    ast.Div: lambda a, b: a / b, ast.FloorDiv: lambda a, b: a // b, ast.Mod: operator.mod}
+_CMP: dict[type[ast.cmpop], Callable[[Any, Any], Any]] = {ast.Lt: operator.lt, ast.LtE: operator.le, ast.Gt: operator.gt, ast.GtE: operator.ge,
         ast.Eq: operator.eq, ast.NotEq: operator.ne}
 FUNCTIONS = ("bag", "random", "min", "max", "abs", "round", "int")
 
@@ -128,14 +133,14 @@ MAX_INT_BITS = 4096          # a `set` value can't grow into a huge integer
 MAX_TEXT = 10_000            # ... or a huge string
 
 
-def _check_value(value, line):
+def _check_value(value: object, line: int) -> None:
     if isinstance(value, int) and not isinstance(value, bool) and value.bit_length() > MAX_INT_BITS:
         raise Stopped(_("line {n}: the number grew too large (over {bits} bits)", n=line, bits=MAX_INT_BITS))
     if isinstance(value, str) and len(value) > MAX_TEXT:
         raise Stopped(_("line {n}: the text grew too large (over {max} characters)", n=line, max=MAX_TEXT))
 
 
-def compile_expr(text, line):
+def compile_expr(text: str, line: int) -> ast.expr:
     """Parse once, refusing anything that isn't plain arithmetic, comparison and our functions."""
     text = text.strip()
     if not text:
@@ -147,7 +152,7 @@ def compile_expr(text, line):
     except (SyntaxError, ValueError, MemoryError, RecursionError):
         raise ScriptError(line, _("can't read this expression: {expr}", expr=text))
     count = depth = 0
-    stack = [(tree, 1)]
+    stack: list[tuple[ast.AST, int]] = [(tree, 1)]
     while stack:
         node, d = stack.pop()
         count += 1
@@ -173,7 +178,9 @@ def compile_expr(text, line):
     return tree.body
 
 
-def evaluate(node, names, funcs):
+def evaluate(node: ast.expr, names: Mapping[str, Any], funcs: Mapping[str, Callable[..., Any]]) -> Any:
+    """The value of a checked expression (compile_expr). Any: a script's values are whatever its
+    variables and the game's numbers hold - numbers, text, true or false."""
     if isinstance(node, ast.Constant):
         return node.value
     if isinstance(node, ast.Name):
@@ -194,7 +201,7 @@ def evaluate(node, names, funcs):
         left, right = evaluate(node.left, names, funcs), evaluate(node.right, names, funcs)
         if isinstance(node.op, ast.Mult) and (isinstance(left, str) or isinstance(right, str)):
             raise ValueError(_("text can't be multiplied"))   # "a" * 10**9 would eat the memory
-        return _BIN[type(node.op)](left, right)
+        return _BIN[type(node.op)](left, right)   # compile_expr let only these operators through
     if isinstance(node, ast.Compare):
         left = evaluate(node.left, names, funcs)
         for op, right_node in zip(node.ops, node.comparators):
@@ -213,16 +220,19 @@ def evaluate(node, names, funcs):
 
 # ---------------------------------------------------------------- parsing
 class Node:
-    def __init__(self, kind, line, args="", body=None):
+    """One command of a script, with the block under it (repeat, while, if, sub, on_stop)."""
+
+    def __init__(self, kind: str, line: int, args: str = "", body: list[Node] | None = None) -> None:
         self.kind, self.line, self.args = kind, line, args
-        self.body = body or []
-        self.branches = []      # for if: [(condition, body)], else as (None, body)
-        self.expr = None
-        self.opts = {}
+        self.body: list[Node] = body or []
+        self.branches: list[tuple[ast.expr | None, list[Node]]] = []   # for if: [(condition, body)], else as (None, body)
+        self.expr: ast.expr | None = None
+        self.opts: dict[str, Any] = {}       # what the command's prepare step read from its line
 
 
-def _strip_comment(text):
-    out, quote = [], None
+def _strip_comment(text: str) -> str:
+    out: list[str] = []
+    quote: str | None = None
     for ch in text:
         if quote:
             if ch == quote:
@@ -235,13 +245,14 @@ def _strip_comment(text):
     return "".join(out).strip()
 
 
-def parse(text):
+def parse(text: str) -> tuple[list[Node], dict[str, list[Node]], list[Node]]:
     """Text -> (main nodes, subs {name: nodes}, on_stop nodes). Raises ScriptError."""
     if len(text) > MAX_SCRIPT:
         raise ScriptError(1, _("the script is too long (over {max} characters)", max=MAX_SCRIPT))
     root = Node("root", 0)
     stack = [root]
-    subs, on_stop = {}, []
+    subs: dict[str, list[Node]] = {}
+    on_stop: list[Node] = []
     for n, raw in enumerate(text.splitlines(), 1):
         line = _strip_comment(raw)
         if not line:
@@ -263,7 +274,7 @@ def parse(text):
     return root.body, subs, on_stop
 
 
-def _parse_end(stack, subs, on_stop, n):
+def _parse_end(stack: list[Node], subs: dict[str, list[Node]], on_stop: list[Node], n: int):
     """'end': the block on top is done; a sub or on_stop block goes where it belongs."""
     if len(stack) == 1:
         raise ScriptError(n, _("'end' without a block to end"))
@@ -274,7 +285,7 @@ def _parse_end(stack, subs, on_stop, n):
         on_stop.extend(done.body)
 
 
-def _parse_branch(top, word, rest, n):
+def _parse_branch(top: Node, word: str, rest: str, n: int):
     """'elif' or 'else' inside an if block: a new branch the next lines go into."""
     if top.kind != "if":
         raise ScriptError(n, _("'{word}' outside an if block", word=word))
@@ -284,7 +295,7 @@ def _parse_branch(top, word, rest, n):
     top.body = top.branches[-1][1]
 
 
-def _parse_command(stack, word, rest, n):
+def _parse_command(stack: list[Node], word: str, rest: str, n: int):
     """Any other command: checked, put in the block on top, and opening a block of its own when it
     is one (sub and on_stop only at the top level)."""
     node = Node(word, n, rest)
@@ -306,7 +317,7 @@ def _parse_command(stack, word, rest, n):
         stack.append(node)
 
 
-def _check_script(main, subs, on_stop):
+def _check_script(main: list[Node], subs: dict[str, list[Node]], on_stop: list[Node]):
     """What can only be checked once the whole script is read: calls, recursion, breaks."""
     _check_calls(main, subs)
     for body in list(subs.values()) + [on_stop]:
@@ -317,7 +328,7 @@ def _check_script(main, subs, on_stop):
         _check_breaks(body, False)
 
 
-def _check_breaks(nodes, in_loop):
+def _check_breaks(nodes: list[Node], in_loop: bool):
     """'break' only inside repeat/while: anywhere else it would end the run with a crash."""
     for node in nodes:
         if node.kind == "break" and not in_loop:
@@ -328,7 +339,7 @@ def _check_breaks(nodes, in_loop):
             _check_breaks(body, inner)
 
 
-def _check_calls(nodes, subs):
+def _check_calls(nodes: list[Node], subs: dict[str, list[Node]]):
     for node in nodes:
         if node.kind == "call" and node.args not in subs:
             raise ScriptError(node.line, _("no sub named {name}", name=node.args))
@@ -337,9 +348,9 @@ def _check_calls(nodes, subs):
             _check_calls(body, subs)
 
 
-def _calls(nodes):
+def _calls(nodes: list[Node]) -> list[Node]:
     """Every call node in a block, nested blocks included."""
-    out = []
+    out: list[Node] = []
     for node in nodes:
         if node.kind == "call":
             out.append(node)
@@ -349,14 +360,14 @@ def _calls(nodes):
     return out
 
 
-def _check_recursion(subs):
+def _check_recursion(subs: dict[str, list[Node]]):
     """Refuse a sub that reaches itself: it would recurse until the Python stack dies.
 
     Iterative on purpose: a file with thousands of subs must be refused or run, not crash the
     checker itself. Block nesting is already capped, so _calls() stays shallow.
     """
     edges = {name: _calls(body) for name, body in subs.items()}
-    color = {}
+    color: dict[str, int] = {}
     for start in subs:
         if color.get(start):
             continue
@@ -378,16 +389,16 @@ def _check_recursion(subs):
                 stack.pop()
 
 
-def _split(rest, line):
+def _split(rest: str, line: int) -> list[str]:
     try:
         return shlex.split(rest, posix=True)
     except ValueError:
         raise ScriptError(line, _("unbalanced quotes"))
 
 
-def _message_split(rest):
+def _message_split(rest: str) -> tuple[str, str, str]:
     """`condition : message` split at the first colon outside quotes ("23:00" stays whole)."""
-    quote = None
+    quote: str | None = None
     for i, c in enumerate(rest):
         if quote:
             if c == quote:
@@ -399,14 +410,14 @@ def _message_split(rest):
     return rest, "", ""
 
 
-def _number(text, line, what):
+def _number(text: str, line: int, what: str) -> float:
     try:
         return float(text)
     except (TypeError, ValueError):
         raise ScriptError(line, _("{what} must be a number, not {value}", what=what, value=text))
 
 
-def _prepare(node):
+def _prepare(node: Node):
     """Check a command's arguments as it is read, so mistakes show before anything runs. One
     function per command (PREPARE); a command missing from it takes no arguments to check."""
     prep = PREPARE.get(node.kind)
@@ -414,15 +425,15 @@ def _prepare(node):
         prep(node, node.args, node.line)
 
 
-def _prep_condition(node, rest, n):
+def _prep_condition(node: Node, rest: str, n: int):
     node.expr = compile_expr(rest, n)
 
 
-def _prep_repeat(node, rest, n):
+def _prep_repeat(node: Node, rest: str, n: int):
     node.opts["times"] = int(_number(rest, n, "repeat")) if rest else None
 
 
-def _prep_set(node, rest, n):
+def _prep_set(node: Node, rest: str, n: int):
     name, eq, expr = rest.partition("=")
     name = name.strip()
     if not eq or not re.match(r"^[A-Za-z_]\w*$", name):
@@ -432,13 +443,13 @@ def _prep_set(node, rest, n):
     node.opts["name"], node.expr = name, compile_expr(expr, n)
 
 
-def _prep_stop_when(node, rest, n):
+def _prep_stop_when(node: Node, rest: str, n: int):
     cond, colon, msg = _message_split(rest)
     node.expr = compile_expr(cond, n)
     node.opts["message"] = msg.strip() if colon else _("stop rule: {cond}", cond=cond.strip())
 
 
-def _prep_end_at(node, rest, n):
+def _prep_end_at(node: Node, rest: str, n: int):
     word = rest.strip().lower()
     if word in END_WORDS:
         node.opts["end"] = (word,)
@@ -451,7 +462,7 @@ def _prep_end_at(node, rest, n):
     node.opts["end"] = ("place", mid, cell)
 
 
-def _prep_keep_drop(node, rest, n):
+def _prep_keep_drop(node: Node, rest: str, n: int):
     """keep_drop <minutes>: the day's drop time this run leaves unused (the character's setting
     otherwise). 0 uses all of it."""
     word = rest.strip()
@@ -460,7 +471,7 @@ def _prep_keep_drop(node, rest, n):
     node.opts["minutes"] = int(word)
 
 
-def _map_of(where, n):
+def _map_of(where: str, n: int):
     """The map a script names (by name or number), or the line's error."""
     mid = atlas.resolve(" ".join(_split(where, n)))
     if mid is None:
@@ -468,12 +479,12 @@ def _map_of(where, n):
     return mid
 
 
-def _prep_travel(node, rest, n):
+def _prep_travel(node: Node, rest: str, n: int):
     rest, cell = _at(rest, n)
     node.opts["map"], node.opts["cell"] = _map_of(rest, n), cell
 
 
-def _prep_go(node, rest, n):
+def _prep_go(node: Node, rest: str, n: int):
     m = re.match(r"^\s*dungeon\s+(.+?)(\s+talk)?\s*$", rest, re.I)
     if m:
         e = dungeons.find(" ".join(_split(m.group(1), n)))
@@ -487,7 +498,7 @@ def _prep_go(node, rest, n):
     node.opts.update(map=_map_of(rest, n), cell=cell, npc=npc, talk=False)
 
 
-def _prep_player(node, rest, n):
+def _prep_player(node: Node, rest: str, n: int):
     k = node.kind
     words = _split(rest, n)
     if not words:
@@ -503,14 +514,14 @@ def _prep_player(node, rest, n):
         node.opts["cell"] = cell
 
 
-def _prep_talk(node, rest, n):
+def _prep_talk(node: Node, rest: str, n: int):
     rest, cell = _at(rest, n)
     if not rest.strip():
         raise ScriptError(n, _("talk to whom? write: talk Cable Car manager"))
     node.opts["npc"], node.opts["cell"] = " ".join(_split(rest, n)), cell
 
 
-def _prep_survey(node, rest, n):
+def _prep_survey(node: Node, rest: str, n: int):
     w = rest.strip() or "cities"
     if w not in ("cities", "all", "everything", "here"):
         mid = atlas.resolve(w)
@@ -520,16 +531,16 @@ def _prep_survey(node, rest, n):
     node.opts["scope"] = w
 
 
-def _prep_check_only(node, rest, n):
+def _prep_check_only(node: Node, rest: str, n: int):
     if rest.strip().lower() not in ("", "check"):
         raise ScriptError(n, _("write it as: {cmd}  or  {cmd} check", cmd=node.kind))
     node.opts["check"] = rest.strip().lower() == "check"
 
 
-def _prep_chores(node, rest, n):
+def _prep_chores(node: Node, rest: str, n: int):
     words = rest.split()
     node.opts["check"] = "check" in [w.lower() for w in words]
-    only = []
+    only: list[str] = []
     for w in words:
         if w.lower() == "check":
             continue
@@ -543,7 +554,7 @@ def _prep_chores(node, rest, n):
     node.opts["only"] = only
 
 
-def _prep_sell_collection(node, rest, n):
+def _prep_sell_collection(node: Node, rest: str, n: int):
     w = rest.strip().lower() or "all"
     kinds = tuple(town.COLLECTION_BUYERS)
     if w not in kinds + ("all",):
@@ -551,20 +562,20 @@ def _prep_sell_collection(node, rest, n):
     node.opts["kinds"] = kinds if w == "all" else (w,)
 
 
-def _prep_visit(node, rest, n):
+def _prep_visit(node: Node, rest: str, n: int):
     if not rest.strip():
         raise ScriptError(n, _("visit what? write: visit storehouse  or  visit Grocer John"))
     node.opts["what"] = rest.strip()
 
 
-def _prep_count_item(node, rest, n):
+def _prep_count_item(node: Node, rest: str, n: int):
     m = re.match(r"^\s*(\d+)\s+(.+?)\s*$", rest)
     if not m:
         raise ScriptError(n, _("write it as: {cmd} 50 Large Red Potion", cmd=node.kind))
     node.opts["count"], node.opts["item"] = int(m.group(1)), m.group(2).strip('"')
 
 
-def _prep_item_count(node, rest, n):
+def _prep_item_count(node: Node, rest: str, n: int):
     m = re.match(r"^\s*(.+?)(?:\s+(\d+))?\s*$", rest)
     if not m or not m.group(1).strip():
         raise ScriptError(n, _("write it as: {cmd} Milkfish 20", cmd=node.kind))
@@ -572,7 +583,7 @@ def _prep_item_count(node, rest, n):
     node.opts["count"] = int(m.group(2)) if m.group(2) else None
 
 
-def _prep_choose(node, rest, n):
+def _prep_choose(node: Node, rest: str, n: int):
     text = rest.strip()
     if not text:
         raise ScriptError(n, _("choose what? write: choose Tulip City"))
@@ -586,14 +597,14 @@ def _prep_choose(node, rest, n):
         node.opts["pattern"] = re.escape(text.strip('"'))
 
 
-def _prep_walk(node, rest, n):
+def _prep_walk(node: Node, rest: str, n: int):
     parts = _split(rest.replace(",", " "), n)
     if len(parts) != 2:
         raise ScriptError(n, _("write it as: walk x y"))
     node.opts["cell"] = (int(_number(parts[0], n, "x")), int(_number(parts[1], n, "y")))
 
 
-def _prep_key(node, rest, n):
+def _prep_key(node: Node, rest: str, n: int):
     parts = _split(rest, n)
     if not parts:
         raise ScriptError(n, _("which key?"))
@@ -601,21 +612,21 @@ def _prep_key(node, rest, n):
     node.opts["ms"] = int(_number(parts[1], n, "milliseconds")) if len(parts) > 1 else 60
 
 
-def _prep_hold(node, rest, n):
+def _prep_hold(node: Node, rest: str, n: int):
     parts = _split(rest, n)
     if len(parts) != 2:
         raise ScriptError(n, _("write it as: hold key seconds"))
     node.opts["key"], node.opts["secs"] = parts[0].lower(), _number(parts[1], n, "seconds")
 
 
-def _prep_wait(node, rest, n):
+def _prep_wait(node: Node, rest: str, n: int):
     node.opts["secs"] = _number(rest, n, "seconds")
 
 
-def _farm_options(rest, n):
+def _farm_options(rest: str, n: int) -> tuple[dict[str, Any], str]:
     """farm's name=value words, as written (until= takes the rest of the line: a condition may hold
     spaces and quotes)."""
-    opts = {}
+    opts: dict[str, Any] = {}
     m = re.search(r"(?:^|\s)until=", rest)
     if m:
         opts["until"] = rest[m.end():].strip()
@@ -632,14 +643,14 @@ def _farm_options(rest, n):
     return opts, rest
 
 
-def _farm_area(text, n):
+def _farm_area(text: str, n: int) -> list[int]:
     box = [int(_number(v, n, "area")) for v in text.split(",")]
     if len(box) != 4:
         raise ScriptError(n, _("area is four numbers: x1,y1,x2,y2"))
     return [min(box[0], box[2]), min(box[1], box[3]), max(box[0], box[2]), max(box[1], box[3])]
 
 
-def _farm_choices(opts, n):
+def _farm_choices(opts: dict[str, Any], n: int):
     if opts.get("patrol", "random") not in ("random", "full", "quick", "short"):
         raise ScriptError(n, _("patrol is random, full, quick or short"))
     if opts.get("elites", "fight") not in ("fight", "avoid"):
@@ -652,7 +663,7 @@ def _farm_choices(opts, n):
                 raise ScriptError(n, _("{opt} isn't a valid name pattern", opt=rx))
 
 
-def _prep_farm(node, rest, n):
+def _prep_farm(node: Node, rest: str, n: int):
     opts, rest = _farm_options(rest, n)
     if "map" in opts:
         opts["map"] = atlas.resolve(opts["map"])
@@ -669,7 +680,7 @@ def _prep_farm(node, rest, n):
     node.opts = opts
 
 
-def _prep_say(node, rest, n):
+def _prep_say(node: Node, rest: str, n: int):
     node.opts["parts"] = [(compile_expr(m, n) if i % 2 else m)
                           for i, m in enumerate(re.split(r"\{([^}]*)\}", rest))]
 
@@ -688,45 +699,52 @@ PREPARE = {
 
 # ---------------------------------------------------------------- running
 class Runner:
-    def __init__(self, bot, text):
+    def __init__(self, bot: Bot, text: str):
         self.bot = bot
         self.main, self.subs, self.on_stop = parse(text)
-        self.vars = {}
+        self.vars: dict[str, Any] = {}       # the script's own `set` values
         self.call_depth = 0
-        self.watched = set()
+        self.watched: set[Node] = set()
 
-    def names(self):
+    def names(self) -> dict[str, Any]:
+        """What an expression can read: the script's own values, then the game's (hp, map...)."""
         b = self.bot
         me = b.me()
-        sheet = me.get("sheet") or {}
+        sheet: dict[str, Any] = me.get("sheet") or {}
         snap_map = b.a.json("mem map")
         hp, top = me.get("hp", 0), me.get("maxhp", 0) or 1
         reading = b.mp_now(me, clock_for(b).time())
         mp, maxmp = reading if reading else (sheet.get("mp", -1), sheet.get("maxmp", -1))
-        names = dict(self.vars)
+        names: dict[str, Any] = dict(self.vars)
         names.update(hp=hp, maxhp=top, hp_pct=round(100.0 * hp / top, 1), mp=mp, maxmp=maxmp,
                      mp_pct=round(100.0 * mp / maxmp, 1) if maxmp > 0 else -1, level=sheet.get("level", -1),
                      map=snap_map.get("id"), map_name=snap_map.get("name"), x=me["x"], y=me["y"],
                      kills=b.kills, minutes=round(b.minutes(), 2), clock=time.strftime("%H:%M"))
         names["monsters"] = _Lazy(lambda: len(b.targets(b.snap())))
-        r = b.tally.result() if b.tally else {}
+        r: dict[str, Any] = b.tally.result() if b.tally else {}
+        picked: dict[str, int] = r.get("picked") or {}
         names.update(arnebia_gained=r.get("arnebia", 0), contribution_gained=r.get("contribution", 0),
                      xp_gained=r.get("experience", 0), levels_gained=r.get("levels", 0),
-                     shards_gained=sum(v for n, v in (r.get("picked") or {}).items() if stats.is_shard(n)))
+                     shards_gained=sum(v for n, v in picked.items() if stats.is_shard(n)))
         return names
 
-    def funcs(self):
-        def bag(item):
+    def funcs(self) -> dict[str, Callable[..., Any]]:
+        def bag(item: str) -> int:
             rows = self.bot.a.json("mem bag")
-            if isinstance(rows, dict):
+            if not jsonio.is_array(rows):
                 return 0
             want = str(item).strip().lower()
             exact = [r["count"] for r in rows if (r.get("name") or "").strip().lower() == want]
             return sum(exact) if exact else sum(r["count"] for r in rows if want in (r.get("name") or "").lower())
-        return {"bag": bag, "random": lambda a, b: random.randint(int(a), int(b)), "min": min, "max": max,
+        def rand(a: float, b: float) -> int:
+            return random.randint(int(a), int(b))
+        return {"bag": bag, "random": rand, "min": min, "max": max,
                 "abs": abs, "round": round, "int": int}
 
-    def value(self, expr, line):
+    def value(self, expr: ast.expr | None, line: int) -> Any:
+        """An expression's value now (Any: see evaluate)."""
+        if expr is None:
+            raise Stopped(_("line {n}: a condition or value is missing", n=line))
         try:
             v = evaluate(expr, self.names(), self.funcs())
             v = v.get() if isinstance(v, _Lazy) else v
@@ -737,7 +755,7 @@ class Runner:
         except (TypeError, OverflowError, ZeroDivisionError, ValueError) as e:
             raise Stopped(_("line {n}: {err}", n=line, err=e))
 
-    def run(self):
+    def run(self) -> None:
         try:
             self.block(self.main)
             self.bot.log(_("script finished"))
@@ -751,7 +769,7 @@ class Runner:
             raise
         self.finish()
 
-    def finish(self):
+    def finish(self) -> None:
         if not self.on_stop:
             return
         self.bot.log(_("running on_stop"))
@@ -761,7 +779,7 @@ class Runner:
         except (_End, _Break):
             pass
 
-    def block(self, nodes):
+    def block(self, nodes: list[Node]) -> None:
         for node in nodes:
             self.bot.check()
             deaths = 0
@@ -779,20 +797,20 @@ class Runner:
     LOOP_TURNS = 20.0     # a loop goes round at most this often a second
 
     @classmethod
-    def loop_pause(cls, began, clock: Clock = CLOCK):
+    def loop_pause(cls, began: float, clock: Clock = CLOCK) -> float:
         """The pause after one turn of a repeat or while: a moment after a turn that did something,
         longer after one that took no time (waiting for HP to drop, say), so a script polling the
         game never reads it a hundred times a second."""
         return max(0.01, 1.0 / cls.LOOP_TURNS - (clock.time() - began))
 
-    def step(self, node):
+    def step(self, node: Node) -> None:
         """One command: the method for its kind, _do_<kind> (a kind with none does nothing here:
         sub and on_stop blocks are kept aside when the script is read)."""
         do = getattr(self, "_do_" + node.kind, None)
         if do is not None:
             do(node, self.bot, node.opts)
 
-    def _loop_turn(self, body, began):
+    def _loop_turn(self, body: list[Node], began: float) -> bool:
         """One turn of a repeat or while; False when a break ended the loop."""
         b = self.bot
         try:
@@ -802,28 +820,28 @@ class Runner:
         b.sleep(self.loop_pause(began, clock_for(b)))
         return True
 
-    def _do_repeat(self, node, b, o):
+    def _do_repeat(self, node: Node, b: Bot, o: dict[str, Any]):
         count = 0
         while o["times"] is None or count < o["times"]:
             count += 1
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
-    def _do_while(self, node, b, o):
+    def _do_while(self, node: Node, b: Bot, o: dict[str, Any]):
         while self.value(node.expr, node.line):
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
-    def _do_if(self, node, b, o):
+    def _do_if(self, node: Node, b: Bot, o: dict[str, Any]):
         for cond, body in node.branches:
             if cond is None or self.value(cond, node.line):
                 self.block(body)
                 break
 
-    def _do_break(self, node, b, o):
+    def _do_break(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _Break()
 
-    def _do_call(self, node, b, o):
+    def _do_call(self, node: Node, b: Bot, o: dict[str, Any]):
         self.call_depth += 1
         try:
             if self.call_depth > MAX_CALL_DEPTH:
@@ -833,22 +851,22 @@ class Runner:
         finally:
             self.call_depth -= 1
 
-    def _do_set(self, node, b, o):
+    def _do_set(self, node: Node, b: Bot, o: dict[str, Any]):
         self.vars[o["name"]] = self.value(node.expr, node.line)
 
-    def _do_stop_when(self, node, b, o):
+    def _do_stop_when(self, node: Node, b: Bot, o: dict[str, Any]):
         expr, line = node.expr, node.line
         if node not in self.watched:      # a stop_when in a loop must not pile up watchers
             self.watched.add(node)
             b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
 
-    def _do_stop(self, node, b, o):
+    def _do_stop(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _End(node.args)
 
-    def _do_travel(self, node, b, o):
+    def _do_travel(self, node: Node, b: Bot, o: dict[str, Any]):
         b.travel(o["map"], o.get("cell"))
 
-    def _do_go(self, node, b, o):
+    def _do_go(self, node: Node, b: Bot, o: dict[str, Any]):
         if o.get("dungeon"):
             e = dungeons.find(o["dungeon"])      # now: a circle learned since is included
             if e is None:
@@ -857,25 +875,26 @@ class Runner:
         else:
             b.go(o["map"], o.get("cell"), o.get("npc"), o.get("talk", False))
 
-    def _do_talk(self, node, b, o):
+    def _do_talk(self, node: Node, b: Bot, o: dict[str, Any]):
         if not b.talk(o["npc"], o.get("cell")):
             raise Stopped(_("couldn't talk to {npc}", npc=o["npc"]))
 
-    def _do_follow(self, node, b, o):
+    def _do_follow(self, node: Node, b: Bot, o: dict[str, Any]):
         follow.follow(b, o["player"])
 
-    def _do_come(self, node, b, o):
+    def _do_come(self, node: Node, b: Bot, o: dict[str, Any]):
         answer = follow.come_to(b, o["player"], o.get("map"), o.get("cell"))
         b.log(answer)
-        if getattr(b, "tell", None):
-            b.tell(answer)
+        tell: Callable[[str], None] | None = getattr(b, "tell", None)   # a bot in the tests may have none
+        if tell:
+            tell(answer)
 
-    def _do_survey(self, node, b, o):
+    def _do_survey(self, node: Node, b: Bot, o: dict[str, Any]):
         survey.survey(b, o["scope"])
 
-    def _do_gem_maker(self, node, b, o):
+    def _do_gem_maker(self, node: Node, b: Bot, o: dict[str, Any]):
         k = node.kind
-        cfg = b.p.get("gem_maker" if k == "gem_maker" else "enhancer") or {}
+        cfg: dict[str, Any] = b.p.get("gem_maker" if k == "gem_maker" else "enhancer") or {}
         if not cfg:
             raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Maker") if k == "gem_maker"
                             else _("Equipment Enhancer")))
@@ -884,23 +903,23 @@ class Runner:
 
     _do_enhance = _do_gem_maker
 
-    def _do_chores(self, node, b, o):
+    def _do_chores(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "chores"):
             chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
 
-    def _do_gather(self, node, b, o):
+    def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "gather"):     # the catch and its sale are no farming loot
             gathering.run(b, gathering.config(b.p), o.get("check", False))
 
-    def _do_dungeon(self, node, b, o):
+    def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
         dungeon.run(b, dungeon.config(b.p), o.get("check", False))
 
-    def _do_sell_collection(self, node, b, o):
+    def _do_sell_collection(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "sell_collection"):
             if not town.sell_collection(b, o["kinds"]):
                 b.log(_("nothing of the collection was sold"))
 
-    def _do_visit(self, node, b, o):
+    def _do_visit(self, node: Node, b: Bot, o: dict[str, Any]):
         w = o["what"]
         role = w.lower().replace(" ", "_")
         if knowledge.service_npcs(role):
@@ -908,60 +927,60 @@ class Runner:
         else:
             town.visit(b, None, name=w)
 
-    def _do_restock(self, node, b, o):
+    def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
         if not town.restock(b, b.p.get("restock") or [], start=True):
             b.log(_("nothing to restock"))
 
-    def _do_buy(self, node, b, o):
+    def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])
 
-    def _do_withdraw(self, node, b, o):
+    def _do_withdraw(self, node: Node, b: Bot, o: dict[str, Any]):
         town.withdraw(b, o["item"], o["count"])
 
-    def _do_sell(self, node, b, o):
+    def _do_sell(self, node: Node, b: Bot, o: dict[str, Any]):
         town.sell(b, o["item"], o["count"])
 
-    def _do_deposit(self, node, b, o):
+    def _do_deposit(self, node: Node, b: Bot, o: dict[str, Any]):
         town.deposit(b, o["item"], o["count"])
 
-    def _do_choose(self, node, b, o):
+    def _do_choose(self, node: Node, b: Bot, o: dict[str, Any]):
         if b.choose(o["pattern"]) is None:
             raise Stopped(_("no menu entry like \"{want}\"", want=o["pattern"]))
 
-    def _do_walk(self, node, b, o):
+    def _do_walk(self, node: Node, b: Bot, o: dict[str, Any]):
         b.walk_to(o["cell"])
 
-    def _do_key(self, node, b, o):
+    def _do_key(self, node: Node, b: Bot, o: dict[str, Any]):
         b.key(o["key"], o["ms"])
 
-    def _do_hold(self, node, b, o):
+    def _do_hold(self, node: Node, b: Bot, o: dict[str, Any]):
         b.hold(o["key"])
         try:
             b.sleep(o["secs"])
         finally:
             b.let_go(o["key"])
 
-    def _do_wait(self, node, b, o):
+    def _do_wait(self, node: Node, b: Bot, o: dict[str, Any]):
         b.sleep(o["secs"])
 
-    def _do_say(self, node, b, o):
+    def _do_say(self, node: Node, b: Bot, o: dict[str, Any]):
         b.log("".join(str(self.value(p, node.line)) if not isinstance(p, str) else p for p in o["parts"]),
               speak=True)
 
-    def _do_heal(self, node, b, o):
+    def _do_heal(self, node: Node, b: Bot, o: dict[str, Any]):
         key, name = b.potion("hp")
         b.drink("hp", name, key)
 
-    def _do_hearthstone(self, node, b, o):
+    def _do_hearthstone(self, node: Node, b: Bot, o: dict[str, Any]):
         b.go_home()
 
-    def _do_end_at(self, node, b, o):
+    def _do_end_at(self, node: Node, b: Bot, o: dict[str, Any]):
         b.end_place = o["end"]
 
-    def _do_keep_drop(self, node, b, o):
+    def _do_keep_drop(self, node: Node, b: Bot, o: dict[str, Any]):
         b.drop_keep = o["minutes"]        # this run's, ahead of the character's (drop_time_check)
 
-    def _do_farm(self, node, b, o):
+    def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
         mid = o.get("map") or b.map_id()
         b.farm(mid, area=o.get("area"), minutes=o.get("minutes", 0), kills=o.get("kills", 0),
@@ -973,32 +992,31 @@ class Runner:
 class _Lazy:
     """A value only worked out if a condition actually uses it (monsters needs a full read)."""
 
-    def __init__(self, fn):
+    def __init__(self, fn: Callable[[], int]) -> None:
         self.fn = fn
 
-    def get(self):
+    def get(self) -> int:
         return self.fn()
 
-    def _v(self):
+    def _v(self) -> int:
         return self.fn()
 
-    def __lt__(self, o): return self._v() < o
-    def __le__(self, o): return self._v() <= o
-    def __gt__(self, o): return self._v() > o
-    def __ge__(self, o): return self._v() >= o
-    def __eq__(self, o): return self._v() == o
-    def __ne__(self, o): return self._v() != o
-    def __bool__(self): return bool(self._v())
-    def __int__(self): return int(self._v())
-    def __str__(self): return str(self._v())
-    def __add__(self, o): return self._v() + o
-    def __radd__(self, o): return o + self._v()
-    def __sub__(self, o): return self._v() - o
-    def __rsub__(self, o): return o - self._v()
-    __hash__: Any = None
+    def __lt__(self, o: float) -> bool: return self._v() < o
+    def __le__(self, o: float) -> bool: return self._v() <= o
+    def __gt__(self, o: float) -> bool: return self._v() > o
+    def __ge__(self, o: float) -> bool: return self._v() >= o
+    def __eq__(self, o: object) -> bool: return self._v() == o
+    def __ne__(self, o: object) -> bool: return self._v() != o
+    def __bool__(self) -> bool: return bool(self._v())
+    def __int__(self) -> int: return int(self._v())
+    def __str__(self) -> str: return str(self._v())
+    def __add__(self, o: float) -> float: return self._v() + o
+    def __radd__(self, o: float) -> float: return o + self._v()
+    def __sub__(self, o: float) -> float: return self._v() - o
+    def __rsub__(self, o: float) -> float: return o - self._v()
 
 
-def check(text):
+def check(text: str) -> str | None:
     """None if the script reads correctly, else the error message."""
     try:
         parse(text)

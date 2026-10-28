@@ -1,6 +1,8 @@
 """Kills from the game's own reports: monsters that die with a hit of ours on them, whoever struck
 last, area-skill kills included; and monsters we already hurt are taken before fresh ones."""
 
+from __future__ import annotations
+
 import json
 import time
 
@@ -9,6 +11,7 @@ from conftest import ME
 from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
 from unclefarmer.engine.kills import KillTracker
+from typing import Any
 
 DODGED, CRIT, HIT = 2, 5, 3
 
@@ -16,25 +19,30 @@ DODGED, CRIT, HIT = 2, 5, 3
 class Link:
     """The agent's `casts` answer, fed by the test."""
 
-    def __init__(self, deaths=True):
-        self.casts, self.deaths, self.with_deaths = [], [], deaths
+    def __init__(self, deaths: bool=True) -> None:
+        self.casts: list[dict[str, Any]] = []
+        self.deaths: list[list[int]] = []           # [map id... or monster, when]
+        self.with_deaths = deaths
 
-    def cast(self, t, caster, hits):
+    def cast(self, t: int, caster: int, hits: list[tuple[int, int]]) -> None:
         self.casts.append({"t": t, "caster": caster, "seq": len(self.casts), "skill": "Level 5 Multi Shot",
                            "hits": [[target, result, 100] for target, result in hits]})
 
-    def die(self, t, mid):
+    def die(self, t: int, mid: int) -> None:
         self.deaths.append([mid, t])
 
-    def json(self, line):
+    def send(self, line: str) -> str:      # nothing here sends; the bot's link has it
+        return "ok"
+
+    def json(self, line: str) -> dict[str, Any]:
         since = int(line.split()[1])
-        r = {"now": 0, "casts": [c for c in self.casts if c["t"] > since]}
+        r: dict[str, Any] = {"now": 0, "casts": [c for c in self.casts if c["t"] > since]}
         if self.with_deaths:
             r["deaths"] = [d for d in self.deaths if d[1] > since]
         return r
 
 
-def test_an_area_skill_kills_every_monster_it_hit():
+def test_an_area_skill_kills_every_monster_it_hit() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-1, HIT), (-2, CRIT), (-3, HIT)])
@@ -46,7 +54,7 @@ def test_an_area_skill_kills_every_monster_it_hit():
     assert k.update(ME) == []                # each once
 
 
-def test_a_kill_shared_with_another_player_is_ours():
+def test_a_kill_shared_with_another_player_is_ours() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-7, HIT)])
@@ -55,7 +63,7 @@ def test_a_kill_shared_with_another_player_is_ours():
     assert k.update(ME) == [-7]
 
 
-def test_not_ours_without_a_landed_hit():
+def test_not_ours_without_a_landed_hit() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-4, DODGED)])
@@ -66,7 +74,7 @@ def test_not_ours_without_a_landed_hit():
     assert k.update(ME) == []
 
 
-def test_an_old_hit_doesnt_make_a_kill_ours():
+def test_an_old_hit_doesnt_make_a_kill_ours() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-8, HIT)])
@@ -75,7 +83,7 @@ def test_an_old_hit_doesnt_make_a_kill_ours():
     assert k.update(ME) == []
 
 
-def test_an_older_agent_says_it_cant_tell():
+def test_an_older_agent_says_it_cant_tell() -> None:
     a = Link(deaths=False)
     k = KillTracker(a)
     a.cast(1000, ME, [(-1, HIT)])
@@ -85,26 +93,28 @@ def test_an_older_agent_says_it_cant_tell():
 class Fighter(FightingMixin, WalkingMixin):
     """What targets() and count_kills() use of the bot."""
 
-    def __init__(self, link):
+    def __init__(self, link: Link) -> None:
         self.a = link
         self.p = {"attack_range": 10.0}
         self.skillbook = None
         self.kill_tracker = KillTracker(link)
         self.mob_names, self.counted, self.kills = {}, {}, 0
-        self.killed_kinds, self.skip, self.skip_names = set(), {}, {}
+        self.killed_kinds = set()
+        self.skip = {}
+        self.skip_names = {}
         self._dists = None
         self._attackers, self._attackers_at = set(), time.time()
-        self.lines = []
+        self.lines: list[str] = []
 
-    def log(self, line, speak=False):
+    def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
 
 
-def monster(mid, x, y, name="Wolf"):
+def monster(mid: int, x: int, y: int, name: str="Wolf") -> dict[str, Any]:
     return {"id": mid, "kind": "monster", "side": -2, "name": name, "x": x, "y": y, "hp": 500, "maxhp": 900}
 
 
-def test_a_monster_we_already_hurt_comes_before_a_nearer_fresh_one():
+def test_a_monster_we_already_hurt_comes_before_a_nearer_fresh_one() -> None:
     a = Link()
     b = Fighter(a)
     me = {"id": ME, "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
@@ -118,7 +128,7 @@ def test_a_monster_we_already_hurt_comes_before_a_nearer_fresh_one():
     assert [e["id"] for e in b.targets(snap)] == [-2, -1, -3]
 
 
-def test_kills_are_counted_and_logged_once_by_name():
+def test_kills_are_counted_and_logged_once_by_name() -> None:
     a = Link()
     b = Fighter(a)
     me = {"id": ME, "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
@@ -133,7 +143,7 @@ def test_kills_are_counted_and_logged_once_by_name():
     assert b.count_kills(snap) == [] and b.kills == 2
 
 
-def test_a_death_in_the_same_millisecond_as_the_last_read_is_still_counted_once():
+def test_a_death_in_the_same_millisecond_as_the_last_read_is_still_counted_once() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-1, HIT), (-2, HIT)])
@@ -144,7 +154,7 @@ def test_a_death_in_the_same_millisecond_as_the_last_read_is_still_counted_once(
     assert k.update(ME) == []
 
 
-def test_fresh_casts_are_only_the_new_ones_and_include_monsters():
+def test_fresh_casts_are_only_the_new_ones_and_include_monsters() -> None:
     a = Link()
     k = KillTracker(a)
     a.cast(1000, ME, [(-1, HIT)])
@@ -156,7 +166,7 @@ def test_fresh_casts_are_only_the_new_ones_and_include_monsters():
     assert [c["caster"] for c in k.fresh] == [4242]
 
 
-def test_count_kills_feeds_the_tally_with_both_sides():
+def test_count_kills_feeds_the_tally_with_both_sides() -> None:
     from unclefarmer import stats
 
     a = Link()
@@ -169,17 +179,18 @@ def test_count_kills_feeds_the_tally_with_both_sides():
     a.cast(1001, -1, [(ME, HIT)])            # the wolf's hit on us: 100 damage
     b.count_kills(snap)
     got = b.tally.combat.result()
+    assert got is not None
     assert got["given"]["damage"] == 100
     assert got["received"]["damage"] == 100
     assert got["received"]["by_monster"]["Wolf"]["damage"] == 100
 
 
 # ------------------------------------------------------------------ someone else's strikes (agent 44)
-def strike(a, t, caster, targets):
+def strike(a: Link, t: int, caster: int, targets: list[list[int]]) -> None:
     a.casts.append({"t": t, "caster": caster, "seq": len(a.casts), "skill": "Mind Whip", "targets": targets})
 
 
-def test_the_agents_cast_targets_are_read_as_its_contract_says():
+def test_the_agents_cast_targets_are_read_as_its_contract_says() -> None:
     from test_ask_vitals import contract
     a = Link()
     k = KillTracker(a)
@@ -189,7 +200,7 @@ def test_the_agents_cast_targets_are_read_as_its_contract_says():
     assert k.claimed(-17) and not k.claimed(-6)
 
 
-def test_someone_elses_strikes_give_a_rate_from_the_second_on():
+def test_someone_elses_strikes_give_a_rate_from_the_second_on() -> None:
     a = Link()
     k = KillTracker(a)
     strike(a, 1000, 4152, [[-5, 40000]])
@@ -203,7 +214,7 @@ def test_someone_elses_strikes_give_a_rate_from_the_second_on():
     assert not k.claimed(-5)                                 # its id's next life starts clean
 
 
-def test_our_pets_strikes_are_ours():
+def test_our_pets_strikes_are_ours() -> None:
     a = Link()
     k = KillTracker(a)
     k.own = {10008112}
@@ -215,7 +226,7 @@ def test_our_pets_strikes_are_ours():
     assert not k.pets_alone(-8) and k.claimed(-8)
 
 
-def test_a_monster_our_pet_finished_alone_is_our_kill():
+def test_a_monster_our_pet_finished_alone_is_our_kill() -> None:
     # the game counts the pet's kills as the player's (Scorpion Cave: 298 said the game, 22 of
     # them the pet's last blow on monsters we never hit)
     a = Link()
@@ -228,7 +239,7 @@ def test_a_monster_our_pet_finished_alone_is_our_kill():
     assert k.update(ME) == [-8]
 
 
-def test_old_strikes_are_forgotten():
+def test_old_strikes_are_forgotten() -> None:
     a = Link()
     k = KillTracker(a)
     strike(a, 1000, 4152, [[-9, 40000]])
@@ -238,7 +249,7 @@ def test_old_strikes_are_forgotten():
     assert not k.claimed(-9) and k.claimed(-10)
 
 
-def test_count_kills_knows_our_pets_by_name():
+def test_count_kills_knows_our_pets_by_name() -> None:
     a = Link()
     b = Fighter(a)
     me = {"id": ME, "name": "Hero", "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
@@ -248,7 +259,7 @@ def test_count_kills_knows_our_pets_by_name():
     assert b.kill_tracker.own == {10008112}
 
 
-def test_a_monster_someone_else_is_killing_fast_is_doomed_from_their_second_strike():
+def test_a_monster_someone_else_is_killing_fast_is_doomed_from_their_second_strike() -> None:
     a = Link()
     b = Fighter(a)
     me = {"id": ME, "name": "Hero", "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
@@ -264,7 +275,7 @@ def test_a_monster_someone_else_is_killing_fast_is_doomed_from_their_second_stri
     assert not b.doomed(far, me)         # nobody else on it: walk over
 
 
-def test_a_monster_only_our_pet_is_killing_is_never_doomed():
+def test_a_monster_only_our_pet_is_killing_is_never_doomed() -> None:
     a = Link()
     b = Fighter(a)
     me = {"id": ME, "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}

@@ -36,7 +36,9 @@ def main():
     from .gui.main import MainFrame
     frame = MainFrame()
     frame.Show()
-    app.MainLoop()
+    # wx.App.MainLoop is wxPython's own Python wrapper (it restores stdio after the loop) and its stub
+    # leaves it unannotated; nothing here reads what it returns
+    app.MainLoop()  # pyright: ignore[reportUnknownMemberType]
 
 
 if __name__ == "__main__":

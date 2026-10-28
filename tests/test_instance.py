@@ -10,7 +10,7 @@ from unclefarmer import instance
 pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="Windows named mutex")
 
 
-def test_only_one_instance_can_hold_the_mutex():
+def test_only_one_instance_can_hold_the_mutex() -> None:
     name = "Local\\UncleFarmerTest-" + uuid.uuid4().hex
     first, second = instance.InstanceLock(name), instance.InstanceLock(name)
     try:

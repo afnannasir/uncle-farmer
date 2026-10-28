@@ -7,11 +7,16 @@ The rest goes through the Action menu (W_LOCAL_OPTION, Ctrl+Enter), whose team r
 isn't found ends the chore and says which step it was.
 """
 
+from __future__ import annotations
+
 import re
 from collections.abc import Sequence
-from typing import Any
+from typing import TYPE_CHECKING
 
 from ..i18n import _
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 INVITE = re.compile(r'^\s*(.+?) invites you to join the "?(.*?)"? team', re.I)
 
@@ -25,12 +30,12 @@ def invite_in(texts: Sequence[str | None]) -> tuple[str, str] | None:
     return None
 
 
-def accept_invite(bot: Any) -> bool:
+def accept_invite(bot: Bot) -> bool:
     """Answer the open invite with yes."""
     return bot.choose(r"^\s*yes\s*$") is not None
 
 
-def _menu(bot, steps, close=True):
+def _menu(bot: Bot, steps: Sequence[str], close: bool = True) -> int | None:
     """Open the Action menu and pick each step in turn. None when done, else the step that failed.
     close=False leaves whatever the last step opened (a question to answer) open."""
     bot.close_dialogs()
@@ -46,11 +51,11 @@ def _menu(bot, steps, close=True):
     return None
 
 
-def _name(name):
+def _name(name: str):
     return r"^\s*%s(\W|$)" % re.escape(name)
 
 
-def accept_application(bot, name):
+def accept_application(bot: Bot, name: str):
     """Our team: take name's application to join."""
     failed = _menu(bot, [r"apply to join", _name(name), r"agree"])
     if failed is None:
@@ -64,7 +69,7 @@ TRANSFER = r"^\s*transfer team leader"
 YES = r"^\s*(yes|confirm|ok|sure)\b"
 
 
-def make_leader(bot, name):
+def make_leader(bot: Bot, name: str):
     """Hand the team's leadership to name. The team row opens the member list, one row per member:
     "name;id" first, then (for the leader only) "Transfer team leader" and "remove" for that member.
     The transfer entry of name's own row is the one: the first "transfer" or "leader" anywhere was
@@ -97,7 +102,7 @@ def make_leader(bot, name):
     return True, _("{name} leads the team now", name=name)
 
 
-def leave(bot):
+def leave(bot: Bot):
     """The Action menu's team row holds "<name> team" (opening it lists the members) and, beside
     it, "quit" with the question "Do you want to quit the <name> team?". The guild's row has its
     own "quit", so the question picks the team's."""

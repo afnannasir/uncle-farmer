@@ -40,8 +40,9 @@ import statistics
 import subprocess
 import sys
 import time
+from collections.abc import Iterable, Sequence
 from ctypes import wintypes
-from typing import Any
+from typing import Any, TypedDict
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGS = os.path.join(ROOT, "logs")
@@ -52,9 +53,12 @@ PIECE = 900             # seconds of py-spy per profile file: py-spy writes its 
                         # piece ends, so a PC shut down mid-piece (the bot's after-stop action, a
                         # power cut) loses at most this much of the profile
 
+Record = dict[str, Any]          # one JSON record: a sample, a result row, a field-log line
+Procs = dict[int, tuple[str, int]]   # pid -> (exe name lower-case, thread count)
+
 # --------------------------------------------------------------------------- Windows process facts
 
-_k32 = ctypes.WinDLL("kernel32", use_last_error=True) if os.name == "nt" else None
+_k32: ctypes.WinDLL | None = ctypes.WinDLL("kernel32", use_last_error=True) if os.name == "nt" else None
 QUERY = 0x1000          # PROCESS_QUERY_LIMITED_INFORMATION
 BELOW_NORMAL = 0x4000
 
@@ -83,13 +87,13 @@ class _Entry(ctypes.Structure):
                 ("pcPriClassBase", ctypes.c_long), ("dwFlags", wintypes.DWORD), ("szExeFile", ctypes.c_char * 260)]
 
 
-def processes():
+def processes() -> Procs:
     """{pid: (exe name lower-case, thread count)} of every process, from one Toolhelp snapshot."""
     k = _k32
     assert k is not None
     k.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
     snap = k.CreateToolhelp32Snapshot(0x2, 0)
-    out = {}
+    out: Procs = {}
     e = _Entry()
     e.dwSize = ctypes.sizeof(_Entry)
     ok = k.Process32First(snap, ctypes.byref(e))
@@ -100,7 +104,7 @@ def processes():
     return out
 
 
-def usage(pid):
+def usage(pid: int) -> dict[str, float] | None:
     """{"cpu_s", "private_mb", "working_mb", "peak_working_mb", "handles"} of a process, or None."""
     k = _k32
     assert k is not None
@@ -113,7 +117,7 @@ def usage(pid):
         if not k.GetProcessTimes(h, ctypes.byref(c), ctypes.byref(e), ctypes.byref(kt), ctypes.byref(ut)):
             return None
 
-        def secs(f):
+        def secs(f: wintypes.FILETIME) -> float:
             return ((f.dwHighDateTime << 32) | f.dwLowDateTime) / 1e7
         m = _MemCounters()
         m.cb = ctypes.sizeof(m)
@@ -127,7 +131,7 @@ def usage(pid):
         k.CloseHandle(h)
 
 
-def system_memory():
+def system_memory() -> dict[str, int]:
     s = _MemStatus()
     s.dwLength = ctypes.sizeof(s)
     assert _k32 is not None
@@ -136,7 +140,7 @@ def system_memory():
             "commit_free_mb": round(s.ullAvailPageFile / 2**20)}
 
 
-def command_lines(names):
+def command_lines(names: Iterable[str]) -> dict[int, str]:
     """{pid: command line} of the processes with these exe names (one PowerShell call)."""
     flt = " or ".join("Name='%s'" % n for n in names)
     ps = ("Get-CimInstance Win32_Process -Filter \"%s\" | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine)\" }"
@@ -146,7 +150,7 @@ def command_lines(names):
                              text=True, timeout=60, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
     except (OSError, subprocess.SubprocessError):
         return {}
-    found = {}
+    found: dict[int, str] = {}
     for line in out.splitlines():
         pid, _sep, cmd = line.partition("\t")
         if pid.strip().isdigit():
@@ -154,7 +158,7 @@ def command_lines(names):
     return found
 
 
-def find_bot():
+def find_bot() -> int | None:
     """The pid of the running Uncle Farmer, or None."""
     for pid, cmd in sorted(command_lines(("python.exe", "pythonw.exe", "Uncle Farmer.exe", "UncleFarmer.exe")).items()):
         low = cmd.lower()
@@ -163,26 +167,27 @@ def find_bot():
     return None
 
 
-def py_spy():
+def py_spy() -> str:
     return shutil.which("py-spy") or os.path.join(os.path.dirname(sys.executable), "Scripts", "py-spy.exe")
 
 
 # --------------------------------------------------------------------------- watch
 
-def _write_json(path, data):
+def _write_json(path: str, data: object) -> None:
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=1)
     os.replace(tmp, path)
 
 
-def _now():
+def _now() -> str:
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _sample(now, bot, procs):
+def _sample(now: float, bot: int | None, procs: Procs) -> Record:
     """One resource sample: the PC, the bot and every game."""
-    row = {"t": round(now, 1), "system": system_memory(), "bot": None, "games": {}}
+    games: dict[str, dict[str, float]] = {}
+    row: Record = {"t": round(now, 1), "system": system_memory(), "bot": None, "games": games}
     if bot is not None:
         u = usage(bot)
         if u:
@@ -193,11 +198,11 @@ def _sample(now, bot, procs):
             u = usage(pid)
             if u:
                 u["threads"] = threads
-                row["games"][str(pid)] = u
+                games[str(pid)] = u
     return row
 
 
-def _finish(spy, wait):
+def _finish(spy: subprocess.Popen[bytes] | None, wait: float) -> None:
     """Let a py-spy piece end and write its file; one that won't is killed (and its piece lost)."""
     if spy is None or spy.poll() is not None:
         return
@@ -210,18 +215,21 @@ def _finish(spy, wait):
 class Watch:
     """The watcher itself (runs detached; see start())."""
 
-    def __init__(self, out, hours, every, rate):
+    def __init__(self, out: str, hours: float, every: float, rate: int) -> None:
         self.out, self.every, self.rate = out, every, rate
         self.info_path = os.path.join(out, "watch.json")
-        self.info = {"started": _now(), "hours": hours, "every": every, "rate": rate, "watcher_pid": os.getpid(),
+        self.info: Record = {"started": _now(), "hours": hours, "every": every, "rate": rate, "watcher_pid": os.getpid(),
                      "bots": [], "ended": None, "why": None, "profiles": []}
         self.end = time.time() + hours * 3600
-        self.bot, self.spy, self.gone_since, self.last_find = None, None, None, 0.0
+        self.bot: int | None = None
+        self.spy: subprocess.Popen[bytes] | None = None
+        self.gone_since: float | None = None
+        self.last_find = 0.0
 
-    def save(self):
+    def save(self) -> None:
         _write_json(self.info_path, self.info)
 
-    def find(self, now, procs):
+    def find(self, now: float, procs: Procs) -> bool:
         """Keep self.bot on the running bot: after it closes, look again once a minute. False when
         it has been gone for 30 minutes (the night is over)."""
         if self.bot is not None and self.bot in procs:
@@ -238,9 +246,9 @@ class Watch:
                 self.gone_since = None
                 self.info["bots"].append({"pid": self.bot, "at": _now()})
                 self.save()
-        return not (self.bot is None and self.gone_since and now - self.gone_since > 1800)
+        return not (self.bot is None and self.gone_since is not None and now - self.gone_since > 1800)
 
-    def profile(self, now):
+    def profile(self, now: float) -> None:
         """A new py-spy piece when none is running: PIECE seconds, or what is left of the watch."""
         if self.bot is None or (self.spy is not None and self.spy.poll() is None):
             return
@@ -255,7 +263,7 @@ class Watch:
         self.info["profiles"].append({"file": name, "pid": self.bot, "from": _now(), "seconds": piece})
         self.save()
 
-    def run(self):
+    def run(self) -> None:
         if _k32 is not None:
             _k32.SetPriorityClass(_k32.GetCurrentProcess(), BELOW_NORMAL)
         os.makedirs(self.out, exist_ok=True)
@@ -281,11 +289,11 @@ class Watch:
             self.save()
 
 
-def watch(out, hours, every, rate):
+def watch(out: str, hours: float, every: float, rate: int) -> None:
     Watch(out, hours, every, rate).run()
 
 
-def start(hours, every, rate):
+def start(hours: float, every: float, rate: int) -> None:
     """Start the watcher detached, so it outlives this console."""
     if not os.path.exists(py_spy()):
         sys.exit("py-spy isn't installed: uv sync installs it")
@@ -301,27 +309,27 @@ def start(hours, every, rate):
     print("watching for %g hours: %s" % (hours, out))
 
 
-def newest():
+def newest() -> str | None:
     dirs = sorted(d for d in glob.glob(os.path.join(NIGHTS, "*")) if os.path.isfile(os.path.join(d, "watch.json")))
     return dirs[-1] if dirs else None
 
 
-def _alive(night):
+def _alive(night: str) -> bool:
     try:
         with open(os.path.join(night, "watch.json"), encoding="utf-8") as f:
-            info = json.load(f)
+            info: Record = json.load(f)
     except (OSError, ValueError):
         return False
     return not info.get("ended") and info.get("watcher_pid") in processes()
 
 
-def status():
+def status() -> None:
     night = newest()
     if not night:
         print("no night watched yet")
         return
     with open(os.path.join(night, "watch.json"), encoding="utf-8") as f:
-        info = json.load(f)
+        info: Record = json.load(f)
     print(night)
     print("running" if _alive(night) else "ended %s (%s)" % (info.get("ended"), info.get("why")))
     print("started %s, last sample %s, bot pids %s, profiles %d" % (
@@ -353,22 +361,23 @@ EVENTS = [      # (kind, pattern) - the first that matches names the line
     ("start", re.compile(r"^starting ")),
     ("stop", re.compile(r"^(?:STOPPED|stopped)(?::|$)")),
 ]
+Row = tuple[dt.datetime, str, "str | None", "re.Match[str] | None", str]   # (at, who, kind, match, text)
 WASTE = ("no_select", "taken", "theirs", "no_damage", "gone", "too_long")
 WASTE_WORDS = {"no_select": "not selectable", "taken": "taken by someone else",
                "theirs": "nearly killed by someone else", "no_damage": "took no damage",
                "gone": "gone before a hit landed", "too_long": "fight took too long"}
 
 
-def _log_files(day):
+def _log_files(day: dt.date) -> list[str]:
     base = os.path.join(LOGS, day.strftime("%Y-%m-%d") + ".log")
     olds = sorted(glob.glob(base + ".*"), key=lambda p: -int(p.rsplit(".", 1)[1]) if p.rsplit(".", 1)[1].isdigit() else 0)
     return [p for p in olds if p.rsplit(".", 1)[1].isdigit()] + ([base] if os.path.exists(base) else [])
 
 
-def read_log(t0, t1):
+def read_log(t0: dt.datetime, t1: dt.datetime) -> list[Row]:
     """[(datetime, character, kind or None, match or None, text)] of the run log lines between
     t0 and t1, every day file they span (and its rotated parts), in order."""
-    rows = []
+    rows: list[Row] = []
     day = t0.date()
     while day <= t1.date():
         for path in _log_files(day):
@@ -381,7 +390,8 @@ def read_log(t0, t1):
                     if not t0 <= at <= t1:
                         continue
                     who, text = m.group(4).strip(), m.group(5)
-                    kind, hit = None, None
+                    kind: str | None = None
+                    hit: re.Match[str] | None = None
                     for k, pat in EVENTS:
                         hit = pat.search(text)
                         if hit:
@@ -393,8 +403,8 @@ def read_log(t0, t1):
     return rows
 
 
-def read_errors(t0, t1):
-    out = []
+def read_errors(t0: dt.datetime, t1: dt.datetime) -> list[tuple[dt.datetime, str]]:
+    out: list[tuple[dt.datetime, str]] = []
     path = os.path.join(LOGS, "errors.log")
     if not os.path.exists(path):
         return out
@@ -409,15 +419,15 @@ def read_errors(t0, t1):
     return out
 
 
-def read_results(t0, t1):
+def read_results(t0: dt.datetime, t1: dt.datetime) -> dict[str, list[Record]]:
     """{character: [result rows]} of the runs that ended between t0 and t1 (+10 min for the walk
     to safety), from results/<character>.jsonl."""
-    out = collections.defaultdict(list)
+    out: collections.defaultdict[str, list[Record]] = collections.defaultdict(list)
     for path in glob.glob(os.path.join(ROOT, "results", "*.jsonl")):
         with open(path, encoding="utf-8", errors="replace") as f:
             for line in f:
                 try:
-                    r = json.loads(line)
+                    r: Record = json.loads(line)
                     start = dt.datetime.strptime(r["start"], "%Y-%m-%d %H:%M:%S")
                 except (ValueError, KeyError, TypeError):
                     continue
@@ -429,10 +439,10 @@ def read_results(t0, t1):
     return out
 
 
-def read_field(t0, t1):
+def read_field(t0: dt.datetime, t1: dt.datetime) -> dict[str, list[Record]]:
     """{character: [field-log records]} between t0 and t1 (logs/field-<day>.jsonl, written by the
     bot from 2026-10-24 on): each fight from the pick on, and each search walk."""
-    out = collections.defaultdict(list)
+    out: collections.defaultdict[str, list[Record]] = collections.defaultdict(list)
     day = t0.date()
     while day <= t1.date():
         base = os.path.join(LOGS, "field-%s.jsonl" % day.strftime("%Y-%m-%d"))
@@ -442,7 +452,7 @@ def read_field(t0, t1):
             with open(path, encoding="utf-8", errors="replace") as f:
                 for line in f:
                     try:
-                        r = json.loads(line)
+                        r: Record = json.loads(line)
                         at = dt.datetime.strptime(r["at"], "%Y-%m-%d %H:%M:%S")
                     except (ValueError, KeyError, TypeError):
                         continue
@@ -452,24 +462,28 @@ def read_field(t0, t1):
     return out
 
 
-def stand_point(fights):
+Stand = tuple["int | None", "tuple[int, int] | None", float, float, int, float]
+
+
+def stand_point(fights: list[Record]) -> Stand | None:
     """The place we stood that would have had the most of the monsters we picked within reach,
     on the map with the most fights: (map, (x, y), share within reach from there, share in reach
     where we actually stood when we picked, fights). Only places we stood count - they are
     walkable. The monsters are those we saw from where we were, so it is a hint, not a promise."""
-    by_map = collections.defaultdict(list)
+    by_map: collections.defaultdict[int | None, list[Record]] = collections.defaultdict(list)
     for r in fights:
         by_map[r.get("map")].append(r)
     if not by_map:
         return None
     mid, rows = max(by_map.items(), key=lambda kv: len(kv[1]))
-    reach = statistics.median(r["reach"] for r in rows)
-    mobs = [tuple(r["mob"]) for r in rows]
-    spots = sorted({(round(r["me"][0]), round(r["me"][1])) for r in rows})
+    reach: float = statistics.median(r["reach"] for r in rows)
+    mobs: list[tuple[float, float]] = [(r["mob"][0], r["mob"][1]) for r in rows]
+    spots: list[tuple[int, int]] = sorted({(round(r["me"][0]), round(r["me"][1])) for r in rows})
     if len(spots) > 1500:
         spots = spots[::len(spots) // 1500 + 1]
     rr = reach * reach
-    best, best_n = None, -1
+    best: tuple[int, int] | None = None
+    best_n = -1
     for sx, sy in spots:
         n = sum(1 for mx, my in mobs if (mx - sx) ** 2 + (my - sy) ** 2 <= rr)
         if n > best_n:
@@ -478,7 +492,7 @@ def stand_point(fights):
     return mid, best, best_n / len(rows), actual / len(rows), len(rows), reach
 
 
-def walking(records):
+def walking(records: list[Record]) -> Record | None:
     """What the field log says about one character's walking: picks in reach, walk times, fights
     that never reached their monster, search walks, and a better place to stand."""
     fights = [r for r in records if r.get("kind") == "fight"]
@@ -486,14 +500,14 @@ def walking(records):
     if not fights and not searches:
         return None
     w: dict[str, Any] = {"fights": len(fights), "kills": sum(r.get("kills", 0) for r in fights)}
-    walked = sorted(r["reach_s"] for r in fights if "reach_s" in r)
+    walked: list[float] = sorted(r["reach_s"] for r in fights if "reach_s" in r)
     w["in_reach_at_pick"] = sum(1 for r in fights if r["dist"] <= r["reach"])
     w["passed_by"] = sum(1 for r in fights if r["dist"] > r["reach"] and r.get("in_reach", 0) > 0
                          and not r.get("attacking"))
     w["walk_s"] = sum(walked)
     w["walk_median"] = _pct(walked, 0.5) if walked else 0
     w["walk_p90"] = _pct(walked, 0.9) if walked else 0
-    beyond = sorted(r["dist"] - r["reach"] for r in fights if r["dist"] > r["reach"])
+    beyond: list[float] = sorted(r["dist"] - r["reach"] for r in fights if r["dist"] > r["reach"])
     w["beyond_median"] = _pct(beyond, 0.5) if beyond else 0
     never = [r for r in fights if "reach_s" not in r]
     w["never"] = len(never)
@@ -508,9 +522,9 @@ def walking(records):
     return w
 
 
-def thread_names(t1):
+def thread_names(t1: dt.datetime) -> dict[int, str]:
     """{OS thread id: label} from logs/threads.log, the newest record of each id up to t1."""
-    out = {}
+    out: dict[int, str] = {}
     path = os.path.join(LOGS, "threads.log")
     if os.path.exists(path):
         with open(path, encoding="utf-8", errors="replace") as f:
@@ -528,42 +542,43 @@ def thread_names(t1):
 
 # --------------------------------------------------------------------------- the night, per character
 
-def _pct(xs, q):
-    if not xs:
+def _pct(xs: Iterable[float], q: float) -> float:
+    ordered = sorted(xs)
+    if not ordered:
         return 0.0
-    xs = sorted(xs)
-    return xs[min(len(xs) - 1, int(math.ceil(q * len(xs))) - 1)]
+    return ordered[min(len(ordered) - 1, int(math.ceil(q * len(ordered))) - 1)]
 
 
-def characters(rows):
+def characters(rows: list[Row]) -> dict[str, Record]:
     """Per character: totals, per hour, kill gaps, wasted targets."""
-    out = {}
-    by = collections.defaultdict(list)
+    out: dict[str, Record] = {}
+    by: collections.defaultdict[str, list[Row]] = collections.defaultdict(list)
     for r in rows:
         by[r[1]].append(r)
     for who, rs in by.items():
-        c = collections.Counter(r[2] for r in rs if r[2])
+        c = collections.Counter(r[2] for r in rs if r[2] is not None)
         if not c["kill"] and not c["fight"]:
             continue                       # a tool run or a one-off, not farming
         first, last = rs[0][0], rs[-1][0]
-        hours = collections.OrderedDict()
+        hours: collections.OrderedDict[dt.datetime, collections.Counter[str]] = collections.OrderedDict()
         for r in rs:
             h = r[0].replace(minute=0, second=0)
-            hc = hours.setdefault(h, collections.Counter())
-            if r[2]:
+            hc = hours.setdefault(h, collections.Counter[str]())
+            if r[2] is not None:
                 hc[r[2]] += 1
-        timing = [(r[0], r[3].groups()) for r in rs if r[2] == "timing"]
-        contrib = [(r[0], int(r[3].group(2)), int(r[3].group(1))) for r in rs if r[2] == "contribution"]
+        timing = [(r[0], r[3].groups()) for r in rs if r[2] == "timing" and r[3] is not None]
+        contrib = [(r[0], int(r[3].group(2)), int(r[3].group(1))) for r in rs
+                   if r[2] == "contribution" and r[3] is not None]
         kills = [r[0] for r in rs if r[2] == "kill"]
-        gaps = []
+        gaps: list[tuple[float, dt.datetime, dt.datetime]] = []
         for a, b in zip(kills, kills[1:]):
             gaps.append(((b - a).total_seconds(), a, b))
         # each target from "fighting X" until what ended it: a kill, a waste, or the next target
         # a target that gave nothing cost the time since the last target ended (a kill or another
         # waste): searching for it, walking to it, fighting it
-        wasted = collections.Counter()
-        wasted_s = collections.Counter()
-        since = None
+        wasted = collections.Counter[str]()
+        wasted_s: collections.defaultdict[str, float] = collections.defaultdict(float)
+        since: dt.datetime | None = None
         for r in rs:
             if r[2] == "kill" or r[2] == "start":
                 since = r[0]
@@ -572,7 +587,7 @@ def characters(rows):
                 if since is not None:
                     wasted_s[r[2]] += min(120.0, (r[0] - since).total_seconds())
                 since = r[0]
-        long_gaps = []
+        long_gaps: list[Record] = []
         for s, a, b in sorted(gaps, reverse=True)[:8]:
             between = [r for r in rs if a < r[0] < b][:14]
             long_gaps.append({"seconds": s, "from": a.strftime("%H:%M:%S"), "to": b.strftime("%H:%M:%S"),
@@ -584,7 +599,8 @@ def characters(rows):
             "gap_stats": {"median": _pct(g, 0.5), "p90": _pct(g, 0.9), "p99": _pct(g, 0.99),
                           "over_60s": sum(1 for x in g if x > 60), "over_60s_total": sum(x for x in g if x > 60)},
             "long_gaps": long_gaps, "wasted": wasted, "wasted_s": wasted_s,
-            "game_memory": [(r[0], int(r[3].group(1)), int(r[3].group(2))) for r in rs if r[2] == "game_memory"],
+            "game_memory": [(r[0], int(r[3].group(1)), int(r[3].group(2))) for r in rs
+                            if r[2] == "game_memory" and r[3] is not None],
             "stops": [(r[0], r[4]) for r in rs if r[2] == "stop"],
         }
     return out
@@ -592,12 +608,12 @@ def characters(rows):
 
 # --------------------------------------------------------------------------- resources
 
-def resources(samples):
+def resources(samples: list[Record]) -> Record:
     """Per hour: the bot's CPU (% of one core), private memory; per game the same; the PC's free
     memory. Growth in MB an hour from the first to the last sample of each process."""
-    hours = collections.OrderedDict()
-    procs = collections.defaultdict(list)          # name -> [(t, usage)]
-    sysmin = None
+    hours: collections.OrderedDict[dt.datetime, list[Record]] = collections.OrderedDict()
+    procs: collections.defaultdict[str, list[tuple[float, Record]]] = collections.defaultdict(list)   # name -> [(t, usage)]
+    sysmin: int | None = None
     for s in samples:
         h = dt.datetime.fromtimestamp(s["t"]).replace(minute=0, second=0, microsecond=0)
         hours.setdefault(h, [])
@@ -608,7 +624,9 @@ def resources(samples):
             procs["game " + pid].append((s["t"], u))
         free = s["system"]["free_mb"]
         sysmin = free if sysmin is None else min(sysmin, free)
-    out = {"procs": {}, "free_min_mb": sysmin, "hours": []}
+    per_proc: dict[str, Record] = {}
+    per_hour: list[Record] = []
+    out: Record = {"procs": per_proc, "free_min_mb": sysmin, "hours": per_hour}
     for name, rows in procs.items():
         if len(rows) < 2:
             continue
@@ -618,7 +636,7 @@ def resources(samples):
         for (ta, ua), (tb, ub) in zip(rows, rows[1:]):
             if tb > ta and ub["cpu_s"] >= ua["cpu_s"]:
                 busiest = max(busiest, 100 * (ub["cpu_s"] - ua["cpu_s"]) / (tb - ta))
-        out["procs"][name] = {
+        per_proc[name] = {
             "minutes": round(span / 60), "cpu_avg_pct": round(100 * (b["cpu_s"] - a["cpu_s"]) / span, 2),
             "cpu_max_pct": round(busiest, 1), "private_start_mb": a["private_mb"], "private_end_mb": b["private_mb"],
             "private_max_mb": max(u["private_mb"] for _t, u in rows),
@@ -626,14 +644,14 @@ def resources(samples):
             "handles_start": a["handles"], "handles_end": b["handles"],
             "threads_start": a.get("threads"), "threads_end": b.get("threads")}
     for h, ss in hours.items():
-        row = {"hour": h, "free_min_mb": min(s["system"]["free_mb"] for s in ss)}
+        row: Record = {"hour": h, "free_min_mb": min(s["system"]["free_mb"] for s in ss)}
         bots = [s["bot"] for s in ss if s.get("bot")]
         if len(bots) >= 2:
             span = ss[-1]["t"] - ss[0]["t"]
             row["bot_cpu_pct"] = round(100 * (bots[-1]["cpu_s"] - bots[0]["cpu_s"]) / max(1.0, span), 2)
             row["bot_private_mb"] = bots[-1]["private_mb"]
         row["games_private_mb"] = {pid: u["private_mb"] for pid, u in ss[-1].get("games", {}).items()}
-        out["hours"].append(row)
+        per_hour.append(row)
     return out
 
 
@@ -650,16 +668,26 @@ WAITING_FILES = ("socket.py", "selectors.py", "queue.py", "threading.py", "ssl.p
 AGENT_FILES = ("unclefarmer\\link.py", "unclefarmer/link.py")
 
 
-def _ours(path):
+def _ours(path: str) -> str | None:
     p = path.replace("/", "\\").lower()
     i = p.find("unclefarmer\\")
     return p[i:] if i >= 0 and "site-packages" not in p else None
 
 
-def profiles(night, info, names):
+class ThreadProfile(TypedDict):
+    samples: int
+    waiting: int
+    agent_wait: int
+    agent: int
+    funcs: collections.Counter[str]
+    busy_leaf: collections.Counter[str]
+    wait_where: collections.Counter[str]
+
+
+def profiles(night: str, info: Record, names: dict[int, str]) -> dict[str, ThreadProfile]:
     """Per thread over every profile file: samples, how many waited, where our code was (by function,
     inclusive), how much waited inside link.py (on the agent), and the busiest leaves."""
-    threads = {}
+    threads: dict[str, ThreadProfile] = {}
     for prof in info.get("profiles", []):
         path = os.path.join(night, prof["file"])
         if not os.path.exists(path):
@@ -679,7 +707,7 @@ def profiles(night, info, names):
                                                "funcs": collections.Counter(), "busy_leaf": collections.Counter(),
                                                "wait_where": collections.Counter()})
                 t["samples"] += n
-                parsed = []
+                parsed: list[tuple[str, str]] = []
                 for fr in frames:
                     m = FRAME.match(fr)
                     if m:
@@ -713,23 +741,24 @@ def profiles(night, info, names):
 
 # --------------------------------------------------------------------------- the report
 
-def _h(td_s):
+def _h(td_s: float) -> str:
     s = int(td_s)
     return "%d:%02d:%02d" % (s // 3600, s % 3600 // 60, s % 60) if s >= 3600 else "%d:%02d" % (s // 60, s % 60)
 
 
-def _contribution(c):
+def _contribution(c: Record) -> tuple[int, int]:
     """(contribution, minutes it covers): the runs' results when they cover more of the night than
     the bot's hourly contribution lines (a run's first hour has no line yet)."""
-    got = sum(x[1] for x in c["contribution"])
-    mins = sum(x[2] for x in c["contribution"])
-    runs = [r for r in c.get("runs") or [] if isinstance(r.get("contribution"), int)]
+    got: int = sum(x[1] for x in c["contribution"])
+    mins: int = sum(x[2] for x in c["contribution"])
+    all_runs: list[Record] = c.get("runs") or []
+    runs = [r for r in all_runs if isinstance(r.get("contribution"), int)]
     if runs and sum(r.get("minutes") or 0 for r in runs) > mins:
         got, mins = sum(r["contribution"] for r in runs), sum(r.get("minutes") or 0 for r in runs)
     return got, mins
 
 
-def _md_overview(chars, summary):
+def _md_overview(chars: dict[str, Record], summary: Record) -> list[str]:
     md = ["## Characters", "",
           "| Character | Hours | Kills | Kills/h | Contribution | Contribution/h | Deaths | Stucks | Wasted targets "
           "| Time lost to them |", "|---|---|---|---|---|---|---|---|---|---|"]
@@ -748,10 +777,11 @@ def _md_overview(chars, summary):
     return md + [""]
 
 
-def _md_runs(runs):
+def _md_runs(runs: list[Record]) -> list[str]:
     if not runs:
         return []
-    md = ["| Run | Started | Minutes | Kills | Contribution | Contribution/h | Deaths |", "|---|---|---|---|---|---|---|"]
+    md: list[str] = ["| Run | Started | Minutes | Kills | Contribution | Contribution/h | Deaths |",
+                     "|---|---|---|---|---|---|---|"]
     for r in runs:
         mins = r.get("minutes") or 0
         md.append("| %s | %s | %.0f | %s | %s | %s | %s |" % (
@@ -761,7 +791,7 @@ def _md_runs(runs):
     return md + [""]
 
 
-def _md_gaps(c):
+def _md_gaps(c: Record) -> list[str]:
     gs = c["gap_stats"]
     md = ["Time between kills: median %.0f s, 90%% under %.0f s, 99%% under %.0f s; %d gaps over a minute, %s in "
           "all." % (gs["median"], gs["p90"], gs["p99"], gs["over_60s"], _h(gs["over_60s_total"])), ""]
@@ -777,7 +807,7 @@ def _md_gaps(c):
     return md
 
 
-def _md_character(who, c):
+def _md_character(who: str, c: Record) -> list[str]:
     n = c["counts"]
     md = ["## %s" % who, "",
           "From %s to %s. Potions: %d HP, %d MP, %d for the pet. Repairs: %d. Stucks: %d (left the map to get "
@@ -804,7 +834,7 @@ def _md_character(who, c):
     return md
 
 
-def _md_walking(w):
+def _md_walking(w: Record | None) -> list[str]:
     if not w:
         return []
     n = w["fights"] or 1
@@ -831,7 +861,7 @@ def _md_walking(w):
     return md
 
 
-def _md_resources(res):
+def _md_resources(res: Record) -> list[str]:
     md = ["## CPU and memory", ""]
     if not res["procs"]:
         return md + ["No resource samples.", ""]
@@ -851,7 +881,7 @@ def _md_resources(res):
     return md + [""]
 
 
-def _md_threads(prof, summary):
+def _md_threads(prof: dict[str, ThreadProfile], summary: Record) -> list[str]:
     md = ["## Where the bot's threads spent their time (py-spy)", ""]
     if not prof:
         return md + ["No profile.", ""]
@@ -877,9 +907,9 @@ def _md_threads(prof, summary):
     return md
 
 
-def report(night):
+def report(night: str) -> str:
     with open(os.path.join(night, "watch.json"), encoding="utf-8") as f:
-        info = json.load(f)
+        info: Record = json.load(f)
     t0 = dt.datetime.strptime(info["started"], "%Y-%m-%d %H:%M:%S")
     # a watch the PC's shutdown cut off never wrote its end: its last sample is where it stopped
     end = info.get("ended") or info.get("last_sample")
@@ -892,7 +922,7 @@ def report(night):
     for who, recs in read_field(t0, t1).items():
         if who in chars:
             chars[who]["walking"] = walking(recs)
-    samples = []
+    samples: list[Record] = []
     sp = os.path.join(night, "samples.jsonl")
     if os.path.exists(sp):
         with open(sp, encoding="utf-8") as f:
@@ -900,7 +930,7 @@ def report(night):
     res = resources(samples)
     prof = profiles(night, info, thread_names(t1))
     errors = read_errors(t0, t1)
-    summary = {"night": os.path.basename(night), "characters": {}, "resources": res["procs"], "threads": {}}
+    summary: Record = {"night": os.path.basename(night), "characters": {}, "resources": res["procs"], "threads": {}}
     md = ["# Night %s to %s" % (t0.strftime("%Y-%m-%d %H:%M"), t1.strftime("%H:%M")), "",
           "Judged by contribution and kills. Watched %.1f hours; %d log lines; %d resource samples; %d profile "
           "files." % ((t1 - t0).total_seconds() / 3600, len(rows), len(samples), len(info.get("profiles", []))), ""]
@@ -919,8 +949,8 @@ def report(night):
     return os.path.join(night, "report.md")
 
 
-def main(argv=None):
-    a = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+def main(argv: Sequence[str] | None = None) -> None:
+    a = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     sub = a.add_subparsers(dest="cmd", required=True)
     w = sub.add_parser("watch", help="start watching (detached)")
     w.add_argument("--hours", type=float, default=8.0)

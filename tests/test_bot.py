@@ -1,5 +1,9 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The bot itself (engine/bot.py): it is put together from every part, its __init__ wires the link,
 profile and stop flag, and it starts every collaborator a run needs."""
+
+from __future__ import annotations
 
 import queue
 import threading
@@ -13,6 +17,7 @@ from unclefarmer.engine.bot import Bot
 from unclefarmer.engine.botparts.bag import BagMixin
 from unclefarmer.engine.botparts.dialogs import DialogsMixin
 from unclefarmer.engine.botparts.farming import FarmingMixin
+from unclefarmer.engine.botparts.parts import Log
 from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.health import HealthMixin
 from unclefarmer.engine.botparts.keys import KeysMixin
@@ -20,6 +25,8 @@ from unclefarmer.engine.botparts.reading import ReadingMixin
 from unclefarmer.engine.botparts.travel import TravelMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
 from unclefarmer.engine.kills import KillTracker
+import pytest
+from typing import Any
 
 PARTS = (ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMixin, DialogsMixin,
          FightingMixin, FarmingMixin)
@@ -28,41 +35,44 @@ PARTS = (ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMix
 class Link:
     """A link that answers nothing in particular; __init__ only stores it."""
 
-    def __init__(self):
-        self.sent = []
+    def __init__(self) -> None:
+        self.sent: list[str] = []
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         self.sent.append(line)
         return "tapped"
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         return {}
 
 
-def make(link=None, profile=None, log=None, stop_event=None):
-    link = link or Link()
+def make(profile: dict[str, Any] | None = None) -> tuple[Bot, Link, dict[str, Any], Log, threading.Event]:
+    link = Link()
     profile = {"name": "Hero"} if profile is None else profile
     lines: list[str] = []
-    log = log or (lambda line, speak=False: lines.append(line))
-    stop_event = stop_event or threading.Event()
+
+    def log(line: str, /, speak: bool = False) -> None:
+        lines.append(line)
+
+    stop_event = threading.Event()
     b = Bot(link, profile, log, stop_event)
     return b, link, profile, log, stop_event
 
 
 # ------------------------------------------------------------------ assembly
-def test_the_bot_is_put_together_from_every_part():
+def test_the_bot_is_put_together_from_every_part() -> None:
     for part in PARTS:
         assert issubclass(Bot, part)
 
 
-def test_the_bot_has_the_methods_of_every_part():
+def test_the_bot_has_the_methods_of_every_part() -> None:
     for name in ("check", "sleep", "snap", "me", "map_id", "run_requests", "timing_report", "ui",
                  "key", "hold", "let_go", "move_key", "look_after", "drink", "walk_to", "get_unstuck",
                  "bag_check", "travel", "talk", "fight", "farm"):
         assert callable(getattr(Bot, name))
 
 
-def test_the_bot_module_exports_what_other_modules_import():
+def test_the_bot_module_exports_what_other_modules_import() -> None:
     assert set(botmod.__all__) == {"Bot", "CONFIRM", "DIRECTIONS", "NPC_HP", "Respawned", "Stopped",
                                    "potion_kind", "skill_things", "snap_map"}
     for name in botmod.__all__:
@@ -70,7 +80,7 @@ def test_the_bot_module_exports_what_other_modules_import():
 
 
 # ------------------------------------------------------------------ __init__ wiring
-def test_init_keeps_the_link_profile_log_and_stop_flag():
+def test_init_keeps_the_link_profile_log_and_stop_flag() -> None:
     b, link, profile, log, stop_event = make()
     assert b.a is link
     assert b.p is profile
@@ -78,21 +88,21 @@ def test_init_keeps_the_link_profile_log_and_stop_flag():
     assert b.stop_event is stop_event
 
 
-def test_init_records_the_start_time(monkeypatch):
+def test_init_records_the_start_time(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = Clock(5000.0)
     monkeypatch.setattr(CLOCK, "time", clock.time)
     b, *_ = make()
     assert b.started == 5000.0
 
 
-def test_init_starts_a_kill_tracker_on_the_link():
+def test_init_starts_a_kill_tracker_on_the_link() -> None:
     b, link, *_ = make()
     assert isinstance(b.kill_tracker, KillTracker)
     assert b.kill_tracker.a is link
     assert b.kill_tracker.live is None
 
 
-def test_init_starts_the_counters_at_zero():
+def test_init_starts_the_counters_at_zero() -> None:
     b, *_ = make()
     assert b.kills == 0
     assert b.deaths == 0
@@ -106,7 +116,7 @@ def test_init_starts_the_counters_at_zero():
     assert b.daily_reset == "" and b.daily_done is False
 
 
-def test_init_starts_the_maps_empty():
+def test_init_starts_the_maps_empty() -> None:
     b, *_ = make()
     assert b.mob_names == {}
     assert b.counted == {}
@@ -117,7 +127,7 @@ def test_init_starts_the_maps_empty():
     assert b.pets_refused == {}
 
 
-def test_init_starts_the_potion_state_clean():
+def test_init_starts_the_potion_state_clean() -> None:
     b, *_ = make()
     assert b._potions_had == {}
     assert b._potions_out == {}
@@ -127,7 +137,7 @@ def test_init_starts_the_potion_state_clean():
     assert b.watches == []
 
 
-def test_init_starts_the_run_flags():
+def test_init_starts_the_run_flags() -> None:
     b, *_ = make()
     assert b.approaching is False
     assert b.in_fight is False
@@ -145,18 +155,18 @@ def test_init_starts_the_run_flags():
     assert b.timing is None and b._phases == []
 
 
-def test_init_starts_the_end_and_trust_state():
+def test_init_starts_the_end_and_trust_state() -> None:
     b, *_ = make()
     assert b.end_place == ("start",)
     assert not b.trusted
 
 
-def test_init_starts_a_gear_reader():
+def test_init_starts_a_gear_reader() -> None:
     b, *_ = make()
     assert isinstance(b.gear, repair.Gear)
 
 
-def test_init_starts_the_pause_and_request_machines():
+def test_init_starts_the_pause_and_request_machines() -> None:
     b, *_ = make()
     assert isinstance(b.paused, threading.Event)
     assert not b.paused.is_set()
@@ -165,7 +175,7 @@ def test_init_starts_the_pause_and_request_machines():
     assert b.held == set()
 
 
-def test_each_bot_gets_its_own_mutable_state():
+def test_each_bot_gets_its_own_mutable_state() -> None:
     b1, *_ = make()
     b2, *_ = make()
     b1.held.add("d")

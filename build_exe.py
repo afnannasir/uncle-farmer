@@ -9,6 +9,8 @@ nothing installed: zip "dist\\Uncle Farmer" and share it. Character settings, pl
 settings and logs are NOT copied, so your own setup never ends up in someone else's copy.
 """
 
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
@@ -38,7 +40,7 @@ def windows_version(version: str) -> str:
 CPP_RUNTIME = ("msvcp140.dll",)   # Nuitka found no copy it may ship, and a module of ours needs it
 
 
-def carry_cpp_runtime(out):
+def carry_cpp_runtime(out: str) -> None:
     """Most PCs have the Visual C++ runtime in System32, but not every one, and without it the
     exe doesn't start. Its licence lets an app carry the DLLs next to its exe, so the folder does."""
     system = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
@@ -48,7 +50,7 @@ def carry_cpp_runtime(out):
             shutil.copy2(src, out)
 
 
-def main(full=False):
+def main(full: bool = False) -> None:
     """full: every core at normal priority (faster, but the PC is busy meanwhile)."""
     sys.path.insert(0, ROOT)
     # The jar is rebuilt every time: it is gitignored, so "it exists" says nothing about whether

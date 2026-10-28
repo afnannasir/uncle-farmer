@@ -14,11 +14,15 @@ text, so each player's copy is built from their own game), and rebuilt when the 
     python -m unclefarmer.gametexts --find <regex>     search it
 """
 
+from __future__ import annotations
+
 import gzip
 import os
 import re
 import sys
 import threading
+from collections.abc import Iterator
+from typing import Any
 
 from . import jsonio as json, paths, settings
 
@@ -30,11 +34,11 @@ _NOT_ENGLISH = re.compile(r"\b(de|que|para|com|não|est|bir|ve|và|của|aap|hai
 # Language folders whose files pair English source lines with a translation.
 PAIRED = ("russian", "Russian beta", "en_uk", "public english translation", "turkish", "vietnamese", "chinese", "urdu")
 
-_cache = None
+_cache: dict[str, Any] | None = None     # {"stamp", "texts"} as game_texts.json holds them
 _lock = threading.Lock()
 
 
-def _english(line):
+def _english(line: str) -> bool:
     line = line.strip()
     if not line or _FOREIGN.search(line):
         return False
@@ -43,19 +47,19 @@ def _english(line):
     return len(_ENGLISH.findall(line)) >= 2 and not _NOT_ENGLISH.search(line)
 
 
-def _stamp(game):
+def _stamp(game: str) -> int:
     try:
         return int(os.path.getmtime(os.path.join(game, "version", "language.gz")))
     except OSError:
         return 0
 
 
-def build(game):
+def build(game: str) -> int:
     """Read the game folder and write data/game_texts.json. Returns the number of texts."""
-    texts = []
-    seen = set()
+    texts: list[str] = []
+    seen: set[str] = set()
 
-    def add(line):
+    def add(line: str) -> None:
         line = line.strip()
         if line and line not in seen:
             seen.add(line)
@@ -77,7 +81,7 @@ def build(game):
     return len(texts)
 
 
-def _txt_lines(folder):
+def _txt_lines(folder: str) -> Iterator[str]:
     """Every line of every .txt file under folder, file by file in name order."""
     for root, _d, files in os.walk(folder):
         for name in sorted(files):
@@ -86,7 +90,7 @@ def _txt_lines(folder):
                     yield from f.read().replace("\r", "").split("\n")
 
 
-def _packed_lines(game):
+def _packed_lines(game: str) -> list[str]:
     """The lines of version/language.gz (none when it can't be read)."""
     try:
         with open(os.path.join(game, "version", "language.gz"), "rb") as f:
@@ -96,14 +100,14 @@ def _packed_lines(game):
     return raw.replace("\r", "").split("\n")
 
 
-def texts(game=None):
+def texts(game: str | None = None) -> list[str]:
     """Every English text of the game. Built (or rebuilt after a game update) when needed."""
     global _cache
     with _lock:
         if game is None:
             game = settings.load_app().get("game_folder", "")
         if _cache is None or (game and _cache.get("stamp") != _stamp(game) and _stamp(game)):
-            data = None
+            data: dict[str, Any] | None = None
             if os.path.exists(OUT):
                 try:
                     with open(OUT, encoding="utf-8") as f:
@@ -116,21 +120,22 @@ def texts(game=None):
                 with open(OUT, encoding="utf-8") as f:
                     data = json.load(f)
             _cache = data or {"stamp": 0, "texts": []}
-        return _cache["texts"]
+        found: list[str] = _cache["texts"]
+        return found
 
 
-def find(pattern, game=None):
+def find(pattern: str, game: str | None = None) -> list[str]:
     """The game's texts matching a regex (any case)."""
     rx = re.compile(pattern, re.I)
     return [t for t in texts(game) if rx.search(t)]
 
 
-def has(text, game=None):
+def has(text: str, game: str | None = None) -> bool:
     """True if the game has this exact text (a menu label, say)."""
     return text.strip() in set(texts(game))
 
 
-def main(argv):
+def main(argv: list[str]) -> None:
     if argv[:1] == ["--find"] and len(argv) > 1:
         for t in find(" ".join(argv[1:])):
             print(t)

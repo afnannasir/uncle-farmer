@@ -16,6 +16,7 @@ costs exactly as Python does, or a tie between two equal routes could be broken 
 """
 
 import glob
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -31,21 +32,19 @@ FLAGS = ["-O2", "-shared", "-std=c11", "-Wall", "-Wextra", "-Werror", "-ffp-cont
          "-fno-fast-math", "-s"]
 
 
-def compiler():
+def compiler() -> list[str] | None:
     """The command that compiles C, as a list, or None."""
     if os.environ.get("CC"):
         return [os.environ["CC"]]
     gcc = shutil.which("gcc") or (MSYS_GCC if os.path.exists(MSYS_GCC) else None)
     if gcc:
         return [gcc, "-static-libgcc"]
-    try:
-        import ziglang  # noqa: F401  # pyright: ignore[reportMissingImports]
+    if importlib.util.find_spec("ziglang") is not None:      # pip install ziglang: a C compiler as a package
         return [sys.executable, "-m", "ziglang", "cc", "-target", "x86_64-windows-gnu"]
-    except ImportError:
-        return None
+    return None
 
 
-def build():
+def build() -> int:
     cc = compiler()
     if cc is None:
         print("no C compiler found: install MSYS2's mingw-w64 gcc, or pip install ziglang")

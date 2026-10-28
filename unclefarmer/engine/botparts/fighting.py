@@ -1,27 +1,23 @@
-# pyright: strict
 """Fighting: reach, targets, target modes, the fight loop, fighting back and defending.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
+
 import math
 import re
 from collections.abc import Sequence
-from typing import Any, Protocol, cast
+from typing import Any
 
-from ... import applog, atlas, nearby
+from ... import applog, atlas, jsonio, nearby
 from ...settings import TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, combat, pets, teamheal
 from .base import (NPC_HP, STOPPING, Stopped, agent_strike, note_failure, skill_things, snap_map)
-from .parts import Parts
-
-
-class FightingLink(Protocol):
-    def send(self, line: str) -> str: ...
-
-    def json(self, line: str) -> Any: ...
+from ...link import GameLink
+from .parts import as_bot, Parts
 
 
 class FightingMixin(Parts):
@@ -54,8 +50,8 @@ class FightingMixin(Parts):
     follow_ok: bool
 
     @property
-    def _game(self) -> FightingLink:
-        return cast(FightingLink, self.a)
+    def _game(self) -> GameLink:
+        return self.a
                           # measure: live 2026-10-21 a Golden eagle at 25.6-32 yards was never taken
                           # (a nearer Alpaca was), while fights at our own reach (18 for a Hunter)
                           # select fine. pull_range stops within this: beyond it the stop only
@@ -120,7 +116,7 @@ class FightingMixin(Parts):
             picked = self._select_by_id(mob)
             if picked is not None:
                 return picked
-        keys = cast(dict[str, str], self.p.get("target_keys") or {})
+        keys: dict[str, str] = self.p.get("target_keys") or {}
         if not any(keys.values()) or "target" not in self.ui():
             return True
         if self.ui().get("target") == mob["id"]:
@@ -134,7 +130,7 @@ class FightingMixin(Parts):
         # then the other two, a couple of presses each: a monster almost on top of us has no clear
         # direction, and the game's idea of "west" may not be ours
         order += [d for d in ("west", "north", "south", "east") if d not in order]
-        keys = cast(dict[str, str], self.p.get("target_keys") or {})
+        keys: dict[str, str] = self.p.get("target_keys") or {}
         for n, direction in enumerate(order):
             k = keys.get(direction)
             if not k:
@@ -222,7 +218,7 @@ class FightingMixin(Parts):
             return
         want = self.p.get("target_mode", 2)
         m = self._game.json("mem modes")
-        modes = cast(dict[str, Any], m) if isinstance(m, dict) else {}
+        modes: dict[str, Any] = m if jsonio.is_object(m) else {}
         have = modes.get("target")
         if have is None or have == want:
             return
@@ -242,11 +238,11 @@ class FightingMixin(Parts):
         if isinstance(r, (int, float)) and r != 5.0:
             return float(r)
         if self.skillbook is None and self.p.get("smart_skills", True):
-            self.skillbook = cast(Any, combat.SkillBook(self))
+            self.skillbook = combat.SkillBook(self)
         sb = self.skillbook
         if sb and sb.ok:
-            base = [x.get("range") for pg in sb.slots.values() for x in pg
-                    if x.get("role") == "base_attack" and x.get("range")]
+            base: list[float] = [x["range"] for pg in sb.slots.values() for x in pg
+                                 if x.get("role") == "base_attack" and x.get("range")]
             if base:
                 return combat.base_reach(min(base))
         return 5.0 if r == "auto" else float(r)
@@ -269,15 +265,16 @@ class FightingMixin(Parts):
         v30): our selected target, what our area skills hit, and monsters other players were
         hitting too - the game shares those. Each is counted and logged once. Returns their ids;
         empty with an older agent, which can't tell (the fight loop then counts its target)."""
-        me = cast(dict[str, Any], (snap or {}).get("self") or getattr(self, "last_me", None) or {})
+        me: dict[str, Any] = (snap or {}).get("self") or getattr(self, "last_me", None) or {}
         if "id" not in me:
             return []
         if snap is not None and me.get("name"):
             # our pets' strikes are ours: a monster only they are at is no one else's (agent 44)
             tail = nearby.OWNER + str(me["name"])
-            self.kill_tracker.own = {e["id"] for e in cast(list[dict[str, Any]], snap.get("entities", []))
+            entities: list[dict[str, Any]] = snap.get("entities", [])
+            self.kill_tracker.own = {e["id"] for e in entities
                                      if e.get("kind") == "player" and str(e.get("name") or "").endswith(tail)}
-        dead = cast(list[int], self.kill_tracker.update(me["id"]))
+        dead = self.kill_tracker.update(me["id"])
         tally = getattr(self, "tally", None)
         if tally is not None:
             tally.combat.observe(self.kill_tracker.fresh, me["id"], self.mob_names)
@@ -299,8 +296,8 @@ class FightingMixin(Parts):
         """Note every monster's HP with the time, for dying_in()."""
         now = self.clock.time()
         log: dict[int, list[tuple[float, float]]] = getattr(self, "hp_log", {})
-        for raw_e in snap["entities"]:
-            e = cast(dict[str, Any], raw_e)
+        entities: list[dict[str, Any]] = snap["entities"]
+        for e in entities:
             if e.get("kind") != "monster" or "hp" not in e:
                 continue
             rows = log.setdefault(int(e["id"]), [])
@@ -319,8 +316,8 @@ class FightingMixin(Parts):
         whatever hurts it; math.inf when it isn't going down. Until the world's readings span the
         0.8 s that make a rate, someone else's strikes give one (agent 44): live, a monster other
         players took died a median 3.1 s after their first strike, so that second counts."""
-        log = cast(dict[int, list[tuple[float, float]]], getattr(self, "hp_log", {}))
-        rows = log.get(int(e["id"])) or []
+        log: dict[int, list[tuple[float, float]]] = getattr(self, "hp_log", {})
+        rows: list[Any] = log.get(int(e["id"])) or []
         if len(rows) < 2 or rows[-1][0] - rows[0][0] < 0.8:
             rate = self.kill_tracker.struck_rate(e["id"])
             return float(e["hp"]) / rate if rate else math.inf
@@ -358,10 +355,10 @@ class FightingMixin(Parts):
             return self._attackers
         self._attackers_at = now
         r = self._game.json("casts %d" % int((now - 4) * 1000))
-        data = cast(dict[str, Any], r) if isinstance(r, dict) else {}
-        self.casts_seen = isinstance(r, dict) and "error" not in data
-        casts = cast(list[dict[str, Any]], data.get("casts", []))
-        me = cast(dict[str, Any], getattr(self, "_snap_self", None) or getattr(self, "last_me", None) or {})
+        data: dict[str, Any] = r if jsonio.is_object(r) else {}
+        self.casts_seen = jsonio.is_object(r) and "error" not in data
+        casts: list[dict[str, Any]] = data.get("casts", [])
+        me: dict[str, Any] = getattr(self, "_snap_self", None) or getattr(self, "last_me", None) or {}
         self._attackers = {int(c["caster"]) for c in casts
                            if c["caster"] < 0 and self.at_us(c, me.get("id"), self.kill_tracker.own)}
         return self._attackers
@@ -374,19 +371,19 @@ class FightingMixin(Parts):
         older agent, our id not read yet) every monster's cast counts, as before."""
         if me_id is None:
             return True
-        hits = cast(list[list[Any]], c.get("hits") or [])
+        hits: list[list[Any]] = c.get("hits") or []
         if any(h and h[0] == me_id for h in hits):
             return True               # it hit us, or we dodged it
         if "targets" in c:
-            return any(row and (row[0] == me_id or row[0] in pets)
-                       for row in cast(list[list[Any]], c["targets"]))
+            struck: list[list[Any]] = c["targets"]
+            return any(row and (row[0] == me_id or row[0] in pets) for row in struck)
         return int(getattr(self, "agent_version", 0) or 0) < 44   # agent 44 names targets: none struck
 
     def targets(self, snap: dict[str, Any], area: Sequence[float] | None = None, only: str | None = None, skip: str | None = None, avoid_rects: Sequence[tuple[float, float, float, float]] = (), limit: float | None = None) -> list[dict[str, Any]]:
         """The monsters to fight, nearest first by walking distance - those attacking us before all
         others. limit: leave out any further than that many steps (not those attacking us)."""
         now = self.clock.time()
-        me = cast(dict[str, Any], snap["self"])
+        me: dict[str, Any] = snap["self"]
         hitting = self.attackers()
         out: list[dict[str, Any]] = []
         steps: dict[int, float] = {}
@@ -397,8 +394,8 @@ class FightingMixin(Parts):
         # bosses are never targets, nor is anything close to one: fighting there pulls the boss in
         keep = self.p.get("boss_distance", 40)
         boss_list = bosses.in_sight(snap) if keep else []
-        for raw_e in snap["entities"]:
-            e = cast(dict[str, Any], raw_e)
+        entities: list[dict[str, Any]] = snap["entities"]
+        for e in entities:
             if e["kind"] != "monster" or "hp" not in e or e["hp"] <= 0:
                 continue
             if not e.get("name") or e["maxhp"] <= 1:        # drops and corpses
@@ -467,12 +464,13 @@ class FightingMixin(Parts):
         """The farm loop picked mob: where we stand, how far it is and how many others were in
         sight or already in reach. fight() writes it to the field log when the fight is over, with
         how long the walk and the whole fight took - what a night's walking is measured from."""
-        me = cast(dict[str, Any], snap["self"])
+        me: dict[str, Any] = snap["self"]
         rng = self.reach()
 
         def dist(e: dict[str, Any]) -> float:
             return math.hypot(e["x"] - me["x"], e["y"] - me["y"])
-        steps = cast(dict[int, float], getattr(self, "walk_steps", {})).get(mob["id"], math.inf)
+        walked: dict[int, float] = getattr(self, "walk_steps", {})
+        steps = walked.get(mob["id"], math.inf)
         self.picked = {
             "kind": "fight", "who": getattr(self, "character", None), "map": snap_map(snap),
             "me": [round(me["x"], 1), round(me["y"], 1)], "mob": [round(mob["x"], 1), round(mob["y"], 1)],
@@ -484,7 +482,7 @@ class FightingMixin(Parts):
         }
 
     def fight(self, mob: dict[str, Any]) -> None:
-        beasts.ensure(self, beasts.FIGHT)
+        beasts.ensure(as_bot(self), beasts.FIGHT)
         self.in_fight = True
         rec = getattr(self, "picked", None)
         self.picked = None
@@ -520,7 +518,7 @@ class FightingMixin(Parts):
 
     def _end_place(self, rec: dict[str, Any]) -> None:
         """Where the last reading put us, as the record's end_me (left out before any reading)."""
-        me = cast(dict[str, Any], getattr(self, "last_me", None) or {})
+        me: dict[str, Any] = getattr(self, "last_me", None) or {}
         if "x" in me:
             rec["end_me"] = [round(float(me["x"]), 1), round(float(me["y"]), 1)]
 
@@ -534,6 +532,8 @@ class FightingMixin(Parts):
         the presses keep a key's pace, and each is followed by a look at the casts: no key is
         held, so the look costs the press nothing."""
         sb = self.skillbook
+        if sb is None:          # only a fight with smart skills bursts (_fight_burst)
+            raise RuntimeError("a burst needs the skill book")
         self.check()
         if self.slot_command(key) is None:
             self.wait_keys_free()
@@ -661,7 +661,7 @@ class FightingMixin(Parts):
             return None, False
         return m, self.select_target(m)
 
-    def _leash(self, follow: bool, rng: float, engage: float, pull: float) -> float:
+    def leash_for(self, follow: bool, rng: float, engage: float, pull: float) -> float:
         """How far off a target may be and still be watched during a fight: our reach plus a step,
         the follow attack's reach, and any opening-fire range beyond it (pull_range works by
         starting the fight before the monster is in reach, so the leash has to include it)."""
@@ -671,16 +671,16 @@ class FightingMixin(Parts):
         p = self.p
         self.log(_("fighting {name}", name=mob["name"]))
         if self.skillbook is None and p.get("smart_skills", True):
-            self.skillbook = cast(Any, combat.SkillBook(self))
+            self.skillbook = combat.SkillBook(self)
         f = _Fight(self, mob)
         while self.clock.time() - max(f.start, self.resumed_at) < p["fight_timeout"]:
             now = self.clock.time()
-            due = f.sb.ready_in(now) if self.skillbook is not None and f.snap is not None else 1.0
+            due = f.sb.ready_in(now) if f.sb is not None and f.look is not None else 1.0
             # a check only starts when it will be done before the next press is due (it is timed),
             # and never more than two seconds apart
-            if f.snap is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
+            if f.look is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
                 self._fight_look(f, now)
-            if f.m is None or f.m["hp"] <= 0:
+            if f.seen is None or f.seen["hp"] <= 0:
                 self._fight_over(f)
                 return
             casts = getattr(self.skillbook, "casts_done", 0) if self.skillbook is not None else 0
@@ -691,7 +691,7 @@ class FightingMixin(Parts):
                 return
             if step == "again":
                 continue
-            if self.skillbook is not None and f.sb.confirm:
+            if f.sb is not None and f.sb.confirm:
                 self.sleep(0.05)      # the cooldown paces us now
             else:
                 self.sleep(p["attack_gap"])
@@ -703,17 +703,17 @@ class FightingMixin(Parts):
         attacks us, and how far the monster is (reached: we have been within reach of it)."""
         f.checked = now
         f.check_at = now + self.CHECK_EVERY
-        snap = f.snap = cast(dict[str, Any], self.snap())
-        self.look_after(cast(dict[str, Any], snap["self"]))
-        teamheal.look_after(self, snap)       # only while following
-        pets.look_after(self, snap)
+        snap = f.look = self.snap()
+        self.look_after(snap["self"])
+        teamheal.look_after(as_bot(self), snap)       # only while following
+        pets.look_after(as_bot(self), snap)
         self.clear_popups()
-        f.m = f.find(snap)
+        f.seen = f.find(snap)
         self.count_kills(snap)
         self.read_points(snap["self"], now)
         f.hit_us = f.hit_us or f.mid in self.attackers()
-        if f.m is not None:
-            f.dist = math.hypot(f.m["x"] - snap["self"]["x"], f.m["y"] - snap["self"]["y"])
+        if f.seen is not None:
+            f.dist = math.hypot(f.seen["x"] - snap["self"]["x"], f.m["y"] - snap["self"]["y"])
             if f.dist <= f.rng + 0.5:
                 if f.follow and not f.reached:
                     self.follow_stalls = 0      # the follow attack got us there
@@ -765,10 +765,11 @@ class FightingMixin(Parts):
             f.last_drop, f.casts_at_drop = self.clock.time(), casts      # it is hurt: our reading lags
         elif landed:
             other = max(landed, key=lambda k: landed[k])
-            o = next((e for e in cast(list[dict[str, Any]], f.snap["entities"]) if e["id"] == other and e.get("hp", 0) > 0), None)
+            seen: list[dict[str, Any]] = f.snap["entities"]
+            o = next((e for e in seen if e["id"] == other and e.get("hp", 0) > 0), None)
             if o is not None:
                 self.log(_("our hits land on {name} - fighting that one", name=o["name"]))
-                f.mid, f.mob, f.m = other, o, o
+                f.mid, f.mob, f.seen = other, o, o
                 f.last_hp, f.last_drop, f.casts_at_drop = float(o["hp"]), self.clock.time(), casts
                 f.hit_us = f.hit_us or f.mid in self.attackers()
         return False
@@ -839,7 +840,7 @@ class FightingMixin(Parts):
         game casts it), or the profile's attack keys. "again" (go round now), "return" (the fight
         ends), or None (pace the next press)."""
         sb, p, m, mid = f.sb, self.p, f.m, f.mid
-        if f.follow and f.dist > f.rng + 0.5:
+        if sb is not None and f.follow and f.dist > f.rng + 0.5:     # (the follow attack needs the skill book)
             k = sb.follow_key()
             if k:
                 # still walking in: no skill reaches yet, and the base attack's follow key keeps
@@ -848,14 +849,14 @@ class FightingMixin(Parts):
                 f.i += 1
                 self.sleep(0.3)
                 return "again"
-        picked = sb.pick(f.snap, m) if self.skillbook else None
-        if picked == "wait":
+        picked = sb.pick(f.snap, m) if sb is not None else None
+        if sb is not None and picked == "wait":
             # sleep until the cooldown ends, or until the next check is due, whichever first
             now = self.clock.time()
             self.sleep(max(0.02, min(sb.ready_in(now), f.check_at - now, 0.5)))
             return "again"
-        if picked and sb.confirm and p.get("press_burst", True):
-            if self._fight_burst(f, picked):
+        if sb is not None and isinstance(picked, tuple) and sb.confirm and p.get("press_burst", True):
+            if self._fight_burst(f, sb, picked):
                 return "return"
         elif picked:
             self.key(picked[0])
@@ -874,11 +875,10 @@ class FightingMixin(Parts):
             return "return"
         return None
 
-    def _fight_burst(self, f: "_Fight", picked: tuple[str, str]) -> bool:
+    def _fight_burst(self, f: "_Fight", sb: combat.SkillBook, picked: combat.Press) -> bool:
         """Press the picked skill until the game casts it. True when the fight ends: refused again
         and again at a monster we never hurt."""
-        sb = f.sb
-        if self.burst(picked[0], cast(dict[str, Any], f.snap["self"]).get("id"), sb.burst_time(picked[1])):
+        if self.burst(picked[0], f.snap["self"].get("id"), sb.burst_time(picked[1])):
             f.refused_run = 0
             return False
         if f.dist > f.rng + 0.5:
@@ -903,10 +903,10 @@ class _Fight:
     press waited for three turns). The reading, healing and checks run at most every CHECK_EVERY,
     in the time the cooldown leaves; the press goes the moment it ends."""
 
-    def __init__(self, bot: Any, mob: dict[str, Any]):
+    def __init__(self, bot: FightingMixin, mob: dict[str, Any]) -> None:
         self.mob, self.mid = mob, mob["id"]
-        self.m: Any = None             # the monster as the last look saw it (None: gone from view)
-        self.snap: Any = None          # the last look; the loop makes one before anything reads it
+        self.seen: dict[str, Any] | None = None   # the monster as the last look saw it (None: gone from view)
+        self.look: dict[str, Any] | None = None   # the last look; the loop makes one before anything reads it
         self.rng = bot.reach()
         self.start = bot.clock.time()
         self.last_hp, self.last_drop = float(mob["hp"]), bot.clock.time()
@@ -919,11 +919,26 @@ class _Fight:
         self.follow = bot.follows()
         engage = max(self.rng, bot.FOLLOW_LEASH) if self.follow else self.rng
         pull = float(bot.p.get("pull_range", 0) or 0.0)
-        self.leash = bot._leash(self.follow, self.rng, engage, pull)
+        self.leash = bot.leash_for(self.follow, self.rng, engage, pull)
         self.reached = False           # we have been within reach of it this fight
         self.refused_run = 0           # bursts in a row the game cast nothing for, within reach
         self.closing: tuple[float, float] | None = None   # (time, distance) while the follow attack walks us in
         self.dist = 0.0
+
+
+    @property
+    def m(self) -> dict[str, Any]:
+        """The monster in view: read only once the loop has seen that it is."""
+        if self.seen is None:
+            raise RuntimeError("the fight read a monster that is out of view")
+        return self.seen
+
+    @property
+    def snap(self) -> dict[str, Any]:
+        """The last look: read only after the loop's first one."""
+        if self.look is None:
+            raise RuntimeError("the fight read the world before looking")
+        return self.look
 
     def find(self, snap: dict[str, Any]) -> dict[str, Any] | None:
         return next((e for e in snap["entities"] if e["id"] == self.mid), None)
@@ -933,7 +948,7 @@ class _Approach:
     """The walk up to one monster: when to stop walking, and what it noticed on the way (it opened
     fire early on a monster closing in, or the monster is about to die to someone else)."""
 
-    def __init__(self, bot: Any, mid: int, rng: float, engage: float, pull: float):
+    def __init__(self, bot: FightingMixin, mid: int, rng: float, engage: float, pull: float) -> None:
         self.b, self.mid, self.rng, self.engage, self.pull = bot, mid, rng, engage, pull
         self.here = bot.map_id()
         self.closing: tuple[float, tuple[float, float], float] | None = None   # (when, where we were, how far) at the previous look

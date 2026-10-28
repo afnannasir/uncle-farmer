@@ -17,11 +17,17 @@ the bag is used the moment the fight is over (the bag cursor needs its own keys)
 rather not can turn it off (profile repair_with "off").
 """
 
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 import re
 
+from .. import jsonio
 from ..clock import clock_for
 from ..i18n import _
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 # (name, highest equipment level it repairs), cheapest first
 TOOLBOXES = (("Small Toolbox", 60), ("Large Toolbox", 80), ("Alloy Toolbox", 10 ** 6))
@@ -37,9 +43,9 @@ BROKEN_EVERY = 30.0       # seconds between looks for broken items when nothing 
 class Gear:
     """What the bot knows about its gear's wear during a run."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.wear_seen = 0          # agent clock (ms) of the newest wear warning read
-        self.warned = {}            # uid -> "low" or "broken", since the last repair
+        self.warned: dict[int, str] = {}     # uid -> "low" or "broken", since the last repair
         self.repaired_at = 0.0      # clock_for(bot).time() of the last repair
         self.failed_at = 0.0        # last repair that didn't work, so it isn't retried every loop
         self.checked_at = 0.0
@@ -49,23 +55,24 @@ class Gear:
         self.said_wait = False
 
 
-def equipment(bot):
+def equipment(bot: Bot) -> list[dict[str, Any]]:
     rows = bot.a.json("mem equipment")
-    return rows if isinstance(rows, list) else []
+    return rows if jsonio.is_array(rows) else []
 
 
-def broken(bot):
+def broken(bot: Bot) -> list[str]:
     """Names of the equipped items the game marked broken."""
     return [r.get("name") or "?" for r in equipment(bot) if (r.get("equipped") or 0) < 0]
 
 
-def read_wear(bot, g):
+def read_wear(bot: Bot, g: Gear) -> bool:
     """Fold the agent's new wear warnings into g.warned. False on an agent without `wear`."""
     r = bot.a.json("wear %d" % g.wear_seen)
-    if not isinstance(r, dict) or "wear" not in r:
+    if not jsonio.is_object(r) or "wear" not in r:
         return False
-    mine = None
-    for w in r["wear"]:
+    mine: dict[object, object] | None = None      # uid -> name of what we wear
+    warnings: list[dict[str, Any]] = r["wear"]
+    for w in warnings:
         g.wear_seen = max(g.wear_seen, w["t"])
         if mine is None:
             mine = {row.get("uid"): row.get("name") for row in equipment(bot)}
@@ -83,26 +90,29 @@ def read_wear(bot, g):
     return True
 
 
-def level(bot):
+def level(bot: Bot) -> int:
     """The character's level: the last character sheet, else the scan."""
-    lv = ((bot.last_me or {}).get("sheet") or {}).get("level") or 0
+    me: dict[str, Any] = bot.last_me or {}
+    sheet: dict[str, Any] = me.get("sheet") or {}
+    lv: int = sheet.get("level") or 0
     if lv <= 0:
-        lv = (bot.p.get("scan") or {}).get("level") or 0
+        scan: dict[str, Any] = bot.p.get("scan") or {}
+        lv = scan.get("level") or 0
     return lv
 
 
-def toolboxes(bot):
+def toolboxes(bot: Bot) -> list[tuple[str, str | None, int]]:
     """The toolboxes we have, best choice first: [(name, hotkey or None, count)].
     Those that cover the character's level come first, cheapest first; within that a toolbox on a
     hotkey beats one only in the bag. One that doesn't cover the level is a last resort (the game
     still mends what it can)."""
-    have = {}
+    have: dict[str, tuple[str, int]] = {}
     for r in bot.bag_rows():
         n = (r.get("name") or "").strip()
         if n and r.get("count"):
             have[n.lower()] = (n, have.get(n.lower(), (n, 0))[1] + int(r["count"]))
     lv = level(bot)
-    out = []
+    out: list[tuple[bool, str, str | None, int]] = []
     for name, top in TOOLBOXES:
         if name.lower() in have:
             n, count = have[name.lower()]
@@ -113,13 +123,13 @@ def toolboxes(bot):
     return [(n, key, count) for _f, n, key, count in fits + rest]
 
 
-def check(bot: Any) -> bool:
+def check(bot: Bot) -> bool:
     """Repair at the game's first warning (or when something broke). Called from look_after, so
     walking, travelling and fighting all get it. True when a repair was made. A broken item with
     nothing to repair it ends the run safely, if the profile says so (stop_when_gear_broken):
     broken gear makes every fight harder until the character dies."""
     p = bot.p
-    if (p.get("repair_with") or "toolbox") == "off" or bot.held or getattr(bot, "_repairing", False):
+    if (p.get("repair_with") or "toolbox") == "off" or bot.held or getattr(bot, "repairing", False):
         return False
     g = bot.gear
     now = clock_for(bot).time()
@@ -131,7 +141,7 @@ def check(bot: Any) -> bool:
         g.said_old_agent = True
         bot.log(_("this game's agent can't warn before gear breaks - restart Mist World so the new "
                   "agent loads; until then gear is repaired only once something breaks"))
-    gone = []
+    gone: list[str] = []
     if g.warned or now - g.broken_checked_at >= BROKEN_EVERY:
         g.broken_checked_at = now
         gone = broken(bot)
@@ -141,14 +151,14 @@ def check(bot: Any) -> bool:
         return False
     if now - g.repaired_at < AFTER_REPAIR and not gone:
         return False
-    bot._repairing = True
+    bot.repairing = True
     try:
         return repair(bot, gone)
     finally:
-        bot._repairing = False
+        bot.repairing = False
 
 
-def repair(bot, gone=None):
+def repair(bot: Bot, gone: list[str] | None = None) -> bool:
     """Use a toolbox (hotkey first, else the bag between fights) and confirm. True when done."""
     g = bot.gear
     tools = toolboxes(bot)

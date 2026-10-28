@@ -1,8 +1,9 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins in this file replace real methods and attributes with fakes on purpose;
-# what they do is checked by running the tests, not by their types.
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The Run lifecycle: gating on the agent version, the daily stop, speech muting, the after-stop
 action and the error paths - with a fake link, bot, scanner and script runner (no game at all)."""
+
+from __future__ import annotations
 
 
 
@@ -11,31 +12,45 @@ from unclefarmer.engine import runner as R
 from unclefarmer.engine import script as script_mod
 from unclefarmer.engine.bot import Respawned
 from unclefarmer.link import AgentError
+from pathlib import Path
+import datetime as dt
+import types
+
+import pytest
+from conftest import as_bot, as_kind, returning, stand_in, Clock
+from unclefarmer.engine.bot import Bot
+from typing import Any, NoReturn
+from collections.abc import Callable
+from unclefarmer.engine.botparts.parts import Parts
+from unclefarmer.stats import Record
+from threading import Event
+from unclefarmer.engine.runner import Run
 
 
 # ---------------------------------------------------------------- fakes
 class FakeLink:
-    def __init__(self, pid=None):
+    def __init__(self, pid: int | None=None) -> None:
         self.pid = pid
-        self.sent = []
+        self.sent: list[str] = []
         self.closed = False
-        self.reply = {}
-        self.snap = {}
+        self.reply: dict[str, str] = {}
+        self.snap: dict[str, Any] = {}
+        self.asked: list[str] = []
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         self.sent.append(line)
         return self.reply.get(line, "ok")
 
-    def json(self, line):
-        self.asked = getattr(self, "asked", []) + [line]
+    def json(self, line: str) -> Any:
+        self.asked = self.asked + [line]
         return self.snap if line in ("mem", "mem state") else {}
 
-    def close(self):
+    def close(self) -> None:
         self.closed = True
 
 
 class FakeBot:
-    def __init__(self, link, profile, log, stop_event, clock=None):
+    def __init__(self, link: FakeLink, profile: dict[str, Any], log: Callable[..., Any], stop_event: Event, clock: Clock | None=None) -> None:
         self.a = link
         self.p = profile
         self.log = log
@@ -44,98 +59,105 @@ class FakeBot:
         self.finish_calls = 0
         self.defend_calls = 0
         self.ran = False
+        self.agent_state = False        # the runner sets these from the agent's version and the profile
+        self.guarding = False
 
-    def finish(self):
+    def finish(self) -> None:
         self.finish_calls += 1
 
-    def defend(self):
+    def defend(self) -> None:
         self.defend_calls += 1
 
-    def refresh_sheet(self, force=False):
+    def refresh_sheet(self, force: bool=False) -> dict[str, Any] | None:
         pass
 
-    def bag_rows(self):
+    def bag_rows(self) -> list[dict[str, Any]]:
         return []
 
-    def me(self):
+    def me(self) -> dict[str, Any]:
         return {"sheet": {"level": 1}}
 
-    def map_id(self):
+    def map_id(self) -> int:
         return 1
 
 
 class FakeTally:
-    def __init__(self, character, title, clock=None, tool=None):
+    def __init__(self, character: str, title: str, clock: Clock | None=None, tool: None=None) -> None:
         self.character, self.title, self.tool = character, title, tool
-        self.updates = []
+        self.updates: list[bool] = []
         self.finished_with = None
         self.saved = False
 
-    def update(self, bot, force=False):
+    def update(self, bot: Parts, force: bool=False) -> None:
         self.updates.append(force)
 
-    def finish(self, bot=None):
+    def finish(self, bot: Parts | None=None) -> None:
         self.finished_with = bot
 
-    def save(self):
+    def save(self) -> None:
         self.saved = True
 
-    def result(self):
+    def result(self) -> Record:
         return {"kills": 3}
 
-    def results(self):
+    def results(self) -> list[Record]:
         return [self.result()]
 
 
 class FakeRunner:
-    def __init__(self, bot, text):
+    def __init__(self, bot: FakeBot, text: str) -> None:
         self.bot, self.text = bot, text
 
-    def run(self):
+    def run(self) -> None:
         self.bot.ran = True
 
 
 class FarmingRunner(FakeRunner):
-    def run(self):
+    def run(self) -> None:
         super().run()
         self.bot.farmed = True
 
 
-class BoomRunner:
-    def __init__(self, bot, text):
+class BoomRunner(FakeRunner):
+    def __init__(self, bot: FakeBot, text: str) -> None:
         pass
 
-    def run(self):
+    def run(self) -> None:
         raise script_mod.ScriptError(3, "bad command")
 
 
-def make(monkeypatch, tmp_path, *, text="wait 1", walk=False, app=None, plan=(None, None), agent=27,
-         snap=None, keys="ready", reply=None, scan_raises=None, link_raises=None, runner=None):
+def make(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, text: str = "wait 1", walk: bool = False,
+         app: dict[str, Any] | None = None, plan: tuple[dt.datetime | None, str | None] = (None, None), agent: int = 27,
+         snap: dict[str, Any] | None = None, keys: str = "ready", reply: dict[str, str] | None = None,
+         scan_raises: BaseException | None = None, link_raises: BaseException | None = None,
+         runner: type[FakeRunner] | None = None) -> tuple[Run, list[FakeLink], list[tuple[str, bool]], list[str]]:
     monkeypatch.setattr(paths, "LOGS", str(tmp_path))
-    application = {"game_folder": "", "after_stop": "nothing"}
+    application: dict[str, Any] = {"game_folder": "", "after_stop": "nothing"}
     application.update(app or {})
-    monkeypatch.setattr(settings, "load_app", lambda: application)
-    monkeypatch.setattr(settings, "has_profile", lambda name: True)
-    monkeypatch.setattr(settings, "load_profile", lambda name: {"vitals_key": "v", "points_key": "p", "mp_use": False})
+    monkeypatch.setattr(settings, "load_app", stand_in(settings.load_app, lambda: application))
+    monkeypatch.setattr(settings, "has_profile", stand_in(settings.has_profile, lambda character: True))
+    monkeypatch.setattr(settings, "load_profile", stand_in(settings.load_profile, lambda character: {"vitals_key": "v", "points_key": "p", "mp_use": False}))
     monkeypatch.setattr(R, "Bot", FakeBot)
     monkeypatch.setattr(R, "Runner", runner or FakeRunner)
     monkeypatch.setattr(stats, "Tally", FakeTally)
-    monkeypatch.setattr(stats, "report", lambda r, t: "report")
-    monkeypatch.setattr(stats, "short", lambda r: "short")
+    monkeypatch.setattr(stats, "report", stand_in(stats.report, lambda r, title: "report"))
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "short"))
 
     from unclefarmer import daily as daily_mod
     from unclefarmer import phrases as phrases_mod
     from unclefarmer import scan as scan_mod
     from unclefarmer.engine import keyslots
-    monkeypatch.setattr(daily_mod, "plan", lambda a: plan)
-    monkeypatch.setattr(phrases_mod, "arrange", lambda *a, **k: {})
-    monkeypatch.setattr(keyslots, "arrange", lambda *a, **k: None)
+    monkeypatch.setattr(daily_mod, "plan", stand_in(daily_mod.plan, lambda app: plan))
+    monkeypatch.setattr(phrases_mod, "arrange", stand_in(phrases_mod.arrange, returning({})))
+    monkeypatch.setattr(keyslots, "arrange", stand_in(keyslots.arrange, returning(None)))
     if scan_raises is not None:
-        def boom(*a, **k):
-            raise scan_raises
+        exc = scan_raises
+
+        def boom(*a: object, **k: object) -> NoReturn:
+            raise exc
         monkeypatch.setattr(scan_mod, "scan_and_save", boom)
     else:
-        monkeypatch.setattr(scan_mod, "scan_and_save", lambda link, character, folder="": ({}, {"class": "warrior"}))
+        monkeypatch.setattr(scan_mod, "scan_and_save", stand_in(scan_mod.scan_and_save, lambda link, character, game_folder="": ({}, {"class": "warrior"})))
 
     base = {"version": "mwagent %d" % agent, "keys": keys, "arm": "ok", "speech": "on",
             "speech off": "off", "guardmods on": "on", "closegame": "ok"}
@@ -143,9 +165,9 @@ def make(monkeypatch, tmp_path, *, text="wait 1", walk=False, app=None, plan=(No
     snap_map = {"ok": True, "self": {"name": "Hero", "id": 7, "x": 5, "y": 6}, "map": {"id": 5121}}
     if snap is not None:
         snap_map = snap
-    links = []
+    links: list[FakeLink] = []
 
-    def make_link(pid=None, **kw):
+    def make_link(pid: int | None = None, **kw: object) -> FakeLink:
         if link_raises is not None:
             raise link_raises
         link = FakeLink(pid)
@@ -154,7 +176,8 @@ def make(monkeypatch, tmp_path, *, text="wait 1", walk=False, app=None, plan=(No
         return link
 
     monkeypatch.setattr(R, "AgentLink", make_link)
-    logs, done = [], []
+    logs: list[tuple[str, bool]] = []
+    done: list[str] = []
     run = R.Run(text, "TestRun", 999,
                 lambda line, speak, r: logs.append((line, speak)),
                 lambda reason, r: done.append(reason), walk=walk)
@@ -162,8 +185,8 @@ def make(monkeypatch, tmp_path, *, text="wait 1", walk=False, app=None, plan=(No
 
 
 # ---------------------------------------------------------------- the Run object itself
-def test_run_init_defaults():
-    run = R.Run("wait 1", "Title", 42, lambda *a: None, lambda *a: None)
+def test_run_init_defaults() -> None:
+    run = R.Run("wait 1", "Title", 42, lambda line, speak, run: None, lambda reason, run: None)
     assert run.text == "wait 1" and run.title == "Title" and run.pid == 42
     assert run.stop_event.is_set() is False
     assert run.character is None and run.tally is None and run.bot is None
@@ -173,9 +196,9 @@ def test_run_init_defaults():
     assert isinstance(run.started, float)
 
 
-def test_farmed_only_for_a_farming_run():
-    run = R.Run("", "", 1, lambda *a: None, lambda *a: None)
-    run.bot = type("B", (), {"farmed": True})()
+def test_farmed_only_for_a_farming_run() -> None:
+    run = R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
+    run.bot = as_kind(Bot, types.SimpleNamespace(farmed=True))
     assert run.farmed() is True
     run.kind = "errand"
     assert run.farmed() is False
@@ -184,8 +207,8 @@ def test_farmed_only_for_a_farming_run():
     assert run.farmed() is False
 
 
-def test_a_tools_menu_run_keeps_its_results_apart_from_farming():
-    run = R.Run("gem_maker check\n", "Gem Maker check", 1, lambda *a: None, lambda *a: None)
+def test_a_tools_menu_run_keeps_its_results_apart_from_farming() -> None:
+    run = R.Run("gem_maker check\n", "Gem Maker check", 1, lambda line, speak, run: None, lambda reason, run: None)
     assert run._tool() is None                  # a plan or script farms
     run.kind = "errand"
     assert run._tool() == "gem_maker"
@@ -195,15 +218,15 @@ def test_a_tools_menu_run_keeps_its_results_apart_from_farming():
     assert run._tool() is None
 
 
-def test_stop_sets_the_stop_event():
-    run = R.Run("", "", 1, lambda *a: None, lambda *a: None)
+def test_stop_sets_the_stop_event() -> None:
+    run = R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
     assert not run.stop_event.is_set()
     run.stop()
     assert run.stop_event.is_set()
 
 
 # ---------------------------------------------------------------- logging
-def test_log_writes_to_the_daily_file(monkeypatch, tmp_path):
+def test_log_writes_to_the_daily_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, logs, _ = make(monkeypatch, tmp_path)
     run.character = "Hero"
     run.log("hello", speak=True)
@@ -214,18 +237,18 @@ def test_log_writes_to_the_daily_file(monkeypatch, tmp_path):
     assert "Hero: hello" in files[0].read_text(encoding="utf-8")
 
 
-def test_write_log_swallows_an_oserror(monkeypatch, tmp_path):
+def test_write_log_swallows_an_oserror(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(paths, "LOGS", str(tmp_path / "missing"))
     R._write_log("nothing")            # must not raise
 
 
-def bot_of(run):
-    """The Bot a finished run made (only an early refusal leaves it None)."""
+def bot_of(run: R.Run) -> FakeBot:
+    """The (pretend) Bot a finished run made (only an early refusal leaves it None)."""
     assert run.bot is not None
-    return run.bot
+    return as_kind(FakeBot, run.bot)
 
 
-def test_write_crash_appends_the_traceback(monkeypatch, tmp_path):
+def test_write_crash_appends_the_traceback(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(paths, "LOGS", str(tmp_path))
     R._write_crash("Title", "Hero")
     text = (tmp_path / "errors.log").read_text(encoding="utf-8")
@@ -233,20 +256,20 @@ def test_write_crash_appends_the_traceback(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------- run: happy path
-def test_run_completes_and_reports(monkeypatch, tmp_path):
+def test_run_completes_and_reports(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, logs, done = make(monkeypatch, tmp_path)
     run.run()
     assert done == ["finished"]
     assert run.ended_by_itself is True
     assert bot_of(run).ran is True and bot_of(run).finish_calls == 1
-    assert run.tally is not None and run.tally.saved is True
+    assert run.tally is not None and as_kind(FakeTally, run.tally).saved is True
     assert links[0].closed is True
     assert "keysup" in links[0].sent
     assert any("starting TestRun as Hero" in line for line, _ in logs)
 
 
-def test_run_walk_ends_on_arrival(monkeypatch, tmp_path):
-    run, links, logs, done = make(monkeypatch, tmp_path, walk=True)
+def test_run_walk_ends_on_arrival(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    run, links, _logs, done = make(monkeypatch, tmp_path, walk=True)
     run.run()
     assert done == ["arrived"]
     assert run.tally is None
@@ -255,47 +278,47 @@ def test_run_walk_ends_on_arrival(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------- run: gating
-def test_run_refuses_an_old_agent(monkeypatch, tmp_path):
-    run, links, logs, done = make(monkeypatch, tmp_path, agent=4)
+def test_run_refuses_an_old_agent(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    run, links, _logs, done = make(monkeypatch, tmp_path, agent=4)
     run.run()
     assert "older" in done[0] and run.ended_by_itself is False
     assert links and links[0].closed is True
 
 
-def test_run_reads_the_lean_state_when_the_agent_has_it(monkeypatch, tmp_path):
+def test_run_reads_the_lean_state_when_the_agent_has_it(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, _ = make(monkeypatch, tmp_path, agent=37)
     run.run()
     assert links[0].asked[0] == "mem state"
     assert bot_of(run).agent_state is True
 
 
-def test_run_reads_the_full_snapshot_from_an_older_agent(monkeypatch, tmp_path):
+def test_run_reads_the_full_snapshot_from_an_older_agent(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, _ = make(monkeypatch, tmp_path, agent=36)
     run.run()
     assert links[0].asked[0] == "mem"
     assert bot_of(run).agent_state is False
 
 
-def test_run_asks_you_to_log_in(monkeypatch, tmp_path):
+def test_run_asks_you_to_log_in(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, _, done = make(monkeypatch, tmp_path, snap={"ok": False})
     run.run()
     assert "log in" in done[0]
 
 
-def test_run_blocked_by_the_daily_stop(monkeypatch, tmp_path):
+def test_run_blocked_by_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, done = make(monkeypatch, tmp_path, plan=(None, "05:00"))
     run.run()
     assert "farming is over" in done[0]
     assert links == []
 
 
-def test_run_refuses_when_the_keys_are_unusable(monkeypatch, tmp_path):
+def test_run_refuses_when_the_keys_are_unusable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, _, done = make(monkeypatch, tmp_path, keys="not ready")
     run.run()
     assert "keys can't be used" in done[0]
 
 
-def test_run_survives_a_guard_that_will_not_turn_on(monkeypatch, tmp_path):
+def test_run_survives_a_guard_that_will_not_turn_on(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, logs, done = make(monkeypatch, tmp_path, agent=26, reply={"guardmods on": "nope"})
     run.run()
     assert done == ["finished"]
@@ -303,7 +326,7 @@ def test_run_survives_a_guard_that_will_not_turn_on(monkeypatch, tmp_path):
     assert bot_of(run).guarding is False
 
 
-def test_run_blanks_keys_an_old_agent_cannot_read(monkeypatch, tmp_path):
+def test_run_blanks_keys_an_old_agent_cannot_read(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, _, done = make(monkeypatch, tmp_path, agent=5)
     run.run()
     assert done == ["finished"]
@@ -311,15 +334,15 @@ def test_run_blanks_keys_an_old_agent_cannot_read(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------- run: speech
-def test_run_mutes_and_unmutes_the_game_speech(monkeypatch, tmp_path):
-    run, links, logs, done = make(monkeypatch, tmp_path, app={"game_speech": "running"})
+def test_run_mutes_and_unmutes_the_game_speech(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    run, links, logs, _done = make(monkeypatch, tmp_path, app={"game_speech": "running"})
     run.run()
     sent = links[0].sent
     assert "speech off" in sent and "speech on" in sent
     assert any("speech is off" in line for line, _ in logs)
 
 
-def test_run_leaves_always_muted(monkeypatch, tmp_path):
+def test_run_leaves_always_muted(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, _ = make(monkeypatch, tmp_path, app={"game_speech": "always"})
     run.run()
     sent = links[0].sent
@@ -327,7 +350,7 @@ def test_run_leaves_always_muted(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------- run: after-stop
-def test_run_closes_the_game_after_farming(monkeypatch, tmp_path):
+def test_run_closes_the_game_after_farming(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, _ = make(monkeypatch, tmp_path, runner=FarmingRunner, app={"after_stop": "close_game"})
     run.run()
     assert run.farmed() is True
@@ -335,37 +358,37 @@ def test_run_closes_the_game_after_farming(monkeypatch, tmp_path):
     assert run.after_stop == "close_game"
 
 
-def test_run_does_not_close_the_game_after_a_tool(monkeypatch, tmp_path):
+def test_run_does_not_close_the_game_after_a_tool(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, _ = make(monkeypatch, tmp_path, app={"after_stop": "close_game"})
     run.run()
     assert "closegame" not in links[0].sent
 
 
 # ---------------------------------------------------------------- run: error paths
-def test_run_reports_a_script_error(monkeypatch, tmp_path):
+def test_run_reports_a_script_error(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, _, done = make(monkeypatch, tmp_path, runner=BoomRunner)
     run.run()
     assert "line 3" in done[0]
 
 
-def test_run_reports_a_missing_game(monkeypatch, tmp_path):
+def test_run_reports_a_missing_game(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, links, _, done = make(monkeypatch, tmp_path, link_raises=AgentError("no_game"))
     run.run()
     assert done[0] == "the game isn't running with the agent"
     assert links == []
 
 
-def test_run_reports_a_lost_connection(monkeypatch, tmp_path):
+def test_run_reports_a_lost_connection(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     run, _, _, done = make(monkeypatch, tmp_path, link_raises=AgentError("closed"))
     run.run()
     assert done[0] == "lost the connection to the game"
 
 
-def test_run_reports_our_own_value_error_not_a_lost_connection(monkeypatch, tmp_path, allow_ignored_failures):
+def test_run_reports_our_own_value_error_not_a_lost_connection(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None) -> None:
     # A ValueError is a bug in the bot's own numbers, not a dead agent: reporting it as "lost the
     # connection to the game" hid a whole class of crashes (random_cell's inverted randrange).
     class ValueBoom(FakeRunner):
-        def run(self):
+        def run(self) -> None:
             raise ValueError("empty range for randrange()")
 
     run, _, _, done = make(monkeypatch, tmp_path, runner=ValueBoom)
@@ -375,7 +398,7 @@ def test_run_reports_our_own_value_error_not_a_lost_connection(monkeypatch, tmp_
     assert (tmp_path / "errors.log").exists()          # the traceback is kept for a bug report
 
 
-def test_run_logs_a_failed_scan_and_continues(monkeypatch, tmp_path, allow_ignored_failures):
+def test_run_logs_a_failed_scan_and_continues(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, allow_ignored_failures: None) -> None:
     run, _, logs, done = make(monkeypatch, tmp_path, scan_raises=RuntimeError("boom"))
     run.run()
     assert done == ["finished"]
@@ -384,33 +407,33 @@ def test_run_logs_a_failed_scan_and_continues(monkeypatch, tmp_path, allow_ignor
 
 # ---------------------------------------------------------------- guard
 class GuardBot:
-    def __init__(self):
-        self.events = []
+    def __init__(self) -> None:
+        self.events: list[str] = []
 
-    def defend(self):
+    def defend(self) -> None:
         self.events.append("defend")
 
-    def finish(self):
+    def finish(self) -> None:
         self.events.append("finish")
 
 
-def a_run():
-    return R.Run("", "", 1, lambda *a: None, lambda *a: None)
+def a_run() -> Run:
+    return R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
 
 
-def test_guard_defends_and_finishes():
+def test_guard_defends_and_finishes() -> None:
     run, bot = a_run(), GuardBot()
-    run.guard(bot)
+    run.guard(as_bot(bot))
     assert bot.events == ["defend", "finish"]
 
 
-def test_guard_can_leave_the_character_where_they_are():
+def test_guard_can_leave_the_character_where_they_are() -> None:
     run, bot = a_run(), GuardBot()
-    run.guard(bot, finish=False)
+    run.guard(as_bot(bot), finish=False)
     assert bot.events == ["defend"]
 
 
-def test_guard_retries_after_a_respawn():
+def test_guard_retries_after_a_respawn() -> None:
     run, bot = a_run(), GuardBot()
     calls = {"n": 0}
 
@@ -421,11 +444,11 @@ def test_guard_retries_after_a_respawn():
             raise Respawned
 
     bot.defend = defend
-    run.guard(bot)
+    run.guard(as_bot(bot))
     assert bot.events == ["defend", "defend", "finish"]
 
 
-def test_guard_keeps_guarding_when_finishing_fails(allow_ignored_failures):
+def test_guard_keeps_guarding_when_finishing_fails(allow_ignored_failures: None) -> None:
     run, bot = a_run(), GuardBot()
 
     def finish():
@@ -433,11 +456,11 @@ def test_guard_keeps_guarding_when_finishing_fails(allow_ignored_failures):
         raise RuntimeError("stuck")
 
     bot.finish = finish
-    run.guard(bot)
+    run.guard(as_bot(bot))
     assert bot.events == ["defend", "finish", "defend"]
 
 
-def test_guard_gives_up_at_once_when_stopped(allow_ignored_failures):
+def test_guard_gives_up_at_once_when_stopped(allow_ignored_failures: None) -> None:
     run, bot = a_run(), GuardBot()
 
     def finish():
@@ -446,11 +469,11 @@ def test_guard_gives_up_at_once_when_stopped(allow_ignored_failures):
 
     bot.finish = finish
     run.stop()
-    run.guard(bot)
+    run.guard(as_bot(bot))
     assert bot.events == ["defend", "finish"]
 
 
-def test_guard_swallows_a_second_defend_failure(allow_ignored_failures):
+def test_guard_swallows_a_second_defend_failure(allow_ignored_failures: None) -> None:
     run, bot = a_run(), GuardBot()
     calls = {"n": 0}
 
@@ -465,5 +488,5 @@ def test_guard_swallows_a_second_defend_failure(allow_ignored_failures):
         raise RuntimeError("stuck")
 
     bot.defend, bot.finish = defend, finish
-    run.guard(bot)                     # must not raise
+    run.guard(as_bot(bot))                     # must not raise
     assert bot.events == ["defend", "finish", "defend"]

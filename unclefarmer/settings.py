@@ -1,15 +1,18 @@
 """App settings (settings.json) and character profiles (profiles/<character>.json)."""
 
+from __future__ import annotations
+
 import copy
 import os
 import shutil
+from collections.abc import Callable, Collection
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from . import filelock, jsonio as json, paths
 
-APP_DEFAULTS = {
+APP_DEFAULTS: dict[str, Any] = {
     "language": "en",
     "game_folder": "",
     "speak": True,            # announce important events through NVDA when it is running
@@ -30,7 +33,7 @@ APP_DEFAULTS = {
 }
 
 # One per character. Everything the bot needs to know about how YOU play.
-PROFILE_DEFAULTS = {
+PROFILE_DEFAULTS: dict[str, Any] = {
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
     # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
     # the one pointing at the monster it chose, then checks the game selected that monster.
@@ -305,10 +308,10 @@ PK_MODES = ["pacifist mode", "pacifist mode with counterattack", "Moral Mode", "
 TARGET_MODES = ["all", "own side", "enemies", "NPCs"]
 
 
-_unreadable = set()          # files that exist but could not be read: never overwrite them blindly
+_unreadable: set[str] = set()          # files that exist but could not be read: never overwrite them blindly
 
 
-def _keep_aside(path):
+def _keep_aside(path: str) -> bool:
     """Move a file we could not read to <name>.corrupt, when the file system lets us."""
     try:
         filelock.move(path, path + ".corrupt")
@@ -317,7 +320,7 @@ def _keep_aside(path):
         return False
 
 
-def _copy_aside(path):
+def _copy_aside(path: str) -> None:
     """A copy of a file with values we could not use, as <name>.corrupt; the file itself stays."""
     try:
         shutil.copyfile(path, path + ".corrupt")
@@ -325,12 +328,12 @@ def _copy_aside(path):
         pass
 
 
-def _read(path, defaults, model):
+def _read(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> dict[str, Any]:
     if os.path.exists(path):
         try:
             with open(path, encoding="utf-8") as f:
                 raw = json.load(f)
-            if not isinstance(raw, dict):
+            if not json.is_object(raw):
                 raise ValueError("not a JSON object")
             # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
             merged = {**copy.deepcopy(defaults), **raw}
@@ -343,7 +346,7 @@ def _read(path, defaults, model):
                 _copy_aside(path)
                 for err in e.errors():
                     if err["loc"]:
-                        key = err["loc"][0]
+                        key = str(err["loc"][0])          # a top-level field name
                         merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
                 data = model.model_validate(merged).model_dump()
             _unreadable.discard(path)
@@ -360,7 +363,7 @@ def _read(path, defaults, model):
     return copy.deepcopy(defaults)
 
 
-def _write(path, data):
+def _write(path: str, data: dict[str, Any]) -> None:
     if path in _unreadable:
         if not _keep_aside(path):
             raise OSError("can't read or move aside %s - close whatever holds it and try again" % path)
@@ -368,39 +371,39 @@ def _write(path, data):
     json.save(path, data, indent=2)
 
 
-def load_app():
+def load_app() -> dict[str, Any]:
     return _read(paths.SETTINGS, APP_DEFAULTS, AppSettings)
 
 
-def save_app(data):
+def save_app(data: dict[str, Any]) -> None:
     _write(paths.SETTINGS, data)
 
 
-def profile_path(character):
+def profile_path(character: str) -> str:
     return os.path.join(paths.PROFILES, paths.safe_name(character) + ".json")
 
 
-def profiles():
+def profiles() -> list[str]:
     return sorted(n[:-5] for n in os.listdir(paths.PROFILES) if n.endswith(".json"))
 
 
-def load_profile(character):
+def load_profile(character: str) -> dict[str, Any]:
     """The character's profile; a new one from the defaults if there is none yet."""
     return _upgrade(_read(profile_path(character), PROFILE_DEFAULTS, Profile))
 
 
-def _upgrade(p):
+def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
     """A profile saved by an older version, brought up to date: each step below once, in order."""
     for step in UPGRADES:
         step(p)
     return p
 
 
-def _upgrade_choices(p):
+def _upgrade_choices(p: dict[str, Any]) -> None:
     """Profiles saved before 2026-10-04's choices: on/off beasts, a single pet name, shard lists."""
-    shards = p.pop("sell_shards", None)
+    shards: list[str] | None = p.pop("sell_shards", None)
     if shards:
-        rules = p.setdefault("bag_rules", {})
+        rules: dict[str, Any] = p.setdefault("bag_rules", {})
         for n in shards:
             rules.setdefault(n.lower(), {"action": "sell", "keep": 0})
     for k in ("sell_shards_on_trip", "sell_loot", "store_loot"):
@@ -420,7 +423,7 @@ def _upgrade_choices(p):
         p["attack_range"] = "auto"
 
 
-def _upgrade_shard_lists(p):
+def _upgrade_shard_lists(p: dict[str, Any]) -> None:
     """2026-10-06: the player sorts shards into throw / keep / sell lists. Before, a shard with no
     rule was thrown when the Shard Market paid under 1000. A profile saved before gets that as its
     lists once, so nothing changes until the player moves a shard; a new profile starts with all
@@ -429,17 +432,18 @@ def _upgrade_shard_lists(p):
     if not p.get("shard_lists"):
         if p.get("potions_auto"):
             from .engine.town import shard_catalog
-            rules = p.setdefault("bag_rules", {})
+            known: dict[str, Any] = p.setdefault("bag_rules", {})
             for n, v in shard_catalog()[0].items():
-                if n.lower() not in rules and (v.get("price") or 0) < 1000:
-                    rules[n.lower()] = {"action": "throw", "keep": 0}
+                if n.lower() not in known and (v.get("price") or 0) < 1000:
+                    known[n.lower()] = {"action": "throw", "keep": 0}
         p["shard_lists"] = True
-    for name, r in list((p.get("bag_rules") or {}).items()):
+    bag_rules: dict[str, dict[str, Any]] = p.get("bag_rules") or {}
+    for name, r in list(bag_rules.items()):
         if r.get("action") == "gem":
             del p["bag_rules"][name]
 
 
-def _upgrade_potions(p):
+def _upgrade_potions(p: dict[str, Any]) -> None:
     """Potions before 2026-10-04 evening: fixed 80% / 3 s, MP off at 0. The bot now works the mark
     and cooldown out from the potion itself; old defaults become "auto" once (marker saved with
     the profile), numbers a player changed stay as they are."""
@@ -457,7 +461,7 @@ def _upgrade_potions(p):
     p["potions_auto"] = True
 
 
-def _upgrade_pet_potions(p):
+def _upgrade_pet_potions(p: dict[str, Any]) -> None:
     """Pet potions before 2026-10-21: red only, at a fixed 50% with 10 s between. Pets died with
     potions in the bag; the marks now work like our own. A number the player chose stays."""
     if p.get("pet_potions_auto"):
@@ -469,10 +473,10 @@ def _upgrade_pet_potions(p):
     p["pet_potions_auto"] = True
 
 
-def _upgrade_once(marker, key, old, new):
+def _upgrade_once(marker: str, key: str, old: Collection[object], new: object) -> Callable[[dict[str, Any]], None]:
     """A default that changed: the old one becomes the new once (the marker is saved with the
     profile); a number the player chose stays."""
-    def step(p):
+    def step(p: dict[str, Any]) -> None:
         if not p.get(marker):
             if p.get(key) in old:
                 p[key] = new
@@ -480,14 +484,14 @@ def _upgrade_once(marker, key, old, new):
     return step
 
 
-def _upgrade_dropped(p):
+def _upgrade_dropped(p: dict[str, Any]) -> None:
     """Pulling back from a pack is gone: the monsters followed at our own speed and kept hitting a
     character that had stopped attacking, so every pull-back cost potions and most ended in death."""
     for k in ("retreat", "retreat_below", "retreat_pack", "retreats_warn"):
         p.pop(k, None)
 
 
-def _upgrade_class_reach(p):
+def _upgrade_class_reach(p: dict[str, Any]) -> None:
     """Every class fights from its own base attack's distance (Bot.reach, "auto"): a range typed in
     by hand before that became the rule goes back to auto, once. One set after this is kept."""
     if not p.get("class_reach"):
@@ -495,7 +499,7 @@ def _upgrade_class_reach(p):
         p["class_reach"] = True
 
 
-UPGRADES = [
+UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_choices, _upgrade_shard_lists, _upgrade_potions, _upgrade_pet_potions,
     # Before 2026-10-04 night the sheet was the only way to read MP and opened every minute (every
     # 15 s near the potion mark). MP now comes from the own-HP key; the sheet is for load and drop time.
@@ -511,9 +515,9 @@ UPGRADES = [
 ]
 
 
-def save_profile(character, data):
+def save_profile(character: str, data: dict[str, Any]) -> None:
     _write(profile_path(character), data)
 
 
-def has_profile(character):
+def has_profile(character: str) -> bool:
     return os.path.exists(profile_path(character))

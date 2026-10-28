@@ -1,17 +1,21 @@
 """Private messages: who is trusted, how strangers are answered, and the reply lines themselves."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import wx
 
 from .. import messages
 from ..i18n import _
-from .common import group, labeled, ok_cancel, page, save_file, tabs
+from .common import Dialog, group, labeled, ok_cancel, page, save_file, tabs
 
 MODES = ["running", "always", "never"]
 SPEAK = ["trusted", "everyone", "never"]
 
 
-class MessagesDialog(wx.Dialog):
-    def __init__(self, parent, app_settings):
+class MessagesDialog(Dialog):
+    def __init__(self, parent: wx.Window, app_settings: dict[str, Any]) -> None:
         super().__init__(parent, title=_("Private messages"), size=wx.Size(720, 640),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.s = app_settings
@@ -64,14 +68,14 @@ class MessagesDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
 
     @staticmethod
-    def lines(ctrl):
+    def lines(ctrl: wx.TextCtrl) -> list[str]:
         return [l.strip() for l in ctrl.GetValue().splitlines() if l.strip()]
 
-    def recount(self):
+    def recount(self) -> None:
         self.count.SetLabel(_("{r} replies, {g} goodbyes", r=len(self.lines(self.replies)),
                               g=len(self.lines(self.goodbyes))))
 
-    def on_ok(self, evt):
+    def on_ok(self, evt: wx.CommandEvent) -> None:
         s = self.s
         s["pm_replies"] = MODES[max(0, self.mode.GetSelection())]
         s["pm_trusted"] = [n.strip() for n in self.trusted.GetValue().replace(";", ",").split(",") if n.strip()]

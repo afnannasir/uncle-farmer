@@ -4,12 +4,16 @@ Saved in the character's profile. Check only walks to each NPC and reads the men
 collecting, spending or entering anything; Start does the chores that aren't done today.
 """
 
+from __future__ import annotations
+
+from typing import Any
+
 import wx
 
 from .. import settings
 from ..engine import chores
 from ..i18n import _
-from .common import Form, group, page, save_file, tabs
+from .common import Dialog, with_code, Form, group, page, save_file, tabs
 from .crafting import CHECK, START
 
 DONATIONS = ("off", "10000", "20000", "diamonds")
@@ -26,8 +30,8 @@ def assistant_names():
             _("Ice prince"), _("Ice princess")]
 
 
-class ChoresDialog(wx.Dialog):
-    def __init__(self, parent, character):
+class ChoresDialog(Dialog):
+    def __init__(self, parent: wx.Window, character: str) -> None:
         super().__init__(parent, title=_("{tool} - {name}", tool=_("Daily chores"), name=character),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
@@ -42,7 +46,8 @@ class ChoresDialog(wx.Dialog):
         self.bounty = f.check(_("Collect &hunting bounties from a city officer"), c["bounty"])
         f = group(panel, box, _("Pet rebirth (free ones only, never for diamonds)"))
         self.rebirth = f.check(_("Use the day's free &rebirths on one pet"), c["pet_rebirth"])
-        pets = list((self.p.get("scan") or {}).get("pets") or [])
+        scan: dict[str, Any] = self.p.get("scan") or {}
+        pets: list[str] = list(scan.get("pets") or [])
         if c["pet"] and c["pet"] not in pets:
             pets.append(c["pet"])
         self.pet = f.add(_("&Pet:"), lambda w: wx.ComboBox(w, value=c["pet"], choices=pets))
@@ -95,7 +100,7 @@ class ChoresDialog(wx.Dialog):
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
             btn = wx.Button(self, label=label)
-            btn.Bind(wx.EVT_BUTTON, lambda e, c=code: self.done(c))
+            btn.Bind(wx.EVT_BUTTON, with_code(self.done, code))
             buttons.Add(btn, 0, wx.RIGHT, 8)
         cancel = wx.Button(self, wx.ID_CANCEL, _("Cancel"))
         buttons.Add(cancel, 0)
@@ -103,7 +108,7 @@ class ChoresDialog(wx.Dialog):
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(620, 520))
 
-    def done(self, code):
+    def done(self, code: int) -> None:
         pet = self.pet.GetValue().strip()
         if self.rebirth.GetValue() and not pet:
             wx.MessageBox(_("Choose the pet to rebirth, or untick pet rebirth."), _("Pet rebirth"),

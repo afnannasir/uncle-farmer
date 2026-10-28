@@ -3,11 +3,17 @@ and whose messages are read out. The player lists them by name or by the game's 
 list ("Kim, 2001"); either matches.
 """
 
-from typing import Any, Iterable
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .link import SendLink
 
 
 class Trusted:
-    def __init__(self, entries: Iterable[Any] = ()):
+    def __init__(self, entries: Iterable[object] = ()):
         self.names: set[str] = set()
         self.ids: set[int] = set()
         for e in entries:
@@ -20,7 +26,7 @@ class Trusted:
     def __bool__(self):
         return bool(self.names or self.ids)
 
-    def has(self, name: str | None = None, pid: Any = None, link: Any = None) -> bool:
+    def has(self, name: str | None = None, pid: int | str | None = None, link: SendLink | None = None) -> bool:
         """Trusted by name or by id. With only a name and ids in the list, the agent's `idof` (the
         players the game has shown) can tell whose name it is."""
         name = (name or "").strip()
@@ -39,5 +45,5 @@ class Trusted:
         return False
 
 
-def from_settings(app):
+def from_settings(app: dict[str, Any]) -> Trusted:
     return Trusted(app.get("pm_trusted", []))

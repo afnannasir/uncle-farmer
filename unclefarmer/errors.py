@@ -5,6 +5,8 @@ Those handlers call carry_on() so the decision is visible in one place. Tests se
 UNCLEFARMER_TESTING and the same exception is re-raised instead of disappearing.
 """
 
+from __future__ import annotations
+
 import os
 
 TESTING_ENV = "UNCLEFARMER_TESTING"

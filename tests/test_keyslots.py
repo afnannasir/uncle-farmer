@@ -1,28 +1,30 @@
-# pyright: reportAttributeAccessIssue=false
-# The stand-ins in this file replace real methods and attributes with fakes on purpose;
-# what they do is checked by running the tests, not by their types.
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """Putting skills and items on empty keys: which skills/items the bot wants, never overwriting a
 key in use, checking every placement against the game, and the no-room / no-empty-key fallbacks."""
 
+from __future__ import annotations
+
 import pytest
-from conftest import data  # noqa: F401  (keeps conftest importable the same way as the suite)
+from conftest import as_bot, stand_in
 
 from unclefarmer import gamekeys, settings
 from unclefarmer.engine import keyslots
+from typing import Any, NoReturn
 
 
 class Link:
-    def __init__(self, combat_rows=(), attack_keys=None, slots=None):
+    def __init__(self, combat_rows: list[dict[str, Any]] | tuple[()]=(), attack_keys: dict[str, int] | None=None, slots: dict[str, Any] | None=None) -> None:
         self.combat_rows = list(combat_rows)
         self.attack_keys = dict(attack_keys or {})
         self.slots = dict(slots or {})
         self.accept = True
         self.mem_skills = True
 
-    def send(self, line):
+    def send(self, line: str) -> str:
         return "mwagent 28" if line == "version" else "tapped"
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         if line == "mem skills":
             if not self.mem_skills:
                 return {}
@@ -38,55 +40,56 @@ class Link:
 class SB:
     """A stand-in skill book: only what keyslots.skills() touches."""
 
-    def __init__(self, cls: str | None = "Priest", uses=None, flip_ok=True):
+    def __init__(self, cls: str | None = "Priest", uses: dict[str, str] | None=None, flip_ok: bool=True) -> None:
         self.cls = cls
         self.uses = uses or {}
         self.flip_ok = flip_ok
-        self.flipped = []
+        self.flipped: list[int] = []
 
-    def use_of(self, name):
+    def use_of(self, name: str) -> str:
         return self.uses.get(name, "auto")
 
-    def flip_to(self, page):
+    def flip_to(self, page: int) -> bool:
         self.flipped.append(page)
         return self.flip_ok
 
 
 class Bot:
-    def __init__(self, link, sb):
+    def __init__(self, link: Link, sb: SB) -> None:
+        self.told_no_skill_room = False        # keyslots says the skill page is full once
         self.a = link
         self.skillbook = sb
         self.p = dict(settings.PROFILE_DEFAULTS)
         self.in_fight = False
         self.dialog_open = False
-        self.lines = []
+        self.lines: list[str] = []
         self.skill_cursor = 0
         self.panel = None
-        self.keys = []
-        self.sleeps = []
-        self.bag = []
-        self.hotkeys = {}
+        self.keys: list[str] = []
+        self.sleeps: list[float] = []
+        self.bag: list[dict[str, Any]] = []
+        self.hotkeys: dict[str, str] = {}
         self.last_me = {}
-        self._potion_keys = "stale"
-        self._keys_to_fill = False
-        self._attackers = set()
+        self.potion_slots = "stale"
+        self.keys_to_fill = False
+        self._attackers: set[int] = set()
         self.stop_event = _Event()
 
-    def log(self, line, speak=False):
+    def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
 
-    def dialog(self):
+    def dialog(self) -> dict[str, Any]:
         return {"open": self.dialog_open}
 
-    def goto_panel(self, panel):
+    def goto_panel(self, panel: int) -> dict[str, Any] | None:
         self.panel = panel
         return {"panel": panel, "category": 0, "cursor": 0}
 
-    def panel_cursor(self, panel, index, size):
+    def panel_cursor(self, panel: int, index: int, size: int) -> bool:
         self.skill_cursor = index
         return True
 
-    def key(self, k):
+    def key(self, k: str) -> None:
         self.keys.append(k)
         if k.startswith("lctrl+alt+"):
             akeys = gamekeys.attack_key_list()
@@ -100,22 +103,22 @@ class Bot:
             if self.a.accept and suffix in skeys:
                 self.a.slots[str(skeys.index(suffix) + 1)] = [1, 2]
 
-    def sleep(self, s):
+    def sleep(self, s: float) -> None:
         self.sleeps.append(s)
 
-    def attackers(self):
+    def attackers(self) -> set[int]:
         return set(self._attackers)
 
-    def bag_rows(self):
+    def bag_rows(self) -> list[dict[str, Any]]:
         return [dict(r) for r in self.bag]
 
-    def hotkey_of(self, name):
+    def hotkey_of(self, name: str) -> str | None:
         return self.hotkeys.get(name.lower())
 
-    def bag_cursor(self, name):
+    def bag_cursor(self, name: str) -> str | None:
         return name if any(r.get("name") == name for r in self.bag) else None
 
-    def potion(self, kind):
+    def potion(self, kind: str) -> tuple[str | None, str | None]:
         name = self.p.get(kind + "_potion")
         if self.p.get(kind + "_key") not in ("auto", ""):
             return self.p[kind + "_key"], (None if name in (None, "auto") else name)
@@ -123,236 +126,236 @@ class Bot:
 
 
 class _Event:
-    def __init__(self):
+    def __init__(self) -> None:
         self.set_ = False
 
-    def is_set(self):
+    def is_set(self) -> bool:
         return self.set_
 
 
-def priest_rows():
+def priest_rows() -> list[dict[str, Any]]:
     return [{"id": i + 1, "name": n} for i, n in enumerate(
         ["Heal", "Recover", "Concentrated Will", "Light of Miracles", "Holy Light",
          "Soul of Redemption", "Requiem"])]
 
 
 # ---------------------------------------------------------------- wanted_skills
-def test_wanted_skills_are_the_class_own_support_skills_in_order():
+def test_wanted_skills_are_the_class_own_support_skills_in_order() -> None:
     assert keyslots.wanted_skills("Priest") == [
         "Heal", "Recover", "Concentrated Will", "Light of Miracles", "Holy Light",
         "Soul of Redemption", "Requiem"]
 
 
-def test_wanted_skills_empty_for_an_unknown_class():
+def test_wanted_skills_empty_for_an_unknown_class() -> None:
     assert keyslots.wanted_skills("Nobody") == []
 
 
 # ---------------------------------------------------------------- skills
-def test_skills_puts_wanted_skills_on_empty_keys():
+def test_skills_puts_wanted_skills_on_empty_keys() -> None:
     link = Link(priest_rows())
     sb = SB()
     bot = Bot(link, sb)
-    assert keyslots.skills(bot) is True
+    assert keyslots.skills(as_bot(bot)) is True
     assert link.attack_keys == {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7}
     assert any("put on the empty skill key" in line for line in bot.lines)
     assert sb.flipped[-1] == 0                       # the page is put back
     assert bot.skillbook is not sb                   # re-read into a fresh book
 
 
-def test_skills_skips_a_skill_the_player_set_to_never():
+def test_skills_skips_a_skill_the_player_set_to_never() -> None:
     link = Link([{"id": 1, "name": "Heal"}, {"id": 2, "name": "Recover"}])
     bot = Bot(link, SB(uses={"Heal": "never"}))
-    assert keyslots.skills(bot) is True
+    assert keyslots.skills(as_bot(bot)) is True
     assert link.attack_keys == {"1": 2}              # Recover placed, Heal left alone
 
 
-def test_skills_does_not_touch_a_key_already_in_use():
+def test_skills_does_not_touch_a_key_already_in_use() -> None:
     link = Link(priest_rows(), attack_keys={"1": 1})  # Heal already on key 1
     bot = Bot(link, SB())
-    assert keyslots.skills(bot) is True
+    assert keyslots.skills(as_bot(bot)) is True
     assert link.attack_keys["1"] == 1                 # untouched
     assert link.attack_keys["2"] == 2                 # Recover went to the next empty key
 
 
-def test_skills_stops_when_the_game_does_not_take_the_placement():
+def test_skills_stops_when_the_game_does_not_take_the_placement() -> None:
     link = Link(priest_rows())
     link.accept = False
     bot = Bot(link, SB())
-    assert keyslots.skills(bot) is False
+    assert keyslots.skills(as_bot(bot)) is False
     assert any("the game didn't put" in line for line in bot.lines)
 
 
-def test_skills_with_no_combat_data_or_class_returns_false():
+def test_skills_with_no_combat_data_or_class_returns_false() -> None:
     bot = Bot(Link(priest_rows()), SB(cls=None))
-    assert keyslots.skills(bot) is False
+    assert keyslots.skills(as_bot(bot)) is False
     bot2 = Bot(Link(priest_rows()), SB())
     bot2.a.mem_skills = False
-    assert keyslots.skills(bot2) is False
+    assert keyslots.skills(as_bot(bot2)) is False
 
 
-def test_skills_stops_when_the_panel_cannot_be_reached():
+def test_skills_stops_when_the_panel_cannot_be_reached() -> None:
     link = Link(priest_rows())
     bot = Bot(link, SB())
     bot.panel_cursor = lambda panel, index, size: False
-    assert keyslots.skills(bot) is False
+    assert keyslots.skills(as_bot(bot)) is False
 
 
-def test_skills_stops_when_the_page_cannot_flip():
+def test_skills_stops_when_the_page_cannot_flip() -> None:
     link = Link(priest_rows())
     bot = Bot(link, SB(flip_ok=False))
-    assert keyslots.skills(bot) is False
+    assert keyslots.skills(as_bot(bot)) is False
 
 
-def test_skills_with_no_empty_key_tells_the_player_once():
+def test_skills_with_no_empty_key_tells_the_player_once() -> None:
     link = Link(priest_rows(), attack_keys={str(i): 100 + i for i in range(1, 21)})
     bot = Bot(link, SB())
-    assert keyslots.skills(bot) is False
-    assert bot._told_no_skill_room is True
+    assert keyslots.skills(as_bot(bot)) is False
+    assert bot.told_no_skill_room is True
     assert any("no empty skill key" in line for line in bot.lines)
     # a second pass does not repeat the line
     before = len(bot.lines)
-    keyslots.skills(bot)
+    keyslots.skills(as_bot(bot))
     assert len(bot.lines) == before
 
 
-def test_tell_no_room_names_duplicated_keys():
+def test_tell_no_room_names_duplicated_keys() -> None:
     link = Link(priest_rows(), attack_keys={"1": 1, "11": 1})   # Heal on two keys
     bot = Bot(link, SB())
-    keyslots.tell_no_room(bot, ["Recover"], {1: 1, 11: 1}, priest_rows())
+    keyslots.tell_no_room(as_bot(bot), ["Recover"], {1: 1, 11: 1}, priest_rows())
     assert any("also on another key" in line for line in bot.lines)
 
 
 # ---------------------------------------------------------------- wanted_items
-def test_wanted_items_collects_potions_toolbox_and_hearthstone(monkeypatch):
+def test_wanted_items_collects_potions_toolbox_and_hearthstone(monkeypatch: pytest.MonkeyPatch) -> None:
     bot = Bot(Link(), SB())
     bot.p.update(hp_potion="Large Red Potion", mp_potion="Large Blue Potion",
                  hearthstone_item="Hearthstone", hearthstone_key="")
     bot.bag = [{"name": "Hearthstone", "count": 1}]
-    monkeypatch.setattr(keyslots.repair, "toolboxes", lambda b: [("Alloy Toolbox", None, 1)])
-    assert keyslots.wanted_items(bot) == ["Large Red Potion", "Large Blue Potion", "Alloy Toolbox", "Hearthstone"]
+    monkeypatch.setattr(keyslots.repair, "toolboxes", stand_in(keyslots.repair.toolboxes, lambda bot: [("Alloy Toolbox", None, 1)]))
+    assert keyslots.wanted_items(as_bot(bot)) == ["Large Red Potion", "Large Blue Potion", "Alloy Toolbox", "Hearthstone"]
 
 
-def test_wanted_items_skips_what_is_already_on_a_hotkey(monkeypatch):
+def test_wanted_items_skips_what_is_already_on_a_hotkey(monkeypatch: pytest.MonkeyPatch) -> None:
     bot = Bot(Link(), SB())
     bot.p.update(hp_potion="auto", mp_potion="auto", hearthstone_key="5")
     bot.bag = [{"name": "Hearthstone", "count": 1}]
-    monkeypatch.setattr(keyslots.repair, "toolboxes", lambda b: [("Alloy Toolbox", "2", 1)])
-    assert keyslots.wanted_items(bot) == []
+    monkeypatch.setattr(keyslots.repair, "toolboxes", stand_in(keyslots.repair.toolboxes, lambda bot: [("Alloy Toolbox", "2", 1)]))
+    assert keyslots.wanted_items(as_bot(bot)) == []
     # a hearthstone in the bag but on a hotkey is also skipped
     bot.p["hearthstone_key"] = ""
     bot.hotkeys["hearthstone"] = "6"
-    monkeypatch.setattr(keyslots.repair, "toolboxes", lambda b: [])
-    assert keyslots.wanted_items(bot) == []
+    monkeypatch.setattr(keyslots.repair, "toolboxes", stand_in(keyslots.repair.toolboxes, lambda bot: []))
+    assert keyslots.wanted_items(as_bot(bot)) == []
 
 
 # ---------------------------------------------------------------- items
-def test_items_puts_an_item_on_an_empty_hotkey():
+def test_items_puts_an_item_on_an_empty_hotkey() -> None:
     link = Link()
     bot = Bot(link, SB())
     bot.p.update(hp_potion="Large Red Potion")
     bot.bag = [{"name": "Large Red Potion", "count": 20}]
-    assert keyslots.items(bot) is True
+    assert keyslots.items(as_bot(bot)) is True
     assert link.slots == {"1": [1, 2]}
-    assert bot._potion_keys is None
+    assert bot.potion_slots is None
     assert any("put on the empty hotkey" in line for line in bot.lines)
 
 
-def test_items_stops_when_the_game_does_not_take_it():
+def test_items_stops_when_the_game_does_not_take_it() -> None:
     link = Link()
     link.accept = False
     bot = Bot(link, SB())
     bot.p.update(hp_potion="Large Red Potion")
     bot.bag = [{"name": "Large Red Potion", "count": 20}]
-    assert keyslots.items(bot) is False
+    assert keyslots.items(as_bot(bot)) is False
     assert any("didn't put" in line for line in bot.lines)
 
 
-def test_items_with_no_empty_hotkey_says_so():
+def test_items_with_no_empty_hotkey_says_so() -> None:
     link = Link(slots={str(i): [1, 2] for i in range(1, 13)})
     bot = Bot(link, SB())
     bot.p.update(hp_potion="Large Red Potion")
     bot.bag = [{"name": "Large Red Potion", "count": 20}]
-    assert keyslots.items(bot) is False
+    assert keyslots.items(as_bot(bot)) is False
     assert any("no empty hotkey" in line for line in bot.lines)
 
 
-def test_items_none_wanted_returns_false():
+def test_items_none_wanted_returns_false() -> None:
     bot = Bot(Link(), SB())
     bot.p.update(hp_potion="auto", mp_potion="auto", hearthstone_key="1")
-    assert keyslots.items(bot) is False
+    assert keyslots.items(as_bot(bot)) is False
 
 
-def test_items_slots_unreadable_returns_false():
+def test_items_slots_unreadable_returns_false() -> None:
     bot = Bot(Link(), SB())
     bot.p.update(hp_potion="Large Red Potion")
     bot.bag = [{"name": "Large Red Potion", "count": 20}]
     bot.a.json = lambda line: [] if line == "mem slots" else {}
-    assert keyslots.items(bot) is False
+    assert keyslots.items(as_bot(bot)) is False
 
 
 # ---------------------------------------------------------------- refill
-def test_refill_does_nothing_unless_asked():
+def test_refill_does_nothing_unless_asked() -> None:
     bot = Bot(Link(), SB())
-    assert keyslots.refill(bot) is False
+    assert keyslots.refill(as_bot(bot)) is False
 
 
-def test_refill_skips_a_fight_or_attackers(monkeypatch):
+def test_refill_skips_a_fight_or_attackers(monkeypatch: pytest.MonkeyPatch) -> None:
     bot = Bot(Link(), SB())
-    bot._keys_to_fill = True
+    bot.keys_to_fill = True
     bot.in_fight = True
-    assert keyslots.refill(bot) is False
-    assert bot._keys_to_fill is True            # asked again next time
+    assert keyslots.refill(as_bot(bot)) is False
+    assert bot.keys_to_fill is True            # asked again next time
     bot.in_fight = False
-    bot._attackers = {"Wolf"}
-    assert keyslots.refill(bot) is False
+    bot._attackers = {-7}                      # a monster hitting us
+    assert keyslots.refill(as_bot(bot)) is False
 
 
-def test_refill_defers_when_a_dialog_is_open():
+def test_refill_defers_when_a_dialog_is_open() -> None:
     bot = Bot(Link(), SB())
-    bot._keys_to_fill = True
+    bot.keys_to_fill = True
     bot.dialog_open = True
-    assert keyslots.refill(bot) is False
-    assert bot._keys_to_fill is True
+    assert keyslots.refill(as_bot(bot)) is False
+    assert bot.keys_to_fill is True
 
 
-def test_refill_places_items_and_returns_to_the_bag_panel():
+def test_refill_places_items_and_returns_to_the_bag_panel() -> None:
     bot = Bot(Link(), SB())
-    bot._keys_to_fill = True
+    bot.keys_to_fill = True
     bot.p.update(hp_potion="Large Red Potion")
     bot.bag = [{"name": "Large Red Potion", "count": 20}]
-    assert keyslots.refill(bot) is True
+    assert keyslots.refill(as_bot(bot)) is True
     assert bot.panel == 0
 
 
 # ---------------------------------------------------------------- arrange
-def test_arrange_off_or_in_fight_does_nothing(monkeypatch):
-    called = []
-    monkeypatch.setattr(keyslots, "skills", lambda b: called.append("s") or False)
+def test_arrange_off_or_in_fight_does_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
+    called: list[str] = []
+    monkeypatch.setattr(keyslots, "skills", stand_in(keyslots.skills, lambda bot: called.append("s") or False))
     bot = Bot(Link(), SB())
     bot.p["fill_empty_keys"] = False
-    keyslots.arrange(bot)
+    keyslots.arrange(as_bot(bot))
     bot.p["fill_empty_keys"] = True
     bot.in_fight = True
-    keyslots.arrange(bot)
+    keyslots.arrange(as_bot(bot))
     assert called == []
 
 
-def test_arrange_fills_keys_and_returns_to_the_bag(monkeypatch):
-    monkeypatch.setattr(keyslots, "skills", lambda b: True)
-    monkeypatch.setattr(keyslots, "items", lambda b: False)
+def test_arrange_fills_keys_and_returns_to_the_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(keyslots, "skills", stand_in(keyslots.skills, lambda bot: True))
+    monkeypatch.setattr(keyslots, "items", stand_in(keyslots.items, lambda bot: False))
     bot = Bot(Link(), SB())
-    keyslots.arrange(bot)
+    keyslots.arrange(as_bot(bot))
     assert bot.panel == 0
 
 
-def test_arrange_swallows_errors_but_not_a_stop(monkeypatch, allow_ignored_failures):
-    def boom(b):
+def test_arrange_swallows_errors_but_not_a_stop(monkeypatch: pytest.MonkeyPatch, allow_ignored_failures: None) -> None:
+    def boom(b: Bot) -> NoReturn:
         raise RuntimeError("nope")
 
     monkeypatch.setattr(keyslots, "skills", boom)
     bot = Bot(Link(), SB())
-    keyslots.arrange(bot)                        # never raises
+    keyslots.arrange(as_bot(bot))                        # never raises
     assert any("couldn't put things on empty keys" in line for line in bot.lines)
     bot.stop_event.set_ = True
     with pytest.raises(RuntimeError):
-        keyslots.arrange(bot)
+        keyslots.arrange(as_bot(bot))

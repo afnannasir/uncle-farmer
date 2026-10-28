@@ -1,29 +1,36 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """Translation: gettext catalogs, the .po/.pot round trip, .mo compiling, loading, and wx."""
+
+from __future__ import annotations
 
 import gettext
 import os
 import re
 import sys
 import types
+from typing import ClassVar
 
 import pytest
 
 from unclefarmer import catalog, i18n, paths
+from pathlib import Path
+from collections.abc import Iterator
 
 
 @pytest.fixture(autouse=True)
-def fresh_language():
+def fresh_language() -> Iterator[None]:
     i18n.load("en")
     yield
     i18n.load("en")
 
 
-def test_a_missing_string_falls_back_to_english_and_formats():
+def test_a_missing_string_falls_back_to_english_and_formats() -> None:
     assert i18n._("Hello") == "Hello"
     assert i18n._("Hello {name}", name="Ann") == "Hello Ann"
 
 
-def test_a_translation_is_used_and_formatted(tmp_path, monkeypatch):
+def test_a_translation_is_used_and_formatted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     catalog.compile_catalog(str(tmp_path), "ru", {"language": "ru", "x-language-name": "Русский"},
                             [("Hello", "Привет"), ("Hello {name}", "Привет, {name}")])
@@ -33,7 +40,7 @@ def test_a_translation_is_used_and_formatted(tmp_path, monkeypatch):
     assert i18n._("Not translated") == "Not translated"
 
 
-def test_a_mistyped_translation_falls_back_to_english(tmp_path, monkeypatch):
+def test_a_mistyped_translation_falls_back_to_english(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     catalog.compile_catalog(str(tmp_path), "ru", {"language": "ru"},
                             [("Hello {name}", "Привет, {nom}"), ("Cost {name}", "Цена {name} {0}")])
@@ -44,19 +51,19 @@ def test_a_mistyped_translation_falls_back_to_english(tmp_path, monkeypatch):
     assert i18n._("Cost {name}", name="Ann") == "Cost Ann"
 
 
-def test_english_needs_no_file_at_all(tmp_path, monkeypatch):
+def test_english_needs_no_file_at_all(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path / "missing"))
     i18n.load("en")
     assert i18n._("Anything") == "Anything"
 
 
-def test_a_code_with_no_catalog_means_english(tmp_path, monkeypatch):
+def test_a_code_with_no_catalog_means_english(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     i18n.load("de")
     assert i18n._("Anything") == "Anything"
 
 
-def test_a_broken_catalog_is_english_not_a_crash(tmp_path, monkeypatch):
+def test_a_broken_catalog_is_english_not_a_crash(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     folder = tmp_path / "de" / "LC_MESSAGES"
     folder.mkdir(parents=True)
@@ -65,11 +72,11 @@ def test_a_broken_catalog_is_english_not_a_crash(tmp_path, monkeypatch):
     assert i18n._("Anything") == "Anything"
 
 
-def test_n_marker_is_identity():
+def test_n_marker_is_identity() -> None:
     assert i18n.N_("Kept for later") == "Kept for later"
 
 
-def test_languages_lists_english_plus_the_catalogs(tmp_path, monkeypatch):
+def test_languages_lists_english_plus_the_catalogs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     catalog.compile_catalog(str(tmp_path), "de", {"language": "de", "x-language-name": "Deutsch"},
                             [("Hi", "Hallo")])
@@ -81,12 +88,12 @@ def test_languages_lists_english_plus_the_catalogs(tmp_path, monkeypatch):
     assert i18n.languages() == [("en", "English"), ("de", "Deutsch"), ("fr", "fr")]
 
 
-def test_languages_without_a_folder_is_just_english(tmp_path, monkeypatch):
+def test_languages_without_a_folder_is_just_english(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path / "nope"))
     assert i18n.languages() == [("en", "English")]
 
 
-def test_roman_urdu_catalog_is_roman_and_keeps_placeholders():
+def test_roman_urdu_catalog_is_roman_and_keeps_placeholders() -> None:
     path = os.path.join(paths.LANG, "ur.po")
     header, entries = catalog.parse_po(open(path, encoding="utf-8").read())
     assert header["x-language-name"] == "Urdu (Roman)"
@@ -111,7 +118,7 @@ def test_roman_urdu_catalog_is_roman_and_keeps_placeholders():
         assert not re.search(r"\b(Settings|Save|Cancel)\b", msgstr), msgid
 
 
-def test_roman_urdu_compiles_and_loads(tmp_path, monkeypatch):
+def test_roman_urdu_compiles_and_loads(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     path = os.path.join(paths.LANG, "ur.po")
     header, entries = catalog.parse_po(open(path, encoding="utf-8").read())
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
@@ -124,11 +131,11 @@ def test_roman_urdu_compiles_and_loads(tmp_path, monkeypatch):
 
 @pytest.mark.skipif(not os.path.isfile(os.path.join(paths.LANG, "ur", "LC_MESSAGES", catalog.DOMAIN + ".mo")),
                     reason="run --strings to compile the catalogs")
-def test_roman_urdu_is_offered():
+def test_roman_urdu_is_offered() -> None:
     assert ("ur", "Urdu (Roman)") in i18n.languages()
 
 
-def test_roman_urdu_standard_buttons_are_translated():
+def test_roman_urdu_standard_buttons_are_translated() -> None:
     path = os.path.join(paths.LANG, "ur", "LC_MESSAGES", "wxstd.mo")
     with open(path, "rb") as f:
         translation = gettext.GNUTranslations(f)
@@ -137,7 +144,7 @@ def test_roman_urdu_standard_buttons_are_translated():
     assert translation.gettext("&Save") == "&Mahfooz"
 
 
-def test_write_template_collects_strings(tmp_path, monkeypatch):
+def test_write_template_collects_strings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path / "lang"))
     path, count = i18n.write_template()
     assert path == str(tmp_path / "lang" / "unclefarmer.pot")
@@ -149,13 +156,13 @@ def test_write_template_collects_strings(tmp_path, monkeypatch):
     assert "dungeon - you leave by its chest, not on foot" in {msgid for msgid, _msgstr in entries}
 
 
-def test_extract_reads_literal_calls(tmp_path):
+def test_extract_reads_literal_calls(tmp_path: Path) -> None:
     (tmp_path / "some.py").write_text(
         'from x import _, N_\n_("Plain")\nN_("Table")\n_("Place {n}", n=1)\n_(name)\n', encoding="utf-8")
     assert catalog.extract(str(tmp_path)) == ["Place {n}", "Plain", "Table"]
 
 
-def test_po_round_trip_keeps_quotes_and_newlines():
+def test_po_round_trip_keeps_quotes_and_newlines() -> None:
     entries = [('A "quoted" line', 'Eine "zitierte" Zeile'),
                ('choosing "{entry}"', 'chun raha hoon "{entry}"'),
                ("two\nlines", "zwei\nZeilen"),
@@ -169,7 +176,7 @@ def test_po_round_trip_keeps_quotes_and_newlines():
     assert "#~ msgid \"Gone\"" in text
 
 
-def test_a_compiled_catalog_is_read_by_gettext(tmp_path):
+def test_a_compiled_catalog_is_read_by_gettext(tmp_path: Path) -> None:
     entries = [("Ready", "Bereit"), ("Hello {name}", "Hallo {name}"), ("Unused", "")]
     path = catalog.compile_catalog(str(tmp_path), "de", {"language": "de", "x-language-name": "Deutsch"}, entries)
     with open(path, "rb") as f:
@@ -180,7 +187,7 @@ def test_a_compiled_catalog_is_read_by_gettext(tmp_path):
     assert translation.info()["x-language-name"] == "Deutsch"
 
 
-def test_write_template_merges_translations_and_compiles(tmp_path, monkeypatch):
+def test_write_template_merges_translations_and_compiles(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
     po = tmp_path / "de.po"
     po.write_text(catalog.render_po({"language": "de", "x-language-name": "Deutsch"},
@@ -199,7 +206,7 @@ def test_write_template_merges_translations_and_compiles(tmp_path, monkeypatch):
     assert "#~ msgstr \"Weg\"" in po.read_text(encoding="utf-8")
 
 
-def test_long_obsolete_entries_survive_every_rewrite_unchanged(tmp_path, monkeypatch):
+def test_long_obsolete_entries_survive_every_rewrite_unchanged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # Long entries are written as continued "#~ ..." lines; reading those back cut the opening
     # quote, and each rewrite added another \" to the end of the text.
     monkeypatch.setattr(paths, "LANG", str(tmp_path))
@@ -217,51 +224,51 @@ def test_long_obsolete_entries_survive_every_rewrite_unchanged(tmp_path, monkeyp
     assert obsolete == [(gone, weg)]
 
 
-def test_wx_is_pointed_at_the_same_catalogs(tmp_path, monkeypatch):
+def test_wx_is_pointed_at_the_same_catalogs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     class Info:
         Language = 42
 
     class Locale:
-        def __init__(self, language):
+        def __init__(self, language: int) -> None:
             self.language = language
 
         @staticmethod
-        def FindLanguageInfo(code):
+        def FindLanguageInfo(code: str) -> Info:
             return Info()
 
     class Translations:
-        instance = None
+        instance: ClassVar[Translations | None] = None
 
-        def __init__(self):
-            self.language = None
+        def __init__(self) -> None:
+            self.language: str | None = None
             self.std = False
-            self.domains = []
+            self.domains: list[str] = []
             Translations.instance = self
 
         @classmethod
-        def Get(cls):
+        def Get(cls) -> Translations | None:
             return cls.instance
 
         @classmethod
-        def Set(cls, value):
+        def Set(cls, value: Translations | None) -> None:
             cls.instance = value
 
-        def SetLanguage(self, code):
+        def SetLanguage(self, code: str) -> None:
             self.language = code
 
-        def AddStdCatalog(self):
+        def AddStdCatalog(self) -> bool:
             self.std = True
             return True
 
-        def AddCatalog(self, domain):
+        def AddCatalog(self, domain: str) -> bool:
             self.domains.append(domain)
             return True
 
     class Loader:
-        prefixes = []
+        prefixes: ClassVar[list[str]] = []
 
         @staticmethod
-        def AddCatalogLookupPathPrefix(path):
+        def AddCatalogLookupPathPrefix(path: str) -> None:
             Loader.prefixes.append(path)
 
     wx_dir = tmp_path / "wx"

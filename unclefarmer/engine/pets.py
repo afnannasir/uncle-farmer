@@ -21,11 +21,17 @@ What the game showed in testing:
     and juices heal the pet's HP or MP over a few minutes.
 """
 
-from typing import Any
+from __future__ import annotations
 
+from typing import Any, TYPE_CHECKING
+
+from .. import jsonio
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
 from . import potions, teamheal
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 REFUSED_FOR = 90    # a summon the game didn't take (dungeon, cooldown we didn't see) - try later
 CHECK_EVERY = 5     # seconds between looks at the pet list
@@ -41,19 +47,22 @@ HEAL_MISSES = 3
 DESCRIBE_RETRY = 300     # seconds before trying again to read a description that didn't come
 
 
-def owned(b):
+Pet = dict[str, Any]       # a row of the pet list: id, name ("Kind>><< name"), usable_at
+
+
+def owned(b: Bot) -> list[Pet]:
     rows = b.a.json("mem pets")
-    return rows if isinstance(rows, list) else []
+    return rows if jsonio.is_array(rows) else []
 
 
-def same_pet(a, b):
+def same_pet(a: str | None, b: str | None) -> bool:
     """Pet names from different places ("Shorthair Cat>><< Mittens", "Shorthair Cat Mittens")."""
-    def norm(s):
+    def norm(s: str | None) -> str:
         return " ".join((s or "").replace(">><<", " ").replace("|||", " ").lower().split())
     return norm(a) == norm(b)
 
 
-def state(r, clock: Clock = CLOCK):
+def state(r: Pet, clock: Clock = CLOCK) -> str:
     now = clock.time()
     if r["usable_at"] < 0:
         return "out"
@@ -62,7 +71,7 @@ def state(r, clock: Clock = CLOCK):
     return "ready"
 
 
-def entity(b, snap):
+def entity(b: Bot, snap: dict[str, Any]) -> dict[str, Any] | None:
     """Our pet out in the world, or None. Found by id: the pet list's id is the id the pet has out
     in the world. The name ("... belongs to <owner>") is only the fallback, for a pet list not read
     yet."""
@@ -77,13 +86,15 @@ def entity(b, snap):
                  and " ".join(e.get("name", "").split()).endswith(tail)), None)
 
 
-def chosen(b):
+def chosen(b: Bot) -> list[str]:
     """The pets the player ticked, in their order (profile "pets": [{"name", "use"}]); with none
     ticked, the one a dungeon run took on for itself (adopt)."""
-    return [x["name"] for x in b.p.get("pets", []) if x.get("use")] or list(getattr(b, "run_pets", None) or [])
+    ticked: list[dict[str, Any]] = b.p.get("pets", [])
+    run_pets: list[str] = getattr(b, "run_pets", None) or []
+    return [x["name"] for x in ticked if x.get("use")] or list(run_pets)
 
 
-def adopt(b) -> str | None:
+def adopt(b: Bot) -> str | None:
     """No pet ticked, but one is out: look after that one for this run (b.run_pets, never saved).
     In a dungeon the pet is a good part of the kills - the game counts its kills as ours - and it
     needs its potions and Rice Rolls whether or not the player ticked it. Its name, or None."""
@@ -96,7 +107,7 @@ def adopt(b) -> str | None:
     return out["name"]
 
 
-def wanted(b, rows):
+def wanted(b: Bot, rows: list[Pet]) -> Pet | None:
     """The first pet in the player's order that is ready now: when the first is dead or cooling
     down, the second comes out, and so on."""
     now = clock_for(b).time()
@@ -108,13 +119,13 @@ def wanted(b, rows):
     return None
 
 
-def _rank(b, r):
+def _rank(b: Bot, r: Pet) -> int:
     """A pet's place in the player's order (lower is better); unticked pets rank last."""
     order = chosen(b)
     return order.index(r["name"]) if r["name"] in order else len(order)
 
 
-def _press(b, rows, pet, want_state):
+def _press(b: Bot, rows: list[Pet], pet: Pet, want_state: str) -> bool:
     """The pet panel cursor onto pet, the use key, and wait for the game to show want_state."""
     if not b.panel_cursor(3, rows.index(pet), len(rows)):
         return False
@@ -127,7 +138,7 @@ def _press(b, rows, pet, want_state):
     return False
 
 
-def keep_out(b: Any) -> None:
+def keep_out(b: Bot) -> None:
     """Keep the best pet out, by the player's order. How the game works:
     every pet has its own cooldown after dying (paid pets 10 minutes, free ones 30), and the pet
     list tells us when each one is ready. So the moment a pet higher in the order is ready again,
@@ -169,7 +180,7 @@ def keep_out(b: Any) -> None:
     b.log(_("{pet} didn't come out (no pets allowed here?) - trying again later", pet=best["name"]))
 
 
-def pet_key(b):
+def pet_key(b: Bot) -> str | None:
     """The pet HP key: the profile's, else Shift + the own-HP key (the game's default binding)."""
     k = b.p.get("pet_vitals_key")
     if k:
@@ -178,7 +189,7 @@ def pet_key(b):
     return "shift+" + own if own else None
 
 
-def numbers(b, snap, pet):
+def numbers(b: Bot, snap: dict[str, Any], pet: dict[str, Any]) -> dict[str, Any]:
     """{"hp", "maxhp", "mp", "maxmp", "amiability"} of the pet out, each None when unknown. HP comes
     from the pet out in the world (live), MP from the pet HP key's answer, the maximum MP from its
     description (else the most seen), amiability from the points key or the description, whichever
@@ -186,8 +197,8 @@ def numbers(b, snap, pet):
     me = snap["self"]
     out = {"hp": pet.get("hp"), "maxhp": pet.get("maxhp"), "mp": None, "maxmp": None, "amiability": None,
            "described": False}
-    v = me.get("pet_vitals") or {}
-    info = me.get("pet_info") or {}
+    v: dict[str, Any] = me.get("pet_vitals") or {}
+    info: dict[str, Any] = me.get("pet_info") or {}
     out_row = getattr(b, "pet_out", None)
     mine = bool(info) and (out_row is None or same_pet(info.get("name"), out_row["name"]))
     if mine and info.get("maxmp"):
@@ -201,7 +212,7 @@ def numbers(b, snap, pet):
         b.pet_mp_peak = peak
         out["maxmp"] = out["maxmp"] or peak[key]
     best = None                        # (age ms, amiability)
-    pts = me.get("points") or {}
+    pts: dict[str, Any] = me.get("points") or {}
     if "pet" in pts:
         best = (pts.get("age_ms", 1e9), pts["pet"])
     if mine and info.get("amiability", -1) >= 0 and (best is None or info["age_ms"] < best[0]):
@@ -211,7 +222,7 @@ def numbers(b, snap, pet):
     return out
 
 
-def _below(b, kind, inf, top):
+def _below(b: Bot, kind: str, inf: dict[str, Any] | None, top: float) -> float:
     """The percent under which a pet potion of this kind ("pet_hp", "pet_mp") is drunk: the
     profile's number, else - as for our own potions - the moment one potion's worth is missing."""
     v = b.p.get(kind + "_below", "auto")
@@ -220,7 +231,7 @@ def _below(b, kind, inf, top):
     return potions.mark(inf, top) or potions.FALLBACK_MARK
 
 
-def _drink(b, kind, share, top, label):
+def _drink(b: Bot, kind: str, share: float, top: float, label: str) -> bool:
     """A pet potion of this kind when the pet is below the mark. True when one was used."""
     key, name = b.potion(kind)
     if not (key or name):
@@ -244,12 +255,12 @@ def _drink(b, kind, share, top, label):
     b.log(_("pet {what} {pct}% - {item}", what=label, pct=int(share), item=key or name))
     if key:
         b.key(key)
-    else:
+    elif name:
         b.use_item(name)
     return True
 
 
-def _read(b, me, now):
+def _read(b: Bot, me: dict[str, Any], now: float) -> None:
     """Ask for the pet's HP and MP now and then (no window): without a key from agent 39, else
     with the pet HP key. And the points key for the amiability when no fight is pressing it."""
     k = pet_key(b)
@@ -262,12 +273,13 @@ def _read(b, me, now):
                 b.key(k, 30)
     pk = b.p.get("points_key")
     if pk and b.p.get("pet_food_below", 70) and now - getattr(b, "pet_points_at", 0) >= AMIABILITY_EVERY:
-        if (me.get("points") or {}).get("age_ms", 1e9) > AMIABILITY_EVERY * 1000:
+        points: dict[str, Any] = me.get("points") or {}
+        if points.get("age_ms", 1e9) > AMIABILITY_EVERY * 1000:
             b.pet_points_at = now
             b.key(pk, 30)
 
 
-def describe(b):
+def describe(b: Bot) -> None:
     """Between fights, once per pet: the pet panel's cursor onto the pet, so the game sends its
     description (the maximum MP is nowhere else). A summon does this by itself."""
     out = getattr(b, "pet_out", None)
@@ -291,7 +303,7 @@ def describe(b):
     b.goto_panel(0)
 
 
-def feed(b, amiability):
+def feed(b: Bot, amiability: float | None) -> bool:
     """A Pet Rice Roll ("Increase 30% Amiability") when the amiability is under pet_food_below:
     from a hotkey if one holds it, else from the bag between fights."""
     below = b.p.get("pet_food_below", 70)
@@ -307,8 +319,8 @@ def feed(b, amiability):
             return False
         have = any((r.get("name") or "").strip().lower() == food.lower() and r.get("count") for r in b.bag_rows())
         if not have:
-            if not getattr(b, "_told_no_pet_food", False):
-                b._told_no_pet_food = True
+            if not getattr(b, "told_no_pet_food", False):
+                b.told_no_pet_food = True
                 b.log(_("the pet's amiability is {n} but there's no {item} in the bag", n="%g" % amiability,
                         item=food), speak=True)
             b.pet_fed_at = now
@@ -322,7 +334,7 @@ def feed(b, amiability):
     return True
 
 
-def heal(b: Any, pet: dict[str, Any], share: float, now: float) -> bool:
+def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
     """The class's quick heal on the pet (Priest Heal or Recover, Sorceress Healing Wave): the
     pet selected, the heal pressed, our target selected again. The game heals the ally that is
     selected (with a monster selected the same heal lands on us), and it costs no potion. Before
@@ -362,28 +374,29 @@ def heal(b: Any, pet: dict[str, Any], share: float, now: float) -> bool:
         return False
     b.pet_healed_at = now
     b.pet_heal_try = (now, pet["hp"])
-    if not getattr(b, "_told_pet_heal", False):
-        b._told_pet_heal = True
+    if not getattr(b, "told_pet_heal", False):
+        b.told_pet_heal = True
         b.log(_("heals the pet with {skill} below {pct}% of its HP", skill=h["name"], pct="%g" % below))
     return True
 
 
-def look_after(b: Any, snap: dict[str, Any]) -> None:
+def look_after(b: Bot, snap: dict[str, Any]) -> None:
     """Keep the pet out alive and willing: its red potion by its HP, its blue potion by its MP,
     and a Rice Roll when its amiability is low."""
     if not chosen(b):
         return
     pet = entity(b, snap)
     if not pet or not pet.get("maxhp"):
-        if getattr(b, "pet_out", None) and not getattr(b, "_told_pet_unseen", False):
-            b._told_pet_unseen = True
-            b.log(_("{pet} is out, but not in sight - its potions wait until it is", pet=b.pet_out["name"]))
+        out: dict[str, Any] | None = getattr(b, "pet_out", None)
+        if out and not getattr(b, "told_pet_unseen", False):
+            b.told_pet_unseen = True
+            b.log(_("{pet} is out, but not in sight - its potions wait until it is", pet=out["name"]))
         return
     now = clock_for(b).time()
     _read(b, snap["self"], now)
     n = numbers(b, snap, pet)
-    if not getattr(b, "_told_pet_seen", None) == pet["id"]:
-        b._told_pet_seen = pet["id"]
+    if not getattr(b, "told_pet_seen", None) == pet["id"]:
+        b.told_pet_seen = pet["id"]
         b.log(_("looking after {pet}: HP {hp}/{max}", pet=pet.get("name", "").split(" belongs to ")[0],
                 hp=pet["hp"], max=pet["maxhp"]))
     share = 100.0 * n["hp"] / n["maxhp"]
@@ -400,7 +413,7 @@ def look_after(b: Any, snap: dict[str, Any]) -> None:
         describe(b)
 
 
-def recall(b: Any) -> None:
+def recall(b: Bot) -> None:
     """Put the pet away (used only when the profile asks for it at the end of a run)."""
     rows = owned(b)
     out = next((r for r in rows if state(r, clock_for(b)) == "out"), None)

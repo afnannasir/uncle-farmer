@@ -1,19 +1,20 @@
-# pyright: strict
 """Getting from map to map: travel, teleports, the hearthstone, rides, the walking assistant.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
+
 import math
 import re
-from typing import Any, cast
+from typing import Any
 
-from ... import atlas, dungeons, knowledge, travel
+from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
 from .. import beasts
 from .base import (CONFIRM, STOPPING, Stopped, note_failure)
-from .parts import Parts
+from .parts import as_bot, Parts
 
 
 class TravelMixin(Parts):
@@ -108,14 +109,14 @@ class TravelMixin(Parts):
             self.traveling = False
 
     def _travel(self, dst: int, cell: tuple[float, float] | list[float] | None, avoid: set[Any]) -> None:
-        goal_cell = cast(tuple[float, float], tuple(cell)) if cell is not None else None
+        goal_cell = (cell[0], cell[1]) if cell is not None else None
         said = None
         failed: dict[Any, int] = {}       # transport id -> rides that didn't work this trip
         for _leg in range(40):
             mid = self.map_id()
             if mid == dst and cell is None:
                 return
-            beasts.ensure(self, beasts.TRAVEL)   # again each leg: mounting waits out combat
+            beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
                 return
@@ -135,15 +136,15 @@ class TravelMixin(Parts):
         if self.p.get("prefer_walking", False):
             # Optional: walk whenever the maps connect on foot (the default is the shortest way,
             # cable cars and airships included; bag items stay off unless use_travel_items).
-            legs = cast(list[dict[str, Any]] | None, travel.plan(mid, (me["x"], me["y"]), dst, goal_cell, transport=False, avoid=avoid,
-                               bag=[], items=False))
+            legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell, transport=False, avoid=avoid,
+                               bag=[], items=False)
         if legs is None:
-            legs = cast(list[dict[str, Any]] | None, travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
+            legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
                            transport=self.p.get("use_transport", True), avoid=avoid,
                            vip=self.p.get("vip", False), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
-                           items=self.p.get("use_travel_items", False)))
+                           items=self.p.get("use_travel_items", False))
         if legs is None:
             raise Stopped(_("no way from {a} to {b} - go there yourself and start again",
                             a=atlas.label(mid), b=atlas.label(dst)))
@@ -197,7 +198,8 @@ class TravelMixin(Parts):
         elif not self.use_item(leg["item"]):
             return False
         try:
-            for pick in cast(list[str], leg.get("choose") or []):
+            choose: list[str] = leg.get("choose") or []
+            for pick in choose:
                 if not self.wait_dialog(4.0) or self.choose(pick) is None:
                     return False
             ok = self.wait_map_change(mid, 30 if leg["item"] == "Hearthstone" else 15)
@@ -281,7 +283,7 @@ class TravelMixin(Parts):
         was = self.walk_only
         self.walk_only = True
         try:
-            swift = [r for r in beasts.owned(self) if r.get("kind") == "swift"]
+            swift = [r for r in beasts.owned(as_bot(self)) if r.get("kind") == "swift"]
             if not swift:
                 self.log(_("no Swift fusion beast on this character - walking on foot"), speak=True)
             if npc:
@@ -307,7 +309,7 @@ class TravelMixin(Parts):
         was = self.walk_only
         self.walk_only = True
         try:
-            if not [r for r in beasts.owned(self) if r.get("kind") == "swift"]:
+            if not [r for r in beasts.owned(as_bot(self)) if r.get("kind") == "swift"]:
                 self.log(_("no Swift fusion beast on this character - walking on foot"), speak=True)
             mid = entry["map"]
             self.travel(mid)
@@ -366,7 +368,8 @@ class TravelMixin(Parts):
     def _ride(self, leg: dict[str, Any], mid: int) -> bool:
         if not self.talk(leg["npc"], leg.get("at"), leg.get("stand")):
             return False
-        steps = cast(list[str], leg["choose"]) if isinstance(leg["choose"], list) else cast(list[str], [leg["choose"]])
+        choose = leg["choose"]
+        steps: list[str] = choose if jsonio.is_array(choose) else [choose]
         for i, pick in enumerate(steps):
             if i and not self.wait_dialog(3.0):
                 self.log(_("the {npc}'s next menu didn't open", npc=leg["npc"]), speak=True)

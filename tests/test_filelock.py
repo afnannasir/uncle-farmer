@@ -1,22 +1,27 @@
 """User data file locks: an open handle blocks deletion on Windows."""
 
+from __future__ import annotations
+
 import os
 import sys
 
 import pytest
 
 from unclefarmer import filelock, jsonio, paths
+from pathlib import Path
+from conftest import stand_in
+from collections.abc import Iterator
 
 pytestmark = pytest.mark.skipif(sys.platform != "win32", reason="Windows file sharing")
 
 
 @pytest.fixture(autouse=True)
-def release_locks():
+def release_locks() -> Iterator[None]:
     yield
     filelock.release_all()
 
 
-def test_protected_paths_are_the_user_files():
+def test_protected_paths_are_the_user_files() -> None:
     assert filelock.is_protected(paths.SETTINGS)
     assert filelock.is_protected(os.path.join(paths.PLANS, "plan.json"))
     assert filelock.is_protected(os.path.join(paths.PROFILES, "character.json"))
@@ -27,7 +32,7 @@ def test_protected_paths_are_the_user_files():
     assert not filelock.is_protected(os.path.join(paths.APP, "data", "knowledge.json"))
 
 
-def test_an_open_handle_blocks_deletion(tmp_path):
+def test_an_open_handle_blocks_deletion(tmp_path: Path) -> None:
     path = tmp_path / "settings.json"
     path.write_text("{}", encoding="utf-8")
     assert filelock.acquire(str(path))
@@ -37,10 +42,10 @@ def test_an_open_handle_blocks_deletion(tmp_path):
     path.unlink()
 
 
-def test_save_releases_the_handle_and_takes_it_again(tmp_path, monkeypatch):
+def test_save_releases_the_handle_and_takes_it_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     path = tmp_path / "plan.json"
     path.write_text("old", encoding="utf-8")
-    monkeypatch.setattr(filelock, "is_protected", lambda _path: True)
+    monkeypatch.setattr(filelock, "is_protected", stand_in(filelock.is_protected, lambda path: True))
     assert filelock.acquire(str(path))
     jsonio.save_text(str(path), "new")
     assert path.read_text(encoding="utf-8") == "new"
@@ -50,7 +55,7 @@ def test_save_releases_the_handle_and_takes_it_again(tmp_path, monkeypatch):
     path.unlink()
 
 
-def test_delete_releases_before_removing(tmp_path):
+def test_delete_releases_before_removing(tmp_path: Path) -> None:
     path = tmp_path / "plan.json"
     path.write_text("{}", encoding="utf-8")
     assert filelock.acquire(str(path))

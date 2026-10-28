@@ -1,5 +1,7 @@
 """The script editor."""
 
+from __future__ import annotations
+
 import os
 
 import wx
@@ -8,7 +10,7 @@ from .. import filelock, jsonio
 from ..engine import plan as plans
 from ..engine import script as lang
 from ..i18n import _
-from .common import Form, ask, error, guide_text, info, save_file, show_text
+from .common import Dialog, Form, Handler, ask, error, guide_text, info, save_file, show_text, modal
 
 SNIPPETS = [
     ("travel", 'travel "Wolf Prairie"'),
@@ -50,11 +52,11 @@ end
 """
 
 
-class ScriptDialog(wx.Dialog):
-    def __init__(self, parent, name=""):
+class ScriptDialog(Dialog):
+    def __init__(self, parent: wx.Window, name: str = "") -> None:
         super().__init__(parent, title=_("Script: {name}", name=name or _("new")), size=wx.Size(820, 640),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-        self.original = name
+        self.original: str = name
         root = wx.BoxSizer(wx.VERTICAL)
         f = Form(self)
         self.name = f.text(_("Script &name:"), name)
@@ -71,11 +73,13 @@ class ScriptDialog(wx.Dialog):
             self.text.SetValue(EXAMPLE)
 
         row = wx.BoxSizer(wx.HORIZONTAL)
-        for label, handler in ((_("&Check (F5)"), self.on_check), (_("&Insert command..."), self.on_insert),
-                               (_("Command &list (F1)"), self.on_help),
-                               (_("Scripting &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
-                               (_("&Save"), self.on_save),
-                               (_("Close"), self.on_close)):
+        specs: list[tuple[str, Handler]] = [
+            (_("&Check (F5)"), self.on_check), (_("&Insert command..."), self.on_insert),
+            (_("Command &list (F1)"), self.on_help),
+            (_("Scripting &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
+            (_("&Save"), self.on_save),
+            (_("Close"), self.on_close)]
+        for label, handler in specs:
             b = wx.Button(self, label=label)
             b.Bind(wx.EVT_BUTTON, handler)
             row.Add(b, 0, wx.RIGHT, 6)
@@ -89,7 +93,7 @@ class ScriptDialog(wx.Dialog):
         self.saved_text = self.text.GetValue()
         self.text.SetFocus()
 
-    def on_key(self, evt):
+    def on_key(self, evt: wx.KeyEvent) -> None:
         k = evt.GetKeyCode()
         if k == wx.WXK_F1:
             self.on_help(None)
@@ -102,10 +106,10 @@ class ScriptDialog(wx.Dialog):
         else:
             evt.Skip()
 
-    def problem(self):
+    def problem(self) -> str | None:
         return lang.check(self.text.GetValue())
 
-    def on_check(self, _evt):
+    def on_check(self, _evt: wx.Event | None = None) -> None:
         p = self.problem()
         if p is None:
             info(self, _("The script reads correctly."))
@@ -113,7 +117,7 @@ class ScriptDialog(wx.Dialog):
         error(self, p)
         self.go_to_error(p)
 
-    def go_to_error(self, message):
+    def go_to_error(self, message: str) -> None:
         try:
             n = int(message.split(":")[0].split()[-1])
         except (ValueError, IndexError):
@@ -123,18 +127,18 @@ class ScriptDialog(wx.Dialog):
             self.text.SetInsertionPoint(pos)
         self.text.SetFocus()
 
-    def on_insert(self, _evt):
+    def on_insert(self, _evt: wx.Event | None = None) -> None:
         labels = [s[0] for s in SNIPPETS]
-        with wx.SingleChoiceDialog(self, _("Choose a command to insert at the cursor:"), _("Insert command"),
-                                   labels) as d:
+        with modal(wx.SingleChoiceDialog(self, _("Choose a command to insert at the cursor:"), _("Insert command"),
+                                   labels)) as d:
             if d.ShowModal() == wx.ID_OK:
                 self.text.WriteText(SNIPPETS[d.GetSelection()][1] + "\n")
         self.text.SetFocus()
 
-    def on_help(self, _evt):
-        show_text(self, _("Script commands"), lang.__doc__)
+    def on_help(self, _evt: wx.Event | None = None) -> None:
+        show_text(self, _("Script commands"), lang.__doc__ or "")
 
-    def on_save(self, _evt):
+    def on_save(self, _evt: wx.Event | None = None) -> bool:
         name = self.name.GetValue().strip()
         if not name:
             error(self, _("Give the script a name."))
@@ -161,7 +165,7 @@ class ScriptDialog(wx.Dialog):
         self.SetTitle(_("Script: {name}", name=name))
         return True
 
-    def on_close(self, _evt):
+    def on_close(self, _evt: wx.Event | None = None) -> None:
         if self.text.GetValue() != self.saved_text:
             answer = wx.MessageBox(_("Save changes to the script?"), _("Uncle Farmer"),
                                    wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION, self)

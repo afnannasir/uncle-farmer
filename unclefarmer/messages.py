@@ -17,20 +17,28 @@ Anything else they write is treated as a chat between people and answered at mos
 "away" note while a bot runs. Team invites from trusted players are accepted (engine/team.py).
 """
 
+from __future__ import annotations
+
 import collections
 import os
 import random
 import threading
 import time
-from typing import Any
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, TypeVarTuple
 
 from . import applog, jsonio, nearby, paths, settings, stats, trust
 from .clock import CLOCK, Clock
 from .engine import follow, team
 from .engine.bot import Bot, Stopped
+from .engine.botparts.parts import Where
 from .errors import carry_on
 from .i18n import _
-from .link import AgentError, AgentLink
+from .link import AgentError, AgentLink, OpenLink
+from collections.abc import Iterable
+
+if TYPE_CHECKING:
+    from .engine.runner import Run
 
 MESSAGES_DIR = os.path.join(paths.APP, "messages")
 REPLIES_FILE = os.path.join(MESSAGES_DIR, "replies.txt")
@@ -134,14 +142,14 @@ def config():
     return {k: s.get(k, v) for k, v in DEFAULTS.items()}
 
 
-def _lines(path, default):
+def _lines(path: str, default: str):
     if not os.path.exists(path):
         jsonio.save_text(path, default)
     with open(path, encoding="utf-8") as f:
         return [l.strip() for l in f if l.strip() and not l.lstrip().startswith("#")]
 
 
-def address(line, name, cfg):
+def address(line: str, name: str, cfg: dict[str, Any]):
     """A reply line said to someone: {name} in it becomes their name; a line without it starts with
     their name when pm_call_by_name is on ("Kim, I'm away right now")."""
     if "{name}" in line:
@@ -159,12 +167,12 @@ def goodbyes():
     return _lines(GOODBYES_FILE, DEFAULT_GOODBYES)
 
 
-def save_lines(path, lines):
+def save_lines(path: str, lines: Iterable[str]):
     """Rewrite a replies/goodbyes file in one atomic step: the message thread may be reading it."""
     jsonio.save_text(path, "\n".join(l.strip() for l in lines if l.strip()) + "\n")
 
 
-def parse_command(text):
+def parse_command(text: str):
     """(command, rest) when the whole message is a command, else None. "stop it lol" is chat."""
     words = text.strip().split()
     if not words:
@@ -189,13 +197,32 @@ def parse_command(text):
 
 
 # ---------------------------------------------------------------- stranger replies
+T = TypeVar("T")
+Ts = TypeVarTuple("Ts")
+
+
+class Host(Protocol):
+    """The main window's side of a Messenger (gui/mainparts/talk.py and runs.py)."""
+
+    def run_for(self, pid: int) -> Run | None: ...
+    def call(self, fn: Callable[[*Ts], T], *args: *Ts) -> T | str | None: ...
+    def start_bot(self, pid: int, plan: str | None) -> str | None: ...
+    def stop_bot(self, pid: int) -> None: ...
+    def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None: ...
+    def character(self, pid: int) -> str | None: ...
+    def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
+                   follows: str | None = None) -> str | None: ...
+    def follow_for(self, pid: int, leader: str, tell: Callable[[str], None] | None = None) -> str | None: ...
+    def unfollow(self, pid: int) -> str | None: ...
+
+
 class ReplyBook:
     """Who has been answered, how often, and which lines are left for them."""
 
-    def __init__(self):
-        self.people = {}
+    def __init__(self) -> None:
+        self.people: dict[str, dict[str, Any]] = {}
 
-    def answer(self, name, cfg, now=None, clock: Clock = CLOCK):
+    def answer(self, name: str, cfg: dict[str, Any], now: float | None=None, clock: Clock = CLOCK):
         """The line for name's message now, or None to stay silent."""
         now = now or clock.time()
         key = name.lower()
@@ -229,22 +256,22 @@ class Messenger(threading.Thread):
 
     clock: Clock = CLOCK
 
-    def __init__(self, pid, host, clock: Clock = CLOCK):
+    def __init__(self, pid: int, host: Host, clock: Clock = CLOCK) -> None:
         super().__init__(daemon=True, name="unclefarmer-pm-%d" % pid)
         self.pid, self.host = pid, host
         self.clock = clock
         self.halt = threading.Event()
-        self.outbox = collections.deque()      # (id, name, text, not before)
+        self.outbox: collections.deque[tuple[int, str, str, float]] = collections.deque()   # (id, name, text, not before)
         self.book = ReplyBook()
-        self.pending = set()                   # strangers with an answer already waiting
-        self.away_noted = {}
+        self.pending: set[str] = set()         # strangers with an answer already waiting
+        self.away_noted: dict[str, float] = {}
         self.last_sent = 0.0
-        self.link: Any = None
+        self.link: OpenLink | None = None
         self.ready = False
         self.unsupported = False               # the game runs an agent without private messages
-        self.sightings = {}                    # trusted player (lower case) -> (map id, x, y, when): memory only
+        self.sightings: dict[str, tuple[int, float, float, float]] = {}   # trusted player (lower case) -> (map id, x, y, when): memory only
 
-    def stop(self):
+    def stop(self) -> None:
         self.halt.set()
 
     # -------------------------------------------------- the loop
@@ -285,7 +312,26 @@ class Messenger(threading.Thread):
             if self.link:
                 self.link.close()
 
-    def note_players(self):
+    def game_in_front(self) -> bool:
+        hook: Callable[[int], bool] | None = getattr(self.host, "game_in_front", None)   # not every host has it
+        return bool(hook and hook(self.pid))
+
+    def farm_start(self) -> Where | None:
+        """(map, x, y) where this game's last farming run started, if the host keeps it."""
+        hook: Callable[[int], Where | None] | None = getattr(self.host, "farm_start_for", None)
+        return hook(self.pid) if hook else None
+
+    def bot_log(self, line: str, speak: bool = False) -> None:
+        self.say(line, speak)
+
+    def agent(self) -> OpenLink:
+        """The open link. Everything that asks the game runs on the message thread after run() opened
+        it; a call before that, or after the game closed, ends like a closed game does."""
+        if self.link is None:
+            raise AgentError("no link to the game")
+        return self.link
+
+    def note_players(self) -> None:
         """Remember where each trusted player in view was last seen. A player walks out of view
         within a minute, and `come` sent after that found nobody; any of our games having seen
         them a little earlier is enough to walk there and look again."""
@@ -293,23 +339,26 @@ class Messenger(threading.Thread):
         if not s:
             return
         trusted = trust.Trusted(config()["pm_trusted"])
-        mid, now = (s.get("map") or {}).get("id"), self.clock.time()
-        for e in s.get("entities", []):
+        here: dict[str, Any] = s.get("map") or {}
+        mid: int | None = here.get("id")
+        now = self.clock.time()
+        entities: list[dict[str, Any]] = s.get("entities", [])
+        for e in entities:
             name = (e.get("name") or "").strip().lower()
             if e.get("kind") == "player" and mid is not None and trusted.has(name, e.get("id")):
                 self.sightings[name] = (mid, e["x"], e["y"], now)
 
-    def say(self, line, speak=False, private=False):
+    def say(self, line: str, speak: bool=False, private: bool=False) -> None:
         """private: a line with someone's message in it - shown and spoken, never written to a file."""
         self.host.log(line, speak, self.host.character(self.pid), private)
 
     # -------------------------------------------------- arriving
-    def received(self, pm):
+    def received(self, pm: dict[str, Any]):
         cfg = config()
         name, text, pid_from = pm.get("name") or "?", pm.get("text") or "", pm.get("id", 0)
         trusted = trust.Trusted(cfg["pm_trusted"]).has(name, pid_from)
         # the player in the game's own window reads it there: shown in the log, not read out
-        in_front = bool(getattr(self.host, "game_in_front", lambda pid: False)(self.pid))
+        in_front = self.game_in_front()
         speak = not in_front and (cfg["pm_speak"] == "everyone" or (cfg["pm_speak"] == "trusted" and trusted))
         if pm.get("voice"):
             self.say(_("voice message from {name} - play it in Chat (Ctrl+T)", name=name), speak, private=True)
@@ -349,7 +398,7 @@ class Messenger(threading.Thread):
         due = min(max(when, self.last_sent + GAP) for _to, _n, _t, when in self.outbox)
         return min(WAIT, max(0.0, due - self.clock.time()))
 
-    def send(self, to, name, text, when=0.0, first=False):
+    def send(self, to: int, name: str, text: str, when: float=0.0, first: bool=False):
         """Queue a line. first: a trusted player's answer goes ahead of strangers' replies. A line
         longer than the game's 200 characters is sent in parts by the agent (v35), in turn."""
         item = (to, name, text, when)
@@ -364,14 +413,14 @@ class Messenger(threading.Thread):
             if when <= now and now - self.last_sent >= GAP:
                 del self.outbox[i]
                 self.pending.discard(name.lower())
-                r = self.link.send("pm %d %s" % (to, text.replace("\n", " ")))
+                r = self.agent().send("pm %d %s" % (to, text.replace("\n", " ")))
                 self.last_sent = now
                 self.say(_("message to {name}: {words}", name=name, words=text) if r == "sent"
                          else _("couldn't message {name}: {why}", name=name, why=r), private=True)
                 return
 
     # -------------------------------------------------- trusted players
-    def command(self, to, name, word, rest):
+    def command(self, to: int, name: str, word: str, rest: str):
         self.say(_("{name} asks: {what}", name=name, what=(word + " " + rest).strip()), private=True)
         try:
             answer = getattr(self, "cmd_" + word)(to, name, rest)
@@ -382,11 +431,11 @@ class Messenger(threading.Thread):
         if answer:
             self.send(to, name, answer, first=True)
 
-    def snap(self):
-        s = self.link.json("mem")
-        return s if s.get("ok") else None
+    def snap(self) -> dict[str, Any] | None:
+        s = self.agent().json("mem")
+        return s if jsonio.is_object(s) and s.get("ok") else None
 
-    def cmd_help(self, to, name, rest):
+    def cmd_help(self, to: int, name: str, rest: str) -> str | None:
         word = rest.strip().lower().strip("!/.,?")
         if not word:
             self.send(to, name, _("Commands: {list}", list=", ".join(COMMANDS)), first=True)
@@ -402,16 +451,16 @@ class Messenger(threading.Thread):
         names = [a for a, w in ALIASES.items() if w == word]
         return text + (" " + _("Also: {names}", names=", ".join(names)) if names else "")
 
-    def cmd_status(self, to, name, rest):
+    def cmd_status(self, to: int, name: str, rest: str) -> str | None:
         s = self.snap()
         if not s:
             return _("Not logged in.")
         me = s["self"]
         run = self.host.run_for(self.pid)
         hp = int(100 * me.get("hp", 0) / max(1, me.get("maxhp", 1)))
-        vit = me.get("vitals") or {}
-        sheet = me.get("sheet") or {}
-        mp = vit.get("mp", sheet.get("mp", -1))
+        vit: dict[str, Any] = me.get("vitals") or {}
+        sheet: dict[str, Any] = me.get("sheet") or {}
+        mp: int = vit.get("mp", sheet.get("mp", -1))
         mp_part = ", MP %d%%" % int(100 * mp / sheet["maxmp"]) if mp >= 0 and sheet.get("maxmp") else ""
         where = s["map"]["name"]
         p = nearby.pet(s)
@@ -425,32 +474,32 @@ class Messenger(threading.Thread):
                      m=mins, map=where, hp=hp, mp=mp_part, k=kills)
         return _("Idle on {map}, HP {hp}%{mp}.", map=where, hp=hp, mp=mp_part)
 
-    def cmd_players(self, to, name, rest):
+    def cmd_players(self, to: int, name: str, rest: str) -> str | None:
         s = self.snap()
         if not s:
             return _("Not logged in.")
         return _("On {map}: {who}", map=s["map"]["name"], who=nearby.players_text(s))
 
-    def cmd_pet(self, to, name, rest):
+    def cmd_pet(self, to: int, name: str, rest: str) -> str | None:
         s = self.snap()
         if not s:
             return _("Not logged in.")
         return nearby.pet_text(s)
 
-    def cmd_where(self, to, name, rest):
+    def cmd_where(self, to: int, name: str, rest: str) -> str | None:
         s = self.snap()
         if not s:
             return _("Not logged in.")
         return _("{map} at {x}, {y}", map=s["map"]["name"], x=int(s["self"]["x"]), y=int(s["self"]["y"]))
 
-    def cmd_results(self, to, name, rest):
+    def cmd_results(self, to: int, name: str, rest: str) -> str | None:
         run = self.host.run_for(self.pid)
         if run and run.tally:
             return _("This run: {r}", r=stats.short(run.tally.result()))
         past = stats.runs(self.host.character(self.pid) or "")
         return _("Last run: {r}", r=stats.short(past[-1])) if past else _("No results yet.")
 
-    def cmd_today(self, to, name, rest):
+    def cmd_today(self, to: int, name: str, rest: str) -> str | None:
         who = self.host.character(self.pid) or ""
         since = time.mktime(time.strptime(time.strftime("%Y-%m-%d"), "%Y-%m-%d"))
         rs = stats.runs(who, since)
@@ -462,65 +511,67 @@ class Messenger(threading.Thread):
         t = stats.add_up(rs)
         return _("Today, {n} runs, {m} min: {r}", n=t["runs"], m=int(t["minutes"]), r=stats.short(t))
 
-    def cmd_bag(self, to, name, rest):
-        rows = self.link.json("mem bag")
-        rows = rows if isinstance(rows, list) else []
+    def cmd_bag(self, to: int, name: str, rest: str) -> str | None:
+        got = self.agent().json("mem bag")
+        rows: list[dict[str, Any]] = got if jsonio.is_array(got) else []
         pots = ["%s %d" % (r["name"], r["count"]) for r in rows if "potion" in (r.get("name") or "").lower()]
-        s = self.snap() or {}
-        sheet = (s.get("self") or {}).get("sheet") or {}
+        s: dict[str, Any] = self.snap() or {}
+        me: dict[str, Any] = s.get("self") or {}
+        sheet: dict[str, Any] = me.get("sheet") or {}
         load = (_("load {a} of {b}", a=sheet["load"], b=sheet["maxload"]) + ", ") if sheet.get("maxload") else ""
         return load + (", ".join(pots[:6]) if pots else _("no potions"))
 
-    def cmd_drop(self, to, name, rest):
-        s = self.snap() or {}
-        sheet = (s.get("self") or {}).get("sheet") or {}
-        left = sheet.get("drop_seconds", -1)
+    def cmd_drop(self, to: int, name: str, rest: str) -> str | None:
+        s: dict[str, Any] = self.snap() or {}
+        me: dict[str, Any] = s.get("self") or {}
+        sheet: dict[str, Any] = me.get("sheet") or {}
+        left: int = sheet.get("drop_seconds", -1)
         if left < 0:
             return _("Drop time not read yet.")
         left = max(0, left - sheet.get("age", 0))
         return _("Drop time left: {h} h {m} min", h=left // 3600, m=left % 3600 // 60)
 
-    def cmd_pause(self, to, name, rest):
+    def cmd_pause(self, to: int, name: str, rest: str) -> str | None:
         run = self.host.run_for(self.pid)
         if not run or not run.bot:
             return _("The bot isn't running.")
         run.bot.paused.set()
         return _("Paused. Send resume to go on.")
 
-    def cmd_resume(self, to, name, rest):
+    def cmd_resume(self, to: int, name: str, rest: str) -> str | None:
         run = self.host.run_for(self.pid)
         if not run or not run.bot:
             return _("The bot isn't running.")
         run.bot.paused.clear()
         return _("Going on.")
 
-    def cmd_stop(self, to, name, rest):
+    def cmd_stop(self, to: int, name: str, rest: str) -> str | None:
         if not self.host.run_for(self.pid):
             return _("The bot isn't running.")
         self.host.call(self.host.stop_bot, self.pid)
         return _("Stopping.")
 
-    def cmd_start(self, to, name, rest):
+    def cmd_start(self, to: int, name: str, rest: str) -> str | None:
         if self.host.run_for(self.pid):
             return _("Already running.")
         return self.host.call(self.host.start_bot, self.pid, rest.strip() or None)
 
-    def cmd_mute(self, to, name, rest):
-        return _("The game is quiet.") if self.link.send("speech off") == "off" else _("Couldn't.")
+    def cmd_mute(self, to: int, name: str, rest: str) -> str | None:
+        return _("The game is quiet.") if self.agent().send("speech off") == "off" else _("Couldn't.")
 
-    def cmd_unmute(self, to, name, rest):
-        return _("The game talks again.") if self.link.send("speech on") == "on" else _("Couldn't.")
+    def cmd_unmute(self, to: int, name: str, rest: str) -> str | None:
+        return _("The game talks again.") if self.agent().send("speech on") == "on" else _("Couldn't.")
 
-    def cmd_quit(self, to, name, rest):
+    def cmd_quit(self, to: int, name: str, rest: str) -> str | None:
         if self.host.run_for(self.pid):
             self.host.call(self.host.stop_bot, self.pid)
         self.send(to, name, _("Closing the game."))
         self.flush_now()
-        r = self.link.send("closegame")
+        r = self.agent().send("closegame")
         return None if r == "closing" else _("Couldn't close it: {why}", why=r)
 
     # chores that press keys: done by the running bot between steps, or right here when idle
-    def cmd_home(self, to, name, rest):
+    def cmd_home(self, to: int, name: str, rest: str) -> str | None:
         """Back to where farming started: the running farm's own start (its end goes there, walking
         and riding as travel does), else where this game's last farming run started (an errand of
         its own, as `come` is). The hearthstone only when neither is known."""
@@ -528,22 +579,22 @@ class Messenger(threading.Thread):
         bot = getattr(run, "bot", None) if run else None
         place = getattr(bot, "start_place", None) if run and not getattr(run, "walk", False) else None
         if place:
-            def back(b):
+            def back(b: Bot):
                 b.end_place = ("place", place[0], [place[1], place[2]])
                 done = Stopped(_("going back to where farming started, as {name} asked", name=name))
                 done.asked = True          # asked for: not the end of farming (no closing the game)
                 raise done
             return self.chore(back, _("Going back to where farming started."), to, name)
-        place = None if run else getattr(self.host, "farm_start_for", lambda pid: None)(self.pid)
+        place = None if run else self.farm_start()
         if place:
-            def tell(text):
+            def tell(text: str):
                 self.send(to, name, text, first=True)
             text = "go %d at %d,%d" % (place[0], place[1], place[2])
             busy = self.host.call(self.host.errand_for, self.pid, text, _("going back to where farming started"),
                                   tell)
             return busy or _("Going back to where farming started.")
 
-        def job(b):
+        def job(b: Bot):
             ok = b.go_home(tries=2)
             self.send(to, name, _("Home.") if ok else _("The hearthstone didn't work."))
             if ok and b is not self.idle_bot_ref:
@@ -552,23 +603,23 @@ class Messenger(threading.Thread):
                 raise done
         return self.chore(job, _("Going home."), to, name)
 
-    def cmd_come(self, to, name, rest):
+    def cmd_come(self, to: int, name: str, rest: str) -> str | None:
         """come, come <map>, or come <the location key E's text, copied with Shift+C>."""
         mid, cell = follow.parse_location(rest)
         if rest.strip() and mid is None:
             return _("I can't tell the map from that. Press E in the game, copy it with Shift+C and send: "
                      "come <what you copied>")
 
-        def closer(bot):
+        def closer(bot: Bot):
             self.send(to, name, follow.come_to(bot, name, mid, cell), first=True)
 
-        def job(bot):
+        def job(bot: Bot):
             closer(bot)
             done = Stopped(_("went to {name} as they asked", name=name))
             done.stay = True              # the run ends beside them, not at its end place
             raise done
 
-        def tell(text):
+        def tell(text: str):
             self.send(to, name, text, first=True)
         run = self.host.run_for(self.pid)
         if run and getattr(run, "follows", None) == name.lower():
@@ -582,15 +633,15 @@ class Messenger(threading.Thread):
         busy = self.host.call(self.host.errand_for, self.pid, text, _("going to {name}", name=name), tell)
         return busy or _("Coming.")
 
-    def cmd_follow(self, to, name, rest):
-        def tell(text):
+    def cmd_follow(self, to: int, name: str, rest: str) -> str | None:
+        def tell(text: str):
             self.send(to, name, text, first=True)
         return self.host.call(self.host.follow_for, self.pid, name, tell)
 
-    def cmd_unfollow(self, to, name, rest):
+    def cmd_unfollow(self, to: int, name: str, rest: str) -> str | None:
         return self.host.call(self.host.unfollow, self.pid)
 
-    def cmd_buff(self, to, name, rest):
+    def cmd_buff(self, to: int, name: str, rest: str) -> str | None:
         """Buffs while following: off unless asked for, "buff" turns them on, "buff off" off."""
         word = rest.strip().lower()
         if word not in ("", "on", "off", "stop", "no"):
@@ -602,19 +653,19 @@ class Messenger(threading.Thread):
         bot.follow_buffs = word in ("", "on")
         return _("Buffs on.") if bot.follow_buffs else _("Buffs off.")
 
-    def cmd_add(self, to, name, rest):
+    def cmd_add(self, to: int, name: str, rest: str) -> str | None:
         return self.chore(lambda bot: self.send(to, name, team.accept_application(bot, name)[1]),
                           _("Looking for your application."), to, name)
 
-    def cmd_leader(self, to, name, rest):
+    def cmd_leader(self, to: int, name: str, rest: str) -> str | None:
         return self.chore(lambda bot: self.send(to, name, team.make_leader(bot, name)[1]), None, to, name)
 
-    def cmd_leave(self, to, name, rest):
+    def cmd_leave(self, to: int, name: str, rest: str) -> str | None:
         return self.chore(lambda bot: self.send(to, name, team.leave(bot)[1]), None, to, name)
 
-    idle_bot_ref = None
+    idle_bot_ref: Bot | None = None
 
-    def chore(self, job, first, to, name):
+    def chore(self, job: Callable[[Bot], object], first: str | None, to: int, name: str) -> str | None:
         """A running bot does it between two steps; with no run, this thread does it now."""
         run = self.host.run_for(self.pid)
         if run and run.bot:
@@ -629,35 +680,37 @@ class Messenger(threading.Thread):
         job(bot)
         return None
 
-    def idle_bot(self):
+    def idle_bot(self) -> Bot | None:
         """A bot on this messenger's own connection, for chores while no run is going."""
         s = self.snap()
         if not s:
             return None
         profile = settings.load_profile(s["self"]["name"])
-        b = Bot(self.link, profile, lambda m, speak=False: self.say(m, speak), threading.Event(),
+        b = Bot(self.agent(), profile, self.bot_log, threading.Event(),
                 clock=self.clock)
         b.trusted = trust.Trusted(config()["pm_trusted"])
-        b.locate = getattr(self.host, "locate", None)
+        b.locate = getattr(self.host, "locate", None)         # the window has these; test hosts may not
         b.last_seen = getattr(self.host, "last_seen", None)
         self.idle_bot_ref = b
         return b
 
-    def flush_now(self):
+    def flush_now(self) -> None:
         end = self.clock.time() + 6
         while self.outbox and self.clock.time() < end:
             self.flush()
             self.clock.sleep(0.2)
 
     # -------------------------------------------------- invites while no bot runs
-    def idle_invites(self):
+    def idle_invites(self) -> None:
         cfg = config()
         if not cfg["pm_accept_invites"] or self.host.run_for(self.pid):
             return                              # a running bot handles its own popups
-        d = self.link.json("dialog")
-        if not d.get("ok") or not d.get("open"):
+        d = self.agent().json("dialog")
+        if not jsonio.is_object(d) or not d.get("ok") or not d.get("open"):
             return
-        texts = [e.get("text") or e.get("raw") or "" for row in (d.get("top") or {}).get("rows", []) for e in row if e]
+        top: dict[str, Any] = d.get("top") or {}
+        rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
+        texts: list[str] = [e.get("text") or e.get("raw") or "" for row in rows for e in row if e]
         inv = team.invite_in(texts)
         if inv and trust.Trusted(cfg["pm_trusted"]).has(inv[0], link=self.link):
             bot = self.idle_bot()

@@ -26,6 +26,8 @@ a place where gathering never starts is remembered for the skill's rank and pass
 rank rises.
 """
 
+from __future__ import annotations
+
 import math
 import os
 import re
@@ -34,7 +36,7 @@ from typing import Any
 from .. import atlas, jsonio as json, paths
 from ..i18n import N_, _
 from . import beasts, chores, crafting, town
-from .bot import CONFIRM, Respawned, Stopped
+from .bot import Bot, CONFIRM, Respawned, Stopped
 
 SKILLS: dict[str, dict[str, str]] = {
     "Fishing": {"kind": "fish", "entrance": "Lake Entrance"},
@@ -77,7 +79,8 @@ DEFAULTS: dict[str, Any] = {
 
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's gathering settings, with every setting filled in."""
-    return dict(DEFAULTS, **(p.get("gathering") or {}))
+    mine: dict[str, Any] = p.get("gathering") or {}
+    return {**DEFAULTS, **mine}
 
 
 def rank_name(rank: int | None) -> str:
@@ -93,17 +96,18 @@ def kind_of(skill: str) -> str:
 # ---------------------------------------------------------------------------------------- the skill
 def skill_of(skills: dict[str, Any]) -> tuple[str | None, int | None]:
     """(the character's gathering skill, its rank or None) from a `mem skills` answer."""
-    ranks = skills.get("profession_ranks") or {}
-    for r in skills.get("profession") or []:
+    ranks: dict[str, Any] = skills.get("profession_ranks") or {}
+    rows: list[dict[str, Any]] = skills.get("profession") or []
+    for r in rows:
         if r.get("name") in SKILLS:
             rank = ranks.get(str(r.get("id")))
             return r["name"], (int(rank) if rank is not None else None)
     return None, None
 
 
-def read_skill(b: Any) -> tuple[str | None, int | None]:
+def read_skill(b: Bot) -> tuple[str | None, int | None]:
     sk = b.a.json("mem skills")
-    return skill_of(sk if isinstance(sk, dict) and "error" not in sk else {})
+    return skill_of(sk if json.is_object(sk) and "error" not in sk else {})
 
 
 # ---------------------------------------------------------------------------------------- places
@@ -146,7 +150,8 @@ def label(p: dict[str, Any]) -> str:
 
 def places(cfg: dict[str, Any], skill: str) -> list[dict[str, Any]]:
     """Every outside place for the skill, the player's own first, each with its area's level."""
-    own: list[dict[str, Any]] = [dict(p, source="mine") for p in cfg.get("places") or [] if p.get("skill") == skill]
+    mine: list[dict[str, Any]] = cfg.get("places") or []
+    own: list[dict[str, Any]] = [dict(p, source="mine") for p in mine if p.get("skill") == skill]
     known = known_places(skill) if cfg.get("known_places", True) else []
     seen = {place_key(p) for p in own}
     out: list[dict[str, Any]] = []
@@ -162,7 +167,8 @@ def places(cfg: dict[str, Any], skill: str) -> list[dict[str, Any]]:
 
 def usable(p: dict[str, Any], level: int | None, rank: int | None, cfg: dict[str, Any]) -> bool:
     """Not refused at this rank (a better rank tries again), its monsters within reach."""
-    refused = (cfg.get("refused") or {}).get(place_key(p))
+    refusals: dict[str, int] = cfg.get("refused") or {}
+    refused = refusals.get(place_key(p))
     if refused is not None and (rank is None or rank <= int(refused)):
         return False
     lv = p.get("level")
@@ -182,13 +188,13 @@ def choose(found: list[dict[str, Any]], level: int | None, rank: int | None,
     return max(ok, key=lambda p: (p.get("level") or 0, p["source"] == "mine"), default=None)
 
 
-def refuse(b: Any, cfg: dict[str, Any], p: dict[str, Any], rank: int | None) -> None:
+def refuse(b: Bot, cfg: dict[str, Any], p: dict[str, Any], rank: int | None) -> None:
     """Remember a place that didn't take us, for this rank, in the profile."""
     cfg.setdefault("refused", {})[place_key(p)] = -1 if rank is None else rank
     _save(b, cfg)
 
 
-def _save(b: Any, cfg: dict[str, Any]) -> None:
+def _save(b: Bot, cfg: dict[str, Any]) -> None:
     b.p["gathering"] = cfg
     save = getattr(b, "save_profile", None)
     if save:
@@ -196,49 +202,51 @@ def _save(b: Any, cfg: dict[str, Any]) -> None:
 
 
 # ---------------------------------------------------------------------------------------- the game's answers
-def _ms(b: Any) -> int:
+def _ms(b: Bot) -> int:
     return int(b.clock.time() * 1000)
 
 
-def own_casts(b: Any, skill: str, since: int, me: int | None) -> list[dict[str, Any]]:
+def own_casts(b: Bot, skill: str, since: int, me: int | None) -> list[dict[str, Any]]:
     """Our own casts of the skill since a moment (ms): the game gathering for us. me: our id."""
     r = b.a.json("casts %d" % since)
-    if not isinstance(r, dict) or "error" in r:
+    if not json.is_object(r) or "error" in r:
         return []
-    return [c for c in r.get("casts", []) if c.get("skill") == skill and (me is None or c.get("caster") == me)]
+    casts: list[dict[str, Any]] = r.get("casts", [])
+    return [c for c in casts if c.get("skill") == skill and (me is None or c.get("caster") == me)]
 
 
-def said(b: Any, since: int) -> list[str]:
+def said(b: Bot, since: int) -> list[str]:
     """What the game said (IN op=60) since a moment (ms): "lack of vitality", "overweight"..."""
     r = b.a.json("said %d" % since)
-    if not isinstance(r, dict) or "error" in r:
+    if not json.is_object(r) or "error" in r:
         return []
-    return [s.get("text", "") for s in r.get("said", [])]
+    lines: list[dict[str, Any]] = r.get("said", [])
+    return [s.get("text", "") for s in lines]
 
 
-def bag_load(b: Any, force: bool = False) -> tuple[int, int] | None:
+def bag_load(b: Bot, force: bool = False) -> tuple[int, int] | None:
     """(load, most it takes) of the bag, when the sheet says (read now and then, or now: force)."""
-    sheet = b.refresh_sheet(force=force) or {}
+    sheet: dict[str, Any] = b.refresh_sheet(force=force) or {}
     if sheet.get("maxload", 0) > 0 and sheet.get("load", -1) >= 0:
         b.load_share = 100.0 * sheet["load"] / sheet["maxload"]   # the sheet is read sooner near full
         return int(sheet["load"]), int(sheet["maxload"])
     return None
 
 
-def bag_full(b: Any) -> bool:
+def bag_full(b: Bot) -> bool:
     """Full while gathering: past the profile's bag_full_at percent (the game's own "overweight"
     ends it too)."""
     got = bag_load(b)
     return got is not None and 100.0 * got[0] / got[1] >= b.p.get("bag_full_at", 100)
 
 
-def vitality(b: Any, force: bool = False) -> float | None:
+def vitality(b: Bot, force: bool = False) -> float | None:
     """The Vitality left, from the character sheet (agent 50: "Vitality 44.7"); None when unknown."""
     v = (b.refresh_sheet(force=force) or {}).get("vitality")
     return float(v) if v is not None and v >= 0 else None
 
 
-def vitality_kept(b: Any, cfg: dict[str, Any], force: bool = False) -> float | None:
+def vitality_kept(b: Bot, cfg: dict[str, Any], force: bool = False) -> float | None:
     """The Vitality left when it is down to the player's stop mark (stop_vitality), else None."""
     mark = float(cfg.get("stop_vitality") or 0)
     if mark <= 0:
@@ -251,7 +259,7 @@ def vitality_kept(b: Any, cfg: dict[str, Any], force: bool = False) -> float | N
     return v if v is not None and v <= mark else None
 
 
-def no_room(b: Any, cfg: dict[str, Any]) -> tuple[int, int] | None:
+def no_room(b: Bot, cfg: dict[str, Any]) -> tuple[int, int] | None:
     """Looked at before setting out to gather: (load, most) when less than free_load is left, the
     safe room for a gathering trip; None when there is room (or the sheet can't be read)."""
     got = bag_load(b, force=True)
@@ -260,7 +268,7 @@ def no_room(b: Any, cfg: dict[str, Any]) -> tuple[int, int] | None:
     return got
 
 
-def warn_full(b: Any, got: tuple[int, int]) -> str:
+def warn_full(b: Bot, got: tuple[int, int]) -> str:
     msg = _("the bag is full: load {load} of {max}", load=got[0], max=got[1])
     b.log(msg, speak=True)
     return msg
@@ -271,7 +279,7 @@ START = r"(?i)^\s*start\b"
 STOP = r"(?i)^\s*stop\b"
 
 
-def start(b: Any, skill: str) -> bool:
+def start(b: Bot, skill: str) -> bool:
     """Start the skill from the bag's Profession skills panel: the cursor onto it, the use key
     (its menu: "Start <skill>"), then "Confirm". From then on the game goes on by itself until it
     is stopped or another skill or item is used (outside, a potion or a fight does; it is started
@@ -279,7 +287,7 @@ def start(b: Any, skill: str) -> bool:
     that offers "Stop" instead means it is running already: closed, nothing chosen. True when the
     game took the start (whether it casts is seen from the casts that follow)."""
     sk = b.a.json("mem skills")
-    rows = (sk.get("profession") or []) if isinstance(sk, dict) else []
+    rows: list[dict[str, Any]] = (sk.get("profession") or []) if json.is_object(sk) else []
     index = next((i for i, r in enumerate(rows) if r.get("name") == skill), None)
     if index is None:
         return False
@@ -305,7 +313,7 @@ def start(b: Any, skill: str) -> bool:
     return True
 
 
-def gather_here(b: Any, cfg: dict[str, Any], skill: str, place: dict[str, Any] | None,
+def gather_here(b: Bot, cfg: dict[str, Any], skill: str, place: dict[str, Any] | None,
                 end_at: float | None) -> str:
     """Gather where we stand until something ends it. place: the outside place, None in a gang's
     area. A gang's area is left to the game for its half hour: started, and only watched for its
@@ -338,7 +346,7 @@ def gather_here(b: Any, cfg: dict[str, Any], skill: str, place: dict[str, Any] |
         if place is not None and b.attackers():
             b.fight_back()
             last_cast, tries = None, 0
-            if place is not None and not _back_to(b, place):
+            if not _back_to(b, place):
                 return "lost"
             continue
         got = own_casts(b, skill, seen_from, snap["self"].get("id"))
@@ -359,7 +367,7 @@ def gather_here(b: Any, cfg: dict[str, Any], skill: str, place: dict[str, Any] |
         b.sleep(LOOK)
 
 
-def _stop_reason(b: Any, cfg: dict[str, Any], place: dict[str, Any] | None, said_from: int) -> str | None:
+def _stop_reason(b: Bot, cfg: dict[str, Any], place: dict[str, Any] | None, said_from: int) -> str | None:
     """What ends gathering now, if anything: the game saying Vitality ran out or the bag is too
     heavy (since said_from), the bag past bag_full_at, or - outside - the Vitality the player keeps."""
     for line in said(b, said_from):
@@ -374,7 +382,7 @@ def _stop_reason(b: Any, cfg: dict[str, Any], place: dict[str, Any] | None, said
     return None
 
 
-def _back_to(b: Any, place: dict[str, Any]) -> bool:
+def _back_to(b: Bot, place: dict[str, Any]) -> bool:
     """After a fight: back onto the place's own cell (a step off it may be out of the water)."""
     me = b.me()
     if b.map_id() == int(place["map"]) and math.hypot(me["x"] - place["x"], me["y"] - place["y"]) <= 1.5:
@@ -410,16 +418,16 @@ def _gang_key(gang: str) -> str:
     return GANG_DONE + (":" + gang.lower() if gang else "")
 
 
-def gang_done_today(b: Any, gang: str = "") -> dict[str, Any] | None:
+def gang_done_today(b: Bot, gang: str = "") -> dict[str, Any] | None:
     return chores.done_today(getattr(b, "character", None)).get(_gang_key(gang))
 
 
-def _into_gang(b: Any, gang: str) -> None:
+def _into_gang(b: Bot, gang: str) -> None:
     """Into a gang's base where its production area entrances stand: our own gang's inner hall, or
     the gang named `gang`, found by name at the Gang Entrance ("all gangs"), its inner hall when the
     game offers it to us, else its outer hall."""
     if not gang:
-        chores._inner_hall(b)
+        chores.inner_hall(b)
         return
     b.close_dialogs()
     town.visit(b, "gang_entrance")
@@ -431,16 +439,17 @@ def _into_gang(b: Any, gang: str) -> None:
         if d and d.get("top") and b.find_entry(d["top"], hall) is not None:
             b.choose(hall)
             break
-    chores._confirm(b)
+    chores.confirm(b)
     if not b.wait_map_change(mid, 15) or not crafting.in_gang(b):
         b.close_dialogs()
         raise Stopped(_("couldn't get into the gang {gang}'s base", gang=gang))
 
 
-def _entrance(b: Any, cfg: dict[str, Any], name: str) -> tuple[float, float] | None:
+def _entrance(b: Bot, cfg: dict[str, Any], name: str) -> tuple[float, float] | None:
     """Where the gang area's entrance stands in the part of the base we are in: known, in sight,
     or found by a walk round it (and remembered: every gang base has the same layout)."""
-    cell = (cfg.get("entrances") or {}).get(name) or ENTRANCE_CELLS.get(name)
+    known: dict[str, tuple[int, int]] = cfg.get("entrances") or {}
+    cell = known.get(name) or ENTRANCE_CELLS.get(name)
     if cell and crafting.reachable_cell(b, (int(cell[0]), int(cell[1]))):
         return float(cell[0]), float(cell[1])
     for stop in [None] + list(chores.INNER_SWEEP) + list(chores.OUTER_SWEEP):
@@ -456,7 +465,7 @@ def _entrance(b: Any, cfg: dict[str, Any], name: str) -> tuple[float, float] | N
     return None
 
 
-def gang_area(b: Any, cfg: dict[str, Any], skill: str, check_only: bool = False,
+def gang_area(b: Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,
               gang: str = "") -> tuple[bool, str, bool]:
     """Into a gang's production area for the skill (gang: "" our own, else that gang by name),
     through its entrance in the base. (in, what happened, whether today's visit there is over: in,
@@ -469,7 +478,7 @@ def gang_area(b: Any, cfg: dict[str, Any], skill: str, check_only: bool = False,
     if not b.talk(name, cell):
         return False, _("couldn't talk to the {npc}", npc=name), False
     b.wait_dialog(3.0)
-    text = town._menu_text(b)
+    text = town.menu_text(b)
     area = AREA_LINE.search(text)
     fee_m = FEE.search(text)
     fee = int(fee_m.group(1)) if fee_m else 0
@@ -492,7 +501,7 @@ def gang_area(b: Any, cfg: dict[str, Any], skill: str, check_only: bool = False,
     mid = b.map_id()
     since = _ms(b)
     b.choose(r"^\s*Enter\s*$")
-    chores._confirm(b)
+    chores.confirm(b)
     if not b.wait_map_change(mid, 15):
         b.close_dialogs()
         why = "; ".join(said(b, since)) or _("no reason given")
@@ -501,7 +510,7 @@ def gang_area(b: Any, cfg: dict[str, Any], skill: str, check_only: bool = False,
 
 
 # ---------------------------------------------------------------------------------------- the run
-def _sell(b: Any, cfg: dict[str, Any], skill: str) -> int:
+def _sell(b: Bot, cfg: dict[str, Any], skill: str) -> int:
     if not cfg.get("sell", True):
         return 0
     try:
@@ -513,7 +522,7 @@ def _sell(b: Any, cfg: dict[str, Any], skill: str) -> int:
         return 0
 
 
-def _holding(b: Any, skill: str) -> bool:
+def _holding(b: Bot, skill: str) -> bool:
     """The bag holds something of the skill's kind: by the item's name, or because the game has
     shown that kind's buyer buying it ("Butterfly shell" is no fish by its name)."""
     from .. import knowledge
@@ -529,7 +538,7 @@ def _holding(b: Any, skill: str) -> bool:
     return False
 
 
-def check(b: Any, cfg: dict[str, Any], skill: str, rank: int | None, level: int | None) -> list[str]:
+def check(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: int | None) -> list[str]:
     """What a run would do, walking only to read the gang area's entrance."""
     notes = [_("{skill}, {rank}; character level {level}", skill=_(skill), rank=rank_name(rank),
                level=level or "?")]
@@ -558,14 +567,14 @@ def check(b: Any, cfg: dict[str, Any], skill: str, rank: int | None, level: int 
     return notes
 
 
-def run(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
+def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     """Gather as the settings say: the gang's area once a game day, then outside, selling the
     collection when the bag fills and at the end. Returns what happened, in a few lines."""
     skill, rank = read_skill(b)
     if skill is None:
         raise Stopped(_("this character has no gathering skill: learn Fishing, Mining or Collect Herbs "
                         "(one of them) from the gang's Guru Elder or Master Pepper"))
-    level = chores._level(b) or None
+    level = chores.char_level(b) or None
     if check_only:
         notes = check(b, cfg, skill, rank, level)
         b.close_dialogs()
@@ -598,7 +607,7 @@ def run(b: Any, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     return notes
 
 
-def _gang_round(b: Any, cfg: dict[str, Any], skill: str, end_at: float | None, notes: list[str],
+def _gang_round(b: Bot, cfg: dict[str, Any], skill: str, end_at: float | None, notes: list[str],
                 gang: str = "") -> str:
     """Today's visit to one gang's area. Why it ended ("" when we never got in)."""
     if cfg.get("sell", True) and _holding(b, skill):
@@ -646,7 +655,7 @@ def _gang_round(b: Any, cfg: dict[str, Any], skill: str, end_at: float | None, n
     return why if why in ("vitality", "time") else ""
 
 
-def _room(b: Any, cfg: dict[str, Any], skill: str, notes: list[str]) -> bool:
+def _room(b: Bot, cfg: dict[str, Any], skill: str, notes: list[str]) -> bool:
     """Before setting out to gather: a look at the bag's load. With less than free_load left it
     says the bag is full, sells first when the player lets it, and looks again. False when there
     still isn't room."""
@@ -664,7 +673,7 @@ def _room(b: Any, cfg: dict[str, Any], skill: str, notes: list[str]) -> bool:
     return False
 
 
-def _ready(b: Any, cfg: dict[str, Any], skill: str, notes: list[str]) -> str:
+def _ready(b: Bot, cfg: dict[str, Any], skill: str, notes: list[str]) -> str:
     """Before setting out to an outside place: room in the bag ("full" when there is none, even
     after selling) and Vitality above the player's mark ("kept"). "" when ready."""
     if not _room(b, cfg, skill, notes):
@@ -676,7 +685,7 @@ def _ready(b: Any, cfg: dict[str, Any], skill: str, notes: list[str]) -> str:
     return ""
 
 
-def _outside(b: Any, cfg: dict[str, Any], skill: str, rank: int | None, level: int | None,
+def _outside(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: int | None,
              end_at: float | None, notes: list[str]) -> str:
     """Gather at the outside places, one after another as they refuse us. Why it ended."""
     left = 0

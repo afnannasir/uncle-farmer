@@ -4,6 +4,8 @@ An open Windows file handle without FILE_SHARE_DELETE blocks DeleteFile/MoveFile
 uses that sharing mode, so one read-only handle per protected file is enough. Saving releases the
 handle around os.replace (which needs delete access), then takes it again.
 """
+
+from __future__ import annotations
 import atexit
 import os
 import threading

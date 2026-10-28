@@ -22,6 +22,8 @@ bot's results against. `faults` injects trouble: drop the connection, delay a re
 line, kill the character, fill the bag. `events` are the game's occasional surprises, grown from
 problems seen in real runs (see test_soak.py)."""
 
+from __future__ import annotations
+
 import json
 import math
 import os
@@ -152,6 +154,8 @@ class World:
         cx, cy = int((z[0] + z[2]) / 2), int((z[1] + z[3]) / 2)
         c = self.model.nearest_walkable(cx, cy, 60) or self.model.nearest_walkable(self.model.w // 2,
                                                                                     self.model.h // 2, 400)
+        if c is None:
+            raise RuntimeError("the pretend game's map has no walkable cell")
         return float(c[0]), float(c[1])
 
     def _spawn(self, near: bool = False, critter: bool = False) -> None:
@@ -241,8 +245,8 @@ class World:
     def _walk(self, dt: float) -> None:
         if self.dead:
             return
-        keys = (set().union(*self.held.values()) if self.held and self.dialog is None and not self.chat_open
-                else set())
+        keys: set[str] = (set[str]().union(*self.held.values()) if self.held and self.dialog is None
+                          and not self.chat_open else set())
         dx = sum(MOVE[k][0] for k in keys if k in MOVE)
         dy = sum(MOVE[k][1] for k in keys if k in MOVE)
         if dx or dy:
@@ -330,7 +334,7 @@ class World:
         if self.chat_open:
             return                    # the chat line has the keys: every press is lost
         if self.dialog is not None:
-            self._window_key(key)
+            self.window_key(key)
             return
         if self.dead:
             return
@@ -343,7 +347,7 @@ class World:
         elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"):
             self._hotkey(key)
 
-    def _window_key(self, key: str) -> None:
+    def window_key(self, key: str) -> None:
         """An open window takes the keys: the movement keys move its cursor (no walking)."""
         d = self.dialog
         assert d is not None
@@ -554,7 +558,7 @@ class SimGame:
 
     def held_keys(self) -> set[str]:
         with self.lock:
-            return set().union(*self.world.held.values()) if self.world.held else set()
+            return set[str]().union(*self.world.held.values()) if self.world.held else set()
 
     # ------------------------------------------------------------------ connections
     def _accept(self) -> None:
@@ -678,7 +682,7 @@ class SimGame:
 
     def _cmd_keydown(self, arg: str, cid: int, w: World) -> str:
         if w.dialog is not None:      # a window has the keys: held, but it doesn't walk
-            w._window_key(arg)
+            w.window_key(arg)
         w.held.setdefault(cid, set()).add(arg)
         return "down %s" % arg
 
@@ -804,7 +808,7 @@ class Soak:
         self.game.at.append((self.run.started + 60 * minutes, call))
         self.game.at.sort(key=lambda a: a[0])
 
-    def go(self) -> "Soak":
+    def go(self) -> Soak:
         import time
 
         def hung():

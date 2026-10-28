@@ -1,13 +1,13 @@
 """Where everything lives. The app is portable: all of it sits in one folder next to the exe."""
 
+from __future__ import annotations
+
 import os
 import sys
 
-if getattr(sys, "frozen", False):
-    # PyInstaller one-folder build: the exe's folder holds data/, agent/, lang/ beside it.
-    APP = os.path.dirname(sys.executable)
-else:
-    APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# A PyInstaller one-folder build: the exe's folder holds data/, agent/, lang/ beside it.
+APP = (os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
+       else os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA = os.path.join(APP, "data")
 LANG = os.path.join(APP, "lang")
@@ -25,7 +25,7 @@ for _d in (PROFILES, PLANS, SCRIPTS, LOGS):
     os.makedirs(_d, exist_ok=True)
 
 
-def safe_name(name):
+def safe_name(name: str) -> str:
     """A file name from a character or plan name; keeps letters, digits, space, - and _."""
     keep = "".join(c if c.isalnum() or c in " -_" else "_" for c in name).strip()
     return keep or "unnamed"

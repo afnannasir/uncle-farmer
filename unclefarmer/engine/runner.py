@@ -7,8 +7,12 @@ Several runs can go at once, one per game client (each has its own pid, connecti
 share the day's log file; applog serialises the writes.
 """
 
+from __future__ import annotations
+
+import datetime as dt
 import threading
 import time
+from collections.abc import Callable
 from typing import Any
 
 from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
@@ -19,6 +23,7 @@ from ..link import AgentError, AgentLink
 from . import chores, keyslots
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
+from .botparts.parts import Sighting, Where
 from .script import Runner, ScriptError
 
 AGENT_VERSION = 5   # the agent's StateServer.VERSION this app needs (4: dialog, target; 5: typing quantities)
@@ -34,26 +39,27 @@ AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without th
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
 
-def _write_log(line):
+def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
     applog.write(line)
 
 
-def _write_crash(title, character):
+def _write_crash(title: str, character: str | None) -> None:
     """The whole traceback of an unexpected error to logs/errors.log: one line in the window says
     what happened, this says where, so a crash on someone else's PC can be fixed from their logs."""
-    applog.crash(title, character)
+    applog.crash(title, character or "")
 
 
 class Run(threading.Thread):
     # set by the window once the run starts (main.py): where it is, what it is, who it follows
-    locate: Any
-    last_seen: Any
-    tell: Any
+    locate: Callable[[str], Where | None] | None
+    last_seen: Callable[[str], Sighting | None] | None
+    tell: Callable[[str], None] | None
     kind: str
-    follows: Any
+    follows: str | None
 
-    def __init__(self, text, title, pid, on_log, on_done, walk=False, clock: Clock = CLOCK):
+    def __init__(self, text: str, title: str, pid: int, on_log: Callable[[str, bool, "Run"], None],
+                 on_done: Callable[[str, "Run"], None], walk: bool = False, clock: Clock = CLOCK) -> None:
         """on_log(line, speak, run) and on_done(reason, run) are called from this thread.
         walk: the walking assistant - it isn't farming, so the farming day's end doesn't block it,
         it earns no results, and it ends where it arrived, still riding (no end-of-run trip)."""
@@ -61,12 +67,12 @@ class Run(threading.Thread):
         self.text, self.title, self.pid = text, title, pid
         self.on_log, self.on_done = on_log, on_done
         self.stop_event = threading.Event()
-        self.character = None     # known once connected; names the run in the log
-        self.tally = None         # stats.Tally: what this run earns, readable while it runs
-        self.bot = None           # the Bot once running (private message commands reach it here)
-        self.link: Any = None     # this run's connection to the game, while it runs
+        self.character: str | None = None   # known once connected; names the run in the log
+        self.tally: stats.Tally | None = None   # what this run earns, readable while it runs
+        self.bot: Bot | None = None         # the Bot once running (private message commands reach it here)
+        self.link: AgentLink | None = None  # this run's connection to the game, while it runs
         self.muted = False        # this run turned the game's own speech off (the end turns it on again)
-        self.speech_choice = None  # "on"/"off" when the player muted or unmuted this game by hand
+        self.speech_choice: str | None = None  # "on"/"off" when the player muted or unmuted this game by hand
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
         self.after_stop = "nothing"   # what the app setting said to do then: nothing | close_game | shutdown
@@ -74,16 +80,16 @@ class Run(threading.Thread):
         self.started = self.clock.time()
         self.walk = walk
 
-    def farmed(self):
+    def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
         plan or script that farmed. A tool (Gem Maker, Enhancer), the walking assistant, `come` or
         `follow`, or a script that never farmed, ends and leaves the game and the PC alone."""
-        return getattr(self, "kind", "") != "errand" and getattr(self.bot, "farmed", False)
+        return getattr(self, "kind", "") != "errand" and bool(getattr(self.bot, "farmed", False))
 
-    def stop(self):
+    def stop(self) -> None:
         self.stop_event.set()
 
-    def guard(self, bot, finish=True):
+    def guard(self, bot: Bot, finish: bool = True) -> None:
         """The run stopped on its own (stuck, an error, a stop rule): never leave the character
         standing there. Fight back and drink until nothing attacks, then end somewhere safe as a
         finished run does (finish=False: stay where we are, e.g. beside the player who called us).
@@ -108,12 +114,12 @@ class Run(threading.Thread):
                     self.log(_("couldn't stay on guard either: {err}", err=e2))
                 return
 
-    def log(self, message, speak=False):
+    def log(self, message: str, speak: bool=False) -> None:
         line = "%s  %s" % (time.strftime("%H:%M:%S"), message)
         _write_log("%s  %s: %s" % (line[:8], self.character, message) if self.character else line)
         self.on_log(line, speak, self)
 
-    def run(self):
+    def run(self) -> None:
         """Connect, set up, run the plan or script, and whatever ends it, end it well: one step per
         method below. self.link and self.muted hold what the end has to undo even when the start
         failed half way (self.bot is None until the Bot exists)."""
@@ -140,9 +146,10 @@ class Run(threading.Thread):
             self._end(app, reason)
 
     # ---------------------------------------------------------------- starting
-    def _start(self, app):
+    def _start(self, app: dict[str, Any]) -> Bot:
         """The game connected and checked, the character scanned, the keys armed: the Bot, set up."""
         day_end, blocked = daily.plan(app) if not self.walk else (None, None)
+        character: str
         if blocked:
             raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
                             "after that", reset=blocked))
@@ -164,7 +171,7 @@ class Run(threading.Thread):
         self._set_up(bot, snap, profile, found, agent, app)
         return bot
 
-    def _profile(self, link, character):
+    def _profile(self, link: AgentLink, character: str) -> tuple[dict[str, Any], dict[str, Any]]:
         """Every run starts with a fresh scan: skills, keys, potions, beasts, pets -> the profile (a
         character without a profile gets one here). (profile, what the scan found)."""
         try:
@@ -177,14 +184,14 @@ class Run(threading.Thread):
                            name=character), speak=True)
             return settings.load_profile(character), {}
 
-    def _arm(self, link, agent, profile, app):
+    def _arm(self, link: AgentLink, agent: int, profile: dict[str, Any], app: dict[str, Any]) -> str | None:
         """Keys armed, the player's modifiers kept out, the game's own speech off as set. Returns
         the answer to `guardmods on` (None for an agent that can't)."""
         link.send("arm")
         keys = link.send("keys")
         if not keys.startswith("ready"):
             raise Stopped(_("the game's keys can't be used: {why}", why=keys))
-        guard = None
+        guard: str | None = None
         if agent >= AGENT_GUARD:
             # The player holding Ctrl in another window (NVDA) made the bot's potion key a
             # Ctrl+key hotkey binding: the beast went onto the blue potions' key. The agent
@@ -202,7 +209,8 @@ class Run(threading.Thread):
                 self.log(_("the game's own speech is off while the bot runs"))
         return guard
 
-    def _make_bot(self, link, profile, agent, guard, day_end, app):
+    def _make_bot(self, link: AgentLink, profile: dict[str, Any], agent: int, guard: str | None,
+                  day_end: dt.datetime | None, app: dict[str, Any]) -> Bot:
         bot = Bot(link, profile, self.log, self.stop_event, clock=self.clock)
         bot.agent_version = agent
         bot.agent_state = agent >= AGENT_STATE
@@ -218,7 +226,12 @@ class Run(threading.Thread):
             self.log(_("farming stops at {time} at the latest (the drop time resets at {reset})",
                        time=day_end.strftime("%H:%M"), reset=bot.daily_reset))
         bot.character = self.character   # names the game in logs/dialogs.log when several run
-        bot.save_profile = lambda data, name=self.character: settings.save_profile(name, data)
+        name = self.character or ""
+
+        def save_profile(data: dict[str, Any]) -> None:
+            settings.save_profile(name, data)
+
+        bot.save_profile = save_profile
         bot.trusted = trust.from_settings(app)
         bot.locate = getattr(self, "locate", None)   # where another of our characters is (follow, come)
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
@@ -226,20 +239,23 @@ class Run(threading.Thread):
         self.bot = bot
         return bot
 
-    def _set_up(self, bot, snap, profile, found, agent, app):
+    def _set_up(self, bot: Bot, snap: dict[str, Any], profile: dict[str, Any], found: dict[str, Any], agent: int,
+                app: dict[str, Any]) -> None:
         """The results, where the run started, max MP, the quick phrases and the keys it needs."""
         if not self.walk:
             if getattr(bot, "agent_sheet", False):
                 # the results count contribution and experience from the first sheet they see: a
                 # fresh one now, or the first reading comes after the first kills and leaves them out
                 bot.ask_sheet(force=True)
-            bot.tally = self.tally = stats.Tally(self.character, self.title, clock=clock_for(bot),
+            bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
                                                  tool=self._tool())
             bot.tally.update(bot, force=True)
-        here = snap.get("self") or {}
-        if snap.get("map", {}).get("id"):
+        here: dict[str, Any] = snap.get("self") or {}
+        where: dict[str, Any] = snap.get("map", {})
+        if where.get("id"):
             bot.start_place = (snap["map"]["id"], int(here.get("x", 0)), int(here.get("y", 0)))
-        if profile.get("mp_use", True) and not (here.get("sheet") or {}).get("maxmp"):
+        sheet: dict[str, Any] = here.get("sheet") or {}
+        if profile.get("mp_use", True) and not sheet.get("maxmp"):
             # Max MP is only on the character sheet, and only farming reads it on its own:
             # without it a walk, `come` or `follow` never drank a blue potion.
             bot.refresh_sheet(force=True)
@@ -249,11 +265,11 @@ class Run(threading.Thread):
         if not self.walk:
             keyslots.arrange(bot)        # skills and items the bot needs, onto EMPTY keys only
 
-    def game_folder(self):
+    def game_folder(self) -> str:
         """This game's own folder (the copy it runs from), else the settings' one."""
         return gameinstall.folder_of(self.pid, settings.load_app().get("game_folder", ""))
 
-    def _tool(self):
+    def _tool(self) -> str | None:
         """The job (stats.TOOLS) this run is when it is one from the Tools menu, else None: its
         results are kept apart from farming."""
         if getattr(self, "kind", "") != "errand":
@@ -262,7 +278,7 @@ class Run(threading.Thread):
         return words[0] if words and words[0] in stats.TOOLS else None
 
     # ---------------------------------------------------------------- running and stopping
-    def _play(self, bot):
+    def _play(self, bot: Bot) -> str | None:
         """The plan or script itself, then the end of a finished run. A reason when not "finished"."""
         if getattr(self, "kind", "") != "errand" and not self.walk:
             cfg = chores.config(bot.p)
@@ -282,7 +298,7 @@ class Run(threading.Thread):
         self.ended_by_itself = True
         return None
 
-    def _stopped(self, e):
+    def _stopped(self, e: Stopped) -> str:
         """The run stopped itself (stuck, a stop rule, the drop time...): a frozen game says so;
         otherwise guard, and end somewhere safe unless asked to stay."""
         reason = str(e)
@@ -303,7 +319,7 @@ class Run(threading.Thread):
                                         and not getattr(e, "asked", False))
         return reason
 
-    def _crashed(self, e):
+    def _crashed(self, e: Exception) -> str:
         carry_on(e, "the run")
         reason = _("unexpected error: {err}", err=repr(e))
         _write_crash(self.title, self.character)
@@ -313,7 +329,7 @@ class Run(threading.Thread):
         return reason
 
     # ---------------------------------------------------------------- the end
-    def _end(self, app, reason):
+    def _end(self, app: dict[str, Any], reason: str) -> None:
         """However it ended: the results finished, the game let go, said, saved and reported."""
         bot = self.bot
         if self.tally:
@@ -328,7 +344,7 @@ class Run(threading.Thread):
                     carry_on(e, "finishing the results without the bot")
                     self.log(_("couldn't finish the results: {err}", err=e))
         if self.link:
-            self._let_go(app, bot)
+            self._let_go(app, bot, self.link)
         self.log(_("stopped: {why}", why=reason), speak=True)
         tell = getattr(self, "tell", None)
         if tell and not self.stop_event.is_set() and reason != _("arrived"):
@@ -348,7 +364,7 @@ class Run(threading.Thread):
                 self.log(stats.short(r), speak=True)
         self.on_done(reason, self)
 
-    def _last_readings(self, bot):
+    def _last_readings(self, bot: Bot | None) -> None:
         """Before the results close: the kills the game reported since the bot last looked, and a
         fresh character sheet. The sheet is read without waiting while farming (agent 43), so the
         last reading can be a few seconds old; the long-run simulator caught each run's results
@@ -364,9 +380,8 @@ class Run(threading.Thread):
         except Exception as e:      # a lost game, a stop: the results keep what they had
             carry_on(e, "the last readings for the results")
 
-    def _let_go(self, app, bot):
+    def _let_go(self, app: dict[str, Any], bot: Bot | None, link: AgentLink) -> None:
         """The keys let go, the game's speech back, and the after-stop action, then the link closed."""
-        link = self.link
         try:
             if bot is not None and hasattr(bot, "let_go"):
                 bot.let_go()      # only this run's keys; a `keysup` could drop another controller's

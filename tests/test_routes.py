@@ -1,20 +1,25 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """Route planning by A*: the same route costs as the Dijkstra search it replaced, on a maze of
 one-way doors (turkey cave), to cells and to exits."""
+
+from __future__ import annotations
 
 import random
 
 import pytest
 
 from unclefarmer import atlas
+from unclefarmer.atlaslib import Cell
 
 
-def cost(dist, reached):
+def cost(dist: dict[int, float], reached: dict[int, int]) -> float | None:
     return dist[next(iter(reached.values()))] if reached else None
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("avoid", [False, True])
-def test_astar_costs_what_dijkstra_does(avoid):
+def test_astar_costs_what_dijkstra_does(avoid: bool) -> None:
     m = atlas.model(5302)
     ys, xs = m.walk.nonzero()
     cells = list(zip(xs.tolist(), ys.tolist()))
@@ -32,7 +37,7 @@ def test_astar_costs_what_dijkstra_does(avoid):
         assert cost(dd, rd) == pytest.approx(cost(da, ra)) if rd else not ra, (a, b)
 
 
-def test_a_route_is_a_walk_of_single_steps_to_the_target():
+def test_a_route_is_a_walk_of_single_steps_to_the_target() -> None:
     m = atlas.model(5302)
     ys, xs = m.walk.nonzero()
     cells = list(zip(xs.tolist(), ys.tolist()))
@@ -50,39 +55,39 @@ def test_a_route_is_a_walk_of_single_steps_to_the_target():
     assert found >= 10
 
 
-def test_a_gate_ignoring_fallback_is_not_cached(monkeypatch):
+def test_a_gate_ignoring_fallback_is_not_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     import numpy as np
     from unclefarmer import atlaslib
     m = atlaslib.MapModel.__new__(atlaslib.MapModel)
-    m.gate = np.ones((3, 3), dtype=np.uint8)
+    m.gate = np.ones((3, 3), dtype=np.int32)
     m._gate_list = b"\x01" * 9
     m._zero_list = bytes(9)
-    calls = []
+    calls: list[bool] = []
 
-    def fake(a, b, avoid_directional=False):
+    def fake(a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
         calls.append(bool(m.__dict__.get("_gates_off")))
         return None if len(calls) == 1 else [(1, 1), (2, 2)]
 
-    monkeypatch.setattr(m, "_route", fake)
+    monkeypatch.setattr(m, "gated_route", fake)
     assert m.route((1, 1), (2, 2)) == [(1, 1), (2, 2)]
     assert calls == [False, True]
     assert ((1, 1), (2, 2), False) not in m.__dict__.get("_route_cache", {})
 
 
-def test_a_gate_respecting_route_is_cached(monkeypatch):
+def test_a_gate_respecting_route_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
     import numpy as np
     from unclefarmer import atlaslib
     m = atlaslib.MapModel.__new__(atlaslib.MapModel)
-    m.gate = np.zeros((3, 3), dtype=np.uint8)      # no gates: no fallback
+    m.gate = np.zeros((3, 3), dtype=np.int32)      # no gates: no fallback
     m._gate_list = bytes(9)
     m._zero_list = bytes(9)
-    calls = []
+    calls: list[int] = []
 
-    def fake(a, b, avoid_directional=False):
+    def fake(a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
         calls.append(1)
         return [(1, 2), (2, 2)]
 
-    monkeypatch.setattr(m, "_route", fake)
+    monkeypatch.setattr(m, "gated_route", fake)
     assert m.route((1, 1), (2, 2)) == [(1, 2), (2, 2)]
     assert m.route((1, 1), (2, 2)) == [(1, 2), (2, 2)]
     assert calls == [1]

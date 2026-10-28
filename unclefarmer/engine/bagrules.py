@@ -12,8 +12,10 @@ What makes the suggestions smart, all from the game itself:
     load before and after storing or selling N of an item gives that item's weight.
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, TypedDict
 import os
 import re
 
@@ -25,8 +27,16 @@ SUPPLY = re.compile(r"potion|teleportation stone|hearthstone|memory butterfly|re
 WEIGHTS = os.path.join(paths.PROFILES, "_learned_weights.json")
 
 
+class BagRule(TypedDict):
+    """What to do with an item: keep, sell, store or throw it (action), how many to keep, and
+    whether the player chose that (else it is the bot's suggestion)."""
+    action: str
+    keep: int
+    chosen: bool
+
+
 # ---------------------------------------------------------------- facts about an item
-def shard_price(name):
+def shard_price(name: str) -> int | None:
     from .town import shard_catalog
     shards, _m = shard_catalog()
     for n, v in shards.items():
@@ -35,7 +45,7 @@ def shard_price(name):
     return None
 
 
-def buyer(name):
+def buyer(name: str) -> tuple[str, int, str] | None:
     """(npc, price, currency) of the best NPC buyer the game has shown for it, or None."""
     t = knowledge.traders(name, "buy")
     if t:
@@ -44,17 +54,18 @@ def buyer(name):
     return None
 
 
-def seller(name):
+def seller(name: str) -> tuple[str, int, str] | None:
     """(npc, price, currency) of the cheapest NPC shop the game has shown selling it, or None."""
     t = knowledge.traders(name, "sell")
     return (t[0][1], t[0][4], t[0][5]) if t else None
 
 
-def can_sell(name):
+def can_sell(name: str) -> bool:
     return shard_price(name) is not None or buyer(name) is not None or knowledge.buyer_role(name) is not None
 
 
-def weights():
+def weights() -> dict[str, float]:
+    """{item (lower case): its weight}, as learned from the load (learn_weight)."""
     try:
         with open(WEIGHTS, encoding="utf-8") as f:
             return json.load(f)
@@ -62,7 +73,7 @@ def weights():
         return {}
 
 
-def learn_weight(name, load_before, load_after, n):
+def learn_weight(name: str, load_before: float | None, load_after: float | None, n: int) -> float | None:
     """The load fell by (before - after) when n of the item left the bag: remember its weight."""
     if n <= 0 or load_before is None or load_after is None or load_before < load_after:
         return None
@@ -77,9 +88,9 @@ def learn_weight(name, load_before, load_after, n):
     return w
 
 
-def about(name, count=None, hotkey=False):
+def about(name: str, count: int | None = None, hotkey: bool = False) -> str:
     """One line of facts for the bag manager."""
-    bits = []
+    bits: list[str] = []
     sp = shard_price(name)
     if sp is not None:
         bits.append("Shard Market pays about %d arnebia each" % sp)
@@ -102,7 +113,7 @@ def about(name, count=None, hotkey=False):
 
 
 # ---------------------------------------------------------------- suggestions
-def suggest(name, hotkey=False):
+def suggest(name: str, hotkey: bool = False) -> tuple[str, int]:
     """The bot's advice for an item with no rule yet: (action, keep)."""
     if hotkey or SUPPLY.search(name):
         return "keep", 0
@@ -112,9 +123,10 @@ def suggest(name, hotkey=False):
     return "keep", 0         # unknown things stay where they are until the player decides
 
 
-def rule(p, name, hotkey=False):
-    """The rule the player set for the item, else the suggestion. {"action", "keep", "chosen"}."""
-    r = (p.get("bag_rules") or {}).get(name.lower())
+def rule(p: dict[str, Any], name: str, hotkey: bool = False) -> BagRule:
+    """The rule the player set for the item, else the suggestion."""
+    rules: dict[str, dict[str, Any]] = p.get("bag_rules") or {}
+    r = rules.get(name.lower())
     if r:
         return {"action": r.get("action", "keep"), "keep": int(r.get("keep", 0)), "chosen": True}
     a, k = suggest(name, hotkey)
@@ -126,7 +138,7 @@ def plan(p: dict[str, Any], bag: dict[str, int], hotkeys: Sequence[str] = (), ga
     only_this_run (the default) nothing beyond what this run picked up (gained) is touched,
     unless the player chose a rule for that item themselves."""
     hot = {h.lower() for h in hotkeys}
-    out = []
+    out: list[tuple[str, str, int]] = []
     for name, count in sorted(bag.items()):
         r = rule(p, name, name.lower() in hot)
         if r["action"] == "keep":
@@ -140,7 +152,7 @@ def plan(p: dict[str, Any], bag: dict[str, int], hotkeys: Sequence[str] = (), ga
 
 
 # ---------------------------------------------------------------- supplies
-def supply_rule(r):
+def supply_rule(r: dict[str, Any]) -> str:
     """Old restock rules (storage_first/buy) read as one source."""
     if "source" in r:
         return r["source"]
@@ -153,11 +165,12 @@ def supply_rule(r):
     return "tell"
 
 
-def suggest_supplies(scan):
+def suggest_supplies(scan: dict[str, Any] | None) -> list[dict[str, Any]]:
     """Supplies worth watching, from what sits on the hotkeys: [{"item", "min", "stock", "source"}].
     Off ("tell") until the player picks a source, so nothing is bought or taken unasked."""
-    out = []
-    for h in (scan or {}).get("hotkeys", []):
+    out: list[dict[str, Any]] = []
+    hotkeys: list[dict[str, Any]] = (scan or {}).get("hotkeys", [])
+    for h in hotkeys:
         item = h.get("item")
         if not item or not re.search(r"potion|rice roll|food|toolbox", item, re.I):
             continue

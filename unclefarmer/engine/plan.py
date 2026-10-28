@@ -18,13 +18,16 @@ time, a full bag, deaths, broken gear). With one spot it farms there until it st
 minutes or kills only matter with several spots: how long before moving on to the next.
 """
 
+from __future__ import annotations
+
 import os
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from .. import atlas, filelock, jsonio as json, paths
 
-PLAN_DEFAULTS = {
+PLAN_DEFAULTS: dict[str, Any] = {
     "name": "",
     "spots": [],
     "rotation": "round",
@@ -37,7 +40,7 @@ PLAN_DEFAULTS = {
     "end": {"how": "start"},
 }
 
-STEP_DEFAULTS = {"map": 5121, "minutes": 30, "kills": 0, "patrol": "random", "area": None,
+STEP_DEFAULTS: dict[str, Any] = {"map": 5121, "minutes": 30, "kills": 0, "patrol": "random", "area": None,
                  "only": "", "skip": "", "elites": "fight"}
 END_HOWS = ("start", "place", "hearthstone", "safe", "here")
 
@@ -71,7 +74,7 @@ class Plan(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     name: str = PLAN_DEFAULTS["name"]
-    spots: list[Spot] = Field(default_factory=list)
+    spots: list[Spot] = Field(default_factory=list[Spot])
     rotation: str = PLAN_DEFAULTS["rotation"]
     stop_after_minutes: int = PLAN_DEFAULTS["stop_after_minutes"]
     stop_at_clock: str = PLAN_DEFAULTS["stop_at_clock"]
@@ -82,14 +85,14 @@ class Plan(BaseModel):
     end: End = Field(default_factory=End)
 
 
-def new_step(map_id=None):
+def new_step(map_id: int | None = None) -> dict[str, Any]:
     s = dict(STEP_DEFAULTS)
     if map_id:
         s["map"] = int(map_id)
     return s
 
 
-def upgrade(p):
+def upgrade(p: dict[str, Any]) -> dict[str, Any]:
     """A plan saved by the old editor: "steps" with a "repeat" box and "finish". A single step's
     minutes and kills were the whole plan's length: they become its stop rules. The old ending
     (the hearthstone, or staying) becomes going back where the run started - the new default,
@@ -113,20 +116,22 @@ def upgrade(p):
     return p
 
 
-def _q(text):
+def _q(text: str | float) -> str:
     """Quote a value for a script line."""
     return '"%s"' % str(text).replace('"', "'")
 
 
-def end_line(end):
-    how = (end or {}).get("how", "start")
+def end_line(end: dict[str, Any] | None) -> str:
+    """The script line for a plan's end place (its "end": how, and map and cell for a place)."""
+    end = end or {}
+    how = end.get("how", "start")
     if how == "place" and end.get("map"):
         cell = end.get("cell")
         return "end_at %s%s" % (end["map"], (" at %d,%d" % tuple(cell)) if cell else "")
     return "end_at %s" % (how if how in END_HOWS and how != "place" else "start")
 
 
-def to_script(plan):
+def to_script(plan: dict[str, Any]) -> str:
     lines = ["# %s" % (plan.get("name") or "plan"),
              "# Made with the plan editor. Saving it as a script lets you edit it by hand.", "",
              end_line(plan.get("end"))]
@@ -142,9 +147,9 @@ def to_script(plan):
         lines.append("stop_when bag(%s) < %s : %s is running out" % (
             _q(plan["stop_when_item"]), plan.get("stop_when_item_below", 0), plan["stop_when_item"]))
     lines.append("")
-    spots = plan.get("spots", [])
+    spots: list[dict[str, Any]] = plan.get("spots", [])
     several = len(spots) > 1
-    body = []
+    body: list[str] = []
     for s in spots:
         opts = ["map=%s" % s["map"]]
         if several and s.get("minutes"):
@@ -172,15 +177,15 @@ def to_script(plan):
     return "\n".join(lines) + "\n"
 
 
-def path(name):
+def path(name: str) -> str:
     return os.path.join(paths.PLANS, paths.safe_name(name) + ".json")
 
 
-def names():
+def names() -> list[str]:
     return sorted(n[:-5] for n in os.listdir(paths.PLANS) if n.endswith(".json"))
 
 
-def load(name):
+def load(name: str) -> dict[str, Any]:
     with open(path(name), encoding="utf-8") as f:
         checked = Plan.model_validate(json.load(f)).model_dump()
     p = dict(PLAN_DEFAULTS)
@@ -189,23 +194,23 @@ def load(name):
     return p
 
 
-def save(plan):
+def save(plan: dict[str, Any]) -> None:
     json.save(path(plan["name"]), Plan.model_validate(plan).model_dump(), indent=2)
 
 
-def delete(name):
+def delete(name: str) -> None:
     filelock.delete(path(name))
 
 
-def same_file(a, b):
+def same_file(a: str, b: str) -> bool:
     """True when two paths point at the same file on this disk (Windows ignores case), so a
     rename that only changes the case must not delete the file it just saved."""
     return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
 
 
-def script_path(name):
+def script_path(name: str) -> str:
     return os.path.join(paths.SCRIPTS, paths.safe_name(name) + ".mwf")
 
 
-def script_names():
+def script_names() -> list[str]:
     return sorted(n[:-4] for n in os.listdir(paths.SCRIPTS) if n.endswith(".mwf"))

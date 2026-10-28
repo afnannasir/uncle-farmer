@@ -10,6 +10,8 @@ The format written here is the subset of PO this project uses: one string per ms
 no contexts, no source references. A header field the translator adds - X-Language-Name - is the
 name of the language in that language, shown in Settings."""
 
+from __future__ import annotations
+
 import ast
 import os
 import struct
@@ -99,7 +101,7 @@ def _field(name: str, value: str) -> list[str]:
 
 def header_text(header: dict[str, str]) -> str:
     """The msgid-"" msgstr: one 'Name: value' line per field, lower-case keys in, canonical out."""
-    lines = []
+    lines: list[str] = []
     for name, default in HEADER_FIELDS:
         lines.append("%s: %s\n" % (name, header.get(name.lower()) or (default if name != "Language" else "")))
     for name in sorted(header):

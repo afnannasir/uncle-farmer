@@ -1,10 +1,12 @@
 """Trusted players by name or by id, and auto replies that call the player by name."""
 
+from __future__ import annotations
+
 from unclefarmer import messages, trust
 
 
 class Link:
-    def send(self, line):
+    def send(self, line: str) -> str:
         return {"idof Sara": "3005", "idof Kim": "2001"}.get(line, "0")
 
 

@@ -1,10 +1,19 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """Reading a character's setup into a profile: the all-in-one scan, folding it into a profile,
 saving it, and the screen-reader summary.
 """
 
+from __future__ import annotations
+
 import json
 
 from unclefarmer import paths, scan
+from pathlib import Path
+import pytest
+from conftest import stand_in
+from collections.abc import Iterable
+from typing import Any
 
 HUNTER_SKILLS = ["Arcane Shot", "Aimed Shot", "Rapid Arrows"]
 
@@ -27,14 +36,14 @@ W_USE2=2
 
 
 class FakeLink:
-    def __init__(self, answers):
+    def __init__(self, answers: dict[str, Any]) -> None:
         self.answers = answers
 
-    def json(self, line):
+    def json(self, line: str) -> Any:
         return self.answers.get(line)
 
 
-def game_folder(tmp_path, phrase_lines=()):
+def game_folder(tmp_path: Path, phrase_lines: Iterable[str] = ()) -> str:
     """A pretend game install with the player's keymap (and quick phrases)."""
     cfg = tmp_path / "config"
     cfg.mkdir(parents=True)
@@ -69,7 +78,7 @@ def hunter_answers():
 
 
 # ---------------------------------------------------------------- the scan
-def test_scan_reads_the_character_and_its_setup(tmp_path):
+def test_scan_reads_the_character_and_its_setup(tmp_path: Path):
     link = FakeLink(hunter_answers())
     folder = game_folder(tmp_path, phrase_lines=["1,/6", "2,/0 hello", "3,some text"])
     out = scan.scan(link, folder)
@@ -98,7 +107,7 @@ def test_scan_reads_the_character_and_its_setup(tmp_path):
                                    "skip_enemy_corpses": True}
 
 
-def test_scan_without_a_game_folder_reports_what_it_can(tmp_path):
+def test_scan_without_a_game_folder_reports_what_it_can(tmp_path: Path):
     link = FakeLink(hunter_answers())
     out = scan.scan(link, "")
     assert out["name"] == "Hero" and out["keys"] == {}
@@ -119,7 +128,7 @@ def test_json_swallows_errors_and_error_answers():
     assert scan._json(FakeLink({}), "missing") is None
 
     class Boom:
-        def json(self, line):
+        def json(self, line: str) -> Any:
             raise OSError("closed")
 
     assert scan._json(Boom(), "x") is None
@@ -127,7 +136,7 @@ def test_json_swallows_errors_and_error_answers():
 
 # ---------------------------------------------------------------- applying
 def test_apply_learns_keys_beasts_and_pets():
-    p = {}
+    p: dict[str, Any] = {}
     s = {"keys": {"move_keys": {"up": "w"}, "pk_key": "z"},
          "skill_keys": [{"slot": 1, "page": 1, "key": "j", "skill": "A"},
                         {"slot": 11, "page": 2, "key": "y", "skill": "B"}],
@@ -164,7 +173,7 @@ def test_apply_of_an_empty_scan_only_sets_the_defaults():
 
 
 # ---------------------------------------------------------------- saving and summary
-def test_scan_and_save_folds_it_into_the_file(monkeypatch, tmp_path):
+def test_scan_and_save_folds_it_into_the_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
     p, s = scan.scan_and_save(FakeLink(hunter_answers()), "Hero", "")
     assert s["name"] == "Hero" and p["scan"] is s and s["class"] == "Hunter"
@@ -173,8 +182,8 @@ def test_scan_and_save_folds_it_into_the_file(monkeypatch, tmp_path):
     assert saved["scan"]["name"] == "Hero"
 
 
-def test_summary_reads_the_scan_back(monkeypatch):
-    monkeypatch.setattr(scan.gamekeys, "_game", lambda: {})     # the default phrase keys
+def test_summary_reads_the_scan_back(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(scan.gamekeys, "_game", stand_in(scan.gamekeys._game, lambda: {}))     # the default phrase keys
     assert scan.summary(None) == ""
     assert scan.summary({}) == ""
     s = {"name": "Hero", "class": "Hunter", "level": 80, "when": "2026-01-01 10:00",

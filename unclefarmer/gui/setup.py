@@ -1,19 +1,22 @@
 """Settings for the whole app: the game and its agent, speech, language, the farming day."""
 
+from __future__ import annotations
+
 import os
+from typing import Any
 
 import wx
 
 from .. import applog, daily, gameinstall, i18n, paths, updater
 from ..i18n import _
-from .common import ask, buttons, enable_label, error, group, info, ok_cancel, page, tabs
+from .common import Dialog, ask, buttons, enable_label, error, group, info, ok_cancel, page, tabs, modal
 
 SPEECH_MODES = ("running", "always", "never")
 AFTER = ("nothing", "close_game", "shutdown")
 
 
-class SetupDialog(wx.Dialog):
-    def __init__(self, parent, app_settings):
+class SetupDialog(Dialog):
+    def __init__(self, parent: wx.Window, app_settings: dict[str, Any]) -> None:
         super().__init__(parent, title=_("Settings"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.s = app_settings
         root = wx.BoxSizer(wx.VERTICAL)
@@ -33,7 +36,7 @@ class SetupDialog(wx.Dialog):
         if not self.folder.GetValue():
             self.on_find(None, quiet=True)
 
-    def game_page(self, nb):
+    def game_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Game"))
         f = group(panel, box, _("Mist World"))
         self.folder = f.text(_("&Game folder:"), self.s.get("game_folder", ""))
@@ -44,7 +47,7 @@ class SetupDialog(wx.Dialog):
         self.install_btn, self.remove_btn = buttons(f.parent, f.box, (_("&Install"), self.on_install),
                                                     (_("&Remove"), self.on_remove))
 
-    def speech_page(self, nb):
+    def speech_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Speech and language"))
         f = group(panel, box, _("Speech"))
         self.speak = f.check(_("&Speak important events with NVDA"), self.s.get("speak", True))
@@ -61,13 +64,13 @@ class SetupDialog(wx.Dialog):
         codes = [c for c, _n in self.langs]
         lang = self.s.get("language", "en")
         self.lang = f.choice(_("&Language:"), [n for _c, n in self.langs], codes.index(lang) if lang in codes else 0)
-        self.updates = None
+        self.updates: wx.CheckBox | None = None
         if updater.REPO:          # nowhere to look for updates: no switch for it
             f = group(panel, box, _("Updates"))
             self.updates = f.check(_("Look for a new &version when Uncle Farmer starts"),
                                    self.s.get("check_updates", True))
 
-    def day_page(self, nb):
+    def day_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Farming day"))
         f = group(panel, box, _("Stop every day"))
         self.day_on = f.check(_("&Stop farming every day at a set time, whatever the bot is doing"),
@@ -91,18 +94,18 @@ class SetupDialog(wx.Dialog):
         self.after.Bind(wx.EVT_CHOICE, lambda e: self.sync_after())
         self.sync_after()
 
-        def sync(_evt=None):
+        def sync(_evt: wx.Event | None = None) -> None:
             self.day_at.Enable(self.day_on.GetValue())
             enable_label(self.day_at, self.day_on.GetValue())
         self.day_on.Bind(wx.EVT_CHECKBOX, sync)
         sync()
 
-    def sync_after(self):
+    def sync_after(self) -> None:
         on = AFTER[max(0, self.after.GetSelection())] == "shutdown"
         self.delay.Enable(on)
         enable_label(self.delay, on)
 
-    def log_page(self, nb):
+    def log_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Logging"))
         f = group(panel, box, _("Log files"))
         level = str(self.s.get("log_level", applog.DEFAULT_LEVEL)).upper()
@@ -124,14 +127,14 @@ class SetupDialog(wx.Dialog):
             "so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."),
             lines=3)
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         if self.day_on.GetValue() and not daily.valid(self.day_at.GetValue()):
             error(self, _("Enter the daily stop time as HH:MM, for example 04:50."))
             self.day_at.SetFocus()
             return
         self.EndModal(wx.ID_OK)
 
-    def refresh(self):
+    def refresh(self) -> None:
         folder = self.folder.GetValue().strip()
         st = gameinstall.status(folder)
         text = {
@@ -146,20 +149,20 @@ class SetupDialog(wx.Dialog):
         self.install_btn.Enable(st in ("missing", "other"))
         self.remove_btn.Enable(st in ("installed", "other"))
 
-    def on_browse(self, _evt):
-        with wx.DirDialog(self, _("Choose the Mist World folder (the one with mw.exe)"),
-                          self.folder.GetValue()) as d:
+    def on_browse(self, _evt: wx.Event) -> None:
+        with modal(wx.DirDialog(self, _("Choose the Mist World folder (the one with mw.exe)"),
+                          self.folder.GetValue())) as d:
             if d.ShowModal() == wx.ID_OK:
                 self.folder.SetValue(d.GetPath())
 
-    def on_find(self, _evt, quiet=False):
+    def on_find(self, _evt: wx.Event | None, quiet: bool = False) -> None:
         found = gameinstall.running_game_folders()
         if found:
             self.folder.SetValue(found[0])
         elif not quiet:
             info(self, _("Mist World isn't running. Start it, or use Browse."))
 
-    def on_install(self, _evt):
+    def on_install(self, _evt: wx.Event) -> None:
         try:
             gameinstall.install(self.folder.GetValue().strip())
         except OSError as e:
@@ -168,7 +171,7 @@ class SetupDialog(wx.Dialog):
         self.refresh()
         info(self, _("Installed. Restart Mist World to load it."))
 
-    def on_remove(self, _evt):
+    def on_remove(self, _evt: wx.Event) -> None:
         if not ask(self, _("Remove the agent from the game? The bot won't work until you install it again.")):
             return
         try:
@@ -178,7 +181,7 @@ class SetupDialog(wx.Dialog):
             return
         self.refresh()
 
-    def apply(self):
+    def apply(self) -> None:
         self.s["game_folder"] = self.folder.GetValue().strip()
         self.s["language"] = self.langs[max(0, self.lang.GetSelection())][0]
         self.s["speak"] = self.speak.GetValue()

@@ -1,21 +1,17 @@
-# pyright: strict
 """Pressing, holding and letting go of keys (all through the agent, the game's own key handler).
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
+from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Protocol, cast
+
 
 from ...i18n import _
 from .base import (Stopped, agent_strike)
+from ...link import GameLink
 from .parts import Parts
-
-
-class AgentConnection(Protocol):
-    def send(self, line: str) -> str: ...
 
 
 # The attack keys' modifiers (config/input.ini: W_SUSTAIN_ATTACKn = ALT+W_ATTACKn, W_LOCK_ATTACKn =
@@ -27,12 +23,10 @@ class KeysMixin(Parts):
     held: set[str]
     agent_keys: bool = False
     agent_slots: bool = False
-    check: Callable[[], None]
-    wait_keys_free: Callable[[], None]
 
     @property
-    def _link(self) -> AgentConnection:
-        return cast(AgentConnection, self.a)
+    def _link(self) -> GameLink:
+        return self.a
 
     def key(self, k: str, ms: int = 60) -> None:
         self.check()
@@ -53,10 +47,10 @@ class KeysMixin(Parts):
         mods, _plus, base = k.lower().rpartition("+")
         if mods not in SLOT_MODS:
             return None
-        keys = cast(list[str] | None, getattr(self, "_attack_keys", None))
+        keys: list[str] | None = getattr(self, "_attack_keys", None)
         if keys is None:
             from ... import gamekeys
-            keys = [str(x).lower() for x in cast(list[str], gamekeys.attack_key_list())]
+            keys = [str(x).lower() for x in gamekeys.attack_key_list()]
             self._attack_keys = keys
         if base not in keys:
             return None
@@ -101,5 +95,5 @@ class KeysMixin(Parts):
         self.held.clear()
 
     def move_key(self, direction: str) -> str:
-        move_keys = cast(dict[str, str], self.p["move_keys"])
+        move_keys: dict[str, str] = self.p["move_keys"]
         return move_keys[direction]

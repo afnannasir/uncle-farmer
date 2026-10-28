@@ -3872,6 +3872,9 @@ msgstr ""
 msgid "line {n} again after respawning"
 msgstr ""
 
+msgid "line {n}: a condition or value is missing"
+msgstr ""
+
 msgid "line {n}: died every time I tried it"
 msgstr ""
 

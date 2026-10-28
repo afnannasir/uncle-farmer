@@ -9,11 +9,14 @@ never written to a file or a log, and gone when Uncle Farmer closes. Private mes
 (messages.py): they show here too, but it is the Messenger that speaks and sends them.
 """
 
+from __future__ import annotations
+
 import collections
-from typing import Any
 import threading
 import time
 import winsound
+from collections.abc import Callable
+from typing import Any
 
 from .i18n import N_, _
 from .link import AgentError, AgentLink
@@ -41,15 +44,17 @@ CHANNELS: "collections.OrderedDict[int, str]" = collections.OrderedDict([
 CHANNEL_KEYS = [str(k) for k in CHANNELS]
 PRIVATE = "private"
 NOTICE = "notice"          # the game's broadcasts on other numbers: loot, events, team recruiting
+Line = dict[str, Any]      # one chat line: {"when", "channel", "name", "text", "mine"} and maybe more
 SPEAK_DEFAULT = ["4", "3", "2"]     # team, gang, nearby (private messages: the Messenger's setting)
 
 
 MOST = 200                 # the game's chat box; the agent (v35) sends a longer text in parts
 
 
-def parts(text):
+def parts(text: str) -> list[str]:
     """The parts a text is sent in, as the agent cuts it: at the last space before 200 characters."""
-    out, rest = [], " ".join(text.split())
+    out: list[str] = []
+    rest = " ".join(text.split())
     while len(rest) > MOST:
         cut = rest.rfind(" ", 0, MOST + 1)
         if cut < MOST // 2:
@@ -61,14 +66,14 @@ def parts(text):
     return out
 
 
-def channel_of(incoming):
+def channel_of(incoming: int) -> str:
     """The channel key ("0".."5") of an incoming number, or NOTICE."""
     if incoming % 3 == 0 and incoming // 3 in CHANNELS:
         return str(incoming // 3)
     return NOTICE
 
 
-def channel_name(key):
+def channel_name(key: str) -> str:
     if key == PRIVATE:
         return _("Private messages")
     if key == NOTICE:
@@ -80,33 +85,35 @@ class Feed(threading.Thread):
     """One game's chat. `on_line(feed, line)` is called (on this thread) for each new line:
     {"when", "channel", "name", "text", "mine"}, and "voice" (its name in the game) for a voice message."""
 
-    def __init__(self, pid, on_line=None):
+    def __init__(self, pid: int, on_line: Callable[["Feed", Line], None] | None = None) -> None:
         super().__init__(daemon=True, name="unclefarmer-chat-%d" % pid)
         self.pid = pid
         self.on_line = on_line
-        self.lines = collections.deque(maxlen=KEEP)          # every channel but the notices
-        self.buffers = collections.defaultdict(lambda: collections.deque(maxlen=KEEP_EACH))
+        self.lines: collections.deque[Line] = collections.deque(maxlen=KEEP)   # every channel but the notices
+        self.buffers: collections.defaultdict[str, collections.deque[Line]] = collections.defaultdict(
+            lambda: collections.deque(maxlen=KEEP_EACH))
         self.buffers[PRIVATE] = collections.deque(maxlen=KEEP_PRIVATE)
-        self.ids = {}                 # player name (lower case) -> id, from private messages: memory only
+        self.ids: dict[str, int] = {}                 # player name (lower case) -> id, from private messages: memory only
         self.room = 0
         self.halt = threading.Event()
         self.unsupported = False
-        self.link = None
+        self.link: AgentLink | None = None
         self.send_lock = threading.Lock()
-        self.sender = None
+        self.sender: AgentLink | None = None
         self.sender_used = 0.0        # time.monotonic() of the sending connection's last answer
         self.version = 0
         self.voice_parts = 0
 
-    def stop(self):
+    def stop(self) -> None:
         self.halt.set()
 
-    def buffer(self, key):
+    def buffer(self, key: str) -> list[Line]:
         """The lines of one buffer: "all", or a channel key."""
         return list(self.lines) if key == "all" else list(self.buffers.get(key, ()))
 
-    def add(self, channel, name, text, mine=False, to=None, peer_id=0, voice=None):
-        line = {"when": time.time(), "channel": channel, "name": name, "text": text, "mine": mine}
+    def add(self, channel: str, name: str, text: str, mine: bool = False, to: str | None = None, peer_id: int = 0,
+            voice: str | None = None) -> None:
+        line: Line = {"when": time.time(), "channel": channel, "name": name, "text": text, "mine": mine}
         if to:
             line["to"] = to
         if voice:
@@ -123,7 +130,7 @@ class Feed(threading.Thread):
         if self.on_line:
             self.on_line(self, line)
 
-    def run(self):
+    def run(self) -> None:
         try:
             self.link = AgentLink(pid=self.pid)
             v = self.link.send("version")
@@ -160,7 +167,7 @@ class Feed(threading.Thread):
                 self.link.close()
 
     @staticmethod
-    def peer_key(line):
+    def peer_key(line: Line) -> str:
         """One conversation per player: by the game's id when known, else by name."""
         return "id:%d" % line["peer_id"] if line.get("peer_id") else "name:" + (line.get("peer") or "?").lower()
 
@@ -178,7 +185,7 @@ class Feed(threading.Thread):
             c["lines"].append(line)
         return sorted(convs.values(), key=lambda c: -c["order"])
 
-    def _ask(self, line):
+    def _ask(self, line: str) -> str:
         with self.send_lock:
             if self.sender is not None and time.monotonic() - self.sender_used > SENDER_IDLE:
                 self.sender.close()          # the agent has dropped it, or is about to
@@ -190,7 +197,7 @@ class Feed(threading.Thread):
             self.sender_used = time.monotonic()
             return reply
 
-    def id_of(self, who):
+    def id_of(self, who: str) -> int | None:
         """The game's id for a player: typed as a number, or a name this character messaged with,
         or one the game has shown (agent v34 `idof`). None when it isn't known."""
         who = who.strip()
@@ -207,13 +214,13 @@ class Feed(threading.Thread):
         return n or None
 
     # ---------------------------------------------------------------- voice messages
-    def voice_ready(self):
+    def voice_ready(self) -> str | None:
         """None when this game's agent does voice messages, else why not, for the player."""
         if self.unsupported or self.version < AGENT_VOICE:
             return _("Voice messages need the new agent in this game: restart the game.")
         return None
 
-    def play_voice(self, name):
+    def play_voice(self, name: str) -> str | None:
         """Plays a voice message (the agent decodes it with the game's own codec). None, or why not."""
         why = self.voice_ready()
         if why:
@@ -229,7 +236,7 @@ class Feed(threading.Thread):
         winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT)
         return None
 
-    def record_voice(self):
+    def record_voice(self) -> str | None:
         """Starts recording from the game's microphone. None, or why not."""
         why = self.voice_ready()
         if why:
@@ -241,7 +248,7 @@ class Feed(threading.Thread):
             return _("The game didn't start recording: {why}", why=e)
         return None if r == "recording" else _("The game didn't start recording: {why}", why=r)
 
-    def send_voice(self, channel=None, to=0):
+    def send_voice(self, channel: str | None = None, to: int = 0) -> str | None:
         """Stops recording and sends it: to Team or Gang (channel "4" or "3"), or to the player with
         id to. None when sent, else why not; voice_parts then says in how many messages (the agent
         cuts a recording longer than 20 s into parts of about the same length, as the game takes
@@ -263,13 +270,13 @@ class Feed(threading.Thread):
             return _("Nothing was recorded: check the microphone the game uses.")
         return _("The game didn't send it: {why}", why=r)
 
-    def cancel_voice(self):
+    def cancel_voice(self) -> None:
         try:
             self._ask("voice cancel")
         except (AgentError, OSError):
             self.sender = None
 
-    def say(self, channel, text):
+    def say(self, channel: int, text: str) -> str | None:
         """A line on a chat channel (0-6). Returns None when sent, else why not, for the player."""
         text = " ".join(text.split())
         if not text:

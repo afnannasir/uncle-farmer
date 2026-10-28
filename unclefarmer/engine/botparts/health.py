@@ -1,22 +1,20 @@
-# pyright: strict
 """Staying alive: the look-after step of every loop, death, MP, potions, the class's own heal and resting.
 
 Part of the Bot class (engine/bot.py), which puts these mixins together; methods call each other
 through self whatever part they live in.
 """
 
-import re
-from typing import Any, Literal, Protocol, cast
+from __future__ import annotations
 
-from ... import atlas, gamekeys
+import re
+from typing import Any, Literal
+
+from ... import atlas, gamekeys, jsonio
 from ...i18n import _
 from .. import combat, potions, repair
 from .base import (CONFIRM, RESPAWN, RESPAWN_MENU, Respawned, Stopped, potion_kind)
-from .parts import Parts
-
-
-class HealthLink(Protocol):
-    def json(self, line: str) -> Any: ...
+from ...link import GameLink
+from .parts import as_bot, Parts
 
 
 ASK_EVERY = 3.0       # seconds between keyless HP/MP requests (agent 39): no key, so no reason to wait long
@@ -29,8 +27,8 @@ class HealthMixin(Parts):
     POTIONS_LOW = 20      # warn once when this few are left
     agent_ask: bool = False
     agent_sheet: bool = False
-    _keys_to_fill: bool
-    _potion_keys: tuple[float, dict[str, tuple[str, str]], dict[str, str], dict[str, int]] | None
+    keys_to_fill: bool
+    potion_slots: tuple[float, dict[str, tuple[str, str]], dict[str, str], dict[str, int]] | None
     _heals: bool
     _support_at: float
     _potions_stopped: bool
@@ -51,11 +49,10 @@ class HealthMixin(Parts):
     low_since: float | None
     no_rest_until: float
     resting: bool
-    skillbook: Any
 
     @property
-    def _game(self) -> HealthLink:
-        return cast(HealthLink, self.a)
+    def _game(self) -> GameLink:
+        return self.a
 
     def potion(self, kind: str) -> tuple[str | None, str | None]:
         """(key, potion name) for an HP ("hp"), MP ("mp") or pet ("pet_hp", "pet_mp") potion. The
@@ -71,7 +68,7 @@ class HealthMixin(Parts):
         if key != "auto":
             return key, (None if want.lower() == "auto" else want)
         now = self.clock.time()
-        cache = getattr(self, "_potion_keys", None)
+        cache = getattr(self, "potion_slots", None)
         if not cache or now - cache[0] >= 60:
             cache = self._read_potion_slots(cache)
         if want.lower() == "auto":
@@ -88,7 +85,7 @@ class HealthMixin(Parts):
     def hotkey_of(self, name: str) -> str | None:
         """The key (1 .. =) of the hotkey slot holding this item, or None. Read with the potion
         slots, again at most every minute."""
-        cache = getattr(self, "_potion_keys", None)
+        cache = getattr(self, "potion_slots", None)
         if not cache or self.clock.time() - cache[0] >= 60:
             cache = self._read_potion_slots(cache)
         return cache[2].get(name.lower())
@@ -101,9 +98,9 @@ class HealthMixin(Parts):
         found: dict[str, tuple[int, str, str]] = {}
         by_name: dict[str, str] = {}
         bag: dict[str, int] = {}
-        if isinstance(raw_slots, dict) and isinstance(raw_rows, list):
-            slots = cast(dict[str, Any], raw_slots)
-            rows = cast(list[dict[str, Any]], raw_rows)
+        if jsonio.is_object(raw_slots) and jsonio.is_array(raw_rows):
+            slots = raw_slots
+            rows: list[dict[str, Any]] = raw_rows
             by_uid = {r["uid"]: r for r in rows}
             by_type: dict[Any, dict[str, Any]] = {}
             for r in rows:
@@ -116,8 +113,8 @@ class HealthMixin(Parts):
                 # a slot is [item type, bag uid]; the uid goes stale when the stack changes, the
                 # type doesn't (live: slot 2's Large Blue Potion uid was gone, the potions weren't)
                 r: dict[str, Any] | None = None
-                if isinstance(v, list):
-                    slot = cast(list[Any], v)
+                if jsonio.is_array(v):
+                    slot = v
                     if len(slot) > 1:
                         r = by_type.get(slot[0]) or by_uid.get(slot[1])
                 i = int(idx) - 1
@@ -137,8 +134,8 @@ class HealthMixin(Parts):
                 self.log(_("{what} potion: {item} on key {key}", what=k.upper(), item=v[2], key=v[1]))
             if old:
                 self.potion_keys_lost(old[1], picked, bag)
-        self._potion_keys = (now, picked, by_name, bag)
-        return self._potion_keys
+        self.potion_slots = (now, picked, by_name, bag)
+        return self.potion_slots
 
     def potion_keys_lost(self, before: dict[str, tuple[str, str]], now: dict[str, tuple[str, str]], bag: dict[str, int]) -> None:
         """Say so when the red or blue potion we drank from a hotkey is no longer there, and have
@@ -157,7 +154,7 @@ class HealthMixin(Parts):
             elif not now.get(kind):
                 self.log(_("the {item} on key {key} are used up", item=item, key=key), speak=True)
             if not now.get(kind) and self.strongest_in_bag(kind, bag):
-                self._keys_to_fill = True
+                self.keys_to_fill = True
 
     @staticmethod
     def strongest_in_bag(kind: str, bag: dict[str, int]) -> str | None:
@@ -173,7 +170,7 @@ class HealthMixin(Parts):
     def potion_stock(self, kind: str) -> int | None:
         """How many potions of that kind ("hp", "mp") the bag holds, any size, from the last slot
         reading (at most a minute old); None before the first reading."""
-        cache = getattr(self, "_potion_keys", None)
+        cache = getattr(self, "potion_slots", None)
         if not cache:
             return None
         return sum(n for name, n in cache[3].items() if potion_kind(name) == kind)
@@ -187,7 +184,7 @@ class HealthMixin(Parts):
         reds."""
         if not self.p.get("stop_when_out_of_potions", True) or self._potions_stopped:
             return        # once: the guard's defend() and finish() run through here too
-        restock = cast(list[dict[str, Any]], self.p.get("restock") or [])
+        restock: list[dict[str, Any]] = self.p.get("restock") or []
         restocked = {str(r.get("item") or "").lower() for r in restock}
         for kind, label in (("hp", _("red")), ("mp", _("blue"))):
             if kind == "mp" and not self.p.get("mp_use", True):
@@ -208,8 +205,8 @@ class HealthMixin(Parts):
             since = self._potions_out.get(kind)
             if since is None:
                 self._potions_out[kind] = now
-                if self._potion_keys is not None:
-                    self._potion_keys = (0.0, self._potion_keys[1], self._potion_keys[2], self._potion_keys[3])   # read again next time
+                if self.potion_slots is not None:
+                    self.potion_slots = (0.0, self.potion_slots[1], self.potion_slots[2], self.potion_slots[3])   # read again next time
                 continue
             if now - since < 3:
                 continue
@@ -261,7 +258,7 @@ class HealthMixin(Parts):
         if self.skillbook is None:
             if share >= p.get("heal_below", 85) and not self.resting:
                 return bool(getattr(self, "_heals", False))
-            self.skillbook = cast(Any, combat.SkillBook(self))
+            self.skillbook = combat.SkillBook(self)
         sb = self.skillbook
         healer = sb.healer()
         if not (sb.ok and healer):
@@ -288,11 +285,11 @@ class HealthMixin(Parts):
         self._support_at = now
         if self.skillbook is None:
             share = combat.hp_pct(me)
-            vitals = cast(dict[str, Any], me.get("vitals") or {})
+            vitals: dict[str, Any] = me.get("vitals") or {}
             if share >= p.get("heal_below", 85) and not vitals.get("debuffs") \
                     and not getattr(self, "modes_done", False):
                 return            # nothing to do yet, and no fight seen: don't read the skills early
-            self.skillbook = cast(Any, combat.SkillBook(self))
+            self.skillbook = combat.SkillBook(self)
         sb = self.skillbook
         if not sb.ok:
             return
@@ -437,11 +434,11 @@ class HealthMixin(Parts):
         """(mp, max mp) from the freshest reading, or None. The own-HP key's answer (agent
         "vitals") has MP but not max MP; that comes from any character sheet seen this game, else
         from the highest MP read this run."""
-        sheet = cast(dict[str, Any], me.get("sheet") or {})
+        sheet: dict[str, Any] = me.get("sheet") or {}
         if sheet.get("maxmp"):
             self.maxmp = sheet["maxmp"]
         best = None          # (arrived at, mp)
-        v = cast(dict[str, Any], me.get("vitals") or {})
+        v: dict[str, Any] = me.get("vitals") or {}
         if v and v.get("mp", -1) >= 0 and v.get("age_ms", 1e9) < 120000:
             best = (now - v["age_ms"] / 1000.0, v["mp"])
         if sheet.get("maxmp") and sheet.get("age", 999) < 120:
@@ -516,7 +513,7 @@ class HealthMixin(Parts):
     def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]:
         """Heal, refresh the sheet, check stop rules. Runs inside every loop."""
         self.check()
-        me = cast(dict[str, Any], me or self.me())
+        me = me or self.me()
         if me.get("hp", 1) <= 0:
             self.handle_death()
         now = self.clock.time()
@@ -535,7 +532,7 @@ class HealthMixin(Parts):
         self.watch_potions(now)
 
         # The game's first "about to break" warning: one toolbox mends everything we wear.
-        repair.check(self)
+        repair.check(as_bot(self))
 
         if not self.requests.empty():
             self.run_requests()

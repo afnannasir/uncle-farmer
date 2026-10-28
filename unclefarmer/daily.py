@@ -11,14 +11,17 @@ STOP_BEFORE minutes: leaving the monsters takes a while, and the drop timer keep
 minutes after reaching safety.
 """
 
+from __future__ import annotations
+
 import datetime as dt
 import re
+from typing import Any
 
 STOP_BEFORE = 10      # minutes before the reset, for the default stop time
 NEAR_RESET = 120      # a stop time this close before the reset blocks starting until the reset
 
 
-def reset_local(now=None):
+def reset_local(now: dt.datetime | None = None) -> dt.datetime:
     """The next 00:00 GMT, as a local datetime (naive, the computer's own clock)."""
     now = now or dt.datetime.now().astimezone()
     utc = now.astimezone(dt.timezone.utc)
@@ -26,39 +29,39 @@ def reset_local(now=None):
     return nxt.astimezone(now.tzinfo).replace(tzinfo=None)
 
 
-def game_day(now=None):
+def game_day(now: dt.datetime | None = None) -> str:
     """The game's day as "YYYY-MM-DD": the date at 00:00 GMT, when its daily limits start again."""
     now = now or dt.datetime.now().astimezone()
     return now.astimezone(dt.timezone.utc).date().isoformat()
 
 
-def reset_clock():
+def reset_clock() -> str:
     """The reset as "HH:MM" on this computer's clock."""
     return reset_local().strftime("%H:%M")
 
 
-def default_clock():
+def default_clock() -> str:
     return (reset_local() - dt.timedelta(minutes=STOP_BEFORE)).strftime("%H:%M")
 
 
-def valid(text):
+def valid(text: str | None) -> bool:
     return bool(re.match(r"^([01]\d|2[0-3]):[0-5]\d$", (text or "").strip()))
 
 
-def stop_clock(app):
+def stop_clock(app: dict[str, Any]) -> str | None:
     """The daily stop time in force ("HH:MM"), or None when it is turned off."""
     if not app.get("daily_stop", True):
         return None
-    t = (app.get("daily_stop_at") or "").strip()
+    t = str(app.get("daily_stop_at") or "").strip()
     return t if valid(t) else default_clock()
 
 
-def _at(day, clock):
+def _at(day: dt.datetime, clock: str) -> dt.datetime:
     h, m = map(int, clock.split(":"))
     return day.replace(hour=h, minute=m, second=0, microsecond=0)
 
 
-def plan(app, now=None):
+def plan(app: dict[str, Any], now: dt.datetime | None = None) -> tuple[dt.datetime | None, str | None]:
     """(the next stop as a local datetime or None, why a run may not start now or None)."""
     clock = stop_clock(app)
     if not clock:

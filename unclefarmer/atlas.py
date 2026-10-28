@@ -3,16 +3,21 @@
 Built from the game's own map table. Read-only data in the data folder.
 """
 
+from __future__ import annotations
+
 import os
 import threading
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from . import jsonio as json, paths
 from .i18n import _
 
-_maps = None
-_farms = None
-_models = {}
+if TYPE_CHECKING:
+    from .atlaslib import MapModel
+
+_maps: dict[int, dict[str, Any]] | None = None
+_farms: dict[int, dict[str, Any]] | None = None
+_models: dict[int, "MapModel"] = {}
 _lock = threading.Lock()
 
 
@@ -20,15 +25,17 @@ def maps() -> dict[int, dict[str, Any]]:
     global _maps
     if _maps is None:
         with open(os.path.join(paths.DATA, "atlas.json"), encoding="utf-8") as f:
-            _maps = {int(k): v for k, v in json.load(f)["maps"].items()}
+            raw: dict[str, dict[str, Any]] = json.load(f)["maps"]
+        _maps = {int(k): v for k, v in raw.items()}
     return _maps
 
 
-def farms():
+def farms() -> dict[int, dict[str, Any]]:
     global _farms
     if _farms is None:
         with open(os.path.join(paths.DATA, "farms.json"), encoding="utf-8") as f:
-            _farms = {int(k): v for k, v in json.load(f).items()}
+            raw: dict[str, dict[str, Any]] = json.load(f)
+        _farms = {int(k): v for k, v in raw.items()}
     return _farms
 
 
@@ -42,7 +49,7 @@ def label(mid: int | str) -> str:
     return "%s (%s)" % (name(mid), mid)
 
 
-def model(mid: int | str) -> Any:
+def model(mid: int | str) -> "MapModel":
     """The walkable grid of a map (loads in about half a second, then cached).
 
     A long travel or survey meets every map on the way, and each model is several MB: only the
@@ -62,9 +69,9 @@ def zones(mid: int | str, kinds: tuple[str, ...] = ("monster", "elite", "boss"))
     return [z for z in maps().get(int(mid), {}).get("spawn", {}).get("zones", []) if z["kind"] in kinds]
 
 
-_kinds = None
+_kinds: dict[int, str] | None = None
 
-def kind_words(k):
+def kind_words(k: str | None) -> str:
     """What a map kind means, for the player ("" for an ordinary farming field)."""
     return {"dungeon": _("dungeon - you leave by its chest, not on foot"),
             "dungeon?": _("probably a dungeon - no way out on foot"),
@@ -72,10 +79,10 @@ def kind_words(k):
             "wedding": _("wedding map"), "arena": _("arena"), "fishing": _("fishing lake"),
             "test": _("test map"), "event": _("minigame map"),
             "instance": _("closed map - no way in or out on foot"),
-            "town": _("town"), "transit": _("road")}.get(k, "")
+            "town": _("town"), "transit": _("road")}.get(k or "", "")
 
 
-def kind(mid):
+def kind(mid: int | str) -> str | None:
     """What sort of map it is, from the game's own data:
     dungeon, dungeon?, field (an ordinary farming map), town, transit, secret_room, gang, wedding,
     arena, fishing, test or instance. None for a map not in the table."""
@@ -83,22 +90,23 @@ def kind(mid):
     if _kinds is None:
         try:
             with open(os.path.join(paths.DATA, "map_kinds.json"), encoding="utf-8") as f:
-                _kinds = {int(k): v["kind"] for k, v in json.load(f).items()}
+                raw: dict[str, dict[str, Any]] = json.load(f)
+            _kinds = {int(k): str(v["kind"]) for k, v in raw.items()}
         except (OSError, ValueError):
             _kinds = {}
     return _kinds.get(int(mid))
 
 
-def farming_maps():
+def farming_maps() -> list[tuple[int, str, str]]:
     """Maps that have monster zones, as (id, label, summary): ordinary farming fields first, then
     dungeons, secret rooms and the rest, each saying what it is."""
-    out = []
+    out: list[tuple[int, str, str]] = []
     for mid, m in maps().items():
         zs = zones(mid)
         if not zs:
             continue
         sp = m["spawn"]
-        bits = []
+        bits: list[str] = []
         if kind_words(kind(mid)):
             bits.append(kind_words(kind(mid)))
         if sp.get("levels"):
@@ -112,11 +120,11 @@ def farming_maps():
     return out
 
 
-def all_maps():
+def all_maps() -> list[tuple[int, str]]:
     return sorted(((mid, label(mid)) for mid in maps()), key=lambda t: t[1].lower())
 
 
-def resolve(text):
+def resolve(text: object) -> int | None:
     """A map id from '5121', 'Wolf Prairie' or 'Wolf Prairie (5121)'. None if unknown/ambiguous."""
     text = str(text).strip()
     if text.endswith(")") and "(" in text:
@@ -138,21 +146,32 @@ def monster_area(mid: int | str) -> list[float] | None:
             max(z["rect"][2] for z in zs), max(z["rect"][3] for z in zs)]
 
 
-_short = None
+_short: dict[str, dict[str, Any]] | None = None
 
 
-def patrol_loop(mid: int | str, variant: str) -> list[tuple[int, ...]] | None:
+def _cells(loop: list[str]) -> list[tuple[int, int]]:
+    """Cells written as "x|y"."""
+    out: list[tuple[int, int]] = []
+    for c in loop:
+        x, y = c.split("|")
+        out.append((int(x), int(y)))
+    return out
+
+
+def patrol_loop(mid: int | str, variant: str) -> list[tuple[int, int]] | None:
     """A ready patrol lap ('full', 'quick' or 'short') as a list of cells, or None."""
     if variant == "short":
         global _short
         if _short is None:
+            short: dict[str, dict[str, Any]]
             try:
                 with open(os.path.join(paths.DATA, "short_loops.json"), encoding="utf-8") as f:
-                    _short = json.load(f)
+                    short = json.load(f)
             except OSError:
-                _short = {}
+                short = {}
+            _short = short
         v = _short.get(str(int(mid)))
-        return [tuple(int(n) for n in c.split("|")) for c in v["loop"]] if v else None
+        return _cells(v["loop"]) if v else None
     f = farms().get(int(mid))
     if not f:
         return None
@@ -161,7 +180,7 @@ def patrol_loop(mid: int | str, variant: str) -> list[tuple[int, ...]] | None:
         return None
     if v.get("bad_hops"):
         return None     # it crosses a one-way gate the wrong way somewhere: random patrol instead
-    return [tuple(int(n) for n in c.split("|")) for c in v["loop"]]
+    return _cells(v["loop"])
 
 
 def edge_direction(mid: int, rect: tuple[float, float, float, float]) -> str | None:

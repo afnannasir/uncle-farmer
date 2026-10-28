@@ -5,6 +5,8 @@ wrong JSON type used to surface only when a bot reached that map at night; these
 fail in CI. Unknown keys are rejected so a misspelled field cannot silently do nothing.
 """
 
+from __future__ import annotations
+
 import json
 from functools import lru_cache
 from pathlib import Path
@@ -134,7 +136,7 @@ class AtlasFile(Strict):
     maps: dict[str, AtlasMap]
 
     @model_validator(mode="after")
-    def _keys_are_ids(self):
+    def _keys_are_ids(self) -> AtlasFile:
         for key, atlas_map in self.maps.items():
             if key != str(atlas_map.id):
                 raise ValueError("map key %r does not match id %d" % (key, atlas_map.id))
@@ -226,7 +228,7 @@ class Farm(Strict):
 
 class FarmsFile(RootModel[dict[str, Farm]]):
     @model_validator(mode="after")
-    def _keys_are_ids(self):
+    def _keys_are_ids(self) -> FarmsFile:
         for key, farm in self.root.items():
             if key != str(farm.id):
                 raise ValueError("farm key %r does not match id %d" % (key, farm.id))
@@ -496,16 +498,16 @@ def model(name: str) -> BaseModel:
 
 
 @pytest.mark.parametrize("name", sorted(MODELS))
-def test_data_file_matches_model(name):
+def test_data_file_matches_model(name: str) -> None:
     assert model(name) is not None
 
 
-def test_every_data_json_has_a_model():
+def test_every_data_json_has_a_model() -> None:
     found = {path.name for path in DATA.glob("*.json")}
     assert found <= set(MODELS), "no model for: %s" % sorted(found - set(MODELS))
 
 
-def test_map_references_exist_in_the_atlas():
+def test_map_references_exist_in_the_atlas() -> None:
     atlas = model("atlas.json")
     assert isinstance(atlas, AtlasFile)
     ids = {atlas_map.id for atlas_map in atlas.maps.values()}
@@ -562,7 +564,7 @@ def test_map_references_exist_in_the_atlas():
     assert not knowledge_maps - ids, "knowledge map missing"
 
 
-def test_models_reject_malformed_edits():
+def test_models_reject_malformed_edits() -> None:
     with pytest.raises(ValidationError):
         ShardsFile.model_validate({"shards": {}, "markets": {}, "shard": {}})
     with pytest.raises(ValidationError):

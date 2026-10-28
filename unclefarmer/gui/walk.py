@@ -1,32 +1,39 @@
 """The walking assistant's window: pick a dungeon entrance or a map, and the bot takes the character
 there on the fastest Swift fusion beast, never stopping to fight (the `go` script command)."""
 
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
+
 import wx
 
 from .. import atlas, dungeons, travel
 from ..errors import carry_on
 from ..i18n import _
-from .common import Form, enable_label, error, labeled, ok_cancel, page, tabs
+from .common import Dialog, Form, enable_label, error, labeled, ok_cancel, page, tabs
 
 NOT_SEEN = _("The game isn't readable. Is it running, with a character logged in?")
 
 
-def _quote(text):
+def _quote(text: str) -> str:
     return '"%s"' % text.replace('"', "").replace("\r", " ").replace("\n", " ")
 
 
-def entrance_line(e):
+def entrance_line(e: dict[str, Any]) -> str:
     team = _(", team of 2-3") if e.get("team") else ""
     return _("{name} - {map}{team}", name=e["name"], map=atlas.label(e["map"]), team=team)
 
 
-class WalkDialog(wx.Dialog):
+class WalkDialog(Dialog):
     """script: the `go` line to run once OK is pressed; title: what the run is called."""
 
-    def __init__(self, parent, game):
+    def __init__(self, parent: wx.Window, game: Callable[[], dict[str, Any] | None]) -> None:
         super().__init__(parent, title=_("Walk to"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.game = game
-        self.script = self.title = None
+        self.script = self.title = ""      # set when OK is pressed
+        self.d_items: list[dict[str, Any]] = []
+        self.m_items: list[tuple[int, str]] = []
         self.entrances = dungeons.entrances()
         # only the open world: a closed map or one inside a dungeon can't be walked to (dungeons
         # have their own tab, by entrance)
@@ -58,7 +65,7 @@ class WalkDialog(wx.Dialog):
         self.route = labeled(self, below, _("Route from where you are:"),
                              lambda p: wx.TextCtrl(p, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 90)))
         root.Add(below, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 12)
-        ok_cancel(self, root, _("&Go"), extra=(_("Show the &route"), self.on_route))
+        ok_cancel(self, root, _("&Go"), extra=[(_("Show the &route"), self.on_route)])
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(560, 560))
 
@@ -76,7 +83,7 @@ class WalkDialog(wx.Dialog):
         self.d_list.SetFocus()
 
     # ------------------------------------------------------------ lists
-    def fill_dungeons(self):
+    def fill_dungeons(self) -> None:
         q = self.d_search.GetValue().strip().lower()
         self.d_items = [e for e in self.entrances if not q or q in entrance_line(e).lower()
                         or q in (e.get("npc") or "").lower()]
@@ -85,7 +92,7 @@ class WalkDialog(wx.Dialog):
             self.d_list.SetSelection(0)
         self.describe()
 
-    def fill_maps(self):
+    def fill_maps(self) -> None:
         q = self.m_search.GetValue().strip().lower()
         self.m_items = [(mid, lab) for mid, lab in self.all_maps if not q or q in lab.lower()]
         words = [atlas.kind_words(atlas.kind(mid)) for mid, _l in self.m_items]
@@ -93,30 +100,30 @@ class WalkDialog(wx.Dialog):
         if self.m_items:
             self.m_list.SetSelection(0)
 
-    def sync_cell(self):
+    def sync_cell(self) -> None:
         on = self.cell_on.GetValue()
         for c in (self.cx, self.cy):
             c.Enable(on)
             enable_label(c, on)
 
-    def entrance(self):
+    def entrance(self) -> dict[str, Any] | None:
         i = self.d_list.GetSelection()
         return self.d_items[i] if 0 <= i < len(self.d_items) else None
 
-    def map_choice(self):
+    def map_choice(self) -> int | None:
         i = self.m_list.GetSelection()
         return self.m_items[i][0] if 0 <= i < len(self.m_items) else None
 
-    def describe(self):
+    def describe(self) -> None:
         self.route.SetValue("")
         e = self.entrance()
-        lines = []
+        lines: list[str] = []
         if e:
             if e.get("at"):
                 lines.append(_("Entrance: {npc}, on {map} at {x},{y}.", npc=e["npc"], map=atlas.label(e["map"]),
                                x=e["at"][0], y=e["at"][1]))
             else:
-                spots = e.get("spots") or []
+                spots: list[Any] = e.get("spots") or []
                 lines.append(_("Entrance: on {map}, at one of the {n} entrances the game marks there "
                                "({spots}). The bot looks at each until the game shows the {name} circle, "
                                "and remembers it for next time.", map=atlas.label(e["map"]),
@@ -135,22 +142,22 @@ class WalkDialog(wx.Dialog):
         self.d_about.SetValue("\n".join(lines))
 
     # ------------------------------------------------------------ the goal
-    def on_dungeon_page(self):
+    def on_dungeon_page(self) -> bool:
         return self.nb.GetSelection() == 0
 
-    def goal(self):
+    def goal(self) -> tuple[int, tuple[int, int] | None, str | None, str] | None:
         """(map, cell, npc, words) for what is chosen, or None."""
         if self.on_dungeon_page():
             e = self.entrance()
             if not e:
                 return None
             if e.get("at"):
-                cell = tuple(e["at"])
+                cell = (e["at"][0], e["at"][1])
             else:
-                spots = e.get("spots") or []
+                spots: list[Any] = e.get("spots") or []
                 if not spots:
                     return None
-                cell = tuple(spots[0][:2])          # the route shown goes to the first marked spot
+                cell = (spots[0][0], spots[0][1])   # the route shown goes to the first marked spot
             return e["map"], cell, e.get("npc"), e["name"]
         mid = self.map_choice()
         if mid is None:
@@ -158,17 +165,18 @@ class WalkDialog(wx.Dialog):
         cell = (self.cx.GetValue(), self.cy.GetValue()) if self.cell_on.GetValue() else None
         return mid, cell, None, atlas.label(mid)
 
-    def on_route(self, _evt):
+    def on_route(self, _evt: wx.Event) -> None:
         g = self.goal()
         if not g:
             return
         snap = self.game()
-        me = (snap or {}).get("self") or {}
-        here = ((snap or {}).get("map") or {}).get("id")
+        me: dict[str, Any] = (snap or {}).get("self") or {}
+        where: dict[str, Any] = (snap or {}).get("map") or {}
+        here: int | None = where.get("id")
         if not me or here is None:
             error(self, NOT_SEEN)
             return
-        mid, cell, npc, _words = g
+        mid, cell, _npc, _words = g
         try:
             legs = travel.plan(here, (me["x"], me["y"]), mid, cell, items=False)
         except Exception as e:      # a map the atlas can't read: say so, don't crash the window
@@ -185,12 +193,12 @@ class WalkDialog(wx.Dialog):
             self.route.SetValue("\n".join(travel.describe(legs)))
         self.route.SetFocus()
 
-    def on_ok(self, _evt):
+    def on_ok(self, _evt: wx.Event) -> None:
         g = self.goal()
         if not g:
             error(self, _("Choose where to go first."))
             return
-        mid, cell, npc, words = g
+        mid, cell, _npc, words = g
         if self.on_dungeon_page():
             self.script = "go dungeon %s%s\n" % (_quote(words), " talk" if self.talk.GetValue() else "")
         else:

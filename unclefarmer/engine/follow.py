@@ -23,16 +23,21 @@ near them that is casting or already wounded is one they are fighting. The agent
 not at whom, so that is the best sign there is.
 """
 
+from __future__ import annotations
+
 import math
 import re
+from collections.abc import Callable
 
 from .. import atlas, gamekeys
 from ..clock import clock_for
 from ..i18n import _
-from .bot import Stopped, snap_map
+from .bot import snap_map, Bot, Stopped
 from .botparts.base import STOPPING, note_failure
+from .botparts.parts import Sighting
 from .. import phrases as phrase_book
 from . import teamheal
+from typing import Any
 
 NEAR = 3          # tiles: close enough to stand beside them
 GAP = 4           # tiles: further than this and we catch up
@@ -46,7 +51,7 @@ ASK_EVERY = 3.0       # seconds between two "/6" rounds when they are out of sig
 ASK_PRESSES = 5       # "/6" presses per round: each names the next teammate on the map
 
 
-def find_player(snap, name):
+def find_player(snap: dict[str, Any], name: str):
     want = name.strip().lower()
     for e in snap.get("entities", []):
         if e.get("kind") == "player" and (e.get("name") or "").strip().lower() == want:
@@ -54,11 +59,11 @@ def find_player(snap, name):
     return None
 
 
-def _dist(a, b):
+def _dist(a: dict[str, Any], b: dict[str, Any]) -> float:
     return math.hypot(a["x"] - b["x"], a["y"] - b["y"])
 
 
-def _locate(bot, name):
+def _locate(bot: Bot, name: str):
     fn = getattr(bot, "locate", None)
     if not fn:
         return None
@@ -71,7 +76,7 @@ def _locate(bot, name):
         return None
 
 
-def _last_seen(bot, name):
+def _last_seen(bot: Bot, name: str):
     fn = getattr(bot, "last_seen", None)
     if not fn:
         return None
@@ -84,18 +89,18 @@ def _last_seen(bot, name):
         return None
 
 
-def _beside(bot, p):
+def _beside(bot: Bot, p: dict[str, Any]):
     """A walkable cell next to the player (their own cell may be taken by them, or a wall edge)."""
     m = atlas.model(bot.map_id())
     x, y = int(round(p["x"])), int(round(p["y"]))
     return m.nearest_walkable(x, y, 4) or (x, y)
 
 
-def _walk_up(bot, name, cell):
+def _walk_up(bot: Bot, name: str, cell: tuple[int, int]) -> str:
     """Walk towards cell, stopping as soon as the player is within NEAR, or has moved on more than
     GAP from the cell (walking on to where they were left us trailing behind; the caller aims
     again at where they are now)."""
-    def close(me):
+    def close(me: dict[str, Any]):
         p = find_player(bot.snap(), name)
         if p is None:
             return False
@@ -103,18 +108,18 @@ def _walk_up(bot, name, cell):
     return bot.walk_to(cell, near=close)
 
 
-def _agent(bot):
+def _agent(bot: Bot):
     return getattr(bot, "agent_version", 0)
 
 
-def teammate_position(bot, name):
+def teammate_position(bot: Bot, name: str):
     """(x, y) of a teammate on our map, from the game's answer to the "/6" quick phrase, or None
     (no such phrase, no team, they're on another map, or a fight is on: the phrase changes our
     target)."""
     now = clock_for(bot).time()
-    if _agent(bot) < 27 or bot.in_fight or now < getattr(bot, "_ask_team_at", 0.0):
+    if _agent(bot) < 27 or bot.in_fight or now < getattr(bot, "team_ask_at", 0.0):
         return None
-    bot._ask_team_at = now + ASK_EVERY
+    bot.team_ask_at = now + ASK_EVERY
     slot = phrase_book.slot_of(getattr(bot, "phrases", None) or {}, "/6")
     if not slot:
         return None
@@ -128,12 +133,12 @@ def teammate_position(bot, name):
             if (m.get("name") or "").strip().lower() == want and m.get("age_ms", 1e9) < 1500:
                 return m["x"], m["y"]
         if any("no team" in (s.get("text") or "").lower() for s in bot.a.json("said %d" % t0).get("said", [])):
-            bot._ask_team_at = now + 60
+            bot.team_ask_at = now + 60
             return None
     return None
 
 
-def teleport(bot, name, them=None):
+def teleport(bot: Bot, name: str, them: dict[str, Any] | None = None) -> bool:
     """Shift+P to the team leader, when that may be our player. True when it put us within
     LEADER_NEAR of them. them: where they are, when known (decides who leads from a refusal)."""
     tp = bot.__dict__.setdefault("_teleport", {"off": None, "next": 0.0, "not_leader": set()})
@@ -181,7 +186,7 @@ def teleport(bot, name, them=None):
     return False
 
 
-def _look_for(bot, name, where):
+def _look_for(bot: Bot, name: str, where: Sighting) -> None:
     """Go to where the player was last seen (map id, x, y, ...), stopping once they are in view."""
     mid, x, y = where[0], int(where[1]), int(where[2])
     bot.log(_("{name} was last seen on {map} at {x}, {y} - looking there", name=name, map=atlas.label(mid),
@@ -192,7 +197,7 @@ def _look_for(bot, name, where):
         bot.walk_to((x, y), near=lambda me: find_player(bot.snap(), name) is not None)
 
 
-def parse_location(text):
+def parse_location(text: str):
     """(map id or None, (x, y) or None) from what a player sends after `come`: a map name or number,
     or what the game says for the location key E, copied with Shift+C - "<name>;<name>;<x>;<y>;<name>"
     (the client joins the parts with ";" and rounds x and y to whole tiles; the LAST part is the map's
@@ -227,13 +232,13 @@ def parse_location(text):
     return None, cell
 
 
-def come_to(bot, name, map_id=None, cell=None):
+def come_to(bot: Bot, name: str, map_id: int | None = None, cell: tuple[int, int] | None = None) -> str:
     """Walk up to the player. map_id / cell: where they said they are (`come <map>`, or the
     location key E's text). Returns a short answer for them."""
-    looked = None
+    looked: Sighting | None = None
     went_to_cell = False
 
-    def in_view(_me):
+    def in_view(_me: dict[str, Any]) -> bool:
         return find_player(bot.snap(), name) is not None
 
     for _try in range(4):
@@ -253,7 +258,7 @@ def come_to(bot, name, map_id=None, cell=None):
         if cell and not went_to_cell and (map_id is None or bot.map_id() == map_id):
             went_to_cell = True
             bot.log(_("going to {x}, {y}, where {name} said they are", x=cell[0], y=cell[1], name=name))
-            bot.walk_to(tuple(cell), near=in_view)
+            bot.walk_to((cell[0], cell[1]), near=in_view)
             continue
         seen = _last_seen(bot, name)
         if seen and looked is None and (map_id is None or seen[0] == map_id):
@@ -264,21 +269,22 @@ def come_to(bot, name, map_id=None, cell=None):
     return _come_answer(bot, went_to_cell, looked, map_id)
 
 
-def _come_up(bot, name, snap, p):
+def _come_up(bot: Bot, name: str, snap: dict[str, Any], p: dict[str, Any]):
     """The player is in view: there by the teleport phrase if far, then walking up, aiming again
     where they are now. True when we are next to them; False when they went out of view."""
+    them: dict[str, Any] | None = p
     if _dist(snap["self"], p) > TELEPORT_FROM:
         teleport(bot, name, p)
-        p = find_player(bot.snap(), name)
+        them = find_player(bot.snap(), name)
     for _aim in range(8):          # a walking player: aim again where they are now
-        if p is None or _dist(bot.me(), p) <= NEAR:
+        if them is None or _dist(bot.me(), them) <= NEAR:
             break
-        _walk_up(bot, name, _beside(bot, p))
-        p = find_player(bot.snap(), name)
-    return p is not None
+        _walk_up(bot, name, _beside(bot, them))
+        them = find_player(bot.snap(), name)
+    return them is not None
 
 
-def _come_where_known(bot, name, in_view):
+def _come_where_known(bot: Bot, name: str, in_view: Callable[[dict[str, Any]], bool]) -> bool:
     """Where one of our games plays them, or where the team phrase says they are: go there. True
     when there was such a place."""
     where = _locate(bot, name)
@@ -302,7 +308,7 @@ def _come_where_known(bot, name, in_view):
     return False
 
 
-def _come_answer(bot, went_to_cell, looked, map_id):
+def _come_answer(bot: Bot, went_to_cell: bool, looked: Sighting | None, map_id: int | None) -> str:
     """What to tell a player we couldn't find, and how they can help."""
     me = bot.me()
     if went_to_cell:
@@ -318,7 +324,7 @@ def _come_answer(bot, went_to_cell, looked, map_id):
     return _("I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>")
 
 
-def help_target(bot, snap, p):
+def help_target(bot: Bot, snap: dict[str, Any], p: dict[str, Any]):
     """A monster the player is fighting: within HELP of them and casting or wounded, nearest to
     them first. Anything attacking us is handled by the walking code's fight-back."""
     hitting = bot.attackers()
@@ -327,7 +333,7 @@ def help_target(bot, snap, p):
     return min(mobs, key=lambda e: _dist(e, p)) if mobs else None
 
 
-def _exit_taken(mid, seen):
+def _exit_taken(mid: int, seen: tuple[float, float]) -> dict[str, Any] | None:
     """The exit whose stand is within EXIT_NEAR of where the player was last seen, or None."""
     best = None
     for e in atlas.maps().get(mid, {}).get("exits", []):
@@ -339,7 +345,7 @@ def _exit_taken(mid, seen):
     return best[1] if best else None
 
 
-def follow(bot, name):
+def follow(bot: Bot, name: str):
     """Stay with the player until stopped: catch up when they move off, help with their fights,
     and go along when they change map. Ends (Stopped) after LOST seconds without any sign of them."""
     bot.log(_("following {name}", name=name), speak=True)
@@ -352,8 +358,8 @@ def follow(bot, name):
         bot.following = None
 
 
-def _follow(bot, name):
-    seen = None                 # (map id, x, y) where we last saw them
+def _follow(bot: Bot, name: str):
+    seen: tuple[int, float, float] | None = None     # (map id, x, y) where we last saw them
     lost_since = None
     searched = False            # walked to where one of our games last saw them
     while True:
@@ -394,7 +400,7 @@ def _follow(bot, name):
         bot.sleep(0.5)
 
 
-def _keep_up(bot, name, snap, me, p):
+def _keep_up(bot: Bot, name: str, snap: dict[str, Any], me: dict[str, Any], p: dict[str, Any]):
     """The player is in view: help with their fight, else catch up (by the teleport phrase when
     far), else wait a moment."""
     mob = help_target(bot, snap, p)
@@ -409,7 +415,7 @@ def _keep_up(bot, name, snap, me, p):
     bot.sleep(0.3)
 
 
-def _follow_where_known(bot, name, here, me):
+def _follow_where_known(bot: Bot, name: str, here: int, me: dict[str, Any]) -> tuple[int, float, float] | bool | None:
     """Out of view, but one of our games plays them (True: we went after them), or the team
     phrase says where they are on this map ((map, x, y): where they are seen now). None: neither."""
     where = _locate(bot, name)
@@ -430,7 +436,7 @@ def _follow_where_known(bot, name, here, me):
     return None
 
 
-def _after_them(bot, name, here, me, seen):
+def _after_them(bot: Bot, name: str, here: int, me: dict[str, Any], seen: tuple[int, float, float]) -> str | None:
     """They left our view on this map: through the exit they stood by ("exit"), or walk to where
     they were last seen ("walked"). None when we are there already."""
     e = _exit_taken(here, (seen[1], seen[2]))

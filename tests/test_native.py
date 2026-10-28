@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage=false
+# White-box tests: they check this module's internal helpers (leading-underscore names) directly.
 """The C map searches (unclefarmer/native/routing.c) against the Python ones they replace.
 
 Every C search must give exactly what its Python body gives - the same costs, the same paths (ties
@@ -7,14 +9,24 @@ They also check the DLL is the one built from routing.c, and that the searches f
 Python where the C ones can't run.
 """
 
+from __future__ import annotations
+
 import ctypes
 import random
 import threading
+from functools import partial
 
 import numpy as np
 import pytest
 
 from unclefarmer import atlas, atlaslib, lru, native, shortloop, travel
+from pathlib import Path
+from conftest import as_kind, returning, stand_in
+from typing import Any, TypeVar
+from collections.abc import Callable
+from unclefarmer.atlaslib import Cell, MapModel
+
+R = TypeVar("R")
 
 C = atlaslib.NATIVE
 needs_c = pytest.mark.skipif(C is None, reason="native searches not loaded: " + native.why_not)
@@ -25,7 +37,7 @@ CAVE = 1503           # a walled cave without gates
 FIELD = 1041          # central plains: open ground, 150,000 cells
 
 
-def python(monkeypatch_or_none, fn):
+def python(monkeypatch_or_none: None, fn: Callable[[], R]) -> R:
     """fn() with the C searches switched off."""
     saved = atlaslib.NATIVE
     atlaslib.NATIVE = None
@@ -35,18 +47,18 @@ def python(monkeypatch_or_none, fn):
         atlaslib.NATIVE = saved
 
 
-def walkable(m):
+def walkable(m: MapModel) -> list[tuple[int, int]]:
     ys, xs = m.walk.nonzero()
     return list(zip(xs.tolist(), ys.tolist()))
 
 
-def test_the_dll_is_built_from_this_routing_c():
+def test_the_dll_is_built_from_this_routing_c() -> None:
     # A routing.c edited without `python build_native.py` would quietly run the Python searches.
     assert C is not None, native.why_not
     assert (native.dll_path() or "").endswith("_routing-%s%s" % (native.source_hash()[:12], native.EXT))
 
 
-def test_a_dll_from_another_routing_c_is_refused(tmp_path):
+def test_a_dll_from_another_routing_c_is_refused(tmp_path: Path) -> None:
     other = tmp_path / "routing.c"
     other.write_text("/* not the source the DLL was built from */\n")
     assert native.load(native.dll_path(), source=str(other)) is None
@@ -56,14 +68,14 @@ def test_a_dll_from_another_routing_c_is_refused(tmp_path):
     native.why_not = ""
 
 
-def test_the_searches_can_be_turned_off(monkeypatch):
+def test_the_searches_can_be_turned_off(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("UNCLEFARMER_NO_NATIVE", "1")
     assert native.load() is None
     assert "turned off" in native.why_not
     native.why_not = ""
 
 
-def test_a_release_without_routing_c_takes_the_dll_beside_it(tmp_path):
+def test_a_release_without_routing_c_takes_the_dll_beside_it(tmp_path: Path) -> None:
     (tmp_path / ("_routing-aaa" + native.EXT)).write_bytes(b"")
     found = native.dll_path(source=str(tmp_path / "routing.c"), folder=str(tmp_path))
     assert found is not None and found.endswith("_routing-aaa" + native.EXT)
@@ -73,7 +85,7 @@ def test_a_release_without_routing_c_takes_the_dll_beside_it(tmp_path):
 @needs_c
 @pytest.mark.slow
 @pytest.mark.parametrize("mid", [GATES, EXITS, CAVE])
-def test_dijkstra_is_the_same_search(mid):
+def test_dijkstra_is_the_same_search(mid: int) -> None:
     m = atlas.model(mid)
     cells = walkable(m)
     rnd = random.Random(mid)
@@ -90,7 +102,7 @@ def test_dijkstra_is_the_same_search(mid):
 
 
 @needs_c
-def test_dijkstra_with_a_target_off_the_map_searches_everything(monkeypatch):
+def test_dijkstra_with_a_target_off_the_map_searches_everything(monkeypatch: pytest.MonkeyPatch) -> None:
     m = atlas.model(CAVE)
     a = walkable(m)[0]
     off = [(-5, -5), a]                     # in Python's set, never settled: no early stop
@@ -100,7 +112,7 @@ def test_dijkstra_with_a_target_off_the_map_searches_everything(monkeypatch):
 @needs_c
 @pytest.mark.slow
 @pytest.mark.parametrize("mid", [GATES, EXITS, CAVE, FIELD])
-def test_routes_are_the_same_paths(mid):
+def test_routes_are_the_same_paths(mid: int) -> None:
     m = atlas.model(mid)
     cells = walkable(m)
     rnd = random.Random(7 + mid)
@@ -109,16 +121,16 @@ def test_routes_are_the_same_paths(mid):
     jobs += [(tuple(e["stand"]), rnd.choice(cells)) for e in m.exits[:3] if e.get("stand")]
     for a, b in jobs:
         for avoid in (False, True):
-            assert m._route(a, b, avoid) == python(None, lambda: m._route(a, b, avoid)), (a, b, avoid)
+            assert m.gated_route(a, b, avoid) == python(None, lambda: m.gated_route(a, b, avoid)), (a, b, avoid)
             if m.gate.any():
                 with m.no_gates():
-                    assert m._route(a, b, avoid) == python(None, lambda: m._route(a, b, avoid))
+                    assert m.gated_route(a, b, avoid) == python(None, lambda: m.gated_route(a, b, avoid))
 
 
 @needs_c
 @pytest.mark.slow
 @pytest.mark.parametrize("mid", [GATES, EXITS])
-def test_steps_two_way_and_components_are_the_same(mid):
+def test_steps_two_way_and_components_are_the_same(mid: int) -> None:
     m = atlas.model(mid)
     cells = walkable(m)
     rnd = random.Random(3)
@@ -145,7 +157,7 @@ def test_steps_two_way_and_components_are_the_same(mid):
 
 @needs_c
 @pytest.mark.parametrize("mid", [GATES, EXITS, CAVE])
-def test_line_and_diagonal_checks_are_the_same(mid):
+def test_line_and_diagonal_checks_are_the_same(mid: int) -> None:
     m = atlas.model(mid)
     cells = walkable(m)
     rnd = random.Random(11)
@@ -156,32 +168,32 @@ def test_line_and_diagonal_checks_are_the_same(mid):
         assert m.line_ok(p, q, min_clear, ledges) == python(None, lambda: m.line_ok(p, q, min_clear, ledges)), (p, q)
         assert m.diag_ok(p, q) == python(None, lambda: m.diag_ok(p, q)), (p, q)
     for _ in range(10):
-        path = m._route(rnd.choice(cells), rnd.choice(cells))
+        path = m.gated_route(rnd.choice(cells), rnd.choice(cells))
         if path:
-            assert m.diag_hops(path) == python(None, lambda: m.diag_hops(path))
-            assert m.diag_hops(path, reach=20, stride=3) == python(None, lambda: m.diag_hops(path, 20, 3))
+            assert m.diag_hops(path) == python(None, partial(m.diag_hops, path))
+            assert m.diag_hops(path, reach=20, stride=3) == python(None, partial(m.diag_hops, path, 20, 3))
 
 
-def test_the_tiny_map_answers_the_same_both_ways(monkeypatch):
+def test_the_tiny_map_answers_the_same_both_ways(monkeypatch: pytest.MonkeyPatch) -> None:
     rows = [_row(105, 1, 1, 6, 5), _row(200, 3, 1, 3, 5), _row(301, 3, 3, 3, 3, 4.0),
             _row(333, 2, 2, 2, 2, 8.0), _row(1041101, 6, 1, 6, 1, z=-1.0)]
-    monkeypatch.setattr(atlaslib, "all_rows", lambda: {9999: rows})
+    monkeypatch.setattr(atlaslib, "all_rows", stand_in(atlaslib.all_rows, lambda: {9999: rows}))
     m = atlaslib.MapModel(9999)
     for a in [(1, 1), (2, 3), (4, 3), (6, 1)]:
         for b in [(1, 5), (4, 3), (6, 1), (5, 5)]:
-            assert m._route(a, b) == python(None, lambda: m._route(a, b))
+            assert m.gated_route(a, b) == python(None, lambda: m.gated_route(a, b))
             assert m.dijkstra(a, [b]) == python(None, lambda: m.dijkstra(a, [b]))
             assert m.line_ok(a, b) == python(None, lambda: m.line_ok(a, b))
             assert m.diag_ok(a, b) == python(None, lambda: m.diag_ok(a, b))
 
 
-def _row(t, x1, y1, x2, y2, z=0.0):
+def _row(t: int, x1: int, y1: int, x2: int, y2: int, z: float=0.0) -> dict[str, str]:
     return {"map_id": "9999", "map_name": "Test Land", "type_id": str(t), "blocks": "",
             "x1": str(x1), "y1": str(y1), "x2": str(x2), "y2": str(y2), "label": "", "z": str(z)}
 
 
 @needs_c
-def test_fractional_cells_are_left_to_the_python_searches():
+def test_fractional_cells_are_left_to_the_python_searches() -> None:
     m = atlas.model(CAVE)
     a = walkable(m)[0]
     half = (a[0] + 0.5, a[1])
@@ -189,7 +201,7 @@ def test_fractional_cells_are_left_to_the_python_searches():
     assert m.dijkstra(a, [half]) == python(None, lambda: m.dijkstra(a, [half]))
 
 
-def test_a_two_key_walk_to_a_fractional_cell_ends():
+def test_a_two_key_walk_to_a_fractional_cell_ends() -> None:
     # diag_steps stepped one cell at a time towards x.5 and never got there: the list of steps grew
     # until the machine ran out of memory. It works on whole cells now, in Python and in C alike.
     m = atlas.model(CAVE)
@@ -202,7 +214,7 @@ def test_a_two_key_walk_to_a_fractional_cell_ends():
 
 
 @needs_c
-def test_a_search_from_off_the_grid_is_left_to_python():
+def test_a_search_from_off_the_grid_is_left_to_python() -> None:
     m = atlas.model(CAVE)
     far = (m.W * 3, m.h * 3)
     with pytest.raises(IndexError):
@@ -211,32 +223,33 @@ def test_a_search_from_off_the_grid_is_left_to_python():
 
 
 @needs_c
-def test_the_route_workspace_starts_over_when_its_stamps_run_out():
+def test_the_route_workspace_starts_over_when_its_stamps_run_out() -> None:
     m = atlas.model(GATES)
     cells = walkable(m)
     rnd = random.Random(1)
     jobs = [(rnd.choice(cells), rnd.choice(cells)) for _ in range(6)]
-    want = [python(None, lambda: m._route(a, b)) for a, b in jobs]
+    want = [python(None, lambda: m.gated_route(a, b)) for a, b in jobs]
     ws = m._workspace(len(m._walk_list))
     ws.stamp = ws.STAMP_MAX - 2                # the next searches cross the wrap
-    assert [m._route(a, b) for a, b in jobs] == want
+    assert [m.gated_route(a, b) for a, b in jobs] == want
     assert ws.stamp < 10
 
 
 @needs_c
 @pytest.mark.slow
-def test_threads_routing_on_one_map_get_their_own_answers():
+def test_threads_routing_on_one_map_get_their_own_answers() -> None:
     m = atlas.model(EXITS)
     cells = walkable(m)
     rnd = random.Random(2)
     jobs = [(rnd.choice(cells), rnd.choice(cells)) for _ in range(12)]
-    want = [m._route(a, b) for a, b in jobs]
-    got, errors = {}, []
+    want = [m.gated_route(a, b) for a, b in jobs]
+    got: dict[int, list[list[Cell] | None]] = {}
+    errors: list[Exception] = []
 
-    def worker(k):
+    def worker(k: int) -> None:
         try:
             for _ in range(3):
-                got[k] = [m._route(a, b) for a, b in jobs[k::4]]
+                got[k] = [m.gated_route(a, b) for a, b in jobs[k::4]]
         except Exception as e:           # pragma: no cover - reported by the assert
             errors.append(e)
 
@@ -251,12 +264,12 @@ def test_threads_routing_on_one_map_get_their_own_answers():
 
 
 @needs_c
-def test_a_c_search_out_of_memory_is_an_error(monkeypatch):
+def test_a_c_search_out_of_memory_is_an_error(monkeypatch: pytest.MonkeyPatch) -> None:
     m = atlas.model(CAVE)
 
     class NoMemory:
-        def __getattr__(self, name):
-            return lambda *a: -1
+        def __getattr__(self, name: str) -> Callable[..., int]:
+            return returning(-1)
 
     monkeypatch.setattr(atlaslib, "NATIVE", NoMemory())
     a = walkable(m)[0]
@@ -268,13 +281,13 @@ def test_a_c_search_out_of_memory_is_an_error(monkeypatch):
         m._astar_path(a, [walkable(m)[5]])
 
 
-def test_a_stand_in_model_without_flat_bytes_uses_python():
+def test_a_stand_in_model_without_flat_bytes_uses_python() -> None:
     m = atlaslib.MapModel.__new__(atlaslib.MapModel)
     assert m._c() is None
 
 
 @pytest.mark.parametrize("mid", [EXITS, GATES, FIELD])
-def test_exit_stand_cells_are_the_nearest_in_x_then_y_order(mid):
+def test_exit_stand_cells_are_the_nearest_in_x_then_y_order(mid: int) -> None:
     m = atlas.model(mid)
     for e in m.exits + m.towns:
         cells = [(x, y) for x in range(e["x1"], e["x2"] + 1) for y in range(e["y1"], e["y2"] + 1) if m.ok(x, y)]
@@ -285,7 +298,7 @@ def test_exit_stand_cells_are_the_nearest_in_x_then_y_order(mid):
             assert not e["stand_inside"]
 
 
-def test_rows_of_a_map_late_in_the_file_are_read_by_offset():
+def test_rows_of_a_map_late_in_the_file_are_read_by_offset() -> None:
     import csv
     with atlaslib.GEOMETRY.open(encoding="utf-8-sig", newline="") as fh:
         wanted = [r for r in csv.DictReader(fh) if r["map_id"] == str(GATES)]
@@ -294,8 +307,8 @@ def test_rows_of_a_map_late_in_the_file_are_read_by_offset():
     assert atlaslib.rows_for(424242) == ()
 
 
-def test_lru_drops_the_least_recently_used():
-    c = {}
+def test_lru_drops_the_least_recently_used() -> None:
+    c: dict[str, str] = {}
     for k in "abc":
         lru.put(c, k, k.upper(), 3)
     assert lru.get(c, "a") == "A"            # a is now the most recent
@@ -304,7 +317,7 @@ def test_lru_drops_the_least_recently_used():
     assert lru.get(c, "b", "none") == "none"
 
 
-def test_the_route_cache_keeps_hot_routes_past_its_size(monkeypatch):
+def test_the_route_cache_keeps_hot_routes_past_its_size(monkeypatch: pytest.MonkeyPatch) -> None:
     m = atlas.model(CAVE)
     monkeypatch.setattr(m, "ROUTE_CACHE_MAX", 4)
     m._route_cache = {}
@@ -318,79 +331,82 @@ def test_the_route_cache_keeps_hot_routes_past_its_size(monkeypatch):
     assert len(m._route_cache) == 4
 
 
-def test_an_unreachable_route_on_a_gated_map_is_searched_once(monkeypatch):
+def test_an_unreachable_route_on_a_gated_map_is_searched_once(monkeypatch: pytest.MonkeyPatch) -> None:
     m = atlas.model(GATES)
-    m._route_cache, m._route_loose = {}, {}
-    calls = []
-    real = m._route
+    m._route_cache = {}
+    m._route_loose = {}
+    calls: list[int] = []
+    real = m.gated_route
 
-    def counting(a, b, avoid_directional=False):
+    def counting(a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
         calls.append(1)
         return real(a, b, avoid_directional)
 
-    monkeypatch.setattr(m, "_route", counting)
+    monkeypatch.setattr(m, "gated_route", counting)
     a, nowhere = walkable(m)[0], (1, 1)       # (1, 1) is the void border
     assert m.route(a, nowhere) is None
     assert m.route(a, nowhere) is None
     assert len(calls) == 2                    # gated, then without gates; the second ask is cached
 
 
-def test_shortloop_cover_and_distances_match_the_set_based_ones():
+def test_shortloop_cover_and_distances_match_the_set_based_ones() -> None:
     m = atlas.model(1047)
-    f = atlas.farms().get(1047, {}).get("variants") or {}
-    _start, walk, cells = shortloop._ground(m, 1047, f)
+    f: dict[str, dict[str, Any]] = atlas.farms().get(1047, {}).get("variants") or {}
+    _start, walk, cells = shortloop.ground(m, 1047, f)
 
     class DictsOnly:
         """The model without its array searches: shortloop's original set and dict code."""
-        def __init__(self, m):
+        def __init__(self, m: MapModel) -> None:
             self._m = m
 
-        def __getattr__(self, name):
+        def __getattr__(self, name: str) -> Any:
             if name in ("dijkstra_arr", "multi_steps"):
                 raise AttributeError(name)
             return getattr(self._m, name)
 
+    sets = as_kind(MapModel, DictsOnly(m))
     stops = shortloop._cover(m, cells, walk)
-    assert stops == shortloop._cover(DictsOnly(m), cells, walk)
-    fast, slow = shortloop._Laps(m, cells), shortloop._Laps(DictsOnly(m), cells)
+    assert stops == shortloop._cover(sets, cells, walk)
+    fast, slow = shortloop._Laps(m, cells), shortloop._Laps(sets, cells)
     fast.measure(stops)
     slow.measure(stops)
     assert fast.dists == slow.dists
     path = fast.lap(fast.nearest_first(stops, stops[0]))
+    assert path is not None
     assert fast.covered(path) == slow.covered(path)
 
 
-def test_travel_port_distances_match_the_dict_search():
+def test_travel_port_distances_match_the_dict_search() -> None:
     m = atlas.model(EXITS)
     ports = [(p["x"], p["y"]) for p in atlas.maps()[EXITS]["ports"]] + [(-3, -3), (1, 1)]
     start = walkable(m)[100]
 
     class DictsOnly:
-        def __init__(self, m):
+        def __init__(self, m: MapModel) -> None:
             self._m = m
 
-        def __getattr__(self, name):
+        def __getattr__(self, name: str) -> Any:
             if name in ("dijkstra_arr", "dijkstra_targets"):
                 raise AttributeError(name)
             return getattr(self._m, name)
 
     class ArraysOnly(DictsOnly):
-        def __getattr__(self, name):
+        def __getattr__(self, name: str) -> Any:
             if name == "dijkstra_targets":
                 raise AttributeError(name)
             return getattr(self._m, name)
 
-    want = travel._steps_uncached(DictsOnly(m), start, ports)
+    want = travel._steps_uncached(as_kind(MapModel, DictsOnly(m)), start, ports)
     assert travel._steps_uncached(m, start, ports) == want
-    assert travel._steps_uncached(ArraysOnly(m), start, ports) == want
+    assert travel._steps_uncached(as_kind(MapModel, ArraysOnly(m)), start, ports) == want
     gated = atlas.model(GATES)
     start = walkable(gated)[40]
     ports = [(p["x"], p["y"]) for p in atlas.maps()[GATES]["ports"]]
-    assert travel._steps_uncached(gated, start, ports) == travel._steps_uncached(DictsOnly(gated), start, ports)
+    assert travel._steps_uncached(gated, start, ports) == travel._steps_uncached(as_kind(MapModel, DictsOnly(gated)), start, ports)
 
 
 @needs_c
-def test_components_report_a_full_size_table():
+def test_components_report_a_full_size_table() -> None:
     assert C is not None
     walk = np.zeros((4, 4), dtype=bool).ravel().tobytes()
     comp = np.empty(16, dtype=np.int32)
@@ -401,7 +417,7 @@ def test_components_report_a_full_size_table():
 
 
 @needs_c
-def test_a_route_longer_than_the_buffer_is_refused():
+def test_a_route_longer_than_the_buffer_is_refused() -> None:
     assert C is not None
     m = atlas.model(CAVE)
     W, n = m.W, len(m._walk_list)
@@ -418,7 +434,7 @@ def test_a_route_longer_than_the_buffer_is_refused():
 
 @needs_c
 @pytest.mark.parametrize("mid", [GATES, EXITS, FIELD])
-def test_targets_only_search_gives_the_full_searchs_distances(mid):
+def test_targets_only_search_gives_the_full_searchs_distances(mid: int) -> None:
     m = atlas.model(mid)
     cells = walkable(m)
     rnd = random.Random(21)
@@ -434,7 +450,7 @@ def test_targets_only_search_gives_the_full_searchs_distances(mid):
 
 @needs_c
 @pytest.mark.parametrize("mid", [GATES, EXITS])
-def test_the_bucket_route_search_settles_like_the_heap(mid):
+def test_the_bucket_route_search_settles_like_the_heap(mid: int) -> None:
     m = atlas.model(mid)
     W, n = m.W, len(m._walk_list)
     cells = walkable(m)
@@ -443,7 +459,7 @@ def test_the_bucket_route_search_settles_like_the_heap(mid):
     lib = C
     assert lib is not None
 
-    def search(a, b, heap):
+    def search(a: Cell, b: Cell, heap: int) -> tuple[list[int], int, list[int]]:
         want = np.array([b[1] * W + b[0]], dtype=np.int32)
         got = ctypes.c_int32()
         stats = np.zeros(2, dtype=np.int64)
@@ -461,7 +477,7 @@ def test_the_bucket_route_search_settles_like_the_heap(mid):
 
 
 @needs_c
-def test_costs_off_the_half_step_grid_still_match(monkeypatch):
+def test_costs_off_the_half_step_grid_still_match(monkeypatch: pytest.MonkeyPatch) -> None:
     # PEN or TURN changed to values the buckets can't hold: the C searches use their heaps.
     m = atlas.model(GATES)
     pen = {1: 4.3, 2: 1.7, 3: 0.25}
@@ -473,5 +489,5 @@ def test_costs_off_the_half_step_grid_still_match(monkeypatch):
     rnd = random.Random(8)
     for _ in range(8):
         a, b = rnd.choice(cells), rnd.choice(cells)
-        assert m._route(a, b) == python(None, lambda: m._route(a, b)), (a, b)
+        assert m.gated_route(a, b) == python(None, lambda: m.gated_route(a, b)), (a, b)
         assert m.dijkstra(a, [b]) == python(None, lambda: m.dijkstra(a, [b]))

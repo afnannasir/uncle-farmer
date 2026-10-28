@@ -11,51 +11,57 @@ shows them:
 Every menu met is written to logs/dialogs.log so the unknown ones can be learned from a live run.
 """
 
+from __future__ import annotations
+
 import os
 import re
+from collections.abc import Callable, Iterable, Sequence
 from typing import Any
 
 from .. import atlas, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
 from ..i18n import _
 from . import bagrules
-from .bot import CONFIRM, Stopped
+from .bot import CONFIRM, Bot, Stopped
 
 
-def counts(b: Any) -> dict[str, int]:
+def counts(b: Bot) -> dict[str, int]:
     """{item name (lower): count} from the bag, summed over its rows."""
-    out = {}
+    out: dict[str, int] = {}
     for r in b.bag_rows():
         n = (r.get("name") or "").strip().lower()
         out[n] = out.get(n, 0) + int(r.get("count") or 0)
     return out
 
 
-def item_pattern(item):
+def item_pattern(item: str) -> str:
     """Matches the item in a menu entry ("187 Large Red Potion", "Large Red Potion; Unit price ...")
     but not a longer name containing it ("Pet Large Red Potion")."""
     return r"(^|[;|]\s*|\d\s+)" + re.escape(item.strip()) + r"\s*($|[|;,])"
 
 
 # ---------------------------------------------------------------------------------------- getting there
-def nearest(b, role, candidates=None):
+Npc = tuple[int, str, float, float]      # (map, name, x, y)
+
+
+def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -> Npc | None:
     """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y)."""
     here = b.map_id()
     me = b.me()
-    best = None
-    for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role)):
+    best: tuple[float, Npc] | None = None
+    for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
         legs, cost = travel.plan(here, (me["x"], me["y"]), mid, (x, y + 1), with_cost=True,
                                  transport=b.p.get("use_transport", True), vip=b.p.get("vip", False),
                                  bag=b.bag_rows() if b.p.get("use_travel_items", False) else [],
                                  hearth_home=b.p.get("hearth_home") or None)
-        if legs is None:
+        if legs is None or cost is None:
             continue
         if best is None or cost < best[0]:
             best = (cost, (mid, name, x, y))
     return best[1] if best else None
 
 
-def visit(b, role, name=None, candidates=None):
+def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None) -> str:
     """Travel to the nearest NPC of a role (or the named one, or the nearest of candidates) and open
     its menu. Returns its name."""
     if candidates:
@@ -67,7 +73,7 @@ def visit(b, role, name=None, candidates=None):
         target = nearest(b, role)
     if target is None:
         raise Stopped(_("I don't know where to find a {role} - visit one with the agent running first",
-                        role=role.replace("_", " ")))
+                        role=(role or name or "").replace("_", " ")))     # a named NPC has no role
     mid, npc, x, y = target
     b.log(_("going to {npc} on {map}", npc=npc, map=atlas.label(mid)))
     b.travel(mid)
@@ -77,7 +83,7 @@ def visit(b, role, name=None, candidates=None):
 
 
 # ---------------------------------------------------------------------------------------- menus + typing
-def wait_input(b: Any, want_open: bool = True, seconds: float = 3.0) -> bool:
+def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
     end = clock_for(b).time() + seconds
     while clock_for(b).time() < end:
         s = b.a.json("input")
@@ -87,7 +93,7 @@ def wait_input(b: Any, want_open: bool = True, seconds: float = 3.0) -> bool:
     return False
 
 
-def type_text(b, text):
+def type_text(b: Bot, text: str) -> bool:
     """Answer a box that asks for a name. True once the game has taken it."""
     if not wait_input(b, True):
         return False
@@ -101,7 +107,7 @@ def type_text(b, text):
     return wait_input(b, False)
 
 
-def type_number(b: Any, n: int) -> bool:
+def type_number(b: Bot, n: int) -> bool:
     """Answer the game's "how many?" box. True once it has taken the number."""
     if not wait_input(b, True):
         return False
@@ -123,7 +129,7 @@ def type_number(b: Any, n: int) -> bool:
     return True
 
 
-def pick(b, pattern, quantity=None):
+def pick(b: Bot, pattern: str, quantity: int | None = None) -> bool:
     """Choose an entry; if the game then asks how many, type quantity."""
     if b.choose(pattern) is None:
         return False
@@ -132,7 +138,7 @@ def pick(b, pattern, quantity=None):
     return type_number(b, quantity)
 
 
-def open_section(b, pattern):
+def open_section(b: Bot, pattern: str) -> bool:
     """Go one level into a menu (e.g. "item storage"), if the open menu has that entry."""
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], pattern) is not None:
@@ -142,7 +148,7 @@ def open_section(b, pattern):
 
 
 # ---------------------------------------------------------------------------------------- errands
-def withdraw(b, item, n):
+def withdraw(b: Bot, item: str, n: int):
     """Take up to n of item out of the storehouse. Returns how many arrived in the bag."""
     before = counts(b).get(item.lower(), 0)
     visit(b, "storehouse")
@@ -163,7 +169,7 @@ def withdraw(b, item, n):
     return got
 
 
-def deposit(b, item, n=None):
+def deposit(b: Bot, item: str, n: int | None=None):
     """Put n (default: all) of item into the storehouse."""
     have = counts(b).get(item.lower(), 0)
     if have <= 0:
@@ -184,7 +190,7 @@ def deposit(b, item, n=None):
     return put
 
 
-def buy(b, item, n):
+def buy(b: Bot, item: str, n: int) -> int:
     """Buy n of item where the game has shown it for sale (cheapest reachable, arnebia first);
     if no shop has been seen selling it yet, the kind of shop that should. Returns how many arrived."""
     sellers = [t[:4] for t in knowledge.traders(item, "sell") if t[5] == "arnebia"]
@@ -214,7 +220,7 @@ def buy(b, item, n):
     return got
 
 
-def sell(b, item, n=None):
+def sell(b: Bot, item: str, n: int | None=None):
     """Sell n (default: all) of item to an NPC the game has shown buying it (best price), or else
     the kind of NPC that should."""
     buyers = [t[:4] for t in sorted(knowledge.traders(item, "buy"),
@@ -252,11 +258,13 @@ COLLECTION_BUYERS = {"fish": "fish_buyer", "ore": "ore_buyer", "herb": "herb_buy
 BUYER_ROW = re.compile(r"^\s*(\d+)\s+(.+?)\s*;\s*Unit price\s+(\d+)\s+arnebia", re.I)
 
 
-def buyer_rows(b):
+def buyer_rows(b: Bot) -> list[tuple[int, str, int]]:
     """[(count, item, price)] of the open buyer's menu."""
     d = b.dialog()
-    out = []
-    for row in ((d.get("top") or {}).get("rows", []) if d.get("open") else []):
+    out: list[tuple[int, str, int]] = []
+    top: dict[str, Any] = d.get("top") or {}
+    rows: list[list[Any]] = top.get("rows", []) if d.get("open") else []
+    for row in rows:
         for e in row:
             for t in (b.entry_texts(e) if e else []):
                 m = BUYER_ROW.match(t)
@@ -265,10 +273,10 @@ def buyer_rows(b):
     return out
 
 
-def collection_left(p, rows):
+def collection_left(p: dict[str, Any], rows: list[tuple[int, str, int]]) -> list[tuple[str, int]]:
     """[(item, how many to sell)] of a buyer's rows: everything it lists, but never what the player
     told the bag manager to keep, and never below the number they keep of an item."""
-    out = []
+    out: list[tuple[str, int]] = []
     for count, item, _price in rows:
         r = bagrules.rule(p, item)
         if r["chosen"] and r["action"] == "keep":
@@ -279,7 +287,7 @@ def collection_left(p, rows):
     return out
 
 
-def sell_collection(b: Any, kinds: tuple[str, ...] = ("fish", "ore", "herb")) -> int:
+def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) -> int:
     """Sell what gathering brought in to the nearest Aquaculture, Ore or Herb Buyer: each lists
     what of its kind the bag holds ("101 Milkfish; Unit price 670 arnebia"), and every row is sold
     (the bag manager's keep rules apart) until it says there is nothing left of its kind. A kind no
@@ -326,17 +334,20 @@ def sell_collection(b: Any, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
     return earned
 
 
-def _collection_word(kind):
+def _collection_word(kind: str):
     return {"fish": _("fish"), "ore": _("ore"), "herb": _("herbs")}[kind]
 
 
 # ---------------------------------------------------------------------------------------- restock
-def needs(b, rules, start=False):
+Need = tuple[dict[str, Any], int, int]     # (restock rule, in the bag, wanted)
+
+
+def needs(b: Bot, rules: Sequence[dict[str, Any]] | None, start: bool = False) -> list[Need]:
     """[(rule, have, want)] for every rule that should be topped up now. While farming a rule
     triggers below its min; at the start of a run (or once a trip is happening anyway) anything
     below its stock is topped up too."""
     c = counts(b)
-    out = []
+    out: list[Need] = []
     for r in rules or []:
         item = (r.get("item") or "").strip()
         if not item or not r.get("on", True):
@@ -349,10 +360,10 @@ def needs(b, rules, start=False):
     return out
 
 
-def restock(b: Any, rules: list[dict[str, Any]], start: bool = False) -> bool:
+def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     """Top up every rule that needs it: storehouse first (free), then the shop. True if a trip was made."""
     todo = needs(b, rules, start)
-    told = getattr(b, "supply_told", set())
+    told: set[str] = getattr(b, "supply_told", set())
     b.supply_told = told
     # "just tell me" rules never make a trip: say it once, then leave them
     for r, have, _w in todo:
@@ -385,24 +396,25 @@ def restock(b: Any, rules: list[dict[str, Any]], start: bool = False) -> bool:
 
 
 # ---------------------------------------------------------------------------------------- shards
-def shard_catalog():
+def shard_catalog() -> tuple[dict[str, dict[str, Any]], dict[str, list[float]]]:
     """{shard name: {"price", "makes"}} and {map: [x, y]} of the Shard Markets (data/shards.json,
     built from the market's own menus)."""
     try:
         with open(os.path.join(paths.DATA, "shards.json"), encoding="utf-8") as f:
-            d = json.load(f)
+            d: dict[str, Any] = json.load(f)
         return d.get("shards", {}), d.get("markets", {})
     except (OSError, ValueError):
         return {}, {}
 
 
-def market_candidates(markets):
+def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
     """(map, name, x, y) for each Shard Market, under the name the game uses there now: the survey
     found the "Shard Marketplace" renamed "Shard Broker" in every city (2026-10-11), and talk()
     finds an NPC by its exact name."""
-    out = []
+    out: list[Npc] = []
     for m, xy in markets.items():
-        here = [n for n in knowledge.data().get("npcs", [])
+        npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
+        here = [n for n in npcs
                 if n.get("map") == int(m) and n.get("role") == "shard_market"
                 and any(src.startswith("survey") for src in n.get("sources", []))]
         best = min(here, key=lambda n: abs(n["x"] - xy[0]) + abs(n["y"] - xy[1]), default=None)
@@ -410,14 +422,14 @@ def market_candidates(markets):
     return out
 
 
-def sell_shards(b, names, at_most=None):
+def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = None) -> int:
     """Sell shards of the given types at the nearest Shard Market (live menu, seen in our logs:
     talk -> a row per shard "<name> | Unit price N arnebia" -> "buy" / "sell" -> "Please enter the
     quantity to sell, up to 2000"). at_most: {lower-cased name: how many} - the bag rule's "sell N,
     keep the rest". Returns how many kinds were sold."""
     _s, markets = shard_catalog()
     have = counts(b)
-    todo = []
+    todo: list[tuple[str, int]] = []
     for n in names:
         in_bag = have.get(n.lower(), 0)
         if in_bag > 0:
@@ -466,20 +478,20 @@ GEM_SHARD = re.compile(r"^\s*Level (\d+) (.+?) Shard\s*$", re.I)
 SHARDS_PER_GEM = 4      # the game's own instructions: four shards of a colour and level make a gem
 
 
-def gem_of(shard):
+def gem_of(shard: str | None) -> str | None:
     """("Level 1 Obsidian Shard") -> "Level 1 Obsidian"; None for anything else (Enhance Crystal
     Shards make crystals, not gems)."""
     m = GEM_SHARD.match(shard or "")
     return "Level %s %s" % (m.group(1), m.group(2)) if m else None
 
 
-def _menu_text(b):
+def menu_text(b: Bot) -> str:
     d = b.dialog()
-    top = d.get("top") or {}
+    top: dict[str, Any] = d.get("top") or {}
     return " | ".join(t for row in top.get("rows", []) for e in row if e for t in b.entry_texts(e))
 
 
-def _open_shard_synthesis(b, opener=None):
+def _open_shard_synthesis(b: Bot, opener: Callable[[], object] | None = None) -> bool:
     """The Gem Craftsman's shard list, open. Reuses an open one, else opens one: opener(), or the
     nearest Gem Craftsman."""
     for _try in range(2):
@@ -491,11 +503,14 @@ def _open_shard_synthesis(b, opener=None):
         if top and b.find_entry(top, r"Shard\s*\d+\s*$") is not None:
             return True                       # already in the shard list
         b.close_dialogs()
-        opener() if opener else visit(b, "gem_craftsman")
+        if opener:
+            opener()
+        else:
+            visit(b, "gem_craftsman")
     return False
 
 
-def make_gems(b, wanted, opener=None):
+def make_gems(b: Bot, wanted: dict[str, int], opener: Callable[[], object] | None = None) -> int:
     """Turn shards into gems at the Gem Craftsman ("shard synthesis"), for the Gem Maker
     (engine/crafting.py). wanted: {shard name: how many of it may be used}. Four shards make one gem
     of their level and this never fails; leftovers (fewer than four) stay in the bag. The menu is read live: the
@@ -504,7 +519,7 @@ def make_gems(b, wanted, opener=None):
     number of shards and the fee come from the game, not from here. Returns the gems made."""
     have = counts(b)
     spelled = {(r.get("name") or "").strip().lower(): (r.get("name") or "").strip() for r in b.bag_rows()}
-    todo = []
+    todo: list[tuple[str, str, int]] = []
     for name, n in wanted.items():
         name = spelled.get(name.strip().lower(), name.strip())      # the bag's own spelling
         gem = gem_of(name)
@@ -529,7 +544,7 @@ def make_gems(b, wanted, opener=None):
             if b.choose(r"^\s*synthesize\s+" + re.escape(gem) + r"\s*$") is None or not b.wait_dialog(3.0):
                 b.log(_("the Gem Craftsman offered no way to make {gem}", gem=gem))
                 continue
-        text = _menu_text(b)
+        text = menu_text(b)
         need = re.search(r"needs\s+(\d+)", text, re.I)
         need = int(need.group(1)) if need else SHARDS_PER_GEM
         fee = re.search(r"fee\s+(\d+)\s+arnebia", text, re.I)
@@ -557,24 +572,26 @@ def make_gems(b, wanted, opener=None):
 
 
 
-def _load(b):
+def load_now(b: Bot) -> int | None:
     """The bag's load right now (opens and closes the character sheet), or None."""
-    sheet = b.refresh_sheet(force=True) or {}
+    sheet: dict[str, Any] = b.refresh_sheet(force=True) or {}
     return sheet.get("load") if sheet.get("maxload", 0) > 0 else None
 
 
-def unload(b: Any) -> int:
+def unload(b: Bot) -> int:
     """A bag trip by the bag manager's rules (engine/bagrules.py): for each item, keep / store /
     sell / throw away, keeping the number the player set. Shards are sold at the Shard Market,
     other things to an NPC the game has shown buying them; what can't be sold is stored instead.
     Every action is weighed (sheet load before and after) so the bag manager learns item weights.
     Returns how many kinds of item left the bag."""
-    hot = [h["item"] for h in (b.p.get("scan") or {}).get("hotkeys", []) if h.get("item")]
-    bag = {}
+    scan: dict[str, Any] = b.p.get("scan") or {}
+    hotkeys: list[dict[str, Any]] = scan.get("hotkeys", [])
+    hot: list[str] = [h["item"] for h in hotkeys if h.get("item")]
+    bag: dict[str, int] = {}
     for r in b.bag_rows():
         if r.get("name") and r.get("count"):
             bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
-    start = getattr(b, "bag_start", None) or {}
+    start: dict[str, Any] = getattr(b, "bag_start", None) or {}
     gained = {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
     todo = bagrules.plan(b.p, bag, hot, gained)
     if not todo:
@@ -606,18 +623,18 @@ def unload(b: Any) -> int:
     return done
 
 
-def _weighed(b, name, action):
+def _weighed(b: Bot, name: str, action: Callable[[], int]) -> int:
     """Do it, and learn the item's weight from the load before and after."""
-    before = _load(b)
+    before = load_now(b)
     moved = action()
     if moved:
-        w = bagrules.learn_weight(name, before, _load(b), moved)
+        w = bagrules.learn_weight(name, before, load_now(b), moved)
         if w is not None:
             b.log(_("{item} weighs {w} each", item=name, w=w))
     return moved
 
 
-def _try_trip(b, failed, name, action):
+def _try_trip(b: Bot, failed: str, name: str, action: Callable[[], int]) -> int | None:
     """action(); a Stopped from it is said (failed: "couldn't ... {item}: {why}") and passed over,
     unless the player pressed Stop."""
     try:
@@ -629,7 +646,7 @@ def _try_trip(b, failed, name, action):
         return None
 
 
-def _sell_to_buyers(b, sales, store):
+def _sell_to_buyers(b: Bot, sales: Iterable[tuple[str, int]], store: list[tuple[str, int]]) -> int:
     """Sell to NPC buyers; what nobody buys (or that didn't sell) goes onto store instead."""
     done = 0
     for name, n in sales:
@@ -643,7 +660,7 @@ def _sell_to_buyers(b, sales, store):
     return done
 
 
-def _sell_one_shard(b, name, n):
+def _sell_one_shard(b: Bot, name: str, n: int) -> int:
     before = counts(b).get(name.lower(), 0)
     sell_shards(b, [name], at_most={name.lower(): n})
     return before - counts(b).get(name.lower(), 0)

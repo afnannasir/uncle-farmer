@@ -4,6 +4,8 @@ Apothecary's shop menu, kept in data/knowledge.json): "Recover 15% Max HP and 15
 missing, so HP and MP stay near full and no potion is wasted (a potion that recovers 15% is
 drunk at 85%)."""
 
+from __future__ import annotations
+
 from typing import Any
 import re
 
@@ -18,8 +20,10 @@ FALLBACK_MARK = 80.0   # a potion the game hasn't described yet
 FALLBACK_GAP = 3.0
 
 
-def _parse(item):
-    m = DESC.search((item or {}).get("description") or "")
+def _parse(item: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not item:
+        return None
+    m = DESC.search(item.get("description") or "")
     if not m:
         return None
     return {"pct": float(m.group(1)), "flat": int(m.group(3)), "cd": float(m.group(4)), "from": item["name"]}
@@ -56,7 +60,7 @@ def mark(inf: dict[str, Any] | None, top: float) -> float | None:
     return max(LOWEST_MARK, min(HIGHEST_MARK, 100.0 - 100.0 * recovers(inf, top) / top))
 
 
-def describe(name, what="HP"):
+def describe(name: str, what: str = "HP") -> str:
     """One line for the player about a potion."""
     inf = info(name)
     if not inf:

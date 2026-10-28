@@ -25,9 +25,13 @@ What an entry's flags mean (bit fields, worked out from 836 logged dialogs):
   plain text = 0. Safe to press while surveying: exactly 8 or 12, and text not on the deny list.
 """
 
+from __future__ import annotations
+
 import os
 import re
 import time
+from collections.abc import Sequence
+from typing import Any
 
 from .. import applog, atlas, jsonio as json, knowledge, paths, settings, travel
 from ..clock import clock_for
@@ -35,7 +39,7 @@ from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError
 from . import beasts
-from .bot import Respawned, Stopped
+from .bot import Bot, Respawned, Stopped
 from .botparts.base import STOPPING, note_failure
 
 SIGHT = 55            # walk so every cell is this close to a stop (the server reports out to ~78)
@@ -57,10 +61,26 @@ DENY = re.compile(r"\b(?:(?:%s)\b|(?:%s))" % (_WORDS, _STEMS), re.I)
 
 OUT = os.environ.get("MW_SURVEY_DIR") or os.path.join(paths.APP, "survey")
 
-_TEXTS = {}
+Entity = dict[str, Any]                          # one entity of a `mem` snapshot
+Npc = dict[str, Any]                             # one NPC of a record, as saved
+Rect = tuple[int, int, int, int]                 # x1, y1, x2, y2
+Cell = tuple[int, int]
+Described = tuple[int | None, str, str]          # (level or None, kind, text)
+Scope = str | Sequence[int | str]                # "cities" | "all" | "everything" | "here" | map ids
 
 
-def _pairs(name):
+class TextCache:
+    """The game's language files, read once each."""
+
+    def __init__(self) -> None:
+        self.npc: dict[str, list[Described]] | None = None
+        self.items: set[str] | None = None
+
+
+_TEXTS = TextCache()
+
+
+def _pairs(name: str) -> list[str]:
     """The translated line of each entry in one of the game's language files (an entry is the
     original line, its translation and a blank line), placeholders like $1 taken out."""
     folder = settings.load_app().get("game_folder") or ""
@@ -70,7 +90,7 @@ def _pairs(name):
             blocks = fh.read().replace("\r", "").split("\n\n")
     except OSError:
         return []
-    out = []
+    out: list[str] = []
     for blk in blocks:
         lines = [x for x in blk.split("\n") if x.strip()]
         if lines:
@@ -78,15 +98,16 @@ def _pairs(name):
     return out
 
 
-def described():
+def described() -> dict[str, list[Described]]:
     """name (lower case) -> the game's descriptions of it: [(level or None, kind, text)]."""
-    if "npc" not in _TEXTS:
-        about = {}
+    if _TEXTS.npc is None:
+        about: dict[str, list[Described]] = {}
         for line in _pairs("role_description_npc.txt"):
             parts = [p.strip() for p in line.split(";")]
             if len(parts) < 2 or not parts[0]:
                 continue
             m = re.match(r"level\s*(\d*)\s*(.*)$", parts[1], re.I)
+            entry: Described
             if m:
                 entry = (int(m.group(1)) if m.group(1) else None, m.group(2).strip(), "; ".join(parts[2:]))
             else:
@@ -94,38 +115,40 @@ def described():
             about.setdefault(parts[0].lower(), [])
             if entry not in about[parts[0].lower()]:
                 about[parts[0].lower()].append(entry)
-        _TEXTS["npc"] = about
-    return _TEXTS["npc"]
+        _TEXTS.npc = about
+    return _TEXTS.npc
 
 
-def plain(text):
+def plain(text: str | None) -> str:
     """A name to compare: lower case, numbers and extra spaces out (the item list says
     "Level $1 Opal Shard" where a menu says "Level 1 Opal Shard")."""
     return " ".join(re.sub(r"\d+", " ", text or "").lower().split())
 
 
-def item_names():
-    if "items" not in _TEXTS:
-        _TEXTS["items"] = {plain(n) for n in _pairs("item.txt") if plain(n)}
-    return _TEXTS["items"]
+def item_names() -> set[str]:
+    if _TEXTS.items is None:
+        _TEXTS.items = {plain(n) for n in _pairs("item.txt") if plain(n)}
+    return _TEXTS.items
 
 
-def out_dir():
+def out_dir() -> str:
     d = os.path.abspath(OUT)
     os.makedirs(d, exist_ok=True)
     return d
 
 
-def words(e):
+def words(e: Entity) -> list[str]:
     """Every text an entry carries: its own, the question behind it (f..i) and its options. The
     game now sends most entries with text and raw empty and the words in options."""
-    out = [e.get("text"), e.get("raw")] + [e.get(k) for k in ("f", "g", "h", "i")]
-    return [w for w in out + list(e.get("options") or []) if w]
+    out: list[str | None] = [e.get("text"), e.get("raw")] + [e.get(k) for k in ("f", "g", "h", "i")]
+    options: list[str] = e.get("options") or []
+    return [w for w in out + list(options) if w]
 
 
-def label(e):
+def label(e: Entity) -> str:
     """What the entry says on its line: its text, else its first option."""
-    return e.get("text") or e.get("raw") or next(iter(e.get("options") or []), "") or ""
+    options: list[str] = e.get("options") or []
+    return e.get("text") or e.get("raw") or next(iter(options), "") or ""
 
 
 # A row of a list rather than a menu topic: "1; Bluish White Horse" in the beast storage, an item
@@ -134,13 +157,13 @@ def label(e):
 LIST_ROW = re.compile(";")
 
 
-def is_thing(text):
+def is_thing(text: str | None) -> bool:
     """The entry names an item (the game's item list), or is a row of a list of things."""
     t = (text or "").strip()
     return bool(LIST_ROW.search(t)) or plain(t) in item_names()
 
 
-def safe(entry):
+def safe(entry: Entity) -> bool:
     """Only shows more: the right flags, nothing it says - nor the question behind it - is on the
     deny list, and it is a menu topic, not one of a list of things (items, beasts, goods)."""
     return (entry.get("flags") in SAFE_FLAGS and not any(DENY.search(w) for w in words(entry))
@@ -148,13 +171,13 @@ def safe(entry):
 
 
 # ------------------------------------------------------------------------------------ sweep points
-def sweep_points(mid, start=None, rect=None):
+def sweep_points(mid: int, start: tuple[float, float] | None = None, rect: Rect | None = None) -> list[Cell]:
     """Stops covering the walkable region we can reach, SIGHT apart, in a short walking order."""
     m = atlas.model(mid)
     comp = m.comp_of(int(start[0]), int(start[1])) if start and m.ok(int(start[0]), int(start[1])) else None
     x0, y0, x1, y1 = rect or (1, 1, m.w, m.h)
     step = int(SIGHT * 1.2)
-    pts = []
+    pts: list[Cell] = []
     for gy in range(y0 + step // 2, y1 + step // 2 + 1, step):
         for gx in range(x0 + step // 2, x1 + step // 2 + 1, step):
             c = m.nearest_walkable(min(gx, x1), min(gy, y1), step // 2, comp)
@@ -166,7 +189,7 @@ def sweep_points(mid, start=None, rect=None):
         return []
     # nearest-neighbour tour from where we start
     here = (int(start[0]), int(start[1])) if start else pts[0]
-    order = []
+    order: list[Cell] = []
     while pts:
         nxt = min(pts, key=lambda p: abs(p[0] - here[0]) + abs(p[1] - here[1]))
         pts.remove(nxt)
@@ -177,7 +200,9 @@ def sweep_points(mid, start=None, rect=None):
 
 # ------------------------------------------------------------------------------------ the record
 class Record:
-    def __init__(self, mid):
+    data: dict[str, Any]
+
+    def __init__(self, mid: int) -> None:
         self.mid = mid
         self.path = os.path.join(out_dir(), "%d.json" % mid)
         if os.path.exists(self.path):
@@ -187,44 +212,46 @@ class Record:
         else:
             self.data = {"map": mid, "name": atlas.name(mid), "npcs": {}, "swept": False, "started": time.strftime("%Y-%m-%d %H:%M")}
 
-    def key(self, e):
+    def key(self, e: Entity) -> str:
         return "%s@%d,%d" % (e["name"], int(round(e["x"])), int(round(e["y"])))
 
-    def same(self, e):
+    def same(self, e: Entity) -> Npc | None:
         """The entry for this NPC seen before at another place: one that walks about (guards on
         patrol, civilians, ducks) keeps its id, so it is one NPC, not one per place it was seen."""
-        return next((n for n in self.data["npcs"].values()
-                     if n["id"] == e["id"] and n["name"] == e["name"]), None)
+        npcs: dict[str, Npc] = self.data["npcs"]
+        return next((n for n in npcs.values() if n["id"] == e["id"] and n["name"] == e["name"]), None)
 
     @staticmethod
-    def moved(n, x, y):
+    def moved(n: Npc, x: float, y: float) -> None:
         """Where a walking NPC was last seen, and the box it walks in."""
         x0, y0, x1, y1 = n.get("walks") or (n["x"], n["y"], n["x"], n["y"])
         n["walks"] = [min(x0, x), min(y0, y), max(x1, x), max(y1, y)]
         n["x"], n["y"] = x, y
 
-    def merge_walkers(self):
+    def merge_walkers(self) -> None:
         """Records written before same() existed hold a walking NPC once per place: fold them into
         one, keeping the read menus if any of them has them."""
-        keep = {}
-        for k in list(self.data["npcs"]):
-            n = self.data["npcs"][k]
+        keep: dict[tuple[int, str], str] = {}
+        npcs: dict[str, Npc] = self.data["npcs"]
+        for k in list(npcs):
+            n = npcs[k]
             first = keep.setdefault((n["id"], n["name"]), k)
             if first == k:
                 continue
-            f = self.data["npcs"][first]
+            f = npcs[first]
             self.moved(f, n["x"], n["y"])
             if f.get("menus") is None and n.get("menus") is not None:
                 f["menus"], f["read"] = n["menus"], n.get("read")
-            del self.data["npcs"][k]
+            del npcs[k]
 
-    def saw(self, e):
+    def saw(self, e: Entity) -> Npc:
         k = self.key(e)
-        n = self.data["npcs"].get(k) or self.same(e)
+        npcs: dict[str, Npc] = self.data["npcs"]
+        n = npcs.get(k) or self.same(e)
         if n is not None and self.key(n) != k:
             self.moved(n, round(e["x"], 2), round(e["y"], 2))
         if n is None:
-            n = self.data["npcs"][k] = {"name": e["name"], "x": round(e["x"], 2), "y": round(e["y"], 2),
+            n = npcs[k] = {"name": e["name"], "x": round(e["x"], 2), "y": round(e["y"], 2),
                                         "id": e["id"], "type": e.get("type"), "hp": e.get("hp"),
                                         "kind": e.get("kind"), "side": e.get("side"),
                                         "first_seen": time.strftime("%Y-%m-%d %H:%M"), "menus": None}
@@ -233,10 +260,10 @@ class Record:
                 n["about"] = about
         return n
 
-    def saw_monster(self, e):
+    def saw_monster(self, e: Entity) -> None:
         """Each kind of monster once per map: how many were seen, their HP, where, and what the
         game says it is (level, ordinary / elite / super, description)."""
-        mons = self.data.setdefault("monsters", {})
+        mons: dict[str, dict[str, Any]] = self.data.setdefault("monsters", {})
         name = e["name"].strip()
         m = mons.get(name)
         if m is None:
@@ -251,7 +278,7 @@ class Record:
         if len(m["cells"]) < 12 and cell not in m["cells"]:
             m["cells"].append(cell)
 
-    def save(self):
+    def save(self) -> None:
         self.data["updated"] = time.strftime("%Y-%m-%d %H:%M")
         tmp = self.path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
@@ -259,7 +286,7 @@ class Record:
         os.replace(tmp, self.path)
 
 
-def is_npc(e):
+def is_npc(e: Entity) -> bool:
     """Town NPCs and objects: the game's own kind when the agent reports it (v22), else a negative
     id with either no hp at all or exactly NPC_HP."""
     if "side" in e:
@@ -267,13 +294,13 @@ def is_npc(e):
     return e["id"] < 0 and (e.get("hp") in (None, NPC_HP) or e.get("maxhp") == NPC_HP)
 
 
-def critter(n):
+def critter(n: Npc) -> bool:
     """A town animal (ducks, roosters: about a thousand HP where townsfolk have NPC_HP or more): it
     wanders off and has no menu, so walking up to talk to it is wasted time."""
     return n.get("hp") is not None and 0 < n["hp"] < NPC_HP // 100
 
 
-def worth_noting(e):
+def worth_noting(e: Entity) -> bool:
     """An NPC, a guard or gate keeper the game's NPC list describes as one, or an object (a circle,
     a portal, a sign) - not loot lying on the ground, not another player's pet or summon, not a trap."""
     name = (e.get("name") or "").strip()
@@ -286,9 +313,10 @@ def worth_noting(e):
     return False
 
 
-def look(b, rec):
+def look(b: Bot, rec: Record) -> int:
     seen = 0
-    for e in b.snap()["entities"]:
+    entities: list[Entity] = b.snap()["entities"]
+    for e in entities:
         if worth_noting(e):
             rec.saw(e)
             seen += 1
@@ -298,14 +326,15 @@ def look(b, rec):
 
 
 # ------------------------------------------------------------------------------------ menus
-def page(d):
+def page(d: dict[str, Any]) -> dict[str, Any]:
     """The open dialog as a plain record."""
-    top = d.get("top") or {}
-    rows = []
-    for r, row in enumerate(top.get("rows", [])):
+    top: dict[str, Any] = d.get("top") or {}
+    rows: list[dict[str, Any]] = []
+    menu: list[list[Entity | None]] = top.get("rows", [])
+    for r, row in enumerate(menu):
         for c, e in enumerate(row):
             if e:
-                rec = {"row": r, "col": c, "flags": e.get("flags"), "text": label(e)}
+                rec: dict[str, Any] = {"row": r, "col": c, "flags": e.get("flags"), "text": label(e)}
                 for k in ("f", "g", "h", "i"):
                     if e.get(k):
                         rec[k] = e[k]
@@ -317,11 +346,11 @@ def page(d):
     return {"kind": top.get("kind"), "entries": rows}
 
 
-def exact(text):
+def exact(text: str) -> str:
     return r"^\s*" + re.escape(text.strip()) + r"\s*$"
 
 
-def open_npc(b, n, path):
+def open_npc(b: Bot, n: Npc, path: list[str]) -> dict[str, Any] | None:
     """Talk to the NPC and follow path (entry texts) down the menu. The open dialog, or None."""
     b.close_dialogs()
     if not b.talk(n["name"], (n["x"], n["y"])):
@@ -334,7 +363,7 @@ def open_npc(b, n, path):
     return b.dialog()
 
 
-def heard(b, since):
+def heard(b: Bot, since: float) -> list[str]:
     """What the game said aloud since then (agent v25 `said`): an NPC or object that answers
     without a menu ("Requirements not met"), and the description spoken when it is selected."""
     try:
@@ -347,10 +376,13 @@ def heard(b, since):
     except Exception as e:
         note_failure(b, "reading what the game said", e)
         return []
-    return [x["text"] for x in r.get("said", [])] if isinstance(r, dict) else []
+    if not json.is_object(r):
+        return []
+    said: list[dict[str, Any]] = r.get("said", [])
+    return [x["text"] for x in said]
 
 
-def acted(b, n, path, said):
+def acted(b: Bot, n: Npc, path: list[str], said: list[str]) -> bool:
     """The game answered a press aloud ("taken out"): the press did something, so the entries
     beside it may too. Leave the rest of this NPC's menus unread and say what happened."""
     b.log(_("{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus",
@@ -358,12 +390,12 @@ def acted(b, n, path, said):
     return True
 
 
-def explore(b, rec, n):
+def explore(b: Bot, rec: Record, n: Npc) -> list[dict[str, Any]]:
     """Record the NPC's menu tree, breadth first, pressing only safe() entries, and what the game
     says aloud along the way."""
-    pages = []
-    todo = [[]]
-    seen = set()
+    pages: list[dict[str, Any]] = []
+    todo: list[list[str]] = [[]]
+    seen: set[str] = set()
     while todo and len(pages) < MAX_PAGES:
         path = todo.pop(0)
         asked = clock_for(b).time()
@@ -372,7 +404,10 @@ def explore(b, rec, n):
             b.sleep(1.0)           # a spoken answer comes a moment after the talk
             said = heard(b, asked)
             why = getattr(b, "talk_problem", None) if not path else None
-            pages.append(dict({"path": path, "error": why or "didn't open"}, **({"said": said} if said else {})))
+            failed: dict[str, Any] = {"path": path, "error": why or "didn't open"}
+            if said:
+                failed["said"] = said
+            pages.append(failed)
             if said and path and acted(b, n, path, said):
                 break
             continue
@@ -381,7 +416,7 @@ def explore(b, rec, n):
         if said:
             p["said"] = said
             if path and acted(b, n, path, said):
-                pages.append(dict(p, path=path))
+                pages.append({**p, "path": path})
                 break
         sig = json.dumps([(e["flags"], e["text"]) for e in p["entries"]], ensure_ascii=False)
         if sig in seen:
@@ -398,7 +433,8 @@ def explore(b, rec, n):
 
 
 # ------------------------------------------------------------------------------------ the survey
-def survey_map(b, mid, talk=True, rect=None, redo=False, go=True):
+def survey_map(b: Bot, mid: int, talk: bool = True, rect: Rect | None = None, redo: bool = False,
+               go: bool = True) -> dict[str, Any]:
     """Survey one map (go=False: the one we stand on, wherever that is). Returns its record."""
     mid = int(mid)
     rec = Record(mid)
@@ -422,7 +458,8 @@ def survey_map(b, mid, talk=True, rect=None, redo=False, go=True):
         rec.data["sweep_rect"] = rect
         rec.save()
     b.log(_("{map}: {n} NPCs", map=atlas.label(mid), n=len(rec.data["npcs"])))
-    if talk and any(n.get("menus") is None or redo or retry(n) for n in rec.data["npcs"].values()):
+    npcs: dict[str, Npc] = rec.data["npcs"]
+    if talk and any(n.get("menus") is None or redo or retry(n) for n in npcs.values()):
         # Off the beast while reading menus: standing at NPCs for many minutes would only burn
         # fusion power (about 3 a minute fused, 6 a minute back unfused), which the next sweep
         # needs. On foot, whatever attacks us here is fought back as usual.
@@ -436,23 +473,25 @@ def survey_map(b, mid, talk=True, rect=None, redo=False, go=True):
     return rec.data
 
 
-def silent(n):
+def silent(n: Npc) -> bool:
     """Talked to, and nothing opened: a guard, a sign."""
-    return bool(n.get("menus")) and all(p.get("error") == "no answer" for p in n["menus"])
+    menus: list[dict[str, Any]] | None = n.get("menus")
+    return bool(menus) and all(p.get("error") == "no answer" for p in menus or [])
 
 
-def retry(n):
+def retry(n: Npc) -> bool:
     """Its menus weren't read because we never got to it (stuck on the way: NPCs block the
     path, and the map doesn't show them), and it hasn't had its second try yet. Records from
     before the reason was kept say "didn't open" for this; one that spoke did answer."""
-    m = n.get("menus")
+    m: list[dict[str, Any]] = n.get("menus") or []
     return (bool(m) and n.get("tries", 1) < 2 and not any(p.get("said") for p in m)
             and all(p.get("error") in ("out of reach", "not found", "didn't open") for p in m))
 
 
-def read_menus(b, rec, redo=False):
+def read_menus(b: Bot, rec: Record, redo: bool = False) -> None:
     b.set_target_mode(3)
-    for k, n in sorted(rec.data["npcs"].items()):
+    npcs: dict[str, Npc] = rec.data["npcs"]
+    for _k, n in sorted(npcs.items()):
         if n.get("menus") is not None and not redo and not retry(n):
             continue
         if n.get("menus") is not None and not redo:
@@ -463,7 +502,7 @@ def read_menus(b, rec, redo=False):
             continue
         # The town's guards all say nothing: once one of a name hasn't answered, the rest of
         # that name on this map are left (each costs three tries to talk).
-        twin = next((o for o in rec.data["npcs"].values()
+        twin = next((o for o in npcs.values()
                      if o is not n and o["name"] == n["name"] and silent(o)), None)
         if twin is not None:
             n["menus"], n["same_as"] = [], rec.key(twin)
@@ -482,9 +521,9 @@ def read_menus(b, rec, redo=False):
     b.set_target_mode(b.p.get("target_mode", 2))
 
 
-def city_rect(mid, pad=12):
+def city_rect(mid: int, pad: int = 12) -> Rect | None:
     """The town zones of a map, merged and padded (NPCs live in towns), or None for the whole map."""
-    towns = atlas.maps().get(mid, {}).get("towns", [])
+    towns: list[list[int]] = atlas.maps().get(mid, {}).get("towns", [])
     if not towns:
         return None
     m = atlas.maps()[mid]
@@ -495,10 +534,10 @@ def city_rect(mid, pad=12):
     return (x0, y0, x1, y1)
 
 
-_hint_notes = set()          # (map, error kind) already reported by hints()
+_hint_notes: set[tuple[int, str]] = set()          # (map, error kind) already reported by hints()
 
 
-def hints(mid):
+def hints(mid: int) -> list[Rect]:
     """Where the game's own data puts NPCs on this map, as (x1, y1, x2, y2) boxes: its town zones,
     the NPC spots of the map table, dungeon entrances (teleportation circles), the transport NPCs
     (cable cars, airships) and NPCs known from the game texts. Empty for a plain farming field:
@@ -506,8 +545,9 @@ def hints(mid):
     teleportation circle (corpse cave) - over an hour of sweeping monster fields for nothing."""
     from .. import atlaslib
     mid = int(mid)
-    boxes = [tuple(t[1:5]) for t in atlas.maps().get(mid, {}).get("towns", [])]
-    spots = []
+    towns: list[list[int]] = atlas.maps().get(mid, {}).get("towns", [])
+    boxes: list[Rect] = [(t[1], t[2], t[3], t[4]) for t in towns]
+    spots: list[tuple[float, float]] = []
     try:
         spots += [(mk["x1"], mk["y1"]) for mk in atlas.model(mid).markers
                   if atlaslib.marker_kind(mk["label"]) == "npc"]
@@ -523,16 +563,18 @@ def hints(mid):
                 data = json.load(f)
         except (OSError, ValueError):
             continue
-        for e in data.get("entrances") or data.get("transports") or []:
+        rows: list[dict[str, Any]] = data.get("entrances") or data.get("transports") or []
+        for e in rows:
             if e.get("map") == mid:
-                spots += [tuple(s[:2]) for s in e.get("spots") or []]
-                spots += [tuple(e[k]) for k in ("at", "stand") if e.get(k)]
-    spots += [(n["x"], n["y"]) for n in knowledge.data().get("npcs", [])
-              if n.get("map") == mid and n.get("x") is not None]
+                where: list[list[float]] = e.get("spots") or []
+                spots += [(s[0], s[1]) for s in where]
+                spots += [(e[k][0], e[k][1]) for k in ("at", "stand") if e.get(k)]
+    known: list[Npc] = knowledge.data().get("npcs", [])
+    spots += [(n["x"], n["y"]) for n in known if n.get("map") == mid and n.get("x") is not None]
     return boxes + [(int(x), int(y), int(x), int(y)) for x, y in spots]
 
 
-def hint_rect(mid, pad=SIGHT):
+def hint_rect(mid: int, pad: int = SIGHT) -> Rect | None:
     """The part of the map the hints lie in, padded by what one stop sees, or None (no hints)."""
     hs = hints(mid)
     if not hs:
@@ -542,12 +584,12 @@ def hint_rect(mid, pad=SIGHT):
             min(m["w"], max(h[2] for h in hs) + pad), min(m["h"], max(h[3] for h in hs) + pad))
 
 
-def plan_targets(scope):
+def plan_targets(scope: Scope) -> list[int]:
     """Which maps a survey visits: 'cities' (every map with a town or village, the undergrounds,
     lifting platforms and ports), 'all' (every map the game's data puts an NPC, a town, a dungeon
     entrance or a transport on - not the plain farming fields), 'everything' (every map you can
     walk out of), or a list of ids."""
-    if isinstance(scope, (list, tuple)):
+    if not isinstance(scope, str):
         return [int(m) for m in scope]
     maps = atlas.maps()
     open_world = [mid for mid in maps if not travel.is_instance(mid)]
@@ -559,20 +601,22 @@ def plan_targets(scope):
     return sorted(mid for mid in open_world if maps[mid].get("towns") or mid in extra)
 
 
-def tour(start, targets):
+def tour(start: int, targets: Sequence[int]) -> list[int]:
     """The targets in visiting order: each next one the fewest walking exits away from the last
     (in map-number order a whole-world survey crossed the world between neighbouring numbers).
     Maps no walking exit leads to (airship and cable-car stops) come last, in number order."""
     maps = atlas.maps()
-    links = {mid: {e.get("dest") for e in m.get("exits") or [] if e.get("dest") in maps}
-             for mid, m in maps.items()}
+    links: dict[int, set[int]] = {}
+    for mid, m in maps.items():
+        exits: list[dict[str, Any]] = m.get("exits") or []
+        links[mid] = {e["dest"] for e in exits if e.get("dest") in maps}
     left = set(targets)
-    order = []
+    order: list[int] = []
     here = start
     while left:
         seen = {here}
         ring = [here]
-        found = None
+        found: int | None = None
         while ring and found is None:
             hits = sorted(mid for mid in ring if mid in left)
             if hits:
@@ -587,14 +631,15 @@ def tour(start, targets):
     return order + sorted(left)
 
 
-def done(mid, talk=True):
+def done(mid: int, talk: bool = True) -> bool:
     """A map whose record is complete: swept, and (talk) every NPC's menus read."""
     data = Record(int(mid)).data
+    npcs: dict[str, Npc] = data["npcs"]
     return bool(data.get("swept")) and (not talk or all(n.get("menus") is not None and not retry(n)
-                                                         for n in data["npcs"].values()))
+                                                         for n in npcs.values()))
 
 
-def survey(b, scope="cities", talk=True, redo=False):
+def survey(b: Bot, scope: Scope = "cities", talk: bool = True, redo: bool = False) -> None:
     """Survey the maps in scope, riding the Swift fusion beast the whole way as the walking
     assistant does: a survey only looks, so it never stops to fight - it outruns what attacks it,
     and potions keep its HP up."""
@@ -608,7 +653,7 @@ def survey(b, scope="cities", talk=True, redo=False):
         b.walk_only = was
 
 
-def _survey(b, scope, talk, redo):
+def _survey(b: Bot, scope: Scope, talk: bool, redo: bool) -> None:
     if scope == "here":
         survey_map(b, b.map_id(), talk=talk, redo=redo, go=False)
         b.log(_("survey finished"), speak=True)
@@ -621,12 +666,12 @@ def _survey(b, scope, talk, redo):
         note_failure(b, "reading the map", e)
         start = None
     targets = plan_targets(scope)
-    if start is not None and not isinstance(scope, (list, tuple)):
+    if start is not None and isinstance(scope, str):
         targets = tour(start, targets)
     b.log(_("survey of {n} maps", n=len(targets)), speak=True)
     # A survey farms nothing, so the day's farming stop (kept clear of the drop-time reset) doesn't
     # end it; a whole-world survey takes more than a night. Back on for whatever the script does next.
-    day_end, b.daily_stop_at = getattr(b, "daily_stop_at", None), None
+    day_end, b.daily_stop_at = getattr(b, "daily_stop_at", 0.0), 0.0
     try:
         for mid in targets:
             if not redo and done(mid, talk):
