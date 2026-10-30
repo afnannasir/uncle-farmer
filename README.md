@@ -91,7 +91,7 @@ nothing.
 
 ## Getting started
 
-1. Download `UncleFarmer-<version>.zip` from this repository's [Releases](https://github.com/askunclefarmer/uncle-farmer/releases)
+1. Download `UncleFarmer-<version>.zip` from this repository's [Releases](https://github.com/afnannasir/uncle-farmer/releases)
    and unzip it anywhere: it makes an `Uncle Farmer` folder.
 2. Run `UncleFarmer.exe`. The first time, it opens **Settings**: choose your Mist World folder (or
    start the game and press **Find the running game**) and press **Install**.
@@ -173,7 +173,7 @@ need to be in front. The Python app decides what to do next.
 This is a community project. It gets better every time someone helps, and you don't have to be a
 programmer to help:
 
-- 🐞 **Report a bug.** [Open an issue](https://github.com/askunclefarmer/uncle-farmer/issues): say what you did, what
+- 🐞 **Report a bug.** [Open an issue](https://github.com/afnannasir/uncle-farmer/issues): say what you did, what
   you expected, and what happened. Attach the day's file from the `logs` folder if you can.
 - 🛠️ **Fix something.** Pull requests are welcome, big or small. See [CONTRIBUTING.md](CONTRIBUTING.md).
 - 🌍 **Translate it.** Copy `lang/unclefarmer.pot` to `lang/<your language code>.po`, fill in the
@@ -190,12 +190,12 @@ back:
 
 - ⭐ **Star this repository.** It helps other players find it.
 - 🤝 **Contribute.** Your time and fixes are worth as much as money.
-- ☕ **Donate.** Write to me at [ask.unclefarmer@gmail.com](mailto:ask.unclefarmer@gmail.com) and I'll tell you how.
+- ☕ **Donate.** Write to me at [afnan.nasir2000@gmail.com](mailto:afnan.nasir2000@gmail.com) and I'll tell you how.
 
 ## Contact 📧
 
-Questions, ideas, or anything else: [ask.unclefarmer@gmail.com](mailto:ask.unclefarmer@gmail.com). Bugs are best reported as an
-[issue](https://github.com/askunclefarmer/uncle-farmer/issues), so everyone can see the fix.
+Questions, ideas, or anything else: [afnan.nasir2000@gmail.com](mailto:afnan.nasir2000@gmail.com). Bugs are best reported as an
+[issue](https://github.com/afnannasir/uncle-farmer/issues), so everyone can see the fix.
 
 ## Play fair
 
