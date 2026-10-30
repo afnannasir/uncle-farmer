@@ -4081,6 +4081,9 @@ msgstr ""
 msgid "no secret room for this level has a free place"
 msgstr ""
 
+msgid "no shop near enough lists {item} - see logs\\dialogs.log"
+msgstr ""
+
 msgid "no sub named {name}"
 msgstr ""
 
@@ -4803,9 +4806,6 @@ msgstr ""
 msgid "the script is too long (over {max} characters)"
 msgstr ""
 
-msgid "the shop doesn't list {item} - see logs\\dialogs.log"
-msgstr ""
-
 msgid "the storehouse"
 msgstr ""
 
@@ -5324,6 +5324,9 @@ msgid "{now} of {top} ({pct}%)"
 msgstr ""
 
 msgid "{npc} didn't answer"
+msgstr ""
+
+msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr ""
 
 msgid "{npc} isn't in sight - looking for it"

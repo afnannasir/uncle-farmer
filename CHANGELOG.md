@@ -71,6 +71,15 @@
 - `dungeon <cave>` goes to that cave (`dungeon Spider cave`), one a day; Start in Tools, Dungeons
   names the chosen cave in its script, so a stale profile can't send the run elsewhere.
 
+**Restocking**
+
+- Potions (and grocer goods) are bought at the nearest shop that sells them, not always in Giant
+  Rock City. Only Apothecary Phillips's menu was known, so farming Flaming Mountain meant a trip
+  past Holy Blood City and Butterfly Valley to Giant Rock City and back. Now every town's potion
+  seller counts, nearest by travel first; one whose menu turns out not to list the item is
+  remembered and the next nearest tried, and what each shop stocks is learned
+  (profiles\_learned_shops.json).
+
 **Runs**
 
 - The dungeon, daily-chores and gathering settings no longer share the defaults' own lists: a

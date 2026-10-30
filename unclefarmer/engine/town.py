@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import os
 import re
+import threading
 from collections.abc import Callable, Iterable, Sequence
 from typing import Any
 
@@ -190,34 +191,105 @@ def deposit(b: Bot, item: str, n: int | None=None):
     return put
 
 
-def buy(b: Bot, item: str, n: int) -> int:
-    """Buy n of item where the game has shown it for sale (cheapest reachable, arnebia first);
-    if no shop has been seen selling it yet, the kind of shop that should. Returns how many arrived."""
-    sellers = [t[:4] for t in knowledge.traders(item, "sell") if t[5] == "arnebia"]
+# Which shops turned out to stock what, learned on the way: {"<map>|<npc>": {"sells": [...],
+# "lacks": [...]}} (lower-cased items). The game data records one potion seller's menu (Apothecary
+# Phillips, Giant Rock City); every town has one, and the game describes nearly all of them alike.
+SHOPS_SEEN = "_learned_shops.json"   # in the profiles folder (the player's own, never in a release)
+BUY_TRIES = 3           # shops tried, nearest first, before an item is given up as not for sale
+_shops_lock = threading.Lock()
+
+
+def _shop_key(npc: Npc) -> str:
+    return "%d|%s" % (npc[0], npc[1].strip().lower())
+
+
+def _shops_seen() -> dict[str, dict[str, list[str]]]:
+    try:
+        with open(os.path.join(paths.PROFILES, SHOPS_SEEN), encoding="utf-8") as f:
+            got = json.load(f)
+        return got if json.is_object(got) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def note_shop(npc: Npc, item: str, sells: bool) -> None:
+    """Remember that this shop's menu listed the item (or didn't)."""
+    with _shops_lock:
+        seen = _shops_seen()
+        row = seen.setdefault(_shop_key(npc), {"sells": [], "lacks": []})
+        want, other = ("sells", "lacks") if sells else ("lacks", "sells")
+        name = item.strip().lower()
+        row[other] = [x for x in row.get(other, []) if x != name]
+        if name not in row.setdefault(want, []):
+            row[want].append(name)
+        try:
+            with open(os.path.join(paths.PROFILES, SHOPS_SEEN), "w", encoding="utf-8") as f:
+                json.dump(seen, f, ensure_ascii=False, indent=1)
+        except OSError:
+            pass
+
+
+def shops_for(item: str) -> list[Npc]:
+    """Where the item may be bought for arnebia: the shops the game data has seen selling it, and
+    every NPC of the kind that sells it (every town's potion seller or grocer) that hasn't turned
+    out not to stock it. The nearest one is visited first (buy)."""
+    name = item.strip().lower()
+    seen = _shops_seen()
+    out: list[Npc] = [t[:4] for t in knowledge.traders(item, "sell") if t[5] == "arnebia"]
     role = knowledge.shop_role(item)
-    if not sellers and role is None:
+    for npc in knowledge.service_npcs(role) if role else []:
+        if npc not in out and name not in seen.get(_shop_key(npc), {}).get("lacks", []):
+            out.append(npc)
+    return out
+
+
+def _buy_menu(b: Bot, item: str) -> bool:
+    """With a shop's menu open: get to the list that names the item. True when it is there."""
+    d = b.dialog()
+    if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
+        # a top menu first ("buy goods", "buy", "shop")
+        for section in (r"^\s*buy\b", r"\bbuy goods", r"\bshop\b", r"\bpurchase"):
+            if open_section(b, section):
+                break
+        d = b.dialog()
+    if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
+        b.note_dialog(d, "looking for %s to buy" % item)
+        return False
+    return True
+
+
+def buy(b: Bot, item: str, n: int) -> int:
+    """Buy n of item at the nearest shop that sells it: the shops seen selling it and every one of
+    the kind that should (a potion seller, a grocer), nearest by travel first. Before, only the one
+    shop whose menu the game data held was ever used - a Priest farming Flaming Mountain went to
+    Giant Rock City for potions every time. A shop whose menu turns out not to list it is
+    remembered and the next nearest tried (BUY_TRIES). Returns how many arrived."""
+    shops = shops_for(item)
+    if not shops:
         raise Stopped(_("I don't know which shop sells {item}", item=item))
     before = counts(b).get(item.lower(), 0)
-    visit(b, role, candidates=sellers or None)
-    try:
-        d = b.dialog()
-        if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
-            # a top menu first ("buy goods", "buy", "shop")
-            for section in (r"^\s*buy\b", r"\bbuy goods", r"\bshop\b", r"\bpurchase"):
-                if open_section(b, section):
-                    break
-            d = b.dialog()
-        if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
-            b.note_dialog(d, "looking for %s to buy" % item)
-            b.log(_("the shop doesn't list {item} - see logs\\dialogs.log", item=item), speak=True)
-            return 0
-        pick(b, item_pattern(item), n)
-    finally:
-        b.close_dialogs()
-    got = counts(b).get(item.lower(), 0) - before
-    b.log(_("bought {n} {item}", n=got, item=item))
-    stats.moved(b, "bought", item, got)
-    return got
+    tried: list[Npc] = []
+    for _try in range(BUY_TRIES):
+        target = nearest(b, None, [s for s in shops if s not in tried])
+        if target is None:
+            break
+        tried.append(target)
+        visit(b, None, candidates=[target])
+        try:
+            if not _buy_menu(b, item):
+                note_shop(target, item, False)
+                b.log(_("{npc} doesn't sell {item} - trying the next nearest shop", npc=target[1], item=item))
+                continue
+            note_shop(target, item, True)
+            pick(b, item_pattern(item), n)
+        finally:
+            b.close_dialogs()
+        got = counts(b).get(item.lower(), 0) - before
+        b.log(_("bought {n} {item}", n=got, item=item))
+        stats.moved(b, "bought", item, got)
+        return got
+    b.log(_("no shop near enough lists {item} - see logs\\dialogs.log", item=item), speak=True)
+    return 0
 
 
 def sell(b: Bot, item: str, n: int | None=None):

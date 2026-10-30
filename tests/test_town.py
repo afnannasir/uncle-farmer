@@ -555,6 +555,38 @@ def test_deposit_when_the_pick_fails(monkeypatch: pytest.MonkeyPatch, no_visit: 
 
 
 # ============================================================ buy
+Npc = tuple[int, str, float, float]
+PHILLIPS: Npc = (1041, "Apothecary Phillips", 180, 220)      # the one shop the game data has a menu of
+MAGNUS: Npc = (1121, "Potion Merchant Magnus", 40, 50)        # next door to where we farm
+DANI: Npc = (1021, "Pharmacist Dani", 70, 80)
+
+
+@pytest.fixture
+def shops(monkeypatch: pytest.MonkeyPatch) -> dict[Npc, float]:
+    """Phillips known to sell potions, Magnus and Dani only known as potion sellers; nearest() goes by
+    the travel costs in the returned dict (change them in a test)."""
+    cost: dict[Npc, float] = {MAGNUS: 10.0, DANI: 50.0, PHILLIPS: 300.0}
+    monkeypatch.setattr(knowledge, "traders", stand_in(
+        knowledge.traders, lambda item, they: [PHILLIPS + (450, "arnebia")] if they == "sell" else []))
+    monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: "potions"))
+    monkeypatch.setattr(knowledge, "service_npcs", stand_in(
+        knowledge.service_npcs, lambda role: [PHILLIPS, MAGNUS, DANI] if role == "potions" else []))
+    monkeypatch.setattr(town, "nearest", stand_in(
+        town.nearest, lambda b, role, candidates=None: min(candidates or [], key=lambda n: cost[n], default=None)))
+    return cost
+
+
+def shop_visits(monkeypatch: pytest.MonkeyPatch) -> list[Npc]:
+    went: list[Npc] = []
+
+    def visit(b: Any, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None) -> str:
+        assert candidates
+        went.append(candidates[0])
+        return candidates[0][1]
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+    return went
+
+
 def test_buy_unknown_item_stops(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(knowledge, "traders", stand_in(knowledge.traders, lambda item, they: []))
     monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: None))
@@ -562,25 +594,22 @@ def test_buy_unknown_item_stops(monkeypatch: pytest.MonkeyPatch) -> None:
         town.buy(as_bot(TownBot()), "Thing", 1)
 
 
-def test_buy_from_the_nearest_known_seller(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(knowledge, "traders",
-                        stand_in(knowledge.traders, lambda item, they: [(9, "Apothecary", 1, 2, 670, "arnebia")]))
-    monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: "potions"))
-    visited: list[tuple[str | None, Sequence[tuple[int, str, float, float]] | None]] = []
-    monkeypatch.setattr(town, "visit",
-                        stand_in(town.visit, lambda b, role, name=None, candidates=None: visited.append((role, candidates))
-                        or "Apothecary"))
+def test_buy_goes_to_the_nearest_seller_not_the_one_on_record(monkeypatch: pytest.MonkeyPatch,
+                                                              shops: dict[Npc, float]) -> None:
+    # farming Flaming Mountain, the bot crossed to Giant Rock City for potions every time: only
+    # Phillips's menu was in the game data
+    went = shop_visits(monkeypatch)
     tb = TownBot()
     tb.dialog = lambda: {"open": 1, "top": menu(opt("187 Large Red Potion"))}
     monkeypatch.setattr(town, "pick", stand_in(town.pick, lambda b, pattern, quantity: tb.add("Large Red Potion", quantity or 0)))
     assert town.buy(as_bot(tb), "Large Red Potion", 3) == 3
-    assert visited == [("potions", [(9, "Apothecary", 1, 2)])]
+    assert went == [MAGNUS]
     assert any("bought 3" in line for line in tb.lines)
+    assert "large red potion" in town._shops_seen()["1121|potion merchant magnus"]["sells"]
 
 
-def test_buy_enters_a_buy_page_first(monkeypatch: pytest.MonkeyPatch, no_visit: None) -> None:
-    monkeypatch.setattr(knowledge, "traders", stand_in(knowledge.traders, lambda item, they: [(1, "Shop", 0, 0, 10, "arnebia")]))
-    monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: "potions"))
+def test_buy_enters_a_buy_page_first(monkeypatch: pytest.MonkeyPatch, shops: dict[Npc, float]) -> None:
+    shop_visits(monkeypatch)
     tb = TownBot()
     dialogs = iter([{"open": 1, "top": menu(opt("welcome"))},
                     {"open": 1, "top": menu(opt("Large Red Potion"))}])
@@ -590,29 +619,48 @@ def test_buy_enters_a_buy_page_first(monkeypatch: pytest.MonkeyPatch, no_visit: 
     assert town.buy(as_bot(tb), "Large Red Potion", 2) == 2
 
 
-def test_buy_when_the_shop_does_not_list_it(monkeypatch: pytest.MonkeyPatch, no_visit: None) -> None:
-    monkeypatch.setattr(knowledge, "traders", stand_in(knowledge.traders, lambda item, they: [(1, "Shop", 0, 0, 10, "arnebia")]))
-    monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: "potions"))
+def test_a_shop_without_it_is_remembered_and_the_next_nearest_tried(monkeypatch: pytest.MonkeyPatch,
+                                                                    shops: dict[Npc, float]) -> None:
+    went = shop_visits(monkeypatch)
+    tb = TownBot()
+    tb.dialog = lambda: ({"open": 1, "top": menu(opt("Large Red Potion"))} if went[-1] == DANI
+                         else {"open": 1, "top": menu(opt("Bread"))})
+    monkeypatch.setattr(town, "open_section", stand_in(town.open_section, returning(False)))
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, lambda b, pattern, quantity: tb.add("Large Red Potion", quantity or 0)))
+    assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
+    assert went == [MAGNUS, DANI]
+    assert any("Potion Merchant Magnus doesn't sell Large Red Potion" in line for line in tb.lines)
+    assert MAGNUS not in town.shops_for("Large Red Potion")       # next time: not tried again
+    assert DANI in town.shops_for("Large Red Potion")
+
+
+def test_buy_when_no_shop_near_enough_lists_it(monkeypatch: pytest.MonkeyPatch, shops: dict[Npc, float]) -> None:
+    went = shop_visits(monkeypatch)
     b = TownBot()
     b.dialog = lambda: {"open": 1, "top": menu(opt("nothing here"))}
     monkeypatch.setattr(town, "open_section", stand_in(town.open_section, returning(False)))
     assert town.buy(as_bot(b), "Large Red Potion", 1) == 0
-    assert any("doesn't list" in line for line in b.spoken)
-    assert b.notes == ["looking for Large Red Potion to buy"]
+    assert went == [MAGNUS, DANI, PHILLIPS][:town.BUY_TRIES]
+    assert any("no shop near enough lists" in line for line in b.spoken)
+    assert b.notes == ["looking for Large Red Potion to buy"] * len(went)
 
 
-def test_buy_by_role_when_no_seller_is_known(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_buy_by_role_when_no_seller_is_known(monkeypatch: pytest.MonkeyPatch, shops: dict[Npc, float]) -> None:
     monkeypatch.setattr(knowledge, "traders", stand_in(knowledge.traders, lambda item, they: []))
-    monkeypatch.setattr(knowledge, "shop_role", stand_in(knowledge.shop_role, lambda name: "grocer"))
-    visited: list[Sequence[tuple[int, str, float, float]] | None] = []
-    monkeypatch.setattr(town, "visit",
-                        stand_in(town.visit, lambda b, role, name=None, candidates=None: visited.append(candidates)
-                        or "Grocer"))
+    went = shop_visits(monkeypatch)
     tb = TownBot()
     tb.dialog = lambda: {"open": 1, "top": menu(opt("Large Red Potion"))}
     monkeypatch.setattr(town, "pick", stand_in(town.pick, lambda b, pattern, quantity: tb.add("Large Red Potion", quantity or 0)))
     assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
-    assert visited == [None]
+    assert went == [MAGNUS]
+
+
+def test_the_shop_record_moves_an_item_from_lacks_to_sells() -> None:
+    town.note_shop(MAGNUS, "Large Red Potion", False)
+    assert "large red potion" in town._shops_seen()["1121|potion merchant magnus"]["lacks"]
+    town.note_shop(MAGNUS, "Large Red Potion", True)          # it was out of stock, or a new menu
+    row = town._shops_seen()["1121|potion merchant magnus"]
+    assert row == {"sells": ["large red potion"], "lacks": []}
 
 
 # ============================================================ sell
