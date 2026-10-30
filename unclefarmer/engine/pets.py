@@ -28,7 +28,7 @@ from typing import Any, TYPE_CHECKING
 from .. import jsonio
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
-from . import potions, teamheal
+from . import combat, potions, teamheal
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -44,6 +44,7 @@ FOOD_GAP = 90       # seconds after feeding before feeding again (the next readi
 HEAL_GAP = 3.0
 HEAL_CHECK = 2.5
 HEAL_MISSES = 3
+HEAL_REST = 300.0   # seconds of pet potions only after HEAL_MISSES misses, before the heal is tried again
 DESCRIBE_RETRY = 300     # seconds before trying again to read a description that didn't come
 
 
@@ -194,7 +195,8 @@ def pet_key(b: Bot) -> str | None:
 
 
 def numbers(b: Bot, snap: dict[str, Any], pet: dict[str, Any]) -> dict[str, Any]:
-    """{"hp", "maxhp", "mp", "maxmp", "amiability"} of the pet out, each None when unknown. HP comes
+    """{"hp", "maxhp", "mp", "maxmp", "amiability", "amiability_age" (seconds)} of the pet out, each
+    None when unknown, and "described" (its maximum MP came from its description). HP comes
     from the pet out in the world (live), MP from the pet HP key's answer, the maximum MP from its
     description (else the most seen), amiability from the points key or the description, whichever
     is newer."""
@@ -223,6 +225,7 @@ def numbers(b: Bot, snap: dict[str, Any], pet: dict[str, Any]) -> dict[str, Any]
         best = (info["age_ms"], info["amiability"])
     if best is not None:
         out["amiability"] = best[1]
+    out["amiability_age"] = best[0] / 1000.0 if best is not None else None
     return out
 
 
@@ -338,22 +341,40 @@ def feed(b: Bot, amiability: float | None) -> bool:
     return True
 
 
+def _heal_problem(b: Bot, why: str) -> None:
+    """Why the pet's heal didn't go off, said once per run for each reason (the first one aloud):
+    the run goes on with pet potions, and the heal is tried again."""
+    told: set[str] = b.__dict__.setdefault("_told_pet_heal_problems", set())
+    if why in told:
+        return
+    b.log(why, speak=not told)
+    told.add(why)
+
+
 def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
     """The class's quick heal on the pet (Priest Heal or Recover, Sorceress Healing Wave): the
     pet selected, the heal pressed, our target selected again. The game heals the ally that is
     selected (with a monster selected the same heal lands on us), and it costs no potion. Before
-    any pet potion; only with the agent's `select` (agent 40), which picks the pet by its id. A
-    heal that hasn't raised the pet's HP HEAL_MISSES times running is going somewhere else: then
-    pet potions only, for the rest of the run. True when a heal was pressed."""
-    if not b.p.get("pet_heal_with_skill", True) or getattr(b, "pet_heal_off", False):
-        return False
-    if not getattr(b, "agent_act", False) or getattr(b, "walk_only", False):
+    any pet potion; only with the agent's `select` (agent 40), which picks the pet by its id.
+    Whatever keeps the heal from going off is said plainly, and the run goes on with pet potions:
+    a heal that hasn't raised the pet's HP HEAL_MISSES times running (between fights) is likely
+    landing elsewhere, so it rests HEAL_REST seconds and is tried again - never given up for the
+    run. True when a heal was pressed."""
+    if not b.p.get("pet_heal_with_skill", True) or getattr(b, "walk_only", False):
         return False
     sb = getattr(b, "skillbook", None)
     if sb is None or not getattr(sb, "ok", False):
         return False
     h = sb.healer()
     if not h:
+        return False
+    name = (pet.get("name") or "").split(" belongs to ")[0].strip() or _("the pet")
+    if not getattr(b, "agent_act", False):
+        _heal_problem(b, _("can't heal {pet} with {skill}: the bot can't select the pet in this game "
+                           "(restart the game so Uncle Farmer's agent loads) - pet potions meanwhile",
+                           pet=name, skill=h["name"]))
+        return False
+    if now < getattr(b, "pet_heal_rest_until", 0.0):
         return False
     tried = getattr(b, "pet_heal_try", None)
     if tried:
@@ -362,11 +383,18 @@ def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
         b.pet_heal_try = None
         if pet["hp"] > tried[1]:
             b.pet_heal_misses = 0
+        elif tried[2]:
+            pass      # healed in a fight: the monsters may take more than it gave - nothing learned
         else:
             b.pet_heal_misses = getattr(b, "pet_heal_misses", 0) + 1
             if b.pet_heal_misses >= HEAL_MISSES:
-                b.pet_heal_off = True
-                b.log(_("{skill} doesn't reach the pet - pet potions only", skill=h["name"]), speak=True)
+                b.pet_heal_misses = 0
+                b.pet_heal_rest_until = now + HEAL_REST
+                told = getattr(b, "told_pet_heal_rest", False)
+                b.told_pet_heal_rest = True
+                b.log(_("{skill} didn't raise {pet}'s HP {n} times running - it may be landing on you instead. "
+                        "Pet potions for {minutes} minutes, then {skill} again",
+                        skill=h["name"], pet=name, n=HEAL_MISSES, minutes=int(HEAL_REST / 60)), speak=not told)
                 return False
     below = b.p.get("pet_heal_below", 85)
     below = 85.0 if potions.auto(below) else float(below)
@@ -374,14 +402,33 @@ def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
         return False
     if sb.gcd_wait(now) or not sb.ready(h, now):
         return False
-    if not teamheal.cast_on(b, sb, h, pet["id"], now):
+    refused: list[str] = []
+    if not teamheal.cast_on(b, sb, h, pet["id"], now, refused):
+        b.pet_healed_at = now             # not again at once: the next try after the heal's gap
+        why = refused[0] if refused else _("no answer")
+        _heal_problem(b, _("can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again",
+                           pet=name, skill=h["name"], why=why))
         return False
     b.pet_healed_at = now
-    b.pet_heal_try = (now, pet["hp"])
+    b.pet_heal_try = (now, pet["hp"], bool(getattr(b, "in_fight", False)))
     if not getattr(b, "told_pet_heal", False):
         b.told_pet_heal = True
         b.log(_("heals the pet with {skill} below {pct}% of its HP", skill=h["name"], pct="%g" % below))
     return True
+
+
+def heal_in_fight(b: Bot, snap: dict[str, Any]) -> bool:
+    """In a fight, at the moment our next press is due: the pet's heal instead of an attack. The
+    fight looks at the world (look_after) only while the global cooldown still runs - the look is
+    timed to fit before the next press - so a heal tried there never went off in a fight, and a
+    Priest's or Sorceress' pet lived on potions. Not while our own HP needs the heal (the skill
+    picker heals us first). True when the heal was pressed."""
+    if not chosen(b) or combat.hp_pct(snap["self"]) < max(b.p.get("emergency_below", 50), 50):
+        return False
+    pet = entity(b, snap)
+    if not pet or not pet.get("maxhp"):
+        return False
+    return heal(b, pet, 100.0 * pet["hp"] / pet["maxhp"], clock_for(b).time())
 
 
 def look_after(b: Bot, snap: dict[str, Any]) -> None:
@@ -413,7 +460,11 @@ def look_after(b: Bot, snap: dict[str, Any]) -> None:
             b.pet_vitals_at = 0.0       # read the MP again soon after
             return
     feed(b, n["amiability"])
-    if not n["described"]:
+    # The points key keeps the amiability fresh. Where its answer never comes (a Priest's before
+    # agent 52), the pet's description is the only reading: read it again now and then, or the
+    # amiability stays what it was at the summon and no Rice Roll is ever fed.
+    stale = b.p.get("pet_food_below", 70) and (n["amiability_age"] is None or n["amiability_age"] > DESCRIBE_RETRY)
+    if not n["described"] or stale:
         describe(b)
 
 

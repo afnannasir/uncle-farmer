@@ -436,6 +436,35 @@ def test_read_gives_up_after_five_seconds(clock: Clock) -> None:
     assert clock.now > 1005.0
 
 
+def test_read_waits_longer_for_our_character_to_come_back(clock: Clock) -> None:
+    # the server can drop our own character from the entity map for a few seconds
+    b = Read()
+    ticking(b, clock)
+    gone = {"error": "noplayer: id 4242 not in the entity map"}
+    b.link.answers["mem self"] = Seq(*[gone] * 50, {"id": 4242})
+    assert b._read("mem self", lambda s: "error" not in s) == {"id": 4242}
+    assert clock.now > 1010.0
+
+
+def test_read_gives_up_on_a_missing_character_in_the_end(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem self"] = {"error": "noplayer: id 4242 not in the entity map"}
+    with pytest.raises(Stopped) as e:
+        b._read("mem self", lambda s: "error" not in s)
+    assert e.value.final is True and "4242" in str(e.value)
+    assert 1060.0 < clock.now < 1062.0
+
+
+def test_read_gives_up_soon_when_nobody_is_logged_in(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem self"] = {"error": "noplayer: id 0 not in the entity map"}
+    with pytest.raises(Stopped):
+        b._read("mem self", lambda s: "error" not in s)
+    assert clock.now < 1006.0
+
+
 def test_read_gives_up_at_once_on_a_real_error(clock: Clock) -> None:
     b = Read()
     ticking(b, clock)
@@ -556,6 +585,16 @@ def test_settled_map_waits_for_the_player_to_come_back(clock: Clock) -> None:
     b.link.answers["mem self"] = Seq({"error": "noplayer: id 1 not in the entity map"}, {"id": 1})
     assert b.settled_map() == 5121
     assert b.last_me == {"id": 1}
+    assert b.sleeps == [0.3]
+
+
+def test_settled_map_waits_when_the_map_changes_during_the_reads(clock: Clock) -> None:
+    # map-id-first: the new id is read, then the player, then the map changed under us: read again
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem map"] = Seq({"id": 1001}, {"id": 5121}, {"id": 5121})
+    b.link.answers["mem self"] = {"id": 1, "x": 3, "y": 4}
+    assert b.settled_map() == 5121
     assert b.sleeps == [0.3]
 
 

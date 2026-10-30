@@ -25,6 +25,7 @@ public final class BotAgent {
             GamePorts.install(inst);       // first: the game's main class loads right after premain
             Health.install();
             SpeechSwitch.install(inst);
+            VoicePlayer.install(inst);
             PrivateChat.init(inst);
         } catch (Throwable ignored) { }
         try {

@@ -75,6 +75,27 @@ class ResultsMixin(FrameParts):
                     pass
         threading.Thread(target=work, daemon=True).start()
 
+    def keep_voice_fix(self) -> None:
+        """fix_voice: tell each game's agent whether to mend the game's voice message player. A game
+        starts mended, so only a change is sent: to every game when the setting changes, and to each
+        game that starts while it is off. Once per game and change (an older agent can't, and isn't
+        asked again). On a worker, like keep_silent."""
+        want = bool(self.s.get("fix_voice", True))
+        todo = [pid for pid, _n, _w in list(self.games) if self.voice_fixed.get(pid, True) != want]
+        if not todo:
+            return
+        for pid in todo:
+            self.voice_fixed[pid] = want
+
+        def work() -> None:
+            for pid in todo:
+                try:
+                    with AgentLink(pid=pid, timeout=3) as a:
+                        a.send("voicefix " + ("on" if want else "off"))
+                except (AgentError, OSError):
+                    pass
+        threading.Thread(target=work, daemon=True).start()
+
     def set_game_speech(self, talk: bool, every: bool = False) -> None:
         """Mute (talk False) or unmute the selected game - each game on its own, so muting one that
         is botting leaves the one being played talking - or, with every, all of them. Two commands,

@@ -134,11 +134,28 @@ def shop(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_settings_fill_in_and_keep_the_players_supplies() -> None:
-    cfg = dungeon.config({"dungeon": {"caves": ["Spider cave"], "supplies": {"pet_mp": {"min": 20}}}})
-    assert cfg["caves"] == ["Spider cave"]
+    cfg = dungeon.config({"dungeon": {"cave": "Spider cave", "supplies": {"pet_mp": {"min": 20}}}})
+    assert cfg["cave"] == "Spider cave"
     assert cfg["supplies"]["pet_mp"] == {"item": "", "min": 20}
     assert cfg["supplies"]["pet_food"] == {"item": "", "min": 3}
     assert cfg["patrol"] == "quick" and cfg["pack"] == 2 and cfg["end"] == {"how": "start"}
+
+
+def test_the_old_ticked_list_becomes_its_first_cave_and_nonsense_the_best_one() -> None:
+    assert dungeon.config({"dungeon": {"caves": ["Spider cave", "Scorpion Cave"]}})["cave"] == "Spider cave"
+    assert "caves" not in dungeon.config({"dungeon": {"cave": "Spider cave"}})
+    assert dungeon.config({"dungeon": {"caves": []}})["cave"] == dungeon.BEST
+    assert dungeon.config({"dungeon": {"cave": "Atlantis"}})["cave"] == dungeon.BEST
+    assert dungeon.config({})["cave"] == dungeon.BEST
+
+
+def test_best_is_the_highest_cave_the_level_lets_in() -> None:
+    best = dungeon.config({})
+    assert dungeon.pick(best, 79) == "Scorpion Cave"
+    assert dungeon.pick(best, 59) == "Spider cave"
+    assert dungeon.pick(best, 30) is None
+    assert dungeon.pick(best, 0) == "Scorpion Cave"           # level unknown: the highest
+    assert dungeon.pick(dungeon.config({"dungeon": {"cave": "Spider cave"}}), 79) == "Spider cave"
 
 
 def test_the_supplies_are_the_potions_the_character_drinks_and_the_pet_food() -> None:
@@ -190,7 +207,7 @@ def test_check_only_never_restocks(shop: None) -> None:
 def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop: None) -> None:
     g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
     g._enter()
-    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Scorpion Cave"]}}))
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
     assert g.walked == ["Scorpion Cave"]
     assert g.farmed == [{"map": 1539, "patrol": "quick", "instance": True, "pack": 2, "chase": 90}]
     assert g.mid == 1531 and g.left == 0
@@ -198,7 +215,7 @@ def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop: Non
     assert vars(g)["shot_moving"] is True and g.move_shots is False    # inside only
     assert notes and "Scorpion Cave" in notes[0] and "kills" in notes[0]
     assert dungeon.done_today("Hero") == ["Scorpion Cave"]
-    assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Scorpion Cave"]}})) == []
+    assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}})) == []
     assert g.walked == ["Scorpion Cave"]                      # not again today
 
 
@@ -206,18 +223,29 @@ def test_still_inside_after_the_timer_it_leaves_itself(shop: None) -> None:
     g = Game(moves_out=False, bag={"pet large blue potion": 30, "pet rice roll": 5,
                                    "large blue potion": 80, "large red potion": 40})
     g._enter()
-    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Spider cave"]}}))
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
     assert g.left == 1 and g.mid == 1531
 
 
-def test_not_let_in_is_written_down_and_the_next_cave_is_tried(shop: None) -> None:
+def test_not_let_in_is_written_down_and_no_other_cave_is_tried(shop: None) -> None:
+    # the game lets a character into one cave a day: turned away from one, it has had its cave
     g = Game(lets_in=False, bag={"pet large blue potion": 30, "pet rice roll": 5,
                                  "large blue potion": 80, "large red potion": 40})
     notes = dungeon.run(as_bot(g), dungeon.config({}))
-    assert g.walked == ["Scorpion Cave", "Spider cave"]
+    assert g.walked == ["Scorpion Cave"]
     assert g.farmed == []
-    assert all("didn't let us in" in n for n in notes)
+    assert len(notes) == 1 and "didn't let us in" in notes[0]
     assert chores.done_today("Hero")["_dungeon Scorpion Cave"]["note"] == "not let in"
+
+
+def test_one_cave_a_day_whichever_it_was(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g.character = "One a day"
+    g._enter()
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+    assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}})) == []
+    assert g.walked == ["Spider cave"]
+    assert any("Spider cave is done for today - a character goes into one cave a day" in line for line in g.lines)
 
 
 def test_a_menu_without_enter_is_said(shop: None) -> None:
@@ -226,18 +254,20 @@ def test_a_menu_without_enter_is_said(shop: None) -> None:
     assert any("Enter the dungeon" in line for line in g.lines)
 
 
-def test_a_cave_above_the_characters_level_is_left_out(shop: None) -> None:
-    g = Game(level=50, bag={"pet large blue potion": 30, "pet rice roll": 5,
-                            "large blue potion": 80, "large red potion": 40})
+def test_a_cave_above_the_characters_level_is_said_and_not_tried(shop: None) -> None:
+    bag = {"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40}
+    g = Game(level=50, bag=bag)
+    g.character = "Level fifty"
     g._enter()
-    dungeon.run(as_bot(g), dungeon.config({}))
+    assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}})) == []
+    assert g.walked == [] and any("needs level 60" in line for line in g.lines)
+    dungeon.run(as_bot(g), dungeon.config({}))              # the best it can: Spider cave
     assert g.walked == ["Spider cave"]
-    assert any("needs level 60" in line for line in g.lines)
 
 
 def test_check_only_says_where_it_would_go_and_goes_nowhere(shop: None) -> None:
     g = Game()
-    assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["would go to: Scorpion Cave, Spider cave"]
+    assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["would go to: Scorpion Cave"]
     assert g.walked == [] and g.restocks == []
 
 
@@ -250,8 +280,30 @@ def test_the_window_runs_its_end_place_then_the_caves() -> None:
 
 
 def test_the_script_command_parses() -> None:
-    for line in ("dungeon", "dungeon check"):
+    for line in ("dungeon", "dungeon check", "dungeon Scorpion Cave", "dungeon check spider cave"):
         assert not script.check(line + "\n")
+    assert script.check("dungeon Atlantis\n")                           # no such dungeon
+    assert script.check("dungeon Scorpion Cave, Spider cave\n")         # one cave a day
+
+
+def test_the_window_names_the_chosen_cave_in_its_script() -> None:
+    # a cave chosen in the window goes into the script, so a stale profile can't send it elsewhere
+    text = dungeon.script(dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+    assert text == "end_at start\ndungeon Spider cave\n" and script.check(text) is None
+
+
+def test_a_cave_named_in_the_script_goes_over_the_window_s(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g.character = "Named cave"
+    g._enter()
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}), cave="Spider cave")
+    assert g.walked == ["Spider cave"]
+
+
+def test_settings_never_share_the_defaults() -> None:
+    a = dungeon.config({})
+    a["end"]["how"] = "home"
+    assert dungeon.config({})["end"] == {"how": "start"} and dungeon.DEFAULTS["end"] == {"how": "start"}
 
 
 def test_every_cave_has_a_known_entrance_and_a_patrol() -> None:
@@ -295,7 +347,7 @@ class PetGame(Game):
 
 def test_the_pet_chosen_for_the_dungeons_goes_over_the_ticked_ones(shop: None) -> None:
     g = PetGame("Chosen pet")
-    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"caves": ["Scorpion Cave"], "pet": "Wild Eagle>><< Sparky"}}))
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave", "pet": "Wild Eagle>><< Sparky"}}))
     assert g.inside and g.inside[0] == ["Wild Eagle>><< Sparky"]
     assert any("taking Wild Eagle>><< Sparky into the dungeons" in line for line in g.lines)
     assert pets.chosen(as_bot(g)) == ["Pixie Sparky"]     # afterwards: Character, Settings again
@@ -304,7 +356,7 @@ def test_the_pet_chosen_for_the_dungeons_goes_over_the_ticked_ones(shop: None) -
 
 def test_no_pet_chosen_for_the_dungeons_takes_none_and_no_pet_supplies(shop: None) -> None:
     g = PetGame("No pet")
-    cfg = dungeon.config({"dungeon": {"caves": ["Scorpion Cave"], "pet": dungeon.NO_PET}})
+    cfg = dungeon.config({"dungeon": {"cave": "Scorpion Cave", "pet": dungeon.NO_PET}})
     dungeon.run(as_bot(g), cfg)
     assert g.inside and g.inside[0] == []
     assert any("without a pet" in line for line in g.lines)

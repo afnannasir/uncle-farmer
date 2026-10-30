@@ -65,7 +65,7 @@ msgstr ""
 msgid "&Cancel the shutdown"
 msgstr ""
 
-msgid "&Caves (tick the ones to go to):"
+msgid "&Cave:"
 msgstr ""
 
 msgid "&Change key..."
@@ -136,6 +136,9 @@ msgid "&Find the running game"
 msgstr ""
 
 msgid "&Find:"
+msgstr ""
+
+msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr ""
 
 msgid "&Game folder:"
@@ -741,9 +744,6 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Caves"
-msgstr ""
-
-msgid "Caves, each once a game day, in this order"
 msgstr ""
 
 msgid "Cell x:"
@@ -2722,6 +2722,9 @@ msgstr ""
 msgid "The bot reads the real one from the Forger every try."
 msgstr ""
 
+msgid "The cave (a character goes into one cave a game day)"
+msgstr ""
+
 msgid "The collection"
 msgstr ""
 
@@ -2802,6 +2805,9 @@ msgid "The guide {name} is missing from the docs folder."
 msgstr ""
 
 msgid "The hearthstone didn't work."
+msgstr ""
+
+msgid "The highest cave my level lets in"
 msgstr ""
 
 msgid ""
@@ -2916,9 +2922,6 @@ msgstr ""
 msgid "Thrown away:"
 msgstr ""
 
-msgid "Tick a cave to go to."
-msgstr ""
-
 msgid "Tick the monsters to fight:"
 msgstr ""
 
@@ -2944,6 +2947,12 @@ msgid "Today"
 msgstr ""
 
 msgid "Today, {n} runs, {m} min: {r}"
+msgstr ""
+
+msgid "Today: no cave yet."
+msgstr ""
+
+msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr ""
 
 msgid "Tone from &everyone else:"
@@ -3378,6 +3387,21 @@ msgid "can't get next to {npc}"
 msgstr ""
 
 msgid ""
+"can't heal {name} with {skill}: the bot can't select teammates in this game (restart the game so Uncle Farmer's agent loads)"
+msgstr ""
+
+msgid "can't heal {name} with {skill}: {why} - the heal is tried again"
+msgstr ""
+
+msgid ""
+"can't heal {pet} with {skill}: the bot can't select the pet in this game (restart the game so Uncle Farmer's agent loads) - pet potions meanwhile"
+msgstr ""
+
+msgid ""
+"can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again"
+msgstr ""
+
+msgid ""
 "can't read the game's bag cursor - restart the game so the new agent loads"
 msgstr ""
 
@@ -3552,6 +3576,9 @@ msgstr ""
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr ""
 
+msgid "couldn't turn to the attack page {skill} is on"
+msgstr ""
+
 msgid "couldn't type into the game: {why}"
 msgstr ""
 
@@ -3580,9 +3607,6 @@ msgid "died {n} times - stopping; this place may be too hard"
 msgstr ""
 
 msgid "done here - going to {map}, where no monsters spawn"
-msgstr ""
-
-msgid "done today"
 msgstr ""
 
 msgid "done: made {n} {gem}; {have} in the bag"
@@ -3615,9 +3639,6 @@ msgid ""
 msgstr ""
 
 msgid "entrance unknown"
-msgstr ""
-
-msgid "every chosen dungeon is done for today"
 msgstr ""
 
 msgid "everything"
@@ -3992,7 +4013,13 @@ msgstr ""
 msgid "no Swift fusion beast on this character - walking on foot"
 msgstr ""
 
+msgid "no answer"
+msgstr ""
+
 msgid "no arnebia shared this time: {why}"
+msgstr ""
+
+msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
@@ -4058,6 +4085,9 @@ msgid "no sub named {name}"
 msgstr ""
 
 msgid "no such chore: {names} (there are: {all})"
+msgstr ""
+
+msgid "no such dungeon: {name} (there are: {all})"
 msgstr ""
 
 msgid "no way from {a} to {b} - go there yourself and start again"
@@ -4127,9 +4157,6 @@ msgstr ""
 msgid "not set"
 msgstr ""
 
-msgid "not yet today"
-msgstr ""
-
 msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
@@ -4161,6 +4188,9 @@ msgid "on this map, with Resurrection Crystals"
 msgstr ""
 
 msgid "on {name}"
+msgstr ""
+
+msgid "one cave only: a character goes into one cave a day"
 msgstr ""
 
 msgid "only {names}"
@@ -4691,6 +4721,9 @@ msgstr ""
 msgid "the game won't let us hit {name} from here - next one"
 msgstr ""
 
+msgid "the game wouldn't select it ({why})"
+msgstr ""
+
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr ""
 
@@ -4755,6 +4788,9 @@ msgid "the officer offers no hunting bounty"
 msgstr ""
 
 msgid "the outer hall"
+msgstr ""
+
+msgid "the pet"
 msgstr ""
 
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
@@ -4964,7 +5000,7 @@ msgstr ""
 msgid "would enter {room}"
 msgstr ""
 
-msgid "would go to: {caves}"
+msgid "would go to: {cave}"
 msgstr ""
 
 msgid "would {what}"
@@ -5010,7 +5046,10 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr ""
 
-msgid "{cave} - level {n} - {where} - {today}"
+msgid "{cave} - level {n} - {where}"
+msgstr ""
+
+msgid "{cave} is done for today - a character goes into one cave a day"
 msgstr ""
 
 msgid "{cave} needs level {n}"
@@ -5407,10 +5446,12 @@ msgstr ""
 msgid "{skill} at {where}"
 msgstr ""
 
-msgid "{skill} doesn't reach teammates - no more teammate heals this run"
+msgid ""
+"{skill} didn't raise {name}'s HP {n} times running - it may be landing on you, or the game isn't showing their HP. No teammate heals for {minutes} minutes, then {skill} again"
 msgstr ""
 
-msgid "{skill} doesn't reach the pet - pet potions only"
+msgid ""
+"{skill} didn't raise {pet}'s HP {n} times running - it may be landing on you instead. Pet potions for {minutes} minutes, then {skill} again"
 msgstr ""
 
 msgid "{skill} put on the empty skill key {key} (page {page})"

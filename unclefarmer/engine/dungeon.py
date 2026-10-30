@@ -15,6 +15,9 @@ What the game showed (hand runs logged 2026-10-27, one with a Hunter, one with a
     fills faster than another: what kills most is never stopping - a loop through the whole cave,
     taking whatever is in reach, area skills on whatever is close together.
   - Pets are allowed (a pet was out in both runs); the loot was only Arnebia.
+  - A character goes into ONE cave a game day, whichever it is, not one of each: the player
+    chooses which (or the highest one the character's level lets in). More caves come at levels
+    80, 90 and 100; each is one row in CAVES.
 
 So a visit is: the supplies topped up before setting out (the pet's blue potions and Rice Rolls,
 our own blues and reds - a pet that fights and a lower character's potions are a good part of the
@@ -23,12 +26,14 @@ no trips out (the visit can't be taken up again), no resting (drink instead), ar
 monsters together, chasing whatever is within 90 steps (caveloops.py: the chase range, not the
 loop, is what decides the kills here), until the game moves us out. The pet is the one chosen in
 Tools, Dungeons, or none; by default the ones ticked in Character, Settings, and with none ticked
-the pet that is out is looked after for the run - the game counts its kills as ours. Each cave once a game day, written down in the
-chores' done list. Where the run ends is the script's end_at, as for farming.
+the pet that is out is looked after for the run - the game counts its kills as ours. One cave a
+game day, written down in the chores' done list. Where the run ends is the script's end_at, as for
+farming.
 """
 
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 from .. import atlas, dungeons, jsonio, knowledge
@@ -37,11 +42,12 @@ from . import chores, pets, town
 from .bot import Bot, Stopped
 from .botparts.base import potion_kind
 
-CAVES: dict[str, dict[str, Any]] = {
-    "Scorpion Cave": {"map": 1539, "level": 60},
+CAVES: dict[str, dict[str, Any]] = {          # lowest level first; the caves at 80, 90 and 100 go here
     "Spider cave": {"map": 1503, "level": 40},
+    "Scorpion Cave": {"map": 1539, "level": 60},
 }
 CAVE_NAMES = (N_("Scorpion Cave"), N_("Spider cave"))     # CAVES' names, for translators
+BEST = "best"             # the cave setting's default: the highest one the character's level lets in
 MINUTES = 15              # the game's timer inside
 OVERTIME = 2.0            # minutes past the timer before leaving through the Action menu ourselves
 CHASE = 90                # walking steps to chase a monster from the loop: farming's 40 left a
@@ -55,7 +61,7 @@ SUPPLY_NAMES = {"pet_mp": N_("Pet blue potions"), "pet_food": N_("Pet Rice Rolls
                 "mp": N_("Our blue potions"), "hp": N_("Our red potions")}
 SOURCES = ("both", "storage", "buy")
 DEFAULTS: dict[str, Any] = {
-    "caves": ["Scorpion Cave", "Spider cave"],   # these, in this order, each once a game day
+    "cave": BEST,             # the one cave a game day: a CAVES name, or BEST
     "supplies": {"pet_mp": {"item": "", "min": 25},     # item "": the one on the hotkey (or the
                  "pet_food": {"item": "", "min": 3},    # strongest in the bag); min 0: not looked at
                  "mp": {"item": "", "min": 50},
@@ -77,7 +83,12 @@ PATROLS = ("quick", "full", "short")
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's dungeon settings, with every setting filled in."""
     mine: dict[str, Any] = p.get("dungeon") or {}
-    cfg: dict[str, Any] = {**DEFAULTS, **mine}
+    cfg: dict[str, Any] = {**copy.deepcopy(DEFAULTS), **mine}   # never the defaults' own lists and dicts
+    old: object = cfg.pop("caves", None)   # before one cave a day: a ticked list, the first was the one
+    if "cave" not in mine and jsonio.is_array(old):
+        cfg["cave"] = next((str(c) for c in old if str(c) in CAVES), BEST)
+    if cfg["cave"] != BEST and cfg["cave"] not in CAVES:
+        cfg["cave"] = BEST
     supplies: dict[str, dict[str, Any]] = {k: dict(v) for k, v in DEFAULTS["supplies"].items()}
     chosen: dict[str, Any] = cfg.get("supplies") or {}
     for k, v in chosen.items():
@@ -92,15 +103,20 @@ def done_key(cave: str) -> str:
 
 
 def done_today(name: str | None) -> list[str]:
-    """The caves this character has been into this game day."""
+    """The caves this character has been into (or been turned away from) this game day: one at
+    most, as the game lets a character into one a day."""
     done = chores.done_today(name)
     return [c for c in CAVES if done_key(c) in done]
 
 
-def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
-    """The player's caves, in their order, not yet visited this game day."""
-    done = done_today(name)
-    return [c for c in cfg["caves"] if c in CAVES and c not in done]
+def pick(cfg: dict[str, Any], level: int) -> str | None:
+    """The cave to go to: the one chosen, or with BEST the highest one the level lets in (the
+    highest of all when the level isn't known). None when the level is too low for any."""
+    chosen = cfg.get("cave", BEST)
+    if chosen in CAVES:
+        return chosen
+    able = [c for c, v in CAVES.items() if not level or level >= v["level"]]
+    return max(able, key=lambda c: CAVES[c]["level"], default=None)
 
 
 # ------------------------------------------------------------------------------------- supplies
@@ -116,9 +132,12 @@ def known_items(kind: str) -> list[str]:
 
 
 def script(cfg: dict[str, Any]) -> str:
-    """The run the window starts: its end place, then the caves."""
+    """The run the window starts: its end place, then the cave. A cave the player chose is named in
+    the script, so the run goes where the window said - not where a profile saved earlier (or
+    another copy of it) happens to point."""
     from .plan import end_line
-    return end_line(cfg.get("end")) + "\ndungeon\n"
+    cave = cfg.get("cave")
+    return end_line(cfg.get("end")) + "\ndungeon" + (" " + cave if cave in CAVES else "") + "\n"
 
 
 def supply_item(b: Bot, kind: str, cfg: dict[str, Any]) -> str | None:
@@ -237,32 +256,32 @@ def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     return line
 
 
-def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
-    """Each of the player's caves not yet visited today, supplies first. [what happened]."""
+def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None = None) -> list[str]:
+    """Today's cave (the one a script names, else the window's), supplies first, unless this
+    character has been in one today. [what happened]."""
+    if cave in CAVES:
+        cfg = dict(cfg, cave=cave)
     name = getattr(b, "character", None)
-    todo = due(name, cfg)
-    if not todo:
-        b.log(_("every chosen dungeon is done for today"), speak=True)
+    done = done_today(name)
+    if done:
+        b.log(_("{cave} is done for today - a character goes into one cave a day", cave=_(done[0])), speak=True)
         return []
     level = level_of(b)
-    able = [c for c in todo if not level or level >= CAVES[c]["level"]]
-    for c in todo:
-        if c not in able:
-            b.log(_("{cave} needs level {n}", cave=c, n=CAVES[c]["level"]))
-    if not able:
+    cave = pick(cfg, level)
+    if cave is None:
+        b.log(_("no cave lets in level {n} yet (the lowest needs level {low})", n=level,
+                low=min(v["level"] for v in CAVES.values())), speak=True)
+        return []
+    if level and level < CAVES[cave]["level"]:
+        b.log(_("{cave} needs level {n}", cave=_(cave), n=CAVES[cave]["level"]), speak=True)
         return []
     was = getattr(b, "pets_for_run", None)
     try:
         choose_pet(b, cfg)
         get_supplies(b, cfg, check_only)
         if check_only:
-            return [_("would go to: {caves}", caves=", ".join(able))]
-        notes: list[str] = []
-        for i, cave in enumerate(able):
-            if i:
-                get_supplies(b, cfg)        # the first cave used some: top up again between them
-            notes.append(visit(b, cfg, cave))
-        return notes
+            return [_("would go to: {cave}", cave=_(cave))]
+        return [visit(b, cfg, cave)]
     finally:
         b.pets_for_run = was            # the rest of the run goes by Character, Settings again
 

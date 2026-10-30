@@ -37,6 +37,8 @@ class FightingMixin(Parts):
     FIRST_HIT = 0.5       # seconds from being in reach to our first hit landing (press, cast, the game's answer)
     UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone
     REFUSED_RUN = 3       # bursts in a row with no cast, at a monster we never hurt, before leaving it
+    REFUSED_RUN_INSIDE = 2    # ... in a dungeon, where another is always close: a refused run cost
+                              # up to 5.3 s a monster in a 15-minute Scorpion Cave
     SELECT_RANGE = 20.0   # how far the game's target keys pick a monster at most, as far as we can
     MOVE_SHOT_REACH = 8.0   # shooting on the way only for a character that hits from this far
     move_shots: bool = False   # Tools, Dungeons' "shoot while walking", for the visit
@@ -176,30 +178,40 @@ class FightingMixin(Parts):
                 and sb is not None and sb.ok and sb.confirm and self.reach() >= self.MOVE_SHOT_REACH
                 and not self.follows())
 
-    def move_shot(self, snap: dict[str, Any], me: dict[str, Any]) -> bool:
+    def move_shot(self, snap: dict[str, Any], me: dict[str, Any]) -> int | None:
         """One shot on the way, without stopping: at the nearest monster in reach with a clear line,
         when the global cooldown allows. The press goes while the walking keys stay held; the next
-        look confirms it (or presses again). True when a skill was pressed."""
+        look confirms it (or presses again). The id of the monster shot at, or None."""
         sb = self.skillbook
         if sb is None:
-            return False
+            return None
         rng = self.reach()
         here = snap_map(snap)
         area, only, skip, rects = self.farm_filter or (None, "", "", [])
         near = [e for e in self.targets(snap, area, only, skip, rects, limit=rng + 2)
                 if math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= rng and self.clear_shot(me, e, here)]
         if not near:
-            return False
+            return None
         e = min(near, key=lambda e: math.hypot(e["x"] - me["x"], e["y"] - me["y"]))
         if sb.gcd_wait(self.clock.time()):
-            return False
+            return None
         if self.ui().get("target") != e["id"] and not self._select_by_id(e):
-            return False
-        picked = sb.pick(snap, e)
+            return None
+        sb.on_the_move = True     # instant skills only: a channel breaks as we walk on
+        try:
+            picked = sb.pick(snap, e)
+        finally:
+            sb.on_the_move = False
         if not isinstance(picked, tuple):
-            return False
+            return None
         self.key(picked[0])
-        return True
+        return e["id"]
+
+    def downed(self, mid: int, since: float) -> bool:
+        """A cast of ours since then left this monster at 0 HP (the cast report says so, agent 44):
+        dead, though the world and the death report may not show it yet."""
+        sb = self.skillbook
+        return sb is not None and getattr(sb, "downed", {}).get(mid, -1.0) >= since
 
     def hit(self, me: dict[str, Any]) -> bool:
         """True when HP fell since the last step of a walk and fighting back is on."""
@@ -652,6 +664,9 @@ class FightingMixin(Parts):
             self.skip[mid] = self.clock.time() + 120
             return None
         snap = self.snap()
+        if self.downed(mid, way.began):
+            self.count_kills(snap)        # shot dead on the way: on to the next one at once
+            return None
         m = way.find(snap)
         if m is None or m["hp"] <= 0:
             self._taken(snap, mob)
@@ -728,6 +743,13 @@ class FightingMixin(Parts):
                 return
             step = self._fight_press(f)
             if step == "return":
+                return
+            if self.downed(f.mid, f.start):
+                # One hit was enough: the cast report shows it at 0 HP. The fight's next look was
+                # up to CHECK_EVERY away and the walk to the next one waited for it (0.45 s a kill,
+                # 113 s of a 15-minute Scorpion Cave). The kill is counted when its death report
+                # comes in (count_kills, here or at the farm loop's next look).
+                self.count_kills(f.snap)
                 return
             if step == "again":
                 continue
@@ -891,6 +913,8 @@ class FightingMixin(Parts):
                 f.i += 1
                 self.sleep(0.3)
                 return "again"
+        if sb is not None and (teamheal.look_after(as_bot(self), f.snap) or pets.heal_in_fight(as_bot(self), f.snap)):
+            return None       # this press healed a teammate (while following) or the pet
         picked = sb.pick(f.snap, m) if sb is not None else None
         if sb is not None and picked == "wait":
             # sleep until the cooldown ends, or until the next check is due, whichever first
@@ -902,8 +926,21 @@ class FightingMixin(Parts):
                 return "return"
         elif picked:
             self.key(picked[0])
-        else:
+        elif sb is None or not sb.ok:
+            # No usable skill book (an old agent, keys the bot can't read, Smart skills off):
+            # press the profile's own attack keys. With a working book, pressing them would cast
+            # whatever sits on them - including a skill the player set to Never.
             self.key(p["attack_keys"][f.i % len(p["attack_keys"])])
+        else:
+            # Nothing picked: an attack the player allows that is off its cooldown (sb.fallback),
+            # never the profile's keys; with none at all (every skill Never, or cooling down) wait
+            # instead of spinning on the agent.
+            spare = getattr(sb, "fallback", None)
+            press = spare(self.clock.time()) if spare is not None else None
+            if press:
+                self.key(press[0])
+            else:
+                self.sleep(max(0.2, p.get("attack_gap", 0.2)))
         f.i += 1
         if f.i % 3 == 0 and self.ui().get("target") != mid and not self.select_target(m):
             if f.dist >= self.SELECT_RANGE:
@@ -926,8 +963,12 @@ class FightingMixin(Parts):
         if f.dist > f.rng + 0.5:
             return False      # out of reach the follow attack is still walking us in
         sb.refuse(picked[1], self.clock.time())
+        if (sb.skill(picked[1]) or {}).get("role") in combat.CALM_ROLES:
+            f.refused_run = 0     # a heal or buff the game wouldn't cast is not the monster's fault
+            return False
         f.refused_run += 1
-        if (f.refused_run >= self.REFUSED_RUN and f.m["hp"] >= f.mob["hp"]
+        limit = self.REFUSED_RUN_INSIDE if self.in_instance else self.REFUSED_RUN
+        if (f.refused_run >= limit and f.m["hp"] >= f.mob["hp"]
                 and not self.kill_tracker.hit_since(int(1000 * f.start)).get(f.mid)):
             # Not one cast went off at it: the server won't let us hit it from here
             # (live 2026-10-22: 221 fights waited the whole 6 s no-damage time for this).
@@ -993,6 +1034,7 @@ class _Approach:
     def __init__(self, bot: FightingMixin, mid: int, rng: float, engage: float, pull: float) -> None:
         self.b, self.mid, self.rng, self.engage, self.pull = bot, mid, rng, engage, pull
         self.here = bot.map_id()
+        self.began = bot.clock.time()
         self.closing: tuple[float, tuple[float, float], float] | None = None   # (when, where we were, how far) at the previous look
         self.opened_early = False      # we stopped short and started casting on the way in
         self.doomed: list[dict[str, Any]] = []
@@ -1008,14 +1050,17 @@ class _Approach:
         """Stop walking: it is in reach, gone (another player took it), about to die to someone
         else, or another one is in reach on the way (the farm loop takes that one - walking on
         past it wasted the trip). Shooting on the way (shoots_moving), that one is shot without
-        stopping and the walk goes on."""
+        stopping and the walk goes on. The picked one in reach ends the walk even when it was just
+        shot: walking on gains nothing, since the game holds a character still for about 0.7 s
+        after each cast (keys held, measured in Scorpion Cave 2026-10-30), and a shot the game
+        dropped had the walk go on past it for a second (live: fewer kills, not more)."""
         b = self.b
         snap = b.snap()
         m = self.find(snap)
         moving = b.shoots_moving()
         if moving:
             b.move_shot(snap, me)
-        if m is None or m["hp"] <= 0 or self.reachable(me, m, self.engage):
+        if m is None or m["hp"] <= 0 or b.downed(self.mid, self.began) or self.reachable(me, m, self.engage):
             return True
         b.watch_hp(snap)
         if b.doomed(m, me):

@@ -28,6 +28,7 @@ rank rises.
 
 from __future__ import annotations
 
+import copy
 import math
 import os
 import re
@@ -80,7 +81,7 @@ DEFAULTS: dict[str, Any] = {
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's gathering settings, with every setting filled in."""
     mine: dict[str, Any] = p.get("gathering") or {}
-    return {**DEFAULTS, **mine}
+    return {**copy.deepcopy(DEFAULTS), **mine}    # never the defaults' own lists and dicts
 
 
 def rank_name(rank: int | None) -> str:
@@ -190,7 +191,9 @@ def choose(found: list[dict[str, Any]], level: int | None, rank: int | None,
 
 def refuse(b: Bot, cfg: dict[str, Any], p: dict[str, Any], rank: int | None) -> None:
     """Remember a place that didn't take us, for this rank, in the profile."""
-    cfg.setdefault("refused", {})[place_key(p)] = -1 if rank is None else rank
+    # a new dict: the one from DEFAULTS is shared by every settings made from them, and writing
+    # into it carried one refused place into every later run (and test)
+    cfg["refused"] = {**(cfg.get("refused") or {}), place_key(p): -1 if rank is None else rank}
     _save(b, cfg)
 
 

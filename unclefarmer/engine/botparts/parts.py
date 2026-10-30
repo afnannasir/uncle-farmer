@@ -100,9 +100,10 @@ class Parts:
     pet_points_at: float
     pet_mp_peak: dict[int | None, int]
     pet_healed_at: float
-    pet_heal_try: tuple[float, int] | None
+    pet_heal_try: tuple[float, int, bool] | None
     pet_heal_misses: int
-    pet_heal_off: bool
+    pet_heal_rest_until: float
+    told_pet_heal_rest: bool
     told_no_pet_food: bool
     told_pet_heal: bool
     told_pet_seen: int | None
@@ -111,9 +112,10 @@ class Parts:
     team_names: set[str]
     team_learn_at: float
     team_healed_at: float
-    team_heal_try: tuple[float, int, int] | None
+    team_heal_try: tuple[float, int, int, bool] | None
     team_heal_misses: int
-    team_heal_off: bool
+    team_heal_rest_until: float
+    told_team_heal_rest: bool
     told_no_skill_room: bool
 
     # ---------------------------------------------------------------- run state

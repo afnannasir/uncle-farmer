@@ -22,8 +22,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      day: bank, bounty, pet_rebirth, donation, construction, secret_room
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
-    dungeon [check]                  the caves chosen in Tools, Dungeons (Scorpion Cave, Spider cave),
-                                     each once a game day: supplies first, then all 15 minutes inside
+    dungeon [check] [<cave>]         the cave named (Spider cave, Scorpion Cave), else the one chosen in
+                                     Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
     sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
                                      and Herb Buyers (all of them, if no kind is given)
     survey [cities|all|everything|here|<map>]   learn NPCs and their menus from the game itself (only looks)
@@ -537,6 +537,22 @@ def _prep_check_only(node: Node, rest: str, n: int):
     node.opts["check"] = rest.strip().lower() == "check"
 
 
+def _prep_dungeon(node: Node, rest: str, n: int):
+    """dungeon [check] [<cave>]: the cave named, or the one set in Tools, Dungeons."""
+    words = rest.strip()
+    check = False
+    m = re.match(r"^check\b\s*(.*)$", words, re.I)
+    if m:
+        check, words = True, m.group(1).strip()
+    cave = words.strip('"').strip()
+    known = {k.lower(): k for k in dungeon.CAVES}
+    if "," in cave:
+        raise ScriptError(n, _("one cave only: a character goes into one cave a day"))
+    if cave and cave.lower() not in known:
+        raise ScriptError(n, _("no such dungeon: {name} (there are: {all})", name=cave, all=", ".join(dungeon.CAVES)))
+    node.opts.update(check=check, cave=known[cave.lower()] if cave else None)
+
+
 def _prep_chores(node: Node, rest: str, n: int):
     words = rest.split()
     node.opts["check"] = "check" in [w.lower() for w in words]
@@ -690,7 +706,7 @@ PREPARE = {
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
-    "gather": _prep_check_only, "dungeon": _prep_check_only, "sell_collection": _prep_sell_collection,
+    "gather": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
@@ -912,7 +928,7 @@ class Runner:
             gathering.run(b, gathering.config(b.p), o.get("check", False))
 
     def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
-        dungeon.run(b, dungeon.config(b.p), o.get("check", False))
+        dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
 
     def _do_sell_collection(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "sell_collection"):

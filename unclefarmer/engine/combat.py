@@ -38,6 +38,24 @@ Press = tuple[str, str]          # (key, skill name) to press
 
 DEFAULT_KEYS = gamekeys.ATTACK_DEFAULTS
 PACK_RADIUS = 8.0        # monsters this close to the target count as one pack
+# What an area skill hits, by the shape its own text gives (every class's, data/skills.json):
+#   an arc in front, aimed at the target: "4 targets within 20 yards and 90 degrees" (Multi Shot,
+#     Ice Storm, Ice Orb, Icicle, Fire Surge, Blazing Storm, Holy Light Wave, Fan of Knives);
+#   straight ahead: "3 enemies within 5 yards ahead" (Sweep Attack, Flesh Cleave, Rampage Hack),
+#     counted as a 90-degree arc;
+#   a ring round us: "4 enemies within a 5-yard radius" (Whirlwind Slash, Blade Fury Dance, Frost
+#     Nova, Divine Nova "around you", Dead Toxin spreading out on the ground);
+#   an area where it lands, round the target: Blizzard ("in an area of 10-yard radius"), Skeleton
+#     Explosion ("additional targets within an 8-yard radius").
+# Counted only round the target, the arcs were under-counted: the Hunter's Multi Shot went off 37
+# times in a 15-minute Scorpion Cave (one-hit kills) where ~150 were possible.
+CONE = re.compile(r"within (\d+(?:\.\d+)?) yards and (\d+) degrees", re.I)
+AHEAD = re.compile(r"(\d+(?:\.\d+)?) yards ahead", re.I)
+RADIUS = re.compile(r"(\d+(?:\.\d+)?)-yard radius", re.I)
+AT_TARGET = re.compile(r"in an area of|on contact|additional targets", re.I)
+ADDITIONAL = re.compile(r"up to (\d+) additional targets", re.I)   # Skeleton Explosion: 1 + 5
+AHEAD_DEGREES = 90.0     # "yards ahead": the arc a melee sweep covers
+CONE_SLACK = 5.0         # degrees past the arc's edge still counted: positions are a step behind
 LEAD = 0.1               # press this much before the cooldown ends: the press still travels to the server
 RETRY = 0.3              # a press the game didn't cast (sent too early, lost) is pressed again this soon
 BURST_EARLY = 0.15       # with press_burst, start pressing this long before the cooldown should end
@@ -63,8 +81,17 @@ def base_reach(skill_range: float) -> float:
     """The distance a class fights from, given its base attack's range: just inside it, and never
     under 4 (a melee class's 5 would otherwise put it on the monster's own tile)."""
     return max(4.0, float(skill_range) - REACH_MARGIN)
+def damage_rate(s: Skill, weight: float, gcd: float) -> float:
+    """Attack per global cooldown a press takes: a channel is that much longer, so a 4.5 s
+    Pyroblast is no filler beside an instant Fireball of the same attack."""
+    return (s.get("attack") or 0) * weight / (1 + (s.get("cast") or 0) / gcd)
+
+
 # roles never pressed by the farming bot (solo): they need a party, a place, or a moment we can't see
 NEVER = {"teleport", "resurrect", "party_buff", "taunt", "heal", "dispel", "anti_heal", "reactive"}
+# Roles whose cast hits nothing: the no-damage count ignores them, and one the game wouldn't cast
+# says nothing about whether the monster can be hit.
+CALM_ROLES = ("heal", "party_buff", "self_buff", "dispel", "defensive", "mobility")
 # What the player may say about each skill (profile skill_use): the bot decides; never; only when HP
 # is low; whenever it is ready in a fight, ahead of the bot's own choice.
 SKILL_USES = ("auto", "never", "emergency", "ready")
@@ -134,6 +161,7 @@ class _PickView:
         foes: list[dict[str, Any]] = [e for e in snap["entities"] if is_foe(e)
                 and (e.get("maxhp") or 0) > 1 and (e.get("name") or "").strip()
                 and e["name"].strip().lower() not in skill_things()]
+        self.me, self.foes = me, foes
         self.pack = sum(1 for e in foes if math.hypot(e["x"] - target["x"], e["y"] - target["y"]) <= PACK_RADIUS)
         self.near_me = sum(1 for e in foes if math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= 3.0)
         self.big = (target.get("maxhp") or target.get("hp") or 0) >= LONG_FIGHT_HP * max(1, me["maxhp"])
@@ -144,10 +172,49 @@ class _PickView:
         r = s.get("range")
         return r is None or self.dist <= r + 0.5
 
+    def area_hits(self, s: Skill) -> int:
+        """How many monsters an area skill would hit now, by its shape (see CONE): an arc towards
+        the target, a ring round us, or an area round the target. A skill whose text gives no
+        shape counts the pack round the target, as before. At most its number of targets."""
+        text = s.get("text", "")
+        n: int | None = None
+        cone, ahead, ring = CONE.search(text), AHEAD.search(text), RADIUS.search(text)
+        if cone:
+            n = self._in_arc(float(cone.group(1)), float(cone.group(2)))
+        elif ahead:
+            n = self._in_arc(float(ahead.group(1)), AHEAD_DEGREES)
+        elif ring and AT_TARGET.search(text):
+            n = self._round(self.target, float(ring.group(1)))
+        elif ring:
+            n = self._round(self.me, float(ring.group(1)))
+        if n is None:
+            return self.pack
+        more = ADDITIONAL.search(text)
+        most = 1 + int(more.group(1)) if more else int(s.get("targets") or n)
+        return min(n, most)
+
+    def _in_arc(self, reach: float, degrees: float) -> int:
+        """Monsters within reach of us and inside the arc of that many degrees aimed at the target."""
+        reach, half = reach + 0.5, degrees / 2 + CONE_SLACK
+        mx, my = self.me["x"], self.me["y"]
+        aim = math.atan2(self.target["y"] - my, self.target["x"] - mx)
+        n = 0
+        for e in self.foes:
+            d = math.hypot(e["x"] - mx, e["y"] - my)
+            if d > reach:
+                continue
+            off = abs((math.degrees(math.atan2(e["y"] - my, e["x"] - mx) - aim) + 180) % 360 - 180)
+            if d < 0.5 or off <= half:
+                n += 1
+        return n
+
+    def _round(self, centre: dict[str, Any], radius: float) -> int:
+        """Monsters within radius of centre (us, or the target)."""
+        return sum(1 for e in self.foes if math.hypot(e["x"] - centre["x"], e["y"] - centre["y"]) <= radius + 0.5)
+
     def score(self, s: Skill) -> float:
-        """Attack per global cooldown its press takes: a channel is that much longer, so a
-        4.5 s Pyroblast is no filler beside an instant Fireball of the same attack."""
-        return (s.get("attack") or 0) * self.weight(s) / (1 + (s.get("cast") or 0) / self.gcd)
+        """Attack per global cooldown its press takes, a channel counting longer (damage_rate)."""
+        return damage_rate(s, self.weight(s), self.gcd)
 
     def first(self, role: str | tuple[str, ...], cond: Callable[[Skill], bool] = lambda s: True) -> Skill | None:
         """The hardest hitter of these roles."""
@@ -172,6 +239,7 @@ class SkillBook:
     combos: combo_rules.Combos | None = None     # see __init__
     last_gcd_cast: tuple[str, float] | None = None
     target_id: int | None = None
+    on_the_move = False      # picking for a shot on the way: instant skills only (move_shot)
     cls: str | None = None                       # the character's class, from its learned skills
     slots: dict[int, list[Skill]]                # page -> the skills on its keys
     agent_version = 0
@@ -200,6 +268,7 @@ class SkillBook:
         self.last_gcd_cast = None   # (name, time) of that cast
         self.pending_target: dict[str, int | None] = {}    # skill name -> the target id it was pressed at
         self.landed: dict[tuple[str, int | None], float] = {}     # (skill name, target id) -> when our cast landed there
+        self.downed: dict[int, float] = {}       # monster id -> when a cast of ours left it at 0 HP
         self.target_id = None
         self.combos = None
         self.gaps: list[float] = []           # seconds between our consecutive casts -> the global cooldown
@@ -476,6 +545,15 @@ class SkillBook:
         self._time_cast(name, t, info)
         self.pending.pop(name, None)
         target = self.pending_target.pop(name, None)
+        # agent 44: whom the cast struck and their HP after it - a 0 there is a kill the fight can
+        # end on now, without waiting for its next look at the world
+        struck: list[list[Any]] = c.get("targets") or []
+        downed: dict[int, float] = self.__dict__.setdefault("downed", {})    # (a test's book made without __init__)
+        for row in struck:
+            if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and row[1] == 0:
+                downed[row[0]] = t
+        if len(downed) > 200:
+            self.downed = dict(sorted(downed.items(), key=lambda kv: kv[1])[-100:])
         # hit results (agent v28): [target, result, amount]; result & 7 == 5 is a critical hit
         raw: list[list[int]] = c.get("hits", [])
         hits = [h for h in raw if len(h) >= 2 and h[0] != me_id]
@@ -490,7 +568,7 @@ class SkillBook:
                     del self.landed[k]
         self._count_points(name, t, info, touched)
         self.used[name] = t
-        if info.get("role") not in ("heal", "party_buff", "self_buff", "dispel", "defensive", "mobility"):
+        if info.get("role") not in CALM_ROLES:
             self.casts_done += 1      # attacks: the no-damage check counts these
         self.used[self.cd_group(info)] = t
         if self.combos:
@@ -799,7 +877,9 @@ class SkillBook:
         self.target_id = target.get("id")
         self.read_casts(me["id"])
         if self.gcd_wait(now):
-            return "wait"
+            # A panic button outside the global cooldown (Concentrated Will, Summon Spirit) still
+            # goes now: emergency() lets only those through while the cooldown runs.
+            return self.emergency(me, now) or "wait"
         # 0. ourselves first: a heal while HP is down, a dispel when a debuff is on us, buffs
         tgt_big = (target.get("maxhp") or target.get("hp") or 0) >= LONG_FIGHT_HP * max(1, me["maxhp"])
         near_target = sum(1 for e in snap["entities"] if is_foe(e)
@@ -846,6 +926,8 @@ class SkillBook:
                 if (s["name"] in seen or not self.allowed(s, urgent) or not self.ready(s, now)
                         or not self.affordable(s, now)):
                     continue
+                if s.get("cast") and getattr(self, "on_the_move", False):
+                    continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
                 seen.add(s["name"])
                 if s.get("use") == "ready" and s.get("role") not in NEVER_READY:
                     wanted.append(dict(s, page=pg))
@@ -889,14 +971,17 @@ class SkillBook:
                      and self.debuff_worth(x, v.hp_share)]
             choice = (max(worth, key=lambda x: (self.debuff_worth(x, v.hp_share), x["page"] == up), default=None)
                       or v.first("dot", lambda s: not v.running(s)))
-        # 4. a pack: the widest area skill; a Hunter spends its marks with Marked Shot
-        if not choice and v.pack >= getattr(self.b, "pack_min", 3):
-            if self.cls == "Hunter" and (marks >= 2 if marks is not None else now - self.marked_at < 8):
-                choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
-            if not choice:
-                choice = max((s for s in skills if s.get("role") == "aoe" and v.in_range(s)
-                              and s["name"] not in MARK_SHOTS),
-                             key=lambda s: (s.get("targets") or 0), default=None)
+        # 4. a pack: the area skill that hits the most (a Hunter spends its marks with Marked Shot)
+        need = getattr(self.b, "pack_min", 3)
+        if not choice and v.pack >= need and self.cls == "Hunter" and (
+                marks >= 2 if marks is not None else now - self.marked_at < 8):
+            choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
+        if not choice:
+            area = [(v.area_hits(s), s.get("targets") or 0, s) for s in skills
+                    if s.get("role") == "aoe" and v.in_range(s) and s["name"] not in MARK_SHOTS]
+            best = max(area, key=lambda a: (a[0], a[1]), default=None)
+            if best is not None and best[0] >= need:
+                choice = best[2]
         # several targets marked (the T key counts them): one shot hits them all
         if not choice and marks is not None and marks >= 3:
             choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
@@ -910,6 +995,23 @@ class SkillBook:
             choice = choice or base
         return choice
 
+    def fallback(self, now: float) -> Press | None:
+        """A press when pick() found nothing: the hardest-hitting attack the player allows whose own
+        cooldown is over, even one refuse() set aside for a while. Pressing the profile's attack
+        keys instead would cast whatever sits on them, a skill set to Never included; pressing
+        nothing let a simulated Hunter whose two skills were both set aside stand and die. None
+        when there is no such skill (only Never ones, or all cooling down)."""
+        up = self.page()
+        weight: Callable[[Skill], float] = self.combos.weight if self.combos else (lambda s: 1.0)
+        gcd = self.gcd()
+        cands = [dict(s, page=pg) for pg, row in self.slots.items() for s in row
+                 if self.allowed(s) and s.get("role") not in NEVER and s.get("role") not in CALM_ROLES
+                 and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
+        if not cands:
+            return None
+        best = max(cands, key=lambda s: (s["page"] == up, damage_rate(s, weight(s), gcd)))
+        return self._press_pick(best, cands, up, now, lambda s: True)
+
     def _press_pick(self, choice: Skill, skills: list[Skill], up: int, now: float,
                     in_range: Callable[[Skill], bool]) -> Press | None:
         """Get the chosen skill's page up (else the best of its kind on this page) and record the
@@ -919,7 +1021,10 @@ class SkillBook:
             same = [s for s in skills if s["page"] == up and s.get("role") == choice.get("role") and in_range(s)]
             if not same:
                 return None
-            choice = same[0]
+            # the hardest hitter of that kind there, not simply the first one on the page
+            weight: Callable[[Skill], float] = self.combos.weight if self.combos else (lambda s: 1.0)
+            gcd = self.gcd()
+            choice = max(same, key=lambda s: damage_rate(s, weight(s), gcd))
         self.pressed(choice, now)
         if self.cls == "Hunter":
             if choice["name"] in ("Multi Shot", "Rapid Arrows"):

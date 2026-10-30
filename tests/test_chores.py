@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import threading
 from typing import Any, TypeAlias
+from pathlib import Path
 
 import pytest
 
@@ -571,3 +572,54 @@ def test_the_chores_command_in_a_script() -> None:
     assert main[1].opts == {"check": False, "only": []}
     with pytest.raises(script.ScriptError):
         script.parse("chores only=laundry\n")
+
+
+# ---------------------------------------------------------------------------------------- settings and done list
+def test_label_and_config_fill_every_chore() -> None:
+    assert chores.label("bank") == "bank income"
+    assert chores.label("secret_room") == "secret room"
+    cfg = chores.config({"chores": {"bank": False, "donation": "diamonds"}})
+    assert cfg["bank"] is False and cfg["donation"] == "diamonds"
+    assert cfg["bounty"] is True and cfg["construction"] == 0
+
+
+def test_chores_config_does_not_share_mutable_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Today's defaults are all scalars; a nested one added later must still not be shared.
+    monkeypatch.setitem(chores.DEFAULTS, "share_list", [])
+    a = chores.config({})
+    b = chores.config({})
+    a["share_list"].append("Ally")
+    assert b["share_list"] == [] and chores.DEFAULTS["share_list"] == []
+
+
+def test_wanted_uses_each_chores_own_switch() -> None:
+    cfg = dict(chores.DEFAULTS)
+    assert chores.wanted(cfg, "bank")
+    assert not chores.wanted(dict(cfg, bank=False), "bank")
+    assert chores.wanted(dict(cfg, donation="10000"), "donation")
+    assert not chores.wanted(dict(cfg, donation="off"), "donation")
+    assert chores.wanted(dict(cfg, construction=2), "construction")
+    assert not chores.wanted(dict(cfg, construction=0), "construction")
+    assert chores.wanted(dict(cfg, pet_rebirth=True, pet="Sparky"), "pet_rebirth")
+    assert not chores.wanted(dict(cfg, pet_rebirth=True, pet=""), "pet_rebirth")
+    assert not chores.wanted(dict(cfg, pet_rebirth=False, pet="Sparky"), "pet_rebirth")
+
+
+def test_the_done_list_is_per_day_and_per_character(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
+    monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")
+    chores.mark("Hero", "bank", "done")
+    assert "bank" in chores.done_today("Hero")
+    assert chores.done_today("Other") == {}
+    monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-31")
+    assert chores.done_today("Hero") == {}                     # yesterday's list is not today's
+    chores.put("Hero", "_shares", [1])
+    assert chores.done_today("Hero")["_shares"] == [1]
+
+
+def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
+    monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")
+    cfg = dict(chores.DEFAULTS, bank=True, bounty=True, donation="off")
+    chores.mark("Hero", "bank", "done")
+    assert chores.due("Hero", cfg) == ["bounty"]

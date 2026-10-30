@@ -351,22 +351,31 @@ collection now sells to all three buyers from wherever you are. In a script: `ga
 
 ### Dungeons
 
-Tools, Dungeons (Ctrl+Shift+G) runs the caves that can be entered once a game day: Scorpion Cave
-(level 60, entered at thousand miles of rivers) and Spider cave (level 40, entered at water
-curtained cave). Each gives 15 minutes inside; the aim is as many kills as those minutes give.
+Tools, Dungeons (Ctrl+Shift+G) runs the cave a character can enter once a game day: Spider cave
+(level 40, entered at water curtained cave) or Scorpion Cave (level 60, entered at thousand miles
+of rivers). The game lets each character into one of them a day, not one of each. The visit gives
+15 minutes inside; the aim is as many kills as those minutes give. Caves for levels 80, 90 and 100
+will be added to the same list.
 
-- **Caves tab:** tick the caves to go to and put them in order. Each line says whether the cave is
-  done today. A cave above your level is left out.
+- **Caves tab:** choose the cave, or "The highest cave my level lets in" (the default). Below it
+  the window says whether this character has had its cave today. A cave above your level isn't
+  tried; the bot says so.
 - **Supplies tab:** what to have before setting out: the pet's blue potions (25 by default), Pet
   Rice Rolls (3), your own blue potions (50) and red potions (30). Each row uses the potion on your
   hotkey (else the strongest in the bag) unless you choose one; 0 means don't look. What is short
-  is taken from the storehouse, then bought, before the bot sets out, and again between two caves.
+  is taken from the storehouse, then bought, before the bot sets out.
   If something is still short it doesn't go (or goes anyway, if you choose). The pet's rows count
   only with a pet ticked in Character, Settings.
 - **Inside:** the bot rides to the entrance, chooses "Enter the dungeon", and from the cave's
   safe landing it never stops: it takes the nearest monster it can walk to within 90 steps, and
-  only walks its loop round the cave when there is none. It uses area skills as soon as two
-  monsters are close together (you can raise that). Monsters come back about 30 seconds after
+  only walks its loop round the cave when there is none. A character that fights from afar shoots
+  whatever comes into reach on the way, without stopping, and walks on to the next one the moment
+  the game reports a kill. It uses area skills as soon as two monsters would be hit (you can raise
+  that). For every class it counts what each area skill would really hit, by the skill's own
+  shape: an arc in front (Multi Shot, Ice Storm, Fire Surge, Holy Light Wave...), straight ahead
+  (Sweep Attack, Flesh Cleave), a ring round you (Whirlwind Slash, Frost Nova, Divine Nova) or an
+  area where it lands (Blizzard, Skeleton Explosion). Shots on the way use instant skills only,
+  since walking on breaks a channel. Monsters come back about 30 seconds after
   they die, at random anywhere in the cave. In simulated visits on the caves' real walls, which
   loop it walks hardly mattered, but chasing 90 steps instead of farming's 40 gave a caster 5
   to 13% more kills. It drinks instead of resting, keeps the pet out, its HP and MP up, and its
@@ -376,11 +385,10 @@ curtained cave). Each gives 15 minutes inside; the aim is as many kills as those
 - **Kills:** the bot counts your pet's kills as yours, as the game does in the report it shows
   when you come out ("Monsters Killed").
 - **The end:** after 15 minutes the game moves you out by itself (if it ever doesn't, the bot
-  leaves through the Action menu). Then the next cave, and at the end the place on the Where to
-  end tab: back where you started it (the default), a place you choose, home with the hearthstone,
+  leaves through the Action menu). Then it goes to the place on the Where to end tab: back where you started it (the default), a place you choose, home with the hearthstone,
   or where it is.
 
-Check only says what is short and which caves it would go to. In a script: `dungeon` or
+Check only says what is short and which cave it would go to. In a script: `dungeon` or
 `dungeon check` (put `end_at` first to choose where it ends).
 
 ## Walking
@@ -505,6 +513,12 @@ takes at most 20 seconds in one voice message, so a longer recording goes as sev
 same length (45 seconds: three of 15), one after the other, the way a long text goes in parts. A
 recording stops by itself after 5 minutes. Voice needs agent 42: restart the game once after
 updating.
+
+The game's own auto-play has a fault: with two games open, one of them now and then starts playing
+every voice message slow and deep, until it is closed. The agent mends that (agent 51). If you would
+rather keep the deep voices, untick "Fix the speed of voice messages the game plays by itself" in
+File, Settings, Speech and language: every open game plays as the game does at once, and ticking it
+again mends them, no restart needed.
 
 **Settings**
 - **Read new messages:** only while the Chat window is open (to start with), always, or never; and

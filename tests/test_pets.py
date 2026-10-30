@@ -132,3 +132,18 @@ def test_the_newer_amiability_reading_wins() -> None:
     n = pets.numbers(as_bot(b), snap(points={"raw": "1", "fusion": 1.0, "pet": 80.0, "age_ms": 1000}, pet_info=info),
                      snap()["entities"][0])
     assert n["amiability"] == 80.0 and n["maxmp"] == 1 and n["described"]
+
+
+def test_an_old_description_is_read_again_when_nothing_newer_gives_the_amiability(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A Priest's points key answer never came (before agent 52): the description read at the summon
+    # was the only amiability, and it never changed, so no Rice Roll was ever fed.
+    visits: list[int] = []
+    monkeypatch.setattr(pets, "describe", stand_in(pets.describe, lambda b: visits.append(1)))
+    info = {"name": "Wild Eagle Sky", "amiability": 90.0, "hp": 1, "maxhp": 1, "mp": 1, "maxmp": 110000,
+            "age_ms": (pets.DESCRIBE_RETRY + 60) * 1000}
+    b = Bot()
+    pets.look_after(as_bot(b), snap(pet_info=info))
+    assert visits == [1]
+    fresh = {"raw": "0", "fusion": 100.0, "pet": 90.0, "age_ms": 3000}
+    pets.look_after(as_bot(b), snap(pet_info=info, points=fresh))
+    assert visits == [1]                          # the points key says it: no visit to the pet panel

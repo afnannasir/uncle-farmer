@@ -93,7 +93,7 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[...
     from unclefarmer import settings
     from unclefarmer.engine import dungeon
     from unclefarmer.engine.bot import Bot
-    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, dungeon={"caves": ["Spider cave"]}))
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, dungeon={"cave": "Spider cave"}))
     monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
     monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
     monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
@@ -124,17 +124,17 @@ def test_a_ranged_character_shoots_on_the_way_in_a_dungeon(sim_env: Callable[...
     from unclefarmer.engine.botparts.fighting import FightingMixin
     monkeypatch.setattr(simgame, "SKILLS", [("Arcane Shot", 0.0, 2600, 20.0), ("Aimed Shot", 6.0, 5200, 20.0)])
     settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, attack_range=19.5,
-                                             dungeon={"caves": ["Spider cave"]}))
+                                             dungeon={"cave": "Spider cave"}))
     monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
     monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
     monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
     monkeypatch.setattr(Bot, "leave_instance", stand_in(Bot.leave_instance, lambda self: True))
-    shots: list[bool] = []
+    shots: list[int] = []
     real = FightingMixin.move_shot
 
-    def counted(self: FightingMixin, snap: dict[str, Any], me: dict[str, Any]) -> bool:
+    def counted(self: FightingMixin, snap: dict[str, Any], me: dict[str, Any]) -> int | None:
         shot = real(self, snap, me)
-        if shot:
+        if shot is not None:
             shots.append(shot)
         return shot
     monkeypatch.setattr(FightingMixin, "move_shot", counted)

@@ -8,7 +8,10 @@ import java.util.regex.Pattern;
  * Our accumulation points, fusion power and the pet's amiability, as the game answers the
  * "accumulation points" key (W_SELF_LJ, T by default).
  *
- * The key sends OUT op=23 with nothing after the opcode (game.i.K -> game.N.e(-1)). The server
+ * The key sends OUT op=23 with nothing after the opcode (game.i.K -> game.N.e(-1)), except for a
+ * Priest (game.B.g 13 or 14: class (g - 1) / 2 = 6), whose request carries one more byte, the
+ * PK mode (game.i.Q, 0-5); taking only the one-byte request left Priests with no amiability, so
+ * no Rice Rolls for their pets. The server
  * answers IN op=60, the client's general "say this" message (one byte, then text), with
  * "points;fusion power" and, when a pet is out, ";amiability". Points are the class's own
  * resource: a Warrior's or Orc's rage (0-300), how many targets a Hunter has marked, an
@@ -29,9 +32,9 @@ final class Points {
 
     private Points() { }
 
-    /** OUT op=23 on its own: the request. */
+    /** OUT op=23 on its own, or with a Priest's PK mode byte: the request. */
     static void outbound(byte[] m) {
-        if (m.length == 1) askedAt = System.currentTimeMillis();
+        if (m.length == 1 || m.length == 2) askedAt = System.currentTimeMillis();
     }
 
     /** IN op=60: speech; ours when it has the points shape and follows a request. True if taken. */

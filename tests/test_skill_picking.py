@@ -1,3 +1,4 @@
+# pyright: reportPrivateUsage=false
 """How the skill picker chooses, and what it learns from the game's cast reports."""
 
 from __future__ import annotations
@@ -8,7 +9,7 @@ from conftest import as_parts, data, fight, Bot
 from unclefarmer.engine import combat
 from unclefarmer.engine.combat import Skill
 from conftest import Clock
-from typing import Any
+from typing import Any, cast
 
 
 def test_fireball_fills_not_the_long_pyroblast(clock: Clock) -> None:
@@ -121,3 +122,72 @@ def test_real_fight_one_bunched_gap_doesnt_fool_the_estimate(recorded: dict[str,
     sb.read_casts(recorded["me"])
     assert min(x for x in sb.gaps if x > 0.3) < 0.8           # the odd gap is in there
     assert 1.1 < sb.gcd() < 1.3
+
+
+# ---------------------------------------------------------------------------------- area skills in front
+MULTI: Skill = {"name": "Multi Shot", "role": "aoe", "targets": 4, "range": 20.0,
+                "text": "Attack 4 targets within 20 yards and 90 degrees, have a chance to mark the enemy"}
+RAPID: Skill = {"name": "Rapid Arrows", "role": "aoe", "targets": 8, "range": 15.0,
+                "text": "Attack 8 targets within 15 yards and 180 degrees"}
+
+
+class _Book:
+    combos = None
+
+    def gcd(self) -> float:
+        return 1.2
+
+
+def _view(*at: tuple[float, float]) -> combat._PickView:
+    """We stand at 0,0 facing east; the first position is the target."""
+    foes = [{"id": -1 - i, "name": "Scorpion", "hp": 100, "maxhp": 100, "x": x, "y": y} for i, (x, y) in enumerate(at)]
+    snap = {"self": {"id": 7, "x": 0.0, "y": 0.0, "hp": 100, "maxhp": 100}, "entities": foes}
+    return combat._PickView(cast(combat.SkillBook, _Book()), snap, foes[0], [], 0, 0.0)
+
+
+def test_an_aimed_area_skill_counts_what_stands_in_its_arc_not_round_the_target() -> None:
+    # Scorpions 12 tiles apart in front of us: none within 8 of the target (the old pack count),
+    # but all three in Multi Shot's 90 degrees out to 20 yards
+    v = _view((18.0, 0.0), (8.0, 6.0), (12.0, -9.0))
+    assert v.pack == 1
+    assert v.area_hits(MULTI) == 3
+    assert v.area_hits(RAPID) == 2                    # 15 yards: the target is out of its reach
+
+
+def test_what_stands_behind_us_or_too_far_is_not_counted() -> None:
+    v = _view((18.0, 0.0), (-10.0, 0.0), (0.0, 12.0), (30.0, 0.0))
+    assert v.area_hits(MULTI) == 1                    # behind, square to the side, past 20 yards
+    assert v.area_hits(RAPID) == 1                    # 180 degrees takes the one at the side; the target is past 15
+
+
+def _skill(name: str, text: str, targets: int | None, reach: float) -> Skill:
+    return {"name": name, "role": "aoe", "targets": targets, "range": reach, "text": text}
+
+
+def test_every_class_s_area_shapes_are_counted_their_own_way() -> None:
+    sweep = _skill("Sweep Attack", "Sweep through 2 enemies 5 yards ahead, 4 seconds CD", 2, 5.0)
+    whirl = _skill("Whirlwind Slash", "Deal a powerful strike to 4 enemies within a 5-yard radius", 4, 5.0)
+    nova = _skill("Divine Nova", "a holy light blast around your, dealing divine damage to all enemy targets "
+                  "within a 12-yard radius", 99, 12.0)
+    blizzard = _skill("Blizzard", "summon ice shards to fall from the sky in an area of 10-yard radius", None, 10.0)
+    skeleton = _skill("Skeleton Explosion", "throw a skeleton at 1 enemy within 10 yards and cause an explosion "
+                      "on contact. The explosion deals damage to up to 5 additional targets within an "
+                      "8-yard radius", 1, 10.0)
+    # close in: the target 4 east, one 3 behind us, one 12 east
+    v = _view((4.0, 0.0), (-3.0, 0.0), (12.0, 0.0))
+    assert v.area_hits(sweep) == 1                    # 5 yards ahead: the target; behind us never
+    assert v.area_hits(whirl) == 2                    # round us, 5 yards: the target and the one behind
+    # further out: the target 10 east, one 4 behind us, one 6 past the target, one 6 beside it
+    v = _view((10.0, 0.0), (-4.0, 0.0), (16.0, 0.0), (10.0, 6.0))
+    assert v.area_hits(nova) == 3                     # round us, 12 yards: not the one 16 out
+    assert v.area_hits(blizzard) == 3                 # round where it lands: not the one behind us
+    assert v.area_hits(skeleton) == 3                 # round the target, 8 yards (1 + up to 5 more)
+
+
+def test_a_shot_on_the_way_never_picks_a_channel(clock: Clock) -> None:
+    _g, _b, sb = fight(clock, ["Magic Sphere", "Ice Arrow"], [], 1)
+    names = {s["name"] for s in sb._usable(sb.page(), False, clock.now + 30)[0]}
+    assert "Ice Arrow" in names
+    sb.on_the_move = True
+    names = {s["name"] for s in sb._usable(sb.page(), False, clock.now + 30)[0]}
+    assert "Ice Arrow" not in names and "Magic Sphere" in names

@@ -210,15 +210,27 @@ class ReadingMixin(Parts):
         self.check()
 
     def _read(self, line: str, good: Callable[[dict[str, Any]], object]) -> dict[str, Any]:
-        end = self.clock.time() + 5.0
+        began = self.clock.time()
         while True:
             r = self._game.json(line)
             if good(r):
                 return r
             why = (r.get("error") if jsonio.is_object(r) else None) or "?"
-            if not why.startswith(self.TRANSIENT) or self.clock.time() > end:
+            if not why.startswith(self.TRANSIENT) or self.clock.time() > began + self._patience(why):
                 raise Stopped(_("the game can't be read: {why}", why=why), final=True)
             self.sleep(0.25)
+
+    # The server sometimes tells the game our own character has left (op 33 with our id) and puts
+    # it back later (op 32): recorded gaps were mostly under 35 s, and a run given up after 5 s had
+    # its character readable again within 15 s. Id 0 is no character at all (logged out, kicked),
+    # which no wait brings back.
+    SELF_GONE_WAIT = 60.0
+
+    def _patience(self, why: str) -> float:
+        """How long a transient error may last before the run is given up."""
+        if why.startswith("noplayer:") and not why.startswith("noplayer: id 0 "):
+            return self.SELF_GONE_WAIT
+        return 5.0
 
     def snap(self) -> dict[str, Any]:
         s = self._read("mem state" if getattr(self, "agent_state", False) else "mem",
@@ -245,15 +257,18 @@ class ReadingMixin(Parts):
     def settled_map(self, seconds: float = 15) -> int:
         """The map once a map change has finished. Mid-teleport the game reports map 0 and has no
         player in its entity map (in testing the hearthstone read as "home: 0", then
-        "noplayer: id ... not in the entity map" stopped the run)."""
+        "noplayer: id ... not in the entity map" stopped the run). The map is read again after the
+        player: when the two disagree, the game was changing maps during the reads, so wait."""
         end = self.clock.time() + seconds
         while self.clock.time() < end:
             m = self._game.json("mem map")
             if "error" not in m and m.get("id"):
                 s = self._game.json("mem self")
                 if "error" not in s:
-                    self.last_me = s
-                    return m["id"]
+                    after = self._game.json("mem map")
+                    if "error" not in after and after.get("id") == m["id"]:
+                        self.last_me = s
+                        return m["id"]
             self.sleep(0.3)
         self.me()                 # still unreadable: stop with the game's own reason
         return self.map_id()

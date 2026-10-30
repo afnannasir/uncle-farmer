@@ -1,5 +1,86 @@
 # What's new
 
+## Next
+
+**Voice messages**
+
+- With two games open, the game's auto-play no longer turns every voice message slow and deep in
+  one of them. Both games save a message to the same file, so one could read it while the other
+  was rewriting it; the game's player then opened its next sound at the wrong speed and kept it
+  until the game closed. The agent now has the player open each message at its own rate and skip
+  one it can't play. Restart the games once for the new agent.
+- If you liked the deep voices, untick "Fix the speed of voice messages the game plays by
+  itself" (Settings, Speech and language): the games play as before, right away.
+
+**Pets**
+
+- Priests' pets get their Pet Rice Rolls. For a Priest the game's points key (T) sends one more
+  byte than for other classes, so the agent never took the answer as ours, never learned the
+  pet's amiability, and never fed it. The new agent reads it (restart the games once); until
+  then, the pet's description is read again every few minutes instead.
+- A Priest or Sorceress heals the pet in fights too. The heal was only tried while the global
+  cooldown was still running, so in a fight it never went off and the pet lived on potions. Now
+  it takes the place of an attack when the next press is due and the pet is under its mark.
+- The pet's heal is never given up for the whole run any more. If it doesn't raise the pet's HP
+  3 times running, pet potions take over for 5 minutes, then the heal is tried again. Whatever
+  keeps it from going off is said once in the log: the game wouldn't select the pet (with the
+  game's reason), the agent can't select in this game, or the heal's attack page couldn't be
+  turned to.
+- The same for teammates while following: heals that raise nobody's HP rest 5 minutes and are
+  tried again (no more "no more teammate heals this run"), the reasons are said once, and
+  teammates are healed in fights too, at the moment a press is due.
+
+**Dungeons**
+
+- One cave a day per character, as the game allows: Tools, Dungeons now has one choice, a cave or
+  "The highest cave my level lets in" (the default), instead of a list to tick. A character that
+  has had its cave today isn't sent to another. Old settings keep the first cave that was ticked.
+  The caves at levels 80, 90 and 100 will join the same list.
+- Faster from one kill to the next (a Hunter's Scorpion Cave: 380 kills on 10-29, about half the
+  casts its cooldown allows). A fight now ends the moment the game's report of our cast shows the
+  monster at 0 HP, instead of at the next look up to 0.4 s later. A monster shot dead on the way
+  ends the walk to it at once. (The short stand after each shot that players see is the game's:
+  it holds a character still for about 0.7 s after every cast, keys held or not.)
+- In a dungeon a monster the game won't let us hit is left after two refused tries instead of
+  three: in a Scorpion Cave visit such monsters cost up to 5 s each.
+- Area skills, for every class, count what they would really hit, by the shape their own text
+  gives: an arc in front (Multi Shot, Rapid Arrows, Ice Storm, Ice Orb, Icicle, Fire Surge, Blazing
+  Storm, Holy Light Wave, Fan of Knives), straight ahead (Sweep Attack, Flesh Cleave, Rampage
+  Hack), a ring round you (Whirlwind Slash, Blade Fury Dance, Frost Nova, Divine Nova, Dead Toxin)
+  or an area where they land (Blizzard, Skeleton Explosion). Before, every one counted only the
+  monsters round the target: in that cave run Multi Shot went off 37 times of the ~150 its
+  cooldown allowed.
+- Every class that fights from afar (Hunter, Mage, Elf, Priest, Sorceress) shoots on the way with
+  instant skills only: a channel such as Pyroblast or Blazing Storm breaks as soon as it walks on.
+  The quicker move to the next monster after a kill works for every class.
+
+**Fighting** (from a contributor's changes)
+
+- A skill set to Never is no longer cast behind your back: when the skill picker finds nothing, the
+  bot presses the strongest attack you allow that is off its cooldown (or waits), instead of the
+  profile's attack keys, which cast whatever sits on them.
+- A panic shield that works outside the global cooldown (Concentrated Will, Summon Spirit) comes out
+  at once instead of waiting for the cooldown to end.
+- A heal or buff the game refuses (no mana, no rage) no longer gets the monster written off as one
+  the game won't let the bot hit.
+- When the skill page can't be turned, the fallback uses the strongest skill of the same kind on
+  the page that is up, not simply the first one on it.
+
+**Scripts**
+
+- `dungeon <cave>` goes to that cave (`dungeon Spider cave`), one a day; Start in Tools, Dungeons
+  names the chosen cave in its script, so a stale profile can't send the run elsewhere.
+
+**Runs**
+
+- The dungeon, daily-chores and gathering settings no longer share the defaults' own lists: a
+  change in one run's settings could leak into every later one.
+- After a teleport the map is read again after the character: when the two disagree, the game was
+  still changing maps, and the bot waits.
+- A run no longer stops with "noplayer: id ... not in the entity map" when the server drops your
+  own character for a moment (it did mid-fight on a laggy server, and put it back seconds later).
+  The bot now waits up to a minute for it.
+
 ## 0.6.0
 
 **Dungeons** (Tools, Dungeons, Ctrl+Shift+G)
