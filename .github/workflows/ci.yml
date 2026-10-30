@@ -109,7 +109,9 @@ jobs:
         run: uv run --no-project python agent/java_tests.py
 
   build:
-    name: Windows build (${{ github.ref_name == 'master' && 'production' || 'development' }})
+    # A plain name: a skipped job shows an expression in its name unevaluated. The build type is
+    # in the artifact's name, build-info.json and the run's summary.
+    name: Windows build
     # Only after every test job passed, and only for dev and master themselves: a pull request is
     # tested, never built, and no other branch is built.
     needs: [python, agent]

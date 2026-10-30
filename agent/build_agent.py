@@ -35,6 +35,8 @@ def javac() -> str:
 def main(argv: list[str] | None = None) -> None:
     argv = sys.argv[1:] if argv is None else argv
     jar_path = os.path.abspath(argv[0]) if argv else JAR
+    # the jar's folder may not exist yet (a clean CI runner's temp folder): make it
+    os.makedirs(os.path.dirname(jar_path), exist_ok=True)
     shutil.rmtree(BUILD, ignore_errors=True)
     os.makedirs(BUILD)
     sources = [os.path.join(folder, n) for folder, _d, names in os.walk(SRC) for n in names if n.endswith(".java")]
