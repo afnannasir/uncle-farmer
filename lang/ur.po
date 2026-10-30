@@ -4227,6 +4227,9 @@ msgstr "is level ke liye koi khali jagah wala kamra nahi"
 msgid "no secret room for this level has a free place"
 msgstr "is level ke kisi secret room mein khali jagah nahi"
 
+msgid "no shop near enough lists {item} - see logs\\dialogs.log"
+msgstr "kisi qareebi dukaan mein {item} nahi mila - logs\\dialogs.log dekhein"
+
 msgid "no sub named {name}"
 msgstr "{name} naam ka koi sub nahi"
 
@@ -4983,9 +4986,6 @@ msgstr ""
 msgid "the script is too long (over {max} characters)"
 msgstr "script bohat lambi hai ({max} characters se zyada)"
 
-msgid "the shop doesn't list {item} - see logs\\dialogs.log"
-msgstr "dukaan {item} list nahi karti - logs\\dialogs.log dekhein"
-
 msgid "the storehouse"
 msgstr "storehouse"
 
@@ -5522,6 +5522,9 @@ msgstr "{top} mein se {now} ({pct}%)"
 msgid "{npc} didn't answer"
 msgstr "{npc} ne jawab nahi diya"
 
+msgid "{npc} doesn't sell {item} - trying the next nearest shop"
+msgstr "{npc} {item} nahi bechta - agli qareebi dukaan aazma rahe hain"
+
 msgid "{npc} isn't in sight - looking for it"
 msgstr "{npc} nazar nahi aa raha - dhoond rahe hain"
 
@@ -5820,6 +5823,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the gang's area: {why}"
 #~ msgstr "gang ka ilaqa: {why}"
+
+#~ msgid "the shop doesn't list {item} - see logs\\dialogs.log"
+#~ msgstr "dukaan {item} list nahi karti - logs\\dialogs.log dekhein"
 
 #~ msgid "would go to: {caves}"
 #~ msgstr "yahan jaata: {caves}"
