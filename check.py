@@ -2,6 +2,8 @@
 
     python check.py            ruff, pyright, pytest with coverage, then the agent's Java tests
     python check.py --quick    the same without the slow real-time tests
+    python check.py --report-dir reports   also write pytest.xml (JUnit) and coverage.xml there
+    python check.py --skip-agent           leave the Java tests out (CI runs them in their own job)
 
 Exit code 0 when everything passed. release.py --local runs it before it builds anything, and
 .githooks/pre-commit runs it on every commit.
@@ -26,10 +28,26 @@ def have_jdk() -> bool:
     return shutil.which("javac") is not None
 
 
+def report_dir(argv: list[str]) -> str | None:
+    """--report-dir DIR: where CI keeps the test results, made absolute (the steps run in ROOT)."""
+    if "--report-dir" not in argv:
+        return None
+    i = argv.index("--report-dir")
+    if i + 1 >= len(argv):
+        sys.exit("--report-dir needs a folder")
+    folder = os.path.abspath(argv[i + 1])
+    os.makedirs(folder, exist_ok=True)
+    return folder
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    reports = report_dir(argv)
     tests = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
              "--cov=unclefarmer", "--cov-report=term-missing"]
+    if reports:
+        tests += ["--junitxml=" + os.path.join(reports, "pytest.xml"),
+                  "--cov-report=xml:" + os.path.join(reports, "coverage.xml")]
     if "--quick" in argv:
         tests += ["-m", "not slow"]
     core = [sys.executable, "-m", "coverage", "report",
@@ -40,7 +58,9 @@ def main(argv: list[str] | None = None) -> int:
              ("pytest", tests)]
     # The agent runs inside the game: a broken parser takes the game down, so it is checked here
     # too (compiled into a temporary folder, never over the jar a running game has loaded).
-    if have_jdk():
+    if "--skip-agent" in argv:
+        print("== agent java tests: left out (--skip-agent)", flush=True)
+    elif have_jdk():
         steps.append(("agent java tests", [sys.executable, os.path.join("agent", "java_tests.py")]))
     else:
         print("== agent java tests: skipped, no JDK (install one, or set JAVA_HOME)", flush=True)

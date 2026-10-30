@@ -71,6 +71,19 @@
 - `dungeon <cave>` goes to that cave (`dungeon Spider cave`), one a day; Start in Tools, Dungeons
   names the chosen cave in its script, so a stale profile can't send the run elsewhere.
 
+**For developers**
+
+- CI/CD: `master` (production) and `dev` (development). Every pull request into either and every
+  push to them runs the Python checks on Windows (Python 3.11 and 3.14) and the Java agent's build
+  and tests; a push to `dev` or `master` is then built into the Windows app, only once every check
+  passed, and uploaded as an Actions artifact (`UncleFarmer-dev-<commit>` or
+  `UncleFarmer-master-<version>-<commit>`) with its SHA-256 and `build-info.json`. See
+  CONTRIBUTING.md, "CI/CD".
+- The built app checks itself without a window (`UncleFarmer.exe --self-test report.json`), and a
+  build stops if its folder or zip lacks anything it must hold.
+- `build_exe.py` no longer falls back on a UPX folder on one PC: UPX comes from `UPX_DIR` or PATH,
+  else the build stops and says so.
+
 **Restocking**
 
 - Potions (and grocer goods) are bought at the nearest shop that sells them, not always in Giant

@@ -14,7 +14,7 @@ Open an issue and include:
 
 ## Changing the code
 
-1. Fork the repository and make a branch for your change.
+1. Fork the repository and make a branch for your change from `dev` (see "CI/CD" below).
 2. Set up as in the README's "Running from source", and test in the game.
 3. Keep to the house style:
    - **Screen readers first.** Native wx controls only, a label created right before every field
@@ -84,7 +84,8 @@ Open an issue and include:
    bugs: when a long run goes wrong in the real game, add what happened as an event (`Events` in
    `simgame.py`), give it a test in `test_soak.py`, and it stays covered. Run them on a quiet PC: a
    few minutes each, a few hundred MB of memory.
-5. Open a pull request that says what it changes and how you tested it.
+5. Open a pull request into `dev` that says what it changes and how you tested it. CI tests it;
+   it can be merged once every required check is green.
 
 ## Dependencies
 
@@ -106,9 +107,105 @@ uv export --locked --all-groups --no-emit-project --format requirements-txt --ou
 uv run pip-audit --requirement locked.txt --require-hashes --disable-pip
 ```
 
+## CI/CD
+
+Two long-lived branches:
+
+- **`dev`** - where work comes together. Branch from it (`git switch -c my-change dev`) and open a
+  pull request back into it.
+- **`master`** - the stable, production code. It only changes through a pull request from `dev`
+  (or a release branch), and only what passed every check gets there.
+
+One workflow, `.github/workflows/ci.yml`, does everything. Its jobs:
+
+| Job | Runs on | What it does |
+|---|---|---|
+| Python checks (Windows, Python 3.11 / 3.14) | every pull request into `dev` or `master`, every push to them | `uv sync --locked`, pip-audit of `uv.lock`, then `check.py --skip-agent --report-dir reports`: ruff, pyright, pytest with the coverage floors (70% overall, 90% for `unclefarmer/engine`). The JUnit and coverage XML are kept as the `test-reports-python-<version>` artifact, also when tests fail. |
+| Java agent (build, Java 8 check, tests) | the same | `agent/build_agent.py` builds the jar (`--release 8`, warnings are errors), `ci_build.py verify-agent` checks its manifest and that every class is Java 8 (the game's Java), `agent/java_tests.py` runs the agent's tests and the packet parser fuzz. |
+| Windows build (development / production) | pushes to `dev` and `master` only, after **both** jobs above passed | builds the app from the same commit the tests checked (`ci_build.py build`, see below) and uploads it. |
+
+Pull requests are tested, never built. Other branches run nothing (push one as a pull request to
+test it). A newer push to a pull request or to `dev` cancels the run still going; a run on `master`
+is never cancelled. Every job runs on `windows-latest`: the app, its paths and its tests are
+Windows-only. The tests need no game and no developer files: the agent jar, `game_texts.json`, the
+player's folders and every temporary file are made in the run's own folders.
+
+**The build** (`ci_build.py build --type development|production`) is the project's own build, not
+a second one: `build_exe.py --full` (the agent jar, Nuitka, UPX, the data, the folder check) and
+`release.py`'s `make_zip`. Then it checks:
+
+1. the folder and the zip hold everything in `build_exe.REQUIRED` (the exe, Python and wx DLLs, the
+   agent jar, the NVDA bridge, the routing DLL, the data, translations and guides); the zip is read
+   back member by member;
+2. the built exe checks itself without a window: `UncleFarmer.exe --self-test report.json`
+   (`unclefarmer/selftest.py`: the libraries, the routing DLL, the data, the translations and the
+   agent jar), within 2 minutes;
+3. it writes `build-info.json` and `<zip>.sha256`, the SHA-256 of the finished zip.
+
+UPX is installed by the workflow (version and SHA-256 pinned in `ci.yml`) and found through
+`UPX_DIR`. On your PC `build_exe.py` takes `UPX_DIR`, else the `upx` on PATH (`winget install
+UPX.UPX`); without either it stops with that message instead of building something different.
+
+**Artifacts** (Actions -> the run -> Artifacts at the bottom; they are zips of the files below):
+
+| Branch | Artifact | Kept |
+|---|---|---|
+| `dev` | `UncleFarmer-dev-<short sha>` | 14 days |
+| `master` | `UncleFarmer-master-<version>-<short sha>` | 90 days |
+
+Each holds the app zip of the same name, its `.zip.sha256` and `build-info.json` (application,
+version, build type, branch, full and short commit, UTC time, run id and number, Python, Java and
+UPX versions, runner, package size and SHA-256). The version is the project's own
+(`unclefarmer/__init__.py`); CI never changes it. To check a download:
+
+```
+certutil -hashfile UncleFarmer-dev-1a2b3c4.zip SHA256
+type UncleFarmer-dev-1a2b3c4.zip.sha256
+```
+
+The two hashes must match. A `dev` artifact is a development build: never hand it out as a release.
+
+**The same checks on your PC:**
+
+```
+uv sync --locked
+uv run python check.py                     # what the Python job runs (plus the Java tests if you have a JDK)
+uv run python agent/build_agent.py dist\agent-check.jar
+uv run python ci_build.py verify-agent dist\agent-check.jar
+uv run python agent/java_tests.py
+uv run python ci_build.py build --type development     # the whole build job, about half an hour
+```
+
+**Secrets:** none. No job reads a secret or gets more than read access to the repository, pull
+requests from forks run with the same read-only token, and nothing is signed or published.
+
+**Branch protection.** The rules are in `.github/rulesets/`. Once the GitHub CLI is logged in with
+admin rights on the repository, apply them (OWNER/REPO: the repository's owner and name):
+
+```
+gh api -X POST repos/OWNER/REPO/rulesets --input .github/rulesets/master.json
+gh api -X POST repos/OWNER/REPO/rulesets --input .github/rulesets/dev.json
+```
+
+Or by hand: Settings -> Rules -> Rulesets -> New branch ruleset, one for `master` and one for `dev`:
+
+- Target branches: `master` (or `dev`); enforcement **Active**; **no bypass list** (admins included).
+- **Restrict deletions** and **Block force pushes**.
+- **Require a pull request before merging** (`master`: also dismiss stale approvals and require
+  conversation resolution). Required approvals: 0 while one person maintains the project; set it to
+  1 once there are other collaborators who can review.
+- **Require status checks to pass**: `Python checks (Windows, Python 3.11)`, `Python checks
+  (Windows, Python 3.14)`, `Java agent (build, Java 8 check, tests)` (they appear in the list after
+  the workflow's first run). `master`: also **Require branches to be up to date before merging**.
+
+The build job is not a required check on purpose: it never runs for a pull request.
+
 ## Releasing
 
-Write the version's changes at the top of `CHANGELOG.md`, commit and push, then
+A release is made from `master`, by hand: CI builds every push to `master` (the production
+artifact above) but never publishes a release, signs anything or changes the version. When `dev`
+holds what the release should have, merge it into `master` with a pull request, then on `master`:
+write the version's changes at the top of `CHANGELOG.md`, commit and push, then
 `uv run python release.py 0.5.1 --notes-file notes.md` (the new section as the notes). It runs check.py,
 sets the version, builds the folder, zips it as `dist/UncleFarmer-0.5.1.zip` and makes the GitHub
 release v0.5.1 with it, using the GitHub CLI (`gh`, logged in). Every copy's updater finds it there:
