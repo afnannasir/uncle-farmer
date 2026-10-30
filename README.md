@@ -6,6 +6,7 @@
 
 **A free, open-source farming bot for Mist World.**
 
+[![CI](https://github.com/afnannasir/uncle-farmer/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/afnannasir/uncle-farmer/actions/workflows/ci.yml)
 [![Licence: GPL v3](https://img.shields.io/badge/licence-GPL%20v3-blue.svg)](LICENSE)
 ![Platform: Windows](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 ![Requires NVDA](https://img.shields.io/badge/requires-NVDA-green.svg)

@@ -54,8 +54,10 @@ def set_version(v: str) -> None:
         sys.exit("uv lock failed: uv.lock no longer matches pyproject.toml")
 
 
-def make_zip(v: str) -> str:
-    path = os.path.join(ROOT, "dist", "UncleFarmer-%s.zip" % v)
+def make_zip(v: str, path: str | None = None) -> str:
+    """The built folder as a zip (dist/UncleFarmer-<v>.zip, or path): "Uncle Farmer/..." inside,
+    and never a player's own files. CI's builds (ci_build.py) are zipped here too."""
+    path = path or os.path.join(ROOT, "dist", "UncleFarmer-%s.zip" % v)
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
         for folder, _dirs, files in os.walk(OUT):
             rel = os.path.relpath(folder, OUT)
