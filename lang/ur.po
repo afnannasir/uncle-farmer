@@ -65,8 +65,8 @@ msgstr "Unhein unke &naam se pukarein"
 msgid "&Cancel the shutdown"
 msgstr "Shutdown &mansookh karein"
 
-msgid "&Caves (tick the ones to go to):"
-msgstr "&Ghaar (jin mein jaana hai unhein tick karein):"
+msgid "&Cave:"
+msgstr "&Ghaar:"
 
 msgid "&Change key..."
 msgstr "&Key tabdeel karein..."
@@ -137,6 +137,9 @@ msgstr "Chalti hui game &dhoondein"
 
 msgid "&Find:"
 msgstr "&Dhoondna:"
+
+msgid "&Fix the speed of voice messages the game plays by itself"
+msgstr "Game ke khud bajaaye voice messages ki &raftaar theek karein"
 
 msgid "&Game folder:"
 msgstr "&Game ka folder:"
@@ -753,9 +756,6 @@ msgstr "Mansookh"
 
 msgid "Caves"
 msgstr "Ghaar"
-
-msgid "Caves, each once a game day, in this order"
-msgstr "Ghaar, har ek game ke din mein ek baar, isi tarteeb se"
 
 msgid "Cell x:"
 msgstr "Khanah x:"
@@ -2786,6 +2786,9 @@ msgstr "Bot nahi chal raha."
 msgid "The bot reads the real one from the Forger every try."
 msgstr "Bot har koshish par Forger se asal wala parhta hai."
 
+msgid "The cave (a character goes into one cave a game day)"
+msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
+
 msgid "The collection"
 msgstr "Collection"
 
@@ -2873,6 +2876,9 @@ msgstr "Guide {name} docs folder mein maujood nahi hai."
 
 msgid "The hearthstone didn't work."
 msgstr "Hearthstone kaam nahi kiya."
+
+msgid "The highest cave my level lets in"
+msgstr "Sab se ooncha ghaar jis mein mera level jaane de"
 
 msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
@@ -2998,9 +3004,6 @@ msgstr "Phen&kein:"
 msgid "Thrown away:"
 msgstr "Phenke gaye:"
 
-msgid "Tick a cave to go to."
-msgstr "Jaane ke liye koi ghaar tick karein."
-
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
 
@@ -3027,6 +3030,12 @@ msgstr "Aaj"
 
 msgid "Today, {n} runs, {m} min: {r}"
 msgstr "Aaj, {n} runs, {m} min: {r}"
+
+msgid "Today: no cave yet."
+msgstr "Aaj: abhi koi ghaar nahi."
+
+msgid "Today: {cave} is done - the next one after the game day's reset."
+msgstr "Aaj: {cave} ho gaya - agla game ke din ke reset ke baad."
 
 msgid "Tone from &everyone else:"
 msgstr "&Baqi sab ki awaaz:"
@@ -3485,6 +3494,25 @@ msgid "can't get next to {npc}"
 msgstr "{npc} ke paas nahi pohanch sakte"
 
 msgid ""
+"can't heal {name} with {skill}: the bot can't select teammates in this game (restart the game so Uncle Farmer's agent loads)"
+msgstr ""
+"{name} ko {skill} se heal nahi kar sakte: bot is game mein team ke saathiyon ko select nahi kar sakta (game dobara chalayein taake Uncle Farmer ka agent load ho){name} ko {skill} se heal nahi kar sakte: bot is game mein team ke saathiyon ko select nahi kar sakta (game dobara chalayein taake Uncle Farmer ka agent load ho)"
+
+msgid "can't heal {name} with {skill}: {why} - the heal is tried again"
+msgstr ""
+"{name} ko {skill} se heal nahi kar sakte: {why} - heal dobara aazmaya jayega{name} ko {skill} se heal nahi kar sakte: {why} - heal dobara aazmaya jayega"
+
+msgid ""
+"can't heal {pet} with {skill}: the bot can't select the pet in this game (restart the game so Uncle Farmer's agent loads) - pet potions meanwhile"
+msgstr ""
+"{pet} ko {skill} se heal nahi kar sakte: bot is game mein pet ko select nahi kar sakta (game dobara chalayein taake Uncle Farmer ka agent load ho) - tab tak pet potions{pet} ko {skill} se heal nahi kar sakte: bot is game mein pet ko select nahi kar sakta (game dobara chalayein taake Uncle Farmer ka agent load ho) - tab tak pet potions"
+
+msgid ""
+"can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again"
+msgstr ""
+"{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega"
+
+msgid ""
 "can't read the game's bag cursor - restart the game so the new agent loads"
 msgstr ""
 "game ka bag cursor nahi parh sakte - game dobara shuru karein taake naya agent load ho"
@@ -3669,6 +3697,9 @@ msgstr "{npc} se baat nahi kar sake"
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr "protection rune tick nahi kar sake - iske baghair nahi bana rahe"
 
+msgid "couldn't turn to the attack page {skill} is on"
+msgstr "attack ka woh page nahi khol sake jis par {skill} hai"
+
 msgid "couldn't type into the game: {why}"
 msgstr "game mein type nahi kar sake: {why}"
 
@@ -3700,9 +3731,6 @@ msgstr "{n} dafa mar gaye - rok rahe hain; yeh jagah shayad bohot mushkil hai"
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr ""
 "yahan kaam khatam - {map} ja rahe hain, jahan koi monster paida nahi hota"
-
-msgid "done today"
-msgstr "aaj ho gaya"
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "ho gaya: {n} {gem} banaye; basta mein {have}"
@@ -3738,9 +3766,6 @@ msgstr ""
 
 msgid "entrance unknown"
 msgstr "daakhla maloom nahi"
-
-msgid "every chosen dungeon is done for today"
-msgstr "har chuna hua dungeon aaj ke liye ho gaya"
 
 msgid "everything"
 msgstr "sab kuch"
@@ -4126,8 +4151,15 @@ msgstr ""
 msgid "no Swift fusion beast on this character - walking on foot"
 msgstr "is kirdaar par koi Swift fusion beast nahi - paidal chal rahe hain"
 
+msgid "no answer"
+msgstr "koi jawab nahi"
+
 msgid "no arnebia shared this time: {why}"
 msgstr "is baar arnebia share nahi hua: {why}"
+
+msgid "no cave lets in level {n} yet (the lowest needs level {low})"
+msgstr ""
+"abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)"
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
@@ -4201,6 +4233,9 @@ msgstr "{name} naam ka koi sub nahi"
 msgid "no such chore: {names} (there are: {all})"
 msgstr "aisa koi kaam nahi: {names} (yeh hain: {all})"
 
+msgid "no such dungeon: {name} (there are: {all})"
+msgstr "aisa koi dungeon nahi: {name} (yeh hain: {all})"
+
 msgid "no way from {a} to {b} - go there yourself and start again"
 msgstr ""
 "{a} se {b} tak koi raasta nahi - khud wahan jayein aur dobara shuru karein"
@@ -4273,9 +4308,6 @@ msgstr "dungeon ke liye saamaan kaafi nahi"
 msgid "not set"
 msgstr "set nahi"
 
-msgid "not yet today"
-msgstr "aaj abhi nahi"
-
 msgid "nothing can follow 'else' in the same if"
 msgstr "isi if mein 'else' ke baad kuch nahi aa sakta"
 
@@ -4308,6 +4340,9 @@ msgstr "is map par, Resurrection Crystals ke sath"
 
 msgid "on {name}"
 msgstr "{name} par"
+
+msgid "one cave only: a character goes into one cave a day"
+msgstr "sirf ek ghaar: kirdaar din mein ek hi ghaar mein jata hai"
 
 msgid "only {names}"
 msgstr "sirf {names}"
@@ -4862,6 +4897,9 @@ msgstr ""
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
 
+msgid "the game wouldn't select it ({why})"
+msgstr "game ne use select nahi kiya ({why})"
+
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr "game abhi {beast} nahi le raha; baad mein dobara koshish karenge"
 
@@ -4930,6 +4968,9 @@ msgstr "afsar hunting bounty nahi de raha"
 
 msgid "the outer hall"
 msgstr "bahar wala hall"
+
+msgid "the pet"
+msgstr "pet"
 
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr "pet ki amiability {n} hai lekin baste mein {item} nahi"
@@ -5145,8 +5186,8 @@ msgstr ""
 msgid "would enter {room}"
 msgstr "{room} mein jayenge"
 
-msgid "would go to: {caves}"
-msgstr "yahan jaata: {caves}"
+msgid "would go to: {cave}"
+msgstr "yahan jayenge: {cave}"
 
 msgid "would {what}"
 msgstr "yeh karenge: {what}"
@@ -5193,8 +5234,11 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
 
-msgid "{cave} - level {n} - {where} - {today}"
-msgstr "{cave} - level {n} - {where} - {today}"
+msgid "{cave} - level {n} - {where}"
+msgstr "{cave} - level {n} - {where}"
+
+msgid "{cave} is done for today - a character goes into one cave a day"
+msgstr "{cave} aaj ke liye ho gaya - kirdaar din mein ek hi ghaar mein jata hai"
 
 msgid "{cave} needs level {n}"
 msgstr "{cave} ke liye level {n} chahiye"
@@ -5601,12 +5645,15 @@ msgstr ""
 msgid "{skill} at {where}"
 msgstr "{skill}, {where} par"
 
-msgid "{skill} doesn't reach teammates - no more teammate heals this run"
+msgid ""
+"{skill} didn't raise {name}'s HP {n} times running - it may be landing on you, or the game isn't showing their HP. No teammate heals for {minutes} minutes, then {skill} again"
 msgstr ""
-"{skill} teammates tak nahin pohanchti - is run mein teammates ki mazeed shifa nahin"
+"{skill} ne lagataar {n} baar {name} ka HP nahi barhaya - shayad aap par lag raha hai, ya game unka HP nahi dikha raha. {minutes} minute team ko heal nahi, phir dobara {skill}{skill} ne lagataar {n} baar {name} ka HP nahi barhaya - shayad aap par lag raha hai, ya game unka HP nahi dikha raha. {minutes} minute team ko heal nahi, phir dobara {skill}"
 
-msgid "{skill} doesn't reach the pet - pet potions only"
-msgstr "{skill} pet tak nahin pohanchti - ab sirf pet potions"
+msgid ""
+"{skill} didn't raise {pet}'s HP {n} times running - it may be landing on you instead. Pet potions for {minutes} minutes, then {skill} again"
+msgstr ""
+"{skill} ne lagataar {n} baar {pet} ka HP nahi barhaya - shayad aap par lag raha hai. {minutes} minute pet potions, phir dobara {skill}{skill} ne lagataar {n} baar {pet} ka HP nahi barhaya - shayad aap par lag raha hai. {minutes} minute pet potions, phir dobara {skill}"
 
 msgid "{skill} put on the empty skill key {key} (page {page})"
 msgstr "{skill} khali skill key {key} par rakh diya (page {page})"
@@ -5656,11 +5703,17 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Assistant:"
 #~ msgstr "&Madadgar:"
 
+#~ msgid "&Caves (tick the ones to go to):"
+#~ msgstr "&Ghaar (jin mein jaana hai unhein tick karein):"
+
 #~ msgid "&Names (separated by commas):"
 #~ msgstr "&Naam (comma se alag):"
 
 #~ msgid "&Stay for up to (minutes; the game gives 180 a day):"
 #~ msgstr "&Zyada se zyada itni der rukein (minute; game roz 180 deta hai):"
+
+#~ msgid "Caves, each once a game day, in this order"
+#~ msgstr "Ghaar, har ek game ke din mein ek baar, isi tarteeb se"
 
 #~ msgid "Gather &outside (after the gang's area, or without one)"
 #~ msgstr "&Bahar jama karein (gang ke ilaqe ke baad, ya us ke baghair)"
@@ -5713,6 +5766,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "The gang's production area (its Lake, Mining Area or Herbal Garden)"
 #~ msgstr "Gang ka production ilaqa (us ki Lake, Mining Area ya Herbal Garden)"
 
+#~ msgid "Tick a cave to go to."
+#~ msgstr "Jaane ke liye koi ghaar tick karein."
+
 #~ msgid "Time between pet potions (&seconds):"
 #~ msgstr "Pet potions ke darmiyan waqt (&second):"
 
@@ -5724,6 +5780,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "built {n} times; the game took no more today"
 #~ msgstr "{n} baar tameer kiya; game ne aaj aur nahi liya"
 
+#~ msgid "done today"
+#~ msgstr "aaj ho gaya"
+
+#~ msgid "every chosen dungeon is done for today"
+#~ msgstr "har chuna hua dungeon aaj ke liye ho gaya"
+
 #~ msgid ""
 #~ "follow: I stay with you, help with your fights and go where you go. No buffs unless you send buff. After a minute without seeing you I stop."
 #~ msgstr ""
@@ -5732,6 +5794,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "home: I use the hearthstone to go home, then the run stops."
 #~ msgstr ""
 #~ "home: main ghar jaane ke liye hearthstone use karta hoon, phir run ruk jaata hai."
+
+#~ msgid "not yet today"
+#~ msgstr "aaj abhi nahi"
 
 #~ msgid "pet HP {pct}% - pressing {key}"
 #~ msgstr "pet HP {pct}% - {key} daba rahe hain"
@@ -5756,9 +5821,22 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "the gang's area: {why}"
 #~ msgstr "gang ka ilaqa: {why}"
 
+#~ msgid "would go to: {caves}"
+#~ msgstr "yahan jaata: {caves}"
+
+#~ msgid "{cave} - level {n} - {where} - {today}"
+#~ msgstr "{cave} - level {n} - {where} - {today}"
+
 #~ msgid "{kind} is due back at {x},{y} in about {n} s - going there"
 #~ msgstr ""
 #~ "{kind} taqreeban {n} second mein {x},{y} par wapas aayega - wahan ja rahe hain"
 
 #~ msgid "{minutes} minutes in {room}; shared arnebia {n} times today"
 #~ msgstr "{room} mein {minutes} minute; aaj {n} baar arnebia share kiya"
+
+#~ msgid "{skill} doesn't reach teammates - no more teammate heals this run"
+#~ msgstr ""
+#~ "{skill} teammates tak nahin pohanchti - is run mein teammates ki mazeed shifa nahin"
+
+#~ msgid "{skill} doesn't reach the pet - pet potions only"
+#~ msgstr "{skill} pet tak nahin pohanchti - ab sirf pet potions"

@@ -598,6 +598,17 @@ def test_pick_uses_a_shield_when_hp_is_low() -> None:
     assert s.pick(snap, tgt) == ("j", "Formless")
 
 
+def test_pick_uses_a_panic_shield_while_the_global_cooldown_runs(clock: Clock) -> None:
+    # Concentrated Will and Summon Spirit are no_gcd: a cooldown must not hold them back
+    will = skill("Concentrated Will", role="defensive", no_gcd=True,
+                 text="reduce 50% damage taken", page=0)
+    s = pinned(sb(b=TB(a=TLink()), slots={0: [will]}, confirm=True, press_confirmed=True,
+                  last_cast=clock.now), page=0)        # the game's global cooldown runs now
+    s.support = lambda me, now, fight=None: None
+    snap, tgt = _snap(me_hp=29000)
+    assert s.pick(snap, tgt) == ("j", "Concentrated Will")
+
+
 def test_pick_jumps_back_when_a_monster_is_on_top() -> None:
     dis = skill("Disengage", role="mobility", text="jump backward out of trouble", page=0)
     s = pinned(sb(slots={0: [dis]}, cls="Hunter"), page=0)
@@ -638,6 +649,29 @@ def test_press_pick_falls_back_to_the_same_kind_on_this_page() -> None:
     same = skill("Cleave", role="single_target", page=0)
     r = s._press_pick(choice, [same], 0, 1000.0, lambda x: True)
     assert r == ("j", "Cleave")
+
+
+def test_press_pick_falls_back_to_the_strongest_of_the_same_kind() -> None:
+    # "the best of the same kind": not simply the first one on the page
+    s = pinned(sb(can_flip=False), page=0)
+    choice = skill("Bash", role="single_target", page=1)
+    weak = skill("Cleave", role="single_target", page=0, attack=5)
+    strong = skill("Sweep Attack", role="single_target", page=0, attack=50)
+    r = s._press_pick(choice, [weak, strong], 0, 1000.0, lambda x: True)
+    assert r == ("j", "Sweep Attack")
+
+
+def test_the_fallback_presses_an_allowed_attack_never_a_never_one() -> None:
+    # pick() found nothing (every skill set aside after refused presses): rather than the profile's
+    # keys, which cast whatever sits on them, an allowed attack off its cooldown
+    banned = skill("Bash", key="y", role="single_target", attack=90, use="never")
+    aside = skill("Cleave", key="u", role="single_target", attack=40)
+    cooling = skill("Sweep Attack", key="i", role="aoe", attack=80, cd=6)
+    s = pinned(sb(slots={0: [banned, aside, cooling]}, refused={"Cleave": 9999.0},
+                  used={"Sweep Attack": 999.0}), page=0)
+    assert s.fallback(1000.0) == ("u", "Cleave")
+    s = pinned(sb(slots={0: [banned]}), page=0)
+    assert s.fallback(1000.0) is None                  # only a Never one: nothing at all
 
 
 def test_press_pick_none_when_no_fallback_exists() -> None:

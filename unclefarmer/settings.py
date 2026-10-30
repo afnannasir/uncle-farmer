@@ -19,6 +19,7 @@ APP_DEFAULTS: dict[str, Any] = {
     "last_run": "",           # what was selected to run last time
     "last_runs": {},          # character -> what it ran last ("plan:name"), for several games at once
     "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never"
+    "fix_voice": True,        # mend the game's voice message player (off: deep, slow voices come back, as the game has it)
     "results_speak": "end",   # speak a run's results: "end" (once, when it stops) or "never"
     "results_every": 0,       # minutes between spoken progress lines while running (0 = never)
     "daily_stop": True,       # every run ends at the daily stop time, before the game's day turns over
@@ -176,6 +177,7 @@ class AppSettings(BaseModel):
     last_run: str = APP_DEFAULTS["last_run"]
     last_runs: dict[str, str] = APP_DEFAULTS["last_runs"]
     game_speech: str = APP_DEFAULTS["game_speech"]
+    fix_voice: bool = APP_DEFAULTS["fix_voice"]
     results_speak: str = APP_DEFAULTS["results_speak"]
     results_every: int = APP_DEFAULTS["results_every"]
     daily_stop: bool = APP_DEFAULTS["daily_stop"]

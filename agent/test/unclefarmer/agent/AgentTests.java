@@ -33,6 +33,7 @@ public final class AgentTests {
         theGameFolderIsWrittenForTheApp();
         vitalsCreditOnlyTheAnswerToOurOwnRequest(contract);
         vitalsForIdZeroAreThePets();
+        aPriestsPointsRequestIsAnsweredToo();
         askPacketIsTheOwnHpKeysRequest(contract);
         usePacketIsTheUseKeysRequest(contract);
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
@@ -45,6 +46,11 @@ public final class AgentTests {
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
         voiceIsCleanedAndCutIntoMessages();
+        theVoicePlayerOpensEachMessageAtItsOwnRate();
+        theVoicePlayerSkipsAHalfReadFile();
+        theVoiceFixCanBeSwitchedOff();
+        theVoicePlayerRateFixMatchesTheGamesCode();
+        theSpeechSwitchStillSilences();
 
         System.out.println("agent tests: " + (run - failed) + " of " + run + " passed");
         if (failed > 0) System.exit(1);
@@ -196,6 +202,21 @@ public final class AgentTests {
         eq(PetInfo.vitalsMp, 400, "id 0 is the pet: its MP");
     }
 
+    /** The points key (T): op=23 alone, or with the PK mode byte for a Priest (game.i.K). Both are
+     *  our request, and the answer's amiability is kept; with no request, speech isn't taken. */
+    private static void aPriestsPointsRequestIsAnsweredToo() {
+        byte[] reply = concat(new byte[] {60, 0}, "0;100.0;64.5".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Points.pet = -1;
+        World.inbound(reply);
+        eq(Points.pet, -1.0, "no request: no amiability");
+        for (byte[] ask : new byte[][] {{23}, {23, 2}}) {
+            Points.pet = -1;
+            World.outbound(ask);
+            World.inbound(reply);
+            eq(Points.pet, 64.5, "request of " + ask.length + " byte(s): the pet's amiability");
+        }
+    }
+
     private static void askPacketIsTheOwnHpKeysRequest(Map<String, String> contract) {
         StringBuilder sb = new StringBuilder();
         for (byte b : Ask.packet(Ask.OP_VITALS, 1234567)) sb.append(sb.length() == 0 ? "" : " ").append(b & 0xFF);
@@ -282,6 +303,7 @@ public final class AgentTests {
         java.util.Set<String> mine = new java.util.HashSet<String>();
         eq(StateServer.handle("version", armed, mine, guarded), "mwagent " + StateServer.VERSION, "version");
         eq(StateServer.handle("ping", armed, mine, guarded), "pong", "ping");
+        eq(StateServer.handle("voicefix off", armed, mine, guarded), "unknown", "no voice player loaded: nothing to switch");
         eq(StateServer.handle("frobnicate", armed, mine, guarded), "unknown command: frobnicate", "unknown");
         eq(StateServer.handle("ask vitals", armed, mine, guarded), "refused: send 'arm' first", "ask needs arm");
         eq(StateServer.handle("key j", armed, mine, guarded), "refused: send 'arm' first", "keys need arm");
@@ -509,6 +531,182 @@ public final class AgentTests {
         Thread.sleep(400L);
         eq(String.valueOf(quick.calls), "[down 1, down 2, up]", "a press before the last let go takes its release over");
         eq(Act.releaseMethod(OneShape.class), null, "no release of that shape: not guessed");
+    }
+
+    // ---------------------------------------------------------------- patches of game classes
+
+    /**
+     * A stand-in for the game's voice player (game.ac), with its bug: a message whose rate differs
+     * from the last opens its line at the last rate, then keeps the new one. `opened` stands for
+     * the line's rate; nothing is played.
+     */
+    public static final class PlayerStandIn {
+        public int rate = 16000;
+        public float opened = 16000;
+        public int decodedAt;
+        public int frames;
+
+        public synchronized void a(byte[] sound, float x, float y) {
+            int channels = sound[0] / 10 + 1;
+            int code = sound[0] % 10;
+            int r = code == 0 ? 8000 : code == 1 ? 16000 : code == 2 ? 24000 : 48000;
+            int frame = 255 & sound[1];
+            if (r != rate) {
+                javax.sound.sampled.AudioFormat f = new javax.sound.sampled.AudioFormat(
+                        javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED, rate, 16, 2, 4, rate, false);
+                try {
+                    opened = f.getSampleRate();
+                } catch (RuntimeException e) {
+                    return;
+                }
+                rate = r;
+            }
+            decodedAt = rate * channels;
+            for (int i = 2; i < sound.length; i += frame) frames++;
+        }
+    }
+
+    /** PlayerStandIn as the agent changes it when the game loads it, in a loader of its own. */
+    private static Object mendedPlayer() throws Exception {
+        final String name = PlayerStandIn.class.getName();
+        final byte[] mended = VoicePlayer.patch(classBytes("AgentTests$PlayerStandIn.class"));
+        check(mended != null, "the stand-in is recognised as the voice player");
+        check(VoicePlayer.patch(mended) == null, "and a mended player is left alone");
+        ClassLoader loader = new ClassLoader(AgentTests.class.getClassLoader()) {
+            @Override
+            protected Class<?> loadClass(String n, boolean resolve) throws ClassNotFoundException {
+                if (n.equals(name)) {
+                    Class<?> c = findLoadedClass(n);
+                    return c != null ? c : defineClass(n, mended, 0, mended.length);
+                }
+                return super.loadClass(n, resolve);
+            }
+        };
+        return loader.loadClass(name).getConstructor().newInstance();     // the JVM verifies it here
+    }
+
+    private static byte[] classBytes(String resource) throws Exception {
+        java.io.InputStream in = AgentTests.class.getResourceAsStream(resource);
+        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        for (int n; (n = in.read(buf)) > 0; ) bo.write(buf, 0, n);
+        in.close();
+        return bo.toByteArray();
+    }
+
+    private static void play(Object player, byte[] sound) throws Exception {
+        player.getClass().getMethod("a", byte[].class, float.class, float.class).invoke(player, sound, 0f, 0f);
+    }
+
+    private static Object field(Object o, String name) throws Exception {
+        return o.getClass().getField(name).get(o);
+    }
+
+    private static void theVoicePlayerOpensEachMessageAtItsOwnRate() throws Exception {
+        byte[] at8k = {0, 2, 9, 9, 9, 9};
+        byte[] at16k = {1, 2, 9, 9, 9, 9};
+        PlayerStandIn game = new PlayerStandIn();
+        game.a(at8k, 0f, 0f);
+        game.a(at16k, 0f, 0f);
+        eq(game.opened, 8000f, "the game as it is: after an 8 kHz message, 16 kHz plays on an 8 kHz line");
+
+        Object mended = mendedPlayer();
+        play(mended, at8k);
+        eq(field(mended, "opened"), 8000f, "mended: an 8 kHz message gets an 8 kHz line");
+        play(mended, at16k);
+        eq(field(mended, "opened"), 16000f, "and the next 16 kHz message a 16 kHz line again");
+        eq(field(mended, "decodedAt"), 16000, "decoded at its own rate");
+        eq(field(mended, "frames"), 4, "every frame of both played");
+    }
+
+    private static void theVoiceFixCanBeSwitchedOff() throws Exception {
+        byte[] at8k = {0, 2, 9, 9, 9, 9};
+        byte[] at16k = {1, 2, 9, 9, 9, 9};
+        Object p = mendedPlayer();
+        java.lang.reflect.Field off = p.getClass().getField(VoicePlayer.FIELD);
+        eq(off.getBoolean(null), false, "a game starts with the fix on");
+        off.setBoolean(null, true);
+        play(p, at8k);
+        play(p, at16k);
+        eq(field(p, "opened"), 8000f, "switched off: the game's own player, deep voice and all");
+        eq(field(p, "frames"), 4, "and it still plays every frame");
+        off.setBoolean(null, false);
+        play(p, at8k);
+        play(p, at16k);
+        eq(field(p, "opened"), 16000f, "switched on again: each message at its own rate");
+        play(p, new byte[] {0, 0, 0, 0});
+        eq(field(p, "frames"), 8, "and a half-read file skipped again");
+    }
+
+    private static void theVoicePlayerSkipsAHalfReadFile() throws Exception {
+        Object mended = mendedPlayer();
+        play(mended, null);
+        play(mended, new byte[0]);
+        play(mended, new byte[] {1, 40});
+        play(mended, new byte[] {0, 0, 0, 0, 0, 0});           // read while the other game rewrote it
+        play(mended, new byte[] {121, 111, 5, 5});             // not mono or stereo
+        play(mended, new byte[] {-3, 40, 5, 5});
+        eq(field(mended, "rate"), 16000, "none of them changes the player's rate");
+        eq(field(mended, "frames"), 0, "and none is played");
+        play(mended, new byte[] {11, (byte) 200, 5, 5});       // stereo, a frame length over 127
+        eq(field(mended, "frames"), 1, "a real message still plays");
+    }
+
+    /** The rate fix on the game's own bytes (javap of game.ac, 2026-10-29): `iload_3` holds the
+     *  new rate, field #31 the old one; the block opens the line and stores the new rate. */
+    private static void theVoicePlayerRateFixMatchesTheGamesCode() {
+        byte[] c = {
+            0x1D, 0x2A, (byte) 0xB4, 0x00, 0x1F, (byte) 0x9F, 0x00, 0x12,  // iload_3; aload_0; getfield c; if_icmpeq 23
+            0x2A, (byte) 0xB4, 0x00, 0x1F, (byte) 0x86,                    // aload_0; getfield c; i2f   (sample rate)
+            0x2A, (byte) 0xB4, 0x00, 0x1F, (byte) 0x86,                    // aload_0; getfield c; i2f   (frame rate)
+            0x2A, 0x1D, (byte) 0xB5, 0x00, 0x1F,                           // aload_0; iload_3; putfield c
+            0x2A, (byte) 0xB4, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00,         // after the block: the decoder's rate
+        };
+        check(VoicePlayer.openAtNewRate(c, 0, c.length), "the game's rate test is found");
+        eq(String.format("%02x%02x%02x%02x %02x%02x%02x%02x", c[8], c[9], c[10], c[11], c[13], c[14], c[15], c[16]),
+                "1d000000 1d000000", "both reads of the old rate become the new rate");
+        eq(String.format("%02x%02x%02x%02x", c[23], c[24], c[25], c[26]), "2ab4001f",
+                "the field read after the block stays");
+    }
+
+    /** A stand-in for the game's sound engine (game.aT): its speak method of the known shape. */
+    public static final class SpeechStandIn {
+        public int spoken;
+
+        public void a(int kind, String text, int b, float x, float y, int c) {
+            switch (kind) {
+                case 0: spoken++; break;
+                case 5: spoken += 2; break;
+                default: spoken += 3;
+            }
+        }
+    }
+
+    private static void theSpeechSwitchStillSilences() throws Exception {
+        final String name = SpeechStandIn.class.getName();
+        final byte[] gated = SpeechSwitch.patch(classBytes("AgentTests$SpeechStandIn.class"));
+        check(gated != null, "the speech switch finds the speak method");
+        ClassLoader loader = new ClassLoader(AgentTests.class.getClassLoader()) {
+            @Override
+            protected Class<?> loadClass(String n, boolean resolve) throws ClassNotFoundException {
+                if (n.equals(name)) {
+                    Class<?> c = findLoadedClass(n);
+                    return c != null ? c : defineClass(n, gated, 0, gated.length);
+                }
+                return super.loadClass(n, resolve);
+            }
+        };
+        Class<?> c = loader.loadClass(name);
+        Object o = c.getConstructor().newInstance();
+        java.lang.reflect.Method speak = c.getMethod("a", int.class, String.class, int.class, float.class, float.class, int.class);
+        speak.invoke(o, 5, "hi", 0, 0f, 0f, 0);
+        eq(field(o, "spoken"), 2, "speaking: the method runs, its switch too");
+        c.getField(SpeechSwitch.FIELD).setBoolean(null, true);
+        speak.invoke(o, 0, "hi", 0, 0f, 0f, 0);
+        eq(field(o, "spoken"), 2, "silenced: nothing is said");
+        c.getField(SpeechSwitch.FIELD).setBoolean(null, false);
+        speak.invoke(o, 7, "hi", 0, 0f, 0f, 0);
+        eq(field(o, "spoken"), 5, "and speaking again");
     }
 
     private static Map<String, String> contract(String path) throws Exception {

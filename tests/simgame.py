@@ -344,6 +344,10 @@ class World:
             self.target_mode = (self.target_mode + 1) % len(settings.TARGET_MODES)
         elif key in ATTACK_KEYS:
             self._cast(ATTACK_KEYS.index(key), now)
+        elif key.startswith("alt+") and key[4:] in ATTACK_KEYS:
+            # the game's stationary attack (help: Alt+key), which the skill book presses for a
+            # skill aimed from where we stand: the same cast
+            self._cast(ATTACK_KEYS.index(key[4:]), now)
         elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"):
             self._hotkey(key)
 

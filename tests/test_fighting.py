@@ -128,13 +128,19 @@ class Pick:
     """The SkillBook methods fighting.py calls, scripted by the test."""
 
     def __init__(self, confirm: bool=True, want_follow: bool=False, ready: float=1.0, pick: Press | str | None=None, casts: int=0,
-                 follow_key: str | None=None, cls: str="Warrior", ok: bool=True) -> None:
+                 follow_key: str | None=None, cls: str="Warrior", ok: bool=True,
+                 info: dict[str, dict[str, Any]] | None=None) -> None:
         self.confirm, self.want_follow, self.ok, self.cls = confirm, want_follow, ok, cls
         self._ready, self._pick = ready, pick
         self._follow_key, self.casts_done = follow_key, casts
+        self.info = info or {}
         self.press_confirmed = False
         self.picked: list[Any] = []
         self.refused: list[str] = []
+        self.downed: dict[int, float] = {}       # monster id -> when a cast report left it at 0 HP
+
+    def skill(self, name: str) -> dict[str, Any] | None:
+        return self.info.get(name)
 
     def ready_in(self, now: float) -> float:
         return self._ready
@@ -1267,13 +1273,13 @@ def test_a_shot_on_the_way_goes_at_the_nearest_in_reach(clock: Clock) -> None:
     b, sb = move_bot()
     near, far, out = monster(-2, x=106.0), monster(-3, x=109.0), monster(-4, x=125.0)
     snap = {"map": {"id": 5121}, "self": dict(b.self_), "entities": [far, out, near]}
-    assert b.move_shot(snap, b.self_) is True
+    assert b.move_shot(snap, b.self_) == -2                  # the one shot at
     assert b.link.sent == ["select -2"] and sb.picked == [-2] and b.keys_pressed == ["j"]
     sb._ready = 0.5                           # the global cooldown runs: no press at all
-    assert b.move_shot(snap, b.self_) is False and b.keys_pressed == ["j"]
+    assert b.move_shot(snap, b.self_) is None and b.keys_pressed == ["j"]
     sb._ready = 0.0
     snap["entities"] = [out]                  # nothing in reach
-    assert b.move_shot(snap, b.self_) is False
+    assert b.move_shot(snap, b.self_) is None
 
 
 def test_walking_up_with_shots_on_the_way_does_not_stop_for_them(clock: Clock) -> None:
@@ -1286,6 +1292,28 @@ def test_walking_up_with_shots_on_the_way_does_not_stop_for_them(clock: Clock) -
     assert sb.picked == [-2] and b.keys_pressed == ["j"]     # ...shooting the one in reach
     b.move_shots = False
     assert way.stop(b.self_) is True           # without: it stops there as before
+
+
+def test_the_picked_one_in_reach_ends_the_walk_even_when_just_shot(clock: Clock) -> None:
+    # the game holds us still ~0.7 s after a cast anyway; walking on past a dropped shot cost kills
+    b, sb = move_bot()
+    target = monster(-2, x=106.0)                       # in reach, and the nearest
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(target)]}
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    way = fighting._Approach(b, -2, 10.0, 10.0, 0.0)
+    assert way.stop(b.self_) is True
+    assert sb.picked == [-2]                            # shot on the way all the same
+
+
+def test_the_picked_one_felled_by_a_shot_on_the_way_ends_the_walk(clock: Clock) -> None:
+    b, sb = move_bot()
+    target = monster(-2, x=130.0)                       # still out of reach
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(target)]}
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    way = fighting._Approach(b, -2, 10.0, 10.0, 0.0)
+    assert way.stop(b.self_) is False
+    sb.downed = {-2: clock.now}                         # its cast report: 0 HP
+    assert way.stop(b.self_) is True and b.downed(-2, way.began)
 
 
 def test_pull_range_opens_fire_while_the_monster_closes_in(clock: Clock) -> None:
@@ -1511,7 +1539,7 @@ def test_hit_until_down_follows_our_hits_to_another_monster(clock: Clock) -> Non
 
 def test_hit_until_down_gives_up_a_lost_target(clock: Clock) -> None:
     b = until_bot(profile(attack_range=10.0, no_damage_timeout=999, no_damage_casts=999))
-    b.skillbook = as_kind(SkillBook, Pick(want_follow=False, pick=None))
+    b.skillbook = as_kind(SkillBook, Pick(want_follow=False, pick="j"))
     b.select_target = lambda mob, by_keys=False: False
     b.ui = lambda: {"target": -99}
     mob = monster(-1, x=105.0)
@@ -1522,7 +1550,7 @@ def test_hit_until_down_gives_up_a_lost_target(clock: Clock) -> None:
     b.snap = snap
     b._hit_until_down(mob)
     assert b.skip[-1] == clock.now + 30
-    assert b.keys_pressed == ["j", "y", "."]   # a plain attack key each turn
+    assert b.keys_pressed == ["j", "j", "j"]   # every third press re-selects the target
     assert any("lost our target" in line for line in b.lines)   # the give-up says why
 
 
@@ -1574,6 +1602,62 @@ def test_hit_until_down_leaves_a_monster_the_game_casts_nothing_at(clock: Clock)
     assert sb.refused == ["Arcane Shot"] * b.REFUSED_RUN
     assert any("won't let us hit Wolf from here" in line for line in b.lines)
     assert not any("takes no damage" in line for line in b.lines)
+
+
+def test_inside_a_dungeon_two_refused_bursts_are_enough(clock: Clock) -> None:
+    # another monster is always close: a refused run cost up to 5.3 s in a Scorpion Cave visit
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=999, no_damage_casts=999))
+    b.in_instance = True
+    sb = Pick(want_follow=False, pick=("j", "Arcane Shot"))
+    b.skillbook = as_kind(SkillBook, sb)
+    b.burst = lambda key, me_id, longest=1.0: (clock.advance(1.0), False)[1]
+    b.ui = lambda: {"target": -1}
+    mob = monster(-1, x=105.0)
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b._hit_until_down(mob)
+    assert sb.refused == ["Arcane Shot"] * b.REFUSED_RUN_INSIDE
+    assert any("won't let us hit Wolf from here" in line for line in b.lines)
+
+
+def test_a_refused_heal_is_not_blamed_on_the_monster(clock: Clock) -> None:
+    # a healer out of mana: the heal won't cast, but that says nothing about the monster
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=999, no_damage_casts=999,
+                          fight_timeout=5.0))
+    sb = Pick(want_follow=False, pick=("j", "Heal"), info={"Heal": {"role": "heal"}})
+    b.skillbook = as_kind(SkillBook, sb)
+    b.burst = lambda key, me_id, longest=1.0: (clock.advance(1.0), False)[1]
+    b.ui = lambda: {"target": -1}
+    mob = monster(-1, x=105.0)
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b._hit_until_down(mob)
+    assert set(sb.refused) == {"Heal"}
+    assert not any("won't let us hit" in line for line in b.lines)
+    assert any("fight took too long" in line for line in b.lines)
+
+
+# ------------------------------------------------------------------ _fight_press
+def press_bot(sb: Pick) -> tuple[Bot, Any]:
+    b = Bot(prof=profile())
+    b.skillbook = as_kind(SkillBook, sb)
+    mob = monster(-1, x=105.0)
+    f = fighting._Fight(b, mob)
+    f.seen = dict(mob)
+    f.look = {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    return b, f
+
+
+def test_fight_press_does_not_press_keys_for_a_skill_set_to_never() -> None:
+    # the picker has a working book and nothing the player lets it press (Never, or a cooldown):
+    # the profile's keys would cast whichever skill sits on them, Never ones included
+    b, f = press_bot(Pick(ok=True, pick=None))
+    assert b._fight_press(f) is None
+    assert b.keys_pressed == []
+
+
+def test_fight_press_uses_the_profiles_keys_without_a_working_skill_book() -> None:
+    b, f = press_bot(Pick(ok=False, pick=None))
+    assert b._fight_press(f) is None
+    assert b.keys_pressed == ["j"]           # attack_keys[0]
 
 
 def test_refused_casts_at_a_monster_we_have_hurt_are_not_a_reason_to_leave(clock: Clock) -> None:

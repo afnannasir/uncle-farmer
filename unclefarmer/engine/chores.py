@@ -44,6 +44,7 @@ Menus as the game shows them (logged sessions and the survey, 2026-10-11):
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import re
@@ -103,7 +104,7 @@ def label(chore: str) -> str:
 def config(p: dict[str, Any]) -> dict[str, Any]:
     """The profile's chores, with every setting filled in."""
     own: dict[str, Any] = p.get("chores") or {}
-    return dict(DEFAULTS, **own)
+    return {**copy.deepcopy(DEFAULTS), **own}     # never the defaults' own lists and dicts
 
 
 def wanted(cfg: dict[str, Any], chore: str) -> bool:

@@ -51,6 +51,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.log_lines = []      # [(text, important)]
         self.last_line = {}      # pid -> the latest log line of that game's run
         self.silenced = set()    # games this window silenced because game_speech is "always"
+        self.voice_fixed = {}    # pid -> what that game's voice player was last told (fix_voice)
         self.filling = False     # the Games list is being remade: its selection events mean nothing
         self.destroyed = False
         self.snap = None         # (pid, snapshot, when): the last reading of a game

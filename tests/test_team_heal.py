@@ -43,10 +43,11 @@ class Link:
         self.sent: list[str] = []
         self.members = list(members)
         self.no_team = no_team
+        self.answer = "selected"
 
     def send(self, line: str) -> str:
         self.sent.append(line)
-        return "selected"
+        return self.answer
 
     def json(self, what: str) -> Any:
         if what == "team":
@@ -58,7 +59,6 @@ class Healer:
     def __init__(self, clock: Clock, following: str="Leader", members: list[str] | tuple[()]=()) -> None:
         self.team_names: set[str] = set()
         self.team_heal_misses = 0
-        self.team_heal_off = False
         self.clock = clock
         self.p = {"team_heal": True, "team_heal_below": 70, "emergency_below": 50}
         self.following: str | None = following
@@ -134,14 +134,42 @@ def test_it_off_or_no_select_by_id_means_no_heal(clock: Clock) -> None:
     assert not teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 3000)))
 
 
-def test_heals_that_raise_nobodys_hp_stop_after_a_few(clock: Clock) -> None:
+def test_heals_that_raise_nobodys_hp_rest_then_are_tried_again(clock: Clock) -> None:
+    # never given up for the run: a rest, said plainly, then heals again
     b = Healer(clock)
     for _round in range(teamheal.TEAM_MISSES + 1):
         teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))
         clock.advance(teamheal.HEAL_CHECK + teamheal.HEAL_GAP)
-    assert b.team_heal_off is True
-    assert any("doesn't reach teammates" in line for line in b.lines)
+    assert any("didn't raise Leader's HP 5 times running" in line for line in b.lines), b.lines
     assert b.pressed == ["alt+3"] * teamheal.TEAM_MISSES
+    assert not teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))     # resting
+    clock.advance(teamheal.TEAM_REST)
+    assert teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))
+    assert b.pressed == ["alt+3"] * (teamheal.TEAM_MISSES + 1)
+
+
+def test_heals_in_a_fight_that_the_monsters_outdo_are_no_misses(clock: Clock) -> None:
+    b = Healer(clock)
+    b.in_fight = True
+    for _round in range(teamheal.TEAM_MISSES + 2):
+        teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))
+        clock.advance(teamheal.HEAL_CHECK + teamheal.HEAL_GAP)
+    assert b.team_heal_misses == 0 and not any("didn't raise" in line for line in b.lines)
+    assert b.pressed == ["alt+3"] * (teamheal.TEAM_MISSES + 2)
+
+
+def test_why_a_teammate_isn_t_healed_is_said_once(clock: Clock) -> None:
+    b = Healer(clock)
+    b.a.answer = "refused: %d out of reach" % LEADER
+    for _round in range(3):
+        assert not teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))
+        clock.advance(teamheal.HEAL_GAP + 1)
+    said = [line for line in b.lines if line.startswith("can't heal Leader with Healing Wave")]
+    assert said == ["can't heal Leader with Healing Wave: the game wouldn't select it (out of reach) - the heal is tried again"]
+    b = Healer(clock)
+    b.agent_act = False
+    teamheal.look_after(as_bot(b), snap(player(LEADER, "Leader", 5000)))
+    assert any("can't select teammates" in line and "restart the game" in line for line in b.lines)
 
 
 def test_a_heal_that_lands_keeps_healing(clock: Clock) -> None:

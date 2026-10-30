@@ -172,6 +172,7 @@ class GamesMixin(FrameParts):
             return
         self.progress()
         self.keep_silent()
+        self.keep_voice_fix()
         self.keep_messengers()
         self.keep_chats()
         pid = self.selected_pid()

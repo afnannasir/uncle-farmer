@@ -56,6 +56,8 @@ class SetupDialog(Dialog):
                                     [_("While a bot runs in it"), _("Always"), _("Never")],
                                     SPEECH_MODES.index(mode) if mode in SPEECH_MODES else 0)
         self.speak_end = f.check(_("Speak the &results when a run ends"), self.s.get("results_speak", "end") == "end")
+        self.fix_voice = f.check(_("&Fix the speed of voice messages the game plays by itself"),
+                                 self.s.get("fix_voice", True))
         every = self.s.get("results_every", 0) or 0
         self.progress, self.every = f.optional(_("Speak &progress while running"), every > 0,
                                                _("Every (minutes):"), every or 15, 1, 600)
@@ -188,6 +190,7 @@ class SetupDialog(Dialog):
         if self.updates is not None:
             self.s["check_updates"] = self.updates.GetValue()
         self.s["game_speech"] = SPEECH_MODES[max(0, self.game_speech.GetSelection())]
+        self.s["fix_voice"] = self.fix_voice.GetValue()
         self.s["results_speak"] = "end" if self.speak_end.GetValue() else "never"
         self.s["results_every"] = self.every.GetValue() if self.progress.GetValue() else 0
         self.s["daily_stop"] = self.day_on.GetValue()
