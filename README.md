@@ -123,7 +123,7 @@ Install adds one line to the game's `mw.exe.vmoptions` and keeps the original as
 ### Running from source
 
 You need Windows, [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`), and a JDK 9 or
-newer (for the game agent). uv brings the right Python itself: 3.11 or newer (3.14 is what we use).
+newer (for the game agent). uv brings the right Python itself: 3.14, the only one Uncle Farmer supports.
 
 ```
 uv sync
