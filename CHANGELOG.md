@@ -2,6 +2,18 @@
 
 ## Next
 
+**Updates and the agent**
+
+- Uncle Farmer looks for new versions again (at start, and Help, Check for updates), on the
+  project's GitHub releases. It had stopped looking when the old address went away.
+- An update no longer stops at "close every Mist World window first": it asks, and on OK closes
+  the games itself, then updates. Start the games again afterwards.
+- When the agent needs installing again, Uncle Farmer says why when it starts. That happens when
+  another tool removed it from the game's settings, when the game loads another Uncle Farmer's
+  agent, or when an open game started without this version's agent. Press OK: every Mist World
+  window closes (through its own close button, or ended after 20 seconds) and the agent is
+  installed again. Settings, Install offers the same for games that are open.
+
 **Voice messages**
 
 - With two games open, the game's auto-play no longer turns every voice message slow and deep in

@@ -25,6 +25,13 @@ The installer adds one line to the game's file mw.exe.vmoptions and keeps a copy
 as mw.exe.vmoptions.bak-unclefarmer. **Remove**, in the same place, takes the line out again. If you
 move the Uncle Farmer folder, install the agent again so the line points to the new place.
 
+**When the agent needs installing again**, Uncle Farmer says so when it starts, and why: another
+tool removed it from the game's settings, the game loads another Uncle Farmer's agent (an older
+copy, or this one before it moved), or a game that is open started without this version's agent.
+Press **OK**: Uncle Farmer closes every Mist World window and installs the agent again. Then start
+the game: a game loads the agent only as it starts. Cancel leaves everything as it is. Pressing
+Install in Settings while games are open offers the same.
+
 ## The main window
 
 The main window has three tabs (Ctrl+1, Ctrl+2, Ctrl+3):
@@ -593,7 +600,9 @@ Stop following.
 
 When it starts, Uncle Farmer asks its GitHub releases page whether there is a newer version, and
 offers it with what changed; Help, Check for updates asks at any time. Say yes and it downloads the
-release, checks it, and restarts as the new version. The request carries nothing about you or your
+release, checks it, and restarts as the new version. If games are open, it asks first: the update
+replaces the agent they have loaded, so press **OK** and it closes every Mist World window, then
+updates; start the games again afterwards. The request carries nothing about you or your
 game. Settings, "Look for a new version when Uncle Farmer starts" turns the check off; then it never
 goes online.
 
@@ -613,7 +622,8 @@ never changed. Pick the language in the game as usual; after changing it, restar
 ## Things to know
 
 - If the bot says it can't find the game: other tools that clean the game's settings (such as
-  mwMod) remove the agent line. Open File, Settings and press Install again, then restart the game.
+  mwMod) remove the agent line. Restart Uncle Farmer and press OK when it offers to reinstall the
+  agent (or open File, Settings and press Install), then start the game again.
 - Your character settings, plans, scripts and logs are stored in this folder (profiles, plans,
   scripts, logs). Copy them to keep a backup.
 - Translations: copy `lang\unclefarmer.pot` to `lang\<language code>.po`, fill in the `msgstr`

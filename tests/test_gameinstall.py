@@ -19,7 +19,7 @@ import pytest
 
 from unclefarmer import gameinstall, paths
 from pathlib import Path
-from conftest import stand_in
+from conftest import Clock, stand_in
 from conftest import returning
 from collections.abc import Callable
 
@@ -356,3 +356,93 @@ def test_a_games_own_folder_comes_from_its_agent(sandbox: Path) -> None:
     (run / "agent.43.folder").write_text(str(sandbox / "gone"), encoding="utf-8")
     assert gameinstall.folder_of(43, "D:/fallback") == "D:/fallback"      # not a game folder (any more)
     assert gameinstall.folder_of(None, "D:/fallback") == "D:/fallback"
+
+
+def test_running_games_gives_each_game_its_pid(monkeypatch: pytest.MonkeyPatch) -> None:
+    mw = os.path.join("C:", "Games", "Mist World", "mw.exe")
+    fake_windows(monkeypatch, {11: mw, 12: mw, 13: os.path.join("C:", "Other", "game.exe")})
+    folder = os.path.dirname(mw)
+    assert gameinstall.running_games() == [(11, folder), (12, folder)]
+    assert gameinstall.running_game_folders() == [folder]
+
+
+# ------------------------------------------------------------------------------- the agent's version
+def test_agent_version_is_the_one_the_agent_source_answers() -> None:
+    # the version this copy expects of a running game is the one its own jar answers
+    java = os.path.join(paths.APP, "agent", "src", "unclefarmer", "agent", "StateServer.java")
+    with open(java, encoding="utf-8") as f:
+        source = f.read()
+    assert "static final int VERSION = %d;" % gameinstall.AGENT_VERSION in source
+
+
+def test_stale_games_are_those_without_this_versions_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer import link
+    folder = os.path.join("C:", "MW")
+    monkeypatch.setattr(gameinstall, "running_games", returning([(1, folder), (2, folder), (3, folder)]))
+    # game 1 has this version's agent, game 2 an older one, game 3 none at all
+    monkeypatch.setattr(link, "agents", returning([(17311, 1, "s"), (17312, 2, "s")]))
+    versions = {1: gameinstall.AGENT_VERSION, 2: 44}
+    monkeypatch.setattr(gameinstall, "_agent_version", stand_in(gameinstall._agent_version, versions.__getitem__))
+    assert gameinstall.stale_games() == [(2, 44), (3, 0)]
+
+
+# ------------------------------------------------------------------------------- closing the games
+class _Games:
+    """Running games for close_games: which answer the agent's closegame, and how long they take."""
+
+    def __init__(self, clock: Clock, agent: dict[int, float | None]) -> None:
+        # pid -> seconds its close button takes (None: it never closes by itself); a pid left
+        # out has no agent to ask
+        self.clock, self.agent = clock, agent
+        self.gone_at: dict[int, float] = {}
+        self.ended: list[int] = []
+
+    def alive(self, pid: int) -> bool:
+        return self.clock.time() < self.gone_at.get(pid, float("inf"))
+
+    def ask(self, pid: int) -> bool:
+        if pid not in self.agent:
+            return False
+        after = self.agent[pid]
+        if after is not None:
+            self.gone_at[pid] = self.clock.time() + after
+        return True
+
+    def end(self, pid: int) -> None:
+        self.ended.append(pid)
+        self.gone_at[pid] = min(self.gone_at.get(pid, float("inf")), self.clock.time() + 1.0)
+
+
+def closing(monkeypatch: pytest.MonkeyPatch, agent: dict[int, float | None]) -> tuple[_Games, Clock]:
+    clock = Clock()
+    games = _Games(clock, agent)
+    monkeypatch.setattr(gameinstall, "_ask_to_close", stand_in(gameinstall._ask_to_close, games.ask))
+    monkeypatch.setattr(gameinstall, "_end", stand_in(gameinstall._end, games.end))
+    return games, clock
+
+
+def test_close_games_lets_each_game_close_itself(monkeypatch: pytest.MonkeyPatch) -> None:
+    games, clock = closing(monkeypatch, {1: 2.0, 2: 3.0})
+    assert gameinstall.close_games([1, 2], clock=clock, alive=games.alive) == []
+    assert games.ended == []                 # nothing forced: both closed through their own button
+    assert clock.time() - 1000.0 < 4.0
+
+
+def test_close_games_ends_a_game_without_an_agent_at_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    games, clock = closing(monkeypatch, {1: 2.0})
+    assert gameinstall.close_games([1, 2], clock=clock, alive=games.alive) == []
+    assert games.ended == [2]
+
+
+def test_close_games_ends_one_that_doesnt_close_in_time(monkeypatch: pytest.MonkeyPatch) -> None:
+    # a game that asks "really quit?" or hangs is ended once the wait is over
+    games, clock = closing(monkeypatch, {1: None})
+    assert gameinstall.close_games([1], wait=20.0, clock=clock, alive=games.alive) == []
+    assert games.ended == [1]
+    assert 1020.0 <= clock.time() < 1030.0
+
+
+def test_close_games_reports_one_that_wont_end(monkeypatch: pytest.MonkeyPatch) -> None:
+    games, clock = closing(monkeypatch, {})
+    monkeypatch.setattr(gameinstall, "_end", stand_in(gameinstall._end, games.ended.append))   # access denied
+    assert gameinstall.close_games([7], clock=clock, alive=games.alive) == [7]

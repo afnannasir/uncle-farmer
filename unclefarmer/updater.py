@@ -14,9 +14,8 @@ Only what a release ships is replaced: the exe and its _internal folder, agent/,
 docs/ and the files beside the exe. Character profiles, plans, scripts, settings, logs, messages,
 results and anything learned (data/game_texts.json, agent/run) are never in a release, so they stay.
 
-The repository is private for now, and GitHub shows a private repository's releases only with a
-token: set UNCLEFARMER_GITHUB_TOKEN (a read-only token) to test updates before it goes public.
-Without one, a private repository simply has no update to offer.
+The releases are public, so no login is needed. UNCLEFARMER_GITHUB_TOKEN (a read-only token)
+still works for a private fork's releases; without one, a private repository has no update to offer.
 """
 
 from __future__ import annotations
@@ -43,8 +42,8 @@ from . import __version__, jsonio as json, paths
 # app never asks the network for one. Only ever a repository the project controls: a name nobody
 # controls any more could be taken by someone else, whose "release" every copy would then offer
 # and install.
-REPO = ""
-LATEST = "https://api.github.com/repos/%s/releases/latest" % REPO
+REPO = "afnannasir/uncle-farmer"
+LATEST = "https://api.github.com/repos/%s/releases/latest"      # % REPO, when asked
 ASSET = re.compile(r"^UncleFarmer-[\w.\-]+\.zip$", re.I)
 EXE = "UncleFarmer.exe"
 UPDATE = os.path.join(paths.APP, "update")
@@ -125,7 +124,7 @@ def latest(timeout: float=10) -> Release | None:
     if not REPO:
         return None
     try:
-        with _open(LATEST, "application/vnd.github+json", timeout) as r:
+        with _open(LATEST % REPO, "application/vnd.github+json", timeout) as r:
             rel = json.load(r)
     except urllib.error.HTTPError as e:
         if e.code == 404:
