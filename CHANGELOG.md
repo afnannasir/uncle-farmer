@@ -1,5 +1,18 @@
 # What's new
 
+## 0.7.1
+
+**Logs**
+
+- Two new files in the `logs` folder say how each start and each close of Uncle Farmer went:
+  `bootup.log` (settings, language, the window, the hotkeys, the update check, the agent, then
+  "ready") and `teardown.log` (stopping the bots, the message and chat readers, the hotkeys and
+  the timer, then "closed"). A step that fails is there with its whole error; a start that died
+  half way says at which step, even when the window never opened. A bot that doesn't end within
+  5 seconds of closing is noted there.
+- Closing now also stops each game's chat reader, and a step of the close that fails no longer
+  keeps the window from closing.
+
 ## 0.7.0
 
 **Updates and the agent**

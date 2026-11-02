@@ -194,7 +194,8 @@ This is a community project. It gets better every time someone helps, and you do
 programmer to help:
 
 - 🐞 **Report a bug.** [Open an issue](https://github.com/afnannasir/uncle-farmer/issues): say what you did, what
-  you expected, and what happened. Attach the day's file from the `logs` folder if you can.
+  you expected, and what happened. Attach the day's file from the `logs` folder if you can, and
+  `logs/bootup.log` or `logs/teardown.log` if Uncle Farmer won't open or won't close.
 - 🛠️ **Fix something.** Pull requests are welcome, big or small. See [CONTRIBUTING.md](CONTRIBUTING.md).
 - 🌍 **Translate it.** Copy `lang/unclefarmer.pot` to `lang/<your language code>.po`, fill in the
   `msgstr` lines and run `python -m unclefarmer --strings` to compile them.

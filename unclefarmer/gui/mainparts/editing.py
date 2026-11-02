@@ -7,7 +7,7 @@ import subprocess
 
 import wx
 
-from ... import filelock, gameinstall, i18n, paths, settings
+from ... import applog, filelock, gameinstall, i18n, paths, settings
 from ...engine import dungeon, plan as plans, script
 from ...i18n import _
 from .. import agentfix
@@ -184,9 +184,19 @@ class EditingMixin(FrameParts):
 
     # ------------------------------------------------------------ settings
     def first_run(self) -> None:
-        self.after_update()
+        """The first thing the main loop does: how an update went, the agent, and then the END of
+        bootup.log. A check that fails is written there with its traceback; the window stays."""
+        boot = applog.bootup
+        with boot.step("update result and check", must=False):
+            self.after_update()
+        with boot.step("game folder and agent", must=False):
+            self.check_game()
+        boot.end("ready")
+
+    def check_game(self) -> None:
         folder = self.remember_game_folder()
         if not gameinstall.is_game_folder(folder):
+            applog.bootup.note("no game folder set yet: the welcome message offers Settings")
             if ask(self, _("Welcome to Uncle Farmer. The agent needs to be installed in Mist World first. "
                            "Open Settings now?")):
                 self.open_setup()
@@ -197,6 +207,7 @@ class EditingMixin(FrameParts):
         """The agent must be in the game's settings, pointing at this copy, and every open game
         must have loaded this version of it. Otherwise it is reinstalled (reinstall_agent)."""
         st = gameinstall.status(folder)
+        applog.bootup.note("agent in the game's settings: %s" % st)
         if st == "missing":
             why = _("Mist World's settings don't load it (it was never installed there, or another tool "
                     "removed it)")
@@ -206,7 +217,9 @@ class EditingMixin(FrameParts):
         else:
             stale = gameinstall.stale_games()
             if not stale:
+                applog.bootup.note("no open game lacks this version's agent")
                 return
+            applog.bootup.note("open games without this version's agent: %d - asking to reinstall" % len(stale))
             why = _("open games started without this version's agent: {n}", n=len(stale))
         self.reinstall_agent(folder, why)
 

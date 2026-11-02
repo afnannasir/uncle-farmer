@@ -60,6 +60,14 @@ crash keeps its traceback in `errors.log` beside it. Settings, Logging chooses h
 those files and how big they may grow before the oldest are dropped; the Log tab always shows the
 run's lines whatever is chosen there.
 
+Two more files there say how Uncle Farmer itself started and closed. `bootup.log` has a block for
+each start: settings, language, the window, the hotkeys, the update check and the agent, each
+"started" and then "done" or "FAILED" with the error, and an END line: "ready", or the step it
+failed at. `teardown.log` does the same for each close: stopping the bots (one that doesn't end
+within 5 seconds is noted), the message and chat readers, the hotkeys and the timer, then "closed".
+If Uncle Farmer won't open, or hangs while closing, these two files say where. They are written
+whatever Settings, Logging says, as `errors.log` is, and rotate the same way.
+
 ## Plans
 
 A plan answers three questions, one tab each.

@@ -10,7 +10,9 @@ Open an issue and include:
 - what you did, what you expected, and what happened instead;
 - the map you were on, and the plan or script you ran;
 - the day's log from the `logs` folder, if you can (look through it first: it may contain the names
-  of players who sent your character private messages, and you can remove those).
+  of players who sent your character private messages, and you can remove those);
+- if Uncle Farmer won't start or won't close: `logs/bootup.log` or `logs/teardown.log`. Each start
+  and each close is a block of stages from BEGIN to END, every failed stage with its traceback.
 
 ## Changing the code
 

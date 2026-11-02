@@ -66,3 +66,7 @@ _LOCK = InstanceLock()
 
 def acquire() -> bool:
     return _LOCK.acquire()
+
+
+def release() -> None:
+    _LOCK.release()
