@@ -136,7 +136,7 @@ uv run UncleFarmer.pyw
 checking tools and Nuitka. Every dependency is listed in `pyproject.toml`.
 
 `uv run python build_exe.py` builds the shareable folder `dist\Uncle Farmer` with Nuitka; it also
-needs UPX (`winget install UPX.UPX`), found on PATH, in `UPX_DIR`.
+needs UPX (`winget install UPX.UPX`), found in the folder `UPX_DIR` names, else on PATH.
 `uv run python build_native.py` builds the optional C module that makes map searches 10-24 times
 faster; without it the same searches run in Python.
 
