@@ -4,6 +4,7 @@
     python check.py --quick    the same without the slow real-time tests
     python check.py --report-dir reports   also write pytest.xml (JUnit) and coverage.xml there
     python check.py --skip-agent           leave the Java tests out (CI runs them in their own job)
+    python check.py --only ruff,pyright    just those steps (CI's static job; pytest's job: --only pytest)
 
 Exit code 0 when everything passed. release.py --local runs it before it builds anything, and
 .githooks/pre-commit runs it on every commit.
@@ -40,9 +41,26 @@ def report_dir(argv: list[str]) -> str | None:
     return folder
 
 
+STEPS = ("ruff", "pyright", "pytest", "agent")
+
+
+def only(argv: list[str]) -> set[str]:
+    """--only a,b: the steps to run (all of STEPS without it). CI runs the static checks and the
+    tests in parallel jobs, each one exactly once, with the same commands and floors as here."""
+    if "--only" not in argv:
+        return set(STEPS)
+    i = argv.index("--only")
+    names: set[str] = {n.strip() for n in argv[i + 1].split(",")} if i + 1 < len(argv) else set()
+    unknown = names - set(STEPS)
+    if not names or unknown:
+        sys.exit("--only takes a comma list of: " + ", ".join(STEPS))
+    return names
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     reports = report_dir(argv)
+    wanted = only(argv)
     tests = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
              "--cov=unclefarmer", "--cov-report=term-missing"]
     if reports:
@@ -53,23 +71,25 @@ def main(argv: list[str] | None = None) -> int:
     core = [sys.executable, "-m", "coverage", "report",
             "--include=unclefarmer/*", "--omit=unclefarmer/gui/*",
             "--fail-under=%d" % CORE_FLOOR]
-    steps = [("ruff", [sys.executable, "-m", "ruff", "check", "."]),
-             ("pyright", [sys.executable, "-m", "pyright", "--pythonpath", sys.executable]),
-             ("pytest", tests)]
+    steps = [step for step in [("ruff", [sys.executable, "-m", "ruff", "check", "."]),
+                               ("pyright", [sys.executable, "-m", "pyright", "--pythonpath", sys.executable]),
+                               ("pytest", tests)]
+             if step[0] in wanted]
     # The agent runs inside the game: a broken parser takes the game down, so it is checked here
     # too (compiled into a temporary folder, never over the jar a running game has loaded).
-    if "--skip-agent" in argv:
-        print("== agent java tests: left out (--skip-agent)", flush=True)
-    elif have_jdk():
-        steps.append(("agent java tests", [sys.executable, os.path.join("agent", "java_tests.py")]))
-    else:
-        print("== agent java tests: skipped, no JDK (install one, or set JAVA_HOME)", flush=True)
+    if "agent" in wanted:
+        if "--skip-agent" in argv:
+            print("== agent java tests: left out (--skip-agent)", flush=True)
+        elif have_jdk():
+            steps.append(("agent java tests", [sys.executable, os.path.join("agent", "java_tests.py")]))
+        else:
+            print("== agent java tests: skipped, no JDK (install one, or set JAVA_HOME)", flush=True)
     failed: list[str] = []
     for name, cmd in steps:
         print("== %s" % name, flush=True)
         if subprocess.call(cmd, cwd=ROOT) != 0:
             failed.append(name)
-    if os.path.exists(os.path.join(ROOT, ".coverage")):
+    if "pytest" in wanted and os.path.exists(os.path.join(ROOT, ".coverage")):
         # The engine on its own: the GUI is untested and must not hide an engine regression.
         print("== core coverage (%d%%)" % CORE_FLOOR, flush=True)
         if subprocess.call(core, cwd=ROOT) != 0:

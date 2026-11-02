@@ -120,14 +120,17 @@ One workflow, `.github/workflows/ci.yml`, does everything. Its jobs:
 
 | Job | Runs on | What it does |
 |---|---|---|
-| Python checks (Windows, Python 3.11 / 3.14) | every pull request into `dev` or `master`, every push to them | `uv sync --locked`, pip-audit of `uv.lock`, then `check.py --skip-agent --report-dir reports`: ruff, pyright, pytest with the coverage floors (70% overall, 90% for `unclefarmer/engine`). The JUnit and coverage XML are kept as the `test-reports-python-<version>` artifact, also when tests fail. |
+| Static checks (ruff, pyright) | every pull request into `dev` or `master`, every push to them | `uv sync --locked`, then `check.py --only ruff,pyright`. |
+| Tests (Windows, Python 3.14) | the same | `uv sync --locked`, then `check.py --only pytest --report-dir reports`: pytest with the coverage floors (70% overall, 90% for `unclefarmer/engine`). The JUnit and coverage XML are kept as the `test-reports` artifact, also when tests fail. |
+| Dependency audit (pip-audit) | the same | pip-audit of every package in `uv.lock`, hashes required. |
 | Java agent (build, Java 8 check, tests) | the same | `agent/build_agent.py` builds the jar (`--release 8`, warnings are errors), `ci_build.py verify-agent` checks its manifest and that every class is Java 8 (the game's Java), `agent/java_tests.py` runs the agent's tests and the packet parser fuzz. |
-| Windows build (development / production) | pushes to `dev` and `master` only, after **both** jobs above passed | builds the app from the same commit the tests checked (`ci_build.py build`, see below) and uploads it. |
+| Windows build (development / production) | pushes to `dev` and `master` only, after **all four** jobs above passed | builds the app from the same commit the tests checked (`ci_build.py build`, see below) and uploads it. |
 
 Pull requests are tested, never built. Other branches run nothing (push one as a pull request to
 test it). A newer push to a pull request or to `dev` cancels the run still going; a run on `master`
-is never cancelled. Every job runs on `windows-latest`: the app, its paths and its tests are
-Windows-only. The tests need no game and no developer files: the agent jar, `game_texts.json`, the
+is never cancelled. Every job runs on `windows-latest` with Python 3.14, the only Python the app
+supports (no version matrix): the app, its paths and its tests are Windows-only. The four check
+jobs run at the same time and each check runs once, so a run takes as long as its slowest job. The tests need no game and no developer files: the agent jar, `game_texts.json`, the
 player's folders and every temporary file are made in the run's own folders.
 
 **The build** (`ci_build.py build --type development|production`) is the project's own build, not
@@ -143,7 +146,14 @@ a second one: `build_exe.py --full` (the agent jar, Nuitka, UPX, the data, the f
 3. it writes `build-info.json` and `<zip>.sha256`, the SHA-256 of the finished zip.
 
 UPX is installed by the workflow (version and SHA-256 pinned in `ci.yml`) and found through
-`UPX_DIR`. On your PC `build_exe.py` takes `UPX_DIR`, else the `upx` on PATH (`winget install
+`UPX_DIR`.
+
+**Caches.** setup-uv keeps uv's download cache, keyed by `uv.lock` and `pyproject.toml` (only the
+tests job saves it; `.venv` is never cached, `uv sync --locked` makes it fresh in every job). The
+build keeps Nuitka's own cache (its MSVC object cache, UPX-compressed files and downloads) per
+branch and per `uv.lock`: the first build after a lock change compiles everything (about 18
+minutes), later ones only what changed. Its entries are found by the content compiled, so a stale
+one is only a miss. To start it fresh, delete the `nuitka-...` entries under Actions -> Caches. On your PC `build_exe.py` takes `UPX_DIR`, else the `upx` on PATH (`winget install
 UPX.UPX`); without either it stops with that message instead of building something different.
 
 **Artifacts** (Actions -> the run -> Artifacts at the bottom; they are zips of the files below):
@@ -169,7 +179,7 @@ The two hashes must match. A `dev` artifact is a development build: never hand i
 
 ```
 uv sync --locked
-uv run python check.py                     # what the Python job runs (plus the Java tests if you have a JDK)
+uv run python check.py                     # the static and tests jobs together (plus the Java tests if you have a JDK)
 uv run python agent/build_agent.py dist\agent-check.jar
 uv run python ci_build.py verify-agent dist\agent-check.jar
 uv run python agent/java_tests.py
@@ -194,9 +204,9 @@ Or by hand: Settings -> Rules -> Rulesets -> New branch ruleset, one for `master
 - **Require a pull request before merging** (`master`: also dismiss stale approvals and require
   conversation resolution). Required approvals: 0 while one person maintains the project; set it to
   1 once there are other collaborators who can review.
-- **Require status checks to pass**: `Python checks (Windows, Python 3.11)`, `Python checks
-  (Windows, Python 3.14)`, `Java agent (build, Java 8 check, tests)` (they appear in the list after
-  the workflow's first run). `master`: also **Require branches to be up to date before merging**.
+- **Require status checks to pass**: `Static checks (ruff, pyright)`, `Tests (Windows, Python
+  3.14)`, `Dependency audit (pip-audit)`, `Java agent (build, Java 8 check, tests)` (they appear in
+  the list after the workflow's first run). `master`: also **Require branches to be up to date before merging**.
 
 The build job is not a required check on purpose: it never runs for a pull request.
 

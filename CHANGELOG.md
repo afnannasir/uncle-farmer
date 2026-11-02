@@ -74,13 +74,18 @@
 **For developers**
 
 - CI/CD: `master` (production) and `dev` (development). Every pull request into either and every
-  push to them runs the Python checks on Windows (Python 3.11 and 3.14) and the Java agent's build
-  and tests; a push to `dev` or `master` is then built into the Windows app, only once every check
+  push to them runs, at the same time and each once, the static checks (ruff, pyright), the tests
+  with their coverage floors, pip-audit of `uv.lock` and the Java agent's build and tests, on
+  Windows with Python 3.14; a push to `dev` or `master` is then built into the Windows app, only once every check
   passed, and uploaded as an Actions artifact (`UncleFarmer-dev-<commit>` or
   `UncleFarmer-master-<version>-<commit>`) with its SHA-256 and `build-info.json`. See
   CONTRIBUTING.md, "CI/CD".
 - The built app checks itself without a window (`UncleFarmer.exe --self-test report.json`), and a
   build stops if its folder or zip lacks anything it must hold.
+- Python 3.14 is the only supported Python (`requires-python = ">=3.14"`); 3.11 is no longer
+  tested. The build keeps Nuitka's compile cache between runs, so a build that changed a few modules
+  compiles only those instead of all of them.
+- `check.py --only ruff,pyright` (or `--only pytest`, `--only agent`) runs just those steps.
 - `build_exe.py` no longer falls back on a UPX folder on one PC: UPX comes from `UPX_DIR` or PATH,
   else the build stops and says so.
 

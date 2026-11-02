@@ -27,8 +27,9 @@
       "parameters": {
         "strict_required_status_checks_policy": false,
         "required_status_checks": [
-          {"context": "Python checks (Windows, Python 3.11)", "integration_id": 15368},
-          {"context": "Python checks (Windows, Python 3.14)", "integration_id": 15368},
+          {"context": "Static checks (ruff, pyright)", "integration_id": 15368},
+          {"context": "Tests (Windows, Python 3.14)", "integration_id": 15368},
+          {"context": "Dependency audit (pip-audit)", "integration_id": 15368},
           {"context": "Java agent (build, Java 8 check, tests)", "integration_id": 15368}
         ]
       }
