@@ -103,8 +103,15 @@ The **Pause** key starts and stops the bot from anywhere, even inside the game; 
 speaks your results.
 
 New versions: Uncle Farmer offers them itself when it starts (or Help, Check for updates), and
-installs them for you. You can also unzip a newer release over the same folder. Your characters,
-plans and settings are never in a release, so they stay.
+installs them for you. If games are open, it asks first and closes them (an open game holds the
+agent file); start them again after the update. You can also unzip a newer release over the same
+folder with every game closed. Your characters, plans and settings are never in a release, so they
+stay.
+
+When the agent needs installing again (another tool removed it from the game, Uncle Farmer moved
+to another folder, or an open game started without this version's agent), Uncle Farmer says why
+when it starts. Press OK: it closes every Mist World window and reinstalls the agent; then start
+the game again.
 
 The full guide is in [docs/USER_GUIDE.md](docs/USER_GUIDE.md), as README.html in the program's
 folder, and in the program under Help (F1). More guides, also under Help:
@@ -123,7 +130,7 @@ Install adds one line to the game's `mw.exe.vmoptions` and keeps the original as
 ### Running from source
 
 You need Windows, [uv](https://docs.astral.sh/uv/) (`winget install astral-sh.uv`), and a JDK 9 or
-newer (for the game agent). uv brings the right Python itself: 3.11 or newer (3.14 is what we use).
+newer (for the game agent). uv brings the right Python itself: 3.14, the only one Uncle Farmer supports.
 
 ```
 uv sync
@@ -134,6 +141,18 @@ uv run UncleFarmer.pyw
 
 `uv sync` installs the exact versions pinned in `uv.lock` into `.venv`: the app's packages, the
 checking tools and Nuitka. Every dependency is listed in `pyproject.toml`.
+
+Without uv, pip installs the same pinned versions (with Python 3.14 from python.org):
+
+```
+py -3.14 -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python agent/build_agent.py
+.venv\Scripts\python UncleFarmer.pyw
+```
+
+`requirements.txt` is what the app needs to run; `requirements-dev.txt` adds the checking tools
+(`python check.py`) and Nuitka (`python build_exe.py`).
 
 `uv run python build_exe.py` builds the shareable folder `dist\Uncle Farmer` with Nuitka; it also
 needs UPX (`winget install UPX.UPX`), found in the folder `UPX_DIR` names, else on PATH.

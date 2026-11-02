@@ -852,13 +852,15 @@ msgstr "Band karein"
 msgid "Close a dialog"
 msgstr "Dialog band karein"
 
-msgid ""
-"Close every Mist World window first: an open game keeps the bot's agent file in use, so it can't be updated."
-msgstr ""
-"Pehle Mist World ki har window band karein: khuli game bot ki agent file rok leti hai, is liye update nahi ho sakta."
-
 msgid "Close the game"
 msgstr "Game band karein"
+
+msgid "Closing every Mist World window for the update..."
+msgstr "Update ke liye Mist World ki har window band ho rahi hai..."
+
+msgid "Closing every Mist World window to reinstall the agent..."
+msgstr ""
+"Agent dobara install karne ke liye Mist World ki har window band ho rahi hai..."
 
 msgid "Closing the game."
 msgstr "Game band kar raha hoon."
@@ -1551,8 +1553,18 @@ msgid ""
 msgstr ""
 "Install ho gaya. Agar install ke waqt game chal rahi thi, to game restart karein."
 
-msgid "Installed. Restart Mist World to load it."
-msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
+msgid "Installed. Start Mist World: it loads the agent as it starts."
+msgstr ""
+"Install ho gaya. Mist World chalayein: woh shuru hote hi agent load karti hai."
+
+msgid ""
+"Installed. The open games load the agent only when they start again.\n"
+"\n"
+"Press OK to close every Mist World window ({n} open) now, then start Mist World again."
+msgstr ""
+"Install ho gaya. Khuli games agent sirf dobara shuru hone par load karti hain.\n"
+"\n"
+"OK dabayein taake Mist World ki har window ({n} khuli) abhi band ho, phir Mist World dobara chalayein."
 
 msgid "International"
 msgstr "International"
@@ -1775,6 +1787,28 @@ msgstr ""
 
 msgid "Mist World isn't running. Start it, or use Browse."
 msgstr "Mist World nahi chal rahi. Shuru karein, ya Browse istemal karein."
+
+msgid ""
+"Mist World loads another Uncle Farmer's agent (an older copy, or this one before it moved)"
+msgstr ""
+"Mist World kisi aur Uncle Farmer ka agent load karti hai (purani copy, ya yehi copy jagah badalne se pehle)"
+
+msgid "Mist World windows that didn't close: {n}. Close them yourself."
+msgstr "Mist World ki jo windows band nahi huin: {n}. Unhein khud band karein."
+
+msgid "Mist World windows that didn't close: {n}. Close them, then update."
+msgstr ""
+"Mist World ki jo windows band nahi huin: {n}. Unhein band karein, phir update karein."
+
+msgid ""
+"Mist World windows that didn't close: {n}. The agent wasn't reinstalled: close them, then use File, Settings, Install."
+msgstr ""
+"Mist World ki jo windows band nahi huin: {n}. Agent dobara install nahi hua: unhein band karein, phir File, Tarteeb, Install istemal karein."
+
+msgid ""
+"Mist World's settings don't load it (it was never installed there, or another tool removed it)"
+msgstr ""
+"Mist World ki tarteeb ise load nahi karti (yeh wahan kabhi install nahi hua, ya kisi aur tool ne ise hata diya)"
 
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
@@ -2293,6 +2327,9 @@ msgstr ""
 msgid "Refill when fewer &than:"
 msgstr "&Jab is se kam hon to bharein:"
 
+msgid "Reinstall the agent"
+msgstr "Agent dobara install karein"
+
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
 msgstr ""
@@ -2755,6 +2792,11 @@ msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "Uncle Farmer ke agent folder mein agent file nahi hai."
 
 msgid ""
+"The agent is reinstalled. Start Mist World again: it loads the agent as it starts."
+msgstr ""
+"Agent dobara install ho gaya. Mist World dobara chalayein: woh shuru hote hi agent load karti hai."
+
+msgid ""
 "The agent isn't installed in the game yet, and without it a second game closes right after it starts. Open Settings now?"
 msgstr ""
 "Agent abhi game mein install nahi hai, aur is ke baghair doosra game shuru hote hi band ho jata hai. Abhi Tarteeb kholen?"
@@ -2858,6 +2900,11 @@ msgstr "Game ka map kehta hai: {about}"
 msgid "The game's skill texts don't describe this one."
 msgstr "Game ke skill texts is ko bayan nahi karte."
 
+msgid ""
+"The games are closed. Start Mist World again: it loads the agent as it starts."
+msgstr ""
+"Games band ho gayin. Mist World dobara chalayein: woh shuru hote hi agent load karti hai."
+
 msgid "The games were already muted."
 msgstr "Games pehle se chup thin."
 
@@ -2942,6 +2989,15 @@ msgstr "Update shuru nahi ho saka: {why}"
 
 msgid "The update didn't download: {why}"
 msgstr "Update download nahi hua: {why}"
+
+msgid ""
+"The update reinstalls Uncle Farmer's agent, which the open games have loaded, so every Mist World window must close first.\n"
+"\n"
+"Press OK to close them ({n} open) and update. Start Mist World again after the update."
+msgstr ""
+"Update Uncle Farmer ka agent dobara install karta hai, jo khuli games ne load kiya hua hai, is liye pehle Mist World ki har window band honi chahiye.\n"
+"\n"
+"OK dabayein taake woh ({n} khuli) band hon aur update ho. Update ke baad Mist World dobara chalayein."
 
 msgid ""
 "The update to {v} didn't finish: {why}\n"
@@ -3098,6 +3154,29 @@ msgstr ""
 
 msgid "Uncle Farmer {v} is the newest version."
 msgstr "Uncle Farmer {v} sab se naya version hai."
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}.\n"
+"\n"
+"Press OK to close every Mist World window ({n} open) and reinstall it. A game loads the agent only as it starts, so start Mist World again afterwards."
+msgstr ""
+"Uncle Farmer ka agent dobara install karna hai: {why}.\n"
+"\n"
+"OK dabayein taake Mist World ki har window ({n} khuli) band ho aur agent dobara install ho. Game agent sirf shuru hote waqt load karti hai, is liye baad mein Mist World dobara chalayein."
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}.\n"
+"\n"
+"Press OK to reinstall it."
+msgstr ""
+"Uncle Farmer ka agent dobara install karna hai: {why}.\n"
+"\n"
+"OK dabayein taake yeh dobara install ho."
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}. Stop every running bot, then use File, Settings, Install."
+msgstr ""
+"Uncle Farmer ka agent dobara install karna hai: {why}. Har chalta bot rokein, phir File, Tarteeb, Install istemal karein."
 
 msgid "Unmute every &game"
 msgstr "Har &game ki awaaz chalu karein"
@@ -4352,6 +4431,9 @@ msgstr "sirf {names}"
 
 msgid "only {n} {kind} potions left"
 msgstr "sirf {n} {kind} potions baqi hain"
+
+msgid "open games started without this version's agent: {n}"
+msgstr "khuli games jo is version ke agent ke baghair shuru huin: {n}"
 
 msgid "ore"
 msgstr "ore (kachi dhaat)"
@@ -5718,12 +5800,20 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Caves, each once a game day, in this order"
 #~ msgstr "Ghaar, har ek game ke din mein ek baar, isi tarteeb se"
 
+#~ msgid ""
+#~ "Close every Mist World window first: an open game keeps the bot's agent file in use, so it can't be updated."
+#~ msgstr ""
+#~ "Pehle Mist World ki har window band karein: khuli game bot ki agent file rok leti hai, is liye update nahi ho sakta."
+
 #~ msgid "Gather &outside (after the gang's area, or without one)"
 #~ msgstr "&Bahar jama karein (gang ke ilaqe ke baad, ya us ke baghair)"
 
 #~ msgid "Gather in the &gang's area first, once a game day (30 minutes inside)"
 #~ msgstr ""
 #~ "Pehle &gang ke ilaqe mein jama karein, game ke din mein ek baar (andar 30 minute)"
+
+#~ msgid "Installed. Restart Mist World to load it."
+#~ msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
 
 #~ msgid ""
 #~ "Open fire up to this many tiles &early, while the monster is coming to you (0: walk all the way; the game's target keys reach 20):"

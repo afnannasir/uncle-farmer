@@ -1,11 +1,15 @@
 # Uncle Farmer's CI/CD: every pull request into dev or master and every push to them is tested;
-# a push to dev or master is then built into the Windows app, only after every test job passed.
+# a push to dev or master is then built into the Windows app, only after every check passed.
 #
-#   python   check.py (ruff, pyright, pytest + coverage floors) and pip-audit on Windows, Python 3.11/3.14
+#   static   ruff and pyright (check.py --only ruff,pyright)
+#   tests    pytest with the coverage floors (check.py --only pytest)
+#   audit    pip-audit of uv.lock
 #   agent    the game agent's jar built, checked (Java 8 classes, manifest) and its Java tests run
+#            (these four run at the same time, each exactly once, on Windows with Python 3.14)
 #   build    push to dev    -> development build, artifact UncleFarmer-dev-<sha>        (14 days)
 #            push to master -> production build,  artifact UncleFarmer-master-<ver>-<sha> (90 days)
 #
+# Python 3.14 is the only Python the app supports and ships with, so there is no version matrix.
 # Nothing here publishes a GitHub Release or signs anything: releases stay manual (release.py), and
 # no job receives a release secret. CONTRIBUTING.md ("CI/CD") explains it all, branch rules included.
 # Actions are pinned to full commit SHAs; the tag each one was taken from is in its comment.
@@ -26,55 +30,101 @@ permissions:
 # One run per pull request or branch. A newer push to a pull request or to dev replaces the run in
 # progress; a run on master is never cancelled (a production build finishes once started).
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  python:
-    name: Python checks (Windows, Python ${{ matrix.python-version }})
+  static:
+    name: Static checks (ruff, pyright)
     runs-on: windows-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        # The oldest Python pyproject.toml allows, and the one the app is built and shipped with.
-        python-version: ["3.11", "3.14"]
+    timeout-minutes: 15
     steps:
       - name: Check out the commit under test
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Set up uv and Python ${{ matrix.python-version }}
+      # uv's download cache follows the lock and pyproject.toml; only the tests job saves it, so
+      # the parallel jobs don't race to write the same entry. The .venv itself is never cached.
+      - name: Set up uv and Python 3.14
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.14"
           enable-cache: true
-          cache-dependency-glob: uv.lock     # the cache follows the lock: a new lock, a new cache
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          save-cache: false
 
       # --locked: fails if pyproject.toml changed without `uv lock`; the lock is never rewritten here.
       - name: Install the locked dependencies
         run: uv sync --locked
 
-      - name: Audit the locked dependencies (pip-audit)
-        shell: bash
-        run: |
-          uv export --locked --all-groups --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/locked-requirements.txt"
-          uv run --locked pip-audit --requirement "$RUNNER_TEMP/locked-requirements.txt" --require-hashes --disable-pip
+      - name: check.py --only ruff,pyright
+        run: uv run --locked python check.py --only ruff,pyright
 
-      # The same checks as on a developer's PC (python check.py), with the same floors. The Java
-      # tests run in the agent job, so they are left out here.
-      - name: check.py (ruff, pyright, pytest, coverage floors)
-        run: uv run --locked python check.py --skip-agent --report-dir reports
+  tests:
+    name: Tests (Windows, Python 3.14)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the commit under test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python 3.14
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+
+      - name: Install the locked dependencies
+        run: uv sync --locked
+
+      # The same tests and floors as on a developer's PC (python check.py): 70% overall, 90% for
+      # unclefarmer/engine. The Java tests run in the agent job.
+      - name: check.py --only pytest (pytest, coverage floors)
+        run: uv run --locked python check.py --only pytest --report-dir reports
 
       - name: Keep the test and coverage reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: test-reports-python-${{ matrix.python-version }}
+          name: test-reports
           path: reports/
           retention-days: 14
           if-no-files-found: warn     # a run that fails before pytest has no reports to keep
+
+  audit:
+    name: Dependency audit (pip-audit)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the commit under test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python 3.14
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.14"
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          save-cache: false
+
+      # Every locked package, hashes required: what a player's copy and the build would get.
+      - name: Audit the locked dependencies (pip-audit)
+        shell: bash
+        run: |
+          uv export --locked --all-groups --no-emit-project --format requirements-txt --output-file "$RUNNER_TEMP/locked-requirements.txt"
+          uv run --locked pip-audit --requirement "$RUNNER_TEMP/locked-requirements.txt" --require-hashes --disable-pip
 
   agent:
     name: Java agent (build, Java 8 check, tests)
@@ -92,7 +142,8 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Python
+      # The agent's scripts use the standard library only: no dependencies to install or cache.
+      - name: Set up Python 3.14
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           python-version: "3.14"
@@ -112,9 +163,9 @@ jobs:
     # A plain name: a skipped job shows an expression in its name unevaluated. The build type is
     # in the artifact's name, build-info.json and the run's summary.
     name: Windows build
-    # Only after every test job passed, and only for dev and master themselves: a pull request is
+    # Only after every check passed, and only for dev and master themselves: a pull request is
     # tested, never built, and no other branch is built.
-    needs: [python, agent]
+    needs: [static, tests, audit, agent]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master')
     runs-on: windows-latest
     timeout-minutes: 120
@@ -137,10 +188,28 @@ jobs:
         with:
           python-version: "3.14"
           enable-cache: true
-          cache-dependency-glob: uv.lock
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+          save-cache: false
 
       - name: Install the locked dependencies (Nuitka included)
         run: uv sync --locked
+
+      # Nuitka's own cache: the MSVC object cache (clcache), its UPX-compressed DLLs and its
+      # downloads. Without it every build compiles all ~650 C files from nothing (15 of the build's
+      # 18 minutes); with it only the modules a commit changed are compiled again. Entries are
+      # looked up by the content of what is compiled, so a stale one is a miss, never a wrong
+      # object. One cache per branch (master never takes dev's) and per uv.lock (new libraries or
+      # a new Nuitka start a fresh one, which keeps it from growing for ever); it is saved only
+      # when the whole build passed.
+      - name: Restore Nuitka's compile cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/AppData/Local/Nuitka/Nuitka/Cache
+          key: nuitka-${{ runner.os }}-py3.14-${{ github.ref_name }}-${{ hashFiles('uv.lock') }}-${{ github.sha }}
+          restore-keys: |
+            nuitka-${{ runner.os }}-py3.14-${{ github.ref_name }}-${{ hashFiles('uv.lock') }}-
 
       - name: Set up a JDK for the agent
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0

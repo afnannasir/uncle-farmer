@@ -1,6 +1,18 @@
 # What's new
 
-## Next
+## 0.7.0
+
+**Updates and the agent**
+
+- Uncle Farmer looks for new versions again (at start, and Help, Check for updates), on the
+  project's GitHub releases. It had stopped looking when the old address went away.
+- An update no longer stops at "close every Mist World window first": it asks, and on OK closes
+  the games itself, then updates. Start the games again afterwards.
+- When the agent needs installing again, Uncle Farmer says why when it starts. That happens when
+  another tool removed it from the game's settings, when the game loads another Uncle Farmer's
+  agent, or when an open game started without this version's agent. Press OK: every Mist World
+  window closes (through its own close button, or ended after 20 seconds) and the agent is
+  installed again. Settings, Install offers the same for games that are open.
 
 **Voice messages**
 
@@ -74,13 +86,21 @@
 **For developers**
 
 - CI/CD: `master` (production) and `dev` (development). Every pull request into either and every
-  push to them runs the Python checks on Windows (Python 3.11 and 3.14) and the Java agent's build
-  and tests; a push to `dev` or `master` is then built into the Windows app, only once every check
+  push to them runs, at the same time and each once, the static checks (ruff, pyright), the tests
+  with their coverage floors, pip-audit of `uv.lock` and the Java agent's build and tests, on
+  Windows with Python 3.14; a push to `dev` or `master` is then built into the Windows app, only once every check
   passed, and uploaded as an Actions artifact (`UncleFarmer-dev-<commit>` or
   `UncleFarmer-master-<version>-<commit>`) with its SHA-256 and `build-info.json`. See
   CONTRIBUTING.md, "CI/CD".
 - The built app checks itself without a window (`UncleFarmer.exe --self-test report.json`), and a
   build stops if its folder or zip lacks anything it must hold.
+- Python 3.14 is the only supported Python (`requires-python = ">=3.14"`); 3.11 is no longer
+  tested. The build keeps Nuitka's compile cache between runs, so a build that changed a few modules
+  compiles only those instead of all of them.
+- `requirements.txt` and `requirements-dev.txt` for running from source with pip: the exact pins
+  of `uv.lock`, with hashes, made by `export_requirements.py`; a test fails when they fall behind
+  the lock.
+- `check.py --only ruff,pyright` (or `--only pytest`, `--only agent`) runs just those steps.
 - `build_exe.py` no longer falls back on a UPX folder on one PC: UPX comes from `UPX_DIR` or PATH,
   else the build stops and says so.
 

@@ -840,11 +840,13 @@ msgstr ""
 msgid "Close a dialog"
 msgstr ""
 
-msgid ""
-"Close every Mist World window first: an open game keeps the bot's agent file in use, so it can't be updated."
+msgid "Close the game"
 msgstr ""
 
-msgid "Close the game"
+msgid "Closing every Mist World window for the update..."
+msgstr ""
+
+msgid "Closing every Mist World window to reinstall the agent..."
 msgstr ""
 
 msgid "Closing the game."
@@ -1518,7 +1520,13 @@ msgid ""
 "Installed. If the game was running when you installed it, restart the game."
 msgstr ""
 
-msgid "Installed. Restart Mist World to load it."
+msgid "Installed. Start Mist World: it loads the agent as it starts."
+msgstr ""
+
+msgid ""
+"Installed. The open games load the agent only when they start again.\n"
+"\n"
+"Press OK to close every Mist World window ({n} open) now, then start Mist World again."
 msgstr ""
 
 msgid "International"
@@ -1737,6 +1745,24 @@ msgid "Mist World isn't in this folder. Choose the folder that has mw.exe."
 msgstr ""
 
 msgid "Mist World isn't running. Start it, or use Browse."
+msgstr ""
+
+msgid ""
+"Mist World loads another Uncle Farmer's agent (an older copy, or this one before it moved)"
+msgstr ""
+
+msgid "Mist World windows that didn't close: {n}. Close them yourself."
+msgstr ""
+
+msgid "Mist World windows that didn't close: {n}. Close them, then update."
+msgstr ""
+
+msgid ""
+"Mist World windows that didn't close: {n}. The agent wasn't reinstalled: close them, then use File, Settings, Install."
+msgstr ""
+
+msgid ""
+"Mist World's settings don't load it (it was never installed there, or another tool removed it)"
 msgstr ""
 
 msgid ""
@@ -2241,6 +2267,9 @@ msgstr ""
 msgid "Refill when fewer &than:"
 msgstr ""
 
+msgid "Reinstall the agent"
+msgstr ""
+
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
 msgstr ""
@@ -2692,6 +2721,10 @@ msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr ""
 
 msgid ""
+"The agent is reinstalled. Start Mist World again: it loads the agent as it starts."
+msgstr ""
+
+msgid ""
 "The agent isn't installed in the game yet, and without it a second game closes right after it starts. Open Settings now?"
 msgstr ""
 
@@ -2789,6 +2822,10 @@ msgstr ""
 msgid "The game's skill texts don't describe this one."
 msgstr ""
 
+msgid ""
+"The games are closed. Start Mist World again: it loads the agent as it starts."
+msgstr ""
+
 msgid "The games were already muted."
 msgstr ""
 
@@ -2865,6 +2902,12 @@ msgid "The update couldn't start: {why}"
 msgstr ""
 
 msgid "The update didn't download: {why}"
+msgstr ""
+
+msgid ""
+"The update reinstalls Uncle Farmer's agent, which the open games have loaded, so every Mist World window must close first.\n"
+"\n"
+"Press OK to close them ({n} open) and update. Start Mist World again after the update."
 msgstr ""
 
 msgid ""
@@ -3005,6 +3048,22 @@ msgid ""
 msgstr ""
 
 msgid "Uncle Farmer {v} is the newest version."
+msgstr ""
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}.\n"
+"\n"
+"Press OK to close every Mist World window ({n} open) and reinstall it. A game loads the agent only as it starts, so start Mist World again afterwards."
+msgstr ""
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}.\n"
+"\n"
+"Press OK to reinstall it."
+msgstr ""
+
+msgid ""
+"Uncle Farmer's agent needs to be reinstalled: {why}. Stop every running bot, then use File, Settings, Install."
 msgstr ""
 
 msgid "Unmute every &game"
@@ -4200,6 +4259,9 @@ msgid "only {names}"
 msgstr ""
 
 msgid "only {n} {kind} potions left"
+msgstr ""
+
+msgid "open games started without this version's agent: {n}"
 msgstr ""
 
 msgid "ore"

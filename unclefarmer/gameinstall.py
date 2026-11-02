@@ -8,6 +8,10 @@ One line there loads our agent:
 Nothing else in the game folder is changed. The original file is kept once as
 mw.exe.vmoptions.bak-unclefarmer. Some other tools (mwMod) delete every -javaagent line when they start
 the game; if the agent stops answering after using one, install it again.
+
+A game loads the agent only as it starts, so a reinstall (the line gone or pointing at another
+Uncle Farmer, or a game running without this copy's agent) closes the open games first:
+stale_games() finds them, close_games() closes them.
 """
 
 from __future__ import annotations
@@ -16,14 +20,20 @@ import ctypes
 import ctypes.wintypes as wt
 import os
 import shutil
+from collections.abc import Callable
 
 from . import paths
+from .clock import CLOCK, Clock
 
 VMOPTIONS = "mw.exe.vmoptions"
 MARKER = "unclefarmer-agent.jar"
 # Lines an older build added (MW Farmer, before the rename): replaced on install and removed on
 # uninstall, so the game never loads two copies of the agent.
 LEGACY = ("mwfarmer-agent.jar",)
+# The agent version this copy ships (StateServer.VERSION in agent/src; a test keeps them equal).
+# A running game whose agent answers an older one loaded it before this copy was installed.
+AGENT_VERSION = 52
+CLOSE_WAIT = 20.0       # seconds a game gets to close through its own close button before it is ended
 
 
 def _ours(line: str) -> bool:
@@ -41,6 +51,16 @@ def is_game_folder(folder: str | None) -> bool:
 def running_game_folders() -> list[str]:
     """Folders of every running mw.exe (so the user rarely has to browse)."""
     out: list[str] = []
+    for _pid, folder in running_games():
+        if folder not in out:
+            out.append(folder)
+    return out
+
+
+def running_games() -> list[tuple[int, str]]:
+    """(pid, folder) of every running mw.exe. The game's Java runs inside mw.exe, so the pid is
+    also the one its agent writes in agent.<pid>.port."""
+    out: list[tuple[int, str]] = []
     psapi, kernel = ctypes.windll.psapi, ctypes.windll.kernel32
     pids = (wt.DWORD * 4096)()
     got = wt.DWORD()
@@ -55,12 +75,85 @@ def running_game_folders() -> list[str]:
             size = wt.DWORD(1024)
             if kernel.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(size)):
                 if os.path.basename(buf.value).lower() == "mw.exe":
-                    folder = os.path.dirname(buf.value)
-                    if folder not in out:
-                        out.append(folder)
+                    out.append((int(pid), os.path.dirname(buf.value)))
         finally:
             kernel.CloseHandle(h)
     return out
+
+
+def _agent_version(pid: int) -> int:
+    """The version the game's agent answers; 0 when it doesn't answer."""
+    from .link import AgentError, AgentLink     # link reads settings; this module stays light
+    try:
+        with AgentLink(pid=pid, timeout=3) as a:
+            return int(a.send("version").split()[1])
+    except (AgentError, OSError, ValueError, IndexError):
+        return 0
+
+
+def stale_games() -> list[tuple[int, int]]:
+    """(pid, agent version) of every running game without this copy's agent loaded: version 0 for
+    one with no agent at all (started before the install, or after a tool removed the line), an
+    older number for one that loaded an older Uncle Farmer's agent."""
+    from .link import agents
+    loaded = {pid for _port, pid, _secret in agents()}
+    out: list[tuple[int, int]] = []
+    for pid, _folder in running_games():
+        version = _agent_version(pid) if pid in loaded else 0
+        if version < AGENT_VERSION:
+            out.append((pid, version))
+    return out
+
+
+def _alive(pid: int) -> bool:
+    from .link import _alive  # pyright: ignore[reportPrivateUsage]
+    return _alive(pid)
+
+
+def _end(pid: int) -> None:
+    """End the game's process (one that didn't close through its own close button)."""
+    kernel = ctypes.windll.kernel32
+    h = kernel.OpenProcess(0x0001, False, pid)      # PROCESS_TERMINATE
+    if h:
+        try:
+            kernel.TerminateProcess(h, 1)
+        finally:
+            kernel.CloseHandle(h)
+
+
+def _ask_to_close(pid: int) -> bool:
+    """The game closes as its window's close button does (agent 15's closegame). False when its
+    agent can't be asked."""
+    from .link import AgentError, AgentLink
+    try:
+        with AgentLink(pid=pid, timeout=3) as a:
+            a.send("arm")
+            return a.send("closegame") == "closing"
+    except (AgentError, OSError):
+        return False
+
+
+def close_games(pids: list[int], wait: float = CLOSE_WAIT, clock: Clock = CLOCK,
+                alive: Callable[[int], bool] = _alive) -> list[int]:
+    """Close every game in pids: through its own close button where its agent answers, then
+    whatever is still open after `wait` seconds (or has no agent to ask) is ended. Returns the
+    pids still running after that (normally none)."""
+    asked = [pid for pid in pids if alive(pid) and _ask_to_close(pid)]
+    for pid in pids:
+        if pid not in asked and alive(pid):
+            _end(pid)
+    until = clock.time() + wait
+    while any(alive(pid) for pid in asked) and clock.time() < until:
+        clock.sleep(0.5)
+    for pid in asked:
+        if alive(pid):
+            _end(pid)
+    left = [pid for pid in pids if alive(pid)]
+    until = clock.time() + 5.0              # an ended process lets go of its files a moment later
+    while left and clock.time() < until:
+        clock.sleep(0.25)
+        left = [pid for pid in left if alive(pid)]
+    return left
 
 
 def _read_lines(folder: str) -> tuple[str, list[str], str]:
