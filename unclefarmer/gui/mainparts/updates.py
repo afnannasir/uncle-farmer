@@ -6,7 +6,7 @@ import threading
 
 import wx
 
-from ... import __version__, settings, updater
+from ... import __version__, applog, settings, updater
 from ...i18n import _
 from .. import agentfix
 from ..common import ask, ask_ok, error, info, save_file
@@ -21,17 +21,25 @@ class UpdatesMixin(FrameParts):
         if result is None:
             updater.clean()
         elif result.get("ok"):
+            applog.bootup.note("the update to %s finished" % __version__)
             info(self, _("Uncle Farmer is updated to {v}.", v=__version__))
         else:
+            applog.bootup.note("the update to %s didn't finish: %s" % (result.get("version"), result.get("error")),
+                               "WARNING")
             error(self, _("The update to {v} didn't finish: {why}\nUncle Farmer {cur} still works. The details are "
                           "in {log}.", v=result.get("version"), why=result.get("error"), cur=__version__,
                           log=updater.LOG))
-        if updater.frozen() and self.s.get("check_updates", True):
+        if not updater.frozen():
+            applog.bootup.note("no update check: this copy runs from source")
+        elif not self.s.get("check_updates", True):
+            applog.bootup.note("no update check: it is off in Settings")
+        else:
             def look() -> None:
                 rel = updater.check()
                 if rel and rel["version"] != self.s.get("skip_version"):
                     wx.CallAfter(self.offer_update, rel, True)
             threading.Thread(target=look, daemon=True).start()
+            applog.bootup.note("update check running in the background")
 
     def check_updates(self) -> None:
         """Help, Check for updates. The request goes to a worker: GitHub can take its time and the
@@ -176,4 +184,5 @@ class UpdatesMixin(FrameParts):
         except OSError as e:
             error(self, _("The update couldn't start: {why}", why=e))
             return
+        self.close_reason = "the update to %s is ready: the updater takes over" % rel["version"]
         self.Close()

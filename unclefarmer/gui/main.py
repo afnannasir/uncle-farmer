@@ -13,7 +13,7 @@ import os
 
 import wx
 
-from .. import __version__, messages, paths, settings
+from .. import __version__, applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, group, guide_text, info, labeled, show_text, tabs
@@ -30,6 +30,7 @@ RESULTS_HOTKEY_ID = 0xBF02
 VK_PAUSE = 0x13
 MOD_SHIFT = 0x0004
 MOD_NOREPEAT = 0x4000
+BOT_STOP_WAIT = 5.0         # seconds each running bot gets to end when the app closes
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
@@ -58,6 +59,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.snap_busy = False
         self.scanning = set()    # characters being scanned on a worker thread
         self.updating = False
+        self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
+        self.hotkeys: list[int] = []     # the global hotkeys this window holds
 
         panel = wx.Panel(self)
         root = wx.BoxSizer(wx.VERTICAL)
@@ -74,12 +77,19 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, lambda e: self.poll(), self.timer)
         self.timer.Start(3000)
+        applog.bootup.note("game list timer started (every 3 s)")
         if self.RegisterHotKey(HOTKEY_ID, MOD_NOREPEAT, VK_PAUSE):
+            self.hotkeys.append(HOTKEY_ID)
             self.Bind(wx.EVT_HOTKEY, lambda e: self.toggle(), id=HOTKEY_ID)
         else:
+            applog.bootup.problem("the Pause key is taken by another program: the Pause shortcut won't work")
             self._append(_("Another program is using the Pause key; the Pause shortcut won't work."), False)
         if self.RegisterHotKey(RESULTS_HOTKEY_ID, MOD_SHIFT | MOD_NOREPEAT, VK_PAUSE):
+            self.hotkeys.append(RESULTS_HOTKEY_ID)
             self.Bind(wx.EVT_HOTKEY, lambda e: self.speak_results(front=True), id=RESULTS_HOTKEY_ID)
+        else:
+            applog.bootup.problem("Shift+Pause is taken by another program: it won't speak the results")
+        applog.bootup.note("hotkeys held: %d of 2" % len(self.hotkeys))
 
         self.fill_runs()
         self.refresh_games()
@@ -238,21 +248,40 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
 
     def on_close(self, evt: wx.CloseEvent) -> None:
+        """Stop what runs, let go of the hotkeys and the timer, and go. Each step is in
+        teardown.log; one that fails is written down there and the others still happen, so the
+        window always closes. __main__ writes the END once the main loop is over."""
+        down = applog.teardown
+        down.begin("close requested (%s)" % (self.close_reason or (
+            "the window" if evt.CanVeto() else "Windows is ending the session")))
         if self.runs:
             if not ask(self, _("A bot is running. Stop it and quit?")):
                 evt.Veto()
+                down.end("cancelled: the player kept the bots running")
                 return
-            for run in list(self.runs.values()):
-                run.stop()
-            for run in list(self.runs.values()):
-                run.join(5)
-        for m in self.messengers.values():
-            m.stop()
+            runs = list(self.runs.values())
+            with down.step("ask %d bot%s to stop" % (len(runs), "" if len(runs) == 1 else "s"), must=False):
+                for run in runs:
+                    run.stop()
+            with down.step("wait for the bots to end", must=False):
+                for run in runs:
+                    run.join(BOT_STOP_WAIT)
+                    if run.is_alive():
+                        down.problem("the bot of game %d still runs after %g s" % (run.pid, BOT_STOP_WAIT))
+        with down.step("ask the private messages and chat readers to stop", must=False):
+            for m in self.messengers.values():
+                m.stop()
+            for f in self.chats.values():
+                f.stop()
         self.destroyed = True         # pending CallLater/CallAfter work must not touch the window
-        self.UnregisterHotKey(HOTKEY_ID)
-        self.UnregisterHotKey(RESULTS_HOTKEY_ID)
-        self.timer.Stop()
-        self.Destroy()
+        with down.step("release the hotkeys", must=False):
+            for hotkey in self.hotkeys:
+                if not self.UnregisterHotKey(hotkey):
+                    down.problem("Windows didn't take back hotkey %#x" % hotkey)
+        with down.step("stop the game list timer", must=False):
+            self.timer.Stop()
+        with down.step("destroy the window", must=False):
+            self.Destroy()
 
 
 def _logs() -> str:
