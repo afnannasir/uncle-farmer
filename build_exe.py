@@ -40,7 +40,7 @@ REQUIRED = ("UncleFarmer.exe", "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll
 
 def upx_dir() -> str:
     """The folder holding upx.exe: UPX_DIR, else the upx on PATH. It used to fall back on a folder
-    on the developer's own drive (F:\\upx-...), which no other PC (and no CI runner) has."""
+    on one developer's own drive, which no other PC (and no CI runner) has."""
     exe = "upx.exe" if os.name == "nt" else "upx"
     given = os.environ.get("UPX_DIR")
     if given:
