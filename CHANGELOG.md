@@ -85,6 +85,9 @@
 - Python 3.14 is the only supported Python (`requires-python = ">=3.14"`); 3.11 is no longer
   tested. The build keeps Nuitka's compile cache between runs, so a build that changed a few modules
   compiles only those instead of all of them.
+- `requirements.txt` and `requirements-dev.txt` for running from source with pip: the exact pins
+  of `uv.lock`, with hashes, made by `export_requirements.py`; a test fails when they fall behind
+  the lock.
 - `check.py --only ruff,pyright` (or `--only pytest`, `--only agent`) runs just those steps.
 - `build_exe.py` no longer falls back on a UPX folder on one PC: UPX comes from `UPX_DIR` or PATH,
   else the build stops and says so.

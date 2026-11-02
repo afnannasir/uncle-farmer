@@ -98,7 +98,13 @@ uv add <package>                 # a package the app needs
 uv add --group dev <package>     # a tool for checking it
 uv lock --upgrade                # move every pin to the newest allowed version
 uv lock --upgrade-package numpy  # just one
+uv run python export_requirements.py   # then refresh the pip files from the new lock
 ```
+
+`requirements.txt` (what the app runs on) and `requirements-dev.txt` (that, the checking tools and
+Nuitka) are the lock's pins, with hashes, for people who use pip instead of uv. They are made by
+`export_requirements.py`, never edited by hand; `tests/test_requirements.py` fails while either
+differs from `uv.lock`, and `release.py` exports them again when it sets a version.
 
 To check the pinned versions for known vulnerabilities, the way CI does:
 

@@ -1,0 +1,72 @@
+# Uncle Farmer's packages to run from source, pinned, for Python 3.14 on Windows:
+#     py -3.14 -m venv .venv
+#     .venv\Scripts\pip install -r requirements.txt
+# Made from uv.lock by export_requirements.py: don't edit it, run that after `uv lock`.
+annotated-types==0.8.0 ; sys_platform == 'win32' \
+    --hash=sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7 \
+    --hash=sha256:f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0
+    # via pydantic
+numpy==2.5.4 ; sys_platform == 'win32' \
+    --hash=sha256:067374eb538c34c745436365cf7b0112595c1d326f21ce4ff340f61230239fbb \
+    --hash=sha256:298eca75243f2cbbfdb460560b9fb2a1792a33cf2ab4286efd43d92e8d3df508 \
+    --hash=sha256:2ca144f15135b6212a5c47b1e2aeca6e412f102f95a2d5d88d8aec77eb255de3 \
+    --hash=sha256:332f3378fe077dd850e677ec01bdcc4f22368fb5d50ef10b2c79230b1bf5a592 \
+    --hash=sha256:38f47be9f74ab870d2633b5456ae519c43758a8d1fd05342f0ce4ecc034396ee \
+    --hash=sha256:468397ba3c64427474706e5c9123fe266395496714dc684294eac75cd4930d1e \
+    --hash=sha256:64d1c8ac28a4077cf987e0a71a7a0ef7e2df70722f07f0baa42dbb7eb6938647 \
+    --hash=sha256:7a14a461d9340f1b46b8648578aed9cdb8b3b018a8fac6c1dde2c9192a01a87f \
+    --hash=sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a \
+    --hash=sha256:ad62a416ddcf863bf44bba76fbf6b53366ab0692e294f51cae4b5fbe0d246788 \
+    --hash=sha256:cfd73180400042a7c532d30c5e287bdd03c59ff9ee1b4c0316af0539e29dfe23 \
+    --hash=sha256:d4cccbbc78717966f764cd3af4fb70276fa01fc7a2688af11c78901fa5c04f05 \
+    --hash=sha256:e94aef2c639da4a960ad0db8e06471208d8589974953d78b61d345b4eb99e394
+    # via
+    #   unclefarmer
+    #   wxpython
+orjson==3.13.0 ; sys_platform == 'win32' \
+    --hash=sha256:6adcaa85d79977659a448b4123a88eb33511a11ed2db243535ad7ea88a6668e0 \
+    --hash=sha256:7804dd1d6161da0e53b284c2aebf20f23e78eaac617300803e1467d1828d987f \
+    --hash=sha256:83705c12b4afde10c62a5dd3fe6fdb21b7900bd0dcd5af1c85612ae94d0ee590 \
+    --hash=sha256:d1de5eb04485110c5da4c657e49168995d55e076b1ce60f1a042e254f4186c4f \
+    --hash=sha256:f5c05a8fee59309f537590a1ff12d3c1009c485e96a50a9ac60dd085c09d0fc0
+    # via unclefarmer
+pydantic==2.14.1 ; sys_platform == 'win32' \
+    --hash=sha256:9195d967ec791692a04438115466764fb8b9a27b31f14a760437694f40d6b454 \
+    --hash=sha256:94f478203dd03404682a1ada216965651dd74b1d2d5ffd62e00e0837caab5c26
+    # via unclefarmer
+pydantic-core==2.50.1 ; sys_platform == 'win32' \
+    --hash=sha256:1c8632d4ac04e6f91128fca584b3a8a507d81604c24eeaaad00d4be42765c32b \
+    --hash=sha256:3fde4fdc6487a58d944ca87cf5adc95d5f266e872c19599f5f4c0a8a1b1f9f9f \
+    --hash=sha256:94845ff54dc5193f228cab81b2662a04bfbb892e95bdc15edf7399000ce57d54 \
+    --hash=sha256:983a662de2571cb2502fc8ff47b6770b03d025d2eb314c92f77b3f07c74720ed \
+    --hash=sha256:99ba9bc2b8062ea0c326a990f7f00e6530c23579de66dd246e72c4cafef950a5 \
+    --hash=sha256:9d1bed94af6a63835461f3cf7502058eb166c58c4778e11d0f433cfb1bd69e19 \
+    --hash=sha256:bc94f474417604bd383d2cd445d071b07dd55fedceed3ce33407bf1fcc107290 \
+    --hash=sha256:bed5163e03b98bc1fa2eb05d74c63d9c5c95d8ed6254985481640fbf5e237dea \
+    --hash=sha256:c3ede305158e75510be50869b319550ab072008c13d64d4ab1e094fb286b6f44 \
+    --hash=sha256:c8dce1f1e0e5358b682a6ad3fa5e31b31d4560997b8e61417e9217c8d60f8a0c \
+    --hash=sha256:ceff0acc940be2715bd6ad17b24c0e5304abf44f6efd0f81ee8499e640f9dc86 \
+    --hash=sha256:cf356f70551d40374eaffb1aa63f1eb6d2006681cbd7a9faea173ce0f4dd7cd2 \
+    --hash=sha256:d32f3acc081cc3923386d88f422cde8892335e95f034e0104bb4cf9310d9915f \
+    --hash=sha256:e50d7b94baac6c7d09927fa5ca5800a0c7ee5015c7fcff65beb3a1931b5a6e09
+    # via pydantic
+typing-extensions==4.16.0 ; sys_platform == 'win32' \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
+    --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
+    # via
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.4 ; sys_platform == 'win32' \
+    --hash=sha256:547274fa6b0a561ccf549cc9524b999a578e737d015d8709d021f9d0d13bea47 \
+    --hash=sha256:65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147
+    # via pydantic
+wxpython==4.3.2 ; sys_platform == 'win32' \
+    --hash=sha256:03c20c625acd9bc97f1fbe12db8ba74c35a20306c1ae04480d4c4c2af62ca499 \
+    --hash=sha256:5531baa9344488a15081a6b2eaeb67af047d12a814cf657c082360ccc37204fb \
+    --hash=sha256:71db87ca19d0c629f407431387044d56d227d62335d21f9c1ecd38a1000ebda9 \
+    --hash=sha256:7d9be0748e5c10fae1db10ee910fa594e6d5db1fac406c008f566e13ea89e92c \
+    --hash=sha256:8ef1bca30118e11926f3e19d5fab9f9720b795bf674cf5482989bca5399fc736 \
+    --hash=sha256:e9c5bedb76ca280cfc568d657e0daadfbb9a0151022db5e430bcddd291f39069 \
+    --hash=sha256:ee020117de744d57c125cad214debfc1fe91fec659b9a259676a948c004d1637
+    # via unclefarmer
