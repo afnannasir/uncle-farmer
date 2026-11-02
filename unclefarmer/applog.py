@@ -1,4 +1,5 @@
-"""All of the app's log files, in one place: the day's run log and field log, errors.log and dialogs.log.
+"""All of the app's log files, in one place: the day's run log and field log, errors.log and
+dialogs.log, and how each start and close of the app went (bootup.log, teardown.log: Lifecycle).
 
 The level (Settings, Logging) decides which lines are written; the size and number of old files
 decide when each file is rotated. Every write is best-effort: a full disk or a locked file must
@@ -8,13 +9,15 @@ written goes to stderr instead - a crash must never be lost.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import re
 import sys
 import threading
 import time
 import traceback
-from collections.abc import Mapping
+from collections.abc import Callable, Generator, Mapping
 
 from . import paths
 from .errors import carry_on
@@ -147,3 +150,143 @@ def dialog(text: str) -> OSError | None:
     if not _enabled("INFO"):
         return None
     return _append("dialog log", os.path.join(paths.LOGS, "dialogs.log"), text)
+
+
+def _took(seconds: float) -> str:
+    return "%d ms" % (seconds * 1000) if seconds < 1 else "%.1f s" % seconds
+
+
+def _trace(exc: BaseException) -> str:
+    return "".join(traceback.format_exception(exc))
+
+
+_MARK = re.compile(r"\[(\d+)\] (?:(BEGIN|END) |(.+): (started|done|finished with problems|FAILED))")
+
+
+class Lifecycle:
+    """logs/bootup.log or logs/teardown.log: one block per start (or close) of the app. BEGIN, then
+    each stage as it starts and as it ends - done, or FAILED with its traceback - and an END line
+    that says how the whole went: it is never "ready" or "closed" with a failed stage behind it.
+
+    Written whatever the level, as errors.log is: a start that dies before the window opens has
+    nowhere else to say why. Every line carries the process id, so a second copy started
+    meanwhile can't be taken for this one. Writing is best-effort like every log here."""
+
+    def __init__(self, name: str, what: str, clock: Callable[[], float] = time.monotonic) -> None:
+        self.name, self.what, self.clock = name, what, clock     # "bootup.log", "startup"
+        self.open = False                # between BEGIN and END
+        self.problems: list[str] = []    # what went wrong this time, for the END line
+        self.failed: str | None = None   # the stage whose failure ended it
+        self.stage: str | None = None    # the stage under way
+        self._began = 0.0
+        self._told: BaseException | None = None     # the exception a FAILED line already showed
+
+    def path(self) -> str:
+        return os.path.join(paths.LOGS, self.name)
+
+    def _line(self, level: str, text: str, exc: BaseException | None = None) -> None:
+        try:
+            now = time.time()
+            out = "%s.%03d  %-7s [%d] %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now)),
+                                               int(now % 1 * 1000), level, os.getpid(), text)
+            if exc is not None:
+                out += "".join("    %s\n" % row for row in _trace(exc).rstrip("\n").split("\n"))
+            _append(self.what + " log", self.path(), out, fallback=out if exc is not None else "")
+        except Exception as e:           # a log line must never be what stops a start or a close
+            _complain(self.what + " log", e)
+
+    def begin(self, text: str) -> None:
+        """BEGIN a new block, first saying so if the last one in the file never reached its END."""
+        self._unfinished()
+        self.open, self.problems, self.failed, self.stage = True, [], None, None
+        self._began, self._told = self.clock(), None
+        self._line("INFO", "BEGIN %s: %s" % (self.what, text))
+
+    def _unfinished(self) -> None:
+        """A block without an END: that copy died or hung there (or is still open - a second copy
+        started while the first was starting). Only the file's last 64 KB are read."""
+        try:
+            with open(self.path(), "rb") as f:
+                f.seek(0, os.SEEK_END)
+                f.seek(max(f.tell() - 65536, 0))
+                tail = f.read().decode("utf-8", "replace")
+        except OSError:
+            return                       # no file yet: nothing came before
+        blocks: dict[str, tuple[str | None, str | None]] = {}    # pid -> (stage under way, last done)
+        for row in tail.splitlines():
+            m = _MARK.search(row)
+            if not m:
+                continue
+            pid, mark, stage, how = m.groups()
+            if mark == "BEGIN":
+                blocks[pid] = (None, None)
+            elif mark == "END":
+                blocks.pop(pid, None)
+            elif pid in blocks:
+                blocks[pid] = (stage, None) if how == "started" else (None, stage)
+        for pid, (during, after) in blocks.items():
+            where = "during '%s'" % during if during else "after '%s'" % after if after else "at once"
+            self._line("WARNING", "the %s of pid %s before this one has no END: still open, or it stopped "
+                                  "%s" % (self.what, pid, where))
+
+    def note(self, text: str, level: str = "INFO") -> None:
+        self._line(level, text)
+
+    def problem(self, text: str) -> None:
+        """Something went wrong that doesn't stop this start or close: a WARNING, and the END says so."""
+        self.problems.append(text)
+        self._line("WARNING", text)
+
+    @contextlib.contextmanager
+    def step(self, name: str, must: bool = True) -> Generator[None]:
+        """One stage: "started", then "done", or "FAILED" with its traceback. A stage that must work
+        raises its error on (the start can't go on); one that needn't is written down and the next
+        stage goes ahead (a close must close)."""
+        self.stage = name
+        before = len(self.problems)
+        self._line("INFO", "%s: started" % name)
+        began = self.clock()
+        try:
+            yield
+        except BaseException as e:
+            self._line("ERROR", "%s: FAILED after %s: %s: %s" % (name, _took(self.clock() - began),
+                                                              type(e).__name__, e), e)
+            self._told = e
+            self.problems.append(name)
+            if must or not isinstance(e, Exception):     # Ctrl+C and exit are never held back
+                self.failed = name
+                raise
+        else:
+            if len(self.problems) > before:
+                self._line("WARNING", "%s: finished with problems (%s)" % (name, _took(self.clock() - began)))
+            else:
+                self._line("INFO", "%s: done (%s)" % (name, _took(self.clock() - began)))
+        finally:
+            self.stage = None
+
+    def crashed(self, exc: BaseException) -> None:
+        """An error ended it: its traceback (unless a FAILED line already has it), then END."""
+        if exc is not self._told:
+            self.failed = self.failed or self.stage or "outside any stage"
+            self._line("ERROR", "unexpected error during '%s': %s: %s" % (self.failed, type(exc).__name__, exc), exc)
+        self.failed = self.failed or "outside any stage"
+        self.end("")
+
+    def end(self, outcome: str) -> bool:
+        """The END line: FAILED at the stage that stopped it, else the outcome, with the problems
+        met on the way. True only when nothing went wrong."""
+        took = _took(self.clock() - self._began)
+        if self.failed:
+            self._line("ERROR", "END %s: FAILED at '%s' after %s" % (self.what, self.failed, took))
+        elif self.problems:
+            self._line("WARNING", "END %s: %s in %s, with %d problem%s: %s" % (
+                self.what, outcome, took, len(self.problems), "" if len(self.problems) == 1 else "s",
+                "; ".join(self.problems)))
+        else:
+            self._line("INFO", "END %s: %s in %s" % (self.what, outcome, took))
+        self.open = False
+        return not self.failed and not self.problems
+
+
+bootup = Lifecycle("bootup.log", "startup")
+teardown = Lifecycle("teardown.log", "shutdown")
