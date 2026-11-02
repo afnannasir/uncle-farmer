@@ -1,6 +1,6 @@
 # What's new
 
-## Next
+## 0.7.1
 
 **Logs**
 
