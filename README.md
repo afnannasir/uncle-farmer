@@ -135,6 +135,18 @@ uv run UncleFarmer.pyw
 `uv sync` installs the exact versions pinned in `uv.lock` into `.venv`: the app's packages, the
 checking tools and Nuitka. Every dependency is listed in `pyproject.toml`.
 
+Without uv, pip installs the same pinned versions (with Python 3.14 from python.org):
+
+```
+py -3.14 -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python agent/build_agent.py
+.venv\Scripts\python UncleFarmer.pyw
+```
+
+`requirements.txt` is what the app needs to run; `requirements-dev.txt` adds the checking tools
+(`python check.py`) and Nuitka (`python build_exe.py`).
+
 `uv run python build_exe.py` builds the shareable folder `dist\Uncle Farmer` with Nuitka; it also
 needs UPX (`winget install UPX.UPX`), found in the folder `UPX_DIR` names, else on PATH.
 `uv run python build_native.py` builds the optional C module that makes map searches 10-24 times

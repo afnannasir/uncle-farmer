@@ -28,6 +28,7 @@ from dataclasses import dataclass
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
+import export_requirements  # noqa: E402
 from unclefarmer import updater  # noqa: E402
 
 INIT = os.path.join(ROOT, "unclefarmer", "__init__.py")
@@ -47,11 +48,13 @@ def _replace_once(path: str, pattern: str, new: str) -> None:
 
 def set_version(v: str) -> None:
     """The version in unclefarmer/__init__.py and pyproject.toml, and uv.lock to match: the lock
-    records the project's version, and CI's `uv sync --locked` fails when the two disagree."""
+    records the project's version, and CI's `uv sync --locked` fails when the two disagree. The
+    pip files are exported again from that lock, so a release never ships stale ones."""
     _replace_once(INIT, r'__version__ = "[^"]*"', '__version__ = "%s"' % v)
     _replace_once(PYPROJECT, r'^version = "[^"]*"', 'version = "%s"' % v)
     if subprocess.call(["uv", "lock"], cwd=ROOT) != 0:
         sys.exit("uv lock failed: uv.lock no longer matches pyproject.toml")
+    export_requirements.main()
 
 
 def make_zip(v: str, path: str | None = None) -> str:
