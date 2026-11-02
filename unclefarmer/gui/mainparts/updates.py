@@ -6,9 +6,10 @@ import threading
 
 import wx
 
-from ... import __version__, gameinstall, settings, updater
+from ... import __version__, settings, updater
 from ...i18n import _
-from ..common import ask, error, info, save_file
+from .. import agentfix
+from ..common import ask, ask_ok, error, info, save_file
 from .base import FrameParts
 
 
@@ -93,10 +94,30 @@ class UpdatesMixin(FrameParts):
         if self.runs:
             error(self, _("Stop every running bot first, then update."))
             return
-        if gameinstall.running_game_folders():
-            error(self, _("Close every Mist World window first: an open game keeps the bot's agent file in use, "
-                          "so it can't be updated."))
+        games = agentfix.running_pids()
+        if games:
+            # An open game holds the agent file, which the update replaces: the games close first.
+            if not ask_ok(self, _("The update reinstalls Uncle Farmer's agent, which the open games have loaded, "
+                                  "so every Mist World window must close first.\n\nPress OK to close them ({n} "
+                                  "open) and update. Start Mist World again after the update.", n=len(games)),
+                          _("Update")):
+                return
+            self.updating = True
+            self.say(_("Closing every Mist World window for the update..."))
+            agentfix.close_then(games, lambda left: self._games_closed_for_update(rel, left))
             return
+        self._download_update(rel)
+
+    def _games_closed_for_update(self, rel: updater.Release, left: list[int]) -> None:
+        self.updating = False
+        if self.destroyed:
+            return
+        if left:
+            error(self, _("Mist World windows that didn't close: {n}. Close them, then update.", n=len(left)))
+            return
+        self._download_update(rel)
+
+    def _download_update(self, rel: updater.Release) -> None:
         self.updating = True
         dlg = wx.ProgressDialog(_("Update"), _("Downloading Uncle Farmer {v}...", v=rel["version"]), 100, self,
                                 wx.PD_APP_MODAL | wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME)

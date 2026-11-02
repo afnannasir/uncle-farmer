@@ -103,8 +103,15 @@ The **Pause** key starts and stops the bot from anywhere, even inside the game; 
 speaks your results.
 
 New versions: Uncle Farmer offers them itself when it starts (or Help, Check for updates), and
-installs them for you. You can also unzip a newer release over the same folder. Your characters,
-plans and settings are never in a release, so they stay.
+installs them for you. If games are open, it asks first and closes them (an open game holds the
+agent file); start them again after the update. You can also unzip a newer release over the same
+folder with every game closed. Your characters, plans and settings are never in a release, so they
+stay.
+
+When the agent needs installing again (another tool removed it from the game, Uncle Farmer moved
+to another folder, or an open game started without this version's agent), Uncle Farmer says why
+when it starts. Press OK: it closes every Mist World window and reinstalls the agent; then start
+the game again.
 
 The full guide is in [docs/USER_GUIDE.md](docs/USER_GUIDE.md), as README.html in the program's
 folder, and in the program under Help (F1). More guides, also under Help:

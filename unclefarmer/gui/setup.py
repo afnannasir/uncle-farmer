@@ -9,7 +9,8 @@ import wx
 
 from .. import applog, daily, gameinstall, i18n, paths, updater
 from ..i18n import _
-from .common import Dialog, ask, buttons, enable_label, error, group, info, ok_cancel, page, tabs, modal
+from . import agentfix
+from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, ok_cancel, page, tabs, modal
 
 SPEECH_MODES = ("running", "always", "never")
 AFTER = ("nothing", "close_game", "shutdown")
@@ -171,7 +172,22 @@ class SetupDialog(Dialog):
             error(self, _("Couldn't change the game's settings: {err}", err=e))
             return
         self.refresh()
-        info(self, _("Installed. Restart Mist World to load it."))
+        games = agentfix.running_pids()
+        if not games:
+            info(self, _("Installed. Start Mist World: it loads the agent as it starts."))
+            return
+        if ask_ok(self, _("Installed. The open games load the agent only when they start again.\n\nPress OK to "
+                          "close every Mist World window ({n} open) now, then start Mist World again.", n=len(games)),
+                  _("Reinstall the agent")):
+            agentfix.close_then(games, self._games_closed)
+
+    def _games_closed(self, left: list[int]) -> None:
+        if not self:                     # the dialog closed meanwhile
+            return
+        if left:
+            error(self, _("Mist World windows that didn't close: {n}. Close them yourself.", n=len(left)))
+        else:
+            info(self, _("The games are closed. Start Mist World again: it loads the agent as it starts."))
 
     def on_remove(self, _evt: wx.Event) -> None:
         if not ask(self, _("Remove the agent from the game? The bot won't work until you install it again.")):

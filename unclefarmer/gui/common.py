@@ -335,6 +335,11 @@ def ask(parent: wx.Window | None, message: str, title: str | None = None) -> boo
     return wx.MessageBox(message, title or _("Uncle Farmer"), wx.YES_NO | wx.ICON_QUESTION, parent) == wx.YES
 
 
+def ask_ok(parent: wx.Window | None, message: str, title: str | None = None) -> bool:
+    """OK or Cancel: for a step the player starts by pressing OK (closing the games)."""
+    return wx.MessageBox(message, title or _("Uncle Farmer"), wx.OK | wx.CANCEL | wx.ICON_WARNING, parent) == wx.OK
+
+
 def guide_text(name: str) -> str:
     """A guide from the docs folder as plain text a screen reader reads well: no markdown marks,
     table rows as "name: meaning"."""
