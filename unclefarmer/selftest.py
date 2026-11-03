@@ -67,16 +67,11 @@ def _agent() -> str:
     return "%d bytes" % os.path.getsize(paths.AGENT_JAR)
 
 
-def frozen() -> bool:
-    """Running as the built exe (Nuitka standalone), not from the source."""
-    return bool(getattr(sys, "frozen", False)) or "__compiled__" in globals()
-
-
 def checks() -> list[tuple[str, Callable[[], str], bool]]:
     """(name, check, required). The agent jar is gitignored in a source checkout (build_agent.py
     makes it), so there it is reported but not required."""
     return [("imports", _imports, True), ("native routing", _native, True), ("data", _data, True),
-            ("translations", _translations, True), ("game agent", _agent, frozen())]
+            ("translations", _translations, True), ("game agent", _agent, paths.frozen())]
 
 
 def run(report_path: str) -> int:
@@ -91,7 +86,7 @@ def run(report_path: str) -> int:
                          "detail": "%s: %s" % (type(e).__name__, e),
                          "trace": traceback.format_exc(limit=3)})
             ok = ok and not required
-    report = {"ok": ok, "version": __version__, "frozen": frozen(), "app": paths.APP,
+    report = {"ok": ok, "version": __version__, "frozen": paths.frozen(), "app": paths.APP,
               "python": sys.version.split()[0], "checks": rows}
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=1)

@@ -463,8 +463,9 @@ def test_redirect_drops_the_token_off_github() -> None:
     assert same is not None and same.get_header("Authorization") == "Bearer t"
 
 
-def test_frozen_follows_sys(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(updater.sys, "frozen", True, raising=False)
+def test_frozen_is_the_shared_answer(monkeypatch: pytest.MonkeyPatch) -> None:
+    # tests/test_built_copy.py covers paths.frozen itself (Nuitka's marker, sys.frozen)
+    monkeypatch.setattr(updater.paths, "frozen", lambda: True)
     assert updater.frozen() is True
-    monkeypatch.delattr(updater.sys, "frozen", raising=False)
+    monkeypatch.setattr(updater.paths, "frozen", lambda: False)
     assert updater.frozen() is False
