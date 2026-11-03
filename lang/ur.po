@@ -3487,6 +3487,10 @@ msgstr "{npc} ke paas pohanch gaye"
 msgid "arrived on {map}"
 msgstr "{map} par pohanch gaye"
 
+msgid "arrived on {map} at {x},{y} - planning the way on from here"
+msgstr ""
+"{map} par {x},{y} par pohanch gaye - yahan se aage ka rasta bana rahe hain"
+
 msgid "at {time}"
 msgstr "{time} par"
 
@@ -3496,8 +3500,14 @@ msgstr "hamla"
 msgid "attack that heals you"
 msgstr "aisa hamla jo aap ko shifa de"
 
+msgid "attacked - staying on foot, no fusion beast until the fight is over"
+msgstr "hamla hua - paidal hi hain, larai khatam hone tak koi fusion beast nahi"
+
 msgid "attacked by {name}, fighting back"
 msgstr "{name} ne hamla kiya, jawabi hamla"
+
+msgid "attacked on the way - stopping to fight"
+msgstr "raste mein hamla hua - larne ke liye ruk rahe hain"
 
 msgid "attacks {how}"
 msgstr "hamla {how}"
@@ -3507,6 +3517,9 @@ msgstr "elites se bachte hue"
 
 msgid "back to {map}"
 msgstr "{map} par wapas"
+
+msgid "back to {map} after {why}"
+msgstr "{why} ke baad {map} par wapas"
 
 msgid "bad pattern: {why}"
 msgstr "ghalat pattern: {why}"
@@ -4174,10 +4187,6 @@ msgstr "game ka bag cursor kho gaya"
 msgid "low on {item}: {have} left"
 msgstr "{item} kam hai: {have} bache hain"
 
-msgid "low on {item}: {have} left (the bag manager says only to tell you)"
-msgstr ""
-"{item} kam hai: {have} bache hain (basta manager kehta hai sirf aap ko batana hai)"
-
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Level {lv} {kind} Enhance Crystals banaye"
 
@@ -4235,6 +4244,9 @@ msgstr "koi jawab nahi"
 
 msgid "no arnebia shared this time: {why}"
 msgstr "is baar arnebia share nahi hua: {why}"
+
+msgid "no arnebia to buy {item}"
+msgstr "{item} khareedne ke liye arnebia nahi"
 
 msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
@@ -4306,8 +4318,15 @@ msgstr "is level ke liye koi khali jagah wala kamra nahi"
 msgid "no secret room for this level has a free place"
 msgstr "is level ke kisi secret room mein khali jagah nahi"
 
+msgid "no shop in {map} sells {item} - not going to another town for it"
+msgstr ""
+"{map} mein koi dukaan {item} nahi bechti - iske liye doosre shehar nahi ja rahe"
+
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "kisi qareebi dukaan mein {item} nahi mila - logs\\dialogs.log dekhein"
+
+msgid "no storehouse in {map} - not taking {item} out"
+msgstr "{map} mein koi storehouse nahi - {item} nahi nikal rahe"
 
 msgid "no sub named {name}"
 msgstr "{name} naam ka koi sub nahi"
@@ -4387,6 +4406,9 @@ msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 msgid "not enough supplies for the dungeon"
 msgstr "dungeon ke liye saamaan kaafi nahi"
 
+msgid "not restocking {item}: {why}"
+msgstr "{item} dobara stock nahi kar rahe: {why}"
+
 msgid "not set"
 msgstr "set nahi"
 
@@ -4419,6 +4441,9 @@ msgstr "is map par"
 
 msgid "on this map, with Resurrection Crystals"
 msgstr "is map par, Resurrection Crystals ke sath"
+
+msgid "on {map}: riding - waiting to arrive"
+msgstr "{map} par: sawari par - pohanchne ka intezar"
 
 msgid "on {name}"
 msgstr "{name} par"
@@ -4559,6 +4584,9 @@ msgstr "respawn ho rahe hain: {how}"
 msgid "resting"
 msgstr "aaram"
 
+msgid "restocking in {map}: {what}"
+msgstr "{map} mein dobara stock ho raha hai: {what}"
+
 msgid "restocking: {what}"
 msgstr "dobara stock ho raha hai: {what}"
 
@@ -4572,9 +4600,6 @@ msgstr "resume: main waqfe wala run jari rakhta hoon."
 
 msgid "revive"
 msgstr "zinda karna"
-
-msgid "riding - waiting to arrive"
-msgstr "sawari par - pohanchne ka intezar"
 
 msgid "riding {beast}"
 msgstr "{beast} par sawaar"
@@ -4684,6 +4709,9 @@ msgstr "ab bhi hamla ho raha hai - rukne se pehle jawabi hamla"
 
 msgid "still broken after the repair: {items}"
 msgstr "repair ke baad bhi toota hua: {items}"
+
+msgid "still on {map} after {n} seconds - the ride didn't move us on"
+msgstr "{n} second baad bhi {map} par - sawari ne aage nahi pohanchaya"
 
 msgid "still short after restocking: {what}"
 msgstr "restock ke baad bhi kami hai: {what}"
@@ -4898,6 +4926,9 @@ msgid ""
 msgstr ""
 "basta {pct}% bhara hai un cheezon se jo aap rakhte hain - kisi mehfooz jagah ja kar ruk rahe hain"
 
+msgid "the bag trip"
+msgstr "bag ka chakkar"
+
 msgid "the bag's gems are as high as they go"
 msgstr "baste ke gems apni aakhri had tak hain"
 
@@ -5045,6 +5076,10 @@ msgstr "pichhle 30 din"
 msgid "the last 7 days"
 msgstr "pichhle 7 din"
 
+msgid "the last trip for {item} got none, and nothing has changed since"
+msgstr ""
+"pichhle chakkar mein {item} bilkul nahi mila, aur tab se kuch nahi badla"
+
 msgid "the menu has no entry like \"{want}\""
 msgstr "menu mein aisa koi entry nahi: \"{want}\""
 
@@ -5060,16 +5095,25 @@ msgstr "pet"
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr "pet ki amiability {n} hai lekin baste mein {item} nahi"
 
+msgid "the ride from {map} never arrived"
+msgstr "{map} se sawari kabhi nahi pohanchi"
+
 msgid ""
-"the run started where monsters spawn - ending on the nearest map without them"
+"the run started where monsters spawn ({map} {x},{y}) - ending on the nearest map without them"
 msgstr ""
-"run wahan shuru hua jahan monsters paida hote hain - sab se qareeb monster-free map par khatam kar rahe hain"
+"run wahan shuru hua jahan monsters paida hote hain ({map} {x},{y}) - qareeb tareen baghair monsters wale map par khatam kar rahe hain"
 
 msgid "the script is too long (over {max} characters)"
 msgstr "script bohat lambi hai ({max} characters se zyada)"
 
 msgid "the storehouse"
 msgstr "storehouse"
+
+msgid "the storehouse has no {item}"
+msgstr "storehouse mein {item} nahi"
+
+msgid "the storehouse has no {item} and there is no arnebia to buy it"
+msgstr "storehouse mein {item} nahi aur khareedne ke liye arnebia bhi nahi"
 
 msgid "the storehouse has {n} {item}"
 msgstr "storehouse mein {n} {item} hain"
@@ -5086,8 +5130,16 @@ msgstr "storehouse, phir Shard Market"
 msgid "the target key was on {mode} - back to {want}"
 msgstr "target key {mode} par thi - {want} par wapas"
 
+msgid ""
+"the target keys still won't select {name} where it stands - leaving it {n} seconds"
+msgstr ""
+"target keys ab bhi {name} ko uski jagah par select nahi kar rahi - {n} second ke liye chhor rahe hain"
+
 msgid "the target keys wouldn't select {name} - next one"
 msgstr "target keys se {name} select nahi hua - agla"
+
+msgid "the text grew too long (over {n} characters)"
+msgstr "text bohat lamba ho gaya ({n} haroof se zyada)"
 
 msgid "the {item} on key {key} are used up"
 msgstr "key {key} wali {item} khatam ho gayi"
@@ -5225,6 +5277,9 @@ msgstr "{name} ka voice message - Chat (Ctrl+T) mein sunein"
 msgid "walk to the enemy"
 msgstr "dushman tak chalo"
 
+msgid "walking on to {cell}"
+msgstr "{cell} ki taraf aage chal rahe hain"
+
 msgid "walking to monsters"
 msgstr "monsters tak chal rahe hain"
 
@@ -5247,6 +5302,11 @@ msgstr ""
 
 msgid "when {item} is below {n}"
 msgstr "jab {item} {n} se kam ho"
+
+msgid ""
+"where the run started wasn't read - ending on the nearest map without monsters"
+msgstr ""
+"run kahan shuru hua yeh parha nahi gaya - qareeb tareen baghair monsters wale map par khatam kar rahe hain"
 
 msgid "where: the map I'm on and my x, y on it."
 msgstr "where: main kis map par hoon aur us par mera x, y."
@@ -5513,6 +5573,9 @@ msgstr ""
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} kisi aur se marne wala hai - agla"
+
+msgid "{name} is attacking our pet - fighting it first"
+msgstr "{name} hamare pet par hamla kar raha hai - pehle us se lar rahe hain"
 
 msgid "{name} is gone, and none of our hits landed on it"
 msgstr "{name} gayab ho gaya, aur hamara koi hit us par nahi laga"
@@ -5888,6 +5951,10 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "home: main ghar jaane ke liye hearthstone use karta hoon, phir run ruk jaata hai."
 
+#~ msgid "low on {item}: {have} left (the bag manager says only to tell you)"
+#~ msgstr ""
+#~ "{item} kam hai: {have} bache hain (basta manager kehta hai sirf aap ko batana hai)"
+
 #~ msgid "not yet today"
 #~ msgstr "aaj abhi nahi"
 
@@ -5896,6 +5963,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "pet HP {pct}% - {item} from the bag"
 #~ msgstr "pet HP {pct}% - basta se {item}"
+
+#~ msgid "riding - waiting to arrive"
+#~ msgstr "sawari par - pohanchne ka intezar"
 
 #~ msgid "the bag has too little room left to gather"
 #~ msgstr "baste mein jama karne ke liye bohot kam jagah baqi hai"
@@ -5913,6 +5983,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the gang's area: {why}"
 #~ msgstr "gang ka ilaqa: {why}"
+
+#~ msgid ""
+#~ "the run started where monsters spawn - ending on the nearest map without them"
+#~ msgstr ""
+#~ "run wahan shuru hua jahan monsters paida hote hain - sab se qareeb monster-free map par khatam kar rahe hain"
 
 #~ msgid "the shop doesn't list {item} - see logs\\dialogs.log"
 #~ msgstr "dukaan {item} list nahi karti - logs\\dialogs.log dekhein"

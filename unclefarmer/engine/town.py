@@ -149,10 +149,24 @@ def open_section(b: Bot, pattern: str) -> bool:
 
 
 # ---------------------------------------------------------------------------------------- errands
+def in_town(b: Bot, npcs: Sequence[Npc]) -> list[Npc]:
+    """The NPCs of a restock trip's town (b.restock_town, a map id) - all of them outside a trip:
+    a trip never goes on from one town to another for its errands."""
+    town_map: int | None = getattr(b, "restock_town", None)
+    return list(npcs) if town_map is None else [n for n in npcs if n[0] == town_map]
+
+
 def withdraw(b: Bot, item: str, n: int):
-    """Take up to n of item out of the storehouse. Returns how many arrived in the bag."""
+    """Take up to n of item out of the storehouse (the trip's town's, during a restock). Returns
+    how many arrived in the bag, counted at the storehouse: a potion drunk on the way there is not a
+    potion the storehouse failed to hand over (that used to send the trip on to a shop)."""
+    houses = in_town(b, knowledge.service_npcs("storehouse"))
+    if not houses:
+        b.log(_("no storehouse in {map} - not taking {item} out", map=atlas.label(getattr(b, "restock_town", 0) or 0),
+                item=item))
+        return 0
+    visit(b, "storehouse", candidates=houses)
     before = counts(b).get(item.lower(), 0)
-    visit(b, "storehouse")
     try:
         if not open_section(b, r"^\s*item storage"):
             b.log(_("the storehouse menu has no item storage"), speak=True)
@@ -160,11 +174,12 @@ def withdraw(b: Bot, item: str, n: int):
         d = b.dialog()
         if b.find_entry(d["top"], item_pattern(item)) is None:
             b.log(_("no {item} in the storehouse", item=item))
+            b.__dict__.setdefault("storehouse_lacks", set()).add(item.strip().lower())
             return 0
         pick(b, item_pattern(item), n)
     finally:
         b.close_dialogs()
-    got = counts(b).get(item.lower(), 0) - before
+    got = max(0, counts(b).get(item.lower(), 0) - before)
     b.log(_("took {n} {item} out of the storehouse", n=got, item=item))
     stats.moved(b, "withdrawn", item, got)
     return got
@@ -186,6 +201,8 @@ def deposit(b: Bot, item: str, n: int | None=None):
     finally:
         b.close_dialogs()
     put = have - counts(b).get(item.lower(), 0)
+    if put > 0:
+        b.__dict__.setdefault("storehouse_lacks", set()).discard(item.strip().lower())   # it has some now
     b.log(_("put {n} {item} into the storehouse", n=put, item=item))
     stats.moved(b, "stored", item, put)
     return put
@@ -267,6 +284,11 @@ def buy(b: Bot, item: str, n: int) -> int:
     shops = shops_for(item)
     if not shops:
         raise Stopped(_("I don't know which shop sells {item}", item=item))
+    shops = in_town(b, shops)
+    if not shops:
+        b.log(_("no shop in {map} sells {item} - not going to another town for it",
+                map=atlas.label(getattr(b, "restock_town", 0) or 0), item=item), speak=True)
+        return 0
     before = counts(b).get(item.lower(), 0)
     tried: list[Npc] = []
     for _try in range(BUY_TRIES):
@@ -414,10 +436,15 @@ def _collection_word(kind: str):
 Need = tuple[dict[str, Any], int, int]     # (restock rule, in the bag, wanted)
 
 
+RESTOCK_RETRY = 1800.0   # seconds before a restock that got nothing is tried again (or sooner: more arnebia)
+
+
 def needs(b: Bot, rules: Sequence[dict[str, Any]] | None, start: bool = False) -> list[Need]:
-    """[(rule, have, want)] for every rule that should be topped up now. While farming a rule
-    triggers below its min; at the start of a run (or once a trip is happening anyway) anything
-    below its stock is topped up too."""
+    """[(rule, have, want)] for every rule that should be topped up now. A rule triggers once the
+    item is down to its min ("refill when fewer than": 30 means 30 or fewer); its stock ("fill up
+    to") is only how far a trip fills it. With start (an explicit restock, or a trip happening
+    anyway) anything below its stock is topped up too - never a reason to leave on its own: 199 of
+    200 above a min of 30 is no trip."""
     c = counts(b)
     out: list[Need] = []
     for r in rules or []:
@@ -427,13 +454,81 @@ def needs(b: Bot, rules: Sequence[dict[str, Any]] | None, start: bool = False) -
         have = c.get(item.lower(), 0)
         stock = int(r.get("stock") or 0)
         low = int(r.get("min") or 0)
-        if have < low or (start and have < stock):
+        if (low > 0 and have <= low or start) and have < stock:
             out.append((r, have, stock))
     return out
 
 
+def _sources(r: dict[str, Any]) -> tuple[bool, bool]:
+    """(from the storehouse?, from a shop?) for a rule."""
+    source = bagrules.supply_rule(r)
+    return source in ("both", "storage"), source in ("both", "buy")
+
+
+def possible(b: Bot, r: dict[str, Any], why: list[str]) -> bool:
+    """Whether a trip could get any of this rule's item: the storehouse isn't known to be out of it,
+    or there is arnebia to buy it; and a trip that got none of it lately (RESTOCK_RETRY) isn't
+    made again before more arnebia has come in. Why not goes into why."""
+    item = r["item"].strip().lower()
+    store, shop = _sources(r)
+    bag = counts(b)
+    money = bag.get(stats.ARNEBIA)          # None: the bag shows no arnebia row - not known to be broke
+    failed: dict[str, tuple[float, int]] = getattr(b, "restock_failed", {})
+    last = failed.get(item)
+    now = clock_for(b).time()
+    if last is not None and now - last[0] < RESTOCK_RETRY and (money or 0) <= last[1]:
+        why.append(_("the last trip for {item} got none, and nothing has changed since", item=r["item"]))
+        return False
+    lacks: set[str] = getattr(b, "storehouse_lacks", set())
+    from_store = store and item not in lacks
+    from_shop = shop and (money is None or money > 0)
+    if from_store or from_shop:
+        return True
+    if store and not shop:
+        why.append(_("the storehouse has no {item}", item=r["item"]))
+    elif shop and money is not None and money <= 0:
+        why.append(_("no arnebia to buy {item}", item=r["item"]))
+    else:
+        why.append(_("the storehouse has no {item} and there is no arnebia to buy it", item=r["item"]))
+    return False
+
+
+def restock_town(b: Bot, todo: Sequence[Need]) -> int | None:
+    """The one town (a map) a restock trip goes to: the nearest that has what the trip needs - a
+    storehouse for the rules that take from it, a shop of the right kind for those that buy -
+    preferring one with all of it. The town we are in first, whatever else is near. None when no
+    town has any of it."""
+    want_store = any(_sources(r)[0] for r, _h, _w in todo)
+    shop_items = [r["item"] for r, _h, _w in todo if _sources(r)[1]]
+    towns: dict[int, list[Npc]] = {}
+    for npc in (knowledge.service_npcs("storehouse") if want_store else []):
+        towns.setdefault(npc[0], []).append(npc)
+    for item in shop_items:
+        for npc in shops_for(item):
+            towns.setdefault(npc[0], []).append(npc)
+    if not towns:
+        return None
+
+    def covers(mid: int) -> int:
+        here = towns[mid]
+        store = want_store and any(n in knowledge.service_npcs("storehouse") for n in here)
+        shops = sum(1 for item in shop_items if any(n in here for n in shops_for(item)))
+        return int(store) + shops
+
+    best = max(covers(m) for m in towns)
+    full = [m for m in towns if covers(m) == best]
+    here = b.map_id()
+    if here in full:
+        return here
+    near = nearest(b, None, [npc for m in full for npc in towns[m]])
+    return near[0] if near else None
+
+
 def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
-    """Top up every rule that needs it: storehouse first (free), then the shop. True if a trip was made."""
+    """Top up every rule that needs it: storehouse first (free), then the shop, all in one town
+    (restock_town) - never on to another town. A rule that can't be met (no arnebia, the
+    storehouse out of it, a trip that got none) makes no trip, and says why once. True if a trip
+    was made."""
     todo = needs(b, rules, start)
     told: set[str] = getattr(b, "supply_told", set())
     b.supply_told = told
@@ -443,28 +538,57 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
             told.add(r["item"])
             b.log(_("low on {item}: {have} left", item=r["item"], have=have), speak=True)
     todo = [t for t in todo if bagrules.supply_rule(t[0]) != "tell"]
-    if not todo:
+    skipped: set[str] = getattr(b, "restock_skipped", set())
+    b.restock_skipped = skipped
+    able: list[Need] = []
+    for t in todo:
+        why: list[str] = []
+        if possible(b, t[0], why):
+            able.append(t)
+            skipped.discard(t[0]["item"])
+        elif t[0]["item"] not in skipped:
+            skipped.add(t[0]["item"])
+            b.log(_("not restocking {item}: {why}", item=t[0]["item"], why=why[0] if why else "?"), speak=True)
+    if not able:
         return False
-    # once we're going anyway, top up everything that's short
-    todo = [t for t in needs(b, rules, True) if bagrules.supply_rule(t[0]) != "tell"]
-    b.log(_("restocking: {what}", what=", ".join("%s %d/%d" % (r["item"], h, w) for r, h, w in todo)), speak=True)
-    for r, have, want in todo:
-        missing = want - have
-        if missing <= 0:
-            continue
-        source = bagrules.supply_rule(r)
-        if source == "tell":
-            b.log(_("low on {item}: {have} left (the bag manager says only to tell you)", item=r["item"], have=have),
-                  speak=True)
-            continue
-        if source in ("both", "storage"):
-            missing -= withdraw(b, r["item"], missing)
-        if missing > 0 and source in ("both", "buy"):
-            buy(b, r["item"], missing)
+    # once we're going anyway, top up everything that's short (and can be had)
+    todo = [t for t in needs(b, rules, True) if bagrules.supply_rule(t[0]) != "tell" and possible(b, t[0], [])]
+    where = restock_town(b, todo)
+    what = ", ".join("%s %d/%d" % (r["item"], h, w) for r, h, w in todo)
+    if where is None:
+        # no town found from here by the data: the errands look for their NPCs themselves
+        b.log(_("restocking: {what}", what=what), speak=True)
+    else:
+        b.log(_("restocking in {map}: {what}", map=atlas.label(where), what=what), speak=True)
+    b.restock_town = where
+    try:
+        for r, have, want in todo:
+            got = _fill(b, r, want - have)
+            item = r["item"].strip().lower()
+            if got <= 0 and counts(b).get(item, 0) <= int(r.get("min") or 0):
+                b.__dict__.setdefault("restock_failed", {})[item] = (clock_for(b).time(),
+                                                                     counts(b).get(stats.ARNEBIA) or 0)
+            elif got > 0:
+                getattr(b, "restock_failed", {}).pop(item, None)
+    finally:
+        b.restock_town = None
     still = [(r["item"], h) for r, h, _w in needs(b, rules, False)]
     if still:
         b.log(_("still short after restocking: {what}", what=", ".join("%s %d" % s for s in still)), speak=True)
     return True
+
+
+def _fill(b: Bot, r: dict[str, Any], missing: int) -> int:
+    """Withdraw, then buy what is still missing, as the rule's source allows. How many came in."""
+    if missing <= 0:
+        return 0
+    store, shop = _sources(r)
+    got = 0
+    if store:
+        got += withdraw(b, r["item"], missing)
+    if missing - got > 0 and shop:
+        got += buy(b, r["item"], missing - got) or 0
+    return got
 
 
 # ---------------------------------------------------------------------------------------- shards

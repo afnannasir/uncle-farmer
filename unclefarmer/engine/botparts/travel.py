@@ -7,7 +7,6 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import math
-import re
 from typing import Any
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
@@ -20,6 +19,10 @@ from .parts import as_bot, Parts
 class TravelMixin(Parts):
     traveling: bool
     RIDE_TRIES = 2        # a transport NPC that fails this often in one trip is left out of it
+    # Longest wait on a ride map (atlas.is_ride) for the game to move us on: flights took about
+    # 25 s and cable cars 37 s in the logs; well past that the ride has gone wrong.
+    RIDE_WAIT = 180.0
+    NPC_MODE = 3          # TARGET_MODES index: the target keys pick NPCs
 
     def has_hearthstone(self) -> bool:
         """A hearthstone on a hotkey, or one in the bag."""
@@ -114,8 +117,18 @@ class TravelMixin(Parts):
         failed: dict[Any, int] = {}       # transport id -> rides that didn't work this trip
         for _leg in range(40):
             mid = self.map_id()
+            if atlas.is_ride(mid):
+                # An airship's flight hall, a cable car: the game moves us on by itself. No plan,
+                # no keys, no stuck checks here - wait for the real map change, then plan again
+                # from wherever it put us (the destination is kept: dst, cell).
+                self.wait_ride(mid)
+                said = None
+                continue
             if mid == dst and cell is None:
                 return
+            self.restock_on_the_way()
+            if self.map_id() != mid:
+                continue          # the restock walked us elsewhere: plan from there
             beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
@@ -175,6 +188,30 @@ class TravelMixin(Parts):
             self.walk_to(tuple(leg["cell"]))
             return True
         return False
+
+    def wait_ride(self, here: int) -> int:
+        """Ride it out: on a map the game carries us off by itself (atlas.is_ride), wait for the
+        game's own move to another map - not for a time, which only says the ride is due. Nothing
+        is pressed and nothing is planned meanwhile. The map we land on, once its reads agree
+        (settled_map); a ride that never moves us on in RIDE_WAIT seconds stops the run as it
+        stands, rather than guess that it arrived or walk about in the hall."""
+        self.let_go()                 # no walking key stays held across the ride
+        self.log(_("on {map}: riding - waiting to arrive", map=atlas.label(here)))
+        end = self.clock.time() + self.RIDE_WAIT
+        while self.clock.time() < end:
+            self.sleep(0.5)
+            if self.map_id() == here:
+                continue
+            landed = self.settled_map()
+            if landed == here:
+                continue              # a read taken mid-change: still riding
+            me = self.me()            # fresh: the position before the ride means nothing here
+            self.log(_("arrived on {map} at {x},{y} - planning the way on from here", map=atlas.label(landed),
+                       x=int(me.get("x", 0)), y=int(me.get("y", 0))))
+            return landed
+        self.log(_("still on {map} after {n} seconds - the ride didn't move us on", map=atlas.label(here),
+                   n=int(self.RIDE_WAIT)), speak=True)
+        raise Stopped(_("the ride from {map} never arrived", map=atlas.label(here)))
 
     def wait_map_change(self, mid: int, seconds: float) -> bool:
         self.last_hp = self.me().get("hp")       # only a hit from now on counts as an interruption
@@ -257,9 +294,10 @@ class TravelMixin(Parts):
         self.sleep(1.0)
 
     def _step_on_again(self, mid: int, stand: tuple[int, int]) -> bool:
-        """An exit inside the map (Loki Union's is the very cell the airship lands on) takes us
-        through only as we step onto it, so standing on it does nothing: step off and back on.
-        Live 2026-10-23 the bot stood there re-planning every 4 s for 20 s. True when it moved."""
+        """An exit inside the map takes us through only as we step onto it, so standing on it
+        does nothing: step off and back on. (Loki Union, where the bot once stood re-planning every
+        4 s, is an airship's flight hall: travel now waits there instead, see wait_ride.) True
+        when it moved."""
         try:
             m = atlas.model(mid)
         except Exception as e:
@@ -358,12 +396,25 @@ class TravelMixin(Parts):
         mid = leg["map"]
         self.log(_("{map}: taking the {npc} to {dest}", map=atlas.label(mid), npc=leg["npc"],
                    dest=atlas.label(leg["dest"])))
+        # Transport NPCs answer the target keys only in NPC mode: switch before looking for it,
+        # and put back whatever mode was on before (not the profile's, which the player may have
+        # changed by hand) once the menu is done with - boarded, refused or not found alike.
+        was = self.target_mode_now()
+        if not self.set_target_mode(self.NPC_MODE):
+            self.log(_("couldn't switch the target key to NPCs"), speak=True)
         try:
             return self._ride(leg, mid)
         finally:
             if self.map_id() == mid:
                 self.close_dialogs()
-            self.set_target_mode(self.p.get("target_mode", 2))
+            # V only: on a ride map this presses no walking key and plans nothing
+            self.set_target_mode(was if was is not None else self.p.get("target_mode", 2))
+
+    def target_mode_now(self) -> int | None:
+        """The game's target mode right now (TARGET_MODES index), or None when it can't be read."""
+        m = self.a.json("mem modes")
+        mode = m.get("target") if jsonio.is_object(m) else None
+        return mode if isinstance(mode, int) else None
 
     def _ride(self, leg: dict[str, Any], mid: int) -> bool:
         if not self.talk(leg["npc"], leg.get("at"), leg.get("stand")):
@@ -396,14 +447,13 @@ class TravelMixin(Parts):
                 if here == mid:
                     continue
                 self.log(_("now on {map}", map=atlas.label(here)))
-                self.sleep(1.0)
-                if re.search(r"cable car|airship", atlas.name(here), re.I):
-                    # The vehicle carries us itself (live 2026-10-04: cable car 1055 moved us to
-                    # Tulip City's underground 37 s after boarding; every step in it was refused,
-                    # IN op=101). Wait for that instead of walking at the door.
-                    self.log(_("riding - waiting to arrive"))
-                    if self.wait_map_change(here, 120):
-                        self.log(_("arrived on {map}", map=atlas.label(self.map_id())))
+                if atlas.is_ride(here):
+                    # The vehicle carries us itself (cable car 1055 moved us to Tulip City's
+                    # underground 37 s after boarding, every step in it refused; an airship's
+                    # flight hall the same after about 25 s). Wait for that instead of walking.
+                    self.wait_ride(here)
+                else:
+                    self.sleep(1.0)
                 return True
             self.sleep(0.3)
         self.log(_("the {npc} didn't take me anywhere", npc=leg["npc"]), speak=True)

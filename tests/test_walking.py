@@ -550,7 +550,7 @@ def test_walk_to_after_a_stuck_walks_one_axis_and_plans_around_npcs(model: Map) 
     assert b.walk_to((10, 10)) == "arrived"
     assert len(diag_calls) == 1                                  # only the first attempt is diagonal
     assert axis_calls                                            # the retry walks an axis at a time
-    assert model.without_calls and model.without_calls[-1] == set()   # no NPCs about here
+    assert model.without_calls == []         # no NPCs or players about: planned on the map itself
 
 
 def test_a_chat_line_that_stopped_the_walk_is_closed_and_no_stuck(model: Map) -> None:

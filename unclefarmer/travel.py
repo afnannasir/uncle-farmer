@@ -32,7 +32,6 @@ import re
 from collections.abc import Callable, Collection, Hashable, Mapping, Sequence
 from typing import Any, Literal, TypeAlias, overload
 
-import numpy as np
 
 from . import atlas, jsonio as json, lru, paths
 from .atlaslib import Cell, MapModel, Point
@@ -243,9 +242,28 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False)
     return g
 
 
+def count_of(row: Row) -> int:
+    """How many a bag row holds: a whole number from the game, 1 when it says nothing (an item
+    with no count is a single one). A count that isn't a number - null, text, a fraction, not
+    finite - counts as none: a broken row must not make the planner count on an item it may not
+    have (it used to stop the whole plan with a TypeError)."""
+    if "count" not in row:
+        return 1
+    v = row.get("count")
+    if isinstance(v, bool):
+        return 0
+    if isinstance(v, int):
+        return v
+    if isinstance(v, float) and math.isfinite(v) and v.is_integer():
+        return int(v)
+    if isinstance(v, str) and v.strip().isdigit():
+        return int(v.strip())
+    return 0
+
+
 def item_options(bag: Sequence[Row] | None, hearth_home: str | None = None, hearth_key: bool = False) -> list[ItemOption]:
     """Travel items we could use right now: [(item, choose list, (map, x, y), cost)]."""
-    have: dict[str, int] = {(r.get("name") or "").strip().lower(): r.get("count", 1) for r in (bag or [])}
+    have: dict[str, int] = {str(r.get("name") or "").strip().lower(): count_of(r) for r in (bag or [])}
     out: list[ItemOption] = []
     for item, choices in ITEMS.items():
         if have.get(item.lower(), 0) <= 0:
@@ -283,52 +301,25 @@ def _steps_from(mid: int, cell: Sequence[float], targets: Sequence[Point]) -> di
 
 
 def _steps_uncached(m: MapModel, cell: Cell, targets: Sequence[Point]) -> dict[Point, float]:
+    """Walking steps from cell to each target, counted the way the stored routes between ports
+    (atlas routes) are: the length of the map's own route there (MapModel.route - round walls and
+    one-way gates, ending on the first cell of an exit). The walks from where we stand and to the
+    goal cell used to be the wall-avoiding search's cost instead, which adds a little for every step
+    beside a wall: one plan added up two kinds of number, up to 8% apart on central plains, and a
+    port near a wall looked further than it was."""
     if not m.ok(*cell):
         near = m.nearest_walkable(cell[0], cell[1], 6)
         if not near:
             return {}
         cell = near
-    want: list[Point] = [(t[0], t[1]) for t in targets if m.ok(int(t[0]), int(t[1]))]
-    if hasattr(m, "dijkstra_arr"):
-        return _steps_arrays(m, cell, targets, want)
-    dist, _prev = m.dijkstra(cell, want)
-    if any(t[1] * m.W + t[0] not in dist for t in want) and m.gate.any():
-        with m.no_gates():                     # see MapModel.route
-            loose, _prev = m.dijkstra(cell, want)
-        loose.update(dist)
-        dist = loose
     out: dict[Point, float] = {}
     for t in targets:
-        d = dist.get(int(t[1]) * m.W + int(t[0]))
-        if d is not None:
-            out[(t[0], t[1])] = d
-    return out
-
-
-def _steps_arrays(m: MapModel, cell: Cell, targets: Sequence[Point], want: list[Point]) -> dict[Point, float]:
-    """_steps_uncached on the model's array search: the same distances, without turning a search
-    that reaches the whole map into a dict first (inf = the search never got there)."""
-    if hasattr(m, "dijkstra_targets"):
-        got = m.dijkstra_targets(cell, want)
-        if not np.isfinite(got).all() and m.gate.any():
-            with m.no_gates():                 # see MapModel.route
-                loose = m.dijkstra_targets(cell, want)
-            got = np.where(np.isfinite(got), got, loose)
-        reached: list[float] = got.tolist()
-        by_cell = {(int(t[0]), int(t[1])): float(d) for t, d in zip(want, reached) if math.isfinite(d)}
-        return {(t[0], t[1]): by_cell[(int(t[0]), int(t[1]))] for t in targets
-                if (int(t[0]), int(t[1])) in by_cell}
-    W = m.W
-    dist, _prev = m.dijkstra_arr(cell, want)
-    if any(not math.isfinite(dist[int(t[1]) * W + int(t[0])]) for t in want) and m.gate.any():
-        with m.no_gates():                     # see MapModel.route
-            loose, _prev = m.dijkstra_arr(cell, want)
-        dist = np.where(np.isfinite(dist), dist, loose)
-    out: dict[Point, float] = {}
-    for t in targets:
-        k = int(t[1]) * W + int(t[0])
-        if 0 <= k < dist.size and math.isfinite(dist[k]):
-            out[(t[0], t[1])] = float(dist[k])
+        goal = (int(t[0]), int(t[1]))
+        if not m.ok(*goal):
+            continue
+        path = m.route(cell, goal)
+        if path is not None:
+            out[(t[0], t[1])] = float(len(path) - 1)
     return out
 
 
@@ -360,8 +351,11 @@ def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Se
     the bag and the settings change between calls. The bot's travel loop asks for the same plan
     after each leg; a copy goes out so a caller cannot edit the cached legs."""
     here_map, goal_map = int(here_map), int(goal_map)
-    have = frozenset((r.get("name") or "").strip().lower() for r in (bag or [])
-                     if r.get("count", 1) > 0)
+    if here_map not in atlas.maps() or goal_map not in atlas.maps():
+        # a map the data doesn't have: no way to plan there (with or without a goal cell alike -
+        # a goal cell used to reach the map model first and raise KeyError)
+        return (None, None) if with_cost else None
+    have = frozenset(str(r.get("name") or "").strip().lower() for r in (bag or []) if count_of(r) > 0)
     key = (here_map, (int(here_cell[0]), int(here_cell[1])), goal_map,
            (int(goal_cell[0]), int(goal_cell[1])) if goal_cell is not None else None,
            bool(transport), frozenset(avoid), bool(vip), have, hearth_home, bool(hearth_key),

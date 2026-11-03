@@ -217,8 +217,7 @@ def test_a_two_key_walk_to_a_fractional_cell_ends() -> None:
 def test_a_search_from_off_the_grid_is_left_to_python() -> None:
     m = atlas.model(CAVE)
     far = (m.W * 3, m.h * 3)
-    with pytest.raises(IndexError):
-        m.dijkstra(far)                      # what the Python search does there
+    assert m.dijkstra(far) == ({}, {})        # off the grid: nothing reached (it used to raise IndexError)
     assert m._dijkstra_c(far, (), False, None) is None
 
 

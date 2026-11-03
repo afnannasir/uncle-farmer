@@ -493,19 +493,43 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING)
     TOOL or None for both."""
     out: list[Record] = []
     try:
-        with open(os.path.join(RESULTS, paths.safe_name(character) + ".jsonl"), encoding="utf-8") as f:
+        # utf-8-sig: a byte order mark at the start made the first record unreadable, and it was lost
+        with open(os.path.join(RESULTS, paths.safe_name(character) + ".jsonl"), encoding="utf-8-sig") as f:
             for line in f:
-                try:
-                    r = upgrade(json.loads(line))
-                except (ValueError, AttributeError):
+                r = _record(line)
+                if r is None or (kind is not None and r.get("kind") != kind):
                     continue
-                if kind is not None and r["kind"] != kind:
-                    continue
-                if since is None or time.mktime(time.strptime(r["start"], "%Y-%m-%d %H:%M:%S")) >= since:
-                    out.append(r)
+                if since is not None:
+                    started = start_time(r)
+                    if started is None or started < since:
+                        continue        # (a record whose start can't be read can't be in a period)
+                out.append(r)
     except OSError:
         pass
     return out
+
+
+def _record(line: str) -> Record | None:
+    """One line of a results file as a record, or None for one that isn't one: not JSON, not an
+    object, or with fields of the wrong shape. One bad line costs only itself, never the report."""
+    try:
+        raw = json.loads(line)
+    except ValueError:
+        return None
+    if not json.is_object(raw):
+        return None
+    try:
+        return upgrade(raw)
+    except (ValueError, AttributeError, TypeError):
+        return None
+
+
+def start_time(r: Record) -> float | None:
+    """When the run started, as a clock time, or None when its "start" can't be read."""
+    try:
+        return time.mktime(time.strptime(str(r.get("start")), "%Y-%m-%d %H:%M:%S"))
+    except (ValueError, OverflowError):
+        return None
 
 
 def tool_name(key: str) -> str:
@@ -568,14 +592,16 @@ def add_up(results: Iterable[Record]) -> Record:
     for r in results:
         for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "shard_value", "contribution",
                   "merit", "experience", "levels"):
-            total[k] += r.get(k, 0) or 0
+            v = r.get(k, 0)
+            total[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
         for k in ("shards", "items", "picked", "used"):
             _add(total[k], r.get(k))
         moved: dict[str, dict[str, int]] = r.get("moved") or {}
         for how, items in moved.items():
             _add(total["moved"].setdefault(how, {}), items)
-        if r.get("level", -1) >= 0:
-            total["level"], total["xp_needed"] = r["level"], r.get("xp_needed", -1)
+        level = r.get("level")
+        if isinstance(level, int) and not isinstance(level, bool) and level >= 0:
+            total["level"], total["xp_needed"] = level, r.get("xp_needed", -1)
         c: dict[str, Any] | None = r.get("combat")
         if c:
             combat: dict[str, Any] | None = total["combat"]
