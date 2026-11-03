@@ -19,7 +19,8 @@ import ctypes
 import glob
 import hashlib
 import os
-import sys
+
+from .. import paths
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "routing.c")
@@ -91,7 +92,7 @@ def load(path: str | None = None, source: str = SOURCE) -> ctypes.CDLL | None:
     if dll.uf_abi() != ABI:
         why_not = "built for another version of this module"
         return None
-    if os.path.exists(source) and not getattr(sys, "frozen", False):
+    if os.path.exists(source) and not paths.frozen():
         built = (dll.uf_source_hash() or b"").decode("ascii", "replace")
         if built != source_hash(source):
             why_not = "built from another routing.c (python build_native.py)"

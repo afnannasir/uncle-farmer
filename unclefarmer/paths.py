@@ -5,9 +5,23 @@ from __future__ import annotations
 import os
 import sys
 
-# A PyInstaller one-folder build: the exe's folder holds data/, agent/, lang/ beside it.
-APP = (os.path.dirname(sys.executable) if getattr(sys, "frozen", False)
-       else os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+def frozen() -> bool:
+    """Running as the built UncleFarmer.exe, not from the source: the one answer every module asks.
+    build_exe.py builds with Nuitka, which sets no sys.frozen; it puts __compiled__ in the globals
+    of every module it compiles, this one too. sys.frozen still counts, for another tool's build."""
+    return "__compiled__" in globals() or bool(getattr(sys, "frozen", False))
+
+
+def app_folder() -> str:
+    """The folder that holds data/, agent/, lang/: in a build the exe's own (Nuitka's sys.executable
+    is a python.exe beside UncleFarmer.exe), from source the checkout's. Never the working folder."""
+    if frozen():
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+APP = app_folder()
 
 DATA = os.path.join(APP, "data")
 LANG = os.path.join(APP, "lang")
