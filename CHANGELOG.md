@@ -1,5 +1,16 @@
 # What's new
 
+## 0.7.2
+
+**Updates**
+
+- The downloaded Uncle Farmer now knows it is the downloaded copy. 0.7.0 and 0.7.1 took
+  themselves for a copy run from the source code: they never looked for a new version at start,
+  and Update said "update it with git pull". This version looks at start and installs updates
+  again. Copies of 0.7.0 and 0.7.1 can't find it by themselves: download it once by hand and
+  unpack it over your Uncle Farmer folder. Updates after this one arrive by themselves.
+- bootup.log's first line now says "packaged build" for the downloaded copy.
+
 ## 0.7.1
 
 **Logs**
