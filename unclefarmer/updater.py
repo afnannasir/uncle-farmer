@@ -81,8 +81,8 @@ class UpdateResult(TypedDict):
 
 
 def frozen() -> bool:
-    """True in the built exe; from source, updating is git's job."""
-    return bool(getattr(sys, "frozen", False))
+    """True in the built exe (paths.frozen); from source, updating is git's job."""
+    return paths.frozen()
 
 
 def version_tuple(v: str | None) -> tuple[int, ...]:

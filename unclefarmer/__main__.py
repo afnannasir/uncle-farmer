@@ -50,8 +50,8 @@ def main() -> None:
 
 
 def _about() -> str:
-    from . import __version__
-    build = "packaged build" if getattr(sys, "frozen", False) else "from source"
+    from . import __version__, paths
+    build = "packaged build" if paths.frozen() else "from source"
     return "Uncle Farmer %s, %s, Python %s" % (__version__, build, sys.version.split()[0])
 
 
