@@ -7,13 +7,29 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
 from .. import beasts
 from .base import (CONFIRM, STOPPING, Stopped, note_failure)
 from .parts import as_bot, Parts
+
+
+WaysOut = dict[int, tuple[int, tuple[float, float]]]
+
+
+def ways_out(b: object) -> WaysOut:
+    """{map we can't plan out of: (the map its way out leads to, the cell)}, learned this run."""
+    got: object = getattr(b, "ways_out", None)
+    return cast(WaysOut, got) if isinstance(got, dict) else {}
+
+
+def note_way_out(b: object, inside: int, to_map: int, cell: tuple[float, float]) -> None:
+    """Remember that leaving map `inside` puts us on to_map at cell (where we came in from)."""
+    known = ways_out(b)
+    known[int(inside)] = (int(to_map), (float(cell[0]), float(cell[1])))
+    b.__dict__["ways_out"] = known
 
 
 class TravelMixin(Parts):
@@ -137,9 +153,24 @@ class TravelMixin(Parts):
             if steps != said and len(legs) > 1:
                 self.log(_("route to {map}: {steps}", map=atlas.label(dst), steps=" / ".join(steps)))
             said = steps[1:]
-            if self._take_leg(legs[0], avoid, failed):
+            if self._take_leg_noting(legs[0], avoid, failed):
                 return
         raise Stopped(_("travel to {map} didn't arrive", map=atlas.label(dst)))
+
+    def _take_leg_noting(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
+        """_take_leg, remembering how each map we can't plan out of (a gang base, a dungeon) was
+        got into and where its way out put us: from inside one every place costs the same unknown
+        leave, so the nearest NPC is judged from there instead (town.nearest)."""
+        was, me = self.map_id(), self.me()
+        done = self._take_leg(leg, avoid, failed)
+        now = self.map_id()
+        if now != was:
+            if travel.is_instance(now) and not travel.is_instance(was):
+                note_way_out(self, now, was, (me.get("x", 0), me.get("y", 0)))
+            elif travel.is_instance(was) and not travel.is_instance(now):
+                at = self.me()
+                note_way_out(self, was, now, (at.get("x", 0), at.get("y", 0)))
+        return done
 
     def _plan_legs(self, mid: int, dst: int, goal_cell: tuple[float, float] | None, avoid: set[Any]) -> list[dict[str, Any]]:
         """The way from here, as the profile wants it planned; a Stopped when there is none."""
@@ -159,6 +190,9 @@ class TravelMixin(Parts):
                            hearth_key=bool(self.p.get("hearthstone_key")),
                            items=self.p.get("use_travel_items", False))
         if legs is None:
+            if travel.gang_exit(mid) is not None:
+                raise Stopped(_("{a}: the gang base's way out is in its outer hall, walled off from here - "
+                                "walk out yourself and start again", a=atlas.label(mid)))
             raise Stopped(_("no way from {a} to {b} - go there yourself and start again",
                             a=atlas.label(mid), b=atlas.label(dst)))
         return legs
@@ -167,6 +201,12 @@ class TravelMixin(Parts):
         """The route's first leg. What failed is left out of the next plan. True: the trip is done."""
         if leg["do"] == "exit":
             self.cross_exit(leg)
+            if leg.get("dest") is None and self.map_id() == leg["map"]:
+                failed["gang_exit"] = failed.get("gang_exit", 0) + 1
+                if failed["gang_exit"] >= 2:
+                    avoid.add("gang_exit")
+                    self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
+                             speak=True)
         elif leg["do"] == "npc":
             if not self.ride(leg):
                 failed[leg["id"]] = failed.get(leg["id"], 0) + 1
@@ -253,6 +293,8 @@ class TravelMixin(Parts):
         """Leave a dungeon, secret room or event map: the Action menu (W_LOCAL_OPTION) has a
         'leave ...' entry there."""
         mid = self.map_id()
+        if travel.gang_exit(mid) is not None:
+            return self.leave_here()
         self.log(_("{map}: leaving through the Action menu", map=atlas.label(mid)))
         self.close_dialogs()
         self.key(self.p.get("action_menu_key", "lctrl+enter"))
@@ -272,10 +314,29 @@ class TravelMixin(Parts):
             self.close_dialogs()
         return ok
 
+    def leave_here(self) -> bool:
+        """Out of the map we can't plan our way out of (a gang base: its exit; a dungeon, secret
+        room or event: the Action menu), and no further. True when the map changed."""
+        mid = self.map_id()
+        me = self.me()
+        legs, _cost = travel.way_out(mid, (me.get("x", 0), me.get("y", 0)))
+        if not legs:
+            if travel.gang_exit(mid) is not None:
+                self.log(_("{map}: the gang base's way out is in its outer hall, walled off from here",
+                           map=atlas.label(mid)), speak=True)
+            return False
+        if legs[0]["do"] == "leave":
+            return self.leave_instance()
+        self._take_leg_noting(legs[0], set(), {})
+        return self.map_id() != mid
+
     def cross_exit(self, leg: dict[str, Any]) -> None:
         """Walk into a map exit, pushing off the edge if walking onto it isn't enough."""
         mid = leg["map"]
-        self.log(_("{map}: heading for the exit to {dest}", map=atlas.label(mid), dest=atlas.label(leg["dest"])))
+        if leg.get("dest") is None:
+            self.log(_("{map}: walking out of the gang base", map=atlas.label(mid)))
+        else:
+            self.log(_("{map}: heading for the exit to {dest}", map=atlas.label(mid), dest=atlas.label(leg["dest"])))
         if self.walk_to(tuple(leg["stand"]), map_change=True) != "map":
             edge = atlas.edge_direction(mid, leg["rect"])
             if edge:

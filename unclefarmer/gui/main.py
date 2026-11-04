@@ -223,7 +223,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            (_("Gathe&ring...\tCtrl+Shift+F"), lambda e: self.open_tool("gather")),
                            (_("D&ungeons...\tCtrl+Shift+G"), lambda e: self.open_tool("dungeon")),
                            (_("&Sell the collection now"),
-                            lambda e: self.run_errand("sell_collection\n", _("Selling the collection")))])
+                            lambda e: self.run_errand("sell_collection\n", _("Selling the collection"))),
+                           (_("Sell s&hards now"), lambda e: self.sell_shards_now()),
+                           (_("Clean the &bag now (throw-away list)..."), lambda e: self.clean_bag_now())])
         menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
                            (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
@@ -373,6 +375,9 @@ in the order you list them (each once a game day, half an hour inside), then out
 or one the bot knows, the best area for your level. It fights whatever attacks it, starts again,
 sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full and comes back, and
 stops when Vitality runs out. Tools, Sell the collection now: sells it from wherever you are.
+Tools, Sell shards now: sells the shards the bag manager says to sell, at this city's Shard Market
+(or the nearest one). Tools, Clean the bag now: throws away, where you stand, only what is on the
+bag manager's throw-away list, after you say yes.
 Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
 kills as their 15 minutes give. Before setting out it tops up what you set on the Supplies tab (the
 pet's blue potions and Rice Rolls, your blue and red potions) from the storehouse or the shop; then

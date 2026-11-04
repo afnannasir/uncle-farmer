@@ -18,6 +18,7 @@ plan() returns a list of legs; the bot carries out only the first one and asks a
   {"do": "npc",  "map", "npc", "at", "stand", "choose": [...], "dest", "ride", "id", "kind"}
   {"do": "item", "item", "choose": [...], "dest", "lands"}             use a travel item
   {"do": "leave", "map"}                                                leave an instance (Action menu)
+  {"do": "exit", ..., "dest": None}                                     walk out of a gang base (gang_exit)
   {"do": "walk", "map", "cell"}                                         the last stretch to a cell
 """
 
@@ -118,6 +119,45 @@ def is_instance(mid: int) -> bool:
     m = atlas.maps().get(int(mid), {})
     exits: list[Row] = m.get("exits", [])
     return not [e for e in exits if e.get("dest") is not None]
+
+
+LEAVE_COST = 500.0      # leaving an instance: where it puts us isn't known, so a plan can't go on
+
+
+def gang_exit(mid: int) -> tuple[int, Row] | None:
+    """A gang base's way out: (exit index, exit). The map data marks one exit on the south edge of
+    the OUTER hall with no destination - the game sends you back to where you came in from - and
+    the base has no "leave" in its Action menu (only dungeons and the like do). None on any other
+    map."""
+    m = atlas.maps().get(int(mid), {})
+    exits: list[Row] = m.get("exits", [])
+    if any(e.get("dest") is not None for e in exits):
+        return None
+    for i, e in enumerate(exits):
+        if e.get("dest") is None and e.get("stand"):
+            return i, e
+    return None
+
+
+def way_out(here_map: int, here_cell: Sequence[float], avoid: Collection[Hashable] = ()) -> CostedPlan:
+    """Out of a map you can't plan your way out of: a gang base's own exit when we can walk to it
+    (its inner hall is walled off from it), else - dungeons, secret rooms, events - the Action
+    menu's "leave". ([leg], cost) or (None, None)."""
+    found = gang_exit(here_map)
+    if found is not None:
+        i, e = found
+        if "gang_exit" in avoid:
+            return None, None
+        stand = (e["stand"][0], e["stand"][1])
+        steps = _steps_from(here_map, here_cell, [stand]).get(stand)
+        if steps is None:
+            return None, None          # in the inner hall: no way to the exit on foot
+        leg: Leg = {"do": "exit", "map": int(here_map), "exit": i, "stand": list(e["stand"]),
+                    "rect": list(e["rect"]), "dest": None}
+        return [leg], steps + CROSSING + LEAVE_COST
+    if is_instance(here_map) and "leave" not in avoid:
+        return [{"do": "leave", "map": int(here_map)}], LEAVE_COST
+    return None, None
 
 
 _static: Graph | None = None
@@ -390,11 +430,11 @@ def _plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: S
     at_goal = _goal_test(goal_map, goal_cell)
     found, best, prev = _search(first, edges, item_edges, at_goal)
     if found is None:
-        # Stuck in a dungeon, secret room or event map with no item to get out: leave it through
-        # the Action menu, then plan again from wherever that puts us.
-        if is_instance(here_map) and "leave" not in avoid:
-            left: list[Leg] = [{"do": "leave", "map": here_map}]
-            return (left, 500.0) if with_cost else left
+        # Stuck in a dungeon, secret room, event map or gang base with no item to get out: leave it
+        # (the Action menu, or a gang base's own exit), then plan again from wherever that puts us.
+        left, cost = way_out(here_map, here_cell, avoid)
+        if left is not None:
+            return (left, cost) if with_cost else left
         return (None, None) if with_cost else None
     legs: list[Leg] = []
     node = found
@@ -421,6 +461,14 @@ def _same_map(here_map: int, here_cell: Sequence[float], goal_cell: Sequence[flo
         return legs, 0.0
     goal = (goal_cell[0], goal_cell[1])
     d = _steps_from(here_map, here_cell, [goal]).get(goal)
+    if d is None:
+        # The cell beside an NPC can be a wall or a counter (central plains' and Tulip City's Shard
+        # Brokers). From another map the goal is reached at the nearest walkable cell (_goal_test
+        # walks from it); here it was "no way", so the NPC in the city we stand in lost to one in
+        # another city.
+        near = atlas.model(here_map).nearest_walkable(int(goal[0]), int(goal[1]), 6)
+        if near is not None:
+            d = _steps_from(here_map, here_cell, [near]).get((near[0], near[1]))
     return (legs, d) if d is not None else (None, None)
 
 
@@ -525,7 +573,9 @@ def describe(legs: list[dict[str, Any]]) -> list[str]:
     """One line per leg, for logs and for checking a plan by ear."""
     out: list[str] = []
     for leg in legs:
-        if leg["do"] == "exit":
+        if leg["do"] == "exit" and leg.get("dest") is None:
+            out.append("%s: walk out of the gang base" % atlas.label(leg["map"]))
+        elif leg["do"] == "exit":
             out.append("%s: walk out to %s" % (atlas.label(leg["map"]), atlas.label(leg["dest"])))
         elif leg["do"] == "npc":
             how = {"cable_car": "cable car", "airship": "airship", "circle": "teleport circle",

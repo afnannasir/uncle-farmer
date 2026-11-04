@@ -840,6 +840,15 @@ msgstr "Shehar ke chowk"
 msgid "Cl&ear"
 msgstr "Saaf kar&ein"
 
+msgid "Clean the &bag now (throw-away list)..."
+msgstr "&Basta abhi saaf karein (phenkne wali list)..."
+
+msgid "Clean the bag"
+msgstr "Basta saaf karein"
+
+msgid "Cleaning the bag"
+msgstr "Basta saaf ho raha hai"
+
 msgid "Clear the log? This can't be undone."
 msgstr "Log saaf karein? Yeh wapas nahi hoga."
 
@@ -2473,8 +2482,14 @@ msgstr "Pehle plan chunein."
 msgid "Sell it and come back"
 msgstr "Bech kar wapas aayein"
 
+msgid "Sell s&hards now"
+msgstr "S&hards abhi bechein"
+
 msgid "Selling"
 msgstr "Bechna"
+
+msgid "Selling shards"
+msgstr "Shards bechna"
 
 msgid "Selling the collection"
 msgstr "Collection bechna"
@@ -2984,6 +2999,11 @@ msgstr "Sirf storehouse"
 msgid "The strongest one"
 msgstr "Sab se taqatwar"
 
+msgid ""
+"The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
+msgstr ""
+"Phenkne wali list khaali hai. Pehle Kirdaar, Basta aur supplies mein chunein ke kya phenkna hai."
+
 msgid "The update couldn't start: {why}"
 msgstr "Update shuru nahi ho saka: {why}"
 
@@ -3056,6 +3076,19 @@ msgstr "Yeh run: {r}"
 
 msgid "Throw awa&y:"
 msgstr "Phen&kein:"
+
+msgid ""
+"Throw away whatever of these is in the bag, right where you stand?\n"
+"\n"
+"{list}\n"
+"\n"
+"Nothing else is touched. Thrown items are gone for good."
+msgstr ""
+"In mein se jo bhi baste mein hai, yahin khade khade phenk dein?\n"
+"\n"
+"{list}\n"
+"\n"
+"Kisi aur cheez ko haath nahi lagaya jayega. Phenki hui cheezein hamesha ke liye chali jati hain."
 
 msgid "Thrown away:"
 msgstr "Phenke gaye:"
@@ -3786,6 +3819,9 @@ msgstr "{npc} se baat nahi kar sake"
 msgid "couldn't talk to {npc}"
 msgstr "{npc} se baat nahi kar sake"
 
+msgid "couldn't throw away: {list}"
+msgstr "phenk nahi sake: {list}"
+
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr "protection rune tick nahi kar sake - iske baghair nahi bana rahe"
 
@@ -4112,6 +4148,10 @@ msgstr "yahan har {name} ko chhor rahe hain - is par hamla nahi ho sakta"
 msgid "leaving out the {npc} on {map} and planning again"
 msgstr "{map} par {npc} ko chhor kar dobara mansooba bana rahe hain"
 
+msgid "leaving {map} first, to find the nearest from outside"
+msgstr ""
+"pehle {map} se nikal rahe hain, taake bahar se sab se qareeb dhoonda ja sake"
+
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "atak se nikalne ke liye {map} chhod kar {dest} ja rahe hain"
 
@@ -4318,6 +4358,10 @@ msgstr "is level ke liye koi khali jagah wala kamra nahi"
 msgid "no secret room for this level has a free place"
 msgstr "is level ke kisi secret room mein khali jagah nahi"
 
+msgid "no shards to sell: nothing in the bag is on the bag manager's sell list"
+msgstr ""
+"bechne ke liye koi shard nahi: baste mein kuch bhi bag manager ki bechne wali list par nahi"
+
 msgid "no shop in {map} sells {item} - not going to another town for it"
 msgstr ""
 "{map} mein koi dukaan {item} nahi bechti - iske liye doosre shehar nahi ja rahe"
@@ -4369,6 +4413,10 @@ msgstr "koi nahi"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 
+msgid "none of the {n} places that could do it can be reached from {map}"
+msgstr ""
+"yeh kaam karne wali {n} jagahon mein se koi bhi {map} se nahi pohanch sakti"
+
 msgid "normal"
 msgstr "normal"
 
@@ -4409,14 +4457,25 @@ msgstr "dungeon ke liye saamaan kaafi nahi"
 msgid "not restocking {item}: {why}"
 msgstr "{item} dobara stock nahi kar rahe: {why}"
 
+msgid "not selling {item}: the Shard Market doesn't buy it"
+msgstr "{item} nahi bech rahe: Shard Market isay nahi khareedti"
+
 msgid "not set"
 msgstr "set nahi"
+
+msgid "not sold: {list}"
+msgstr "nahi bika: {list}"
 
 msgid "nothing can follow 'else' in the same if"
 msgstr "isi if mein 'else' ke baad kuch nahi aa sakta"
 
 msgid "nothing done"
 msgstr "kuch nahi hua"
+
+msgid ""
+"nothing in the bag is on the throw-away list (or only what its rules keep)"
+msgstr ""
+"baste mein kuch bhi phenkne wali list par nahi (ya sirf woh jo us ke qaide rakhte hain)"
 
 msgid "nothing of the collection was sold"
 msgstr "collection mein se kuch nahi bika"
@@ -4643,6 +4702,9 @@ msgstr "secret room: {who}"
 msgid "selecting"
 msgstr "select kar rahe hain"
 
+msgid "selling shards: {list}"
+msgstr "shards bech rahe hain: {list}"
+
 msgid "selling to the nearest {role}"
 msgstr "sab se qareebi {role} ko bech rahe hain"
 
@@ -4681,6 +4743,9 @@ msgstr "{map} chhod rahe hain: {why}"
 
 msgid "sold the {kind} for {n} arnebia"
 msgstr "{kind} {n} arnebia mein bech di"
+
+msgid "sold {list}; {n} arnebia came in"
+msgstr "{list} bech diye; {n} arnebia aaye"
 
 msgid "sold {n} {item}"
 msgstr "{n} {item} bech diye"
@@ -4888,6 +4953,9 @@ msgstr "basta"
 
 msgid "the bag cursor is out of range"
 msgstr "bag cursor hadd se bahar hai"
+
+msgid "the bag is empty - nothing to throw away"
+msgstr "basta khaali hai - phenkne ko kuch nahi"
 
 msgid "the bag is full"
 msgstr "basta bhara hua hai"
@@ -5141,6 +5209,11 @@ msgstr "target keys se {name} select nahi hua - agla"
 msgid "the text grew too long (over {n} characters)"
 msgstr "text bohat lamba ho gaya ({n} haroof se zyada)"
 
+msgid ""
+"the throw-away list is empty - choose items in Character, Bag and supplies"
+msgstr ""
+"phenkne wali list khaali hai - Kirdaar, Basta aur supplies mein cheezein chunein"
+
 msgid "the {item} on key {key} are used up"
 msgstr "key {key} wali {item} khatam ho gayi"
 
@@ -5192,6 +5265,9 @@ msgstr "yeh number bohat bara hai: {expr}"
 
 msgid "this text is too long: {expr}"
 msgstr "yeh text bohat lamba hai: {expr}"
+
+msgid "threw away {list}"
+msgstr "{list} phenk diye"
 
 msgid "throwing away {n} {item} (the bag manager says so)"
 msgstr "{n} {item} phenk rahe hain (bag manager kehta hai)"
@@ -5366,6 +5442,11 @@ msgstr "aap"
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' aisi key nahi hai jo bot daba sakta ho."
 
+msgid ""
+"{a}: the gang base's way out is in its outer hall, walled off from here - walk out yourself and start again"
+msgstr ""
+"{a}: gang base ka bahar ka rasta us ke outer hall mein hai, jo yahan se deewar se band hai - khud bahar nikal kar dobara shuru karein"
+
 msgid "{better} is ready again - putting {pet} away for it"
 msgstr "{better} phir tayyar hai - iske liye {pet} ko wapas bhej rahe hain"
 
@@ -5479,6 +5560,9 @@ msgstr ""
 msgid "{item} weighs {w} each"
 msgstr "har {item} ka wazan {w} hai"
 
+msgid "{item}, keeping {n}"
+msgstr "{item}, {n} rakh kar"
+
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
 msgstr ""
@@ -5527,6 +5611,17 @@ msgstr "{map}: Action menu se nikal rahe hain"
 
 msgid "{map}: taking the {npc} to {dest}"
 msgstr "{map}: {npc} se {dest} ja rahe hain"
+
+msgid ""
+"{map}: the gang base's way out is in its outer hall, walled off from here"
+msgstr ""
+"{map}: gang base ka bahar ka rasta us ke outer hall mein hai, jo yahan se deewar se band hai"
+
+msgid "{map}: walking out of the gang base"
+msgstr "{map}: gang base se paidal bahar nikal rahe hain"
+
+msgid "{map}: walking out through its exit didn't take me out"
+msgstr "{map}: exit se paidal nikalne par bhi bahar nahi gaye"
 
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
@@ -5954,6 +6049,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "low on {item}: {have} left (the bag manager says only to tell you)"
 #~ msgstr ""
 #~ "{item} kam hai: {have} bache hain (basta manager kehta hai sirf aap ko batana hai)"
+
+#~ msgid "no shards were sold"
+#~ msgstr "koi shard nahi bika"
 
 #~ msgid "not yet today"
 #~ msgstr "aaj abhi nahi"
