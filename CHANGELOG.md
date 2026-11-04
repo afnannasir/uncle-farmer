@@ -1,5 +1,14 @@
 # What's new
 
+## Not released yet
+
+**Chat**
+
+- Agent 54: a chat line no longer shows a stray letter or number before the sender's name
+  ("2magoestelar"). The agent read part of the sender's id into the name for about one player in
+  four, whoever they were; it now reads the name where the game itself does. Names that start
+  with a number keep it. Uncle Farmer offers the new agent at start (close your games first).
+
 ## 0.9.0
 
 **Schedules**
