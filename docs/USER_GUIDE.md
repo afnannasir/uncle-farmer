@@ -672,6 +672,12 @@ does and turns what it sees back into English, so it finds the same potions, ski
 pets and menus. Whatever a language pack leaves untranslated is English already. Players' names are
 never changed. Pick the language in the game as usual; after changing it, restart the game.
 
+## Contact
+
+Help, Contact the developer shows the developer's email address, for questions, ideas or
+donations, with buttons to write an email or copy the address. Bugs are best
+reported as a GitHub issue, so everyone can see the fix.
+
 ## Things to know
 
 - If the bot says it can't find the game: other tools that clean the game's settings (such as

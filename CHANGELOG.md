@@ -14,6 +14,11 @@
   total. Shop prices are the shop's fixed ones; shard prices are marked as estimates.
 - A run saved twice is counted once.
 
+**Help**
+
+- Help, Contact the developer: the address to write to for questions, ideas or donations, with
+  buttons to write an email or copy it.
+
 **Shards and shops**
 
 - Tools, Update shard prices: reads the nearest Shard Broker's prices into the price list. Only

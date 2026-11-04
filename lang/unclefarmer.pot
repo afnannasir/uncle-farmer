@@ -102,6 +102,9 @@ msgid ""
 "&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
 msgstr ""
 
+msgid "&Copy the address"
+msgstr ""
+
 msgid "&Daily chores...\tCtrl+Shift+D"
 msgstr ""
 
@@ -127,6 +130,9 @@ msgid "&Edit..."
 msgstr ""
 
 msgid "&Edit...\tCtrl+E"
+msgstr ""
+
+msgid "&Email address:"
 msgstr ""
 
 msgid "&End:"
@@ -455,6 +461,9 @@ msgid "&What to do:"
 msgstr ""
 
 msgid "&When the bag is full:"
+msgstr ""
+
+msgid "&Write an email"
 msgstr ""
 
 msgid "&Write to the files in the logs folder:"
@@ -935,6 +944,12 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
+msgid "Contact the &developer..."
+msgstr ""
+
+msgid "Contact the developer"
+msgstr ""
+
 msgid "Contribution"
 msgstr ""
 
@@ -944,6 +959,9 @@ msgstr ""
 msgid "Copied"
 msgstr ""
 
+msgid "Copied {email}."
+msgstr ""
+
 msgid "Couldn't apply the settings: {err}"
 msgstr ""
 
@@ -951,6 +969,9 @@ msgid "Couldn't change the game's settings: {err}"
 msgstr ""
 
 msgid "Couldn't close it: {why}"
+msgstr ""
+
+msgid "Couldn't copy it. The address is {email}"
 msgstr ""
 
 msgid "Couldn't delete it: {err}"
@@ -1943,6 +1964,9 @@ msgstr ""
 msgid "No crystals or runes seen yet."
 msgstr ""
 
+msgid "No email program opened. Write to {email} from your email."
+msgstr ""
+
 msgid "No farming spots yet."
 msgstr ""
 
@@ -2308,6 +2332,10 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 
 msgid "Put the pet &away when the run ends"
+msgstr ""
+
+msgid ""
+"Questions, ideas, or want to donate? Write to the developer at {email}. Bugs are best reported on GitHub, so everyone can see the fix: {issues}"
 msgstr ""
 
 msgid "Quick guide"

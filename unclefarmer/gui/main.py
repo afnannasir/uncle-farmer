@@ -245,9 +245,15 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           (_("&Commands for trusted players"),
                            lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
                           (_("Check for &updates..."), lambda e: self.check_updates()),
+                          (_("Contact the &developer..."), lambda e: self.contact_developer()),
                           (_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
+
+    def contact_developer(self) -> None:
+        from .contact import ContactDialog
+        with ContactDialog(self) as d:
+            d.ShowModal()
 
     def go_tab(self, i: int) -> None:
         self.nb.SetSelection(i)
@@ -444,6 +450,7 @@ silence. Trusted players can send commands; send "help" to the character to get 
 
 9. SCRIPTS
 For anything a plan can't do: Plans tab, New script. Help, Script commands lists every command.
+Questions, ideas or donations: Help, Contact the developer.
 
 SAFETY
 Stop always lets go of every key. The bot stops by itself when it gets stuck again and again, dies

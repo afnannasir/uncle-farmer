@@ -102,6 +102,9 @@ msgid ""
 "&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
 msgstr "Roz ki &tameer (har baar 10,000 arnebia, 2,500 gang contribution):"
 
+msgid "&Copy the address"
+msgstr "Pata &copy karein"
+
 msgid "&Daily chores...\tCtrl+Shift+D"
 msgstr "&Roz ke kaam...\tCtrl+Shift+D"
 
@@ -128,6 +131,9 @@ msgstr "&Tabdeel..."
 
 msgid "&Edit...\tCtrl+E"
 msgstr "&Tabdeel...\tCtrl+E"
+
+msgid "&Email address:"
+msgstr "&Email ka pata:"
 
 msgid "&End:"
 msgstr "&Aakhir:"
@@ -459,6 +465,9 @@ msgstr "&Kya karna hai:"
 
 msgid "&When the bag is full:"
 msgstr "&Jab basta bhar jaye:"
+
+msgid "&Write an email"
+msgstr "&Email likhein"
 
 msgid "&Write to the files in the logs folder:"
 msgstr "logs folder ki files mein &likhein:"
@@ -950,6 +959,12 @@ msgstr "Trusted players ke commands"
 msgid "Commands: {list}"
 msgstr "Hukm: {list}"
 
+msgid "Contact the &developer..."
+msgstr "&Developer se raabta..."
+
+msgid "Contact the developer"
+msgstr "Developer se raabta"
+
 msgid "Contribution"
 msgstr "Hissa"
 
@@ -959,6 +974,9 @@ msgstr "Sab cop&y karein"
 msgid "Copied"
 msgstr "Copy ho gaya"
 
+msgid "Copied {email}."
+msgstr "{email} copy ho gaya."
+
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
 
@@ -967,6 +985,9 @@ msgstr "Game ki tarteeb badal nahi saka: {err}"
 
 msgid "Couldn't close it: {why}"
 msgstr "Ise band nahi kar saka: {why}"
+
+msgid "Couldn't copy it. The address is {email}"
+msgstr "Copy nahi ho saka. Pata yeh hai: {email}"
 
 msgid "Couldn't delete it: {err}"
 msgstr "Hata nahi saka: {err}"
@@ -1992,6 +2013,9 @@ msgstr "{word} naam ka koi command nahi. List ke liye help bhejein."
 msgid "No crystals or runes seen yet."
 msgstr "Abhi tak koi crystals ya runes nahi dikhe."
 
+msgid "No email program opened. Write to {email} from your email."
+msgstr "Koi email program nahi khula. Apni email se {email} par likhein."
+
 msgid "No farming spots yet."
 msgstr "Abhi koi kheti ki jagah nahi."
 
@@ -2370,6 +2394,11 @@ msgstr ""
 
 msgid "Put the pet &away when the run ends"
 msgstr "Run khatam hone par pet ko &wapas bhej dein"
+
+msgid ""
+"Questions, ideas, or want to donate? Write to the developer at {email}. Bugs are best reported on GitHub, so everyone can see the fix: {issues}"
+msgstr ""
+"Sawal, khayalaat, ya chanda dena chahte hain? Developer ko {email} par likhein. Bugs behtar hai GitHub par bataayein, taake sab ko hal nazar aaye: {issues}"
 
 msgid "Quick guide"
 msgstr "Mukhtasar guide"

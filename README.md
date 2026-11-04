@@ -216,7 +216,8 @@ back:
 ## Contact 📧
 
 Questions, ideas, or anything else: [afnan.nasir2000@gmail.com](mailto:afnan.nasir2000@gmail.com). Bugs are best reported as an
-[issue](https://github.com/afnannasir/uncle-farmer/issues), so everyone can see the fix.
+[issue](https://github.com/afnannasir/uncle-farmer/issues), so everyone can see the fix. Inside the app, Help, Contact the
+developer shows the address too.
 
 ## Play fair
 
