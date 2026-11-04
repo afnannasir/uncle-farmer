@@ -16,13 +16,13 @@ from __future__ import annotations
 import os
 import re
 import threading
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any
 
 from .. import atlas, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
 from ..i18n import _
-from . import bagrules
+from . import bagrules, menus
 from .bot import CONFIRM, Bot, Stopped
 from .botparts.travel import ways_out
 
@@ -329,12 +329,17 @@ def buy(b: Bot, item: str, n: int) -> int:
         tried.append(target)
         visit(b, None, candidates=[target])
         try:
-            if not _buy_menu(b, item):
+            # a potion seller's verified list: the item by its index, no walk down the list
+            if menus.pick(b, menus.POTION_SHOP, name=item) is not None:
+                note_shop(target, item, True)
+                type_number(b, n)
+            elif not _buy_menu(b, item):
                 note_shop(target, item, False)
                 b.log(_("{npc} doesn't sell {item} - trying the next nearest shop", npc=target[1], item=item))
                 continue
-            note_shop(target, item, True)
-            pick(b, item_pattern(item), n)
+            else:
+                note_shop(target, item, True)
+                pick(b, item_pattern(item), n)
         finally:
             b.close_dialogs()
         got = counts(b).get(item.lower(), 0) - before
@@ -662,6 +667,47 @@ def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
     return out
 
 
+TRADE_MOST = 2000      # the Shard Market's "how many" box takes at most this many at a time
+
+
+def market_lists(b: Bot, name: str) -> bool:
+    """The Shard Market's list is open and has the shard: by the verified layout when the agent
+    reads it (agent 53), else by the entries' text."""
+    if menus.find(b, menus.SHARD_MARKET, name=name) is not None:
+        return True
+    d = b.dialog()
+    return bool(d["open"] and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None)
+
+
+def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
+    """With the Shard Market's list open: buy or sell n of a shard, in steps the "how many" box
+    takes (TRADE_MOST); the list opens again after each. Each step goes by the verified index when
+    the agent can (the shard's row, then the buy or sell row of that same shard's id), else by the
+    entries' text as before. A step that began by index never goes on by text: a buy/sell menu
+    that isn't the one for the shard just chosen is left unanswered, so the wrong shard is never
+    bought or sold. Returns how many were asked for in the steps taken."""
+    done = 0
+    while done < n:
+        step = min(n - done, TRADE_MOST)
+        listed = menus.pick(b, menus.SHARD_MARKET, name=name)
+        if listed is not None:
+            if menus.pick(b, menus.SHARD_TRADE, item_id=int(listed["id"]), action=action, wait=3.0,
+                          then_text=False) is None:
+                b.log(_("the Shard Market's buy and sell menu for {item} didn't come up as expected - "
+                        "nothing chosen there, see logs\\dialogs.log", item=name), speak=True)
+                b.close_dialogs()
+                break
+            if not type_number(b, step):
+                break
+        else:
+            if b.choose(item_pattern(name)) is None or not b.wait_dialog(3.0):
+                break
+            if not pick(b, r"\b%s\b" % action, step):
+                break
+        done += step
+    return done
+
+
 def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = None) -> int:
     """Sell shards of the given types at the nearest Shard Market (live menu, seen in our logs:
     talk -> a row per shard "<name> | Unit price N arnebia" -> "buy" / "sell" -> "Please enter the
@@ -683,27 +729,16 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
     sold = 0
     for name, n in todo:
         for _try in range(2):
-            d = b.dialog()
-            if not d["open"] or not d.get("top") or b.find_entry(d["top"], item_pattern(name)) is None:
+            if not market_lists(b, name):
                 b.close_dialogs()
                 visit(b, None, candidates=candidates)
-                d = b.dialog()
-            if d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None:
+            if market_lists(b, name):
                 break
         else:
             b.log(_("the Shard Market didn't list {item}", item=name))
             continue
         before = counts(b).get(name.lower(), 0)
-        if b.choose(item_pattern(name)) is None or not b.wait_dialog(3.0):
-            continue
-        left = n
-        while left > 0:                      # the box takes at most 2000 at a time
-            step = min(left, 2000)
-            if not pick(b, r"\bsell\b", step):
-                break
-            left -= step
-            if left > 0 and (b.choose(item_pattern(name)) is None or not b.wait_dialog(3.0)):
-                break
+        shard_trade(b, name, "sell", n)
         gone = before - counts(b).get(name.lower(), 0)
         if gone > 0:
             sold += 1
@@ -997,6 +1032,150 @@ def clean_bag(b: Bot) -> int:
     if thrown:
         b.log(_("threw away {list}", list=", ".join("%d %s" % (k, s) for s, k in thrown)), speak=True)
     return len(thrown)
+
+
+# ---------------------------------------------------------------------------------------- shard prices
+# The Shard Market's prices change; data/shards.json keeps the last ones read, which the bag manager
+# and the results use. Tools, Update shard prices reads the market's list again.
+SHARDS_FILE = "shards.json"
+PRICE_MOST = 100_000_000          # no shard has cost anywhere near this: a reading above it is wrong
+SHOWN_PRICE = re.compile(r"\bunit price\s+(\d{1,9})\s+arnebia", re.I)
+
+
+class PriceReading:
+    """What the market's list gave: valid prices by the name shards.json uses, and what was left out."""
+
+    def __init__(self) -> None:
+        self.prices: dict[str, int] = {}
+        self.bad: list[str] = []          # rows that were read but not used, with why
+        self.unknown: list[str] = []      # shards the list shows that shards.json doesn't have
+
+
+def read_market_prices(top: dict[str, Any] | None, known: Iterable[str]) -> PriceReading:
+    """The prices on the Shard Market's list as the game shows it (logs/dialogs.log): row 0 a header
+    with no command, then one row per shard, options [name, "Unit price N arnebia; ..."] and cmd
+    [1, item id, N]. A price is used only when the text and the command agree, it is a whole number
+    from 1 to PRICE_MOST, the shard is one shards.json has, and no other row gives it another
+    price. Anything else is left out with the reason; a menu that isn't the market's list gives
+    nothing at all."""
+    out = PriceReading()
+    rows: list[list[dict[str, Any] | None]] = (top or {}).get("rows") or []
+    names = {" ".join(k.split()).casefold(): k for k in known}
+    head = rows[0][0] if rows and rows[0] else None
+    if head is None or head.get("cmd") is not None or len(rows) < 2:
+        out.bad.append(_("the open menu isn't the Shard Market's list"))
+        return out
+    seen: dict[str, int] = {}
+    clash: set[str] = set()
+    for r, row in enumerate(rows[1:], start=1):
+        e = row[0] if len(row) == 1 else None
+        options: list[Any] = (e or {}).get("options") or []
+        name = str(options[0]).strip() if options and options[0] else ""
+        cmd: list[Any] = (e or {}).get("cmd") or []
+        label = name or _("row {n}", n=r)
+        if e is None or not name or len(cmd) != 3 or cmd[0] != 1:
+            out.bad.append(_("{row}: not a shard row", row=label))
+            continue
+        shown = [int(m.group(1)) for t in options[1:] if isinstance(t, str) for m in [SHOWN_PRICE.search(t)] if m]
+        sent = cmd[2]
+        if not shown:
+            out.bad.append(_("{row}: no price shown", row=label))
+            continue
+        if not isinstance(sent, int) or isinstance(sent, bool) or sent != shown[0]:
+            out.bad.append(_("{row}: the price shown ({shown}) isn't the one the menu sends ({sent})",
+                             row=label, shown=shown[0], sent=sent))
+            continue
+        if not 1 <= sent <= PRICE_MOST:
+            out.bad.append(_("{row}: {price} isn't a price", row=label, price=sent))
+            continue
+        key = names.get(" ".join(name.split()).casefold())
+        if key is None:
+            out.unknown.append(name)
+            continue
+        if key in seen and seen[key] != sent:
+            clash.add(key)
+        seen[key] = sent
+    for key in sorted(clash):
+        out.bad.append(_("{row}: listed twice with different prices", row=key))
+        seen.pop(key, None)
+    out.prices = seen
+    return out
+
+
+def save_shard_prices(prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
+    """Write the new prices into data/shards.json, every other field and shard as it was, in the
+    file's own layout. Only valid prices of shards it has are written (read_market_prices); one that
+    isn't a positive whole number is never written over a good one. Returns [(shard, old, new)] of
+    the prices that changed."""
+    path = os.path.join(paths.DATA, SHARDS_FILE)
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    data: object = json.loads(text)
+    shards: object = data.get("shards") if json.is_object(data) else None
+    if not json.is_object(data) or not json.is_object(shards):
+        raise ValueError(_("{file} isn't a shard price list", file=SHARDS_FILE))
+    changed: list[tuple[str, int, int]] = []
+    for name, price in prices.items():
+        row: object = shards.get(name)
+        if not json.is_object(row) or isinstance(price, bool) or not 1 <= price <= PRICE_MOST:
+            continue
+        old = row.get("price")
+        if old == price:
+            continue
+        # only the number changes: the file keeps its own layout, byte for byte
+        at = re.compile(r"(%s\s*:\s*\{\s*\"price\"\s*:\s*)-?\d+(?=\s*[,}])" % re.escape(json.dumps(name)))
+        text, n = at.subn(lambda m: m.group(1) + str(price), text, count=1)
+        if n != 1:
+            raise ValueError(_("{file}: the price of {shard} isn't where it should be", file=SHARDS_FILE, shard=name))
+        row["price"] = price
+        changed.append((name, old if isinstance(old, int) else 0, price))
+    if changed:
+        if json.loads(text) != data:       # the edit must say exactly what was meant, or nothing is saved
+            raise ValueError(_("{file}: the new prices didn't come out right - nothing saved", file=SHARDS_FILE))
+        json.save_text(path, text)
+    return changed
+
+
+def update_shard_prices(b: Bot) -> int:
+    """Tools, Update shard prices: read the nearest Shard Market's list and keep its prices in
+    data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
+    (those keep their old price). Returns how many prices changed."""
+    shards, markets = shard_catalog()
+    if not shards:
+        b.log(_("the shard price list (data\\shards.json) can't be read"), speak=True)
+        return 0
+    if not markets:
+        b.log(_("I don't know where a Shard Market is"), speak=True)
+        return 0
+    visit(b, None, candidates=market_candidates(markets))
+    try:
+        d = b.dialog()
+        b.note_dialog(d, "reading the shard prices")
+        got = read_market_prices(d.get("top"), shards)
+    finally:
+        b.close_dialogs()
+    for why in got.bad:
+        b.log(_("shard price not used: {why}", why=why))
+    if got.unknown:
+        b.log(_("not in the price list, left out: {list}", list=", ".join(got.unknown)))
+    missing = sorted(set(shards) - set(got.prices))
+    if missing:
+        b.log(_("not read, old price kept: {list}", list=", ".join(missing)))
+    if not got.prices:
+        b.log(_("no shard prices could be read - nothing changed"), speak=True)
+        return 0
+    try:
+        changed = save_shard_prices(got.prices)
+    except (OSError, ValueError) as e:
+        b.log(_("couldn't save the shard prices: {err}", err=e), speak=True)
+        return 0
+    if changed:
+        stats.forget_prices()           # the results cost old records at the new prices from now on
+    for name, old, new in changed:
+        b.log(_("{shard}: {old} -> {new} arnebia", shard=name, old=old, new=new))
+    b.log(_("shard prices: {changed} changed, {same} unchanged, {missing} not read",
+            changed=len(changed), same=len(got.prices) - len(changed), missing=len(missing)), speak=True)
+    return len(changed)
 
 
 def _sell_one_shard(b: Bot, name: str, n: int) -> int:

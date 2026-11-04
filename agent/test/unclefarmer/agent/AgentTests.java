@@ -44,6 +44,10 @@ public final class AgentTests {
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
         commandsAnswerWithoutTheGame();
+        theLoggedShopAndMarketMenusAreRecognised();
+        aVerifiedIndexIsChosenOnlyForItsItem();
+        aChangedOrUnexpectedMenuIsRefused();
+        theMenuReplyIsTheContracts(contract);
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
         voiceIsCleanedAndCutIntoMessages();
@@ -353,6 +357,152 @@ public final class AgentTests {
                 "ask without a game says so instead of throwing");
         eq(StateServer.handle("say 1", armed, mine, guarded), "error: say <0-6> <text>", "say without text");
         eq(StateServer.handle("pms x", armed, mine, guarded), "bad number in: pms x", "a bad number is answered");
+        check(StateServer.handle("menu", armed, mine, guarded).startsWith("{\"ok\":false"),
+                "menu without a game answers with an error, not a throw");
+        check(StateServer.handle("pick shard_market 20385", armed, mine, guarded).startsWith("error: "),
+                "pick without a game says so and chooses nothing");
+        eq(StateServer.handle("pick shard_market x", armed, mine, guarded), "bad number in: pick shard_market x",
+                "pick a bad id");
+        eq(StateServer.handle("pick shard_market", armed, mine, guarded), "error: pick <layout> <id> [buy|sell]",
+                "pick what");
+        boolean[] unarmed = {false};
+        eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
+                "pick needs arm");
+    }
+
+    // ---------------------------------------------------------------- shop and Shard Market menus
+    // The menus as dialogs.log recorded them (flags, options, cmd): the Shard Broker's list, what a
+    // shard opens, and a potion seller's list.
+    private static final String[][] MARKET_ROWS = {
+        {"Weapon Enhance Crystal Shard", "4000"}, {"Equipment Enhance Crystal Shard", "1000"},
+        {"Level 1 Ruby Shard", "2550"}, {"Level 1 Sapphire Shard", "20"}, {"Level 1 Tiger Eye Stone Shard", "2320"},
+        {"Level 1 Opal Shard", "2540"}, {"Level 1 Spinel Shard", "20"}, {"Level 1 Aquamarine Shard", "22"},
+        {"Level 1 Garnet Shard", "4020"}, {"Level 1 Blond Jade Shard", "5850"}, {"Level 1 Grape Stone Shard", "56"},
+        {"Level 1 Olivine Shard", "22"}, {"Level 1 Topaz Shard", "535"}, {"Level 1 Obsidian Shard", "2635"},
+        {"Level 1 Sunlight Stone Shard", "26"}, {"Level 1 Moonstone Shard", "2455"}, {"Level 1 Turquoise Shard", "1405"},
+    };
+    private static final String[] SHOP_ROWS = {"Small Red Potion", "Small Blue Potion", "Medium Red Potion",
+        "Medium Blue Potion", "Large Red Potion", "Large Blue Potion", "Pet Small Red Potion", "Pet Small Blue Potion",
+        "Pet Medium Red Potion", "Pet Medium Blue Potion", "Pet Large Red Potion", "Pet Large Blue Potion"};
+
+    private static Menus.Entry z(int flags, int[] cmd, String... options) {
+        return new Menus.Entry(flags, options, cmd);
+    }
+
+    private static java.util.List<Menus.Entry> row(Menus.Entry... cells) {
+        return new java.util.ArrayList<Menus.Entry>(java.util.Arrays.asList(cells));
+    }
+
+    private static Menus.Menu market() {
+        Menus.Menu m = new Menus.Menu();
+        m.rows.add(row(z(0, null, "Welcome to Shard  Market"), z(8, new int[] {4}, "View description")));
+        for (int i = 0; i < MARKET_ROWS.length; i++) {
+            int price = Integer.parseInt(MARKET_ROWS[i][1]);
+            m.rows.add(row(z(8, new int[] {1, Menus.SHARD_MARKET_IDS[i], price}, MARKET_ROWS[i][0],
+                    "Unit price " + price + " arnebia")));
+        }
+        return m;
+    }
+
+    private static Menus.Menu trade(int id, int price) {
+        Menus.Menu m = new Menus.Menu();
+        m.rows.add(row(z(13, new int[] {2, id, price, 0}, "buy")));
+        m.rows.add(row(z(13, new int[] {3, id, price, 0}, "sell")));
+        return m;
+    }
+
+    private static Menus.Menu shop() {
+        Menus.Menu m = new Menus.Menu();
+        int[] prices = {60, 60, 150, 150, 450, 450, 120, 120, 300, 300, 1000, 1000};
+        for (int i = 0; i < SHOP_ROWS.length; i++) {
+            m.rows.add(row(z(9, new int[] {1, Menus.POTION_SHOP_IDS[i], 0}, SHOP_ROWS[i],
+                    "unit price " + prices[i] + " arnebia", "Recover some HP")));
+        }
+        return m;
+    }
+
+    private static String placed(Menus.Menu m, String layout, int id, String action) {
+        try {
+            int[] at = Menus.place(m, layout, id, action);
+            return "placed " + at[0] + "," + at[1];
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        }
+    }
+
+    private static void theLoggedShopAndMarketMenusAreRecognised() {
+        eq(Menus.classify(market()), Menus.SHARD_MARKET, "the Shard Broker's list");
+        check(Menus.verified(market(), Menus.SHARD_MARKET), "in the verified order");
+        eq(Menus.classify(trade(20425, 2175)), Menus.SHARD_TRADE, "what a shard opens");
+        eq(Menus.classify(shop()), Menus.POTION_SHOP, "a potion seller's list");
+        check(Menus.verified(shop(), Menus.POTION_SHOP), "in the verified order");
+        Menus.Menu storehouse = new Menus.Menu();
+        storehouse.rows.add(row(z(0, null, "item storage")));
+        storehouse.rows.add(row(z(0, null, "deposit item")));
+        eq(Menus.classify(storehouse), Menus.UNKNOWN, "a menu without commands is none of them");
+        Menus.Menu marketplace = new Menus.Menu();      // the players' marketplace, also "buy"
+        marketplace.rows.add(row(z(12, new int[] {2, -1, 0, 1}, "buy goods")));
+        marketplace.rows.add(row(z(8, new int[] {4}, "sell goods")));
+        eq(Menus.classify(marketplace), Menus.UNKNOWN, "the players' marketplace is not the shard trade");
+        eq(Menus.classify(new Menus.Menu()), Menus.UNKNOWN, "an empty menu");
+        eq(Menus.classify(null), Menus.UNKNOWN, "no menu");
+    }
+
+    private static void aVerifiedIndexIsChosenOnlyForItsItem() {
+        eq(placed(market(), Menus.SHARD_MARKET, 20385, null), "placed 3,0", "Level 1 Ruby Shard is row 3");
+        eq(placed(market(), Menus.SHARD_MARKET, 20665, null), "placed 17,0", "the last shard, row 17");
+        eq(placed(shop(), Menus.POTION_SHOP, 23387, null), "placed 4,0", "Large Red Potion is row 4");
+        eq(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "sell"), "placed 1,0", "sell is row 1");
+        eq(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "buy"), "placed 0,0", "buy is row 0");
+    }
+
+    private static void aChangedOrUnexpectedMenuIsRefused() {
+        Menus.Menu swapped = market();
+        java.util.Collections.swap(swapped.rows, 3, 4);
+        check(!Menus.verified(swapped, Menus.SHARD_MARKET), "two rows swapped: not the verified order");
+        check(placed(swapped, Menus.SHARD_MARKET, 20385, null).startsWith("refused: shard_market changed"),
+                "and nothing is chosen in it");
+        Menus.Menu shorter = market();
+        shorter.rows.remove(shorter.rows.size() - 1);
+        check(placed(shorter, Menus.SHARD_MARKET, 20385, null).startsWith("refused: shard_market changed"),
+                "a row gone: changed");
+        Menus.Menu longer = shop();
+        longer.rows.add(row(z(9, new int[] {1, 99999, 0}, "Huge Red Potion", "unit price 2000 arnebia")));
+        check(placed(longer, Menus.POTION_SHOP, 23387, null).startsWith("refused: potion_shop changed"),
+                "a new item in the shop: changed");
+        check(placed(market(), Menus.SHARD_MARKET, 12345, null).startsWith("refused: item 12345 is not"),
+                "an item the verified layout doesn't have");
+        check(placed(shop(), Menus.SHARD_MARKET, 23387, null).startsWith("refused: the open menu is potion_shop"),
+                "the shop is not the Shard Market");
+        check(placed(market(), Menus.SHARD_TRADE, 20385, "sell").startsWith("refused: the open menu is shard_market"),
+                "selling needs the buy/sell menu open");
+        check(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20385, "sell").startsWith("refused: row 1 holds item 20425"),
+                "the buy/sell menu of another shard: refused, so the wrong shard is never sold");
+        check(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, null).startsWith("refused: shard_trade needs"),
+                "buy or sell must be said");
+        check(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "steal").startsWith("refused: shard_trade needs"),
+                "and nothing else");
+        check(placed(market(), Menus.SHARD_MARKET, 20385, "sell").startsWith("refused: shard_market takes no action"),
+                "the list itself takes no buy or sell");
+        Menus.Menu flipped = new Menus.Menu();          // sell on top: not the layout, so nothing chosen
+        flipped.rows.add(row(z(13, new int[] {3, 20425, 2175, 0}, "sell")));
+        flipped.rows.add(row(z(13, new int[] {2, 20425, 2175, 0}, "buy")));
+        eq(Menus.classify(flipped), Menus.UNKNOWN, "buy and sell the other way round is not the verified layout");
+        check(placed(flipped, Menus.SHARD_TRADE, 20425, "buy").startsWith("refused: the open menu is unknown"),
+                "so a buy is never sent as a sell");
+    }
+
+    private static void theMenuReplyIsTheContracts(Map<String, String> contract) {
+        eq(Menus.describe(trade(20425, 2175)), contract.get("menu_trade"), "the buy/sell menu's reply");
+        String m = Menus.describe(market());
+        check(m.startsWith("{\"ok\":true,\"layout\":\"shard_market\",\"verified\":true,\"items\":[{\"row\":1,"),
+                "the market's reply: " + m.substring(0, Math.min(120, m.length())));
+        check(m.contains("{\"row\":3,\"col\":0,\"id\":20385,\"name\":\"Level 1 Ruby Shard\",\"price\":2550}"),
+                "each shard with its row, id and price");
+        check(Menus.describe(shop()).contains("\"id\":23387,\"name\":\"Large Red Potion\",\"price\":450}"),
+                "a shop row's price is the one it shows");
+        eq(Menus.describe(new Menus.Menu()), "{\"ok\":true,\"layout\":\"unknown\",\"verified\":false,\"items\":[]}",
+                "an unknown menu lists nothing");
     }
 
     // ---------------------------------------------------------------- voice

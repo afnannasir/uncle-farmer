@@ -26,6 +26,12 @@ import java.util.List;
  *   world .G  int      special local targets 1..10 (team view); o() resets it to 0.
  *
  * game.Trans.b(String) is the client's own Chinese -> English lookup (a static map read).
+ *
+ * `pick` (agent 53) is the one thing here that acts: it chooses an entry of a verified shop or Shard
+ * Market menu by its index (Menus). The game does the same itself when the server picks an entry
+ * for it (game.N.e(byte[]): y.d = n, y.e = 0, then world.a(Win), the method Enter calls): the
+ * checks, the cursor and the choice all happen under the world's lock, the one every dialog change
+ * of the game's takes, so the menu can't change between the check and the choice.
  */
 final class Dialogs {
 
@@ -34,6 +40,7 @@ final class Dialogs {
     static final String D_KIND = "b";
     static final String D_ROW = "d";
     static final String D_COL = "e";
+    static final String D_OPTION = "f";
     static final String D_ROWS = "g";
     static final String Z_FLAGS = "a";
     static final String Z_TEXT = "e";
@@ -66,6 +73,115 @@ final class Dialogs {
         } catch (Throwable t) {
             Log.error("dialogs", t);
             return error("failed: " + t);
+        }
+    }
+
+    /** `menu`: the open menu as Menus sees it (layout, verified, items by index). */
+    static String menu() {
+        try {
+            Object world = Memory.world();
+            loader = world.getClass().getClassLoader();
+            List<Object> open = copy(list(world, W_DIALOGS));
+            if (open.isEmpty()) return "{\"ok\":true,\"layout\":\"none\",\"verified\":false,\"items\":[]}";
+            return Menus.describe(model(open.get(open.size() - 1)));
+        } catch (Memory.Unavailable u) {
+            return error(u.getMessage());
+        } catch (Throwable t) {
+            Log.error("menu", t);
+            return error("failed: " + t);
+        }
+    }
+
+    /** `pick <layout> <id> [buy|sell]`: choose the item by its verified index, or refuse with the
+     * reason and touch nothing. */
+    static String pick(String layout, int id, String action) {
+        try {
+            Object world = Memory.world();
+            loader = world.getClass().getClassLoader();
+            java.awt.Frame win = Memory.window();
+            if (win == null) return "error: no game window";
+            Method choose = chooseMethod(world.getClass(), win.getClass());
+            if (choose == null) return "error: the game's choose method wasn't found";
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Object y = open.get(open.size() - 1);
+                int[] at;
+                try {
+                    at = Menus.place(model(y), layout, id, action);
+                } catch (Menus.Refused r) {
+                    return "refused: " + r.getMessage();
+                }
+                setInt(y, D_ROW, at[0]);
+                setInt(y, D_COL, at[1]);
+                setInt(y, D_OPTION, 0);
+                choose.invoke(world, win);
+                Log.info("ACTION menu " + layout + " row " + at[0] + " item " + id + (action == null ? "" : " " + action));
+                return "picked " + layout + " " + at[0] + " " + at[1] + " " + id;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Throwable t) {
+            Log.error("pick", t);
+            return "error: " + t;
+        }
+    }
+
+    private static volatile Method choose;
+
+    /** world.a(Win): public, boolean, the window its only parameter - the one method of that shape
+     * (Enter's). Found by its shape, so a renamed build can't make it another. */
+    static Method chooseMethod(Class<?> world, Class<?> win) {
+        Method m = choose;
+        if (m != null && m.getDeclaringClass() == world) return m;
+        Method found = null;
+        for (Method c : world.getDeclaredMethods()) {
+            Class<?>[] p = c.getParameterTypes();
+            if (c.getReturnType() == boolean.class && p.length == 1 && p[0] == win
+                    && Modifier.isPublic(c.getModifiers())) {
+                if (found != null) return null;       // two of that shape: not sure which, so neither
+                found = c;
+            }
+        }
+        if (found != null) {
+            found.setAccessible(true);
+            choose = found;
+        }
+        return found;
+    }
+
+    /** The dialog y as Menus reads it: every entry's flags, options (in English) and command. */
+    static Menus.Menu model(Object y) throws Memory.Unavailable {
+        Menus.Menu m = new Menus.Menu();
+        for (Object row : copy(list(y, D_ROWS))) {
+            List<Menus.Entry> cells = new ArrayList<Menus.Entry>();
+            List<Object> zs = row instanceof ArrayList ? copy((ArrayList<?>) row) : new ArrayList<Object>();
+            for (Object z : zs) {
+                if (z == null) {
+                    cells.add(null);
+                    continue;
+                }
+                Object opts = ref(z, Z_OPTIONS);
+                String[] o = null;
+                if (opts instanceof String[]) {
+                    o = ((String[]) opts).clone();
+                    for (int i = 0; i < o.length; i++) o[i] = english(o[i]);
+                }
+                Object cmd = ref(z, Z_COMMAND);
+                cells.add(new Menus.Entry(intField(z, Z_FLAGS), o, cmd instanceof int[] ? ((int[]) cmd).clone() : null));
+            }
+            m.rows.add(cells);
+        }
+        return m;
+    }
+
+    private static void setInt(Object o, String name, int value) throws Memory.Unavailable {
+        Field f = field(o.getClass(), name);
+        if (f == null || f.getType() != int.class) throw moved(o, name);
+        try {
+            f.setInt(o, value);
+        } catch (IllegalAccessException e) {
+            throw moved(o, name);
         }
     }
 

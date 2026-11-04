@@ -177,7 +177,7 @@ def test_save_keeps_quiet_when_nothing_happened(monkeypatch: pytest.MonkeyPatch,
     assert stats.runs("Hero Two") == []
 
 
-def test_save_appends_runs_and_they_can_be_read_back(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_save_appends_a_run_once_and_it_can_be_read_back(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(stats, "RESULTS", str(tmp_path))
     t = stats.Tally("Hero Two", "Wolves")
     t.finish()
@@ -189,8 +189,14 @@ def test_save_appends_runs_and_they_can_be_read_back(monkeypatch: pytest.MonkeyP
     assert stats.characters() == ["Hero Two"]
     got = stats.runs("Hero Two")
     assert len(got) == 1 and got[0]["kills"] == 12 and got[0]["arnebia"] == 7
-    t.save()
-    assert len(stats.runs("Hero Two")) == 2
+    t.save()                                   # a second save of the same run writes nothing more
+    assert len(stats.runs("Hero Two")) == 1
+    assert len((tmp_path / "Hero Two.jsonl").read_text(encoding="utf-8").splitlines()) == 1
+    second = stats.Tally("Hero Two", "Wolves")  # another run is another record
+    second.started = t.started + 60
+    second.parts["farming"].kills = 3
+    second.save()
+    assert [r["kills"] for r in stats.runs("Hero Two")] == [12, 3]
 
 
 def test_characters_without_a_results_folder(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
