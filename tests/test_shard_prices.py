@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 
-from unclefarmer import paths, stats
+from unclefarmer import atlas, knowledge, paths, stats
 from unclefarmer.engine import script as S, town
 from conftest import as_bot, returning
 
@@ -65,9 +65,15 @@ class MarketBot:
 
 @pytest.fixture
 def data(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[Path]:
+    # The game data the app caches on first use is read now, from the real folder: read for the
+    # first time inside this test it would come from the copy (shards.json alone) and stay empty
+    # for every test after it.
+    knowledge.data()
+    atlas.kind(1041)
     shutil.copy(REAL, tmp_path / "shards.json")
     monkeypatch.setattr(paths, "DATA", str(tmp_path))
     monkeypatch.setattr(town, "visit", returning(""))
+    monkeypatch.setattr(town, "market_candidates", returning([]))
     stats.forget_prices()
     yield tmp_path / "shards.json"
     stats.forget_prices()
