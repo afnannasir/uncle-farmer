@@ -1,5 +1,17 @@
 # What's new
 
+## Not released yet
+
+**Travel**
+
+- Routes leave out a cable car or airship whose fare is more than the arnebia in the bag (VIP rides
+  are free), instead of walking to the NPC and being turned away. With no arnebia reading, every
+  ride is still planned.
+- With "Use airships" off, the nearest shop or craftsman is judged without airships too, as the
+  trip there is made.
+- A transport entry in the data that is missing its map or landing is left out instead of stopping
+  the route plan.
+
 ## 0.9.0
 
 **Schedules**
