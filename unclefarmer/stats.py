@@ -40,7 +40,8 @@ TOOL = "tool"
 # The jobs kept apart from farming, by the script command that runs them: on their own from the
 # Tools menu, or inside a farming run (chores before farming, `gem_maker` in a script).
 TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
-                         "gather": N_("Gathering"), "sell_collection": N_("Selling the collection")}
+                         "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
+                         "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag")}
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")
 OUT = ("thrown", "sold", "stored")      # left the bag after being picked up
 IN = ("bought", "withdrawn")            # came into the bag without being picked up

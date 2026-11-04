@@ -26,6 +26,10 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
     sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
                                      and Herb Buyers (all of them, if no kind is given)
+    sell_shards                      sell the shards the bag manager says to sell, at the nearest
+                                     Shard Market (this city's when it has one)
+    clean_bag                        throw away, where you stand, what is on the bag manager's
+                                     throw-away list (keeping what each rule keeps) - nothing else
     survey [cities|all|everything|here|<map>]   learn NPCs and their menus from the game itself (only looks)
     follow <player>                  stay with that player and help with their fights, until stopped
     come <player> [<map>]            walk up to that player (on their map, if it is given)
@@ -90,7 +94,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "sell_shards", "clean_bag", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
@@ -958,6 +962,14 @@ class Runner:
             town.visit(b, role)
         else:
             town.visit(b, None, name=w)
+
+    def _do_sell_shards(self, node: Node, b: Bot, o: dict[str, Any]):
+        with stats.doing(b, "sell_shards"):
+            town.sell_shards_now(b)
+
+    def _do_clean_bag(self, node: Node, b: Bot, o: dict[str, Any]):
+        with stats.doing(b, "clean_bag"):
+            town.clean_bag(b)
 
     def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
         if not town.restock(b, b.p.get("restock") or [], start=True):

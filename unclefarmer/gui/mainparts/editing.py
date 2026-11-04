@@ -8,7 +8,7 @@ import subprocess
 import wx
 
 from ... import applog, filelock, gameinstall, i18n, paths, settings
-from ...engine import dungeon, plan as plans, script
+from ...engine import dungeon, plan as plans, script, town
 from ...i18n import _
 from .. import agentfix
 from ..common import ask, ask_ok, error, info, save_file, show_text, modal
@@ -169,6 +169,33 @@ class EditingMixin(FrameParts):
                 self.auto_scan(name)          # a fresh look at the bag before choosing
         with BagManagerDialog(self, name) as d:
             d.ShowModal()
+
+    def sell_shards_now(self) -> None:
+        """Tools, Sell shards now: the shards the bag manager says to sell, at this city's Shard
+        Market or the nearest one - a job of its own, like selling the collection."""
+        self.run_errand("sell_shards\n", _("Selling shards"))
+
+    def clean_bag_now(self) -> None:
+        """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
+        the player has seen the list and said yes (thrown items are gone for good)."""
+        name = character_of(self.snapshot())
+        if not name:
+            error(self, _("Log in to the character in the game first."))
+            return
+        if self.selected_pid() in self.runs:
+            self.say(_("Stop the bot first."))
+            return
+        listed = town.throw_list(settings.load_profile(name))
+        if not listed:
+            info(self, _("The throw-away list is empty. Choose what to throw away in Character, Bag and supplies "
+                         "first."))
+            return
+        what = "\n".join(_("{item}, keeping {n}", item=item, n=keep) if keep else item for item, keep in listed)
+        if not ask(self, _("Throw away whatever of these is in the bag, right where you stand?\n\n{list}\n\n"
+                           "Nothing else is touched. Thrown items are gone for good.", list=what),
+                   _("Clean the bag")):
+            return
+        self.run_errand("clean_bag\n", _("Cleaning the bag"))
 
     def edit_other_profile(self) -> None:
         names = settings.profiles()

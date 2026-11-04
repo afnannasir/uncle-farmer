@@ -828,6 +828,15 @@ msgstr ""
 msgid "Cl&ear"
 msgstr ""
 
+msgid "Clean the &bag now (throw-away list)..."
+msgstr ""
+
+msgid "Clean the bag"
+msgstr ""
+
+msgid "Cleaning the bag"
+msgstr ""
+
 msgid "Clear the log? This can't be undone."
 msgstr ""
 
@@ -2412,7 +2421,13 @@ msgstr ""
 msgid "Sell it and come back"
 msgstr ""
 
+msgid "Sell s&hards now"
+msgstr ""
+
 msgid "Selling"
+msgstr ""
+
+msgid "Selling shards"
 msgstr ""
 
 msgid "Selling the collection"
@@ -2898,6 +2913,10 @@ msgstr ""
 msgid "The strongest one"
 msgstr ""
 
+msgid ""
+"The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
+msgstr ""
+
 msgid "The update couldn't start: {why}"
 msgstr ""
 
@@ -2960,6 +2979,14 @@ msgid "This run: {r}"
 msgstr ""
 
 msgid "Throw awa&y:"
+msgstr ""
+
+msgid ""
+"Throw away whatever of these is in the bag, right where you stand?\n"
+"\n"
+"{list}\n"
+"\n"
+"Nothing else is touched. Thrown items are gone for good."
 msgstr ""
 
 msgid "Thrown away:"
@@ -3644,6 +3671,9 @@ msgstr ""
 msgid "couldn't talk to {npc}"
 msgstr ""
 
+msgid "couldn't throw away: {list}"
+msgstr ""
+
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr ""
 
@@ -3955,6 +3985,9 @@ msgstr ""
 msgid "leaving out the {npc} on {map} and planning again"
 msgstr ""
 
+msgid "leaving {map} first, to find the nearest from outside"
+msgstr ""
+
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr ""
 
@@ -4152,6 +4185,9 @@ msgstr ""
 msgid "no secret room for this level has a free place"
 msgstr ""
 
+msgid "no shards to sell: nothing in the bag is on the bag manager's sell list"
+msgstr ""
+
 msgid "no shop in {map} sells {item} - not going to another town for it"
 msgstr ""
 
@@ -4200,6 +4236,9 @@ msgstr ""
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr ""
 
+msgid "none of the {n} places that could do it can be reached from {map}"
+msgstr ""
+
 msgid "normal"
 msgstr ""
 
@@ -4237,13 +4276,23 @@ msgstr ""
 msgid "not restocking {item}: {why}"
 msgstr ""
 
+msgid "not selling {item}: the Shard Market doesn't buy it"
+msgstr ""
+
 msgid "not set"
+msgstr ""
+
+msgid "not sold: {list}"
 msgstr ""
 
 msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
 msgid "nothing done"
+msgstr ""
+
+msgid ""
+"nothing in the bag is on the throw-away list (or only what its rules keep)"
 msgstr ""
 
 msgid "nothing of the collection was sold"
@@ -4464,6 +4513,9 @@ msgstr ""
 msgid "selecting"
 msgstr ""
 
+msgid "selling shards: {list}"
+msgstr ""
+
 msgid "selling to the nearest {role}"
 msgstr ""
 
@@ -4501,6 +4553,9 @@ msgid "skipping {map}: {why}"
 msgstr ""
 
 msgid "sold the {kind} for {n} arnebia"
+msgstr ""
+
+msgid "sold {list}; {n} arnebia came in"
 msgstr ""
 
 msgid "sold {n} {item}"
@@ -4702,6 +4757,9 @@ msgid "the bag"
 msgstr ""
 
 msgid "the bag cursor is out of range"
+msgstr ""
+
+msgid "the bag is empty - nothing to throw away"
 msgstr ""
 
 msgid "the bag is full"
@@ -4938,6 +4996,10 @@ msgstr ""
 msgid "the text grew too long (over {n} characters)"
 msgstr ""
 
+msgid ""
+"the throw-away list is empty - choose items in Character, Bag and supplies"
+msgstr ""
+
 msgid "the {item} on key {key} are used up"
 msgstr ""
 
@@ -4986,6 +5048,9 @@ msgid "this number is too large: {expr}"
 msgstr ""
 
 msgid "this text is too long: {expr}"
+msgstr ""
+
+msgid "threw away {list}"
 msgstr ""
 
 msgid "throwing away {n} {item} (the bag manager says so)"
@@ -5155,6 +5220,10 @@ msgstr ""
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr ""
 
+msgid ""
+"{a}: the gang base's way out is in its outer hall, walled off from here - walk out yourself and start again"
+msgstr ""
+
 msgid "{better} is ready again - putting {pet} away for it"
 msgstr ""
 
@@ -5265,6 +5334,9 @@ msgstr ""
 msgid "{item} weighs {w} each"
 msgstr ""
 
+msgid "{item}, keeping {n}"
+msgstr ""
+
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
 msgstr ""
@@ -5310,6 +5382,16 @@ msgid "{map}: leaving through the Action menu"
 msgstr ""
 
 msgid "{map}: taking the {npc} to {dest}"
+msgstr ""
+
+msgid ""
+"{map}: the gang base's way out is in its outer hall, walled off from here"
+msgstr ""
+
+msgid "{map}: walking out of the gang base"
+msgstr ""
+
+msgid "{map}: walking out through its exit didn't take me out"
 msgstr ""
 
 msgid "{map}: {n} NPCs"
