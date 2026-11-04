@@ -55,6 +55,7 @@ from ..i18n import _
 from . import bagrules, town
 from .bot import Bot, Stopped
 from .botparts.base import STOPPING, note_failure
+from .botparts.travel import note_way_out
 
 # The craftsmen in a gang's base: the same cells in every gang (seen in two gangs' bases).
 GANG_SPOTS = {"forger": ("Forger", (28, 94)), "gem_craftsman": ("Gem Craftsman", (59, 93)),
@@ -148,6 +149,7 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
     b.close_dialogs()
     town.visit(b, "gang_entrance")          # (leaves a gang base first when we are in one)
     mid = b.map_id()
+    me = b.me()
     if gang:
         if not pick_at_entrance(b, gang):
             return False
@@ -166,6 +168,8 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
         return False
     if not in_gang(b):
         return False
+    # the base's exit leads back here: judge the nearest storehouse or market from this city
+    note_way_out(b, b.map_id(), mid, (me.get("x", 0), me.get("y", 0)))
     if not _reachable(b, role):
         b.log(_("landed in the gang's inner hall, which is walled off from the craftsmen"), speak=True)
         return False

@@ -24,6 +24,7 @@ from ..clock import clock_for
 from ..i18n import _
 from . import bagrules
 from .bot import CONFIRM, Bot, Stopped
+from .botparts.travel import ways_out
 
 
 def counts(b: Bot) -> dict[str, int]:
@@ -46,20 +47,45 @@ Npc = tuple[int, str, float, float]      # (map, name, x, y)
 
 
 def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -> Npc | None:
-    """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y)."""
+    """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y).
+
+    From inside a map we can't plan our way out of (a gang base, a dungeon) every other map costs
+    the same unknown "leave", so the first NPC in the data's order used to win: a Gem Maker in the
+    gang base entered from central plains went on to Mario Basin's craftsman. There, an NPC on
+    another map is judged from where the way out puts us, when that is known (ways_out)."""
     here = b.map_id()
     me = b.me()
+    out = ways_out(b).get(here) if travel.is_instance(here) else None
     best: tuple[float, Npc] | None = None
     for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
-        legs, cost = travel.plan(here, (me["x"], me["y"]), mid, (x, y + 1), with_cost=True,
+        start_map, start_cell, extra = here, (me["x"], me["y"]), 0.0
+        if out is not None and mid != here:
+            start_map, start_cell, extra = out[0], out[1], travel.LEAVE_COST
+        legs, cost = travel.plan(start_map, start_cell, mid, (x, y + 1), with_cost=True,
                                  transport=b.p.get("use_transport", True), vip=b.p.get("vip", False),
                                  bag=b.bag_rows() if b.p.get("use_travel_items", False) else [],
                                  hearth_home=b.p.get("hearth_home") or None)
         if legs is None or cost is None:
             continue
+        cost += extra
         if best is None or cost < best[0]:
             best = (cost, (mid, name, x, y))
     return best[1] if best else None
+
+
+def _step_out_first(b: Bot, target: Npc | None) -> bool:
+    """In a gang base whose way out we haven't seen yet (the run started inside it), with the chosen
+    NPC on another map: walk out first, so the nearest one is chosen from where we come out rather
+    than by the data's order. (Dungeons are left as travel plans it: a travel item may beat the
+    Action menu there.) True when we left (choose again)."""
+    here = b.map_id()
+    if target is None or target[0] == here or travel.gang_exit(here) is None or here in ways_out(b):
+        return False
+    leave = getattr(b, "leave_here", None)
+    if leave is None:
+        return False
+    b.log(_("leaving {map} first, to find the nearest from outside", map=atlas.label(here)))
+    return bool(leave()) and b.map_id() != here
 
 
 def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None) -> str:
@@ -72,6 +98,11 @@ def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequenc
         target = (known["map"], known["name"], known["x"], known["y"]) if known else None
     else:
         target = nearest(b, role)
+    if not name and _step_out_first(b, target):
+        target = nearest(b, role, candidates or None)
+    if target is None and candidates:
+        raise Stopped(_("none of the {n} places that could do it can be reached from {map}",
+                        n=len(candidates), map=atlas.label(b.map_id())))
     if target is None:
         raise Stopped(_("I don't know where to find a {role} - visit one with the agent running first",
                         role=(role or name or "").replace("_", " ")))     # a named NPC has no role
@@ -606,15 +637,28 @@ def shard_catalog() -> tuple[dict[str, dict[str, Any]], dict[str, list[float]]]:
 def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
     """(map, name, x, y) for each Shard Market, under the name the game uses there now: the survey
     found the "Shard Marketplace" renamed "Shard Broker" in every city (2026-10-11), and talk()
-    finds an NPC by its exact name."""
+    finds an NPC by its exact name.
+
+    Every city's market, not only those in shards.json: that file holds the cities whose market
+    menu was read (its prices), and leaving the others out sent a character in Mario Basin or
+    Holy Blood City to sell shards in another city past their own market."""
     out: list[Npc] = []
+    npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
+
+    def surveyed(n: dict[str, Any]) -> bool:
+        return any(str(src).startswith("survey") for src in n.get("sources", []))
+
     for m, xy in markets.items():
-        npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
-        here = [n for n in npcs
-                if n.get("map") == int(m) and n.get("role") == "shard_market"
-                and any(src.startswith("survey") for src in n.get("sources", []))]
+        here = [n for n in npcs if n.get("map") == int(m) and n.get("role") == "shard_market" and surveyed(n)]
         best = min(here, key=lambda n: abs(n["x"] - xy[0]) + abs(n["y"] - xy[1]), default=None)
         out.append((int(m), best["name"] if best else "Shard Broker", xy[0], xy[1]))
+    seen = {npc[0] for npc in out}
+    for mid, name, x, y in knowledge.service_npcs("shard_market"):
+        if mid in seen or atlas.kind(mid) == "gang":
+            continue
+        seen.add(mid)
+        known = next((n for n in npcs if n.get("map") == mid and n.get("name") == name), None)
+        out.append((mid, name if known is not None and surveyed(known) else "Shard Broker", x, y))
     return out
 
 
@@ -854,6 +898,105 @@ def _sell_to_buyers(b: Bot, sales: Iterable[tuple[str, int]], store: list[tuple[
         b.log(_("nobody I know buys {item} - storing it instead", item=name))
         store.append((name, n))
     return done
+
+
+# ---------------------------------------------------------------------------------------- Tools: by hand
+def _bag_and_hotkeys(b: Bot) -> tuple[dict[str, int], list[str]]:
+    """{item as the bag spells it: count} and the items on hotkeys, as a bag trip reads them."""
+    scan: dict[str, Any] = b.p.get("scan") or {}
+    hotkeys: list[dict[str, Any]] = scan.get("hotkeys", [])
+    bag: dict[str, int] = {}
+    for r in b.bag_rows():
+        if r.get("name") and r.get("count"):
+            bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
+    return bag, [h["item"] for h in hotkeys if h.get("item")]
+
+
+def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
+    """What Tools, Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
+    (keeping the number its rule keeps) and the Shard Market buys; and the shards set to sell that
+    the market doesn't list (not sold, said)."""
+    bag, hot = _bag_and_hotkeys(b)
+    market, _m = shard_catalog()
+    buys = {n.lower() for n in market}
+    sell: list[tuple[str, int]] = []
+    other: list[str] = []
+    for name, action, n in bagrules.plan(b.p, bag, hot, None):
+        if action != "sell" or "shard" not in name.lower():
+            continue
+        if name.lower() in buys:
+            sell.append((name, n))
+        else:
+            other.append(name)
+    return sell, other
+
+
+def sell_shards_now(b: Bot) -> int:
+    """Tools, Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
+    Market - the one in this city when it has one - and nothing else (the bag trip's shard step on
+    its own). Says what was sold and what wasn't. Returns how many kinds were sold."""
+    todo, other = shards_to_sell(b)
+    for name in other:
+        b.log(_("not selling {item}: the Shard Market doesn't buy it", item=name))
+    if not todo:
+        b.log(_("no shards to sell: nothing in the bag is on the bag manager's sell list"), speak=True)
+        return 0
+    before = counts(b)
+    b.log(_("selling shards: {list}", list=", ".join("%d %s" % (n, s) for s, n in todo)))
+    sell_shards(b, [s for s, _n in todo], at_most={s.lower(): n for s, n in todo})
+    after = counts(b)
+    sold = [(s, before.get(s.lower(), 0) - after.get(s.lower(), 0)) for s, _n in todo]
+    done = [(s, k) for s, k in sold if k > 0]
+    left = [s for s, k in sold if k <= 0]
+    if left:
+        b.log(_("not sold: {list}", list=", ".join(left)), speak=True)
+    if done:
+        b.log(_("sold {list}; {n} arnebia came in", list=", ".join("%d %s" % (k, s) for s, k in done),
+                n=max(0, after.get(stats.ARNEBIA, 0) - before.get(stats.ARNEBIA, 0))), speak=True)
+    return len(done)
+
+
+def throw_list(p: dict[str, Any]) -> list[tuple[str, int]]:
+    """The bag manager's throw-away list: [(item, how many it keeps)], only what the player put
+    there themselves."""
+    rules: dict[str, object] = p.get("bag_rules") or {}
+    return sorted((name, int(r.get("keep") or 0)) for name, r in rules.items()
+                  if json.is_object(r) and r.get("action") == "throw")
+
+
+def clean_bag(b: Bot) -> int:
+    """Tools, Clean the bag now: throw away, right where we stand, what the bag manager's
+    throw-away list says (keeping the number each rule keeps) - only what is on that list, never
+    anything else. Says what went, what couldn't be thrown and what wasn't there. Returns how many
+    kinds of item left the bag."""
+    listed = {name for name, _keep in throw_list(b.p)}
+    if not listed:
+        b.log(_("the throw-away list is empty - choose items in Character, Bag and supplies"), speak=True)
+        return 0
+    bag, hot = _bag_and_hotkeys(b)
+    if not bag:
+        b.log(_("the bag is empty - nothing to throw away"), speak=True)
+        return 0
+    todo = [(name, n) for name, action, n in bagrules.plan(b.p, bag, hot, None)
+            if action == "throw" and name.lower() in listed and bagrules.rule(b.p, name)["chosen"]]
+    if not todo:
+        b.log(_("nothing in the bag is on the throw-away list (or only what its rules keep)"), speak=True)
+        return 0
+    thrown: list[tuple[str, int]] = []
+    failed: list[str] = []
+    for name, n in todo:
+        if b.stop_event.is_set():
+            raise Stopped(_("stopped"))
+        gone = b.throw_item(name, n)
+        if gone > 0:
+            thrown.append((name, gone))
+        else:
+            failed.append(name)
+    if failed:
+        b.log(_("couldn't throw away: {list}", list=", ".join(failed)), speak=True)
+    if thrown:
+        b.log(_("threw away {list}", list=", ".join("%d %s" % (k, s) for s, k in thrown)), speak=True)
+    return len(thrown)
 
 
 def _sell_one_shard(b: Bot, name: str, n: int) -> int:
