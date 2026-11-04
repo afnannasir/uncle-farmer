@@ -1,5 +1,18 @@
 # What's new
 
+## Not released yet
+
+**Updates**
+
+- Settings, Updates, Release channel: **Master** (stable releases, the default) or **Dev**
+  (development builds of the dev branch, made by GitHub for every change: the newest changes, and
+  they can break). The choice is kept after a restart, and each channel only offers its own builds.
+- The update log is now `logs/update.log`, with the other logs, and says more: each check, the
+  download, unpacking, installing, cleaning and what went wrong. The old one moves there by itself.
+- The `update` folder is emptied and removed after every update, failed or cancelled ones too, and
+  old downloads no longer pile up in it. It is never cleaned while an update is using it, and
+  nothing outside it is ever deleted.
+
 ## 0.9.0
 
 **Schedules**

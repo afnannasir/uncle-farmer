@@ -68,10 +68,15 @@ class SetupDialog(Dialog):
         lang = self.s.get("language", "en")
         self.lang = f.choice(_("&Language:"), [n for _c, n in self.langs], codes.index(lang) if lang in codes else 0)
         self.updates: wx.CheckBox | None = None
+        self.channel: wx.Choice | None = None
         if updater.REPO:          # nowhere to look for updates: no switch for it
             f = group(panel, box, _("Updates"))
             self.updates = f.check(_("Look for a new &version when Uncle Farmer starts"),
                                    self.s.get("check_updates", True))
+            self.channel = f.choice(_("Release &channel:"),
+                                    [_("Master: stable releases"),
+                                     _("Dev: development builds (newest changes, can break)")],
+                                    updater.CHANNELS.index(updater.channel(self.s.get("update_channel"))))
 
     def day_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Farming day"))
@@ -205,6 +210,8 @@ class SetupDialog(Dialog):
         self.s["speak"] = self.speak.GetValue()
         if self.updates is not None:
             self.s["check_updates"] = self.updates.GetValue()
+        if self.channel is not None:
+            self.s["update_channel"] = updater.CHANNELS[max(0, self.channel.GetSelection())]
         self.s["game_speech"] = SPEECH_MODES[max(0, self.game_speech.GetSelection())]
         self.s["fix_voice"] = self.fix_voice.GetValue()
         self.s["results_speak"] = "end" if self.speak_end.GetValue() else "never"

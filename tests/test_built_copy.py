@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 import runpy
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -161,11 +162,11 @@ class Window:
 class Started:
     """threading.Thread for the update check, run at once on start()."""
 
-    def __init__(self, target: Any, daemon: bool = False) -> None:
-        self.target = target
+    def __init__(self, target: Any, daemon: bool = False, kwargs: dict[str, Any] | None = None) -> None:
+        self.target, self.kwargs = target, kwargs or {}
 
     def start(self) -> None:
-        self.target()
+        self.target(**self.kwargs)
 
 
 REL: updater.Release = {"version": "99.0.0", "tag": "v99.0.0", "notes": "", "asset": "UncleFarmer-99.0.0.zip",
@@ -188,8 +189,8 @@ def window(monkeypatch: pytest.MonkeyPatch) -> dict[str, list[str]]:
     def note(text: str, level: str = "INFO") -> None:
         said["notes"].append(text)
 
-    def check(timeout: float = 10) -> updater.Release | None:
-        said["checked"].append("yes")
+    def check(timeout: float = 10, update_channel: str = "master") -> updater.Release | None:
+        said["checked"].append(update_channel)
         return None                       # no newer release, or GitHub not reached: check() says None for both
     monkeypatch.setattr(updates, "info", info)
     monkeypatch.setattr(updates, "error", error)
@@ -205,9 +206,9 @@ def window(monkeypatch: pytest.MonkeyPatch) -> dict[str, list[str]]:
 @pytest.mark.usefixtures("built")
 def test_a_build_looks_for_updates_at_start(window: dict[str, list[str]]) -> None:
     Window().after_update()
-    assert window["checked"] == ["yes"]
+    assert window["checked"] == ["master"]
     assert not any("source" in n for n in window["notes"])
-    assert "update check running in the background" in window["notes"]
+    assert "update check (master channel) running in the background" in window["notes"]
 
 
 @pytest.mark.usefixtures("source")
@@ -240,3 +241,82 @@ def test_a_build_that_cannot_reach_github_says_that_not_source(window: dict[str,
     Window()._checked_updates(None, updater.UpdateError("timed out"))
     assert len(window["error"]) == 1 and "Couldn't reach GitHub" in window["error"][0]
     assert not any("source" in m for m in window["info"] + window["error"])
+
+
+# ------------------------------------------------------------ release channels in the window
+@pytest.mark.usefixtures("built")
+def test_the_start_check_asks_the_chosen_channel(window: dict[str, list[str]]) -> None:
+    w = Window()
+    w.s["update_channel"] = "dev"
+    w.after_update()
+    assert window["checked"] == ["dev"]
+    assert "update check (dev channel) running in the background" in window["notes"]
+
+
+@pytest.mark.usefixtures("built")
+def test_an_unknown_channel_checks_master(window: dict[str, list[str]]) -> None:
+    w = Window()
+    w.s["update_channel"] = "nightly"
+    w.after_update()
+    assert window["checked"] == ["master"]
+
+
+@pytest.mark.usefixtures("built")
+def test_the_help_menu_check_asks_the_chosen_channel(window: dict[str, list[str]],
+                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    asked: list[str] = []
+
+    def latest(timeout: float = 10, update_channel: str = "master") -> updater.Release | None:
+        asked.append(update_channel)
+        return None
+    monkeypatch.setattr(updater, "latest", latest)
+    w = Window()
+    w.s["update_channel"] = "dev"
+    from unclefarmer.gui.mainparts import updates
+
+    def append(self: Window, text: str, keep: bool) -> None:
+        pass
+
+    def call_after(fn: Callable[..., object], *args: object) -> None:
+        fn(*args)
+    monkeypatch.setattr(Window, "_append", append, raising=False)
+    monkeypatch.setattr(updates.wx, "CallAfter", call_after)
+    w.check_updates()
+    assert asked == ["dev"]
+    assert window["info"] == ["No development build of Uncle Farmer can be seen on GitHub yet."]
+
+
+@pytest.mark.usefixtures("built")
+def test_no_dev_build_yet_says_so(window: dict[str, list[str]]) -> None:
+    w = Window()
+    w.s["update_channel"] = "dev"
+    w._checked_updates(None, None)
+    assert window["info"] == ["No development build of Uncle Farmer can be seen on GitHub yet."]
+
+
+@pytest.mark.usefixtures("built")
+def test_back_on_master_a_dev_build_is_told_why_nothing_is_offered(window: dict[str, list[str]],
+                                                                    monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(updater, "installed_version", returning("0.9.0-dev.57"))
+    w = Window()
+    w._checked_updates({**REL, "version": "0.9.0"}, None)
+    assert len(window["info"]) == 1 and "development build 0.9.0-dev.57" in window["info"][0]
+    assert w.downloads == []
+
+
+@pytest.mark.usefixtures("built")
+def test_a_dev_build_is_offered_as_one(window: dict[str, list[str]], monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui.mainparts import updates
+    asked: list[str] = []
+    def ask(parent: object, text: str, title: str | None = None) -> bool:
+        asked.append(text)
+        return True
+    monkeypatch.setattr(updates, "ask", ask)
+    monkeypatch.setattr(updater, "installed_version", returning("0.9.0-dev.57"))
+    w = Window()
+    w.s["update_channel"] = "dev"
+    rel: updater.Release = {**REL, "version": "0.9.0-dev.58", "notes": "the notes"}
+    w._checked_updates(rel, None)
+    assert len(asked) == 1 and "0.9.0-dev.58 is out (you have 0.9.0-dev.57)" in asked[0]
+    assert "development build from the dev branch" in asked[0] and "the notes" in asked[0]
+    assert w.downloads == [rel]

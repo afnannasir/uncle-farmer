@@ -1056,6 +1056,9 @@ msgstr ""
 msgid "Details:"
 msgstr ""
 
+msgid "Dev: development builds (newest changes, can break)"
+msgstr ""
+
 msgid "Ding"
 msgstr ""
 
@@ -1818,6 +1821,9 @@ msgstr ""
 msgid "Master"
 msgstr ""
 
+msgid "Master: stable releases"
+msgstr ""
+
 msgid "Messa&ge to {where}:"
 msgstr ""
 
@@ -1962,6 +1968,9 @@ msgid "No command called {word}. Send help for the list."
 msgstr ""
 
 msgid "No crystals or runes seen yet."
+msgstr ""
+
+msgid "No development build of Uncle Farmer can be seen on GitHub yet."
 msgstr ""
 
 msgid "No email program opened. Write to {email} from your email."
@@ -2394,6 +2403,9 @@ msgid "Refill when fewer &than:"
 msgstr ""
 
 msgid "Reinstall the agent"
+msgstr ""
+
+msgid "Release &channel:"
 msgstr ""
 
 msgid ""
@@ -3106,6 +3118,10 @@ msgstr ""
 msgid "This game started with an older agent. Restart it to mute it."
 msgstr ""
 
+msgid ""
+"This is a development build from the dev branch: the newest changes, not yet a stable release, and it can break."
+msgstr ""
+
 msgid "This many"
 msgstr ""
 
@@ -3504,6 +3520,10 @@ msgid "You are already on {map}."
 msgstr ""
 
 msgid "You have (last scan):"
+msgstr ""
+
+msgid ""
+"You have the development build {v}. The newest stable release, {stable}, is older; the next stable release newer than your build will be offered."
 msgstr ""
 
 msgid "a chat line"

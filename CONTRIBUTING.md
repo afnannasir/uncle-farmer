@@ -26,8 +26,8 @@ Open an issue and include:
    - **Read the game, don't guess.** Prefer what the game itself says (its texts, its messages)
      over fixed numbers in settings.
    - **Nothing leaves the computer.** No network calls except to the agent on `127.0.0.1` and the
-     update check in `unclefarmer/updater.py` (GitHub's latest release, nothing sent about the
-     player; it can be turned off), and
+     update check in `unclefarmer/updater.py` (GitHub's latest release, or its release list on the
+     Dev channel; nothing sent about the player; it can be turned off), and
      no chat or packet logging in the agent.
    - **No personal details in code or comments**: no character names, account details, or other
      players' names. Use made-up examples.
@@ -183,6 +183,27 @@ type UncleFarmer-dev-1a2b3c4.zip.sha256
 
 The two hashes must match. A `dev` artifact is a development build: never hand it out as a release.
 
+**The Dev release channel.** After a `dev` build passed, the `publish-dev` job (Ubuntu, a few
+seconds) publishes it for copies whose Settings say "Release channel: Dev":
+`ci_build.py publish-dev` uploads the build's zip as a GitHub **pre-release** tagged
+`v<version>-dev.<run number>` (v0.9.0-dev.57), with the asset `UncleFarmer-0.9.0-dev.57.zip` and its
+`.sha256`, never marked latest. The run number only grows, so a later dev build always has the
+higher version; the version stays the last release's (`unclefarmer/__init__.py`), so 0.9.0-dev.57 is
+a build made after 0.9.0 and before 0.10.0, and the updater orders them that way.
+
+- The updater's Master channel reads GitHub's *latest release*, which is never a pre-release, and
+  it also refuses any `-dev.` tag or asset. Its Dev channel reads the release list and takes only
+  pre-releases whose tag, version and asset all have the dev shape. Neither can see the other's.
+- Every build, CI's and `release.py`'s, has `build.json` beside the exe (version, channel, commit):
+  that is how an installed dev build knows its own number, and an update always replaces it.
+- The job reads the uploaded artifact back, checks GitHub's checksum of the published zip, replaces
+  a pre-release of the same tag (a re-run of the same run), and keeps the newest 10 dev
+  pre-releases: older ones go with their tags. It only ever deletes or replaces a release that is
+  a pre-release *and* has a dev tag; stable releases are never touched.
+- A newer push to `dev` cancels the run in progress, this job too: a pre-release left without its
+  zip is skipped by the updater and pruned later like any old dev build.
+- Master builds are as before: built and uploaded as an artifact, never published by CI.
+
 **The same checks on your PC:**
 
 ```
@@ -194,8 +215,10 @@ uv run python agent/java_tests.py
 uv run python ci_build.py build --type development     # the whole build job, about half an hour
 ```
 
-**Secrets:** none. No job reads a secret or gets more than read access to the repository, pull
-requests from forks run with the same read-only token, and nothing is signed or published.
+**Secrets:** none. No job reads a secret. Every job but `publish-dev` gets read access to the
+repository only; `publish-dev` gets the run's own token with `contents: write` (releases and tags)
+and `actions: read` (the artifact), runs only for `dev` itself and never for a pull request, and
+installs nothing. Pull requests from forks run with the read-only token, and nothing is signed.
 
 **Branch protection.** The rules are in `.github/rulesets/`. Once the GitHub CLI is logged in with
 admin rights on the repository, apply them (OWNER/REPO: the repository's owner and name):
@@ -221,7 +244,8 @@ The build job is not a required check on purpose: it never runs for a pull reque
 ## Releasing
 
 A release is made from `master`, by hand: CI builds every push to `master` (the production
-artifact above) but never publishes a release, signs anything or changes the version. When `dev`
+artifact above) but never publishes a stable release, signs anything or changes the version (the
+dev pre-releases above are the only thing CI publishes). When `dev`
 holds what the release should have, merge it into `master` with a pull request, then on `master`:
 write the version's changes at the top of `CHANGELOG.md`, commit and push, then
 `uv run python release.py 0.5.1 --notes-file notes.md` (the new section as the notes). It runs check.py,

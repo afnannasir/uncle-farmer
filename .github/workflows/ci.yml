@@ -8,10 +8,14 @@
 #            (these four run at the same time, each exactly once, on Windows with Python 3.14)
 #   build    push to dev    -> development build, artifact UncleFarmer-dev-<sha>        (14 days)
 #            push to master -> production build,  artifact UncleFarmer-master-<ver>-<sha> (90 days)
+#   publish-dev  after a dev build: the Dev release channel's pre-release v<ver>-dev.<run>
 #
 # Python 3.14 is the only Python the app supports and ships with, so there is no version matrix.
-# Nothing here publishes a GitHub Release or signs anything: releases stay manual (release.py), and
-# no job receives a release secret. CONTRIBUTING.md ("CI/CD") explains it all, branch rules included.
+# Stable (master) releases stay manual (release.py): nothing here publishes one or signs anything.
+# Only publish-dev writes to the repository, with the run's own GITHUB_TOKEN and no other secret: it
+# publishes a dev build as a PRE-release, never marked latest, so the Master channel (GitHub's latest
+# release) can't see it, and it only ever replaces or deletes dev pre-releases. CONTRIBUTING.md
+# ("CI/CD") explains it all, branch rules included.
 # Actions are pinned to full commit SHAs; the tag each one was taken from is in its comment.
 
 name: CI
@@ -169,6 +173,9 @@ jobs:
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master')
     runs-on: windows-latest
     timeout-minutes: 120
+    outputs:
+      artifact: ${{ steps.build.outputs.artifact }}
+      release_version: ${{ steps.build.outputs.release_version }}
     env:
       BUILD_TYPE: ${{ github.ref_name == 'master' && 'production' || 'development' }}
       UPX_VERSION: "5.3.0"
@@ -256,7 +263,61 @@ jobs:
             echo ""
             echo "Artifact: **${{ steps.build.outputs.artifact }}** (download it from this run's Artifacts)"
             echo ""
+            echo "Release version: **${{ steps.build.outputs.release_version }}**"
+            echo ""
             echo '```'
             cat dist/ci/*.zip.sha256
             echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish-dev:
+    # The Dev release channel: the build just made and checked, as a GitHub pre-release the updater
+    # finds when a copy is set to Dev. dev only; a master build is never published here.
+    name: Publish the dev build
+    needs: [build]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The only job that writes: releases and their tags (contents), and reading this run's
+    # artifact (actions). The build job, which runs the whole toolchain, stays read-only.
+    permissions:
+      contents: write
+      actions: read
+    # Two publishes never run at once. A newer push to dev still cancels this whole run (the
+    # workflow's concurrency): a pre-release left without its zip is skipped by the updater, and
+    # later runs prune it like any old dev build.
+    concurrency:
+      group: publish-dev
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_VERSION: ${{ needs.build.outputs.release_version }}
+      ARTIFACT: ${{ needs.build.outputs.artifact }}
+    steps:
+      # ci_build.py's publish-dev uses the standard library and gh only: nothing is installed.
+      - name: Check out the built commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python 3.14
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: "3.14"
+
+      - name: Fetch the build from this run
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT" --dir dist/ci
+
+      - name: Publish the pre-release (ci_build.py publish-dev)
+        run: |
+          zip=$(ls dist/ci/UncleFarmer-dev-*.zip)
+          uv run --no-project python ci_build.py publish-dev --zip "$zip" --version "$RELEASE_VERSION" --sha "$GITHUB_SHA"
+
+      - name: Summary
+        run: |
+          {
+            echo "### Dev channel"
+            echo ""
+            echo "Published pre-release **v${RELEASE_VERSION}** (asset UncleFarmer-${RELEASE_VERSION}.zip)."
           } >> "$GITHUB_STEP_SUMMARY"

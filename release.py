@@ -89,6 +89,7 @@ def main() -> None:
     set_version(v)
     import build_exe
     build_exe.main(full=a.full)
+    updater.write_build(OUT, v, "master")      # a stable release: the master channel's
     if a.local and notes:
         with open(os.path.join(OUT, "What's new.txt"), "w", encoding="utf-8") as f:
             f.write("Uncle Farmer %s\n\n%s\n" % (v, notes.strip()))
