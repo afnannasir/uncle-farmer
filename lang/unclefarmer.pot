@@ -3363,6 +3363,9 @@ msgstr ""
 msgid "arrived on {map}"
 msgstr ""
 
+msgid "arrived on {map} at {x},{y} - planning the way on from here"
+msgstr ""
+
 msgid "at {time}"
 msgstr ""
 
@@ -3372,7 +3375,13 @@ msgstr ""
 msgid "attack that heals you"
 msgstr ""
 
+msgid "attacked - staying on foot, no fusion beast until the fight is over"
+msgstr ""
+
 msgid "attacked by {name}, fighting back"
+msgstr ""
+
+msgid "attacked on the way - stopping to fight"
 msgstr ""
 
 msgid "attacks {how}"
@@ -3382,6 +3391,9 @@ msgid "avoiding elites"
 msgstr ""
 
 msgid "back to {map}"
+msgstr ""
+
+msgid "back to {map} after {why}"
 msgstr ""
 
 msgid "bad pattern: {why}"
@@ -4018,9 +4030,6 @@ msgstr ""
 msgid "low on {item}: {have} left"
 msgstr ""
 
-msgid "low on {item}: {have} left (the bag manager says only to tell you)"
-msgstr ""
-
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr ""
 
@@ -4076,6 +4085,9 @@ msgid "no answer"
 msgstr ""
 
 msgid "no arnebia shared this time: {why}"
+msgstr ""
+
+msgid "no arnebia to buy {item}"
 msgstr ""
 
 msgid "no cave lets in level {n} yet (the lowest needs level {low})"
@@ -4140,7 +4152,13 @@ msgstr ""
 msgid "no secret room for this level has a free place"
 msgstr ""
 
+msgid "no shop in {map} sells {item} - not going to another town for it"
+msgstr ""
+
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
+msgstr ""
+
+msgid "no storehouse in {map} - not taking {item} out"
 msgstr ""
 
 msgid "no sub named {name}"
@@ -4216,6 +4234,9 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid "not restocking {item}: {why}"
+msgstr ""
+
 msgid "not set"
 msgstr ""
 
@@ -4247,6 +4268,9 @@ msgid "on this map"
 msgstr ""
 
 msgid "on this map, with Resurrection Crystals"
+msgstr ""
+
+msgid "on {map}: riding - waiting to arrive"
 msgstr ""
 
 msgid "on {name}"
@@ -4382,6 +4406,9 @@ msgstr ""
 msgid "resting"
 msgstr ""
 
+msgid "restocking in {map}: {what}"
+msgstr ""
+
 msgid "restocking: {what}"
 msgstr ""
 
@@ -4393,9 +4420,6 @@ msgid "resume: I go on with the paused run."
 msgstr ""
 
 msgid "revive"
-msgstr ""
-
-msgid "riding - waiting to arrive"
 msgstr ""
 
 msgid "riding {beast}"
@@ -4503,6 +4527,9 @@ msgid "still being attacked - fighting back before stopping"
 msgstr ""
 
 msgid "still broken after the repair: {items}"
+msgstr ""
+
+msgid "still on {map} after {n} seconds - the ride didn't move us on"
 msgstr ""
 
 msgid "still short after restocking: {what}"
@@ -4710,6 +4737,9 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 
+msgid "the bag trip"
+msgstr ""
+
 msgid "the bag's gems are as high as they go"
 msgstr ""
 
@@ -4846,6 +4876,9 @@ msgstr ""
 msgid "the last 7 days"
 msgstr ""
 
+msgid "the last trip for {item} got none, and nothing has changed since"
+msgstr ""
+
 msgid "the menu has no entry like \"{want}\""
 msgstr ""
 
@@ -4861,14 +4894,23 @@ msgstr ""
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr ""
 
+msgid "the ride from {map} never arrived"
+msgstr ""
+
 msgid ""
-"the run started where monsters spawn - ending on the nearest map without them"
+"the run started where monsters spawn ({map} {x},{y}) - ending on the nearest map without them"
 msgstr ""
 
 msgid "the script is too long (over {max} characters)"
 msgstr ""
 
 msgid "the storehouse"
+msgstr ""
+
+msgid "the storehouse has no {item}"
+msgstr ""
+
+msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr ""
 
 msgid "the storehouse has {n} {item}"
@@ -4886,7 +4928,14 @@ msgstr ""
 msgid "the target key was on {mode} - back to {want}"
 msgstr ""
 
+msgid ""
+"the target keys still won't select {name} where it stands - leaving it {n} seconds"
+msgstr ""
+
 msgid "the target keys wouldn't select {name} - next one"
+msgstr ""
+
+msgid "the text grew too long (over {n} characters)"
 msgstr ""
 
 msgid "the {item} on key {key} are used up"
@@ -5021,6 +5070,9 @@ msgstr ""
 msgid "walk to the enemy"
 msgstr ""
 
+msgid "walking on to {cell}"
+msgstr ""
+
 msgid "walking to monsters"
 msgstr ""
 
@@ -5041,6 +5093,10 @@ msgid ""
 msgstr ""
 
 msgid "when {item} is below {n}"
+msgstr ""
+
+msgid ""
+"where the run started wasn't read - ending on the nearest map without monsters"
 msgstr ""
 
 msgid "where: the map I'm on and my x, y on it."
@@ -5298,6 +5354,9 @@ msgid ""
 msgstr ""
 
 msgid "{name} is about to be killed by someone else - next one"
+msgstr ""
+
+msgid "{name} is attacking our pet - fighting it first"
 msgstr ""
 
 msgid "{name} is gone, and none of our hits landed on it"

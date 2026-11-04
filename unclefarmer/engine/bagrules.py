@@ -74,8 +74,10 @@ def weights() -> dict[str, float]:
 
 
 def learn_weight(name: str, load_before: float | None, load_after: float | None, n: int) -> float | None:
-    """The load fell by (before - after) when n of the item left the bag: remember its weight."""
-    if n <= 0 or load_before is None or load_after is None or load_before < load_after:
+    """The load fell by (before - after) when n of the item left the bag: remember its weight. A load
+    that didn't move says nothing (the reading may be old, or rounded): an earlier weight is kept,
+    where it used to be overwritten with 0."""
+    if n <= 0 or load_before is None or load_after is None or load_before <= load_after:
         return None
     w = round((load_before - load_after) / float(n), 3)
     data = weights()

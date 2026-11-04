@@ -14,6 +14,7 @@ from typing import Any
 from ... import atlas
 from ...i18n import _
 from .. import beasts
+from ...nearby import OWNER
 from .base import (DIRECTIONS, NPC_HP, STOPPING, Respawned, Stopped, note_failure, snap_map)
 from .parts import as_bot, Parts
 
@@ -32,35 +33,82 @@ class WalkingMixin(Parts):
     # of its own), not that a wall is in the way: that time doesn't count towards a stuck. The
     # long-run simulator caught a hang of a few seconds mid-walk reading as a stuck and a step aside.
     GAME_STALL = 1.0
+    # A walk's own time limit, from how far it goes: on foot at about WALK_RATE tiles a second,
+    # with room for slow ground and the odd pause (a 400-tile hop takes about 100 s; the old fixed
+    # 60 s called it stuck while it was still walking). Getting nowhere is caught on its own by
+    # _no_progress, in 1.5 s, whatever the limit.
+    WALK_RATE = 4.0
+    WALK_SLACK = 1.5
+    WALK_MIN = 60.0
+    WALK_MAX = 600.0
+    ATTACK_EVERY = 0.5    # seconds between "is anything casting at us?" looks while travelling
     _dists: tuple[int, tuple[int, int], Any, Any, bool] | None
     _unsticking: bool
+    _attack_look_at: float
+    _attacks_ignored_until: float
 
+    def walk_timeout(self, tiles: float) -> float:
+        """The time limit for a walk of this many tiles (see WALK_RATE)."""
+        return min(self.WALK_MAX, max(self.WALK_MIN, self.WALK_SLACK * tiles / self.WALK_RATE + 10.0))
 
     def npc_cells(self, dest: tuple[float, float], keep: float = 2.5) -> set[tuple[int, int]]:
-        """The cells town NPCs stand on, with the cells around them - except those near dest (the
-        NPC we may be walking up to)."""
+        """The cells standing NPCs and other players take up: nobody can walk through them, and the
+        map doesn't know where they stand. An NPC takes the cells round it too (its counter, its
+        stall); a player takes its own cell. Pets and summons (" belongs to ") follow their owner
+        about and are left out, and so is our own cell, and everything near dest (the NPC we may be
+        walking up to, a monster with players round it)."""
         cells: set[tuple[int, int]] = set()
         try:
-            ents = self.snap()["entities"]
+            snap = self.snap()
         except STOPPING:
             raise                   # a stop, a death or a lost agent must not look like "no NPCs"
         except Exception as e:
             note_failure(self, "reading NPC positions", e)
             return cells
+        me: dict[str, Any] = snap.get("self") or {}
+        ents: list[dict[str, Any]] = snap.get("entities") or []
         for e in ents:
-            if not (e.get("kind") == "npc" or (e.get("id", 0) < 0 and (e.get("maxhp") or 0) >= NPC_HP)):
+            npc = e.get("kind") == "npc" or (e.get("id", 0) < 0 and (e.get("maxhp") or 0) >= NPC_HP)
+            player = (e.get("kind") == "player" and e.get("id") != me.get("id")
+                      and OWNER not in str(e.get("name") or ""))
+            if not (npc or player) or not isinstance(e.get("x"), (int, float)) or not isinstance(e.get("y"), (int, float)):
                 continue
             x, y = int(round(e["x"])), int(round(e["y"]))
             if math.hypot(x - dest[0], y - dest[1]) <= keep:
                 continue
-            cells.update((x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+            if npc:
+                cells.update((x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
+            else:
+                cells.add((x, y))
+        if "x" in me and "y" in me:
+            cells.discard((int(me["x"]), int(me["y"])))     # where we stand is never a wall
         return cells
 
-    def walk_diag(self, target: tuple[float, float], map_before: int | None = None, tol: float = 0.5, timeout: float = 60.0, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
+    def _broken_off(self, me: dict[str, Any]) -> bool:
+        """A walk stops for an attack: our HP dropped (hit), or on a trip something casts at us."""
+        return self.hit(me) or self.attacked_on_the_way()
+
+    def attacked_on_the_way(self) -> bool:
+        """While travelling: a monster has cast at us (or our pet) lately - the walk stops for the
+        fight, though our HP may not have dropped yet (a dodge, a shield, a pet hit). Only on a
+        trip between maps: the farm loop's own walks pick their fights themselves. Looked at
+        every ATTACK_EVERY seconds; never on the walking assistant (it never fights) or with
+        fighting back off."""
+        if (not getattr(self, "traveling", False) or self.in_fight or self.walk_only
+                or not self.p.get("fight_back", True)):
+            return False
+        now = self.clock.time()
+        if now < getattr(self, "_attacks_ignored_until", 0.0) or now < getattr(self, "_attack_look_at", 0.0):
+            return False
+        self._attack_look_at = now + self.ATTACK_EVERY
+        return bool(self.attackers())
+
+    def walk_diag(self, target: tuple[float, float], map_before: int | None = None, tol: float = 0.5, timeout: float | None = None, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         """Hold the east-west and the north-south key together, letting go of each once its
         coordinate is reached: on the slant while both are held, straight on after (the walk
         atlas diag_ok checked). If the game only follows one key at a time this is the old
-        one-axis walk, so it never does worse. Returns what walk_axis returns."""
+        one-axis walk, so it never does worse. Returns what walk_axis returns. timeout: None
+        works it out from the distance (walk_timeout)."""
         me = self.look_after()
         held: dict[int, tuple[int, str]] = {}
         for axis in (0, 1):
@@ -76,15 +124,16 @@ class WalkingMixin(Parts):
         try:
             start = self.clock.time()
             left = sum(abs(target[a] - (me["x"], me["y"])[a]) for a in held)
+            limit = self.walk_timeout(left) if timeout is None else timeout
             best, best_at = left, start
             near_at = 0.0
-            while self.clock.time() - max(start, self.resumed_at) < timeout:
+            while self.clock.time() - max(start, self.resumed_at) < limit:
                 self.clock.wait(self.stop_event, 0.04)
                 tick = self.clock.time()
                 if map_before is not None and self.map_id() != map_before:
                     return "map"
                 me = self.look_after()
-                if self.hit(me):
+                if self._broken_off(me):
                     return "attacked"
                 if near and self.clock.time() >= near_at:
                     near_at = self.clock.time() + self.NEAR_EVERY
@@ -126,14 +175,17 @@ class WalkingMixin(Parts):
                 self.let_go(k)
                 del held[axis]
 
-    def walk_axis(self, axis: int, target: float, map_before: int | None = None, tol: float = 0.5, timeout: float = 60.0, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
+    def walk_axis(self, axis: int, target: float, map_before: int | None = None, tol: float = 0.5, timeout: float | None = None, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         """Hold one direction until that coordinate is reached.
-        Returns 'arrived', 'stuck', 'map' (we changed map) or 'near' (near() said stop)."""
+        Returns 'arrived', 'stuck', 'map' (we changed map) or 'near' (near() said stop).
+        timeout: None works it out from the distance (walk_timeout)."""
         me = self.look_after()
         pos = me["x"] if axis == 0 else me["y"]
         delta = target - pos
         if abs(delta) <= tol:
             return "arrived"
+        if timeout is None:
+            timeout = self.walk_timeout(abs(delta))
         sign = 1 if delta > 0 else -1
         k = self.move_key(DIRECTIONS[(sign, 0) if axis == 0 else (0, sign)])
         self.last_hp = me.get("hp")
@@ -148,7 +200,7 @@ class WalkingMixin(Parts):
                 if map_before is not None and self.map_id() != map_before:
                     return "map"
                 me = self.look_after()
-                if self.hit(me):
+                if self._broken_off(me):
                     return "attacked"
                 # near() reads the whole world (is a monster in sight?): a few times a second is
                 # plenty, where the position is read every step to stop on the right tile
@@ -181,7 +233,6 @@ class WalkingMixin(Parts):
         # Both direction keys at once, across open ground on the slant (walk_diag) - unless the
         # profile turns it off, or this walk already got stuck once: then one axis at a time.
         diagonal = self.p.get("walk_diagonal", True)
-        plan = m          # after a stuck: the map with the NPCs standing about made walls
         while attempt < 4:
             if getattr(self, "traveling", False) and not self.in_fight:
                 beasts.ensure(as_bot(self), beasts.TRAVEL)   # back on the mount once a fight is behind us
@@ -191,13 +242,17 @@ class WalkingMixin(Parts):
                 # standing on a cell the map calls a wall (pushed against an edge, a fractional
                 # position): plan from the nearest walkable one, or there is "no way" from here
                 here = m.nearest_walkable(here[0], here[1], 4) or here
+            # NPCs and other players can't be walked through and the map doesn't know where they
+            # stand: plan round them, read afresh each time the walk is planned again (the survey
+            # once stood stuck behind a smithy's three NPCs).
+            plan = self._obstacle_map(m, cell, here)
             hops = self._walk_hops(m, plan, mid, here, cell, diagonal)
             stuck = self._walk_hops_go(hops, diagonal, mid if map_change else None, near)
             if stuck in ("map", "near"):
                 self.stuck_in_a_row = 0
                 return stuck
             if stuck == "attacked":
-                self.fight_back()
+                self._fight_on_the_way(cell)
                 attacks += 1
                 if attacks < self.ATTACK_LIMIT:
                     continue      # re-plan from where the fight ended; not a stuck walk
@@ -207,9 +262,6 @@ class WalkingMixin(Parts):
                 return "stuck"
             if stuck == "stuck":
                 diagonal = False
-                # NPCs can't be walked through and the map doesn't know where they stand (the
-                # survey stuck behind a smithy's three NPCs, 2026-10-11): plan round them now
-                plan = m.without(self.npc_cells(cell))
             if not stuck:
                 self.stuck_in_a_row = 0
                 return "arrived"
@@ -220,6 +272,31 @@ class WalkingMixin(Parts):
                 return "stuck"
             attempt += 1
         return "stuck"
+
+    def _obstacle_map(self, m: Any, cell: tuple[int, int], here: tuple[int, int]) -> Any:
+        """The map with the NPCs and players standing about made walls (npc_cells), our own cell
+        and the goal left open; the map itself when nobody stands in the way."""
+        blocked = self.npc_cells(cell)
+        blocked.discard(here)
+        blocked.discard((int(cell[0]), int(cell[1])))
+        return m.without(blocked) if blocked else m
+
+    def _fight_on_the_way(self, cell: tuple[int, int]) -> None:
+        """A walk broken off by an attack: the walk is paused (no key held, nothing planned) while
+        fight_back handles whoever attacks us, then it is planned again from wherever the fight
+        ended, to the same goal. On a trip the pause and the way on are logged. An attack that
+        leaves nothing to fight (a critter, a monster left alone on purpose) is not looked at again
+        for a few seconds, so the walk doesn't stop and start at every step."""
+        travelling = getattr(self, "traveling", False) and not self.walk_only
+        if not travelling:
+            self.fight_back()
+            return
+        self.log(_("attacked on the way - stopping to fight"))
+        kills = self.kills
+        self.fight_back()
+        if self.kills == kills and self.attackers():
+            self._attacks_ignored_until = self.clock.time() + 5.0
+        self.log(_("walking on to {cell}", cell="%d,%d" % (int(cell[0]), int(cell[1]))))
 
     @staticmethod
     def _walk_goal(m: Any, mid: int, cell: tuple[float, float], map_change: bool) -> tuple[int, int]:

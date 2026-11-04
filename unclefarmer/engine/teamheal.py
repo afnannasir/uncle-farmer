@@ -38,7 +38,13 @@ LEARN_PRESSES = 5     # "/6" presses per round: each names the next teammate on 
 def cast_on(b: Bot, sb: Any, h: dict[str, Any], eid: int, now: float, refused: list[str] | None = None) -> bool:
     """Select eid, press the heal h, select our own target again. The game heals the ally that is
     selected (with a monster selected the same heal lands on us). True when the heal was pressed;
-    else why not goes into refused, in words for the log."""
+    else why not goes into refused, in words for the log.
+
+    With cast reports the heal is pressed as the fight's attacks are (Bot.burst): again and again
+    until the game says it was cast. The global cooldown's end is only an estimate, taken a little
+    early on purpose so a burst's first press is the one that counts; one press there fell inside
+    the cooldown and the game dropped it - a simulated Priest landed none of its pet heals that way,
+    every one the moment before our target went back to the monster."""
     ours = b.ui().get("target")
     reply = b.a.send("select %d" % eid)
     if reply != "selected":
@@ -49,7 +55,12 @@ def cast_on(b: Bot, sb: Any, h: dict[str, Any], eid: int, now: float, refused: l
         return False
     pressed = sb.press_support(h, now)
     if pressed:
-        b.key(pressed[0])
+        burst = getattr(b, "burst", None)
+        if burst is not None and getattr(sb, "confirm", False) and b.p.get("press_burst", True):
+            me: dict[str, Any] = getattr(b, "_snap_self", None) or getattr(b, "last_me", None) or {}
+            burst(pressed[0], me.get("id"), combat.BURST_MAX)
+        else:
+            b.key(pressed[0])
     elif refused is not None:
         refused.append(_("couldn't turn to the attack page {skill} is on", skill=h["name"]))
     if ours and ours != eid:

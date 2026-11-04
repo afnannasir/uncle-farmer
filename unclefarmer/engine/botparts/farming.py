@@ -75,12 +75,15 @@ class FarmingMixin(Parts):
         within this many walking steps (else the profile's chase_range)."""
         map_id = int(map_id)
         if not self.restocked_once and not instance:
+            # Before setting out: only what is down to its min (a full top-up of everything under
+            # its stock made a trip to town for 199 potions of 200).
             self.restocked_once = True
-            self.restock_now(start=True)
+            self.restock_now()
         if getattr(self, "bag_start", None) is None:
             from .. import town
             self.bag_start = town.counts(as_bot(self))   # what was ours before the run: never sold or stored
         if not instance:
+            self.on_farm_run = True       # travel checks the restock rules on the way (restock_on_the_way)
             self.travel(map_id)
         self.farmed = True        # only a run that got to its map closes the game or the PC when it ends
         area = list(area) if area else atlas.monster_area(map_id)
@@ -119,6 +122,7 @@ class FarmingMixin(Parts):
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
+            self.on_farm_run = False
             self.in_instance, self.pack_min = was
             self.farm_filter = None
             self.timing_report(final=True)
@@ -186,12 +190,20 @@ class FarmingMixin(Parts):
         return self.clock.time()
 
     def _off_map(self, map_id: int) -> bool:
-        """We are no longer on the farm's map. A dungeon is over (True: stop); elsewhere go back."""
+        """We are no longer on the farm's map. A dungeon is over (True: stop); elsewhere go back.
+        After a trip of our own (the bag trip: away_reason) the log says so - it used to say "died
+        or moved?" after every bag trip - and the restock rules are looked at before the town is
+        left: whatever is down to its min is filled here, not on another trip later."""
         if self.in_instance:
             self.log(_("moved out of {map}", map=atlas.label(map_id)))
             return True
-        self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
+        why, self.away_reason = getattr(self, "away_reason", None), None
         with self.timed("town"):
+            if why:
+                self.restock_now()
+                self.log(_("back to {map} after {why}", map=atlas.label(map_id), why=why))
+            else:
+                self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
             self.travel(map_id)
         self.set_modes()
         return False
@@ -328,10 +340,15 @@ class FarmingMixin(Parts):
             elif kind in ("start", "place"):
                 if kind == "start":
                     if not self.start_place:
+                        self.log(_("where the run started wasn't read - ending on the nearest map without monsters"),
+                                 speak=True)
                         return self._finish_safe()
                     mid, cell = self.start_place[0], (self.start_place[1], self.start_place[2])
                     if self.spawns_at(mid, cell):
-                        self.log(_("the run started where monsters spawn - ending on the nearest map without them"))
+                        # (a city in a field, such as central plains: a start outside its walls is
+                        # monster ground, and the nearest map without monsters may be underground)
+                        self.log(_("the run started where monsters spawn ({map} {x},{y}) - ending on the "
+                                   "nearest map without them", map=atlas.label(mid), x=int(cell[0]), y=int(cell[1])))
                         return self._finish_safe()
                 else:
                     if len(how) != 3:
@@ -374,10 +391,27 @@ class FarmingMixin(Parts):
     def restock_now(self, start: bool = False) -> bool:
         """Top up the profile's restock rules if they need it (storehouse first, then shops)."""
         rules: list[dict[str, Any]] = self.p.get("restock") or []
-        if not rules:
+        if not rules or getattr(self, "restocking", False):
             return False
         from .. import town
-        return town.restock(as_bot(self), rules, start)
+        self.restocking = True            # its own walks to town must not restock again on the way
+        try:
+            return town.restock(as_bot(self), rules, start)
+        finally:
+            self.restocking = False
+
+    def restock_on_the_way(self) -> None:
+        """On a farm run's trip between maps, every restock_check_every seconds as the farm loop
+        does: an item down to its min sends us to a town now, and the trip goes on from there (the
+        travel loop plans again from wherever we are). Not on the walking assistant, not in a
+        dungeon, not on a restock's own walk."""
+        if not getattr(self, "on_farm_run", False) or self.walk_only or self.in_instance:
+            return
+        now = self.clock.time()
+        if now - getattr(self, "restock_looked", 0.0) <= self.p.get("restock_check_every", 30):
+            return
+        self.restock_looked = now
+        self.restock_now()
 
     def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
         """A walkable cell near us in the area that we can walk to: never on a map exit (stepping on

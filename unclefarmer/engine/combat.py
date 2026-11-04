@@ -536,6 +536,30 @@ class SkillBook:
             self.cast_seen = max(self.cast_seen, c["t"])
             if c["caster"] == me_id:
                 self._fold_cast(c, me_id)
+            else:
+                self._note_downed(c.get("targets") or [], c["t"] / 1000.0)
+        # A monster our pet, another player or a damage over time killed is just as dead: the
+        # fight must not press at it again until its next full look (up to 2 s, a wasted cast).
+        deaths: list[list[Any]] = r.get("deaths") or []
+        for row in deaths:
+            if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and isinstance(row[1], (int, float)):
+                self._note_downed([[row[0], 0]], row[1] / 1000.0)
+
+    def _note_downed(self, struck: list[list[Any]], t: float) -> None:
+        """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it)."""
+        downed: dict[int, float] = self.__dict__.setdefault("downed", {})    # (a test's book made without __init__)
+        for row in struck:
+            if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and row[1] == 0:
+                downed[row[0]] = max(t, downed.get(row[0], t))
+        if len(downed) > 200:
+            self.downed = dict(sorted(downed.items(), key=lambda kv: kv[1])[-100:])
+
+    def forget_target(self, mid: int) -> None:
+        """The monster is dead: a press at it the game never cast is no longer on its way, so the
+        skill is free for the next one at once (pending holds a pressed skill back 1.5 s)."""
+        for name in [n for n, t in self.pending_target.items() if t == mid]:
+            self.pending.pop(name, None)
+            self.pending_target.pop(name, None)
 
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
@@ -547,13 +571,7 @@ class SkillBook:
         target = self.pending_target.pop(name, None)
         # agent 44: whom the cast struck and their HP after it - a 0 there is a kill the fight can
         # end on now, without waiting for its next look at the world
-        struck: list[list[Any]] = c.get("targets") or []
-        downed: dict[int, float] = self.__dict__.setdefault("downed", {})    # (a test's book made without __init__)
-        for row in struck:
-            if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and row[1] == 0:
-                downed[row[0]] = t
-        if len(downed) > 200:
-            self.downed = dict(sorted(downed.items(), key=lambda kv: kv[1])[-100:])
+        self._note_downed(c.get("targets") or [], t)
         # hit results (agent v28): [target, result, amount]; result & 7 == 5 is a critical hit
         raw: list[list[int]] = c.get("hits", [])
         hits = [h for h in raw if len(h) >= 2 and h[0] != me_id]

@@ -65,6 +65,7 @@ levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`.
 from __future__ import annotations
 
 import ast
+import math
 import operator
 import random
 import re
@@ -136,7 +137,7 @@ MAX_TEXT = 10_000            # ... or a huge string
 def _check_value(value: object, line: int) -> None:
     if isinstance(value, int) and not isinstance(value, bool) and value.bit_length() > MAX_INT_BITS:
         raise Stopped(_("line {n}: the number grew too large (over {bits} bits)", n=line, bits=MAX_INT_BITS))
-    if isinstance(value, str) and len(value) > MAX_TEXT:
+    if isinstance(value, (str, bytes)) and len(value) > MAX_TEXT:
         raise Stopped(_("line {n}: the text grew too large (over {max} characters)", n=line, max=MAX_TEXT))
 
 
@@ -164,8 +165,10 @@ def compile_expr(text: str, line: int) -> ast.expr:
             if isinstance(node.value, int) and not isinstance(node.value, bool) \
                     and node.value.bit_length() > MAX_INT_BITS:
                 raise ScriptError(line, _("this number is too large: {expr}", expr=text))
-            if isinstance(node.value, str) and len(node.value) > MAX_TEXT:
+            if isinstance(node.value, (str, bytes)) and len(node.value) > MAX_TEXT:
                 raise ScriptError(line, _("this text is too long: {expr}", expr=text))
+            if isinstance(node.value, float) and not math.isfinite(node.value):
+                raise ScriptError(line, _("this number is too large: {expr}", expr=text))
         stack.extend((child, d + 1) for child in ast.iter_child_nodes(node))
     for node in ast.walk(tree):
         ok = isinstance(node, (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.UnaryOp, ast.Not, ast.USub,
@@ -176,6 +179,13 @@ def compile_expr(text: str, line: int) -> ast.expr:
         if isinstance(node, ast.Call) and not (isinstance(node.func, ast.Name) and node.func.id in FUNCTIONS):
             raise ScriptError(line, _("unknown function in: {expr}", expr=text))
     return tree.body
+
+
+def _sized(value: Any) -> Any:
+    """value, unless it is text (or bytes) grown past MAX_TEXT: "a" + "a" + ... eats memory too."""
+    if isinstance(value, (str, bytes)) and len(value) > MAX_TEXT:
+        raise ValueError(_("the text grew too long (over {n} characters)", n=MAX_TEXT))
+    return value
 
 
 def evaluate(node: ast.expr, names: Mapping[str, Any], funcs: Mapping[str, Callable[..., Any]]) -> Any:
@@ -199,9 +209,9 @@ def evaluate(node: ast.expr, names: Mapping[str, Any], funcs: Mapping[str, Calla
         return (not v) if isinstance(node.op, ast.Not) else (-v if isinstance(node.op, ast.USub) else +v)
     if isinstance(node, ast.BinOp):
         left, right = evaluate(node.left, names, funcs), evaluate(node.right, names, funcs)
-        if isinstance(node.op, ast.Mult) and (isinstance(left, str) or isinstance(right, str)):
+        if isinstance(node.op, ast.Mult) and (isinstance(left, (str, bytes)) or isinstance(right, (str, bytes))):
             raise ValueError(_("text can't be multiplied"))   # "a" * 10**9 would eat the memory
-        return _BIN[type(node.op)](left, right)   # compile_expr let only these operators through
+        return _sized(_BIN[type(node.op)](left, right))   # compile_expr let only these operators through
     if isinstance(node, ast.Compare):
         left = evaluate(node.left, names, funcs)
         for op, right_node in zip(node.ops, node.comparators):
@@ -246,7 +256,9 @@ def _strip_comment(text: str) -> str:
 
 
 def parse(text: str) -> tuple[list[Node], dict[str, list[Node]], list[Node]]:
-    """Text -> (main nodes, subs {name: nodes}, on_stop nodes). Raises ScriptError."""
+    """Text -> (main nodes, subs {name: nodes}, on_stop nodes). Raises ScriptError. A UTF-8 byte
+    order mark at the start (Notepad writes one) is not part of the first command."""
+    text = text[1:] if text.startswith("\ufeff") else text
     if len(text) > MAX_SCRIPT:
         raise ScriptError(1, _("the script is too long (over {max} characters)", max=MAX_SCRIPT))
     root = Node("root", 0)
@@ -412,9 +424,13 @@ def _message_split(rest: str) -> tuple[str, str, str]:
 
 def _number(text: str, line: int, what: str) -> float:
     try:
-        return float(text)
+        value = float(text)
     except (TypeError, ValueError):
         raise ScriptError(line, _("{what} must be a number, not {value}", what=what, value=text))
+    if not math.isfinite(value):
+        # "nan", "inf", 1e999: no count, wait or cell can be that (int() of one raised OverflowError)
+        raise ScriptError(line, _("{what} must be a number, not {value}", what=what, value=text))
+    return value
 
 
 def _prepare(node: Node):
@@ -1030,6 +1046,21 @@ class _Lazy:
     def __radd__(self, o: float) -> float: return o + self._v()
     def __sub__(self, o: float) -> float: return self._v() - o
     def __rsub__(self, o: float) -> float: return o - self._v()
+    # the rest of what SCRIPTING.md promises for numbers: * / // %, a minus sign, abs() and round()
+    def __mul__(self, o: float) -> float: return self._v() * o
+    def __rmul__(self, o: float) -> float: return o * self._v()
+    def __truediv__(self, o: float) -> float: return self._v() / o
+    def __rtruediv__(self, o: float) -> float: return o / self._v()
+    def __floordiv__(self, o: float) -> float: return self._v() // o
+    def __rfloordiv__(self, o: float) -> float: return o // self._v()
+    def __mod__(self, o: float) -> float: return self._v() % o
+    def __rmod__(self, o: float) -> float: return o % self._v()
+    def __neg__(self) -> int: return -self._v()
+    def __pos__(self) -> int: return +self._v()
+    def __abs__(self) -> int: return abs(self._v())
+    def __round__(self, ndigits: int | None = None) -> float: return round(self._v(), ndigits)
+    def __float__(self) -> float: return float(self._v())
+    def __index__(self) -> int: return self._v()
 
 
 def check(text: str) -> str | None:

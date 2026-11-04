@@ -45,6 +45,11 @@ HEAL_GAP = 3.0
 HEAL_CHECK = 2.5
 HEAL_MISSES = 3
 HEAL_REST = 300.0   # seconds of pet potions only after HEAL_MISSES misses, before the heal is tried again
+# While the heal can go off within a press or two, the pet's red potion waits for it - unless the pet
+# is below HEAL_DANGER (a heal may not be enough), or the game refused the heal lately (HEAL_REFUSED).
+HEAL_DANGER = 40.0
+HEAL_REFUSED = 20.0
+MP_EMPTY = 10.0     # our MP percent under which no heal can be cast
 DESCRIBE_RETRY = 300     # seconds before trying again to read a description that didn't come
 
 
@@ -85,6 +90,26 @@ def entity(b: Bot, snap: dict[str, Any]) -> dict[str, Any] | None:
     tail = "belongs to " + me
     return next((e for e in snap["entities"] if me and e.get("kind") == "player"
                  and " ".join(e.get("name", "").split()).endswith(tail)), None)
+
+
+def ours(b: Bot, snap: dict[str, Any]) -> set[int]:
+    """The ids of our pets out in the world: the one the pet list says is out (its id is its
+    world id), and every entity named "... belongs to <us>" - the name evened out first, since the
+    game builds it from parts and may space it oddly. A monster striking one of these is attacking
+    us as much as one striking us (Bot.attackers), and the pet's own strikes are ours (kills)."""
+    found: set[int] = set()
+    out: dict[str, Any] | None = getattr(b, "pet_out", None)
+    if out and isinstance(out.get("id"), int):
+        found.add(out["id"])
+    me_row: dict[str, Any] = snap.get("self") or {}
+    me = " ".join(str(me_row.get("name") or "").split())
+    if me:
+        tail = "belongs to " + me
+        entities: list[dict[str, Any]] = snap.get("entities") or []
+        for e in entities:
+            if e.get("kind") == "player" and isinstance(e.get("id"), int)                     and " ".join(str(e.get("name") or "").split()).endswith(tail):
+                found.add(e["id"])
+    return found
 
 
 def chosen(b: Bot) -> list[str]:
@@ -405,6 +430,7 @@ def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
     refused: list[str] = []
     if not teamheal.cast_on(b, sb, h, pet["id"], now, refused):
         b.pet_healed_at = now             # not again at once: the next try after the heal's gap
+        b.pet_heal_refused_at = now       # potions meanwhile (heal_coming)
         why = refused[0] if refused else _("no answer")
         _heal_problem(b, _("can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again",
                            pet=name, skill=h["name"], why=why))
@@ -415,6 +441,24 @@ def heal(b: Bot, pet: dict[str, Any], share: float, now: float) -> bool:
         b.told_pet_heal = True
         b.log(_("heals the pet with {skill} below {pct}% of its HP", skill=h["name"], pct="%g" % below))
     return True
+
+
+def heal_coming(b: Bot, share: float, now: float) -> bool:
+    """The pet's heal will go off within a press or two, so its red potion can wait: the class has a
+    quick heal the bot may cast on the pet, it is not resting after misses, the game hasn't refused
+    it lately, our MP can pay for it, and the pet isn't in danger. A fight looks at the world while
+    the global cooldown runs, when no heal can go off (heal() waits for the press due next): without
+    this the same look drank a pet potion every time, and a Priest's or Sorceress' pet lived on
+    potions with the heal on a key."""
+    if share < HEAL_DANGER or not b.p.get("pet_heal_with_skill", True) or getattr(b, "walk_only", False):
+        return False
+    sb = getattr(b, "skillbook", None)
+    if sb is None or not getattr(sb, "ok", False) or not sb.healer() or not getattr(b, "agent_act", False):
+        return False
+    if now < getattr(b, "pet_heal_rest_until", 0.0) or now - getattr(b, "pet_heal_refused_at", -1e9) < HEAL_REFUSED:
+        return False
+    mp = getattr(b, "mp_share", None)
+    return mp is None or mp >= MP_EMPTY
 
 
 def heal_in_fight(b: Bot, snap: dict[str, Any]) -> bool:
@@ -453,7 +497,7 @@ def look_after(b: Bot, snap: dict[str, Any]) -> None:
     share = 100.0 * n["hp"] / n["maxhp"]
     if heal(b, pet, share, now):
         return
-    if _drink(b, "pet_hp", share, n["maxhp"], _("HP")):
+    if not heal_coming(b, share, now) and _drink(b, "pet_hp", share, n["maxhp"], _("HP")):
         return
     if n["mp"] is not None and n["maxmp"]:
         if _drink(b, "pet_mp", 100.0 * n["mp"] / n["maxmp"], n["maxmp"], _("MP")):

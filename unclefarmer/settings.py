@@ -313,10 +313,21 @@ TARGET_MODES = ["all", "own side", "enemies", "NPCs"]
 _unreadable: set[str] = set()          # files that exist but could not be read: never overwrite them blindly
 
 
+def _aside_name(path: str) -> str:
+    """<name>.corrupt, or .corrupt.2, .corrupt.3 ... when that is taken: a second broken file never
+    overwrites the copy of the first."""
+    name = path + ".corrupt"
+    n = 1
+    while os.path.exists(name):
+        n += 1
+        name = "%s.corrupt.%d" % (path, n)
+    return name
+
+
 def _keep_aside(path: str) -> bool:
     """Move a file we could not read to <name>.corrupt, when the file system lets us."""
     try:
-        filelock.move(path, path + ".corrupt")
+        filelock.move(path, _aside_name(path))
         return True
     except OSError:
         return False
@@ -325,7 +336,7 @@ def _keep_aside(path: str) -> bool:
 def _copy_aside(path: str) -> None:
     """A copy of a file with values we could not use, as <name>.corrupt; the file itself stays."""
     try:
-        shutil.copyfile(path, path + ".corrupt")
+        shutil.copyfile(path, _aside_name(path))
     except OSError:
         pass
 
@@ -333,7 +344,9 @@ def _copy_aside(path: str) -> None:
 def _read(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> dict[str, Any]:
     if os.path.exists(path):
         try:
-            with open(path, encoding="utf-8") as f:
+            # utf-8-sig: a file saved by Notepad starts with a byte order mark, which the JSON
+            # reader takes for broken JSON - the player's settings went to .corrupt and defaults
+            with open(path, encoding="utf-8-sig") as f:
                 raw = json.load(f)
             if not json.is_object(raw):
                 raise ValueError("not a JSON object")

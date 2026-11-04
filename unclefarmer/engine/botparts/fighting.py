@@ -11,7 +11,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from ... import applog, atlas, jsonio, nearby
+from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, combat, pets, teamheal
@@ -35,16 +35,21 @@ class FightingMixin(Parts):
     FOLLOW_TRIES = 3      # stalls in a row, never reaching the monster, before we walk up ourselves
     DOOMED_SKIP = 10.0    # longest a monster someone else is about to kill is left alone
     FIRST_HIT = 0.5       # seconds from being in reach to our first hit landing (press, cast, the game's answer)
-    UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone
+    UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone...
+    UNSELECTED_MAX = 300.0  # ... three times longer each time again, up to this
+    UNSELECTED_MOVED = 3.0  # tiles it must move from where it couldn't be selected to be tried again
     REFUSED_RUN = 3       # bursts in a row with no cast, at a monster we never hurt, before leaving it
     REFUSED_RUN_INSIDE = 2    # ... in a dungeon, where another is always close: a refused run cost
                               # up to 5.3 s a monster in a 15-minute Scorpion Cave
     SELECT_RANGE = 20.0   # how far the game's target keys pick a monster at most, as far as we can
     MOVE_SHOT_REACH = 8.0   # shooting on the way only for a character that hits from this far
     move_shots: bool = False   # Tools, Dungeons' "shoot while walking", for the visit
+    burst_target: tuple[int, float] | None = None   # the fight's monster while a burst presses at it
     _speech: str
     select_refused: str = ""   # agent 41's reason the last `select` was refused ("" when it wasn't)
     _attackers: set[int]
+    _pet_attackers: set[int]
+    unselectable: dict[int, tuple[int, tuple[float, float], float]]
     _attackers_at: float
     last_points_key: float
     mob_names: dict[int, str]
@@ -208,8 +213,9 @@ class FightingMixin(Parts):
         return e["id"]
 
     def downed(self, mid: int, since: float) -> bool:
-        """A cast of ours since then left this monster at 0 HP (the cast report says so, agent 44):
-        dead, though the world and the death report may not show it yet."""
+        """A report since then left this monster at 0 HP - a cast of ours, our pet's or anyone's
+        (agent 44 `targets`), or the game's death report: dead, though the world may not show it
+        yet."""
         sb = self.skillbook
         return sb is not None and getattr(sb, "downed", {}).get(mid, -1.0) >= since
 
@@ -317,12 +323,10 @@ class FightingMixin(Parts):
         me: dict[str, Any] = (snap or {}).get("self") or getattr(self, "last_me", None) or {}
         if "id" not in me:
             return []
-        if snap is not None and me.get("name"):
-            # our pets' strikes are ours: a monster only they are at is no one else's (agent 44)
-            tail = nearby.OWNER + str(me["name"])
-            entities: list[dict[str, Any]] = snap.get("entities", [])
-            self.kill_tracker.own = {e["id"] for e in entities
-                                     if e.get("kind") == "player" and str(e.get("name") or "").endswith(tail)}
+        if snap is not None:
+            # our pets' strikes are ours: a monster only they are at is no one else's (agent 44);
+            # and a monster striking them is an attacker of ours (attackers)
+            self.kill_tracker.own = pets.ours(as_bot(self), snap)
         dead = self.kill_tracker.update(me["id"])
         tally = getattr(self, "tally", None)
         if tally is not None:
@@ -411,9 +415,23 @@ class FightingMixin(Parts):
         self.casts_seen = jsonio.is_object(r) and "error" not in data
         casts: list[dict[str, Any]] = data.get("casts", [])
         me: dict[str, Any] = getattr(self, "_snap_self", None) or getattr(self, "last_me", None) or {}
+        own = self.kill_tracker.own
         self._attackers = {int(c["caster"]) for c in casts
-                           if c["caster"] < 0 and self.at_us(c, me.get("id"), self.kill_tracker.own)}
+                           if c["caster"] < 0 and self.at_us(c, me.get("id"), own)}
+        self._pet_attackers = {int(c["caster"]) for c in casts
+                               if c["caster"] < 0 and own and self.at_pet(c, own)}
         return self._attackers
+
+    def pet_attackers(self) -> set[int]:
+        """The attackers (attackers()) whose casts struck our pet."""
+        self.attackers()
+        return getattr(self, "_pet_attackers", set())
+
+    @staticmethod
+    def at_pet(c: dict[str, Any], pets: set[int]) -> bool:
+        """A monster's cast struck our pet: it names the pet among whom it hit or struck."""
+        rows: list[list[Any]] = list(c.get("hits") or []) + list(c.get("targets") or [])
+        return any(row and row[0] in pets for row in rows)
 
     def at_us(self, c: dict[str, Any], me_id: int | None, pets: set[int]) -> bool:
         """A monster's cast struck us or our pet. From agent 44 every cast names whom it struck:
@@ -424,8 +442,8 @@ class FightingMixin(Parts):
         if me_id is None:
             return True
         hits: list[list[Any]] = c.get("hits") or []
-        if any(h and h[0] == me_id for h in hits):
-            return True               # it hit us, or we dodged it
+        if any(h and (h[0] == me_id or h[0] in pets) for h in hits):
+            return True               # it hit us or our pet, or we dodged it
         if "targets" in c:
             struck: list[list[Any]] = c["targets"]
             return any(row and (row[0] == me_id or row[0] in pets) for row in struck)
@@ -447,13 +465,14 @@ class FightingMixin(Parts):
         keep = self.p.get("boss_distance", 40)
         boss_list = bosses.in_sight(snap) if keep else []
         entities: list[dict[str, Any]] = snap["entities"]
+        size = atlas.maps().get(snap_map(snap), {})
         for e in entities:
             if e["kind"] != "monster" or "hp" not in e or e["hp"] <= 0:
                 continue
-            if not e.get("name") or e["maxhp"] <= 1:        # drops and corpses
-                continue
+            if not e.get("name") or e["maxhp"] <= 1 or not self._placed(e, size):
+                continue        # drops and corpses; or seen with no position we can walk to or aim at
             self.mob_names[e["id"]] = e["name"]
-            if e["maxhp"] >= NPC_HP or self.skip.get(e["id"], 0) > now:
+            if e["maxhp"] >= NPC_HP or self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
                 continue
             if self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
                 continue        # its kind took no damage and never attacked: a critter, not a monster
@@ -485,6 +504,18 @@ class FightingMixin(Parts):
         if len(self.mob_names) > 2000:
             self.mob_names = {e["id"]: e["name"] for e in out}
         return out
+
+    @staticmethod
+    def _placed(e: dict[str, Any], size: dict[str, Any]) -> bool:
+        """The monster has a real position: numbers, finite, on the map (when its size is known).
+        A reading mid-spawn or mid-despawn can carry none, and walking or aiming at it fails."""
+        x, y = e.get("x"), e.get("y")
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)) or isinstance(x, bool):
+            return False
+        if not (math.isfinite(x) and math.isfinite(y)):
+            return False
+        w, h = size.get("w"), size.get("h")
+        return not (isinstance(w, int) and isinstance(h, int)) or (0 <= x <= w + 1 and 0 <= y <= h + 1)
 
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         """The monster to take on next: the nearest one (targets() sorts them nearest first,
@@ -582,7 +613,9 @@ class FightingMixin(Parts):
         character can make, whatever the network or this loop's timing do. Nobody presses keys by
         hand while the bot fights, so the extra presses cost nothing. Through agent 45's `slot`
         the presses keep a key's pace, and each is followed by a look at the casts: no key is
-        held, so the look costs the press nothing."""
+        held, so the look costs the press nothing. A fight's burst (burst_target: the monster and
+        when the fight began) stops the moment a report says that monster died - by our pet,
+        another player, anything - with False."""
         sb = self.skillbook
         if sb is None:          # only a fight with smart skills bursts (_fight_burst)
             raise RuntimeError("a burst needs the skill book")
@@ -604,6 +637,9 @@ class FightingMixin(Parts):
                 sb.read_casts(me_id)
                 if sb.press_confirmed:
                     return True
+                aim = self.burst_target
+                if aim is not None and self.downed(*aim):
+                    return False          # dead already: no cast is coming, and none is wanted
         return False
 
     def follows(self) -> bool:
@@ -642,11 +678,46 @@ class FightingMixin(Parts):
         # Attacking anyway sends every skill with no target (or at whatever the game has
         # selected) and wastes the whole no-damage wait: leave it for one we can select.
         if not selected:
-            self.skip[mob["id"]] = self.clock.time() + self.UNSELECTED_SKIP
-            self.log(_("the target keys wouldn't select {name} - next one", name=mob["name"]))
+            self.note_unselectable(mob)
             return
         with self.timed("fight"):
             self._hit_until_down(mob)
+
+    def note_unselectable(self, mob: dict[str, Any]) -> None:
+        """The game won't let us select this monster even from as close as we got: seen, but not
+        one the target keys can track (behind a wall or in a rock, past a door edge - Skull Cave's
+        pillars). It is left alone UNSELECTED_SKIP seconds, three times longer each time it fails
+        again where it stands (up to UNSELECTED_MAX), so the farm loop doesn't walk back to it every
+        ten seconds; once it has moved off that spot it is a fresh try (targets)."""
+        now = self.clock.time()
+        rows: dict[int, tuple[int, tuple[float, float], float]] = self.__dict__.setdefault("unselectable", {})
+        n, at, _until = rows.get(mob["id"], (0, (mob["x"], mob["y"]), 0.0))
+        if math.hypot(mob["x"] - at[0], mob["y"] - at[1]) >= self.UNSELECTED_MOVED:
+            n = 0
+        n += 1
+        wait = min(self.UNSELECTED_MAX, self.UNSELECTED_SKIP * 3 ** (n - 1))
+        rows[mob["id"]] = (n, (mob["x"], mob["y"]), now + wait)
+        self.skip[mob["id"]] = now + wait
+        if len(rows) > 500:
+            self.unselectable = {k: v for k, v in rows.items() if v[2] > now}
+        if n == 1:
+            self.log(_("the target keys wouldn't select {name} - next one", name=mob["name"]))
+        else:
+            self.log(_("the target keys still won't select {name} where it stands - leaving it {n} seconds",
+                       name=mob["name"], n=int(wait)))
+
+    def untrackable(self, e: dict[str, Any], now: float) -> bool:
+        """Left alone for now by note_unselectable - unless it has moved off the spot where the
+        game wouldn't select it, which is a new chance (the record is dropped)."""
+        rows: dict[int, tuple[int, tuple[float, float], float]] = getattr(self, "unselectable", {})
+        u = rows.get(e["id"])
+        if u is None or u[2] <= now:
+            return False
+        if math.hypot(e["x"] - u[1][0], e["y"] - u[1][1]) < self.UNSELECTED_MOVED:
+            return True
+        del rows[e["id"]]
+        self.skip.pop(e["id"], None)
+        return False
 
     def _approach(self, mob: dict[str, Any], way: "_Approach") -> dict[str, Any] | None:
         """Walk up to the monster unless it is in reach already. The monster as it is now, or None
@@ -735,9 +806,18 @@ class FightingMixin(Parts):
             # and never more than two seconds apart
             if f.look is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
                 self._fight_look(f, now)
-            if f.seen is None or f.seen["hp"] <= 0:
+            if f.seen is None or f.seen["hp"] <= 0 or self.downed(f.mid, f.start):
+                # gone, at 0 HP, or reported dead by any cast or death report since the last look:
+                # no press at it now (its HP in the last look can be up to 2 s old)
+                if f.sb is not None and hasattr(f.sb, "forget_target"):
+                    f.sb.forget_target(f.mid)
+                if f.seen is not None and f.seen["hp"] > 0:
+                    self.count_kills(f.snap)
+                    return
                 self._fight_over(f)
                 return
+            if f.look is not None and f.checked == now and self._pet_needs_us(f):
+                return                # the farm loop takes the pet's attacker next (attackers first)
             casts = getattr(self.skillbook, "casts_done", 0) if self.skillbook is not None else 0
             if self._fight_hits_elsewhere(f, casts) or self._fight_no_damage(f, casts) or self._fight_moved_off(f):
                 return
@@ -749,6 +829,8 @@ class FightingMixin(Parts):
                 # up to CHECK_EVERY away and the walk to the next one waited for it (0.45 s a kill,
                 # 113 s of a 15-minute Scorpion Cave). The kill is counted when its death report
                 # comes in (count_kills, here or at the farm loop's next look).
+                if f.sb is not None and hasattr(f.sb, "forget_target"):
+                    f.sb.forget_target(f.mid)
                 self.count_kills(f.snap)
                 return
             if step == "again":
@@ -781,6 +863,30 @@ class FightingMixin(Parts):
                     self.follow_stalls = 0      # the follow attack got us there
                 f.reached = True
         f.check_cost = 0.7 * f.check_cost + 0.3 * (self.clock.time() - now)
+
+    PET_FINISH = 0.3      # a monster we fight this far down is finished before turning to the pet's attacker
+
+    def _pet_needs_us(self, f: "_Fight") -> bool:
+        """A monster is striking our pet while the one we fight attacks neither us nor the pet:
+        end this fight, and the farm loop (attackers first) takes the pet's attacker on. Not when
+        this one is nearly dead (finished first), and only for an attacker we may fight at all
+        (targets(): not a boss, not one left alone). Said once per attacker."""
+        biting = self.pet_attackers() - {f.mid}
+        if not biting or f.mid in self.attackers():
+            return False
+        m = f.m
+        if m.get("maxhp") and m["hp"] < self.PET_FINISH * m["maxhp"]:
+            return False
+        biter = next((e for e in self.targets(f.snap) if e["id"] in biting), None)
+        if biter is None:
+            return False
+        told: set[int] = self.__dict__.setdefault("_told_pet_biters", set())
+        if biter["id"] not in told:
+            told.add(biter["id"])
+            if len(told) > 200:
+                told.clear()
+            self.log(_("{name} is attacking our pet - fighting it first", name=biter["name"]))
+        return True
 
     def _fight_over(self, f: "_Fight") -> None:
         """It is gone or dead: ours (counted), someone else's, or out of sight."""
@@ -957,9 +1063,16 @@ class FightingMixin(Parts):
     def _fight_burst(self, f: "_Fight", sb: combat.SkillBook, picked: combat.Press) -> bool:
         """Press the picked skill until the game casts it. True when the fight ends: refused again
         and again at a monster we never hurt."""
-        if self.burst(picked[0], f.snap["self"].get("id"), sb.burst_time(picked[1])):
+        self.burst_target = (f.mid, f.start)
+        try:
+            cast = self.burst(picked[0], f.snap["self"].get("id"), sb.burst_time(picked[1]))
+        finally:
+            self.burst_target = None
+        if cast:
             f.refused_run = 0
             return False
+        if self.downed(f.mid, f.start):
+            return False          # it died mid-burst: no refusal of ours (_hit_until_down ends it)
         if f.dist > f.rng + 0.5:
             return False      # out of reach the follow attack is still walking us in
         sb.refuse(picked[1], self.clock.time())

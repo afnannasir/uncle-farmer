@@ -302,7 +302,7 @@ def test_farm_sets_up_and_tears_down(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Farm()
     cap = farm_capture(b, map_id=5121)
     assert b.farmed is True
-    assert b.restock_calls == [True] and b.restocked_once is True
+    assert b.restock_calls == [False] and b.restocked_once is True   # down-to-min only, no full top-up
     assert b.travels == [(5121, None)]
     assert b.set_modes_calls == [True]
     assert b.modes_done is True

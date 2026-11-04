@@ -15,7 +15,7 @@ from __future__ import annotations
 import threading
 
 import pytest
-from conftest import as_kind, failing, returning, stand_in, Clock
+from conftest import as_kind, failing, returning, stand_in, Clock, JsonOnly
 
 from unclefarmer.clock import CLOCK
 from unclefarmer import atlas, dungeons, knowledge
@@ -81,6 +81,8 @@ class Bot(TravelMixin):
         self.walk_only = False
         self.traveling = False
         self.save_profile = lambda p: self.saved.append(dict(p))
+        self.game_mode = 2                      # the target mode the game is in (mem modes)
+        self.a = JsonOnly(lambda line: {"target": self.game_mode} if line == "mem modes" else {})
 
     def log(self, line: str, speak: bool=False):
         self.lines.append(line)
@@ -118,6 +120,9 @@ class Bot(TravelMixin):
 
     def fight_back(self) -> None:
         self.lines.append("fight_back")
+
+    def restock_on_the_way(self) -> None:
+        self.lines.append("restock looked at")
 
     def settled_map(self, seconds: float = 15) -> int:
         return self.settled if self.settled is not None else self._map
@@ -907,7 +912,7 @@ def test_ride_talks_chooses_and_lands() -> None:
     b.choose = choose
     assert b.ride(npc_leg()) is True
     assert b.chosen == ["destination"]
-    assert b.target_modes == [2]                # the target mode is restored afterwards
+    assert b.target_modes == [3, 2]             # NPC mode to board, then the mode we had before
     assert any("now on map2000" in line for line in b.lines)
 
 
@@ -915,7 +920,7 @@ def test_ride_gives_up_when_the_npc_will_not_talk() -> None:
     b = Bot()
     b.talk_value = False
     assert b.ride(npc_leg()) is False
-    assert b.closed == 1 and b.target_modes == [2]
+    assert b.closed == 1 and b.target_modes == [3, 2]
 
 
 def test_ride_gives_up_when_the_destination_row_is_missing() -> None:
@@ -969,30 +974,33 @@ def test_ride_accepts_a_confirm_prompt() -> None:
 
 def test_ride_waits_for_the_cable_car_to_carry_us(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot(clock)
-    b.settled_map = lambda seconds=15: 2000
-    state = {"changed": False}
+    state = {"changed": False, "carried": False}
 
     def map_id():
+        if state["carried"]:
+            return 3000
         return 2000 if state["changed"] else 1001
 
     b.map_id = map_id
+    b.settled_map = lambda seconds=15: map_id()
 
     def choose(pattern: str):
         state["changed"] = True
         return {"options": ["x"]}
 
     b.choose = choose
-    b.wait_map_change = lambda mid, seconds: True
-    calls = {"n": 0}
+    monkeypatch.setattr(atlas, "is_ride", stand_in(atlas.is_ride, lambda mid: int(mid) == 2000))
 
-    def name(mid: int):
-        calls["n"] += 1
-        return "Cable Car Station" if calls["n"] == 1 else "map%d" % int(mid)
-
-    monkeypatch.setattr(atlas, "name", name)
+    def sleep(seconds: float) -> None:
+        b.sleeps.append(seconds)
+        clock.advance(seconds)
+        if state["changed"] and len(b.sleeps) > 20:
+            state["carried"] = True            # the car arrives by itself
+    b.sleep = sleep
     assert b.ride(npc_leg()) is True
     assert any("riding - waiting to arrive" in line for line in b.lines)
-    assert any(line.startswith("arrived on ") for line in b.lines)
+    assert any(line.startswith("arrived on map3000") for line in b.lines)
+    assert b.keys == [] and b.walked == []        # nothing pressed in the car
 
 
 def test_ride_gives_up_when_the_transport_never_moves_us(clock: Clock) -> None:
