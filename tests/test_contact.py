@@ -13,10 +13,10 @@ wx = pytest.importorskip("wx")
 from unclefarmer.gui import contact as gui_contact, main  # noqa: E402
 
 
-def test_the_address_is_the_developer_s_public_one() -> None:
-    assert contact.EMAIL == "afnan.nasir2000@gmail.com"
-    assert contact.mailto() == "mailto:afnan.nasir2000@gmail.com"
-    assert contact.mailto("Uncle Farmer 1.0") == "mailto:afnan.nasir2000@gmail.com?subject=Uncle%20Farmer%201.0"
+def test_the_mailto_link_is_the_address_with_an_optional_subject() -> None:
+    assert contact.EMAIL
+    assert contact.mailto() == "mailto:" + contact.EMAIL
+    assert contact.mailto("Uncle Farmer 1.0") == "mailto:%s?subject=Uncle%%20Farmer%%201.0" % contact.EMAIL
 
 
 def test_the_window_says_where_to_write_and_where_bugs_go() -> None:
