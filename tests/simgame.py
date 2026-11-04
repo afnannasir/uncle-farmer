@@ -435,10 +435,9 @@ class World:
         """An open window takes the keys: the movement keys move its cursor (no walking)."""
         d = self.dialog
         assert d is not None
-        if key == "w":
-            d["row"] = max(0, d["row"] - 1)
-        elif key == "s":
-            d["row"] = min(len(d["rows"]) - 1, d["row"] + 1)
+        if key in ("w", "s"):
+            # the rows wrap, as the game's do (game.i.e/f): Up on the first goes to the last
+            d["row"] = (d["row"] + (1 if key == "s" else -1)) % len(d["rows"])
         elif key == "esc":
             if d["kind"] != "respawn":     # the respawn window can't be closed, only answered
                 self.dialog = None

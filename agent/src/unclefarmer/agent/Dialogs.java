@@ -27,8 +27,9 @@ import java.util.List;
  *
  * game.Trans.b(String) is the client's own Chinese -> English lookup (a static map read).
  *
- * `pick` (agent 53) is the one thing here that acts: it chooses an entry of a verified shop or Shard
- * Market menu by its index (Menus). The game does the same itself when the server picks an entry
+ * `pick` (agent 53) and `choose` (agent 55) are the things here that act. `pick` it chooses an entry of a verified shop or Shard
+ * Market menu by its index (Menus); `choose` any menu's entry at the row and column the bot read,
+ * when the menu still has the signature that reading gave it (Menus.signature). The game does the same itself when the server picks an entry
  * for it (game.N.e(byte[]): y.d = n, y.e = 0, then world.a(Win), the method Enter calls): the
  * checks, the cursor and the choice all happen under the world's lock, the one every dialog change
  * of the game's takes, so the menu can't change between the check and the choice.
@@ -127,6 +128,41 @@ final class Dialogs {
         }
     }
 
+    /** `choose <row> <col> <sig>`: choose the entry at row, col of the open menu, which must still
+     * be the one read with that signature (`dialog` "sig"), or refuse with the reason and touch
+     * nothing. As Enter on that entry, with no walk to it a key at a time. */
+    static String choose(int row, int col, int sig) {
+        try {
+            Object world = Memory.world();
+            loader = world.getClass().getClassLoader();
+            java.awt.Frame win = Memory.window();
+            if (win == null) return "error: no game window";
+            Method enter = chooseMethod(world.getClass(), win.getClass());
+            if (enter == null) return "error: the game's choose method wasn't found";
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Object y = open.get(open.size() - 1);
+                try {
+                    Menus.chosen(model(y, false), row, col, sig);
+                } catch (Menus.Refused r) {
+                    return "refused: " + r.getMessage();
+                }
+                setInt(y, D_ROW, row);
+                setInt(y, D_COL, col);
+                setInt(y, D_OPTION, 0);
+                enter.invoke(world, win);
+                Log.info("ACTION menu row " + row + " col " + col);
+                return "chosen " + row + " " + col;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Throwable t) {
+            Log.error("choose", t);
+            return "error: " + t;
+        }
+    }
+
     private static volatile Method choose;
 
     /** world.a(Win): public, boolean, the window its only parameter - the one method of that shape
@@ -152,6 +188,12 @@ final class Dialogs {
 
     /** The dialog y as Menus reads it: every entry's flags, options (in English) and command. */
     static Menus.Menu model(Object y) throws Memory.Unavailable {
+        return model(y, true);
+    }
+
+    /** english false: the game's own strings, text too, untranslated - what Menus.signature takes,
+     * so no translation lookups for it on every reading. */
+    static Menus.Menu model(Object y, boolean english) throws Memory.Unavailable {
         Menus.Menu m = new Menus.Menu();
         for (Object row : copy(list(y, D_ROWS))) {
             List<Menus.Entry> cells = new ArrayList<Menus.Entry>();
@@ -165,10 +207,14 @@ final class Dialogs {
                 String[] o = null;
                 if (opts instanceof String[]) {
                     o = ((String[]) opts).clone();
-                    for (int i = 0; i < o.length; i++) o[i] = english(o[i]);
+                    if (english) {
+                        for (int i = 0; i < o.length; i++) o[i] = english(o[i]);
+                    }
                 }
                 Object cmd = ref(z, Z_COMMAND);
-                cells.add(new Menus.Entry(intField(z, Z_FLAGS), o, cmd instanceof int[] ? ((int[]) cmd).clone() : null));
+                Object text = english ? null : ref(z, Z_TEXT);
+                cells.add(new Menus.Entry(intField(z, Z_FLAGS), text instanceof String ? (String) text : null, o,
+                        cmd instanceof int[] ? ((int[]) cmd).clone() : null));
             }
             m.rows.add(cells);
         }
@@ -206,6 +252,7 @@ final class Dialogs {
         sb.append("{\"kind\":").append(intField(y, D_KIND));
         sb.append(",\"row\":").append(intField(y, D_ROW));
         sb.append(",\"col\":").append(intField(y, D_COL));
+        sb.append(",\"sig\":").append(Menus.signature(model(y, false)));
         sb.append(",\"rows\":[");
         List<Object> rows = copy(list(y, D_ROWS));
         for (int r = 0; r < rows.size(); r++) {

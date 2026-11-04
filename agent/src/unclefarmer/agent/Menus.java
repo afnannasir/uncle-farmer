@@ -29,6 +29,12 @@ import java.util.List;
  * reason, nothing is pressed, and the bot falls back to choosing by text. The cursor is then put
  * on the entry the way the game's own row keys do it (game.i.e()/f(): row d, column e, option f =
  * 0, under the world's lock) and Enter is pressed as the Enter key is.
+ *
+ * Every other menu (agent 55, `choose`): the bot finds the entry it wants in its `dialog` reading,
+ * by text, and sends that entry's row and column with the reading's signature. Under the world's
+ * lock the open menu must still have that signature (the same content, row for row) and an entry
+ * there; then the cursor is put on it and Enter pressed as above, with no walk down the list a key
+ * at a time. Anything else is refused and the bot walks to it with the keys, the nearer way round.
  */
 final class Menus {
 
@@ -54,20 +60,33 @@ final class Menus {
 
     private Menus() { }
 
-    /** One entry as the game holds it (game.z): its flags, options and command. */
+    /** One entry as the game holds it (game.z): its flags, text, options and command. */
     static final class Entry {
         final int flags;
+        final String text;
         final String[] options;
         final int[] cmd;
 
         Entry(int flags, String[] options, int[] cmd) {
+            this(flags, null, options, cmd);
+        }
+
+        Entry(int flags, String text, String[] options, int[] cmd) {
             this.flags = flags;
+            this.text = text;
             this.options = options == null ? new String[0] : options;
             this.cmd = cmd;
         }
 
         String name() {
             return options.length > 0 ? options[0] : null;
+        }
+
+        int hash() {
+            int h = flags;
+            h = 31 * h + (text == null ? 0 : text.hashCode());
+            h = 31 * h + java.util.Arrays.hashCode(options);
+            return 31 * h + java.util.Arrays.hashCode(cmd);
         }
     }
 
@@ -185,6 +204,33 @@ final class Menus {
         if (e.cmd[1] != id) throw new Refused("row " + row + " holds item " + e.cmd[1] + ", not " + id);
         if (e.cmd[0] != want) throw new Refused("row " + row + " sends command " + e.cmd[0] + ", not " + want);
         return new int[] {row, 0};
+    }
+
+    // ---------------------------------------------------------------- choosing any menu's entry
+    /**
+     * A number for the menu's whole content - every row, every entry's flags, text, options and
+     * command, in order; not the cursor. `dialog` reports it with the open menu, and `choose` takes
+     * it back: the bot found the entry it wants in that reading, so a menu whose content changed
+     * since (another one opened, a row came or went) never gets the row the bot found in the old
+     * one.
+     */
+    static int signature(Menu m) {
+        int h = m.rows.size();
+        for (List<Entry> r : m.rows) {
+            h = 31 * h + r.size();
+            for (Entry e : r) h = 31 * h + (e == null ? 0 : e.hash());
+        }
+        return h;
+    }
+
+    /** `choose <row> <col> <sig>`: the entry at row, col of the menu read with that signature;
+     * Refused with the reason otherwise. */
+    static Entry chosen(Menu m, int row, int col, int sig) throws Refused {
+        if (m == null || m.rows.isEmpty()) throw new Refused("the menu has no rows");
+        if (signature(m) != sig) throw new Refused("the menu changed since it was read");
+        Entry e = m.at(row, col);
+        if (e == null) throw new Refused("no entry at row " + row + " col " + col);
+        return e;
     }
 
     private static final java.util.regex.Pattern UNIT_PRICE =

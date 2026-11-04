@@ -728,13 +728,14 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
     candidates = market_candidates(markets)
     sold = 0
     for name, n in todo:
+        listed = market_lists(b, name)            # read once; again only after going to a market
         for _try in range(2):
-            if not market_lists(b, name):
-                b.close_dialogs()
-                visit(b, None, candidates=candidates)
-            if market_lists(b, name):
+            if listed:
                 break
-        else:
+            b.close_dialogs()
+            visit(b, None, candidates=candidates)
+            listed = market_lists(b, name)
+        if not listed:
             b.log(_("the Shard Market didn't list {item}", item=name))
             continue
         before = counts(b).get(name.lower(), 0)

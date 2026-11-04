@@ -9,6 +9,18 @@
   four, whoever they were; it now reads the name where the game itself does. Names that start
   with a number keep it. Uncle Farmer offers the new agent at start (close your games first).
 
+**Menus**
+
+- Agent 55: every NPC menu's entry is chosen where it is, in one step, instead of a walk down the
+  list one key at a time (each press read the menu again and made the game speak the entry). The
+  agent first checks the menu is still the one the bot read; if it isn't, nothing is chosen and the
+  bot walks to the entry with the keys as before.
+- Walking with the keys goes the shorter way round: the game's menus wrap, so an entry near the
+  bottom is reached by going up past the top. Across a 30-entry menu that's half the presses.
+- A shop or Shard Market item the bot has found once is picked by its id after that, without
+  reading the list again: selling a shard in three lots reads the market's list once instead of
+  eight times.
+
 ## 0.9.0
 
 **Schedules**
