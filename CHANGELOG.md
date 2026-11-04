@@ -1,5 +1,27 @@
 # What's new
 
+## 0.8.1
+
+**Gang base, gem making and shards**
+
+- Leaving a gang base: the bot walks out through the gang base's own exit (the south edge of the
+  outer hall). It used to look for a "leave" entry in the Action menu, which a gang base doesn't
+  have, so every trip out of the gang base stopped with "no way from ...".
+- From inside the gang base, the nearest storehouse, market or craftsman is chosen from the city
+  you came in by, not always Mario Basin.
+- Shards are sold at the Shard Broker of the city you are in. Mario Basin and Holy Blood City's
+  brokers were missing from the list, and central plains' and Tulip City's were skipped because
+  of the counter in front of them.
+- From the inner hall, which is walled off from the exit, the bot says so instead of "no way".
+
+**Tools**
+
+- Sell shards now: sells the shards the bag manager says to sell, at this city's Shard Broker
+  or the nearest one.
+- Clean the bag now: shows your throw-away list, asks, then throws away only what is on it,
+  keeping the number each rule keeps.
+- Both are script commands too: `sell_shards` and `clean_bag`.
+
 ## 0.8.0
 
 **Travel**
