@@ -97,6 +97,33 @@ def kind(mid: int | str) -> str | None:
     return _kinds.get(int(mid))
 
 
+ALL_EDGES = {"north", "south", "east", "west"}
+
+
+def is_ride(mid: int | str) -> bool:
+    """A map the game carries us off by itself, on a timer: an airship's flight hall (the 5x5
+    "Central Kingdom", "Loki Union" and "Garth Empire" maps an airship lands us on, whose one exit
+    is the whole map), a cable car, a tutor cut scene. Walking there does nothing and every step
+    may be refused: the bot waits for the game to move it on. From the map data, not a list of
+    ids: an exit on all four edges at once, or covering the whole map, is no door but the timer's
+    way out."""
+    m = maps().get(int(mid))
+    if not m:
+        return False
+    if "cable car" in str(m.get("name", "")).lower():
+        return True
+    exits: list[dict[str, Any]] = [e for e in m.get("exits", []) if e.get("dest") is not None]
+    if not exits:
+        return False
+    w, h = m.get("w", 0), m.get("h", 0)
+
+    def whole(e: dict[str, Any]) -> bool:
+        r = e.get("rect") or (0, 0, 0, 0)
+        covers = r[0] <= 1 and r[1] <= 1 and r[2] >= w and r[3] >= h
+        return covers or ALL_EDGES <= set(str(e.get("side", "")).split())
+    return all(whole(e) for e in exits)
+
+
 def farming_maps() -> list[tuple[int, str, str]]:
     """Maps that have monster zones, as (id, label, summary): ordinary farming fields first, then
     dungeons, secret rooms and the rest, each saying what it is."""

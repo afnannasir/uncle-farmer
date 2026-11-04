@@ -1,5 +1,46 @@
 # What's new
 
+## 0.8.0
+
+**Travel**
+
+- Airships: after boarding, the bot now waits on the airship until the game lands it, instead of
+  trying to walk off the airship every few seconds. It then plans the rest of the way from where
+  it landed. A ride that never lands in 3 minutes stops the run instead of walking about.
+- Airship and cable car administrators: the target key switches to NPCs before talking to them,
+  and goes back to the mode you had before.
+- NPCs and other players standing in the way are walked round from the start.
+- Attacked while travelling: the bot stops, fights on foot (no fusion beast while it is
+  attacked), then walks on to the same place.
+- Long straight walks are no longer called "stuck" after 60 seconds.
+
+**Pets and fights**
+
+- Priest and Sorceress: the heal now really reaches the pet. It used to be pressed a moment too
+  early, so the game dropped it and pet potions were used instead.
+- A monster attacking your pet is fought first.
+- A monster killed by your pet or another player gets no more skills cast at it.
+- A monster the game won't let you select (inside rock, behind a wall) is left alone longer each
+  time, instead of being walked back to every 10 seconds.
+
+**Restocking**
+
+- "Refill when fewer than 30" now means 30 or fewer. Having 199 of 200 no longer sends the bot
+  to town, and nothing is topped up at the start of a run unless it is down to its minimum.
+- A restock trip does everything in one town, the one you are in if it can, and never goes on to
+  another town for a shop.
+- A restock that can't get anything (no arnebia, the storehouse is out) is said once and not tried
+  again every 30 seconds.
+- After the bag trip the log says "back to ... after the bag trip" instead of "died or moved?".
+
+**Scripts, settings and results**
+
+- `monsters` in a script can be multiplied, divided, made negative, and used with abs() and
+  round(). Numbers like nan or 1e999 are a script error instead of a crash.
+- Scripts, settings and results files saved by Notepad (with a byte order mark) are read
+  correctly instead of being reset or losing their first line.
+- A broken results line no longer spoils a whole day's or week's report.
+
 ## 0.7.2
 
 **Updates**

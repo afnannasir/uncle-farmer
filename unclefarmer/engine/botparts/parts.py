@@ -81,6 +81,7 @@ class Parts:
     last_ride_check: float
     phrases: dict[int, str]     # the game's quick phrases by slot (engine/runner.py)
     said_low_power: bool
+    said_no_mount: bool         # "attacked - staying on foot" said, until nothing attacks us
     said_no_vitality: bool
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
@@ -103,6 +104,7 @@ class Parts:
     pet_heal_try: tuple[float, int, bool] | None
     pet_heal_misses: int
     pet_heal_rest_until: float
+    pet_heal_refused_at: float
     told_pet_heal_rest: bool
     told_no_pet_food: bool
     told_pet_heal: bool
@@ -122,6 +124,14 @@ class Parts:
     following: str | None       # the player a follow run stays with (engine/follow.py)
     team_ask_at: float          # when follow next asks the team phrase where its player is
     supply_told: set[str]       # supplies already said to be low (town.restock): said once a run
+    restock_skipped: set[str]   # restock rules said to be impossible this run (town.restock): said once
+    restock_failed: dict[str, tuple[float, int]]   # item -> (when, arnebia then) of a trip that got none
+    restock_town: int | None    # the one town (map) a restock trip does its errands in
+    storehouse_lacks: set[str]  # items the storehouse showed none of (cleared when we store some)
+    restocking: bool            # a restock is under way (its walks don't restock again)
+    restock_looked: float       # when travel last looked at the restock rules
+    on_farm_run: bool           # a farm run's travel: restock rules are looked at on the way
+    away_reason: str | None     # why we left the farm's map ourselves (the bag trip), for the way back
     started: float
     resumed_at: float
     daily_stop_at: float
@@ -253,6 +263,8 @@ class Parts:
         # farming.py
         def drop_time_check(self, sheet: dict[str, Any]) -> None: ...
         def set_modes(self) -> None: ...
+        def restock_now(self, start: bool = False) -> bool: ...
+        def restock_on_the_way(self) -> None: ...
 
     def choose(self, pattern: str) -> dict[str, Any] | None: ...
     def dialog(self) -> dict[str, Any]: ...

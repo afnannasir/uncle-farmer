@@ -58,6 +58,7 @@ import csv
 import functools
 import heapq
 import math
+import numbers
 import operator
 import pathlib
 import re
@@ -858,12 +859,50 @@ class MapModel(object):
         return (int(xs[i]), int(ys[i]))
 
     # -------------------------------------------------------- routing
+    def grid_cell(self, c: Sequence[Any]) -> Cell | None:
+        """The whole cell c names on this map's grid, or None when it names none: not two finite
+        numbers, or off the grid (the grid is the map plus its one-cell void border). A fractional
+        position is cut down to its cell, as diag_steps does. Every search takes its cells through
+        this, so the C searches and their Python twins answer the same - an off-grid cell is out of
+        reach for both - and no flat index from a bad cell reaches the C code or wraps round a row."""
+        try:
+            x, y = c[0], c[1]
+        except (TypeError, IndexError, KeyError):
+            return None
+        # numbers.Real: Python's numbers and numpy's alike (not bool, which is a number too)
+        if isinstance(x, bool) or isinstance(y, bool) or not isinstance(x, numbers.Real) \
+                or not isinstance(y, numbers.Real):
+            return None
+        fx, fy = float(x), float(y)
+        if not (math.isfinite(fx) and math.isfinite(fy)):
+            return None
+        cx, cy = int(fx), int(fy)
+        if cx != math.floor(fx) or cy != math.floor(fy):
+            return None              # (int() of -0.5 is 0: a cell left of the grid stays off it)
+        W, h = getattr(self, "W", None), getattr(self, "h", None)     # (a test's bare model has neither)
+        if W is not None and h is not None and not (0 <= cx < W and 0 <= cy < h + 2):
+            return None
+        return (cx, cy)
+
+    def _grid_cells(self, cells: Iterable[Point]) -> list[Cell]:
+        return [g for g in (self.grid_cell(c) for c in cells) if g is not None]
+
     def dijkstra(self, src: Cell, targets: Collection[Point] = (), avoid_directional: bool = False,
                  limit: float | None = None) -> tuple[dict[int, float], dict[int, int]]:
         """Wall-avoiding shortest paths from src. Stops once every target
         (set of (x,y)) is settled, or past limit steps. Returns (dist dict by
         flat index, prev). dijkstra_arr() is the same search as two arrays, without building
-        the dicts (a whole-map search reaches 150,000 cells)."""
+        the dicts (a whole-map search reaches 150,000 cells). An off-grid src reaches nothing; an
+        off-grid target is never reached (grid_cell)."""
+        cell = self.grid_cell(src)
+        if cell is None:
+            return {}, {}
+        src = cell
+        if targets:
+            targets = self._grid_cells(targets)
+            if not targets:
+                k = cell[1] * self.W + cell[0]
+                return {k: 0.0}, {k: -1}
         arrs = self._dijkstra_c(src, targets, avoid_directional, limit)
         if arrs is None:
             return self._dijkstra_py(src, targets, avoid_directional, limit)
@@ -876,6 +915,16 @@ class MapModel(object):
                      limit: float | None = None) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.int32]]:
         """dijkstra() as flat arrays: dist (float64, inf where the search never got) and prev
         (int32: -1 at src, -2 where never got)."""
+        cell = self.grid_cell(src)
+        if cell is None or (targets and not self._grid_cells(targets)):
+            n = len(self._walk_list)
+            dist = np.full(n, np.inf)
+            prev = np.full(n, -2, dtype=np.int32)
+            if cell is not None:
+                k = cell[1] * self.W + cell[0]
+                dist[k], prev[k] = 0.0, -1
+            return dist, prev
+        src, targets = cell, (self._grid_cells(targets) if targets else targets)
         arrs = self._dijkstra_c(src, targets, avoid_directional, limit)
         if arrs is not None:
             return arrs
@@ -891,7 +940,18 @@ class MapModel(object):
     def dijkstra_targets(self, src: Cell, targets: Sequence[Point], avoid_directional: bool = False) -> npt.NDArray[np.float64]:
         """dijkstra(src, targets)'s distance to each target, as a float64 array (inf where the
         search never got): the same search without whole-map arrays. On the C search's kept
-        workspace, a search that stops after a few hundred cells costs only those."""
+        workspace, a search that stops after a few hundred cells costs only those. An off-grid
+        src or target is out of reach (grid_cell): inf."""
+        cells = [self.grid_cell(t) for t in targets]
+        start = self.grid_cell(src)
+        if start is None or any(c is None for c in cells):
+            out_all = np.full(len(cells), np.inf, dtype=np.float64)
+            good = [i for i, c in enumerate(cells) if c is not None]
+            if start is not None and good:
+                got = self.dijkstra_targets(start, [cells[i] for i in good], avoid_directional)   # type: ignore[misc]
+                out_all[good] = got
+            return out_all
+        src, targets = start, [c for c in cells if c is not None]
         lib = self._c()
         W = self.W
         n = len(self._walk_list) if lib is not None else 0
@@ -979,7 +1039,11 @@ class MapModel(object):
         """steps() as a flat int32 array: distance by cell index, -1 where not reached. Layered
         BFS over numpy arrays (one vector step per ring) instead of a Python deque: 6-7x faster,
         same numbers (checked cell for cell on the big maps). The C search is a plain queue BFS:
-        the same field again."""
+        the same field again. An off-grid src reaches nothing (grid_cell)."""
+        cell = self.grid_cell(src)
+        if cell is None:
+            return np.full(len(self._walk_list), -1, dtype=np.int32)
+        src = cell
         lib = self._c()
         s = src[1] * self.W + src[0]
         if lib is not None and 0 <= s < len(self._walk_list):
@@ -1005,7 +1069,9 @@ class MapModel(object):
         int32 by flat index, -1 = not reached (shortloop's 'how close is the lap')."""
         lib = self._c()
         W = self.W
-        seeds = sorted({c[1] * W + c[0] for c in cells})
+        seeds = sorted({c[1] * W + c[0] for c in self._grid_cells(cells)})
+        if not seeds:
+            return np.full(len(self._walk_list), -1, dtype=np.int32)
         if lib is not None:
             return self._bfs(lib, seeds, gates=False, limit=limit)
         walk_flat = self.walk.ravel()
@@ -1387,8 +1453,12 @@ class MapModel(object):
         for the same question, which would plan it the same way again.
 
         no_gates() swaps the model's gate arrays, so the search runs under the
-        model's lock: the farm thread and the message thread share a model."""
-        a, b = (a[0], a[1]), (b[0], b[1])       # a list cell too: the cache key must be a tuple
+        model's lock: the farm thread and the message thread share a model. A cell off the grid
+        (grid_cell) has no path, from the C search and the Python one alike."""
+        ga, gb = self.grid_cell(a), self.grid_cell(b)
+        if ga is None or gb is None:
+            return None
+        a, b = ga, gb                           # whole cells, as tuples: the cache key must be one
         with self._route_mutex():
             if self.__dict__.get("_gates_off"):
                 return self.gated_route(a, b, avoid_directional)   # already planned gate-less

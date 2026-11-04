@@ -238,6 +238,7 @@ class BagMixin(Parts):
         from .. import town
         self.log(_("the bag is {pct}% full - going to sell and store by the bag manager's rules", pct=int(share)),
                  speak=True)
+        self.away_reason = _("the bag trip")      # the farm loop's way back says so, not "died?"
         moved = town.unload(as_bot(self))
         after: dict[str, Any] = self.refresh_sheet(force=True) or {}
         if after.get("maxload") and 100.0 * after.get("load", 0) / after["maxload"] >= full and not moved:

@@ -110,6 +110,8 @@ def ensure(b: Bot, purpose: Any = None) -> None:
     refused = b.beasts_refused
     if purpose == TRAVEL and clock_for(b).time() - getattr(b, "last_combat", 0) < AFTER_FIGHT:
         return      # still in combat as far as the server is concerned: walk on, mount later
+    if purpose == TRAVEL and _on_foot_for_a_fight(b):
+        return
     pw = power(b.me())
     low_power = pw is not None and pw < MIN_POWER
     pick = b.p.get("speed_beast" if purpose == TRAVEL else "fight_beast", "auto" if purpose == TRAVEL else "none")
@@ -146,6 +148,20 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         later = WALK_REFUSED_FOR if getattr(b, "walk_only", False) else REFUSED_FOR
         refused[want["id"]] = clock_for(b).time() + later   # level, combat...: try again later
         b.log(_("the game wouldn't take {beast} now; trying again later", beast=want["name"]))
+
+
+def _on_foot_for_a_fight(b: Bot) -> bool:
+    """Monsters on us (something cast at us or our pet lately, Bot.attackers): the fight comes
+    first, on foot - the game refuses a mount in combat, and a Swift beast can't use skills. Said
+    once while it lasts. True: no mounting now."""
+    look = getattr(b, "attackers", None)      # (a stand-in bot without cast reports: never)
+    if not (look is not None and look()):
+        b.said_no_mount = False
+        return False
+    if not getattr(b, "said_no_mount", False):
+        b.said_no_mount = True
+        b.log(_("attacked - staying on foot, no fusion beast until the fight is over"))
+    return True
 
 
 def keep_riding(b: Bot) -> None:

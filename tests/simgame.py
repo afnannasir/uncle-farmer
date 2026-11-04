@@ -58,6 +58,17 @@ def tile(v: float) -> int:
 
 LOOT = ["Level 1 Garnet Shard", "Level 1 Opal Shard", "Wolf Fur", "Arnebia"]
 HOTKEYS = {"1": "Large Red Potion", "2": "Large Blue Potion"}     # on the hotkey bar from the start
+# A class's own skill set, for the class simulations: (name, cooldown, damage or heal, reach, kind).
+# The names are the game's own (data/skills.json), so the skill book takes the right class.
+CLASS_SKILLS = {
+    "Warrior": [(n, cd, dmg, reach, "attack") for n, cd, dmg, reach in SKILLS],
+    "Priest": [("Retribution", 0.0, 2600, 20.0, "attack"), ("Heal", 0.0, 9000, 20.0, "heal")],
+    "Witcher": [("Shadow Arrow", 0.0, 2600, 20.0, "attack"), ("Healing Wave", 0.0, 9000, 20.0, "heal")],
+}
+PET = 10001                  # the pet's id, out in the world and in the pet list
+PET_NAME = "Wild Eagle>><< Sky"
+PET_RED = "Pet Large Red Potion"
+RICE = "Pet Rice Roll"
 RESPAWN_ROWS = ["Please select your respawn method", "Map Respawn", "Respawn back to the City"]
 
 
@@ -98,6 +109,7 @@ class Monster:
         self.died_at: float | None = None
         self.hit_by_us = False
         self.critter = False       # takes no damage and never attacks (a town's ducks and hens)
+        self.on_pet = False        # goes for our pet, not for us
 
 
 class World:
@@ -145,8 +157,32 @@ class World:
         self.chat_open = False      # the game's chat line has the keys (input mode 5)
         self.busy_until = 0.0
         self.frozen = False
+        self.hotkeys = dict(HOTKEYS)     # hotkey -> item on the bar
+        self.skills: list[tuple[Any, ...]] = [tuple(s) + ("attack",) if len(s) == 4 else tuple(s) for s in SKILLS]
+        self.pet: dict[str, Any] | None = None     # our pet out in the world (with_pet)
+        self.points_seen: float | None = None      # when the points key (T) was last answered
+        self.pet_vitals_seen: float | None = None
+        self.target_reports = False      # casts name whom they struck ("targets", agent 44)
+        self.walls_block_select = False  # select refuses without a clear line (agent 41's sight check)
+        self.pet_hunters = 0             # monsters about that go for the pet, kept up as they die
         for _i in range(monsters):
             self._spawn()
+
+    def with_pet(self, hp: int = 120000, amiability: float = 80.0, hunters: int = 0) -> None:
+        """Our pet out beside us, its potions and food in the bag; `hunters` monsters go for the
+        pet rather than for us (they spawn near it)."""
+        self.pet = {"hp": float(hp), "maxhp": hp, "mp": 50000, "maxmp": 50000, "amiability": amiability,
+                    "x": self.x + 1.5, "y": self.y, "dead": False}
+        self.bag[PET_RED] = 300
+        self.bag[RICE] = 50
+        self.hotkeys["3"] = PET_RED
+        self.target_reports = True
+        self.pet_hunters = hunters
+        for _i in range(hunters):
+            self._spawn(near=True, on_pet=True)
+
+    def use_class(self, cls: str) -> None:
+        self.skills = list(CLASS_SKILLS[cls])
 
     # ------------------------------------------------------------------ the world moving on
     def _start_cell(self) -> tuple[float, float]:
@@ -158,7 +194,7 @@ class World:
             raise RuntimeError("the pretend game's map has no walkable cell")
         return float(c[0]), float(c[1])
 
-    def _spawn(self, near: bool = False, critter: bool = False) -> None:
+    def _spawn(self, near: bool = False, critter: bool = False, on_pet: bool = False) -> None:
         for _try in range(40):
             z = self.rnd.choice(self.zones)
             if near:
@@ -170,6 +206,7 @@ class World:
                 m = Monster(mid, x, y, z, self.rnd.randint(50, 62))
                 if critter:
                     m.name, m.critter = "Sim Duck", True
+                m.on_pet = on_pet
                 self.monsters[mid] = m
                 return
 
@@ -206,6 +243,7 @@ class World:
         if dt <= 0:
             return
         self._walk(dt)
+        self._pet_moves(dt)
         for m in list(self.monsters.values()):
             if m.died_at is not None:
                 if now - m.died_at > 3.0:
@@ -216,6 +254,9 @@ class World:
         alive = sum(1 for m in self.monsters.values() if m.died_at is None and not m.critter)
         if alive < self.want_monsters and self.rnd.random() < dt / 4.0:
             self._spawn()
+        hunting = sum(1 for m in self.monsters.values() if m.died_at is None and m.on_pet)
+        if self.pet is not None and hunting < self.pet_hunters and self.rnd.random() < dt / 8.0:
+            self._spawn(near=True, on_pet=True)
         self.drop_seconds = max(0.0, self.drop_seconds - dt)
         if not self.dead:
             self.hp = min(self.maxhp, self.hp + 120 * dt)
@@ -263,6 +304,14 @@ class World:
         if self.model.ok(tile(self.x), tile(ny)):
             self.y = ny
 
+    def _pet_moves(self, dt: float) -> None:
+        """The pet keeps beside us, and its amiability slowly falls (food puts it back)."""
+        pet = self.pet
+        if pet is None or pet["dead"]:
+            return
+        pet["x"], pet["y"] = self.x + 1.5, self.y
+        pet["amiability"] = max(0.0, pet["amiability"] - 0.01 * dt)
+
     def _follow(self, dt: float) -> None:
         """The game's follow attack: it walks us at the target until it is in reach."""
         t = self.monsters.get(self.follow) if self.follow is not None else None
@@ -281,6 +330,10 @@ class World:
             self.follow = None        # a wall in the way: the follow attack gives up
 
     def _monster(self, m: Monster, now: float, dt: float) -> None:
+        pet = self.pet
+        if m.on_pet and pet is not None and not pet["dead"] and not m.critter:
+            self._at_pet(m, pet, now, dt)
+            return
         d = math.hypot(m.x - self.x, m.y - self.y)
         if d < 6 and not self.dead and not m.critter:
             if d > 1.2:          # charge
@@ -292,14 +345,37 @@ class World:
                 m.hit_at = now
                 amount = int(900 * self.rnd.uniform(0.7, 1.3))
                 self.seq += 1
-                self.casts.append({"t": int(now * 1000), "caster": m.id, "seq": self.seq,
-                                   "skill": "Level 1 Bite", "hits": [[ME, 3, amount]]})
+                cast: dict[str, Any] = {"t": int(now * 1000), "caster": m.id, "seq": self.seq,
+                                        "skill": "Level 1 Bite", "hits": [[ME, 3, amount]]}
                 self._hurt(amount)
+                if self.target_reports:
+                    cast["targets"] = [[ME, int(max(0, self.hp))]]
+                self.casts.append(cast)
         elif self.rnd.random() < dt / 3.0:
             nx = min(max(m.x + self.rnd.uniform(-2, 2), m.zone[0]), m.zone[2])
             ny = min(max(m.y + self.rnd.uniform(-2, 2), m.zone[1]), m.zone[3])
             if self.model.ok(tile(nx), tile(ny)):
                 m.x, m.y = nx, ny
+
+    def _at_pet(self, m: Monster, pet: dict[str, Any], now: float, dt: float) -> None:
+        """A monster that goes for our pet: it walks up to it and bites it, every 2 s."""
+        d = math.hypot(m.x - pet["x"], m.y - pet["y"])
+        if d > 1.2:
+            step = min(d - 1.0, 3.0 * dt)
+            m.x, m.y = m.x + (pet["x"] - m.x) / d * step, m.y + (pet["y"] - m.y) / d * step
+            return
+        if now - m.hit_at < 2.0:
+            return
+        m.hit_at = now
+        amount = int(2500 * self.rnd.uniform(0.7, 1.3))
+        pet["hp"] -= amount
+        self.seq += 1
+        self.truth["pet_bitten"] = self.truth.get("pet_bitten", 0) + 1
+        if pet["hp"] <= 0:
+            pet["hp"], pet["dead"] = 0.0, True
+            self.truth["pet_deaths"] = self.truth.get("pet_deaths", 0) + 1
+        self.casts.append({"t": int(now * 1000), "caster": m.id, "seq": self.seq, "skill": "Level 1 Bite",
+                           "hits": [[PET, 3, amount]], "targets": [[PET, int(pet["hp"])]]})
 
     def _hurt(self, amount: float) -> None:
         if self.dead:
@@ -350,6 +426,10 @@ class World:
             self._cast(ATTACK_KEYS.index(key[4:]), now)
         elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"):
             self._hotkey(key)
+        elif key == "t":
+            self.points_seen = now          # the points key: the answer comes into `mem self`
+        elif key == "shift+r":
+            self.pet_vitals_seen = now
 
     def window_key(self, key: str) -> None:
         """An open window takes the keys: the movement keys move its cursor (no walking)."""
@@ -369,10 +449,13 @@ class World:
                 self.respawn()
 
     def _cast(self, slot: int, now: float) -> None:
-        if slot >= len(SKILLS):
+        if slot >= len(self.skills):
             return
-        name, cd, dmg, reach = SKILLS[slot]
+        name, cd, dmg, reach, kind = self.skills[slot]
         if now < self.gcd_end or now < self.cooldown.get(name, 0):
+            return
+        if kind == "heal":
+            self._heal(name, cd, dmg, now)
             return
         t = self.monsters.get(self.target) if self.target is not None else None
         if t is None or t.died_at is not None:
@@ -394,14 +477,19 @@ class World:
                                "skill": "Level 5 " + name, "hits": [[t.id, 2, 0]]})
             return
         at = int((now + 0.2) * 1000)
-        self.casts.append({"t": at, "caster": ME, "seq": self.seq, "skill": "Level 5 " + name,
-                           "hits": [[t.id, 5 if crit else 3, amount]]})
+        cast: dict[str, Any] = {"t": at, "caster": ME, "seq": self.seq, "skill": "Level 5 " + name,
+                                "hits": [[t.id, 5 if crit else 3, amount]]}
+        if self.target_reports:
+            cast["targets"] = [[t.id, int(max(0, t.hp))]]
+        self.casts.append(cast)
         self.truth["casts"] += 1
         if t.hp <= 0:
             t.hp = 0
             t.died_at = now
             self.deaths.append([t.id, at])
             self.truth["kills"] += 1
+            if t.on_pet:
+                self.truth["pet_hunters_killed"] = self.truth.get("pet_hunters_killed", 0) + 1
             self.contribution += 5
             self.truth["contribution"] += 5
             self.xp_needed = max(0, self.xp_needed - 3000)
@@ -416,24 +504,74 @@ class World:
         self.casts = self.casts[-256:]
         self.deaths = self.deaths[-256:]
 
+    def _heal(self, name: str, cd: float, amount: float, now: float) -> None:
+        """A heal goes to the ally selected (our pet), else - a monster selected, or nothing - to
+        us, as the game's own heals do."""
+        self.gcd_end = now + GCD
+        self.cooldown[name] = now + cd
+        self.seq += 1
+        pet = self.pet
+        at = int((now + 0.2) * 1000)
+        if pet is not None and self.target == PET and not pet["dead"]:
+            pet["hp"] = min(pet["maxhp"], pet["hp"] + amount)
+            self.truth["pet_heals"] = self.truth.get("pet_heals", 0) + 1
+            row = [PET, int(pet["hp"])]
+        else:
+            self.hp = min(self.maxhp, self.hp + amount)
+            self.truth["self_heals"] = self.truth.get("self_heals", 0) + 1
+            row = [ME, int(self.hp)]
+        cast: dict[str, Any] = {"t": at, "caster": ME, "seq": self.seq, "skill": "Level 5 " + name,
+                                "hits": [[row[0], 3, int(amount)]]}
+        if self.target_reports:
+            cast["targets"] = [row]
+        self.casts.append(cast)
+
     def _hotkey(self, key: str) -> None:
-        item = HOTKEYS.get(key)
-        if item and self.bag.get(item, 0) > 0:
+        item = self.hotkeys.get(key)
+        if item:
+            self.use(item)
+
+    def use(self, item: str) -> bool:
+        """One of the item used, from a hotkey or the bag (agent 40 `use <uid>`)."""
+        if self.bag.get(item, 0) > 0:
             self.bag[item] -= 1
+            if item == PET_RED:
+                if self.pet is not None and not self.pet["dead"]:
+                    self.pet["hp"] = min(self.pet["maxhp"], self.pet["hp"] + 20000)
+                self.truth["pet_potions"] = self.truth.get("pet_potions", 0) + 1
+                return True
+            if item == RICE:
+                if self.pet is not None:
+                    self.pet["amiability"] = min(100.0, self.pet["amiability"] + 30.0)
+                self.truth["rice_rolls"] = self.truth.get("rice_rolls", 0) + 1
+                return True
             self.truth["potions"] += 1
             if "Red" in item:
                 self.hp = min(self.maxhp, self.hp + 20000)
             else:
                 self.mp = min(self.maxmp, self.mp + 15000)
+            return True
+        return False
 
     def select(self, mid: int) -> str:
+        if mid == PET and self.pet is not None and not self.pet["dead"]:
+            self.target = mid
+            return "selected"
         m = self.monsters.get(mid)
         if m is None or m.died_at is not None:
             return "error: %d isn't in sight" % mid
         if math.hypot(m.x - self.x, m.y - self.y) > 14:
             return "refused: %d is out of the target keys' reach" % mid
+        if self.walls_block_select and not self.clear_line(m):
+            self.truth["refused_selects"] = self.truth.get("refused_selects", 0) + 1
+            return "refused: %d isn't in a clear line" % mid
         self.target = mid
         return "selected"
+
+    def clear_line(self, m: Monster) -> bool:
+        """The game's sight check: no wall between us and it (its own cell may be one)."""
+        cells = list(self.model.line((tile(self.x), tile(self.y)), (tile(m.x), tile(m.y))))
+        return all(self.model.ok(x, y) for x, y in cells[:-1])
 
     # ------------------------------------------------------------------ what the bot reads
     def entity(self, m: Monster) -> dict[str, Any]:
@@ -450,11 +588,26 @@ class World:
         if self.vitals_seen is not None:
             me["vitals"] = {"hp": int(self.hp), "mp": int(self.mp), "buffs": 0, "debuffs": 0,
                             "age_ms": int(1000 * (now - self.vitals_seen))}
+        pet = self.pet
+        if self.points_seen is not None:
+            # the points key's answer, "points;fusion[;amiability]" as the game sends it
+            me["points"] = {"raw": "0", "n": 0, "fusion": 100.0, "age_ms": int(1000 * (now - self.points_seen))}
+            if pet is not None and not pet["dead"]:
+                me["points"]["pet"] = round(pet["amiability"], 1)
+        if pet is not None and self.pet_vitals_seen is not None:
+            me["pet_vitals"] = {"hp": int(pet["hp"]), "mp": int(pet["mp"]),
+                                "age_ms": int(1000 * (now - self.pet_vitals_seen))}
         return me
 
     def entities(self) -> list[dict[str, Any]]:
-        return [self.entity(m) for m in self.monsters.values()
-                if math.hypot(m.x - self.x, m.y - self.y) < 40]
+        out = [self.entity(m) for m in self.monsters.values()
+               if math.hypot(m.x - self.x, m.y - self.y) < 40]
+        pet = self.pet
+        if pet is not None and not pet["dead"]:
+            out.append({"id": PET, "kind": "player", "side": 1, "name": "Wild Eagle Sky belongs to " + NAME,
+                        "x": round(pet["x"], 3), "y": round(pet["y"], 3), "type": 0, "facing": 0,
+                        "hp": int(pet["hp"]), "maxhp": pet["maxhp"]})
+        return out
 
     def state(self) -> dict[str, Any]:
         return {"ok": True, "map": {"id": self.map_id, "name": self.model.name}, "self": self.me(),
@@ -473,7 +626,7 @@ class World:
 
     def slots(self) -> dict[str, list[int]]:
         """`mem slots`: hotkey slot -> [item type, bag uid], for the potions on the bar."""
-        return {k: [self.type_of(n), 900000 + self.type_of(n)] for k, n in HOTKEYS.items() if self.bag.get(n)}
+        return {k: [self.type_of(n), 900000 + self.type_of(n)] for k, n in self.hotkeys.items() if self.bag.get(n)}
 
 
 class Events:
@@ -645,11 +798,14 @@ class SimGame:
     # ------------------------------------------------------------------ the commands
     # Fixed answers: what the agent says to these whatever the game is doing.
     PLAIN = {"version": "mwagent 43", "arm": "armed", "keys": "ready (sim)", "phrase": "set"}
+    version = 43              # the agent version the pretend game answers (a test may raise it)
 
     def _handle(self, line: str, cid: int, w: World) -> str:
         parts = line.split()
         verb = parts[0] if parts else ""
         arg = parts[1] if len(parts) > 1 else ""
+        if verb == "version":
+            return "mwagent %d" % self.version
         if verb in self.PLAIN:
             return self.PLAIN[verb]
         do = getattr(self, "_cmd_" + verb, None)
@@ -702,12 +858,20 @@ class SimGame:
     def _cmd_select(self, arg: str, cid: int, w: World) -> str:
         return w.select(int(arg))
 
+    def _cmd_use(self, arg: str, cid: int, w: World) -> str:
+        name = next((r["name"] for r in w.bag_full_rows() if r["uid"] == int(arg)), None)
+        if name is None:
+            return "error: no item %s in the bag" % arg
+        return "used" if w.use(name) else "error: none left"
+
     def _cmd_ask(self, arg: str, cid: int, w: World) -> str:
         if arg == "vitals":
             w.vitals_seen = self.clock.time()
         elif arg == "sheet":
             w.ask_sheet()
-        elif arg != "petvitals":
+        elif arg == "petvitals":
+            w.pet_vitals_seen = self.clock.time()
+        else:
             return "error: ask vitals|petvitals|sheet"
         return "asked"
 
@@ -760,11 +924,15 @@ class SimGame:
         if which == "ui":
             return j(self._ui(w))
         if which == "skills":
-            return j({"combat": [{"id": i + 1, "name": s[0]} for i, s in enumerate(SKILLS)],
-                      "attack_keys": {str(i + 1): i + 1 for i in range(len(SKILLS))}, "talents": []})
+            return j({"combat": [{"id": i + 1, "name": s[0]} for i, s in enumerate(w.skills)],
+                      "attack_keys": {str(i + 1): i + 1 for i in range(len(w.skills))}, "talents": []})
         if which == "bagfull":
             return j(w.bag_full_rows())
-        if which in ("beasts", "equipment", "pets"):
+        if which == "pets":
+            pet = w.pet
+            return j([] if pet is None else [{"id": PET, "name": PET_NAME,
+                                              "usable_at": 2e9 if pet["dead"] else -1}])
+        if which in ("beasts", "equipment"):
             return j([])
         self.unknown["mem " + which] = self.unknown.get("mem " + which, 0) + 1
         return j({"ok": False, "error": "unknown section: " + which})

@@ -131,8 +131,10 @@ def render_po(header: dict[str, str], entries: Iterable[tuple[str, str]],
 def _parse(text: str) -> tuple[dict[str, str], list[tuple[str, str]], list[tuple[str, str]]]:
     """(header, current entries, obsolete entries). Fuzzy entries are dropped."""
     r = _PoReader()
-    for raw in text.splitlines():
-        r.line(raw.strip())
+    # Lines end at "\n" only: splitlines() also cut a line at U+2028, U+0085 and the other Unicode
+    # line separators inside a translation, and the rest of it was lost on the next round trip.
+    for raw in text.lstrip("\ufeff").split("\n"):
+        r.line(raw.strip(" \t\r\f\v"))
     r.flush()
     return r.header, r.entries, r.obsolete_entries
 
@@ -270,7 +272,7 @@ def mo_bytes(header: dict[str, str], entries: Iterable[tuple[str, str]]) -> byte
 
 
 def read(path: str) -> str:
-    with open(path, encoding="utf-8") as f:
+    with open(path, encoding="utf-8-sig") as f:
         return f.read()
 
 

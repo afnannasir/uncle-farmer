@@ -34,6 +34,7 @@ public final class AgentTests {
         vitalsCreditOnlyTheAnswerToOurOwnRequest(contract);
         vitalsForIdZeroAreThePets();
         aPriestsPointsRequestIsAnsweredToo();
+        theAmiabilityIsTheThirdFieldForEveryClass();
         askPacketIsTheOwnHpKeysRequest(contract);
         usePacketIsTheUseKeysRequest(contract);
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
@@ -214,6 +215,29 @@ public final class AgentTests {
             World.outbound(ask);
             World.inbound(reply);
             eq(Points.pet, 64.5, "request of " + ask.length + " byte(s): the pet's amiability");
+        }
+    }
+
+    /** The points key's answers as recorded from the game (56,269 replies to the one-byte request,
+     *  the Priest's two-byte one too): "points;fusion[;amiability]". The amiability is always the
+     *  third field - for a Priest as well, whose points are two counts ("s0 e1") - and a reply
+     *  with two fields carries none: its second field is the fusion power, never the amiability. */
+    private static void theAmiabilityIsTheThirdFieldForEveryClass() {
+        Object[][] cases = {
+            {new byte[] {23}, "0;100.0;8.5", 100.0, 8.5},           // a Hunter, pet out
+            {new byte[] {23}, "300;61.0;69.9", 61.0, 69.9},         // a Warrior's full rage
+            {new byte[] {23}, "0;100.0", 100.0, -1.0},              // no pet out
+            {new byte[] {23, 1}, "s0 e1; 79.3; 64.5", 79.3, 64.5},  // a Priest with a pet
+            {new byte[] {23, 1}, "s0 e0; 81.3", 81.3, -1.0},        // a Priest without one
+        };
+        for (Object[] c : cases) {
+            byte[] text = ((String) c[1]).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            Points.pet = -1;
+            Points.fusion = -1;
+            World.outbound((byte[]) c[0]);
+            World.inbound(concat(new byte[] {60, 9}, text));
+            eq(Points.fusion, (Double) c[2], c[1] + ": the fusion power is the second field");
+            eq(Points.pet, (Double) c[3], c[1] + ": the amiability is the third field");
         }
     }
 
