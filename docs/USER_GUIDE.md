@@ -364,6 +364,26 @@ Check only reads the gang area's entrance and says where it would gather. Tools,
 collection now sells to all three buyers from wherever you are. In a script: `gather`,
 `gather check`, `sell_collection` or `sell_collection fish`.
 
+### Shard prices
+
+Shard Market prices change. Tools, Update shard prices walks to the nearest Shard Broker, reads
+its list and keeps the prices in `data\shards.json`, the price list the bag manager and the
+results use. A price is kept only when the price the list shows and the price its row sends to the
+game are the same, sane number; any other row, and any shard the list doesn't show, keeps its old
+price, and the log says which. Nothing else in the file changes. In a script:
+`update_shard_prices`. An update of Uncle Farmer brings its own price list, so run it again after
+updating.
+
+### Shops and the Shard Market by index
+
+With agent 53, the Shard Broker's list, its buy and sell menu, and a potion seller's list are
+chosen in by their rows instead of walking down the list a key at a time. The agent knows these
+menus as the game showed them in every city they were seen in. It first checks that the whole menu
+is that one, that the row holds the item's own number in the game, and that buy is buy and sell is
+sell; if anything differs it chooses nothing and says why. The bot then goes by the menu's text as
+before, except in a buy or sell menu that came up for the wrong shard: there it chooses nothing at
+all. Other shops (the grocer's) are always chosen in by text.
+
 ### Dungeons
 
 Tools, Dungeons (Ctrl+Shift+G) runs the cave a character can enter once a game day: Spider cave
@@ -434,6 +454,24 @@ Choose a game in the Games list, choose its plan and press Start, then do the sa
 game. Inside a game window, Pause starts and stops that game's bot. Bot, Stop every bot
 (Ctrl+Shift+S) stops them all.
 
+## Schedules
+
+Bot, Schedules (Ctrl+Shift+H) starts a plan or script for a character at a set time: once (a date
+and a time), every day, or on the days of the week you tick. The list shows each schedule, when it
+runs next and whether it is on; Add, Edit, Turn on or off, Delete and History act on the selected
+one. Changes are saved straight away, in `schedules.json` beside the settings (an update never
+replaces it).
+
+- A scheduled plan starts as the Start button would, in the game that character is logged in to:
+  the same log, results, farming day and end place.
+- Each time runs once. A time that came round while Uncle Farmer was closed, or while the schedule
+  was off, is not made up for later: History says "missed".
+- One run per game. If the character's game is busy with another run (yours, or another
+  schedule's) or isn't open, the schedule waits up to 15 minutes and then gives that time up
+  ("skipped", with why). A run already going is never stopped for a schedule.
+- History keeps when each time was due, when it started and how it ended: finished, stopped, or
+  an error, with the reason and the run's results line.
+
 ## Results
 
 Bot, Results (Ctrl+R) shows what each character earned farming: time and kills, contribution,
@@ -446,6 +484,13 @@ Only farming counts there. Show can switch to the Gem Maker, Equipment Enhancer 
 what each of them made, used and cost, kept apart because shards made into gems are not loot. Those
 jobs are kept apart inside a farming run too (chores before farming, `gem_maker` in a script).
 While a run is paused nothing is counted: what you kill or pick up by hand is yours, not the bot's.
+
+Arnebia spent on items used up: for each item used up (potions drunk, shards made into gems) its
+unit price, how many were used and what they cost, then the total. Shop items are at the shop's
+fixed price from the game data; shards are at the Shard Market price last read, which changes, so
+those are marked as estimates. What was bought is not counted as used. An item with no stored price
+is named and not counted. Each run keeps the prices it was costed at, so later price changes don't
+rewrite old results.
 
 It also shows the fight itself, from the game's own hit reports: damage given and received, hits
 and misses, critical hits and defence breaks (with the best and the last of each), the best normal

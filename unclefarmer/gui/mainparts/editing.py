@@ -175,6 +175,11 @@ class EditingMixin(FrameParts):
         Market or the nearest one - a job of its own, like selling the collection."""
         self.run_errand("sell_shards\n", _("Selling shards"))
 
+    def update_shard_prices_now(self) -> None:
+        """Tools, Update shard prices: read the nearest Shard Market's list into data/shards.json
+        (only the prices it shows and sends alike; every other price stays as it was)."""
+        self.run_errand("update_shard_prices\n", _("Updating shard prices"))
+
     def clean_bag_now(self) -> None:
         """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
         the player has seen the list and said yes (thrown items are gone for good)."""

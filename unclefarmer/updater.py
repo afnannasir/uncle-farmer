@@ -55,7 +55,8 @@ LOG = os.path.join(UPDATE, "update.log")
 REPLACE = ("_internal",)
 KEEP_IN = {"agent": ("run",)}
 # never copied, even if a release carried them: the player's own things
-NEVER = {"profiles", "plans", "scripts", "logs", "messages", "results", "survey", "update", "settings.json"}
+NEVER = {"profiles", "plans", "scripts", "logs", "messages", "results", "survey", "update", "settings.json",
+         "schedules.json"}
 
 
 class UpdateError(Exception):

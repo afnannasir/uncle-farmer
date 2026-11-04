@@ -11,6 +11,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
+msgid " (estimated: it includes shards)"
+msgstr ""
+
 msgid " ({n} thrown away)"
 msgstr ""
 
@@ -86,6 +89,9 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
+msgid "&Close"
+msgstr ""
+
 msgid "&Close windows the game opens by itself"
 msgstr ""
 
@@ -97,6 +103,9 @@ msgid ""
 msgstr ""
 
 msgid "&Daily chores...\tCtrl+Shift+D"
+msgstr ""
+
+msgid "&Date (year-month-day):"
 msgstr ""
 
 msgid "&Defensive skills below HP (%):"
@@ -184,6 +193,9 @@ msgid "&Hearthstone item:"
 msgstr ""
 
 msgid "&Help"
+msgstr ""
+
+msgid "&History..."
 msgstr ""
 
 msgid "&How many:"
@@ -295,6 +307,9 @@ msgstr ""
 msgid "&Place:"
 msgstr ""
 
+msgid "&Plan or script:"
+msgstr ""
+
 msgid "&Plans"
 msgstr ""
 
@@ -322,6 +337,9 @@ msgstr ""
 msgid "&Remove"
 msgstr ""
 
+msgid "&Repeat:"
+msgstr ""
+
 msgid "&Replies before the goodbye:"
 msgstr ""
 
@@ -344,6 +362,9 @@ msgid "&Save"
 msgstr ""
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
+msgstr ""
+
+msgid "&Schedules:"
 msgstr ""
 
 msgid "&Script commands"
@@ -398,6 +419,9 @@ msgid "&Then:"
 msgstr ""
 
 msgid "&Throw away:"
+msgstr ""
+
+msgid "&Time (hours:minutes):"
 msgstr ""
 
 msgid "&Time limit"
@@ -458,6 +482,9 @@ msgid "'{word}' outside an if block"
 msgstr ""
 
 msgid "(Taken from {twin}, the same size.)"
+msgstr ""
+
+msgid "(and {n} more with no price then)"
 msgstr ""
 
 msgid "(no notes)"
@@ -531,6 +558,10 @@ msgid "A name for this place:"
 msgstr ""
 
 msgid "A plan named {name} already exists. Replace it?"
+msgstr ""
+
+msgid ""
+"A scheduled plan starts in the game the character is logged in to, as the Start button would. A time missed while Uncle Farmer was closed doesn't run later; a game busy with another run waits up to 15 minutes."
 msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
@@ -661,6 +692,10 @@ msgstr ""
 msgid "Arnebia"
 msgstr ""
 
+msgid ""
+"Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
+msgstr ""
+
 msgid "As many as I can"
 msgstr ""
 
@@ -668,6 +703,9 @@ msgid "At a &clock time"
 msgstr ""
 
 msgid "At a place I choose"
+msgstr ""
+
+msgid "At the shops' fixed prices:"
 msgstr ""
 
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
@@ -807,6 +845,9 @@ msgstr ""
 msgid "Choose a map."
 msgstr ""
 
+msgid "Choose a plan or script to run."
+msgstr ""
+
 msgid "Choose in a dialog"
 msgstr ""
 
@@ -924,6 +965,9 @@ msgstr ""
 msgid "Couldn't read the game: {err}"
 msgstr ""
 
+msgid "Couldn't save the schedules: {err}"
+msgstr ""
+
 msgid "Couldn't save: {err}"
 msgstr ""
 
@@ -973,10 +1017,16 @@ msgstr ""
 msgid "Damage received: {dmg} ({hits} hits, {misses} misses)"
 msgstr ""
 
+msgid "Date: write it as year-month-day, for example 2026-11-05"
+msgstr ""
+
 msgid "Death"
 msgstr ""
 
 msgid "Deaths before stopping:"
+msgstr ""
+
+msgid "Delete the schedule for {what} ({who})?"
 msgstr ""
 
 msgid "Delete {name}? This can't be undone."
@@ -1050,6 +1100,9 @@ msgid "E&xit"
 msgstr ""
 
 msgid "East edge (x):"
+msgstr ""
+
+msgid "Edit schedule"
 msgstr ""
 
 msgid "Elite"
@@ -1203,6 +1256,9 @@ msgid "For (seconds):"
 msgstr ""
 
 msgid "Free rebirths a day (the game gives 2):"
+msgstr ""
+
+msgid "Friday"
 msgstr ""
 
 msgid "From (+):"
@@ -1417,6 +1473,9 @@ msgid "Here, next to you."
 msgstr ""
 
 msgid "Highest l&evel to make:"
+msgstr ""
+
+msgid "History of {what} for {who}"
 msgstr ""
 
 msgid "Ho&w the game works"
@@ -1717,6 +1776,9 @@ msgstr ""
 msgid "Make a plan first, in the Plans tab."
 msgstr ""
 
+msgid "Make a plan or script first, in the Plans tab."
+msgstr ""
+
 msgid "Make as many {gem} as I can."
 msgstr ""
 
@@ -1772,6 +1834,9 @@ msgstr ""
 
 msgid ""
 "Mist World's settings don't load it (it was never installed there, or another tool removed it)"
+msgstr ""
+
+msgid "Monday"
 msgstr ""
 
 msgid ""
@@ -1841,7 +1906,13 @@ msgstr ""
 msgid "New sc&ript..."
 msgstr ""
 
+msgid "New schedule"
+msgstr ""
+
 msgid "Newbie"
+msgstr ""
+
+msgid "Next"
 msgstr ""
 
 msgid "Next category"
@@ -1911,6 +1982,9 @@ msgstr ""
 msgid "No plans yet. Press New plan to make one."
 msgstr ""
 
+msgid "No price stored, not counted: {list}"
+msgstr ""
+
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr ""
 
@@ -1974,6 +2048,9 @@ msgstr ""
 msgid "Nothing gained yet."
 msgstr ""
 
+msgid "Nothing has happened yet."
+msgstr ""
+
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr ""
 
@@ -2001,6 +2078,12 @@ msgstr ""
 msgid "Oldhand"
 msgstr ""
 
+msgid "On"
+msgstr ""
+
+msgid "On chosen days"
+msgstr ""
+
 msgid "On every try"
 msgstr ""
 
@@ -2008,6 +2091,9 @@ msgid "On the nearest map without monsters"
 msgstr ""
 
 msgid "On {map}: {who}"
+msgstr ""
+
+msgid "Once"
 msgstr ""
 
 msgid "Only areas whose monsters are at most this many levels &above you:"
@@ -2162,6 +2248,9 @@ msgid "Plan"
 msgstr ""
 
 msgid "Plan &name:"
+msgstr ""
+
+msgid "Plan or script"
 msgstr ""
 
 msgid "Plan, from the last scan of your bag:"
@@ -2358,6 +2447,9 @@ msgstr ""
 msgid "STOPPED: {why}"
 msgstr ""
 
+msgid "Saturday"
+msgstr ""
+
 msgid "Save"
 msgstr ""
 
@@ -2374,6 +2466,18 @@ msgid "Saved. It's in the Plans tab as a script."
 msgstr ""
 
 msgid "Scan complete."
+msgstr ""
+
+msgid "Sche&dules...\tCtrl+Shift+H"
+msgstr ""
+
+msgid "Scheduled {what} for {who} couldn't start: {why}"
+msgstr ""
+
+msgid "Scheduled: starting {what} for {who}"
+msgstr ""
+
+msgid "Schedules"
 msgstr ""
 
 msgid "Scorpion Cave"
@@ -2453,6 +2557,9 @@ msgid "Settings"
 msgstr ""
 
 msgid "Shard Market price when last seen: {price} arnebia"
+msgstr ""
+
+msgid "Shard prices change at the Shard Market, so these prices are estimated:"
 msgstr ""
 
 msgid "Shards"
@@ -2679,6 +2786,9 @@ msgstr ""
 msgid "Summary:"
 msgstr ""
 
+msgid "Sunday"
+msgstr ""
+
 msgid "Supplies"
 msgstr ""
 
@@ -2716,7 +2826,13 @@ msgstr ""
 msgid "That place is in your list already."
 msgstr ""
 
+msgid "That schedule is gone"
+msgstr ""
+
 msgid "That takes about {k} more {shard}{cost}, plus the craftsman's fees."
+msgstr ""
+
+msgid "That time has already passed: choose a later one."
 msgstr ""
 
 msgid "That was too short to send - hold on a little longer."
@@ -2888,6 +3004,9 @@ msgstr ""
 msgid "The room"
 msgstr ""
 
+msgid "The schedule isn't complete"
+msgstr ""
+
 msgid ""
 "The script has a mistake:\n"
 "{p}\n"
@@ -2992,6 +3111,12 @@ msgstr ""
 msgid "Thrown away:"
 msgstr ""
 
+msgid "Thursday"
+msgstr ""
+
+msgid "Tick at least one day."
+msgstr ""
+
 msgid "Tick the monsters to fight:"
 msgstr ""
 
@@ -2999,6 +3124,12 @@ msgid "Time (HH:MM):"
 msgstr ""
 
 msgid "Time between potions (seconds):"
+msgstr ""
+
+msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
+msgstr ""
+
+msgid "Time: write it as hours:minutes, for example 06:30"
 msgstr ""
 
 msgid "Time: {h} h {m} min"
@@ -3031,6 +3162,9 @@ msgstr ""
 msgid "Tone from &trusted players:"
 msgstr ""
 
+msgid "Total arnebia spent on items used: {n}"
+msgstr ""
+
 msgid "Travel"
 msgstr ""
 
@@ -3042,6 +3176,15 @@ msgstr ""
 
 msgid ""
 "Trusted players are the names and ids in Private messages (Ctrl+Shift+M), where reading private messages out is set too."
+msgstr ""
+
+msgid "Tuesday"
+msgstr ""
+
+msgid "Turn on or o&ff"
+msgstr ""
+
+msgid "Turned &on"
 msgstr ""
 
 msgid "Type a message first."
@@ -3102,7 +3245,13 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
+msgid "Update shard &prices"
+msgstr ""
+
 msgid "Updates"
+msgstr ""
+
+msgid "Updating shard prices"
 msgstr ""
 
 msgid "Use"
@@ -3219,6 +3368,9 @@ msgstr ""
 msgid "Warnings and errors"
 msgstr ""
 
+msgid "Wednesday"
+msgstr ""
+
 msgid ""
 "Welcome to Uncle Farmer. The agent needs to be installed in Mist World first. Open Settings now?"
 msgstr ""
@@ -3311,6 +3463,9 @@ msgstr ""
 msgid "Worst normal hit received: {hit}"
 msgstr ""
 
+msgid "Write the character's name: the game it is logged in to runs it."
+msgstr ""
+
 msgid "X:"
 msgstr ""
 
@@ -3340,6 +3495,9 @@ msgstr ""
 
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
+msgstr ""
+
+msgid "about {price}"
 msgstr ""
 
 msgid "accepted {name} into the team"
@@ -3638,6 +3796,9 @@ msgstr ""
 msgid "couldn't respawn - please do it by hand"
 msgstr ""
 
+msgid "couldn't save the shard prices: {err}"
+msgstr ""
+
 msgid "couldn't scan {name}: {err}"
 msgstr ""
 
@@ -3740,6 +3901,12 @@ msgid ""
 msgstr ""
 
 msgid "entrance unknown"
+msgstr ""
+
+msgid "error"
+msgstr ""
+
+msgid "every day at {time}"
 msgstr ""
 
 msgid "everything"
@@ -3943,8 +4110,17 @@ msgstr ""
 msgid "in {where}"
 msgstr ""
 
+msgid "in {who}'s game"
+msgstr ""
+
+msgid "it didn't start"
+msgstr ""
+
 msgid ""
 "it's {time} - the day's farming is over (the drop time resets at {reset})"
+msgstr ""
+
+msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr ""
 
 msgid "joined {who}'s team ({team}): {who} is trusted"
@@ -4105,6 +4281,9 @@ msgstr ""
 msgid "mute: the game stops talking (only my game)."
 msgstr ""
 
+msgid "never again"
+msgstr ""
+
 msgid "new"
 msgstr ""
 
@@ -4183,6 +4362,9 @@ msgid "no room with a free place for this level"
 msgstr ""
 
 msgid "no secret room for this level has a free place"
+msgstr ""
+
+msgid "no shard prices could be read - nothing changed"
 msgstr ""
 
 msgid "no shards to sell: nothing in the bag is on the bag manager's sell list"
@@ -4273,6 +4455,12 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid "not in the price list, left out: {list}"
+msgstr ""
+
+msgid "not read, old price kept: {list}"
+msgstr ""
+
 msgid "not restocking {item}: {why}"
 msgstr ""
 
@@ -4304,13 +4492,22 @@ msgstr ""
 msgid "nothing to restock"
 msgstr ""
 
+msgid "now (waiting to start)"
+msgstr ""
+
 msgid "now on {map}"
 msgstr ""
 
 msgid "nowhere to build now (places: {places})"
 msgstr ""
 
+msgid "off"
+msgstr ""
+
 msgid "off to the secret room to share arnebia"
+msgstr ""
+
+msgid "on"
 msgstr ""
 
 msgid "on this map"
@@ -4319,10 +4516,16 @@ msgstr ""
 msgid "on this map, with Resurrection Crystals"
 msgstr ""
 
+msgid "on {days} at {time}"
+msgstr ""
+
 msgid "on {map}: riding - waiting to arrive"
 msgstr ""
 
 msgid "on {name}"
+msgstr ""
+
+msgid "once, {date} at {time}"
 msgstr ""
 
 msgid "one cave only: a character goes into one cave a day"
@@ -4391,6 +4594,9 @@ msgid ""
 msgstr ""
 
 msgid "phrase {line}"
+msgstr ""
+
+msgid "plan"
 msgstr ""
 
 msgid ""
@@ -4480,10 +4686,16 @@ msgstr ""
 msgid "route to {map}: {steps}"
 msgstr ""
 
+msgid "row {n}"
+msgstr ""
+
 msgid "running"
 msgstr ""
 
 msgid "running on_stop"
+msgstr ""
+
+msgid "script"
 msgstr ""
 
 msgid "script finished"
@@ -4528,6 +4740,12 @@ msgstr ""
 msgid "set yourself as the team's navigation target"
 msgstr ""
 
+msgid "shard price not used: {why}"
+msgstr ""
+
+msgid "shard prices: {changed} changed, {same} unchanged, {missing} not read"
+msgstr ""
+
 msgid "shared arnebia {n} of {all} times today"
 msgstr ""
 
@@ -4544,6 +4762,9 @@ msgid "short of supplies for the dungeon: {what}"
 msgstr ""
 
 msgid "skills go by keys again: {why}"
+msgstr ""
+
+msgid "skipped"
 msgstr ""
 
 msgid "skipping {map}: died there every time"
@@ -4569,6 +4790,9 @@ msgstr ""
 
 msgid ""
 "start: I start the plan I ran last. start and a plan's name starts that plan, for example: start wolves"
+msgstr ""
+
+msgid "started"
 msgstr ""
 
 msgid "starting {what} as {name}"
@@ -4753,6 +4977,16 @@ msgstr ""
 msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr ""
 
+msgid ""
+"the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
+msgstr ""
+
+msgid "the agent can't read menus by layout (agent {n} or newer needed)"
+msgstr ""
+
+msgid "the app wasn't running then"
+msgstr ""
+
 msgid "the bag"
 msgstr ""
 
@@ -4928,6 +5162,9 @@ msgstr ""
 msgid "the instructor offers no secret room training"
 msgstr ""
 
+msgid "the item isn't on it"
+msgstr ""
+
 msgid "the last 30 days"
 msgstr ""
 
@@ -4941,6 +5178,12 @@ msgid "the menu has no entry like \"{want}\""
 msgstr ""
 
 msgid "the officer offers no hunting bounty"
+msgstr ""
+
+msgid "the open menu is {what}"
+msgstr ""
+
+msgid "the open menu isn't the Shard Market's list"
 msgstr ""
 
 msgid "the outer hall"
@@ -4960,6 +5203,9 @@ msgid ""
 msgstr ""
 
 msgid "the script is too long (over {max} characters)"
+msgstr ""
+
+msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
 msgid "the storehouse"
@@ -5001,6 +5247,9 @@ msgid ""
 msgstr ""
 
 msgid "the {item} on key {key} are used up"
+msgstr ""
+
+msgid "the {kind} {name} doesn't exist any more"
 msgstr ""
 
 msgid "the {npc} didn't take me anywhere"
@@ -5220,6 +5469,9 @@ msgstr ""
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr ""
 
+msgid "{at}: {outcome} (due {due})"
+msgstr ""
+
 msgid ""
 "{a}: the gang base's way out is in its outer hall, walled off from here - walk out yourself and start again"
 msgstr ""
@@ -5279,6 +5531,15 @@ msgid "{field}: enter a number from {lo} to {hi}"
 msgstr ""
 
 msgid "{field}: enter a number, for example 1.5"
+msgstr ""
+
+msgid "{file} isn't a shard price list"
+msgstr ""
+
+msgid "{file}: the new prices didn't come out right - nothing saved"
+msgstr ""
+
+msgid "{file}: the price of {shard} isn't where it should be"
 msgstr ""
 
 msgid "{games} games, {bots} bots running"
@@ -5354,6 +5615,9 @@ msgid ""
 "{item}: the game hasn't shown what it heals yet. Until you type your own numbers below, the bot drinks it when {what} is below {pct}%, every {secs} seconds at most."
 msgstr ""
 
+msgid "{item}: {n} used x {price} = {cost} arnebia"
+msgstr ""
+
 msgid "{key} (page {page})"
 msgstr ""
 
@@ -5395,6 +5659,10 @@ msgid "{map}: walking out through its exit didn't take me out"
 msgstr ""
 
 msgid "{map}: {n} NPCs"
+msgstr ""
+
+msgid ""
+"{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
 msgstr ""
 
 msgid "{m} min"
@@ -5613,6 +5881,9 @@ msgstr ""
 msgid "{n} thrown away"
 msgstr ""
 
+msgid "{n} times, {first} to {last}: {why}"
+msgstr ""
+
 msgid "{n} used up"
 msgstr ""
 
@@ -5643,10 +5914,28 @@ msgstr ""
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr ""
 
+msgid "{row}: listed twice with different prices"
+msgstr ""
+
+msgid "{row}: no price shown"
+msgstr ""
+
+msgid "{row}: not a shard row"
+msgstr ""
+
+msgid "{row}: the price shown ({shown}) isn't the one the menu sends ({sent})"
+msgstr ""
+
+msgid "{row}: {price} isn't a price"
+msgstr ""
+
 msgid "{r} replies, {g} goodbyes"
 msgstr ""
 
 msgid "{shard} costs {price} at the market, more than your limit of {limit}"
+msgstr ""
+
+msgid "{shard}: {old} -> {new} arnebia"
 msgstr ""
 
 msgid "{skill} at {where}"
@@ -5678,6 +5967,12 @@ msgstr ""
 msgid "{tool} check"
 msgstr ""
 
+msgid "{what} for {who} is waiting: {why}"
+msgstr ""
+
+msgid "{what} for {who}: {outcome} ({why})"
+msgstr ""
+
 msgid "{what} must be a number, not {value}"
 msgstr ""
 
@@ -5698,6 +5993,12 @@ msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr ""
 
 msgid "{where} failed: {err} (carrying on)"
+msgstr ""
+
+msgid "{who} isn't logged in to a game that Uncle Farmer sees"
+msgstr ""
+
+msgid "{who}'s game is busy with {what}"
 msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."

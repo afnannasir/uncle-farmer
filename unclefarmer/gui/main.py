@@ -22,6 +22,7 @@ from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
 from .mainparts.results import ResultsMixin
 from .mainparts.runs import RunsMixin
+from .mainparts.scheduling import SchedulingMixin
 from .mainparts.talk import TalkMixin
 from .mainparts.updates import UpdatesMixin
 
@@ -34,7 +35,7 @@ BOT_STOP_WAIT = 5.0         # seconds each running bot gets to end when the app 
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -94,6 +95,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.fill_runs()
         self.refresh_games()
         self.update_buttons()
+        self.start_schedules()
         self.game_list.SetFocus()
         wx.CallAfter(self.first_run)
 
@@ -203,6 +205,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          (_("P&ause or go on\tF6"), lambda e: self.toggle_pause()),
                          (_("Stop &every bot\tCtrl+Shift+S"), lambda e: self.stop_all()),
                          (_("Wa&lk to a dungeon or map...\tCtrl+W"), lambda e: self.walk()),
+                         (_("Sche&dules...\tCtrl+Shift+H"), lambda e: self.open_schedules()),
                          (_("&Results...\tCtrl+R"), lambda e: self.show_results()),
                          (_("Spea&k the results\tCtrl+Shift+R"), lambda e: self.speak_results()),
                          (_("&Mute this game\tCtrl+M"), lambda e: self.set_game_speech(False)),
@@ -225,7 +228,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            (_("&Sell the collection now"),
                             lambda e: self.run_errand("sell_collection\n", _("Selling the collection"))),
                            (_("Sell s&hards now"), lambda e: self.sell_shards_now()),
-                           (_("Clean the &bag now (throw-away list)..."), lambda e: self.clean_bag_now())])
+                           (_("Clean the &bag now (throw-away list)..."), lambda e: self.clean_bag_now()),
+                           (_("Update shard &prices"), lambda e: self.update_shard_prices_now())])
         menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
                            (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
@@ -282,6 +286,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                     down.problem("Windows didn't take back hotkey %#x" % hotkey)
         with down.step("stop the game list timer", must=False):
             self.timer.Stop()
+        timer: wx.Timer | None = getattr(self, "schedule_timer", None)   # none if the window never got that far
+        if timer is not None:
+            with down.step("stop the schedules timer", must=False):
+                timer.Stop()
         with down.step("destroy the window", must=False):
             self.Destroy()
 
@@ -303,6 +311,7 @@ Main window
   F6                  Pause it where it is, or let a paused bot go on (you can play by hand meanwhile)
   Ctrl+Shift+S       Stop every bot
   Ctrl+W              Walk to a dungeon entrance or a map (Pause stops the walk)
+  Ctrl+Shift+H        Schedules: plans and scripts started at set times
   Ctrl+R              Results
   Ctrl+Shift+R        Speak the results
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Bot menu: every game)
@@ -377,7 +386,9 @@ sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full 
 stops when Vitality runs out. Tools, Sell the collection now: sells it from wherever you are.
 Tools, Sell shards now: sells the shards the bag manager says to sell, at this city's Shard Market
 (or the nearest one). Tools, Clean the bag now: throws away, where you stand, only what is on the
-bag manager's throw-away list, after you say yes.
+bag manager's throw-away list, after you say yes. Tools, Update shard prices: reads the nearest
+Shard Market's prices into the price list the bag manager and the results use; a price that can't
+be read keeps its old value.
 Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
 kills as their 15 minutes give. Before setting out it tops up what you set on the Supplies tab (the
 pet's blue potions and Rice Rolls, your blue and red potions) from the storehouse or the shop; then
@@ -417,10 +428,15 @@ keeps everything.
 Bot, Open another game window (Ctrl+O). Every game shows in the Games list with its character;
 each runs its own plan. Inside a game window, Pause starts and stops that game's bot.
 Ctrl+Shift+S stops them all. Each game needs about 1 GB of memory.
+Bot, Schedules (Ctrl+Shift+H) starts a plan or script for a character at a set time: once, every
+day or on chosen days. Each time runs once; a time missed while Uncle Farmer was closed doesn't run
+later, and a game busy with another run waits up to 15 minutes. History says what happened.
 
 7. RESULTS
 Bot, Results (Ctrl+R): arnebia, shards, contribution, experience, levels and items, for this run,
-today, a week, a month or ever. Shift+Pause speaks a short summary from anywhere.
+today, a week, a month or ever, and the arnebia the items used up cost (shop items at their fixed
+price, shards at the last Shard Market price, an estimate). Shift+Pause speaks a short summary from
+anywhere.
 
 8. PRIVATE MESSAGES
 Bot, Private messages (Ctrl+Shift+M). Strangers get a few of your reply lines, then a goodbye and

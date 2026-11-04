@@ -1,5 +1,28 @@
 # What's new
 
+## Not released yet
+
+**Schedules**
+
+- Bot, Schedules (Ctrl+Shift+H): start a plan or script for a character at a set time, once,
+  every day or on chosen days. Each time runs once; a time missed while Uncle Farmer was closed
+  is not run later; a busy game waits up to 15 minutes. History says what happened each time.
+
+**Results**
+
+- Arnebia spent on the items used up: each item's unit price, how many were used, its cost and the
+  total. Shop prices are the shop's fixed ones; shard prices are marked as estimates.
+- A run saved twice is counted once.
+
+**Shards and shops**
+
+- Tools, Update shard prices: reads the nearest Shard Broker's prices into the price list. Only
+  prices that check out are kept; the rest stay as they were. Script command `update_shard_prices`.
+- Agent 53: the Shard Broker's list, its buy and sell menu and a potion seller's list are chosen in
+  by their verified rows, after checking the menu, the item and buy or sell, instead of a key per
+  row. A menu that doesn't match is chosen in by its text as before; a buy or sell menu for the
+  wrong shard is never answered.
+
 ## 0.8.1
 
 **Gang base, gem making and shards**

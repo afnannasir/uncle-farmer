@@ -52,7 +52,7 @@ from typing import Any, TypeVar
 
 from .. import atlas, knowledge
 from ..i18n import _
-from . import bagrules, town
+from . import bagrules, menus, town
 from .bot import Bot, Stopped
 from .botparts.base import STOPPING, note_failure
 from .botparts.travel import note_way_out
@@ -419,12 +419,15 @@ def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=
     town.visit(b, None, candidates=town.market_candidates(markets))
     before = town.counts(b).get(shard.lower(), 0)
     try:
-        pattern = town.item_pattern(shard)
-        e = entry_like(b, pattern)
-        if e is None:
-            b.log(_("the Shard Market doesn't sell {shard}", shard=shard))
-            return 0
-        price = _num(r"Unit price\s+(\d+)", " ".join(b.entry_texts(e)), 0)
+        listed = menus.find(b, menus.SHARD_MARKET, name=shard)     # the verified list's own row
+        if listed is not None:
+            price = int(listed.get("price") or 0)
+        else:
+            e = entry_like(b, town.item_pattern(shard))
+            if e is None:
+                b.log(_("the Shard Market doesn't sell {shard}", shard=shard))
+                return 0
+            price = _num(r"Unit price\s+(\d+)", " ".join(b.entry_texts(e)), 0)
         if check_only:
             b.log(_("the Shard Market sells {shard} at {price} arnebia each", shard=shard, price=price))
             return 0
@@ -442,14 +445,7 @@ def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=
         if n <= 0:
             b.log(_("not enough spare arnebia to buy {shard}", shard=shard), speak=True)
             return 0
-        left = n
-        while left > 0:                       # the box takes at most 2000 at a time
-            if b.choose(pattern) is None or not b.wait_dialog(3.0):
-                break
-            step = min(left, 2000)
-            if not town.pick(b, r"\bbuy\b", step):
-                break
-            left -= step
+        town.shard_trade(b, shard, "buy", n)    # in steps the box takes, by index when it can
     finally:
         b.close_dialogs()
     got = town.counts(b).get(shard.lower(), 0) - before

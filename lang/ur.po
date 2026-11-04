@@ -11,6 +11,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
+msgid " (estimated: it includes shards)"
+msgstr " (andaza: is mein shards shamil hain)"
+
 msgid " ({n} thrown away)"
 msgstr " ({n} phenke)"
 
@@ -86,6 +89,9 @@ msgstr "&Jaanch (F5)"
 msgid "&Check only"
 msgstr "&Sirf check"
 
+msgid "&Close"
+msgstr "&Band karein"
+
 msgid "&Close windows the game opens by itself"
 msgstr "Game khud jo windows kholta hai unhein &band karein"
 
@@ -98,6 +104,9 @@ msgstr "Roz ki &tameer (har baar 10,000 arnebia, 2,500 gang contribution):"
 
 msgid "&Daily chores...\tCtrl+Shift+D"
 msgstr "&Roz ke kaam...\tCtrl+Shift+D"
+
+msgid "&Date (year-month-day):"
+msgstr "&Tareekh (saal-mahina-din):"
 
 msgid "&Defensive skills below HP (%):"
 msgstr "HP se neeche &defensive skills (%):"
@@ -185,6 +194,9 @@ msgstr "&Hearthstone cheez:"
 
 msgid "&Help"
 msgstr "&Madad"
+
+msgid "&History..."
+msgstr "&Tareekhcha..."
 
 msgid "&How many:"
 msgstr "&Kitne:"
@@ -296,6 +308,9 @@ msgstr "&Mere qareeb ke monsters mein se chunein..."
 msgid "&Place:"
 msgstr "&Jagah:"
 
+msgid "&Plan or script:"
+msgstr "&Mansooba ya script:"
+
 msgid "&Plans"
 msgstr "&Mansoobe"
 
@@ -324,6 +339,9 @@ msgstr "Naye paigham &padh kar sunayein:"
 msgid "&Remove"
 msgstr "&Hataayein"
 
+msgid "&Repeat:"
+msgstr "&Dohrana:"
+
 msgid "&Replies before the goodbye:"
 msgstr "&Rukhsati se pehle jawab:"
 
@@ -348,6 +366,9 @@ msgstr "&Mahfooz"
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
 "Din ke drop ke waqt mein se kuch &mahfooz rakhein (kirdaar ki setting ki jagah)"
+
+msgid "&Schedules:"
+msgstr "&Schedules:"
 
 msgid "&Script commands"
 msgstr "&Script ke commands"
@@ -402,6 +423,9 @@ msgstr "&Phir:"
 
 msgid "&Throw away:"
 msgstr "&Phenkein:"
+
+msgid "&Time (hours:minutes):"
+msgstr "&Waqt (ghante:minute):"
 
 msgid "&Time limit"
 msgstr "&Waqt ki hadd"
@@ -462,6 +486,9 @@ msgstr "'{word}' if block ke bahar hai"
 
 msgid "(Taken from {twin}, the same size.)"
 msgstr "({twin} se liya gaya, wohi size.)"
+
+msgid "(and {n} more with no price then)"
+msgstr "(aur {n} jin ki tab koi qeemat nahi thi)"
 
 msgid "(no notes)"
 msgstr "(koi notes nahi)"
@@ -536,6 +563,11 @@ msgstr "Is jagah ka naam:"
 
 msgid "A plan named {name} already exists. Replace it?"
 msgstr "{name} naam ka mansooba pehle se mojood hai. Isay badlein?"
+
+msgid ""
+"A scheduled plan starts in the game the character is logged in to, as the Start button would. A time missed while Uncle Farmer was closed doesn't run later; a game busy with another run waits up to 15 minutes."
+msgstr ""
+"Schedule kiya hua mansooba us game mein shuru hota hai jis mein kirdaar logged in hai, jaise Start ka button karta. Jo waqt Uncle Farmer band hone par guzar gaya woh baad mein nahi chalta; doosre run mein masroof game 15 minute tak intezar karta hai."
 
 msgid "A script called {name} exists. Replace it?"
 msgstr "{name} naam ka script pehle se mojood hai. Isay badal dein?"
@@ -669,6 +701,11 @@ msgstr "Mere a&as paas ka ilaqa"
 msgid "Arnebia"
 msgstr "Arnebia"
 
+msgid ""
+"Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
+msgstr ""
+"Istemal shuda cheezon par kharch hua arnebia (mahfooz qeematon se; khareedi hui cheezein yahan nahi gini jaatin):"
+
 msgid "As many as I can"
 msgstr "Jitne ban sakein"
 
@@ -677,6 +714,9 @@ msgstr "&Ghadi ke waqt par"
 
 msgid "At a place I choose"
 msgstr "Meri chuni hui jagah par"
+
+msgid "At the shops' fixed prices:"
+msgstr "Dukaanon ki muqarrar qeematon par:"
 
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
@@ -819,6 +859,9 @@ msgstr "Cursor par shamil karne ke liye command chunein:"
 msgid "Choose a map."
 msgstr "Map chunein."
 
+msgid "Choose a plan or script to run."
+msgstr "Chalane ke liye mansooba ya script chunein."
+
 msgid "Choose in a dialog"
 msgstr "Dialog mein chunein"
 
@@ -937,6 +980,9 @@ msgstr "Updates dekhne ke liye GitHub tak nahi pahunch saka: {why}"
 msgid "Couldn't read the game: {err}"
 msgstr "Game parhi nahi ja saki: {err}"
 
+msgid "Couldn't save the schedules: {err}"
+msgstr "Schedules mahfooz nahi ho sake: {err}"
+
 msgid "Couldn't save: {err}"
 msgstr "Mahfooz nahi ho saka: {err}"
 
@@ -987,11 +1033,17 @@ msgstr "Diya gaya damage: {dmg} ({hits} hits, {misses} misses)"
 msgid "Damage received: {dmg} ({hits} hits, {misses} misses)"
 msgstr "Mila damage: {dmg} ({hits} hits, {misses} misses)"
 
+msgid "Date: write it as year-month-day, for example 2026-11-05"
+msgstr "Tareekh: saal-mahina-din likhein, masalan 2026-11-05"
+
 msgid "Death"
 msgstr "Maut"
 
 msgid "Deaths before stopping:"
 msgstr "Rokne se pehle kitni maut:"
+
+msgid "Delete the schedule for {what} ({who})?"
+msgstr "{what} ({who}) ka schedule hataayein?"
 
 msgid "Delete {name}? This can't be undone."
 msgstr "{name} hataayein? Yeh wapas nahi hoga."
@@ -1065,6 +1117,9 @@ msgstr "Bahar &niklein"
 
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
+
+msgid "Edit schedule"
+msgstr "Schedule tabdeel karein"
 
 msgid "Elite"
 msgstr "Elite"
@@ -1223,6 +1278,9 @@ msgstr "Kitne (second) tak:"
 
 msgid "Free rebirths a day (the game gives 2):"
 msgstr "Roz ke muft rebirth (game 2 deta hai):"
+
+msgid "Friday"
+msgstr "Jumma"
 
 msgid "From (+):"
 msgstr "Se (+):"
@@ -1442,6 +1500,9 @@ msgstr "Yahan, tumhare paas."
 
 msgid "Highest l&evel to make:"
 msgstr "Banane ka sab se &ooncha level:"
+
+msgid "History of {what} for {who}"
+msgstr "{who} ke liye {what} ka tareekhcha"
 
 msgid "Ho&w the game works"
 msgstr "Game kaise &kaam karti hai"
@@ -1756,6 +1817,9 @@ msgstr "Gem banayein: kaunsa, uska level aur kitne, chunein"
 msgid "Make a plan first, in the Plans tab."
 msgstr "Pehle Plans tab mein plan banayein."
 
+msgid "Make a plan or script first, in the Plans tab."
+msgstr "Pehle Plans tab mein mansooba ya script banayein."
+
 msgid "Make as many {gem} as I can."
 msgstr "Jitne {gem} ban sakein banayein."
 
@@ -1818,6 +1882,9 @@ msgid ""
 "Mist World's settings don't load it (it was never installed there, or another tool removed it)"
 msgstr ""
 "Mist World ki tarteeb ise load nahi karti (yeh wahan kabhi install nahi hua, ya kisi aur tool ne ise hata diya)"
+
+msgid "Monday"
+msgstr "Peer"
 
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
@@ -1887,8 +1954,14 @@ msgstr "Naya &script...\tCtrl+Shift+N"
 msgid "New sc&ript..."
 msgstr "Naya sc&ript..."
 
+msgid "New schedule"
+msgstr "Naya schedule"
+
 msgid "Newbie"
 msgstr "Newbie"
+
+msgid "Next"
+msgstr "Agla"
 
 msgid "Next category"
 msgstr "Agli qism"
@@ -1959,6 +2032,9 @@ msgstr "Abhi koi plan nahi"
 msgid "No plans yet. Press New plan to make one."
 msgstr "Abhi koi plan nahi. Naya plan banane ke liye New plan dabayein."
 
+msgid "No price stored, not counted: {list}"
+msgstr "Koi qeemat mahfooz nahi, gina nahi gaya: {list}"
+
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "GitHub par Uncle Farmer ka koi release abhi nahi dikh raha."
 
@@ -2025,6 +2101,9 @@ msgstr "Bag mein kuch nahi badla."
 msgid "Nothing gained yet."
 msgstr "Abhi kuch nahi mila."
 
+msgid "Nothing has happened yet."
+msgstr "Abhi tak kuch nahi hua."
+
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr "Kuch karne ko nahi: abhi baste mein koi gems ya shards nahi."
 
@@ -2052,6 +2131,12 @@ msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
 msgid "Oldhand"
 msgstr "Oldhand"
 
+msgid "On"
+msgstr "On"
+
+msgid "On chosen days"
+msgstr "Chune hue dinon par"
+
 msgid "On every try"
 msgstr "Har koshish par"
 
@@ -2060,6 +2145,9 @@ msgstr "Sab se qareebi monster-free map par"
 
 msgid "On {map}: {who}"
 msgstr "{map} par: {who}"
+
+msgid "Once"
+msgstr "Aik baar"
 
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
@@ -2221,6 +2309,9 @@ msgstr "Mansooba"
 
 msgid "Plan &name:"
 msgstr "Mansoobe ka &naam:"
+
+msgid "Plan or script"
+msgstr "Mansooba ya script"
 
 msgid "Plan, from the last scan of your bag:"
 msgstr "Mansooba, aapke baste ke aakhri scan se:"
@@ -2419,6 +2510,9 @@ msgstr "&Jama karein:"
 msgid "STOPPED: {why}"
 msgstr "RUK GAYA: {why}"
 
+msgid "Saturday"
+msgstr "Hafta"
+
 msgid "Save"
 msgstr "Mahfooz"
 
@@ -2436,6 +2530,18 @@ msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
 
 msgid "Scan complete."
 msgstr "Scan mukammal."
+
+msgid "Sche&dules...\tCtrl+Shift+H"
+msgstr "Sche&dules...\tCtrl+Shift+H"
+
+msgid "Scheduled {what} for {who} couldn't start: {why}"
+msgstr "{who} ke liye schedule kiya hua {what} shuru nahi ho saka: {why}"
+
+msgid "Scheduled: starting {what} for {who}"
+msgstr "Schedule: {who} ke liye {what} shuru kar raha hoon"
+
+msgid "Schedules"
+msgstr "Schedules"
 
 msgid "Scorpion Cave"
 msgstr "Scorpion Cave"
@@ -2516,6 +2622,10 @@ msgstr "Tarteeb"
 
 msgid "Shard Market price when last seen: {price} arnebia"
 msgstr "Shard Market ki aakhri dekhi qeemat: {price} arnebia"
+
+msgid "Shard prices change at the Shard Market, so these prices are estimated:"
+msgstr ""
+"Shard Market mein shards ki qeematein badalti rehti hain, is liye yeh qeematein andaza hain:"
 
 msgid "Shards"
 msgstr "Shards"
@@ -2747,6 +2857,9 @@ msgstr "Ajnabi"
 msgid "Summary:"
 msgstr "Khulasa:"
 
+msgid "Sunday"
+msgstr "Itwaar"
+
 msgid "Supplies"
 msgstr "Supplies"
 
@@ -2785,9 +2898,15 @@ msgstr ""
 msgid "That place is in your list already."
 msgstr "Yeh jagah pehle se aap ki list mein hai."
 
+msgid "That schedule is gone"
+msgstr "Woh schedule ab nahi raha"
+
 msgid "That takes about {k} more {shard}{cost}, plus the craftsman's fees."
 msgstr ""
 "Is mein takreeban {k} mazeed {shard}{cost} lagega, aur craftsman ki fees alag."
+
+msgid "That time has already passed: choose a later one."
+msgstr "Woh waqt guzar chuka hai: baad ka waqt chunein."
 
 msgid "That was too short to send - hold on a little longer."
 msgstr "yeh bhejne ke liye bohat chhota tha - thora zyada der bolein."
@@ -2970,6 +3089,9 @@ msgstr "Mansooba mahfooz ho gaya, lekin purani file hataayi nahi ja saki: {err}"
 msgid "The room"
 msgstr "Kamra"
 
+msgid "The schedule isn't complete"
+msgstr "Schedule mukammal nahi hai"
+
 msgid ""
 "The script has a mistake:\n"
 "{p}\n"
@@ -3093,6 +3215,12 @@ msgstr ""
 msgid "Thrown away:"
 msgstr "Phenke gaye:"
 
+msgid "Thursday"
+msgstr "Jumeraat"
+
+msgid "Tick at least one day."
+msgstr "Kam az kam aik din par nishan lagayein."
+
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
 
@@ -3101,6 +3229,12 @@ msgstr "Waqt (HH:MM):"
 
 msgid "Time between potions (seconds):"
 msgstr "Potions ke darmiyan waqt (second):"
+
+msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
+msgstr "Waqt: ghante 0 se 23 aur minute 0 se 59 tak hote hain"
+
+msgid "Time: write it as hours:minutes, for example 06:30"
+msgstr "Waqt: ghante:minute likhein, masalan 06:30"
 
 msgid "Time: {h} h {m} min"
 msgstr "Waqt: {h} ghante {m} minute"
@@ -3132,6 +3266,9 @@ msgstr "&Baqi sab ki awaaz:"
 msgid "Tone from &trusted players:"
 msgstr "&Bharosemand khilariyon ki awaaz:"
 
+msgid "Total arnebia spent on items used: {n}"
+msgstr "Istemal shuda cheezon par kul kharch arnebia: {n}"
+
 msgid "Travel"
 msgstr "Safar"
 
@@ -3145,6 +3282,15 @@ msgid ""
 "Trusted players are the names and ids in Private messages (Ctrl+Shift+M), where reading private messages out is set too."
 msgstr ""
 "Bharosemand khilari woh naam aur id hain jo Zaati paigham (Ctrl+Shift+M) mein hain, wahin zaati paigham padh kar sunana bhi tay hota hai."
+
+msgid "Tuesday"
+msgstr "Mangal"
+
+msgid "Turn on or o&ff"
+msgstr "On ya o&ff karein"
+
+msgid "Turned &on"
+msgstr "&On hai"
 
 msgid "Type a message first."
 msgstr "Pehle paigham likhein."
@@ -3220,8 +3366,14 @@ msgstr "Unpack ho raha hai..."
 msgid "Update"
 msgstr "Update"
 
+msgid "Update shard &prices"
+msgstr "Shards ki &qeematein update karein"
+
 msgid "Updates"
 msgstr "Updates"
+
+msgid "Updating shard prices"
+msgstr "Shards ki qeematein update ho rahi hain"
 
 msgid "Use"
 msgstr "Istemal"
@@ -3343,6 +3495,9 @@ msgstr "Random idhar udhar ghoomna"
 msgid "Warnings and errors"
 msgstr "Warnings aur errors"
 
+msgid "Wednesday"
+msgstr "Budh"
+
 msgid ""
 "Welcome to Uncle Farmer. The agent needs to be installed in Mist World first. Open Settings now?"
 msgstr ""
@@ -3439,6 +3594,10 @@ msgstr "Sab se bura mila hit: {hit}"
 msgid "Worst normal hit received: {hit}"
 msgstr "Sab se bura normal hit mila: {hit}"
 
+msgid "Write the character's name: the game it is logged in to runs it."
+msgstr ""
+"Kirdaar ka naam likhein: jis game mein woh logged in hai wahi ise chalata hai."
+
 msgid "X:"
 msgstr "X:"
 
@@ -3470,6 +3629,9 @@ msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
 msgstr ""
 "game mein ek text box khula hai (chat?) - jab tak aap Escape se band nahi karte game keys ignore karta hai"
+
+msgid "about {price}"
+msgstr "taqreeban {price}"
 
 msgid "accepted {name} into the team"
 msgstr "{name} ko team mein shamil kar liya"
@@ -3786,6 +3948,9 @@ msgstr "skills panel mein {skill} tak nahi pohanch sake"
 msgid "couldn't respawn - please do it by hand"
 msgstr "respawn nahi ho saka - baraye meharbani khud karein"
 
+msgid "couldn't save the shard prices: {err}"
+msgstr "shards ki qeematein mahfooz nahi ho sakin: {err}"
+
 msgid "couldn't scan {name}: {err}"
 msgstr "{name} scan nahi kar sake: {err}"
 
@@ -3894,6 +4059,12 @@ msgstr ""
 
 msgid "entrance unknown"
 msgstr "daakhla maloom nahi"
+
+msgid "error"
+msgstr "ghalati"
+
+msgid "every day at {time}"
+msgstr "har roz {time} baje"
 
 msgid "everything"
 msgstr "sab kuch"
@@ -4101,10 +4272,19 @@ msgstr "{room} mein; mashq ka baqi waqt: {m} minute"
 msgid "in {where}"
 msgstr "{where} mein"
 
+msgid "in {who}'s game"
+msgstr "{who} ke game mein"
+
+msgid "it didn't start"
+msgstr "yeh shuru nahi hua"
+
 msgid ""
 "it's {time} - the day's farming is over (the drop time resets at {reset})"
 msgstr ""
 "{time} ho gaya - aaj ki kheti khatam (drop time {reset} par reset hota hai)"
+
+msgid "its items aren't the verified ones (the game may have changed it)"
+msgstr "is ki cheezein tasdeeq shuda nahi (shayad game ne ise badal diya hai)"
 
 msgid "joined {who}'s team ({team}): {who} is trusted"
 msgstr "{who} ki team mein shamil ho gaya ({team}): {who} par bharosa hai"
@@ -4269,6 +4449,9 @@ msgstr "movement"
 msgid "mute: the game stops talking (only my game)."
 msgstr "mute: game bolna band kar deta hai (sirf mera game)."
 
+msgid "never again"
+msgstr "dobara kabhi nahi"
+
 msgid "new"
 msgstr "naya"
 
@@ -4357,6 +4540,9 @@ msgstr "is level ke liye koi khali jagah wala kamra nahi"
 
 msgid "no secret room for this level has a free place"
 msgstr "is level ke kisi secret room mein khali jagah nahi"
+
+msgid "no shard prices could be read - nothing changed"
+msgstr "shards ki koi qeemat parhi na ja saki - kuch nahi badla"
 
 msgid "no shards to sell: nothing in the bag is on the bag manager's sell list"
 msgstr ""
@@ -4454,6 +4640,12 @@ msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 msgid "not enough supplies for the dungeon"
 msgstr "dungeon ke liye saamaan kaafi nahi"
 
+msgid "not in the price list, left out: {list}"
+msgstr "qeemat ki fehrist mein nahi, chhor diye: {list}"
+
+msgid "not read, old price kept: {list}"
+msgstr "parhe nahi gaye, purani qeemat rakhi: {list}"
+
 msgid "not restocking {item}: {why}"
 msgstr "{item} dobara stock nahi kar rahe: {why}"
 
@@ -4486,14 +4678,23 @@ msgstr "aaj lene ko kuch nahi"
 msgid "nothing to restock"
 msgstr "restock karne ke liye kuch nahi"
 
+msgid "now (waiting to start)"
+msgstr "abhi (shuru hone ke intezar mein)"
+
 msgid "now on {map}"
 msgstr "ab {map} par"
 
 msgid "nowhere to build now (places: {places})"
 msgstr "abhi kahin tameer nahi ho sakti (jagahein: {places})"
 
+msgid "off"
+msgstr "off"
+
 msgid "off to the secret room to share arnebia"
 msgstr "arnebia share karne secret room ja rahe hain"
+
+msgid "on"
+msgstr "on"
 
 msgid "on this map"
 msgstr "is map par"
@@ -4501,11 +4702,17 @@ msgstr "is map par"
 msgid "on this map, with Resurrection Crystals"
 msgstr "is map par, Resurrection Crystals ke sath"
 
+msgid "on {days} at {time}"
+msgstr "{days} ko {time} baje"
+
 msgid "on {map}: riding - waiting to arrive"
 msgstr "{map} par: sawari par - pohanchne ka intezar"
 
 msgid "on {name}"
 msgstr "{name} par"
+
+msgid "once, {date} at {time}"
+msgstr "aik baar, {date} ko {time} baje"
 
 msgid "one cave only: a character goes into one cave a day"
 msgstr "sirf ek ghaar: kirdaar din mein ek hi ghaar mein jata hai"
@@ -4578,6 +4785,9 @@ msgstr ""
 
 msgid "phrase {line}"
 msgstr "phrase {line}"
+
+msgid "plan"
+msgstr "mansooba"
 
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
@@ -4669,11 +4879,17 @@ msgstr "sadak"
 msgid "route to {map}: {steps}"
 msgstr "{map} ka rasta: {steps}"
 
+msgid "row {n}"
+msgstr "qataar {n}"
+
 msgid "running"
 msgstr "chal raha"
 
 msgid "running on_stop"
 msgstr "on_stop chal raha hai"
+
+msgid "script"
+msgstr "script"
 
 msgid "script finished"
 msgstr "script mukammal ho gayi"
@@ -4717,6 +4933,13 @@ msgstr "apne target ko team ka navigation target banayein"
 msgid "set yourself as the team's navigation target"
 msgstr "khud ko team ka navigation target banayein"
 
+msgid "shard price not used: {why}"
+msgstr "shard ki qeemat istemal nahi hui: {why}"
+
+msgid "shard prices: {changed} changed, {same} unchanged, {missing} not read"
+msgstr ""
+"shards ki qeematein: {changed} badlin, {same} wahi rahin, {missing} parhi nahi gayin"
+
 msgid "shared arnebia {n} of {all} times today"
 msgstr "aaj {all} mein se {n} baar arnebia share kiya"
 
@@ -4734,6 +4957,9 @@ msgstr "dungeon ke liye saamaan kam hai: {what}"
 
 msgid "skills go by keys again: {why}"
 msgstr "skills ab phir keys se: {why}"
+
+msgid "skipped"
+msgstr "chhor diya"
 
 msgid "skipping {map}: died there every time"
 msgstr "{map} chhod rahe hain: wahan har baar maut hui"
@@ -4760,6 +4986,9 @@ msgid ""
 "start: I start the plan I ran last. start and a plan's name starts that plan, for example: start wolves"
 msgstr ""
 "start: main pichla chalaya gaya mansooba shuru karta hoon. start aur mansoobe ka naam us mansoobe ko shuru karta hai, misaal: start wolves"
+
+msgid "started"
+msgstr "shuru hua"
 
 msgid "starting {what} as {name}"
 msgstr "{what} ko {name} ke tor par shuru kar rahe hain"
@@ -4947,6 +5176,18 @@ msgstr "Shard Market {shard} nahi bechta"
 
 msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr "Shard Market {shard} {price} arnebia mein bechta hai"
+
+msgid ""
+"the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
+msgstr ""
+"{item} ke liye Shard Market ka khareedne aur bechne ka menu tawaqqo ke mutabiq nahi aaya - wahan kuch nahi chuna, logs\\dialogs.log dekhein"
+
+msgid "the agent can't read menus by layout (agent {n} or newer needed)"
+msgstr ""
+"agent menus ko un ki tarteeb se nahi parh sakta (agent {n} ya naya chahiye)"
+
+msgid "the app wasn't running then"
+msgstr "us waqt app nahi chal rahi thi"
 
 msgid "the bag"
 msgstr "basta"
@@ -5138,6 +5379,9 @@ msgstr "instructor abhi secret room nahi de raha"
 msgid "the instructor offers no secret room training"
 msgstr "instructor secret room ki mashq nahi de raha"
 
+msgid "the item isn't on it"
+msgstr "cheez is par nahi hai"
+
 msgid "the last 30 days"
 msgstr "pichhle 30 din"
 
@@ -5153,6 +5397,12 @@ msgstr "menu mein aisa koi entry nahi: \"{want}\""
 
 msgid "the officer offers no hunting bounty"
 msgstr "afsar hunting bounty nahi de raha"
+
+msgid "the open menu is {what}"
+msgstr "khula menu {what} hai"
+
+msgid "the open menu isn't the Shard Market's list"
+msgstr "khula menu Shard Market ki fehrist nahi hai"
 
 msgid "the outer hall"
 msgstr "bahar wala hall"
@@ -5173,6 +5423,9 @@ msgstr ""
 
 msgid "the script is too long (over {max} characters)"
 msgstr "script bohat lambi hai ({max} characters se zyada)"
+
+msgid "the shard price list (data\\shards.json) can't be read"
+msgstr "shards ki qeemat ki fehrist (data\\shards.json) parhi nahi ja sakti"
 
 msgid "the storehouse"
 msgstr "storehouse"
@@ -5216,6 +5469,9 @@ msgstr ""
 
 msgid "the {item} on key {key} are used up"
 msgstr "key {key} wali {item} khatam ho gayi"
+
+msgid "the {kind} {name} doesn't exist any more"
+msgstr "{kind} {name} ab maujood nahi"
 
 msgid "the {npc} didn't take me anywhere"
 msgstr "{npc} mujhe kahin nahi le gaya"
@@ -5442,6 +5698,9 @@ msgstr "aap"
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' aisi key nahi hai jo bot daba sakta ho."
 
+msgid "{at}: {outcome} (due {due})"
+msgstr "{at}: {outcome} (waqt {due})"
+
 msgid ""
 "{a}: the gang base's way out is in its outer hall, walled off from here - walk out yourself and start again"
 msgstr ""
@@ -5504,6 +5763,15 @@ msgstr "{field}: {lo} se {hi} tak number likhein"
 
 msgid "{field}: enter a number, for example 1.5"
 msgstr "{field}: number likhein, misaal ke taur par 1.5"
+
+msgid "{file} isn't a shard price list"
+msgstr "{file} shards ki qeemat ki fehrist nahi hai"
+
+msgid "{file}: the new prices didn't come out right - nothing saved"
+msgstr "{file}: nayi qeematein theek nahi bani - kuch mahfooz nahi hua"
+
+msgid "{file}: the price of {shard} isn't where it should be"
+msgstr "{file}: {shard} ki qeemat apni jagah par nahi hai"
 
 msgid "{games} games, {bots} bots running"
 msgstr "{games} games, {bots} bots chal rahe hain"
@@ -5582,6 +5850,9 @@ msgid ""
 msgstr ""
 "{item}: game ne abhi nahi dikhaya ke yeh kitna shifa deta hai. Jab tak aap neeche apne numbers na likho, bot ise tab peeta hai jab {what} {pct}% se kam ho, zyada se zyada har {secs} seconds mein."
 
+msgid "{item}: {n} used x {price} = {cost} arnebia"
+msgstr "{item}: {n} istemal x {price} = {cost} arnebia"
+
 msgid "{key} (page {page})"
 msgstr "{key} (safha {page})"
 
@@ -5625,6 +5896,11 @@ msgstr "{map}: exit se paidal nikalne par bhi bahar nahi gaye"
 
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
+
+msgid ""
+"{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
+msgstr ""
+"{menu}: qataar ke number se nahi chun raha ({why}) - is ke bajaye menu ki ibarat se chun raha hoon"
 
 msgid "{m} min"
 msgstr "{m} min"
@@ -5846,6 +6122,9 @@ msgstr "{n} jama kiye"
 msgid "{n} thrown away"
 msgstr "{n} phenke"
 
+msgid "{n} times, {first} to {last}: {why}"
+msgstr "{n} baar, {first} se {last} tak: {why}"
+
 msgid "{n} used up"
 msgstr "{n} istemal hue"
 
@@ -5878,12 +6157,31 @@ msgstr "{pet}: {n} muft rebirth, assets {before} -> {after}"
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: aaj {all} mein se {n} baar arnebia share kiya"
 
+msgid "{row}: listed twice with different prices"
+msgstr "{row}: do baar mukhtalif qeematon ke saath"
+
+msgid "{row}: no price shown"
+msgstr "{row}: koi qeemat nahi dikhai gayi"
+
+msgid "{row}: not a shard row"
+msgstr "{row}: shard ki qataar nahi"
+
+msgid "{row}: the price shown ({shown}) isn't the one the menu sends ({sent})"
+msgstr ""
+"{row}: dikhai gayi qeemat ({shown}) woh nahi jo menu bhejta hai ({sent})"
+
+msgid "{row}: {price} isn't a price"
+msgstr "{row}: {price} qeemat nahi hai"
+
 msgid "{r} replies, {g} goodbyes"
 msgstr "{r} jawab, {g} rukhsati"
 
 msgid "{shard} costs {price} at the market, more than your limit of {limit}"
 msgstr ""
 "market par {shard} ki qeemat {price} hai, jo aap ki {limit} ki hadd se zyada hai"
+
+msgid "{shard}: {old} -> {new} arnebia"
+msgstr "{shard}: {old} -> {new} arnebia"
 
 msgid "{skill} at {where}"
 msgstr "{skill}, {where} par"
@@ -5916,6 +6214,12 @@ msgstr "{tool} - {name}"
 msgid "{tool} check"
 msgstr "{tool} check"
 
+msgid "{what} for {who} is waiting: {why}"
+msgstr "{who} ke liye {what} intezar mein hai: {why}"
+
+msgid "{what} for {who}: {outcome} ({why})"
+msgstr "{who} ke liye {what}: {outcome} ({why})"
+
 msgid "{what} must be a number, not {value}"
 msgstr "{what} number hona chahiye, {value} nahi"
 
@@ -5939,6 +6243,12 @@ msgstr ""
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} nakam raha: {err} (jari hai)"
+
+msgid "{who} isn't logged in to a game that Uncle Farmer sees"
+msgstr "{who} kisi aise game mein logged in nahi jo Uncle Farmer ko nazar aaye"
+
+msgid "{who}'s game is busy with {what}"
+msgstr "{who} ka game {what} mein masroof hai"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
