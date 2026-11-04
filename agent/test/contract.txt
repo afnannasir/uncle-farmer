@@ -19,3 +19,7 @@ cast_targets=[[-17,43248],[-6,0]]
 
 # `use 1234567` (a bag item's uid): what the use key and hotkeys send (op 18, bag panel 0, uid, 0)
 use_packet=18 0 0 18 214 135 0 0 0 0
+
+# `menu` with the buy/sell menu of Level 1 Tiger Eye Stone Shard open (item 20425, 2175 arnebia), as
+# dialogs.log recorded it: row 0 buy cmd [2,20425,2175,0], row 1 sell cmd [3,20425,2175,0]
+menu_trade={"ok":true,"layout":"shard_trade","verified":true,"items":[{"row":0,"col":0,"id":20425,"name":"buy","price":2175,"action":"buy"},{"row":1,"col":0,"id":20425,"name":"sell","price":2175,"action":"sell"}]}

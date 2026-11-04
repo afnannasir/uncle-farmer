@@ -18,9 +18,9 @@ import os
 import re
 import time
 from collections.abc import Generator, Iterable, Mapping
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeGuard
 
-from . import jsonio as json, paths
+from . import jsonio as json, knowledge, paths
 from .clock import CLOCK, Clock
 from .engine.botparts.base import STOPPING, note_failure
 from .errors import carry_on
@@ -41,7 +41,8 @@ TOOL = "tool"
 # Tools menu, or inside a farming run (chores before farming, `gem_maker` in a script).
 TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
                          "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
-                         "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag")}
+                         "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
+                         "update_shard_prices": N_("Updating shard prices")}
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")
 OUT = ("thrown", "sold", "stored")      # left the bag after being picked up
 IN = ("bought", "withdrawn")            # came into the bag without being picked up
@@ -199,6 +200,73 @@ def is_shard(name: str) -> bool:
     return "shard" in name.lower()
 
 
+# Where an item's unit price comes from, for what a run's used-up items cost.
+SHOP = "shop"        # a shop's fixed price, from the game data (the cheapest NPC selling it for arnebia)
+SHARD = "shard"      # the Shard Market's price last read (data/shards.json): it changes, so an estimate
+Price = tuple[int, str]          # (arnebia each, SHOP or SHARD)
+
+
+def unit_prices() -> dict[str, Price]:
+    """{item (lower case): (arnebia each, where the price comes from)} for every item a price is
+    stored for. Shop prices are the game data's own, never changed here; shard prices are the
+    Shard Market's last reading (Tools, Update shard prices)."""
+    out: dict[str, Price] = {}
+    npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
+    for npc in npcs:
+        goods: list[dict[str, Any]] = npc.get("goods") or []
+        for g in goods:
+            price = g.get("price")
+            if g.get("they") != "sell" or g.get("currency") != ARNEBIA or not _whole(price) or price <= 0:
+                continue
+            key = str(g.get("item") or "").strip().lower()
+            if key and (key not in out or price < out[key][0]):
+                out[key] = (price, SHOP)
+    for name, price in _prices().items():
+        if _whole(price) and price > 0:
+            out[name] = (price, SHARD)
+    return out
+
+
+def _whole(v: object) -> TypeGuard[int]:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def spending(used: Mapping[str, int], prices: Mapping[str, Price]) -> dict[str, dict[str, Any]]:
+    """What the used-up items cost: {item: {"n": how many were used, "price": arnebia each or None,
+    "source": SHOP | SHARD | None, "cost": n x price or None}}. An item with no stored price keeps
+    its count and a price of None: it is shown, never counted as free."""
+    out: dict[str, dict[str, Any]] = {}
+    for name, n in used.items():
+        if not _whole(n) or n <= 0:
+            continue
+        known = prices.get(name.strip().lower())
+        if known is None:
+            out[name] = {"n": n, "price": None, "source": None, "cost": None}
+        else:
+            out[name] = {"n": n, "price": known[0], "source": known[1], "cost": n * known[0]}
+    return out
+
+
+def _add_spending(dst: dict[str, dict[str, Any]], src: Mapping[str, Any] | None) -> None:
+    """Add one record's spending to a total: counts and costs add up; the unit price is the last
+    record's, and "varied" says the records had different ones (the cost is still exact)."""
+    for name, s in (src or {}).items():
+        if not json.is_object(s) or not _whole(s.get("n")):
+            continue
+        d = dst.setdefault(name, {"n": 0, "price": None, "source": None, "cost": None})
+        d["n"] += s["n"]
+        price: object = s.get("price")
+        cost: object = s.get("cost")
+        if _whole(price) and _whole(cost):
+            if d["price"] is not None and d["price"] != price:
+                d["varied"] = True
+            d["price"], d["source"] = price, s.get("source")
+            before: int = d["cost"] or 0
+            d["cost"] = before + cost
+        else:
+            d["unpriced"] = d.get("unpriced", 0) + s["n"]
+
+
 class _Part:
     """What one activity of a run did (farming, or a job like the Gem Maker): its time, the bag's
     changes, what the bot itself moved in or out of the bag, and what the sheet gained."""
@@ -252,6 +320,8 @@ class Tally:
         self.combat.on = self.main == FARMING
         self.last_update = 0.0
         self.prices = _prices()
+        self.unit_prices = unit_prices()   # what used-up items cost, as stored when the run began
+        self.saved = False                 # save() writes a run's records once, however often it is called
         self.spoken = self.clock.time()    # for the spoken progress lines (results_every)
 
     # the main activity's numbers, as the run's own record has them
@@ -432,6 +502,7 @@ class Tally:
             "shards": {n: d for n, d in changes.items() if is_shard(n)},
             "items": {n: d for n, d in changes.items() if n.lower() != ARNEBIA and not is_shard(n)},
             "picked": picked, "used": used, "moved": moved,
+            "spent": spending(used, self.unit_prices),
             "contribution": part.gains["contribution"], "merit": part.gains["merit"],
             "experience": part.xp, "levels": part.levels,
             "level": s1.get("level", -1), "xp_needed": s1.get("xp_needed", -1),
@@ -453,6 +524,9 @@ class Tally:
         self.ended = self.clock.time()
 
     def save(self) -> None:
+        if self.saved:
+            return                       # once only: a second save would count the run's usage twice
+        self.saved = True
         records = self.results()
         lines: list[str] = []
         for r in records:
@@ -493,6 +567,7 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING)
     """Saved records of a character, oldest first; since = a clock time limit; kind = FARMING,
     TOOL or None for both."""
     out: list[Record] = []
+    seen: set[str] = set()
     try:
         # utf-8-sig: a byte order mark at the start made the first record unreadable, and it was lost
         with open(os.path.join(RESULTS, paths.safe_name(character) + ".jsonl"), encoding="utf-8-sig") as f:
@@ -504,6 +579,10 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING)
                     started = start_time(r)
                     if started is None or started < since:
                         continue        # (a record whose start can't be read can't be in a period)
+                key = line.strip()
+                if key in seen:
+                    continue            # the same record written twice: its kills and usage count once
+                seen.add(key)
                 out.append(r)
     except OSError:
         pass
@@ -561,7 +640,28 @@ def upgrade(r: Record) -> Record:
         r["picked"] = {n: d for n, d in net.items() if d > 0}
         r["used"] = {n: -d for n, d in net.items() if d < 0}
         r["moved"] = {}
+    if "spent" not in r:
+        # from before spending was kept: costed at the prices stored now (shown as estimates anyway)
+        used: dict[str, int] = r.get("used") or {}
+        r["spent"] = spending(used, _current_prices())
     return r
+
+
+_price_cache: dict[str, Price] | None = None
+
+
+def _current_prices() -> dict[str, Price]:
+    """unit_prices(), read once rather than once per old record."""
+    global _price_cache
+    if _price_cache is None:
+        _price_cache = unit_prices()
+    return _price_cache
+
+
+def forget_prices() -> None:
+    """After the prices changed (Tools, Update shard prices): old records are costed afresh."""
+    global _price_cache
+    _price_cache = None
 
 
 def _merge_side(dst: dict[str, Any], src: dict[str, Any]) -> None:
@@ -588,7 +688,7 @@ def add_up(results: Iterable[Record]) -> Record:
     results = [upgrade(dict(r)) for r in results]
     total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0,
              "arnebia": 0, "shards": {}, "shard_value": 0, "contribution": 0, "merit": 0, "experience": 0,
-             "levels": 0, "items": {}, "picked": {}, "used": {}, "moved": {}, "level": -1, "xp_needed": -1,
+             "levels": 0, "items": {}, "picked": {}, "used": {}, "moved": {}, "spent": {}, "level": -1, "xp_needed": -1,
              "combat": None, "kind": results[0]["kind"] if results else FARMING}
     for r in results:
         for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "shard_value", "contribution",
@@ -597,6 +697,7 @@ def add_up(results: Iterable[Record]) -> Record:
             total[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
         for k in ("shards", "items", "picked", "used"):
             _add(total[k], r.get(k))
+        _add_spending(total["spent"], r.get("spent"))
         moved: dict[str, dict[str, int]] = r.get("moved") or {}
         for how, items in moved.items():
             _add(total["moved"].setdefault(how, {}), items)
@@ -705,6 +806,43 @@ def _moved_lines(moved: dict[str, dict[str, int]], hows: Iterable[str]) -> list[
     return out
 
 
+def _spent_line(name: str, s: dict[str, Any]) -> str:
+    each = _("about {price}", price=_n(s["price"])) if s.get("varied") else _n(s["price"])
+    line = _("{item}: {n} used x {price} = {cost} arnebia", item=name, n=_n(s["n"]), price=each, cost=_n(s["cost"]))
+    if s.get("unpriced"):
+        line += " " + _("(and {n} more with no price then)", n=_n(s["unpriced"]))
+    return "    " + line
+
+
+def _spending_lines(spent: dict[str, dict[str, Any]] | None) -> list[str]:
+    """What the used-up items cost, from the prices stored when the run was saved: shop items at
+    the shop's fixed price, shards at the Shard Market price last read - which changes, so those
+    are said to be estimates before they are listed. Items used without a stored price are named,
+    never counted as free. Bought items are not here: buying is not using."""
+    spent = spent or {}
+    priced = {n: s for n, s in spent.items() if _whole(s.get("cost")) and _whole(s.get("price")) and s.get("n")}
+    unpriced = sorted((n for n, s in spent.items() if n not in priced and s.get("n")), key=str.lower)
+    if not priced and not unpriced:
+        return []
+    out = [_("Arnebia spent on items used up (from the stored prices; bought items are not counted here):")]
+    shop = _biggest({n: s["cost"] for n, s in priced.items() if s.get("source") != SHARD})
+    shards = _biggest({n: s["cost"] for n, s in priced.items() if s.get("source") == SHARD})
+    if shop:
+        out.append(_("At the shops' fixed prices:"))
+        out += [_spent_line(n, priced[n]) for n, _c in shop]
+    if shards:
+        out.append(_("Shard prices change at the Shard Market, so these prices are estimated:"))
+        out += [_spent_line(n, priced[n]) for n, _c in shards]
+    if priced:
+        total = sum(s["cost"] for s in priced.values())
+        out.append(_("Total arnebia spent on items used: {n}", n=_n(total)) +
+                   (_(" (estimated: it includes shards)") if shards else ""))
+    if unpriced:
+        out.append(_("No price stored, not counted: {list}", list=", ".join(
+            "%s %s" % (_n(spent[n]["n"]), n) for n in unpriced)))
+    return out
+
+
 def report(r: Record, title: str) -> str:
     """The full text, one fact per line, what matters most first: time and kills, contribution,
     experience and arnebia, then the loot - every shard picked up, and how many of it were thrown
@@ -764,6 +902,7 @@ def report(r: Record, title: str) -> str:
     if used:
         lines.append(_("Used up:"))
         lines += ["    %s %s" % (_n(v), n) for n, v in used]
+    lines += _spending_lines(r.get("spent"))
     if len(lines) <= 2:
         lines.append(_("Nothing gained yet."))
     if "combat" in r:
@@ -792,6 +931,7 @@ def _tool_report(r: Record, title: str) -> str:
     if used:
         lines.append(_("Used up:"))
         lines += ["    %s %s" % (_n(v), n) for n, v in used]
+    lines += _spending_lines(r.get("spent"))
     lines += _moved_lines(r.get("moved") or {}, IN + OUT)
     if len(lines) <= 2:
         lines.append(_("Nothing changed in the bag."))

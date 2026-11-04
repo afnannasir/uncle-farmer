@@ -57,11 +57,13 @@ class LogMixin(FrameParts):
         self.log_box.ChangeValue("")
 
     def on_done(self, reason: str, run: Run | None = None) -> None:
-        wx.CallAfter(self._done, run)
+        wx.CallAfter(self._done, run, reason)
 
-    def _done(self, run: Run | None) -> None:
+    def _done(self, run: Run | None, reason: str = "") -> None:
         if self.destroyed:
             return
+        if run is not None:
+            self.schedule_ended(run, reason)     # a scheduled run's history says how it ended
         for pid, r in list(self.runs.items()):
             if r is run or (run is None and not r.is_alive()):
                 place: Where | None = getattr(getattr(r, "bot", None), "start_place", None)

@@ -76,6 +76,7 @@ class Run(threading.Thread):
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
         self.after_stop = "nothing"   # what the app setting said to do then: nothing | close_game | shutdown
+        self.schedule: tuple[str, str] | None = None   # (schedule id, occurrence) when a schedule started it
         self.clock = clock
         self.started = self.clock.time()
         self.walk = walk
