@@ -502,6 +502,9 @@ def tools_window(monkeypatch: pytest.MonkeyPatch, rules: dict[str, dict[str, Any
 
         def run_errand(self, text: str, title: str, walk: bool = False) -> None:
             seen.errands.append(text)
+
+        def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None:
+            seen.said.append(line)
     seen.win = Win()
     return seen
 
@@ -510,12 +513,13 @@ def test_tools_sell_shards_now_runs_the_sell_shards_job(monkeypatch: pytest.Monk
     seen = tools_window(monkeypatch, {}, True)
     seen.win.sell_shards_now()
     assert seen.errands == ["sell_shards\n"]
+    assert seen.said == ["Sell shards now: started by hand"]
 
 
 def test_tools_clean_bag_asks_first_showing_the_list(monkeypatch: pytest.MonkeyPatch) -> None:
     seen = tools_window(monkeypatch, {"wolf fur": {"action": "throw", "keep": 2}, "x": {"action": "sell"}}, True)
     seen.win.clean_bag_now()
-    assert seen.errands == ["clean_bag\n"]
+    assert seen.errands == ["clean_bag\n"] and seen.said == ["Clean the bag now: started by hand"]
     assert "wolf fur, keeping 2" in seen.asked[0] and "x" not in seen.asked[0].split("\n")
 
 

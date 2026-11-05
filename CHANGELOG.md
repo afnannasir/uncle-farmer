@@ -1,5 +1,15 @@
 # What's new
 
+## Not released yet
+
+**After farming**
+
+- Character, Settings, Travel and pets: "Automatically sell shards after farming" and
+  "Automatically clean the bag after farming", each on its own (both off). Ticked, Sell shards now
+  and Clean the bag now run by themselves, one after the other, when a farming run finishes by
+  itself - never after Stop. A failure in one doesn't keep the other from running, and the Tools
+  menu still runs both by hand.
+
 ## 1.0.0
 
 **Repairs**

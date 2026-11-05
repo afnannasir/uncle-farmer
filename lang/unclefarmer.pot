@@ -652,6 +652,9 @@ msgstr ""
 msgid "After a &time limit"
 msgstr ""
 
+msgid "After farming (when a run finishes by itself, never after Stop)"
+msgstr ""
+
 msgid "Agent"
 msgstr ""
 
@@ -721,6 +724,12 @@ msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 
 msgid "Automatic, by class"
+msgstr ""
+
+msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
+msgstr ""
+
+msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
 msgstr ""
 
 msgid "Back where the run started"
@@ -882,6 +891,9 @@ msgid "Clean the &bag now (throw-away list)..."
 msgstr ""
 
 msgid "Clean the bag"
+msgstr ""
+
+msgid "Clean the bag now: started by hand"
 msgstr ""
 
 msgid "Cleaning the bag"
@@ -2568,6 +2580,9 @@ msgstr ""
 msgid "Sell s&hards now"
 msgstr ""
 
+msgid "Sell shards now: started by hand"
+msgstr ""
+
 msgid "Selling"
 msgstr ""
 
@@ -3557,6 +3572,9 @@ msgstr ""
 msgid "after a dodge or block"
 msgstr ""
 
+msgid "after farming, automatically: {job}"
+msgstr ""
+
 msgid "after {n} kills"
 msgstr ""
 
@@ -3736,6 +3754,9 @@ msgid "choose what? write: choose Tulip City"
 msgstr ""
 
 msgid "choosing \"{entry}\""
+msgstr ""
+
+msgid "cleaning the bag"
 msgstr ""
 
 msgid "closed a window the game opened: {what}"
@@ -4788,6 +4809,9 @@ msgstr ""
 msgid "selecting"
 msgstr ""
 
+msgid "selling shards"
+msgstr ""
+
 msgid "selling shards: {list}"
 msgstr ""
 
@@ -5682,6 +5706,9 @@ msgid ""
 msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
+msgstr ""
+
+msgid "{job} didn't finish: {why}"
 msgstr ""
 
 msgid "{key} (page {page})"

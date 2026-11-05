@@ -659,6 +659,9 @@ msgstr "&Kills ki ginti ke baad"
 msgid "After a &time limit"
 msgstr "&Waqt ki hadd ke baad"
 
+msgid "After farming (when a run finishes by itself, never after Stop)"
+msgstr "Farming ke baad (jab run khud khatam ho, Stop ke baad kabhi nahi)"
+
 msgid "Agent"
 msgstr "Agent"
 
@@ -733,6 +736,12 @@ msgstr ""
 
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
+
+msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
+msgstr "Farming ke baad khud basta &saaf karein (Tools, Clean the bag now)"
+
+msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
+msgstr "Farming ke baad khud shards &bechein (Tools, Sell shards now)"
 
 msgid "Back where the run started"
 msgstr "Wahan wapas jahan run shuru hua tha"
@@ -897,6 +906,9 @@ msgstr "&Basta abhi saaf karein (phenkne wali list)..."
 
 msgid "Clean the bag"
 msgstr "Basta saaf karein"
+
+msgid "Clean the bag now: started by hand"
+msgstr "Clean the bag now: haath se shuru kiya"
 
 msgid "Cleaning the bag"
 msgstr "Basta saaf ho raha hai"
@@ -2632,6 +2644,9 @@ msgstr "Bech kar wapas aayein"
 msgid "Sell s&hards now"
 msgstr "S&hards abhi bechein"
 
+msgid "Sell shards now: started by hand"
+msgstr "Sell shards now: haath se shuru kiya"
+
 msgid "Selling"
 msgstr "Bechna"
 
@@ -3694,6 +3709,9 @@ msgstr ""
 msgid "after a dodge or block"
 msgstr "dodge ya block ke baad"
 
+msgid "after farming, automatically: {job}"
+msgstr "farming ke baad, khud se: {job}"
+
 msgid "after {n} kills"
 msgstr "{n} kills ke baad"
 
@@ -3887,6 +3905,9 @@ msgstr "kya choose karna hai? likhein: choose Tulip City"
 
 msgid "choosing \"{entry}\""
 msgstr "chun raha hoon \"{entry}\""
+
+msgid "cleaning the bag"
+msgstr "basta saaf kar rahe hain"
 
 msgid "closed a window the game opened: {what}"
 msgstr "game ki kholi hui window band ki: {what}"
@@ -4987,6 +5008,9 @@ msgstr "secret room: {who}"
 msgid "selecting"
 msgstr "select kar rahe hain"
 
+msgid "selling shards"
+msgstr "shards bech rahe hain"
+
 msgid "selling shards: {list}"
 msgstr "shards bech rahe hain: {list}"
 
@@ -5924,6 +5948,9 @@ msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item}: {n} istemal x {price} = {cost} arnebia"
+
+msgid "{job} didn't finish: {why}"
+msgstr "{job} poora nahi hua: {why}"
 
 msgid "{key} (page {page})"
 msgstr "{key} (safha {page})"
