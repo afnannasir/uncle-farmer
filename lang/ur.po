@@ -4638,6 +4638,11 @@ msgstr "normal"
 msgid "not allowed in an expression: {expr}"
 msgstr "expression mein ijazat nahi: {expr}"
 
+msgid ""
+"not choosing in the menu directly ({why}) - moving to the entry with the keys"
+msgstr ""
+"menu mein seedha nahi chun rahe ({why}) - keys se entry tak ja rahe hain"
+
 msgid "not enough arnebia above your reserve for a {n} arnebia donation"
 msgstr "{n} arnebia ke chande ke liye aap ke reserve se upar kaafi arnebia nahi"
 

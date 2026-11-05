@@ -12,7 +12,7 @@ from typing import Any
 
 from ... import applog, atlas, jsonio as json, knowledge, travel
 from ...i18n import _
-from .. import team
+from .. import menus, team
 from .base import (Stopped, note_failure, steps)
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -138,9 +138,14 @@ class DialogsMixin(Parts):
         return None
 
     def choose(self, pattern: str, row: str | None = None) -> dict[str, Any] | None:
-        """Pick the entry matching pattern in the open dialog with the walking keys, then Enter.
-        row: only in the row whose first entry matches it (find_in_row). Returns the entry, or None
-        (dialog closed again) if nothing matches."""
+        """Pick the entry matching pattern in the open dialog, then Enter. row: only in the row
+        whose first entry matches it (find_in_row). Returns the entry, or None (dialog closed
+        again) if nothing matches.
+
+        The entry is found once, in one reading of the menu. With agent 55 it is chosen right
+        there (menus.choose_at: its row and column, checked against that reading); else the
+        walking keys move the cursor to it - a row the shorter way round, as the game's rows wrap
+        (menus.row_keys) - and Enter chooses it."""
         d = self.dialog()
         top = d.get("top")
         if not top:
@@ -152,30 +157,65 @@ class DialogsMixin(Parts):
             self.close_dialogs()
             return None
         r, c = where
-        mk = self.p["move_keys"]
-        for axis, want, back, fwd in (("row", r, mk["up"], mk["down"]), ("col", c, mk["left"], mk["right"])):
-            flips = 0
-            key = back if top[axis] > want else fwd
-            for _press in range(len(top["rows"]) * 2 + 6):
-                if top[axis] == want:
-                    break
-                before = top[axis]
-                self.key(key)
-                self.sleep(0.12)
-                top = self.dialog().get("top") or top
-                # Not sure which way W moves the cursor, and lists can wrap: if a press moved us
-                # further away, turn round once.
-                if abs(top[axis] - want) > abs(before - want) and flips == 0:
-                    key, flips = (fwd if key == back else back), 1
-            if top[axis] != want:
-                self.log(_("couldn't move to the menu entry"), speak=True)
-                self.close_dialogs()
-                return None
         entry = top["rows"][r][c]
-        self.log(_("choosing \"{entry}\"", entry=(entry.get("options") or [None])[0] or entry.get("text") or entry.get("raw")))
+        name = (entry.get("options") or [None])[0] or entry.get("text") or entry.get("raw")
+        if menus.choose_at(as_bot(self), top, r, c):
+            self.log(_("choosing \"{entry}\"", entry=name))
+            self.sleep(0.4)
+            return entry
+        top = self._move_to(top, r, c)
+        if top is None:
+            self.log(_("couldn't move to the menu entry"), speak=True)
+            self.close_dialogs()
+            return None
+        self.log(_("choosing \"{entry}\"", entry=name))
         self.key(self.p.get("enter_key", "enter"))
         self.sleep(0.4)
         return entry
+
+    def _move_to(self, top: dict[str, Any], r: int, c: int) -> dict[str, Any] | None:
+        """Move the menu's cursor to row r, column c with the walking keys: the row first, the
+        shorter way round (the game's rows wrap), then the column (they don't wrap; Left/Right
+        step through an entry's options on the way). A press that doesn't move the cursor means a
+        list that doesn't wrap: straight there from then on. Not sure which way a key moves it: a
+        press that moves it the other way swaps the two keys, once. The menu as it stands at the
+        end, or None if the cursor didn't get there."""
+        mk = self.p["move_keys"]
+        rows = len(top["rows"])
+        step = {mk["down"]: 1, mk["up"]: -1}
+        wraps, swapped = True, False
+        for _press in range(rows * 2 + 6):
+            if top["row"] == r:
+                break
+            way = menus.row_keys(top["row"], r, rows)[0] if wraps else (1 if r > top["row"] else -1)
+            key = next(k for k, s in step.items() if s == way)
+            before = top["row"]
+            self.key(key)
+            self.sleep(0.12)
+            top = self.dialog().get("top") or top
+            moved = (top["row"] - before) % rows
+            went = 1 if moved == 1 else -1 if moved == rows - 1 else 0
+            if went == way or (rows == 2 and moved == 1):
+                continue
+            if went == 0:
+                wraps = False
+            elif not swapped:
+                step = {k: -s for k, s in step.items()}
+                swapped = True
+        if top["row"] != r:
+            return None
+        flips = 0
+        key = mk["left"] if top["col"] > c else mk["right"]
+        for _press in range(rows * 2 + 6):
+            if top["col"] == c:
+                break
+            before = top["col"]
+            self.key(key)
+            self.sleep(0.12)
+            top = self.dialog().get("top") or top
+            if abs(top["col"] - c) > abs(before - c) and flips == 0:
+                key, flips = (mk["right"] if key == mk["left"] else mk["left"]), 1
+        return top if top["row"] == r and top["col"] == c else None
 
     def find_npc(self, name: str, near: tuple[float, float] | None = None, within: float | None = None) -> dict[str, Any] | None:
         """The NPC with that name the game knows about, the one nearest `near` (or us). within:

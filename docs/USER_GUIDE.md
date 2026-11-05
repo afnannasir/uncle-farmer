@@ -390,6 +390,18 @@ sell; if anything differs it chooses nothing and says why. The bot then goes by 
 before, except in a buy or sell menu that came up for the wrong shard: there it chooses nothing at
 all. Other shops (the grocer's) are always chosen in by text.
 
+Once the bot has found an item there, it picks that item by its number after that, without reading
+the list again; the agent still checks the whole menu first.
+
+### Every other menu
+
+With agent 55, an NPC's menu entry is chosen where it is, in one step: the bot finds the entry by
+its text in one reading of the menu, and the agent chooses it as Enter would, once it has checked
+the menu is still the one read. There is no walk down the list, and the game doesn't speak each
+entry on the way. When that can't be done (an older agent, or the menu changed), the bot walks to
+the entry with the keys the shorter way round: the game's menus wrap, so an entry near the bottom is
+reached by going up past the top.
+
 ### Dungeons
 
 Tools, Dungeons (Ctrl+Shift+G) runs the cave a character can enter once a game day: Spider cave

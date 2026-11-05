@@ -48,6 +48,7 @@ public final class AgentTests {
         aVerifiedIndexIsChosenOnlyForItsItem();
         aChangedOrUnexpectedMenuIsRefused();
         theMenuReplyIsTheContracts(contract);
+        aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom();
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
         aChatSendersIdNeverJoinsTheirName();
@@ -455,6 +456,50 @@ public final class AgentTests {
         eq(placed(shop(), Menus.POTION_SHOP, 23387, null), "placed 4,0", "Large Red Potion is row 4");
         eq(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "sell"), "placed 1,0", "sell is row 1");
         eq(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "buy"), "placed 0,0", "buy is row 0");
+    }
+
+    private static Menus.Menu npcMenu(String... texts) {
+        Menus.Menu m = new Menus.Menu();
+        for (int i = 0; i < texts.length; i++) {
+            m.rows.add(row(new Menus.Entry(8, texts[i], new String[] {texts[i]}, new int[] {7, i})));
+        }
+        return m;
+    }
+
+    private static String chosenAt(Menus.Menu m, int row, int col, int sig) {
+        try {
+            Menus.Entry e = Menus.chosen(m, row, col, sig);
+            return "chosen " + e.name();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        }
+    }
+
+    private static void aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom() {
+        Menus.Menu m = npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave");
+        int sig = Menus.signature(m);
+        eq(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave")), sig,
+                "the same content reads the same signature every time");
+        eq(chosenAt(m, 1, 0, sig), "chosen Fly to Holy Blood", "the entry at the row and column read");
+        eq(chosenAt(m, 2, 0, sig), "chosen Leave", "the last row");
+        check(Menus.signature(npcMenu("Fly to Holy Blood", "Fly to Tulip", "Leave")) != sig, "two rows swapped");
+        check(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood")) != sig, "a row gone");
+        check(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave", "More")) != sig, "a row more");
+        Menus.Menu other = npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave");
+        other.rows.get(1).set(0, new Menus.Entry(8, "Fly to Holy Blood", new String[] {"Fly to Holy Blood"}, new int[] {7, 9}));
+        check(Menus.signature(other) != sig, "the same text sending another command");
+        eq(chosenAt(npcMenu("Fly to Holy Blood", "Fly to Tulip", "Leave"), 1, 0, sig),
+                "refused: the menu changed since it was read", "another menu: nothing chosen");
+        eq(chosenAt(m, 3, 0, sig), "refused: no entry at row 3 col 0", "past the last row");
+        eq(chosenAt(m, 0, 1, sig), "refused: no entry at row 0 col 1", "past the row's last column");
+        eq(chosenAt(m, -1, 0, sig), "refused: no entry at row -1 col 0", "before the first row");
+        Menus.Menu gap = npcMenu("Ali");
+        gap.rows.get(0).add(null);
+        eq(chosenAt(gap, 0, 1, Menus.signature(gap)), "refused: no entry at row 0 col 1", "an empty cell");
+        eq(chosenAt(new Menus.Menu(), 0, 0, Menus.signature(new Menus.Menu())), "refused: the menu has no rows",
+                "an empty menu");
+        eq(chosenAt(market(), 17, 0, Menus.signature(market())), "chosen Level 1 Turquoise Shard",
+                "a verified layout's row too");
     }
 
     private static void aChangedOrUnexpectedMenuIsRefused() {
