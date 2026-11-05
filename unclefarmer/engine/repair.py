@@ -12,7 +12,12 @@ What the game says, all from its own data:
     item at a time, so they are never used: one toolbox mends everything.
 
 So at the first warning the bot repairs everything with the cheapest toolbox that covers the
-character's level. One on a hotkey (1 .. =) is pressed at once, in a fight too; one that is only in
+character's level. Only a warning that comes during this run counts: the agent keeps each item's
+newest warning for as long as the game is open, so a run's first `wear 0` also hands back warnings
+an earlier run already repaired. Every tool is a run of its own (Sell shards, Update shard prices,
+Clean the bag now), and each took last night's "about to break" for a new one and spent a toolbox on
+gear that was fine. Gear that really broke before the run is still repaired: the game marks it
+broken in `mem equipment`, which is read at the run's first gear check and every BROKEN_EVERY. One on a hotkey (1 .. =) is pressed at once, in a fight too; one that is only in
 the bag is used the moment the fight is over (the bag cursor needs its own keys). A player who'd
 rather not can turn it off (profile repair_with "off").
 """
@@ -45,6 +50,9 @@ class Gear:
 
     def __init__(self) -> None:
         self.wear_seen = 0          # agent clock (ms) of the newest wear warning read
+        self.started_at = 0.0       # clock_for(bot).time() of the run's first gear check: warnings
+                                    # from before it belong to an earlier run (or the player's play)
+        self.older = 0              # how many of those were left out
         self.warned: dict[int, str] = {}     # uid -> "low" or "broken", since the last repair
         self.repaired_at = 0.0      # clock_for(bot).time() of the last repair
         self.failed_at = 0.0        # last repair that didn't work, so it isn't retried every loop
@@ -78,6 +86,9 @@ def read_wear(bot: Bot, g: Gear) -> bool:
             mine = {row.get("uid"): row.get("name") for row in equipment(bot)}
         if w["uid"] not in mine:
             continue              # not one of our items
+        if w["t"] / 1000.0 < g.started_at:
+            g.older += 1          # from before this run: repaired then, or out of date (see the notes)
+            continue
         if not w["broken"] and w["t"] / 1000.0 < g.repaired_at + LATE_WARNING:
             # Already on its way when the toolbox mended everything (live: one came 2 s after a
             # repair). Kept, it only waited out AFTER_REPAIR and then spent a second toolbox.
@@ -136,7 +147,13 @@ def check(bot: Bot) -> bool:
     if now - g.checked_at < CHECK_EVERY:
         return False
     g.checked_at = now
+    first = not g.started_at
+    if first:
+        g.started_at = now
     new_agent = read_wear(bot, g)
+    if first and g.older:
+        bot.log(_("left out {n} gear warnings from before this run (they were dealt with then); "
+                  "broken gear is still repaired", n=g.older))
     if not new_agent and not g.said_old_agent:
         g.said_old_agent = True
         bot.log(_("this game's agent can't warn before gear breaks - restart Mist World so the new "

@@ -277,3 +277,93 @@ def test_a_voice_line_reads_as_a_voice_message() -> None:
     feed.add("4", "Ali", "", voice=VOICE)
     assert got[0]["voice"] == VOICE
     assert line_text(got[0]) == "Team, Ali: voice message"
+
+
+# ---------------------------------------------------------------- when the game says no
+class GrumpyAgent:
+    """A game whose agent answers every line with replies[line prefix], or raises for "boom"."""
+
+    replies: ClassVar[dict[str, str]] = {}
+    opened: ClassVar[int] = 0
+
+    def __init__(self, pid: int | None = None, **_kw: object) -> None:
+        GrumpyAgent.opened += 1
+
+    def send(self, line: str) -> str:
+        if line == "arm":
+            return "armed"
+        for start, reply in GrumpyAgent.replies.items():
+            if line.startswith(start):
+                if reply == "boom":
+                    raise chat.AgentError("the game went away")
+                return reply
+        return "ok"
+
+    def close(self) -> None:
+        pass
+
+
+def grumpy(monkeypatch: pytest.MonkeyPatch, **replies: str) -> Feed:
+    GrumpyAgent.replies = {k.replace("_", " "): v for k, v in replies.items()}
+    GrumpyAgent.opened = 0
+    monkeypatch.setattr(chat, "AgentLink", GrumpyAgent)
+    feed = chat.Feed(77)
+    feed.version = 42
+    return feed
+
+
+@pytest.mark.parametrize("reply, said", [
+    ("boom", "the game went away"),
+    ("refused: no international room", "Join an international room in the game first."),
+    ("refused: not in a private channel", "Join a private channel in the game first."),
+    ("refused: muted", "The game didn't take it: refused: muted"),
+])
+def test_a_line_the_game_wont_send_says_why(monkeypatch: pytest.MonkeyPatch, reply: str, said: str) -> None:
+    feed = grumpy(monkeypatch, say_=reply)
+    got = feed.say(5, "hello   there")
+    assert got is not None and said in got
+    if reply == "boom":
+        assert feed.sender is None                 # a fresh connection next time
+        feed.say(5, "again")
+        assert GrumpyAgent.opened == 2
+
+
+def test_an_empty_line_is_never_sent(monkeypatch: pytest.MonkeyPatch) -> None:
+    feed = grumpy(monkeypatch)
+    assert feed.say(0, "   ") == "Type a message first." and GrumpyAgent.opened == 0
+
+
+@pytest.mark.parametrize("reply, said", [
+    ("boom", "The game didn't send it: the game went away"),
+    ("refused: nothing was recorded", "Nothing was recorded"),
+    ("refused: too short", "too short to send"),
+    ("refused: odd", "The game didn't send it: refused: odd"),
+])
+def test_a_voice_message_the_game_wont_send_says_why(monkeypatch: pytest.MonkeyPatch, reply: str, said: str) -> None:
+    feed = grumpy(monkeypatch, voice_send=reply)
+    got = feed.send_voice(to=2001)
+    assert got is not None and said in got and feed.voice_parts == 0
+
+
+def test_recording_and_playing_say_why_they_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    feed = grumpy(monkeypatch, voice_record="refused: no microphone", voice_play="refused: unknown voice")
+    assert "no microphone" in (feed.record_voice() or "")
+    assert "unknown voice" in (feed.play_voice(VOICE) or "")
+    feed = grumpy(monkeypatch, voice_record="boom", voice_play="boom")
+    assert "the game went away" in (feed.record_voice() or "")
+    assert feed.sender is None
+    assert "the game went away" in (feed.play_voice(VOICE) or "")
+
+
+def test_cancelling_a_recording_survives_a_game_that_went_away(monkeypatch: pytest.MonkeyPatch) -> None:
+    feed = grumpy(monkeypatch, voice_cancel="boom")
+    feed.cancel_voice()
+    assert feed.sender is None
+
+
+def test_a_name_the_game_cant_place_has_no_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    feed = grumpy(monkeypatch, idof_="0")
+    assert feed.id_of("Nobody") is None
+    assert feed.id_of(" 2001 ") == 2001
+    feed = grumpy(monkeypatch, idof_="boom")
+    assert feed.id_of("Nobody") is None and feed.sender is None

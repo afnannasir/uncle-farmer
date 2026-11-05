@@ -408,7 +408,7 @@ class FightingMixin(Parts):
         are fought first, wherever they stand."""
         now = self.clock.time()
         if now - getattr(self, "_attackers_at", 0) < 0.5:
-            return self._attackers
+            return self._attackers | pets.suspects(as_bot(self))
         self._attackers_at = now
         r = self._game.json("casts %d" % int((now - 4) * 1000))
         data: dict[str, Any] = r if jsonio.is_object(r) else {}
@@ -416,16 +416,20 @@ class FightingMixin(Parts):
         casts: list[dict[str, Any]] = data.get("casts", [])
         me: dict[str, Any] = getattr(self, "_snap_self", None) or getattr(self, "last_me", None) or {}
         own = self.kill_tracker.own
-        self._attackers = {int(c["caster"]) for c in casts
-                           if c["caster"] < 0 and self.at_us(c, me.get("id"), own)}
+        striking = [c for c in casts if c["caster"] < 0 and self.at_us(c, me.get("id"), own)]
+        self._attackers = {int(c["caster"]) for c in striking}
         self._pet_attackers = {int(c["caster"]) for c in casts
                                if c["caster"] < 0 and own and self.at_pet(c, own)}
-        return self._attackers
+        if striking:              # when the last one struck: the fusion beast's quiet time counts from it
+            self.last_attacked = max(getattr(self, "last_attacked", 0.0), max(float(c.get("t") or now * 1000) for c in striking) / 1000.0)
+        return self._attackers | pets.suspects(as_bot(self))
 
     def pet_attackers(self) -> set[int]:
-        """The attackers (attackers()) whose casts struck our pet."""
+        """The attackers (attackers()) whose casts struck our pet, and the monsters next to it
+        while its HP falls fast with no cast to say who does it (pets.suspects)."""
         self.attackers()
-        return getattr(self, "_pet_attackers", set())
+        seen: set[int] = getattr(self, "_pet_attackers", set())
+        return seen | pets.suspects(as_bot(self))
 
     @staticmethod
     def at_pet(c: dict[str, Any], pets: set[int]) -> bool:

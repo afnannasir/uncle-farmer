@@ -4,7 +4,7 @@
 
 [project]
 name = "unclefarmer"
-version = "0.9.1"            # release.py sets this together with unclefarmer/__init__.py
+version = "1.0.0"            # release.py sets this together with unclefarmer/__init__.py
 description = "A farming bot for Mist World."
 readme = "README.md"
 license = "GPL-3.0-only"
@@ -30,9 +30,27 @@ dev = [
     "py-spy",
     "cachebox",
     "pip-audit>=2.10",
+    "check-manifest>=0.50",
 ]
 # Building the shareable folder: build_exe.py and release.py.
 build = ["nuitka"]
+
+# Only for the source distribution (MANIFEST.in), which check-manifest builds and compares with
+# git: the app is run from its folder and never installed, so nothing is packaged as modules
+# (packages and py-modules are empty) and uv never builds it (package = false below).
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+py-modules = []
+
+[tool.check-manifest]
+# The compiled catalogs are tracked on purpose: the app and its build read them as they are (the
+# app's own is compiled from lang/ur.po by `python -m unclefarmer --strings`, wxstd.mo is
+# wxPython's own catalog, with no source here).
+ignore-bad-ideas = ["lang/*/LC_MESSAGES/*.mo"]
 
 [tool.uv]
 # An app run from its folder, not a package to install: uv installs only the dependencies.
@@ -81,7 +99,9 @@ branch = true
 omit = ["*/__main__.py"]
 
 [tool.coverage.report]
-# The whole app, GUI included. check.py also gates the engine on its own (90%): the GUI has no
-# tests, so a single total would let the engine rot while the number stayed respectable.
-fail_under = 70
+# The whole app, GUI included: what pytest --cov fails under, here and in CI (check.py and the
+# workflow's tests job both run it). check.py also gates the engine on its own (CORE_FLOOR, 92%):
+# the GUI has few tests, so a single total would let the engine rot while the number held.
+fail_under = 78
+show_missing = true
 skip_covered = true

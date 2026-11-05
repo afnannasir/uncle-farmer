@@ -50,6 +50,15 @@ HEAL_REST = 300.0   # seconds of pet potions only after HEAL_MISSES misses, befo
 HEAL_DANGER = 40.0
 HEAL_REFUSED = 20.0
 MP_EMPTY = 10.0     # our MP percent under which no heal can be cast
+# A pet under attack. A monster's cast that names the pet makes it an attacker (Bot.attackers), but
+# not every hit is reported that way (an older agent, a hit the reports leave out). So the pet's HP
+# is watched too: falling this fast, the pet is taken to be under attack, and the monsters right
+# next to it are fought first (suspects), until its HP has stopped falling for THREAT_HOLD.
+THREAT_WINDOW = 3.0     # seconds of the pet's HP readings looked at
+THREAT_DROP = 8.0       # percent of its maximum HP lost within the window that is an attack
+THREAT_HOLD = 6.0       # it stays under attack this long after the last fast fall
+THREAT_NEAR = 3.0       # monsters this close to the pet (tiles) are taken for its attackers
+READING_GAP = 5.0       # readings further apart than this start afresh: the old ones say nothing now
 DESCRIBE_RETRY = 300     # seconds before trying again to read a description that didn't come
 
 
@@ -475,12 +484,57 @@ def heal_in_fight(b: Bot, snap: dict[str, Any]) -> bool:
     return heal(b, pet, 100.0 * pet["hp"] / pet["maxhp"], clock_for(b).time())
 
 
+def watch(b: Bot, snap: dict[str, Any], pet: dict[str, Any] | None, now: float) -> None:
+    """Follow the pet's HP and tell when it is falling fast (see THREAT_*). A pet out of sight, a
+    reading without HP or a new pet starts the readings afresh, and an old threat simply runs out:
+    missing or late readings never make one up."""
+    if pet is None or pet.get("hp") is None or not pet.get("maxhp"):
+        b.pet_hp_log = []
+        return
+    log: list[tuple[float, float]] = getattr(b, "pet_hp_log", [])
+    if getattr(b, "pet_hp_id", None) != pet.get("id") or (log and now - log[-1][0] > READING_GAP):
+        log = []
+    b.pet_hp_id = pet.get("id")
+    hp, top = float(pet["hp"]), float(pet["maxhp"])
+    log = [(t, h) for t, h in log if now - t <= THREAT_WINDOW] + [(now, hp)]
+    b.pet_hp_log = log
+    lost = max(h for _t, h in log) - hp
+    name = (pet.get("name") or "").split(" belongs to ")[0] or _("our pet")
+    if hp > 0 and lost >= THREAT_DROP / 100.0 * top:
+        b.pet_threat_until = now + THREAT_HOLD
+        if not getattr(b, "told_pet_threat", False):
+            b.told_pet_threat = True
+            b.log(_("{pet} is losing HP fast ({pct}% in {secs} s) - fighting what is next to it",
+                    pet=name, pct=int(100 * lost / top), secs=round(now - log[0][0], 1)))
+    if now >= getattr(b, "pet_threat_until", 0.0):
+        b.pet_suspects = set()
+        if getattr(b, "told_pet_threat", False):
+            b.told_pet_threat = False
+            b.log(_("{pet} is no longer losing HP", pet=name))
+        return
+    px, py = pet.get("x"), pet.get("y")
+    if px is None or py is None:
+        b.pet_suspects = set()
+        return
+    b.pet_suspects = {int(e["id"]) for e in snap.get("entities", ())
+                      if (e.get("id") or 0) < 0 and (e.get("hp") or 0) > 0 and e.get("x") is not None
+                      and ((e["x"] - px) ** 2 + (e["y"] - py) ** 2) ** 0.5 <= THREAT_NEAR}
+
+
+def suspects(b: Bot) -> set[int]:
+    """The monsters taken for the pet's attackers while its HP falls fast (watch), else none."""
+    if clock_for(b).time() >= getattr(b, "pet_threat_until", 0.0):
+        return set()
+    return set(getattr(b, "pet_suspects", set()))
+
+
 def look_after(b: Bot, snap: dict[str, Any]) -> None:
     """Keep the pet out alive and willing: its red potion by its HP, its blue potion by its MP,
-    and a Rice Roll when its amiability is low."""
+    and a Rice Roll when its amiability is low. Its HP is watched for an attack too (watch)."""
     if not chosen(b):
         return
     pet = entity(b, snap)
+    watch(b, snap, pet, clock_for(b).time())
     if not pet or not pet.get("maxhp"):
         out: dict[str, Any] | None = getattr(b, "pet_out", None)
         if out and not getattr(b, "told_pet_unseen", False):
