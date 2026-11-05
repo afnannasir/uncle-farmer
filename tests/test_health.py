@@ -550,3 +550,17 @@ def test_a_potion_off_the_hotkeys_is_drunk_in_a_fight_when_the_agent_uses_it_by_
     assert b.drink("hp", "Large Red Potion", None) is False
     b.in_fight = False
     assert b.drink("hp", "Large Red Potion", None) is True
+
+
+def test_a_fall_in_our_hp_counts_as_an_attack_for_the_fusion_beast(clock: Clock) -> None:
+    h = low_red(H(), hp=950)
+    h.look_after()
+    assert getattr(h, "last_attacked", 0.0) == 0.0          # the first reading: nothing to compare
+    clock.advance(1.0)
+    h._me = {"hp": 900, "maxhp": 1000}
+    h.look_after()
+    assert h.last_attacked == clock.now
+    clock.advance(1.0)
+    h._me = {"hp": 940, "maxhp": 1000}                     # healing is no attack
+    h.look_after()
+    assert h.last_attacked == clock.now - 1.0

@@ -520,6 +520,12 @@ class HealthMixin(Parts):
         hp, top = me.get("hp", 0), me.get("maxhp", 0) or 1
         share = 100.0 * hp / top
         p = self.p
+        # Any fall in our HP is an attack as far as the fusion beast is concerned (beasts.QUIET),
+        # whatever the cast reports say: a hit they missed still keeps us in combat.
+        seen = getattr(self, "hp_seen", None)
+        if seen is not None and me.get("hp") is not None and hp < seen:
+            self.last_attacked = now
+        self.hp_seen = me.get("hp")
 
         # Keep HP near full: drink as soon as one potion's worth is missing (potion_plan), as
         # often as the potion's cooldown allows.

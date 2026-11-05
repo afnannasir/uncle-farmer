@@ -274,6 +274,25 @@ in the bag is used as soon as the fight is over. Without a toolbox it says so; i
 broken and can't be repaired, it goes somewhere safe and stops. Both are on the Fighting page of
 Character, Settings.
 
+Only a warning that comes while the bot is running counts. The game keeps an item's last warning
+for as long as it is open, so a warning from an earlier run (already repaired then) is left out:
+Tools such as Sell shards, Update shard prices or Clean the bag now no longer spend a toolbox on
+gear that is fine. Gear the game shows as broken is still repaired at once, whenever it broke.
+
+### Fusion beasts and your pet in fights
+
+A fusion beast goes on only after 6 seconds without an attack on you or your pet; every hit, or
+any fall in your HP, starts the 6 seconds again. Getting off a Swift beast for a fight is never held
+back, since its skills are off. When the game doesn't take a beast, the bot carries on and tries
+it again later: after a minute, then two, four and so on up to ten minutes while it keeps refusing
+(the walking assistant: from 15 seconds up to a minute). The log says so once, and again when the
+beast is finally taken.
+
+Your pet's HP is watched too. If it falls fast (8% of its HP within 3 seconds) the monsters right
+next to it are treated as its attackers and fought first, even when the game didn't report who hit
+it. A monster that is attacking you, or one nearly dead, is finished first. It stops once the pet's
+HP hasn't fallen for 6 seconds. With the pet out of sight or no HP reading, nothing is assumed.
+
 ## Tools
 
 Both tools can use your own gang's craftsmen (gangs pay less), another gang's (type its name), or

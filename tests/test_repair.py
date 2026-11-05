@@ -346,14 +346,14 @@ def test_check_repairs_on_a_warning(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = Clock()
     monkeypatch.setattr(CLOCK, "time", clock)
     b = Bot(Link([{"uid": 1, "name": "Sword", "equipped": 1}],
-                 [{"uid": 1, "t": 20000, "broken": False}]))
+                 [{"uid": 1, "t": 1_000_500, "broken": False}]))
     b.hotkeys = {"small toolbox": "4"}
     b.bag = [{"name": "Small Toolbox", "count": 1}]
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
     assert repair.check(as_bot(b)) is True
     assert b.gear.repaired_at == clock.now
     # right after a repair, another warning does not trigger a second repair
-    b.a.wear = [{"uid": 1, "t": 30000, "broken": False}]
+    b.a.wear = [{"uid": 1, "t": 1_002_000, "broken": False}]
     clock.advance(2.5)
     assert repair.check(as_bot(b)) is False
 
@@ -362,7 +362,7 @@ def test_check_repairs_again_after_the_gap(monkeypatch: pytest.MonkeyPatch) -> N
     clock = Clock()
     monkeypatch.setattr(CLOCK, "time", clock)
     b = Bot(Link([{"uid": 1, "name": "Sword", "equipped": 1}],
-                 [{"uid": 1, "t": 20000, "broken": False}]))
+                 [{"uid": 1, "t": 1_000_500, "broken": False}]))
     b.hotkeys = {"small toolbox": "4"}
     b.bag = [{"name": "Small Toolbox", "count": 2}]
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
@@ -376,8 +376,78 @@ def test_check_waits_after_a_failed_repair(monkeypatch: pytest.MonkeyPatch) -> N
     clock = Clock()
     monkeypatch.setattr(CLOCK, "time", clock)
     b = Bot(Link([{"uid": 1, "name": "Sword", "equipped": 1}],
-                 [{"uid": 1, "t": 20000, "broken": False}]))
+                 [{"uid": 1, "t": 1_000_500, "broken": False}]))
     b.gear.failed_at = clock.now
     assert repair.check(as_bot(b)) is False
     assert b.gear.warned == {} or True         # no repair attempted
     assert b.gear.repaired_at == 0.0
+
+
+# ---------------------------------------------------------------- warnings from before the run
+# The agent keeps each item's newest warning for as long as the game is open, and every tool
+# (Sell shards, Update shard prices, Clean the bag now) is a run of its own with fresh gear records.
+def tool_run(link: Link) -> Bot:
+    """A tool's run on the same game: a new bot, the same agent (its warnings kept)."""
+    b = Bot(link)
+    b.hotkeys = {"large toolbox": "6"}
+    b.bag = [{"name": "Large Toolbox", "count": 3}]
+    b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
+    return b
+
+
+@pytest.mark.parametrize("tool", ["Sell shards", "Update shard prices", "Clean the bag now"])
+def test_a_tool_run_never_repairs_for_a_warning_an_earlier_run_saw(monkeypatch: pytest.MonkeyPatch,
+                                                                   tool: str) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    link = Link([{"uid": 1, "name": "Penetrator shawl", "equipped": 1}],
+                [{"uid": 1, "t": int((clock.now - 900) * 1000), "broken": False}])   # last night's
+    b = tool_run(link)
+    assert repair.check(as_bot(b)) is False
+    assert b.keys == [] and b.chosen == []                       # no toolbox pressed or confirmed
+    assert not any("about to break" in line for line in b.lines)
+    assert any("left out 1 gear warnings from before this run" in line for line in b.lines)
+    for _i in range(5):                                          # the tool goes on: still nothing
+        clock.advance(repair.BROKEN_EVERY + 1)
+        assert repair.check(as_bot(b)) is False
+    assert b.keys == []
+
+
+def test_a_warning_during_the_run_is_still_repaired(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    link = Link([{"uid": 1, "name": "Penetrator shawl", "equipped": 1}],
+                [{"uid": 1, "t": int((clock.now - 900) * 1000), "broken": False}])
+    b = tool_run(link)
+    assert repair.check(as_bot(b)) is False                      # the old one: left out
+    clock.advance(repair.CHECK_EVERY + 1)
+    link.wear = [{"uid": 1, "t": int(clock.now * 1000), "broken": False}]          # a hit just now
+    assert repair.check(as_bot(b)) is True
+    assert b.keys == ["6"] and any("Penetrator shawl is about to break" in line for line in b.lines)
+
+
+def test_gear_broken_before_the_run_is_still_repaired_at_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    link = Link([{"uid": 1, "name": "Penetrator shawl", "equipped": -1}],          # the game's broken mark
+                [{"uid": 1, "t": int((clock.now - 600) * 1000), "broken": True}])
+    link.equipment[0]["equipped"] = -1
+    b = tool_run(link)
+
+    def mended(pat: str) -> dict[str, Any]:
+        link.equipment[0]["equipped"] = 1
+        b.chosen.append(pat)
+        return {"text": "picked"}
+    b.choose = mended                                            # type: ignore[method-assign]
+    assert repair.check(as_bot(b)) is True
+    assert b.keys == ["6"]
+
+
+def test_a_warning_for_someone_elses_item_never_repairs(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = tool_run(Link([{"uid": 1, "name": "Penetrator shawl", "equipped": 1}], []))
+    assert repair.check(as_bot(b)) is False
+    clock.advance(repair.CHECK_EVERY + 1)
+    b.a.wear = [{"uid": 77, "t": int(clock.now * 1000), "broken": False}]          # another player's gear
+    assert repair.check(as_bot(b)) is False and b.keys == []

@@ -1,5 +1,27 @@
 # What's new
 
+## Not released yet
+
+**Repairs**
+
+- Sell shards, Update shard prices and Clean the bag now no longer repair gear that is fine. The
+  game keeps an item's last "about to break" warning for as long as it is open, and each new run
+  took the one an earlier run had already repaired for a new one, spending a toolbox. Only
+  warnings that come during the run count now; gear the game shows as broken is still repaired.
+
+**Fusion beasts**
+
+- A fusion beast goes on only after 6 seconds without an attack on you or your pet (any hit or fall
+  in HP starts the 6 seconds again). Getting off a Swift beast for a fight is never held back.
+- A beast the game refuses is tried again after a minute, then two, four... up to ten minutes,
+  instead of every minute, and the refusal is logged once. Pressing stops as soon as an attack
+  starts, so a fight is never kept waiting.
+
+**Pets**
+
+- When your pet's HP falls fast, the monsters right next to it are fought first, even when the
+  game didn't report who hit it, until its HP has stopped falling for 6 seconds.
+
 ## 0.9.1
 
 **Travel**
