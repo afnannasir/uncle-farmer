@@ -994,13 +994,23 @@ def test_raise_gems_without_the_section(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_raise_gems_protected_one_at_a_time(monkeypatch: pytest.MonkeyPatch) -> None:
-    b = Bot(bag=[{"name": "Arnebia", "count": 100000}])
+    b = Bot(bag=[{"name": "Arnebia", "count": 100000}, {"name": "Gem Protection Rune", "count": 5}])
     b.top = raise_menu()
     b.open = True
     monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
     monkeypatch.setattr(crafting, "tick", stand_in(crafting.tick, lambda b, pattern, want=True: True))
+
+    def choose(pattern: str) -> dict[str, Any] | None:
+        if "OK to Synthesize" in pattern:
+            add(b, "Gem Protection Rune", -1)         # a protected try that failed: the rune went, the gems stayed
+        b.on_choose = None
+        try:
+            return b.choose(pattern)
+        finally:
+            b.on_choose = choose
+    b.on_choose = choose
     assert crafting.raise_gems(as_bot(b), "Topaz", 2, 2, False, True, "gang") == (0, 2)
-    assert any("OK to Synthesize" in c for c in b.chooses)
+    assert [r["count"] for r in b.bag if r["name"] == "Gem Protection Rune"] == [3]      # two tries, one rune each
 
 
 def test_raise_gems_protected_without_a_rune(monkeypatch: pytest.MonkeyPatch) -> None:

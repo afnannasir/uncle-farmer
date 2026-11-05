@@ -25,6 +25,14 @@ gang", "Enter the inner hall of the gang", "Allied gangs", "all gangs".
 Nothing here spends below the arnebia reserve (profile gem_keep_arnebia), and "check only" walks
 there, reads the menus and reports what it would do without pressing anything that costs.
 
+A combine that works gives NO shard back; only a broken gem leaves one (the next round's boost
+shard, or 4 of them a new gem). So nothing here may count on a shard coming back: a lucky streak
+leaves none, and the boost box ("add 1 ... Shard") must not stay ticked once the last boost shard
+is gone - the game then makes nothing. Every try and every round is judged by what the bag shows
+afterwards (_colour_state): a try the game didn't carry out is no "failed" try, and a round that
+changed nothing ends the Gem Maker instead of being made again and again (up to 40 rounds, each
+with a walk back to the craftsman).
+
 Menus as the game shows them (from logged sessions):
   shard list        "Level 1 Obsidian Shard42"
   crystal levels    "synthesize Level 5 Equipment Enhance Crystal"
@@ -64,6 +72,8 @@ Entry = dict[str, Any]           # one entry of a game menu (link `dialog`)
 N = TypeVar("N")
 D = TypeVar("D")
 GEM = re.compile(r"^\s*Level (\d+) ([A-Za-z' ]+?)\s*$", re.I)
+RUNE = "Gem Protection Rune"
+SETTLE = 2.0             # seconds the bag is given to show a combine's result before it counts as none
 
 
 # ---------------------------------------------------------------------------------------- getting there
@@ -289,6 +299,10 @@ def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bo
     row = r"^\s*" + re.escape(gem) + r"\s+\d+\s*$"
     shard = gem + " Shard"
     done = 0
+
+    def state() -> tuple[int, ...]:
+        have = town.counts(b)
+        return tuple(have.get(n.lower(), 0) for n in (gem, nxt, shard, RUNE))
     for _i in range(k if protect else 1):
         if b.choose(row) is None or not b.wait_dialog(3.0):
             b.log(_("the Gem Craftsman didn't list {gem}", gem=gem))
@@ -308,15 +322,19 @@ def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bo
         if each <= 0:
             b.log(_("not enough spare arnebia to raise {gem} (fee {fee})", gem=gem, fee=fee), speak=True)
             break
+        # a boost shard only exists after a gem broke: never ask for one the bag doesn't hold
         want_boost = boost and level >= 2 and town.counts(b).get(shard.lower(), 0) > 0
+        was = state()
         if protect:
             if not _synthesize_one(b, want_boost, shard, section, where):
                 break
-            done += 1
-        else:
-            if not _synthesize_batch(b, want_boost, each):
-                break
-            done = each
+        elif not _synthesize_batch(b, want_boost, each):
+            break
+        if not _settled(b, was, state):
+            # the game carried nothing out (a stale boost box, a refusal): no try, not a failure
+            b.log(_("the Gem Craftsman made nothing with {gem} - leaving it", gem=gem), speak=True)
+            break
+        done += 1 if protect else each
     b.close_dialogs()
     after = town.counts(b)
     made = after.get(nxt.lower(), 0) - before.get(nxt.lower(), 0)
@@ -327,10 +345,26 @@ def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bo
     return made, lost
 
 
+def _settled(b: Bot, before: tuple[int, ...], read: Callable[[], tuple[int, ...]]) -> bool:
+    """The bag shows a combine's result: some count of the gem, the next gem, its shard or the
+    runes moved. Waits up to SETTLE for the game's bag update. False: nothing happened."""
+    waited = 0.0
+    while read() == before:
+        if waited >= SETTLE:
+            return False
+        b.sleep(0.25)
+        waited += 0.25
+    return True
+
+
 def _synthesize_one(b: Bot, want_boost: bool, shard: str, section: str, where: str) -> bool:
-    """One protected synthesis (the boost shard added when wanted). False: stop."""
-    if not tick(b, r"add 1 .*Shard", want_boost) and want_boost:
-        b.log(_("couldn't add the {shard}", shard=shard))
+    """One protected synthesis (the boost shard added when wanted, and the box cleared when the bag
+    has none - it may still be ticked from the last try, which used the last one up). False: stop."""
+    if not tick(b, r"add 1 .*Shard", want_boost):
+        if want_boost:
+            b.log(_("couldn't add the {shard}", shard=shard))
+        elif (e := entry_like(b, r"add 1 .*Shard")) is not None and is_ticked(e):
+            b.log(_("the {shard} box stays ticked with none in the bag", shard=shard))
     if not tick(b, r"Gem Protection Rune", True):
         b.log(_("no Gem Protection Rune to use - stopping, as asked"), speak=True)
         return False
@@ -348,6 +382,8 @@ def _synthesize_batch(b: Bot, want_boost: bool, each: int) -> bool:
     """A batch synthesis of `each` (the boost shards used automatically when wanted). False: stop."""
     if want_boost:
         tick(b, r"Automatically use .*Shard", True)
+    elif (e := entry_like(b, r"Automatically use .*Shard")) is not None and is_ticked(e):
+        tick(b, r"Automatically use .*Shard", False)      # ticked from before, and none to use now
     if not town.pick(b, r"Please enter quantity|please enter", each):
         b.log(_("the Gem Craftsman didn't ask how many"))
         return False
@@ -570,6 +606,7 @@ def make_most(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     for _round in range(12):
         if b.stop_event.is_set():
             raise Stopped(_("stopped"))
+        before = _bag_gems(b)
         did = 0
         # 1. every shard of the chosen colours into gems of its level
         shards = {name: 10 ** 9 for name in town.counts(b) if town.gem_of(name) and colour_of(name)
@@ -585,8 +622,8 @@ def make_most(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
                     did += made + lost
                 if b.stop_event.is_set():
                     raise Stopped(_("stopped"))
-        if not did:
-            break
+        if not did or _bag_gems(b) == before:
+            break                     # nothing more to make (or nothing came of it): no round again
     b.log(_("the bag's gems are as high as they go"), speak=True)
     b.close_dialogs()
 
@@ -612,13 +649,25 @@ def gem_maker(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
             raise Stopped(_("stopped"))
         if not job.most and gem_levels(b, colour).get(job.level, 0) >= job.target:
             break
-        if _gem_round(b, job):
-            continue
+        before = _colour_state(b, colour)
+        if _gem_round(b, job) and _colour_state(b, colour) != before:
+            continue                  # something was made: plan again from the bag as it is now
         # 3. nothing left to make from: more Level 1 shards, if asked and if that is what's short
         if job.supply == "none" or not _gem_refill(b, job):
             break
     _gem_report(b, job)
     b.close_dialogs()
+
+
+def _colour_state(b: Bot, colour: str) -> tuple[tuple[tuple[int, int], ...], tuple[tuple[int, int], ...]]:
+    """The colour's gems and shards in the bag, level by level: a round made progress only if this
+    changed."""
+    return tuple(sorted(gem_levels(b, colour).items())), tuple(sorted(shard_levels(b, colour).items()))
+
+
+def _bag_gems(b: Bot) -> tuple[tuple[str, int], ...]:
+    """Every gem and gem shard in the bag, for make_most's "did the round change anything"."""
+    return tuple(sorted((n, k) for n, k in town.counts(b).items() if colour_of(n) and k))
 
 
 class _GemJob:

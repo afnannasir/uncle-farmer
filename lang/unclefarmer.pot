@@ -5102,6 +5102,9 @@ msgstr ""
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr ""
 
+msgid "the Gem Craftsman made nothing with {gem} - leaving it"
+msgstr ""
+
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
@@ -5423,6 +5426,9 @@ msgid "the {npc}'s next menu didn't open"
 msgstr ""
 
 msgid "the {role} didn't take {item}"
+msgstr ""
+
+msgid "the {shard} box stays ticked with none in the bag"
 msgstr ""
 
 msgid "the {tool} can't repair this gear: {what}"
