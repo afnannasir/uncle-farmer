@@ -1,6 +1,6 @@
 # What's new
 
-## Not released yet
+## 1.0.0
 
 **Repairs**
 
