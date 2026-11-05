@@ -210,6 +210,9 @@ msgstr "&Kitne:"
 msgid "&Import character settings..."
 msgstr "Character settings &import karein..."
 
+msgid "&Import plan..."
+msgstr "Mansooba &import karein..."
+
 msgid "&Insert command..."
 msgstr "&Command shamil karein..."
 
@@ -998,8 +1001,14 @@ msgstr "Copy nahi ho saka. Pata yeh hai: {email}"
 msgid "Couldn't delete it: {err}"
 msgstr "Hata nahi saka: {err}"
 
+msgid "Couldn't export the plan: {err}"
+msgstr "Mansooba export nahi ho saka: {err}"
+
 msgid "Couldn't export the settings: {err}"
 msgstr "Tarteeb export nahi ho sakin: {err}"
+
+msgid "Couldn't import the plan: {err}"
+msgstr "Mansooba import nahi ho saka: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Tarteeb import nahi ho sakin: {err}"
@@ -1163,6 +1172,9 @@ msgstr "Bahar &niklein"
 msgid "E&xport character settings..."
 msgstr "Character settings e&xport karein..."
 
+msgid "E&xport plan..."
+msgstr "Mansooba e&xport karein..."
+
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
 
@@ -1271,6 +1283,9 @@ msgstr "Expert"
 
 msgid "Export character settings"
 msgstr "Character settings export karein"
+
+msgid "Export plan"
+msgstr "Mansooba export karein"
 
 msgid "Falling"
 msgstr "Utarti awaaz"
@@ -1649,6 +1664,9 @@ msgstr ""
 msgid "Import character settings"
 msgstr "Character settings import karein"
 
+msgid "Import plan"
+msgstr "Mansooba import karein"
+
 msgid "Import settings into this character:"
 msgstr "Tarteeb is character mein import karein:"
 
@@ -1707,6 +1725,9 @@ msgstr "Cheez:"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Bila rule wali cheezein: sirf wohi &chhuein jo is run ne uthaya"
+
+msgid "JSON files (*.json)|*.json"
+msgstr "JSON files (*.json)|*.json"
 
 msgid "Join a private channel in the game first."
 msgstr "Pehle game mein koi private channel join karein."
@@ -2384,6 +2405,16 @@ msgstr "Mansoobe ka &naam:"
 msgid "Plan or script"
 msgstr "Mansooba ya script"
 
+msgid ""
+"Plan {name} was exported to:\n"
+"{path}"
+msgstr ""
+"Mansooba {name} yahan export ho gaya hai:\n"
+"{path}"
+
+msgid "Plan {name} was imported."
+msgstr "Mansooba {name} import ho gaya hai."
+
 msgid "Plan, from the last scan of your bag:"
 msgstr "Mansooba, aapke baste ke aakhri scan se:"
 
@@ -2528,6 +2559,9 @@ msgstr ""
 "{source} se export ki hui Uncle Farmer ki mehfooz tarteeb se {character} ki tarteeb badal dein?\n"
 "\n"
 "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
+
+msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
+msgstr "Mehfooz mansooba {name} badal dein? Yes chunne tak kuch nahi badlega."
 
 msgid "Reply lines"
 msgstr "Jawab ki lines"
@@ -3417,6 +3451,16 @@ msgstr ""
 
 msgid "Uncle Farmer is updated to {v}."
 msgstr "Uncle Farmer {v} par update ho gaya."
+
+msgid ""
+"Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+msgstr ""
+"Uncle Farmer mansooba exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+
+msgid ""
+"Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
+msgstr ""
+"Uncle Farmer mansooba exports aur mansoobay (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 
 msgid ""
 "Uncle Farmer {v}\n"
