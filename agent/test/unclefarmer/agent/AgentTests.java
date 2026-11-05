@@ -50,6 +50,7 @@ public final class AgentTests {
         theMenuReplyIsTheContracts(contract);
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
+        aChatSendersIdNeverJoinsTheirName();
         voiceIsCleanedAndCutIntoMessages();
         theVoicePlayerOpensEachMessageAtItsOwnRate();
         theVoicePlayerSkipsAHalfReadFile();
@@ -573,6 +574,54 @@ public final class AgentTests {
             }
         };
         check(Voice.message(c, 0, c.length, uneven) == null, "frames of different sizes aren't sent");
+    }
+
+    /**
+     * IN op=55 as the game's own reader takes it apart (game.N.P): 37, the time (8), the message id
+     * (4), the channel byte, 2 more bytes when the channel has flag 32, the room (4) when
+     * (channel & 31) >= 15, the sender's id (4), then "name\ntext".
+     */
+    private static byte[] chatLine(int channel, int sender, String name, String text) {
+        int b = channel;
+        int extra = (b & 32) == 32 ? 2 : 0;
+        if (extra > 0) b -= 32;
+        int room = (b & 31) >= 15 ? 4 : 0;
+        byte[] head = new byte[14 + extra + room + 4];
+        head[0] = 55;
+        head[13] = (byte) channel;
+        if (room > 0) head[14 + extra + 3] = 7;                // room 7
+        int at = 14 + extra + room;
+        head[at] = (byte) (sender >>> 24);
+        head[at + 1] = (byte) (sender >>> 16);
+        head[at + 2] = (byte) (sender >>> 8);
+        head[at + 3] = (byte) sender;
+        return concat(head, (name + "\n" + text).getBytes(Protocol.UTF8));
+    }
+
+    private static String lastChatName(String chat) {
+        int i = chat.lastIndexOf("\"name\":\"");
+        return i < 0 ? null : chat.substring(i + 8, chat.indexOf('"', i + 8));
+    }
+
+    private static void aChatSendersIdNeverJoinsTheirName() {
+        // a sender id whose last bytes are letters or digits ('2' is 0x32, "22" 0x3232, 'a' 0x61, '_' 0x5f)
+        int[][] cases = {{3, 0x00000132}, {0, 0x00003232}, {6, 0x00000561}, {9, 0x0000075F}, {12, 0x0000082D},
+            {15, 0x00000932}, {18, 0x00000A41}, {3 + 32, 0x00000B32}};
+        for (int[] c : cases) {
+            GameChat.inbound(chatLine(c[0], c[1], "magoestelar", "vete a escuchar musica feo persi"));
+            String chat = GameChat.since(0, 0);
+            eq(lastChatName(chat), "magoestelar", "channel " + c[0] + ", sender id 0x" + Integer.toHexString(c[1])
+                    + ": the name alone");
+            check(chat.endsWith("\"text\":\"vete a escuchar musica feo persi\"}]}") || chat.contains(
+                    "\"name\":\"magoestelar\",\"text\":\"vete a escuchar musica feo persi\""), "and the text after it");
+        }
+        GameChat.inbound(chatLine(3, 0x00000132, "2Fast4u", "hi"));       // a name that starts with a number
+        eq(lastChatName(GameChat.since(0, 0)), "2Fast4u", "a name beginning with digits keeps them");
+        GameChat.inbound(chatLine(3, 0x00000100, "Ali", "hello"));
+        eq(lastChatName(GameChat.since(0, 0)), "Ali", "a sender id with no letter in it, as before");
+        byte[] voice = chatLine(12 + Voice.FLAG, 0x00000932, "magoestelar", VOICE_NAME);
+        GameChat.inbound(concat(voice, new byte[] {1, 2, 10, 10}));
+        eq(lastChatName(GameChat.since(0, 0)), "magoestelar", "a voice line's name, without the sender's id");
     }
 
     private static void voiceMessagesArriveWithTheirName() {

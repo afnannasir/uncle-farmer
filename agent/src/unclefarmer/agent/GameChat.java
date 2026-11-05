@@ -16,8 +16,9 @@ import java.util.List;
  * 6, 9, 12, 15, 18). Other numbers that arrive are the game's broadcasts (loot, events, team
  * recruiting, the monster count).
  *
- *   IN  op=55  37 <ts:8> <msgid:4> <channel:1> [2 extra bytes on system broadcasts] <sender:4>
- *              "name\ntext" -- the name's place varies; international has <room:4> first
+ *   IN  op=55  37 <ts:8> <msgid:4> <channel:1> [<extra:2> when channel & 32] [<room:4> when
+ *              (channel & 31) >= 15] <sender:4> "name\ntext" -- the game's own reader (game.N.P,
+ *              javap) takes it apart in that order, so the name starts at a known byte (nameStart)
  *   IN  op=8   08 05 <room:4> "room name"  -- the international room we are in
  *   OUT        the game's own sender, N.a(channel, target, text): target 0, or the room for
  *              international and the private channel (the chat model's fields, Memory.chatRooms).
@@ -28,9 +29,7 @@ final class GameChat {
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
     private static final int KEEP = 400;
-    private static final int INTERNATIONAL_IN = 15;
     private static final int INTERNATIONAL_OUT = 5;
-    private static final int PRIVATE_CHANNEL_IN = 18;
     private static final int PRIVATE_CHANNEL_OUT = 6;
 
     private static final List<Object[]> LINES = new ArrayList<Object[]>();   // {seq, at, channel, name, text, voice}
@@ -43,17 +42,11 @@ final class GameChat {
     static void inbound(byte[] m) {
         if (m.length < 15) return;
         int channel = m[13] & 0xFF;
-        int earliest = 14;
         if (channel >= Voice.FLAG) {
             voice(m, channel - Voice.FLAG);
             return;
         }
-        if ((channel == INTERNATIONAL_IN || channel == PRIVATE_CHANNEL_IN) && m.length > 22) {
-            // these two carry their room's id before the sender's
-            int r = Protocol.readInt(m, 14);
-            if (r > 0 && r < 0x10000) earliest = 22;
-        }
-        String[] parts = split(m, earliest);
+        String[] parts = split(m, nameStart(m));
         if (parts == null || parts[1].trim().isEmpty()) return;
         synchronized (LINES) {
             LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, parts[0] == null ? "" : parts[0],
@@ -65,15 +58,15 @@ final class GameChat {
 
     /**
      * A voice message (Voice): "name\n", the 32-character name the game keeps the sound under, then
-     * the sound. The newline taken is the first one with such a name right after it.
+     * the sound. The name starts where a text line's does (nameStart); the newline taken is the
+     * first one after it with such a sound name right after it.
      */
     static void voice(byte[] m, int channel) {
-        for (int i = 14; i < m.length; i++) {
+        int start = nameStart(m);
+        for (int i = start; i < m.length; i++) {
             if (m[i] != 0x0A) continue;
             String id = Voice.nameAfter(m, i);
             if (id == null) continue;
-            int start = i;
-            while (start > 14 && wordChar(m[start - 1])) start--;
             String name = new String(m, start, i - start, UTF8);
             synchronized (LINES) {
                 LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, plausibleName(name) ? name : "", "", id});
@@ -148,30 +141,39 @@ final class GameChat {
     }
 
     /**
-     * The trailing "name\ntext". The name's place varies with the header (18, 20 or 22) and id
-     * bytes can hold 0x0a, so every newline is tried and the one after a name-shaped run of word
-     * characters wins; with none, it is a broadcast whose text names the actor itself.
+     * Where the sender's name starts, worked out as the game's reader does (game.N.P): after the
+     * channel byte (13) come 2 more bytes when it has flag 32, then (with that flag taken off) the
+     * room's id when (channel & 31) >= 15, then the sender's id; the name is next. The channel byte
+     * is read signed, as the game's readByte() does.
+     *
+     * The name used to be found by walking back from the newline over letters and digits, which
+     * ran on into the sender's id whenever its last byte was one ("2magoestelar" from an id ending
+     * in 0x32) - a quarter of all players - and put a digit-led name's own digits twice.
      */
-    private static String[] split(byte[] m, int earliest) {
-        if (m.length <= earliest) return null;
-        int fallback = -1;
-        for (int i = earliest; i < m.length; i++) {
-            if (m[i] != 0x0A) continue;
-            if (fallback < 0) fallback = i;
-            int start = i;
-            while (start > earliest && wordChar(m[start - 1])) start--;
-            if (start < i) {
-                String name = new String(m, start, i - start, UTF8);
-                if (plausibleName(name)) return new String[] {name, decode(m, i + 1, m.length - i - 1)};
-            }
+    static int nameStart(byte[] m) {
+        int b = m[13];
+        int at = 14;
+        if ((b & 32) == 32) {
+            at += 2;
+            b -= 32;
         }
-        if (fallback >= 0) return new String[] {null, decode(m, fallback + 1, m.length - fallback - 1)};
-        return new String[] {null, decode(m, earliest, m.length - earliest)};
+        if ((b & 31) >= 15) at += 4;
+        return at + 4;
     }
 
-    private static boolean wordChar(byte b) {
-        int u = b & 0xFF;
-        return (u >= 'a' && u <= 'z') || (u >= 'A' && u <= 'Z') || (u >= '0' && u <= '9') || u == '_' || u == '-';
+    /**
+     * The trailing "name\ntext" from the name's own start: everything up to the first newline is
+     * the name, as the game takes it; a name that isn't one (a broadcast, whose text names the
+     * actor itself) is left empty.
+     */
+    private static String[] split(byte[] m, int start) {
+        if (m.length <= start) return null;
+        for (int i = start; i < m.length; i++) {
+            if (m[i] != 0x0A) continue;
+            String name = new String(m, start, i - start, UTF8);
+            return new String[] {plausibleName(name) ? name : null, decode(m, i + 1, m.length - i - 1)};
+        }
+        return new String[] {null, decode(m, start, m.length - start)};
     }
 
     private static boolean plausibleName(String s) {
