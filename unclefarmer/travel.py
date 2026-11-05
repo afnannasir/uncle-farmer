@@ -13,6 +13,18 @@ Costs are in walking steps; talking, riding and teleporting add fixed overheads 
 only when they really save walking (or when there's no other way). The plan is rebuilt after every
 leg, so a guess that turns out wrong costs nothing more than a re-plan.
 
+Rides (cable cars, airships, teleport circles) are edges like any other, so a route mixes walking
+and riding wherever that is shortest. A ride is in the graph only when it can be taken: the
+profile allows transports, a team circle only with a team, and a fare the character can pay (the
+arnebia on hand, when the caller says how much; VIP rides are free). A transport row that is
+missing what a ride needs (its map, where it lands) is left out, never a crash.
+
+The search is Dijkstra over that graph - A* with an estimate of zero, which never overestimates
+and is consistent, so the route it returns is the cheapest one under these costs, rides included.
+(A map-level lower bound - the cheapest exits and rides alone - was tried: it returned the same
+routes but skipped only about 5% of the nodes, because nearly all of a route's cost is walking
+inside maps, and working it out made every plan slower.)
+
 plan() returns a list of legs; the bot carries out only the first one and asks again:
   {"do": "exit", "map", "exit", "stand", "rect", "dest"}                walk off through a map exit
   {"do": "npc",  "map", "npc", "at", "stand", "choose": [...], "dest", "ride", "id", "kind"}
@@ -95,8 +107,13 @@ def transports() -> list[Row]:
         path = os.path.join(paths.DATA, "transports.json")
         found: list[Row] = []
         if os.path.exists(path):
-            with open(path, encoding="utf-8") as f:
-                found = json.load(f)["transports"]
+            try:
+                with open(path, encoding="utf-8") as f:
+                    raw: object = json.load(f)
+            except (OSError, ValueError):
+                raw = {}
+            rows: object = raw.get("transports") if json.is_object(raw) else None
+            found = [r for r in rows if json.is_object(r)] if json.is_array(rows) else []
             for i, t in enumerate(found):
                 t["id"] = i
         _transports = found
@@ -252,11 +269,43 @@ def _landing_ports(mid: int, cell: Point) -> dict[int, float]:
     return _landing_cache[key]
 
 
-def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False) -> collections.defaultdict[Node, list[Edge]]:
-    """Port -> NPC stand -> landing, for every usable transport (team dungeons only with a team)."""
+def fare(t: Row) -> int | None:
+    """What the ride costs in arnebia: 0 for a free one, None when the data doesn't know."""
+    cost = t.get("cost")
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or cost < 0:
+        return None
+    return int(cost)
+
+
+def can_pay(t: Row, vip: bool, arnebia: int | None) -> bool:
+    """The character can pay for the ride: VIP rides are free, a fare not known is not counted
+    against it (the NPC's own menu says no if it is too dear, and the ride is left out after
+    that), and with the arnebia on hand unknown (None) every ride counts as payable."""
+    if vip and t.get("choose_vip"):
+        return True
+    price = fare(t)
+    return arnebia is None or price is None or price <= arnebia
+
+
+def usable(t: Row) -> bool:
+    """A transport row with what a ride needs: its map and where it lands, both on maps the data
+    has, and a menu entry to choose. Anything else is left out of the plan."""
+    land: object = t.get("lands")
+    maps = atlas.maps()
+    choose: object = t.get("choose")
+    return (isinstance(t.get("map"), int) and t["map"] in maps and isinstance(t.get("dest"), int)
+            and json.is_object(land) and isinstance(land.get("map"), int) and land["map"] in maps
+            and json.is_object(land.get("ports")) and bool(t.get("npc")) and bool(choose)
+            and t.get("kind") in TALK)
+
+
+def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
+                     arnebia: int | None = None) -> collections.defaultdict[Node, list[Edge]]:
+    """Port -> NPC stand -> landing, for every transport that can be taken: not avoided, a team
+    circle only with a team, a fare the character can pay (can_pay) and a complete row (usable)."""
     g: collections.defaultdict[Node, list[Edge]] = collections.defaultdict(list)
     for t in transports():
-        if t["id"] in avoid or (t.get("team") and not team):
+        if t["id"] in avoid or (t.get("team") and not team) or not usable(t) or not can_pay(t, vip, arnebia):
             continue
         mid = t["map"]
         stand: Node = ("t", t["id"])
@@ -280,6 +329,20 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False)
         for i, steps_ in landed.items():
             g[node].append((steps_, ("p", land["map"], int(i)), None))
     return g
+
+
+def kept_off(p: Mapping[str, Any]) -> set[int]:
+    """The transports a profile leaves out: every airship when "Use airships" is off."""
+    if p.get("use_airships", True):
+        return set()
+    return {t["id"] for t in transports() if t.get("kind") == "airship"}
+
+
+def arnebia_in(bag: Sequence[Row] | None) -> int | None:
+    """The arnebia in a bag reading, or None when the reading has no Arnebia row at all (an
+    empty or failed reading must not look like an empty purse and leave every paid ride out)."""
+    rows = [r for r in bag or [] if str(r.get("name") or "").strip().lower() == "arnebia"]
+    return sum(count_of(r) for r in rows) if rows else None
 
 
 def count_of(row: Row) -> int:
@@ -371,21 +434,23 @@ PLAN_CACHE_MAX = 128
 @overload
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
-         hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False,
+         hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False, arnebia: int | None = None,
          with_cost: Literal[False] = False) -> Plan: ...
 @overload
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
-         hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False, *,
+         hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False, arnebia: int | None = None, *,
          with_cost: Literal[True]) -> CostedPlan: ...
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
          hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False,
-         with_cost: bool = False) -> Plan | CostedPlan:
+         arnebia: int | None = None, with_cost: bool = False) -> Plan | CostedPlan:
     """The legs from (here_map, here_cell) to goal_map (and goal_cell), or None if unreachable.
 
     bag: the bag rows ({"name", "count"}) so travel items can be used; hearth_home: the square the
-    hearthstone takes us to (learned); avoid: transport ids and item names that failed.
+    hearthstone takes us to (learned); avoid: transport ids and item names that failed; arnebia:
+    the arnebia on hand, so no ride is planned that the character can't pay for (None: not known,
+    every ride counts as payable).
 
     Cached by every input that affects the answer - the map graph is static, and only the items in
     the bag and the settings change between calls. The bot's travel loop asks for the same plan
@@ -399,24 +464,33 @@ def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Se
     key = (here_map, (int(here_cell[0]), int(here_cell[1])), goal_map,
            (int(goal_cell[0]), int(goal_cell[1])) if goal_cell is not None else None,
            bool(transport), frozenset(avoid), bool(vip), have, hearth_home, bool(hearth_key),
-           bool(items), bool(team), bool(with_cost))
+           bool(items), bool(team), bool(with_cost), _fare_band(arnebia, vip))
     boxed = lru.get(_plan_cache, key)
     if boxed is None:
         boxed = (_plan(here_map, here_cell, goal_map, goal_cell, transport, avoid, vip, bag,
-                       hearth_home, hearth_key, items, team, with_cost),)
+                       hearth_home, hearth_key, items, team, with_cost, arnebia),)
         lru.put(_plan_cache, key, boxed, PLAN_CACHE_MAX)
     return copy.deepcopy(boxed[0])
+
+
+def _fare_band(arnebia: int | None, vip: bool) -> tuple[int, ...] | None:
+    """Which fares the arnebia on hand covers, for the plan cache: two amounts that pay for the
+    same rides plan alike (the bag's arnebia changes after every kill)."""
+    if arnebia is None:
+        return None
+    return tuple(sorted({f for t in transports() if not (vip and t.get("choose_vip"))
+                         for f in [fare(t)] if f is not None and f <= arnebia}))
 
 
 def _plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
           transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
           hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False,
-          with_cost: bool = False) -> Plan | CostedPlan:
+          with_cost: bool = False, arnebia: int | None = None) -> Plan | CostedPlan:
     if here_map == goal_map:
         return _same_map(here_map, here_cell, goal_cell, with_cost)
     g = _static_graph()
     avoid = set(avoid)
-    extra: Graph = _transport_edges(avoid, vip, team) if transport else {}
+    extra: Graph = _transport_edges(avoid, vip, team, arnebia) if transport else {}
 
     def edges(node: Node) -> list[Edge]:
         return g.get(node, []) + (extra.get(node, []) if extra else [])
@@ -478,8 +552,8 @@ def _walk_starts(here_map: int, here_cell: Sequence[float], transport: bool, avo
     first: list[Edge] = []
     ports = _ports(here_map)
     points: list[Point] = [(p["x"], p["y"]) for p in ports]
-    stands = [t for t in transports() if transport and t["map"] == here_map and t["id"] not in avoid
-              and (team or not t.get("team"))]
+    stands = [t for t in transports() if transport and t.get("map") == here_map and t["id"] not in avoid
+              and (team or not t.get("team")) and usable(t)]
     points += [(t["stand"][0], t["stand"][1]) for t in stands if t.get("stand")]
     reach: dict[Point, float] = _steps_from(here_map, here_cell, points) if ports or stands else {}
     for i, p in enumerate(ports):

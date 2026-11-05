@@ -4475,6 +4475,10 @@ msgstr ""
 msgid "not allowed in an expression: {expr}"
 msgstr ""
 
+msgid ""
+"not choosing in the menu directly ({why}) - moving to the entry with the keys"
+msgstr ""
+
 msgid "not enough arnebia above your reserve for a {n} arnebia donation"
 msgstr ""
 

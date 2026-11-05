@@ -2,6 +2,35 @@
 
 ## Not released yet
 
+**Travel**
+
+- Routes leave out a cable car or airship whose fare is more than the arnebia in the bag (VIP rides
+  are free), instead of walking to the NPC and being turned away. With no arnebia reading, every
+  ride is still planned.
+- With "Use airships" off, the nearest shop or craftsman is judged without airships too, as the
+  trip there is made.
+- A transport entry in the data that is missing its map or landing is left out instead of stopping
+  the route plan.
+
+**Chat**
+
+- Agent 54: a chat line no longer shows a stray letter or number before the sender's name
+  ("2magoestelar"). The agent read part of the sender's id into the name for about one player in
+  four, whoever they were; it now reads the name where the game itself does. Names that start
+  with a number keep it. Uncle Farmer offers the new agent at start (close your games first).
+
+**Menus**
+
+- Agent 55: every NPC menu's entry is chosen where it is, in one step, instead of a walk down the
+  list one key at a time (each press read the menu again and made the game speak the entry). The
+  agent first checks the menu is still the one the bot read; if it isn't, nothing is chosen and the
+  bot walks to the entry with the keys as before.
+- Walking with the keys goes the shorter way round: the game's menus wrap, so an entry near the
+  bottom is reached by going up past the top. Across a 30-entry menu that's half the presses.
+- A shop or Shard Market item the bot has found once is picked by its id after that, without
+  reading the list again: selling a shard in three lots reads the market's list once instead of
+  eight times.
+
 **Updates**
 
 - Settings, Updates, Release channel: **Master** (stable releases, the default) or **Dev**

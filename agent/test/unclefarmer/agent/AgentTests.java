@@ -48,8 +48,10 @@ public final class AgentTests {
         aVerifiedIndexIsChosenOnlyForItsItem();
         aChangedOrUnexpectedMenuIsRefused();
         theMenuReplyIsTheContracts(contract);
+        aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom();
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
+        aChatSendersIdNeverJoinsTheirName();
         voiceIsCleanedAndCutIntoMessages();
         theVoicePlayerOpensEachMessageAtItsOwnRate();
         theVoicePlayerSkipsAHalfReadFile();
@@ -456,6 +458,50 @@ public final class AgentTests {
         eq(placed(trade(20425, 2175), Menus.SHARD_TRADE, 20425, "buy"), "placed 0,0", "buy is row 0");
     }
 
+    private static Menus.Menu npcMenu(String... texts) {
+        Menus.Menu m = new Menus.Menu();
+        for (int i = 0; i < texts.length; i++) {
+            m.rows.add(row(new Menus.Entry(8, texts[i], new String[] {texts[i]}, new int[] {7, i})));
+        }
+        return m;
+    }
+
+    private static String chosenAt(Menus.Menu m, int row, int col, int sig) {
+        try {
+            Menus.Entry e = Menus.chosen(m, row, col, sig);
+            return "chosen " + e.name();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        }
+    }
+
+    private static void aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom() {
+        Menus.Menu m = npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave");
+        int sig = Menus.signature(m);
+        eq(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave")), sig,
+                "the same content reads the same signature every time");
+        eq(chosenAt(m, 1, 0, sig), "chosen Fly to Holy Blood", "the entry at the row and column read");
+        eq(chosenAt(m, 2, 0, sig), "chosen Leave", "the last row");
+        check(Menus.signature(npcMenu("Fly to Holy Blood", "Fly to Tulip", "Leave")) != sig, "two rows swapped");
+        check(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood")) != sig, "a row gone");
+        check(Menus.signature(npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave", "More")) != sig, "a row more");
+        Menus.Menu other = npcMenu("Fly to Tulip", "Fly to Holy Blood", "Leave");
+        other.rows.get(1).set(0, new Menus.Entry(8, "Fly to Holy Blood", new String[] {"Fly to Holy Blood"}, new int[] {7, 9}));
+        check(Menus.signature(other) != sig, "the same text sending another command");
+        eq(chosenAt(npcMenu("Fly to Holy Blood", "Fly to Tulip", "Leave"), 1, 0, sig),
+                "refused: the menu changed since it was read", "another menu: nothing chosen");
+        eq(chosenAt(m, 3, 0, sig), "refused: no entry at row 3 col 0", "past the last row");
+        eq(chosenAt(m, 0, 1, sig), "refused: no entry at row 0 col 1", "past the row's last column");
+        eq(chosenAt(m, -1, 0, sig), "refused: no entry at row -1 col 0", "before the first row");
+        Menus.Menu gap = npcMenu("Ali");
+        gap.rows.get(0).add(null);
+        eq(chosenAt(gap, 0, 1, Menus.signature(gap)), "refused: no entry at row 0 col 1", "an empty cell");
+        eq(chosenAt(new Menus.Menu(), 0, 0, Menus.signature(new Menus.Menu())), "refused: the menu has no rows",
+                "an empty menu");
+        eq(chosenAt(market(), 17, 0, Menus.signature(market())), "chosen Level 1 Turquoise Shard",
+                "a verified layout's row too");
+    }
+
     private static void aChangedOrUnexpectedMenuIsRefused() {
         Menus.Menu swapped = market();
         java.util.Collections.swap(swapped.rows, 3, 4);
@@ -573,6 +619,54 @@ public final class AgentTests {
             }
         };
         check(Voice.message(c, 0, c.length, uneven) == null, "frames of different sizes aren't sent");
+    }
+
+    /**
+     * IN op=55 as the game's own reader takes it apart (game.N.P): 37, the time (8), the message id
+     * (4), the channel byte, 2 more bytes when the channel has flag 32, the room (4) when
+     * (channel & 31) >= 15, the sender's id (4), then "name\ntext".
+     */
+    private static byte[] chatLine(int channel, int sender, String name, String text) {
+        int b = channel;
+        int extra = (b & 32) == 32 ? 2 : 0;
+        if (extra > 0) b -= 32;
+        int room = (b & 31) >= 15 ? 4 : 0;
+        byte[] head = new byte[14 + extra + room + 4];
+        head[0] = 55;
+        head[13] = (byte) channel;
+        if (room > 0) head[14 + extra + 3] = 7;                // room 7
+        int at = 14 + extra + room;
+        head[at] = (byte) (sender >>> 24);
+        head[at + 1] = (byte) (sender >>> 16);
+        head[at + 2] = (byte) (sender >>> 8);
+        head[at + 3] = (byte) sender;
+        return concat(head, (name + "\n" + text).getBytes(Protocol.UTF8));
+    }
+
+    private static String lastChatName(String chat) {
+        int i = chat.lastIndexOf("\"name\":\"");
+        return i < 0 ? null : chat.substring(i + 8, chat.indexOf('"', i + 8));
+    }
+
+    private static void aChatSendersIdNeverJoinsTheirName() {
+        // a sender id whose last bytes are letters or digits ('2' is 0x32, "22" 0x3232, 'a' 0x61, '_' 0x5f)
+        int[][] cases = {{3, 0x00000132}, {0, 0x00003232}, {6, 0x00000561}, {9, 0x0000075F}, {12, 0x0000082D},
+            {15, 0x00000932}, {18, 0x00000A41}, {3 + 32, 0x00000B32}};
+        for (int[] c : cases) {
+            GameChat.inbound(chatLine(c[0], c[1], "magoestelar", "vete a escuchar musica feo persi"));
+            String chat = GameChat.since(0, 0);
+            eq(lastChatName(chat), "magoestelar", "channel " + c[0] + ", sender id 0x" + Integer.toHexString(c[1])
+                    + ": the name alone");
+            check(chat.endsWith("\"text\":\"vete a escuchar musica feo persi\"}]}") || chat.contains(
+                    "\"name\":\"magoestelar\",\"text\":\"vete a escuchar musica feo persi\""), "and the text after it");
+        }
+        GameChat.inbound(chatLine(3, 0x00000132, "2Fast4u", "hi"));       // a name that starts with a number
+        eq(lastChatName(GameChat.since(0, 0)), "2Fast4u", "a name beginning with digits keeps them");
+        GameChat.inbound(chatLine(3, 0x00000100, "Ali", "hello"));
+        eq(lastChatName(GameChat.since(0, 0)), "Ali", "a sender id with no letter in it, as before");
+        byte[] voice = chatLine(12 + Voice.FLAG, 0x00000932, "magoestelar", VOICE_NAME);
+        GameChat.inbound(concat(voice, new byte[] {1, 2, 10, 10}));
+        eq(lastChatName(GameChat.since(0, 0)), "magoestelar", "a voice line's name, without the sender's id");
     }
 
     private static void voiceMessagesArriveWithTheirName() {

@@ -144,6 +144,12 @@ the pet's potions and Rice Rolls, how to travel
 (walking, cable cars, airships, travel items, VIP), and the keys for dialogs, discarding and the
 Action menu.
 
+The way to anywhere mixes walking with cable cars and airships wherever a ride is shorter: from
+Giant Rock City to Tulip City, say, down to its underground and the cable car, then up on foot.
+A ride is planned only when it can be taken: transports and airships switched on, and a fare the
+character can pay with the arnebia in the bag (rides are free for VIP); otherwise the way is on
+foot. The nearest shop or craftsman is judged the same way.
+
 **Bosses.** The bot knows the field bosses by name: Pig-Face Bat King, Man-wolf Caesar, Ice Queen
 Los, Cat King Carter, Pharaoh Tar, Elven King Erth, Fire Lord, Whale Monster Bigger, Monkey King,
 Barbarian Tyrant, Thunder Lord, Lich King, Meteor Queen Elsa, Dark Priest, Dracula and the rest of
@@ -383,6 +389,18 @@ is that one, that the row holds the item's own number in the game, and that buy 
 sell; if anything differs it chooses nothing and says why. The bot then goes by the menu's text as
 before, except in a buy or sell menu that came up for the wrong shard: there it chooses nothing at
 all. Other shops (the grocer's) are always chosen in by text.
+
+Once the bot has found an item there, it picks that item by its number after that, without reading
+the list again; the agent still checks the whole menu first.
+
+### Every other menu
+
+With agent 55, an NPC's menu entry is chosen where it is, in one step: the bot finds the entry by
+its text in one reading of the menu, and the agent chooses it as Enter would, once it has checked
+the menu is still the one read. There is no walk down the list, and the game doesn't speak each
+entry on the way. When that can't be done (an older agent, or the menu changed), the bot walks to
+the entry with the keys the shorter way round: the game's menus wrap, so an entry near the bottom is
+reached by going up past the top.
 
 ### Dungeons
 
