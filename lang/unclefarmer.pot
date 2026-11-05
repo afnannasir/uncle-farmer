@@ -207,6 +207,12 @@ msgstr ""
 msgid "&How many:"
 msgstr ""
 
+msgid "&Import character settings..."
+msgstr ""
+
+msgid "&Import plan..."
+msgstr ""
+
 msgid "&Insert command..."
 msgstr ""
 
@@ -658,6 +664,9 @@ msgstr ""
 msgid "All"
 msgstr ""
 
+msgid "All files (*.*)|*.*"
+msgstr ""
+
 msgid "All time"
 msgstr ""
 
@@ -977,6 +986,18 @@ msgstr ""
 msgid "Couldn't delete it: {err}"
 msgstr ""
 
+msgid "Couldn't export the plan: {err}"
+msgstr ""
+
+msgid "Couldn't export the settings: {err}"
+msgstr ""
+
+msgid "Couldn't import the plan: {err}"
+msgstr ""
+
+msgid "Couldn't import the settings: {err}"
+msgstr ""
+
 msgid "Couldn't open it: {err}"
 msgstr ""
 
@@ -1008,6 +1029,12 @@ msgid "Cra&ftsman:"
 msgstr ""
 
 msgid "Craftsman and spending"
+msgstr ""
+
+msgid ""
+"Create Uncle Farmer settings for {character} from {source}?\n"
+"\n"
+"This creates settings for that name only. It doesn't create or log in to a Mist World character. The choices take effect when that character is scanned or run. Nothing changes until you choose Yes."
 msgstr ""
 
 msgid ""
@@ -1123,6 +1150,12 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
+msgid "E&xport character settings..."
+msgstr ""
+
+msgid "E&xport plan..."
+msgstr ""
+
 msgid "East edge (x):"
 msgstr ""
 
@@ -1223,6 +1256,12 @@ msgid "Experience"
 msgstr ""
 
 msgid "Expert"
+msgstr ""
+
+msgid "Export character settings"
+msgstr ""
+
+msgid "Export plan"
 msgstr ""
 
 msgid "Falling"
@@ -1586,6 +1625,15 @@ msgstr ""
 msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 
+msgid "Import character settings"
+msgstr ""
+
+msgid "Import plan"
+msgstr ""
+
+msgid "Import settings into this character:"
+msgstr ""
+
 msgid "Important events only"
 msgstr ""
 
@@ -1634,6 +1682,9 @@ msgid "Item:"
 msgstr ""
 
 msgid "Items with no rule: touch &only what this run picked up"
+msgstr ""
+
+msgid "JSON files (*.json)|*.json"
 msgstr ""
 
 msgid "Join a private channel in the game first."
@@ -1958,6 +2009,10 @@ msgid "No Gem Maker, Equipment Enhancer or chores runs."
 msgstr ""
 
 msgid "No bot is running."
+msgstr ""
+
+msgid ""
+"No character has settings to export yet. Log in to one and let the bot scan it first."
 msgstr ""
 
 msgid ""
@@ -2286,6 +2341,14 @@ msgstr ""
 msgid "Plan or script"
 msgstr ""
 
+msgid ""
+"Plan {name} was exported to:\n"
+"{path}"
+msgstr ""
+
+msgid "Plan {name} was imported."
+msgstr ""
+
 msgid "Plan, from the last scan of your bag:"
 msgstr ""
 
@@ -2416,6 +2479,15 @@ msgid "Rename"
 msgstr ""
 
 msgid "Repair &gear with toolboxes from the bag"
+msgstr ""
+
+msgid ""
+"Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
+"\n"
+"This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+
+msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 
 msgid "Reply lines"
@@ -2594,6 +2666,17 @@ msgid "Set when to drink myself"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid ""
+"Settings for {character} were exported to:\n"
+"{path}\n"
+"\n"
+"The file has combat, keys, potions, bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone location."
+msgstr ""
+
+msgid ""
+"Settings were imported into {character}. Scan this character before farming if its skills, hotkeys, bag, pets or beasts changed."
 msgstr ""
 
 msgid "Shard Market price when last seen: {price} arnebia"
@@ -3240,7 +3323,19 @@ msgstr ""
 msgid "Uncle Farmer"
 msgstr ""
 
+msgid ""
+"Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
+msgstr ""
+
 msgid "Uncle Farmer is updated to {v}."
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 msgstr ""
 
 msgid ""
