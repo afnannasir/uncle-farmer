@@ -57,14 +57,17 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -
     me = b.me()
     out = ways_out(b).get(here) if travel.is_instance(here) else None
     best: tuple[float, Npc] | None = None
+    rows = b.bag_rows()
+    purse = travel.arnebia_in(rows)
     for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
         start_map, start_cell, extra = here, (me["x"], me["y"]), 0.0
         if out is not None and mid != here:
             start_map, start_cell, extra = out[0], out[1], travel.LEAVE_COST
         legs, cost = travel.plan(start_map, start_cell, mid, (x, y + 1), with_cost=True,
                                  transport=b.p.get("use_transport", True), vip=b.p.get("vip", False),
-                                 bag=b.bag_rows() if b.p.get("use_travel_items", False) else [],
-                                 hearth_home=b.p.get("hearth_home") or None)
+                                 avoid=travel.kept_off(b.p),
+                                 bag=rows if b.p.get("use_travel_items", False) else [],
+                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
         if legs is None or cost is None:
             continue
         cost += extra

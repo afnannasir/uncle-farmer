@@ -118,9 +118,7 @@ class TravelMixin(Parts):
         or a travel item from the bag (teleport stones, the hearthstone). The route is planned again
         after every leg, so a wrong guess only costs a re-plan; whatever fails is left out after."""
         dst = int(dst)
-        avoid: set[Any] = set()
-        if not self.p.get("use_airships", True):
-            avoid |= {t["id"] for t in travel.transports() if t["kind"] == "airship"}
+        avoid: set[Any] = set(travel.kept_off(self.p))      # airships, when the profile says no
         self.traveling = True
         try:
             self._travel(dst, cell, avoid)
@@ -175,7 +173,9 @@ class TravelMixin(Parts):
     def _plan_legs(self, mid: int, dst: int, goal_cell: tuple[float, float] | None, avoid: set[Any]) -> list[dict[str, Any]]:
         """The way from here, as the profile wants it planned; a Stopped when there is none."""
         me = self.me()
-        bag = self.bag_rows() if self.p.get("use_travel_items", False) else []
+        rows = self.bag_rows()
+        bag = rows if self.p.get("use_travel_items", False) else []
+        purse = travel.arnebia_in(rows)       # no ride planned that we can't pay for
         legs = None
         if self.p.get("prefer_walking", False):
             # Optional: walk whenever the maps connect on foot (the default is the shortest way,
@@ -188,7 +188,7 @@ class TravelMixin(Parts):
                            vip=self.p.get("vip", False), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
-                           items=self.p.get("use_travel_items", False))
+                           items=self.p.get("use_travel_items", False), arnebia=purse)
         if legs is None:
             if travel.gang_exit(mid) is not None:
                 raise Stopped(_("{a}: the gang base's way out is in its outer hall, walled off from here - "
