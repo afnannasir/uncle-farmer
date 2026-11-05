@@ -114,3 +114,63 @@ def test_every_profile_moves_onto_its_class_attack_range_once() -> None:
     p["attack_range"] = 12.0
     settings.save_profile("Old", p)
     assert settings.load_profile("Old")["attack_range"] == 12.0
+
+
+def test_character_settings_export_round_trips_choices_but_not_game_facts(tmp_path: Path,
+                                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path / "profiles"))
+    original = dict(settings.PROFILE_DEFAULTS, attack_gap=0.7, bag_rules={"red potion": {"action": "keep", "keep": 4}},
+                    scan={"class": "Hunter", "pets": ["Source pet"]}, hearth_home="Source town", future_key=7)
+    settings.save_profile("Source", original)
+    export = tmp_path / "source.unclefarmer-profile.json"
+    settings.export_profile("Source", str(export))
+    source, imported = settings.read_profile_export(str(export))
+    assert source == "Source"
+    assert imported["attack_gap"] == 0.7
+    assert imported["bag_rules"] == {"red potion": {"action": "keep", "keep": 4}}
+    assert imported["future_key"] == 7
+    assert "scan" not in imported and "hearth_home" not in imported
+
+
+def test_character_settings_import_keeps_destination_game_facts(tmp_path: Path,
+                                                                 monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path / "profiles"))
+    settings.save_profile("Destination", dict(settings.PROFILE_DEFAULTS, attack_gap=0.2,
+                                                scan={"class": "Priest"}, hearth_home="Destination town"))
+    settings.import_profile("Destination", dict(settings.PROFILE_DEFAULTS, attack_gap=0.8, scan={"class": "Hunter"},
+                                                 hearth_home="Source town"))
+    got = settings.load_profile("Destination")
+    assert got["attack_gap"] == 0.8
+    assert got["scan"] == {"class": "Priest"}
+    assert got["hearth_home"] == "Destination town"
+
+
+def test_plain_existing_profile_can_be_imported(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path / "profiles"))
+    source_file = tmp_path / "okyanus.json"
+    source_file.write_text(json.dumps(dict(settings.PROFILE_DEFAULTS, attack_gap=0.65,
+                                           scan={"class": "Hunter"}, hearth_home="Source town")), encoding="utf-8")
+    source, imported = settings.read_profile_export(str(source_file))
+    assert source == "okyanus"
+    assert imported["attack_gap"] == 0.65
+    assert "scan" not in imported and "hearth_home" not in imported
+
+
+def test_unrelated_plain_json_cannot_be_imported(tmp_path: Path) -> None:
+    path = tmp_path / "settings.json"
+    path.write_text(json.dumps({"language": "en", "speak": True}), encoding="utf-8")
+    with pytest.raises(ValueError, match="doesn't contain character settings"):
+        settings.read_profile_export(str(path))
+
+
+@pytest.mark.parametrize("raw, message", [
+    ({}, "doesn't contain character settings"),
+    ({"format": settings.PROFILE_EXPORT_FORMAT, "version": 99, "character": "A", "settings": {}}, "unsupported"),
+    ({"format": settings.PROFILE_EXPORT_FORMAT, "version": 1, "character": "A", "settings": {"attack_gap": "wide"}},
+     "invalid setting"),
+])
+def test_bad_character_settings_exports_are_rejected(tmp_path: Path, raw: dict[str, Any], message: str) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        settings.read_profile_export(str(path))

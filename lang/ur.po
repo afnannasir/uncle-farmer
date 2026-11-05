@@ -207,6 +207,9 @@ msgstr "&Tareekhcha..."
 msgid "&How many:"
 msgstr "&Kitne:"
 
+msgid "&Import character settings..."
+msgstr "Character settings &import karein..."
+
 msgid "&Insert command..."
 msgstr "&Command shamil karein..."
 
@@ -665,6 +668,9 @@ msgstr "Agent"
 msgid "All"
 msgstr "Sab"
 
+msgid "All files (*.*)|*.*"
+msgstr "Tamam files (*.*)|*.*"
+
 msgid "All time"
 msgstr "Sab waqt"
 
@@ -992,6 +998,12 @@ msgstr "Copy nahi ho saka. Pata yeh hai: {email}"
 msgid "Couldn't delete it: {err}"
 msgstr "Hata nahi saka: {err}"
 
+msgid "Couldn't export the settings: {err}"
+msgstr "Tarteeb export nahi ho sakin: {err}"
+
+msgid "Couldn't import the settings: {err}"
+msgstr "Tarteeb import nahi ho sakin: {err}"
+
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
 
@@ -1024,6 +1036,15 @@ msgstr "&Craftsman:"
 
 msgid "Craftsman and spending"
 msgstr "Craftsman aur kharch"
+
+msgid ""
+"Create Uncle Farmer settings for {character} from {source}?\n"
+"\n"
+"This creates settings for that name only. It doesn't create or log in to a Mist World character. The choices take effect when that character is scanned or run. Nothing changes until you choose Yes."
+msgstr ""
+"{source} se {character} ke liye Uncle Farmer ki tarteeb banayein?\n"
+"\n"
+"Is se sirf is naam ki tarteeb banegi. Is se Mist World ka character nahi banta, na log in hota hai. Choices tab asar karengi jab us character ko scan kiya ya chalaya jaye. Yes chunne tak kuch nahi badlega."
 
 msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
@@ -1139,6 +1160,9 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 msgid "E&xit"
 msgstr "Bahar &niklein"
 
+msgid "E&xport character settings..."
+msgstr "Character settings e&xport karein..."
+
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
 
@@ -1244,6 +1268,9 @@ msgstr "Tajurba"
 
 msgid "Expert"
 msgstr "Expert"
+
+msgid "Export character settings"
+msgstr "Character settings export karein"
 
 msgid "Falling"
 msgstr "Utarti awaaz"
@@ -1618,6 +1645,12 @@ msgstr "{map} par khaali, HP {hp}%{mp}."
 msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 "Agar in mein se koi kamre mein na ho, to wahan &kisi ke saath bhi share karein"
+
+msgid "Import character settings"
+msgstr "Character settings import karein"
+
+msgid "Import settings into this character:"
+msgstr "Tarteeb is character mein import karein:"
 
 msgid "Important events only"
 msgstr "Sirf ahem waqiaat"
@@ -2007,6 +2040,11 @@ msgstr "Gem Maker, Equipment Enhancer ya roz ke kaam ka koi run nahi."
 
 msgid "No bot is running."
 msgstr "Koi bot nahi chal raha."
+
+msgid ""
+"No character has settings to export yet. Log in to one and let the bot scan it first."
+msgstr ""
+"Export ke liye abhi kisi character ki settings nahi hain. Game mein kisi character se log in karein aur pehle bot ko usay scan karne dein."
 
 msgid ""
 "No character has settings yet. Log in to one in the game and the bot scans it."
@@ -2482,6 +2520,15 @@ msgstr "Naam badlein"
 msgid "Repair &gear with toolboxes from the bag"
 msgstr "Basta ke toolboxes se &gear repair karein"
 
+msgid ""
+"Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
+"\n"
+"This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+"{source} se export ki hui Uncle Farmer ki mehfooz tarteeb se {character} ki tarteeb badal dein?\n"
+"\n"
+"Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
+
 msgid "Reply lines"
 msgstr "Jawab ki lines"
 
@@ -2660,6 +2707,22 @@ msgstr "Kab peena hai khud set karein"
 
 msgid "Settings"
 msgstr "Tarteeb"
+
+msgid ""
+"Settings for {character} were exported to:\n"
+"{path}\n"
+"\n"
+"The file has combat, keys, potions, bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone location."
+msgstr ""
+"{character} ki settings yahan export ho gayi hain:\n"
+"{path}\n"
+"\n"
+"File mein combat, keys, potions, bag, pet, travel aur restock ki choices hain. Is mein scan ya seekha hua hearthstone ka maqam nahi hai."
+
+msgid ""
+"Settings were imported into {character}. Scan this character before farming if its skills, hotkeys, bag, pets or beasts changed."
+msgstr ""
+"Tarteeb {character} mein import ho gayi hain. Farming se pehle is character ko scan karein agar is ki skills, hotkeys, bag, pets ya beasts badal gaye hain."
 
 msgid "Shard Market price when last seen: {price} arnebia"
 msgstr "Shard Market ki aakhri dekhi qeemat: {price} arnebia"
@@ -3346,6 +3409,11 @@ msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
+
+msgid ""
+"Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
+msgstr ""
+"Uncle Farmer character settings aur profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
 
 msgid "Uncle Farmer is updated to {v}."
 msgstr "Uncle Farmer {v} par update ho gaya."
@@ -6363,6 +6431,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Installed. Restart Mist World to load it."
 #~ msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
 
+#~ msgid "JSON files (*.json)|*.json"
+#~ msgstr "JSON files (*.json)|*.json"
+
 #~ msgid ""
 #~ "Open fire up to this many tiles &early, while the monster is coming to you (0: walk all the way; the game's target keys reach 20):"
 #~ msgstr ""
@@ -6390,6 +6461,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "{where} ke liye recording - bhejne ke liye Record voice dobara dabayein, cancel ke liye Escape."
 
+#~ msgid ""
+#~ "Replace the settings for {character} with those exported from {source}?\n"
+#~ "\n"
+#~ "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+#~ msgstr ""
+#~ "{source} se export ki hui settings se {character} ki settings badal dein?\n"
+#~ "\n"
+#~ "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
+
 #~ msgid "Shards: {n}"
 #~ msgstr "Shards: {n}"
 
@@ -6412,6 +6492,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Time between pet potions (&seconds):"
 #~ msgstr "Pet potions ke darmiyan waqt (&second):"
+
+#~ msgid ""
+#~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
+#~ msgstr ""
+#~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
 
 #~ msgid ""
 #~ "When nothing is in sight, walk to where a monster is due back (learned while farming)"

@@ -207,6 +207,9 @@ msgstr ""
 msgid "&How many:"
 msgstr ""
 
+msgid "&Import character settings..."
+msgstr ""
+
 msgid "&Insert command..."
 msgstr ""
 
@@ -658,6 +661,9 @@ msgstr ""
 msgid "All"
 msgstr ""
 
+msgid "All files (*.*)|*.*"
+msgstr ""
+
 msgid "All time"
 msgstr ""
 
@@ -977,6 +983,12 @@ msgstr ""
 msgid "Couldn't delete it: {err}"
 msgstr ""
 
+msgid "Couldn't export the settings: {err}"
+msgstr ""
+
+msgid "Couldn't import the settings: {err}"
+msgstr ""
+
 msgid "Couldn't open it: {err}"
 msgstr ""
 
@@ -1008,6 +1020,12 @@ msgid "Cra&ftsman:"
 msgstr ""
 
 msgid "Craftsman and spending"
+msgstr ""
+
+msgid ""
+"Create Uncle Farmer settings for {character} from {source}?\n"
+"\n"
+"This creates settings for that name only. It doesn't create or log in to a Mist World character. The choices take effect when that character is scanned or run. Nothing changes until you choose Yes."
 msgstr ""
 
 msgid ""
@@ -1123,6 +1141,9 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
+msgid "E&xport character settings..."
+msgstr ""
+
 msgid "East edge (x):"
 msgstr ""
 
@@ -1223,6 +1244,9 @@ msgid "Experience"
 msgstr ""
 
 msgid "Expert"
+msgstr ""
+
+msgid "Export character settings"
 msgstr ""
 
 msgid "Falling"
@@ -1584,6 +1608,12 @@ msgid "Idle on {map}, HP {hp}%{mp}."
 msgstr ""
 
 msgid "If none of them is in the room, share with &anyone there"
+msgstr ""
+
+msgid "Import character settings"
+msgstr ""
+
+msgid "Import settings into this character:"
 msgstr ""
 
 msgid "Important events only"
@@ -1958,6 +1988,10 @@ msgid "No Gem Maker, Equipment Enhancer or chores runs."
 msgstr ""
 
 msgid "No bot is running."
+msgstr ""
+
+msgid ""
+"No character has settings to export yet. Log in to one and let the bot scan it first."
 msgstr ""
 
 msgid ""
@@ -2418,6 +2452,12 @@ msgstr ""
 msgid "Repair &gear with toolboxes from the bag"
 msgstr ""
 
+msgid ""
+"Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
+"\n"
+"This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+
 msgid "Reply lines"
 msgstr ""
 
@@ -2594,6 +2634,17 @@ msgid "Set when to drink myself"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid ""
+"Settings for {character} were exported to:\n"
+"{path}\n"
+"\n"
+"The file has combat, keys, potions, bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone location."
+msgstr ""
+
+msgid ""
+"Settings were imported into {character}. Scan this character before farming if its skills, hotkeys, bag, pets or beasts changed."
 msgstr ""
 
 msgid "Shard Market price when last seen: {price} arnebia"
@@ -3238,6 +3289,10 @@ msgid "Type the name of the gang whose craftsmen to use."
 msgstr ""
 
 msgid "Uncle Farmer"
+msgstr ""
+
+msgid ""
+"Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
 msgstr ""
 
 msgid "Uncle Farmer is updated to {v}."

@@ -219,7 +219,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         menu(_("&Character"), [(_("&Settings...\tCtrl+P"), lambda e: self.edit_profile()),
                                (_("&Bag and supplies...\tCtrl+B"), lambda e: self.edit_bag()),
                                (_("S&can now"), lambda e: self.scan_now()),
-                               (_("&Another character..."), lambda e: self.edit_other_profile())])
+                               (_("&Another character..."), lambda e: self.edit_other_profile()),
+                               (_("E&xport character settings..."), lambda e: self.export_character_settings()),
+                               (_("&Import character settings..."), lambda e: self.import_character_settings())])
         menu(_("&Tools"), [(_("&Gem Maker...\tCtrl+G"), lambda e: self.open_tool("gem")),
                            (_("&Equipment Enhancer...\tCtrl+Shift+E"), lambda e: self.open_tool("enhance")),
                            (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores")),
