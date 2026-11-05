@@ -1,5 +1,6 @@
-"""All of the app's log files, in one place: the day's run log and field log, errors.log and
-dialogs.log, and how each start and close of the app went (bootup.log, teardown.log: Lifecycle).
+"""All of the app's log files, in one place: the day's run log and field log, errors.log,
+dialogs.log, update.log (the updater), and how each start and close of the app went (bootup.log,
+teardown.log: Lifecycle).
 
 The level (Settings, Logging) decides which lines are written; the size and number of old files
 decide when each file is rotated. Every write is best-effort: a full disk or a locked file must
@@ -150,6 +151,26 @@ def dialog(text: str) -> OSError | None:
     if not _enabled("INFO"):
         return None
     return _append("dialog log", os.path.join(paths.LOGS, "dialogs.log"), text)
+
+
+def update(text: str, level: str = "INFO", logs: str | None = None) -> OSError | None:
+    """One line to logs/update.log: the updater's checks, downloads, unpacking, installing and
+    cleanup, in the same folder as every other log so a staging cleanup never takes it away.
+
+    Written whatever the level, as bootup.log is: an update that went wrong is rare and must be
+    explained. logs is the app's logs folder; the update copier runs from the staging folder,
+    where paths.LOGS is not the app's, so it passes the app's own. The folder is made when missing
+    (as paths makes it at the start), and the file is rotated like the others."""
+    folder = logs or paths.LOGS
+    try:
+        os.makedirs(folder, exist_ok=True)
+    except OSError as e:
+        _complain("update log", e)
+        return e
+    now = time.time()
+    line = "%s.%03d  %-7s [%d] %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now)),
+                                       int(now % 1 * 1000), level, os.getpid(), text)
+    return _append("update log", os.path.join(folder, "update.log"), line)
 
 
 def _took(seconds: float) -> str:

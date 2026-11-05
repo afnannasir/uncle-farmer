@@ -677,6 +677,31 @@ updates; start the games again afterwards. The request carries nothing about you
 game. Settings, "Look for a new version when Uncle Farmer starts" turns the check off; then it never
 goes online.
 
+### Release channel
+
+Settings, Speech and language, Updates, **Release channel** says where updates come from:
+
+- **Master: stable releases** (the default, and what every copy used before the setting existed):
+  the releases made by hand, the same ones the README links to.
+- **Dev: development builds**: a build of the `dev` branch, made by GitHub each time it changes.
+  It has the newest changes before they are a release, and it can break. Its version says it is a
+  development build: 0.9.0-dev.57 is the 57th build, made after 0.9.0.
+
+The choice is saved with the other settings and kept after a restart. Each channel only ever
+offers its own builds: Master never offers a development build, and Dev never offers a stable
+release. Going back from Dev to Master keeps your development build until a stable release newer
+than it is out (Help, Check for updates says so); to go back at once, unpack a stable release's
+zip over the folder by hand.
+
+### What an update leaves behind
+
+The download and the unpacked new version go into the `update` folder beside the app while the
+update runs. It is emptied and removed once the update is done, failed or was cancelled, and old
+downloads never pile up there. It is cleaned only while no update is using it, and only that one
+folder: your characters, plans, settings and logs are never in it. Every step (the check, the
+download, unpacking, installing, cleaning) is written to `logs/update.log`, with the other logs,
+so it is still there after the cleanup.
+
 You can also update by hand: close Uncle Farmer and the games, unpack a newer
 UncleFarmer-<version>.zip over this folder and let it replace the files. Either way your
 characters, plans, scripts, settings and logs stay as they are, since a release never carries

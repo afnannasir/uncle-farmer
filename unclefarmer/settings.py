@@ -6,7 +6,7 @@ import copy
 import os
 import shutil
 from collections.abc import Callable, Collection
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -28,6 +28,7 @@ APP_DEFAULTS: dict[str, Any] = {
     "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
     "check_updates": True,    # look for a new release on GitHub when the app starts
     "skip_version": "",       # a release the player said no to: not offered again at start
+    "update_channel": "master",  # where updates come from: "master" (stable releases) or "dev" (development builds)
     "log_level": "INFO",      # DEBUG | INFO | WARNING | ERROR: what the files in logs/ get
     "log_max_mb": 5,          # start a new log file after this many megabytes (0: never rotate)
     "log_backups": 5,         # old log files kept as name.1 ... name.N
@@ -186,6 +187,7 @@ class AppSettings(BaseModel):
     shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
     check_updates: bool = APP_DEFAULTS["check_updates"]
     skip_version: str = APP_DEFAULTS["skip_version"]
+    update_channel: Literal["master", "dev"] = APP_DEFAULTS["update_channel"]
     log_level: str = APP_DEFAULTS["log_level"]
     log_max_mb: int = APP_DEFAULTS["log_max_mb"]
     log_backups: int = APP_DEFAULTS["log_backups"]

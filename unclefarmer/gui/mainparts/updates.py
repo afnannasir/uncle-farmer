@@ -16,30 +16,32 @@ from .base import FrameParts
 class UpdatesMixin(FrameParts):
     # ------------------------------------------------------------ updates (updater.py)
     def after_update(self) -> None:
-        """Say how an update went, and look for a newer one in the background."""
+        """Say how an update went, empty the staging folder, and look for a newer one in the background."""
         result = updater.take_result()
-        if result is None:
-            updater.clean()
-        elif result.get("ok"):
-            applog.bootup.note("the update to %s finished" % __version__)
-            info(self, _("Uncle Farmer is updated to {v}.", v=__version__))
-        else:
+        mine = updater.installed_version()
+        # In the background: the update copier may still be closing, and the cleanup waits for it.
+        threading.Thread(target=updater.clean, kwargs={"wait": 60}, daemon=True).start()
+        if result is not None and result.get("ok"):
+            applog.bootup.note("the update to %s finished" % mine)
+            info(self, _("Uncle Farmer is updated to {v}.", v=mine))
+        elif result is not None:
             applog.bootup.note("the update to %s didn't finish: %s" % (result.get("version"), result.get("error")),
                                "WARNING")
             error(self, _("The update to {v} didn't finish: {why}\nUncle Farmer {cur} still works. The details are "
-                          "in {log}.", v=result.get("version"), why=result.get("error"), cur=__version__,
+                          "in {log}.", v=result.get("version"), why=result.get("error"), cur=mine,
                           log=updater.LOG))
+        ch = updater.channel(self.s.get("update_channel"))
         if not updater.frozen():
             applog.bootup.note("no update check: this copy runs from source")
         elif not self.s.get("check_updates", True):
             applog.bootup.note("no update check: it is off in Settings")
         else:
             def look() -> None:
-                rel = updater.check()
+                rel = updater.check(update_channel=ch)
                 if rel and rel["version"] != self.s.get("skip_version"):
                     wx.CallAfter(self.offer_update, rel, True)
             threading.Thread(target=look, daemon=True).start()
-            applog.bootup.note("update check running in the background")
+            applog.bootup.note("update check (%s channel) running in the background" % ch)
 
     def check_updates(self) -> None:
         """Help, Check for updates. The request goes to a worker: GitHub can take its time and the
@@ -47,14 +49,19 @@ class UpdatesMixin(FrameParts):
         if self.destroyed:
             return
         self._append(_("Looking for a new version..."), False)
+        ch = updater.channel(self.s.get("update_channel"))
 
         def work() -> None:
             rel: updater.Release | None = None
             err: updater.UpdateError | None = None
             try:
-                rel = updater.latest()
+                rel = updater.latest(update_channel=ch)
             except updater.UpdateError as e:
                 err = e
+                updater.log("update check (%s) failed: %s" % (ch, e), "WARNING")
+            else:
+                updater.log("update check (%s), asked from the Help menu: newest %s" % (
+                    ch, rel["version"] if rel else "none to see"))
             try:
                 wx.CallAfter(self._checked_updates, rel, err)
             except RuntimeError:          # the window went away meanwhile
@@ -65,15 +72,24 @@ class UpdatesMixin(FrameParts):
         if self.destroyed:
             return
         self.SetStatusText("")
+        dev = updater.channel(self.s.get("update_channel")) == "dev"
+        mine = updater.installed_version()
         if err is not None:
             error(self, _("Couldn't reach GitHub to look for updates: {why}", why=err))
         elif rel is None and not updater.REPO:
             info(self, _("Uncle Farmer {v} doesn't look for updates online. New versions come as a zip: "
                          "unpack it over this folder.", v=__version__))
+        elif rel is None and dev:
+            info(self, _("No development build of Uncle Farmer can be seen on GitHub yet."))
         elif rel is None:
             info(self, _("No release of Uncle Farmer can be seen on GitHub yet."))
-        elif not updater.is_newer(rel["version"]):
-            info(self, _("Uncle Farmer {v} is the newest version.", v=__version__))
+        elif not updater.is_newer(rel["version"], mine) and updater.is_dev(mine) and not dev:
+            # switched back to master: a stable release is offered once one is newer than this build
+            info(self, _("You have the development build {v}. The newest stable release, {stable}, is older; "
+                         "the next stable release newer than your build will be offered.", v=mine,
+                         stable=rel["version"]))
+        elif not updater.is_newer(rel["version"], mine):
+            info(self, _("Uncle Farmer {v} is the newest version.", v=mine))
         else:
             self.offer_update(rel, False)
 
@@ -83,9 +99,13 @@ class UpdatesMixin(FrameParts):
         notes = rel.get("notes") or _("(no notes)")
         if len(notes) > 1500:
             notes = notes[:1500].rstrip() + " ..."
+        if updater.is_dev(rel["version"]):
+            notes = _("This is a development build from the dev branch: the newest changes, not yet a stable "
+                      "release, and it can break.") + "\n" + notes
         if not ask(self, _("Uncle Farmer {v} is out (you have {cur}).\n\nWhat's new:\n{notes}\n\n"
                            "Update now? Uncle Farmer closes, updates and starts again; your characters, plans, "
-                           "scripts and settings stay as they are.", v=rel["version"], cur=__version__, notes=notes),
+                           "scripts and settings stay as they are.", v=rel["version"],
+                           cur=updater.installed_version(), notes=notes),
                    _("Update")):
             if at_start:                      # not asked again at start for this one; the Help menu still offers it
                 self.s["skip_version"] = rel["version"]
@@ -144,14 +164,18 @@ class UpdatesMixin(FrameParts):
             folder: str | None = None
             err: Exception | None = None
             try:
-                zip_path = updater.download(rel, progress)
-                try:
-                    wx.CallAfter(self._update_progress, dlg, state, 99, 99, _("Unpacking..."))
-                except RuntimeError:
-                    pass
-                folder = updater.unpack(zip_path)
+                # one claim over both steps: the staging folder is never cleaned between them
+                with updater.claimed("update"):
+                    zip_path = updater.download(rel, progress)
+                    try:
+                        wx.CallAfter(self._update_progress, dlg, state, 99, 99, _("Unpacking..."))
+                    except RuntimeError:
+                        pass
+                    folder = updater.unpack(zip_path)
             except (updater.UpdateError, OSError) as e:
                 err = e
+                updater.log("the update to %s stopped: %s" % (rel["version"], e),
+                            "INFO" if str(e) == "cancelled" else "WARNING")
             try:
                 wx.CallAfter(self._update_done, dlg, rel, folder, err)
             except RuntimeError:
