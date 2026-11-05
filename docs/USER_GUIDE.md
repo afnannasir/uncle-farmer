@@ -476,6 +476,16 @@ Show the route says the way before you go. The whole way it rides your fastest S
 in towns and through monster ground alike, and it doesn't stop to fight; potions still keep your HP
 up. Pause stops it.
 
+### Polson Wetland needs Poison Immunity (for now)
+
+Polson Wetland's poisoned ground hurts anyone on it who hasn't activated the General talent
+Poison Immunity. Until the bot can activate talents itself, it doesn't go to Polson Wetland, or
+through it (the only way to the Underground Water Cave and the sailing port beyond), unless that
+talent is activated: the run stops before anything moves, and the log says "Travel to Polson
+Wetland (5141) refused: Poison Immunity Talent is not activated." This applies to plans, scripts,
+Walk to, the Tools and come/follow alike. Activate the talent in the game and start again. A
+character already standing in Polson Wetland can still move about and leave it.
+
 ## Several games at once
 
 Only one Uncle Farmer runs per Windows session: starting it again brings the open window forward

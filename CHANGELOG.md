@@ -11,6 +11,13 @@
   again, up to 40 times ("make the most of my bag": 12). Now a try or a round that changed nothing
   in the bag ends it, and the log says why. When gems break, it works as before.
 
+**Travel**
+
+- Temporary: no trip goes to Polson Wetland, or through it to the Underground Water Cave or the
+  sailing port, unless the Poison Immunity talent is activated (its poisoned ground hurts
+  otherwise). The run stops before anything moves and the log says why. Every other trip is as
+  before.
+
 ## 1.0.0
 
 **Repairs**
