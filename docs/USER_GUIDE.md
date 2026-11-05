@@ -144,6 +144,12 @@ the pet's potions and Rice Rolls, how to travel
 (walking, cable cars, airships, travel items, VIP), and the keys for dialogs, discarding and the
 Action menu.
 
+The way to anywhere mixes walking with cable cars and airships wherever a ride is shorter: from
+Giant Rock City to Tulip City, say, down to its underground and the cable car, then up on foot.
+A ride is planned only when it can be taken: transports and airships switched on, and a fare the
+character can pay with the arnebia in the bag (rides are free for VIP); otherwise the way is on
+foot. The nearest shop or craftsman is judged the same way.
+
 **Bosses.** The bot knows the field bosses by name: Pig-Face Bat King, Man-wolf Caesar, Ice Queen
 Los, Cat King Carter, Pharaoh Tar, Elven King Erth, Fire Lord, Whale Monster Bigger, Monkey King,
 Barbarian Tyrant, Thunder Lord, Lich King, Meteor Queen Elsa, Dark Priest, Dracula and the rest of
