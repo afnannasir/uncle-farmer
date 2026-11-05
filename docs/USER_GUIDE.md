@@ -144,6 +144,12 @@ the pet's potions and Rice Rolls, how to travel
 (walking, cable cars, airships, travel items, VIP), and the keys for dialogs, discarding and the
 Action menu.
 
+The way to anywhere mixes walking with cable cars and airships wherever a ride is shorter: from
+Giant Rock City to Tulip City, say, down to its underground and the cable car, then up on foot.
+A ride is planned only when it can be taken: transports and airships switched on, and a fare the
+character can pay with the arnebia in the bag (rides are free for VIP); otherwise the way is on
+foot. The nearest shop or craftsman is judged the same way.
+
 **Bosses.** The bot knows the field bosses by name: Pig-Face Bat King, Man-wolf Caesar, Ice Queen
 Los, Cat King Carter, Pharaoh Tar, Elven King Erth, Fire Lord, Whale Monster Bigger, Monkey King,
 Barbarian Tyrant, Thunder Lord, Lich King, Meteor Queen Elsa, Dark Priest, Dracula and the rest of
@@ -383,6 +389,18 @@ is that one, that the row holds the item's own number in the game, and that buy 
 sell; if anything differs it chooses nothing and says why. The bot then goes by the menu's text as
 before, except in a buy or sell menu that came up for the wrong shard: there it chooses nothing at
 all. Other shops (the grocer's) are always chosen in by text.
+
+Once the bot has found an item there, it picks that item by its number after that, without reading
+the list again; the agent still checks the whole menu first.
+
+### Every other menu
+
+With agent 55, an NPC's menu entry is chosen where it is, in one step: the bot finds the entry by
+its text in one reading of the menu, and the agent chooses it as Enter would, once it has checked
+the menu is still the one read. There is no walk down the list, and the game doesn't speak each
+entry on the way. When that can't be done (an older agent, or the menu changed), the bot walks to
+the entry with the keys the shorter way round: the game's menus wrap, so an entry near the bottom is
+reached by going up past the top.
 
 ### Dungeons
 
@@ -658,6 +676,31 @@ replaces the agent they have loaded, so press **OK** and it closes every Mist Wo
 updates; start the games again afterwards. The request carries nothing about you or your
 game. Settings, "Look for a new version when Uncle Farmer starts" turns the check off; then it never
 goes online.
+
+### Release channel
+
+Settings, Speech and language, Updates, **Release channel** says where updates come from:
+
+- **Master: stable releases** (the default, and what every copy used before the setting existed):
+  the releases made by hand, the same ones the README links to.
+- **Dev: development builds**: a build of the `dev` branch, made by GitHub each time it changes.
+  It has the newest changes before they are a release, and it can break. Its version says it is a
+  development build: 0.9.0-dev.57 is the 57th build, made after 0.9.0.
+
+The choice is saved with the other settings and kept after a restart. Each channel only ever
+offers its own builds: Master never offers a development build, and Dev never offers a stable
+release. Going back from Dev to Master keeps your development build until a stable release newer
+than it is out (Help, Check for updates says so); to go back at once, unpack a stable release's
+zip over the folder by hand.
+
+### What an update leaves behind
+
+The download and the unpacked new version go into the `update` folder beside the app while the
+update runs. It is emptied and removed once the update is done, failed or was cancelled, and old
+downloads never pile up there. It is cleaned only while no update is using it, and only that one
+folder: your characters, plans, settings and logs are never in it. Every step (the check, the
+download, unpacking, installing, cleaning) is written to `logs/update.log`, with the other logs,
+so it is still there after the cleanup.
 
 You can also update by hand: close Uncle Farmer and the games, unpack a newer
 UncleFarmer-<version>.zip over this folder and let it replace the files. Either way your

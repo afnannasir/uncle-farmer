@@ -2,6 +2,7 @@
 
     python ci_build.py build --type development|production [--out DIR]
     python ci_build.py verify-agent <unclefarmer-agent.jar>
+    python ci_build.py publish-dev --zip <built zip> --version <x.y.z-dev.N> --sha <commit> [--keep N]
 
 build is what the workflow's build job runs once every test job has passed. It changes nothing in
 how a release is made: build_exe.py builds the folder (with its own folder check) and release.py's
@@ -10,13 +11,27 @@ make_zip zips it, as for a release. Then:
   1. the zip is opened and read back, and must hold everything build_exe.REQUIRED names;
   2. the built exe checks itself without a window (UncleFarmer.exe --self-test, selftest.py) within
      SMOKE_SECONDS, so a build that can't start or can't find its data never gets uploaded;
-  3. build-info.json says what the build is (version, type, branch, commit, time, run, tools);
+  3. build-info.json says what the build is (version, release version, channel, type, branch,
+     commit, time, run, tools);
   4. <zip>.sha256 holds the zip's SHA-256 ("<hash> *<name>", as sha256sum writes it), computed on
      the finished zip and checked again by reading the file back.
 
 Names: UncleFarmer-dev-<short sha>.zip for a development build, UncleFarmer-master-<version>-<short
 sha>.zip for a production one. The version is the project's own (unclefarmer/__init__.py): this
 script never changes it. GITHUB_* variables say the branch, commit and run; outside GitHub git does.
+
+The release version is what the updater compares: the version itself for a production build,
+<version>-dev.<run number> for a development one (0.9.0-dev.57: the 57th CI run, made after
+0.9.0). Before zipping, build.json beside the exe says it and the channel (updater.write_build),
+so the installed copy knows which build it is.
+
+publish-dev is the dev channel's publishing (ci.yml's publish-dev job, after a dev build passed):
+the zip goes up as a GitHub PRE-release tagged v<release version> with the asset
+UncleFarmer-<release version>.zip and its .sha256, never marked latest, so the master channel
+(GitHub's latest release) never sees it. It is read back and checked, and only the newest --keep
+dev pre-releases are kept: older ones are deleted with their tags, and nothing else is ever
+touched (a release must be a pre-release AND have a dev tag to be deleted). It uses the gh CLI
+and the standard library only; GH_TOKEN and GITHUB_REPOSITORY come from the workflow.
 
 verify-agent checks a built jar: the manifest's Premain-Class, and that every class targets the
 game's Java 8 (class file major version 52 or lower).
@@ -36,12 +51,17 @@ import struct
 import subprocess
 import sys
 import zipfile
+from collections.abc import Callable
 from typing import Any
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
 TYPES = {"development": "dev", "production": "master"}
+# the dev channel's version (updater.DEV_VERSION: a test keeps the two the same) and its tag
+DEV_VERSION = re.compile(r"^\d+\.\d+\.\d+-dev\.\d+$")
+DEV_TAG = re.compile(r"^v\d+\.\d+\.\d+-dev\.\d+$")
+DEV_KEEP = 10               # dev pre-releases kept on GitHub (the updater looks through 30)
 SMOKE_SECONDS = 120
 JAVA8 = 52                  # class file major version of Java 8, the game's own Java
 PREMAIN = "unclefarmer.agent.BotAgent"
@@ -77,6 +97,24 @@ def zip_name(build_type: str, version: str, sha: str) -> str:
     return ""
 
 
+def run_number() -> int:
+    """The workflow's run number (it only grows, on every branch); 0 outside GitHub."""
+    try:
+        return max(0, int(os.environ.get("GITHUB_RUN_NUMBER") or 0))
+    except ValueError:
+        return 0
+
+
+def release_version(build_type: str, version: str, run: int) -> str:
+    """What the updater compares: 0.9.0 for a production build, 0.9.0-dev.57 for a development one."""
+    if build_type == "production":
+        return version
+    if build_type == "development":
+        return "%s-dev.%d" % (version, run)
+    fail("unknown build type %r (development or production)" % build_type)
+    return ""
+
+
 def tool_version(cmd: list[str]) -> str:
     """The first line a tool prints about its version, or "unknown"."""
     try:
@@ -93,11 +131,14 @@ def java_version() -> str:
     return tool_version([javac, "-version"])
 
 
-def build_info(build_type: str, version: str, sha: str, branch: str, zip_path: str, digest: str) -> dict[str, Any]:
+def build_info(build_type: str, version: str, sha: str, branch: str, zip_path: str, digest: str,
+               release: str | None = None) -> dict[str, Any]:
     env = os.environ
     return {
         "application": "Uncle Farmer",
         "version": version,
+        "release_version": release or version,
+        "channel": TYPES.get(build_type, ""),
         "build_type": build_type,
         "branch": branch,
         "commit": sha,
@@ -199,9 +240,12 @@ def build(build_type: str, out: str) -> None:
     head = git("rev-parse", "HEAD")
     if head != sha:
         fail("the checkout is at %s, not the commit that was tested (%s)" % (head, sha))
+    from unclefarmer import updater
     name = zip_name(build_type, __version__, sha)
-    print("== building %s (%s, %s at %s)" % (name, build_type, branch, sha), flush=True)
+    rv = release_version(build_type, __version__, run_number())
+    print("== building %s (%s %s, %s at %s)" % (name, build_type, rv, branch, sha), flush=True)
     build_exe.main(full=True)
+    updater.write_build(build_exe.OUT, rv, TYPES[build_type], sha)
     os.makedirs(out, exist_ok=True)
     zip_path = os.path.join(out, name)
     if os.path.exists(zip_path):
@@ -216,14 +260,14 @@ def build(build_type: str, out: str) -> None:
     shutil.rmtree(os.path.join(out, "smoke"), ignore_errors=True)
     print("== checksum and build info", flush=True)
     digest = write_checksum(zip_path)
-    info = build_info(build_type, __version__, sha, branch, zip_path, digest)
+    info = build_info(build_type, __version__, sha, branch, zip_path, digest, rv)
     with open(os.path.join(out, "build-info.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(info, f, indent=2)
     print("built %s (%.1f MB), sha256 %s" % (zip_path, info["package_bytes"] / 1e6, digest), flush=True)
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a", encoding="utf-8") as f:
-            f.write("artifact=%s\nzip=%s\n" % (name[:-len(".zip")], zip_path))
+            f.write("artifact=%s\nzip=%s\nrelease_version=%s\n" % (name[:-len(".zip")], zip_path, rv))
 
 
 def class_major(data: bytes) -> int:
@@ -254,6 +298,89 @@ def verify_agent(jar: str) -> None:
     print("agent jar ok: %d classes, all Java 8 (major <= %d), Premain-Class %s" % (len(classes), JAVA8, PREMAIN))
 
 
+# ------------------------------------------------------------------------------- publish-dev
+Runner = Callable[[list[str]], str]
+
+
+def gh(args: list[str]) -> str:
+    """Run the gh CLI and return what it printed; a failure stops the job with gh's own words."""
+    r = subprocess.run(["gh"] + args, capture_output=True, text=True)
+    if r.returncode != 0:
+        fail("gh %s failed: %s" % (" ".join(args[:3]), (r.stderr or r.stdout).strip()))
+    return r.stdout
+
+
+def _version_key(v: str) -> tuple[int, ...]:
+    return tuple(int(n) for n in re.findall(r"\d+", v)[:4])
+
+
+def is_dev_release(rel: dict[str, Any]) -> bool:
+    """A release publish-dev made, and the only kind it may replace or delete: a pre-release with
+    a dev tag (v0.9.0-dev.57). A stable release is never one, whatever else it says."""
+    return bool(rel.get("prerelease")) and bool(DEV_TAG.match(str(rel.get("tag_name") or "")))
+
+
+def to_prune(releases: list[dict[str, Any]], keep: int) -> list[str]:
+    """The tags of the dev pre-releases past the newest keep (newest by version, not by date)."""
+    dev = sorted((r for r in releases if is_dev_release(r)), key=lambda r: _version_key(r["tag_name"]), reverse=True)
+    return [r["tag_name"] for r in dev[max(1, keep):]]
+
+
+def dev_notes(version: str, sha: str, branch: str = "dev") -> str:
+    return ("Development build %s of Uncle Farmer, built by CI from the %s branch at %s.\n\n"
+            "Not a stable release: it has the newest changes and can break. Only copies set to the Dev "
+            "release channel (Settings, Updates) are offered it." % (version, branch, sha[:7]))
+
+
+def publish_dev(zip_path: str, version: str, sha: str, keep: int = DEV_KEEP, repo: str | None = None,
+                run: Runner = gh) -> str:
+    """Publish one dev build as a pre-release (see the module notes). Returns the tag."""
+    repo = repo or os.environ.get("GITHUB_REPOSITORY") or ""
+    if not re.fullmatch(r"[\w.-]+/[\w.-]+", repo):
+        fail("no repository to publish to (GITHUB_REPOSITORY): %r" % repo)
+    if not DEV_VERSION.match(version):
+        fail("not a dev build's version: %r (x.y.z-dev.N)" % version)
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        fail("not a commit sha: %r" % sha)
+    if not os.path.isfile(zip_path):
+        fail("no built zip at %s" % zip_path)
+    tag, asset = "v" + version, "UncleFarmer-%s.zip" % version
+    folder = os.path.join(os.path.dirname(os.path.abspath(zip_path)), "publish")
+    shutil.rmtree(folder, ignore_errors=True)
+    os.makedirs(folder)
+    upload = os.path.join(folder, asset)
+    shutil.copyfile(zip_path, upload)
+    digest = write_checksum(upload)
+    if digest != sha256_of(zip_path):
+        fail("the copy to publish isn't the built zip")
+    # A re-run of the same workflow run has the same run number: its own pre-release is replaced.
+    existing = json.loads(run(["api", "repos/%s/releases?per_page=100" % repo]) or "[]")
+    for rel in existing:
+        if rel.get("tag_name") == tag:
+            if not is_dev_release(rel):
+                fail("%s exists and is not a dev pre-release: left alone" % tag)
+            print("== replacing the earlier %s" % tag, flush=True)
+            run(["release", "delete", tag, "--repo", repo, "--cleanup-tag", "--yes"])
+    print("== publishing %s (%s)" % (tag, asset), flush=True)
+    run(["release", "create", tag, upload, upload + ".sha256", "--repo", repo, "--target", sha, "--prerelease",
+         "--latest=false", "--title", "Uncle Farmer %s (development build)" % version,
+         "--notes", dev_notes(version, sha)])
+    got = json.loads(run(["api", "repos/%s/releases/tags/%s" % (repo, tag)]))
+    names = {a.get("name"): a for a in got.get("assets", [])}
+    if not is_dev_release(got) or got.get("draft") or asset not in names:
+        fail("%s didn't come out as a dev pre-release with %s" % (tag, asset))
+    published = str(names[asset].get("digest") or "")
+    if published and published.lower() != "sha256:" + digest:
+        fail("GitHub's checksum of %s (%s) isn't the built zip's (%s)" % (asset, published, digest))
+    print("published %s: %s, sha256 %s" % (tag, asset, digest), flush=True)
+    for old in to_prune(existing + [got], keep):
+        if old == tag:
+            continue
+        print("== removing the old dev build %s" % old, flush=True)
+        run(["release", "delete", old, "--repo", repo, "--cleanup-tag", "--yes"])
+    return tag
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -262,9 +389,16 @@ def main(argv: list[str] | None = None) -> None:
     b.add_argument("--out", default=os.path.join(ROOT, "dist", "ci"))
     v = sub.add_parser("verify-agent", help="check a built agent jar")
     v.add_argument("jar")
+    p = sub.add_parser("publish-dev", help="publish a dev build as a GitHub pre-release (CI)")
+    p.add_argument("--zip", required=True)
+    p.add_argument("--version", required=True)
+    p.add_argument("--sha", required=True)
+    p.add_argument("--keep", type=int, default=DEV_KEEP)
     a = ap.parse_args(argv)
     if a.cmd == "build":
         build(a.type, os.path.abspath(a.out))
+    elif a.cmd == "publish-dev":
+        publish_dev(a.zip, a.version, a.sha, a.keep)
     else:
         verify_agent(a.jar)
 

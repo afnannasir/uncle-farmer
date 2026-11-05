@@ -1,3 +1,3 @@
 """Uncle Farmer: a farming bot for Mist World."""
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"

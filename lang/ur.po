@@ -1072,6 +1072,9 @@ msgstr "{name} hataayein? Yeh wapas nahi hoga."
 msgid "Details:"
 msgstr "Tafseel:"
 
+msgid "Dev: development builds (newest changes, can break)"
+msgstr "Dev: development builds (sab se nayi tabdeeliyan, kharab ho sakti hain)"
+
 msgid "Ding"
 msgstr "Ding"
 
@@ -1860,6 +1863,9 @@ msgstr "Map"
 msgid "Master"
 msgstr "Master"
 
+msgid "Master: stable releases"
+msgstr "Master: pakke (stable) releases"
+
 msgid "Messa&ge to {where}:"
 msgstr "{where} ko pai&gham:"
 
@@ -2012,6 +2018,9 @@ msgstr "{word} naam ka koi command nahi. List ke liye help bhejein."
 
 msgid "No crystals or runes seen yet."
 msgstr "Abhi tak koi crystals ya runes nahi dikhe."
+
+msgid "No development build of Uncle Farmer can be seen on GitHub yet."
+msgstr "GitHub par Uncle Farmer ki koi development build abhi nahi dikh rahi."
 
 msgid "No email program opened. Write to {email} from your email."
 msgstr "Koi email program nahi khula. Apni email se {email} par likhein."
@@ -2458,6 +2467,9 @@ msgstr "&Jab is se kam hon to bharein:"
 
 msgid "Reinstall the agent"
 msgstr "Agent dobara install karein"
+
+msgid "Release &channel:"
+msgstr "Release ka &channel:"
 
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
@@ -3205,6 +3217,11 @@ msgid "This game started with an older agent. Restart it to mute it."
 msgstr ""
 "Yeh game purane agent ke saath shuru hui. Awaaz band karne ke liye restart karein."
 
+msgid ""
+"This is a development build from the dev branch: the newest changes, not yet a stable release, and it can break."
+msgstr ""
+"Yeh dev branch ki development build hai: sab se nayi tabdeeliyan, abhi stable release nahi, aur yeh kharab ho sakti hai."
+
 msgid "This many"
 msgstr "Itne"
 
@@ -3638,6 +3655,11 @@ msgstr "Aap pehle se {map} par hain."
 
 msgid "You have (last scan):"
 msgstr "Aap ke paas (aakhri scan):"
+
+msgid ""
+"You have the development build {v}. The newest stable release, {stable}, is older; the next stable release newer than your build will be offered."
+msgstr ""
+"Aap ke paas development build {v} hai. Sab se naya stable release, {stable}, is se purana hai; aap ki build se naya agla stable release pesh kiya jayega."
 
 msgid "a chat line"
 msgstr "ek chat line"
@@ -4637,6 +4659,11 @@ msgstr "normal"
 
 msgid "not allowed in an expression: {expr}"
 msgstr "expression mein ijazat nahi: {expr}"
+
+msgid ""
+"not choosing in the menu directly ({why}) - moving to the entry with the keys"
+msgstr ""
+"menu mein seedha nahi chun rahe ({why}) - keys se entry tak ja rahe hain"
 
 msgid "not enough arnebia above your reserve for a {n} arnebia donation"
 msgstr "{n} arnebia ke chande ke liye aap ke reserve se upar kaafi arnebia nahi"
