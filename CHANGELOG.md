@@ -2,6 +2,15 @@
 
 ## Not released yet
 
+**Gem Maker**
+
+- A lucky run where no gem breaks no longer keeps the Gem Maker going round. A combine that works
+  gives no shard back, so the boost shard is only asked for while the bag holds one, and a combine
+  the game didn't carry out (asking for a shard that wasn't there) no longer counts as a failed
+  try: the Gem Maker said it had made progress, went back to the craftsman and tried the same thing
+  again, up to 40 times ("make the most of my bag": 12). Now a try or a round that changed nothing
+  in the bag ends it, and the log says why. When gems break, it works as before.
+
 **Travel**
 
 - Temporary: no trip goes to Polson Wetland, or through it to the Underground Water Cave or the

@@ -5325,6 +5325,9 @@ msgstr "Gem Craftsman ne {item} list nahi kiya"
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "Gem Craftsman khula hai; kuch nahi banaya (sirf check)"
 
+msgid "the Gem Craftsman made nothing with {gem} - leaving it"
+msgstr "Gem Craftsman ne {gem} se kuch nahi banaya - ise chhor rahe hain"
+
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr "Gem Craftsman ne {gem} banane ka koi tareeqa nahi diya"
 
@@ -5668,6 +5671,9 @@ msgstr "{npc} ka agla menu nahi khula"
 
 msgid "the {role} didn't take {item}"
 msgstr "{role} ne {item} nahi liya"
+
+msgid "the {shard} box stays ticked with none in the bag"
+msgstr "{shard} ka khana tick hi raha, jabke baste mein koi nahi"
 
 msgid "the {tool} can't repair this gear: {what}"
 msgstr "{tool} is equipment ki marammat nahi kar sakta: {what}"
