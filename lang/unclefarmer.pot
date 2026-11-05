@@ -3617,6 +3617,10 @@ msgstr ""
 msgid "attacked on the way - stopping to fight"
 msgstr ""
 
+msgid ""
+"attacked {secs} s ago - the fusion beast waits until {quiet} s without an attack"
+msgstr ""
+
 msgid "attacks {how}"
 msgstr ""
 
@@ -4215,6 +4219,10 @@ msgstr ""
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr ""
 
+msgid ""
+"left out {n} gear warnings from before this run (they were dealt with then); broken gear is still repaired"
+msgstr ""
+
 msgid "left the team"
 msgstr ""
 
@@ -4602,6 +4610,9 @@ msgid "our hits land on {name} - fighting that one"
 msgstr ""
 
 msgid "our own gang"
+msgstr ""
+
+msgid "our pet"
 msgstr ""
 
 msgid "out of Level {lv} {kind} Enhance Crystals - stopping"
@@ -5528,6 +5539,9 @@ msgid ""
 "{a}: the gang base's way out is in its outer hall, walled off from here - walk out yourself and start again"
 msgstr ""
 
+msgid "{beast} taken after {n} refusals"
+msgstr ""
+
 msgid "{better} is ready again - putting {pet} away for it"
 msgstr ""
 
@@ -5949,6 +5963,13 @@ msgid "{pct}% full ({load} of {max})"
 msgstr ""
 
 msgid "{pet} didn't come out (no pets allowed here?) - trying again later"
+msgstr ""
+
+msgid ""
+"{pet} is losing HP fast ({pct}% in {secs} s) - fighting what is next to it"
+msgstr ""
+
+msgid "{pet} is no longer losing HP"
 msgstr ""
 
 msgid "{pet} is out, but not in sight - its potions wait until it is"

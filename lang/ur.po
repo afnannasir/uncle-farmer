@@ -3755,6 +3755,11 @@ msgstr "{name} ne hamla kiya, jawabi hamla"
 msgid "attacked on the way - stopping to fight"
 msgstr "raste mein hamla hua - larne ke liye ruk rahe hain"
 
+msgid ""
+"attacked {secs} s ago - the fusion beast waits until {quiet} s without an attack"
+msgstr ""
+"{secs} s pehle hamla hua - fusion beast {quiet} s bina hamle ke guzarne tak intezar karta hai"
+
 msgid "attacks {how}"
 msgstr "hamla {how}"
 
@@ -4386,6 +4391,11 @@ msgstr ""
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "atak se nikalne ke liye {map} chhod kar {dest} ja rahe hain"
 
+msgid ""
+"left out {n} gear warnings from before this run (they were dealt with then); broken gear is still repaired"
+msgstr ""
+"is run se pehle ki {n} gear warnings chhor di gayin (un ka kaam tab ho chuka tha); toota hua gear phir bhi repair hota hai"
+
 msgid "left the team"
 msgstr "team chhod di"
 
@@ -4793,6 +4803,9 @@ msgstr "hamare hits {name} par lag rahe hain - usi se lad rahe hain"
 
 msgid "our own gang"
 msgstr "hamara apna gang"
+
+msgid "our pet"
+msgstr "hamara pet"
 
 msgid "out of Level {lv} {kind} Enhance Crystals - stopping"
 msgstr "Level {lv} {kind} Enhance Crystals khatam - rok rahe hain"
@@ -5762,6 +5775,9 @@ msgid ""
 msgstr ""
 "{a}: gang base ka bahar ka rasta us ke outer hall mein hai, jo yahan se deewar se band hai - khud bahar nikal kar dobara shuru karein"
 
+msgid "{beast} taken after {n} refusals"
+msgstr "{n} baar inkaar ke baad {beast} le liya gaya"
+
 msgid "{better} is ready again - putting {pet} away for it"
 msgstr "{better} phir tayyar hai - iske liye {pet} ko wapas bhej rahe hain"
 
@@ -6196,6 +6212,14 @@ msgstr "{pct}% bhara ({load} / {max})"
 msgid "{pet} didn't come out (no pets allowed here?) - trying again later"
 msgstr ""
 "{pet} bahar nahi aaya (yahan pets ki ijazat nahi?) - baad mein dobara koshish"
+
+msgid ""
+"{pet} is losing HP fast ({pct}% in {secs} s) - fighting what is next to it"
+msgstr ""
+"{pet} ka HP tezi se ghat raha hai ({secs} s mein {pct}%) - us ke paas wale se lar rahe hain"
+
+msgid "{pet} is no longer losing HP"
+msgstr "{pet} ka HP ab nahi ghat raha"
 
 msgid "{pet} is out, but not in sight - its potions wait until it is"
 msgstr ""

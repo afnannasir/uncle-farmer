@@ -81,6 +81,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.restocked_once = False
         self.beasts_refused = {}      # fusion beast id -> don't try again before (time)
         self.last_combat = 0.0        # end of the last fight (the server keeps us "in combat" a while)
+        self.last_attacked = 0.0      # a monster's cast last struck us or our pet, or our HP fell
+        self.hp_seen = None           # our HP at the last look_after, to notice it falling
         self.pets_refused = {}        # pet id -> don't try to summon before (time)
         self.following: str | None = None   # the player a follow run stays with
         self.team_ask_at = 0.0            # when follow next asks the team phrase where its player is

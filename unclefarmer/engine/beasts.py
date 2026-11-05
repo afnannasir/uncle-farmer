@@ -15,6 +15,13 @@ What the game showed in testing:
     minute comes back while not (two characters, one night). From 100 that is half an hour of
     riding; the game's guide says no fusing under 10, and at 0 the beast comes off by itself.
 Kinds, speeds and levels come from data/beasts.json, built from the game's fusion beast texts.
+
+When a beast goes on: only after QUIET seconds with nothing striking us or our pet and our HP not
+falling (Bot.last_attacked, kept by Bot.attackers and look_after). A change asked for in combat is
+ignored by the server and costs the presses' waits. Getting OFF a Swift beast for a fight is not
+held back: its skills are off. When the game doesn't take a beast, it is left alone for a while that
+grows with each refusal in a row (REFUSED_FOR, doubled up to REFUSED_MAX), the run goes on, and the
+refusal is logged once until the beast is taken again.
 """
 
 from __future__ import annotations
@@ -37,6 +44,9 @@ AFTER_FIGHT = 20   # no mounting this soon after combat (Orcus 2026-10-04: 3 pre
                    # 20 s after a fight - the server lets no Swift beast on while you're in combat)
 REFUSED_FOR = 60   # a beast the game wouldn't take is tried again after this long, not never
 WALK_REFUSED_FOR = 15   # the walking assistant asks again sooner: riding is all it does
+REFUSED_MAX = 600  # each refusal in a row doubles the wait, up to this (WALK_REFUSED_MAX walking)
+WALK_REFUSED_MAX = 60
+QUIET = 6.0        # seconds with no attack on us or our pet before a beast is put on
 RIDE_CHECK = 4.0   # seconds between "still on the Swift beast?" checks while walking
 MIN_POWER = 15     # fusion power under which only "costs no fusion power" beasts are used
 POWER_EVERY = 20.0 # while riding, read fusion power with the T key this often (it costs nothing)
@@ -101,9 +111,52 @@ def power(me: dict[str, Any]) -> int | None:
     return None
 
 
+def attacked_since(b: Bot) -> float:
+    """Seconds since something last struck us or our pet, or our HP fell (Bot.last_attacked).
+    attackers() is asked first: it notes the newest strike as it reads the casts."""
+    look = getattr(b, "attackers", None)
+    if look is not None:
+        look()
+    return clock_for(b).time() - getattr(b, "last_attacked", 0.0)
+
+
+def _too_soon(b: Bot) -> bool:
+    """Attacked within QUIET seconds: no beast goes on now. Said once until it has been quiet."""
+    since = attacked_since(b)
+    if since >= QUIET:
+        b.said_beast_waits = False
+        return False
+    if not getattr(b, "said_beast_waits", False):
+        b.said_beast_waits = True
+        b.log(_("attacked {secs} s ago - the fusion beast waits until {quiet} s without an attack",
+                secs=round(max(since, 0.0), 1), quiet=int(QUIET)))
+    return True
+
+
+def _refused(b: Bot, beast: dict[str, Any]) -> None:
+    """The game didn't take beast: leave it alone for a while that grows with each refusal in a
+    row, and say so the first time only."""
+    walking = getattr(b, "walk_only", False)
+    counts: dict[int, int] = b.__dict__.setdefault("beast_refusals", {})
+    n = counts[beast["id"]] = counts.get(beast["id"], 0) + 1
+    base, top = (WALK_REFUSED_FOR, WALK_REFUSED_MAX) if walking else (REFUSED_FOR, REFUSED_MAX)
+    wait = min(top, base * 2 ** (n - 1))
+    b.beasts_refused[beast["id"]] = clock_for(b).time() + wait
+    if n == 1:
+        b.log(_("the game wouldn't take {beast} now; trying again later", beast=beast["name"]))
+
+
+def _taken(b: Bot, beast: dict[str, Any]) -> None:
+    counts: dict[int, int] = b.__dict__.setdefault("beast_refusals", {})
+    n = counts.pop(beast["id"], 0)
+    if n > 1:
+        b.log(_("{beast} taken after {n} refusals", beast=beast["name"], n=n))
+
+
 def ensure(b: Bot, purpose: Any = None) -> None:
     """Get into the right beast for purpose (or out of a Swift one before a fight). Quiet and
-    cheap when it is already right; never stops the run if the panel can't be worked."""
+    cheap when it is already right; never stops the run if the panel can't be worked. A beast goes
+    on only after QUIET seconds without an attack."""
     rows = owned(b)
     if not rows:
         return
@@ -141,13 +194,25 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         return
     if active and active["id"] == want["id"]:
         return
-    if _press(b, rows, want):
+    _put_on(b, rows, want, active, purpose)
+
+
+def _put_on(b: Bot, rows: list[dict[str, Any]], want: dict[str, Any], active: dict[str, Any] | None,
+            purpose: Any) -> None:
+    """Fuse with want, once QUIET seconds have passed without an attack (see the notes)."""
+    if _too_soon(b):
+        # In combat the server ignores the change. A Swift beast still comes off for a fight.
+        if purpose == FIGHT and active and active["kind"] == "swift" and _press(b, rows, active):
+            b.log(_("got off {beast} for the fight", beast=active["name"]))
+        return
+    if _press(b, rows, want, until_attacked=True):
+        _taken(b, want)
         b.log(_("riding {beast}", beast=want["name"]) if purpose == TRAVEL
               else _("fighting as {beast}", beast=want["name"]))
+    elif attacked_since(b) < QUIET:
+        _too_soon(b)              # an attack came while pressing: not a refusal, just not now
     else:
-        later = WALK_REFUSED_FOR if getattr(b, "walk_only", False) else REFUSED_FOR
-        refused[want["id"]] = clock_for(b).time() + later   # level, combat...: try again later
-        b.log(_("the game wouldn't take {beast} now; trying again later", beast=want["name"]))
+        _refused(b, want)         # level, combat the agent didn't see...: try again later
 
 
 def _on_foot_for_a_fight(b: Bot) -> bool:
@@ -189,15 +254,22 @@ def off(b: Bot) -> None:
         b.log(_("got off {beast}", beast=active["name"]))
 
 
-def _press(b: Bot, rows: list[dict[str, Any]], beast: dict[str, Any]) -> bool:
+def _press(b: Bot, rows: list[dict[str, Any]], beast: dict[str, Any], until_attacked: bool = False) -> bool:
     """Put the fusion beast panel's cursor on beast and press the use key. True once the game
-    shows the change (the beast became active, or stopped being active)."""
+    shows the change (the beast became active, or stopped being active). until_attacked: give up
+    as soon as something attacks us (putting a beast on), so the fight is never kept waiting."""
     index = next(i for i, r in enumerate(rows) if r["id"] == beast["id"])
     was = beast["active"]
     for _try in range(TRIES):
         wait = getattr(b, "last_beast_change", 0) + GAP - clock_for(b).time()
-        if wait > 0:
-            b.sleep(wait)
+        while wait > 0:                # counted down by what was slept: never longer than the gap
+            step = min(wait, 0.5) if until_attacked else wait
+            b.sleep(step)
+            wait -= step
+            if until_attacked and attacked_since(b) < QUIET:
+                return False
+        if until_attacked and attacked_since(b) < QUIET:
+            return False
         if not b.panel_cursor(2, index, len(rows)):
             return False
         b.key(b.p["use_key"])

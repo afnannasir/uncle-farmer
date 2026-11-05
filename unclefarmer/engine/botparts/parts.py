@@ -89,6 +89,13 @@ class Parts:
     # the pet (engine/pets.py) and the fusion beasts (engine/beasts.py)
     pets_refused: dict[int, float]        # pet id -> don't try to summon it before then
     beasts_refused: dict[int, float]      # beast id -> don't try it again before then
+    beast_refusals: dict[int, int]        # beast id -> refusals in a row (the wait grows with them)
+    said_beast_waits: bool      # "the fusion beast waits until no attack for QUIET seconds" said
+    pet_hp_log: list[tuple[float, float]]  # (time, HP) of the pet out, the last few seconds
+    pet_hp_id: int | None       # the pet those readings are of
+    pet_threat_until: float     # the pet counts as under attack until then (its HP fell fast)
+    pet_suspects: set[int]      # monsters next to the pet while it is under attack
+    told_pet_threat: bool       # "our pet is losing HP fast" said, until the threat is over
     run_pets: list[str]         # with no pet ticked, the one a dungeon run looks after
     pets_for_run: list[str] | None   # Tools, Dungeons' pet for its run ([]: none), over the ticked ones
     pet_out: dict[str, Any] | None
@@ -172,6 +179,8 @@ class Parts:
     counted: dict[int, float]
     last_hp: float | None
     last_combat: float
+    last_attacked: float
+    hp_seen: float | None
     _speech: str
     _speech_at: float
     last_points_key: float

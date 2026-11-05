@@ -210,7 +210,7 @@ def test_no_fusion_beast_is_mounted_while_attacked(attacked: bool, monkeypatch: 
     swift = {"id": 1, "name": "Nightmare Beast", "kind": "swift", "active": False, "speed": 9, "free": True}
     monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: [dict(swift)]))
     pressed: list[str] = []
-    monkeypatch.setattr(beasts, "_press", stand_in(beasts._press, lambda b, rows, beast: pressed.append(beast["name"]) or True))
+    monkeypatch.setattr(beasts, "_press", stand_in(beasts._press, lambda b, rows, beast, until_attacked=False: pressed.append(beast["name"]) or True))
     r = Rider(attacked)
     beasts.ensure(r, beasts.TRAVEL)       # type: ignore[arg-type]
     if attacked:
@@ -225,7 +225,7 @@ def test_getting_off_the_beast_for_a_fight_is_unchanged(monkeypatch: pytest.Monk
     swift = {"id": 1, "name": "Nightmare Beast", "kind": "swift", "active": True, "speed": 9, "free": True}
     monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: [dict(swift)]))
     pressed: list[str] = []
-    monkeypatch.setattr(beasts, "_press", stand_in(beasts._press, lambda b, rows, beast: pressed.append(beast["name"]) or True))
+    monkeypatch.setattr(beasts, "_press", stand_in(beasts._press, lambda b, rows, beast, until_attacked=False: pressed.append(beast["name"]) or True))
     r = Rider(attacked=True)
     r.p["fight_beast"] = "none"
     beasts.ensure(r, beasts.FIGHT)        # type: ignore[arg-type]
