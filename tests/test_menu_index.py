@@ -17,7 +17,7 @@ from typing import Any
 import pytest
 
 from unclefarmer import settings
-from unclefarmer.engine import crafting, menus, town
+from unclefarmer.engine import bagrules, crafting, menus, town
 from conftest import Clock, as_bot, returning
 
 CONTRACT = Path(__file__).resolve().parent.parent / "agent" / "test" / "contract.txt"
@@ -179,11 +179,15 @@ class ShopBot:
         self.notes: list[str] = []
         self.stop_event = threading.Event()
         self.restock_town: int | None = None
+        self.sheet: dict[str, Any] | None = None    # the character sheet's load, when a test sets one
 
     def log(self, line: str, speak: bool = False) -> None:
         self.lines.append(line)
         if speak:
             self.spoken.append(line)
+
+    def refresh_sheet(self, force: bool = False) -> dict[str, Any] | None:
+        return self.sheet
 
     def sleep(self, seconds: float) -> None:
         self.clock.advance(seconds)
@@ -279,6 +283,25 @@ def test_a_shard_is_bought_by_index_at_the_list_s_own_price(monkeypatch: pytest.
     got = crafting.buy_shards(as_bot(b), "Level 1 Topaz Shard", 40)
     assert got == 40 and game.trades == [("buy", "Level 1 Topaz Shard", 40)]
     assert game.picks == ["shard_market 20585", "shard_trade 20585 buy"] and game.walking_keys == 0
+
+
+@pytest.mark.parametrize(("room", "steps"), [(2000, [2000]), (2500, [2000, 500]), (4500, [2000, 2000, 500]),
+                                             (6000, [2000, 2000, 2000]), (10_000, [2000, 2000, 2000, 2000, 1000])])
+def test_a_big_shard_buy_goes_in_batches_the_bag_has_room_for(monkeypatch: pytest.MonkeyPatch, room: int,
+                                                               steps: list[int]) -> None:
+    # The market's box takes 2000 at a time; the bag's room (load limit / the shard's weight) and
+    # what is wanted decide the rest: each batch is the smallest of them, worked out afresh.
+    game = PretendShop("market", {"Arnebia": 10_000_000})
+    b = ShopBot(game)
+    b.sheet = {"load": 0, "maxload": room}
+    b.p["bag_full_at"] = 100
+    monkeypatch.setattr(bagrules, "weights", returning({"level 1 topaz shard": 1.0}))
+    monkeypatch.setattr(crafting, "fee_per_shard", returning(0))
+    monkeypatch.setattr(crafting, "spare_arnebia", returning(10_000_000))
+    assert crafting.buy_shards(as_bot(b), "Level 1 Topaz Shard", 9000) == min(9000, room)
+    assert [n for _a, _i, n in game.trades] == steps
+    assert all(n <= town.TRADE_MOST for _a, _i, n in game.trades)
+    assert game.bag["Level 1 Topaz Shard"] == min(9000, room)
 
 
 def test_a_potion_is_bought_by_its_row_in_a_potion_seller_s_list(monkeypatch: pytest.MonkeyPatch) -> None:

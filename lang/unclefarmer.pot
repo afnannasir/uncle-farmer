@@ -20,6 +20,12 @@ msgstr ""
 msgid " ({rate} an hour)"
 msgstr ""
 
+msgid " - estimated: it includes shards"
+msgstr ""
+
+msgid " - {n} used up with no stored price, not counted"
+msgstr ""
+
 msgid "&About Uncle Farmer"
 msgstr ""
 
@@ -711,6 +717,10 @@ msgid "Arnebia"
 msgstr ""
 
 msgid ""
+"Arnebia paid out at shops and for fares: {n} (a bought item is an expense once it is used up)"
+msgstr ""
+
+msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
 msgstr ""
 
@@ -1154,6 +1164,9 @@ msgid "E&xport character settings..."
 msgstr ""
 
 msgid "E&xport plan..."
+msgstr ""
+
+msgid "Earnings so far: {n} arnebia (picked up and sold)"
 msgstr ""
 
 msgid "East edge (x):"
@@ -1972,6 +1985,9 @@ msgstr ""
 msgid "Nearby"
 msgstr ""
 
+msgid "Net earnings: {n} arnebia"
+msgstr ""
+
 msgid "Never"
 msgstr ""
 
@@ -2161,6 +2177,10 @@ msgid "Nowhere to get them from: it makes what the bag allows."
 msgstr ""
 
 msgid "Nowhere, use what's in the bag"
+msgstr ""
+
+msgid ""
+"Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 
 msgid "Oldhand"
@@ -3253,6 +3273,16 @@ msgstr ""
 msgid "Time between potions (seconds):"
 msgstr ""
 
+msgid ""
+"Time remaining: no end time set (no time limit, stop time or daily stop)"
+msgstr ""
+
+msgid "Time remaining: {left}"
+msgstr ""
+
+msgid "Time used: {used}, {kills} kills, {deaths} deaths"
+msgstr ""
+
 msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
 msgstr ""
 
@@ -3260,9 +3290,6 @@ msgid "Time: write it as hours:minutes, for example 06:30"
 msgstr ""
 
 msgid "Time: {h} h {m} min"
-msgstr ""
-
-msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
 msgstr ""
 
 msgid "Times"
@@ -3290,6 +3317,9 @@ msgid "Tone from &trusted players:"
 msgstr ""
 
 msgid "Total arnebia spent on items used: {n}"
+msgstr ""
+
+msgid "Total expenses: {n} arnebia (items used up, at their stored prices)"
 msgstr ""
 
 msgid "Travel"
@@ -3759,6 +3789,12 @@ msgid "bought {n} {item}"
 msgstr ""
 
 msgid "bought {n} {shard}"
+msgstr ""
+
+msgid "bought {n} {shard}: the bag has no room for more"
+msgstr ""
+
+msgid "bought {n} {shard}: the spare arnebia pays for no more"
 msgstr ""
 
 msgid "buff"
@@ -4438,6 +4474,9 @@ msgstr ""
 msgid "new"
 msgstr ""
 
+msgid "no Gem Protection Rune left, and combining is set to use one"
+msgstr ""
+
 msgid "no Gem Protection Rune to use - stopping, as asked"
 msgstr ""
 
@@ -4481,6 +4520,9 @@ msgid "no map without monsters near {map}"
 msgstr ""
 
 msgid "no menu entry like \"{want}\""
+msgstr ""
+
+msgid "no more {shard} came into the bag - the Gem Maker stops here"
 msgstr ""
 
 msgid ""
@@ -4628,6 +4670,10 @@ msgstr ""
 msgid "not sold: {list}"
 msgstr ""
 
+msgid ""
+"nothing came of this round although the bag still has {what} - trying again"
+msgstr ""
+
 msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
@@ -4636,6 +4682,12 @@ msgstr ""
 
 msgid ""
 "nothing in the bag is on the throw-away list (or only what its rules keep)"
+msgstr ""
+
+msgid "nothing left to make {gem} from"
+msgstr ""
+
+msgid "nothing left to make {gem} from, and getting more {shard} is off"
 msgstr ""
 
 msgid "nothing of the collection was sold"
@@ -5102,13 +5154,20 @@ msgstr ""
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr ""
 
-msgid "the Gem Craftsman made nothing with {gem} - leaving it"
+msgid ""
+"the Gem Craftsman made nothing in {n} rounds in a row although the bag still has {what} - stopping; see logs\\dialogs.log"
 msgstr ""
 
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
+msgstr ""
+
+msgid "the Gem Maker can't go on: {why}"
+msgstr ""
+
+msgid "the Gem Maker stopped after {n} rounds"
 msgstr ""
 
 msgid "the Head of the inner hall offers no donation"
@@ -5139,7 +5198,14 @@ msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr ""
 
 msgid ""
+"the Shard Market sold {came} of the {step} {shard} asked for - buying no more now"
+msgstr ""
+
+msgid ""
 "the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
+msgstr ""
+
+msgid "the Shard Market's list didn't open again - bought {n} {shard}"
 msgstr ""
 
 msgid "the agent can't read menus by layout (agent {n} or newer needed)"
@@ -5188,6 +5254,10 @@ msgstr ""
 
 msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
+msgstr ""
+
+msgid ""
+"the bag showed no change after combining {gem} - leaving it for this round"
 msgstr ""
 
 msgid "the bag trip"

@@ -187,6 +187,34 @@ def compile_expr(text: str, line: int) -> ast.expr:
     return tree.body
 
 
+def end_time(expr: ast.expr | None, started: float, now: float) -> float | None:
+    """The clock time a stop rule ends the run at, for the two kinds a plan writes: a time limit
+    (`minutes >= 300`, counted from the run's start like the `minutes` value) and a stop time
+    (`clock == "04:30"`, the next time the computer's clock shows it). None for any other rule:
+    when it comes true can't be known in advance."""
+    if not isinstance(expr, ast.Compare) or len(expr.ops) != 1 or not isinstance(expr.left, ast.Name):
+        return None
+    op, right = expr.ops[0], expr.comparators[0]
+    if not isinstance(right, ast.Constant):
+        return None
+    value: object = right.value
+    if expr.left.id == "minutes" and isinstance(op, (ast.GtE, ast.Gt)):
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+            return None
+        return started + max(0.0, float(value)) * 60.0
+    if expr.left.id == "clock" and isinstance(op, ast.Eq) and isinstance(value, str):
+        m = re.fullmatch(r"\s*(\d{1,2}):(\d{2})\s*", value)
+        if not m or int(m.group(1)) > 23 or int(m.group(2)) > 59:
+            return None
+        hour, minute = int(m.group(1)), int(m.group(2))
+        here = time.localtime(now)
+        at = time.mktime((here.tm_year, here.tm_mon, here.tm_mday, hour, minute, 0, 0, 0, -1))
+        if at <= now - 60:                # its minute is over today: tomorrow's
+            at = time.mktime((here.tm_year, here.tm_mon, here.tm_mday + 1, hour, minute, 0, 0, 0, -1))
+        return at
+    return None
+
+
 def _sized(value: Any) -> Any:
     """value, unless it is text (or bytes) grown past MAX_TEXT: "a" + "a" + ... eats memory too."""
     if isinstance(value, (str, bytes)) and len(value) > MAX_TEXT:
@@ -897,6 +925,10 @@ class Runner:
         if node not in self.watched:      # a stop_when in a loop must not pile up watchers
             self.watched.add(node)
             b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
+            if b.tally is not None:       # the results' Time remaining counts down to the rule's end
+                at = end_time(expr, b.started, clock_for(b).time())
+                if at is not None:
+                    b.tally.deadline(at)
 
     def _do_stop(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _End(node.args)
