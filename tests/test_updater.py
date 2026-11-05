@@ -805,3 +805,29 @@ def test_frozen_is_the_shared_answer(monkeypatch: pytest.MonkeyPatch) -> None:
     assert updater.frozen() is True
     monkeypatch.setattr(updater.paths, "frozen", lambda: False)
     assert updater.frozen() is False
+
+
+# ---------------------------------------------------------------- who holds the staging folder
+def test_alive_knows_this_process_a_running_one_and_ids_that_are_no_process() -> None:
+    import subprocess
+    import sys
+    assert updater._alive(os.getpid()) is True
+    assert updater._alive(0) is False and updater._alive(-5) is False
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+    try:
+        assert updater._alive(child.pid) is True
+    finally:
+        child.kill()
+        child.wait()
+    assert updater._alive(child.pid) is False          # exited: not counted as busy any more
+
+
+def test_a_busy_file_of_a_process_that_exited_lets_the_cleanup_go_ahead(home: Path) -> None:
+    import subprocess
+    import sys
+    child = subprocess.Popen([sys.executable, "-c", "pass"])
+    child.wait()
+    up = staged(home)
+    busy_file(home, child.pid, what="update copier")
+    assert updater.busy() is None
+    assert updater.clean() is True and not up.exists()

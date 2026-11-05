@@ -1,0 +1,33 @@
+# The source distribution: the whole tracked source tree, as the shared source archive has it
+# (git archive of HEAD) - the code, the agent's source, tests, docs, data, translations and the
+# tools that build and check them. check-manifest (check.py, CI's static job) compares this with
+# what git tracks: a new tracked file that lands nowhere, or a file of a player's own that would
+# slip in, fails the check.
+#
+# Never in it: a player's own files (settings, profiles, plans, scripts, logs, results, messages,
+# the game's texts), anything built (agent jars, build/, dist/), caches and the virtual environment.
+# They are not grafted, and the few that live inside grafted folders are taken out below.
+
+include README.md CHANGELOG.md CONTRIBUTING.md LICENSE THIRD_PARTY_NOTICES.md
+include pyproject.toml uv.lock requirements.txt requirements-dev.txt pyrightconfig.json .python-version
+include UncleFarmer.pyw nvdaControllerClient64.dll
+include benchmark.py build_exe.py build_native.py check.py ci_build.py docs_html.py
+include export_requirements.py nightwatch.py profile_bot.py release.py
+include bench_after.txt bench_baseline.txt
+
+graft unclefarmer
+graft agent
+graft tests
+graft data
+graft docs
+graft lang
+graft perf
+graft .githooks
+
+# made on each player's computer, or by building
+exclude data/game_texts.json
+prune agent/run
+prune agent/build
+exclude agent/*.jar
+
+global-exclude __pycache__ *.py[cod]

@@ -1,11 +1,13 @@
 # Uncle Farmer's CI/CD: every pull request into dev or master and every push to them is tested;
 # a push to dev or master is then built into the Windows app, only after every check passed.
 #
-#   static   ruff and pyright (check.py --only ruff,pyright)
-#   tests    pytest with the coverage floors (check.py --only pytest)
+#   static   ruff, pyright and check-manifest (check.py --only ruff,pyright,manifest)
+#   tests    the whole suite with coverage (uv run pytest --cov): the floors in pyproject.toml
+#            (whole app) and check.py (the engine, check.py --only core)
 #   audit    pip-audit of uv.lock
 #   agent    the game agent's jar built, checked (Java 8 classes, manifest) and its Java tests run
 #            (these four run at the same time, each exactly once, on Windows with Python 3.14)
+#   actionlint  every workflow in .github/workflows checked by a pinned actionlint (Ubuntu)
 #   build    push to dev    -> development build, artifact UncleFarmer-dev-<sha>        (14 days)
 #            push to master -> production build,  artifact UncleFarmer-master-<ver>-<sha> (90 days)
 #   publish-dev  after a dev build: the Dev release channel's pre-release v<ver>-dev.<run>
@@ -64,8 +66,10 @@ jobs:
       - name: Install the locked dependencies
         run: uv sync --locked
 
-      - name: check.py --only ruff,pyright
-        run: uv run --locked python check.py --only ruff,pyright
+      # check-manifest builds the source distribution (MANIFEST.in) with the locked setuptools and
+      # fails when it and what git tracks differ.
+      - name: check.py --only ruff,pyright,manifest
+        run: uv run --locked python check.py --only ruff,pyright,manifest
 
   tests:
     name: Tests (Windows, Python 3.14)
@@ -89,10 +93,15 @@ jobs:
       - name: Install the locked dependencies
         run: uv sync --locked
 
-      # The same tests and floors as on a developer's PC (python check.py): 70% overall, 90% for
-      # unclefarmer/engine. The Java tests run in the agent job.
-      - name: check.py --only pytest (pytest, coverage floors)
-        run: uv run --locked python check.py --only pytest --report-dir reports
+      # The same tests and floors as on a developer's PC (python check.py): the whole suite with
+      # coverage of unclefarmer/, a report of the lines missed, and a failure under
+      # [tool.coverage.report] fail_under (78%). Then the engine's own floor (check.py CORE_FLOOR,
+      # 92%) from the same run's data. The Java tests run in the agent job.
+      - name: uv run pytest (whole suite, coverage)
+        run: uv run --locked pytest -q -p no:cacheprovider --cov --cov-report=term-missing --cov-report=xml:reports/coverage.xml --junitxml=reports/pytest.xml
+
+      - name: Engine coverage floor (check.py --only core)
+        run: uv run --locked python check.py --only core
 
       - name: Keep the test and coverage reports
         if: always()
@@ -163,13 +172,40 @@ jobs:
       - name: Agent tests and packet parser fuzz (agent/java_tests.py)
         run: uv run --no-project python agent/java_tests.py
 
+  actionlint:
+    name: Workflow lint (actionlint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      # SHA-256 of actionlint_1.7.12_linux_amd64.tar.gz, from that release's checksums file
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+    steps:
+      - name: Check out the commit under test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The release binary, checked against its published SHA-256: no script piped to a shell, and
+      # the same actionlint on every run. It runs the runner's own shellcheck over each `run:`.
+      - name: Install actionlint ${{ env.ACTIONLINT_VERSION }} (checksum verified)
+        run: |
+          archive="$RUNNER_TEMP/actionlint.tar.gz"
+          curl -fsSL -o "$archive" "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -version
+
+      - name: actionlint (every workflow in .github/workflows)
+        run: '"$RUNNER_TEMP/actionlint" -color'
+
   build:
     # A plain name: a skipped job shows an expression in its name unevaluated. The build type is
     # in the artifact's name, build-info.json and the run's summary.
     name: Windows build
     # Only after every check passed, and only for dev and master themselves: a pull request is
     # tested, never built, and no other branch is built.
-    needs: [static, tests, audit, agent]
+    needs: [static, tests, audit, agent, actionlint]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master')
     runs-on: windows-latest
     timeout-minutes: 120

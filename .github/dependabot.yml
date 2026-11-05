@@ -1,0 +1,36 @@
+# Dependabot: weekly pull requests that keep the locked Python packages (pyproject.toml + uv.lock)
+# and the workflow's pinned actions up to date. Every one goes to dev, like every other change, and
+# goes through the same CI as any pull request; nothing is merged automatically.
+#
+# Minor and patch updates come together in one pull request per ecosystem; a major update comes on
+# its own, so a breaking release is never hidden among small ones. After a uv update, run
+# `uv run python export_requirements.py` on the branch: requirements*.txt are exported from uv.lock
+# (tests/test_requirements.py fails the pull request until they match).
+
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"              # pyproject.toml and uv.lock
+    target-branch: "dev"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      python-minor-and-patch:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"              # .github/workflows; actions stay pinned to full commit SHAs
+    target-branch: "dev"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions-minor-and-patch:
+        update-types: ["minor", "patch"]

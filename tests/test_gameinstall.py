@@ -446,3 +446,60 @@ def test_close_games_reports_one_that_wont_end(monkeypatch: pytest.MonkeyPatch) 
     games, clock = closing(monkeypatch, {})
     monkeypatch.setattr(gameinstall, "_end", stand_in(gameinstall._end, games.ended.append))   # access denied
     assert gameinstall.close_games([7], clock=clock, alive=games.alive) == [7]
+
+
+# ------------------------------------------------------------------------------- asking a game's agent
+class _Agent:
+    """link.AgentLink for one game: its replies by line, or "boom" to fail as a closed game does."""
+
+    replies: dict[str, str] = {}
+    sent: list[str] = []
+
+    def __init__(self, pid: int | None = None, timeout: float = 3, **_kw: object) -> None:
+        if _Agent.replies.get("connect") == "boom":
+            from unclefarmer.link import AgentError
+            raise AgentError("no agent in that game")
+
+    def __enter__(self) -> "_Agent":
+        return self
+
+    def __exit__(self, *exc: object) -> bool:
+        return False
+
+    def send(self, line: str) -> str:
+        _Agent.sent.append(line)
+        reply = _Agent.replies.get(line, "ok")
+        if reply == "boom":
+            raise OSError("connection reset")
+        return reply
+
+
+@pytest.fixture
+def agent_link(monkeypatch: pytest.MonkeyPatch) -> type[_Agent]:
+    from unclefarmer import link
+    _Agent.replies, _Agent.sent = {}, []
+    monkeypatch.setattr(link, "AgentLink", _Agent)
+    return _Agent
+
+
+@pytest.mark.parametrize("reply, want", [("mwagent 55", 55), ("mwagent", 0), ("mwagent x", 0), ("boom", 0)])
+def test_a_games_agent_version_is_its_answer_or_0(agent_link: type[_Agent], reply: str, want: int) -> None:
+    agent_link.replies = {"version": reply}
+    assert gameinstall._agent_version(7) == want
+
+
+def test_a_game_without_an_agent_answers_version_0(agent_link: type[_Agent]) -> None:
+    agent_link.replies = {"connect": "boom"}
+    assert gameinstall._agent_version(7) == 0
+
+
+def test_a_game_is_asked_to_close_as_its_close_button_does(agent_link: type[_Agent]) -> None:
+    agent_link.replies = {"closegame": "closing"}
+    assert gameinstall._ask_to_close(7) is True
+    assert agent_link.sent == ["arm", "closegame"]
+
+
+@pytest.mark.parametrize("replies", [{"closegame": "refused: busy"}, {"closegame": "boom"}, {"connect": "boom"}])
+def test_a_game_that_cant_be_asked_to_close_says_so(agent_link: type[_Agent], replies: dict[str, str]) -> None:
+    agent_link.replies = replies
+    assert gameinstall._ask_to_close(7) is False
