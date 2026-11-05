@@ -236,7 +236,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
                            (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
                            (_("D&uplicate...\tCtrl+D"), lambda e: self.copy_plan()),
-                           (_("&Delete"), lambda e: self.delete_selected())])
+                           (_("&Delete"), lambda e: self.delete_selected()),
+                           (_("E&xport plan..."), lambda e: self.export_plan()),
+                           (_("&Import plan..."), lambda e: self.import_plan())])
         menu(_("&Help"), [(_("&Quick guide\tF1"), lambda e: show_text(self, _("Quick guide"), GUIDE)),
                           (_("&User guide (opens in your browser)"), lambda e: self.open_user_guide()),
                           (_("&Keyboard shortcuts"), lambda e: show_text(self, _("Keyboard shortcuts"), SHORTCUTS)),

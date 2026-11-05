@@ -210,6 +210,9 @@ msgstr ""
 msgid "&Import character settings..."
 msgstr ""
 
+msgid "&Import plan..."
+msgstr ""
+
 msgid "&Insert command..."
 msgstr ""
 
@@ -983,7 +986,13 @@ msgstr ""
 msgid "Couldn't delete it: {err}"
 msgstr ""
 
+msgid "Couldn't export the plan: {err}"
+msgstr ""
+
 msgid "Couldn't export the settings: {err}"
+msgstr ""
+
+msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
@@ -1144,6 +1153,9 @@ msgstr ""
 msgid "E&xport character settings..."
 msgstr ""
 
+msgid "E&xport plan..."
+msgstr ""
+
 msgid "East edge (x):"
 msgstr ""
 
@@ -1247,6 +1259,9 @@ msgid "Expert"
 msgstr ""
 
 msgid "Export character settings"
+msgstr ""
+
+msgid "Export plan"
 msgstr ""
 
 msgid "Falling"
@@ -1613,6 +1628,9 @@ msgstr ""
 msgid "Import character settings"
 msgstr ""
 
+msgid "Import plan"
+msgstr ""
+
 msgid "Import settings into this character:"
 msgstr ""
 
@@ -1664,6 +1682,9 @@ msgid "Item:"
 msgstr ""
 
 msgid "Items with no rule: touch &only what this run picked up"
+msgstr ""
+
+msgid "JSON files (*.json)|*.json"
 msgstr ""
 
 msgid "Join a private channel in the game first."
@@ -2320,6 +2341,14 @@ msgstr ""
 msgid "Plan or script"
 msgstr ""
 
+msgid ""
+"Plan {name} was exported to:\n"
+"{path}"
+msgstr ""
+
+msgid "Plan {name} was imported."
+msgstr ""
+
 msgid "Plan, from the last scan of your bag:"
 msgstr ""
 
@@ -2456,6 +2485,9 @@ msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
 "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+
+msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 
 msgid "Reply lines"
@@ -3296,6 +3328,14 @@ msgid ""
 msgstr ""
 
 msgid "Uncle Farmer is updated to {v}."
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 msgstr ""
 
 msgid ""

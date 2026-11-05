@@ -121,6 +121,56 @@ class EditingMixin(FrameParts):
             return
         self.fill_runs()
 
+    def export_plan(self) -> None:
+        """Plans, Export: make a portable copy of the selected saved plan."""
+        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        if not item or item[0] != "plan":
+            self.say(_("Select a plan first."))
+            return
+        name = item[1]
+        wildcard = _("Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|") + \
+                   _("JSON files (*.json)|*.json")
+        with modal(wx.FileDialog(self, _("Export plan"), wildcard=wildcard,
+                                 defaultFile=paths.safe_name(name) + ".unclefarmer-plan.json",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            target = d.GetPath()
+        try:
+            plans.export(name, target)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't export the plan: {err}", err=e))
+            return
+        info(self, _("Plan {name} was exported to:\n{path}", name=name, path=target))
+
+    def import_plan(self) -> None:
+        """Plans, Import: validate a portable or ordinary plan before an atomic save."""
+        wildcard = _("Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|") + \
+                   _("All files (*.*)|*.*")
+        with modal(wx.FileDialog(self, _("Import plan"), wildcard=wildcard,
+                                 style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            source = d.GetPath()
+        try:
+            plan = plans.read_import(source)
+        except ValueError as e:
+            error(self, _("Couldn't import the plan: {err}", err=e))
+            return
+        existing = next((name for name in plans.names() if name.casefold() == plan["name"].casefold()), None)
+        if existing:
+            plan["name"] = existing
+            if not ask(self, _("Replace the saved plan {name}? Nothing changes until you choose Yes.", name=existing),
+                       _("Import plan")):
+                return
+        try:
+            plans.save(plan)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't import the plan: {err}", err=e))
+            return
+        self.fill_runs(("plan", plan["name"]))
+        info(self, _("Plan {name} was imported.", name=plan["name"]))
+
     def script_help(self) -> None:
         show_text(self, _("Script commands"), script.__doc__ or "")
 

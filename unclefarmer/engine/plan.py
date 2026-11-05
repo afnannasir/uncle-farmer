@@ -21,9 +21,10 @@ minutes or kills only matter with several spots: how long before moving on to th
 from __future__ import annotations
 
 import os
+import copy
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from .. import atlas, filelock, jsonio as json, paths
 
@@ -43,6 +44,8 @@ PLAN_DEFAULTS: dict[str, Any] = {
 STEP_DEFAULTS: dict[str, Any] = {"map": 5121, "minutes": 30, "kills": 0, "patrol": "random", "area": None,
                  "only": "", "skip": "", "elites": "fight"}
 END_HOWS = ("start", "place", "hearthstone", "safe", "here")
+PLAN_EXPORT_FORMAT = "unclefarmer-plan"
+PLAN_EXPORT_VERSION = 1
 
 
 class End(BaseModel):
@@ -196,6 +199,50 @@ def load(name: str) -> dict[str, Any]:
 
 def save(plan: dict[str, Any]) -> None:
     json.save(path(plan["name"]), Plan.model_validate(plan).model_dump(), indent=2)
+
+
+def export(plan_name: str, target: str) -> None:
+    """Write one plan as a versioned portable file, atomically."""
+    json.save(target, {"format": PLAN_EXPORT_FORMAT, "version": PLAN_EXPORT_VERSION,
+                       "plan": load(plan_name)}, indent=2)
+
+
+def read_import(source: str) -> dict[str, Any]:
+    """Read and validate a portable export or an ordinary plan file without writing anything."""
+    try:
+        with open(source, encoding="utf-8-sig") as f:
+            raw = json.load(f)
+    except (OSError, ValueError) as e:
+        raise ValueError("couldn't read the file: %s" % e) from None
+    if not json.is_object(raw):
+        raise ValueError("this isn't a plan file")
+    if "format" in raw:
+        if raw.get("format") != PLAN_EXPORT_FORMAT:
+            raise ValueError("this isn't an Uncle Farmer plan export")
+        if raw.get("version") != PLAN_EXPORT_VERSION:
+            raise ValueError("this plan export is from an unsupported version")
+        data = raw.get("plan")
+        if not json.is_object(data):
+            raise ValueError("the plan export has no plan")
+    else:
+        # Existing plans are plain JSON.  Requiring a plan field avoids importing an unrelated
+        # object such as app settings, which Pydantic could otherwise fill with defaults.
+        if not set(raw).intersection(PLAN_DEFAULTS):
+            raise ValueError("this JSON file doesn't contain a plan")
+        data = raw
+    try:
+        checked = Plan.model_validate(upgrade(copy.deepcopy(data))).model_dump()
+    except ValidationError as e:
+        fields = ", ".join(str(err["loc"][0]) for err in e.errors() if err["loc"])
+        raise ValueError("the plan has invalid field%s: %s" %
+                         ("s" if "," in fields else "", fields or "data")) from None
+    plan = dict(PLAN_DEFAULTS)
+    plan.update(checked)
+    plan["spots"] = [dict(STEP_DEFAULTS, **spot) for spot in plan["spots"]]
+    if not isinstance(plan["name"], str) or not plan["name"].strip():
+        raise ValueError("the plan has no name")
+    plan["name"] = plan["name"].strip()
+    return plan
 
 
 def delete(name: str) -> None:
