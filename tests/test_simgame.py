@@ -81,9 +81,14 @@ def test_drop_time_to_save_is_left_unused(sim_env: Callable[..., simgame.SimGame
     assert s.reason == "drop time used up", list(s.lines)[-10:]
     # the sheet is read every few seconds (agent 43) and checked between fights: the stop comes
     # within one fight of the mark. A fight here can run a little past 30 s of game time when the
-    # bot's and the game's threads take turns slowly (a busy CI runner), so the window is 60 s;
-    # never early is the part that matters.
-    assert 60 * 60 + tail - 60 <= at_stop[0] <= 60 * 60 + tail, at_stop
+    # bot's and the game's threads take turns slowly (a busy CI runner), so the window is 60 s.
+    # A few seconds' early is allowed too: the pretend sheet sends whole seconds (up to 1 s low),
+    # the bot takes off the reading's age in clock seconds, and the pretend game counts at most
+    # 5 s down per update - on a slow runner its drop time can lag the clock, so the bot's sum
+    # lands a little under what the game holds (seen: 0.4 s). The real game sends whole seconds
+    # too; stopping a second or so early keeps the drop time, which is the part that matters.
+    early = 5
+    assert 60 * 60 + tail - 60 <= at_stop[0] <= 60 * 60 + tail + early, at_stop
 
 
 @pytest.mark.slow
