@@ -12,6 +12,7 @@
 /data/game_texts.json
 
 # Build output
+*.egg-info/
 /agent/build/
 /agent/*.jar
 /build/

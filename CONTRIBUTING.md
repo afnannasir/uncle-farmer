@@ -39,10 +39,12 @@ Open an issue and include:
    ```
 
    `uv sync` installs the exact versions in `uv.lock` into `.venv`; the tools can also run on their
-   own (`uv run pytest`, `uv run ruff check .`, `uv run pyright`). check.py runs ruff, pyright and
-   pytest with coverage, and says "all checks passed" or which failed. Coverage must stay at 70%
-   overall and at 90% for `unclefarmer/engine` (the GUI has no tests, so it must not be able to
-   hide an engine regression). `uv run python check.py --quick` leaves out the slow real-time tests. pytest runs in parallel (`pytest-xdist`) and in random order
+   own (`uv run pytest`, `uv run ruff check .`, `uv run pyright`). check.py runs ruff, pyright,
+   check-manifest and pytest with coverage, and says "all checks passed" or which failed. Coverage
+   must stay at 78% overall (`fail_under` in pyproject.toml, which `pytest --cov` enforces) and at
+   92% for `unclefarmer/engine` (`CORE_FLOOR` in check.py: the GUI has few tests, so it must not
+   be able to hide an engine regression). A plain `uv run pytest` of a few files measures no
+   coverage, so it never fails on it; add `--cov` for the floor. `uv run python check.py --quick` leaves out the slow real-time tests. pytest runs in parallel (`pytest-xdist`) and in random order
    (`pytest-randomly`); use `-n0` and `--randomly-seed=<number>` when reproducing a failure.
 
    The same checks run before every commit once you install the hook:
@@ -128,17 +130,18 @@ One workflow, `.github/workflows/ci.yml`, does everything. Its jobs:
 
 | Job | Runs on | What it does |
 |---|---|---|
-| Static checks (ruff, pyright) | every pull request into `dev` or `master`, every push to them | `uv sync --locked`, then `check.py --only ruff,pyright`. |
-| Tests (Windows, Python 3.14) | the same | `uv sync --locked`, then `check.py --only pytest --report-dir reports`: pytest with the coverage floors (70% overall, 90% for `unclefarmer/engine`). The JUnit and coverage XML are kept as the `test-reports` artifact, also when tests fail. |
+| Static checks (ruff, pyright) | every pull request into `dev` or `master`, every push to them | `uv sync --locked`, then `check.py --only ruff,pyright,manifest`: ruff, pyright, and check-manifest, which builds the source distribution (`MANIFEST.in`, the whole tracked tree) with the locked setuptools and fails when it and what git tracks differ. |
+| Tests (Windows, Python 3.14) | the same | `uv sync --locked`, then `uv run pytest --cov --cov-report=term-missing`: the whole suite, coverage of `unclefarmer/` with the lines missed, failing under 78%; then `check.py --only core`, the engine's 92%. The JUnit and coverage XML are kept as the `test-reports` artifact, also when tests fail. |
 | Dependency audit (pip-audit) | the same | pip-audit of every package in `uv.lock`, hashes required. |
 | Java agent (build, Java 8 check, tests) | the same | `agent/build_agent.py` builds the jar (`--release 8`, warnings are errors), `ci_build.py verify-agent` checks its manifest and that every class is Java 8 (the game's Java), `agent/java_tests.py` runs the agent's tests and the packet parser fuzz. |
-| Windows build (development / production) | pushes to `dev` and `master` only, after **all four** jobs above passed | builds the app from the same commit the tests checked (`ci_build.py build`, see below) and uploads it. |
+| Workflow lint (actionlint) | the same | actionlint 1.7.12 (the release binary, its SHA-256 checked) over every workflow in `.github/workflows`, with the Ubuntu runner's shellcheck for each `run:` script. To bump it, change `ACTIONLINT_VERSION` and `ACTIONLINT_SHA256` together (the release's checksums file). |
+| Windows build (development / production) | pushes to `dev` and `master` only, after **all five** jobs above passed | builds the app from the same commit the tests checked (`ci_build.py build`, see below) and uploads it. |
 
 Pull requests are tested, never built. Other branches run nothing (push one as a pull request to
 test it). A newer push to a pull request or to `dev` cancels the run still going; a run on `master`
-is never cancelled. Every job runs on `windows-latest` with Python 3.14, the only Python the app
-supports (no version matrix): the app, its paths and its tests are Windows-only. The four check
-jobs run at the same time and each check runs once, so a run takes as long as its slowest job. The tests need no game and no developer files: the agent jar, `game_texts.json`, the
+is never cancelled. Every job but actionlint and the dev publishing runs on `windows-latest` with
+Python 3.14, the only Python the app supports (no version matrix): the app, its paths and its tests
+are Windows-only. The five check jobs run at the same time and each check runs once, so a run takes as long as its slowest job. The tests need no game and no developer files: the agent jar, `game_texts.json`, the
 player's folders and every temporary file are made in the run's own folders.
 
 **The build** (`ci_build.py build --type development|production`) is the project's own build, not
@@ -236,10 +239,18 @@ Or by hand: Settings -> Rules -> Rulesets -> New branch ruleset, one for `master
   conversation resolution). Required approvals: 0 while one person maintains the project; set it to
   1 once there are other collaborators who can review.
 - **Require status checks to pass**: `Static checks (ruff, pyright)`, `Tests (Windows, Python
-  3.14)`, `Dependency audit (pip-audit)`, `Java agent (build, Java 8 check, tests)` (they appear in
+  3.14)`, `Dependency audit (pip-audit)`, `Java agent (build, Java 8 check, tests)`, `Workflow lint
+  (actionlint)` (they appear in
   the list after the workflow's first run). `master`: also **Require branches to be up to date before merging**.
 
 The build job is not a required check on purpose: it never runs for a pull request.
+
+**Dependabot** (`.github/dependabot.yml`) opens pull requests into `dev` every Monday: one with the
+minor and patch updates of the locked Python packages (pyproject.toml, uv.lock), one with those of
+the workflow's actions (still pinned to commit SHAs), and one for each major update on its own; at
+most five open per ecosystem. They go through the same checks and are never merged automatically.
+On a Python one, run `uv run python export_requirements.py` on its branch and push: requirements*.txt
+are exported from uv.lock and the tests fail until they match.
 
 ## Releasing
 
