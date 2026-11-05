@@ -1,5 +1,14 @@
 # What's new
 
+## Not released yet
+
+**Travel**
+
+- Temporary: no trip goes to Polson Wetland, or through it to the Underground Water Cave or the
+  sailing port, unless the Poison Immunity talent is activated (its poisoned ground hurts
+  otherwise). The run stops before anything moves and the log says why. Every other trip is as
+  before.
+
 ## 1.0.0
 
 **Repairs**
