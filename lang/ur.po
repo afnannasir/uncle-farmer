@@ -20,6 +20,12 @@ msgstr " ({n} phenke)"
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
+msgid " - estimated: it includes shards"
+msgstr " - andaza: is mein shards shamil hain"
+
+msgid " - {n} used up with no stored price, not counted"
+msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
+
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
@@ -720,6 +726,11 @@ msgid "Arnebia"
 msgstr "Arnebia"
 
 msgid ""
+"Arnebia paid out at shops and for fares: {n} (a bought item is an expense once it is used up)"
+msgstr ""
+"Dukanon aur kiraye par diye gaye arnebia: {n} (khareedi hui cheez istemal hone par hi kharcha hai)"
+
+msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
 msgstr ""
 "Istemal shuda cheezon par kharch hua arnebia (mahfooz qeematon se; khareedi hui cheezein yahan nahi gini jaatin):"
@@ -1174,6 +1185,9 @@ msgstr "Character settings e&xport karein..."
 
 msgid "E&xport plan..."
 msgstr "Mansooba e&xport karein..."
+
+msgid "Earnings so far: {n} arnebia (picked up and sold)"
+msgstr "Ab tak ki kamai: {n} arnebia (uthaye aur beche gaye)"
 
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
@@ -2023,6 +2037,9 @@ msgstr "Mera apna gang (gang kam dete hain)"
 msgid "Nearby"
 msgstr "Aas paas"
 
+msgid "Net earnings: {n} arnebia"
+msgstr "Khalis kamai: {n} arnebia"
+
 msgid "Never"
 msgstr "Kabhi nahi"
 
@@ -2219,6 +2236,11 @@ msgstr "Kahan se laayein koi jagah nahi: jo basta ijazat de wohi banata hai."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
+
+msgid ""
+"Older runs kept only the bag's net arnebia change: their earnings are counted from that"
+msgstr ""
+"Purane runs ne sirf baste ke arnebia ka khalis farq rakha: un ki kamai usi se gini gayi"
 
 msgid "Oldhand"
 msgstr "Oldhand"
@@ -3373,6 +3395,17 @@ msgstr "Waqt (HH:MM):"
 msgid "Time between potions (seconds):"
 msgstr "Potions ke darmiyan waqt (second):"
 
+msgid ""
+"Time remaining: no end time set (no time limit, stop time or daily stop)"
+msgstr ""
+"Baqi waqt: khatam hone ka koi waqt tay nahi (na waqt ki had, na rukne ka waqt, na rozana stop)"
+
+msgid "Time remaining: {left}"
+msgstr "Baqi waqt: {left}"
+
+msgid "Time used: {used}, {kills} kills, {deaths} deaths"
+msgstr "Laga waqt: {used}, {kills} kills, {deaths} maut"
+
 msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
 msgstr "Waqt: ghante 0 se 23 aur minute 0 se 59 tak hote hain"
 
@@ -3381,9 +3414,6 @@ msgstr "Waqt: ghante:minute likhein, masalan 06:30"
 
 msgid "Time: {h} h {m} min"
 msgstr "Waqt: {h} ghante {m} minute"
-
-msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
-msgstr "Waqt: {h} ghante {m} minute, {kills} kills, {deaths} maut"
 
 msgid "Times"
 msgstr "Waqt"
@@ -3411,6 +3441,10 @@ msgstr "&Bharosemand khilariyon ki awaaz:"
 
 msgid "Total arnebia spent on items used: {n}"
 msgstr "Istemal shuda cheezon par kul kharch arnebia: {n}"
+
+msgid "Total expenses: {n} arnebia (items used up, at their stored prices)"
+msgstr ""
+"Kul kharcha: {n} arnebia (istemal hui cheezein, un ki mahfooz qeemat par)"
 
 msgid "Travel"
 msgstr "Safar"
@@ -3916,6 +3950,12 @@ msgstr "{n} {item} kharide"
 
 msgid "bought {n} {shard}"
 msgstr "{n} {shard} kharide"
+
+msgid "bought {n} {shard}: the bag has no room for more"
+msgstr "{n} {shard} kharide: baste mein mazeed ki jagah nahi"
+
+msgid "bought {n} {shard}: the spare arnebia pays for no more"
+msgstr "{n} {shard} kharide: spare arnebia mazeed ke liye kaafi nahi"
 
 msgid "buff"
 msgstr "buff"
@@ -4628,6 +4668,10 @@ msgstr "dobara kabhi nahi"
 msgid "new"
 msgstr "naya"
 
+msgid "no Gem Protection Rune left, and combining is set to use one"
+msgstr ""
+"koi Gem Protection Rune baqi nahi, aur jorne ke liye ek istemal karna tay hai"
+
 msgid "no Gem Protection Rune to use - stopping, as asked"
 msgstr ""
 "istemal ke liye koi Gem Protection Rune nahi - jaisa kaha tha, rok rahe hain"
@@ -4677,6 +4721,9 @@ msgstr "{map} ke qareeb koi monster-free map nahi"
 
 msgid "no menu entry like \"{want}\""
 msgstr "aisa koi menu entry nahi: \"{want}\""
+
+msgid "no more {shard} came into the bag - the Gem Maker stops here"
+msgstr "baste mein mazeed {shard} nahi aaye - Gem Maker yahin rukta hai"
 
 msgid ""
 "no outside place to gather at for this character - stand on one and add it in Tools, Gathering"
@@ -4836,6 +4883,11 @@ msgstr "set nahi"
 msgid "not sold: {list}"
 msgstr "nahi bika: {list}"
 
+msgid ""
+"nothing came of this round although the bag still has {what} - trying again"
+msgstr ""
+"is round mein kuch nahi bana halankay baste mein abhi {what} hai - dobara koshish"
+
 msgid "nothing can follow 'else' in the same if"
 msgstr "isi if mein 'else' ke baad kuch nahi aa sakta"
 
@@ -4846,6 +4898,12 @@ msgid ""
 "nothing in the bag is on the throw-away list (or only what its rules keep)"
 msgstr ""
 "baste mein kuch bhi phenkne wali list par nahi (ya sirf woh jo us ke qaide rakhte hain)"
+
+msgid "nothing left to make {gem} from"
+msgstr "{gem} banane ke liye kuch baqi nahi"
+
+msgid "nothing left to make {gem} from, and getting more {shard} is off"
+msgstr "{gem} banane ke liye kuch baqi nahi, aur mazeed {shard} lana band hai"
 
 msgid "nothing of the collection was sold"
 msgstr "collection mein se kuch nahi bika"
@@ -5325,14 +5383,22 @@ msgstr "Gem Craftsman ne {item} list nahi kiya"
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "Gem Craftsman khula hai; kuch nahi banaya (sirf check)"
 
-msgid "the Gem Craftsman made nothing with {gem} - leaving it"
-msgstr "Gem Craftsman ne {gem} se kuch nahi banaya - ise chhor rahe hain"
+msgid ""
+"the Gem Craftsman made nothing in {n} rounds in a row although the bag still has {what} - stopping; see logs\\dialogs.log"
+msgstr ""
+"Gem Craftsman ne lagatar {n} rounds mein kuch nahi banaya halankay baste mein abhi {what} hai - ruk rahe hain; logs\\dialogs.log dekhein"
 
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr "Gem Craftsman ne {gem} banane ka koi tareeqa nahi diya"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "Gem Craftsman ke menu mein gem synthesis nahi hai"
+
+msgid "the Gem Maker can't go on: {why}"
+msgstr "Gem Maker aage nahi chal sakta: {why}"
+
+msgid "the Gem Maker stopped after {n} rounds"
+msgstr "Gem Maker {n} rounds ke baad ruk gaya"
 
 msgid "the Head of the inner hall offers no donation"
 msgstr "andarune hall ka sardar chanda nahi le raha"
@@ -5362,9 +5428,17 @@ msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr "Shard Market {shard} {price} arnebia mein bechta hai"
 
 msgid ""
+"the Shard Market sold {came} of the {step} {shard} asked for - buying no more now"
+msgstr ""
+"Shard Market ne mange gaye {step} {shard} mein se {came} beche - ab mazeed nahi kharid rahe"
+
+msgid ""
 "the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
 msgstr ""
 "{item} ke liye Shard Market ka khareedne aur bechne ka menu tawaqqo ke mutabiq nahi aaya - wahan kuch nahi chuna, logs\\dialogs.log dekhein"
+
+msgid "the Shard Market's list didn't open again - bought {n} {shard}"
+msgstr "Shard Market ki list dobara nahi khuli - {n} {shard} kharide"
 
 msgid "the agent can't read menus by layout (agent {n} or newer needed)"
 msgstr ""
@@ -5418,6 +5492,11 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "basta {pct}% bhara hai un cheezon se jo aap rakhte hain - kisi mehfooz jagah ja kar ruk rahe hain"
+
+msgid ""
+"the bag showed no change after combining {gem} - leaving it for this round"
+msgstr ""
+"{gem} jorne ke baad baste mein koi tabdeeli nahi dikhi - is round ke liye chhor rahe hain"
 
 msgid "the bag trip"
 msgstr "bag ka chakkar"
@@ -6543,6 +6622,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Time between pet potions (&seconds):"
 #~ msgstr "Pet potions ke darmiyan waqt (&second):"
 
+#~ msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
+#~ msgstr "Waqt: {h} ghante {m} minute, {kills} kills, {deaths} maut"
+
 #~ msgid ""
 #~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
 #~ msgstr ""
@@ -6589,6 +6671,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "riding - waiting to arrive"
 #~ msgstr "sawari par - pohanchne ka intezar"
+
+#~ msgid "the Gem Craftsman made nothing with {gem} - leaving it"
+#~ msgstr "Gem Craftsman ne {gem} se kuch nahi banaya - ise chhor rahe hain"
 
 #~ msgid "the bag has too little room left to gather"
 #~ msgstr "baste mein jama karne ke liye bohot kam jagah baqi hai"

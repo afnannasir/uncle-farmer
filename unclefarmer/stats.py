@@ -4,8 +4,12 @@ Nothing here presses a key. The bag (arnebia, shards, every other item) is read 
 memory, and contribution, experience and battlefield merit come from the character sheet the bot
 reads anyway for the bag's load. A run's record is one JSON line in results/<Character>.jsonl.
 
-Numbers are net: arnebia spent on fares or potions comes off what was picked up, a potion drunk
-counts as an item used. Experience is counted from the sheet's "upgrading requires N experience":
+The bag's arnebia is kept two ways: what came in (picked up, sold) and what went out (shops,
+fares), each reading's change on its own side, with a reading on both sides of every trade and
+trip so a purchase never cancels out loot. Earnings are what came in, plus what the run's selling
+jobs (selling shards, cleaning the bag) brought; expenses are the items used up, at their stored
+prices; net earnings are the one less the other. A purchase is neither: a potion bought is an
+expense once it is drunk. Experience is counted from the sheet's "upgrading requires N experience":
 it falls as experience comes in, and a level-up adds what was left of the old level (what was
 earned into the new one shows up from the next reading on). At the top level there is no such
 line; contribution goes up instead.
@@ -14,6 +18,7 @@ line; contribution goes up instead.
 from __future__ import annotations
 
 import contextlib
+import math
 import os
 import re
 import time
@@ -43,6 +48,8 @@ TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment 
                          "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
                          "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
                          "update_shard_prices": N_("Updating shard prices")}
+# The jobs that turn a farming run's loot into arnebia: what they bring counts in its earnings.
+SELLING = ("sell_shards", "clean_bag")
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")
 OUT = ("thrown", "sold", "stored")      # left the bag after being picked up
 IN = ("bought", "withdrawn")            # came into the bag without being picked up
@@ -275,9 +282,24 @@ class _Part:
         self.seconds = 0.0
         self.changes: dict[str, int] = {}     # item -> net change of the bag while this activity ran
         self.moved: dict[str, dict[str, int]] = {m: {} for m in MOVES}
+        self.arnebia_in = self.arnebia_out = 0   # the bag's arnebia: what came in, what went out
         self.gains = {"contribution": 0, "merit": 0}
         self.xp = self.levels = 0
         self.kills = self.deaths = 0
+
+    def add_changes(self, was: Mapping[str, int], now: Mapping[str, int]) -> None:
+        """One bag reading's change since the last: into the net changes, and the arnebia also
+        into what came in or went out."""
+        for n in set(now) | set(was):
+            d = now.get(n, 0) - was.get(n, 0)
+            if not d:
+                continue
+            self.changes[n] = self.changes.get(n, 0) + d
+            if n.lower() == ARNEBIA:
+                if d > 0:
+                    self.arnebia_in += d
+                else:
+                    self.arnebia_out -= d
 
     def busy(self) -> bool:
         return bool(any(self.changes.values()) or any(any(v.values()) for v in self.moved.values())
@@ -323,6 +345,7 @@ class Tally:
         self.unit_prices = unit_prices()   # what used-up items cost, as stored when the run began
         self.saved = False                 # save() writes a run's records once, however often it is called
         self.spoken = self.clock.time()    # for the spoken progress lines (results_every)
+        self.deadlines: list[float] = []   # clock times the run ends at the latest (deadline())
 
     # the main activity's numbers, as the run's own record has them
     @property
@@ -369,10 +392,7 @@ class Tally:
             if self.bag0 is None:
                 self.bag0 = dict(bag)
             elif part is not None:
-                for n in set(bag) | set(self.bag):
-                    d = bag.get(n, 0) - self.bag.get(n, 0)
-                    if d:
-                        part.changes[n] = part.changes.get(n, 0) + d
+                part.add_changes(self.bag, bag)
             self.bag = bag
         self.note_sheet(me.get("sheet"))
         kills, deaths = int(bot.kills or 0), int(getattr(bot, "deaths", 0) or 0)
@@ -413,6 +433,15 @@ class Tally:
         part = self._part() or self.parts[self.main]
         if n > 0 and how in part.moved:
             part.moved[how][item] = part.moved[how].get(item, 0) + int(n)
+
+    def deadline(self, at: float) -> None:
+        """The run ends at clock time `at` at the latest: its time limit, the clock time its plan
+        stops at, or the daily stop. The earliest one is what Time remaining counts down to."""
+        if at > 0 and at not in self.deadlines:
+            self.deadlines.append(at)
+
+    def ends_at(self) -> float | None:
+        return min(self.deadlines) if self.deadlines else None
 
     # ------------------------------------------------------------ what the run is doing
     def switch(self, bot: Parts | None, doing: str | None) -> None:
@@ -502,12 +531,15 @@ class Tally:
             "shards": {n: d for n, d in changes.items() if is_shard(n)},
             "items": {n: d for n, d in changes.items() if n.lower() != ARNEBIA and not is_shard(n)},
             "picked": picked, "used": used, "moved": moved,
+            "arnebia_in": part.arnebia_in, "arnebia_out": part.arnebia_out,
             "spent": spending(used, self.unit_prices),
             "contribution": part.gains["contribution"], "merit": part.gains["merit"],
             "experience": part.xp, "levels": part.levels,
             "level": s1.get("level", -1), "xp_needed": s1.get("xp_needed", -1),
         }
         if farming:
+            # what the run's own selling jobs brought in, from loot farming picked up
+            rec["sales"] = sum(p.arnebia_in for k, p in self.parts.items() if k in SELLING)
             rec["maps"] = list(self.maps)
             rec["combat"] = self.combat.result()
             rec["shard_value"] = sum(v * self.prices.get(n.lower(), 0) for n, v in picked.items() if is_shard(n))
@@ -516,6 +548,15 @@ class Tally:
         if key == self.main:
             paused = self.paused_s + (end - self.since if self.doing is None else 0.0)
             rec["paused_minutes"] = round(paused / 60.0, 1)
+            # Time remaining: to the earliest end (a pause doesn't move it - a plan's time limit
+            # and its stop time are both clock times), none known: None; a finished run: 0.
+            ends = self.ends_at()
+            if self.ended is not None:
+                rec["remaining_minutes"] = 0.0
+            elif ends is not None:
+                rec["remaining_minutes"] = round(max(0.0, ends - end) / 60.0, 2)
+            else:
+                rec["remaining_minutes"] = None
         return rec
 
     def finish(self, bot: Parts | None = None) -> None:
@@ -549,10 +590,21 @@ def doing(bot: Parts, name: str) -> contextlib.AbstractContextManager[None]:
 
 
 def moved(bot: Parts, how: str, item: str, n: int) -> None:
-    """The bot moved n of item itself (thrown, sold, stored, bought, withdrawn): tell the results."""
+    """The bot moved n of item itself (thrown, sold, stored, bought, withdrawn): tell the results.
+    The bag is read at once, so the arnebia the move took or brought is counted apart from
+    anything that comes after."""
     tally: Tally | None = getattr(bot, "tally", None)
     if tally is not None and n:
+        reading(bot)
         tally.moved(how, item, n)
+
+
+def reading(bot: Parts) -> None:
+    """Read the bag for the results now, so what happens next is counted on its own (around a
+    trip or a trade: a fare or a purchase never cancels out loot picked up before it)."""
+    tally: Tally | None = getattr(bot, "tally", None)
+    if tally is not None:
+        tally.update(bot, force=True)          # (a failed reading is noted there, never raised)
 
 
 # ---------------------------------------------------------------- history
@@ -644,6 +696,12 @@ def upgrade(r: Record) -> Record:
         # from before spending was kept: costed at the prices stored now (shown as estimates anyway)
         used: dict[str, int] = r.get("used") or {}
         r["spent"] = spending(used, _current_prices())
+    if "arnebia_in" not in r:
+        # from before the arnebia was kept both ways: only its net change is known
+        change: object = r.get("arnebia", 0)
+        whole = change if _whole(change) else 0
+        r["arnebia_in"], r["arnebia_out"] = max(0, whole), max(0, -whole)
+        r["earnings_from_net"] = True
     return r
 
 
@@ -687,12 +745,13 @@ def add_up(results: Iterable[Record]) -> Record:
     """One result from many (a day, a week) of one kind."""
     results = [upgrade(dict(r)) for r in results]
     total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0,
-             "arnebia": 0, "shards": {}, "shard_value": 0, "contribution": 0, "merit": 0, "experience": 0,
+             "arnebia": 0, "arnebia_in": 0, "arnebia_out": 0, "sales": 0,
+             "shards": {}, "shard_value": 0, "contribution": 0, "merit": 0, "experience": 0,
              "levels": 0, "items": {}, "picked": {}, "used": {}, "moved": {}, "spent": {}, "level": -1, "xp_needed": -1,
              "combat": None, "kind": results[0]["kind"] if results else FARMING}
     for r in results:
-        for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "shard_value", "contribution",
-                  "merit", "experience", "levels"):
+        for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "arnebia_in", "arnebia_out", "sales",
+                  "shard_value", "contribution", "merit", "experience", "levels"):
             v = r.get(k, 0)
             total[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
         for k in ("shards", "items", "picked", "used"):
@@ -701,6 +760,8 @@ def add_up(results: Iterable[Record]) -> Record:
         moved: dict[str, dict[str, int]] = r.get("moved") or {}
         for how, items in moved.items():
             _add(total["moved"].setdefault(how, {}), items)
+        if r.get("earnings_from_net"):
+            total["earnings_from_net"] = True
         level = r.get("level")
         if isinstance(level, int) and not isinstance(level, bool) and level >= 0:
             total["level"], total["xp_needed"] = level, r.get("xp_needed", -1)
@@ -722,6 +783,68 @@ def add_up(results: Iterable[Record]) -> Record:
 
 def _n(v: float) -> str:
     return "{:,}".format(int(v))
+
+
+def _clock(minutes: object, up: bool = False) -> str:
+    """Minutes as hours:minutes ("03:05"); up: rounded up, for time still to go (it says 00:00
+    only at the end)."""
+    v = float(minutes) if isinstance(minutes, (int, float)) and not isinstance(minutes, bool) else 0.0
+    whole = math.ceil(v - 1e-9) if up else int(round(v))
+    h, m = divmod(max(0, whole), 60)
+    return "%02d:%02d" % (h, m)
+
+
+def earnings(r: Record) -> tuple[int, int | None, int]:
+    """(earnings so far, total expenses, net earnings) of a farming record, in arnebia. Earnings:
+    the arnebia that came into the bag (picked up, sold) and what the run's selling jobs brought;
+    expenses: the items used up at their stored prices (None when nothing used up has a price);
+    items with no stored price are left out, as in the spending lines. Purchases are neither."""
+    def num(v: object) -> int:
+        return v if _whole(v) else 0
+    gross = num(r.get("arnebia_in")) + num(r.get("sales"))
+    spent: dict[str, dict[str, Any]] = r.get("spent") or {}
+    costs = [s["cost"] for s in spent.values() if json.is_object(s) and _whole(s.get("cost"))]
+    expenses = sum(costs) if costs else None
+    return gross, expenses, gross - (expenses or 0)
+
+
+def _time_lines(r: Record) -> list[str]:
+    """Time used (farming time) and kills; a single run's Time remaining, a period's number of runs;
+    the time paused."""
+    out = [_("Time used: {used}, {kills} kills, {deaths} deaths", used=_clock(r.get("minutes", 0) or 0),
+             kills=r.get("kills", 0), deaths=r.get("deaths", 0))]
+    if "runs" in r:
+        out.append(_("Runs: {n}", n=r["runs"]))
+    elif "remaining_minutes" in r:
+        left = r["remaining_minutes"]
+        out.append(_("Time remaining: {left}", left=_clock(left, up=True)) if left is not None
+                   else _("Time remaining: no end time set (no time limit, stop time or daily stop)"))
+    if r.get("paused_minutes"):
+        out.append(_("Paused: {n} min, not counted", n=_n(r["paused_minutes"])))
+    return out
+
+
+def _earnings_lines(r: Record) -> list[str]:
+    gross, expenses, net = earnings(r)
+    spent: dict[str, dict[str, Any]] = r.get("spent") or {}
+    shards = any(json.is_object(s) and s.get("source") == SHARD and _whole(s.get("cost")) for s in spent.values())
+    unpriced = sum(s.get("unpriced", 0) if _whole(s.get("cost")) else (s.get("n") or 0)
+                   for s in spent.values() if json.is_object(s))
+    out = [_("Earnings so far: {n} arnebia (picked up and sold)", n=_n(gross))]
+    line = _("Total expenses: {n} arnebia (items used up, at their stored prices)", n=_n(expenses or 0))
+    if shards:
+        line += _(" - estimated: it includes shards")
+    if unpriced:
+        line += _(" - {n} used up with no stored price, not counted", n=_n(unpriced))
+    out.append(line)
+    out.append(_("Net earnings: {n} arnebia", n=("+" if net > 0 else "") + _n(net)))
+    paid = r.get("arnebia_out")
+    if _whole(paid) and paid > 0:
+        out.append(_("Arnebia paid out at shops and for fares: {n} (a bought item is an expense once it is used up)",
+                     n=_n(paid)))
+    if r.get("earnings_from_net"):
+        out.append(_("Older runs kept only the bag's net arnebia change: their earnings are counted from that"))
+    return out
 
 
 def _rate(v: float, minutes: float) -> str | None:
@@ -852,14 +975,8 @@ def report(r: Record, title: str) -> str:
     if r.get("kind") == TOOL:
         return _tool_report(r, title)
     m = r.get("minutes", 0) or 0
-    lines = [title]
-    hours, mins = divmod(int(round(m)), 60)
-    lines.append(_("Time: {h} h {m} min, {kills} kills, {deaths} deaths", h=hours, m=mins,
-                   kills=r.get("kills", 0), deaths=r.get("deaths", 0)))
-    if "runs" in r:
-        lines.append(_("Runs: {n}", n=r["runs"]))
-    if r.get("paused_minutes"):
-        lines.append(_("Paused: {n} min, not counted", n=_n(r["paused_minutes"])))
+    lines = [title] + _time_lines(r)
+    head = len(lines)
 
     def line(label: str, v: float) -> None:
         if not v:
@@ -876,6 +993,9 @@ def report(r: Record, title: str) -> str:
         lines.append(_("Next level needs {n} more experience", n=_n(r["xp_needed"])))
     line(_("Arnebia"), r.get("arnebia", 0))
     line(_("Battlefield merit"), r.get("merit", 0))
+    gained = len(lines) > head
+    lines += _earnings_lines(r)
+    loot = len(lines)
 
     picked: dict[str, int] = r.get("picked") or {}
     moved: dict[str, dict[str, int]] = r.get("moved") or {}
@@ -903,7 +1023,7 @@ def report(r: Record, title: str) -> str:
         lines.append(_("Used up:"))
         lines += ["    %s %s" % (_n(v), n) for n, v in used]
     lines += _spending_lines(r.get("spent"))
-    if len(lines) <= 2:
+    if not gained and len(lines) == loot:
         lines.append(_("Nothing gained yet."))
     if "combat" in r:
         lines.append(_("Fighting:"))

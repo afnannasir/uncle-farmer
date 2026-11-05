@@ -306,8 +306,15 @@ Tools, Gem Maker (Ctrl+G) has two jobs:
 
 - **Make a gem:** you choose which gem, its level and how many (or as many as it can). It makes them
   from the bag's gems and shards, and fetches more Level 1 shards itself from the storehouse or the
-  Shard Broker, a bagful at a time.
+  Shard Broker, a bagful at a time: as many as the bag takes up to your "bag full at" load. The
+  Shard Broker sells at most 2000 at a time, so it buys in batches of up to 2000, working out each
+  batch again from the bag's room and the spare arnebia; the storehouse hands out a bagful at once.
 - **Make the most of my bag:** every shard into gems, then every colour up as far as it goes.
+
+Either job goes on until it is done or something stands in the way, and says what: the arnebia at
+your reserve, no protection rune left, nothing left to make from, no more shards to be had, or the
+Gem Craftsman making nothing for three rounds in a row although there is still something to combine
+(a round that made nothing because of a slow answer or a menu that didn't open is tried again).
 
 ### Equipment Enhancer
 
@@ -526,6 +533,19 @@ experience and levels, arnebia, every shard picked up (with its Shard Broker val
 it were thrown away, sold or put into the storehouse), other items picked up, what was bought or
 taken out of the storehouse, and the potions used. It covers the current run, today, the last 7 or
 30 days, or all time.
+
+For a run it shows **Time used** (farming time, hours:minutes; a pause or a job on the way is not
+counted) and **Time remaining** until the run ends by itself: the plan's time limit, its stop time
+or the daily stop, whichever comes first. These are clock times, so a pause doesn't move them (a
+plan's time limit counts from the start, pauses included). With none of them set it says so. A
+finished run shows its time used and 00:00 remaining. Both update while the window is open.
+
+It also shows the money: **Earnings so far** (arnebia picked up or got from selling, including the
+run's own Sell shards and Clean bag jobs), **Total expenses** (the items used up, at their stored
+prices, as listed further down) and **Net earnings** (the one less the other). A purchase is neither
+an earning nor an expense: a potion bought counts as an expense once it is drunk, and what was paid
+at shops and for fares is shown on its own line. Runs saved by older versions kept only the bag's
+net arnebia change, and their earnings are counted from that.
 
 Only farming counts there. Show can switch to the Gem Maker, Equipment Enhancer and chores instead:
 what each of them made, used and cost, kept apart because shards made into gems are not loot. Those

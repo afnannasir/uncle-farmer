@@ -179,9 +179,9 @@ def rounds(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     seen: list[int] = []
     real = crafting._gem_round
 
-    def counting(b: Any, job: Any) -> int:
+    def counting(b: Any, job: Any, blocked: list[str] | None = None) -> int:
         seen.append(1)
-        return real(b, job)
+        return real(b, job, blocked)
     monkeypatch.setattr(crafting, "_gem_round", counting)
     return seen
 
@@ -238,10 +238,13 @@ def test_a_combine_the_game_wont_carry_out_ends_the_gem_maker_instead_of_repeati
                      sticky_boost=True)
     went = rounds(monkeypatch)
     crafting.gem_maker(as_bot(b), dict(ONE_KIND, level=3, count=3, protect=True, boost=True))
+    # The box that won't clear is a block that doesn't pass by itself: the round that changed
+    # nothing ends the Gem Maker with that reason, never another round for it.
     assert count(b, "Level 3 Topaz") == 1                  # the boosted try worked
     assert len(went) <= 2 and c.opened <= 3 and c.refused <= 2
     assert any("stays ticked with none in the bag" in line for line in b.lines)
-    assert any("made nothing with Level 2 Topaz" in line for line in b.lines)
+    assert any("showed no change after combining Level 2 Topaz" in line for line in b.lines)
+    assert any("can't go on: the Level 2 Topaz Shard box stays ticked" in line for line in b.lines)
     assert any("made 1 of the 3 Level 3 Topaz asked for" in line for line in b.lines)
 
 
@@ -258,12 +261,17 @@ def test_make_the_most_of_the_bag_stops_when_a_round_changes_nothing(craftsman: 
     real = crafting.raise_gems
 
     def nothing_happens(bot: Any, colour: str, level: int, k: int, boost: bool, protect: bool, where: str,
-                        check_only: bool = False) -> tuple[int, int]:
+                        check_only: bool = False, blocked: list[str] | None = None) -> tuple[int, int]:
         calls.append(k)
         return 0, k                                          # an old count of "failed" tries, bag unchanged
     monkeypatch.setattr(crafting, "raise_gems", nothing_happens)
     crafting.make_most(as_bot(b), {"where": "gang", "up_to": 4, "keep": 0, "colours": []})
-    assert calls == [2]                                      # one round, not twelve
+    # Nothing in the way and still nothing happened (a menu that didn't open, a lost answer):
+    # tried again a few times, then stopped with the reason - never twelve rounds of it.
+    assert calls == [2] * (1 + crafting.IDLE_ROUNDS)
+    assert any("made nothing in 3 rounds in a row although the bag still has 6 Level 2 Topaz" in line
+               for line in b.lines)
+    assert not any("as high as they go" in line for line in b.lines)
     monkeypatch.setattr(crafting, "raise_gems", real)
     assert c.opened == 0
 
