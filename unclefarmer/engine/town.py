@@ -134,6 +134,15 @@ def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
     return False
 
 
+def wait_menu_change(b: Bot, before: dict[str, Any] | None) -> None:
+    """Use the state-aware wait when the bot has it, preserving the established fallback otherwise."""
+    waiter = getattr(b, "wait_menu_change", None)
+    if callable(waiter):
+        waiter(before)
+    else:
+        b.sleep(0.4)
+
+
 def type_text(b: Bot, text: str) -> bool:
     """Answer a box that asks for a name. True once the game has taken it."""
     if not wait_input(b, True):
@@ -161,7 +170,7 @@ def type_number(b: Bot, n: int) -> bool:
         if not wait_input(b, False):
             b.log(_("the game didn't take the number"), speak=True)
             return False
-        b.wait_menu_change(before_menu)
+        wait_menu_change(b, before_menu)
         return True
     b.a.send("typeclear")
     r = b.a.send("type %d" % int(n))
@@ -173,7 +182,7 @@ def type_number(b: Bot, n: int) -> bool:
     if not wait_input(b, False):
         b.log(_("the game didn't take the number"), speak=True)
         return False
-    b.wait_menu_change(before_menu)
+    wait_menu_change(b, before_menu)
     # some menus ask "are you sure?" after the number
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], CONFIRM) is not None:
