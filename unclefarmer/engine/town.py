@@ -693,20 +693,21 @@ def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
 
 
 TRADE_MOST = 2000      # the Shard Market's "how many" box takes at most this many at a time
-MARKET_RETURN = 1.0    # the market list normally returns immediately after a completed trade
+MARKET_OPEN = 0.3      # a broker's fixed market list follows their conversation promptly
 
 
 def market_lists(b: Bot, name: str, wait: float = 0.0) -> bool:
     """The Shard Market's list is open and has the shard: by the verified layout when the agent
     reads it (agent 53), else by the entries' text. `wait` gives the completed previous trade a
-    moment to return to the market, without reopening a conversation that is still active."""
+    moment to show the market after opening a conversation."""
     if menus.find(b, menus.SHARD_MARKET, name=name, wait=wait) is not None:
         return True
     d = b.dialog()
     return bool(d["open"] and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None)
 
 
-def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
+def shard_trade(b: Bot, name: str, action: str, n: int,
+                reopen: Callable[[], bool] | None = None) -> int:
     """With the Shard Market's list open: buy or sell n of a shard, in steps the "how many" box
     takes (TRADE_MOST); the list opens again after each. Each step goes by the verified index when
     the agent can (the shard's row, then the buy or sell row of that same shard's id), else by the
@@ -715,10 +716,14 @@ def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
     bought or sold. Returns how many were asked for in the steps taken."""
     done = 0
     while done < n:
+        # A completed sale closes the broker in the real client. Reopen the fixed market before
+        # another 2,000-item batch instead of waiting for a list that cannot return by itself.
+        if done and reopen is not None and not reopen():
+            break
         step = min(n - done, TRADE_MOST)
         # Each choice is direct (the agent verifies the fixed market's item id and row), so do
         # not pause after it.  The next direct choice waits for the game's real next menu instead.
-        listed = menus.pick(b, menus.SHARD_MARKET, name=name, wait=MARKET_RETURN, settle=False)
+        listed = menus.pick(b, menus.SHARD_MARKET, name=name, settle=False)
         if listed is not None:
             if menus.pick(b, menus.SHARD_TRADE, item_id=int(listed["id"]), action=action, wait=3.0,
                           then_text=False, settle=False) is None:
@@ -757,19 +762,30 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
         return 0
     candidates = market_candidates(markets)
     broker: str | None = None
+
+    def open_market(name: str) -> bool:
+        """Open the broker's fixed market only when it is not already on screen."""
+        nonlocal broker
+        # An indexed pick validates the entire fixed layout atomically. Avoid an extra `menu`
+        # request when a current agent already reports that some dialog is open; it will refuse
+        # safely if it is not the market. Older agents still identify the item by menu text here.
+        if menus.can_pick(b):
+            if b.dialog().get("open"):
+                return True
+        elif market_lists(b, name):
+            return True
+        b.close_dialogs()
+        if broker is None:
+            broker = visit(b, None, candidates=candidates)
+        elif not b.talk(broker):
+            return False
+        return market_lists(b, name, MARKET_OPEN)
+
     for name, n in todo:
-        listed = market_lists(b, name, MARKET_RETURN)
-        if not listed:
-            b.close_dialogs()
-            if broker is None:
-                broker = visit(b, None, candidates=candidates)
-            elif not b.talk(broker):
-                break
-            listed = market_lists(b, name, MARKET_RETURN)
-        if not listed:
+        if not open_market(name):
             b.log(_("the Shard Market didn't list {item}", item=name))
             continue
-        traded = shard_trade(b, name, "sell", n)
+        traded = shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name))
         transaction.expect(name, -traded)
     b.close_dialogs()
     after = transaction.settle(b) if transaction.expected else transaction.before

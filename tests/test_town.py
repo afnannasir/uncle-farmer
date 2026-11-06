@@ -932,6 +932,7 @@ def test_sell_shards_keeps_one_broker_visit_and_reconciles_the_batch(monkeypatch
                         stand_in(town.shard_catalog, lambda: ({"Sapphire Shard": {}, "Olivine Shard": {}}, {5: [1, 1]})))
     b = TownBot(bag=[{"name": "Sapphire Shard", "count": 3}, {"name": "Olivine Shard", "count": 4}])
     visits: list[object] = []
+    talks: list[str] = []
     market_open = False
     reads = 0
     bag_rows = b.bag_rows
@@ -947,18 +948,28 @@ def test_sell_shards_keeps_one_broker_visit_and_reconciles_the_batch(monkeypatch
         market_open = True
         return "Shard Broker"
 
-    def trade(bot: TownBot, name: str, action: str, n: int) -> int:
+    def talk(npc: str) -> bool:
+        nonlocal market_open
+        talks.append(npc)
+        market_open = True
+        return True
+
+    def trade(bot: TownBot, name: str, action: str, n: int, reopen: object = None) -> int:
+        nonlocal market_open
         assert action == "sell"
         b.remove(name, n)
+        market_open = False
         return n
 
     b.bag_rows = counted_rows  # type: ignore[method-assign]
+    b.talk = talk  # type: ignore[method-assign]
     monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
     monkeypatch.setattr(town, "market_lists",
                         stand_in(town.market_lists, lambda bot, name, wait=0.0: market_open))
     monkeypatch.setattr(town, "shard_trade", stand_in(town.shard_trade, trade))
     assert town.sell_shards(as_bot(b), ["Sapphire Shard", "Olivine Shard"]) == 2
     assert len(visits) == 1
+    assert talks == ["Shard Broker"]
     assert reads == 2
 
 
