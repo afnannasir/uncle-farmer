@@ -13,6 +13,14 @@
   whenever it is ready. Area skills whose text gives no damage (Blizzard, Icicle) still wait for a
   pack.
 
+**After farming**
+
+- Character, Settings, Travel and pets: "Automatically sell shards after farming" and
+  "Automatically clean the bag after farming", each on its own (both off). Ticked, Sell shards now
+  and Clean the bag now run by themselves, one after the other, when a farming run finishes by
+  itself - never after Stop. A failure in one doesn't keep the other from running, and the Tools
+  menu still runs both by hand.
+
 **Gem Maker**
 
 - A lucky run where no gem breaks no longer keeps the Gem Maker going round. A combine that works
