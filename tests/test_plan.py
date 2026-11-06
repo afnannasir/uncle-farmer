@@ -47,3 +47,29 @@ def test_a_plan_of_the_wrong_shape_is_refused(plans_dir: Path) -> None:
         json.dump({"name": "Bad", "spots": 5}, f)
     with pytest.raises(ValueError):
         plan.load("Bad")
+
+
+def test_plan_export_round_trips_and_a_direct_plan_imports(plans_dir: Path) -> None:
+    original = dict(plan.PLAN_DEFAULTS, name="Turkey cave", spots=[plan.new_step(5302)], stop_after_minutes=120)
+    plan.save(original)
+    exported = plans_dir / "Turkey.unclefarmer-plan.json"
+    plan.export("Turkey cave", str(exported))
+    assert plan.read_import(str(exported)) == plan.load("Turkey cave")
+    direct = plans_dir / "Old.json"
+    direct.write_text(json.dumps({"name": "Old", "steps": [{"map": 5302, "minutes": 45}], "repeat": False}),
+                      encoding="utf-8")
+    imported = plan.read_import(str(direct))
+    assert imported["name"] == "Old"
+    assert imported["stop_after_minutes"] == 45
+
+
+@pytest.mark.parametrize("raw, message", [
+    ({"language": "en"}, "doesn't contain a plan"),
+    ({"format": plan.PLAN_EXPORT_FORMAT, "version": 2, "plan": {}}, "unsupported"),
+    ({"format": plan.PLAN_EXPORT_FORMAT, "version": 1, "plan": {"name": "Bad", "spots": 5}}, "invalid field"),
+])
+def test_bad_plan_imports_are_rejected(plans_dir: Path, raw: dict[str, object], message: str) -> None:
+    source = plans_dir / "bad.json"
+    source.write_text(json.dumps(raw), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        plan.read_import(str(source))

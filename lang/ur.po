@@ -20,6 +20,12 @@ msgstr " ({n} phenke)"
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
+msgid " - estimated: it includes shards"
+msgstr " - andaza: is mein shards shamil hain"
+
+msgid " - {n} used up with no stored price, not counted"
+msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
+
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
@@ -206,6 +212,12 @@ msgstr "&Tareekhcha..."
 
 msgid "&How many:"
 msgstr "&Kitne:"
+
+msgid "&Import character settings..."
+msgstr "Character settings &import karein..."
+
+msgid "&Import plan..."
+msgstr "Mansooba &import karein..."
 
 msgid "&Insert command..."
 msgstr "&Command shamil karein..."
@@ -668,6 +680,9 @@ msgstr "Agent"
 msgid "All"
 msgstr "Sab"
 
+msgid "All files (*.*)|*.*"
+msgstr "Tamam files (*.*)|*.*"
+
 msgid "All time"
 msgstr "Sab waqt"
 
@@ -712,6 +727,11 @@ msgstr "Mere a&as paas ka ilaqa"
 
 msgid "Arnebia"
 msgstr "Arnebia"
+
+msgid ""
+"Arnebia paid out at shops and for fares: {n} (a bought item is an expense once it is used up)"
+msgstr ""
+"Dukanon aur kiraye par diye gaye arnebia: {n} (khareedi hui cheez istemal hone par hi kharcha hai)"
 
 msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
@@ -1004,6 +1024,18 @@ msgstr "Copy nahi ho saka. Pata yeh hai: {email}"
 msgid "Couldn't delete it: {err}"
 msgstr "Hata nahi saka: {err}"
 
+msgid "Couldn't export the plan: {err}"
+msgstr "Mansooba export nahi ho saka: {err}"
+
+msgid "Couldn't export the settings: {err}"
+msgstr "Tarteeb export nahi ho sakin: {err}"
+
+msgid "Couldn't import the plan: {err}"
+msgstr "Mansooba import nahi ho saka: {err}"
+
+msgid "Couldn't import the settings: {err}"
+msgstr "Tarteeb import nahi ho sakin: {err}"
+
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
 
@@ -1036,6 +1068,15 @@ msgstr "&Craftsman:"
 
 msgid "Craftsman and spending"
 msgstr "Craftsman aur kharch"
+
+msgid ""
+"Create Uncle Farmer settings for {character} from {source}?\n"
+"\n"
+"This creates settings for that name only. It doesn't create or log in to a Mist World character. The choices take effect when that character is scanned or run. Nothing changes until you choose Yes."
+msgstr ""
+"{source} se {character} ke liye Uncle Farmer ki tarteeb banayein?\n"
+"\n"
+"Is se sirf is naam ki tarteeb banegi. Is se Mist World ka character nahi banta, na log in hota hai. Choices tab asar karengi jab us character ko scan kiya ya chalaya jaye. Yes chunne tak kuch nahi badlega."
 
 msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
@@ -1151,6 +1192,15 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 msgid "E&xit"
 msgstr "Bahar &niklein"
 
+msgid "E&xport character settings..."
+msgstr "Character settings e&xport karein..."
+
+msgid "E&xport plan..."
+msgstr "Mansooba e&xport karein..."
+
+msgid "Earnings so far: {n} arnebia (picked up and sold)"
+msgstr "Ab tak ki kamai: {n} arnebia (uthaye aur beche gaye)"
+
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
 
@@ -1256,6 +1306,12 @@ msgstr "Tajurba"
 
 msgid "Expert"
 msgstr "Expert"
+
+msgid "Export character settings"
+msgstr "Character settings export karein"
+
+msgid "Export plan"
+msgstr "Mansooba export karein"
 
 msgid "Falling"
 msgstr "Utarti awaaz"
@@ -1631,6 +1687,15 @@ msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 "Agar in mein se koi kamre mein na ho, to wahan &kisi ke saath bhi share karein"
 
+msgid "Import character settings"
+msgstr "Character settings import karein"
+
+msgid "Import plan"
+msgstr "Mansooba import karein"
+
+msgid "Import settings into this character:"
+msgstr "Tarteeb is character mein import karein:"
+
 msgid "Important events only"
 msgstr "Sirf ahem waqiaat"
 
@@ -1686,6 +1751,9 @@ msgstr "Cheez:"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Bila rule wali cheezein: sirf wohi &chhuein jo is run ne uthaya"
+
+msgid "JSON files (*.json)|*.json"
+msgstr "JSON files (*.json)|*.json"
 
 msgid "Join a private channel in the game first."
 msgstr "Pehle game mein koi private channel join karein."
@@ -1981,6 +2049,9 @@ msgstr "Mera apna gang (gang kam dete hain)"
 msgid "Nearby"
 msgstr "Aas paas"
 
+msgid "Net earnings: {n} arnebia"
+msgstr "Khalis kamai: {n} arnebia"
+
 msgid "Never"
 msgstr "Kabhi nahi"
 
@@ -2019,6 +2090,11 @@ msgstr "Gem Maker, Equipment Enhancer ya roz ke kaam ka koi run nahi."
 
 msgid "No bot is running."
 msgstr "Koi bot nahi chal raha."
+
+msgid ""
+"No character has settings to export yet. Log in to one and let the bot scan it first."
+msgstr ""
+"Export ke liye abhi kisi character ki settings nahi hain. Game mein kisi character se log in karein aur pehle bot ko usay scan karne dein."
 
 msgid ""
 "No character has settings yet. Log in to one in the game and the bot scans it."
@@ -2172,6 +2248,11 @@ msgstr "Kahan se laayein koi jagah nahi: jo basta ijazat de wohi banata hai."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
+
+msgid ""
+"Older runs kept only the bag's net arnebia change: their earnings are counted from that"
+msgstr ""
+"Purane runs ne sirf baste ke arnebia ka khalis farq rakha: un ki kamai usi se gini gayi"
 
 msgid "Oldhand"
 msgstr "Oldhand"
@@ -2358,6 +2439,16 @@ msgstr "Mansoobe ka &naam:"
 msgid "Plan or script"
 msgstr "Mansooba ya script"
 
+msgid ""
+"Plan {name} was exported to:\n"
+"{path}"
+msgstr ""
+"Mansooba {name} yahan export ho gaya hai:\n"
+"{path}"
+
+msgid "Plan {name} was imported."
+msgstr "Mansooba {name} import ho gaya hai."
+
 msgid "Plan, from the last scan of your bag:"
 msgstr "Mansooba, aapke baste ke aakhri scan se:"
 
@@ -2493,6 +2584,18 @@ msgstr "Naam badlein"
 
 msgid "Repair &gear with toolboxes from the bag"
 msgstr "Basta ke toolboxes se &gear repair karein"
+
+msgid ""
+"Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
+"\n"
+"This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+"{source} se export ki hui Uncle Farmer ki mehfooz tarteeb se {character} ki tarteeb badal dein?\n"
+"\n"
+"Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
+
+msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
+msgstr "Mehfooz mansooba {name} badal dein? Yes chunne tak kuch nahi badlega."
 
 msgid "Reply lines"
 msgstr "Jawab ki lines"
@@ -2675,6 +2778,22 @@ msgstr "Kab peena hai khud set karein"
 
 msgid "Settings"
 msgstr "Tarteeb"
+
+msgid ""
+"Settings for {character} were exported to:\n"
+"{path}\n"
+"\n"
+"The file has combat, keys, potions, bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone location."
+msgstr ""
+"{character} ki settings yahan export ho gayi hain:\n"
+"{path}\n"
+"\n"
+"File mein combat, keys, potions, bag, pet, travel aur restock ki choices hain. Is mein scan ya seekha hua hearthstone ka maqam nahi hai."
+
+msgid ""
+"Settings were imported into {character}. Scan this character before farming if its skills, hotkeys, bag, pets or beasts changed."
+msgstr ""
+"Tarteeb {character} mein import ho gayi hain. Farming se pehle is character ko scan karein agar is ki skills, hotkeys, bag, pets ya beasts badal gaye hain."
 
 msgid "Shard Market price when last seen: {price} arnebia"
 msgstr "Shard Market ki aakhri dekhi qeemat: {price} arnebia"
@@ -3291,6 +3410,17 @@ msgstr "Waqt (HH:MM):"
 msgid "Time between potions (seconds):"
 msgstr "Potions ke darmiyan waqt (second):"
 
+msgid ""
+"Time remaining: no end time set (no time limit, stop time or daily stop)"
+msgstr ""
+"Baqi waqt: khatam hone ka koi waqt tay nahi (na waqt ki had, na rukne ka waqt, na rozana stop)"
+
+msgid "Time remaining: {left}"
+msgstr "Baqi waqt: {left}"
+
+msgid "Time used: {used}, {kills} kills, {deaths} deaths"
+msgstr "Laga waqt: {used}, {kills} kills, {deaths} maut"
+
 msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
 msgstr "Waqt: ghante 0 se 23 aur minute 0 se 59 tak hote hain"
 
@@ -3299,9 +3429,6 @@ msgstr "Waqt: ghante:minute likhein, masalan 06:30"
 
 msgid "Time: {h} h {m} min"
 msgstr "Waqt: {h} ghante {m} minute"
-
-msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
-msgstr "Waqt: {h} ghante {m} minute, {kills} kills, {deaths} maut"
 
 msgid "Times"
 msgstr "Waqt"
@@ -3329,6 +3456,10 @@ msgstr "&Bharosemand khilariyon ki awaaz:"
 
 msgid "Total arnebia spent on items used: {n}"
 msgstr "Istemal shuda cheezon par kul kharch arnebia: {n}"
+
+msgid "Total expenses: {n} arnebia (items used up, at their stored prices)"
+msgstr ""
+"Kul kharcha: {n} arnebia (istemal hui cheezein, un ki mahfooz qeemat par)"
 
 msgid "Travel"
 msgstr "Safar"
@@ -3362,8 +3493,23 @@ msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
 
+msgid ""
+"Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
+msgstr ""
+"Uncle Farmer character settings aur profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
+
 msgid "Uncle Farmer is updated to {v}."
 msgstr "Uncle Farmer {v} par update ho gaya."
+
+msgid ""
+"Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+msgstr ""
+"Uncle Farmer mansooba exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+
+msgid ""
+"Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
+msgstr ""
+"Uncle Farmer mansooba exports aur mansoobay (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 
 msgid ""
 "Uncle Farmer {v}\n"
@@ -3822,6 +3968,12 @@ msgstr "{n} {item} kharide"
 
 msgid "bought {n} {shard}"
 msgstr "{n} {shard} kharide"
+
+msgid "bought {n} {shard}: the bag has no room for more"
+msgstr "{n} {shard} kharide: baste mein mazeed ki jagah nahi"
+
+msgid "bought {n} {shard}: the spare arnebia pays for no more"
+msgstr "{n} {shard} kharide: spare arnebia mazeed ke liye kaafi nahi"
 
 msgid "buff"
 msgstr "buff"
@@ -4537,6 +4689,10 @@ msgstr "dobara kabhi nahi"
 msgid "new"
 msgstr "naya"
 
+msgid "no Gem Protection Rune left, and combining is set to use one"
+msgstr ""
+"koi Gem Protection Rune baqi nahi, aur jorne ke liye ek istemal karna tay hai"
+
 msgid "no Gem Protection Rune to use - stopping, as asked"
 msgstr ""
 "istemal ke liye koi Gem Protection Rune nahi - jaisa kaha tha, rok rahe hain"
@@ -4586,6 +4742,9 @@ msgstr "{map} ke qareeb koi monster-free map nahi"
 
 msgid "no menu entry like \"{want}\""
 msgstr "aisa koi menu entry nahi: \"{want}\""
+
+msgid "no more {shard} came into the bag - the Gem Maker stops here"
+msgstr "baste mein mazeed {shard} nahi aaye - Gem Maker yahin rukta hai"
 
 msgid ""
 "no outside place to gather at for this character - stand on one and add it in Tools, Gathering"
@@ -4745,6 +4904,11 @@ msgstr "set nahi"
 msgid "not sold: {list}"
 msgstr "nahi bika: {list}"
 
+msgid ""
+"nothing came of this round although the bag still has {what} - trying again"
+msgstr ""
+"is round mein kuch nahi bana halankay baste mein abhi {what} hai - dobara koshish"
+
 msgid "nothing can follow 'else' in the same if"
 msgstr "isi if mein 'else' ke baad kuch nahi aa sakta"
 
@@ -4755,6 +4919,12 @@ msgid ""
 "nothing in the bag is on the throw-away list (or only what its rules keep)"
 msgstr ""
 "baste mein kuch bhi phenkne wali list par nahi (ya sirf woh jo us ke qaide rakhte hain)"
+
+msgid "nothing left to make {gem} from"
+msgstr "{gem} banane ke liye kuch baqi nahi"
+
+msgid "nothing left to make {gem} from, and getting more {shard} is off"
+msgstr "{gem} banane ke liye kuch baqi nahi, aur mazeed {shard} lana band hai"
 
 msgid "nothing of the collection was sold"
 msgstr "collection mein se kuch nahi bika"
@@ -5237,11 +5407,22 @@ msgstr "Gem Craftsman ne {item} list nahi kiya"
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "Gem Craftsman khula hai; kuch nahi banaya (sirf check)"
 
+msgid ""
+"the Gem Craftsman made nothing in {n} rounds in a row although the bag still has {what} - stopping; see logs\\dialogs.log"
+msgstr ""
+"Gem Craftsman ne lagatar {n} rounds mein kuch nahi banaya halankay baste mein abhi {what} hai - ruk rahe hain; logs\\dialogs.log dekhein"
+
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr "Gem Craftsman ne {gem} banane ka koi tareeqa nahi diya"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "Gem Craftsman ke menu mein gem synthesis nahi hai"
+
+msgid "the Gem Maker can't go on: {why}"
+msgstr "Gem Maker aage nahi chal sakta: {why}"
+
+msgid "the Gem Maker stopped after {n} rounds"
+msgstr "Gem Maker {n} rounds ke baad ruk gaya"
 
 msgid "the Head of the inner hall offers no donation"
 msgstr "andarune hall ka sardar chanda nahi le raha"
@@ -5271,9 +5452,17 @@ msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr "Shard Market {shard} {price} arnebia mein bechta hai"
 
 msgid ""
+"the Shard Market sold {came} of the {step} {shard} asked for - buying no more now"
+msgstr ""
+"Shard Market ne mange gaye {step} {shard} mein se {came} beche - ab mazeed nahi kharid rahe"
+
+msgid ""
 "the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
 msgstr ""
 "{item} ke liye Shard Market ka khareedne aur bechne ka menu tawaqqo ke mutabiq nahi aaya - wahan kuch nahi chuna, logs\\dialogs.log dekhein"
+
+msgid "the Shard Market's list didn't open again - bought {n} {shard}"
+msgstr "Shard Market ki list dobara nahi khuli - {n} {shard} kharide"
 
 msgid "the agent can't read menus by layout (agent {n} or newer needed)"
 msgstr ""
@@ -5327,6 +5516,11 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "basta {pct}% bhara hai un cheezon se jo aap rakhte hain - kisi mehfooz jagah ja kar ruk rahe hain"
+
+msgid ""
+"the bag showed no change after combining {gem} - leaving it for this round"
+msgstr ""
+"{gem} jorne ke baad baste mein koi tabdeeli nahi dikhi - is round ke liye chhor rahe hain"
 
 msgid "the bag trip"
 msgstr "bag ka chakkar"
@@ -5580,6 +5774,9 @@ msgstr "{npc} ka agla menu nahi khula"
 
 msgid "the {role} didn't take {item}"
 msgstr "{role} ne {item} nahi liya"
+
+msgid "the {shard} box stays ticked with none in the bag"
+msgstr "{shard} ka khana tick hi raha, jabke baste mein koi nahi"
 
 msgid "the {tool} can't repair this gear: {what}"
 msgstr "{tool} is equipment ki marammat nahi kar sakta: {what}"
@@ -6390,6 +6587,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Installed. Restart Mist World to load it."
 #~ msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
 
+#~ msgid "JSON files (*.json)|*.json"
+#~ msgstr "JSON files (*.json)|*.json"
+
 #~ msgid ""
 #~ "Open fire up to this many tiles &early, while the monster is coming to you (0: walk all the way; the game's target keys reach 20):"
 #~ msgstr ""
@@ -6417,6 +6617,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "{where} ke liye recording - bhejne ke liye Record voice dobara dabayein, cancel ke liye Escape."
 
+#~ msgid ""
+#~ "Replace the settings for {character} with those exported from {source}?\n"
+#~ "\n"
+#~ "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+#~ msgstr ""
+#~ "{source} se export ki hui settings se {character} ki settings badal dein?\n"
+#~ "\n"
+#~ "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
+
 #~ msgid "Shards: {n}"
 #~ msgstr "Shards: {n}"
 
@@ -6439,6 +6648,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Time between pet potions (&seconds):"
 #~ msgstr "Pet potions ke darmiyan waqt (&second):"
+
+#~ msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
+#~ msgstr "Waqt: {h} ghante {m} minute, {kills} kills, {deaths} maut"
+
+#~ msgid ""
+#~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
+#~ msgstr ""
+#~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
 
 #~ msgid ""
 #~ "When nothing is in sight, walk to where a monster is due back (learned while farming)"
@@ -6481,6 +6698,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "riding - waiting to arrive"
 #~ msgstr "sawari par - pohanchne ka intezar"
+
+#~ msgid "the Gem Craftsman made nothing with {gem} - leaving it"
+#~ msgstr "Gem Craftsman ne {gem} se kuch nahi banaya - ise chhor rahe hain"
 
 #~ msgid "the bag has too little room left to gather"
 #~ msgstr "baste mein jama karne ke liye bohot kam jagah baqi hai"

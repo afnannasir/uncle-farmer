@@ -11,12 +11,21 @@ from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
-from .. import beasts
+from .. import beasts, combos
 from .base import (CONFIRM, STOPPING, Stopped, note_failure)
 from .parts import as_bot, Parts
 
 
 WaysOut = dict[int, tuple[int, tuple[float, float]]]
+
+# TEMPORARY, until the bot can activate talents itself: Polson Wetland's poisoned ground hurts
+# whoever stands on it unless the General talent Poison Immunity ("Immune to Poisoned Terrain
+# Effect Damage") is activated. No trip goes there, or through it (the only way to the Underground
+# Water Cave and the sailing port), without it. Read as combos.py reads talents: `mem skills`,
+# activated ones flagged b == 1. Remove with the talent activation system.
+POISON_MAP = 5141
+POISON_TALENT = "Poison Immunity"
+POISON_REFUSED = "Travel to Polson Wetland (5141) refused: Poison Immunity Talent is not activated."
 
 
 def ways_out(b: object) -> WaysOut:
@@ -118,6 +127,8 @@ class TravelMixin(Parts):
         or a travel item from the bag (teleport stones, the hearthstone). The route is planned again
         after every leg, so a wrong guess only costs a re-plan; whatever fails is left out after."""
         dst = int(dst)
+        if dst == POISON_MAP and self.map_id() != POISON_MAP:
+            self._refuse_unless_poison_immune()    # before anything moves (temporary: see POISON_MAP)
         avoid: set[Any] = set(travel.kept_off(self.p))      # airships, when the profile says no
         self.traveling = True
         try:
@@ -147,6 +158,8 @@ class TravelMixin(Parts):
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
                 return
+            if mid != POISON_MAP and any(leg.get("map") == POISON_MAP for leg in legs):
+                self._refuse_unless_poison_immune()   # the way there crosses Polson Wetland
             steps = travel.describe(legs)
             if steps != said and len(legs) > 1:
                 self.log(_("route to {map}: {steps}", map=atlas.label(dst), steps=" / ".join(steps)))
@@ -154,6 +167,26 @@ class TravelMixin(Parts):
             if self._take_leg_noting(legs[0], avoid, failed):
                 return
         raise Stopped(_("travel to {map} didn't arrive", map=atlas.label(dst)))
+
+    def poison_immune(self) -> bool:
+        """The Poison Immunity talent is activated (`mem skills` talents). False when the agent
+        can't say: the trip is refused rather than risked."""
+        try:
+            sk = self.a.json("mem skills")
+        except STOPPING:
+            raise
+        except Exception as exc:
+            note_failure(self, "reading the talents", exc)
+            return False
+        return POISON_TALENT in combos.active_talents(sk if jsonio.is_object(sk) else None)
+
+    def _refuse_unless_poison_immune(self) -> None:
+        """Temporary (see POISON_MAP): no step towards Polson Wetland without Poison Immunity."""
+        if self.poison_immune():
+            return
+        why = _(POISON_REFUSED)
+        self.log(why, speak=True)
+        raise Stopped(why)
 
     def _take_leg_noting(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
         """_take_leg, remembering how each map we can't plan out of (a gang base, a dungeon) was

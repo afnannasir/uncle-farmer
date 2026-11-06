@@ -252,6 +252,8 @@ class Run(threading.Thread):
                 bot.ask_sheet(force=True)
             bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
                                                  tool=self._tool())
+            if getattr(bot, "daily_stop_at", 0.0):
+                bot.tally.deadline(bot.daily_stop_at)     # Time remaining counts down to it at the latest
             bot.tally.update(bot, force=True)
         here: dict[str, Any] = snap.get("self") or {}
         where: dict[str, Any] = snap.get("map", {})

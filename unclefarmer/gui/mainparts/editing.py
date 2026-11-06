@@ -19,6 +19,33 @@ from ..setup import SetupDialog
 from .base import FrameParts, character_of
 
 
+def import_confirmation(character: str, source: str, exists: bool) -> str:
+    """The last clear warning before an import creates or replaces a profile file."""
+    if exists:
+        return _("Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n\n"
+                 "This replaces combat, key, potion, bag, pet, travel and restock choices. "
+                 "It keeps {character}'s own scan and learned hearthstone location. Nothing changes "
+                 "until you choose Yes.", character=character, source=source)
+    return _("Create Uncle Farmer settings for {character} from {source}?\n\n"
+             "This creates settings for that name only. It doesn't create or log in to a Mist World "
+             "character. The choices take effect when that character is scanned or run. Nothing changes "
+             "until you choose Yes.", character=character, source=source)
+
+
+def import_destinations(source: str, profiles: list[str]) -> tuple[list[str], str]:
+    """The destination choices and the canonical name selected for an imported profile.
+
+    Windows profile paths are case-insensitive: ``atomix`` and ``Atomix`` are one file, not two
+    possible destinations.  Keep the spelling already used by this copy when it has one.
+    """
+    character = next((name for name in profiles if name.casefold() == source.casefold()), source)
+    names = list(profiles)
+    if character not in names:
+        names.append(character)
+    names.sort(key=str.casefold)
+    return names, character
+
+
 class EditingMixin(FrameParts):
     # ------------------------------------------------------------ more game clients
     def open_client(self) -> None:
@@ -93,6 +120,56 @@ class EditingMixin(FrameParts):
             error(self, _("Couldn't delete it: {err}", err=e))
             return
         self.fill_runs()
+
+    def export_plan(self) -> None:
+        """Plans, Export: make a portable copy of the selected saved plan."""
+        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        if not item or item[0] != "plan":
+            self.say(_("Select a plan first."))
+            return
+        name = item[1]
+        wildcard = _("Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|") + \
+                   _("JSON files (*.json)|*.json")
+        with modal(wx.FileDialog(self, _("Export plan"), wildcard=wildcard,
+                                 defaultFile=paths.safe_name(name) + ".unclefarmer-plan.json",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            target = d.GetPath()
+        try:
+            plans.export(name, target)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't export the plan: {err}", err=e))
+            return
+        info(self, _("Plan {name} was exported to:\n{path}", name=name, path=target))
+
+    def import_plan(self) -> None:
+        """Plans, Import: validate a portable or ordinary plan before an atomic save."""
+        wildcard = _("Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|") + \
+                   _("All files (*.*)|*.*")
+        with modal(wx.FileDialog(self, _("Import plan"), wildcard=wildcard,
+                                 style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            source = d.GetPath()
+        try:
+            plan = plans.read_import(source)
+        except ValueError as e:
+            error(self, _("Couldn't import the plan: {err}", err=e))
+            return
+        existing = next((name for name in plans.names() if name.casefold() == plan["name"].casefold()), None)
+        if existing:
+            plan["name"] = existing
+            if not ask(self, _("Replace the saved plan {name}? Nothing changes until you choose Yes.", name=existing),
+                       _("Import plan")):
+                return
+        try:
+            plans.save(plan)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't import the plan: {err}", err=e))
+            return
+        self.fill_runs(("plan", plan["name"]))
+        info(self, _("Plan {name} was imported.", name=plan["name"]))
 
     def script_help(self) -> None:
         show_text(self, _("Script commands"), script.__doc__ or "")
@@ -216,6 +293,68 @@ class EditingMixin(FrameParts):
             name = names[d.GetSelection()]
         with ProfileDialog(self, name, self.s.get("game_folder", "")) as d:
             d.ShowModal()
+
+    def export_character_settings(self) -> None:
+        """Character, Export settings: a portable copy of choices, never game readings."""
+        names = settings.profiles()
+        if not names:
+            info(self, _("No character has settings to export yet. Log in to one and let the bot scan it first."))
+            return
+        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Export character settings"), names)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            character = names[d.GetSelection()]
+        filename = paths.safe_name(character) + ".unclefarmer-profile.json"
+        wildcard = _("Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|") + \
+                   _("All files (*.*)|*.*")
+        with modal(wx.FileDialog(self, _("Export character settings"), wildcard=wildcard, defaultFile=filename,
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            path = d.GetPath()
+        try:
+            settings.export_profile(character, path)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't export the settings: {err}", err=e))
+            return
+        info(self, _("Settings for {character} were exported to:\n{path}\n\nThe file has combat, keys, potions, "
+                     "bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone "
+                     "location.", character=character, path=path))
+
+    def import_character_settings(self) -> None:
+        """Character, Import settings: validate first, confirm, then atomically replace choices."""
+        # Profiles from older/local copies are ordinary .json files, as are the new exports.
+        # The initially selected Windows filter explicitly includes both, so either appears at once.
+        wildcard = _("Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|") + \
+                   _("All files (*.*)|*.*")
+        with modal(wx.FileDialog(self, _("Import character settings"), wildcard=wildcard,
+                                 style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            path = d.GetPath()
+        try:
+            source, imported = settings.read_profile_export(path)
+        except ValueError as e:
+            error(self, _("Couldn't import the settings: {err}", err=e))
+            return
+        names, suggested = import_destinations(source, settings.profiles())
+        with modal(wx.SingleChoiceDialog(self, _("Import settings into this character:"),
+                                         _("Import character settings"), names)) as d:
+            d.SetSelection(names.index(suggested))
+            if d.ShowModal() != wx.ID_OK:
+                return
+            character = names[d.GetSelection()]
+        exists = settings.has_profile(character)
+        if not ask(self, import_confirmation(character, source, exists),
+                   _("Import character settings")):
+            return
+        try:
+            settings.import_profile(character, imported)
+        except (OSError, ValueError) as e:
+            error(self, _("Couldn't import the settings: {err}", err=e))
+            return
+        info(self, _("Settings were imported into {character}. Scan this character before farming if its skills, "
+                     "hotkeys, bag, pets or beasts changed.", character=character))
 
     # ------------------------------------------------------------ settings
     def first_run(self) -> None:

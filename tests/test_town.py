@@ -307,6 +307,23 @@ def test_visit_goes_to_the_nearest_and_talks(monkeypatch: pytest.MonkeyPatch) ->
     assert any("going to Storehouse" in line for line in b.lines)
 
 
+def test_visit_reads_the_results_before_and_after_the_trip(monkeypatch: pytest.MonkeyPatch) -> None:
+    # loot before the trip, fares on it and the trade after it are each counted on their own
+    b = TownBot()
+    order: list[str] = []
+    monkeypatch.setattr(town, "nearest", stand_in(town.nearest, lambda b, role, candidates=None: (3, "Shop", 1, 2)))
+    monkeypatch.setattr(town.atlas, "label", stand_in(town.atlas.label, lambda mid: "Map %s" % mid))
+    monkeypatch.setattr(town.stats, "reading", stand_in(town.stats.reading, lambda bot: order.append("reading")))
+    real_travel = b.travel
+
+    def travel(mid: int, cell: tuple[float, float] | None = None) -> None:
+        order.append("travel")
+        real_travel(mid, cell)
+    b.travel = travel                                          # type: ignore[method-assign]
+    town.visit(as_bot(b), "shop")
+    assert order == ["reading", "travel", "reading"]
+
+
 def test_visit_named_npc_comes_from_knowledge(monkeypatch: pytest.MonkeyPatch) -> None:
     b = TownBot()
     monkeypatch.setattr(knowledge, "describe_npc",

@@ -823,11 +823,14 @@ def test_room_for_computes_the_share(monkeypatch: pytest.MonkeyPatch) -> None:
     assert crafting.room_for(as_bot(b), "S", 0.5) == 900
 
 
-def test_room_for_is_capped_at_two_thousand(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(bagrules, "weights", stand_in(bagrules.weights, lambda: {"s": 0.1}))
+def test_room_for_is_the_bag_s_room_alone(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the Shard Market's 2000 a time is buy_shards' limit; the storehouse has none
+    monkeypatch.setattr(bagrules, "weights", stand_in(bagrules.weights, lambda: {"s": 0.25}))
     b = Bot(profile={"bag_full_at": 100})
     b.sheet = {"load": 0, "maxload": 1000}
-    assert crafting.room_for(as_bot(b), "S", 1.0) == 2000
+    assert crafting.room_for(as_bot(b), "S", 1.0) == 4000
+    b.p["bag_full_at"] = 80                                           # the load limit set for the bag
+    assert crafting.room_for(as_bot(b), "S", 1.0) == 3200
 
 
 def test_fill_with_a_known_weight(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -994,13 +997,23 @@ def test_raise_gems_without_the_section(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_raise_gems_protected_one_at_a_time(monkeypatch: pytest.MonkeyPatch) -> None:
-    b = Bot(bag=[{"name": "Arnebia", "count": 100000}])
+    b = Bot(bag=[{"name": "Arnebia", "count": 100000}, {"name": "Gem Protection Rune", "count": 5}])
     b.top = raise_menu()
     b.open = True
     monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
     monkeypatch.setattr(crafting, "tick", stand_in(crafting.tick, lambda b, pattern, want=True: True))
+
+    def choose(pattern: str) -> dict[str, Any] | None:
+        if "OK to Synthesize" in pattern:
+            add(b, "Gem Protection Rune", -1)         # a protected try that failed: the rune went, the gems stayed
+        b.on_choose = None
+        try:
+            return b.choose(pattern)
+        finally:
+            b.on_choose = choose
+    b.on_choose = choose
     assert crafting.raise_gems(as_bot(b), "Topaz", 2, 2, False, True, "gang") == (0, 2)
-    assert any("OK to Synthesize" in c for c in b.chooses)
+    assert [r["count"] for r in b.bag if r["name"] == "Gem Protection Rune"] == [3]      # two tries, one rune each
 
 
 def test_raise_gems_protected_without_a_rune(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1041,7 +1054,7 @@ def test_gem_maker_makes_the_target(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
 
     def raise_gems(bot: Bot, colour: str, level: int, k: int, boost: bool, protect: bool, where: str,
-                   check_only: bool = False) -> tuple[int, int]:
+                   check_only: bool = False, blocked: list[str] | None = None) -> tuple[int, int]:
         add(bot, "Level 2 Topaz", 1)
         for r in bot.bag:
             if r["name"] == "Level 1 Topaz":
@@ -1359,7 +1372,7 @@ def test_make_most_stops_after_a_combine_when_stopped(monkeypatch: pytest.Monkey
     calls: list[tuple[str, int, int]] = []
 
     def raise_gems(bot: Bot, colour: str, level: int, k: int, boost: bool, protect: bool, where: str,
-                   check_only: bool = False) -> tuple[int, int]:
+                   check_only: bool = False, blocked: list[str] | None = None) -> tuple[int, int]:
         calls.append((colour, level, k))
         bot.stop_event.set()
         return 0, 1

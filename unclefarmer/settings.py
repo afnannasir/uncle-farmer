@@ -34,6 +34,14 @@ APP_DEFAULTS: dict[str, Any] = {
     "log_backups": 5,         # old log files kept as name.1 ... name.N
 }
 
+# The portable character-settings file is intentionally narrower than a profile on disk.  A scan
+# describes the particular character the game last showed us (skills, bag, pets and hotkeys), and
+# the hearthstone home is learned from that character's travel.  Copying either to another
+# character can make the bot act on facts that are not true there.
+PROFILE_EXPORT_FORMAT = "unclefarmer-character-settings"
+PROFILE_EXPORT_VERSION = 1
+CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home"))
+
 # One per character. Everything the bot needs to know about how YOU play.
 PROFILE_DEFAULTS: dict[str, Any] = {
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
@@ -542,3 +550,80 @@ def save_profile(character: str, data: dict[str, Any]) -> None:
 
 def has_profile(character: str) -> bool:
     return os.path.exists(profile_path(character))
+
+
+def export_profile(character: str, path: str) -> None:
+    """Write the character's portable, player-chosen settings to *path* atomically.
+
+    The file has an explicit format/version rather than being a bare profile, so an app settings
+    file or a random JSON file cannot be mistaken for a character import.  Character-specific
+    readings stay in the destination profile when it is imported; see
+    CHARACTER_SPECIFIC_PROFILE_KEYS.
+    """
+    profile = copy.deepcopy(load_profile(character))
+    for key in CHARACTER_SPECIFIC_PROFILE_KEYS:
+        profile.pop(key, None)
+    json.save(path, {"format": PROFILE_EXPORT_FORMAT, "version": PROFILE_EXPORT_VERSION,
+                     "character": character, "settings": profile}, indent=2)
+
+
+def read_profile_export(path: str) -> tuple[str, dict[str, Any]]:
+    """Read a portable export or an ordinary existing profile without changing a profile.
+
+    Before this feature existed, profiles were the portable format: players naturally keep and
+    share ``profiles\\<character>.json``.  Those files remain supported.  An envelope is still
+    preferred for new exports because it carries the source character and an explicit version.
+    """
+    try:
+        with open(path, encoding="utf-8-sig") as f:
+            raw = json.load(f)
+    except (OSError, ValueError) as e:
+        raise ValueError("couldn't read the file: %s" % e) from None
+    if not json.is_object(raw):
+        raise ValueError("this isn't a character-settings file")
+    if "format" in raw:
+        if raw.get("format") != PROFILE_EXPORT_FORMAT:
+            raise ValueError("this isn't an Uncle Farmer character-settings file")
+        if raw.get("version") != PROFILE_EXPORT_VERSION:
+            raise ValueError("this character-settings file is from an unsupported version")
+        source = raw.get("character")
+        data = raw.get("settings")
+        if not isinstance(source, str) or not source.strip():
+            raise ValueError("the character-settings file has no character name")
+        if not json.is_object(data):
+            raise ValueError("the character-settings file has no settings")
+    else:
+        # A plain profile must actually contain at least one recognised profile choice.  Without
+        # this a settings.json or any unrelated JSON object would silently become default profile
+        # settings at import time.
+        if not set(raw).intersection(PROFILE_DEFAULTS):
+            raise ValueError("this JSON file doesn't contain character settings")
+        data = raw
+        base = os.path.basename(path)
+        source = base[:-len(".unclefarmer-profile.json")] if base.endswith(".unclefarmer-profile.json") \
+                 else os.path.splitext(base)[0]
+    try:
+        # Validate every known field before a caller asks to replace anything.  Extra fields are
+        # retained by Profile so a newer Uncle Farmer can share settings with an older one.
+        profile = Profile.model_validate({**copy.deepcopy(PROFILE_DEFAULTS), **copy.deepcopy(data)}).model_dump()
+    except ValidationError as e:
+        fields = ", ".join(str(err["loc"][0]) for err in e.errors() if err["loc"])
+        raise ValueError("the character-settings file has invalid setting%s: %s" %
+                         ("s" if "," in fields else "", fields or "data")) from None
+    for key in CHARACTER_SPECIFIC_PROFILE_KEYS:
+        profile.pop(key, None)
+    return str(source).strip(), _upgrade(profile)
+
+
+def import_profile(character: str, imported: dict[str, Any]) -> None:
+    """Replace player choices for *character*, retaining its own learned game facts.
+
+    Call read_profile_export first, show the user what will happen, then call this routine.  The
+    final write uses save_profile's normal atomic, locked-file-aware path.
+    """
+    current = load_profile(character)
+    profile = copy.deepcopy(imported)
+    for key in CHARACTER_SPECIFIC_PROFILE_KEYS:
+        if key in current:
+            profile[key] = current[key]
+    save_profile(character, profile)
