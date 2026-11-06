@@ -25,6 +25,10 @@ from ..i18n import _
 from . import bagrules, menus
 from .bot import CONFIRM, Bot, Stopped
 from .botparts.travel import ways_out
+from .transactions import InventoryTransaction
+
+
+NUMBER_AGENT = 56
 
 
 def counts(b: Bot) -> dict[str, int]:
@@ -148,6 +152,17 @@ def type_number(b: Bot, n: int) -> bool:
     """Answer the game's "how many?" box. True once it has taken the number."""
     if not wait_input(b, True):
         return False
+    before_menu = b.dialog().get("top")
+    if int(getattr(b, "agent_version", 0) or 0) >= NUMBER_AGENT:
+        answer = b.a.send("number %d" % int(n))
+        if not answer.startswith("entered"):
+            b.log(_("couldn't type into the game: {why}", why=answer), speak=True)
+            return False
+        if not wait_input(b, False):
+            b.log(_("the game didn't take the number"), speak=True)
+            return False
+        b.wait_menu_change(before_menu)
+        return True
     b.a.send("typeclear")
     r = b.a.send("type %d" % int(n))
     if not r.startswith("typed"):
@@ -158,7 +173,7 @@ def type_number(b: Bot, n: int) -> bool:
     if not wait_input(b, False):
         b.log(_("the game didn't take the number"), speak=True)
         return False
-    b.sleep(0.4)
+    b.wait_menu_change(before_menu)
     # some menus ask "are you sure?" after the number
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], CONFIRM) is not None:
@@ -433,37 +448,32 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
         if not knowledge.service_npcs(role):
             b.log(_("I don't know where a {role} is", role=role.replace("_", " ")))
             continue
-        before = counts(b).get("arnebia", 0)
-        npc = None
-        sold_any = 0
+        transaction = InventoryTransaction.begin(b)
+        before = transaction.before.get("arnebia", 0)
+        attempted: set[str] = set()
         for _round in range(60):
-            # a row at a time, the menu opened afresh each time: after a sale its rows are old
-            b.close_dialogs()
-            if npc is None:
-                npc = visit(b, role)
-            elif not b.talk(npc):
-                break
-            b.wait_dialog(3.0)
+            if _round == 0:
+                visit(b, role)
+                if not b.wait_dialog(3.0):
+                    break
             rows = buyer_rows(b)
-            if not rows:
-                break                         # "You have no fish and shrimp to sell"
-            todo = collection_left(b.p, rows)
+            todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
             if not todo:
                 break
             item, n = todo[0]
-            have = counts(b).get(item.lower(), 0)
             if not pick(b, r"^\s*\d+\s+" + re.escape(item) + r"\s*;\s*Unit price", n):
                 b.log(_("the {role} didn't take {item}", role=role.replace("_", " "), item=item))
                 break
-            gone = have - counts(b).get(item.lower(), 0)
-            if gone <= 0:
-                break
-            sold_any += 1
-            b.log(_("sold {n} {item}", n=gone, item=item))
-            stats.moved(b, "sold", item, gone)
+            attempted.add(item.lower())
+            transaction.expect(item, -n)
         b.close_dialogs()
-        got = counts(b).get("arnebia", 0) - before
-        if sold_any:
+        after = transaction.settle(b) if transaction.expected else transaction.before
+        moved = transaction.removed(after)
+        got = after.get("arnebia", 0) - before
+        for item, n in moved:
+            b.log(_("sold {n} {item}", n=n, item=item))
+            stats.moved(b, "sold", item, n)
+        if moved:
             earned += max(0, got)
             b.log(_("sold the {kind} for {n} arnebia", kind=_collection_word(kind), n=max(0, got)), speak=True)
     return earned

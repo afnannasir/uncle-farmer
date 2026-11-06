@@ -135,6 +135,9 @@ class TownBot:
         d = self.dialog()
         return d if bool(d.get("open")) == want_open else None
 
+    def wait_menu_change(self, before: dict[str, Any] | None, seconds: float=0.4) -> dict[str, Any]:
+        return self.dialog()
+
     def close_dialogs(self) -> None:
         self.closed += 1
         self._dialog = {"ok": True, "open": 0, "top": None}
@@ -183,6 +186,47 @@ def test_counts_treats_a_missing_name_as_empty_and_missing_count_as_zero() -> No
     b = TownBot(bag=[{"name": "", "count": 5}, {"name": "Thing"},
                      {"count": 9}, {"name": "Thing", "count": "4"}])
     assert town.counts(as_bot(b)) == {"": 14, "thing": 4}
+
+
+def test_sell_collection_refreshes_the_buyer_menu_without_reopening_the_conversation(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot(bag=[{"name": "Milkfish", "count": 4}, {"name": "Blue Crab", "count": 3},
+                     {"name": "Arnebia", "count": 0}],
+                profile={"bag_rules": {"blue crab": {"action": "sell", "keep": 1}}})
+    b._dialog = {"ok": True, "open": 1, "top": menu(
+        opt("4 Milkfish; Unit price 100 arnebia"), opt("3 Blue Crab; Unit price 200 arnebia"))}
+    visits: list[str] = []
+    chosen: list[str] = []
+
+    monkeypatch.setattr(knowledge, "service_npcs",
+                        stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, lambda bot, role: visits.append(role) or "Buyer"))
+
+    def pick(bot: TownBot, pattern: str, quantity: int | None = None) -> bool:
+        item, price = ("Milkfish", 100) if "Milkfish" in pattern else ("Blue Crab", 200)
+        chosen.append(item)
+        bot.remove(item, quantity or 0)
+        bot.add("Arnebia", price * (quantity or 0))
+        # The game renews the menu signature before its displayed rows catch up.
+        bot._dialog = {"ok": True, "open": 1, "top": menu(
+            opt("4 Milkfish; Unit price 100 arnebia"), opt("3 Blue Crab; Unit price 200 arnebia"))}
+        return True
+
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, pick))
+    assert town.sell_collection(as_bot(b), ("fish",)) == 800
+    assert visits == ["fish_buyer"]
+    assert chosen == ["Milkfish", "Blue Crab"]
+
+
+def test_sell_collection_reports_only_items_removed_from_the_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot(bag=[{"name": "Milkfish", "count": 4}, {"name": "Arnebia", "count": 0}])
+    b._dialog = {"ok": True, "open": 1, "top": menu(opt("4 Milkfish; Unit price 100 arnebia"))}
+    monkeypatch.setattr(knowledge, "service_npcs",
+                        stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, returning("Buyer")))
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, returning(True)))
+    assert town.sell_collection(as_bot(b), ("fish",)) == 0
+    assert not any("sold 4 Milkfish" in line for line in b.lines)
 
 
 # ============================================================ item_pattern
@@ -437,6 +481,18 @@ def test_type_number_success_without_a_confirm(monkeypatch: pytest.MonkeyPatch) 
     assert "type 5" in b.a.sent
     assert waits == [True, False]
     assert b.choices == []
+
+
+def test_type_number_uses_one_agent_command_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot()
+    b.agent_version = town.NUMBER_AGENT
+    b.link.answers["number 25"] = "entered 2"
+    waits: list[bool] = []
+    monkeypatch.setattr(town, "wait_input",
+                        stand_in(town.wait_input, lambda b, want_open=True, seconds=3.0: waits.append(want_open) or True))
+    assert town.type_number(as_bot(b), 25) is True
+    assert b.a.sent == ["number 25"]
+    assert waits == [True, False]
 
 
 def test_type_number_confirms_a_second_menu(monkeypatch: pytest.MonkeyPatch) -> None:

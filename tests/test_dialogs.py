@@ -165,6 +165,16 @@ def test_choose_already_on_the_entry_only_enters() -> None:
     assert b.keys == ["enter"]
 
 
+def test_direct_choice_waits_only_until_the_quantity_box_opens(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = DlgBot(top={"sig": 12, **menu([entry("Alpha")])})
+    b.agent_version = 55
+    b.a = JsonOnly(lambda line: {"ok": True, "open": True} if line == "input" else {})
+    monkeypatch.setattr(dialogs_mod.menus, "choose_at", lambda bot, top, row, col: True)
+    started = b.test_clock.now
+    assert b.choose(r"^Alpha$") is not None
+    assert b.test_clock.now == started
+
+
 def test_choose_no_match_closes_and_says_so() -> None:
     b = DlgBot(top=menu([entry("Alpha")]))
     assert b.choose(r"^Nope$") is None
