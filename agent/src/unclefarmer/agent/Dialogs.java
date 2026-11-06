@@ -134,6 +134,12 @@ final class Dialogs {
     /** Complete one verified shard sale without controller round trips between its menu stages. */
     static String shardSell(int id, int count) {
         if (count <= 0) return "error: shardsell count must be positive";
+        int broker;
+        try {
+            broker = selectedId();
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
         String chosen = pick(Menus.SHARD_MARKET, id, null);
         if (!chosen.startsWith("picked ")) return chosen;
         long until = System.currentTimeMillis() + MENU_STEP_TIMEOUT;
@@ -155,7 +161,10 @@ final class Dialogs {
         if (!entered.startsWith("entered")) return entered;
         while (true) {
             try {
-                if (tradeFinished()) return "sold " + id + " " + count;
+                if (tradeFinished()) {
+                    reopenMarket(broker, id);
+                    return "sold " + id + " " + count;
+                }
             } catch (Memory.Unavailable u) {
                 return "error: " + u.getMessage();
             }
@@ -175,6 +184,53 @@ final class Dialogs {
             List<Object> open = copy(list(world, W_DIALOGS));
             return open.isEmpty() || !Menus.classify(model(open.get(open.size() - 1))).equals(Menus.SHARD_TRADE);
         }
+    }
+
+    /** The server closes a completed trade. If the NPC that opened it is still selected, invoke
+     * the game's own Enter action immediately and wait for that same verified market to return. */
+    private static boolean reopenMarket(int broker, int item) {
+        if (broker <= 0) return false;
+        try {
+            Object world = Memory.world();
+            java.awt.Frame win = Memory.window();
+            Method enter = win == null ? null : chooseMethod(world.getClass(), win.getClass());
+            if (enter == null) return false;
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (!open.isEmpty()) return marketHas(open.get(open.size() - 1), item);
+                if (selectedId(world) != broker) return false;
+                enter.invoke(world, win);
+            }
+            long until = System.currentTimeMillis() + MENU_STEP_TIMEOUT;
+            while (true) {
+                synchronized (world) {
+                    List<Object> open = copy(list(world, W_DIALOGS));
+                    if (!open.isEmpty()) return marketHas(open.get(open.size() - 1), item);
+                }
+                if (!pause(until)) return false;
+            }
+        } catch (Throwable t) {
+            Log.error("reopen shard market", t);
+            return false;
+        }
+    }
+
+    private static boolean marketHas(Object dialog, int item) throws Memory.Unavailable {
+        try {
+            Menus.place(model(dialog), Menus.SHARD_MARKET, item, null);
+            return true;
+        } catch (Menus.Refused r) {
+            return false;
+        }
+    }
+
+    private static int selectedId() throws Memory.Unavailable {
+        return selectedId(Memory.world());
+    }
+
+    private static int selectedId(Object world) throws Memory.Unavailable {
+        Object selected = ref(world, W_SELECTED);
+        return selected == null ? 0 : intField(selected, E_ID);
     }
 
     private static boolean pause(long until) {
