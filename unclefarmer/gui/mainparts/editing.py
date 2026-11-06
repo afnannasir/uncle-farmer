@@ -249,7 +249,9 @@ class EditingMixin(FrameParts):
 
     def sell_shards_now(self) -> None:
         """Tools, Sell shards now: the shards the bag manager says to sell, at this city's Shard
-        Market or the nearest one - a job of its own, like selling the collection."""
+        Market or the nearest one - a job of its own, like selling the collection. Started by hand,
+        whatever Character settings says about selling after farming."""
+        self.log(_("Sell shards now: started by hand"))
         self.run_errand("sell_shards\n", _("Selling shards"))
 
     def update_shard_prices_now(self) -> None:
@@ -277,6 +279,7 @@ class EditingMixin(FrameParts):
                            "Nothing else is touched. Thrown items are gone for good.", list=what),
                    _("Clean the bag")):
             return
+        self.log(_("Clean the bag now: started by hand"))
         self.run_errand("clean_bag\n", _("Cleaning the bag"))
 
     def edit_other_profile(self) -> None:

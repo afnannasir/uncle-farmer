@@ -301,6 +301,11 @@ class ProfileDialog(Dialog):
         f = group(panel, box, _("Travel"))
         self.speed_beast = f.choice(_("&Travel on fusion beast:"), [""])
         self.end_hearth = f.check(_("End the run with the &hearthstone"), p.get("end_with_hearthstone", True))
+        f = group(panel, box, _("After farming (when a run finishes by itself, never after Stop)"))
+        self.sell_after = f.check(_("Automatically se&ll shards after farming (Tools, Sell shards now)"),
+                                  p.get("sell_shards_after_farming", False))
+        self.clean_after = f.check(_("Automatically clea&n the bag after farming (Tools, Clean the bag now)"),
+                                   p.get("clean_bag_after_farming", False))
         self.pet_list = labeled(panel, box, _("P&ets (ticked ones come out, first ready one first):"),
                                 lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
         buttons(panel, box, (_("Move &up"), lambda e: self.move_pet(-1)),
@@ -494,6 +499,8 @@ class ProfileDialog(Dialog):
         p["stop_when_out_of_potions"] = self.potions_out.GetValue()
         p["speed_beast"] = self.speed_values[max(0, self.speed_beast.GetSelection())]
         p["end_with_hearthstone"] = self.end_hearth.GetValue()
+        p["sell_shards_after_farming"] = self.sell_after.GetValue()
+        p["clean_bag_after_farming"] = self.clean_after.GetValue()
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()

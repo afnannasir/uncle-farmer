@@ -85,6 +85,8 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "mp_check_every": 10,     # seconds between MP readings with that key when MP is near the potion mark (30 otherwise)
     "close_popups": True,     # close windows the game opens on its own (team invites...) with Escape
     "end_with_hearthstone": True,   # end a run with the hearthstone when one is at hand, else walk
+    "sell_shards_after_farming": False,   # Tools, Sell shards now, by itself after a farming run that finished
+    "clean_bag_after_farming": False,     # Tools, Clean the bag now, by itself after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
@@ -243,6 +245,8 @@ class Profile(BaseModel):
     mp_check_every: int = PROFILE_DEFAULTS["mp_check_every"]
     close_popups: bool = PROFILE_DEFAULTS["close_popups"]
     end_with_hearthstone: bool = PROFILE_DEFAULTS["end_with_hearthstone"]
+    sell_shards_after_farming: bool = PROFILE_DEFAULTS["sell_shards_after_farming"]
+    clean_bag_after_farming: bool = PROFILE_DEFAULTS["clean_bag_after_farming"]
     hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
     hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
     bag_up: str = PROFILE_DEFAULTS["bag_up"]
