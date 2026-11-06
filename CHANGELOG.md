@@ -2,6 +2,12 @@
 
 ## Not released yet
 
+**Pets**
+
+- The bot turns on the monsters next to your pet as soon as the pet loses 2% of its HP within 3
+  seconds (about one hit), instead of 8%: it no longer lets the pet take a beating before it
+  defends it.
+
 **Gem Maker**
 
 - A lucky run where no gem breaks no longer keeps the Gem Maker going round. A combine that works

@@ -288,7 +288,7 @@ it again later: after a minute, then two, four and so on up to ten minutes while
 (the walking assistant: from 15 seconds up to a minute). The log says so once, and again when the
 beast is finally taken.
 
-Your pet's HP is watched too. If it falls fast (8% of its HP within 3 seconds) the monsters right
+Your pet's HP is watched too. If it falls fast (2% of its HP within 3 seconds) the monsters right
 next to it are treated as its attackers and fought first, even when the game didn't report who hit
 it. A monster that is attacking you, or one nearly dead, is finished first. It stops once the pet's
 HP hasn't fallen for 6 seconds. With the pet out of sight or no HP reading, nothing is assumed.
