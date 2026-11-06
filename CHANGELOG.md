@@ -1,6 +1,24 @@
 # What's new
 
-## Not released yet
+## 1.0.1
+
+**Sharing settings and plans**
+
+- Character, Export character settings and Import character settings: a character's settings
+  (combat, keys, potions and the rest) saved to a file and loaded into another character or another
+  copy of Uncle Farmer.
+- Plans, Export plan and Import plan: a plan saved to a file and loaded elsewhere.
+
+**Results**
+
+- Results show Time used and Time remaining (to the earliest known end: the plan's time limit, the
+  stop time or the daily stop), and earnings so far, total expenses and net earnings.
+
+**Gem Maker buying**
+
+- The Gem Maker buys from the market in batches worked out from the room in your bag, your arnebia
+  and the game's 2000-at-a-time limit, and takes a bagful from the storehouse at once. A job that
+  is really blocked stops at once and says why.
 
 **Telegram group**
 
