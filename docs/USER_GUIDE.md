@@ -175,6 +175,24 @@ Character, Bag and supplies (Ctrl+B):
   Full means full: the bot farms until the load reaches its limit (or stops rising just under it
   while monsters keep dying), unless you set a lower mark there.
 
+### Selling shards and cleaning the bag after farming
+
+Character, Settings, Travel and pets, After farming has two boxes, each on its own:
+
+- **Automatically sell shards after farming** does Tools, Sell shards now: the shards on the Sell
+  list, at the nearest Shard Market.
+- **Automatically clean the bag after farming** does Tools, Clean the bag now: throws away, where
+  the character stands, only what is on the throw-away list.
+
+Both are off until you tick them, and they are kept per character. They run when a farming run
+finishes by itself: its plan is done, a stop rule ended it (the drop time, a full bag set to stop,
+deaths...), or the daily stop came. Selling comes first, then cleaning, each after the other has
+finished, once a run, and before the game is closed or the computer shut down if you chose that.
+They never run after Stop, after Pause, when a player called you away (come, follow), after the
+walking assistant or after a tool. If one of them fails, the log says why and the other still runs;
+Stop ends both. The Tools menu items still work by hand whatever the boxes say, and running them
+by hand changes no setting. The log says which way each one was started.
+
 ## Fighting and staying alive
 
 The bot stands and fights, however many monsters are on it. It never turns its back on a pack
@@ -288,7 +306,7 @@ it again later: after a minute, then two, four and so on up to ten minutes while
 (the walking assistant: from 15 seconds up to a minute). The log says so once, and again when the
 beast is finally taken.
 
-Your pet's HP is watched too. If it falls fast (8% of its HP within 3 seconds) the monsters right
+Your pet's HP is watched too. If it falls fast (2% of its HP within 3 seconds) the monsters right
 next to it are treated as its attackers and fought first, even when the game didn't report who hit
 it. A monster that is attacking you, or one nearly dead, is finished first. It stops once the pet's
 HP hasn't fallen for 6 seconds. With the pet out of sight or no HP reading, nothing is assumed.
