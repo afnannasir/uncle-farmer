@@ -989,29 +989,53 @@ class SkillBook:
                      and self.debuff_worth(x, v.hp_share)]
             choice = (max(worth, key=lambda x: (self.debuff_worth(x, v.hp_share), x["page"] == up), default=None)
                       or v.first("dot", lambda s: not v.running(s)))
-        # 4. a pack: the area skill that hits the most (a Hunter spends its marks with Marked Shot)
+        # 4. a Hunter spends its marks with Marked Shot on a pack
         need = getattr(self.b, "pack_min", 3)
         if not choice and v.pack >= need and self.cls == "Hunter" and (
                 marks >= 2 if marks is not None else now - self.marked_at < 8):
             choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
-        if not choice:
-            area = [(v.area_hits(s), s.get("targets") or 0, s) for s in skills
-                    if s.get("role") == "aoe" and v.in_range(s) and s["name"] not in MARK_SHOTS]
-            best = max(area, key=lambda a: (a[0], a[1]), default=None)
-            if best is not None and best[0] >= need:
-                choice = best[2]
         # several targets marked (the T key counts them): one shot hits them all
         if not choice and marks is not None and marks >= 3:
             choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
-        # 5. one target: the strongest ready single-target skill, then the base attack
         if not choice:
-            # the Orc's Bloodthirsty (rage, heals 30% of its damage) is its hardest single hit
-            choice = v.first(("single_target", "lifesteal")) or v.first("finisher")
-            base = v.first("base_attack")
-            if choice and base and v.score(choice) < v.score(base):
-                choice = None         # a long channel that hits no harder than the base attack
-            choice = choice or base
+            choice = self._damage_choice(v, need)
         return choice
+
+    def _damage_choice(self, v: _PickView, need: int) -> Skill | None:
+        """5. The attack that does the most damage now: an area skill's damage counts once for
+        every monster it would hit, so it goes whenever that beats the best single hit - on two
+        monsters, or on one when it hits harder than anything else. A fixed number of monsters
+        (3 in the field, 2 in a cave) kept casters on their single hits in the field, where
+        monsters stand apart: a Witcher, with no single-target skill, only ever fired Shadow
+        Arrow. Area skills are weighed against each other the same way, not by how many targets
+        they could take: an Elf in a pack cast only the 3-second Blazing Storm channel, never
+        Fire Surge, which does twice the damage for the time. An area skill whose text gives no
+        damage (Blizzard, Icicle) still goes on a pack of `need` monsters, as before."""
+        skills = v.skills
+        # the Orc's Bloodthirsty (rage, heals 30% of its damage) is its hardest single hit
+        single = v.first(("single_target", "lifesteal")) or v.first("finisher")
+        base = v.first("base_attack")
+        if single and base and v.score(single) < v.score(base):
+            single = None             # a long channel that hits no harder than the base attack
+        single = single or base
+        best, best_value = single, v.score(single) if single else 0.0
+        unknown: tuple[int, Skill] | None = None
+        for s in skills:
+            if s.get("role") != "aoe" or not v.in_range(s) or s["name"] in MARK_SHOTS:
+                continue
+            hits = v.area_hits(s)
+            if not s.get("attack"):
+                if hits >= need and (unknown is None or hits > unknown[0]):
+                    unknown = (hits, s)
+                continue
+            value = v.score(s) * hits
+            if value > best_value or (best is not None and value == best_value and best.get("role") == "aoe"
+                                      and (s.get("bonus_pct") or 0, s["page"] == v.up)
+                                      > (best.get("bonus_pct") or 0, best["page"] == v.up)):
+                best, best_value = s, value
+        if unknown is not None and (best is None or best.get("role") != "aoe"):
+            return unknown[1]
+        return best
 
     def fallback(self, now: float) -> Press | None:
         """A press when pick() found nothing: the hardest-hitting attack the player allows whose own
