@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
+MENU_POLL = 0.025             # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
 SHARD_TRADE = "shard_trade"
 POTION_SHOP = "potion_shop"
@@ -104,7 +105,7 @@ def find(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
             return hits[0]
         if clock_for(b).time() >= end:
             return None
-        b.sleep(0.15)
+        b.sleep(MENU_POLL)
 
 
 def why_not(b: Bot, layout: str) -> str:
@@ -138,7 +139,7 @@ def _pick_by_id(b: Bot, layout: str, item_id: int, action: str | None, wait: flo
         answer = b.a.send(cmd)
         if not answer.startswith(WAITING) or clock_for(b).time() >= end:
             return answer
-        b.sleep(0.15)
+        b.sleep(MENU_POLL)
 
 
 def _picked(answer: str, item_id: int, name: str | None, action: str | None) -> Item:
