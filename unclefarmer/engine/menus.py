@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
-MENU_POLL = 0.025             # retry direct picks promptly; the agent refuses an unready/wrong menu
+MENU_POLL = 0.01              # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
 SHARD_TRADE = "shard_trade"
 POTION_SHOP = "potion_shop"
