@@ -61,6 +61,22 @@ def _translations() -> str:
     return "Roman Urdu catalog loads"
 
 
+def _help_texts() -> str:
+    """The help windows that show module docstrings (Help, Commands for trusted players; Script
+    commands) and the guides the Help menu reads from docs/. A build made with -OO had no
+    docstrings, and those windows came up empty."""
+    from . import messages
+    from .engine import script
+    empty = [name for name, mod in (("messages", messages), ("engine.script", script)) if not (mod.__doc__ or "").strip()]
+    if empty:
+        raise RuntimeError("no help text in %s (docstrings stripped: built with -OO?)" % ", ".join(empty))
+    missing = [n for n in ("USER_GUIDE.md", "GAME_GUIDE.md", "SCRIPTING.md")
+               if not os.path.isfile(os.path.join(paths.DOCS, n))]
+    if missing:
+        raise RuntimeError("guides missing from %s: %s" % (paths.DOCS, ", ".join(missing)))
+    return "trusted-player and script commands, 3 guides"
+
+
 def _agent() -> str:
     if not os.path.isfile(paths.AGENT_JAR):
         raise RuntimeError("no game agent at %s" % paths.AGENT_JAR)
@@ -71,7 +87,8 @@ def checks() -> list[tuple[str, Callable[[], str], bool]]:
     """(name, check, required). The agent jar is gitignored in a source checkout (build_agent.py
     makes it), so there it is reported but not required."""
     return [("imports", _imports, True), ("native routing", _native, True), ("data", _data, True),
-            ("translations", _translations, True), ("game agent", _agent, paths.frozen())]
+            ("translations", _translations, True), ("help texts", _help_texts, True),
+            ("game agent", _agent, paths.frozen())]
 
 
 def run(report_path: str) -> int:
