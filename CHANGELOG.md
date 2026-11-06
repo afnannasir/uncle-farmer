@@ -2,6 +2,11 @@
 
 ## Not released yet
 
+**Telegram group**
+
+- Help, Join the Telegram group opens the players' Telegram group, where you can talk with other
+  players and the developer. The Contact the developer window has a button for it too.
+
 **Help**
 
 - Help, Commands for trusted players and Script commands (Help menu and the script editor) are no

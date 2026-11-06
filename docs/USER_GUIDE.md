@@ -788,6 +788,10 @@ Help, Contact the developer shows the developer's email address, for questions, 
 donations, with buttons to write an email or copy the address. Bugs are best
 reported as a GitHub issue, so everyone can see the fix.
 
+Help, Join the Telegram group opens the players' Telegram group (https://t.me/+55NtoqsY7u1lMzNk),
+where you can talk with other players and the developer. The Contact the developer window has a
+button for it too.
+
 ## Things to know
 
 - If the bot says it can't find the game: other tools that clean the game's settings (such as

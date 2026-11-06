@@ -1718,6 +1718,9 @@ msgstr ""
 msgid "Join an international room in the game first."
 msgstr ""
 
+msgid "Join the &Telegram group"
+msgstr ""
+
 msgid "Keep &old files:"
 msgstr ""
 
@@ -2037,6 +2040,9 @@ msgid "No Gem Maker, Equipment Enhancer or chores runs."
 msgstr ""
 
 msgid "No bot is running."
+msgstr ""
+
+msgid "No browser opened. The Telegram group is at {link}"
 msgstr ""
 
 msgid ""
@@ -2954,6 +2960,9 @@ msgid "Take their commands while the game &window is in front"
 msgstr ""
 
 msgid "Taken out of the storehouse:"
+msgstr ""
+
+msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr ""
 
 msgid "Target east"

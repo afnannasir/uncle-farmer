@@ -219,6 +219,9 @@ Questions, ideas, or anything else: [afnan.nasir2000@gmail.com](mailto:afnan.nas
 [issue](https://github.com/afnannasir/uncle-farmer/issues), so everyone can see the fix. Inside the app, Help, Contact the
 developer shows the address too.
 
+Join the players' [Telegram group](https://t.me/+55NtoqsY7u1lMzNk) to talk with other players and the developer (in the
+app: Help, Join the Telegram group).
+
 ## Play fair
 
 Using a bot may be against Mist World's rules, so you use Uncle Farmer at your own risk. Please be
