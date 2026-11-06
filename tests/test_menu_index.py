@@ -259,6 +259,17 @@ def test_a_shard_is_sold_by_its_verified_rows_without_walking_down_the_list() ->
     assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
 
 
+def test_shard_chain_uses_the_next_menu_state_instead_of_fixed_pick_pauses() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30})
+    b = ShopBot(game)
+    before = b.clock.now
+    item = menus.pick(as_bot(b), menus.SHARD_MARKET, name="Level 1 Turquoise Shard", settle=False)
+    assert item is not None
+    assert menus.pick(as_bot(b), menus.SHARD_TRADE, item_id=item["id"], action="sell", settle=False) is not None
+    assert game.picks == ["shard_market 20665", "shard_trade 20665 sell"]
+    assert b.clock.now == before
+
+
 def test_by_index_takes_no_walking_keys_where_by_text_took_one_per_row() -> None:
     by_index = PretendShop("market", {"Level 1 Turquoise Shard": 5})
     sell(by_index, "Level 1 Turquoise Shard", 5)

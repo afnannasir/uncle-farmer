@@ -152,7 +152,8 @@ def _picked(answer: str, item_id: int, name: str | None, action: str | None) -> 
 
 
 def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = None,
-         action: str | None = None, wait: float = 0.0, then_text: bool = True) -> Item | None:
+         action: str | None = None, wait: float = 0.0, then_text: bool = True,
+         settle: bool = True) -> Item | None:
     """Choose the item by its verified index. Returns the item chosen, or None when the index can't
     be used - then nothing was chosen. The reason is logged once per run and layout (then_text:
     the caller goes on by the menu's text), and the menu goes to logs/dialogs.log, so a changed
@@ -169,7 +170,8 @@ def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
         if answer.startswith("picked "):
             it = _picked(answer, known, name, action)
             b.log(_("choosing \"{entry}\"", entry=it.get("name") or known))
-            b.sleep(0.4)              # as after Enter: the game's answer comes a moment later
+            if settle:
+                b.sleep(0.4)          # as after Enter: the game's answer comes a moment later
             return it
         if item_id is not None:
             _fell_back(b, layout, answer, then_text)
@@ -185,7 +187,8 @@ def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
         _fell_back(b, layout, answer, then_text)
         return None
     b.log(_("choosing \"{entry}\"", entry=it.get("name") or it["id"]))
-    b.sleep(0.4)                  # as after Enter: the game's answer comes a moment later
+    if settle:
+        b.sleep(0.4)              # as after Enter: the game's answer comes a moment later
     return it
 
 

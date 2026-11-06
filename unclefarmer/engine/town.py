@@ -29,6 +29,7 @@ from .transactions import InventoryTransaction
 
 
 NUMBER_AGENT = 56
+INPUT_POLL = 0.025
 
 
 def counts(b: Bot) -> dict[str, int]:
@@ -130,7 +131,7 @@ def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
         s = b.a.json("input")
         if s.get("ok") and bool(s.get("open")) == want_open:
             return True
-        b.sleep(0.15)
+        b.sleep(INPUT_POLL)
     return False
 
 
@@ -715,10 +716,12 @@ def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
     done = 0
     while done < n:
         step = min(n - done, TRADE_MOST)
-        listed = menus.pick(b, menus.SHARD_MARKET, name=name, wait=MARKET_RETURN)
+        # Each choice is direct (the agent verifies the fixed market's item id and row), so do
+        # not pause after it.  The next direct choice waits for the game's real next menu instead.
+        listed = menus.pick(b, menus.SHARD_MARKET, name=name, wait=MARKET_RETURN, settle=False)
         if listed is not None:
             if menus.pick(b, menus.SHARD_TRADE, item_id=int(listed["id"]), action=action, wait=3.0,
-                          then_text=False) is None:
+                          then_text=False, settle=False) is None:
                 b.log(_("the Shard Market's buy and sell menu for {item} didn't come up as expected - "
                         "nothing chosen there, see logs\\dialogs.log", item=name), speak=True)
                 b.close_dialogs()
