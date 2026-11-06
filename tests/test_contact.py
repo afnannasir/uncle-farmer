@@ -1,4 +1,5 @@
-"""Help, Contact the developer: the address, the email it opens, and the menu entry."""
+"""Help, Contact the developer: the address, the email it opens, and the menu entry; Help, Join the
+Telegram group."""
 
 from __future__ import annotations
 
@@ -22,6 +23,47 @@ def test_the_mailto_link_is_the_address_with_an_optional_subject() -> None:
 def test_the_window_says_where_to_write_and_where_bugs_go() -> None:
     text = gui_contact.message()
     assert contact.EMAIL in text and contact.ISSUES in text and "donate" in text
+    assert contact.TELEGRAM in text
+
+
+def browser(monkeypatch: pytest.MonkeyPatch, works: bool) -> tuple[list[str], list[str]]:
+    """(links the browser was asked to open, error messages shown)."""
+    opened: list[str] = []
+    errors: list[str] = []
+
+    def open_url(url: str) -> bool:
+        opened.append(url)
+        return works
+
+    def show_error(parent: object, msg: str) -> None:
+        errors.append(msg)
+    monkeypatch.setattr(gui_contact.webbrowser, "open", open_url)
+    monkeypatch.setattr(gui_contact, "error", show_error)
+    return opened, errors
+
+
+def test_join_the_telegram_group_opens_its_invite_link(monkeypatch: pytest.MonkeyPatch) -> None:
+    opened, errors = browser(monkeypatch, works=True)
+    gui_contact.join_telegram(None)
+    assert opened == ["https://t.me/+55NtoqsY7u1lMzNk"] == [contact.TELEGRAM] and errors == []
+
+
+def test_with_no_browser_the_link_is_shown_to_type_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    _opened, errors = browser(monkeypatch, works=False)
+    gui_contact.join_telegram(None)
+    assert len(errors) == 1 and contact.TELEGRAM in errors[0]
+
+
+def test_the_help_menu_entry_joins_the_telegram_group(monkeypatch: pytest.MonkeyPatch) -> None:
+    joined: list[object] = []
+
+    def join(parent: object) -> None:
+        joined.append(parent)
+    monkeypatch.setattr(gui_contact, "join_telegram", join)
+    frame = object()
+    handler: Any = main.MainFrame.join_telegram
+    handler(frame)
+    assert joined == [frame]
 
 
 def test_write_an_email_opens_a_message_naming_this_version(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -61,4 +103,5 @@ def test_the_address_is_never_in_the_translations() -> None:
     from pathlib import Path
     lang = Path(__file__).resolve().parent.parent / "lang"
     for name in ("unclefarmer.pot", "ur.po"):
-        assert contact.EMAIL not in (lang / name).read_text(encoding="utf-8")
+        text = (lang / name).read_text(encoding="utf-8")
+        assert contact.EMAIL not in text and contact.TELEGRAM not in text

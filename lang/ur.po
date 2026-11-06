@@ -1761,6 +1761,9 @@ msgstr "Pehle game mein koi private channel join karein."
 msgid "Join an international room in the game first."
 msgstr "Pehle game mein koi international room join karein."
 
+msgid "Join the &Telegram group"
+msgstr "&Telegram group join karein"
+
 msgid "Keep &old files:"
 msgstr "Purani files &rakhein:"
 
@@ -2090,6 +2093,9 @@ msgstr "Gem Maker, Equipment Enhancer ya roz ke kaam ka koi run nahi."
 
 msgid "No bot is running."
 msgstr "Koi bot nahi chal raha."
+
+msgid "No browser opened. The Telegram group is at {link}"
+msgstr "Koi browser nahi khula. Telegram group yahan hai: {link}"
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3043,6 +3049,9 @@ msgstr "Game ki &window saamne ho tab bhi unke commands lein"
 
 msgid "Taken out of the storehouse:"
 msgstr "Storehouse se nikale gaye:"
+
+msgid "Talk with other players and the developer in the Telegram group: {link}"
+msgstr "Doosre players aur developer se Telegram group mein baat karein: {link}"
 
 msgid "Target east"
 msgstr "Mashriq ko target karein"
