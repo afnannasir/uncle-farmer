@@ -148,6 +148,30 @@ def shard_sell(b: Bot, item_id: int, count: int) -> bool:
     return b.a.send("shardsell %d %d" % (item_id, count)).startswith("sold ")
 
 
+def shard_sell_all(b: Bot, sales: list[tuple[int, int]]) -> bool:
+    """Run a verified, sequential shard-sale plan inside a current agent."""
+    if not sales or int(getattr(b, "agent_version", 0) or 0) < SHARD_SELL_AGENT:
+        return False
+    words = " ".join("%d %d" % pair for pair in sales)
+    return b.a.send("shardsellall " + words).startswith("sold all ")
+
+
+def market_item_ids(b: Bot, names: list[str]) -> list[int] | None:
+    """The requested names' IDs from one verified Shard Market reading, in the same order."""
+    menu = read(b)
+    if menu is None or menu.get("layout") != SHARD_MARKET or not menu.get("verified"):
+        return None
+    out: list[int] = []
+    for name in names:
+        hits = _matching(menu, name, None, None)
+        if len(hits) != 1:
+            return None
+        item = int(hits[0]["id"])
+        known_ids(b)[_key(SHARD_MARKET, name)] = item
+        out.append(item)
+    return out
+
+
 def _pick_by_id(b: Bot, layout: str, item_id: int, action: str | None, wait: float) -> str:
     """`pick` by the id, without reading the menu first; while the menu hasn't come up yet (the
     server answers a choice a moment later), again until wait runs out. The agent's answer."""

@@ -172,6 +172,16 @@ final class Dialogs {
         }
     }
 
+    /** Run several verified shard sales serially without returning to the controller between them. */
+    static String shardSellAll(int[] ids, int[] counts) {
+        if (ids.length == 0 || ids.length != counts.length) return "error: shardsellall needs item/count pairs";
+        for (int i = 0; i < ids.length; i++) {
+            String result = shardSell(ids[i], counts[i]);
+            if (!result.startsWith("sold ")) return result;
+        }
+        return "sold all " + ids.length;
+    }
+
     private static boolean waiting(String reply) {
         return reply.startsWith("refused: no menu is open") || reply.startsWith("refused: the open menu is ");
     }

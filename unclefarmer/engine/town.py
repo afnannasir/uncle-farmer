@@ -746,6 +746,33 @@ def shard_trade(b: Bot, name: str, action: str, n: int,
     return done
 
 
+def _sell_shard_batch(b: Bot, todo: list[tuple[str, int]], transaction: InventoryTransaction,
+                      open_market: Callable[[str], bool]) -> list[tuple[str, int]] | None:
+    """Sell one verified plan in the agent. None leaves the ordinary sequential path in charge."""
+    if not open_market(todo[0][0]):
+        return None
+    ids = menus.market_item_ids(b, [name for name, _n in todo])
+    plan = list(zip(ids or [], [n for _name, n in todo]))
+    if ids is None or not menus.shard_sell_all(b, plan):
+        return None
+    for name, n in todo:
+        transaction.expect(name, -n)
+    b.close_dialogs()
+    return transaction.removed(transaction.settle(b))
+
+
+def _sell_shard_steps(b: Bot, todo: list[tuple[str, int]], transaction: InventoryTransaction,
+                      open_market: Callable[[str], bool]) -> list[tuple[str, int]]:
+    """The compatible per-shard path, used when an agent cannot take the batch transaction."""
+    for name, n in todo:
+        if not open_market(name):
+            b.log(_("the Shard Market didn't list {item}", item=name))
+            continue
+        transaction.expect(name, -shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name)))
+    b.close_dialogs()
+    return transaction.removed(transaction.settle(b)) if transaction.expected else []
+
+
 def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = None) -> int:
     """Sell shards of the given types at the nearest Shard Market (live menu, seen in our logs:
     talk -> a row per shard "<name> | Unit price N arnebia" -> "buy" / "sell" -> "Please enter the
@@ -785,15 +812,16 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
             return False
         return market_lists(b, name, MARKET_OPEN)
 
-    for name, n in todo:
-        if not open_market(name):
-            b.log(_("the Shard Market didn't list {item}", item=name))
-            continue
-        traded = shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name))
-        transaction.expect(name, -traded)
-    b.close_dialogs()
-    after = transaction.settle(b) if transaction.expected else transaction.before
-    moved = transaction.removed(after)
+    # A whole market plan is faster than one controller command per shard. The agent validates
+    # every row and sell menu itself; statistics still use the final bag reconciliation below.
+    moved = _sell_shard_batch(b, todo, transaction, open_market)
+    if moved is not None:
+        for name, gone in moved:
+            b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
+            stats.moved(b, "sold", name, gone)
+        return len(moved)
+
+    moved = _sell_shard_steps(b, todo, transaction, open_market)
     for name, gone in moved:
         b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
         stats.moved(b, "sold", name, gone)

@@ -134,6 +134,16 @@ class PretendShop:
             self.bag[item] = self.bag.get(item, 0) - int(count)
             self.screen = self.kind
             return "sold %s %s" % (item_id, count)
+        if line.startswith("shardsellall "):
+            values = line.split()[1:]
+            if self.screen != "market" or len(values) % 2:
+                return "refused: the open menu is %s, not shard_market" % self.layout()
+            for item_id, count in zip(values[::2], values[1::2]):
+                item = self.name_of(int(item_id))
+                self.trades.append(("sell", item, int(count)))
+                self.bag[item] = self.bag.get(item, 0) - int(count)
+            self.screen = self.kind
+            return "sold all %d" % (len(values) // 2)
         if line.startswith("type "):
             self.typed = int(line.split()[1])
             return "typed"
@@ -268,12 +278,15 @@ def test_a_shard_is_sold_by_its_verified_rows_without_walking_down_the_list() ->
     assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
 
 
-def test_new_agent_sells_a_verified_shard_in_one_agent_transaction() -> None:
-    game = PretendShop("market", {"Level 1 Turquoise Shard": 30}, version=56)
-    b = sell(game, "Level 1 Turquoise Shard", 30)
-    assert "shardsell 20665 30" in game.sent
-    assert game.picks == [] and game.trades == [("sell", "Level 1 Turquoise Shard", 30)]
+def test_new_agent_sells_verified_shards_in_one_agent_transaction() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30, "Level 1 Sapphire Shard": 5}, version=56)
+    b = ShopBot(game)
+    town.sell_shards(as_bot(b), ["Level 1 Turquoise Shard", "Level 1 Sapphire Shard"])
+    assert "shardsellall 20665 30 20405 5" in game.sent
+    assert game.picks == [] and game.trades == [("sell", "Level 1 Turquoise Shard", 30),
+                                                 ("sell", "Level 1 Sapphire Shard", 5)]
     assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
+    assert "sold 5 Level 1 Sapphire Shard at the Shard Market" in b.lines
 
 
 def test_shard_chain_uses_the_next_menu_state_instead_of_fixed_pick_pauses() -> None:

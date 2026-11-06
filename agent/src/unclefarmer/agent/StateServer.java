@@ -348,6 +348,21 @@ final class StateServer implements Runnable {
                 return "bad number in: " + command;
             }
         }
+        if (verb.equals("shardsellall")) {
+            if (!armed[0]) return "refused: send 'arm' first";
+            if (parts.length < 3 || parts.length % 2 == 0) return "error: shardsellall <item id> <count> ...";
+            try {
+                int[] ids = new int[(parts.length - 1) / 2];
+                int[] counts = new int[ids.length];
+                for (int i = 0; i < ids.length; i++) {
+                    ids[i] = Integer.parseInt(parts[1 + 2 * i]);
+                    counts[i] = Integer.parseInt(parts[2 + 2 * i]);
+                }
+                return Dialogs.shardSellAll(ids, counts);
+            } catch (NumberFormatException e) {
+                return "bad number in: " + command;
+            }
+        }
         if (verb.equals("choose")) {
             if (!armed[0]) return "refused: send 'arm' first";
             if (parts.length != 4) return "error: choose <row> <col> <sig>";
