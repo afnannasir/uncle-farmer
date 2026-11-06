@@ -134,6 +134,15 @@ def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
     return False
 
 
+def wait_menu_change(b: Bot, before: dict[str, Any] | None) -> None:
+    """Use the state-aware wait when the bot has it, preserving the older fallback otherwise."""
+    waiter = getattr(b, "wait_menu_change", None)
+    if callable(waiter):
+        waiter(before)
+    else:
+        b.sleep(0.4)
+
+
 def type_text(b: Bot, text: str) -> bool:
     """Answer a box that asks for a name. True once the game has taken it."""
     if not wait_input(b, True):
@@ -161,7 +170,7 @@ def type_number(b: Bot, n: int) -> bool:
         if not wait_input(b, False):
             b.log(_("the game didn't take the number"), speak=True)
             return False
-        b.wait_menu_change(before_menu)
+        wait_menu_change(b, before_menu)
         return True
     b.a.send("typeclear")
     r = b.a.send("type %d" % int(n))
@@ -173,7 +182,7 @@ def type_number(b: Bot, n: int) -> bool:
     if not wait_input(b, False):
         b.log(_("the game didn't take the number"), speak=True)
         return False
-    b.wait_menu_change(before_menu)
+    wait_menu_change(b, before_menu)
     # some menus ask "are you sure?" after the number
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], CONFIRM) is not None:
@@ -683,12 +692,14 @@ def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
 
 
 TRADE_MOST = 2000      # the Shard Market's "how many" box takes at most this many at a time
+MARKET_RETURN = 1.0    # the market list normally returns immediately after a completed trade
 
 
-def market_lists(b: Bot, name: str) -> bool:
+def market_lists(b: Bot, name: str, wait: float = 0.0) -> bool:
     """The Shard Market's list is open and has the shard: by the verified layout when the agent
-    reads it (agent 53), else by the entries' text."""
-    if menus.find(b, menus.SHARD_MARKET, name=name) is not None:
+    reads it (agent 53), else by the entries' text. `wait` gives the completed previous trade a
+    moment to return to the market, without reopening a conversation that is still active."""
+    if menus.find(b, menus.SHARD_MARKET, name=name, wait=wait) is not None:
         return True
     d = b.dialog()
     return bool(d["open"] and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None)
@@ -704,7 +715,7 @@ def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
     done = 0
     while done < n:
         step = min(n - done, TRADE_MOST)
-        listed = menus.pick(b, menus.SHARD_MARKET, name=name)
+        listed = menus.pick(b, menus.SHARD_MARKET, name=name, wait=MARKET_RETURN)
         if listed is not None:
             if menus.pick(b, menus.SHARD_TRADE, item_id=int(listed["id"]), action=action, wait=3.0,
                           then_text=False) is None:
@@ -729,7 +740,8 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
     quantity to sell, up to 2000"). at_most: {lower-cased name: how many} - the bag rule's "sell N,
     keep the rest". Returns how many kinds were sold."""
     _s, markets = shard_catalog()
-    have = counts(b)
+    transaction = InventoryTransaction.begin(b)
+    have = transaction.before
     todo: list[tuple[str, int]] = []
     for n in names:
         in_bag = have.get(n.lower(), 0)
@@ -741,27 +753,28 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
         b.log(_("I don't know where a Shard Market is"), speak=True)
         return 0
     candidates = market_candidates(markets)
-    sold = 0
+    broker: str | None = None
     for name, n in todo:
-        listed = market_lists(b, name)            # read once; again only after going to a market
-        for _try in range(2):
-            if listed:
-                break
+        listed = market_lists(b, name, MARKET_RETURN)
+        if not listed:
             b.close_dialogs()
-            visit(b, None, candidates=candidates)
-            listed = market_lists(b, name)
+            if broker is None:
+                broker = visit(b, None, candidates=candidates)
+            elif not b.talk(broker):
+                break
+            listed = market_lists(b, name, MARKET_RETURN)
         if not listed:
             b.log(_("the Shard Market didn't list {item}", item=name))
             continue
-        before = counts(b).get(name.lower(), 0)
-        shard_trade(b, name, "sell", n)
-        gone = before - counts(b).get(name.lower(), 0)
-        if gone > 0:
-            sold += 1
-            b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
-            stats.moved(b, "sold", name, gone)
+        traded = shard_trade(b, name, "sell", n)
+        transaction.expect(name, -traded)
     b.close_dialogs()
-    return sold
+    after = transaction.settle(b) if transaction.expected else transaction.before
+    moved = transaction.removed(after)
+    for name, gone in moved:
+        b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
+        stats.moved(b, "sold", name, gone)
+    return len(moved)
 
 
 # ---------------------------------------------------------------------------------------- gems

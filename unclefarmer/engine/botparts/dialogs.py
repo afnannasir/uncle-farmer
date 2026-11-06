@@ -180,7 +180,7 @@ class DialogsMixin(Parts):
         name = (entry.get("options") or [None])[0] or entry.get("text") or entry.get("raw")
         if menus.choose_at(as_bot(self), top, r, c):
             self.log(_("choosing \"{entry}\"", entry=name))
-            self.wait_menu_change(top)
+            self.sleep(0.4)
             return entry
         top = self._move_to(top, r, c)
         if top is None:

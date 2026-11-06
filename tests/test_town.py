@@ -927,6 +927,41 @@ def test_sell_shards_sells_only_the_rule_count(monkeypatch: pytest.MonkeyPatch) 
     assert steps == [3]
 
 
+def test_sell_shards_keeps_one_broker_visit_and_reconciles_the_batch(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(town, "shard_catalog",
+                        stand_in(town.shard_catalog, lambda: ({"Sapphire Shard": {}, "Olivine Shard": {}}, {5: [1, 1]})))
+    b = TownBot(bag=[{"name": "Sapphire Shard", "count": 3}, {"name": "Olivine Shard", "count": 4}])
+    visits: list[object] = []
+    market_open = False
+    reads = 0
+    bag_rows = b.bag_rows
+
+    def counted_rows() -> list[dict[str, Any]]:
+        nonlocal reads
+        reads += 1
+        return bag_rows()
+
+    def visit(bot: TownBot, role: str | None, candidates: object = None) -> str:
+        nonlocal market_open
+        visits.append(candidates)
+        market_open = True
+        return "Shard Broker"
+
+    def trade(bot: TownBot, name: str, action: str, n: int) -> int:
+        assert action == "sell"
+        b.remove(name, n)
+        return n
+
+    b.bag_rows = counted_rows  # type: ignore[method-assign]
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+    monkeypatch.setattr(town, "market_lists",
+                        stand_in(town.market_lists, lambda bot, name, wait=0.0: market_open))
+    monkeypatch.setattr(town, "shard_trade", stand_in(town.shard_trade, trade))
+    assert town.sell_shards(as_bot(b), ["Sapphire Shard", "Olivine Shard"]) == 2
+    assert len(visits) == 1
+    assert reads == 2
+
+
 def test_sell_shards_stops_when_the_pick_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(town, "shard_catalog",
                         stand_in(town.shard_catalog, lambda: ({"Level 1 Sapphire Shard": {"price": 20, "makes": "x"}}, {5: [1, 1]})))
