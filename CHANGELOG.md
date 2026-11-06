@@ -2,6 +2,12 @@
 
 ## Not released yet
 
+**Help**
+
+- Help, Commands for trusted players and Script commands (Help menu and the script editor) are no
+  longer empty in the built app. The build stripped the texts they show; it keeps them now, and
+  the build's self-test stops a build that lacks them.
+
 **Pets**
 
 - The bot turns on the monsters next to your pet as soon as the pet loses 2% of its HP within 3
