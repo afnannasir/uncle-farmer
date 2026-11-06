@@ -2,6 +2,17 @@
 
 ## Not released yet
 
+**Group skills**
+
+- Area skills are chosen by damage: each one counts once for every monster it would hit, and goes
+  whenever that beats the best single hit. Out in the field they waited for three monsters close
+  together (two in a cave), so casters hardly used them there: a Witcher only fired Shadow Arrow.
+  Now two monsters are usually enough, and one when the area skill hits hardest.
+- Area skills are weighed against each other by damage too, not by how many targets they could
+  take: an Elf in a pack no longer casts only the 3-second Blazing Storm and now uses Fire Surge
+  whenever it is ready. Area skills whose text gives no damage (Blizzard, Icicle) still wait for a
+  pack.
+
 **Gem Maker**
 
 - A lucky run where no gem breaks no longer keeps the Gem Maker going round. A combine that works
