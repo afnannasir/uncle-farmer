@@ -721,6 +721,10 @@ def shard_trade(b: Bot, name: str, action: str, n: int,
         if done and reopen is not None and not reopen():
             break
         step = min(n - done, TRADE_MOST)
+        item_id = menus.item_id(b, menus.SHARD_MARKET, name)
+        if item_id is not None and menus.shard_sell(b, item_id, step):
+            done += step
+            continue
         # Each choice is direct (the agent verifies the fixed market's item id and row), so do
         # not pause after it.  The next direct choice waits for the game's real next menu instead.
         listed = menus.pick(b, menus.SHARD_MARKET, name=name, settle=False)

@@ -55,6 +55,11 @@ final class TextInput {
         return m instanceof Integer ? (Integer) m : 0;
     }
 
+    /** Whether the game's input box is currently open. */
+    static boolean open() throws Memory.Unavailable {
+        return mode(win()) != 0;
+    }
+
     /** {"open":bool,"mode":n,"text":"..."}: whether the input box is up and what has been typed so far. */
     static String state() {
         try {

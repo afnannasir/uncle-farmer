@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
+SHARD_SELL_AGENT = 56           # agent-side market row -> sell -> quantity transaction
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
 MENU_POLL = 0.01              # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
@@ -128,6 +129,23 @@ def known_ids(b: Bot) -> dict[tuple[str, str], int]:
     """(layout, name) -> item id, from verified `menu` readings this run (the ids never change)."""
     ids: dict[tuple[str, str], int] = b.__dict__.setdefault("menu_ids", {})
     return ids
+
+
+def item_id(b: Bot, layout: str, name: str) -> int | None:
+    """The verified id for a named item, learning it from the open menu once when needed."""
+    known = known_ids(b).get(_key(layout, name))
+    if known is not None:
+        return known
+    item = find(b, layout, name=name)
+    return int(item["id"]) if item is not None else None
+
+
+def shard_sell(b: Bot, item_id: int, count: int) -> bool:
+    """Sell through the agent's stateful shard transaction. False leaves the caller's safe,
+    separately-verified menu path in charge (including an older agent without this command)."""
+    if int(getattr(b, "agent_version", 0) or 0) < SHARD_SELL_AGENT:
+        return False
+    return b.a.send("shardsell %d %d" % (item_id, count)).startswith("sold ")
 
 
 def _pick_by_id(b: Bot, layout: str, item_id: int, action: str | None, wait: float) -> str:

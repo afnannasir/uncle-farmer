@@ -36,6 +36,9 @@ import java.util.List;
  */
 final class Dialogs {
 
+    private static final long MENU_STEP_WAIT = 5L;
+    private static final long MENU_STEP_TIMEOUT = 3000L;
+
     static final String W_DIALOGS = "U";
     static final String W_SELECTED = "av";
     static final String D_KIND = "b";
@@ -125,6 +128,63 @@ final class Dialogs {
         } catch (Throwable t) {
             Log.error("pick", t);
             return "error: " + t;
+        }
+    }
+
+    /** Complete one verified shard sale without controller round trips between its menu stages. */
+    static String shardSell(int id, int count) {
+        if (count <= 0) return "error: shardsell count must be positive";
+        String chosen = pick(Menus.SHARD_MARKET, id, null);
+        if (!chosen.startsWith("picked ")) return chosen;
+        long until = System.currentTimeMillis() + MENU_STEP_TIMEOUT;
+        while (true) {
+            String sold = pick(Menus.SHARD_TRADE, id, "sell");
+            if (sold.startsWith("picked ")) break;
+            if (!waiting(sold)) return sold;
+            if (!pause(until)) return "refused: the Shard Market did not open its sell menu";
+        }
+        while (true) {
+            try {
+                if (TextInput.open()) break;
+            } catch (Memory.Unavailable u) {
+                return "error: " + u.getMessage();
+            }
+            if (!pause(until)) return "refused: the Shard Market did not open its quantity box";
+        }
+        String entered = TextInput.number(Integer.toString(count));
+        if (!entered.startsWith("entered")) return entered;
+        while (true) {
+            try {
+                if (tradeFinished()) return "sold " + id + " " + count;
+            } catch (Memory.Unavailable u) {
+                return "error: " + u.getMessage();
+            }
+            if (!pause(until)) return "refused: the Shard Market did not finish the sale";
+        }
+    }
+
+    private static boolean waiting(String reply) {
+        return reply.startsWith("refused: no menu is open") || reply.startsWith("refused: the open menu is ");
+    }
+
+    /** The client leaves the old dialog object around while the quantity's server reply is due;
+     * wait for that trade menu to be replaced or closed before another command can use a menu. */
+    private static boolean tradeFinished() throws Memory.Unavailable {
+        Object world = Memory.world();
+        synchronized (world) {
+            List<Object> open = copy(list(world, W_DIALOGS));
+            return open.isEmpty() || !Menus.classify(model(open.get(open.size() - 1))).equals(Menus.SHARD_TRADE);
+        }
+    }
+
+    private static boolean pause(long until) {
+        if (System.currentTimeMillis() >= until) return false;
+        try {
+            Thread.sleep(MENU_STEP_WAIT);
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
         }
     }
 

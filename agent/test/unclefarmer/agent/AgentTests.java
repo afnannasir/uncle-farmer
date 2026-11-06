@@ -341,6 +341,8 @@ public final class AgentTests {
         eq(StateServer.handle("use 5", armed, mine, guarded), "refused: send 'arm' first", "use needs arm");
         eq(StateServer.handle("select 5", armed, mine, guarded), "refused: send 'arm' first", "select needs arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "refused: send 'arm' first", "slot needs arm");
+        eq(StateServer.handle("shardsell 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "shardsell needs arm");
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "error: the attack page can't be read",
                 "slot without a game says so instead of throwing");
@@ -367,6 +369,10 @@ public final class AgentTests {
                 "pick a bad id");
         eq(StateServer.handle("pick shard_market", armed, mine, guarded), "error: pick <layout> <id> [buy|sell]",
                 "pick what");
+        eq(StateServer.handle("shardsell 20385", armed, mine, guarded), "error: shardsell <item id> <count>",
+                "shardsell needs both numbers");
+        eq(StateServer.handle("shardsell x 1", armed, mine, guarded), "bad number in: shardsell x 1",
+                "shardsell checks the item id");
         boolean[] unarmed = {false};
         eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
                 "pick needs arm");

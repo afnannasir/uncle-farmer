@@ -125,6 +125,15 @@ class PretendShop:
             return "mwagent %d" % self.version
         if line.startswith("pick "):
             return self.pick(line.split()[1:])
+        if line.startswith("shardsell "):
+            _verb, item_id, count = line.split()
+            item = self.name_of(int(item_id))
+            if self.screen != "market" or item_id not in [str(i) for _n, i, _p in self.rows()]:
+                return "refused: the open menu is %s, not shard_market" % self.layout()
+            self.trades.append(("sell", item, int(count)))
+            self.bag[item] = self.bag.get(item, 0) - int(count)
+            self.screen = self.kind
+            return "sold %s %s" % (item_id, count)
         if line.startswith("type "):
             self.typed = int(line.split()[1])
             return "typed"
@@ -256,6 +265,14 @@ def test_a_shard_is_sold_by_its_verified_rows_without_walking_down_the_list() ->
     assert game.picks == ["shard_market 20665", "shard_trade 20665 sell"]
     assert game.trades == [("sell", "Level 1 Turquoise Shard", 30)]
     assert game.walking_keys == 0
+    assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
+
+
+def test_new_agent_sells_a_verified_shard_in_one_agent_transaction() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30}, version=56)
+    b = sell(game, "Level 1 Turquoise Shard", 30)
+    assert "shardsell 20665 30" in game.sent
+    assert game.picks == [] and game.trades == [("sell", "Level 1 Turquoise Shard", 30)]
     assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
 
 

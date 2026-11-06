@@ -48,6 +48,8 @@ import java.security.SecureRandom;
  *   phrase <slot> <text> -> set quick phrase 1-12 the way its window does (armed)
  *   pick <layout> <id> [buy|sell] -> choose that item of a verified menu by its index, after
  *                     checking it (armed); `refused: <why>` and nothing pressed otherwise
+ *   shardsell <id> <count> -> choose a verified shard, sell it, and enter its quantity as one
+ *                     stateful local transaction (armed)
  *   guardmods on|off -> while on, the player's own Shift/Ctrl/Alt are not recorded in this game
  *                    (the connection closing turns it off again)
  *   key <k> [ms]   -> press and release a key, held for ms (default 60). Names: a..z 0..9,
@@ -333,6 +335,15 @@ final class StateServer implements Runnable {
             try {
                 return Dialogs.pick(parts[1].toLowerCase(), Integer.parseInt(parts[2]),
                         parts.length > 3 ? parts[3].toLowerCase() : null);
+            } catch (NumberFormatException e) {
+                return "bad number in: " + command;
+            }
+        }
+        if (verb.equals("shardsell")) {
+            if (!armed[0]) return "refused: send 'arm' first";
+            if (parts.length != 3) return "error: shardsell <item id> <count>";
+            try {
+                return Dialogs.shardSell(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
             } catch (NumberFormatException e) {
                 return "bad number in: " + command;
             }
