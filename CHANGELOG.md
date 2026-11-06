@@ -2,6 +2,12 @@
 
 ## Not released yet
 
+**Pets**
+
+- The bot turns on the monsters next to your pet as soon as the pet loses 2% of its HP within 3
+  seconds (about one hit), instead of 8%: it no longer lets the pet take a beating before it
+  defends it.
+
 **Group skills**
 
 - Area skills are chosen by damage: each one counts once for every monster it would hit, and goes
