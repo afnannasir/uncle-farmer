@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 wx = pytest.importorskip("wx")
 
 from unclefarmer.gui import common, walk  # noqa: E402
-from unclefarmer.gui.mainparts import base as main  # noqa: E402  (the helpers moved here from gui/main.py)
+from unclefarmer.gui.mainparts import base as main, editing  # noqa: E402  (the helpers moved here from gui/main.py)
 from conftest import as_kind, stand_in
 
 
@@ -142,3 +142,18 @@ def test_the_early_fire_setting_says_what_range_it_adds_to() -> None:
     unknown = profile.pull_label({"attack_range": "auto"})
     assert "beyond your class's attack range" in unknown
     assert all("walk all the way" not in t for t in (hunter, warrior, by_hand, unknown))
+
+
+def test_profile_import_confirmation_distinguishes_create_from_replace() -> None:
+    replace = editing.import_confirmation("Atomix", "Atomix", exists=True)
+    create = editing.import_confirmation("Atomix", "Atomix", exists=False)
+    assert replace.startswith("Replace the saved Uncle Farmer settings")
+    assert "keeps Atomix's own scan" in replace
+    assert create.startswith("Create Uncle Farmer settings")
+    assert "doesn't create or log in to a Mist World character" in create
+
+
+def test_profile_import_uses_existing_case_insensitive_destination_name() -> None:
+    names, suggested = editing.import_destinations("Atomix", ["atomix", "Baker"])
+    assert names == ["atomix", "Baker"]
+    assert suggested == "atomix"

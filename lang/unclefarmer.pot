@@ -20,6 +20,12 @@ msgstr ""
 msgid " ({rate} an hour)"
 msgstr ""
 
+msgid " - estimated: it includes shards"
+msgstr ""
+
+msgid " - {n} used up with no stored price, not counted"
+msgstr ""
+
 msgid "&About Uncle Farmer"
 msgstr ""
 
@@ -205,6 +211,12 @@ msgid "&History..."
 msgstr ""
 
 msgid "&How many:"
+msgstr ""
+
+msgid "&Import character settings..."
+msgstr ""
+
+msgid "&Import plan..."
 msgstr ""
 
 msgid "&Insert command..."
@@ -652,10 +664,16 @@ msgstr ""
 msgid "After a &time limit"
 msgstr ""
 
+msgid "After farming (when a run finishes by itself, never after Stop)"
+msgstr ""
+
 msgid "Agent"
 msgstr ""
 
 msgid "All"
+msgstr ""
+
+msgid "All files (*.*)|*.*"
 msgstr ""
 
 msgid "All time"
@@ -702,6 +720,10 @@ msgid "Arnebia"
 msgstr ""
 
 msgid ""
+"Arnebia paid out at shops and for fares: {n} (a bought item is an expense once it is used up)"
+msgstr ""
+
+msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
 msgstr ""
 
@@ -721,6 +743,12 @@ msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 
 msgid "Automatic, by class"
+msgstr ""
+
+msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
+msgstr ""
+
+msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
 msgstr ""
 
 msgid "Back where the run started"
@@ -884,6 +912,9 @@ msgstr ""
 msgid "Clean the bag"
 msgstr ""
 
+msgid "Clean the bag now: started by hand"
+msgstr ""
+
 msgid "Cleaning the bag"
 msgstr ""
 
@@ -977,6 +1008,18 @@ msgstr ""
 msgid "Couldn't delete it: {err}"
 msgstr ""
 
+msgid "Couldn't export the plan: {err}"
+msgstr ""
+
+msgid "Couldn't export the settings: {err}"
+msgstr ""
+
+msgid "Couldn't import the plan: {err}"
+msgstr ""
+
+msgid "Couldn't import the settings: {err}"
+msgstr ""
+
 msgid "Couldn't open it: {err}"
 msgstr ""
 
@@ -1008,6 +1051,12 @@ msgid "Cra&ftsman:"
 msgstr ""
 
 msgid "Craftsman and spending"
+msgstr ""
+
+msgid ""
+"Create Uncle Farmer settings for {character} from {source}?\n"
+"\n"
+"This creates settings for that name only. It doesn't create or log in to a Mist World character. The choices take effect when that character is scanned or run. Nothing changes until you choose Yes."
 msgstr ""
 
 msgid ""
@@ -1123,6 +1172,15 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
+msgid "E&xport character settings..."
+msgstr ""
+
+msgid "E&xport plan..."
+msgstr ""
+
+msgid "Earnings so far: {n} arnebia (picked up and sold)"
+msgstr ""
+
 msgid "East edge (x):"
 msgstr ""
 
@@ -1223,6 +1281,12 @@ msgid "Experience"
 msgstr ""
 
 msgid "Expert"
+msgstr ""
+
+msgid "Export character settings"
+msgstr ""
+
+msgid "Export plan"
 msgstr ""
 
 msgid "Falling"
@@ -1586,6 +1650,15 @@ msgstr ""
 msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 
+msgid "Import character settings"
+msgstr ""
+
+msgid "Import plan"
+msgstr ""
+
+msgid "Import settings into this character:"
+msgstr ""
+
 msgid "Important events only"
 msgstr ""
 
@@ -1636,10 +1709,16 @@ msgstr ""
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr ""
 
+msgid "JSON files (*.json)|*.json"
+msgstr ""
+
 msgid "Join a private channel in the game first."
 msgstr ""
 
 msgid "Join an international room in the game first."
+msgstr ""
+
+msgid "Join the &Telegram group"
 msgstr ""
 
 msgid "Keep &old files:"
@@ -1921,6 +2000,9 @@ msgstr ""
 msgid "Nearby"
 msgstr ""
 
+msgid "Net earnings: {n} arnebia"
+msgstr ""
+
 msgid "Never"
 msgstr ""
 
@@ -1958,6 +2040,13 @@ msgid "No Gem Maker, Equipment Enhancer or chores runs."
 msgstr ""
 
 msgid "No bot is running."
+msgstr ""
+
+msgid "No browser opened. The Telegram group is at {link}"
+msgstr ""
+
+msgid ""
+"No character has settings to export yet. Log in to one and let the bot scan it first."
 msgstr ""
 
 msgid ""
@@ -2106,6 +2195,10 @@ msgid "Nowhere to get them from: it makes what the bag allows."
 msgstr ""
 
 msgid "Nowhere, use what's in the bag"
+msgstr ""
+
+msgid ""
+"Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 
 msgid "Oldhand"
@@ -2286,6 +2379,14 @@ msgstr ""
 msgid "Plan or script"
 msgstr ""
 
+msgid ""
+"Plan {name} was exported to:\n"
+"{path}"
+msgstr ""
+
+msgid "Plan {name} was imported."
+msgstr ""
+
 msgid "Plan, from the last scan of your bag:"
 msgstr ""
 
@@ -2416,6 +2517,15 @@ msgid "Rename"
 msgstr ""
 
 msgid "Repair &gear with toolboxes from the bag"
+msgstr ""
+
+msgid ""
+"Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
+"\n"
+"This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
+msgstr ""
+
+msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 
 msgid "Reply lines"
@@ -2568,6 +2678,9 @@ msgstr ""
 msgid "Sell s&hards now"
 msgstr ""
 
+msgid "Sell shards now: started by hand"
+msgstr ""
+
 msgid "Selling"
 msgstr ""
 
@@ -2594,6 +2707,17 @@ msgid "Set when to drink myself"
 msgstr ""
 
 msgid "Settings"
+msgstr ""
+
+msgid ""
+"Settings for {character} were exported to:\n"
+"{path}\n"
+"\n"
+"The file has combat, keys, potions, bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone location."
+msgstr ""
+
+msgid ""
+"Settings were imported into {character}. Scan this character before farming if its skills, hotkeys, bag, pets or beasts changed."
 msgstr ""
 
 msgid "Shard Market price when last seen: {price} arnebia"
@@ -2836,6 +2960,9 @@ msgid "Take their commands while the game &window is in front"
 msgstr ""
 
 msgid "Taken out of the storehouse:"
+msgstr ""
+
+msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr ""
 
 msgid "Target east"
@@ -3170,6 +3297,16 @@ msgstr ""
 msgid "Time between potions (seconds):"
 msgstr ""
 
+msgid ""
+"Time remaining: no end time set (no time limit, stop time or daily stop)"
+msgstr ""
+
+msgid "Time remaining: {left}"
+msgstr ""
+
+msgid "Time used: {used}, {kills} kills, {deaths} deaths"
+msgstr ""
+
 msgid "Time: hours go from 0 to 23 and minutes from 0 to 59"
 msgstr ""
 
@@ -3177,9 +3314,6 @@ msgid "Time: write it as hours:minutes, for example 06:30"
 msgstr ""
 
 msgid "Time: {h} h {m} min"
-msgstr ""
-
-msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
 msgstr ""
 
 msgid "Times"
@@ -3207,6 +3341,9 @@ msgid "Tone from &trusted players:"
 msgstr ""
 
 msgid "Total arnebia spent on items used: {n}"
+msgstr ""
+
+msgid "Total expenses: {n} arnebia (items used up, at their stored prices)"
 msgstr ""
 
 msgid "Travel"
@@ -3240,7 +3377,19 @@ msgstr ""
 msgid "Uncle Farmer"
 msgstr ""
 
+msgid ""
+"Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|"
+msgstr ""
+
 msgid "Uncle Farmer is updated to {v}."
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports (*.unclefarmer-plan.json)|*.unclefarmer-plan.json|"
+msgstr ""
+
+msgid ""
+"Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 msgstr ""
 
 msgid ""
@@ -3557,6 +3706,9 @@ msgstr ""
 msgid "after a dodge or block"
 msgstr ""
 
+msgid "after farming, automatically: {job}"
+msgstr ""
+
 msgid "after {n} kills"
 msgstr ""
 
@@ -3666,6 +3818,12 @@ msgstr ""
 msgid "bought {n} {shard}"
 msgstr ""
 
+msgid "bought {n} {shard}: the bag has no room for more"
+msgstr ""
+
+msgid "bought {n} {shard}: the spare arnebia pays for no more"
+msgstr ""
+
 msgid "buff"
 msgstr ""
 
@@ -3736,6 +3894,9 @@ msgid "choose what? write: choose Tulip City"
 msgstr ""
 
 msgid "choosing \"{entry}\""
+msgstr ""
+
+msgid "cleaning the bag"
 msgstr ""
 
 msgid "closed a window the game opened: {what}"
@@ -4343,6 +4504,9 @@ msgstr ""
 msgid "new"
 msgstr ""
 
+msgid "no Gem Protection Rune left, and combining is set to use one"
+msgstr ""
+
 msgid "no Gem Protection Rune to use - stopping, as asked"
 msgstr ""
 
@@ -4386,6 +4550,9 @@ msgid "no map without monsters near {map}"
 msgstr ""
 
 msgid "no menu entry like \"{want}\""
+msgstr ""
+
+msgid "no more {shard} came into the bag - the Gem Maker stops here"
 msgstr ""
 
 msgid ""
@@ -4533,6 +4700,10 @@ msgstr ""
 msgid "not sold: {list}"
 msgstr ""
 
+msgid ""
+"nothing came of this round although the bag still has {what} - trying again"
+msgstr ""
+
 msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
@@ -4541,6 +4712,12 @@ msgstr ""
 
 msgid ""
 "nothing in the bag is on the throw-away list (or only what its rules keep)"
+msgstr ""
+
+msgid "nothing left to make {gem} from"
+msgstr ""
+
+msgid "nothing left to make {gem} from, and getting more {shard} is off"
 msgstr ""
 
 msgid "nothing of the collection was sold"
@@ -4788,6 +4965,9 @@ msgstr ""
 msgid "selecting"
 msgstr ""
 
+msgid "selling shards"
+msgstr ""
+
 msgid "selling shards: {list}"
 msgstr ""
 
@@ -5007,10 +5187,20 @@ msgstr ""
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr ""
 
+msgid ""
+"the Gem Craftsman made nothing in {n} rounds in a row although the bag still has {what} - stopping; see logs\\dialogs.log"
+msgstr ""
+
 msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
+msgstr ""
+
+msgid "the Gem Maker can't go on: {why}"
+msgstr ""
+
+msgid "the Gem Maker stopped after {n} rounds"
 msgstr ""
 
 msgid "the Head of the inner hall offers no donation"
@@ -5041,7 +5231,14 @@ msgid "the Shard Market sells {shard} at {price} arnebia each"
 msgstr ""
 
 msgid ""
+"the Shard Market sold {came} of the {step} {shard} asked for - buying no more now"
+msgstr ""
+
+msgid ""
 "the Shard Market's buy and sell menu for {item} didn't come up as expected - nothing chosen there, see logs\\dialogs.log"
+msgstr ""
+
+msgid "the Shard Market's list didn't open again - bought {n} {shard}"
 msgstr ""
 
 msgid "the agent can't read menus by layout (agent {n} or newer needed)"
@@ -5090,6 +5287,10 @@ msgstr ""
 
 msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
+msgstr ""
+
+msgid ""
+"the bag showed no change after combining {gem} - leaving it for this round"
 msgstr ""
 
 msgid "the bag trip"
@@ -5328,6 +5529,9 @@ msgid "the {npc}'s next menu didn't open"
 msgstr ""
 
 msgid "the {role} didn't take {item}"
+msgstr ""
+
+msgid "the {shard} box stays ticked with none in the bag"
 msgstr ""
 
 msgid "the {tool} can't repair this gear: {what}"
@@ -5682,6 +5886,9 @@ msgid ""
 msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
+msgstr ""
+
+msgid "{job} didn't finish: {why}"
 msgstr ""
 
 msgid "{key} (page {page})"

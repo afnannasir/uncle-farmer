@@ -1,13 +1,16 @@
-"""How to reach the developer: Help, Contact the developer, and the README's Contact section.
+"""How to reach the developer: Help, Contact the developer, Help, Join the Telegram group, and the
+README's Contact section.
 
-The address is the developer's public contact, there on purpose, and kept in this one place; the
-translations only carry "{email}", never the address itself.
+The address and the group's invite link are the developer's public contacts, there on purpose, and
+kept in this one place; the translations only carry "{email}" and "{link}", never the contacts
+themselves.
 """
 
 from __future__ import annotations
 
 EMAIL = "afnan.nasir2000@gmail.com"
 ISSUES = "https://github.com/afnannasir/uncle-farmer/issues"
+TELEGRAM = "https://t.me/+55NtoqsY7u1lMzNk"   # the players' Telegram group (invite link)
 
 
 def mailto(subject: str = "") -> str:

@@ -30,6 +30,9 @@ OUT = os.path.join(DIST, "Uncle Farmer")
 # one loaded, and a release can be built while you play.
 JAR = os.path.join(DIST, "unclefarmer-agent.jar")
 BUILT = os.path.join(DIST, "UncleFarmer.dist")
+# -O, never -OO: -OO strips docstrings, and Help, Commands for trusted players and both Script
+# commands windows show module docstrings (messages, engine.script) - they were empty in every build.
+PYTHON_FLAG = "--python-flag=-O"
 # What a finished folder must hold (verify): the exe and Python, the GUI and number libraries, the
 # game agent, the screen reader bridge, the C map searches, and the data, translations and guides.
 REQUIRED = ("UncleFarmer.exe", "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll", "agent/unclefarmer-agent.jar",
@@ -93,7 +96,7 @@ def main(full: bool = False) -> None:
         "--output-filename=UncleFarmer.exe", "--output-dir=" + DIST, "--remove-output",
         "--windows-product-name=Uncle Farmer",
         "--windows-product-version=" + windows_version(__version__),
-        "--jobs=%d" % jobs, "--lto=auto", "--python-flag=-OO",
+        "--jobs=%d" % jobs, "--lto=auto", PYTHON_FLAG,
         "--enable-plugin=upx", "--upx-binary=" + upx,
         "--include-package=unclefarmer",
     ], creationflags=priority)

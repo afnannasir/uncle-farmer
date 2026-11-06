@@ -111,7 +111,9 @@ def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequenc
                         role=(role or name or "").replace("_", " ")))     # a named NPC has no role
     mid, npc, x, y = target
     b.log(_("going to {npc} on {map}", npc=npc, map=atlas.label(mid)))
+    stats.reading(b)            # the results: loot before the trip, fares on it, the trade after it
     b.travel(mid)
+    stats.reading(b)
     if not b.talk(npc, (x, y)):
         raise Stopped(_("couldn't talk to {npc}", npc=npc))
     return npc

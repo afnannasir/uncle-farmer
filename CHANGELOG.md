@@ -1,5 +1,77 @@
 # What's new
 
+## 1.0.1
+
+**Sharing settings and plans**
+
+- Character, Export character settings and Import character settings: a character's settings
+  (combat, keys, potions and the rest) saved to a file and loaded into another character or another
+  copy of Uncle Farmer.
+- Plans, Export plan and Import plan: a plan saved to a file and loaded elsewhere.
+
+**Results**
+
+- Results show Time used and Time remaining (to the earliest known end: the plan's time limit, the
+  stop time or the daily stop), and earnings so far, total expenses and net earnings.
+
+**Gem Maker buying**
+
+- The Gem Maker buys from the market in batches worked out from the room in your bag, your arnebia
+  and the game's 2000-at-a-time limit, and takes a bagful from the storehouse at once. A job that
+  is really blocked stops at once and says why.
+
+**Telegram group**
+
+- Help, Join the Telegram group opens the players' Telegram group, where you can talk with other
+  players and the developer. The Contact the developer window has a button for it too.
+
+**Help**
+
+- Help, Commands for trusted players and Script commands (Help menu and the script editor) are no
+  longer empty in the built app. The build stripped the texts they show; it keeps them now, and
+  the build's self-test stops a build that lacks them.
+
+**Pets**
+
+- The bot turns on the monsters next to your pet as soon as the pet loses 2% of its HP within 3
+  seconds (about one hit), instead of 8%: it no longer lets the pet take a beating before it
+  defends it.
+
+**Group skills**
+
+- Area skills are chosen by damage: each one counts once for every monster it would hit, and goes
+  whenever that beats the best single hit. Out in the field they waited for three monsters close
+  together (two in a cave), so casters hardly used them there: a Witcher only fired Shadow Arrow.
+  Now two monsters are usually enough, and one when the area skill hits hardest.
+- Area skills are weighed against each other by damage too, not by how many targets they could
+  take: an Elf in a pack no longer casts only the 3-second Blazing Storm and now uses Fire Surge
+  whenever it is ready. Area skills whose text gives no damage (Blizzard, Icicle) still wait for a
+  pack.
+
+**After farming**
+
+- Character, Settings, Travel and pets: "Automatically sell shards after farming" and
+  "Automatically clean the bag after farming", each on its own (both off). Ticked, Sell shards now
+  and Clean the bag now run by themselves, one after the other, when a farming run finishes by
+  itself - never after Stop. A failure in one doesn't keep the other from running, and the Tools
+  menu still runs both by hand.
+
+**Gem Maker**
+
+- A lucky run where no gem breaks no longer keeps the Gem Maker going round. A combine that works
+  gives no shard back, so the boost shard is only asked for while the bag holds one, and a combine
+  the game didn't carry out (asking for a shard that wasn't there) no longer counts as a failed
+  try: the Gem Maker said it had made progress, went back to the craftsman and tried the same thing
+  again, up to 40 times ("make the most of my bag": 12). Now a try or a round that changed nothing
+  in the bag ends it, and the log says why. When gems break, it works as before.
+
+**Travel**
+
+- Temporary: no trip goes to Polson Wetland, or through it to the Underground Water Cave or the
+  sailing port, unless the Poison Immunity talent is activated (its poisoned ground hurts
+  otherwise). The run stops before anything moves and the log says why. Every other trip is as
+  before.
+
 ## 1.0.0
 
 **Repairs**

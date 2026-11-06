@@ -63,8 +63,18 @@ def test_a_fast_fall_makes_the_monster_next_to_the_pet_an_attacker(clock: Clock)
 
 def test_a_slow_fall_is_no_attack(clock: Clock) -> None:
     b = bot()
-    feed(b, clock, [(0, 9000), (1, 8900), (2, 8800), (3, 8700), (4, 8600)], monster(-7, x=102.0))
+    # 50 of 9000 a second: 150 (1.7%) in the 3-second window, under the 2% mark
+    feed(b, clock, [(0, 9000), (1, 8950), (2, 8900), (3, 8850), (4, 8800)], monster(-7, x=102.0))
     assert pets.suspects(as_bot(b)) == set() and b.attackers() == set()
+
+
+def test_two_percent_lost_is_already_an_attack(clock: Clock) -> None:
+    b = bot()
+    feed(b, clock, [(0, 9000), (1, 8820)], monster(-7, x=102.0))         # 180 of 9000: 2%
+    assert pets.suspects(as_bot(b)) == {-7}
+    b2 = bot()
+    feed(b2, clock, [(0, 9000), (1, 8830)], monster(-7, x=102.0))        # 170: just under
+    assert pets.suspects(as_bot(b2)) == set()
 
 
 def test_the_threat_lasts_while_hp_falls_and_ends_after_the_hold(clock: Clock) -> None:

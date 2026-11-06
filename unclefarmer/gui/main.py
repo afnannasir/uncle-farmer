@@ -219,7 +219,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         menu(_("&Character"), [(_("&Settings...\tCtrl+P"), lambda e: self.edit_profile()),
                                (_("&Bag and supplies...\tCtrl+B"), lambda e: self.edit_bag()),
                                (_("S&can now"), lambda e: self.scan_now()),
-                               (_("&Another character..."), lambda e: self.edit_other_profile())])
+                               (_("&Another character..."), lambda e: self.edit_other_profile()),
+                               (_("E&xport character settings..."), lambda e: self.export_character_settings()),
+                               (_("&Import character settings..."), lambda e: self.import_character_settings())])
         menu(_("&Tools"), [(_("&Gem Maker...\tCtrl+G"), lambda e: self.open_tool("gem")),
                            (_("&Equipment Enhancer...\tCtrl+Shift+E"), lambda e: self.open_tool("enhance")),
                            (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores")),
@@ -234,7 +236,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
                            (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
                            (_("D&uplicate...\tCtrl+D"), lambda e: self.copy_plan()),
-                           (_("&Delete"), lambda e: self.delete_selected())])
+                           (_("&Delete"), lambda e: self.delete_selected()),
+                           (_("E&xport plan..."), lambda e: self.export_plan()),
+                           (_("&Import plan..."), lambda e: self.import_plan())])
         menu(_("&Help"), [(_("&Quick guide\tF1"), lambda e: show_text(self, _("Quick guide"), GUIDE)),
                           (_("&User guide (opens in your browser)"), lambda e: self.open_user_guide()),
                           (_("&Keyboard shortcuts"), lambda e: show_text(self, _("Keyboard shortcuts"), SHORTCUTS)),
@@ -246,9 +250,14 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
                           (_("Check for &updates..."), lambda e: self.check_updates()),
                           (_("Contact the &developer..."), lambda e: self.contact_developer()),
+                          (_("Join the &Telegram group"), lambda e: self.join_telegram()),
                           (_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
+
+    def join_telegram(self) -> None:
+        from .contact import join_telegram
+        join_telegram(self)
 
     def contact_developer(self) -> None:
         from .contact import ContactDialog
@@ -451,6 +460,7 @@ silence. Trusted players can send commands; send "help" to the character to get 
 9. SCRIPTS
 For anything a plan can't do: Plans tab, New script. Help, Script commands lists every command.
 Questions, ideas or donations: Help, Contact the developer.
+Talk with other players: Help, Join the Telegram group.
 
 SAFETY
 Stop always lets go of every key. The bot stops by itself when it gets stuck again and again, dies

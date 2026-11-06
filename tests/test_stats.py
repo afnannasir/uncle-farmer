@@ -241,7 +241,8 @@ def test_report_lists_what_matters() -> None:
          "items": {"Bread": 4, "Elixir": -2}}
     text = stats.report(r, "Wolves")
     assert text.startswith("Wolves")
-    assert "Time: 1 h 5 min, 10 kills, 1 deaths" in text
+    assert "Time used: 01:05, 10 kills, 1 deaths" in text
+    assert "Time remaining" not in text                       # a period's total has none
     assert "Runs: 3" in text
     assert "Arnebia: +2,500" in text and "an hour" in text
     assert "Levels gained: 2, now level 42" in text

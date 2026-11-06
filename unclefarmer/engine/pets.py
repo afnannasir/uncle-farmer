@@ -55,7 +55,8 @@ MP_EMPTY = 10.0     # our MP percent under which no heal can be cast
 # is watched too: falling this fast, the pet is taken to be under attack, and the monsters right
 # next to it are fought first (suspects), until its HP has stopped falling for THREAT_HOLD.
 THREAT_WINDOW = 3.0     # seconds of the pet's HP readings looked at
-THREAT_DROP = 8.0       # percent of its maximum HP lost within the window that is an attack
+THREAT_DROP = 2.0       # percent of its maximum HP lost within the window that is an attack (about
+                        # one hit: at 8 the pet had to lose a lot before the bot turned on its attackers)
 THREAT_HOLD = 6.0       # it stays under attack this long after the last fast fall
 THREAT_NEAR = 3.0       # monsters this close to the pet (tiles) are taken for its attackers
 READING_GAP = 5.0       # readings further apart than this start afresh: the old ones say nothing now

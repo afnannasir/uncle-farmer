@@ -191,3 +191,34 @@ def test_a_shot_on_the_way_never_picks_a_channel(clock: Clock) -> None:
     sb.on_the_move = True
     names = {s["name"] for s in sb._usable(sb.page(), False, clock.now + 30)[0]}
     assert "Ice Arrow" not in names and "Magic Sphere" in names
+
+
+WITCHER = ["Shadow Arrow", "Corrosion Spell", "Incessant Pain", "Skeleton Explosion", "Dead Toxin"]
+ELF = ["Fireball", "Fire Impact", "Fire Surge", "Blazing Storm"]
+
+
+def test_area_skills_go_on_two_monsters_in_the_field(clock: Clock) -> None:
+    # field farming's pack size is 3, but two monsters already make an area skill the harder hit:
+    # a Witcher, with no single-target skill, fired only Shadow Arrow out in the field
+    g, _b, _sb = fight(clock, WITCHER, [], 30, pack=2, dist=6.0, mob_hp=250000)   # pack_min: 3
+    assert "Skeleton Explosion" in g.log and "Dead Toxin" in g.log, g.log
+
+
+def test_one_monster_gets_the_hardest_single_hit_not_a_weaker_area_skill(clock: Clock) -> None:
+    g, _b, _sb = fight(clock, WITCHER, [], 30, pack=1, dist=6.0, mob_hp=250000)
+    assert set(g.log) == {"Shadow Arrow"}, g.log      # 6000 beats Skeleton Explosion's 4100 on one
+
+
+def test_area_skills_are_weighed_by_damage_not_by_how_many_they_could_take(clock: Clock) -> None:
+    # Blazing Storm takes 8 targets but is a 3-second channel; Fire Surge (6) does twice the damage
+    # for the time: an Elf in a pack cast only Blazing Storm
+    g, _b, _sb = fight(clock, ELF, [], 30, pack=4, dist=6.0, mob_hp=250000)
+    assert g.log.count("Fire Surge") >= 3, g.log         # it was never cast at all
+    assert "Blazing Storm" in g.log, g.log            # the filler while Fire Surge cools down
+
+
+def test_an_area_skill_with_no_damage_figure_still_waits_for_a_pack(clock: Clock) -> None:
+    # Icicle's text gives no damage: it goes on a pack of pack_min, never on fewer
+    two, _b, _sb = fight(clock, ["Magic Sphere", "Icicle"], [], 30, pack=2, dist=6.0, mob_hp=250000)
+    three, _b, _sb = fight(clock, ["Magic Sphere", "Icicle"], [], 30, pack=3, dist=6.0, mob_hp=250000)
+    assert "Icicle" not in two.log and "Icicle" in three.log, (two.log, three.log)

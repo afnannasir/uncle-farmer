@@ -175,6 +175,24 @@ Character, Bag and supplies (Ctrl+B):
   Full means full: the bot farms until the load reaches its limit (or stops rising just under it
   while monsters keep dying), unless you set a lower mark there.
 
+### Selling shards and cleaning the bag after farming
+
+Character, Settings, Travel and pets, After farming has two boxes, each on its own:
+
+- **Automatically sell shards after farming** does Tools, Sell shards now: the shards on the Sell
+  list, at the nearest Shard Market.
+- **Automatically clean the bag after farming** does Tools, Clean the bag now: throws away, where
+  the character stands, only what is on the throw-away list.
+
+Both are off until you tick them, and they are kept per character. They run when a farming run
+finishes by itself: its plan is done, a stop rule ended it (the drop time, a full bag set to stop,
+deaths...), or the daily stop came. Selling comes first, then cleaning, each after the other has
+finished, once a run, and before the game is closed or the computer shut down if you chose that.
+They never run after Stop, after Pause, when a player called you away (come, follow), after the
+walking assistant or after a tool. If one of them fails, the log says why and the other still runs;
+Stop ends both. The Tools menu items still work by hand whatever the boxes say, and running them
+by hand changes no setting. The log says which way each one was started.
+
 ## Fighting and staying alive
 
 The bot stands and fights, however many monsters are on it. It never turns its back on a pack
@@ -288,7 +306,7 @@ it again later: after a minute, then two, four and so on up to ten minutes while
 (the walking assistant: from 15 seconds up to a minute). The log says so once, and again when the
 beast is finally taken.
 
-Your pet's HP is watched too. If it falls fast (8% of its HP within 3 seconds) the monsters right
+Your pet's HP is watched too. If it falls fast (2% of its HP within 3 seconds) the monsters right
 next to it are treated as its attackers and fought first, even when the game didn't report who hit
 it. A monster that is attacking you, or one nearly dead, is finished first. It stops once the pet's
 HP hasn't fallen for 6 seconds. With the pet out of sight or no HP reading, nothing is assumed.
@@ -306,8 +324,15 @@ Tools, Gem Maker (Ctrl+G) has two jobs:
 
 - **Make a gem:** you choose which gem, its level and how many (or as many as it can). It makes them
   from the bag's gems and shards, and fetches more Level 1 shards itself from the storehouse or the
-  Shard Broker, a bagful at a time.
+  Shard Broker, a bagful at a time: as many as the bag takes up to your "bag full at" load. The
+  Shard Broker sells at most 2000 at a time, so it buys in batches of up to 2000, working out each
+  batch again from the bag's room and the spare arnebia; the storehouse hands out a bagful at once.
 - **Make the most of my bag:** every shard into gems, then every colour up as far as it goes.
+
+Either job goes on until it is done or something stands in the way, and says what: the arnebia at
+your reserve, no protection rune left, nothing left to make from, no more shards to be had, or the
+Gem Craftsman making nothing for three rounds in a row although there is still something to combine
+(a round that made nothing because of a slow answer or a menu that didn't open is tried again).
 
 ### Equipment Enhancer
 
@@ -476,6 +501,16 @@ Show the route says the way before you go. The whole way it rides your fastest S
 in towns and through monster ground alike, and it doesn't stop to fight; potions still keep your HP
 up. Pause stops it.
 
+### Polson Wetland needs Poison Immunity (for now)
+
+Polson Wetland's poisoned ground hurts anyone on it who hasn't activated the General talent
+Poison Immunity. Until the bot can activate talents itself, it doesn't go to Polson Wetland, or
+through it (the only way to the Underground Water Cave and the sailing port beyond), unless that
+talent is activated: the run stops before anything moves, and the log says "Travel to Polson
+Wetland (5141) refused: Poison Immunity Talent is not activated." This applies to plans, scripts,
+Walk to, the Tools and come/follow alike. Activate the talent in the game and start again. A
+character already standing in Polson Wetland can still move about and leave it.
+
 ## Several games at once
 
 Only one Uncle Farmer runs per Windows session: starting it again brings the open window forward
@@ -516,6 +551,19 @@ experience and levels, arnebia, every shard picked up (with its Shard Broker val
 it were thrown away, sold or put into the storehouse), other items picked up, what was bought or
 taken out of the storehouse, and the potions used. It covers the current run, today, the last 7 or
 30 days, or all time.
+
+For a run it shows **Time used** (farming time, hours:minutes; a pause or a job on the way is not
+counted) and **Time remaining** until the run ends by itself: the plan's time limit, its stop time
+or the daily stop, whichever comes first. These are clock times, so a pause doesn't move them (a
+plan's time limit counts from the start, pauses included). With none of them set it says so. A
+finished run shows its time used and 00:00 remaining. Both update while the window is open.
+
+It also shows the money: **Earnings so far** (arnebia picked up or got from selling, including the
+run's own Sell shards and Clean bag jobs), **Total expenses** (the items used up, at their stored
+prices, as listed further down) and **Net earnings** (the one less the other). A purchase is neither
+an earning nor an expense: a potion bought counts as an expense once it is drunk, and what was paid
+at shops and for fares is shown on its own line. Runs saved by older versions kept only the bag's
+net arnebia change, and their earnings are counted from that.
 
 Only farming counts there. Show can switch to the Gem Maker, Equipment Enhancer and chores instead:
 what each of them made, used and cost, kept apart because shards made into gems are not loot. Those
@@ -739,6 +787,10 @@ never changed. Pick the language in the game as usual; after changing it, restar
 Help, Contact the developer shows the developer's email address, for questions, ideas or
 donations, with buttons to write an email or copy the address. Bugs are best
 reported as a GitHub issue, so everyone can see the fix.
+
+Help, Join the Telegram group opens the players' Telegram group (https://t.me/+55NtoqsY7u1lMzNk),
+where you can talk with other players and the developer. The Contact the developer window has a
+button for it too.
 
 ## Things to know
 
