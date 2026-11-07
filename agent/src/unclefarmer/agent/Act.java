@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Three things the bot used to do with keys, done the way the game's own code does them:
- * `use <uid>`, `select <id>` and `slot <n> [sustain] [lock]`.
+ * `use <uid>`, `discarddirectall <uid>...`, `select <id>` and `slot <n> [sustain] [lock]`.
  *
  * use: the use key on a bag row (game.i.w) and a hotkey (game.i.g) both end in game.N.b(0, uid, 0),
  * which writes OUT op=18: 0 (the bag panel), the item's uid and 0 as ints (javap 2026-10-04). The
@@ -39,6 +39,7 @@ final class Act {
 
     static final int OP_USE = 18;
     static final int BAG_PANEL = 0;
+    static final int DISCARD = -1;
     /** The same item again this soon is refused: one press of the key can't do it faster. */
     static final long SAME_ITEM_GAP_MS = 300L;
 
@@ -60,6 +61,23 @@ final class Act {
         lastUid = uid;
         lastAt = now;
         return "used";
+    }
+
+    /** Send the exact discard request the game makes after its discard confirmation. Every uid is
+     * checked against one bag snapshot before any packet goes out, including repeated stack uids. */
+    static String discardAll(int[] uids) {
+        if (uids.length == 0) return "error: discarddirectall needs item ids";
+        try {
+            String refused = Memory.discardable(uids);
+            if (refused != null) return refused;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        for (int uid : uids) {
+            String failed = Ask.send(discardPacket(uid), "discard " + uid);
+            if (failed != null) return failed;
+        }
+        return "sent all " + uids.length;
     }
 
     /** The attack keys' numbers (W_ATTACK1..10); the second page is the same keys, 11-20. */
@@ -172,5 +190,13 @@ final class Act {
     static byte[] packet(int uid) {
         return new byte[] {(byte) OP_USE, (byte) BAG_PANEL,
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, 0, 0, 0, 0};
+    }
+
+    /** op 18, bag panel 0, uid, then -1: the packet captured from the game's discard action. */
+    static byte[] discardPacket(int uid) {
+        return new byte[] {(byte) OP_USE, (byte) BAG_PANEL,
+                (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid,
+                (byte) (DISCARD >>> 24), (byte) (DISCARD >>> 16),
+                (byte) (DISCARD >>> 8), (byte) DISCARD};
     }
 }
