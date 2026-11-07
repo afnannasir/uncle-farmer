@@ -160,16 +160,17 @@ def test_own_gang_through_the_outer_hall() -> None:
     assert crafting.enter_gang(as_bot(b)) is True and b.chosen == ["Enter the Outer hall of the gang"]
 
 
-def test_landing_in_the_inner_half_is_caught() -> None:
+def test_landing_in_the_inner_half_walks_on_to_the_craftsmen() -> None:
+    # the inner hall's door lets us out to the outer hall on foot (a recorded hand run, 2026-11-07)
     b = FB(FakeGame([], land=(41, 45)))
-    assert crafting.enter_gang(as_bot(b)) is False and any("walled off" in line for line in b.logs)
+    assert crafting.enter_gang(as_bot(b)) is True
 
 
-def test_from_the_inner_half_it_leaves_and_comes_back_in() -> None:
+def test_from_the_inner_half_it_walks_out_instead_of_going_round_by_the_gang_entrance() -> None:
     g = FakeGame([])
     g.map, g.pos = 4004, {"x": 41.0, "y": 45.0}
     b = FB(g)
-    assert crafting.enter_gang(as_bot(b)) is True and b.chosen == ["Enter the Outer hall of the gang"]
+    assert crafting.enter_gang(as_bot(b)) is True and getattr(b, "chosen", []) == []      # no menu
 
 
 def test_another_gang_from_a_paged_list() -> None:

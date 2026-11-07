@@ -277,7 +277,7 @@ Your names can be used anywhere the bot's own names can.
     enhance check                only look
     chores                       the day's chores as set up in Tools, Daily chores (each once a game day)
     chores check                 only look
-    chores only=bank,donation    just those: bank, bounty, pet_rebirth, donation, construction, secret_room
+    chores only=bank,donation    just those: bank, bounty, pet_rebirth, donation, construction, feed, secret_room
     gather                       fish, mine or collect herbs as set up in Tools, Gathering: the gang's
                                  area once a game day, then outside; fights back and sells the collection
     gather check                 only look: the skill, the gang area's entrance, the place it would use

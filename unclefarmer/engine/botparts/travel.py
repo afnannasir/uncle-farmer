@@ -130,11 +130,12 @@ class TravelMixin(Parts):
         if dst == POISON_MAP and self.map_id() != POISON_MAP:
             self._refuse_unless_poison_immune()    # before anything moves (temporary: see POISON_MAP)
         avoid: set[Any] = set(travel.kept_off(self.p))      # airships, when the profile says no
+        was = getattr(self, "traveling", False)   # a chores run or a survey keeps it on round this
         self.traveling = True
         try:
             self._travel(dst, cell, avoid)
         finally:
-            self.traveling = False
+            self.traveling = was
 
     def _travel(self, dst: int, cell: tuple[float, float] | list[float] | None, avoid: set[Any]) -> None:
         goal_cell = (cell[0], cell[1]) if cell is not None else None
