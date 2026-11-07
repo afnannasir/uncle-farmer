@@ -5019,7 +5019,7 @@ msgstr ""
 msgid "sold the {kind} for {n} arnebia"
 msgstr ""
 
-msgid "sold {list}; {n} arnebia came in"
+msgid "sold {list}"
 msgstr ""
 
 msgid "sold {n} {item}"
