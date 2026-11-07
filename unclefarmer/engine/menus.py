@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
 SHARD_SELL_AGENT = 56           # agent-side market row -> sell -> quantity transaction
-SHARD_DIRECT_AGENT = 63         # agent sends a validated direct-sale plan from the open market
+SHARD_DIRECT_AGENT = 56         # agent sends a validated direct-sale plan from the open market
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
 MENU_POLL = 0.01              # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
@@ -141,20 +141,22 @@ def item_id(b: Bot, layout: str, name: str) -> int | None:
     return int(item["id"]) if item is not None else None
 
 
-def shard_sell(b: Bot, item_id: int, count: int) -> bool:
-    """Sell through the agent's stateful shard transaction. False leaves the caller's safe,
-    separately-verified menu path in charge (including an older agent without this command)."""
+SOLD, UNSURE, NOT_SOLD = "sold", "unsure", "not sold"
+
+
+def shard_sell(b: Bot, item_id: int, count: int) -> str:
+    """Sell through the agent's stateful shard transaction. SOLD; NOT_SOLD when nothing was entered
+    (an older agent, or a menu that wasn't the verified one), which leaves the caller's own menu
+    path in charge; UNSURE once the quantity may have gone to the game, which must never be sold
+    again by another path - only the bag can tell."""
     if int(getattr(b, "agent_version", 0) or 0) < SHARD_SELL_AGENT:
-        return False
-    return b.a.send("shardsell %d %d" % (item_id, count)).startswith("sold ")
-
-
-def shard_sell_all(b: Bot, sales: list[tuple[int, int]]) -> bool:
-    """Run a verified, sequential shard-sale plan inside a current agent."""
-    if not sales or int(getattr(b, "agent_version", 0) or 0) < SHARD_SELL_AGENT:
-        return False
-    words = " ".join("%d %d" % pair for pair in sales)
-    return b.a.send("shardsellall " + words).startswith("sold all ")
+        return NOT_SOLD
+    answer = b.a.send("shardsell %d %d" % (item_id, count))
+    if answer.startswith("sold "):
+        return SOLD
+    if answer.startswith("refused: the Shard Market did not finish the sale") or answer.startswith("entered"):
+        return UNSURE
+    return NOT_SOLD
 
 
 def shard_sell_direct_all(b: Bot, sales: list[tuple[int, int]]) -> bool:

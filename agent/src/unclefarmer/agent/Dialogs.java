@@ -172,16 +172,6 @@ final class Dialogs {
         }
     }
 
-    /** Run several verified shard sales serially without returning to the controller between them. */
-    static String shardSellAll(int[] ids, int[] counts) {
-        if (ids.length == 0 || ids.length != counts.length) return "error: shardsellall needs item/count pairs";
-        for (int i = 0; i < ids.length; i++) {
-            String result = shardSell(ids[i], counts[i]);
-            if (!result.startsWith("sold ")) return result;
-        }
-        return "sold all " + ids.length;
-    }
-
     /** Send one verified sale command from the currently verified Shard Market. */
     static String shardSellDirect(int id, int count) {
         if (count <= 0 || count > 2000) return "error: sharddirect count must be 1-2000";
@@ -277,7 +267,7 @@ final class Dialogs {
     /** The server closes a completed trade. If the NPC that opened it is still selected, invoke
      * the game's own Enter action immediately and wait for that same verified market to return. */
     private static boolean reopenMarket(int broker, int item) {
-        if (broker <= 0) return false;
+        if (broker >= 0) return false;      // NPC ids are negative
         try {
             Object world = Memory.world();
             java.awt.Frame win = Memory.window();

@@ -469,6 +469,14 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
                 if not b.wait_dialog(3.0):
                     break
             rows = buyer_rows(b)
+            if not rows and _round > 0:
+                # something else is on screen after a sale (a message, another menu): ask the
+                # buyer afresh once before taking an empty list for "nothing left to sell"
+                b.close_dialogs()
+                visit(b, role)
+                if not b.wait_dialog(3.0):
+                    break
+                rows = buyer_rows(b)
             todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
             if not todo:
                 break
@@ -723,10 +731,16 @@ def shard_trade(b: Bot, name: str, action: str, n: int,
         if done and reopen is not None and not reopen():
             break
         step = min(n - done, TRADE_MOST)
-        item_id = menus.item_id(b, menus.SHARD_MARKET, name)
-        if item_id is not None and menus.shard_sell(b, item_id, step):
-            done += step
-            continue
+        # The agent's one-command sale sells only: a buy always goes the menu way below.
+        item_id = menus.item_id(b, menus.SHARD_MARKET, name) if action == "sell" else None
+        if item_id is not None:
+            sold = menus.shard_sell(b, item_id, step)
+            if sold == menus.SOLD:
+                done += step
+                continue
+            if sold == menus.UNSURE:
+                done += step          # the bag check afterwards says what really went
+                break
         # Each choice is direct (the agent verifies the fixed market's item id and row), so do
         # not pause after it.  The next direct choice waits for the game's real next menu instead.
         listed = menus.pick(b, menus.SHARD_MARKET, name=name, settle=False)
@@ -748,33 +762,39 @@ def shard_trade(b: Bot, name: str, action: str, n: int,
     return done
 
 
-def _sell_shard_batch(b: Bot, todo: list[tuple[str, int]], transaction: InventoryTransaction,
-                      open_market: Callable[[str], bool]) -> list[tuple[str, int]] | None:
-    """Sell one verified plan in the agent. None leaves the ordinary sequential path in charge."""
+def _sell_shard_batch(b: Bot, todo: list[tuple[str, int]], open_market: Callable[[str], bool]) -> bool:
+    """Hand one verified plan to the agent in a single command. True when it was sent - not proof
+    that the server sold it all: the caller reads the bag afterwards and sells only what is left."""
     if not open_market(todo[0][0]):
-        return None
+        return False
     ids = menus.market_item_ids(b, [name for name, _n in todo])
+    if ids is None:
+        return False
     plan = [(item_id, min(remaining, TRADE_MOST))
-            for item_id, (_name, count) in zip(ids or [], todo)
+            for item_id, (_name, count) in zip(ids, todo)
             for remaining in range(count, 0, -TRADE_MOST)]
-    if ids is None or not (menus.shard_sell_direct_all(b, plan) or menus.shard_sell_all(b, plan)):
-        return None
+    return menus.shard_sell_direct_all(b, plan)
+
+
+def _left_to_sell(todo: list[tuple[str, int]], before: dict[str, int], now: dict[str, int]) -> list[tuple[str, int]]:
+    """What of the plan the bag says is still unsold: never more than was meant to go, so a keep
+    rule ("sell N, keep the rest") holds even when part of a batch went through."""
+    left: list[tuple[str, int]] = []
     for name, n in todo:
-        transaction.expect(name, -n)
-    b.close_dialogs()
-    return transaction.removed(transaction.settle(b))
+        gone = max(0, before.get(name.lower(), 0) - now.get(name.lower(), 0))
+        if n - gone > 0:
+            left.append((name, n - gone))
+    return left
 
 
-def _sell_shard_steps(b: Bot, todo: list[tuple[str, int]], transaction: InventoryTransaction,
-                      open_market: Callable[[str], bool]) -> list[tuple[str, int]]:
-    """The compatible per-shard path, used when an agent cannot take the batch transaction."""
+def _sell_shard_steps(b: Bot, todo: list[tuple[str, int]], open_market: Callable[[str], bool]) -> None:
+    """The per-shard path: for an older agent, and for whatever a batch left unsold."""
     for name, n in todo:
         if not open_market(name):
             b.log(_("the Shard Market didn't list {item}", item=name))
             continue
-        transaction.expect(name, -shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name)))
+        shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name))
     b.close_dialogs()
-    return transaction.removed(transaction.settle(b)) if transaction.expected else []
 
 
 def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = None) -> int:
@@ -801,11 +821,12 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
     def open_market(name: str) -> bool:
         """Open the broker's fixed market only when it is not already on screen."""
         nonlocal broker
-        # An indexed pick validates the entire fixed layout atomically. Avoid an extra `menu`
-        # request when a current agent already reports that some dialog is open; it will refuse
-        # safely if it is not the market. Older agents still identify the item by menu text here.
+        # With a current agent the pick that follows checks the whole list itself, so the screen's
+        # own text is enough here (no extra `menu` read) - but it must list the shard: a popup left
+        # on screen is not the market and would stop every sale.
         if menus.can_pick(b):
-            if b.dialog().get("open"):
+            d = b.dialog()
+            if d.get("open") and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None:
                 return True
         elif market_lists(b, name):
             return True
@@ -816,16 +837,27 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
             return False
         return market_lists(b, name, MARKET_OPEN)
 
-    # A whole market plan is faster than one controller command per shard. The agent validates
-    # every row and sell menu itself; statistics still use the final bag reconciliation below.
-    moved = _sell_shard_batch(b, todo, transaction, open_market)
-    if moved is not None:
-        for name, gone in moved:
-            b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
-            stats.moved(b, "sold", name, gone)
-        return len(moved)
+    # A whole market plan in one agent command is fastest. The bag then says what really went,
+    # and only that which is still unsold goes the step-by-step way.
+    left = todo
+    if _sell_shard_batch(b, todo, open_market):
+        for name, n in todo:
+            transaction.expect(name, -n)
+        left = _left_to_sell(todo, transaction.before, transaction.settle(b))
+        if left:
+            b.log(_("the Shard Market didn't take all of it at once - selling the rest one by one"))
+    if left:
+        _sell_shard_steps(b, left, open_market)
+    b.close_dialogs()
+    return _note_shard_sales(b, transaction, todo)
 
-    moved = _sell_shard_steps(b, todo, transaction, open_market)
+
+def _note_shard_sales(b: Bot, transaction: InventoryTransaction, todo: list[tuple[str, int]]) -> int:
+    """What the bag says was sold, logged and counted. Returns how many kinds went."""
+    if not transaction.expected:
+        for name, n in todo:
+            transaction.expect(name, -n)
+    moved = transaction.removed(transaction.settle(b))
     for name, gone in moved:
         b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
         stats.moved(b, "sold", name, gone)

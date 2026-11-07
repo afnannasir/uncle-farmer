@@ -5454,6 +5454,11 @@ msgstr "Shard Market"
 msgid "the Shard Market didn't list {item}"
 msgstr "Shard Market ne {item} list nahi kiya"
 
+msgid ""
+"the Shard Market didn't take all of it at once - selling the rest one by one"
+msgstr ""
+"Shard Market ne sab ek saath nahi liya - baqi ek ek kar ke bech rahe hain"
+
 msgid "the Shard Market doesn't sell {shard}"
 msgstr "Shard Market {shard} nahi bechta"
 
