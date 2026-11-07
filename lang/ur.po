@@ -5745,6 +5745,9 @@ msgstr ""
 msgid "the game can't be read: {why}"
 msgstr "game nahi parhi ja sakti: {why}"
 
+msgid "the game didn't accept the direct discard request: {why}"
+msgstr "game ne seedha discard request qubool nahin ki: {why}"
+
 msgid "the game didn't ask to confirm"
 msgstr "game ne confirm karne ko nahi kaha"
 

@@ -173,7 +173,7 @@ class BagMixin(Parts):
             self.log(_("the game didn't accept the direct discard request: {why}", why=reply))
             if agent_strike(self, "discard", False):
                 self.agent_act = False
-        return transaction.removed(transaction.settle(self))
+        return transaction.removed(transaction.settle(as_bot(self)))
 
     def bag_cursor(self, name: str) -> str | None:
         """Put the bag panel's cursor on the item (panel 0, category 0, the short way round).

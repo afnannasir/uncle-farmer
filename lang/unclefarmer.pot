@@ -5493,6 +5493,9 @@ msgstr ""
 msgid "the game can't be read: {why}"
 msgstr ""
 
+msgid "the game didn't accept the direct discard request: {why}"
+msgstr ""
+
 msgid "the game didn't ask to confirm"
 msgstr ""
 
