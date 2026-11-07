@@ -358,6 +358,23 @@ def test_visit_goes_to_the_nearest_and_talks(monkeypatch: pytest.MonkeyPatch) ->
     assert any("going to Storehouse" in line for line in b.lines)
 
 
+def test_the_walk_up_to_the_npc_rides_the_swift_beast(monkeypatch: pytest.MonkeyPatch) -> None:
+    # most visits stay on one map (the next buyer in town): the walk to the NPC counts as
+    # travelling, so it puts the Swift fusion beast on; afterwards it is as it was
+    b = TownBot()
+    seen: list[bool] = []
+    monkeypatch.setattr(town, "nearest", stand_in(town.nearest, lambda b, role, candidates=None: (3, "Buyer", 10, 20)))
+    monkeypatch.setattr(town.atlas, "label", stand_in(town.atlas.label, lambda mid: "Map %s" % mid))
+    real_talk = b.talk
+
+    def talk(npc: str, at: tuple[float, float] | None = None) -> bool:
+        seen.append(getattr(b, "traveling", False))
+        return real_talk(npc, at)
+    monkeypatch.setattr(b, "talk", talk)
+    town.visit(as_bot(b), "buyer")
+    assert seen == [True] and getattr(b, "traveling", None) is False
+
+
 def test_visit_reads_the_results_before_and_after_the_trip(monkeypatch: pytest.MonkeyPatch) -> None:
     # loot before the trip, fares on it and the trade after it are each counted on their own
     b = TownBot()

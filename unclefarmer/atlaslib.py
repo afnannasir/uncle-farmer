@@ -470,6 +470,14 @@ class MapModel(object):
 
         tt = self.t
         self.solid = ((tt >= 200) & (tt <= 226)) | (tt == 299)
+        # A gang base's "inner door" (tile 209/210, every base at x 36-45, y 60) is painted with a
+        # wall tile, but it is the inner hall's way out: players walk south through it to the outer
+        # hall and the base's south exit (a recorded hand run, 2026-11-07, x 41 from y 43 to 117).
+        # The one-way door strip right below it (y 61, no step north) keeps the way in shut, as the
+        # game does - the inner hall is entered from the Gang Entrance.
+        for r in rows:
+            if r["label"].strip() == "inner door" and 200 <= int(r["type_id"]) <= 226:
+                self.solid[int(r["y1"]):int(r["y2"]) + 1, int(r["x1"]):int(r["x2"]) + 1] = False
         self.walk = (tt > 0) & ~self.solid
         self.walk[0, :] = self.walk[-1, :] = False
         self.walk[:, 0] = self.walk[:, -1] = False

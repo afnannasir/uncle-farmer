@@ -17,6 +17,7 @@ from .common import Dialog, with_code, Form, group, page, save_file, tabs
 from .crafting import CHECK, START
 
 DONATIONS = ("off", "10000", "20000", "diamonds")
+BUILD_AT = ("posts", "highland")
 
 
 def donation_names():
@@ -57,10 +58,13 @@ class ChoresDialog(Dialog):
         f = group(panel, box, _("Inner hall"))
         self.donation = f.choice(_("&Donation, once a day:"), donation_names(),
                                  DONATIONS.index(c["donation"]) if c["donation"] in DONATIONS else 0)
-        self.construction = f.number(_("&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"),
-                                     c["construction"], 0, 50)
-        self.highland = f.check(_("Build in the gang's &highland too (the outer and inner halls always)"),
-                                c["build_highland"])
+        self.construction = f.number(_("&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"),
+                                     min(int(c["construction"] or 0), 2), 0, 2)
+        self.build_at = f.choice(_("&Build at:"), [_("the inner hall's East and West posts"), _("our gang's highland")],
+                                 BUILD_AT.index(c["build_at"]) if c["build_at"] in BUILD_AT else 0)
+        self.highland = f.number(_("Our gang's &highland number (the one under Occupied Highlands):"),
+                                 int(c["highland"] or 0), 0, 9999)
+        self.feed = f.check(_("&Feed the gang's breed beast at the Animal Shed"), c["feed"])
         self.keep_arnebia = f.number(_("Never spend arnebia belo&w:"), self.p.get("gem_keep_arnebia", 20000),
                                      0, 1000000000)
 
@@ -115,16 +119,24 @@ class ChoresDialog(Dialog):
                           wx.OK | wx.ICON_INFORMATION, self)
             self.pet.SetFocus()
             return
+        if BUILD_AT[self.build_at.GetSelection()] == "highland" and not self.highland.GetValue():
+            wx.MessageBox(_("Type your gang's highland number: the Highland Entrance lists it under Occupied "
+                            "Highlands (\"the own Gang's Highland 38\": 38)."), _("Gang construction"),
+                          wx.OK | wx.ICON_INFORMATION, self)
+            self.highland.SetFocus()
+            return
         self.cfg.update(bank=self.bank.GetValue(), bounty=self.bounty.GetValue(),
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
-                        construction=self.construction.GetValue(), build_highland=self.highland.GetValue(),
+                        construction=self.construction.GetValue(),
+                        build_at=BUILD_AT[self.build_at.GetSelection()], highland=self.highland.GetValue(),
+                        feed=self.feed.GetValue(),
                         secret_room=self.room_on.GetValue(), room=self.room.GetValue().strip(),
                         assistant=self.assistant.GetSelection() + 1, practice_minutes=self.minutes.GetValue(),
                         share_with=self.share_with.GetValue().strip(), share_anyone=self.share_anyone.GetValue(),
                         share_trips=self.trips.GetValue(), trip_lead=self.lead.GetValue(),
                         before_farming=self.before.GetValue())
-        for old in ("room_minutes", "share"):       # settings of the first version
+        for old in ("room_minutes", "share", "build_highland"):       # settings of earlier versions
             self.cfg.pop(old, None)
         self.p["chores"] = self.cfg
         self.p["gem_keep_arnebia"] = self.keep_arnebia.GetValue()
