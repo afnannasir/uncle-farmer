@@ -121,7 +121,8 @@ def test_an_entry_is_chosen_where_it_is_without_a_key() -> None:
     e = b.choose(r"^Entry 27$")
     assert e is not None and e["options"] == ["Entry 27"]
     assert b.agent.sent == ["choose 26 0 %d" % SIG]
-    assert b.keys == [] and b.reads == 1                 # one reading, no walk, no Enter press
+    # The second read is the state-aware wait: it detects the next menu instead of a fixed pause.
+    assert b.keys == [] and b.reads == 2                 # no walk or Enter press
     assert any('choosing "Entry 27"' in line for line in b.logs)
 
 
