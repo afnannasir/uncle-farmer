@@ -32,6 +32,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      throw-away list (keeping what each rule keeps) - nothing else
     update_shard_prices              read the nearest Shard Market's prices into data/shards.json
                                      (only prices the menu shows and sends alike; the rest stay)
+    store_items                      put into the storehouse what is on the bag manager's storage
+                                     list (keeping what each rule keeps) - nothing else
     survey [cities|all|everything|here|<map>]   learn NPCs and their menus from the game itself (only looks)
     follow <player>                  stay with that player and help with their fights, until stopped
     come <player> [<map>]            walk up to that player (on their map, if it is given)
@@ -82,7 +84,7 @@ from typing import Any
 from .. import atlas, dungeons, jsonio, knowledge, stats
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
-from . import chores, crafting, dungeon, follow, gathering, survey, town
+from . import chores, crafting, dungeon, follow, survey, town, triggers
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -96,7 +98,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
@@ -978,8 +980,7 @@ class Runner:
             chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
 
     def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "gather"):     # the catch and its sale are no farming loot
-            gathering.run(b, gathering.config(b.p), o.get("check", False))
+        triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
 
     def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
         dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
@@ -997,17 +998,18 @@ class Runner:
         else:
             town.visit(b, None, name=w)
 
+    # The Tools menu's jobs: the same code the Character settings' triggers run (engine/triggers.py)
     def _do_sell_shards(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "sell_shards"):
-            town.sell_shards_now(b)
+        triggers.run_job(b, "sell_shards")
 
     def _do_clean_bag(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "clean_bag"):
-            town.clean_bag(b)
+        triggers.run_job(b, "clean_bag")
 
     def _do_update_shard_prices(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "update_shard_prices"):
-            town.update_shard_prices(b)
+        triggers.run_job(b, "update_shard_prices")
+
+    def _do_store_items(self, node: Node, b: Bot, o: dict[str, Any]):
+        triggers.run_job(b, "store_items")
 
     def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
         if not town.restock(b, b.p.get("restock") or [], start=True):

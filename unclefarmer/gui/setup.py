@@ -1,4 +1,5 @@
-"""Settings for the whole app: the game and its agent, speech, language, the farming day."""
+"""Settings for the whole app: the game and its agent, speech, language, the farming day, logging
+and the updater."""
 
 from __future__ import annotations
 
@@ -7,13 +8,14 @@ from typing import Any
 
 import wx
 
-from .. import applog, daily, gameinstall, i18n, paths, updater
+from .. import __version__, applog, daily, gameinstall, i18n, paths, updater
 from ..i18n import _
 from . import agentfix
 from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, ok_cancel, page, tabs, modal
 
 SPEECH_MODES = ("running", "always", "never")
 AFTER = ("nothing", "close_game", "shutdown")
+CHECK_UPDATES = wx.ID_HIGHEST + 41      # Updater tab, "Save and check for updates now": the window checks
 
 
 class SetupDialog(Dialog):
@@ -26,6 +28,7 @@ class SetupDialog(Dialog):
         self.speech_page(nb)
         self.day_page(nb)
         self.log_page(nb)
+        self.updater_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"))
         self.SetSizerAndFit(root)
@@ -67,16 +70,6 @@ class SetupDialog(Dialog):
         codes = [c for c, _n in self.langs]
         lang = self.s.get("language", "en")
         self.lang = f.choice(_("&Language:"), [n for _c, n in self.langs], codes.index(lang) if lang in codes else 0)
-        self.updates: wx.CheckBox | None = None
-        self.channel: wx.Choice | None = None
-        if updater.REPO:          # nowhere to look for updates: no switch for it
-            f = group(panel, box, _("Updates"))
-            self.updates = f.check(_("Look for a new &version when Uncle Farmer starts"),
-                                   self.s.get("check_updates", True))
-            self.channel = f.choice(_("Release &channel:"),
-                                    [_("Master: stable releases"),
-                                     _("Dev: development builds (newest changes, can break)")],
-                                    updater.CHANNELS.index(updater.channel(self.s.get("update_channel"))))
 
     def day_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Farming day"))
@@ -135,12 +128,60 @@ class SetupDialog(Dialog):
             "so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."),
             lines=3)
 
-    def on_ok(self, _evt: wx.Event) -> None:
+    def updater_page(self, nb: wx.Notebook) -> None:
+        """Everything about updates in one place: this copy's version, where updates come from, the
+        check at start, the channel, a skipped release, and a check now (Help, Check for updates)."""
+        panel, box = page(nb, _("Updater"))
+        f = group(panel, box, _("This copy"))
+        f.readonly(_("Status:"), self.updater_status(), lines=4)
+        self.updates: wx.CheckBox | None = None
+        self.channel: wx.Choice | None = None
+        self.unskip: wx.CheckBox | None = None
+        if not updater.REPO:          # nowhere to look for updates: no switches for it
+            return
+        f = group(panel, box, _("Updates"))
+        self.updates = f.check(_("Look for a new &version when Uncle Farmer starts"),
+                               self.s.get("check_updates", True))
+        self.channel = f.choice(_("Release &channel:"),
+                                [_("Master: stable releases"),
+                                 _("Dev: development builds (newest changes, can break)")],
+                                updater.CHANNELS.index(updater.channel(self.s.get("update_channel"))))
+        skipped = self.s.get("skip_version") or ""
+        if skipped:
+            self.unskip = f.check(_("&Offer version {v} again (you chose to skip it)", v=skipped), False)
+        buttons(f.parent, f.box, (_("Save and check for updates &now"), self.on_check_now))
+
+    def updater_status(self) -> str:
+        """What the Updater tab says about this copy."""
+        mine = updater.installed_version()
+        lines = [_("Uncle Farmer {v}", v=mine) + (" " + _("(a development build)") if updater.is_dev(mine) else "")]
+        if not updater.REPO:
+            lines.append(_("This copy doesn't look for updates online. New versions come as a zip: unpack it over "
+                           "this folder."))
+        elif not updater.frozen():
+            lines.append(_("Runs from source: it never updates itself (use git pull)."))
+        else:
+            lines.append(_("Updates come from GitHub ({repo}) and install themselves after you say yes.",
+                           repo=updater.REPO))
+        lines.append(_("Update log: {log}", log=updater.LOG))
+        if __version__ != mine.split("-dev.")[0]:
+            lines.append(_("Program version: {v}", v=__version__))
+        return "\n".join(lines)
+
+    def on_check_now(self, _evt: wx.Event) -> None:
+        if self.valid():
+            self.EndModal(CHECK_UPDATES)
+
+    def valid(self) -> bool:
         if self.day_on.GetValue() and not daily.valid(self.day_at.GetValue()):
             error(self, _("Enter the daily stop time as HH:MM, for example 04:50."))
             self.day_at.SetFocus()
-            return
-        self.EndModal(wx.ID_OK)
+            return False
+        return True
+
+    def on_ok(self, _evt: wx.Event) -> None:
+        if self.valid():
+            self.EndModal(wx.ID_OK)
 
     def refresh(self) -> None:
         folder = self.folder.GetValue().strip()
@@ -212,6 +253,8 @@ class SetupDialog(Dialog):
             self.s["check_updates"] = self.updates.GetValue()
         if self.channel is not None:
             self.s["update_channel"] = updater.CHANNELS[max(0, self.channel.GetSelection())]
+        if self.unskip is not None and self.unskip.GetValue():
+            self.s["skip_version"] = ""
         self.s["game_speech"] = SPEECH_MODES[max(0, self.game_speech.GetSelection())]
         self.s["fix_voice"] = self.fix_voice.GetValue()
         self.s["results_speak"] = "end" if self.speak_end.GetValue() else "never"

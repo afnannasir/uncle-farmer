@@ -105,6 +105,10 @@ class FakeTally:
 
 
 class FakeRunner:
+    # what the real Runner holds after reading the script: its lines and subs (no farm command here)
+    main: list[script_mod.Node] = []
+    subs: dict[str, list[script_mod.Node]] = {}
+
     def __init__(self, bot: FakeBot, text: str) -> None:
         self.bot, self.text = bot, text
 
@@ -113,6 +117,8 @@ class FakeRunner:
 
 
 class FarmingRunner(FakeRunner):
+    main = [script_mod.Node("farm", 1)]
+
     def run(self) -> None:
         super().run()
         self.bot.farmed = True

@@ -18,9 +18,10 @@ import re
 import weakref
 from collections.abc import Callable, Generator, Sequence
 from types import TracebackType
-from typing import Any, Literal, Self, TypeVar, overload
+from typing import Any, Literal, Self, TypeVar, cast, overload
 
 import wx
+import wx.lib.scrolledpanel as scrolled
 
 from .. import paths, speech
 from ..i18n import _
@@ -31,9 +32,47 @@ Handler = Callable[[wx.CommandEvent], object]      # a button's, check box's or 
 Reader = Callable[[], "dict[str, Any] | None"]     # reads the game now (the main window's snapshot)
 
 
+SCREEN_MARGIN = 24          # pixels a dialog keeps clear of the screen's edges (and the taskbar)
+
+
+def screen_area(window: wx.Window) -> wx.Rect:
+    """The usable part of the screen the window is on (without the taskbar)."""
+    n = wx.Display.GetFromWindow(window)
+    return wx.Display(n if n != wx.NOT_FOUND else 0).GetClientArea()
+
+
+def fit_on_screen(window: wx.TopLevelWindow) -> None:
+    """Never bigger than the screen: a dialog fitted to its tallest tab opened past the bottom of a
+    1280x720 screen (Character settings' Fighting tab needed 692 pixels of 546, its Gear choices
+    out of sight). Size and smallest size are cut to the screen and the window centred on it; a tab
+    taller than that scrolls (page)."""
+    area = screen_area(window)
+    most = wx.Size(max(320, area.width - SCREEN_MARGIN), max(240, area.height - SCREEN_MARGIN))
+    small = window.GetMinSize()
+    if small.width > most.width or small.height > most.height:
+        window.SetMinSize(wx.Size(min(small.width, most.width) if small.width > 0 else -1,
+                                  min(small.height, most.height) if small.height > 0 else -1))
+    size = window.GetSize()
+    if size.width > most.width or size.height > most.height:
+        window.SetSize(wx.Size(min(size.width, most.width), min(size.height, most.height)))
+        window.CentreOnScreen()
+
+
 class Dialog(wx.Dialog):
     """Every dialog of ours: `with SomeDialog(...) as d` keeps the dialog's own type (wxPython's stub
-    leaves wx.Dialog.__enter__ unannotated). Leaving the with destroys it, as wx's own __exit__ does."""
+    leaves wx.Dialog.__enter__ unannotated). Leaving the with destroys it, as wx's own __exit__ does.
+    Fitted to its contents, it is kept on the screen (fit_on_screen)."""
+
+    def SetSizerAndFit(self, sizer: wx.Sizer, deleteOld: bool = True) -> None:  # noqa: N802 (wx's name)
+        super().SetSizerAndFit(sizer, deleteOld)
+        fit_on_screen(self)
+
+    def SetMinSize(self, size: wx.Size | tuple[int, int]) -> None:  # noqa: N802 (wx's name)
+        """A dialog's own smallest size, never more than the screen holds."""
+        size = size if isinstance(size, wx.Size) else wx.Size(size[0], size[1])
+        area = screen_area(self)
+        most = wx.Size(max(320, area.width - SCREEN_MARGIN), max(240, area.height - SCREEN_MARGIN))
+        super().SetMinSize(wx.Size(min(size.width, most.width), min(size.height, most.height)))
 
     def __enter__(self) -> Self:
         return self
@@ -224,15 +263,27 @@ def tabs(parent: wx.Window) -> wx.Notebook:
     return nb
 
 
+class Page(scrolled.ScrolledPanel):
+    """A notebook page that scrolls when the window is smaller than what it holds, and scrolls a
+    control into view when it gets the focus (Tab), so nothing on it is ever out of reach. Its best
+    size is everything it holds: a dialog still opens big enough to show the whole page when the
+    screen has room (fit_on_screen cuts it to the screen otherwise)."""
+
+    def DoGetBestSize(self) -> wx.Size:  # noqa: N802 (wx's name)
+        sizer = cast("wx.Sizer | None", self.GetSizer())      # None until page() gives it one
+        return sizer.GetMinSize() if sizer is not None else super().DoGetBestSize()
+
+
 def page(notebook: wx.Notebook, title: str) -> tuple[wx.Panel, wx.BoxSizer]:
-    """A notebook page with a padded vertical sizer: returns (panel, sizer)."""
-    panel = wx.Panel(notebook)
+    """A notebook page with a padded vertical sizer: returns (panel, sizer). The page scrolls (Page)."""
+    panel = Page(notebook)
     outer = wx.BoxSizer(wx.VERTICAL)
     inner = wx.BoxSizer(wx.VERTICAL)
     outer.Add(inner, 1, wx.EXPAND | wx.ALL, 12)
     panel.SetSizer(outer)
+    panel.SetupScrolling(scroll_x=True, scroll_y=True, rate_x=20, rate_y=20, scrollToTop=False)
     notebook.AddPage(panel, title)
-    return panel, inner
+    return cast(wx.Panel, panel), inner        # a wx.Panel underneath (wx.lib has no type stubs)
 
 
 def read_decimal(ctrl: wx.TextCtrl) -> float:

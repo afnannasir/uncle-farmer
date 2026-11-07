@@ -11391,7 +11391,9 @@
   },
   {
    "name": "Pet Rice Roll",
-   "category": "pet_food"
+   "category": "pet_food",
+   "description": "Increase Amiability by 30%.",
+   "price": 1000
   },
   {
    "name": "Lesser Frog Soul Stone",
@@ -12335,17 +12337,23 @@
   {
    "name": "Small Toolbox",
    "category": "repair_equipped",
-   "effect": "repairs everything you wear up to level 60"
+   "description": "Can repair all currently outfitted equipment not higher than level 60.",
+   "effect": "repairs everything you wear up to level 60",
+   "price": 20000
   },
   {
    "name": "Large Toolbox",
    "category": "repair_equipped",
-   "effect": "repairs everything you wear up to level 80"
+   "description": "Can repair all currently outfitted equipment level 80 and below.",
+   "effect": "repairs everything you wear up to level 80",
+   "price": 40000
   },
   {
    "name": "Alloy Toolbox",
    "category": "repair_equipped",
-   "effect": "repairs everything you wear, any level"
+   "description": "Can repair all currently outfitted equipment.",
+   "effect": "repairs everything you wear, any level",
+   "price": 80000
   },
   {
    "name": "Repair Scroll",
@@ -12417,7 +12425,9 @@
   {
    "name": "Hearthstone",
    "category": "hearthstone",
-   "effect": "takes you home to your bound city"
+   "description": "Each hearthstone is made by a Space Mage using a stone taken from a fireplace for a very long time. It is made from stone that has fully absorbed smoke and fire, then infused with space magic. You can use it to break the barriers of space and return to the last city where you've stayed.",
+   "effect": "takes you home to your bound city",
+   "price": 10000
   },
   {
    "name": "Memory Butterfly",

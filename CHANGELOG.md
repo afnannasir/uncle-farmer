@@ -1,5 +1,34 @@
 # What's new
 
+## Unreleased
+
+**Repairs**
+
+- The Alloy Toolbox repairs again: a character whose level wasn't known yet used the cheapest
+  toolbox, a toolbox the game turned down was never followed by a stronger one, and gear a Small or
+  Large Toolbox left worn counted as repaired. Now the level is read first, an unknown level takes
+  the Alloy Toolbox, and a toolbox that can't do it hands over to the next, stronger one.
+
+**Prices**
+
+- The shops' prices of Pet Rice Roll (1,000), Hearthstone (10,000), Small Toolbox (20,000), Large
+  Toolbox (40,000) and Alloy Toolbox (80,000) arnebia, with the game's descriptions. Results cost the
+  ones used up, the bag manager shows them, and restocking buys only what your arnebia pays for.
+
+**Triggers and storing**
+
+- Tools, Store items now: puts the bag manager's Store list into the storehouse, nothing else.
+- Character, Settings, Triggers: Sell shards, Clean the bag, Update shard prices, Gathering and
+  Store items, each with its own tick before farming and after farming. The after-farming ticks
+  moved here from Travel and pets, keeping what you had ticked.
+- Script command `store_items`.
+
+**Windows**
+
+- Settings, Updater: all the update settings, this copy's version, and Save and check for updates now.
+- Tabs that hold more than the window shows now scroll, and windows never open bigger than the
+  screen (on a small screen the Fighting tab's Gear choices were out of reach).
+
 ## 1.0.1
 
 **Sharing settings and plans**

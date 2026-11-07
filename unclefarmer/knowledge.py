@@ -101,6 +101,17 @@ def traders(item: str | None, they: str) -> list[tuple[int, str, float, float, i
     return out
 
 
+def unit_price(name: str | None) -> int | None:
+    """What one of the item costs at a shop, in arnebia: the cheapest NPC menu the game has shown
+    selling it, else the price its item record holds (the shops' list price, e.g. a grocer's
+    toolboxes and hearthstones, whose menus the game data never recorded). None when unknown."""
+    sold = [t[4] for t in traders(name, "sell") if t[5] == "arnebia" and t[4] > 0]
+    if sold:
+        return min(sold)
+    price = (item(name) or {}).get("price")
+    return price if isinstance(price, int) and not isinstance(price, bool) and price > 0 else None
+
+
 def describe_npc(name: str | None) -> dict[str, Any] | None:
     for n in data().get("npcs", []):
         if n["name"].lower() == (name or "").lower():

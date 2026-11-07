@@ -231,6 +231,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                             lambda e: self.run_errand("sell_collection\n", _("Selling the collection"))),
                            (_("Sell s&hards now"), lambda e: self.sell_shards_now()),
                            (_("Clean the &bag now (throw-away list)..."), lambda e: self.clean_bag_now()),
+                           (_("S&tore items now (storage list)"), lambda e: self.store_items_now()),
                            (_("Update shard &prices"), lambda e: self.update_shard_prices_now())])
         menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
                            (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
@@ -403,7 +404,10 @@ Tools, Sell shards now: sells the shards the bag manager says to sell, at this c
 (or the nearest one). Tools, Clean the bag now: throws away, where you stand, only what is on the
 bag manager's throw-away list, after you say yes. Tools, Update shard prices: reads the nearest
 Shard Market's prices into the price list the bag manager and the results use; a price that can't
-be read keeps its old value.
+be read keeps its old value. Tools, Store items now: puts into the storehouse what is on the bag
+manager's storage list (Move to storehouse), keeping what each rule keeps, and nothing else.
+Character, Settings, Triggers: tick any of these jobs (and Gathering) to run by themselves before
+farming starts, after farming ends, or both - each stage has its own ticks.
 Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
 kills as their 15 minutes give. Before setting out it tops up what you set on the Supplies tab (the
 pet's blue potions and Rice Rolls, your blue and red potions) from the storehouse or the shop; then
@@ -415,7 +419,7 @@ UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and
 asks. Yes: it downloads it, closes, updates and starts again, keeping your characters, plans,
 scripts and settings. Close the games and stop the bots first. Help, Check for updates looks any
-time; Settings, Speech and language, Updates turns the start-up check off.
+time; Settings, Updater turns the start-up check off and picks the release channel.
 
 WALKING
 Bot, Walk to a dungeon or map (Ctrl+W). Dungeon entrance tab: the dungeons whose entrance NPC the

@@ -47,7 +47,7 @@ TOOL = "tool"
 TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
                          "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
                          "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
-                         "update_shard_prices": N_("Updating shard prices")}
+                         "update_shard_prices": N_("Updating shard prices"), "store_items": N_("Storing items")}
 # The jobs that turn a farming run's loot into arnebia: what they bring counts in its earnings.
 SELLING = ("sell_shards", "clean_bag")
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")
@@ -215,8 +215,8 @@ Price = tuple[int, str]          # (arnebia each, SHOP or SHARD)
 
 def unit_prices() -> dict[str, Price]:
     """{item (lower case): (arnebia each, where the price comes from)} for every item a price is
-    stored for. Shop prices are the game data's own, never changed here; shard prices are the
-    Shard Market's last reading (Tools, Update shard prices)."""
+    stored for. Shop prices are the game data's own, never changed here: a shop menu's price, else
+    the item record's; shard prices are the Shard Market's last reading (Tools, Update shard prices)."""
     out: dict[str, Price] = {}
     npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
     for npc in npcs:
@@ -228,6 +228,14 @@ def unit_prices() -> dict[str, Price]:
             key = str(g.get("item") or "").strip().lower()
             if key and (key not in out or price < out[key][0]):
                 out[key] = (price, SHOP)
+    items: list[dict[str, Any]] = knowledge.data().get("items", [])
+    for it in items:
+        # the item's own list price (toolboxes, hearthstones, Pet Rice Rolls: the grocers' menus
+        # were never recorded), where no shop menu gave one
+        key = str(it.get("name") or "").strip().lower()
+        price = it.get("price")
+        if key and key not in out and _whole(price) and price > 0:
+            out[key] = (price, SHOP)
     for name, price in _prices().items():
         if _whole(price) and price > 0:
             out[name] = (price, SHARD)
