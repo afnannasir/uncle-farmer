@@ -1155,6 +1155,20 @@ def clean_bag(b: Bot) -> int:
     if not todo:
         b.log(_("nothing in the bag is on the throw-away list (or only what its rules keep)"), speak=True)
         return 0
+    if b.stop_event.is_set():
+        raise Stopped(_("stopped"))
+    discard = getattr(b, "throw_items", None)
+    direct = discard(todo) if discard else None
+    if direct is not None:
+        thrown = direct
+        failed = [name for name, _n in todo if not any(done == name for done, _gone in thrown)]
+        for name, gone in thrown:
+            stats.moved(b, "thrown", name, gone)
+        if failed:
+            b.log(_("couldn't throw away: {list}", list=", ".join(failed)), speak=True)
+        if thrown:
+            b.log(_("threw away {list}", list=", ".join("%d %s" % (k, s) for s, k in thrown)), speak=True)
+        return len(thrown)
     thrown: list[tuple[str, int]] = []
     failed: list[str] = []
     for name, n in todo:

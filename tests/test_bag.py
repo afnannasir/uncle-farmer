@@ -463,6 +463,18 @@ def test_throw_by_rules_leaves_sell_and_store_alone() -> None:
     assert calls == ["Junk"]
 
 
+def test_throw_by_rules_by_keys_throws_every_item() -> None:
+    """Without the direct discard every item on the list is thrown, not only the first one."""
+    b = Bot(bag=[{"name": "Junk", "count": 4}, {"name": "Pelt", "count": 3}])
+    b.p["bag_rules"] = {"junk": {"action": "throw", "keep": 0},
+                        "pelt": {"action": "throw", "keep": 0}}
+    b.p["only_this_run"] = False
+    calls: list[str] = []
+    b.throw_item = lambda name, n: calls.append(name) or n
+    assert b.throw_by_rules() is True
+    assert sorted(calls) == ["Junk", "Pelt"]
+
+
 def test_throw_by_rules_with_nothing_to_throw() -> None:
     b = Bot(bag=[{"name": "Junk", "count": 4}])
     assert b.throw_by_rules() is False
@@ -537,6 +549,44 @@ class UseLink(Link):
     def send(self, line: str) -> str:
         self.sent.append(line)
         return self.replies.pop(0)
+
+
+class DiscardLink(Link):
+    """The direct discard command, with the game applying the accepted batch at once."""
+
+    def __init__(self) -> None:
+        super().__init__([{"uid": 7, "name": "Junk", "count": 3},
+                          {"uid": 8, "name": "Pelt", "count": 2}])
+        self.sent: list[str] = []
+
+    def json(self, line: str) -> Any:
+        if line == "mem bagfull":
+            return [dict(row) for row in self.bag]
+        return super().json(line)
+
+    def send(self, line: str) -> str:
+        self.sent.append(line)
+        self.bag[0]["count"] -= 2
+        self.bag[1]["count"] -= 1
+        return "sent all 3"
+
+
+def test_direct_discard_resolves_exact_rows_and_reconciles_once() -> None:
+    b = Bot()
+    b.agent_act = True
+    b.agent_version = 57
+    b.a = DiscardLink()
+    assert b.throw_items([("Junk", 2), ("Pelt", 1)]) == [("Junk", 2), ("Pelt", 1)]
+    assert b.a.sent == ["discarddirectall 7 7 8"]
+
+
+def test_direct_discard_sends_nothing_when_the_bag_changed_first() -> None:
+    b = Bot()
+    b.agent_act = True
+    b.agent_version = 57
+    b.a = DiscardLink()
+    assert b.throw_items([("Junk", 4)]) is None
+    assert b.a.sent == []
 
 
 def test_an_odd_use_answer_waits_for_the_next_try_and_three_give_up() -> None:

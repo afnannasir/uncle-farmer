@@ -290,6 +290,10 @@ public final class AgentTests {
 
     private static void usePacketIsTheUseKeysRequest(Map<String, String> contract) {
         eq(bytes(Act.packet(1234567)), contract.get("use_packet"), "use sends what the use key sends");
+        eq(bytes(Act.discardPacket(1234567, 1)), "18 0 0 18 214 135 255 255 255 255",
+                "discarding one sends what the game's discard sends");
+        eq(bytes(Act.discardPacket(1234567, 3)), "18 0 0 18 214 135 255 255 255 253",
+                "three of a stack go in one packet with minus three");
     }
 
     private static String bytes(byte[] packet) {
@@ -348,6 +352,8 @@ public final class AgentTests {
                 "sharddirect needs arm");
         eq(StateServer.handle("sharddirectall 20385 1", armed, mine, guarded), "refused: send 'arm' first",
                 "sharddirectall needs arm");
+        eq(StateServer.handle("discarddirectall 5", armed, mine, guarded), "refused: send 'arm' first",
+                "discarddirectall needs arm");
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "error: the attack page can't be read",
                 "slot without a game says so instead of throwing");
@@ -384,6 +390,10 @@ public final class AgentTests {
                 "error: sharddirectall <item id> <count> ...", "sharddirectall needs pairs");
         eq(StateServer.handle("sharddirectall x 1", armed, mine, guarded), "bad number in: sharddirectall x 1",
                 "sharddirectall checks item ids");
+        eq(StateServer.handle("discarddirectall", armed, mine, guarded), "error: discarddirectall <uid> ...",
+                "discarddirectall needs ids");
+        eq(StateServer.handle("discarddirectall x", armed, mine, guarded), "bad number in: discarddirectall x",
+                "discarddirectall checks item ids");
         boolean[] unarmed = {false};
         eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
                 "pick needs arm");
