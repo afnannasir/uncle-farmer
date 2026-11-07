@@ -461,7 +461,9 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
         before = transaction.before.get("arnebia", 0)
         attempted: set[str] = set()
         for _round in range(60):
-            if _round == 0:
+            # Most buyer sales leave this fixed menu open. If this game version closes it,
+            # reopen the same buyer before reading the next verified list.
+            if _round == 0 or not b.dialog().get("open"):
                 visit(b, role)
                 if not b.wait_dialog(3.0):
                     break

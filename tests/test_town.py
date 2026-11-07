@@ -61,7 +61,8 @@ class TownBot:
         self.me_at = (0.0, 0.0)
         self.travels: list[tuple[int, tuple[float, float] | None]] = []
         self.talks: list[tuple[str, tuple[float, float] | None]] = []
-        self._dialog = {"ok": True, "open": 0, "top": None}
+        self._dialog: dict[str, Any] = {"ok": True, "open": 0, "top": None}
+        self.agent_version = 0
         self.stop_event = threading.Event()
 
     # ---------------------------------------------------------- small surface
@@ -200,15 +201,21 @@ def test_sell_collection_refreshes_the_buyer_menu_without_reopening_the_conversa
 
     monkeypatch.setattr(knowledge, "service_npcs",
                         stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
-    monkeypatch.setattr(town, "visit", stand_in(town.visit, lambda bot, role: visits.append(role) or "Buyer"))
+    def visit(b: town.Bot, role: str | None, name: str | None = None,
+              candidates: Sequence[town.Npc] | None = None) -> str:
+        visits.append(role or "")
+        return "Buyer"
 
-    def pick(bot: TownBot, pattern: str, quantity: int | None = None) -> bool:
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+
+    def pick(b: town.Bot, pattern: str, quantity: int | None = None) -> bool:
+        assert isinstance(b, TownBot)
         item, price = ("Milkfish", 100) if "Milkfish" in pattern else ("Blue Crab", 200)
         chosen.append(item)
-        bot.remove(item, quantity or 0)
-        bot.add("Arnebia", price * (quantity or 0))
+        b.remove(item, quantity or 0)
+        b.add("Arnebia", price * (quantity or 0))
         # The game renews the menu signature before its displayed rows catch up.
-        bot._dialog = {"ok": True, "open": 1, "top": menu(
+        b._dialog = {"ok": True, "open": 1, "top": menu(
             opt("4 Milkfish; Unit price 100 arnebia"), opt("3 Blue Crab; Unit price 200 arnebia"))}
         return True
 
