@@ -19,6 +19,17 @@ FILES = {
     "requirements.txt": ("to run from source", ["--no-default-groups"]),
     "requirements-dev.txt": ("to run, check (check.py) and build (build_exe.py)", ["--all-groups"]),
 }
+WINDOWS_MARKER = " ; sys_platform == 'win32'"
+
+
+def normalize_windows_export(text: str) -> str:
+    """A Windows-only requirements file does not need uv's redundant Windows marker.
+
+    uv 0.8 wrote it while newer uv versions omit it, although both exports describe the same
+    Windows pins. Keeping the file normalized makes the checked-in pip files independent of that
+    formatting change.
+    """
+    return text.replace(WINDOWS_MARKER, "")
 
 
 def exported(name: str) -> str:
@@ -35,7 +46,7 @@ def exported(name: str) -> str:
               "#     .venv\\Scripts\\pip install -r %s\n"
               "# Made from uv.lock by export_requirements.py: don't edit it, run that after `uv lock`.\n"
               % (purpose, name))
-    return header + out.stdout.replace("\r\n", "\n")
+    return header + normalize_windows_export(out.stdout.replace("\r\n", "\n"))
 
 
 def main() -> int:

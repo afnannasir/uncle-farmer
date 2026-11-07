@@ -5242,8 +5242,8 @@ msgstr "{map} chhod rahe hain: {why}"
 msgid "sold the {kind} for {n} arnebia"
 msgstr "{kind} {n} arnebia mein bech di"
 
-msgid "sold {list}; {n} arnebia came in"
-msgstr "{list} bech diye; {n} arnebia aaye"
+msgid "sold {list}"
+msgstr "{list} bech diye"
 
 msgid "sold {n} {item}"
 msgstr "{n} {item} bech diye"
@@ -5453,6 +5453,11 @@ msgstr "Shard Market"
 
 msgid "the Shard Market didn't list {item}"
 msgstr "Shard Market ne {item} list nahi kiya"
+
+msgid ""
+"the Shard Market didn't take all of it at once - selling the rest one by one"
+msgstr ""
+"Shard Market ne sab ek saath nahi liya - baqi ek ek kar ke bech rahe hain"
 
 msgid "the Shard Market doesn't sell {shard}"
 msgstr "Shard Market {shard} nahi bechta"
@@ -6707,6 +6712,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "riding - waiting to arrive"
 #~ msgstr "sawari par - pohanchne ka intezar"
+
+#~ msgid "sold {list}; {n} arnebia came in"
+#~ msgstr "{list} bech diye; {n} arnebia aaye"
 
 #~ msgid "the Gem Craftsman made nothing with {gem} - leaving it"
 #~ msgstr "Gem Craftsman ne {gem} se kuch nahi banaya - ise chhor rahe hain"

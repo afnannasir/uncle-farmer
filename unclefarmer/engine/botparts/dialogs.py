@@ -112,6 +112,25 @@ class DialogsMixin(Parts):
             self.sleep(0.15)
         return None
 
+    def wait_menu_change(self, before: dict[str, Any] | None, seconds: float = 0.4) -> dict[str, Any]:
+        """Wait only until a chosen menu changes, closes, or opens a text box.
+
+        Direct menu selection normally reaches one of those states well before the old fixed
+        0.4-second pause.  If it does not, the full pause remains, preserving the old timing.
+        """
+        signature = (before or {}).get("sig")
+        end = self.clock.time() + seconds
+        while self.clock.time() < end:
+            dialog = self.dialog()
+            top: dict[str, Any] = dialog.get("top") or {}
+            if not dialog.get("open") or top.get("sig") != signature:
+                return dialog
+            input_state = self.a.json("input")
+            if input_state.get("ok") and input_state.get("open"):
+                return dialog
+            self.sleep(0.025)
+        return self.dialog()
+
     def close_dialogs(self) -> None:
         for _i in range(6):
             if self.dialog()["open"] == 0:

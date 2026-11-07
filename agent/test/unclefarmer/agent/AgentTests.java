@@ -43,6 +43,7 @@ public final class AgentTests {
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
+        directShardPacketUsesTheVerifiedLayout();
         commandsAnswerWithoutTheGame();
         theLoggedShopAndMarketMenusAreRecognised();
         aVerifiedIndexIsChosenOnlyForItsItem();
@@ -341,6 +342,12 @@ public final class AgentTests {
         eq(StateServer.handle("use 5", armed, mine, guarded), "refused: send 'arm' first", "use needs arm");
         eq(StateServer.handle("select 5", armed, mine, guarded), "refused: send 'arm' first", "select needs arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "refused: send 'arm' first", "slot needs arm");
+        eq(StateServer.handle("shardsell 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "shardsell needs arm");
+        eq(StateServer.handle("sharddirect 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "sharddirect needs arm");
+        eq(StateServer.handle("sharddirectall 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "sharddirectall needs arm");
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "error: the attack page can't be read",
                 "slot without a game says so instead of throwing");
@@ -367,9 +374,25 @@ public final class AgentTests {
                 "pick a bad id");
         eq(StateServer.handle("pick shard_market", armed, mine, guarded), "error: pick <layout> <id> [buy|sell]",
                 "pick what");
+        eq(StateServer.handle("shardsell 20385", armed, mine, guarded), "error: shardsell <item id> <count>",
+                "shardsell needs both numbers");
+        eq(StateServer.handle("shardsell x 1", armed, mine, guarded), "bad number in: shardsell x 1",
+                "shardsell checks the item id");
+        eq(StateServer.handle("sharddirect 20385", armed, mine, guarded), "error: sharddirect <item id> <count>",
+                "sharddirect needs both numbers");
+        eq(StateServer.handle("sharddirectall 20385", armed, mine, guarded),
+                "error: sharddirectall <item id> <count> ...", "sharddirectall needs pairs");
+        eq(StateServer.handle("sharddirectall x 1", armed, mine, guarded), "bad number in: sharddirectall x 1",
+                "sharddirectall checks item ids");
         boolean[] unarmed = {false};
         eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
                 "pick needs arm");
+    }
+
+    private static void directShardPacketUsesTheVerifiedLayout() {
+        eq(bytes(Dialogs.shardPacket(-44, 20485, 24, 1)),
+                "34 255 255 255 212 31 0 0 0 3 0 0 80 5 0 0 0 24 0 0 0 1",
+                "direct shard sell is the verified broker command");
     }
 
     // ---------------------------------------------------------------- shop and Shard Market menus

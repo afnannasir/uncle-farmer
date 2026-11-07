@@ -8,7 +8,7 @@ touches; everything it calls elsewhere (travel, bagrules, knowledge, atlas) is m
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 
 import json
 import re
@@ -61,7 +61,8 @@ class TownBot:
         self.me_at = (0.0, 0.0)
         self.travels: list[tuple[int, tuple[float, float] | None]] = []
         self.talks: list[tuple[str, tuple[float, float] | None]] = []
-        self._dialog = {"ok": True, "open": 0, "top": None}
+        self._dialog: dict[str, Any] = {"ok": True, "open": 0, "top": None}
+        self.agent_version = 0
         self.stop_event = threading.Event()
 
     # ---------------------------------------------------------- small surface
@@ -135,6 +136,9 @@ class TownBot:
         d = self.dialog()
         return d if bool(d.get("open")) == want_open else None
 
+    def wait_menu_change(self, before: dict[str, Any] | None, seconds: float=0.4) -> dict[str, Any]:
+        return self.dialog()
+
     def close_dialogs(self) -> None:
         self.closed += 1
         self._dialog = {"ok": True, "open": 0, "top": None}
@@ -183,6 +187,53 @@ def test_counts_treats_a_missing_name_as_empty_and_missing_count_as_zero() -> No
     b = TownBot(bag=[{"name": "", "count": 5}, {"name": "Thing"},
                      {"count": 9}, {"name": "Thing", "count": "4"}])
     assert town.counts(as_bot(b)) == {"": 14, "thing": 4}
+
+
+def test_sell_collection_refreshes_the_buyer_menu_without_reopening_the_conversation(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot(bag=[{"name": "Milkfish", "count": 4}, {"name": "Blue Crab", "count": 3},
+                     {"name": "Arnebia", "count": 0}],
+                profile={"bag_rules": {"blue crab": {"action": "sell", "keep": 1}}})
+    b._dialog = {"ok": True, "open": 1, "top": menu(
+        opt("4 Milkfish; Unit price 100 arnebia"), opt("3 Blue Crab; Unit price 200 arnebia"))}
+    visits: list[str] = []
+    chosen: list[str] = []
+
+    monkeypatch.setattr(knowledge, "service_npcs",
+                        stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
+    def visit(b: town.Bot, role: str | None, name: str | None = None,
+              candidates: Sequence[town.Npc] | None = None) -> str:
+        visits.append(role or "")
+        return "Buyer"
+
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+
+    def pick(b: town.Bot, pattern: str, quantity: int | None = None) -> bool:
+        assert isinstance(b, TownBot)
+        item, price = ("Milkfish", 100) if "Milkfish" in pattern else ("Blue Crab", 200)
+        chosen.append(item)
+        b.remove(item, quantity or 0)
+        b.add("Arnebia", price * (quantity or 0))
+        # The game renews the menu signature before its displayed rows catch up.
+        b._dialog = {"ok": True, "open": 1, "top": menu(
+            opt("4 Milkfish; Unit price 100 arnebia"), opt("3 Blue Crab; Unit price 200 arnebia"))}
+        return True
+
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, pick))
+    assert town.sell_collection(as_bot(b), ("fish",)) == 800
+    assert visits == ["fish_buyer"]
+    assert chosen == ["Milkfish", "Blue Crab"]
+
+
+def test_sell_collection_reports_only_items_removed_from_the_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot(bag=[{"name": "Milkfish", "count": 4}, {"name": "Arnebia", "count": 0}])
+    b._dialog = {"ok": True, "open": 1, "top": menu(opt("4 Milkfish; Unit price 100 arnebia"))}
+    monkeypatch.setattr(knowledge, "service_npcs",
+                        stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, returning("Buyer")))
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, returning(True)))
+    assert town.sell_collection(as_bot(b), ("fish",)) == 0
+    assert not any("sold 4 Milkfish" in line for line in b.lines)
 
 
 # ============================================================ item_pattern
@@ -437,6 +488,18 @@ def test_type_number_success_without_a_confirm(monkeypatch: pytest.MonkeyPatch) 
     assert "type 5" in b.a.sent
     assert waits == [True, False]
     assert b.choices == []
+
+
+def test_type_number_uses_one_agent_command_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TownBot()
+    b.agent_version = town.NUMBER_AGENT
+    b.link.answers["number 25"] = "entered 2"
+    waits: list[bool] = []
+    monkeypatch.setattr(town, "wait_input",
+                        stand_in(town.wait_input, lambda b, want_open=True, seconds=3.0: waits.append(want_open) or True))
+    assert town.type_number(as_bot(b), 25) is True
+    assert b.a.sent == ["number 25"]
+    assert waits == [True, False]
 
 
 def test_type_number_confirms_a_second_menu(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -869,6 +932,55 @@ def test_sell_shards_sells_only_the_rule_count(monkeypatch: pytest.MonkeyPatch) 
     assert town.sell_shards(as_bot(tb), ["Level 1 Sapphire Shard"],
                             at_most={"level 1 sapphire shard": 3}) == 1
     assert steps == [3]
+
+
+def test_sell_shards_keeps_one_broker_visit_and_reconciles_the_batch(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(town, "shard_catalog",
+                        stand_in(town.shard_catalog, lambda: ({"Sapphire Shard": {}, "Olivine Shard": {}}, {5: [1, 1]})))
+    b = TownBot(bag=[{"name": "Sapphire Shard", "count": 3}, {"name": "Olivine Shard", "count": 4}])
+    visits: list[object] = []
+    talks: list[str] = []
+    market_open = False
+    reads = 0
+    bag_rows = b.bag_rows
+
+    def counted_rows() -> list[dict[str, Any]]:
+        nonlocal reads
+        reads += 1
+        return bag_rows()
+
+    def visit(b: town.Bot, role: str | None, name: str | None = None,
+              candidates: Sequence[town.Npc] | None = None) -> str:
+        nonlocal market_open
+        visits.append(candidates)
+        market_open = True
+        return "Shard Broker"
+
+    def talk(npc: str) -> bool:
+        nonlocal market_open
+        talks.append(npc)
+        market_open = True
+        return True
+
+    def trade(b: town.Bot, name: str, action: str, n: int,
+              reopen: Callable[[], bool] | None = None) -> int:
+        nonlocal market_open
+        assert action == "sell"
+        assert isinstance(b, TownBot)
+        b.remove(name, n)
+        market_open = False
+        return n
+
+    b.bag_rows = counted_rows  # type: ignore[method-assign]
+    b.talk = talk  # type: ignore[method-assign]
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+    monkeypatch.setattr(town, "market_lists",
+                        stand_in(town.market_lists, lambda b, name, wait=0.0: market_open))
+    monkeypatch.setattr(town, "shard_trade", stand_in(town.shard_trade, trade))
+    assert town.sell_shards(as_bot(b), ["Sapphire Shard", "Olivine Shard"]) == 2
+    assert len(visits) == 1
+    assert talks == ["Shard Broker"]
+    assert reads == 2
 
 
 def test_sell_shards_stops_when_the_pick_fails(monkeypatch: pytest.MonkeyPatch) -> None:

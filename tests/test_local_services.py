@@ -363,6 +363,7 @@ def test_sell_shards_now_sells_only_the_shards_set_to_sell_keeping_what_the_rule
     assert asked == [([RUBY1], {RUBY1.lower(): 40})]       # not the Topaz (keep), not the fur (no shard)
     assert bot.bag[TOPAZ1] == 30 and bot.bag["Wolf Fur"] == 9
     assert any("sold 40 Level 1 Ruby Shard" in s for s in bot.spoken)
+    assert not any("arnebia came in" in s for s in bot.spoken)
 
 
 def test_sell_shards_now_with_nothing_to_sell_says_so_and_goes_nowhere(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -36,6 +36,9 @@ import java.util.List;
  */
 final class Dialogs {
 
+    private static final long MENU_STEP_WAIT = 5L;
+    private static final long MENU_STEP_TIMEOUT = 3000L;
+
     static final String W_DIALOGS = "U";
     static final String W_SELECTED = "av";
     static final String D_KIND = "b";
@@ -125,6 +128,197 @@ final class Dialogs {
         } catch (Throwable t) {
             Log.error("pick", t);
             return "error: " + t;
+        }
+    }
+
+    /** Complete one verified shard sale without controller round trips between its menu stages. */
+    static String shardSell(int id, int count) {
+        if (count <= 0) return "error: shardsell count must be positive";
+        int broker;
+        try {
+            broker = selectedId();
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        String chosen = pick(Menus.SHARD_MARKET, id, null);
+        if (!chosen.startsWith("picked ")) return chosen;
+        long until = System.currentTimeMillis() + MENU_STEP_TIMEOUT;
+        while (true) {
+            String sold = pick(Menus.SHARD_TRADE, id, "sell");
+            if (sold.startsWith("picked ")) break;
+            if (!waiting(sold)) return sold;
+            if (!pause(until)) return "refused: the Shard Market did not open its sell menu";
+        }
+        while (true) {
+            try {
+                if (TextInput.open()) break;
+            } catch (Memory.Unavailable u) {
+                return "error: " + u.getMessage();
+            }
+            if (!pause(until)) return "refused: the Shard Market did not open its quantity box";
+        }
+        String entered = TextInput.number(Integer.toString(count));
+        if (!entered.startsWith("entered")) return entered;
+        while (true) {
+            try {
+                if (tradeFinished()) {
+                    reopenMarket(broker, id);
+                    return "sold " + id + " " + count;
+                }
+            } catch (Memory.Unavailable u) {
+                return "error: " + u.getMessage();
+            }
+            if (!pause(until)) return "refused: the Shard Market did not finish the sale";
+        }
+    }
+
+    /** Send one verified sale command from the currently verified Shard Market. */
+    static String shardSellDirect(int id, int count) {
+        if (count <= 0 || count > 2000) return "error: sharddirect count must be 1-2000";
+        try {
+            Object world = Memory.world();
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Menus.Menu market = model(open.get(open.size() - 1));
+                int[] at = Menus.place(market, Menus.SHARD_MARKET, id, null);
+                Menus.Entry item = market.at(at[0], at[1]);
+                int broker = selectedId(world);
+                if (broker >= 0) return "refused: no Shard Broker is selected";
+                String failed = Ask.send(shardPacket(broker, id, item.cmd[2], count), "direct shard sell");
+                return failed == null ? "sent " + id + " " + count : failed;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        } catch (Throwable t) {
+            Log.error("direct shard sell", t);
+            return "error: " + t;
+        }
+    }
+
+    /** Validate a whole market plan first, then queue its already-observed sale commands in order. */
+    static String shardSellDirectAll(int[] ids, int[] counts) {
+        if (ids.length == 0 || ids.length != counts.length) return "error: sharddirectall needs item/count pairs";
+        try {
+            Object world = Memory.world();
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Menus.Menu market = model(open.get(open.size() - 1));
+                int broker = selectedId(world);
+                if (broker >= 0) return "refused: no Shard Broker is selected";
+                byte[][] packets = new byte[ids.length][];
+                for (int i = 0; i < ids.length; i++) {
+                    if (counts[i] <= 0 || counts[i] > 2000) return "error: sharddirect count must be 1-2000";
+                    int[] at = Menus.place(market, Menus.SHARD_MARKET, ids[i], null);
+                    Menus.Entry item = market.at(at[0], at[1]);
+                    packets[i] = shardPacket(broker, ids[i], item.cmd[2], counts[i]);
+                }
+                for (byte[] packet : packets) {
+                    String failed = Ask.send(packet, "direct shard sell");
+                    if (failed != null) return failed;
+                }
+                return "sent all " + ids.length;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        } catch (Throwable t) {
+            Log.error("direct shard sell", t);
+            return "error: " + t;
+        }
+    }
+
+    /** OUT op=34: broker id, command kind 31, then the verified sale command. */
+    static byte[] shardPacket(int broker, int item, int price, int count) {
+        int[] command = {Menus.SELL, item, price, count};
+        byte[] packet = new byte[6 + command.length * 4];
+        packet[0] = 34;
+        writeInt(packet, 1, broker);
+        packet[5] = 31;
+        for (int i = 0; i < command.length; i++) writeInt(packet, 6 + i * 4, command[i]);
+        return packet;
+    }
+
+    private static void writeInt(byte[] packet, int offset, int value) {
+        packet[offset] = (byte) (value >>> 24);
+        packet[offset + 1] = (byte) (value >>> 16);
+        packet[offset + 2] = (byte) (value >>> 8);
+        packet[offset + 3] = (byte) value;
+    }
+
+    private static boolean waiting(String reply) {
+        return reply.startsWith("refused: no menu is open") || reply.startsWith("refused: the open menu is ");
+    }
+
+    /** The client leaves the old dialog object around while the quantity's server reply is due;
+     * wait for that trade menu to be replaced or closed before another command can use a menu. */
+    private static boolean tradeFinished() throws Memory.Unavailable {
+        Object world = Memory.world();
+        synchronized (world) {
+            List<Object> open = copy(list(world, W_DIALOGS));
+            return open.isEmpty() || !Menus.classify(model(open.get(open.size() - 1))).equals(Menus.SHARD_TRADE);
+        }
+    }
+
+    /** The server closes a completed trade. If the NPC that opened it is still selected, invoke
+     * the game's own Enter action immediately and wait for that same verified market to return. */
+    private static boolean reopenMarket(int broker, int item) {
+        if (broker >= 0) return false;      // NPC ids are negative
+        try {
+            Object world = Memory.world();
+            java.awt.Frame win = Memory.window();
+            Method enter = win == null ? null : chooseMethod(world.getClass(), win.getClass());
+            if (enter == null) return false;
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (!open.isEmpty()) return marketHas(open.get(open.size() - 1), item);
+                if (selectedId(world) != broker) return false;
+                enter.invoke(world, win);
+            }
+            long until = System.currentTimeMillis() + MENU_STEP_TIMEOUT;
+            while (true) {
+                synchronized (world) {
+                    List<Object> open = copy(list(world, W_DIALOGS));
+                    if (!open.isEmpty()) return marketHas(open.get(open.size() - 1), item);
+                }
+                if (!pause(until)) return false;
+            }
+        } catch (Throwable t) {
+            Log.error("reopen shard market", t);
+            return false;
+        }
+    }
+
+    private static boolean marketHas(Object dialog, int item) throws Memory.Unavailable {
+        try {
+            Menus.place(model(dialog), Menus.SHARD_MARKET, item, null);
+            return true;
+        } catch (Menus.Refused r) {
+            return false;
+        }
+    }
+
+    private static int selectedId() throws Memory.Unavailable {
+        return selectedId(Memory.world());
+    }
+
+    private static int selectedId(Object world) throws Memory.Unavailable {
+        Object selected = ref(world, W_SELECTED);
+        return selected == null ? 0 : intField(selected, E_ID);
+    }
+
+    private static boolean pause(long until) {
+        if (System.currentTimeMillis() >= until) return false;
+        try {
+            Thread.sleep(MENU_STEP_WAIT);
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
         }
     }
 
