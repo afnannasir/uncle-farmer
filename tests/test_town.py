@@ -136,7 +136,7 @@ class TownBot:
         d = self.dialog()
         return d if bool(d.get("open")) == want_open else None
 
-    def wait_menu_change(self, before: dict[str, Any] | None, seconds: float=0.4) -> dict[str, Any]:
+    def wait_menu_change(self, before: dict[str, Any] | None, seconds: float=0.4, depth: int=1) -> dict[str, Any]:
         return self.dialog()
 
     def close_dialogs(self) -> None:
