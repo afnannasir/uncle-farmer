@@ -12,7 +12,7 @@ from typing import Any, TypedDict
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, potions
+from ..engine import combat, potions, triggers
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
@@ -219,6 +219,7 @@ class ProfileDialog(Dialog):
         self.fighting_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
+        self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"), extra=[(_("Ad&vanced..."), self.on_advanced)])
         self.SetSizerAndFit(root)
@@ -301,11 +302,6 @@ class ProfileDialog(Dialog):
         f = group(panel, box, _("Travel"))
         self.speed_beast = f.choice(_("&Travel on fusion beast:"), [""])
         self.end_hearth = f.check(_("End the run with the &hearthstone"), p.get("end_with_hearthstone", True))
-        f = group(panel, box, _("After farming (when a run finishes by itself, never after Stop)"))
-        self.sell_after = f.check(_("Automatically se&ll shards after farming (Tools, Sell shards now)"),
-                                  p.get("sell_shards_after_farming", False))
-        self.clean_after = f.check(_("Automatically clea&n the bag after farming (Tools, Clean the bag now)"),
-                                   p.get("clean_bag_after_farming", False))
         self.pet_list = labeled(panel, box, _("P&ets (ticked ones come out, first ready one first):"),
                                 lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
         buttons(panel, box, (_("Move &up"), lambda e: self.move_pet(-1)),
@@ -314,6 +310,38 @@ class ProfileDialog(Dialog):
         self.pet_recall = f.check(_("Put the pet &away when the run ends"), p["pet_recall_at_end"])
         box.Add(f.grid, 0, wx.TOP, 10)
         self.pet_care = pet_care(panel, box, p)
+
+    def triggers_page(self, nb: wx.Notebook) -> None:
+        """Tools jobs the bot runs by itself (engine/triggers.py): one tick per job and stage, the
+        two stages independent - a job ticked in both runs once before and once after farming."""
+        p = self.p
+        panel, box = page(nb, _("Triggers"))
+        self.triggers: dict[str, wx.CheckBox] = {}
+        labels = {
+            "before": {"sell_shards": _("&Sell shards (Tools, Sell shards now)"),
+                       "clean_bag": _("&Clean the bag (Tools, Clean the bag now)"),
+                       "update_shard_prices": _("&Update shard prices (Tools, Update shard prices)"),
+                       "gather": _("&Gathering (as set in Tools, Gathering)"),
+                       "store_items": _("S&tore items (Tools, Store items now)")},
+            "after": {"sell_shards": _("Se&ll shards (Tools, Sell shards now)"),
+                      "clean_bag": _("Clea&n the bag (Tools, Clean the bag now)"),
+                      "update_shard_prices": _("Up&date shard prices (Tools, Update shard prices)"),
+                      "gather": _("Gat&hering (as set in Tools, Gathering)"),
+                      "store_items": _("St&ore items (Tools, Store items now)")},
+        }
+        titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
+                  "after": _("After farming (when farming finishes by itself, never after Stop)")}
+        for stage in triggers.STAGES:
+            f = group(panel, box, titles[stage])
+            for job, _what in triggers.JOBS:
+                key = triggers.setting(job, stage)
+                self.triggers[key] = f.check(labels[stage][job], p.get(key, False) is True)
+        f = group(panel, box, _("How they run"))
+        f.readonly(_("About:"), _(
+            "Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job "
+            "ticked in both lists runs once before and once after farming. A job that can't finish is said "
+            "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
+            "as it is at that moment."), lines=4)
 
     # ------------------------------------------------------------ from the scan
     def potion_shower(self, kind: str) -> Handler:
@@ -499,8 +527,8 @@ class ProfileDialog(Dialog):
         p["stop_when_out_of_potions"] = self.potions_out.GetValue()
         p["speed_beast"] = self.speed_values[max(0, self.speed_beast.GetSelection())]
         p["end_with_hearthstone"] = self.end_hearth.GetValue()
-        p["sell_shards_after_farming"] = self.sell_after.GetValue()
-        p["clean_bag_after_farming"] = self.clean_after.GetValue()
+        for key, box in self.triggers.items():
+            p[key] = box.GetValue()
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()

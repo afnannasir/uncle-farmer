@@ -18,9 +18,9 @@ from typing import Any
 from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
 from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
-from ..i18n import N_, _
+from ..i18n import _
 from ..link import AgentError, AgentLink
-from . import chores, keyslots, town
+from . import chores, keyslots, triggers
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
 from .botparts.parts import Sighting, Where
@@ -76,7 +76,8 @@ class Run(threading.Thread):
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
         self.after_stop = "nothing"   # what the app setting said to do then: nothing | close_game | shutdown
-        self.after_farming_done = False   # the Character settings' after-farming jobs ran (once a run)
+        self.before_farming_done = False  # the Character settings' before-farming triggers ran (once a run)
+        self.after_farming_done = False   # the Character settings' after-farming triggers ran (once a run)
         self.schedule: tuple[str, str] | None = None   # (schedule id, occurrence) when a schedule started it
         self.clock = clock
         self.started = self.clock.time()
@@ -285,13 +286,16 @@ class Run(threading.Thread):
     # ---------------------------------------------------------------- running and stopping
     def _play(self, bot: Bot) -> str | None:
         """The plan or script itself, then the end of a finished run. A reason when not "finished"."""
+        script = Runner(bot, self.text)          # read first: a script that doesn't parse does nothing
         if getattr(self, "kind", "") != "errand" and not self.walk:
+            if triggers.farms(script.main, script.subs):
+                self._before_farming()
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.character, cfg):
                 bot.log(_("the day's chores first"))
                 with stats.doing(bot, "chores"):
                     chores.run(bot, cfg)
-        Runner(bot, self.text).run()
+        script.run()
         if self.walk:
             return _("arrived")          # stay there, on the beast
         for _try in range(3):
@@ -324,45 +328,30 @@ class Run(threading.Thread):
                                         and not getattr(e, "asked", False))
         return reason
 
-    # (profile setting, the job's name in the results, the town function it runs, what the log
-    # calls it), in this order: the Tools menu's own jobs, looked up when they run
-    AFTER_FARMING: tuple[tuple[str, str, str, str], ...] = (
-        ("sell_shards_after_farming", "sell_shards", "sell_shards_now", N_("selling shards")),
-        ("clean_bag_after_farming", "clean_bag", "clean_bag", N_("cleaning the bag")),
-    )
+    def _before_farming(self) -> None:
+        """The Character settings' before-farming triggers (engine/triggers.py), each one ticked,
+        one after the other, before the plan or script's first line - once a run. A job that
+        fails is said and farming still starts; Stop, a frozen or lost game end the run here."""
+        bot = self.bot
+        if self.before_farming_done or bot is None:
+            return
+        self.before_farming_done = True
+        triggers.run_stage(bot, "before", self.log, self.stop_event.is_set)
 
     def _after_farming(self) -> None:
-        """The jobs Character settings asks for after farming (Sell shards now, Clean the bag now),
-        each one that is ticked, one after the other, the same as from the Tools menu. Only after a
-        farming run that ended by itself - the plan done, a stop rule, the daily stop - as the
-        after-stop action is: never after Stop, a lost or frozen game, `come`/`follow`, a tool
-        or the walking assistant. Before the results close (each job's earnings are its own, apart
-        from farming) and before the game is closed or the PC shut down. Once a run. A job that
-        fails is logged and the next one still runs; Stop ends them all."""
+        """The Character settings' after-farming triggers (engine/triggers.py: Sell shards now,
+        Clean the bag now, Update shard prices, Gathering, Store items now), each one ticked, one
+        after the other, the same as from the Tools menu. Only after a farming run that ended by
+        itself - the plan done, a stop rule, the daily stop - as the after-stop action is: never
+        after Stop, a lost or frozen game, `come`/`follow`, a tool or the walking assistant. Before
+        the results close (each job's earnings are its own, apart from farming) and before the game
+        is closed or the PC shut down. Once a run. A job that fails is logged and the next one still
+        runs; Stop ends them all."""
         bot = self.bot
         if self.after_farming_done or bot is None or self.walk or not self.ended_by_itself or not self.farmed():
             return
         self.after_farming_done = True
-        for key, tool, fn, what in self.AFTER_FARMING:
-            if not bot.p.get(key, False):
-                continue
-            if self.stop_event.is_set():
-                return
-            self.log(_("after farming, automatically: {job}", job=_(what)))
-            try:
-                job: Callable[[Bot], int] = getattr(town, fn)
-                with stats.doing(bot, tool):
-                    job(bot)
-            except Stopped as e:
-                if self.stop_event.is_set():
-                    return
-                self.log(_("{job} didn't finish: {why}", job=_(what), why=e), speak=True)
-            except (AgentError, OSError) as e:
-                self.log(_("{job} didn't finish: {why}", job=_(what), why=e), speak=True)
-                return               # the game is gone: nothing else can be done in it
-            except Exception as e:   # a bug in one job must not keep the other from running
-                carry_on(e, "the after-farming job " + tool)
-                self.log(_("{job} didn't finish: {why}", job=_(what), why=repr(e)), speak=True)
+        triggers.run_stage(bot, "after", self.log, self.stop_event.is_set)
 
     def _crashed(self, e: Exception) -> str:
         carry_on(e, "the run")

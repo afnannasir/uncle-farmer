@@ -175,23 +175,40 @@ Character, Bag and supplies (Ctrl+B):
   Full means full: the bot farms until the load reaches its limit (or stops rising just under it
   while monsters keep dying), unless you set a lower mark there.
 
-### Selling shards and cleaning the bag after farming
+### Storing items now
 
-Character, Settings, Travel and pets, After farming has two boxes, each on its own:
+Tools, Store items now (storage list) puts into the storehouse what the bag manager's Store list
+says (Character, Bag and supplies, "Move to storehouse"), keeping the number each rule keeps in the
+bag, and nothing else: items on no list, or on another list, stay where they are. It walks to the
+nearest storehouse, the same way a bag trip does. The log says what went in, what was only kept,
+what wasn't in the bag, and what the storehouse didn't take (when it is full, whatever didn't fit
+stays in the bag). The list is read when the job runs, so a change you just made counts.
 
-- **Automatically sell shards after farming** does Tools, Sell shards now: the shards on the Sell
-  list, at the nearest Shard Market.
-- **Automatically clean the bag after farming** does Tools, Clean the bag now: throws away, where
-  the character stands, only what is on the throw-away list.
+### Triggers: jobs before and after farming
 
-Both are off until you tick them, and they are kept per character. They run when a farming run
-finishes by itself: its plan is done, a stop rule ended it (the drop time, a full bag set to stop,
-deaths...), or the daily stop came. Selling comes first, then cleaning, each after the other has
-finished, once a run, and before the game is closed or the computer shut down if you chose that.
-They never run after Stop, after Pause, when a player called you away (come, follow), after the
-walking assistant or after a tool. If one of them fails, the log says why and the other still runs;
-Stop ends both. The Tools menu items still work by hand whatever the boxes say, and running them
-by hand changes no setting. The log says which way each one was started.
+Character, Settings, **Triggers** has two lists of the same five jobs:
+
+- **Sell shards** (Tools, Sell shards now): the shards on the Sell list, at the nearest Shard Market.
+- **Clean the bag** (Tools, Clean the bag now): throws away, where the character stands, only what
+  is on the throw-away list.
+- **Update shard prices** (Tools, Update shard prices).
+- **Gathering**, as set in Tools, Gathering.
+- **Store items** (Tools, Store items now): the Store list, as above.
+
+**Before farming** runs when a plan, or a script that farms, starts - after the character is
+scanned and before the day's chores and the first farming line. **After farming** runs when a
+farming run finishes by itself: its plan is done, a stop rule ended it (the drop time, a full bag
+set to stop, deaths...), or the daily stop came - and before the game is closed or the computer
+shut down if you chose that. Neither runs for a Tools job, the walking assistant, come or follow,
+and After farming never runs after Stop or Pause.
+
+The two lists are independent: tick a job in both and it runs once before and once after farming;
+unticking one leaves the other as it is. Ticked jobs run one after the other in the order above,
+each exactly as from the Tools menu, once per stage. A job that can't finish is said aloud and
+logged with the reason, and the next job (and farming) still goes on; Stop ends them. Everything is
+off until you tick it, and kept per character. The two after-farming boxes that used to be on the
+Travel and pets tab are these same settings: what you had ticked there is ticked here. The Tools
+menu items still work by hand whatever the boxes say, and running them by hand changes no setting.
 
 ## Fighting and staying alive
 
@@ -287,7 +304,10 @@ repeat a skill that is also on another key, for you to decide. Turn it off on th
 
 At the game's first warning that gear is about to break, the bot repairs everything you wear with
 one toolbox (Small up to level 60, Large up to 80, Alloy any level; the cheapest that covers your
-level), never pliers. A toolbox on a hotkey (1 to =) is pressed at once, even in a fight; one only
+level), never pliers. If your level isn't known yet it reads the character sheet first, and if it
+still can't tell it uses the Alloy Toolbox. A toolbox that can't do the job - the game turns it
+down, its level limit is under yours, or something is still broken after it - is followed at once
+by the next, stronger one you carry. A toolbox on a hotkey (1 to =) is pressed at once, even in a fight; one only
 in the bag is used as soon as the fight is over. Without a toolbox it says so; if something has
 broken and can't be repaired, it goes somewhere safe and stops. Both are on the Fighting page of
 Character, Settings.
@@ -741,12 +761,17 @@ offers it with what changed; Help, Check for updates asks at any time. Say yes a
 release, checks it, and restarts as the new version. If games are open, it asks first: the update
 replaces the agent they have loaded, so press **OK** and it closes every Mist World window, then
 updates; start the games again afterwards. The request carries nothing about you or your
-game. Settings, "Look for a new version when Uncle Farmer starts" turns the check off; then it never
-goes online.
+game. Settings, Updater, "Look for a new version when Uncle Farmer starts" turns the check off;
+then it never goes online.
+
+Settings, **Updater** holds everything about updates: this copy's version and where its updates
+come from, the check at start, the release channel, "Offer version ... again" when you said no to
+a release, and **Save and check for updates now**, which saves the settings and does what Help,
+Check for updates does.
 
 ### Release channel
 
-Settings, Speech and language, Updates, **Release channel** says where updates come from:
+Settings, Updater, **Release channel** says where updates come from:
 
 - **Master: stable releases** (the default, and what every copy used before the setting existed):
   the releases made by hand, the same ones the README links to.

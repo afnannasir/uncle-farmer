@@ -15,7 +15,7 @@ from ..common import ask, ask_ok, error, info, save_file, show_text, modal
 from ..plan import PlanDialog
 from ..profile import ProfileDialog
 from ..scripts import ScriptDialog
-from ..setup import SetupDialog
+from ..setup import CHECK_UPDATES, SetupDialog
 from .base import FrameParts, character_of
 
 
@@ -254,6 +254,18 @@ class EditingMixin(FrameParts):
         self.log(_("Sell shards now: started by hand"))
         self.run_errand("sell_shards\n", _("Selling shards"))
 
+    def store_items_now(self) -> None:
+        """Tools, Store items now: put into the storehouse what the bag manager's storage list says
+        (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
+        job the Triggers tab can run before or after farming. Storing loses nothing, so no question."""
+        name = character_of(self.snapshot())
+        if name and not town.store_list(settings.load_profile(name)):
+            info(self, _("The storage list is empty. Choose what to move to the storehouse in Character, Bag and "
+                         "supplies first."))
+            return
+        self.log(_("Store items now: started by hand"))
+        self.run_errand("store_items\n", _("Storing items"))
+
     def update_shard_prices_now(self) -> None:
         """Tools, Update shard prices: read the nearest Shard Market's list into data/shards.json
         (only the prices it shows and sends alike; every other price stays as it was)."""
@@ -451,7 +463,8 @@ class EditingMixin(FrameParts):
 
     def open_setup(self) -> None:
         with SetupDialog(self, self.s) as d:
-            if d.ShowModal() != wx.ID_OK:
+            code = d.ShowModal()
+            if code not in (wx.ID_OK, CHECK_UPDATES):
                 return
             old_lang = self.s.get("language", "en")
             try:
@@ -462,6 +475,8 @@ class EditingMixin(FrameParts):
             if save_file(self, settings.save_app, self.s) and self.s["language"] != old_lang:
                 i18n.load(self.s["language"])
                 info(self, _("Restart Uncle Farmer to switch the language."))
+        if code == CHECK_UPDATES:
+            self.check_updates()          # Help, Check for updates, on the channel just saved
 
     def open_user_guide(self) -> None:
         """README.html beside the exe (build_exe.py makes it from docs/USER_GUIDE.md)."""

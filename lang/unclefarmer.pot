@@ -95,6 +95,9 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
+msgid "&Clean the bag (Tools, Clean the bag now)"
+msgstr ""
+
 msgid "&Close"
 msgstr ""
 
@@ -169,6 +172,9 @@ msgid "&Games:"
 msgstr ""
 
 msgid "&Gang name (another gang's):"
+msgstr ""
+
+msgid "&Gathering (as set in Tools, Gathering)"
 msgstr ""
 
 msgid "&Gem Maker...\tCtrl+G"
@@ -295,6 +301,9 @@ msgstr ""
 msgid "&Number of gems:"
 msgstr ""
 
+msgid "&Offer version {v} again (you chose to skip it)"
+msgstr ""
+
 msgid "&Only fight (names, separated by commas):"
 msgstr ""
 
@@ -388,6 +397,9 @@ msgstr ""
 msgid "&Script commands"
 msgstr ""
 
+msgid "&Sell shards (Tools, Sell shards now)"
+msgstr ""
+
 msgid "&Sell the collection now"
 msgstr ""
 
@@ -454,6 +466,9 @@ msgstr ""
 msgid "&Unmute this game\tCtrl+U"
 msgstr ""
 
+msgid "&Update shard prices (Tools, Update shard prices)"
+msgstr ""
+
 msgid "&Use the selected skill:"
 msgstr ""
 
@@ -503,6 +518,9 @@ msgid "'{word}' outside an if block"
 msgstr ""
 
 msgid "(Taken from {twin}, the same size.)"
+msgstr ""
+
+msgid "(a development build)"
 msgstr ""
 
 msgid "(and {n} more with no price then)"
@@ -664,7 +682,7 @@ msgstr ""
 msgid "After a &time limit"
 msgstr ""
 
-msgid "After farming (when a run finishes by itself, never after Stop)"
+msgid "After farming (when farming finishes by itself, never after Stop)"
 msgstr ""
 
 msgid "Agent"
@@ -745,12 +763,6 @@ msgstr ""
 msgid "Automatic, by class"
 msgstr ""
 
-msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
-msgstr ""
-
-msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
-msgstr ""
-
 msgid "Back where the run started"
 msgstr ""
 
@@ -764,6 +776,9 @@ msgid "Bag:"
 msgstr ""
 
 msgid "Battlefield merit"
+msgstr ""
+
+msgid "Before farming (when a plan or a script that farms starts)"
 msgstr ""
 
 msgid "Before moving on to the next spot (only with more than one spot)"
@@ -904,6 +919,9 @@ msgid "City squares"
 msgstr ""
 
 msgid "Cl&ear"
+msgstr ""
+
+msgid "Clea&n the bag (Tools, Clean the bag now)"
 msgstr ""
 
 msgid "Clean the &bag now (throw-away list)..."
@@ -1403,6 +1421,9 @@ msgstr ""
 msgid "Gangs, in &order (the bot goes to each in turn):"
 msgstr ""
 
+msgid "Gat&hering (as set in Tools, Gathering)"
+msgstr ""
+
 msgid "Gathe&ring...\tCtrl+Shift+F"
 msgstr ""
 
@@ -1576,6 +1597,9 @@ msgid "Home."
 msgstr ""
 
 msgid "How the game works"
+msgstr ""
+
+msgid "How they run"
 msgstr ""
 
 msgid ""
@@ -2435,6 +2459,9 @@ msgstr ""
 msgid "Private messages to you"
 msgstr ""
 
+msgid "Program version: {v}"
+msgstr ""
+
 msgid "Put into the storehouse:"
 msgstr ""
 
@@ -2567,6 +2594,9 @@ msgstr ""
 msgid "Running {what}"
 msgstr ""
 
+msgid "Runs from source: it never updates itself (use git pull)."
+msgstr ""
+
 msgid "Runs: {n}"
 msgstr ""
 
@@ -2591,6 +2621,12 @@ msgstr ""
 msgid "S&top\tShift+F5"
 msgstr ""
 
+msgid "S&tore items (Tools, Store items now)"
+msgstr ""
+
+msgid "S&tore items now (storage list)"
+msgstr ""
+
 msgid "S&tore:"
 msgstr ""
 
@@ -2601,6 +2637,9 @@ msgid "Saturday"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "Save and check for updates &now"
 msgstr ""
 
 msgid "Save as scri&pt..."
@@ -2658,6 +2697,9 @@ msgid "Script: {name}"
 msgstr ""
 
 msgid "Scripting &guide"
+msgstr ""
+
+msgid "Se&ll shards (Tools, Sell shards now)"
 msgstr ""
 
 msgid "Se&ttings..."
@@ -2832,6 +2874,9 @@ msgstr ""
 msgid "Spider cave"
 msgstr ""
 
+msgid "St&ore items (Tools, Store items now)"
+msgstr ""
+
 msgid "St&ore:"
 msgstr ""
 
@@ -2940,8 +2985,14 @@ msgstr ""
 msgid "Stops {rules}."
 msgstr ""
 
+msgid "Store items now: started by hand"
+msgstr ""
+
 msgid ""
 "Stored or sold on a bag trip: on the Full bag page, choose to sell and store when the bag is full"
+msgstr ""
+
+msgid "Storing items"
 msgstr ""
 
 msgid "Strangers"
@@ -3187,6 +3238,10 @@ msgstr ""
 msgid "The script was saved, but the old file couldn't be removed: {err}"
 msgstr ""
 
+msgid ""
+"The storage list is empty. Choose what to move to the storehouse in Character, Bag and supplies first."
+msgstr ""
+
 msgid "The storehouse first, then the Shard Broker"
 msgstr ""
 
@@ -3234,6 +3289,13 @@ msgid "They come from {source}, a bagful at a time."
 msgstr ""
 
 msgid "This character has no gathering skill to add a place for."
+msgstr ""
+
+msgid "This copy"
+msgstr ""
+
+msgid ""
+"This copy doesn't look for updates online. New versions come as a zip: unpack it over this folder."
 msgstr ""
 
 msgid "This copy runs from its source code: update it with git pull."
@@ -3289,6 +3351,10 @@ msgid "Tick at least one day."
 msgstr ""
 
 msgid "Tick the monsters to fight:"
+msgstr ""
+
+msgid ""
+"Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
 msgstr ""
 
 msgid "Time (HH:MM):"
@@ -3352,6 +3418,9 @@ msgstr ""
 msgid "Travel and pets"
 msgstr ""
 
+msgid "Triggers"
+msgstr ""
+
 msgid "Trusted players"
 msgstr ""
 
@@ -3390,6 +3459,9 @@ msgstr ""
 
 msgid ""
 "Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
+msgstr ""
+
+msgid "Uncle Farmer {v}"
 msgstr ""
 
 msgid ""
@@ -3435,13 +3507,26 @@ msgstr ""
 msgid "Unpacking..."
 msgstr ""
 
+msgid "Up&date shard prices (Tools, Update shard prices)"
+msgstr ""
+
 msgid "Update"
+msgstr ""
+
+msgid "Update log: {log}"
 msgstr ""
 
 msgid "Update shard &prices"
 msgstr ""
 
+msgid "Updater"
+msgstr ""
+
 msgid "Updates"
+msgstr ""
+
+msgid ""
+"Updates come from GitHub ({repo}) and install themselves after you say yes."
 msgstr ""
 
 msgid "Updating shard prices"
@@ -3706,7 +3791,7 @@ msgstr ""
 msgid "after a dodge or block"
 msgstr ""
 
-msgid "after farming, automatically: {job}"
+msgid "after farming"
 msgstr ""
 
 msgid "after {n} kills"
@@ -3718,7 +3803,7 @@ msgstr ""
 msgid "alive again on {map}"
 msgstr ""
 
-msgid "all the gear repaired"
+msgid "all the gear repaired with a {tool}"
 msgstr ""
 
 msgid "already done today"
@@ -3806,6 +3891,9 @@ msgstr ""
 msgid "basic attack"
 msgstr ""
 
+msgid "before farming"
+msgstr ""
+
 msgid "blocks are nested too deeply (over {max})"
 msgstr ""
 
@@ -3841,6 +3929,10 @@ msgid "built {n} times; no place took more today (places: {places})"
 msgstr ""
 
 msgid "built {n} times; not enough arnebia above your reserve for more"
+msgstr ""
+
+msgid ""
+"buying {n} {item}, not {want}: that is what {money} arnebia pays for at {price} each"
 msgstr ""
 
 msgid "can build at the {post} (10000 arnebia, 2500 gang contribution each)"
@@ -4210,6 +4302,9 @@ msgstr ""
 msgid "gathered at {place}"
 msgstr ""
 
+msgid "gathering"
+msgstr ""
+
 msgid "gathering check: {notes}"
 msgstr ""
 
@@ -4340,6 +4435,9 @@ msgid "joined {who}'s team ({team}): {who} is trusted"
 msgstr ""
 
 msgid "keep_drop takes the minutes of drop time to save, 0 to 1440: {what}"
+msgstr ""
+
+msgid "kept in the bag, as their rules say: {list}"
 msgstr ""
 
 msgid "key {key}"
@@ -4660,6 +4758,12 @@ msgstr ""
 msgid "not enough arnebia above your reserve for the gang area's {fee} arnebia"
 msgstr ""
 
+msgid "not enough arnebia for one {item}: {price} each, {money} in the bag"
+msgstr ""
+
+msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
+msgstr ""
+
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
 
@@ -4682,6 +4786,9 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid "not in the bag: {list}"
+msgstr ""
+
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
@@ -4700,6 +4807,12 @@ msgstr ""
 msgid "not sold: {list}"
 msgstr ""
 
+msgid "not stored (the storehouse may be full): {list}"
+msgstr ""
+
+msgid "nothing"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -4708,6 +4821,9 @@ msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
 msgid "nothing done"
+msgstr ""
+
+msgid "nothing in the bag is on the storage list (or only what its rules keep)"
 msgstr ""
 
 msgid ""
@@ -5077,6 +5193,15 @@ msgid "stopped: {why}"
 msgstr ""
 
 msgid "stops healing"
+msgstr ""
+
+msgid "stored {list}"
+msgstr ""
+
+msgid "storing items"
+msgstr ""
+
+msgid "storing: {list}"
 msgstr ""
 
 msgid "stuck near {cell} and every way out failed - stopping"
@@ -5476,6 +5601,10 @@ msgstr ""
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
+msgid ""
+"the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
+msgstr ""
+
 msgid "the storehouse"
 msgstr ""
 
@@ -5544,6 +5673,14 @@ msgstr ""
 msgid "the {tool} didn't open its question - not repaired"
 msgstr ""
 
+msgid ""
+"the {tool} is still in the bag after the repair ({n}) - the game may not have used it"
+msgstr ""
+
+msgid ""
+"the {tool} only repairs gear up to level {limit}, and this character is level {level}"
+msgstr ""
+
 msgid "there are no team applications waiting"
 msgstr ""
 
@@ -5601,6 +5738,9 @@ msgstr ""
 msgid "trying the {npc} once more"
 msgstr ""
 
+msgid "trying the {tool} instead"
+msgstr ""
+
 msgid "unbalanced quotes"
 msgstr ""
 
@@ -5629,6 +5769,9 @@ msgid "until the plan stops"
 msgstr ""
 
 msgid "until= needs a condition, for example: until=kills >= 100"
+msgstr ""
+
+msgid "updating shard prices"
 msgstr ""
 
 msgid "using the hearthstone key"
@@ -5839,6 +5982,9 @@ msgid ""
 msgstr ""
 
 msgid "{item} ({count}, {where})"
+msgstr ""
+
+msgid "{item} ({n} of {want}: the storehouse took no more)"
 msgstr ""
 
 msgid "{item} didn't take me anywhere"
@@ -6240,6 +6386,15 @@ msgid "{skill} stopped - starting it again"
 msgstr ""
 
 msgid "{skill}, {rank}; character level {level}"
+msgstr ""
+
+msgid "{stage}, automatically: {job}"
+msgstr ""
+
+msgid "{stage}: done {ok}"
+msgstr ""
+
+msgid "{stage}: done {ok}; didn't finish {bad}"
 msgstr ""
 
 msgid "{state} {what} for {m} min on {map}, HP {hp}%{mp}, {k} kills"

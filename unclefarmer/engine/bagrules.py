@@ -55,9 +55,16 @@ def buyer(name: str) -> tuple[str, int, str] | None:
 
 
 def seller(name: str) -> tuple[str, int, str] | None:
-    """(npc, price, currency) of the cheapest NPC shop the game has shown selling it, or None."""
+    """(npc, price, currency) of the cheapest NPC shop the game has shown selling it, else the
+    kind of shop that sells it at the item's list price ("a grocer", 20000, "arnebia"), or None."""
     t = knowledge.traders(name, "sell")
-    return (t[0][1], t[0][4], t[0][5]) if t else None
+    if t:
+        return t[0][1], t[0][4], t[0][5]
+    price = knowledge.unit_price(name)
+    role = knowledge.shop_role(name)
+    if price and role:
+        return "a " + role.replace("_", " "), price, "arnebia"
+    return None
 
 
 def can_sell(name: str) -> bool:
