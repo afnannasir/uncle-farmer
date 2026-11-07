@@ -24,7 +24,7 @@ from unclefarmer.engine.botparts.travel import TravelMixin, note_way_out, ways_o
 
 GANG = 4004                       # a gang base: every one has the same layout (4001-4006)
 OUTER = (59, 93)                  # beside the Gem Craftsman, in the outer hall
-INNER = (40, 40)                  # the inner hall, walled off from the exit
+INNER = (41, 43)                  # the inner hall: out through its inner door, never back in
 CENTRAL, MARIO, HOLY = 1041, 1021, 1121
 ENTRANCE_1041 = (253.0, 181.0)    # just south of central plains' Gang Entrance
 
@@ -73,9 +73,19 @@ def test_from_the_outer_hall_travel_walks_out_instead_of_the_action_menu() -> No
     assert travel.describe(legs[:1]) == ["%s: walk out of the gang base" % travel.atlas.label(GANG)]
 
 
-def test_from_the_inner_hall_there_is_no_way_on_foot() -> None:
-    assert travel.plan(GANG, INNER, CENTRAL, (252, 187)) is None
-    assert travel.plan(GANG, INNER, CENTRAL, (252, 187), with_cost=True) == (None, None)
+def test_from_the_inner_hall_travel_walks_out_through_the_inner_door() -> None:
+    # a recorded hand run (2026-11-07): from the inner hall straight south along x 41, through the
+    # "inner door" (y 60) and the outer hall, out at the base's south exit
+    legs = travel.plan(GANG, INNER, CENTRAL, (252, 187))
+    assert legs is not None and legs[0]["do"] == "exit" and legs[0]["stand"] == [40, 118]
+
+
+@pytest.mark.parametrize("mid", range(4001, 4007))
+def test_every_base_s_inner_door_lets_us_out_but_never_back_in(mid: int) -> None:
+    m = travel.atlas.model(mid)
+    assert m.gated_route(INNER, (40, 117)) is not None
+    if mid != 4002:       # its map data has another opening between the halls, read as before
+        assert m.gated_route((41, 100), INNER) is None      # in again only by the Gang Entrance
 
 
 def test_a_dungeon_still_leaves_through_the_action_menu() -> None:
@@ -132,17 +142,11 @@ def test_leave_instance_in_a_gang_base_walks_out_and_never_opens_the_action_menu
     assert ways_out(b)[GANG] == (CENTRAL, ENTRANCE_1041)  # where the way out led is learned
 
 
-def test_leave_instance_in_the_inner_hall_says_why_and_presses_nothing() -> None:
+def test_leave_instance_in_the_inner_hall_walks_out_too() -> None:
     b = TravelBot(at=INNER)
-    assert b.leave_instance() is False
-    assert b.keys == [] and b.crossed == []
-    assert any("walled off" in line for line in b.lines)
-
-
-def test_travel_from_the_inner_hall_stops_with_a_clear_reason() -> None:
-    b = TravelBot(at=INNER)
-    with pytest.raises(Stopped, match="walled off"):
-        b._plan_legs(GANG, CENTRAL, (252, 187), set())
+    assert b.leave_instance() is True
+    assert b.keys == [] and b.crossed and b.crossed[0]["dest"] is None
+    assert b.map_id() == CENTRAL
 
 
 def test_a_gang_exit_that_keeps_failing_is_left_out() -> None:

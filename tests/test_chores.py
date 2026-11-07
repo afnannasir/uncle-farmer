@@ -33,6 +33,19 @@ Page: TypeAlias = "list[Entry] | Callable[[Game], list[Entry]]"
 Pages: TypeAlias = "dict[str, Page]"
 
 
+class SaidAgent:
+    """The agent's `said`: the game's spoken lines after a moment."""
+
+    def __init__(self, g: Game) -> None:
+        self.g = g
+
+    def json(self, cmd: str) -> dict[str, Any]:
+        if cmd.startswith("said"):
+            since = int(cmd.split()[1])
+            return {"now": self.g.tick, "said": [{"t": t, "text": x} for t, x in self.g.heard if t > since]}
+        return {}
+
+
 class Game:
     """A pretend game: pages of menu entries; choosing an entry runs its action, which returns the
     next page (a name, or None: the menu closes)."""
@@ -51,6 +64,14 @@ class Game:
         self.lines: list[str] = []
         self.talked: list[str] = []
         self.left = False
+        self.tick = 0                    # the agent's clock for `said`
+        self.heard: list[tuple[int, str]] = []
+        self.a = SaidAgent(self)
+
+    def say(self, text: str) -> None:
+        """The game says a line (a refusal, a thank-you), as IN op=60."""
+        self.tick += 1
+        self.heard.append((self.tick, text))
 
     # the bot's surface the chores use
     def entries(self) -> list[Entry]:
@@ -91,7 +112,7 @@ class Game:
     def close_dialogs(self) -> None:
         self.page = None
 
-    def talk(self, name: str, at: tuple[float, float] | None=None) -> bool:
+    def talk(self, name: str, at: tuple[float, float] | None=None, stand: tuple[float, float] | None=None) -> bool:
         self.talked.append(name)
         if name not in self.pages:
             return False
@@ -211,6 +232,16 @@ def test_the_bank_collects_the_deposit_and_every_value_product(world: type[Game]
     assert again == [("bank", "already done today")]                 # written down: not twice
 
 
+def test_a_value_product_already_collected_today_is_not_counted(world: type[Game]) -> None:
+    pages: Pages = {"bank": [("Hero, welcome, you have no deposit in the bank", None), ("Value Product", "value")],
+                    "value": [("VIP And Income monthly card", None),
+                              ("get income", lambda g: g.say("You have gotten the income of this value product today"))]}
+    g = world(pages, {"bank": "bank"})
+    out = chores.run(as_bot(g), cfg(bank=True))
+    assert "1 Value Product incomes were already collected today" in out[0][1]
+    assert "collected 1 Value Product" not in out[0][1]
+
+
 def test_check_only_collects_nothing(world: type[Game]) -> None:
     pages, got = bank_pages()
     g = world(pages, {"bank": "bank"})
@@ -228,7 +259,7 @@ def trainer_pages(free: int=2) -> tuple[Pages, dict[str, int]]:
         rows: list[Entry] = [("Pet name: Pixie>><< mimi", None), ("Current assets %d; mean value" % (200 + state["rebirths"]), None)]
         if state["free"]:
             rows.append(("You still have %d free Pet Rebirth times today; press here to Rebirth" % state["free"],
-                         lambda g: state.update(free=state["free"] - 1, rebirths=state["rebirths"] + 1) or "pet"))
+                         lambda g: state.update(free=state["free"] - 1, rebirths=state["rebirths"] + 1)))  # menu closes
         else:
             rows.append(("Press to  rebirth, fee 50 diamonds", lambda g: state.update(paid=state["paid"] + 1) or "pet"))
         return rows
@@ -256,6 +287,10 @@ def test_pet_rebirth_names_the_pets_when_the_chosen_one_isnt_there(world: type[G
 
 
 def test_a_pet_is_known_by_its_scan_name_its_own_name_or_its_kind() -> None:
+    assert chores.same_pet("Wild Eagle>><< max", "Eagle max")         # the scan shortens the kind
+    assert chores.same_pet("Wild Eagle>><< max", "wild eagle max")
+    assert not chores.same_pet("Wild Eagle>><< max", "Frog max")
+    assert not chores.same_pet("Wild Eagle>><< max", "Eagle maxi")
     assert chores.same_pet("Pixie>><< mimi", "Pixie mimi")
     assert chores.same_pet("Pixie>><< mimi", "mimi")
     assert chores.same_pet("Pixie>><< mimi", "PIXIE")
@@ -289,6 +324,16 @@ def test_the_donation_is_the_chosen_one(world: type[Game]) -> None:
     assert out[0][1].startswith("done: donate 20000 Arnebia")
 
 
+def test_a_donation_already_made_today_is_said_so_and_written_down(world: type[Game]) -> None:
+    pages = head_pages({})
+    pages["donation"] = [("Are you sure you want to donate 20000 Arnebia to the gang? | donate 20000 Arnebia, ...",
+                          lambda g: g.say("already donated today"))]
+    g = world(pages, {"gang_entrance": "gate"}, arnebia=100000)
+    out = chores.run(as_bot(g), cfg(donation="20000"))
+    assert out[0][1] == "already donated today" and g.arnebia == 100000
+    assert "donation" in chores.done_today("Hero")
+
+
 def test_the_donation_keeps_the_arnebia_reserve(world: type[Game]) -> None:
     state: dict[str, int] = {}
     g = world(head_pages(state), {"gang_entrance": "gate"}, arnebia=30000)    # reserve 20000: 10000 spare
@@ -300,83 +345,153 @@ def npc(name: str, x: int, y: int) -> dict[str, Any]:
     return {"name": name, "kind": "npc", "x": x, "y": y}
 
 
-def site_pages(takes: dict[str, int]) -> tuple[Pages, dict[str, int]]:
-    """Each place to build takes takes[name] builds today, then no more (the arnebia stays)."""
+def site_pages(takes: dict[str, int], pays: int = 6000, verb: str = "build") -> tuple[Pages, dict[str, int]]:
+    """Each place takes takes[name] builds today, then pays no more. Building costs nothing: as
+    the game's menu says, each one pays (a general's 3000 contribution, 3000 points, 6000 arnebia)."""
     builds: dict[str, int] = {}
 
     def build(name: str) -> Action:
-        def act(g: Game) -> str:
+        def act(g: Game) -> None:
             if builds.get(name, 0) < takes[name]:
                 builds[name] = builds.get(name, 0) + 1
-                g.arnebia -= 10000
-            return "sure"
+                g.arnebia += pays
         return act
-    pages: Pages = {name: [(name, None), ("construction %s, When build, each time can get 2500gang contributions" % name, None),
-                    ("build", build(name))] for name in takes}
-    pages["sure"] = [("Yes", None)]
-    pages[chores.BOARD] = [("View upgrade conditions", None),
-                           ("View existing supply camps and offensive and defensive facilities", "facilities")]
-    pages["facilities"] = [("Pharmacy room;Leader Upgrading to level 3 construction started", None)]
+    pages: Pages = {name: [(name, None),
+                           ("construction general, When %s, each time can get 3000gang contributions; "
+                            "3000gang points; %d Arnebia; Press to view the description" % (verb, pays), None),
+                           (verb, build(name))] for name in takes}
     return pages, builds
 
 
-def test_construction_builds_at_every_place_until_the_day_is_done(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(crafting, "enter_gang", stand_in(crafting.enter_gang, lambda b, gang, role: True))
-    takes = {"West encampment reinforced construction": 1, "East encampment reinforced construction": 1,
-             "Pharmacy room Construction": 2}
-    pages, builds = site_pages(takes)
-    g = world(pages, {"gang_entrance": "gate"}, arnebia=200000)
-    g.view = [npc("West encampment reinforced construction", 6, 11), npc("East encampment reinforced construction", 75, 11),
-              npc("Pharmacy room Construction", 30, 40), npc(chores.BOARD, 40, 40), npc("Guru Elder", 25, 29)]
-    out = chores.run(as_bot(g), cfg(construction=10, build_highland=False))
-    assert builds == takes and g.arnebia == 200000 - 4 * 10000
-    assert "built 4 times; no place took more today" in out[0][1]
-    assert any("Upgrading to level 3 construction started" in ln for ln in g.lines)    # the board, read
-    assert g.walked[:4] == list(chores.INNER_SWEEP)
+WEST, EAST = (n for n, _c in chores.POSTS)
 
 
-def test_construction_stops_at_the_chosen_number_and_the_reserve(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(crafting, "enter_gang", stand_in(crafting.enter_gang, lambda b, gang, role: True))
-    takes = {"West encampment reinforced construction": 5}
-    pages, _builds = site_pages(takes)
-    g = world(pages, {"gang_entrance": "gate"}, arnebia=200000)
-    g.view = [npc("West encampment reinforced construction", 6, 11)]
-    assert "built 2 times" in chores.run(as_bot(g), cfg(construction=2, build_highland=False))[0][1]
-    chores.done_today("Hero").clear()
-    g2 = world(*site_pages(takes)[:1], {"gang_entrance": "gate"}, arnebia=45000)    # reserve 20000
-    g2.view = list(g.view)
-    out = chores.construction(as_bot(g2), cfg(construction=5, build_highland=False), False)
-    assert out[0] == "built 2 times; not enough arnebia above your reserve for more"
+def test_the_two_posts_are_built_and_pay_for_it(world: type[Game]) -> None:
+    pages, builds = site_pages({WEST: 1, EAST: 1})
+    g = world(pages, {"gang_entrance": "gate"}, arnebia=5000)          # building costs nothing
+    out = chores.run(as_bot(g), cfg(construction=2))
+    assert builds == {WEST: 1, EAST: 1} and g.arnebia == 5000 + 2 * 6000
+    assert out[0][1] == "built 2 times" and g.walked == []            # straight to them: no walk round
 
 
-def test_the_highland_is_swept_too(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(crafting, "enter_gang", stand_in(crafting.enter_gang, lambda b, gang, role: False))
-    takes = {"Highland Construction": 1}
-    pages, builds = site_pages(takes)
-    g = world(pages, {"gang_entrance": "gate"}, arnebia=200000)
-
-    def highland(b: Game) -> bool:
-        b.view = [npc("Highland Construction", 50, 60)]
-        b.mid = 500
-        return True
-    monkeypatch.setattr(chores, "_to_highland", highland)
-
-    class Model:
-        W, h = 80, 120
-
-        @staticmethod
-        def ok(x: int, y: int) -> bool:
-            return True
-    monkeypatch.setattr(chores.atlas, "model", stand_in(chores.atlas.model, lambda mid: Model))
-    out = chores.run(as_bot(g), cfg(construction=3))
-    assert builds == {"Highland Construction": 1} and "built 1 times" in out[0][1]
+def test_the_game_s_two_builds_a_day_end_construction(world: type[Game]) -> None:
+    # builds and repairs share one limit: the third answers "you've already built twice today"
+    pages: Pages = {WEST: [(WEST, None), ("build", lambda g: g.say("you've already built twice today"))],
+                    EAST: [(EAST, None), ("build", None)]}
+    g = world(pages, {"gang_entrance": "gate"})
+    out = chores.run(as_bot(g), cfg(construction=2))
+    assert out[0][1] == "built 0 times; the game's two builds a day are made"
+    assert "construction" in chores.done_today("Hero") and EAST not in g.talked
 
 
-def test_places_to_build_are_known_by_their_names() -> None:
-    assert chores.is_site("West encampment reinforced construction")
-    assert chores.is_site("Level 2 Supply Camp Construction")
-    assert not chores.is_site("Construction and Donation Information")
-    assert not chores.is_site("Head of inner hall")
+def test_one_build_a_place_and_never_more_than_the_game_s_two(world: type[Game]) -> None:
+    # each place takes one a day ("You've repaired the crystal turret today"): on to the next
+    pages, builds = site_pages({WEST: 5, EAST: 5})
+    g = world(pages, {"gang_entrance": "gate"}, arnebia=0)
+    assert chores.run(as_bot(g), cfg(construction=9))[0][1] == "built 2 times"
+    assert builds == {WEST: 1, EAST: 1}
+
+
+def test_a_place_that_pays_no_arnebia_is_built_at_once_a_run(world: type[Game]) -> None:
+    # a soldier's rank gets 0 arnebia: nothing tells a second build took, so one per place
+    pages, builds = site_pages({WEST: 5, EAST: 5}, pays=0)
+    g = world(pages, {"gang_entrance": "gate"})
+    assert chores.run(as_bot(g), cfg(construction=2))[0][1] == "built 2 times"
+    assert builds == {WEST: 1, EAST: 1}
+
+
+def test_a_refusal_the_game_says_stops_building_there(world: type[Game]) -> None:
+    pages: Pages = {WEST: [(WEST, None), ("build", lambda g: g.say("Not enough gang contributions"))]}
+    g = world(pages, {"gang_entrance": "gate"})
+    out = chores.run(as_bot(g), cfg(construction=2))
+    assert "built 0 times" in out[0][1]
+    assert any("Not enough gang contributions" in ln for ln in g.lines)
+
+
+INNER, HIGHLAND = 4004, 3701
+
+
+def highland_game(world: type[Game], number_listed: int = 38) -> tuple[Game, dict[str, int]]:
+    """The inner hall's Highland Entrance; Occupied Highlands lists the gang's own highland by its
+    number (each gang's is different); inside, a Crystal Turret and a Wall barricade take repairs."""
+    pages, repairs = site_pages({"Crystal Turret": 1, "Wall barricade": 1}, pays=6000, verb="repair")
+
+    def into(g: Game) -> None:
+        g.mid = HIGHLAND
+        g.view = [npc("Teleportation circle", 40, 40), npc("Crystal Turret", 30, 20), npc("Wall barricade", 50, 20)]
+
+    def home(g: Game) -> None:
+        g.mid, g.view = INNER, []
+    pages["Highland Entrance"] = [("Occupied Highlands", "occupied"), ("Gang Highlands", "every"), ("Description", None)]
+    pages["occupied"] = [("the own Gang's Highland %d" % number_listed, into)]
+    pages["every"] = [("Highland 35Occupied by Another gang", None), ("Highland 38", into)]
+    pages["Teleportation circle"] = [("Return to Main mansion", home)]
+    return world(pages, {"gang_entrance": "gate"}, arnebia=0, map_id=INNER), repairs
+
+
+def test_the_highland_the_player_numbered_is_repaired_and_the_bot_comes_back(world: type[Game]) -> None:
+    g, repairs = highland_game(world)
+    out = chores.run(as_bot(g), cfg(construction=2, build_at="highland", highland=38))
+    assert repairs == {"Crystal Turret": 1, "Wall barricade": 1} and g.arnebia == 12000
+    assert g.chosen[:2] == ["Occupied Highlands", "the own Gang's Highland 38"]
+    assert g.mid == INNER and "Return to Main mansion" in g.chosen
+    assert WEST not in g.talked and out[0][1] == "built 2 times"
+    assert chores.STANDS["Wall barricade"] in g.walked        # its south side, where it answers
+
+
+def test_a_highland_number_occupied_highlands_doesn_t_list_says_what_it_lists(world: type[Game]) -> None:
+    g, repairs = highland_game(world, number_listed=38)
+    out = chores.run(as_bot(g), cfg(construction=2, build_at="highland", highland=3))
+    assert repairs == {} and g.mid == INNER
+    assert "has no highland 3 (it lists: the own Gang's Highland 38)" in out[0][1]
+    assert "construction" not in chores.done_today("Hero")
+
+
+def test_the_whole_run_rides_the_swift_beast(world: type[Game]) -> None:
+    # every walk of a chores run counts as travelling (most stay on one map, where travel() has
+    # nothing to plan), so the walks put the Swift fusion beast on; afterwards it is as it was
+    seen: list[bool] = []
+    pages, _builds = site_pages({WEST: 1, EAST: 1})
+    pages[WEST] = [(WEST, None), ("build", lambda g: seen.append(getattr(g, "traveling", False)))]
+    g = world(pages, {"gang_entrance": "gate"})
+    chores.run(as_bot(g), cfg(construction=2))
+    assert seen == [True] and getattr(g, "traveling", None) is False
+
+
+def test_the_highland_without_its_number_is_not_due() -> None:
+    assert chores.due("Nobody", cfg(construction=2, build_at="highland", highland=0)) == []
+    assert chores.due("Nobody", cfg(construction=2, build_at="highland", highland=38)) == ["construction"]
+
+
+def test_the_way_home_is_never_taken_for_a_place_to_build(world: type[Game]) -> None:
+    g, _repairs = highland_game(world)
+    g.view = [npc("Teleportation circle", 40, 40), npc("Highland Entrance", 41, 2), npc("Crystal Turret", 30, 20)]
+    assert [n for n, _x, _y in chores.sites_in_view(as_bot(g))] == ["Crystal Turret"]
+
+
+FEED_TEXT = ("each feed can get 500 gang contributions, 500 gang points and 2000 arnebia. Are you sure you "
+             "want to feed?")
+
+
+def shed_pages(answer: Callable[[Game], None], text: str = FEED_TEXT) -> Pages:
+    return {"Animal Shed": [(text, answer),
+                            ("View the existing breed beasts", None), ("Administration", None)]}
+
+
+def test_the_breed_beast_is_fed_once_a_day(world: type[Game]) -> None:
+    def fed(g: Game) -> None:
+        g.arnebia += 2000
+    pages = shed_pages(fed, "Breeding King beetle; 85.0% complete; press to feed")
+    g = world(pages, {"gang_entrance": "gate"}, arnebia=0)
+    out = chores.run(as_bot(g), cfg(feed=True))
+    assert out == [("feed", "fed Breeding King beetle; 85.0% complete")] and g.arnebia == 2000
+    assert chores.run(as_bot(g), cfg(feed=True)) == [("feed", "already done today")]
+
+
+def test_a_feed_the_game_refuses_says_why(world: type[Game]) -> None:
+    g = world(shed_pages(lambda g: g.say("Not enough arnebia")), {"gang_entrance": "gate"})
+    out = chores.run(as_bot(g), cfg(feed=True))
+    assert out[0][1] == "not fed: Not enough arnebia" and "feed" not in chores.done_today("Hero")
 
 
 # ---------------------------------------------------------------------------------------- secret room

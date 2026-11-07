@@ -8,6 +8,7 @@ vitality" when Vitality runs out, and the buyers list one row per kind ("101 Mil
 
 from __future__ import annotations
 
+import math
 import re
 import threading
 from collections.abc import Callable
@@ -17,7 +18,7 @@ import pytest
 
 from unclefarmer.engine import chores, gathering, script, town
 from unclefarmer.engine.bot import Stopped
-from conftest import as_bot, returning, stand_in
+from conftest import as_bot, stand_in
 from unclefarmer.clock import Waitable
 
 ME = 1234
@@ -242,6 +243,21 @@ class Game:
         self.page = name
         return True
 
+    # NPCs standing in the base: the game shows what is within about 30 tiles of us
+    npcs: dict[str, tuple[float, float]] = {"Lake Entrance": (2, 40)}
+    walked: list[tuple[float, float]] = []
+
+    def find_npc(self, name: str, near: Any=None, within: float | None=None) -> dict[str, Any] | None:
+        at = self.npcs.get(name)
+        if at is None or math.hypot(at[0] - self.x, at[1] - self.y) > 30:
+            return None
+        return {"name": name, "x": at[0], "y": at[1]}
+
+    def walk_to(self, cell: tuple[float, float], map_change: bool=False, near: Any=None) -> str:
+        self.walked = self.walked + [cell]
+        self.x, self.y = cell
+        return "arrived"
+
     def wait_map_change(self, mid: int, seconds: float) -> bool:
         return self.mid != mid
 
@@ -356,7 +372,9 @@ def gang_pages(g: Game, fee: int=0) -> None:
 
 @pytest.fixture
 def inner_hall(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
+    def into(b: Any) -> None:           # in the inner hall, as the Gang Entrance puts us
+        b.x, b.y = 41, 43
+    monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, into))
     monkeypatch.setattr(gathering.crafting, "reachable_cell", stand_in(gathering.crafting.reachable_cell, lambda b, cell: True))
 
 
@@ -377,12 +395,31 @@ def test_check_only_and_a_fee_above_the_limit_never_enter(inner_hall: None) -> N
     assert not entered and not over and g.mid == 4004
 
 
-def test_a_gang_without_that_area_is_done_for_the_day(inner_hall: None, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_gang_without_that_area_is_done_for_the_day(inner_hall: None) -> None:
     g = Game(map_id=4004)
-    monkeypatch.setattr(g, "find_npc", returning(None), raising=False)
-    monkeypatch.setattr(g, "walk_to", returning("arrived"), raising=False)
+    g.x, g.y = 40, 40
     entered, about, over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS), "Mining")
     assert not entered and over and "Mining Area Entrance" in about
+    assert sorted(g.walked) == [(2, 40), (79, 40)]       # this hall's two area spots, no walk round the base
+
+
+def test_the_skill_s_area_is_found_at_whichever_end_of_the_hall_it_stands(monkeypatch: pytest.MonkeyPatch) -> None:
+    # a gang has two of the three areas, their entrances at the inner hall's west and east ends
+    monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
+    inner = {(2, 40), (79, 40)}            # the outer hall's spots are walled off from here
+    monkeypatch.setattr(gathering.crafting, "reachable_cell",
+                        stand_in(gathering.crafting.reachable_cell, lambda b, cell: tuple(cell) in inner))
+    g = Game(map_id=4004)
+    g.x, g.y = 40, 41
+    g.npcs = {"Lake Entrance": (2, 40), "Herbal Garden Entrance": (79, 40)}
+
+    def garden(_g: Game) -> list[Entry]:
+        return [("herbal garden of the gang; level 2; saturation 80.0%", None), ("Entry costs 0 arnebia", None),
+                ("Enter", lambda gg: setattr(gg, "mid", 4210))]
+    g.pages["Herbal Garden Entrance"] = garden
+    entered, _about, _over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS), "Collect Herbs")
+    assert entered and g.mid == 4210
+    assert g.walked == [(2, 40), (79, 40)]     # the nearer end first, then the other
 
 
 # ---------------------------------------------------------------------------------------- selling
@@ -562,6 +599,7 @@ def test_own_gang_then_the_others_each_once_a_day(market: None, monkeypatch: pyt
     def into(b: Game, gang: str) -> None:
         went.append(gang)
         b.mid = 4004
+        b.x, b.y = 41, 43
         b.page = None
     monkeypatch.setattr(gathering, "_into_gang", into)
     monkeypatch.setattr(gathering.crafting, "reachable_cell", stand_in(gathering.crafting.reachable_cell, lambda b, cell: True))

@@ -46,7 +46,12 @@ SKILLS: dict[str, dict[str, str]] = {
 }
 SKILL_NAMES = (N_("Fishing"), N_("Mining"), N_("Collect Herbs"))     # SKILLS' names, for translators
 RANKS = (N_("Newbie"), N_("Oldhand"), N_("Elite"), N_("Expert"), N_("Master"), N_("Grand Master"))
-ENTRANCE_CELLS = {"Lake Entrance": (2, 40)}   # seen in a gang base; every base has the same layout
+# A gang base has two production areas. Their entrances stand at the inner hall's west and east
+# ends (2,40 and 79,40), and again in the outer hall (2,80 and 79,80): seen in a base 2026-11-07,
+# the Lake Entrance west, the Herbal Garden Entrance east. Which two areas a gang has differs from
+# gang to gang; where their entrances stand doesn't (every base has the same layout).
+AREA_SPOTS = ((2, 40), (79, 40), (2, 80), (79, 80))
+HALLS_MEET = 60                               # the inner hall is y < 60, the outer y > 60
 GANG_AREAS = range(4201, 4224)                # the production areas' maps: mine valleys, gardens, lakes
 PANEL = 6                 # the bag's Profession skills panel
 START_WAIT = 6.0          # seconds a start has to bring its first cast
@@ -74,7 +79,6 @@ DEFAULTS: dict[str, Any] = {
     "when_full": "sell",      # the bag full outside: "sell" and come back, or "stop"
     "free_load": 1000,        # before setting out: less room left than this (load) is a full bag
     "refused": {},            # place key -> the rank the game didn't let us gather there at
-    "entrances": {},          # gang area entrance -> [x, y], once found
 }
 
 
@@ -449,23 +453,24 @@ def _into_gang(b: Bot, gang: str) -> None:
 
 
 def _entrance(b: Bot, cfg: dict[str, Any], name: str) -> tuple[float, float] | None:
-    """Where the gang area's entrance stands in the part of the base we are in: known, in sight,
-    or found by a walk round it (and remembered: every gang base has the same layout)."""
-    known: dict[str, tuple[int, int]] = cfg.get("entrances") or {}
-    cell = known.get(name) or ENTRANCE_CELLS.get(name)
-    if cell and crafting.reachable_cell(b, (int(cell[0]), int(cell[1]))):
-        return float(cell[0]), float(cell[1])
-    for stop in [None] + list(chores.INNER_SWEEP) + list(chores.OUTER_SWEEP):
-        if stop is not None:
-            if not crafting.reachable_cell(b, stop):
-                continue                  # the other half of the base, walled off from ours
-            b.walk_to(stop)
-        npc = b.find_npc(name)
-        if npc is not None:
-            cfg.setdefault("entrances", {})[name] = [int(npc["x"]), int(npc["y"])]
-            _save(b, cfg)
-            return float(npc["x"]), float(npc["y"])
-    return None
+    """Where the gang area's entrance stands in the part of the base we are in: in sight, else at
+    one of the two area spots (the nearer first) - or None: this gang has no such area."""
+    npc = b.find_npc(name)
+    if npc is None:
+        me = b.me()
+        # this hall's two spots only: the other hall has the same two areas, and the inner hall's
+        # door to the outer one is one-way (in again only by the Gang Entrance)
+        spots = [s for s in AREA_SPOTS if (s[1] < HALLS_MEET) == (me["y"] < HALLS_MEET)
+                 and crafting.reachable_cell(b, s)]
+        spots.sort(key=lambda s: math.hypot(s[0] - me["x"], s[1] - me["y"]))
+        for spot in spots:
+            b.walk_to(spot, near=lambda _me: b.find_npc(name) is not None)
+            npc = b.find_npc(name)
+            if npc is not None:
+                break
+    if npc is None:
+        return None
+    return float(npc["x"]), float(npc["y"])
 
 
 def gang_area(b: Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,

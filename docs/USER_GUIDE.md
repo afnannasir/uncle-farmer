@@ -349,14 +349,20 @@ it again doesn't donate twice.
 
 - **Bank:** the deposit income and every Value Product card's daily income.
 - **Hunting bounties** from the nearest city officer who pays them.
-- **Pet rebirth:** the day's free rebirths of the pet you choose. Rebirths that cost diamonds are
-  never used.
-- **Gang:** the once-a-day donation you choose (10,000 or 20,000 arnebia, or 20 diamonds) and a
-  number of construction builds a day (10,000 arnebia for 2,500 gang contribution each), never
-  below your arnebia reserve. It builds wherever the gang has something to build: the inner hall's
-  West and East encampment reinforced constructions, whatever a leader has started in the inner or
-  outer hall (a Pharmacy room, a Supply Camp...), and the gang's highland if you tick it. It walks
-  round each part to find them, and reads the Information Board for what is being built.
+- **Pet rebirth:** the day's free rebirths of the pet you choose (the name from the character
+  scan works, though the Pet Trainer may call the kind a little differently: "Eagle" there is
+  "Wild Eagle"). Rebirths that cost diamonds are never used.
+- **Gang:** the once-a-day donation you choose (10,000 or 20,000 arnebia, or 20 diamonds, never
+  below your arnebia reserve) and the day's construction: the game allows two builds a day,
+  builds and repairs together ("you've already built twice today"). Building costs nothing: each
+  one pays gang contribution, gang points and, from a colonel's rank up, arnebia (3,000/3,000/6,000
+  for a general). You choose where: the inner hall's East and West encampment reinforced
+  constructions, a short walk from the Gang Entrance, or your gang's highland, where it repairs the
+  Crystal Turret and the Wall barricade and comes back by the Teleportation circle. Every gang's
+  highland is a different one, so type its number: the Highland Entrance lists it under Occupied
+  Highlands ("the own Gang's Highland 38": 38).
+- **Animal Shed:** feeds the gang's breed beast once a day (500 gang contribution, 500 gang
+  points and 2,000 arnebia), apart from the two builds.
 - **Secret room, sharing arnebia:** sharing works once in each half hour of the clock (from :00
   and from :30), 5 times a day, and both players get arnebia. So the bot doesn't stay: it goes in
   a little before the half hour (10:28, say), shares, shares again once 10:30 comes, and leaves.

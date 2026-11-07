@@ -100,11 +100,23 @@ def _reachable(b: Bot, role: str) -> bool:
 
 
 def reachable_cell(b: Bot, cell: tuple[int, int]) -> bool:
-    """We stand in the part of this map that cell is in: a gang base's two halves are walled apart."""
+    """We can walk from here to cell. A gang base's inner hall walks out to the outer hall through
+    its inner door, but nothing walks back in (a one-way door strip; the way in is the Gang
+    Entrance), so this follows the one-way gates, not just which part of the map cell is in."""
     me = b.me()
     try:
         m = atlas.model(b.map_id())
-        return m.comp_of(int(me["x"]), int(me["y"])) == m.comp_of(*cell)
+        here = (int(me["x"]), int(me["y"]))
+        if m.comp_of(*here) != m.comp_of(*cell):
+            return False
+        if not hasattr(m, "gated_route"):
+            return True                   # a map with no gates to follow (no data for them)
+        start = here if m.ok(*here) else m.nearest_walkable(here[0], here[1], 4)
+        goal = (int(cell[0]), int(cell[1]))
+        goal = goal if m.ok(*goal) else m.nearest_walkable(goal[0], goal[1], 4)
+        if start is None or goal is None:
+            return True                   # no walkable cell to judge by: let the walk find out
+        return m.gated_route((start[0], start[1]), (goal[0], goal[1])) is not None
     except STOPPING:
         raise
     except Exception as e:

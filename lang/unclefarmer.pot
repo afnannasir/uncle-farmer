@@ -68,6 +68,9 @@ msgstr ""
 msgid "&Browse..."
 msgstr ""
 
+msgid "&Build at:"
+msgstr ""
+
 msgid "&Call them by their name"
 msgstr ""
 
@@ -105,7 +108,7 @@ msgid "&Commands for trusted players"
 msgstr ""
 
 msgid ""
-"&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
+"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
 msgstr ""
 
 msgid "&Copy the address"
@@ -148,6 +151,9 @@ msgid "&Equipment Enhancer...\tCtrl+Shift+E"
 msgstr ""
 
 msgid "&Equipment to enhance:"
+msgstr ""
+
+msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr ""
 
 msgid "&File"
@@ -701,6 +707,9 @@ msgstr ""
 msgid "An older Uncle Farmer agent is installed. Press Install to update it."
 msgstr ""
 
+msgid "Animal Shed feeding"
+msgstr ""
+
 msgid "Another character"
 msgstr ""
 
@@ -795,9 +804,6 @@ msgid "Buffs off."
 msgstr ""
 
 msgid "Buffs on."
-msgstr ""
-
-msgid "Build in the gang's &highland too (the outer and inner halls always)"
 msgstr ""
 
 msgid "Busy - send stop first."
@@ -1389,6 +1395,9 @@ msgid "Games unmuted."
 msgstr ""
 
 msgid "Gang"
+msgstr ""
+
+msgid "Gang construction"
 msgstr ""
 
 msgid "Gang name"
@@ -2198,6 +2207,10 @@ msgid "Nowhere, use what's in the bag"
 msgstr ""
 
 msgid ""
+"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+msgstr ""
+
+msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 
@@ -2277,6 +2290,9 @@ msgid "Other items picked up:"
 msgstr ""
 
 msgid "Our blue potions"
+msgstr ""
+
+msgid "Our gang's &highland number (the one under Occupied Highlands):"
 msgstr ""
 
 msgid "Our own gang"
@@ -3374,6 +3390,10 @@ msgstr ""
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr ""
 
+msgid ""
+"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+msgstr ""
+
 msgid "Uncle Farmer"
 msgstr ""
 
@@ -3721,6 +3741,9 @@ msgstr ""
 msgid "all the gear repaired"
 msgstr ""
 
+msgid "already donated today"
+msgstr ""
+
 msgid "already done today"
 msgstr ""
 
@@ -3840,10 +3863,10 @@ msgstr ""
 msgid "built {n} times; no place took more today (places: {places})"
 msgstr ""
 
-msgid "built {n} times; not enough arnebia above your reserve for more"
+msgid "built {n} times; the game's two builds a day are made"
 msgstr ""
 
-msgid "can build at the {post} (10000 arnebia, 2500 gang contribution each)"
+msgid "can build at the {post}"
 msgstr ""
 
 msgid "can't find {npc} here"
@@ -3942,6 +3965,9 @@ msgstr ""
 msgid "couldn't get back to {place}: {why}"
 msgstr ""
 
+msgid "couldn't get into highland {n}"
+msgstr ""
+
 msgid "couldn't get into the gang {gang}'s base"
 msgstr ""
 
@@ -3967,12 +3993,6 @@ msgid "couldn't get to {npc}"
 msgstr ""
 
 msgid "couldn't get to {place}: {why}"
-msgstr ""
-
-msgid "couldn't get to {where} to build"
-msgstr ""
-
-msgid "couldn't get to {where} to build: {why}"
 msgstr ""
 
 msgid "couldn't leave the gang's area - waiting for its half hour to end"
@@ -4138,6 +4158,12 @@ msgid "farming stops at {time} at the latest (the drop time resets at {reset})"
 msgstr ""
 
 msgid "farming {map}"
+msgstr ""
+
+msgid "fed {beast}"
+msgstr ""
+
+msgid "fed {beast}, but no arnebia came in"
 msgstr ""
 
 msgid "fighting"
@@ -4516,6 +4542,9 @@ msgstr ""
 msgid "no answer"
 msgstr ""
 
+msgid "no answer from the game"
+msgstr ""
+
 msgid "no arnebia shared this time: {why}"
 msgstr ""
 
@@ -4682,6 +4711,9 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid "not fed: {why}"
+msgstr ""
+
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
@@ -4781,6 +4813,9 @@ msgid "ore"
 msgstr ""
 
 msgid "other"
+msgstr ""
+
+msgid "our gang's highland"
 msgstr ""
 
 msgid "our hits land on {name} - fighting that one"
@@ -5159,6 +5194,9 @@ msgstr ""
 msgid "that didn't work: {err}"
 msgstr ""
 
+msgid "the Animal Shed has nothing to feed now"
+msgstr ""
+
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
 msgstr ""
 
@@ -5206,7 +5244,7 @@ msgstr ""
 msgid "the Head of the inner hall offers no donation"
 msgstr ""
 
-msgid "the Information Board: {lines}"
+msgid "the Highland Entrance offers no Occupied Highlands"
 msgstr ""
 
 msgid "the PK mode is locked here - leaving it as {mode}"
@@ -5320,7 +5358,7 @@ msgstr ""
 msgid "the deposit income can be collected"
 msgstr ""
 
-msgid "the donation didn't go through - already donated today?"
+msgid "the donation didn't go through: {why}"
 msgstr ""
 
 msgid ""
@@ -5418,10 +5456,7 @@ msgstr ""
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr ""
 
-msgid "the highland"
-msgstr ""
-
-msgid "the inner hall"
+msgid "the inner hall's East and West posts"
 msgstr ""
 
 msgid "the instructor offers no secret room now"
@@ -5452,9 +5487,6 @@ msgid "the open menu is {what}"
 msgstr ""
 
 msgid "the open menu isn't the Shard Market's list"
-msgstr ""
-
-msgid "the outer hall"
 msgstr ""
 
 msgid "the pet"
@@ -5532,6 +5564,9 @@ msgstr ""
 msgid "the {npc}'s next menu didn't open"
 msgstr ""
 
+msgid "the {post}: {what}"
+msgstr ""
+
 msgid "the {role} didn't take {item}"
 msgstr ""
 
@@ -5599,6 +5634,9 @@ msgid "travel to {map} didn't arrive"
 msgstr ""
 
 msgid "trying the {npc} once more"
+msgstr ""
+
+msgid "type your gang's highland number in Tools, Daily chores"
 msgstr ""
 
 msgid "unbalanced quotes"
@@ -5701,6 +5739,9 @@ msgid ""
 msgstr ""
 
 msgid "would enter {room}"
+msgstr ""
+
+msgid "would feed: {beast}"
 msgstr ""
 
 msgid "would go to: {cave}"
@@ -6090,6 +6131,9 @@ msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its men
 msgstr ""
 
 msgid "{n} Value Product incomes can be collected"
+msgstr ""
+
+msgid "{n} Value Product incomes were already collected today"
 msgstr ""
 
 msgid "{n} arnebia"
