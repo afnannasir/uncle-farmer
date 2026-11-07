@@ -136,7 +136,7 @@ def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
 
 
 def wait_menu_change(b: Bot, before: dict[str, Any] | None) -> None:
-    """Use the state-aware wait when the bot has it, preserving the older fallback otherwise."""
+    """Use the state-aware wait when the bot has it, preserving the established fallback otherwise."""
     waiter = getattr(b, "wait_menu_change", None)
     if callable(waiter):
         waiter(before)
