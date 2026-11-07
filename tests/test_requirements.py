@@ -14,6 +14,10 @@ import export_requirements
 pytestmark = pytest.mark.skipif(shutil.which("uv") is None, reason="needs uv to export the lock")
 
 
+def test_windows_export_normalizes_the_redundant_platform_marker():
+    assert export_requirements.normalize_windows_export("one ; sys_platform == 'win32'\ntwo\n") == "one\ntwo\n"
+
+
 @pytest.mark.parametrize("name", sorted(export_requirements.FILES))
 def test_the_file_matches_the_lock(name: str):
     with open(os.path.join(export_requirements.ROOT, name), encoding="utf-8") as f:

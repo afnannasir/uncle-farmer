@@ -242,9 +242,12 @@ def test_the_buy_and_sell_menu_is_waited_for_by_the_id(monkeypatch: pytest.Monke
             game.screen, game.trade_id = "trade", 20405
     b.sleep = later                                   # type: ignore[method-assign]
     reads = menu_reads(game)
-    it = menus.pick(as_bot(b), menus.SHARD_TRADE, item_id=20405, action="sell", wait=3.0, then_text=False)
+    before = b.clock.now
+    it = menus.pick(as_bot(b), menus.SHARD_TRADE, item_id=20405, action="sell", wait=3.0,
+                    then_text=False, settle=False)
     assert it is not None and it["action"] == "sell" and it["row"] == 1
     assert reads == [] and game.picks == ["shard_trade 20405 sell"]
+    assert b.clock.now - before == pytest.approx(menus.MENU_POLL)
 
 
 def test_a_potion_bought_twice_reads_the_seller_s_list_once(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -55,6 +55,11 @@ final class TextInput {
         return m instanceof Integer ? (Integer) m : 0;
     }
 
+    /** Whether the game's input box is currently open. */
+    static boolean open() throws Memory.Unavailable {
+        return mode(win()) != 0;
+    }
+
     /** {"open":bool,"mode":n,"text":"..."}: whether the input box is up and what has been typed so far. */
     static String state() {
         try {
@@ -92,6 +97,17 @@ final class TextInput {
         }, "entered");
     }
 
+    /** Replaces a quantity and submits it in one event-queue turn. */
+    static String number(final String number) {
+        return run(new Job() {
+            public void on(Frame w, KeyListener l) {
+                clear(w, l);
+                type(w, l, number);
+                enter(w, l);
+            }
+        }, "entered " + number.length());
+    }
+
     /** Escape: closes whatever box is open (sets Win.w = 0; the game says its title), the same
      *  as the player pressing Escape. The low-level hook can't do it: it drops keys while w != 0. */
     static String escape() {
@@ -108,16 +124,34 @@ final class TextInput {
     static String clear() {
         return run(new Job() {
             public void on(Frame w, KeyListener l) {
-                Object text = field(w, WIN_TEXT);
-                int n = text == null ? 0 : text.toString().length();
-                long now = System.currentTimeMillis();
-                for (int i = 0; i < n + 1; i++) {
-                    l.keyPressed(new KeyEvent(w, KeyEvent.KEY_PRESSED, now, 0, KeyEvent.VK_BACK_SPACE, '\b'));
-                    l.keyTyped(new KeyEvent(w, KeyEvent.KEY_TYPED, now, 0, KeyEvent.VK_UNDEFINED, '\b'));
-                    l.keyReleased(new KeyEvent(w, KeyEvent.KEY_RELEASED, now, 0, KeyEvent.VK_BACK_SPACE, '\b'));
-                }
+                clear(w, l);
             }
         }, "cleared");
+    }
+
+    private static void type(Frame w, KeyListener l, String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            l.keyTyped(new KeyEvent(w, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0,
+                    KeyEvent.VK_UNDEFINED, c));
+        }
+    }
+
+    private static void enter(Frame w, KeyListener l) {
+        long now = System.currentTimeMillis();
+        l.keyPressed(new KeyEvent(w, KeyEvent.KEY_PRESSED, now, 0, KeyEvent.VK_ENTER, '\n'));
+        l.keyReleased(new KeyEvent(w, KeyEvent.KEY_RELEASED, now, 0, KeyEvent.VK_ENTER, '\n'));
+    }
+
+    private static void clear(Frame w, KeyListener l) {
+        Object text = field(w, WIN_TEXT);
+        int n = text == null ? 0 : text.toString().length();
+        long now = System.currentTimeMillis();
+        for (int i = 0; i < n + 1; i++) {
+            l.keyPressed(new KeyEvent(w, KeyEvent.KEY_PRESSED, now, 0, KeyEvent.VK_BACK_SPACE, '\b'));
+            l.keyTyped(new KeyEvent(w, KeyEvent.KEY_TYPED, now, 0, KeyEvent.VK_UNDEFINED, '\b'));
+            l.keyReleased(new KeyEvent(w, KeyEvent.KEY_RELEASED, now, 0, KeyEvent.VK_BACK_SPACE, '\b'));
+        }
     }
 
     private interface Job {
