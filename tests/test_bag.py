@@ -463,6 +463,18 @@ def test_throw_by_rules_leaves_sell_and_store_alone() -> None:
     assert calls == ["Junk"]
 
 
+def test_throw_by_rules_by_keys_throws_every_item() -> None:
+    """Without the direct discard every item on the list is thrown, not only the first one."""
+    b = Bot(bag=[{"name": "Junk", "count": 4}, {"name": "Pelt", "count": 3}])
+    b.p["bag_rules"] = {"junk": {"action": "throw", "keep": 0},
+                        "pelt": {"action": "throw", "keep": 0}}
+    b.p["only_this_run"] = False
+    calls: list[str] = []
+    b.throw_item = lambda name, n: calls.append(name) or n
+    assert b.throw_by_rules() is True
+    assert sorted(calls) == ["Junk", "Pelt"]
+
+
 def test_throw_by_rules_with_nothing_to_throw() -> None:
     b = Bot(bag=[{"name": "Junk", "count": 4}])
     assert b.throw_by_rules() is False

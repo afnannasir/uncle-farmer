@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Three things the bot used to do with keys, done the way the game's own code does them:
+ * Things the bot used to do with keys, done the way the game's own code does them:
  * `use <uid>`, `discarddirectall <uid>...`, `select <id>` and `slot <n> [sustain] [lock]`.
  *
  * use: the use key on a bag row (game.i.w) and a hotkey (game.i.g) both end in game.N.b(0, uid, 0),
@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit;
  * client checks nothing else; the server uses the item and sends the bag's new counts. Here the same
  * ten bytes go through the game's connection (Ask.send), for an item the bag holds, so the bot no
  * longer walks the bag panel with the arrow keys - which also moved us in a fight.
+ *
+ * discard: Shift+Delete, the quantity box and "are you sure" end in game.i.d(0, uid, n), which calls
+ * game.N.b(0, uid, -n): the same op=18 packet as use, with minus the count where use has 0, one
+ * packet for n of a stack (javap 2026-11-07). Here every uid is checked against one bag snapshot,
+ * then each stack goes out as one such packet.
  *
  * select: the target keys (game.i.o) set the client's selected target and speak it; no packet goes
  * out (Memory.select). Done straight, the bot's pick is the game's target at once, with no presses
@@ -39,7 +44,6 @@ final class Act {
 
     static final int OP_USE = 18;
     static final int BAG_PANEL = 0;
-    static final int DISCARD = -1;
     /** The same item again this soon is refused: one press of the key can't do it faster. */
     static final long SAME_ITEM_GAP_MS = 300L;
 
@@ -63,8 +67,9 @@ final class Act {
         return "used";
     }
 
-    /** Send the exact discard request the game makes after its discard confirmation. Every uid is
-     * checked against one bag snapshot before any packet goes out, including repeated stack uids. */
+    /** Discard bag units the way the game's discard does (game.i.d -> N.b(0, uid, -count)). A uid
+     * repeated k times means k units of that stack: they go out as one packet with -k, in the order
+     * each uid first appears. Every unit is checked against one bag snapshot before anything is sent. */
     static String discardAll(int[] uids) {
         if (uids.length == 0) return "error: discarddirectall needs item ids";
         try {
@@ -73,8 +78,14 @@ final class Act {
         } catch (Memory.Unavailable u) {
             return "error: " + u.getMessage();
         }
+        java.util.LinkedHashMap<Integer, Integer> stacks = new java.util.LinkedHashMap<Integer, Integer>();
         for (int uid : uids) {
-            String failed = Ask.send(discardPacket(uid), "discard " + uid);
+            Integer had = stacks.get(Integer.valueOf(uid));
+            stacks.put(Integer.valueOf(uid), Integer.valueOf(had == null ? 1 : had.intValue() + 1));
+        }
+        for (java.util.Map.Entry<Integer, Integer> e : stacks.entrySet()) {
+            int uid = e.getKey().intValue();
+            String failed = Ask.send(discardPacket(uid, e.getValue().intValue()), "discard " + uid);
             if (failed != null) return failed;
         }
         return "sent all " + uids.length;
@@ -192,11 +203,11 @@ final class Act {
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, 0, 0, 0, 0};
     }
 
-    /** op 18, bag panel 0, uid, then -1: the packet captured from the game's discard action. */
-    static byte[] discardPacket(int uid) {
+    /** op 18, bag panel 0, uid, then minus the count: what N.b(0, uid, -count) writes. */
+    static byte[] discardPacket(int uid, int count) {
+        int n = -count;
         return new byte[] {(byte) OP_USE, (byte) BAG_PANEL,
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid,
-                (byte) (DISCARD >>> 24), (byte) (DISCARD >>> 16),
-                (byte) (DISCARD >>> 8), (byte) DISCARD};
+                (byte) (n >>> 24), (byte) (n >>> 16), (byte) (n >>> 8), (byte) n};
     }
 }

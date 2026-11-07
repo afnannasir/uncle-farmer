@@ -290,8 +290,10 @@ public final class AgentTests {
 
     private static void usePacketIsTheUseKeysRequest(Map<String, String> contract) {
         eq(bytes(Act.packet(1234567)), contract.get("use_packet"), "use sends what the use key sends");
-        eq(bytes(Act.discardPacket(1234567)), "18 0 0 18 214 135 255 255 255 255",
-                "discard sends the captured discard request");
+        eq(bytes(Act.discardPacket(1234567, 1)), "18 0 0 18 214 135 255 255 255 255",
+                "discarding one sends what the game's discard sends");
+        eq(bytes(Act.discardPacket(1234567, 3)), "18 0 0 18 214 135 255 255 255 253",
+                "three of a stack go in one packet with minus three");
     }
 
     private static String bytes(byte[] packet) {

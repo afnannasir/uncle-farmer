@@ -330,4 +330,4 @@ class BagMixin(Parts):
             for name, n in moved:
                 stats.moved(self, "thrown", name, n)
             return bool(moved)
-        return any(self.throw_item(name, n) for name, n in todo)
+        return sum(self.throw_item(name, n) for name, n in todo) > 0   # every item, not just the first
