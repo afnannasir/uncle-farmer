@@ -182,6 +182,84 @@ final class Dialogs {
         return "sold all " + ids.length;
     }
 
+    /** Send one verified sale command from the currently verified Shard Market. */
+    static String shardSellDirect(int id, int count) {
+        if (count <= 0 || count > 2000) return "error: sharddirect count must be 1-2000";
+        try {
+            Object world = Memory.world();
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Menus.Menu market = model(open.get(open.size() - 1));
+                int[] at = Menus.place(market, Menus.SHARD_MARKET, id, null);
+                Menus.Entry item = market.at(at[0], at[1]);
+                int broker = selectedId(world);
+                if (broker >= 0) return "refused: no Shard Broker is selected";
+                String failed = Ask.send(shardPacket(broker, id, item.cmd[2], count), "direct shard sell");
+                return failed == null ? "sent " + id + " " + count : failed;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        } catch (Throwable t) {
+            Log.error("direct shard sell", t);
+            return "error: " + t;
+        }
+    }
+
+    /** Validate a whole market plan first, then queue its already-observed sale commands in order. */
+    static String shardSellDirectAll(int[] ids, int[] counts) {
+        if (ids.length == 0 || ids.length != counts.length) return "error: sharddirectall needs item/count pairs";
+        try {
+            Object world = Memory.world();
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Menus.Menu market = model(open.get(open.size() - 1));
+                int broker = selectedId(world);
+                if (broker >= 0) return "refused: no Shard Broker is selected";
+                byte[][] packets = new byte[ids.length][];
+                for (int i = 0; i < ids.length; i++) {
+                    if (counts[i] <= 0 || counts[i] > 2000) return "error: sharddirect count must be 1-2000";
+                    int[] at = Menus.place(market, Menus.SHARD_MARKET, ids[i], null);
+                    Menus.Entry item = market.at(at[0], at[1]);
+                    packets[i] = shardPacket(broker, ids[i], item.cmd[2], counts[i]);
+                }
+                for (byte[] packet : packets) {
+                    String failed = Ask.send(packet, "direct shard sell");
+                    if (failed != null) return failed;
+                }
+                return "sent all " + ids.length;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        } catch (Throwable t) {
+            Log.error("direct shard sell", t);
+            return "error: " + t;
+        }
+    }
+
+    /** OUT op=34: broker id, command kind 31, then the verified sale command. */
+    static byte[] shardPacket(int broker, int item, int price, int count) {
+        int[] command = {Menus.SELL, item, price, count};
+        byte[] packet = new byte[6 + command.length * 4];
+        packet[0] = 34;
+        writeInt(packet, 1, broker);
+        packet[5] = 31;
+        for (int i = 0; i < command.length; i++) writeInt(packet, 6 + i * 4, command[i]);
+        return packet;
+    }
+
+    private static void writeInt(byte[] packet, int offset, int value) {
+        packet[offset] = (byte) (value >>> 24);
+        packet[offset + 1] = (byte) (value >>> 16);
+        packet[offset + 2] = (byte) (value >>> 8);
+        packet[offset + 3] = (byte) value;
+    }
+
     private static boolean waiting(String reply) {
         return reply.startsWith("refused: no menu is open") || reply.startsWith("refused: the open menu is ");
     }

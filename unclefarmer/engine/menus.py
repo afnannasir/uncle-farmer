@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
 SHARD_SELL_AGENT = 56           # agent-side market row -> sell -> quantity transaction
+SHARD_DIRECT_AGENT = 63         # agent sends a validated direct-sale plan from the open market
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
 MENU_POLL = 0.01              # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
@@ -154,6 +155,14 @@ def shard_sell_all(b: Bot, sales: list[tuple[int, int]]) -> bool:
         return False
     words = " ".join("%d %d" % pair for pair in sales)
     return b.a.send("shardsellall " + words).startswith("sold all ")
+
+
+def shard_sell_direct_all(b: Bot, sales: list[tuple[int, int]]) -> bool:
+    """Queue one verified Shard Market plan through the direct-sale command."""
+    if not sales or int(getattr(b, "agent_version", 0) or 0) < SHARD_DIRECT_AGENT:
+        return False
+    words = " ".join("%d %d" % pair for pair in sales)
+    return b.a.send("sharddirectall " + words).startswith("sent all ")
 
 
 def market_item_ids(b: Bot, names: list[str]) -> list[int] | None:

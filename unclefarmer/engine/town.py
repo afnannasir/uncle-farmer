@@ -462,7 +462,9 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
         before = transaction.before.get("arnebia", 0)
         attempted: set[str] = set()
         for _round in range(60):
-            if _round == 0:
+            # Most buyer sales leave this fixed menu open. If this game version closes it,
+            # reopen the same buyer before reading the next verified list.
+            if _round == 0 or not b.dialog().get("open"):
                 visit(b, role)
                 if not b.wait_dialog(3.0):
                     break
@@ -752,8 +754,10 @@ def _sell_shard_batch(b: Bot, todo: list[tuple[str, int]], transaction: Inventor
     if not open_market(todo[0][0]):
         return None
     ids = menus.market_item_ids(b, [name for name, _n in todo])
-    plan = list(zip(ids or [], [n for _name, n in todo]))
-    if ids is None or not menus.shard_sell_all(b, plan):
+    plan = [(item_id, min(remaining, TRADE_MOST))
+            for item_id, (_name, count) in zip(ids or [], todo)
+            for remaining in range(count, 0, -TRADE_MOST)]
+    if ids is None or not (menus.shard_sell_direct_all(b, plan) or menus.shard_sell_all(b, plan)):
         return None
     for name, n in todo:
         transaction.expect(name, -n)
@@ -1066,8 +1070,7 @@ def sell_shards_now(b: Bot) -> int:
     if left:
         b.log(_("not sold: {list}", list=", ".join(left)), speak=True)
     if done:
-        b.log(_("sold {list}; {n} arnebia came in", list=", ".join("%d %s" % (k, s) for s, k in done),
-                n=max(0, after.get(stats.ARNEBIA, 0) - before.get(stats.ARNEBIA, 0))), speak=True)
+        b.log(_("sold {list}", list=", ".join("%d %s" % (k, s) for s, k in done)), speak=True)
     return len(done)
 
 
