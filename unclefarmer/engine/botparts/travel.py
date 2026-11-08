@@ -217,8 +217,9 @@ class TravelMixin(Parts):
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell, transport=False, avoid=avoid,
                                bag=[], items=False)
         if legs is None:
+            rides, off = travel.ride_rules(self.p)
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
-                           transport=self.p.get("use_transport", True), avoid=avoid,
+                           transport=rides, avoid=avoid | off,
                            vip=self.p.get("vip", False), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
