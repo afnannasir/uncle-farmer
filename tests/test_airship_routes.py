@@ -325,3 +325,66 @@ def test_the_nearest_place_is_judged_with_the_rides_the_bot_will_take() -> None:
         want = min(candidates, key=lambda c: cost(c[0], c[2], c[3], airships))
         assert town.nearest(as_bot(Shopper(airships)), None, candidates) == want
     assert town.nearest(as_bot(Shopper(True)), None, candidates) != town.nearest(as_bot(Shopper(False)), None, candidates)
+
+
+# ================================================================ the two ride switches
+LOKI = 1162                             # Loki Union: an airship lands there, no walk reaches it
+MARIO = 1021                            # Mario Basin: an airship from central plains, or a walk
+AIRSHIPS: set[int] = {t["id"] for t in travel.transports() if t.get("kind") == "airship"}
+OTHERS: set[int] = {t["id"] for t in travel.transports() if t.get("kind") != "airship"}
+
+
+@pytest.mark.parametrize("use_transport, use_airships, rides_on, off", [
+    (True, True, True, set[int]()),
+    (False, True, True, OTHERS),          # cable cars and circles off: airships still in
+    (True, False, True, AIRSHIPS),        # airships off: cable cars and circles still in
+    (False, False, False, AIRSHIPS | OTHERS),
+])
+def test_each_switch_turns_off_only_its_own_rides(use_transport: bool, use_airships: bool,
+                                                  rides_on: bool, off: set[int]) -> None:
+    p = {"use_transport": use_transport, "use_airships": use_airships}
+    assert travel.ride_rules(p) == (rides_on, off)
+    assert travel.kept_off(p) == off
+    assert AIRSHIPS and OTHERS
+
+
+def plan_with(goal: int, **switches: bool) -> list[dict[str, Any]]:
+    """_plan_legs from central plains' square, with the profile switches given."""
+    t = Traveller(None)
+    t.p.update(switches)
+    plan_legs: Any = TravelMixin._plan_legs        # pyright: ignore[reportPrivateUsage]
+    legs: list[dict[str, Any]] = plan_legs(as_bot(t), CENTRAL, goal, None, set())
+    return legs
+
+
+def only_airships(legs: list[dict[str, Any]]) -> bool:
+    return bool(rides(legs)) and all(leg["kind"] == "airship" for leg in rides(legs))
+
+
+def test_walking_first_walks_where_a_walk_leads() -> None:
+    """"Walk whenever the maps connect on foot": Mario Basin is an airship from central plains,
+    but a walk leads there too, so the route is on foot."""
+    assert rides(costed(MARIO)[0])                       # the shortest way flies
+    legs = plan_with(MARIO, prefer_walking=True, use_transport=True, use_airships=True)
+    assert legs and not rides(legs)
+
+
+def test_walking_first_flies_where_no_walk_leads() -> None:
+    """No walk reaches Loki Union: walking first falls back to the full plan, airship included."""
+    assert costed(LOKI, transport=False)[0] is None
+    legs = plan_with(LOKI, prefer_walking=True, use_transport=True, use_airships=True)
+    assert "airship" in [leg["kind"] for leg in rides(legs)]
+
+
+@pytest.mark.parametrize("prefer_walking", [False, True])
+def test_cable_cars_off_still_flies_by_airship(prefer_walking: bool) -> None:
+    """Unticking "Use cable cars and teleport circles" used to plan with no rides at all."""
+    assert only_airships(plan_with(LOKI, prefer_walking=prefer_walking, use_transport=False, use_airships=True))
+
+
+def test_both_switches_off_means_no_ride() -> None:
+    from unclefarmer.engine.botparts.base import Stopped
+    with pytest.raises(Stopped):
+        plan_with(LOKI, use_transport=False, use_airships=False)        # Loki Union: only by airship
+    legs = plan_with(1081, use_transport=False, use_airships=False)
+    assert legs and not rides(legs)

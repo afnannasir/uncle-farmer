@@ -342,7 +342,9 @@ def test_nearest_passes_the_profile_to_the_planner(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(town.travel, "plan", plan)
     monkeypatch.setattr(knowledge, "service_npcs", stand_in(knowledge.service_npcs, lambda role: [(1, "A", 1, 1)]))
     town.nearest(as_bot(b), "role")
-    assert seen["transport"] is False and seen["vip"] is True
+    # "Use cable cars and teleport circles" off leaves the airships in ("Use airships" is on)
+    assert seen["transport"] is True and seen["vip"] is True
+    assert seen["avoid"] == {t["id"] for t in town.travel.transports() if t.get("kind") != "airship"}
     assert seen["hearth_home"] == "sunset square"
     assert seen["bag"] == [{"name": "Hearthstone", "count": 1}]
 

@@ -129,7 +129,7 @@ class TravelMixin(Parts):
         dst = int(dst)
         if dst == POISON_MAP and self.map_id() != POISON_MAP:
             self._refuse_unless_poison_immune()    # before anything moves (temporary: see POISON_MAP)
-        avoid: set[Any] = set(travel.kept_off(self.p))      # airships, when the profile says no
+        avoid: set[Any] = set(travel.kept_off(self.p))      # the rides the profile switches off
         was = getattr(self, "traveling", False)   # a chores run or a survey keeps it on round this
         self.traveling = True
         try:
@@ -217,8 +217,9 @@ class TravelMixin(Parts):
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell, transport=False, avoid=avoid,
                                bag=[], items=False)
         if legs is None:
+            rides, off = travel.ride_rules(self.p)
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
-                           transport=self.p.get("use_transport", True), avoid=avoid,
+                           transport=rides, avoid=avoid | off,
                            vip=self.p.get("vip", False), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
@@ -259,8 +260,8 @@ class TravelMixin(Parts):
             if not self.leave_instance():
                 avoid.add("leave")
         else:
-            self.walk_to(tuple(leg["cell"]))
-            return True
+            # "map": something moved us off this map on the last stretch - plan again from there
+            return self.walk_to(tuple(leg["cell"])) != "map"
         return False
 
     def wait_ride(self, here: int) -> int:
