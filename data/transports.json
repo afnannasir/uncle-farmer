@@ -279,7 +279,10 @@
    "note": "the atlas also has a walk-in exit 1122 -> 1128 at the east door",
    "team": false,
    "choose": [
-    "giant rock"
+    "go to giant rock.*costs"
+   ],
+   "choose_vip": [
+    "go to giant rock.*(vip|members) are free"
    ],
    "stand": [
     56,
