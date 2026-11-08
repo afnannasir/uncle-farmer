@@ -987,13 +987,15 @@ MAX_ENHANCE = 12          # +12 (Godbless) is the highest enhancement level
 # Equipment the Forger never enhances (players' word for it), by the game's own names (its english
 # language pack, more\equipment.txt; the diamond ring's name carries the "lzs" mark-up): the three
 # wedding rings, the Mist god Emblem, the four bags (soft pouch, hot bag, weightless sack, Realm
-# Pack: levels 40, 60, 80, 100) - and every medal (NOT_ENHANCEABLE_WORD): the pack has 26 of them
-# (attack medals one to five star, contribution, demon chasing, hunting, arena, tactical, tutor ...)
-# and no other equipment with "medal" in its name.
+# Pack: levels 40, 60, 80, 100), the two food-shaped commemorative badges (Five-Nuts Osmanthus Cake,
+# Crispy potato and vegetable pie) - and every medal and badge (NOT_ENHANCEABLE_WORD): the pack has
+# 30 medals (attack medals one to five star, contribution, demon chasing, hunting, arena, tactical,
+# tutor ...) and the War badges, and no other equipment with either word in its name.
 NOT_ENHANCEABLE = frozenset({"gold wedding ring", "platinum wedding ring", "diamond wedding ring",
                              "mist god emblem",
-                             "soft pouch", "hot bag", "weightless sack", "realm pack"})
-NOT_ENHANCEABLE_WORD = re.compile(r"\bmedal\b", re.I)
+                             "soft pouch", "hot bag", "weightless sack", "realm pack",
+                             "five-nuts osmanthus cake", "crispy potato and vegetable pie"})
+NOT_ENHANCEABLE_WORD = re.compile(r"\b(medal|badge)\b", re.I)
 
 
 def gear_name(name: str) -> str:
@@ -1003,8 +1005,8 @@ def gear_name(name: str) -> str:
 
 
 def enhanceable(name: str) -> bool:
-    """False for equipment the Forger never enhances (wedding rings, medals, the Mist god Emblem,
-    the bags), so it isn't offered."""
+    """False for equipment the Forger never enhances (wedding rings, medals and badges, the Mist god
+    Emblem, the bags), so it isn't offered."""
     shown = gear_name(name)
     return shown.lower() not in NOT_ENHANCEABLE and not NOT_ENHANCEABLE_WORD.search(shown)
 

@@ -1152,8 +1152,9 @@ def test_wedding_rings_are_never_offered_for_enhancing(name: str) -> None:
                                   "Contribution Medal", "Medal of the Demon Chasing girl",
                                   "Medal of the demon Hunting boy", "Gold medal of Hunting", "_Arena Blue medal",
                                   "Tutor Medal", "Mist god Emblem",
-                                  "soft pouch", "hot bag", "weightless sack", "Realm Pack"])
-def test_medals_the_emblem_and_the_bags_are_never_offered_for_enhancing(name: str) -> None:
+                                  "soft pouch", "hot bag", "weightless sack", "Realm Pack",
+                                  "Five-Nuts Osmanthus Cake", "Crispy potato and vegetable pie", "War badge 3"])
+def test_medals_badges_the_emblem_and_the_bags_are_never_offered_for_enhancing(name: str) -> None:
     assert not crafting.enhanceable(name)
 
 
