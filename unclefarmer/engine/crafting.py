@@ -59,6 +59,7 @@ from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
 from .. import atlas, knowledge
+from ..clock import clock_for
 from ..i18n import _
 from . import bagrules, menus, town
 from .bot import Bot, Stopped
@@ -77,6 +78,8 @@ RUNE = "Gem Protection Rune"
 SETTLE = 2.0             # seconds the bag is given to show a combine's result before it counts as none
 IDLE_ROUNDS = 2          # rounds in a row that change nothing, with gems still to combine, tried again
 MAX_ROUNDS = 1000        # a safety net only: every round that counts changed the bag, and buying is bounded
+OFFER_WAIT = 5.0         # seconds the Forger's page for an item is given to show what its next level takes
+MENU_POLL = 0.15         # seconds between reads of a menu that is still changing
 
 
 # ---------------------------------------------------------------------------------------- getting there
@@ -281,6 +284,19 @@ def tick(b: Bot, pattern: str, want: bool = True) -> bool:
 
 def spare_arnebia(b: Bot) -> int:
     return town.counts(b).get("arnebia", 0) - int(b.p.get("gem_keep_arnebia", 20000))
+
+
+def wait_text(b: Bot, pattern: str, seconds: float) -> tuple[re.Match[str] | None, str]:
+    """Read the open menu until its text matches pattern (the server sends the next page a moment
+    after a choice, and the page before stays up until then). (the match or None, the last text read)."""
+    rx = re.compile(pattern, re.I)
+    end = clock_for(b).time() + seconds
+    while True:
+        text = menu_text(b)
+        m = rx.search(text)
+        if m is not None or clock_for(b).time() >= end:
+            return m, text
+        b.sleep(MENU_POLL)
 
 
 def _num(rx: str, text: str, default: D, cast: Callable[[str], N] = int) -> N | D:
@@ -1137,10 +1153,17 @@ def _forger_offer(b: Bot, job: _EnhanceJob, item: str) -> tuple[str, None] | tup
     b.choose(re.escape(item.strip()))
     if not b.wait_dialog(3.0):
         return "next", None
-    text = menu_text(b)
+    # the item list stays up until the Forger's page for the item comes: wait for what it takes,
+    # never guess it (a guessed Level 1 would have the bot make the wrong crystals)
+    need, text = wait_text(b, r"requires\s+(\d+)\s+Level\s+(\d+)", OFFER_WAIT)
+    if need is None:
+        b.log(_("the Forger didn't say which crystal {item} needs - skipping it", item=item), speak=True)
+        b.log(_("on the Forger's screen: {screen}", screen=text or _("nothing")))
+        b.close_dialogs()
+        return "next", None
     o = _Offer(frm=_num(r"from\s+(\d+)\s+to", text, level or 0),
-               need_n=_num(r"requires\s+(\d+)\s+Level", text, 1),
-               need_lv=_num(r"requires\s+\d+\s+Level\s+(\d+)", text, 1),
+               need_n=int(need.group(1)),
+               need_lv=int(need.group(2)),
                kind="Weapon" if re.search(r"Weapon Enhance Crystal", text, re.I) else "Equipment",
                cost=_num(r"costs\s+(\d+)\s+arnebia", text, 0),
                chance=_num(r"([\d.]+)%\s*success rate", text, None, float),

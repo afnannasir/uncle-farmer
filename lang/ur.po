@@ -5120,6 +5120,9 @@ msgstr "arnebia share karne secret room ja rahe hain"
 msgid "on"
 msgstr "on"
 
+msgid "on the Forger's screen: {screen}"
+msgstr ""
+
 msgid "on this map"
 msgstr "is map par"
 
@@ -5562,6 +5565,9 @@ msgstr "Animal Shed par abhi khilane ko kuch nahi"
 
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
 msgstr "Forger ne {item} list nahi kiya (kya yeh equipped hai ya basta mein?)"
+
+msgid "the Forger didn't say which crystal {item} needs - skipping it"
+msgstr ""
 
 msgid "the Forger has no enhance equipment"
 msgstr "Forger ke paas enhance equipment nahi hai"

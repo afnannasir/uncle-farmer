@@ -4895,6 +4895,9 @@ msgstr ""
 msgid "on"
 msgstr ""
 
+msgid "on the Forger's screen: {screen}"
+msgstr ""
+
 msgid "on this map"
 msgstr ""
 
@@ -5323,6 +5326,9 @@ msgid "the Animal Shed has nothing to feed now"
 msgstr ""
 
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
+msgstr ""
+
+msgid "the Forger didn't say which crystal {item} needs - skipping it"
 msgstr ""
 
 msgid "the Forger has no enhance equipment"

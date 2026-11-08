@@ -19,7 +19,7 @@ from unclefarmer.engine import bagrules, crafting, town
 from unclefarmer.engine.botparts.base import Stopped
 from typing import Any
 from collections.abc import Callable
-from conftest import failing, as_bot, as_kind, returning, stand_in
+from conftest import Clock, failing, as_bot, as_kind, returning, stand_in
 from unclefarmer.atlaslib import MapModel
 
 
@@ -91,6 +91,7 @@ class Bot:
         self.a = Link(self)
         self.on_choose: Callable[[str], dict[str, Any] | None] | None = None
         self.on_key: Callable[[str], object] | None = None
+        self.clock: Clock | None = None           # clock_for(): the system clock unless a test sets one
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -1158,6 +1159,61 @@ def test_enhance_check_only_reports(monkeypatch: pytest.MonkeyPatch) -> None:
     assert any("Sniper Belt: +5 to +6 needs 1 Level 5 Equipment Enhance Crystal" in line for line in b.lines)
     assert fetched == [True]
     assert "start forging" not in b.chooses
+
+
+ITEM_LIST = "enhance equipment | Epic Sniper Belt;rare | enhancement level: 10"
+OFFER_PAGE = ("forging Epic Sniper Belt;rare , Enhancement level increased from 10 to 11, requires 1 Level 7 "
+              "Equipment Enhance Crystal, costs 9523 arnebia | 5.0% success rate")
+
+
+def _late_forger(monkeypatch: pytest.MonkeyPatch, pages: list[str]) -> tuple[Bot, Clock]:
+    """A Forger whose page for the item comes late: menu_text reads pages in turn (the last one
+    stays), on a clock that moves with the bot's sleeps."""
+    b = Bot(bag=[{"name": "Arnebia", "count": 100000}])
+    clock = Clock()
+    b.clock = clock
+
+    def sleep(seconds: float) -> None:
+        b.sleeps.append(seconds)
+        clock.advance(seconds)
+
+    b.sleep = sleep
+    b.choose = lambda pattern: b.chooses.append(pattern) or entry("x")
+    b.wait_dialog = lambda seconds=3.0, want_open=True: {"open": 1}
+    b.dialog = lambda: {"ok": True, "open": 1, "top": None}
+    monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
+    monkeypatch.setattr(crafting, "_item_row", stand_in(crafting._item_row, lambda b, name: (entry("x"), 10)))
+    reads = iter(pages)
+    last = [pages[0]]
+
+    def read() -> str:
+        last[0] = next(reads, last[0])
+        return last[0]
+
+    monkeypatch.setattr(crafting, "menu_text", stand_in(crafting.menu_text, lambda b: read()))
+    return b, clock
+
+
+def test_enhance_waits_for_a_late_forger_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    b, clock = _late_forger(monkeypatch, [ITEM_LIST, ITEM_LIST, OFFER_PAGE])
+    monkeypatch.setattr(crafting, "fetch_shards", stand_in(crafting.fetch_shards, returning(0)))
+    crafting.enhance(as_bot(b), {"items": ["Sniper Belt"], "where": "gang", "up_to": 12,
+                                 "make_crystals": False}, check_only=True)
+    assert any("Sniper Belt: +10 to +11 needs 1 Level 7 Equipment Enhance Crystal" in line for line in b.lines)
+    assert not any("Level 1" in line for line in b.lines)
+    assert clock.now - 1000.0 < crafting.OFFER_WAIT
+
+
+def test_enhance_skips_an_item_whose_forger_page_never_comes(monkeypatch: pytest.MonkeyPatch) -> None:
+    b, clock = _late_forger(monkeypatch, [ITEM_LIST])
+    monkeypatch.setattr(crafting, "stock_crystals", stand_in(crafting.stock_crystals, failing("no crystal level known")))
+    crafting.enhance(as_bot(b), {"items": ["Sniper Belt", "Iron Ring"], "where": "gang", "up_to": 12,
+                                 "make_crystals": True, "crystal_stock": 5})
+    skipped = [line for line in b.lines if "didn't say which crystal" in line]
+    assert len(skipped) == 2 and "Sniper Belt" in skipped[0] and "Iron Ring" in skipped[1]
+    assert sum(line == "on the Forger's screen: " + ITEM_LIST for line in b.lines) == 2
+    assert "start forging" not in b.chooses
+    assert clock.now - 1000.0 >= 2 * crafting.OFFER_WAIT
 
 
 def test_enhance_stops_without_spare_arnebia(monkeypatch: pytest.MonkeyPatch) -> None:
