@@ -94,6 +94,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.maxmp = 0                # max MP, from the last character sheet seen
         self.mp_peak = 0              # highest MP read this run: the maximum until a sheet is seen
         self.load_share = None        # bag load percent at the last sheet reading
+        self.load_seen = []           # (sheet time, kills, load) near the full mark: bag_stalled's history
         self.last_popup_check = 0.0
         self.tally = None             # stats.Tally: what this run earned, when the runner keeps one
         self.paused = threading.Event()   # the Pause button or a trusted player's "pause": hold still until cleared
