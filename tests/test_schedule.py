@@ -132,6 +132,98 @@ def test_a_time_more_than_late_old_is_missed_even_with_the_app_open_from_then(tm
     assert start.calls == []
 
 
+# ================================================================ summer time
+HOUR = dt.timedelta(hours=1)
+
+
+class CentralEurope2026(dt.tzinfo):
+    """Central European time for 2026 only, as PEP 495 asks (fold included): +1, summer time +2
+    from 29 March (02:00 jumps to 03:00) to 25 October (03:00 goes back to 02:00). The tests set
+    it as schedule.ZONE, so they never depend on the computer's own zone."""
+    SPRING, FALL = dt.datetime(2026, 3, 29, 2), dt.datetime(2026, 10, 25, 2)       # local, the hour that is odd
+    START, END = dt.datetime(2026, 3, 29, 1), dt.datetime(2026, 10, 25, 1)         # the same, in UTC
+
+    def utcoffset(self, dt_: dt.datetime | None) -> dt.timedelta:
+        assert dt_ is not None
+        local = dt_.replace(tzinfo=None)
+        if self.SPRING <= local < self.SPRING + HOUR:           # the hour the clock skips
+            summer = bool(dt_.fold)
+        elif self.FALL <= local < self.FALL + HOUR:             # the hour the clock shows twice
+            summer = not dt_.fold
+        else:
+            summer = self.SPRING < local < self.FALL
+        return 2 * HOUR if summer else HOUR
+
+    def dst(self, dt_: dt.datetime | None) -> dt.timedelta:
+        return self.utcoffset(dt_) - HOUR
+
+    def tzname(self, dt_: dt.datetime | None) -> str:
+        return "CEST" if self.dst(dt_) else "CET"
+
+    def fromutc(self, dt_: dt.datetime) -> dt.datetime:
+        u = dt_.replace(tzinfo=None)
+        if self.START <= u < self.END:
+            return (u + 2 * HOUR).replace(tzinfo=self)
+        return (u + HOUR).replace(tzinfo=self, fold=int(self.END <= u < self.END + HOUR))
+
+
+@pytest.fixture
+def central(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(schedule, "ZONE", CentralEurope2026())
+
+
+def spring(hour: int, minute: int = 0) -> dt.datetime:
+    return dt.datetime(2026, 3, 29, hour, minute)
+
+
+def fall(hour: int, minute: int = 0) -> dt.datetime:
+    return dt.datetime(2026, 10, 25, hour, minute)
+
+
+@pytest.mark.usefixtures("central")
+def test_a_time_the_clock_skips_is_the_first_minute_after_the_gap() -> None:
+    assert schedule.real(spring(2, 30)) == spring(3)
+    assert schedule.real(spring(2, 0)) == spring(3)
+    assert schedule.real(spring(2, 59)) == spring(3)
+    assert schedule.real(spring(1, 59)) == spring(1, 59)
+    assert schedule.real(spring(3, 0)) == spring(3, 0)
+    assert schedule.real(fall(2, 30)) == fall(2, 30)                # shown twice: left as it is
+    assert schedule.real(dt.datetime(2026, 3, 30, 2, 30)) == dt.datetime(2026, 3, 30, 2, 30)
+
+
+@pytest.mark.usefixtures("central")
+@pytest.mark.parametrize("time", ["02:00", "02:30", "02:59"])
+def test_a_schedule_in_the_skipped_hour_runs_when_the_clock_comes_out_of_it(tmp_path: Path, time: str) -> None:
+    sch, start = fresh(tmp_path), Starts()
+    s = sch.add(daily(time), dt.datetime(2026, 3, 28, 12, 0))
+    assert schedule.next_due(s, spring(1, 0)) == spring(3)
+    said = run_ticks(sch, start, [spring(1, 59), spring(3, 0), spring(3, 3)])   # the clock goes 01:59 -> 03:00
+    assert [due for _i, due in start.calls] == [spring(3)]
+    assert outcomes(s) == [STARTED] and not any("missed" in line for line in said)
+    hour, minute = schedule.parse_time(time)
+    run_ticks(sch, start, [dt.datetime(2026, 3, 30, hour, minute)])
+    assert start.calls[-1][1] == dt.datetime(2026, 3, 30, hour, minute)          # the next day as set
+
+
+@pytest.mark.usefixtures("central")
+def test_a_once_schedule_in_the_skipped_hour_runs_too(tmp_path: Path) -> None:
+    sch, start = fresh(tmp_path), Starts()
+    sch.add({**daily("02:15"), "repeat": schedule.ONCE, "date": "2026-03-29"}, dt.datetime(2026, 3, 28, 12, 0))
+    run_ticks(sch, start, [spring(1, 59), spring(3, 0)])
+    assert [due for _i, due in start.calls] == [spring(3)]
+
+
+@pytest.mark.usefixtures("central")
+def test_the_hour_the_clock_shows_twice_runs_a_schedule_once(tmp_path: Path) -> None:
+    sch, start = fresh(tmp_path), Starts()
+    s = sch.add(daily("02:30"), dt.datetime(2026, 10, 24, 12, 0))
+    first = [fall(1, 45), fall(2, 29), fall(2, 30), fall(2, 31), fall(2, 59)]
+    again = [fall(2, 0), fall(2, 29), fall(2, 30), fall(2, 31), fall(2, 59), fall(3, 0)]   # 03:00 went back to 02:00
+    run_ticks(sch, start, first + again)
+    assert [due for _i, due in start.calls] == [fall(2, 30)]
+    assert outcomes(s) == [STARTED]
+
+
 # ================================================================ busy, missing, broken
 def test_a_busy_game_makes_it_wait_and_it_starts_once_the_game_is_free(tmp_path: Path) -> None:
     sch = fresh(tmp_path)

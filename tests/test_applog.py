@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 
 import pytest
@@ -17,6 +18,7 @@ from collections.abc import Iterator
 @pytest.fixture(autouse=True)
 def fresh(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     monkeypatch.setattr(applog, "_warned", False)
+    monkeypatch.setattr(applog, "_rotate_after", {})
     yield
     applog.configure()
 
@@ -63,6 +65,58 @@ def test_rotation_keeps_the_set_number_of_old_files(tmp_path: Path, monkeypatch:
     assert not (tmp_path / (base.name + ".3")).exists()
     assert "line number 4" in base.read_text(encoding="utf-8")
     assert "line number 3" in (tmp_path / (base.name + ".1")).read_text(encoding="utf-8")
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="a file held open can't be renamed on Windows only")
+def test_a_rotation_that_fails_still_writes_the_line_and_is_tried_again_later(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
+    applog.configure({"log_max_mb": 0.00001, "log_backups": 3})     # about ten bytes
+    base = tmp_path / (time.strftime("%Y-%m-%d") + ".log")
+    applog.write("first line, long enough to be rotated")
+    applog.write("second line")                                     # rotates the first away
+    old = tmp_path / (base.name + ".1")
+    assert "first line" in old.read_text(encoding="utf-8")
+    with open(base, encoding="utf-8"):                              # another program holds it: no rename
+        applog.write("third line, written while the file is held")
+        applog.write("fourth line, before the retry")
+    assert "third line" in base.read_text(encoding="utf-8")
+    assert "fourth line" in base.read_text(encoding="utf-8")
+    assert not (tmp_path / (base.name + ".3")).exists()             # the failed tries pushed nothing out
+    assert capsys.readouterr().err == ""                            # a failed rotation isn't a failed write
+    applog.write("fifth line, still waiting for the retry")
+    assert not (tmp_path / (base.name + ".3")).exists()
+    monkeypatch.setattr(applog, "_rotate_after", {})               # the retry pause is over
+    applog.write("sixth line, after the file was let go")
+    assert "sixth line" in base.read_text(encoding="utf-8")
+    assert "fifth line" in old.read_text(encoding="utf-8")
+    assert "first line" in (tmp_path / (base.name + ".2")).read_text(encoding="utf-8")
+    assert not (tmp_path / (base.name + ".3")).exists()
+
+
+def test_a_rotation_waits_its_pause_before_it_is_tried_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(applog.paths, "LOGS", str(tmp_path))
+    applog.configure({"log_max_mb": 0.00001, "log_backups": 2})
+    tried: list[str] = []
+    real = os.replace
+
+    def locked(src: str, dst: str) -> None:
+        tried.append(src)
+        raise PermissionError(13, "in use by another program", src)
+    monkeypatch.setattr(applog.os, "replace", locked)
+    clock = [100.0]
+    monkeypatch.setattr(applog.time, "monotonic", lambda: clock[0])
+    base = tmp_path / (time.strftime("%Y-%m-%d") + ".log")
+    applog.write("first line, long enough to be rotated")
+    applog.write("second line")
+    applog.write("third line")
+    assert len(tried) == 1                                          # once, then the pause
+    assert base.read_text(encoding="utf-8").count("line") == 3
+    clock[0] += applog.ROTATE_RETRY
+    monkeypatch.setattr(applog.os, "replace", real)
+    applog.write("fourth line")
+    assert "third line" in (tmp_path / (base.name + ".1")).read_text(encoding="utf-8")
+    assert base.read_text(encoding="utf-8") == "fourth line\n"
 
 
 def test_no_rotation_when_the_size_is_zero(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
