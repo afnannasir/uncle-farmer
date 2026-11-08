@@ -344,10 +344,9 @@ def ride_rules(p: Mapping[str, Any]) -> tuple[bool, set[int]]:
 
 
 def kept_off(p: Mapping[str, Any]) -> set[int]:
-    """The transports a profile leaves out: every airship when "Use airships" is off."""
-    if p.get("use_airships", True):
-        return set()
-    return {t["id"] for t in transports() if t.get("kind") == "airship"}
+    """The transports a profile leaves out: the airships when "Use airships" is off, every other
+    ride when "Use cable cars and teleport circles" is (ride_rules)."""
+    return ride_rules(p)[1]
 
 
 def arnebia_in(bag: Sequence[Row] | None) -> int | None:

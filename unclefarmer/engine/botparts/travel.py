@@ -129,7 +129,7 @@ class TravelMixin(Parts):
         dst = int(dst)
         if dst == POISON_MAP and self.map_id() != POISON_MAP:
             self._refuse_unless_poison_immune()    # before anything moves (temporary: see POISON_MAP)
-        avoid: set[Any] = set(travel.kept_off(self.p))      # airships, when the profile says no
+        avoid: set[Any] = set(travel.kept_off(self.p))      # the rides the profile switches off
         was = getattr(self, "traveling", False)   # a chores run or a survey keeps it on round this
         self.traveling = True
         try:

@@ -344,6 +344,7 @@ def test_each_switch_turns_off_only_its_own_rides(use_transport: bool, use_airsh
                                                   rides_on: bool, off: set[int]) -> None:
     p = {"use_transport": use_transport, "use_airships": use_airships}
     assert travel.ride_rules(p) == (rides_on, off)
+    assert travel.kept_off(p) == off
     assert AIRSHIPS and OTHERS
 
 
@@ -380,3 +381,10 @@ def test_cable_cars_off_still_flies_by_airship(prefer_walking: bool) -> None:
     """Unticking "Use cable cars and teleport circles" used to plan with no rides at all."""
     assert only_airships(plan_with(LOKI, prefer_walking=prefer_walking, use_transport=False, use_airships=True))
 
+
+def test_both_switches_off_means_no_ride() -> None:
+    from unclefarmer.engine.botparts.base import Stopped
+    with pytest.raises(Stopped):
+        plan_with(LOKI, use_transport=False, use_airships=False)        # Loki Union: only by airship
+    legs = plan_with(1081, use_transport=False, use_airships=False)
+    assert legs and not rides(legs)
