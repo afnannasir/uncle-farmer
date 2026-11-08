@@ -5121,7 +5121,7 @@ msgid "on"
 msgstr "on"
 
 msgid "on the Forger's screen: {screen}"
-msgstr ""
+msgstr "Forger ki screen par: {screen}"
 
 msgid "on this map"
 msgstr "is map par"
@@ -5568,6 +5568,7 @@ msgstr "Forger ne {item} list nahi kiya (kya yeh equipped hai ya basta mein?)"
 
 msgid "the Forger didn't say which crystal {item} needs - skipping it"
 msgstr ""
+"Forger ne nahi bataya ke {item} ko kaun sa crystal chahiye - ise chhor rahe hain"
 
 msgid "the Forger has no enhance equipment"
 msgstr "Forger ke paas enhance equipment nahi hai"
