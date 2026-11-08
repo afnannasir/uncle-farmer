@@ -187,3 +187,18 @@ def test_each_bot_gets_its_own_mutable_state() -> None:
     assert b1.held is not b2.held
     assert b1.requests is not b2.requests
     assert b1.paused is not b2.paused
+
+
+# ------------------------------------------------------------------ the first bag check
+@pytest.mark.parametrize("load", [97, 98, 99.5])
+def test_the_first_bag_check_near_full_reads_a_clean_load_history(monkeypatch: pytest.MonkeyPatch,
+                                                                   load: float) -> None:
+    """The run's first sheet already shows 97% to under 100% load (bag_full_at at its default
+    100): bag_stalled reads the load history before anything else wrote it, so the real Bot must
+    start with an empty one (it crashed here with AttributeError: 'load_seen')."""
+    b, *_ = make()
+    sheet = {"load": load, "maxload": 100}
+    monkeypatch.setattr(b, "refresh_sheet", lambda force=False: sheet)
+    assert b.bag_check() is False
+    assert b.load_share == load
+    assert b.load_seen == [(b.last_sheet, 0, load)]
