@@ -984,6 +984,20 @@ def _item_row(b: Bot, name: str) -> tuple[Entry | None, int | None]:
 # Forger's menu each try; this is for the window's notes.
 CRYSTAL_LEVELS = ((100, 8), (90, 7), (80, 6), (70, 5), (60, 4), (45, 3), (30, 2), (15, 1))
 MAX_ENHANCE = 12          # +12 (Godbless) is the highest enhancement level
+# Equipment the Forger never enhances: the three wedding rings, by the game's own names (its
+# english language pack, more\equipment.txt; the diamond ring's name carries the "lzs" mark-up).
+NOT_ENHANCEABLE = frozenset({"gold wedding ring", "platinum wedding ring", "diamond wedding ring"})
+
+
+def gear_name(name: str) -> str:
+    """An equipment name as the player reads it: the game's "lzs" mark-up taken out
+    ("lzs0lzs2243lzs1lzsdiamond wedding ring" -> "diamond wedding ring")."""
+    return re.sub(r"(lzs\d*)+", "", name).strip()
+
+
+def enhanceable(name: str) -> bool:
+    """False for equipment the Forger never enhances (the wedding rings), so it isn't offered."""
+    return gear_name(name).lower() not in NOT_ENHANCEABLE
 
 
 def _crystals(b: Bot, kind: str, level: int) -> int:
@@ -1101,7 +1115,8 @@ def enhance(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
                       protect_from=int(cfg.get("protect_from", 8)), max_fails=int(cfg.get("max_fails", 5)),
                       making=cfg.get("make_crystals", True), stock=int(cfg.get("crystal_stock", 0)),
                       refill=int(cfg.get("crystal_refill", 10)))
-    items: list[str] = cfg.get("items", [])
+    # a wedding ring ticked before the list stopped offering one is left out, not walked to the Forger for
+    items: list[str] = [i for i in cfg.get("items", []) if enhanceable(i)]
     for item in items:
         fails = 0
         while not b.stop_event.is_set():
