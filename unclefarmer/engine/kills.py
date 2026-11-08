@@ -30,6 +30,8 @@ class KillTracker:
     def __init__(self, link: JsonLink) -> None:
         self.a = link
         self.since = 0          # agent clock (ms) of the newest cast or death read
+        self.read = False       # the first update only notes the agent's clock (see update)
+        self.begun = 0          # ms the run began (the bot's results): no death before it is its kill
         self.hit: dict[int, int] = {}       # monster id -> agent ms of our last hit on it
         self.live: bool | None = None       # None until read; False: the agent reports no deaths (before v30)
         self.seen: set[tuple[Any, ...]] = set()   # (kind, id, ms) read at the newest millisecond, so a reread skips them
@@ -42,7 +44,12 @@ class KillTracker:
     def update(self, me_id: int) -> list[int]:
         """Read what happened since the last call: the ids of monsters that died with a hit of
         ours on them, each once. [] while the agent can't tell (self.live False). Someone else's
-        strikes (agent 44) go to self.struck, our pets' to self.pet_struck."""
+        strikes (agent 44) go to self.struck, our pets' to self.pet_struck.
+
+        The agent keeps the casts and deaths of before this tracker's run (the last run's, or a
+        fight played by hand): the next run counted the last one's kills as its own (kills=10
+        ended after 3). So the first call reads the agent's clock and starts from it: everything
+        up to then is skipped, and it returns no deaths."""
         self.fresh = []
         self.died = []
         # from one millisecond back: a cast or death noted in the same millisecond as the newest one
@@ -50,6 +57,11 @@ class KillTracker:
         r = self.a.json("casts %d" % (self.since - 1))
         if not jsonio.is_object(r) or "error" in r:
             return []
+        before = -1
+        if not self.read:
+            self.read = True
+            before = int(r.get("now") or 0)
+            self.since = max(self.since, before)
         newest = self.since
         seen: set[tuple[Any, ...]] = set()
         casts: list[dict[str, Any]] = r.get("casts", [])
@@ -57,7 +69,7 @@ class KillTracker:
             newest = max(newest, c["t"])
             key = ("c", c.get("caster"), c.get("seq"), c["t"])
             seen.add(key)
-            if key in self.seen:
+            if key in self.seen or c["t"] <= before:
                 continue
             self.fresh.append(c)
             if c.get("caster") != me_id:
@@ -77,13 +89,13 @@ class KillTracker:
         for mid, t in deaths:
             newest = max(newest, t)
             seen.add(("d", mid, t))
-            if ("d", mid, t) in self.seen:
+            if ("d", mid, t) in self.seen or t <= before:
                 continue
             self.died.append(mid)
             self.struck.pop(mid, None)          # monster ids are reused: the next life starts clean
             pet = self.pet_struck.pop(mid, None)
             last = self.hit.pop(mid, None)
-            if any(s is not None and t - s <= KEEP * 1000 for s in (last, pet)):
+            if t >= self.begun and any(s is not None and t - s <= KEEP * 1000 for s in (last, pet)):
                 out.append(mid)
         self.since = newest
         self.seen = {k for k in seen if k[-1] == newest}
