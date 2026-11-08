@@ -44,18 +44,54 @@ class InstanceLock:
         self._kernel32: Any = None
 
 
-def focus_existing(title: str = "Uncle Farmer") -> bool:
-    """Bring the already running window to the front, if Windows can find it."""
-    if sys.platform != "win32":
+MARK = "UncleFarmer.MainWindow"     # a property on the main window: found whatever language its title is in
+TITLE = "Uncle Farmer"              # the English title, for a copy from before the mark
+
+
+def mark_window(hwnd: int, mark: str = MARK) -> bool:
+    """Mark the main window (its handle) so a second launch finds it: its title is translated,
+    and the second launch looks before it has read the language."""
+    if sys.platform != "win32" or not hwnd:
         return False
     user32 = ctypes.WinDLL("user32", use_last_error=True)
+    user32.SetPropW.argtypes = (ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_void_p)
+    user32.SetPropW.restype = ctypes.c_bool
+    return bool(user32.SetPropW(hwnd, mark, 1))
+
+
+def find_existing(mark: str = MARK, title: str = TITLE) -> int | None:
+    """The handle of the running copy's main window: the one with the mark, else (a copy from
+    before the mark) the one with the English title. None when Windows has neither."""
+    if sys.platform != "win32":
+        return None
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    user32.GetPropW.argtypes = (ctypes.c_void_p, ctypes.c_wchar_p)
+    user32.GetPropW.restype = ctypes.c_void_p
     user32.FindWindowW.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p)
     user32.FindWindowW.restype = ctypes.c_void_p
+    found: list[int] = []
+
+    def each(hwnd: int | None, _param: int | None) -> int:
+        if hwnd and user32.GetPropW(hwnd, mark):
+            found.append(hwnd)
+            return 0                     # found: stop
+        return 1
+    enum_proc = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p)    # WNDENUMPROC
+    user32.EnumWindows.argtypes = (enum_proc, ctypes.c_void_p)
+    user32.EnumWindows(enum_proc(each), None)
+    if found:
+        return found[0]
+    return user32.FindWindowW(None, title) or None
+
+
+def focus_existing(mark: str = MARK, title: str = TITLE) -> bool:
+    """Bring the already running window to the front, if Windows can find it."""
+    hwnd = find_existing(mark, title)
+    if hwnd is None:
+        return False
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
     user32.ShowWindow.argtypes = (ctypes.c_void_p, ctypes.c_int)
     user32.SetForegroundWindow.argtypes = (ctypes.c_void_p,)
-    hwnd = user32.FindWindowW(None, title)
-    if not hwnd:
-        return False
     user32.ShowWindow(hwnd, 9)           # SW_RESTORE
     user32.SetForegroundWindow(hwnd)
     return True

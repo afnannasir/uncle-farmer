@@ -87,6 +87,7 @@ def _start(boot: Lifecycle) -> wx.App | None:
         from .gui.main import MainFrame
         frame = MainFrame()
         frame.Show()
+        instance.mark_window(frame.GetHandle())     # what a second launch looks for (focus_existing)
     boot.note("main loop starting")
     return app
 
