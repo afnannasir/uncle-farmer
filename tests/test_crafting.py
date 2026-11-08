@@ -1147,6 +1147,16 @@ def test_wedding_rings_are_never_offered_for_enhancing(name: str) -> None:
     assert not crafting.enhanceable(name)
 
 
+# names as the game's english pack writes them (more\equipment.txt)
+@pytest.mark.parametrize("name", ["One Star Attack Medal", "Two Star Attack Medal", "Five Star Attack Medal",
+                                  "Contribution Medal", "Medal of the Demon Chasing girl",
+                                  "Medal of the demon Hunting boy", "Gold medal of Hunting", "_Arena Blue medal",
+                                  "Tutor Medal", "Mist god Emblem",
+                                  "soft pouch", "hot bag", "weightless sack", "Realm Pack"])
+def test_medals_the_emblem_and_the_bags_are_never_offered_for_enhancing(name: str) -> None:
+    assert not crafting.enhanceable(name)
+
+
 @pytest.mark.parametrize("name", ["Horror Belt", "Terrifying Scepter", "Horror ring (left)"])
 def test_ordinary_gear_is_offered_for_enhancing(name: str) -> None:
     assert crafting.enhanceable(name)

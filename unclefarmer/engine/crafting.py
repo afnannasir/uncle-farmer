@@ -984,9 +984,16 @@ def _item_row(b: Bot, name: str) -> tuple[Entry | None, int | None]:
 # Forger's menu each try; this is for the window's notes.
 CRYSTAL_LEVELS = ((100, 8), (90, 7), (80, 6), (70, 5), (60, 4), (45, 3), (30, 2), (15, 1))
 MAX_ENHANCE = 12          # +12 (Godbless) is the highest enhancement level
-# Equipment the Forger never enhances: the three wedding rings, by the game's own names (its
-# english language pack, more\equipment.txt; the diamond ring's name carries the "lzs" mark-up).
-NOT_ENHANCEABLE = frozenset({"gold wedding ring", "platinum wedding ring", "diamond wedding ring"})
+# Equipment the Forger never enhances (players' word for it), by the game's own names (its english
+# language pack, more\equipment.txt; the diamond ring's name carries the "lzs" mark-up): the three
+# wedding rings, the Mist god Emblem, the four bags (soft pouch, hot bag, weightless sack, Realm
+# Pack: levels 40, 60, 80, 100) - and every medal (NOT_ENHANCEABLE_WORD): the pack has 26 of them
+# (attack medals one to five star, contribution, demon chasing, hunting, arena, tactical, tutor ...)
+# and no other equipment with "medal" in its name.
+NOT_ENHANCEABLE = frozenset({"gold wedding ring", "platinum wedding ring", "diamond wedding ring",
+                             "mist god emblem",
+                             "soft pouch", "hot bag", "weightless sack", "realm pack"})
+NOT_ENHANCEABLE_WORD = re.compile(r"\bmedal\b", re.I)
 
 
 def gear_name(name: str) -> str:
@@ -996,8 +1003,10 @@ def gear_name(name: str) -> str:
 
 
 def enhanceable(name: str) -> bool:
-    """False for equipment the Forger never enhances (the wedding rings), so it isn't offered."""
-    return gear_name(name).lower() not in NOT_ENHANCEABLE
+    """False for equipment the Forger never enhances (wedding rings, medals, the Mist god Emblem,
+    the bags), so it isn't offered."""
+    shown = gear_name(name)
+    return shown.lower() not in NOT_ENHANCEABLE and not NOT_ENHANCEABLE_WORD.search(shown)
 
 
 def _crystals(b: Bot, kind: str, level: int) -> int:
