@@ -130,7 +130,8 @@ final class StateServer implements Runnable {
         }
     }
 
-    private static ServerSocket bind() {
+    /** The first free port of ours, on 127.0.0.1 only (AgentTests checks it never listens wider). */
+    static ServerSocket bind() {
         for (int port = FIRST_PORT; port <= LAST_PORT; port++) {
             try {
                 return new ServerSocket(port, 8, InetAddress.getByName("127.0.0.1"));

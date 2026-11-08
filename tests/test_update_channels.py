@@ -214,9 +214,20 @@ def test_switching_channels_switches_the_source(github: GitHub, copy: Path) -> N
 @pytest.mark.parametrize("newer, older", [
     ("0.9.0-dev.57", "0.9.0"), ("0.10.0", "0.9.0-dev.57"), ("0.9.0-dev.58", "0.9.0-dev.57"),
     ("0.9.0-dev.100", "0.9.0-dev.99"), ("1.0.0-dev.1", "0.99.0-dev.500"),
+    ("1.0.1-dev.3", "1.0.1-dev.2"), ("1.0.2-dev.1", "1.0.1"), ("1.0.1-dev.3", "1.0.1"),
+    ("1.0.2", "1.0.1-dev.3"), ("1.0.2", "1.0.1-dev.129"), ("1.1.0", "1.0.1-dev.129"),
 ])
 def test_dev_builds_come_after_their_release_and_before_the_next(newer: str, older: str) -> None:
+    # dev keeps the last release's version and CI adds its run number: 1.0.1-dev.129 was built
+    # after 1.0.1 was released, so it is newer than 1.0.1 and older than 1.0.2 (not semver's order)
     assert updater.is_newer(newer, older) and not updater.is_newer(older, newer)
+
+
+@pytest.mark.parametrize("version, same", [
+    ("1.0.1", "1.0.1"), ("v1.0.1", "1.0.1"), ("1.0.1-dev.3", "1.0.1-dev.3"),
+])
+def test_a_version_is_never_newer_than_itself(version: str, same: str) -> None:
+    assert not updater.is_newer(version, same) and not updater.is_newer(same, version)
 
 
 def test_a_copy_without_build_json_is_its_own_version(copy: Path) -> None:
@@ -263,6 +274,21 @@ def test_back_on_master_a_dev_build_waits_for_a_newer_stable_release(github: Git
     github.latest = stable("%d.%d.0" % (major, minor + 1))
     newer = updater.check(update_channel="master")
     assert newer is not None and not updater.is_dev(newer["version"])
+
+
+def test_a_dev_build_on_master_is_offered_the_next_patch_release(github: GitHub, copy: Path) -> None:
+    updater.write_build(str(copy), BASE + "-dev.129", "dev")
+    major, minor, patch = updater.version_tuple(BASE)[:3]
+    github.latest = stable("%d.%d.%d" % (major, minor, patch + 1))
+    newer = updater.check(update_channel="master")
+    assert newer is not None and newer["version"] == "%d.%d.%d" % (major, minor, patch + 1)
+
+
+def test_a_release_switched_to_dev_is_offered_the_builds_made_after_it(github: GitHub, copy: Path) -> None:
+    assert updater.installed_version() == BASE                # a stable copy, no build.json
+    github.releases = [dev(BASE + "-dev.129"), dev(BASE + "-dev.125")]
+    newer = updater.check(update_channel="dev")
+    assert newer is not None and newer["version"] == BASE + "-dev.129"
 
 
 def test_the_channel_shapes_are_the_ci_builds() -> None:

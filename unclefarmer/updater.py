@@ -117,6 +117,9 @@ def frozen() -> bool:
 
 
 def version_tuple(v: str | None) -> tuple[int, ...]:
+    """The numbers to compare: 1.0.1 is (1, 0, 1), a dev build 1.0.1-dev.129 is (1, 0, 1, 129).
+    A dev build is made from dev AFTER its release (dev keeps the last release's version), so it
+    sorts after 1.0.1 and before 1.0.2, not before 1.0.1 as a semver pre-release would."""
     return tuple(int(n) for n in re.findall(r"\d+", v or "")[:4]) or (0,)
 
 

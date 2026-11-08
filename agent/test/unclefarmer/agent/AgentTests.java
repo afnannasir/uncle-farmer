@@ -45,6 +45,7 @@ public final class AgentTests {
         chatQueueCutsLongTextAtSpaces();
         directShardPacketUsesTheVerifiedLayout();
         commandsAnswerWithoutTheGame();
+        theStateServerListensOnLoopbackOnly();
         theLoggedShopAndMarketMenusAreRecognised();
         aVerifiedIndexIsChosenOnlyForItsItem();
         aChangedOrUnexpectedMenuIsRefused();
@@ -397,6 +398,22 @@ public final class AgentTests {
         boolean[] unarmed = {false};
         eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
                 "pick needs arm");
+    }
+
+    /** The state server takes keys and chat from whoever connects, so it must never be reachable
+     *  from another machine: it binds 127.0.0.1 and nothing wider (not 0.0.0.0, not a LAN address). */
+    private static void theStateServerListensOnLoopbackOnly() throws Exception {
+        java.net.ServerSocket server = StateServer.bind();
+        check(server != null, "the state server found a free port in its range");
+        if (server == null) return;
+        try {
+            eq(server.getInetAddress().getHostAddress(), "127.0.0.1", "the state server binds 127.0.0.1");
+            check(server.getInetAddress().isLoopbackAddress(), "a loopback address, nothing off this machine");
+            check(server.getLocalPort() >= StateServer.FIRST_PORT && server.getLocalPort() <= StateServer.LAST_PORT,
+                    "a port in the agent's own range");
+        } finally {
+            server.close();
+        }
     }
 
     private static void directShardPacketUsesTheVerifiedLayout() {
