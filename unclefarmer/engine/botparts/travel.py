@@ -259,8 +259,8 @@ class TravelMixin(Parts):
             if not self.leave_instance():
                 avoid.add("leave")
         else:
-            self.walk_to(tuple(leg["cell"]))
-            return True
+            # "map": something moved us off this map on the last stretch - plan again from there
+            return self.walk_to(tuple(leg["cell"])) != "map"
         return False
 
     def wait_ride(self, here: int) -> int:

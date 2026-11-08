@@ -233,9 +233,18 @@ class WalkingMixin(Parts):
         # Both direction keys at once, across open ground on the slant (walk_diag) - unless the
         # profile turns it off, or this walk already got stuck once: then one axis at a time.
         diagonal = self.p.get("walk_diagonal", True)
+        replanned = False     # planned again once from a start cell the map calls a wall
         while attempt < 4:
+            # Moved on to another map (an exit crossed, a teleport, the game's own move): this
+            # map's walls say nothing about where we stand now, so let the caller plan from there.
+            if self.map_id() != mid:
+                self.stuck_in_a_row = 0
+                return "map"
             if getattr(self, "traveling", False) and not self.in_fight:
                 beasts.ensure(as_bot(self), beasts.TRAVEL)   # back on the mount once a fight is behind us
+                if self.map_id() != mid:
+                    self.stuck_in_a_row = 0
+                    return "map"
             me = self.me()
             here = (int(me["x"]), int(me["y"]))
             if not m.ok(*here):
@@ -246,7 +255,16 @@ class WalkingMixin(Parts):
             # stand: plan round them, read afresh each time the walk is planned again (the survey
             # once stood stuck behind a smithy's three NPCs).
             plan = self._obstacle_map(m, cell, here)
-            hops = self._walk_hops(m, plan, mid, here, cell, diagonal)
+            hops = self._walk_hops(m, plan, mid, here, cell, diagonal, replan=not replanned)
+            if hops is None:
+                # No way out of a wall cell: the position was most likely read on the map we just
+                # came to (a false "no way" after an exit crossing). Wait for the map change to
+                # finish, then plan once more from a fresh reading.
+                replanned = True
+                if self.settled_map() != mid:
+                    self.stuck_in_a_row = 0
+                    return "map"
+                continue
             stuck = self._walk_hops_go(hops, diagonal, mid if map_change else None, near)
             if stuck in ("map", "near"):
                 self.stuck_in_a_row = 0
@@ -315,8 +333,10 @@ class WalkingMixin(Parts):
 
     @staticmethod
     def _walk_hops(m: Any, plan: Any, mid: int, here: tuple[int, int], cell: tuple[int, int],
-                   diagonal: bool) -> list[tuple[int, int]]:
-        """The cells to walk through: straight there when the way is open, else round the walls."""
+                   diagonal: bool, replan: bool = False) -> list[tuple[int, int]] | None:
+        """The cells to walk through: straight there when the way is open, else round the walls.
+        None (only when replan) when there is no way from a start cell this map calls a wall: the
+        map has likely changed under us, so the caller reads again and plans once more."""
         corner = (cell[0], here[1])   # walk_axis goes east-west first, then north-south
         if diagonal and plan.diag_ok(here, cell):
             return [cell]
@@ -326,6 +346,8 @@ class WalkingMixin(Parts):
         path = (plan.route(here, cell, avoid_directional=True) or plan.route(here, cell)
                 or (m.route(here, cell) if plan is not m else None))
         if not path:
+            if replan and not m.ok(*here):
+                return None
             raise Stopped(_("no way from {a} to {b} on {map}", a="%d,%d" % here,
                             b="%d,%d" % cell, map=atlas.label(mid)))
         return plan.diag_hops(path) if diagonal else plan.waypoints(path)

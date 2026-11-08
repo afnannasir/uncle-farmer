@@ -342,6 +342,22 @@ def test_travel_walks_the_last_stretch_and_stops(monkeypatch: pytest.MonkeyPatch
     assert b.walked == [(7, 8)]
 
 
+def test_travel_plans_again_when_the_last_stretch_ends_on_another_map(monkeypatch: pytest.MonkeyPatch) -> None:
+    # walk_to says "map": something moved us off the map on the way, so the trip isn't done yet
+    b = Bot()
+    results = ["map", "arrived"]
+
+    def walk_to(cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None = None) -> str:
+        b.walked.append(tuple(cell))
+        return results.pop(0)
+    b.walk_to = walk_to
+    monkeypatch.setattr(travel_mod, "plan",
+                        stand_in(travel_mod.plan, returning([{"do": "walk", "map": 1041, "cell": [7, 8]}])))
+    b._travel(1041, None, set())
+    assert b.walked == [(7, 8), (7, 8)]
+
+
 def test_travel_returns_on_an_empty_plan(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, returning([])))

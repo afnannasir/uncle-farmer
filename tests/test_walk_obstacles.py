@@ -67,7 +67,9 @@ def cells_walked(m: MapModel, start: tuple[int, int], hops: list[tuple[int, int]
 
 def plan(b: Crowd, m: MapModel) -> tuple[MapModel, list[tuple[int, int]]]:
     p = b._obstacle_map(m, GOAL, START)
-    return p, b._walk_hops(m, p, MID, START, GOAL, True)
+    hops = b._walk_hops(m, p, MID, START, GOAL, True)
+    assert hops is not None
+    return p, hops
 
 
 def test_open_ground_with_nobody_about_goes_straight(ground: MapModel) -> None:
