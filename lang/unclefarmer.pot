@@ -29,19 +29,19 @@ msgstr ""
 msgid "&About Uncle Farmer"
 msgstr ""
 
-msgid "&Add a supply..."
+msgid "&Add"
 msgstr ""
 
-msgid "&Add an item..."
+msgid "&Add a supply"
+msgstr ""
+
+msgid "&Add an item"
 msgstr ""
 
 msgid "&Add where I stand"
 msgstr ""
 
-msgid "&Add..."
-msgstr ""
-
-msgid "&Another character..."
+msgid "&Another character"
 msgstr ""
 
 msgid "&Answer strangers:"
@@ -56,16 +56,13 @@ msgstr ""
 msgid "&Attack style:"
 msgstr ""
 
-msgid "&Bag and supplies...\tCtrl+B"
+msgid "&Bag and supplies"
 msgstr ""
 
 msgid "&Bot"
 msgstr ""
 
-msgid "&Bot\tCtrl+1"
-msgstr ""
-
-msgid "&Browse..."
+msgid "&Browse"
 msgstr ""
 
 msgid "&Build at:"
@@ -80,7 +77,7 @@ msgstr ""
 msgid "&Cave:"
 msgstr ""
 
-msgid "&Change key..."
+msgid "&Change key"
 msgstr ""
 
 msgid "&Character"
@@ -117,7 +114,7 @@ msgstr ""
 msgid "&Copy the address"
 msgstr ""
 
-msgid "&Daily chores...\tCtrl+Shift+D"
+msgid "&Daily chores"
 msgstr ""
 
 msgid "&Date (year-month-day):"
@@ -138,10 +135,7 @@ msgstr ""
 msgid "&Dungeon:"
 msgstr ""
 
-msgid "&Edit..."
-msgstr ""
-
-msgid "&Edit...\tCtrl+E"
+msgid "&Edit"
 msgstr ""
 
 msgid "&Email address:"
@@ -150,7 +144,7 @@ msgstr ""
 msgid "&End:"
 msgstr ""
 
-msgid "&Equipment Enhancer...\tCtrl+Shift+E"
+msgid "&Equipment Enhancer"
 msgstr ""
 
 msgid "&Equipment to enhance:"
@@ -183,7 +177,7 @@ msgstr ""
 msgid "&Gathering (as set in Tools, Gathering)"
 msgstr ""
 
-msgid "&Gem Maker...\tCtrl+G"
+msgid "&Gem Maker"
 msgstr ""
 
 msgid "&Gem:"
@@ -219,19 +213,19 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
-msgid "&History..."
+msgid "&History"
 msgstr ""
 
 msgid "&How many:"
 msgstr ""
 
-msgid "&Import character settings..."
+msgid "&Import character settings"
 msgstr ""
 
-msgid "&Import plan..."
+msgid "&Import plan"
 msgstr ""
 
-msgid "&Insert command..."
+msgid "&Insert command"
 msgstr ""
 
 msgid "&Install"
@@ -265,7 +259,7 @@ msgstr ""
 msgid "&Level:"
 msgstr ""
 
-msgid "&Log\tCtrl+3"
+msgid "&Log"
 msgstr ""
 
 msgid "&Log:"
@@ -286,7 +280,7 @@ msgstr ""
 msgid "&Mute the game's own speech:"
 msgstr ""
 
-msgid "&Mute this game\tCtrl+M"
+msgid "&Mute this game"
 msgstr ""
 
 msgid "&Names or ids (separated by commas):"
@@ -298,10 +292,7 @@ msgstr ""
 msgid "&New chat with (name or id):"
 msgstr ""
 
-msgid "&New plan..."
-msgstr ""
-
-msgid "&New plan...\tCtrl+N"
+msgid "&New plan"
 msgstr ""
 
 msgid "&Number of gems:"
@@ -334,7 +325,7 @@ msgstr ""
 msgid "&Pet:"
 msgstr ""
 
-msgid "&Pick from monsters near me..."
+msgid "&Pick from monsters near me"
 msgstr ""
 
 msgid "&Place:"
@@ -346,19 +337,16 @@ msgstr ""
 msgid "&Plans"
 msgstr ""
 
-msgid "&Plans\tCtrl+2"
-msgstr ""
-
 msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 
-msgid "&Private messages...\tCtrl+Shift+M"
+msgid "&Private messages"
 msgstr ""
 
 msgid "&Protection runes (a failure keeps the level):"
 msgstr ""
 
-msgid "&Quick guide\tF1"
+msgid "&Quick guide"
 msgstr ""
 
 msgid "&Read keys from the game"
@@ -382,7 +370,7 @@ msgstr ""
 msgid "&Rest before the next fight below HP (%):"
 msgstr ""
 
-msgid "&Results...\tCtrl+R"
+msgid "&Results"
 msgstr ""
 
 msgid "&Results:"
@@ -418,10 +406,7 @@ msgstr ""
 msgid "&Send"
 msgstr ""
 
-msgid "&Settings..."
-msgstr ""
-
-msgid "&Settings...\tCtrl+P"
+msgid "&Settings"
 msgstr ""
 
 msgid "&Shields and big heals below HP (%):"
@@ -437,9 +422,6 @@ msgid "&Speak important events with NVDA"
 msgstr ""
 
 msgid "&Start"
-msgstr ""
-
-msgid "&Start\tF5"
 msgstr ""
 
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
@@ -469,7 +451,7 @@ msgstr ""
 msgid "&Travel on fusion beast:"
 msgstr ""
 
-msgid "&Unmute this game\tCtrl+U"
+msgid "&Unmute this game"
 msgstr ""
 
 msgid "&Update shard prices (Tools, Update shard prices)"
@@ -484,7 +466,7 @@ msgstr ""
 msgid "&View"
 msgstr ""
 
-msgid "&View as script..."
+msgid "&View as script"
 msgstr ""
 
 msgid "&Walk whenever the maps connect on foot"
@@ -559,9 +541,6 @@ msgstr ""
 msgid ", {n} threads"
 msgstr ""
 
-msgid "...or after this many casts that do &no damage:"
-msgstr ""
-
 msgid "1 game, bot running"
 msgstr ""
 
@@ -592,7 +571,7 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr ""
 
-msgid "A city s&quare..."
+msgid "A city s&quare"
 msgstr ""
 
 msgid ""
@@ -645,13 +624,13 @@ msgstr ""
 msgid "Activity:"
 msgstr ""
 
-msgid "Ad&vanced..."
+msgid "Ad&vanced"
 msgstr ""
 
 msgid "Add a gang"
 msgstr ""
 
-msgid "Add a gang by &name..."
+msgid "Add a gang by &name"
 msgstr ""
 
 msgid "Add a gang to gather in, or untick gathering in gangs' areas."
@@ -698,6 +677,9 @@ msgid "All"
 msgstr ""
 
 msgid "All files (*.*)|*.*"
+msgstr ""
+
+msgid "All mode"
 msgstr ""
 
 msgid "All time"
@@ -827,7 +809,7 @@ msgstr ""
 msgid "C&hannel:"
 msgstr ""
 
-msgid "C&hat...\tCtrl+T"
+msgid "C&hat"
 msgstr ""
 
 msgid "C&lock:"
@@ -881,7 +863,7 @@ msgstr ""
 msgid "Chat settings"
 msgstr ""
 
-msgid "Check for &updates..."
+msgid "Check for &updates"
 msgstr ""
 
 msgid "Check the bag for restocking every (seconds):"
@@ -930,7 +912,7 @@ msgstr ""
 msgid "Clea&n the bag (Tools, Clean the bag now)"
 msgstr ""
 
-msgid "Clean the &bag now (throw-away list)..."
+msgid "Clean the &bag now (throw-away list)"
 msgstr ""
 
 msgid "Clean the bag"
@@ -957,10 +939,10 @@ msgstr ""
 msgid "Close the game"
 msgstr ""
 
-msgid "Closing every Mist World window for the update..."
+msgid "Closing every Mist World window for the update"
 msgstr ""
 
-msgid "Closing every Mist World window to reinstall the agent..."
+msgid "Closing every Mist World window to reinstall the agent"
 msgstr ""
 
 msgid "Closing the game."
@@ -999,7 +981,7 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
-msgid "Contact the &developer..."
+msgid "Contact the &developer"
 msgstr ""
 
 msgid "Contact the developer"
@@ -1090,13 +1072,10 @@ msgstr ""
 msgid "Crystals"
 msgstr ""
 
-msgid "D&ungeons...\tCtrl+Shift+G"
+msgid "D&ungeons"
 msgstr ""
 
-msgid "D&uplicate..."
-msgstr ""
-
-msgid "D&uplicate...\tCtrl+D"
+msgid "D&uplicate"
 msgstr ""
 
 msgid "Daily chores"
@@ -1151,13 +1130,16 @@ msgstr ""
 msgid "Don't go"
 msgstr ""
 
+msgid "Don't refill, just tell me"
+msgstr ""
+
 msgid "Done this game day (it starts at 00:00 GMT):"
 msgstr ""
 
 msgid "Double beep"
 msgstr ""
 
-msgid "Downloading Uncle Farmer {v}..."
+msgid "Downloading Uncle Farmer {v}"
 msgstr ""
 
 msgid "Drink below (%):"
@@ -1196,10 +1178,10 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
-msgid "E&xport character settings..."
+msgid "E&xport character settings"
 msgstr ""
 
-msgid "E&xport plan..."
+msgid "E&xport plan"
 msgstr ""
 
 msgid "Earnings so far: {n} arnebia (picked up and sold)"
@@ -1236,6 +1218,9 @@ msgid "Ends on the nearest map without monsters."
 msgstr ""
 
 msgid "Ends where it is."
+msgstr ""
+
+msgid "Enemies"
 msgstr ""
 
 msgid "Enhance &up to (+):"
@@ -1418,6 +1403,9 @@ msgstr ""
 msgid "Gang construction"
 msgstr ""
 
+msgid "Gang mode"
+msgstr ""
+
 msgid "Gang name"
 msgstr ""
 
@@ -1433,7 +1421,7 @@ msgstr ""
 msgid "Gat&hering (as set in Tools, Gathering)"
 msgstr ""
 
-msgid "Gathe&ring...\tCtrl+Shift+F"
+msgid "Gathe&ring"
 msgstr ""
 
 msgid "Gather &outside (after the gangs' areas, or without them)"
@@ -1504,6 +1492,9 @@ msgid "Go anyway"
 msgstr ""
 
 msgid "Go round them in turn until the plan stops"
+msgstr ""
+
+msgid "Go somewhere safe and stop"
 msgstr ""
 
 msgid "Go through them once, then end"
@@ -1760,6 +1751,9 @@ msgstr ""
 msgid "Keep away from bosses"
 msgstr ""
 
+msgid "Keep farming, just tell me"
+msgstr ""
+
 msgid "Keep the class's b&uffs up"
 msgstr ""
 
@@ -1867,7 +1861,7 @@ msgstr ""
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr ""
 
-msgid "Looking for a new version..."
+msgid "Looking for a new version"
 msgstr ""
 
 msgid "Looking for your application."
@@ -1994,6 +1988,9 @@ msgstr ""
 msgid "Monsters that hit us:"
 msgstr ""
 
+msgid "Moral Mode"
+msgstr ""
+
 msgid "Most to pay per shard (arnebia):"
 msgstr ""
 
@@ -2030,6 +2027,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr ""
 
+msgid "NPCs"
+msgstr ""
+
 msgid "Nearby"
 msgstr ""
 
@@ -2042,10 +2042,10 @@ msgstr ""
 msgid "Never spend arnebia belo&w:"
 msgstr ""
 
-msgid "New &script...\tCtrl+Shift+N"
+msgid "New &script"
 msgstr ""
 
-msgid "New sc&ript..."
+msgid "New sc&ript"
 msgstr ""
 
 msgid "New schedule"
@@ -2268,7 +2268,7 @@ msgstr ""
 msgid "Only while the Chat window is open"
 msgstr ""
 
-msgid "Open another game &window\tCtrl+O"
+msgid "Open another game &window"
 msgstr ""
 
 msgid ""
@@ -2299,6 +2299,9 @@ msgid "Open the character sheet every (seconds):"
 msgstr ""
 
 msgid "Opening another game window. Log in, then choose it in the Games list."
+msgstr ""
+
+msgid "Or after this many casts that do &no damage:"
 msgstr ""
 
 msgid "Or type its &name:"
@@ -2338,10 +2341,19 @@ msgstr ""
 msgid "Own HP"
 msgstr ""
 
-msgid "P&ause or go on\tF6"
+msgid "Own side"
+msgstr ""
+
+msgid "P&ause or go on"
 msgstr ""
 
 msgid "P&ets (ticked ones come out, first ready one first):"
+msgstr ""
+
+msgid "Pacifist mode"
+msgstr ""
+
+msgid "Pacifist mode with counterattack"
 msgstr ""
 
 msgid "Patrol loops: {loops}"
@@ -2509,7 +2521,7 @@ msgstr ""
 msgid "Re&move debuffs with the class's dispel"
 msgstr ""
 
-msgid "Re&name..."
+msgid "Re&name"
 msgstr ""
 
 msgid "Read MP near the potion mark every (seconds):"
@@ -2525,9 +2537,6 @@ msgid "Reading channels out"
 msgstr ""
 
 msgid "Reading the game"
-msgstr ""
-
-msgid "Reading the game..."
 msgstr ""
 
 msgid "Ready"
@@ -2634,9 +2643,6 @@ msgstr ""
 msgid "S&top"
 msgstr ""
 
-msgid "S&top\tShift+F5"
-msgstr ""
-
 msgid "S&tore items (Tools, Store items now)"
 msgstr ""
 
@@ -2658,7 +2664,7 @@ msgstr ""
 msgid "Save and check for updates &now"
 msgstr ""
 
-msgid "Save as scri&pt..."
+msgid "Save as scri&pt"
 msgstr ""
 
 msgid "Save as script"
@@ -2673,7 +2679,7 @@ msgstr ""
 msgid "Scan complete."
 msgstr ""
 
-msgid "Sche&dules...\tCtrl+Shift+H"
+msgid "Sche&dules"
 msgstr ""
 
 msgid "Scheduled {what} for {who} couldn't start: {why}"
@@ -2718,7 +2724,7 @@ msgstr ""
 msgid "Se&ll shards (Tools, Sell shards now)"
 msgstr ""
 
-msgid "Se&ttings..."
+msgid "Se&ttings"
 msgstr ""
 
 msgid "Secret room"
@@ -2728,6 +2734,9 @@ msgid "Select a game first."
 msgstr ""
 
 msgid "Select a plan first."
+msgstr ""
+
+msgid "Sell and store by these lists, then come back"
 msgstr ""
 
 msgid "Sell it and come back"
@@ -2812,6 +2821,9 @@ msgstr ""
 msgid "Sho&w:"
 msgstr ""
 
+msgid "Shop only"
+msgstr ""
+
 msgid "Shop:"
 msgstr ""
 
@@ -2872,7 +2884,7 @@ msgstr ""
 msgid "South edge (y):"
 msgstr ""
 
-msgid "Spea&k the results\tCtrl+Shift+R"
+msgid "Spea&k the results"
 msgstr ""
 
 msgid "Speak &progress while running"
@@ -2935,7 +2947,7 @@ msgstr ""
 msgid "Stop &at (HH:MM, this computer's clock):"
 msgstr ""
 
-msgid "Stop &every bot\tCtrl+Shift+S"
+msgid "Stop &every bot"
 msgstr ""
 
 msgid "Stop after this many &stuck walks in a row:"
@@ -3008,6 +3020,12 @@ msgid ""
 "Stored or sold on a bag trip: on the Full bag page, choose to sell and store when the bag is full"
 msgstr ""
 
+msgid "Storehouse only"
+msgstr ""
+
+msgid "Storehouse, then the shop"
+msgstr ""
+
 msgid "Storing items"
 msgstr ""
 
@@ -3045,6 +3063,9 @@ msgid "Target west"
 msgstr ""
 
 msgid "Team"
+msgstr ""
+
+msgid "Team mode"
 msgstr ""
 
 msgid "Teleport to the team leader"
@@ -3524,7 +3545,7 @@ msgstr ""
 msgid "Unmute every &game"
 msgstr ""
 
-msgid "Unpacking..."
+msgid "Unpacking"
 msgstr ""
 
 msgid "Up&date shard prices (Tools, Update shard prices)"
@@ -3622,7 +3643,7 @@ msgstr ""
 msgid "Voice messages need the new agent in this game: restart the game."
 msgstr ""
 
-msgid "Wa&lk to a dungeon or map...\tCtrl+W"
+msgid "Wa&lk to a dungeon or map"
 msgstr ""
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"

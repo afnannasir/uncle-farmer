@@ -16,9 +16,12 @@ from ..engine import combat, potions, triggers
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
-                     labeled, ok_cancel, page, pick, read_decimal, save_file, select_row, tabs)
+                     labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
 
 STYLES = ("auto", "follow", "stationary")
+PK_MODE_LABELS = (N_("Pacifist mode"), N_("Pacifist mode with counterattack"), N_("Moral Mode"),
+                  N_("Gang mode"), N_("Team mode"), N_("All mode"))
+TARGET_MODE_LABELS = (N_("All"), N_("Own side"), N_("Enemies"), N_("NPCs"))
 
 # A skill's choices in Advanced settings, in combat.SKILL_USES order.
 USE_LABELS = (N_("The bot decides"), N_("Never"), N_("Only when HP is low"), N_("Whenever it's ready"))
@@ -221,7 +224,7 @@ class ProfileDialog(Dialog):
         self.travel_page(nb)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
-        ok_cancel(self, root, _("Save"), extra=[(_("Ad&vanced..."), self.on_advanced)])
+        ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced)])
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 520))
         # Bound on the dialog, not the button: Enter in a text box sends OK to the dialog directly,
@@ -245,7 +248,7 @@ class ProfileDialog(Dialog):
                                      pick(STYLES, p.get("attack_style", "auto")))
         self.fight_beast = f.choice(_("Fight as &fusion beast:"), [""])
         pk = p["pk_mode"] + 1 if p.get("set_modes") else 0
-        self.pk_mode = f.choice(_("&PK mode:"), [_("Leave as it is")] + [_(n)[:1].upper() + _(n)[1:] for n in settings.PK_MODES],
+        self.pk_mode = f.choice(_("&PK mode:"), [_("Leave as it is")] + [_(n) for n in PK_MODE_LABELS],
                                 pk if 0 <= pk <= len(settings.PK_MODES) else 0)
         self.fight_back = f.check(_("Fight &back when attacked while travelling"), p["fight_back"])
         self.nearest_monster = f.check(_("Always fight the &nearest monster (off: melee picks a calm one beside a pack)"),
@@ -577,7 +580,7 @@ class AdvancedDialog(Dialog):
             self.key_list.SetItem(i, 1, self.keys[k] or _("none"))
         select_row(self.key_list, 0)
         self.key_list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.change_key())
-        buttons(panel, box, (_("&Change key..."), lambda e: self.change_key()),
+        buttons(panel, box, (opens(_("&Change key")), lambda e: self.change_key()),
                 (_("&Read keys from the game"), self.on_read))
         f = Form(panel)
         self.attack_keys = f.text(_("&Attack keys when skills can't be read:"), " ".join(self.p["attack_keys"]))
@@ -711,7 +714,7 @@ class AdvancedDialog(Dialog):
         self.fight_timeout = f.number(_("&Give up a fight after (seconds):"), p["fight_timeout"], 5, 600)
         self.no_damage = f.number(_("Give up when the enemy takes no &damage for (seconds):"),
                                   p["no_damage_timeout"], 3, 120)
-        self.no_damage_casts = f.number(_("...or after this many casts that do &no damage:"),
+        self.no_damage_casts = f.number(_("Or after this many casts that do &no damage:"),
                                         p.get("no_damage_casts", 3), 1, 20)
         self.press_burst = f.check(_("Press a skill again and &again until the game casts it"),
                                    p.get("press_burst", True))
@@ -720,7 +723,7 @@ class AdvancedDialog(Dialog):
         keep = p.get("boss_distance", 40)
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
-        self.target_mode = f.choice(_("&Target keys pick:"), [_(n)[:1].upper() + _(n)[1:] for n in settings.TARGET_MODES],
+        self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)

@@ -29,20 +29,20 @@ msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
-msgid "&Add a supply..."
-msgstr "&Supply shamil karein..."
+msgid "&Add"
+msgstr "&Shamil karein"
 
-msgid "&Add an item..."
-msgstr "&Cheez shamil karein..."
+msgid "&Add a supply"
+msgstr "&Supply shamil karein"
+
+msgid "&Add an item"
+msgstr "&Cheez shamil karein"
 
 msgid "&Add where I stand"
 msgstr "Jahan khara hoon wahan &shamil karein"
 
-msgid "&Add..."
-msgstr "&Shamil karein..."
-
-msgid "&Another character..."
-msgstr "&Doosra kirdaar..."
+msgid "&Another character"
+msgstr "&Doosra kirdaar"
 
 msgid "&Answer strangers:"
 msgstr "&Ajnabiyon ko jawab dein:"
@@ -56,17 +56,14 @@ msgstr "Jab skills parhi na ja sakein to &Hamla keys:"
 msgid "&Attack style:"
 msgstr "&Hamla ka tareeqa:"
 
-msgid "&Bag and supplies...\tCtrl+B"
-msgstr "&Basta aur supplies...\tCtrl+B"
+msgid "&Bag and supplies"
+msgstr "&Basta aur supplies"
 
 msgid "&Bot"
 msgstr "&Bot"
 
-msgid "&Bot\tCtrl+1"
-msgstr "&Bot\tCtrl+1"
-
-msgid "&Browse..."
-msgstr "&Dekhein..."
+msgid "&Browse"
+msgstr "&Dekhein"
 
 msgid "&Build at:"
 msgstr "&Build kahan:"
@@ -80,8 +77,8 @@ msgstr "Shutdown &mansookh karein"
 msgid "&Cave:"
 msgstr "&Ghaar:"
 
-msgid "&Change key..."
-msgstr "&Key tabdeel karein..."
+msgid "&Change key"
+msgstr "&Key tabdeel karein"
 
 msgid "&Character"
 msgstr "&Kirdaar"
@@ -118,8 +115,8 @@ msgstr ""
 msgid "&Copy the address"
 msgstr "Pata &copy karein"
 
-msgid "&Daily chores...\tCtrl+Shift+D"
-msgstr "&Roz ke kaam...\tCtrl+Shift+D"
+msgid "&Daily chores"
+msgstr "&Roz ke kaam"
 
 msgid "&Date (year-month-day):"
 msgstr "&Tareekh (saal-mahina-din):"
@@ -139,11 +136,8 @@ msgstr "&Chanda, din mein ek baar:"
 msgid "&Dungeon:"
 msgstr "&Dungeon:"
 
-msgid "&Edit..."
-msgstr "&Tabdeel..."
-
-msgid "&Edit...\tCtrl+E"
-msgstr "&Tabdeel...\tCtrl+E"
+msgid "&Edit"
+msgstr "&Tabdeel"
 
 msgid "&Email address:"
 msgstr "&Email ka pata:"
@@ -151,8 +145,8 @@ msgstr "&Email ka pata:"
 msgid "&End:"
 msgstr "&Aakhir:"
 
-msgid "&Equipment Enhancer...\tCtrl+Shift+E"
-msgstr "&Equipment Enhancer...\tCtrl+Shift+E"
+msgid "&Equipment Enhancer"
+msgstr "&Equipment Enhancer"
 
 msgid "&Equipment to enhance:"
 msgstr "&Enhance karne ke liye equipment:"
@@ -184,8 +178,8 @@ msgstr "&Gang ka naam (kisi doosre gang ka):"
 msgid "&Gathering (as set in Tools, Gathering)"
 msgstr "&Jama karna (jaisa Tools, Gathering mein set hai)"
 
-msgid "&Gem Maker...\tCtrl+G"
-msgstr "&Gem Maker...\tCtrl+G"
+msgid "&Gem Maker"
+msgstr "&Gem Maker"
 
 msgid "&Gem:"
 msgstr "&Gem:"
@@ -220,20 +214,20 @@ msgstr "&Hearthstone cheez:"
 msgid "&Help"
 msgstr "&Madad"
 
-msgid "&History..."
-msgstr "&Tareekhcha..."
+msgid "&History"
+msgstr "&Tareekhcha"
 
 msgid "&How many:"
 msgstr "&Kitne:"
 
-msgid "&Import character settings..."
-msgstr "Character settings &import karein..."
+msgid "&Import character settings"
+msgstr "Character settings &import karein"
 
-msgid "&Import plan..."
-msgstr "Mansooba &import karein..."
+msgid "&Import plan"
+msgstr "Mansooba &import karein"
 
-msgid "&Insert command..."
-msgstr "&Command shamil karein..."
+msgid "&Insert command"
+msgstr "&Command shamil karein"
 
 msgid "&Install"
 msgstr "&Install"
@@ -267,8 +261,8 @@ msgstr "Shutdown &hone dein"
 msgid "&Level:"
 msgstr "&Level:"
 
-msgid "&Log\tCtrl+3"
-msgstr "&Log\tCtrl+3"
+msgid "&Log"
+msgstr "&Log"
 
 msgid "&Log:"
 msgstr "&Log:"
@@ -288,8 +282,8 @@ msgstr "&Harkat:"
 msgid "&Mute the game's own speech:"
 msgstr "Game ki apni awaaz &band karein:"
 
-msgid "&Mute this game\tCtrl+M"
-msgstr "Is game ki awaaz &band karein\tCtrl+M"
+msgid "&Mute this game"
+msgstr "Is game ki awaaz &band karein"
 
 msgid "&Names or ids (separated by commas):"
 msgstr "&Naam ya id (comma se alag):"
@@ -300,11 +294,8 @@ msgstr "&Kabhi nahi larein:"
 msgid "&New chat with (name or id):"
 msgstr "&Nayi baat-cheet (naam ya id):"
 
-msgid "&New plan..."
-msgstr "&Naya plan..."
-
-msgid "&New plan...\tCtrl+N"
-msgstr "&Naya plan...\tCtrl+N"
+msgid "&New plan"
+msgstr "&Naya plan"
 
 msgid "&Number of gems:"
 msgstr "&Gems ki tadaad:"
@@ -336,8 +327,8 @@ msgstr "&Muddat:"
 msgid "&Pet:"
 msgstr "&Pet:"
 
-msgid "&Pick from monsters near me..."
-msgstr "&Mere qareeb ke monsters mein se chunein..."
+msgid "&Pick from monsters near me"
+msgstr "&Mere qareeb ke monsters mein se chunein"
 
 msgid "&Place:"
 msgstr "&Jagah:"
@@ -348,21 +339,18 @@ msgstr "&Mansooba ya script:"
 msgid "&Plans"
 msgstr "&Mansoobe"
 
-msgid "&Plans\tCtrl+2"
-msgstr "&Mansoobe\tCtrl+2"
-
 msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 "&Mashq kitni der (minute; 0: andar, share, bahar; andar ka waqt drop time leta hai):"
 
-msgid "&Private messages...\tCtrl+Shift+M"
-msgstr "&Zaati paigham...\tCtrl+Shift+M"
+msgid "&Private messages"
+msgstr "&Zaati paigham"
 
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "&Protection runes (fail hone par level bacha rehta hai):"
 
-msgid "&Quick guide\tF1"
-msgstr "&Mukhtasar guide\tF1"
+msgid "&Quick guide"
+msgstr "&Mukhtasar guide"
 
 msgid "&Read keys from the game"
 msgstr "Game se &keys parhein"
@@ -385,8 +373,8 @@ msgstr "&Jawab, har line mein ek:"
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Agli ladai se pehle HP se neeche &aram (%):"
 
-msgid "&Results...\tCtrl+R"
-msgstr "&Nataij...\tCtrl+R"
+msgid "&Results"
+msgstr "&Nataij"
 
 msgid "&Results:"
 msgstr "&Nataij:"
@@ -422,11 +410,8 @@ msgstr "&Bechein:"
 msgid "&Send"
 msgstr "&Bhejein"
 
-msgid "&Settings..."
-msgstr "&Tarteeb..."
-
-msgid "&Settings...\tCtrl+P"
-msgstr "&Tarteeb...\tCtrl+P"
+msgid "&Settings"
+msgstr "&Tarteeb"
 
 msgid "&Shields and big heals below HP (%):"
 msgstr "HP se neeche &shields aur bade heals (%):"
@@ -442,9 +427,6 @@ msgstr "&NVDA se ahem waqiaat sunayein"
 
 msgid "&Start"
 msgstr "&Shuru"
-
-msgid "&Start\tF5"
-msgstr "&Shuru\tF5"
 
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "&Har roz muqarrar waqt par kheti rok do, chahe bot kuch bhi kar raha ho"
@@ -473,8 +455,8 @@ msgstr "&Auzar"
 msgid "&Travel on fusion beast:"
 msgstr "Fusion beast par &safar:"
 
-msgid "&Unmute this game\tCtrl+U"
-msgstr "Is game ki awaaz &chalu karein\tCtrl+U"
+msgid "&Unmute this game"
+msgstr "Is game ki awaaz &chalu karein"
 
 msgid "&Update shard prices (Tools, Update shard prices)"
 msgstr "Shards ki qeematein &update karein (Tools, Update shard prices)"
@@ -488,8 +470,8 @@ msgstr "&User guide (browser mein khulegi)"
 msgid "&View"
 msgstr "&View"
 
-msgid "&View as script..."
-msgstr "&Script ki tarah dekhein..."
+msgid "&View as script"
+msgstr "&Script ki tarah dekhein"
 
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Jab bhi maps paidal jude hon to &chalna"
@@ -563,9 +545,6 @@ msgstr ", Shard Market mein takreeban {v} arnebia ke barabar"
 msgid ", {n} threads"
 msgstr ", {n} threads"
 
-msgid "...or after this many casts that do &no damage:"
-msgstr "...ya itne casts ke baad jin se koi &damage na ho:"
-
 msgid "1 game, bot running"
 msgstr "1 game, bot chal raha hai"
 
@@ -596,8 +575,8 @@ msgstr "; in keys par wohi skill hai jo doosri key par bhi hai: {keys}"
 msgid "A bot is running. Stop it and quit?"
 msgstr "Ek bot chal raha hai. Rok kar bahar niklein?"
 
-msgid "A city s&quare..."
-msgstr "Ek city s&quare..."
+msgid "A city s&quare"
+msgstr "Ek city s&quare"
 
 msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
@@ -651,14 +630,14 @@ msgstr "Amal menu"
 msgid "Activity:"
 msgstr "Sargarmi:"
 
-msgid "Ad&vanced..."
-msgstr "Maz&eed..."
+msgid "Ad&vanced"
+msgstr "Maz&eed"
 
 msgid "Add a gang"
 msgstr "Gang shamil karein"
 
-msgid "Add a gang by &name..."
-msgstr "&Naam se gang shamil karein..."
+msgid "Add a gang by &name"
+msgstr "&Naam se gang shamil karein"
 
 msgid "Add a gang to gather in, or untick gathering in gangs' areas."
 msgstr ""
@@ -707,6 +686,9 @@ msgstr "Sab"
 
 msgid "All files (*.*)|*.*"
 msgstr "Tamam files (*.*)|*.*"
+
+msgid "All mode"
+msgstr "Sab ka mode"
 
 msgid "All time"
 msgstr "Sab waqt"
@@ -841,8 +823,8 @@ msgstr "Masroof hai - pehle stop bhejein."
 msgid "C&hannel:"
 msgstr "C&hannel:"
 
-msgid "C&hat...\tCtrl+T"
-msgstr "C&hat...\tCtrl+T"
+msgid "C&hat"
+msgstr "C&hat"
 
 msgid "C&lock:"
 msgstr "&Ghari:"
@@ -895,8 +877,8 @@ msgstr "Chat ko is game mein naya agent chahiye: game restart karein."
 msgid "Chat settings"
 msgstr "Chat ki tarteeb"
 
-msgid "Check for &updates..."
-msgstr "&Updates dekhein..."
+msgid "Check for &updates"
+msgstr "&Updates dekhein"
 
 msgid "Check the bag for restocking every (seconds):"
 msgstr "Basta restock ke liye har (second) check karein:"
@@ -945,8 +927,8 @@ msgstr "Saaf kar&ein"
 msgid "Clea&n the bag (Tools, Clean the bag now)"
 msgstr "Basta saa&f karein (Tools, Clean the bag now)"
 
-msgid "Clean the &bag now (throw-away list)..."
-msgstr "&Basta abhi saaf karein (phenkne wali list)..."
+msgid "Clean the &bag now (throw-away list)"
+msgstr "&Basta abhi saaf karein (phenkne wali list)"
 
 msgid "Clean the bag"
 msgstr "Basta saaf karein"
@@ -972,12 +954,12 @@ msgstr "Dialog band karein"
 msgid "Close the game"
 msgstr "Game band karein"
 
-msgid "Closing every Mist World window for the update..."
-msgstr "Update ke liye Mist World ki har window band ho rahi hai..."
+msgid "Closing every Mist World window for the update"
+msgstr "Update ke liye Mist World ki har window band ho rahi hai"
 
-msgid "Closing every Mist World window to reinstall the agent..."
+msgid "Closing every Mist World window to reinstall the agent"
 msgstr ""
-"Agent dobara install karne ke liye Mist World ki har window band ho rahi hai..."
+"Agent dobara install karne ke liye Mist World ki har window band ho rahi hai"
 
 msgid "Closing the game."
 msgstr "Game band kar raha hoon."
@@ -1015,8 +997,8 @@ msgstr "Trusted players ke commands"
 msgid "Commands: {list}"
 msgstr "Hukm: {list}"
 
-msgid "Contact the &developer..."
-msgstr "&Developer se raabta..."
+msgid "Contact the &developer"
+msgstr "&Developer se raabta"
 
 msgid "Contact the developer"
 msgstr "Developer se raabta"
@@ -1110,14 +1092,11 @@ msgstr ""
 msgid "Crystals"
 msgstr "Crystals"
 
-msgid "D&ungeons...\tCtrl+Shift+G"
-msgstr "D&ungeons...\tCtrl+Shift+G"
+msgid "D&ungeons"
+msgstr "D&ungeons"
 
-msgid "D&uplicate..."
-msgstr "N&aqal..."
-
-msgid "D&uplicate...\tCtrl+D"
-msgstr "N&aqal...\tCtrl+D"
+msgid "D&uplicate"
+msgstr "N&aqal"
 
 msgid "Daily chores"
 msgstr "Roz ke kaam"
@@ -1171,14 +1150,17 @@ msgstr "Chanda na dein"
 msgid "Don't go"
 msgstr "Na jaayein"
 
+msgid "Don't refill, just tell me"
+msgstr "Dobara na bharein, sirf batayein"
+
 msgid "Done this game day (it starts at 00:00 GMT):"
 msgstr "Is game din mein ho chuka (din 00:00 GMT par shuru hota hai):"
 
 msgid "Double beep"
 msgstr "Dohri beep"
 
-msgid "Downloading Uncle Farmer {v}..."
-msgstr "Uncle Farmer {v} download ho raha hai..."
+msgid "Downloading Uncle Farmer {v}"
+msgstr "Uncle Farmer {v} download ho raha hai"
 
 msgid "Drink below (%):"
 msgstr "Kitne (%) se neeche peeyein:"
@@ -1216,11 +1198,11 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 msgid "E&xit"
 msgstr "Bahar &niklein"
 
-msgid "E&xport character settings..."
-msgstr "Character settings e&xport karein..."
+msgid "E&xport character settings"
+msgstr "Character settings e&xport karein"
 
-msgid "E&xport plan..."
-msgstr "Mansooba e&xport karein..."
+msgid "E&xport plan"
+msgstr "Mansooba e&xport karein"
 
 msgid "Earnings so far: {n} arnebia (picked up and sold)"
 msgstr "Ab tak ki kamai: {n} arnebia (uthaye aur beche gaye)"
@@ -1257,6 +1239,9 @@ msgstr "Sab se qareebi monster-free map par khatam hota hai."
 
 msgid "Ends where it is."
 msgstr "Jahan hai wahin khatam hota hai."
+
+msgid "Enemies"
+msgstr "Dushman"
 
 msgid "Enhance &up to (+):"
 msgstr "&Yahan tak enhance karein (+):"
@@ -1443,6 +1428,9 @@ msgstr "Gang"
 msgid "Gang construction"
 msgstr "Gang construction"
 
+msgid "Gang mode"
+msgstr "Gang mode"
+
 msgid "Gang name"
 msgstr "Gang ka naam"
 
@@ -1458,8 +1446,8 @@ msgstr "Gangs, &tarteeb se (bot baari baari har ek mein jata hai):"
 msgid "Gat&hering (as set in Tools, Gathering)"
 msgstr "Jama ka&rna (jaisa Tools, Gathering mein set hai)"
 
-msgid "Gathe&ring...\tCtrl+Shift+F"
-msgstr "Jama ka&rna...\tCtrl+Shift+F"
+msgid "Gathe&ring"
+msgstr "Jama ka&rna"
 
 msgid "Gather &outside (after the gangs' areas, or without them)"
 msgstr "&Bahar jama karein (gangs ke ilaqon ke baad, ya un ke baghair)"
@@ -1532,6 +1520,9 @@ msgstr "Phir bhi jaayein"
 
 msgid "Go round them in turn until the plan stops"
 msgstr "Jab tak mansooba rukta hai, unke ird gird baari baari jate rahein"
+
+msgid "Go somewhere safe and stop"
+msgstr "Kisi mehfooz jagah jaa kar ruk jayein"
 
 msgid "Go through them once, then end"
 msgstr "Un se ek baar guzrein, phir khatam karein"
@@ -1803,6 +1794,9 @@ msgstr "Purani files &rakhein:"
 msgid "Keep away from bosses"
 msgstr "Bosses se door rahein"
 
+msgid "Keep farming, just tell me"
+msgstr "Farming jaari rakhein, sirf batayein"
+
 msgid "Keep the class's b&uffs up"
 msgstr "Class ke b&uffs barqarar rakhein"
 
@@ -1912,8 +1906,8 @@ msgstr "Logging"
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer shuru hone par naya &version dekhein"
 
-msgid "Looking for a new version..."
-msgstr "Naya version dhoond raha hoon..."
+msgid "Looking for a new version"
+msgstr "Naya version dhoond raha hoon"
 
 msgid "Looking for your application."
 msgstr "Aap ki application dhoond raha hoon."
@@ -2046,6 +2040,9 @@ msgstr "Aap ke qareeb monsters"
 msgid "Monsters that hit us:"
 msgstr "Hum par hamla karne wale monsters:"
 
+msgid "Moral Mode"
+msgstr "Moral Mode"
+
 msgid "Most to pay per shard (arnebia):"
 msgstr "Har shard ke liye zyada se zyada (arnebia):"
 
@@ -2082,6 +2079,9 @@ msgstr "Har game ki awaaz &band karein"
 msgid "My own gang's (gangs pay less)"
 msgstr "Mera apna gang (gang kam dete hain)"
 
+msgid "NPCs"
+msgstr "NPCs"
+
 msgid "Nearby"
 msgstr "Aas paas"
 
@@ -2094,11 +2094,11 @@ msgstr "Kabhi nahi"
 msgid "Never spend arnebia belo&w:"
 msgstr "&Is se kam arnebia kabhi kharch na karein:"
 
-msgid "New &script...\tCtrl+Shift+N"
-msgstr "Naya &script...\tCtrl+Shift+N"
+msgid "New &script"
+msgstr "Naya &script"
 
-msgid "New sc&ript..."
-msgstr "Naya sc&ript..."
+msgid "New sc&ript"
+msgstr "Naya sc&ript"
 
 msgid "New schedule"
 msgstr "Naya schedule"
@@ -2329,8 +2329,8 @@ msgstr "Sirf jab HP kam ho"
 msgid "Only while the Chat window is open"
 msgstr "Sirf jab Chat window khuli ho"
 
-msgid "Open another game &window\tCtrl+O"
-msgstr "Doosri game &window kholain\tCtrl+O"
+msgid "Open another game &window"
+msgstr "Doosri game &window kholain"
 
 msgid ""
 "Open fire up to this many tiles &early, beyond the {reach} tiles set above, while a monster comes at you (0: wait until it is within {reach}):"
@@ -2365,6 +2365,9 @@ msgstr "Kirdaar ki sheet har (second) kholen:"
 msgid "Opening another game window. Log in, then choose it in the Games list."
 msgstr ""
 "Doosri game window khol raha hoon. Login karein, phir Games list mein chunein."
+
+msgid "Or after this many casts that do &no damage:"
+msgstr "Ya itne casts ke baad jo koi &damage na dein:"
 
 msgid "Or type its &name:"
 msgstr "Ya iska &naam likhein:"
@@ -2405,11 +2408,20 @@ msgstr "Jaiza"
 msgid "Own HP"
 msgstr "Apni HP"
 
-msgid "P&ause or go on\tF6"
-msgstr "&Waqfa ya jari\tF6"
+msgid "Own side"
+msgstr "Apni taraf"
+
+msgid "P&ause or go on"
+msgstr "&Waqfa ya jari"
 
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr "P&ets (tick wale bahar aate hain, pehle jo tayyar ho pehle):"
+
+msgid "Pacifist mode"
+msgstr "Pur-aman mode"
+
+msgid "Pacifist mode with counterattack"
+msgstr "Jawabi hamle ke sath pur-aman mode"
 
 msgid "Patrol loops: {loops}"
 msgstr "Patrol loops: {loops}"
@@ -2581,8 +2593,8 @@ msgstr "&Hataayein"
 msgid "Re&move debuffs with the class's dispel"
 msgstr "Class ke dispel se debuffs &hataayein"
 
-msgid "Re&name..."
-msgstr "Naam &badlein..."
+msgid "Re&name"
+msgstr "Naam &badlein"
 
 msgid "Read MP near the potion mark every (seconds):"
 msgstr "Potion mark ke paas MP har (second) par padhein:"
@@ -2598,9 +2610,6 @@ msgstr "Channels padh kar sunana"
 
 msgid "Reading the game"
 msgstr "Game padhna"
-
-msgid "Reading the game..."
-msgstr "Game padhi ja rahi hai..."
 
 msgid "Ready"
 msgstr "Tayyar"
@@ -2712,9 +2721,6 @@ msgstr "Aane wale messages &bol kar sunayein:"
 msgid "S&top"
 msgstr "R&ok"
 
-msgid "S&top\tShift+F5"
-msgstr "R&ok\tShift+F5"
-
 msgid "S&tore items (Tools, Store items now)"
 msgstr "Cheezein s&torehouse mein rakhein (Tools, Store items now)"
 
@@ -2736,8 +2742,8 @@ msgstr "Mahfooz"
 msgid "Save and check for updates &now"
 msgstr "Mahfooz karein aur &abhi updates dekhein"
 
-msgid "Save as scri&pt..."
-msgstr "Scri&pt ki tarah mahfooz karein..."
+msgid "Save as scri&pt"
+msgstr "Scri&pt ki tarah mahfooz karein"
 
 msgid "Save as script"
 msgstr "Script ki tarah mahfooz karein"
@@ -2751,8 +2757,8 @@ msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
 msgid "Scan complete."
 msgstr "Scan mukammal."
 
-msgid "Sche&dules...\tCtrl+Shift+H"
-msgstr "Sche&dules...\tCtrl+Shift+H"
+msgid "Sche&dules"
+msgstr "Sche&dules"
 
 msgid "Scheduled {what} for {who} couldn't start: {why}"
 msgstr "{who} ke liye schedule kiya hua {what} shuru nahi ho saka: {why}"
@@ -2796,8 +2802,8 @@ msgstr "Scripting &rahnumai"
 msgid "Se&ll shards (Tools, Sell shards now)"
 msgstr "Shards bec&hein (Tools, Sell shards now)"
 
-msgid "Se&ttings..."
-msgstr "&Tarteeb..."
+msgid "Se&ttings"
+msgstr "&Tarteeb"
 
 msgid "Secret room"
 msgstr "Secret room"
@@ -2807,6 +2813,9 @@ msgstr "Pehle game chunein."
 
 msgid "Select a plan first."
 msgstr "Pehle plan chunein."
+
+msgid "Sell and store by these lists, then come back"
+msgstr "In lists ke mutabiq bechein aur store karein, phir wapas aayein"
 
 msgid "Sell it and come back"
 msgstr "Bech kar wapas aayein"
@@ -2899,6 +2908,9 @@ msgstr ""
 msgid "Sho&w:"
 msgstr "Dikha&o:"
 
+msgid "Shop only"
+msgstr "Sirf shop"
+
 msgid "Shop:"
 msgstr "Dukaan:"
 
@@ -2960,8 +2972,8 @@ msgstr "Beche gaye:"
 msgid "South edge (y):"
 msgstr "Junoobi kinara (y):"
 
-msgid "Spea&k the results\tCtrl+Shift+R"
-msgstr "Nataij su&nayein\tCtrl+Shift+R"
+msgid "Spea&k the results"
+msgstr "Nataij su&nayein"
 
 msgid "Speak &progress while running"
 msgstr "Chalte waqt &taraqqi sunayein"
@@ -3024,8 +3036,8 @@ msgstr "Rukein"
 msgid "Stop &at (HH:MM, this computer's clock):"
 msgstr "&Rukne ka waqt (HH:MM, is computer ki ghadi):"
 
-msgid "Stop &every bot\tCtrl+Shift+S"
-msgstr "Har &bot rokein\tCtrl+Shift+S"
+msgid "Stop &every bot"
+msgstr "Har &bot rokein"
 
 msgid "Stop after this many &stuck walks in a row:"
 msgstr "Lagataar itni baar &phansi walks ke baad rukein:"
@@ -3099,6 +3111,12 @@ msgid ""
 msgstr ""
 "Bag trip par jama ya becha jata hai: Full bag page par, bag bhar jane par bechna aur jama karna chunein"
 
+msgid "Storehouse only"
+msgstr "Sirf storehouse"
+
+msgid "Storehouse, then the shop"
+msgstr "Storehouse, phir shop"
+
 msgid "Storing items"
 msgstr "Cheezein storehouse mein rakhi ja rahi hain"
 
@@ -3137,6 +3155,9 @@ msgstr "Maghrib ko target karein"
 
 msgid "Team"
 msgstr "Team"
+
+msgid "Team mode"
+msgstr "Team mode"
 
 msgid "Teleport to the team leader"
 msgstr "Team leader ke paas teleport karein"
@@ -3675,8 +3696,8 @@ msgstr ""
 msgid "Unmute every &game"
 msgstr "Har &game ki awaaz chalu karein"
 
-msgid "Unpacking..."
-msgstr "Unpack ho raha hai..."
+msgid "Unpacking"
+msgstr "Unpack ho raha hai"
 
 msgid "Up&date shard prices (Tools, Update shard prices)"
 msgstr "Shards ki qeematein up&date karein (Tools, Update shard prices)"
@@ -3778,8 +3799,8 @@ msgid "Voice messages need the new agent in this game: restart the game."
 msgstr ""
 "voice messages ke liye is game mein naya agent chahiye: game restart karein."
 
-msgid "Wa&lk to a dungeon or map...\tCtrl+W"
-msgstr "Dungeon ya map tak &chalain...\tCtrl+W"
+msgid "Wa&lk to a dungeon or map"
+msgstr "Dungeon ya map tak &chalain"
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Khuli zameen par &tirchha chalein (dono direction keys ek saath)"
@@ -6793,11 +6814,35 @@ msgstr "{who} ka game {what} mein masroof hai"
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
+#~ msgid "&Add a supply..."
+#~ msgstr "&Supply shamil karein..."
+
+#~ msgid "&Add an item..."
+#~ msgstr "&Cheez shamil karein..."
+
+#~ msgid "&Add..."
+#~ msgstr "&Shamil karein..."
+
+#~ msgid "&Another character..."
+#~ msgstr "&Doosra kirdaar..."
+
 #~ msgid "&Assistant:"
 #~ msgstr "&Madadgar:"
 
+#~ msgid "&Bag and supplies...\tCtrl+B"
+#~ msgstr "&Basta aur supplies...\tCtrl+B"
+
+#~ msgid "&Bot\tCtrl+1"
+#~ msgstr "&Bot\tCtrl+1"
+
+#~ msgid "&Browse..."
+#~ msgstr "&Dekhein..."
+
 #~ msgid "&Caves (tick the ones to go to):"
 #~ msgstr "&Ghaar (jin mein jaana hai unhein tick karein):"
+
+#~ msgid "&Change key..."
+#~ msgstr "&Key tabdeel karein..."
 
 #~ msgid ""
 #~ "&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
@@ -6808,11 +6853,92 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "&Construction ki builds aur repairs roz (muft: har aik gang contribution aur arnebia deti hai):"
 
+#~ msgid "&Daily chores...\tCtrl+Shift+D"
+#~ msgstr "&Roz ke kaam...\tCtrl+Shift+D"
+
+#~ msgid "&Edit..."
+#~ msgstr "&Tabdeel..."
+
+#~ msgid "&Edit...\tCtrl+E"
+#~ msgstr "&Tabdeel...\tCtrl+E"
+
+#~ msgid "&Equipment Enhancer...\tCtrl+Shift+E"
+#~ msgstr "&Equipment Enhancer...\tCtrl+Shift+E"
+
+#~ msgid "&Gem Maker...\tCtrl+G"
+#~ msgstr "&Gem Maker...\tCtrl+G"
+
+#~ msgid "&History..."
+#~ msgstr "&Tareekhcha..."
+
+#~ msgid "&Import character settings..."
+#~ msgstr "Character settings &import karein..."
+
+#~ msgid "&Import plan..."
+#~ msgstr "Mansooba &import karein..."
+
+#~ msgid "&Insert command..."
+#~ msgstr "&Command shamil karein..."
+
+#~ msgid "&Log\tCtrl+3"
+#~ msgstr "&Log\tCtrl+3"
+
+#~ msgid "&Mute this game\tCtrl+M"
+#~ msgstr "Is game ki awaaz &band karein\tCtrl+M"
+
 #~ msgid "&Names (separated by commas):"
 #~ msgstr "&Naam (comma se alag):"
 
+#~ msgid "&New plan..."
+#~ msgstr "&Naya plan..."
+
+#~ msgid "&New plan...\tCtrl+N"
+#~ msgstr "&Naya plan...\tCtrl+N"
+
+#~ msgid "&Pick from monsters near me..."
+#~ msgstr "&Mere qareeb ke monsters mein se chunein..."
+
+#~ msgid "&Plans\tCtrl+2"
+#~ msgstr "&Mansoobe\tCtrl+2"
+
+#~ msgid "&Private messages...\tCtrl+Shift+M"
+#~ msgstr "&Zaati paigham...\tCtrl+Shift+M"
+
+#~ msgid "&Quick guide\tF1"
+#~ msgstr "&Mukhtasar guide\tF1"
+
+#~ msgid "&Results...\tCtrl+R"
+#~ msgstr "&Nataij...\tCtrl+R"
+
+#~ msgid "&Settings..."
+#~ msgstr "&Tarteeb..."
+
+#~ msgid "&Settings...\tCtrl+P"
+#~ msgstr "&Tarteeb...\tCtrl+P"
+
+#~ msgid "&Start\tF5"
+#~ msgstr "&Shuru\tF5"
+
 #~ msgid "&Stay for up to (minutes; the game gives 180 a day):"
 #~ msgstr "&Zyada se zyada itni der rukein (minute; game roz 180 deta hai):"
+
+#~ msgid "&Unmute this game\tCtrl+U"
+#~ msgstr "Is game ki awaaz &chalu karein\tCtrl+U"
+
+#~ msgid "&View as script..."
+#~ msgstr "&Script ki tarah dekhein..."
+
+#~ msgid "...or after this many casts that do &no damage:"
+#~ msgstr "...ya itne casts ke baad jin se koi &damage na ho:"
+
+#~ msgid "A city s&quare..."
+#~ msgstr "Ek city s&quare..."
+
+#~ msgid "Ad&vanced..."
+#~ msgstr "Maz&eed..."
+
+#~ msgid "Add a gang by &name..."
+#~ msgstr "&Naam se gang shamil karein..."
 
 #~ msgid "After farming (when a run finishes by itself, never after Stop)"
 #~ msgstr "Farming ke baad (jab run khud khatam ho, Stop ke baad kabhi nahi)"
@@ -6827,13 +6953,53 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "Gang ke &highland mein bhi tameer karein (bahar aur andar wale hall hamesha)"
 
+#~ msgid "C&hat...\tCtrl+T"
+#~ msgstr "C&hat...\tCtrl+T"
+
 #~ msgid "Caves, each once a game day, in this order"
 #~ msgstr "Ghaar, har ek game ke din mein ek baar, isi tarteeb se"
+
+#~ msgid "Check for &updates..."
+#~ msgstr "&Updates dekhein..."
+
+#~ msgid "Clean the &bag now (throw-away list)..."
+#~ msgstr "&Basta abhi saaf karein (phenkne wali list)..."
 
 #~ msgid ""
 #~ "Close every Mist World window first: an open game keeps the bot's agent file in use, so it can't be updated."
 #~ msgstr ""
 #~ "Pehle Mist World ki har window band karein: khuli game bot ki agent file rok leti hai, is liye update nahi ho sakta."
+
+#~ msgid "Closing every Mist World window for the update..."
+#~ msgstr "Update ke liye Mist World ki har window band ho rahi hai..."
+
+#~ msgid "Closing every Mist World window to reinstall the agent..."
+#~ msgstr ""
+#~ "Agent dobara install karne ke liye Mist World ki har window band ho rahi hai..."
+
+#~ msgid "Contact the &developer..."
+#~ msgstr "&Developer se raabta..."
+
+#~ msgid "D&ungeons...\tCtrl+Shift+G"
+#~ msgstr "D&ungeons...\tCtrl+Shift+G"
+
+#~ msgid "D&uplicate..."
+#~ msgstr "N&aqal..."
+
+#~ msgid "D&uplicate...\tCtrl+D"
+#~ msgstr "N&aqal...\tCtrl+D"
+
+#~ msgid "Downloading Uncle Farmer {v}..."
+#~ msgstr "Uncle Farmer {v} download ho raha hai..."
+
+#~ msgid "E&xport character settings..."
+#~ msgstr "Character settings e&xport karein..."
+
+#~ msgid "E&xport plan..."
+#~ msgstr "Mansooba e&xport karein..."
+
+#~ msgid "Gathe&ring...\tCtrl+Shift+F"
+#~ msgstr "Jama ka&rna...\tCtrl+Shift+F"
 
 #~ msgid "Gather &outside (after the gang's area, or without one)"
 #~ msgstr "&Bahar jama karein (gang ke ilaqe ke baad, ya us ke baghair)"
@@ -6845,10 +7011,25 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Installed. Restart Mist World to load it."
 #~ msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
 
+#~ msgid "Looking for a new version..."
+#~ msgstr "Naya version dhoond raha hoon..."
+
+#~ msgid "New &script...\tCtrl+Shift+N"
+#~ msgstr "Naya &script...\tCtrl+Shift+N"
+
+#~ msgid "New sc&ript..."
+#~ msgstr "Naya sc&ript..."
+
+#~ msgid "Open another game &window\tCtrl+O"
+#~ msgstr "Doosri game &window kholain\tCtrl+O"
+
 #~ msgid ""
 #~ "Open fire up to this many tiles &early, while the monster is coming to you (0: walk all the way; the game's target keys reach 20):"
 #~ msgstr ""
 #~ "Itne tiles pehle hi &hamla shuru karein, jab monster aap ki taraf aa raha ho (0: poori tarah chal kar jayein; game ki target keys 20 tak pohanchti hain):"
+
+#~ msgid "P&ause or go on\tF6"
+#~ msgstr "&Waqfa ya jari\tF6"
 
 #~ msgid "Pet"
 #~ msgstr "Pet"
@@ -6867,6 +7048,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "&Secret room mein mashq karein (madadgar aap ke liye maarta hai; public drop time lagta hai)"
 
+#~ msgid "Re&name..."
+#~ msgstr "Naam &badlein..."
+
+#~ msgid "Reading the game..."
+#~ msgstr "Game padhi ja rahi hai..."
+
 #~ msgid ""
 #~ "Recording for {where} - press Record voice again to send it, Escape to cancel."
 #~ msgstr ""
@@ -6884,6 +7071,18 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "\n"
 #~ "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
 
+#~ msgid "S&top\tShift+F5"
+#~ msgstr "R&ok\tShift+F5"
+
+#~ msgid "Save as scri&pt..."
+#~ msgstr "Scri&pt ki tarah mahfooz karein..."
+
+#~ msgid "Sche&dules...\tCtrl+Shift+H"
+#~ msgstr "Sche&dules...\tCtrl+Shift+H"
+
+#~ msgid "Se&ttings..."
+#~ msgstr "&Tarteeb..."
+
 #~ msgid "Shards: {n}"
 #~ msgstr "Shards: {n}"
 
@@ -6892,6 +7091,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Sharing arnebia (both players get some)"
 #~ msgstr "Arnebia share karna (dono khilariyon ko milta hai)"
+
+#~ msgid "Spea&k the results\tCtrl+Shift+R"
+#~ msgstr "Nataij su&nayein\tCtrl+Shift+R"
+
+#~ msgid "Stop &every bot\tCtrl+Shift+S"
+#~ msgstr "Har &bot rokein\tCtrl+Shift+S"
 
 #~ msgid ""
 #~ "The bag is full with less than this much load &left (a safe margin, 900 to 1000):"
@@ -6914,6 +7119,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
 #~ msgstr ""
 #~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
+
+#~ msgid "Unpacking..."
+#~ msgstr "Unpack ho raha hai..."
+
+#~ msgid "Wa&lk to a dungeon or map...\tCtrl+W"
+#~ msgstr "Dungeon ya map tak &chalain...\tCtrl+W"
 
 #~ msgid ""
 #~ "When nothing is in sight, walk to where a monster is due back (learned while farming)"

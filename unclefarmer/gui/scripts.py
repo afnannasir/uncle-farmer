@@ -10,7 +10,7 @@ from .. import filelock, jsonio
 from ..engine import plan as plans
 from ..engine import script as lang
 from ..i18n import _
-from .common import Dialog, Form, Handler, ask, error, guide_text, info, save_file, show_text, modal
+from .common import Dialog, Form, Handler, ask, error, guide_text, info, modal, opens, save_file, show_text
 
 SNIPPETS = [
     ("travel", 'travel "Wolf Prairie"'),
@@ -74,7 +74,7 @@ class ScriptDialog(Dialog):
 
         row = wx.BoxSizer(wx.HORIZONTAL)
         specs: list[tuple[str, Handler]] = [
-            (_("&Check (F5)"), self.on_check), (_("&Insert command..."), self.on_insert),
+            (_("&Check (F5)"), self.on_check), (opens(_("&Insert command")), self.on_insert),
             (_("Command &list (F1)"), self.on_help),
             (_("Scripting &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
             (_("&Save"), self.on_save),

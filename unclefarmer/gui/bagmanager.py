@@ -17,15 +17,15 @@ import wx
 from .. import settings, speech, stats
 from ..engine import bagrules
 from ..engine.town import shard_catalog
-from ..i18n import _
-from .common import (Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel, page, pick,
+from ..i18n import N_, _
+from .common import (Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel, opens, page, pick,
                      save_file, tabs)
 
-SOURCE_LABELS = (("both", "Storehouse, then the shop"), ("storage", "Storehouse only"),
-                 ("buy", "Shop only"), ("tell", "Don't refill, just tell me"))
-FULL_LABELS = (("stop", "Go somewhere safe and stop"),
-               ("unload", "Sell and store by these lists, then come back"),
-               ("nothing", "Keep farming, just tell me"))
+SOURCE_LABELS = (("both", N_("Storehouse, then the shop")), ("storage", N_("Storehouse only")),
+                 ("buy", N_("Shop only")), ("tell", N_("Don't refill, just tell me")))
+FULL_LABELS = (("stop", N_("Go somewhere safe and stop")),
+               ("unload", N_("Sell and store by these lists, then come back")),
+               ("nothing", N_("Keep farming, just tell me")))
 
 
 class SortLists:
@@ -242,7 +242,7 @@ class BagManagerDialog(Dialog):
         self.leave = f.number(_("Always leave this many in the &bag:"), 0, 0, 1000000)
         box.Add(f.grid, 0, wx.TOP, 10)
         self.leave.Bind(wx.EVT_SPINCTRL, lambda e: self.set_leave())
-        buttons(panel, box, (_("&Add an item..."), lambda e: self.add_item()))
+        buttons(panel, box, (opens(_("&Add an item")), lambda e: self.add_item()))
         self.show_leave()
 
     def show_leave(self) -> None:
@@ -292,7 +292,7 @@ class BagManagerDialog(Dialog):
         for spin in (self.low, self.fill):
             spin.Bind(wx.EVT_SPINCTRL, lambda e: self.set_supply())
         self.source.Bind(wx.EVT_CHOICE, lambda e: self.set_supply())
-        buttons(panel, box, (_("&Add a supply..."), lambda e: self.add_supply()),
+        buttons(panel, box, (opens(_("&Add a supply")), lambda e: self.add_supply()),
                 (_("&Remove"), lambda e: self.remove_supply()))
 
     def supply_label(self, r: dict[str, Any]) -> str:

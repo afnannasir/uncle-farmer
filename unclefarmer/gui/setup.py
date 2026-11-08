@@ -11,7 +11,7 @@ import wx
 from .. import __version__, applog, daily, gameinstall, i18n, paths, updater
 from ..i18n import _
 from . import agentfix
-from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, ok_cancel, page, tabs, modal
+from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, modal, ok_cancel, opens, page, tabs
 
 SPEECH_MODES = ("running", "always", "never")
 AFTER = ("nothing", "close_game", "shutdown")
@@ -45,7 +45,7 @@ class SetupDialog(Dialog):
         f = group(panel, box, _("Mist World"))
         self.folder = f.text(_("&Game folder:"), self.s.get("game_folder", ""))
         parent = f.parent
-        buttons(parent, f.box, (_("&Browse..."), self.on_browse), (_("&Find the running game"), self.on_find))
+        buttons(parent, f.box, (opens(_("&Browse")), self.on_browse), (_("&Find the running game"), self.on_find))
         f = group(panel, box, _("Agent"))
         self.status = f.readonly(_("Status:"), lines=2)
         self.install_btn, self.remove_btn = buttons(f.parent, f.box, (_("&Install"), self.on_install),
