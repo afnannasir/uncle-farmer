@@ -23,6 +23,7 @@ class Link:
         self.casts: list[dict[str, Any]] = []
         self.deaths: list[list[int]] = []           # [map id... or monster, when]
         self.with_deaths = deaths
+        self.now = 0                                # the agent's clock (ms) as it answers
 
     def cast(self, t: int, caster: int, hits: list[tuple[int, int]]) -> None:
         self.casts.append({"t": t, "caster": caster, "seq": len(self.casts), "skill": "Level 5 Multi Shot",
@@ -36,7 +37,7 @@ class Link:
 
     def json(self, line: str) -> dict[str, Any]:
         since = int(line.split()[1])
-        r: dict[str, Any] = {"now": 0, "casts": [c for c in self.casts if c["t"] > since]}
+        r: dict[str, Any] = {"now": self.now, "casts": [c for c in self.casts if c["t"] > since]}
         if self.with_deaths:
             r["deaths"] = [d for d in self.deaths if d[1] > since]
         return r
@@ -88,6 +89,38 @@ def test_an_older_agent_says_it_cant_tell() -> None:
     k = KillTracker(a)
     a.cast(1000, ME, [(-1, HIT)])
     assert k.update(ME) == [] and k.live is False
+
+
+def test_two_runs_back_to_back_count_only_their_own_kills() -> None:
+    # farm kills=10 ended after 3 real kills: the agent still held the last run's casts and
+    # deaths, and the new run counted them as its own
+    a = Link()
+    first = KillTracker(a)
+    assert first.update(ME) == []
+    for i in range(7):
+        a.cast(1000 + 100 * i, ME, [(-1 - i, HIT)])
+        a.die(1050 + 100 * i, -1 - i)
+    assert len(first.update(ME)) == 7
+    a.now = 5000                             # that run is over; the next one begins
+    second = KillTracker(a)
+    assert second.update(ME) == []
+    for i in range(3):
+        a.cast(6000 + 100 * i, ME, [(-20 - i, HIT)])
+        a.die(6050 + 100 * i, -20 - i)
+    assert sorted(second.update(ME)) == [-22, -21, -20]
+    assert second.update(ME) == []
+
+
+def test_the_first_update_reads_nothing_from_before_it() -> None:
+    a = Link()
+    a.cast(1000, ME, [(-1, HIT), (-2, HIT), (-3, HIT)])
+    a.die(1500, -1)
+    a.die(2000, -3)                          # in the very millisecond of the first read
+    a.now = 2000
+    k = KillTracker(a)
+    assert k.update(ME) == []
+    assert k.hit == {} and k.fresh == [] and k.died == [] and k.since == 2000
+    assert k.update(ME) == []                # read again from a millisecond back: still not ours
 
 
 class Fighter(FightingMixin, WalkingMixin):
@@ -185,6 +218,21 @@ def test_count_kills_feeds_the_tally_with_both_sides() -> None:
     assert got["given"]["damage"] == 100
     assert got["received"]["damage"] == 100
     assert got["received"]["by_monster"]["Wolf"]["damage"] == 100
+
+
+def test_a_death_before_the_run_began_is_not_its_kill() -> None:
+    from unclefarmer import stats
+
+    a = Link()
+    b = Fighter(a)
+    b.tally = stats.Tally("Hero", "Wolves", clock=Clock(4.0))     # the run began at 4000 ms
+    me = {"id": ME, "x": 100.0, "y": 100.0, "hp": 1, "maxhp": 1}
+    snap = {"map": {"id": 5121}, "self": me, "entities": [monster(-1, 103, 100), monster(-2, 105, 100)]}
+    a.cast(3000, ME, [(-1, HIT), (-2, HIT)])
+    a.die(3500, -1)                          # before the run (a fight played by hand)
+    a.die(4500, -2)
+    assert b.count_kills(snap) == [-2] and b.kills == 1
+    assert b.kill_tracker.died == [-1, -2]   # both deaths still known (spawns)
 
 
 # ------------------------------------------------------------------ someone else's strikes (agent 44)

@@ -327,12 +327,13 @@ class FightingMixin(Parts):
             # our pets' strikes are ours: a monster only they are at is no one else's (agent 44);
             # and a monster striking them is an attacker of ours (attackers)
             self.kill_tracker.own = pets.ours(as_bot(self), snap)
-        dead = self.kill_tracker.update(me["id"])
         tally = getattr(self, "tally", None)
+        # The agent keeps the game's casts and deaths from before the run (a fight played by hand
+        # an hour earlier came into a run's results): only this run's go into its damage and kills.
+        begun = int(1000 * tally.started) if tally is not None else 0
+        self.kill_tracker.begun = begun
+        dead = self.kill_tracker.update(me["id"])
         if tally is not None:
-            # The agent keeps the game's casts from before the run (a fight played by hand an
-            # hour earlier came into a run's results): only this run's go into its damage.
-            begun = 1000 * tally.started
             tally.combat.observe([c for c in self.kill_tracker.fresh if c["t"] >= begun], me["id"], self.mob_names)
         now = self.clock.time()
         for mid in dead:
