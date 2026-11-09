@@ -416,6 +416,11 @@ msgstr "&Tarteeb"
 msgid "&Shields and big heals below HP (%):"
 msgstr "HP se neeche &shields aur bade heals (%):"
 
+msgid ""
+"&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
+msgstr ""
+"Agle monster ki taraf chalte hue pohanch mein aane walon par &nishaana lagaayein (door se larne wala kirdaar)"
+
 msgid "&Show the time after each message"
 msgstr "Har paigham ke baad &waqt dikhayein"
 
@@ -4866,6 +4871,9 @@ msgstr "{place} se bohot baar hatna para"
 msgid "moved out of {map}"
 msgstr "{map} se bahar nikaal diya gaya"
 
+msgid "moved {n} tiles while paused - going on from here"
+msgstr "waqfe mein {n} tiles hil gaye - ab yahin se aage"
+
 msgid "movement"
 msgstr "movement"
 
@@ -5175,6 +5183,9 @@ msgstr "arnebia share karne secret room ja rahe hain"
 msgid "on"
 msgstr "on"
 
+msgid "on another map than when paused - going on from here"
+msgstr "waqfe ke waqt wala map nahi hai - ab yahin se aage"
+
 msgid ""
 "on foot for {secs} s more: the server still counts the last fight as combat"
 msgstr ""
@@ -5463,6 +5474,14 @@ msgstr "aaj {all} mein se {n} baar arnebia share kiya"
 
 msgid "shield"
 msgstr "shield"
+
+msgid "shooting monsters in reach on the way to the next one"
+msgstr "agle monster tak raaste mein pohanch wale monsters par nishaana"
+
+msgid ""
+"shooting while walking is on, but this character fights from close by - it stops for each monster"
+msgstr ""
+"chalte hue nishaana on hai, lekin yeh kirdaar qareeb se larta hai - har monster ke liye rukta hai"
 
 msgid "short"
 msgstr "mukhtasar"

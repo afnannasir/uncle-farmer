@@ -1258,15 +1258,30 @@ def move_bot(ready: float = 0.0) -> tuple[Bot, Pick]:
     return b, sb
 
 
-def test_shooting_on_the_way_is_only_for_a_dungeon_and_a_ranged_character() -> None:
+def test_shooting_on_the_way_is_only_for_a_ranged_character_that_has_it_on() -> None:
     b, _sb = move_bot()
     assert b.shoots_moving()
     b.move_shots = False                      # the window's choice
     assert not b.shoots_moving()
-    b.move_shots, b.in_instance = True, False     # farming keeps its own way
+    b.move_shots, b.in_instance = True, False     # farming keeps its own way: off by default
     assert not b.shoots_moving()
     b.in_instance = True
     b.p["attack_range"] = 3.0                 # melee walks up to every one
+    assert not b.shoots_moving()
+
+
+def test_farming_in_the_field_shoots_on_the_way_when_the_character_setting_says_so() -> None:
+    b, _sb = move_bot()
+    b.in_instance, b.move_shots = False, False
+    b.p["shoot_while_walking"] = True         # Character, Settings, Fighting
+    assert b.shoots_moving()
+    b.farm_filter = None                      # not farming (a trip's fight back): never
+    assert not b.shoots_moving()
+    b.farm_filter = (None, "", "", [])
+    b.p["attack_range"] = 3.0                 # melee: no
+    assert not b.shoots_moving()
+    b.p["attack_range"] = 10.0
+    b.in_instance = True                      # a dungeon goes by its own setting, not this one
     assert not b.shoots_moving()
 
 

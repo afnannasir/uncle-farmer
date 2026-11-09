@@ -412,6 +412,10 @@ msgstr ""
 msgid "&Shields and big heals below HP (%):"
 msgstr ""
 
+msgid ""
+"&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
+msgstr ""
+
 msgid "&Show the time after each message"
 msgstr ""
 
@@ -4663,6 +4667,9 @@ msgstr ""
 msgid "moved out of {map}"
 msgstr ""
 
+msgid "moved {n} tiles while paused - going on from here"
+msgstr ""
+
 msgid "movement"
 msgstr ""
 
@@ -4948,6 +4955,9 @@ msgstr ""
 msgid "on"
 msgstr ""
 
+msgid "on another map than when paused - going on from here"
+msgstr ""
+
 msgid ""
 "on foot for {secs} s more: the server still counts the last fight as combat"
 msgstr ""
@@ -5226,6 +5236,13 @@ msgid "shared arnebia {n} of {all} times today"
 msgstr ""
 
 msgid "shield"
+msgstr ""
+
+msgid "shooting monsters in reach on the way to the next one"
+msgstr ""
+
+msgid ""
+"shooting while walking is on, but this character fights from close by - it stops for each monster"
 msgstr ""
 
 msgid "short"
