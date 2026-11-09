@@ -83,6 +83,9 @@ msgstr ""
 msgid "&Character"
 msgstr ""
 
+msgid "&Character settings"
+msgstr ""
+
 msgid "&Character:"
 msgstr ""
 
@@ -165,6 +168,9 @@ msgstr ""
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr ""
 
+msgid "&Game"
+msgstr ""
+
 msgid "&Game folder:"
 msgstr ""
 
@@ -219,6 +225,9 @@ msgstr ""
 msgid "&How many:"
 msgstr ""
 
+msgid "&Import"
+msgstr ""
+
 msgid "&Import character settings"
 msgstr ""
 
@@ -269,6 +278,9 @@ msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr ""
 
 msgid "&Map:"
+msgstr ""
+
+msgid "&Messages"
 msgstr ""
 
 msgid "&Messages:"
@@ -379,6 +391,12 @@ msgstr ""
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr ""
 
+msgid "&Run"
+msgstr ""
+
+msgid "&Run selected"
+msgstr ""
+
 msgid "&Save"
 msgstr ""
 
@@ -392,9 +410,6 @@ msgid "&Script commands"
 msgstr ""
 
 msgid "&Sell shards (Tools, Sell shards now)"
-msgstr ""
-
-msgid "&Sell the collection now"
 msgstr ""
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
@@ -916,7 +931,7 @@ msgstr ""
 msgid "Clea&n the bag (Tools, Clean the bag now)"
 msgstr ""
 
-msgid "Clean the &bag now (throw-away list)"
+msgid "Clean the &bag now"
 msgstr ""
 
 msgid "Clean the bag"
@@ -1001,6 +1016,9 @@ msgid "Copied"
 msgstr ""
 
 msgid "Copied {email}."
+msgstr ""
+
+msgid "Copy &selection"
 msgstr ""
 
 msgid "Couldn't apply the settings: {err}"
@@ -1180,6 +1198,9 @@ msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr ""
 
 msgid "E&xit"
+msgstr ""
+
+msgid "E&xport"
 msgstr ""
 
 msgid "E&xport character settings"
@@ -1679,6 +1700,12 @@ msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 
 msgid "Import character settings"
+msgstr ""
+
+msgid "Import or export character settings"
+msgstr ""
+
+msgid "Import or export plans"
 msgstr ""
 
 msgid "Import plan"
@@ -2654,7 +2681,7 @@ msgstr ""
 msgid "S&tore items (Tools, Store items now)"
 msgstr ""
 
-msgid "S&tore items now (storage list)"
+msgid "S&tore items now"
 msgstr ""
 
 msgid "S&tore:"
@@ -2754,6 +2781,9 @@ msgid "Sell s&hards now"
 msgstr ""
 
 msgid "Sell shards now: started by hand"
+msgstr ""
+
+msgid "Sell the &collection now"
 msgstr ""
 
 msgid "Selling"

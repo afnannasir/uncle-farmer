@@ -73,7 +73,7 @@ class EditingMixin(FrameParts):
                 self.fill_runs(("plan", d.plan["name"]))
 
     def copy_plan(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item or item[0] != "plan":
             self.say(_("Select a plan first."))
             return
@@ -91,7 +91,7 @@ class EditingMixin(FrameParts):
         self.fill_runs(("script", name) if name else None)
 
     def edit_selected(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item:
             self.new_plan()
             return
@@ -106,7 +106,7 @@ class EditingMixin(FrameParts):
             self.fill_runs(("script", name))
 
     def delete_selected(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item:
             return
         if not ask(self, _("Delete {name}? This can't be undone.", name=item[1])):
@@ -123,7 +123,7 @@ class EditingMixin(FrameParts):
 
     def export_plan(self) -> None:
         """Plans, Export: make a portable copy of the selected saved plan."""
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item or item[0] != "plan":
             self.say(_("Select a plan first."))
             return
@@ -253,6 +253,10 @@ class EditingMixin(FrameParts):
         whatever Character settings says about selling after farming."""
         self.log(_("Sell shards now: started by hand"))
         self.run_errand("sell_shards\n", _("Selling shards"))
+
+    def sell_collection_now(self) -> None:
+        """Sell the selected character's gathered fish, ore, or herbs right away."""
+        self.run_errand("sell_collection\n", _("Selling the collection"))
 
     def store_items_now(self) -> None:
         """Tools, Store items now: put into the storehouse what the bag manager's storage list says
