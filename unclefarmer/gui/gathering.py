@@ -14,7 +14,7 @@ import wx
 from .. import atlas, settings
 from ..engine import gathering
 from ..i18n import _
-from .common import Dialog, Reader, standing, with_code, Form, buttons, error, group, info, labeled, page, save_file, tabs, modal
+from .common import Dialog, Reader, standing, with_code, Form, buttons, error, group, info, labeled, modal, opens, page, save_file, tabs
 from .crafting import CHECK, START
 from .plan import NOT_SEEN
 from typing import Any
@@ -55,7 +55,7 @@ class GatheringDialog(Dialog):
         self.gangs: list[str] = list(gathering.gangs(c))
         self.gang_list = labeled(f.parent, f.box, _("Gangs, in &order (the bot goes to each in turn):"),
                                  lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
-        buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own), (_("Add a gang by &name..."), self.on_add_gang),
+        buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own), (opens(_("Add a gang by &name")), self.on_add_gang),
                 (_("Move &up"), lambda e: self.move_gang(-1)), (_("Move &down"), lambda e: self.move_gang(1)),
                 (_("&Remove"), self.on_remove_gang))
         f = group(panel, box, _("Paying to go in"))
@@ -74,7 +74,7 @@ class GatheringDialog(Dialog):
         self.where = f.choice(_("&Place:"), [], 0)
         self.list = labeled(f.parent, f.box, _("&Your places:"),
                             lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
-        buttons(f.parent, f.box, (_("&Add where I stand"), self.on_add), (_("Re&name..."), self.on_rename),
+        buttons(f.parent, f.box, (_("&Add where I stand"), self.on_add), (opens(_("Re&name")), self.on_rename),
                 (_("Re&move"), self.on_remove))
         self.fill_places(c["place"])
 

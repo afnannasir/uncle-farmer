@@ -16,7 +16,7 @@ import wx
 from .. import __version__, applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
-from .common import Handler, ask, buttons, group, guide_text, info, labeled, show_text, tabs
+from .common import Handler, ask, buttons, group, guide_text, info, labeled, opens, show_text, tabs
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -149,10 +149,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             w, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_DONTWRAP), 1)
         row.Add(right, 3, wx.EXPAND)
         box.Add(row, 1, wx.EXPAND)
-        buttons(panel, box, (_("&New plan..."), lambda e: self.new_plan()),
-                (_("New sc&ript..."), lambda e: self.new_script()),
-                (_("&Edit..."), lambda e: self.edit_selected()),
-                (_("D&uplicate..."), lambda e: self.copy_plan()),
+        buttons(panel, box, (opens(_("&New plan")), lambda e: self.new_plan()),
+                (opens(_("New sc&ript")), lambda e: self.new_script()),
+                (opens(_("&Edit")), lambda e: self.edit_selected()),
+                (opens(_("D&uplicate")), lambda e: self.copy_plan()),
                 (_("&Delete"), lambda e: self.delete_selected()))
         self.plan_list.Bind(wx.EVT_LISTBOX, lambda e: self.show_summary())
         self.plan_list.Bind(wx.EVT_LISTBOX_DCLICK, lambda e: self.edit_selected())
@@ -186,6 +186,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
     def build_menu(self) -> None:
         bar = wx.MenuBar()
 
+        def command(label: str, handler: Handler, shortcut: str = "") -> tuple[str, Handler]:
+            """Add an accelerator after translating its menu label, not inside the catalog key."""
+            return label + ("\t" + shortcut if shortcut else ""), handler
+
         def menu(title: str, entries: list[tuple[str, Handler]]) -> None:
             # No separator lines: a screen reader counts each one as an entry, so a menu of four
             # read "1 of 5".
@@ -195,64 +199,66 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                 self.Bind(wx.EVT_MENU, handler, item)
             bar.Append(m, title)
 
-        menu(_("&File"), [(_("&Settings..."), lambda e: self.open_setup()),
-                          (_("Open the &log folder"), lambda e: os.startfile(_logs())),
-                          (_("Open the &results folder"), lambda e: self.open_results_folder()),
-                          (_("E&xit"), lambda e: self.Close())])
-        menu(_("&View"), [(_("&Bot\tCtrl+1"), lambda e: self.go_tab(0)), (_("&Plans\tCtrl+2"), lambda e: self.go_tab(1)),
-                          (_("&Log\tCtrl+3"), lambda e: self.go_tab(2))])
-        menu(_("&Bot"), [(_("&Start\tF5"), lambda e: self.start()), (_("S&top\tShift+F5"), lambda e: self.stop()),
-                         (_("P&ause or go on\tF6"), lambda e: self.toggle_pause()),
-                         (_("Stop &every bot\tCtrl+Shift+S"), lambda e: self.stop_all()),
-                         (_("Wa&lk to a dungeon or map...\tCtrl+W"), lambda e: self.walk()),
-                         (_("Sche&dules...\tCtrl+Shift+H"), lambda e: self.open_schedules()),
-                         (_("&Results...\tCtrl+R"), lambda e: self.show_results()),
-                         (_("Spea&k the results\tCtrl+Shift+R"), lambda e: self.speak_results()),
-                         (_("&Mute this game\tCtrl+M"), lambda e: self.set_game_speech(False)),
-                         (_("&Unmute this game\tCtrl+U"), lambda e: self.set_game_speech(True)),
-                         (_("Mute e&very game"), lambda e: self.set_game_speech(False, every=True)),
-                         (_("Unmute every &game"), lambda e: self.set_game_speech(True, every=True)),
-                         (_("Open another game &window\tCtrl+O"), lambda e: self.open_client()),
-                         (_("&Private messages...\tCtrl+Shift+M"), lambda e: self.edit_messages()),
-                         (_("C&hat...\tCtrl+T"), lambda e: self.open_chat()),
-                         (_("Let everyone get replies &again"), lambda e: self.forget_answered())])
-        menu(_("&Character"), [(_("&Settings...\tCtrl+P"), lambda e: self.edit_profile()),
-                               (_("&Bag and supplies...\tCtrl+B"), lambda e: self.edit_bag()),
-                               (_("S&can now"), lambda e: self.scan_now()),
-                               (_("&Another character..."), lambda e: self.edit_other_profile()),
-                               (_("E&xport character settings..."), lambda e: self.export_character_settings()),
-                               (_("&Import character settings..."), lambda e: self.import_character_settings())])
-        menu(_("&Tools"), [(_("&Gem Maker...\tCtrl+G"), lambda e: self.open_tool("gem")),
-                           (_("&Equipment Enhancer...\tCtrl+Shift+E"), lambda e: self.open_tool("enhance")),
-                           (_("&Daily chores...\tCtrl+Shift+D"), lambda e: self.open_tool("chores")),
-                           (_("Gathe&ring...\tCtrl+Shift+F"), lambda e: self.open_tool("gather")),
-                           (_("D&ungeons...\tCtrl+Shift+G"), lambda e: self.open_tool("dungeon")),
-                           (_("&Sell the collection now"),
-                            lambda e: self.run_errand("sell_collection\n", _("Selling the collection"))),
-                           (_("Sell s&hards now"), lambda e: self.sell_shards_now()),
-                           (_("Clean the &bag now (throw-away list)..."), lambda e: self.clean_bag_now()),
-                           (_("S&tore items now (storage list)"), lambda e: self.store_items_now()),
-                           (_("Update shard &prices"), lambda e: self.update_shard_prices_now())])
-        menu(_("&Plans"), [(_("&New plan...\tCtrl+N"), lambda e: self.new_plan()),
-                           (_("New &script...\tCtrl+Shift+N"), lambda e: self.new_script()),
-                           (_("&Edit...\tCtrl+E"), lambda e: self.edit_selected()),
-                           (_("D&uplicate...\tCtrl+D"), lambda e: self.copy_plan()),
-                           (_("&Delete"), lambda e: self.delete_selected()),
-                           (_("E&xport plan..."), lambda e: self.export_plan()),
-                           (_("&Import plan..."), lambda e: self.import_plan())])
-        menu(_("&Help"), [(_("&Quick guide\tF1"), lambda e: show_text(self, _("Quick guide"), GUIDE)),
-                          (_("&User guide (opens in your browser)"), lambda e: self.open_user_guide()),
-                          (_("&Keyboard shortcuts"), lambda e: show_text(self, _("Keyboard shortcuts"), SHORTCUTS)),
-                          (_("Ho&w the game works"), lambda e: show_text(self, _("How the game works"),
+        menu(_("&File"), [command(_("&Settings"), lambda e: self.open_setup()),
+                          command(_("Open the &log folder"), lambda e: os.startfile(_logs())),
+                          command(_("Open the &results folder"), lambda e: self.open_results_folder()),
+                          command(_("E&xit"), lambda e: self.Close())])
+        menu(_("&View"), [command(_("&Bot"), lambda e: self.go_tab(0), "Ctrl+1"),
+                          command(_("&Plans"), lambda e: self.go_tab(1), "Ctrl+2"),
+                          command(_("&Log"), lambda e: self.go_tab(2), "Ctrl+3")])
+        menu(_("&Bot"), [command(_("&Start"), lambda e: self.start(), "F5"),
+                         command(_("S&top"), lambda e: self.stop(), "Shift+F5"),
+                         command(_("P&ause or go on"), lambda e: self.toggle_pause(), "F6"),
+                         command(_("Stop &every bot"), lambda e: self.stop_all(), "Ctrl+Shift+S"),
+                         command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
+                         command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
+                         command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
+                         command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R"),
+                         command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
+                         command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
+                         command(_("Mute e&very game"), lambda e: self.set_game_speech(False, every=True)),
+                         command(_("Unmute every &game"), lambda e: self.set_game_speech(True, every=True)),
+                         command(_("Open another game &window"), lambda e: self.open_client(), "Ctrl+O"),
+                         command(_("&Private messages"), lambda e: self.edit_messages(), "Ctrl+Shift+M"),
+                         command(_("C&hat"), lambda e: self.open_chat(), "Ctrl+T"),
+                         command(_("Let everyone get replies &again"), lambda e: self.forget_answered())])
+        menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
+                               command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
+                               command(_("S&can now"), lambda e: self.scan_now()),
+                               command(_("&Another character"), lambda e: self.edit_other_profile()),
+                               command(_("E&xport character settings"), lambda e: self.export_character_settings()),
+                               command(_("&Import character settings"), lambda e: self.import_character_settings())])
+        menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
+                           command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
+                           command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
+                           command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
+                           command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
+                           command(_("&Sell the collection now"),
+                                   lambda e: self.run_errand("sell_collection\n", _("Selling the collection"))),
+                           command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
+                           command(_("Clean the &bag now (throw-away list)"), lambda e: self.clean_bag_now()),
+                           command(_("S&tore items now (storage list)"), lambda e: self.store_items_now()),
+                           command(_("Update shard &prices"), lambda e: self.update_shard_prices_now())])
+        menu(_("&Plans"), [command(_("&New plan"), lambda e: self.new_plan(), "Ctrl+N"),
+                           command(_("New &script"), lambda e: self.new_script(), "Ctrl+Shift+N"),
+                           command(_("&Edit"), lambda e: self.edit_selected(), "Ctrl+E"),
+                           command(_("D&uplicate"), lambda e: self.copy_plan(), "Ctrl+D"),
+                           command(_("&Delete"), lambda e: self.delete_selected()),
+                           command(_("E&xport plan"), lambda e: self.export_plan()),
+                           command(_("&Import plan"), lambda e: self.import_plan())])
+        menu(_("&Help"), [command(_("&Quick guide"), lambda e: show_text(self, _("Quick guide"), GUIDE), "F1"),
+                          command(_("&User guide (opens in your browser)"), lambda e: self.open_user_guide()),
+                          command(_("&Keyboard shortcuts"), lambda e: show_text(self, _("Keyboard shortcuts"), SHORTCUTS)),
+                          command(_("Ho&w the game works"), lambda e: show_text(self, _("How the game works"),
                                                                           guide_text("GAME_GUIDE.md"))),
-                          (_("Script &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
-                          (_("&Script commands"), lambda e: self.script_help()),
-                          (_("&Commands for trusted players"),
+                          command(_("Script &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
+                          command(_("&Script commands"), lambda e: self.script_help()),
+                          command(_("&Commands for trusted players"),
                            lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
-                          (_("Check for &updates..."), lambda e: self.check_updates()),
-                          (_("Contact the &developer..."), lambda e: self.contact_developer()),
-                          (_("Join the &Telegram group"), lambda e: self.join_telegram()),
-                          (_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
+                          command(_("Check for &updates"), lambda e: self.check_updates()),
+                          command(_("Contact the &developer"), lambda e: self.contact_developer()),
+                          command(_("Join the &Telegram group"), lambda e: self.join_telegram()),
+                          command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
 

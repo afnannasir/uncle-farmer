@@ -428,7 +428,7 @@ class EditingMixin(FrameParts):
         if not games:
             self._install_agent(folder, [])
             return
-        self.say(_("Closing every Mist World window to reinstall the agent..."))
+        self.say(_("Closing every Mist World window to reinstall the agent"))
         agentfix.close_then(games, lambda left: self._install_agent(folder, left))
 
     def _install_agent(self, folder: str, left: list[int]) -> None:

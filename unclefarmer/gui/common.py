@@ -103,6 +103,11 @@ def _name(label: str) -> str:
     return label.replace("&", "").rstrip(":").strip()
 
 
+def opens(label: str) -> str:
+    """A dialog-opening action, with decoration kept outside its translated label."""
+    return label + "..."
+
+
 def field_label(ctrl: wx.Window) -> wx.StaticText | None:
     """The label a Form field was built with (set by Form.add), or None for a plain control."""
     return _LABELS.get(ctrl)

@@ -184,7 +184,7 @@ class GamesMixin(FrameParts):
         s = self.cached(pid, 10.0)
         tried = self.snap is not None and self.snap[0] == pid and self.clock.time() - self.snap[2] <= 10.0
         if s is None and not tried:
-            values.setdefault("activity", _("Reading the game..."))
+            values.setdefault("activity", _("Reading the game"))
             self.show_status(**values)
             return
         self.render(pid, s, values)
