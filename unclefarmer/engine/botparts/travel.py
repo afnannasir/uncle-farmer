@@ -18,14 +18,15 @@ from .parts import as_bot, Parts
 
 WaysOut = dict[int, tuple[int, tuple[float, float]]]
 
-# TEMPORARY, until the bot can activate talents itself: Polson Wetland's poisoned ground hurts
-# whoever stands on it unless the General talent Poison Immunity ("Immune to Poisoned Terrain
-# Effect Damage") is activated. No trip goes there, or through it (the only way to the Underground
-# Water Cave and the sailing port), without it. Read as combos.py reads talents: `mem skills`,
-# activated ones flagged b == 1. Remove with the talent activation system.
+# Polson Wetland's poisoned ground hurts whoever stands on it, unless the General talent Poison
+# Immunity ("Immune to Poisoned Terrain Effect Damage") is activated - or the character is on a
+# fusion beast, any kind. So without the talent a trip THROUGH it (the only way to the Underground
+# Water Cave and the sailing port) gets on a beast first and stays on it, fighting nothing on the
+# way; a trip that ends there (farming, gathering) goes, with a warning: fights there are on foot.
+# Talents are read as combos.py reads them: `mem skills`, activated ones flagged b == 1.
 POISON_MAP = 5141
 POISON_TALENT = "Poison Immunity"
-POISON_REFUSED = "Travel to Polson Wetland (5141) refused: Poison Immunity Talent is not activated."
+POISON_MOUNT_WAIT = 30.0    # seconds to wait for a beast to go on before giving up the crossing
 
 
 def ways_out(b: object) -> WaysOut:
@@ -128,7 +129,7 @@ class TravelMixin(Parts):
         after every leg, so a wrong guess only costs a re-plan; whatever fails is left out after."""
         dst = int(dst)
         if dst == POISON_MAP and self.map_id() != POISON_MAP:
-            self._refuse_unless_poison_immune()    # before anything moves (temporary: see POISON_MAP)
+            self._warn_poison_stay()               # before anything moves (see POISON_MAP)
         avoid: set[Any] = set(travel.kept_off(self.p))      # the rides the profile switches off
         was = getattr(self, "traveling", False)   # a chores run or a survey keeps it on round this
         self.traveling = True
@@ -159,14 +160,20 @@ class TravelMixin(Parts):
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
                 return
-            if mid != POISON_MAP and any(leg.get("map") == POISON_MAP for leg in legs):
-                self._refuse_unless_poison_immune()   # the way there crosses Polson Wetland
             steps = travel.describe(legs)
             if steps != said and len(legs) > 1:
                 self.log(_("route to {map}: {steps}", map=atlas.label(dst), steps=" / ".join(steps)))
             said = steps[1:]
-            if self._take_leg_noting(legs[0], avoid, failed):
-                return
+            # a leg into Polson Wetland, or across it, on the way somewhere else: on a beast first
+            crossing = dst != POISON_MAP and POISON_MAP in (mid, legs[0].get("dest"))
+            if crossing:
+                self._ride_into_poison(leaving=mid == POISON_MAP)
+            self.crossing_poison = crossing
+            try:
+                if self._take_leg_noting(legs[0], avoid, failed):
+                    return
+            finally:
+                self.crossing_poison = False
         raise Stopped(_("travel to {map} didn't arrive", map=atlas.label(dst)))
 
     def poison_immune(self) -> bool:
@@ -181,13 +188,33 @@ class TravelMixin(Parts):
             return False
         return POISON_TALENT in combos.active_talents(sk if jsonio.is_object(sk) else None)
 
-    def _refuse_unless_poison_immune(self) -> None:
-        """Temporary (see POISON_MAP): no step towards Polson Wetland without Poison Immunity."""
+    def _warn_poison_stay(self) -> None:
+        """A trip that ends in Polson Wetland without Poison Immunity: it goes, but say (aloud, once
+        a run) that its ground hurts whenever we are off a fusion beast - every fight there."""
+        if getattr(self, "warned_poison", False) or self.poison_immune():
+            return
+        self.warned_poison = True
+        self.log(_("Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever "
+                   "we are off a fusion beast, and every fight there is on foot"), speak=True)
+
+    def _ride_into_poison(self, leaving: bool = False) -> None:
+        """Crossing Polson Wetland without Poison Immunity: get on a fusion beast (any kind) before
+        the step in, waiting out the server's combat time if a fight was just over. Stopped when
+        none will go on: walking through on foot would poison us the whole way. Already on it
+        (leaving): one try, and out either way - standing still waiting is worse."""
         if self.poison_immune():
             return
-        why = _(POISON_REFUSED)
-        self.log(why, speak=True)
-        raise Stopped(why)
+        if leaving:
+            beasts.ride_any(as_bot(self))
+            return
+        end = self.clock.time() + POISON_MOUNT_WAIT
+        while not beasts.ride_any(as_bot(self)):
+            if self.clock.time() >= end:
+                why = _("can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast "
+                        "would go on (a fused character takes no poison damage there)")
+                self.log(why, speak=True)
+                raise Stopped(why)
+            self.sleep(2.0)
 
     def _take_leg_noting(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
         """_take_leg, remembering how each map we can't plan out of (a gang base, a dungeon) was

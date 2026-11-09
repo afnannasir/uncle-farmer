@@ -1193,32 +1193,27 @@ It does not stop to fight monsters along the way, but it still uses potions to k
 
 You can press **Pause** to stop the journey.
 
-### Polson Wetland requires Poison Immunity
+### Polson Wetland and its poison
 
-<badge color="warning">Important</badge>
+Polson Wetland's poisoned ground hurts anyone on it, unless they have activated the General talent
+Poison Immunity or are on a fusion beast (any kind). Without the talent:
 
-Polson Wetland has poisoned ground that damages characters who do not have the **Poison Immunity** General talent activated.
+- A trip through it (the only way to the Underground Water Cave and the sailing port beyond) gets on
+  a fusion beast before stepping in and stays on it all the way across, without stopping to fight.
+  Your fastest Swift beast goes on first, else your strongest Fierce one, whatever your travel beast
+  setting says. If no beast will go on, it waits out a fight that just ended; if there's still none,
+  the run stops before the step in, and the log says why.
+- A trip that ends there (farming, gathering) goes, and says once that Poison Immunity isn't
+  activated: every fight there is on foot, in the poison.
+- Leaving Polson Wetland is never refused.
 
-Until Uncle Farmer can activate talents by itself, it refuses to travel to or through Polson Wetland unless Poison Immunity is already active.
+### Lava
 
-This restriction also affects travel to the Underground Water Cave and the sailing port beyond Polson Wetland.
-
-If a journey is refused, Uncle Farmer stops before moving your character and records this message in the log:
-
-`Travel to Polson Wetland (5141) refused: Poison Immunity Talent is not activated.`
-
-This restriction applies to:
-
-- Farming plans.
-- Scripts.
-- **Walk to**.
-- Tools that require travel.
-- `come` and `follow` commands.
-
-To travel through Polson Wetland, activate Poison Immunity in the game and start the task again.
-
-If your character is already in Polson Wetland, you can still move around the area and leave it. The restriction only prevents entering or traveling through it without the talent activated.
-
+The volcanic caves' lava lake and magma can be walked on, but a character standing in them loses
+HP. The bot treats them as walls: it walks, stands and fights only on the islands and bridges. A
+monster out in the lava is fought from the shore when it is within your attack's reach, and left
+alone when it isn't. On the two maps where lava is the only way between parts of the map (Deep
+underground and Demon Castle), it stays walkable.
 
 ## Several games at once
 

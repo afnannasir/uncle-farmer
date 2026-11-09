@@ -1805,3 +1805,14 @@ def test_left_out_counts_the_doomed(clock: Clock) -> None:
     b.dying_in = lambda e: 0.5
     b.targets(b.snap())
     assert b.left_out == {"doomed": 1}
+
+
+# ------------------------------------------------------------------ crossing Polson Wetland
+def test_no_fighting_back_while_crossing_poisoned_ground(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=101.0)])
+    b._attackers = {-1}
+    b.crossing_poison = True                  # set by travel for a leg into or across Polson Wetland
+    b.last_hp = 100.0
+    assert b.hit({"hp": 50.0}) is False       # a hit doesn't break the walk off
+    b.fight_back()
+    assert not any("fighting back" in line for line in b.lines)

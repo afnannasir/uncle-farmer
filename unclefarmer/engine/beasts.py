@@ -293,6 +293,24 @@ def keep_riding(b: Bot, read_power: bool = True) -> None:
     ensure(b, TRAVEL)
 
 
+def ride_any(b: Bot) -> bool:
+    """On a fusion beast, any kind, for poisoned ground (Polson Wetland): a fused character takes
+    no poison damage there. The fastest Swift one, else the strongest Fierce one; the travel-beast
+    setting doesn't matter here, the poison does. True once one is on (or already was)."""
+    rows = owned(b)
+    active = next((r for r in rows if r["active"]), None)
+    if active is not None:
+        return True
+    if not rows or clock_for(b).time() - getattr(b, "last_combat", 0) < AFTER_FIGHT:
+        return False      # nothing to ride, or the server still counts the last fight as combat
+    clock = clock_for(b)
+    want = choose(rows, TRAVEL, b.beasts_refused, clock) or choose(rows, FIGHT, b.beasts_refused, clock)
+    if want is None:
+        return False
+    _put_on(b, rows, want, None, TRAVEL)
+    return any(r["active"] for r in owned(b))
+
+
 def off(b: Bot) -> None:
     """Get off whatever beast is on (the end of a run, somewhere safe)."""
     rows = owned(b)
