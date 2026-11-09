@@ -752,9 +752,10 @@ def _share(b: Bot, cfg: dict[str, Any]):
     return (made or 0) + 1, True
 
 
-def _enter_room(b: Bot, cfg: dict[str, Any], check_only: bool):
-    """From an instructor into the chosen secret room. (entered, what to say)."""
-    town.visit(b, "instructor")
+def _enter_room(b: Bot, cfg: dict[str, Any], check_only: bool, back_to: town.Place | None = None):
+    """From an instructor into the chosen secret room. (entered, what to say). back_to: where the
+    trip goes afterwards (a farming run's farm): the instructor cheapest there and back is chosen."""
+    town.visit(b, "instructor", back_to=back_to)
     if b.choose(r"^\s*Secret room training") is None:
         return False, _("the instructor offers no secret room training")
     b.wait_dialog(3.0)
@@ -835,15 +836,17 @@ def _wait_slot(b: Bot):
     return True
 
 
-def share_visit(b: Bot, cfg: dict[str, Any], practise: int = 0) -> tuple[int, str]:
+def share_visit(b: Bot, cfg: dict[str, Any], practise: int = 0,
+                back_to: town.Place | None = None) -> tuple[int, str]:
     """One visit: into a room, an assistant out (the game lets us share only then), a share in this
     half hour, another as the next one starts when that is near (or every half hour while
-    practising for `practise` minutes), then out. (shares made today, where)."""
+    practising for `practise` minutes), then out. (shares made today, where). back_to: where the
+    trip goes afterwards (a farming run's farm), so the instructor is chosen for there and back."""
     name = getattr(b, "character", None)
     b.share_tried = slot(b.clock.time())
     where = atlas.label(b.map_id())
     if atlas.kind(b.map_id()) != "secret_room":
-        entered, where = _enter_room(b, cfg, False)
+        entered, where = _enter_room(b, cfg, False, back_to)
         if not entered:
             raise Stopped(where)
     try:
