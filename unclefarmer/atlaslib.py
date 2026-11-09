@@ -85,6 +85,13 @@ EXIT_GANG = 9999999
 # to the nearest non-walkable cell). Keeps routes off walls where the
 # ground allows it, and still lets them through 1-wide corridors.
 PEN = {1: 4.0, 2: 1.5, 3: 0.5}
+# Walkable ground that hurts whoever stands on it: the volcanic caves' lava lake and magma (a
+# character's HP falls there, though the map lets it walk in). It counts as a wall, so the bot
+# walks, stands and fights only on the islands and bridges round it - unless that would cut the
+# walkable ground into parts it can't cross between (Deep underground, Demon Castle): there the
+# lava stays walkable, as before.
+HAZARD_LABELS = frozenset({"lava lake", "magma", "magma pool", "magma hell"})
+HAZARD_PART = 50    # parts of walkable ground this big count when checking that nothing is cut off
 _PEN_C = (ctypes.c_double * 16)(*[PEN.get(i, 0.0) for i in range(16)])   # for the C searches
 
 _RETRY = -3              # routing.c: a cost its buckets can't hold (search again with the heap)
@@ -404,6 +411,28 @@ def _flat_ids(cells: Iterable[Point], W: int) -> npt.NDArray[np.int32] | None:
     return arr
 
 
+def _big_parts(walk: npt.NDArray[np.bool_], W: int) -> list[int]:
+    """Sizes of the 4-connected parts of walk with at least HAZARD_PART cells."""
+    flat = walk.ravel().tolist()
+    seen = bytearray(len(flat))
+    out: list[int] = []
+    for s0 in range(len(flat)):
+        if not flat[s0] or seen[s0]:
+            continue
+        seen[s0] = 1
+        stack, n = [s0], 0
+        while stack:
+            c = stack.pop()
+            n += 1
+            for nb in (c + 1, c - 1, c + W, c - W):
+                if 0 <= nb < len(flat) and flat[nb] and not seen[nb]:
+                    seen[nb] = 1
+                    stack.append(nb)
+        if n >= HAZARD_PART:
+            out.append(n)
+    return out
+
+
 class MapModel(object):
     """One map, painted, with walkability, labels and clearance.
 
@@ -425,6 +454,7 @@ class MapModel(object):
     zmask: npt.NDArray[np.int32]
     solid: npt.NDArray[np.bool_]
     walk: npt.NDArray[np.bool_]
+    hazard: npt.NDArray[np.bool_]      # walkable cells that hurt (HAZARD_LABELS)
     directional: npt.NDArray[np.bool_]
     oneway: npt.NDArray[np.bool_]
     gate: npt.NDArray[np.int32]
@@ -494,6 +524,7 @@ class MapModel(object):
                 if 1 <= x <= self.w and 1 <= y <= self.h and self.walk[y, x]:
                     self.walk[y, x] = False
                     self.npc_cells[(x, y)] = mk["label"]
+        self._keep_off_hazards()
         self.directional = np.isin(tt, list(DIRECTIONAL))
         self._oneway()
         self._gates()
@@ -714,6 +745,18 @@ class MapModel(object):
             sizes.append(n)
         self.comp = comp
         self.comp_sizes = sizes
+
+    def _keep_off_hazards(self) -> None:
+        """hazard: walkable cells that hurt (HAZARD_LABELS). They are taken out of walk when the
+        rest of the ground still holds together - the same big parts, each as connected as before
+        - so routes, patrols and fights stay on the safe ground; else they stay walkable."""
+        ids = [i for i, lab in enumerate(self.labels) if lab.strip().lower() in HAZARD_LABELS]
+        self.hazard = (np.isin(self.lab, ids) & self.walk) if ids else np.zeros(self.walk.shape, dtype=bool)
+        if not self.hazard.any():
+            return
+        safe = self.walk & ~self.hazard
+        if len(_big_parts(safe, self.W)) == len(_big_parts(self.walk, self.W)):
+            self.walk = safe
 
     def comp_of(self, x: int, y: int) -> int:
         return self.comp[y * self.W + x]

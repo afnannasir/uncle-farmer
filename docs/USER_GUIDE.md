@@ -527,15 +527,27 @@ Show the route says the way before you go. The whole way it rides your fastest S
 in towns and through monster ground alike, and it doesn't stop to fight; potions still keep your HP
 up. Pause stops it.
 
-### Polson Wetland needs Poison Immunity (for now)
+### Polson Wetland and its poison
 
-Polson Wetland's poisoned ground hurts anyone on it who hasn't activated the General talent
-Poison Immunity. Until the bot can activate talents itself, it doesn't go to Polson Wetland, or
-through it (the only way to the Underground Water Cave and the sailing port beyond), unless that
-talent is activated: the run stops before anything moves, and the log says "Travel to Polson
-Wetland (5141) refused: Poison Immunity Talent is not activated." This applies to plans, scripts,
-Walk to, the Tools and come/follow alike. Activate the talent in the game and start again. A
-character already standing in Polson Wetland can still move about and leave it.
+Polson Wetland's poisoned ground hurts anyone on it, unless they have activated the General talent
+Poison Immunity or are on a fusion beast (any kind). Without the talent:
+
+- A trip through it (the only way to the Underground Water Cave and the sailing port beyond) gets on
+  a fusion beast before stepping in and stays on it all the way across, without stopping to fight.
+  Your fastest Swift beast goes on first, else your strongest Fierce one, whatever your travel beast
+  setting says. If no beast will go on, it waits out a fight that just ended; if there's still none,
+  the run stops before the step in, and the log says why.
+- A trip that ends there (farming, gathering) goes, and says once that Poison Immunity isn't
+  activated: every fight there is on foot, in the poison.
+- Leaving Polson Wetland is never refused.
+
+### Lava
+
+The volcanic caves' lava lake and magma can be walked on, but a character standing in them loses
+HP. The bot treats them as walls: it walks, stands and fights only on the islands and bridges. A
+monster out in the lava is fought from the shore when it is within your attack's reach, and left
+alone when it isn't. On the two maps where lava is the only way between parts of the map (Deep
+underground and Demon Castle), it stays walkable.
 
 ## Several games at once
 

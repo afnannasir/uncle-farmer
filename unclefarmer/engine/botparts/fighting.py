@@ -235,11 +235,13 @@ class FightingMixin(Parts):
         return sb is not None and getattr(sb, "downed", {}).get(mid, -1.0) >= since
 
     def hit(self, me: dict[str, Any]) -> bool:
-        """True when HP fell since the last step of a walk and fighting back is on."""
+        """True when HP fell since the last step of a walk and fighting back is on (not for the
+        walking assistant, nor while crossing Polson Wetland on a beast: neither stops to fight)."""
         hp = me.get("hp")
         dropped = self.last_hp is not None and hp is not None and hp < self.last_hp
         self.last_hp = hp
-        return (dropped and self.p.get("fight_back", True) and not self.in_fight and not self.walk_only)
+        return (dropped and self.p.get("fight_back", True) and not self.in_fight and not self.walk_only
+                and not getattr(self, "crossing_poison", False))
 
     def fight_back(self) -> None:
         """Something hit us while walking: fight what is attacking us, then let the walk go on.
@@ -247,8 +249,10 @@ class FightingMixin(Parts):
         attack, and what merely stands nearby (a city's ducks and hens) is left alone: chasing
         those pulls a trip off its path and into the town's buildings. Without cast reports
         (an old agent) whatever is close is the best guess. The walking assistant never fights:
-        it rides past on a Swift beast, which can't use skills anyway."""
-        if self.walk_only:
+        it rides past on a Swift beast, which can't use skills anyway. Nor does a crossing of
+        Polson Wetland without Poison Immunity: getting off the beast for a fight there poisons us
+        (travel's crossing_poison)."""
+        if self.walk_only or getattr(self, "crossing_poison", False):
             return
         for _round in range(6):
             snap = self.snap()
