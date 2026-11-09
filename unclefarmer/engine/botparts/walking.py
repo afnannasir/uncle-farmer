@@ -84,6 +84,13 @@ class WalkingMixin(Parts):
             cells.discard((int(me["x"]), int(me["y"])))     # where we stand is never a wall
         return cells
 
+    def _walk_broken(self, me: dict[str, Any], moves: int) -> str | None:
+        """Why a walk round breaks the walk off: "moved" (the player moved us while paused since
+        the walk began: plan again from here), "attacked" (_broken_off), or None."""
+        if getattr(self, "pause_moves", 0) != moves:
+            return "moved"
+        return "attacked" if self._broken_off(me) else None
+
     def _broken_off(self, me: dict[str, Any]) -> bool:
         """A walk stops for an attack: our HP dropped (hit), or on a trip something casts at us."""
         return self.hit(me) or self.attacked_on_the_way()
@@ -127,14 +134,16 @@ class WalkingMixin(Parts):
             limit = self.walk_timeout(left) if timeout is None else timeout
             best, best_at = left, start
             near_at = 0.0
+            moves = getattr(self, "pause_moves", 0)
             while self.clock.time() - max(start, self.resumed_at) < limit:
                 self.clock.wait(self.stop_event, 0.04)
                 tick = self.clock.time()
                 if map_before is not None and self.map_id() != map_before:
                     return "map"
                 me = self.look_after()
-                if self._broken_off(me):
-                    return "attacked"
+                broken = self._walk_broken(me, moves)
+                if broken:
+                    return broken
                 if near and self.clock.time() >= near_at:
                     near_at = self.clock.time() + self.NEAR_EVERY
                     if near(me):
@@ -177,7 +186,8 @@ class WalkingMixin(Parts):
 
     def walk_axis(self, axis: int, target: float, map_before: int | None = None, tol: float = 0.5, timeout: float | None = None, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         """Hold one direction until that coordinate is reached.
-        Returns 'arrived', 'stuck', 'map' (we changed map) or 'near' (near() said stop).
+        Returns 'arrived', 'stuck', 'map' (we changed map), 'near' (near() said stop) or 'moved'
+        (the player moved us while paused: the caller plans again from here).
         timeout: None works it out from the distance (walk_timeout)."""
         me = self.look_after()
         pos = me["x"] if axis == 0 else me["y"]
@@ -194,14 +204,16 @@ class WalkingMixin(Parts):
             start = self.clock.time()
             best, best_at = pos, start
             near_at = 0.0
+            moves = getattr(self, "pause_moves", 0)
             while self.clock.time() - max(start, self.resumed_at) < timeout:
                 self.clock.wait(self.stop_event, 0.04)
                 tick = self.clock.time()
                 if map_before is not None and self.map_id() != map_before:
                     return "map"
                 me = self.look_after()
-                if self._broken_off(me):
-                    return "attacked"
+                broken = self._walk_broken(me, moves)
+                if broken:
+                    return broken
                 # near() reads the whole world (is a monster in sight?): a few times a second is
                 # plenty, where the position is read every step to stop on the right tile
                 if near and self.clock.time() >= near_at:
@@ -269,9 +281,8 @@ class WalkingMixin(Parts):
             if stuck in ("map", "near"):
                 self.stuck_in_a_row = 0
                 return stuck
-            if stuck == "attacked":
-                self._fight_on_the_way(cell)
-                attacks += 1
+            if stuck in ("attacked", "moved"):
+                attacks = self._walk_interrupted(stuck, cell, attacks)
                 if attacks < self.ATTACK_LIMIT:
                     continue      # re-plan from where the fight ended; not a stuck walk
                 # Hit again and again with the fight never clearing the way: this used to re-plan
@@ -290,6 +301,15 @@ class WalkingMixin(Parts):
                 return "stuck"
             attempt += 1
         return "stuck"
+
+    def _walk_interrupted(self, why: str, cell: tuple[int, int], attacks: int) -> int:
+        """A walk broken off before it got anywhere: attacked (fight, and one more attack on this
+        walk) or moved by the player while paused (nothing to do: the walk plans again from
+        where we now stand, and that is no stuck). Returns the walk's attack count."""
+        if why != "attacked":
+            return attacks
+        self._fight_on_the_way(cell)
+        return attacks + 1
 
     def _obstacle_map(self, m: Any, cell: tuple[int, int], here: tuple[int, int]) -> Any:
         """The map with the NPCs and players standing about made walls (npc_cells), our own cell
@@ -359,8 +379,9 @@ class WalkingMixin(Parts):
 
     def _walk_hops_go(self, hops: list[tuple[int, int]], diagonal: bool, leave: int | None,
                       near: Callable[[dict[str, Any]], bool] | None) -> str | bool:
-        """Walk the hops: "map" or "near" (done early), "stuck" or "attacked" (broken off), or
-        False (all walked). leave: the map id when the walk is meant to leave it."""
+        """Walk the hops: "map" or "near" (done early), "stuck", "attacked" or "moved" (broken
+        off; "moved": the player moved us while paused), or False (all walked). leave: the map
+        id when the walk is meant to leave it."""
         for hop in hops:
             if self.walk_only:
                 beasts.keep_riding(as_bot(self))   # thrown off or refused earlier: back on between hops
@@ -372,7 +393,7 @@ class WalkingMixin(Parts):
             else:
                 results = (self.walk_axis(axis, hop[axis], leave, near=near) for axis in (0, 1))
             for r in results:
-                if r in ("map", "near", "stuck", "attacked"):
+                if r in ("map", "near", "stuck", "attacked", "moved"):
                     return r
         return False
 

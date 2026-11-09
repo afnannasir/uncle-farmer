@@ -689,6 +689,10 @@ class SimGame:
             f.write("%d %d %s" % (self.port, os.getpid(), self.secret))
         self._stop = threading.Event()
         self.at: list[tuple[float, Any]] = []      # (game time, callback): measurements during a run
+        # The real agent drops a connection that has asked nothing for 120 s (StateServer.IDLE_MS);
+        # a test sets this to have the pretend game do the same (game seconds), None = never.
+        self.idle_drop: float | None = None
+        self._asked: dict[int, float] = {}          # connection -> when it last asked something
         self.thread = threading.Thread(target=self._accept, daemon=True, name="simgame-accept")
         self.thread.start()
 
@@ -768,6 +772,11 @@ class SimGame:
                 self.connections.remove(conn)
 
     def _answer(self, line: str, cid: int) -> str | None:
+        now = self.clock.time()
+        last = self._asked.get(cid, now)
+        self._asked[cid] = now
+        if self.idle_drop is not None and now - last > self.idle_drop:
+            return None               # idled out, as the agent drops a quiet controller
         self.clock.advance(ROUND_TRIP)
         while self.at and self.clock.time() >= self.at[0][0]:
             _t, call = self.at.pop(0)
