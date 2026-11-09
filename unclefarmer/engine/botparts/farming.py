@@ -156,7 +156,8 @@ class FarmingMixin(Parts):
                     self.note_pick(snap, mob, mobs)
                     self.fight(mob)
                     continue
-                # Nothing in sight: keep moving.
+                # Nothing to fight: keep moving (and say why, when monsters were in sight).
+                self.explain_left_out()
                 me = snap["self"]
                 if loop:
                     if loop_i is None:

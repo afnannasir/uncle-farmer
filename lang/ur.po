@@ -3985,6 +3985,9 @@ msgid ""
 msgstr ""
 "game mein ek text box khula hai (chat?) - jab tak aap Escape se band nahi karte game keys ignore karta hai"
 
+msgid "about to be killed by someone else"
+msgstr "koi aur isay maarne wala hai"
+
 msgid "about {price}"
 msgstr "taqreeban {price}"
 
@@ -4516,6 +4519,9 @@ msgstr "bhara"
 msgid "full loop"
 msgstr "poora loop"
 
+msgid "further to walk than the chase range"
+msgstr "chase range se zyada door paidal"
+
 msgid "fusion power {n} - on foot until it has come back"
 msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
 
@@ -4647,6 +4653,9 @@ msgstr "yahan hunting bounty li ja sakti hai"
 msgid "hunting bounty"
 msgstr "hunting bounty"
 
+msgid "in an elite or boss zone we keep out of"
+msgstr "elite ya boss zone mein, jis se hum door rehte hain"
+
 msgid "in the city"
 msgstr "shehar mein"
 
@@ -4724,6 +4733,12 @@ msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "atak se nikalne ke liye {map} chhod kar {dest} ja rahe hain"
+
+msgid "left alone for now (took no damage, couldn't be reached or selected)"
+msgstr "abhi ke liye chhora (damage nahi hua, pohanch ya select nahi ho saka)"
+
+msgid "left out by the only-fight / never-fight names"
+msgstr "sirf-larna / kabhi-nahi-larna naamon ki wajah se chhora"
 
 msgid ""
 "left out {n} gear warnings from before this run (they were dealt with then); broken gear is still repaired"
@@ -4831,6 +4846,9 @@ msgstr "chook gaya"
 
 msgid "mode set: {mode}"
 msgstr "mode set: {mode}"
+
+msgid "monsters in sight, none to fight: {why}"
+msgstr "monsters nazar mein hain, larne ko koi nahi: {why}"
 
 msgid "moved off {place} too often"
 msgstr "{place} se bohot baar hatna para"
@@ -4978,6 +4996,9 @@ msgstr ""
 
 msgid "no way from {a} to {b} on {map}"
 msgstr "{map} par {a} se {b} tak koi rasta nahi"
+
+msgid "no way to walk there"
+msgstr "wahan paidal jaane ka koi rasta nahi"
 
 msgid "no {item} in the storehouse"
 msgstr "storehouse mein koi {item} nahi"
@@ -5132,6 +5153,9 @@ msgstr "ab {map} par"
 msgid "nowhere to build now (places: {places})"
 msgstr "abhi kahin tameer nahi ho sakti (jagahein: {places})"
 
+msgid "of a kind that can't be attacked here"
+msgstr "aisi qism ka jis par yahan hamla nahi ho sakta"
+
 msgid "off"
 msgstr "off"
 
@@ -5140,6 +5164,30 @@ msgstr "arnebia share karne secret room ja rahe hain"
 
 msgid "on"
 msgstr "on"
+
+msgid ""
+"on foot for {secs} s more: the server still counts the last fight as combat"
+msgstr ""
+"mazeed {secs} s paidal: server abhi pichli larai ko combat hi samajhta hai"
+
+msgid "on foot: no Swift fusion beast to ride"
+msgstr "paidal: sawaari ke liye koi Swift fusion beast nahi"
+
+msgid "on foot: our Swift fusion beast has expired"
+msgstr "paidal: hamara Swift fusion beast expire ho chuka hai"
+
+msgid "on foot: the fusion beast list couldn't be read"
+msgstr "paidal: fusion beast ki list parhi nahi ja saki"
+
+msgid "on foot: the game won't let {beast} on for {secs} s more"
+msgstr "paidal: game mazeed {secs} s tak {beast} par sawaar nahi hone dega"
+
+msgid ""
+"on foot: the travel fusion beast is set to none in the character settings"
+msgstr "paidal: character settings mein safar ka fusion beast none par set hai"
+
+msgid "on foot: {beast} isn't among our fusion beasts"
+msgstr "paidal: {beast} hamare fusion beasts mein nahi hai"
 
 msgid "on the Forger's screen: {screen}"
 msgstr "Forger ki screen par: {screen}"
@@ -5197,6 +5245,9 @@ msgstr "Level {lv} {kind} Enhance Crystals khatam - rok rahe hain"
 
 msgid "out of {kind} potions - stopping"
 msgstr "{kind} potions khatam - rok rahe hain"
+
+msgid "outside the farming area"
+msgstr "farming area se bahar"
 
 msgid "outside: no place for this character - add one where you stand"
 msgstr ""
@@ -6058,6 +6109,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "today: aaj ke tamam runs ne jo kuch kamaya us ka total, kitne runs aur minutes ke saath."
+
+msgid "too close to a boss"
+msgstr "boss ke bohat qareeb"
 
 msgid "took {n} {item} out of the storehouse"
 msgstr "storehouse se {n} {item} nikale"

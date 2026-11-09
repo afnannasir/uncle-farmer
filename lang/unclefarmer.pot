@@ -3820,6 +3820,9 @@ msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
 msgstr ""
 
+msgid "about to be killed by someone else"
+msgstr ""
+
 msgid "about {price}"
 msgstr ""
 
@@ -4325,6 +4328,9 @@ msgstr ""
 msgid "full loop"
 msgstr ""
 
+msgid "further to walk than the chase range"
+msgstr ""
+
 msgid "fusion power {n} - on foot until it has come back"
 msgstr ""
 
@@ -4453,6 +4459,9 @@ msgstr ""
 msgid "hunting bounty"
 msgstr ""
 
+msgid "in an elite or boss zone we keep out of"
+msgstr ""
+
 msgid "in the city"
 msgstr ""
 
@@ -4523,6 +4532,12 @@ msgid "leaving {map} first, to find the nearest from outside"
 msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
+msgstr ""
+
+msgid "left alone for now (took no damage, couldn't be reached or selected)"
+msgstr ""
+
+msgid "left out by the only-fight / never-fight names"
 msgstr ""
 
 msgid ""
@@ -4629,6 +4644,9 @@ msgid "missed"
 msgstr ""
 
 msgid "mode set: {mode}"
+msgstr ""
+
+msgid "monsters in sight, none to fight: {why}"
 msgstr ""
 
 msgid "moved off {place} too often"
@@ -4763,6 +4781,9 @@ msgid "no way from {a} to {b} - go there yourself and start again"
 msgstr ""
 
 msgid "no way from {a} to {b} on {map}"
+msgstr ""
+
+msgid "no way to walk there"
 msgstr ""
 
 msgid "no {item} in the storehouse"
@@ -4907,6 +4928,9 @@ msgstr ""
 msgid "nowhere to build now (places: {places})"
 msgstr ""
 
+msgid "of a kind that can't be attacked here"
+msgstr ""
+
 msgid "off"
 msgstr ""
 
@@ -4914,6 +4938,29 @@ msgid "off to the secret room to share arnebia"
 msgstr ""
 
 msgid "on"
+msgstr ""
+
+msgid ""
+"on foot for {secs} s more: the server still counts the last fight as combat"
+msgstr ""
+
+msgid "on foot: no Swift fusion beast to ride"
+msgstr ""
+
+msgid "on foot: our Swift fusion beast has expired"
+msgstr ""
+
+msgid "on foot: the fusion beast list couldn't be read"
+msgstr ""
+
+msgid "on foot: the game won't let {beast} on for {secs} s more"
+msgstr ""
+
+msgid ""
+"on foot: the travel fusion beast is set to none in the character settings"
+msgstr ""
+
+msgid "on foot: {beast} isn't among our fusion beasts"
 msgstr ""
 
 msgid "on the Forger's screen: {screen}"
@@ -4971,6 +5018,9 @@ msgid "out of Level {lv} {kind} Enhance Crystals - stopping"
 msgstr ""
 
 msgid "out of {kind} potions - stopping"
+msgstr ""
+
+msgid "outside the farming area"
 msgstr ""
 
 msgid "outside: no place for this character - add one where you stand"
@@ -5786,6 +5836,9 @@ msgstr ""
 
 msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
+msgstr ""
+
+msgid "too close to a boss"
 msgstr ""
 
 msgid "took {n} {item} out of the storehouse"

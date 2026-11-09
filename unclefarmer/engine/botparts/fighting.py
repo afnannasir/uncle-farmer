@@ -13,11 +13,25 @@ from typing import Any
 
 from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
-from ...i18n import _
+from ...i18n import N_, _
 from .. import beasts, bosses, combat, pets, teamheal
 from .base import (NPC_HP, STOPPING, Stopped, agent_strike, note_failure, skill_things, snap_map)
 from ...link import GameLink
 from .parts import as_bot, Parts
+
+
+# Why targets() left a monster in sight out (explain_left_out says how many for each).
+LEFT_OUT = {
+    "skip": N_("left alone for now (took no damage, couldn't be reached or selected)"),
+    "kind": N_("of a kind that can't be attacked here"),
+    "names": N_("left out by the only-fight / never-fight names"),
+    "boss": N_("too close to a boss"),
+    "area": N_("outside the farming area"),
+    "avoid": N_("in an elite or boss zone we keep out of"),
+    "far": N_("further to walk than the chase range"),
+    "no way": N_("no way to walk there"),
+    "doomed": N_("about to be killed by someone else"),
+}
 
 
 class FightingMixin(Parts):
@@ -34,6 +48,7 @@ class FightingMixin(Parts):
     FOLLOW_STALL = 2.0    # ... and is given up if it doesn't close in by a tile in this long
     FOLLOW_TRIES = 3      # stalls in a row, never reaching the monster, before we walk up ourselves
     DOOMED_SKIP = 10.0    # longest a monster someone else is about to kill is left alone
+    LEFT_OUT_EVERY = 60.0   # seconds between two "none to fight" lines (explain_left_out)
     FIRST_HIT = 0.5       # seconds from being in reach to our first hit landing (press, cast, the game's answer)
     UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone...
     UNSELECTED_MAX = 300.0  # ... three times longer each time again, up to this
@@ -335,6 +350,7 @@ class FightingMixin(Parts):
         dead = self.kill_tracker.update(me["id"])
         if tally is not None:
             tally.combat.observe([c for c in self.kill_tracker.fresh if c["t"] >= begun], me["id"], self.mob_names)
+        self._forget_the_dead(getattr(self.kill_tracker, "died", []))
         now = self.clock.time()
         for mid in dead:
             self.kills += 1
@@ -348,6 +364,20 @@ class FightingMixin(Parts):
         if len(self.counted) > 500:
             self.counted = {k: t for k, t in self.counted.items() if now - t < 60}
         return dead
+
+    def _forget_the_dead(self, died: Sequence[int]) -> None:
+        """Monsters the game reported dead (anyone's kill): what we held against them goes with
+        them. The game gives a respawned monster an id that just came free, so a skip kept past
+        the death (120 s for one that took no damage or that we got stuck walking to) left the
+        next monster of that id alone too - unless it attacked us. On a busy map, with other
+        players killing what we had left, those reused ids added up to monsters all round that
+        the bot walked past."""
+        if not died:
+            return
+        unselectable: dict[int, Any] = getattr(self, "unselectable", {})
+        for mid in died:
+            self.skip.pop(mid, None)
+            unselectable.pop(mid, None)
 
     def watch_hp(self, snap: dict[str, Any]) -> None:
         """Note every monster's HP with the time, for dying_in()."""
@@ -471,35 +501,29 @@ class FightingMixin(Parts):
         boss_list = bosses.in_sight(snap) if keep else []
         entities: list[dict[str, Any]] = snap["entities"]
         size = atlas.maps().get(snap_map(snap), {})
+        left: dict[str, int] = {}      # why monsters in sight were left out -> how many
         for e in entities:
             if e["kind"] != "monster" or "hp" not in e or e["hp"] <= 0:
                 continue
             if not e.get("name") or e["maxhp"] <= 1 or not self._placed(e, size):
                 continue        # drops and corpses; or seen with no position we can walk to or aim at
             self.mob_names[e["id"]] = e["name"]
-            if e["maxhp"] >= NPC_HP or self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
+            if e["maxhp"] >= NPC_HP or e["name"].strip().lower() in skill_things():
+                continue        # a town NPC; our own (or another player's) trap or totem
+            why = self._left_out(snap, e, hitting, area, only, skip, avoid_rects, boss_list, keep, now)
+            if why is None:
+                hitting_us = e["id"] in hitting
+                steps[e["id"]] = self.walk_dist(snap, e, None if hitting_us else limit)
+                if steps[e["id"]] == math.inf and not hitting_us:
+                    # no walkable way to it, or further than the chase: never picked, whatever the patrol mode
+                    why = "far" if limit is not None and self.walk_dist(snap, e) < math.inf else "no way"
+                elif not hitting_us and self.doomed(e, me, steps[e["id"]], rng):
+                    why = "doomed"  # it will be dead before we get there
+            if why is not None:
+                left[why] = left.get(why, 0) + 1
                 continue
-            if self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
-                continue        # its kind took no damage and never attacked: a critter, not a monster
-            if e["name"].strip().lower() in skill_things():
-                continue        # our own (or another player's) trap or totem, not a monster
-            if only and not re.search(only, e["name"], re.I):
-                continue
-            if skip and re.search(skip, e["name"], re.I):
-                continue
-            if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, keep)):
-                continue
-            hitting_us = e["id"] in hitting
-            if area and not hitting_us and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
-                continue
-            if any(r[0] <= e["x"] <= r[2] and r[1] <= e["y"] <= r[3] for r in avoid_rects):
-                continue
-            steps[e["id"]] = self.walk_dist(snap, e, None if hitting_us else limit)
-            if steps[e["id"]] == math.inf and not hitting_us:
-                continue          # no walkable way to it: never picked, whatever the patrol mode
-            if not hitting_us and self.doomed(e, me, steps[e["id"]], rng):
-                continue        # it will be dead before we get there
             out.append(e)
+        self.left_out = left           # for the farm loop's "nothing to fight" line (explain_left_out)
         self.walk_steps = steps        # for note_pick: the walk the farm loop's choice would take
         # Those attacking us first; then those we have already hurt, close by: our hits make them
         # partly ours, and finishing them gets the kill instead of leaving it to the next player.
@@ -509,6 +533,39 @@ class FightingMixin(Parts):
         if len(self.mob_names) > 2000:
             self.mob_names = {e["id"]: e["name"] for e in out}
         return out
+
+    def _left_out(self, snap: dict[str, Any], e: dict[str, Any], hitting: set[int], area: Sequence[float] | None,
+                  only: str | None, skip: str | None, avoid_rects: Sequence[tuple[float, float, float, float]],
+                  boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
+        """Why targets() leaves this monster out before any walking distance is worked out (a key
+        of LEFT_OUT), or None when it may be a target."""
+        if self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
+            return "skip"
+        if self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
+            return "kind"       # its kind took no damage and never attacked: a critter, not a monster
+        if (only and not re.search(only, e["name"], re.I)) or (skip and re.search(skip, e["name"], re.I)):
+            return "names"
+        if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, keep)):
+            return "boss"
+        if area and e["id"] not in hitting and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
+            return "area"
+        if any(r[0] <= e["x"] <= r[2] and r[1] <= e["y"] <= r[3] for r in avoid_rects):
+            return "avoid"
+        return None
+
+    def explain_left_out(self) -> None:
+        """The farm loop found nothing to fight: when monsters were in sight, say how many were left
+        alone for each reason, at most once a minute, so a log shows why the bot walked past
+        monsters instead of only that it did."""
+        left: dict[str, int] = getattr(self, "left_out", {})
+        if not left:
+            return
+        now = self.clock.time()
+        if now - getattr(self, "_left_said_at", 0.0) < self.LEFT_OUT_EVERY:
+            return
+        self._left_said_at = now
+        parts = ["%s %d" % (_(LEFT_OUT[k]), n) for k, n in sorted(left.items(), key=lambda kv: -kv[1])]
+        self.log(_("monsters in sight, none to fight: {why}", why="; ".join(parts)))
 
     @staticmethod
     def _placed(e: dict[str, Any], size: dict[str, Any]) -> bool:
