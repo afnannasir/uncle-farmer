@@ -123,7 +123,7 @@ class Map:
     def line_ok(self, a: Cell, b: Cell, min_clear: int=1, allow_directional: bool=False) -> bool:
         return self.line
 
-    def route(self, a: Cell, b: Cell, avoid_directional: bool=False) -> list[Cell] | None:
+    def route(self, a: Cell, b: Cell, avoid_directional: bool=False, gates_fallback: bool=True) -> list[Cell] | None:
         self.route_calls.append((a, b, avoid_directional))
         return self.route_paths.pop(0) if self.route_paths else None
 
@@ -955,3 +955,45 @@ def test_a_hung_game_counts_as_no_stuck(clock: Clock) -> None:
     clock.advance(1.6)                              # ...but standing still after that is a stuck
     tick = clock.now - 0.05
     assert w._no_progress(tick, best_at) == (best_at, True)
+
+
+# ---------------------------------------------------------------- mounting on the way
+def _riding_calls(monkeypatch: pytest.MonkeyPatch) -> list[bool]:
+    from unclefarmer.engine import beasts
+    calls: list[bool] = []
+
+    def keep_riding(b: object, read_power: bool = True) -> None:
+        calls.append(read_power)
+
+    monkeypatch.setattr(beasts, "keep_riding", stand_in(beasts.keep_riding, keep_riding))
+    return calls
+
+
+def test_travel_tries_the_mount_again_between_hops(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A dungeon puts us out seconds after the last kill: the leg's start is too soon after the
+    # fight to mount, so the walk itself must try again or the whole map is walked on foot.
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.traveling = True
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    assert b._walk_hops_go([(5, 5), (9, 9)], True, None, None) is False
+    assert calls == [False, False]          # each hop, and never the T key (read_power off)
+
+
+def test_no_mount_tries_outside_travel_or_in_a_fight(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    b._walk_hops_go([(5, 5)], True, None, None)          # farming walks: not travelling
+    b.traveling, b.in_fight = True, True
+    b._walk_hops_go([(5, 5)], True, None, None)
+    assert calls == []
+
+
+def test_the_walking_assistant_still_reads_fusion_power(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.walk_only = b.traveling = True
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    b._walk_hops_go([(5, 5)], True, None, None)
+    assert calls == [True]

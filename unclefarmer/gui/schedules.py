@@ -13,7 +13,7 @@ import wx
 
 from .. import schedule
 from ..i18n import _
-from .common import Dialog, Form, ask, buttons, error, first_selected, labeled, ok_cancel, pick, select_row, show_text
+from .common import Dialog, Form, ask, buttons, error, first_selected, labeled, ok_cancel, opens, pick, select_row, show_text
 
 Item = tuple[str, str]          # ("plan" | "script", name), as the Plans tab lists them
 Now = Callable[[], dt.datetime]
@@ -123,9 +123,9 @@ class SchedulesDialog(Dialog):
         for i, (title, width) in enumerate(((_("Plan or script"), 180), (_("Character"), 120), (_("When"), 200),
                                             (_("Next"), 150), (_("On"), 50))):
             self.list.InsertColumn(i, title, width=width)
-        self.btns = buttons(self, box, (_("&Add..."), lambda e: self.add()), (_("&Edit..."), lambda e: self.edit()),
+        self.btns = buttons(self, box, (opens(_("&Add")), lambda e: self.add()), (opens(_("&Edit")), lambda e: self.edit()),
                             (_("Turn on or o&ff"), lambda e: self.toggle()), (_("&Delete"), lambda e: self.delete()),
-                            (_("&History..."), lambda e: self.history()))
+                            (opens(_("&History")), lambda e: self.history()))
         note = wx.StaticText(self, label=_(
             "A scheduled plan starts in the game the character is logged in to, as the Start button would. "
             "A time missed while Uncle Farmer was closed doesn't run later; a game busy with another run "

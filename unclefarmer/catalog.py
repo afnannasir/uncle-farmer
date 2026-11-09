@@ -299,6 +299,11 @@ def compile_catalog(lang_dir: str, code: str, header: dict[str, str],
     return path
 
 
+def _ui_key(text: str) -> str:
+    """A catalog key without menu-only decoration from an older source string."""
+    return text.split("\t", 1)[0].replace("...", "")
+
+
 def write_template(lang_dir: str) -> tuple[str, int]:
     """Refresh the .pot, merge every .po with it and compile the .mo files.
 
@@ -319,8 +324,10 @@ def write_template(lang_dir: str) -> tuple[str, int]:
             old_header, old, old_obsolete = _parse(read(path))
             header = _language_header(old_header, code)
             known = dict(old)
+            decorated = {_ui_key(msgid): _ui_key(msgstr) for msgid, msgstr in old + old_obsolete if msgstr
+                         if msgid != _ui_key(msgid)}
             current = set(strings)
-            entries = [(s, known.get(s, "")) for s in strings]
+            entries = [(s, known.get(s) or decorated.get(s, "")) for s in strings]
             obsolete = {msgid: msgstr for msgid, msgstr in old_obsolete if msgstr}
             obsolete.update({msgid: msgstr for msgid, msgstr in old
                              if msgid not in current and msgstr})

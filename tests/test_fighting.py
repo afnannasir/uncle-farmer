@@ -193,6 +193,7 @@ class Bot(FightingMixin, WalkingMixin):
     switch_wait = KeysMixin.switch_wait
     note_page_turn = KeysMixin.note_page_turn
     last_attack: tuple[str, float] | None = None
+    last_me: dict[str, Any] | None = None      # count_kills' fallback for who we are
     in_instance = False
 
     def __init__(self, link: Link | None=None, prof: dict[str, Any] | None=None, entities: list[dict[str, Any]] | None=None, me: dict[str, Any] | None=None, map_id: int=5121) -> None:
@@ -1438,6 +1439,55 @@ def test_hit_until_down_leaves_a_monster_that_takes_no_damage(clock: Clock) -> N
     assert any("leaving every Wolf here alone" in line for line in b.lines)
 
 
+def test_a_monster_no_hit_of_ours_landed_on_is_not_written_off(clock: Clock) -> None:
+    """Live in Dark pit City (2026-11-08): six seconds "fighting" a Goblin cast only Soul Purify
+    on ourselves - not one hit landed on it - and the bot wrote off every Goblin for half an hour
+    ("can't be attacked") while they chased and hit us, though it had killed Goblins there
+    minutes before. With the game reporting our hits (live tracker) and none on this monster, it
+    is our miss: another monster now, this one again in a few seconds, its kind never."""
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99),
+                  tracker=FakeTracker(live=True, landed={}))
+    mob = monster(-1, x=105.0)
+
+    def snap():
+        clock.advance(0.5)
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert b.skip[-1] == clock.now + 10
+    assert b.skip_names == {}
+    assert not any("takes no damage" in line for line in b.lines)
+    assert any("couldn't get to Wolf - next one" in line for line in b.lines)
+
+
+class _HitOnceTracker(FakeTracker):
+    """The game reported one hit of ours on monster -1, at agent ms `at`, and none since."""
+
+    def __init__(self, at: int) -> None:
+        super().__init__(live=True)
+        self.at = at
+
+    def hit_since(self, ms: int) -> dict[int, int]:
+        return {-1: self.at} if self.at >= ms else {}
+
+
+def test_a_monster_our_hits_land_on_without_damage_is_still_written_off(clock: Clock) -> None:
+    """The real case stays as it was: a hit of ours landed on it (the game said so) and its HP
+    never moved - a town critter the server won't let anyone hurt - so its kind is left alone."""
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99),
+                  tracker=_HitOnceTracker(int(1000 * clock.now)))
+    mob = monster(-1, x=105.0)
+
+    def snap():
+        clock.advance(0.5)
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert b.skip[-1] == clock.now + 120
+    assert any("takes no damage, leaving it" in line for line in b.lines)
+    assert any("leaving every Wolf here alone" in line for line in b.lines)
+
+
 def test_in_a_dungeon_a_monster_with_no_damage_never_writes_off_its_kind(clock: Clock) -> None:
     b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99))
     b.in_instance = True          # its one kind of monster is what the visit is for
@@ -1685,3 +1735,73 @@ def test_only_a_monster_that_struck_us_or_our_pet_is_an_attacker() -> None:
     assert not at_us(b, {"caster": -3}, me, {pet})          # agent 44 names targets: this struck none
     assert at_us(old, {"caster": -3}, me, set())           # an older agent: as before
     assert at_us(b, {"caster": -3, "targets": [[2002, 1]]}, None, set())             # our id unknown yet
+
+
+# ------------------------------------------------------------------ reused monster ids
+def test_a_death_clears_what_was_held_against_that_id(clock: Clock) -> None:
+    # The game hands a respawned monster an id that just came free: a skip kept past the death
+    # left the next monster of that id alone (only attacking us got it fought).
+    b = target_bot([monster(-1), monster(-2)])
+    b.skip = {-1: clock.now + 120, -2: clock.now + 120}
+    b.unselectable = {-1: (1, (100.0, 100.0), clock.now + 120)}
+    b._forget_the_dead([-1])
+    assert -1 not in b.skip and -1 not in b.unselectable
+    assert b.skip[-2] == clock.now + 120          # still alive: still left alone
+    assert ids(b.targets(b.snap())) == [-1]
+
+
+class DyingTracker(FakeTracker):
+    """A tracker that read deaths (anyone's kills) on its last update."""
+
+    def __init__(self, died: list[int]) -> None:
+        super().__init__(live=True)
+        self.died = died
+        self.own: set[int] = set()
+        self.begun = 0
+
+
+def test_count_kills_forgets_the_skips_of_every_dead_monster(clock: Clock) -> None:
+    b = target_bot([monster(-3)])
+    b.kill_tracker = as_kind(KillTracker, DyingTracker([-3]))     # someone else's kill
+    b.skip = {-3: clock.now + 120}
+    b.last_me = {"id": ME}
+    b.count_kills(None)
+    assert b.skip == {}
+
+
+# ------------------------------------------------------------------ explain_left_out
+def test_explain_left_out_says_why_once_a_minute(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=130.0), monster(-2, x=100.0, y=150.0), monster(-3, x=101.0)])
+    b.skip = {-3: clock.now + 120}
+    assert b.targets(b.snap(), area=(90, 90, 140, 110), limit=10) == []
+    b.explain_left_out()
+    said = [line for line in b.lines if line.startswith("monsters in sight, none to fight")]
+    assert len(said) == 1
+    assert "further to walk than the chase range 1" in said[0]
+    assert "outside the farming area 1" in said[0]
+    assert "left alone for now" in said[0]
+    b.explain_left_out()                          # within the minute: quiet
+    clock.advance(b.LEFT_OUT_EVERY)
+    b.explain_left_out()
+    assert len([line for line in b.lines if line.startswith("monsters in sight")]) == 2
+
+
+def test_explain_left_out_quiet_when_nothing_was_in_sight(clock: Clock) -> None:
+    b = target_bot([])
+    b.targets(b.snap())
+    b.explain_left_out()
+    assert b.lines == []
+
+
+def test_left_out_tells_no_way_from_too_far(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=105.0)])
+    b.walk_dist = lambda snap, e, limit=None: math.inf      # walls all round it
+    b.targets(b.snap(), limit=40)
+    assert b.left_out == {"no way": 1}
+
+
+def test_left_out_counts_the_doomed(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=130.0)])
+    b.dying_in = lambda e: 0.5
+    b.targets(b.snap())
+    assert b.left_out == {"doomed": 1}

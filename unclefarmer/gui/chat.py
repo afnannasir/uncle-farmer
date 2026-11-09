@@ -18,7 +18,7 @@ import wx
 
 from .. import chat, nearby, settings, tones
 from ..i18n import _
-from .common import Dialog, Handler, labeled, ok_cancel, page, tabs
+from .common import Dialog, Handler, labeled, ok_cancel, opens, page, tabs
 
 if TYPE_CHECKING:
     from .mainparts.base import FrameParts
@@ -146,7 +146,7 @@ class ChatFrame(wx.Frame):
         specs: list[tuple[str, Handler]] = [(_("&Send"), lambda e: self.send()),
                                             (_("Record &voice"), lambda e: self.record()),
                                             (_("Pla&y"), lambda e: self.play()),
-                                            (_("Se&ttings..."), lambda e: self.settings()),
+                                            (opens(_("Se&ttings")), lambda e: self.settings()),
                                             (_("Close"), lambda e: self.Close())]
         for label, handler in specs:
             b = wx.Button(panel, label=label)

@@ -12,7 +12,7 @@ from .. import atlas, jsonio, travel
 from ..engine import plan as plans
 from ..engine.script import check as check_script
 from ..i18n import _
-from .common import (Dialog, Form, Reader, ask, buttons, enable_label, error, group, info, labeled, modal,
+from .common import (Dialog, Form, Reader, ask, buttons, enable_label, error, group, info, labeled, modal, opens,
                      ok_cancel, page, pick, save_file, show_text, standing, tabs)
 
 PATROLS = ("random", "full", "quick", "short")
@@ -68,7 +68,7 @@ class StepDialog(Dialog):
         self.only = f.text(_("&Only fight (names, separated by commas):"), names_text(step.get("only", "")))
         self.skip = f.text(_("&Never fight:"), names_text(step.get("skip", "")))
         self.avoid = f.check(_("Stay away from &elite zones"), step.get("elites") == "avoid")
-        buttons(f.parent, f.box, (_("&Pick from monsters near me..."), self.on_mobs))
+        buttons(f.parent, f.box, (opens(_("&Pick from monsters near me")), self.on_mobs))
 
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root)
@@ -301,7 +301,7 @@ class PlanDialog(Dialog):
         self.name = f.text(_("Plan &name:"), p["name"])
         box.Add(f.grid, 0, wx.EXPAND)
         self.steps = labeled(panel, box, _("Farming &spots:"), lambda w: wx.ListBox(w, size=wx.Size(520, 140)), 1)
-        buttons(panel, box, (_("&Add..."), self.on_add), (_("&Edit..."), self.on_edit),
+        buttons(panel, box, (opens(_("&Add")), self.on_add), (opens(_("&Edit")), self.on_edit),
                 (_("&Remove"), self.on_remove), (_("Move &up"), lambda e: self.move(-1)),
                 (_("Move do&wn"), lambda e: self.move(1)))
         f = Form(panel)
@@ -354,16 +354,16 @@ class PlanDialog(Dialog):
         self.end_x = f.number(_("X:"), cell[0], 0, 2000)
         self.end_y = f.number(_("Y:"), cell[1], 0, 2000)
         self.end_buttons = buttons(f.parent, f.box, (_("Use where I &stand now"), self.on_end_here),
-                                   (_("A city s&quare..."), self.on_end_square))
+                                   (opens(_("A city s&quare")), self.on_end_square))
         self.end_note = wx.StaticText(panel, label="")
         box.Add(self.end_note, 0, wx.TOP, 8)
         self.end_how.Bind(wx.EVT_CHOICE, lambda e: self.sync_end())
 
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         row = wx.BoxSizer(wx.HORIZONTAL)
-        view = wx.Button(self, label=_("&View as script..."))
+        view = wx.Button(self, label=opens(_("&View as script")))
         view.Bind(wx.EVT_BUTTON, self.on_view)
-        export = wx.Button(self, label=_("Save as scri&pt..."))
+        export = wx.Button(self, label=opens(_("Save as scri&pt")))
         export.Bind(wx.EVT_BUTTON, self.on_export)
         row.Add(view, 0, wx.RIGHT, 8)
         row.Add(export)

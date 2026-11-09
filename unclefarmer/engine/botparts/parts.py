@@ -86,6 +86,7 @@ class Parts:
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
     traveling: bool
+    gang_base: tuple[int, str] | None   # (map id, gang name) of the named gang base entered this run
     # the pet (engine/pets.py) and the fusion beasts (engine/beasts.py)
     pets_refused: dict[int, float]        # pet id -> don't try to summon it before then
     beasts_refused: dict[int, float]      # beast id -> don't try it again before then
@@ -164,6 +165,7 @@ class Parts:
     in_fight: bool
     skip: dict[int, float]      # monster id -> ignore until
     skip_names: dict[tuple[int, str], float]
+    left_out: dict[str, int]    # why targets() last left monsters in sight out -> how many
     killed_kinds: set[tuple[int, str]]
     last_sheet: float
     load_share: float | None
@@ -251,6 +253,7 @@ class Parts:
                     limit: float | None = None) -> list[dict[str, Any]]: ...
         def count_kills(self, snap: dict[str, Any] | None = None) -> list[int]: ...
         def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]: ...
+        def explain_left_out(self) -> None: ...
         def attackers(self) -> set[int]: ...
         def note_pick(self, snap: dict[str, Any], mob: dict[str, Any], mobs: list[dict[str, Any]]) -> None: ...
         def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float,
