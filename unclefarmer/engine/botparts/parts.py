@@ -144,6 +144,7 @@ class Parts:
     away_reason: str | None     # why we left the farm's map ourselves (the bag trip), for the way back
     started: float
     resumed_at: float
+    pause_moves: int            # pauses the player moved us in (check): a walk plans again on a change
     daily_stop_at: float
     daily_reset: str
     daily_done: bool

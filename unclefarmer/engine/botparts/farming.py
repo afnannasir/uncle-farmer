@@ -15,7 +15,7 @@ from ... import atlas
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, keyslots, pets
-from .base import (Respawned, Stopped)
+from .base import (MOVE_SHOT_REACH, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
 
@@ -103,6 +103,13 @@ class FarmingMixin(Parts):
             self.timing = {"_since": self.clock.time(), "_kills": self.kills, "_contribution": self.contribution_now()}
         start, start_kills = self.clock.time(), self.kills
         self.log(_("farming {map}", map=atlas.label(map_id)))
+        if not instance and self.p.get("shoot_while_walking", False):
+            # once a farm: a character that fights from close by can't use it, and must hear why
+            if self.reach() >= MOVE_SHOT_REACH:
+                self.log(_("shooting monsters in reach on the way to the next one"))
+            else:
+                self.log(_("shooting while walking is on, but this character fights from close by - "
+                           "it stops for each monster"))
         self.set_modes()
         self.modes_done = True
 

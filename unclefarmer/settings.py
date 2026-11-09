@@ -121,6 +121,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "fight_back": True,       # when hit while walking or travelling, fight back, then go on
     "nearest_monster": True,  # always fight the nearest monster (off: melee picks a calm one beside a pack)
     "fight_locked": False,    # fight monsters another player (or their pet) is already killing, while a hit can still land in time (off: leave the close calls too)
+    "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
     "pk_key": "b",            # cycles the PK mode
@@ -291,6 +292,7 @@ class Profile(BaseModel):
     fight_back: bool = PROFILE_DEFAULTS["fight_back"]
     nearest_monster: bool = PROFILE_DEFAULTS["nearest_monster"]
     fight_locked: bool = PROFILE_DEFAULTS["fight_locked"]
+    shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+**Shooting while walking when farming**
+
+- Character, Settings, Fighting: "Shoot monsters in reach while walking to the next one". Dungeons
+  already did this; now field farming can too. A character that fights from afar shoots whatever it
+  would fight that comes into reach on its walk, instead of stopping for each one. It never shoots
+  monsters outside the farm area, bosses, or monsters another player is killing, and never on a
+  trip. Off by default. A character that fights from close by is told it can't use it.
+
+**Pausing**
+
+- A pause of more than two minutes no longer ends the run as "lost the connection to the game"
+  when it goes on: the game's agent dropped a link that asked nothing for two minutes, and a paused
+  run asked nothing. A paused run now checks in every 30 seconds, so a pause can last as long as
+  you like.
+- Moved the character while paused: going on, the bot now plans its walk again from where you
+  left it on the map (and says how far it was moved), instead of pressing on along the old line
+  and maybe calling itself stuck.
+
 **Polson Wetland and lava**
 
 - Polson Wetland without Poison Immunity: a trip through it now gets on a fusion beast (any kind)

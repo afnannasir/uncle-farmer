@@ -15,7 +15,7 @@ from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
 from .. import beasts, bosses, combat, pets, teamheal
-from .base import (NPC_HP, STOPPING, Stopped, agent_strike, note_failure, skill_things, snap_map)
+from .base import (MOVE_SHOT_REACH, NPC_HP, STOPPING, Stopped, agent_strike, note_failure, skill_things, snap_map)
 from ...link import GameLink
 from .parts import as_bot, Parts
 
@@ -57,7 +57,7 @@ class FightingMixin(Parts):
     REFUSED_RUN_INSIDE = 2    # ... in a dungeon, where another is always close: a refused run cost
                               # up to 5.3 s a monster in a 15-minute Scorpion Cave
     SELECT_RANGE = 20.0   # how far the game's target keys pick a monster at most, as far as we can
-    MOVE_SHOT_REACH = 8.0   # shooting on the way only for a character that hits from this far
+    MOVE_SHOT_REACH = MOVE_SHOT_REACH   # shooting on the way only for a character that hits from this far
     move_shots: bool = False   # Tools, Dungeons' "shoot while walking", for the visit
     burst_target: tuple[int, float] | None = None   # the fight's monster while a burst presses at it
     _speech: str
@@ -189,12 +189,21 @@ class FightingMixin(Parts):
         return None
 
     def shoots_moving(self) -> bool:
-        """Shoot on the way: in a dungeon (Tools, Dungeons' "shoot while walking"), a character
-        that fights from afar shoots whatever comes into reach while it walks up to its target,
-        instead of stopping for each one. Hand runs cast 98% of their shots on the move, the bot
-        stood for a third of its; simulated visits (caveloops) gave half as many kills again."""
+        """Shoot on the way: a character that fights from afar shoots whatever comes into reach
+        while it walks up to its target, instead of stopping for each one - in a dungeon as Tools,
+        Dungeons' "shoot while walking" says, farming in the field as the character's Fighting
+        setting says. Hand runs cast 98% of their shots on the move, the bot stood for a third of
+        its; simulated visits (caveloops) gave half as many kills again. In the field only the
+        monsters the farm loop would fight are shot (targets: the farm area, no bosses, none
+        another player is killing), and only while farming: a trip's fight back never shoots
+        what isn't attacking us."""
         sb = self.skillbook
-        return (getattr(self, "move_shots", False) and self.in_instance and getattr(self, "agent_act", False)
+        if getattr(self, "in_instance", False):
+            wanted = bool(getattr(self, "move_shots", False))
+        else:
+            wanted = (bool(self.p.get("shoot_while_walking", False))
+                      and getattr(self, "farm_filter", None) is not None)
+        return (wanted and getattr(self, "agent_act", False)
                 and sb is not None and sb.ok and sb.confirm and self.reach() >= self.MOVE_SHOT_REACH
                 and not self.follows())
 

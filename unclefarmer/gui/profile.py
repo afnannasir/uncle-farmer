@@ -255,6 +255,9 @@ class ProfileDialog(Dialog):
                                        p.get("nearest_monster", True))
         self.fight_locked = f.check(_("Fight monsters another player is &already killing"),
                                     p.get("fight_locked", False))
+        self.shoot_while_walking = f.check(
+            _("&Shoot monsters in reach while walking to the next one (a character that fights from afar)"),
+            p.get("shoot_while_walking", False))
         self.skills_by_slot = f.check(_("Press s&kills through the game, not the keyboard"),
                                       p.get("skills_by_slot", True))
         self.walk_diagonal = f.check(_("Walk d&iagonally across open ground (both direction keys at once)"),
@@ -507,6 +510,7 @@ class ProfileDialog(Dialog):
         p["fight_back"] = self.fight_back.GetValue()
         p["nearest_monster"] = self.nearest_monster.GetValue()
         p["fight_locked"] = self.fight_locked.GetValue()
+        p["shoot_while_walking"] = self.shoot_while_walking.GetValue()
         p["skills_by_slot"] = self.skills_by_slot.GetValue()
         p["walk_diagonal"] = self.walk_diagonal.GetValue()
         p["use_buffs"] = self.use_buffs.GetValue()
