@@ -83,6 +83,9 @@ msgstr "&Key tabdeel karein"
 msgid "&Character"
 msgstr "&Kirdaar"
 
+msgid "&Character settings"
+msgstr "&Kirdaar ki tarteeb"
+
 msgid "&Character:"
 msgstr "&Kirdaar:"
 
@@ -166,6 +169,9 @@ msgstr "&Dhoondna:"
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "Game ke khud bajaaye voice messages ki &raftaar theek karein"
 
+msgid "&Game"
+msgstr "&Game"
+
 msgid "&Game folder:"
 msgstr "&Game ka folder:"
 
@@ -220,6 +226,9 @@ msgstr "&Tareekhcha"
 msgid "&How many:"
 msgstr "&Kitne:"
 
+msgid "&Import"
+msgstr "&Import karein"
+
 msgid "&Import character settings"
 msgstr "Character settings &import karein"
 
@@ -272,6 +281,9 @@ msgstr "&Zaroorat par crystal shards se Enhance Crystals banayein"
 
 msgid "&Map:"
 msgstr "&Map:"
+
+msgid "&Messages"
+msgstr "&Paigham"
 
 msgid "&Messages:"
 msgstr "&Paigham:"
@@ -382,6 +394,12 @@ msgstr "&Nataij:"
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr "&Kamra (naam ka hissa; khali: sab se oonche level ka khali kamra):"
 
+msgid "&Run"
+msgstr "&Chalayein"
+
+msgid "&Run selected"
+msgstr "Chuna hua &chalayein"
+
 msgid "&Save"
 msgstr "&Mahfooz"
 
@@ -397,9 +415,6 @@ msgstr "&Script ke commands"
 
 msgid "&Sell shards (Tools, Sell shards now)"
 msgstr "&Shards bechein (Tools, Sell shards now)"
-
-msgid "&Sell the collection now"
-msgstr "Collection abhi &bechein"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Jama kiya hua Aquaculture, Ore ya Herb Buyer ko &bechein"
@@ -932,8 +947,8 @@ msgstr "Saaf kar&ein"
 msgid "Clea&n the bag (Tools, Clean the bag now)"
 msgstr "Basta saa&f karein (Tools, Clean the bag now)"
 
-msgid "Clean the &bag now (throw-away list)"
-msgstr "&Basta abhi saaf karein (phenkne wali list)"
+msgid "Clean the &bag now"
+msgstr "Basta abhi &saaf karein"
 
 msgid "Clean the bag"
 msgstr "Basta saaf karein"
@@ -1019,6 +1034,9 @@ msgstr "Copy ho gaya"
 
 msgid "Copied {email}."
 msgstr "{email} copy ho gaya."
+
+msgid "Copy &selection"
+msgstr "Chuna hua &copy karein"
 
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
@@ -1202,6 +1220,9 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 
 msgid "E&xit"
 msgstr "Bahar &niklein"
+
+msgid "E&xport"
+msgstr "E&xport karein"
 
 msgid "E&xport character settings"
 msgstr "Character settings e&xport karein"
@@ -1718,6 +1739,12 @@ msgstr ""
 
 msgid "Import character settings"
 msgstr "Character settings import karein"
+
+msgid "Import or export character settings"
+msgstr "Kirdaar ki tarteeb import ya export karein"
+
+msgid "Import or export plans"
+msgstr "Mansoobe import ya export karein"
 
 msgid "Import plan"
 msgstr "Mansooba import karein"
@@ -2734,8 +2761,8 @@ msgstr "R&ok"
 msgid "S&tore items (Tools, Store items now)"
 msgstr "Cheezein s&torehouse mein rakhein (Tools, Store items now)"
 
-msgid "S&tore items now (storage list)"
-msgstr "Cheezein abhi s&torehouse mein rakhein (storage list)"
+msgid "S&tore items now"
+msgstr "Cheezen abhi s&tore karein"
 
 msgid "S&tore:"
 msgstr "&Jama karein:"
@@ -2835,6 +2862,9 @@ msgstr "S&hards abhi bechein"
 
 msgid "Sell shards now: started by hand"
 msgstr "Sell shards now: haath se shuru kiya"
+
+msgid "Sell the &collection now"
+msgstr "Collection abhi &bechein"
 
 msgid "Selling"
 msgstr "Bechna"
@@ -6993,6 +7023,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Results...\tCtrl+R"
 #~ msgstr "&Nataij...\tCtrl+R"
 
+#~ msgid "&Sell the collection now"
+#~ msgstr "Collection abhi &bechein"
+
 #~ msgid "&Settings..."
 #~ msgstr "&Tarteeb..."
 
@@ -7044,6 +7077,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Check for &updates..."
 #~ msgstr "&Updates dekhein..."
+
+#~ msgid "Clean the &bag now (throw-away list)"
+#~ msgstr "&Basta abhi saaf karein (phenkne wali list)"
 
 #~ msgid "Clean the &bag now (throw-away list)..."
 #~ msgstr "&Basta abhi saaf karein (phenkne wali list)..."
@@ -7156,6 +7192,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "S&top\tShift+F5"
 #~ msgstr "R&ok\tShift+F5"
+
+#~ msgid "S&tore items now (storage list)"
+#~ msgstr "Cheezein abhi s&torehouse mein rakhein (storage list)"
 
 #~ msgid "Save as scri&pt..."
 #~ msgstr "Scri&pt ki tarah mahfooz karein..."

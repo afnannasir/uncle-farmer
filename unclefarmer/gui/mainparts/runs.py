@@ -45,6 +45,10 @@ class RunsMixin(FrameParts):
         i = self.plan_list.GetSelection()
         return self.items[i] if 0 <= i < len(self.items) else None
 
+    def active_item(self) -> Item | None:
+        """The plan command's target: the Plans list there, otherwise the Bot tab's choice."""
+        return self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+
     def show_summary(self) -> None:
         item = self.listed_item()
         if not item:
@@ -61,6 +65,9 @@ class RunsMixin(FrameParts):
         self.summary.ChangeValue(text)
 
     def on_plan_key(self, evt: wx.KeyEvent) -> None:
+        if wx.Window.FindFocus() is not self.plan_list:
+            evt.Skip()
+            return
         k = evt.GetKeyCode()
         if k in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
             self.edit_selected()
@@ -89,7 +96,6 @@ class RunsMixin(FrameParts):
             item = ("plan" if self.runs[pid].kind == "plan" else "script", self.runs[pid].title)
             if item in self.items:
                 self.what.SetSelection(self.items.index(item))
-
     def is_paused(self, pid: int | None) -> bool:
         run = self.runs.get(pid) if pid is not None else None
         return bool(run and run.bot is not None and run.bot.paused.is_set())

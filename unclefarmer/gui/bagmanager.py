@@ -18,8 +18,8 @@ from .. import settings, speech, stats
 from ..engine import bagrules
 from ..engine.town import shard_catalog
 from ..i18n import N_, _
-from .common import (Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel, opens, page, pick,
-                     save_file, tabs)
+from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel,
+                     opens, page, pick, popup_actions, save_file, tabs)
 
 SOURCE_LABELS = (("both", N_("Storehouse, then the shop")), ("storage", N_("Storehouse only")),
                  ("buy", N_("Shop only")), ("tell", N_("Don't refill, just tell me")))
@@ -77,6 +77,14 @@ class SortLists:
         """A Move to button's (or menu entry's) handler."""
         return lambda e: self.move(to)
 
+    def menu(self, action: str) -> None:
+        """Offer moving the focused item without making a player tab through every target button."""
+        self.current = action
+        if not self.selected(action):
+            return
+        entries: list[ContextAction] = [(b, self.mover(a), True) for a, _l, b in self.columns if a != action]
+        popup_actions(self.lists[action], entries)
+
     def focused(self, evt: wx.FocusEvent, action: str) -> None:
         self.current = action
         self.show(action)
@@ -109,18 +117,6 @@ class SortLists:
             b.Enable(bool(name) and a != action)
         if self.on_select:
             self.on_select()
-
-    def menu(self, action: str) -> None:
-        self.current = action
-        if not self.selected(action):
-            return
-        m = wx.Menu()
-        for a, _l, b in self.columns:
-            if a != action:
-                item = m.Append(wx.ID_ANY, b)
-                m.Bind(wx.EVT_MENU, self.mover(a), item)
-        self.lists[action].PopupMenu(m)
-        m.Destroy()
 
     def move(self, to: str) -> None:
         src = self.current

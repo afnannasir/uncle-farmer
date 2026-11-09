@@ -91,6 +91,7 @@ class Win:
         self.game_list, self.log_filter, self.log_box = Widget(0), Widget(0), Widget()
         self.fields = {"activity": Widget()}
         self.start_btn, self.stop_btn, self.pause_btn, self.what = Widget(), Widget(), Widget(), Widget()
+        self.plan_list, self.nb = Widget(), Widget()
         self.said: list[str] = []
         self.started: list[tuple[int | None, Any, bool]] = []     # (pid, what to run, asked remotely)
         self.stopped: list[int | None] = []
@@ -166,6 +167,33 @@ def test_the_selected_game_is_the_list_s_selection() -> None:
     assert (w.selected_pid(), w.selected_character()) == (2, "Sara")
     w.game_list.selection = -1                   # nothing selected
     assert w.selected_pid() is None and w.selected_character() is None
+
+
+def test_plan_commands_follow_the_visible_plan_control() -> None:
+    w = Win()
+    w.items = [("plan", "wolves"), ("script", "daily")]
+    w.what, w.plan_list, w.nb = Widget(0), Widget(1), Widget(1)
+    assert w.active_item() == ("script", "daily")
+    w.nb.selection = 0
+    assert w.active_item() == ("plan", "wolves")
+
+
+def test_menu_actions_follow_the_selected_game_and_plan_state() -> None:
+    none = main.action_menu_states(available=False, running=False, any_running=True, has_items=True,
+                                   has_messengers=False, selected=None)
+    assert not none["run_start"] and none["run_stop_all"] and none["run_results"]
+    assert none["messages_private"] and none["character_import"] and not none["tools_gather"]
+
+    stopped = main.action_menu_states(available=True, running=False, any_running=False, has_items=True,
+                                      has_messengers=True, selected=("plan", "wolves"))
+    assert stopped["run_start"] and stopped["run_walk"] and stopped["character_scan"]
+    assert stopped["tools_gem"] and stopped["plans_duplicate"] and stopped["plans_export"]
+
+    running = main.action_menu_states(available=True, running=True, any_running=True, has_items=True,
+                                      has_messengers=True, selected=("script", "daily"))
+    assert running["run_stop"] and running["run_pause"] and running["run_stop_all"]
+    assert not running["run_start"] and not running["run_walk"] and not running["character_scan"]
+    assert not running["tools_dungeon"] and not running["plans_duplicate"] and not running["plans_export"]
 
 
 def test_a_reading_is_reused_only_for_its_game_and_while_fresh() -> None:
