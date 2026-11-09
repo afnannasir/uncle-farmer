@@ -216,7 +216,7 @@ Price = tuple[int, str]          # (arnebia each, SHOP or SHARD)
 def unit_prices() -> dict[str, Price]:
     """{item (lower case): (arnebia each, where the price comes from)} for every item a price is
     stored for. Shop prices are the game data's own, never changed here: a shop menu's price, else
-    the item record's; shard prices are the Shard Market's last reading (Tools, Update shard prices)."""
+    the item record's; shard prices are the Shard Market's last reading (the game menu's Update shard prices)."""
     out: dict[str, Price] = {}
     npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
     for npc in npcs:
@@ -725,7 +725,7 @@ def _current_prices() -> dict[str, Price]:
 
 
 def forget_prices() -> None:
-    """After the prices changed (Tools, Update shard prices): old records are costed afresh."""
+    """After the prices changed (the game menu's Update shard prices): old records are costed afresh."""
     global _price_cache
     _price_cache = None
 

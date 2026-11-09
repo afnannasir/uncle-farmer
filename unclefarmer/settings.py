@@ -87,16 +87,16 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "end_with_hearthstone": True,   # end a run with the hearthstone when one is at hand, else walk
     # Character settings, Triggers (engine/triggers.py): Tools jobs run by themselves before a farming
     # run starts / after one finished. Every job has a tick per stage, the two independent.
-    "sell_shards_before_farming": False,  # Tools, Sell shards now, before a farming run starts
-    "clean_bag_before_farming": False,    # Tools, Clean the bag now, before a farming run starts
-    "update_shard_prices_before_farming": False,   # Tools, Update shard prices, before a farming run starts
+    "sell_shards_before_farming": False,  # the game menu's Sell shards now, before a farming run starts
+    "clean_bag_before_farming": False,    # the game menu's Clean the bag now, before a farming run starts
+    "update_shard_prices_before_farming": False,   # the game menu's Update shard prices, before a farming run starts
     "gather_before_farming": False,       # Tools, Gathering (as set there), before a farming run starts
-    "store_items_before_farming": False,  # Tools, Store items now, before a farming run starts
-    "sell_shards_after_farming": False,   # Tools, Sell shards now, by itself after a farming run that finished
-    "clean_bag_after_farming": False,     # Tools, Clean the bag now, by itself after a farming run that finished
-    "update_shard_prices_after_farming": False,    # Tools, Update shard prices, after a farming run that finished
+    "store_items_before_farming": False,  # the game menu's Store items now, before a farming run starts
+    "sell_shards_after_farming": False,   # the game menu's Sell shards now, by itself after a farming run that finished
+    "clean_bag_after_farming": False,     # the game menu's Clean the bag now, by itself after a farming run that finished
+    "update_shard_prices_after_farming": False,    # the game menu's Update shard prices, after a farming run that finished
     "gather_after_farming": False,        # Tools, Gathering (as set there), after a farming run that finished
-    "store_items_after_farming": False,   # Tools, Store items now, after a farming run that finished
+    "store_items_after_farming": False,   # the game menu's Store items now, after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",

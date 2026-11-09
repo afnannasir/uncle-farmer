@@ -60,7 +60,7 @@ You can give the map's name or its number:
 Some names are used by more than one map. If the bot picks the wrong one, use the number. The
 plan editor's map list shows each map's number in brackets.
 
-`go` is the walking assistant (Bot, Walk to, Ctrl+W, in the window). It takes the same route as
+`go` is the walking assistant (Run, Walk to, Ctrl+W, in the window). It takes the same route as
 `travel`, but rides your fastest Swift fusion beast the whole way, in towns and through monster
 ground alike, and never stops to fight. Potions still keep your HP up.
 
@@ -284,14 +284,17 @@ Your names can be used anywhere the bot's own names can.
     sell_collection              sell what gathering brought in to the Aquaculture, Ore and Herb Buyers
     sell_collection fish         just one buyer: fish, ore or herb
     sell_shards                  sell the shards the bag manager says to sell, at the nearest Shard Market
-                                 (this city's when it has one) - the same as Tools, Sell shards now
+                                 (this city's when it has one) - the same as Sell shards now in the
+                                 game's menu in the Games list
     clean_bag                    throw away, right here, what is on the bag manager's throw-away list
-                                 (keeping what each rule keeps), nothing else - Tools, Clean the bag now
+                                 (keeping what each rule keeps), nothing else - Clean the bag now in
+                                 the game's menu
     update_shard_prices          read the nearest Shard Market's prices into data/shards.json: only a
                                  price the menu shows and sends alike is kept; the others stay as they
-                                 were - Tools, Update shard prices
+                                 were - Update shard prices in the game's menu
     store_items                  put into the storehouse what is on the bag manager's Store list
-                                 (keeping what each rule keeps), nothing else - Tools, Store items now
+                                 (keeping what each rule keeps), nothing else - Store items now in the
+                                 game's menu
     dungeon                      the cave set up in Tools, Dungeons - a character goes into one cave a
                                  game day: supplies first, then all 15 minutes inside
     dungeon Spider cave          that cave instead of the one set in the window

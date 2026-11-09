@@ -1,4 +1,4 @@
-"""Scheduled runs in the main window: the timer that starts what is due, and Bot, Schedules.
+"""Scheduled runs in the main window: the timer that starts what is due, and Run, Schedules.
 
 A scheduled plan or script is started by start(), the Start button's own path, in the game its
 character is logged in to; schedule.Scheduler decides when, and keeps it from running twice.

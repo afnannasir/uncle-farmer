@@ -108,13 +108,33 @@ This is where you control your farming runs. It shows:
 - Nearby players and their distance from you, measured in steps.
 - Your bag contents, drop time, and kill count for the current run.
 
+Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has Walk to, Scan now, Character settings, Bag and supplies, Chat, Private messages, Results, mute and unmute, and the jobs that run right away: **Sell the collection now**, **Sell shards now**, **Clean the bag now**, **Store items now**, and **Update shard prices**. An entry that can't be used right now, such as a job while that game's bot is running, is greyed out.
+
 ### Plans tab
 
 This tab contains your plans and scripts. Select one to see a summary of what it does.
 
+The **New plan** and **New script** buttons are on this tab. Everything else you can do with the selected plan or script is in its menu (**Applications** key, **Shift+F10**, or right-click): Run selected, Edit, Duplicate, Export, Delete, New plan, New script, and Import. You can also press **Enter** to edit it and **Delete** to delete it.
+
 ### Log tab
 
-The Log tab shows what the bot has been doing. You can choose to see everything or only important events.
+The Log tab shows what the bot has been doing. You can choose to see everything or only important events. To copy part of the log, select it and choose **Copy selection** from the log's menu (**Applications** key or right-click).
+
+### Menus
+
+The menu bar has these menus:
+
+- **File:** Settings, the log and results folders, and Exit.
+- **View:** The three tabs.
+- **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
+- **Game:** Mute and unmute this game or every game, and Open another game window.
+- **Messages:** Private messages, Chat, and Let everyone get replies again.
+- **Character:** Settings, Bag and supplies, Scan now, Another character, and the **Import or export character settings** submenu.
+- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, and Dungeons.
+- **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
+- **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
+
+Entries that can't be used right now are greyed out. For example, Start is greyed out while the selected game's bot is running, and Duplicate needs a plan, not a script, to be selected.
 
 ### Help and keyboard shortcuts
 
@@ -180,6 +200,8 @@ A plan tells Uncle Farmer where to farm, when to stop, and where to go when the 
 ### Where to farm
 
 Choose one or more farming spots. Each spot defines the map, movement style, and which monsters to target.
+
+Press **Add** to add a spot. To change a spot, select it and press **Enter**, or open its menu (**Applications** key, **Shift+F10**, or right-click) for **Edit**, **Move up**, **Move down**, and **Remove**. **Delete** also removes it.
 
 With one spot, Uncle Farmer stays there until the plan stops.
 
@@ -373,7 +395,7 @@ You can set a lower limit if you want the bot to stop or handle the bag before i
 
 ### Storing items now
 
-Use **Tools, Store items now** to move items to the storehouse according to your storage list.
+Use **Store items now** in the game's menu in the Games list to move items to the storehouse according to your storage list.
 
 The bot follows the rules under **Character → Bag and supplies → Move to storehouse**. It stores only the items on that list and keeps the required number of each item in your bag.
 
@@ -398,11 +420,11 @@ Open **Character, Settings, Triggers** to configure jobs that run before or afte
 
 There are two lists, and both contain the same five jobs:
 
-- **Sell shards:** Runs **Tools, Sell shards now**. It sells the shards on your Sell list at the nearest Shard Market.
-- **Clean the bag:** Runs **Tools, Clean the bag now**. It throws away only the items on your throw-away list, right where your character is standing.
-- **Update shard prices:** Runs **Tools, Update shard prices**.
+- **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
+- **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
+- **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
-- **Store items:** Runs **Tools, Store items now**, following the storage list described above.
+- **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
 
 
 ## Fighting and staying alive
@@ -834,6 +856,8 @@ On the **Gangs** tab, add the gangs you want to visit and arrange them in the or
 
 You can add your own gang with **Add our own gang**. To add another gang, use **Add a gang by name** and enter its name. This is useful if you gather in a friend's or allied gang.
 
+To change the order or take a gang off the list, select it and open its menu (**Applications** key, **Shift+F10**, or right-click): **Move up**, **Move down**, and **Remove**. **Delete** also removes it.
+
 Uncle Farmer visits each gang in the order listed. For another gang, it first finds the gang through the Gang Entrance's **All gangs** list. It then enters the base and talks to the entrance to check the gathering area for your skill.
 
 Before entering, the bot checks the area's level, saturation, and entry fee. It enters only if the fee is within your configured limit and paying it would not use your arnebia reserve.
@@ -855,6 +879,8 @@ To add your own location:
 3. Press **Add where I stand**.
 
 Uncle Farmer saves that exact position and returns to it when gathering there.
+
+To rename or remove a saved place, select it in **Your places** and open its menu (**Applications** key, **Shift+F10**, or right-click). Double-clicking a place also renames it, and **Delete** removes it.
 
 You can also choose **The best for this character**. The bot then selects the highest-level gathering area where the monsters are no more than a few levels above your character. The default level difference is five.
 
@@ -915,7 +941,7 @@ This setting tells the bot how much Vitality to save for later. It reads your cu
 
 The **Check only** option reads the gang gathering area's entrance and tells you where Uncle Farmer would gather. It does not start gathering.
 
-You can also use **Tools, Sell the collection now** to sell gathered items to all three types of buyers from your current location.
+You can also use **Sell the collection now** in the game's menu in the Games list to sell gathered items to all three types of buyers from your current location.
 
 In a script, use:
 
@@ -1165,7 +1191,7 @@ You can choose where your character should go after the dungeon by putting `end_
 
 Uncle Farmer has a walking tool that lets you travel to dungeon entrances and locations on the open-world map without starting a farming plan.
 
-Open **Bot → Walk to a dungeon or map**, or press **Ctrl+W**.
+Open **Run → Walk to a dungeon or map**, or press **Ctrl+W**.
 
 ### Walking to a dungeon entrance
 
@@ -1225,7 +1251,7 @@ You only need one copy of Uncle Farmer. It can manage multiple game windows, wit
 
 Uncle Farmer itself runs only once per Windows session. If you try to start it again, Windows brings the already-open Uncle Farmer window to the front instead of opening another copy.
 
-To open another Mist World window, use **Bot → Open another game window** or press **Ctrl+O**. You can also start Mist World again normally.
+To open another Mist World window, use **Game → Open another game window** or press **Ctrl+O**. You can also start Mist World again normally.
 
 The agent supports multiple game windows. Each one needs approximately 1 GB of memory, so keep that in mind if your computer has limited RAM.
 
@@ -1248,7 +1274,7 @@ The same applies when starting or pausing individual characters: you control eac
 
 ### Stopping all bots
 
-If you want to stop every bot at once, use **Bot → Stop every bot** or press **Ctrl+Shift+S**.
+If you want to stop every bot at once, use **Run → Stop every bot** or press **Ctrl+Shift+S**.
 
 This stops all active bot runs across your open game windows.
 
@@ -1263,7 +1289,7 @@ Windows may prevent you from moving or deleting these files while the program is
 
 Want Uncle Farmer to start farming without having to press **Start** yourself? You can use schedules to run a plan or script automatically at a time you choose.
 
-Open **Bot → Schedules** or press **Ctrl+Shift+H**.
+Open **Run → Schedules** or press **Ctrl+Shift+H**.
 
 ### Setting up a schedule
 
@@ -1275,7 +1301,7 @@ You can schedule a task to run:
 
 The schedule list shows when each task is due to run next and whether it is currently enabled.
 
-You can manage your schedules using these options:
+The **Add** button creates a new schedule. The other options are in the selected schedule's menu (**Applications** key, **Shift+F10**, or right-click). You can also press **Enter** to edit a schedule and **Delete** to delete it.
 
 - **Add:** Create a new schedule.
 - **Edit:** Change the selected schedule.
@@ -1324,7 +1350,7 @@ Curious about how your character did during the last farming run? The Results wi
 
 You can check your farming time, monsters defeated, items collected, earnings, expenses, and even combat statistics. It's a handy way to see how your character is progressing and where your resources are going.
 
-Open **Bot → Results** or press **Ctrl+R**.
+Open **Run → Results** or press **Ctrl+R**.
 
 ### What does Uncle Farmer record?
 
@@ -1497,7 +1523,7 @@ You can also control speech for individual games:
 
 - Press **Ctrl+M** to mute the selected game in the Games list.
 - Press **Ctrl+U** to unmute it.
-- Open the **Bot** menu to mute or unmute every game at once.
+- Open the **Game** menu to mute or unmute every game at once.
 
 If you manually mute a game, Uncle Farmer keeps it muted even after the farming run ends.
 
@@ -1546,7 +1572,7 @@ The `come` and `follow` commands can use these features when the target is leadi
 
 ## Chat
 
-Uncle Farmer has a built-in chat window that lets you read and send game messages while your character is farming. Open it with **Bot → Chat** or press **Ctrl+T**.
+Uncle Farmer has a built-in chat window that lets you read and send game messages while your character is farming. Open it with **Messages → Chat** or press **Ctrl+T**.
 
 Messages are sent through the game itself, so you can chat while the bot is running without interfering with its controls.
 
@@ -1680,7 +1706,7 @@ Chat messages are not saved to files. Uncle Farmer keeps them in memory only whi
 
 Uncle Farmer can automatically reply to private messages while your character is farming. You can also mark certain players as trusted so they can send commands to control your bot.
 
-Open **Bot → Private messages** or press **Ctrl+Shift+M**.
+Open **Messages → Private messages** or press **Ctrl+Shift+M**.
 
 ### Automatic replies to strangers
 

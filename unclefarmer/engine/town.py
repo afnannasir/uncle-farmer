@@ -1110,7 +1110,7 @@ def _bag_and_hotkeys(b: Bot) -> tuple[dict[str, int], list[str]]:
 
 
 def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
-    """What Tools, Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
+    """What the game menu's Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
     (keeping the number its rule keeps) and the Shard Market buys; and the shards set to sell that
     the market doesn't list (not sold, said)."""
     bag, hot = _bag_and_hotkeys(b)
@@ -1129,7 +1129,7 @@ def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
 
 
 def sell_shards_now(b: Bot) -> int:
-    """Tools, Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
+    """The game menu's Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
     Market - the one in this city when it has one - and nothing else (the bag trip's shard step on
     its own). Says what was sold and what wasn't. Returns how many kinds were sold."""
     todo, other = shards_to_sell(b)
@@ -1161,7 +1161,7 @@ def throw_list(p: dict[str, Any]) -> list[tuple[str, int]]:
 
 
 def clean_bag(b: Bot) -> int:
-    """Tools, Clean the bag now: throw away, right where we stand, what the bag manager's
+    """The game menu's Clean the bag now: throw away, right where we stand, what the bag manager's
     throw-away list says (keeping the number each rule keeps) - only what is on that list, never
     anything else. Says what went, what couldn't be thrown and what wasn't there. Returns how many
     kinds of item left the bag."""
@@ -1218,7 +1218,7 @@ def store_list(p: dict[str, Any]) -> list[tuple[str, int]]:
 
 
 def store_items(b: Bot) -> int:
-    """Tools, Store items now: put into the storehouse what the bag manager's store list says
+    """The game menu's Store items now: put into the storehouse what the bag manager's store list says
     (keeping the number each rule keeps in the bag) - only what is on that list, read as it is now,
     never anything else. The bag trip's storehouse step on its own (deposit, at the nearest
     storehouse). Says what went in, what the storehouse didn't take (full, or refused) and what
@@ -1264,7 +1264,7 @@ def store_items(b: Bot) -> int:
 
 # ---------------------------------------------------------------------------------------- shard prices
 # The Shard Market's prices change; data/shards.json keeps the last ones read, which the bag manager
-# and the results use. Tools, Update shard prices reads the market's list again.
+# and the results use. The game menu's Update shard prices reads the market's list again.
 SHARDS_FILE = "shards.json"
 PRICE_MOST = 100_000_000          # no shard has cost anywhere near this: a reading above it is wrong
 SHOWN_PRICE = re.compile(r"\bunit price\s+(\d{1,9})\s+arnebia", re.I)
@@ -1365,7 +1365,7 @@ def save_shard_prices(prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
 
 
 def update_shard_prices(b: Bot) -> int:
-    """Tools, Update shard prices: read the nearest Shard Market's list and keep its prices in
+    """The game menu's Update shard prices: read the nearest Shard Market's list and keep its prices in
     data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
     (those keep their old price). Returns how many prices changed."""
     shards, markets = shard_catalog()
