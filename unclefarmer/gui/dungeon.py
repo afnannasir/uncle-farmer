@@ -30,7 +30,7 @@ PATROL_LABELS = (("quick", N_("Quick loop (the whole cave, lanes further apart)"
 
 class DungeonDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
-        super().__init__(parent, title=_("{tool} - {name}", tool=_("Dungeons"), name=character),
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Dungeons"), name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game = game

@@ -64,6 +64,49 @@ def test_a_profile_with_auto_pet_potions_loads_as_written(tmp_path: Path, monkey
     assert not os.path.exists(str(tmp_path / "pets.json.corrupt"))
 
 
+def test_same_name_characters_keep_independent_profiles_and_are_named_clearly(tmp_path: Path,
+                                                                                monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    first = settings.character_profile("Democracy", 17197)
+    second = settings.character_profile("Democracy", 8456)
+    settings.save_profile(first, dict(settings.PROFILE_DEFAULTS, attack_gap=0.2))
+    settings.save_profile(second, dict(settings.PROFILE_DEFAULTS, attack_gap=0.8))
+
+    assert settings.load_profile(first)["attack_gap"] == 0.2
+    assert settings.load_profile(second)["attack_gap"] == 0.8
+    assert settings.profile_display(first) == "Democracy - character 17197"
+    assert settings.profile_display(second) == "Democracy - character 8456"
+    assert settings.profiles() == [first, second]
+
+
+def test_an_identified_character_starts_from_its_legacy_name_only_choices(tmp_path: Path,
+                                                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    settings.save_profile("Democracy", dict(settings.PROFILE_DEFAULTS, attack_gap=0.65))
+    identified = settings.character_profile("Democracy", 17197)
+
+    copied = settings.load_profile(identified)
+    assert copied["attack_gap"] == 0.65
+    settings.save_profile(identified, copied)
+    copied["attack_gap"] = 0.9
+    settings.save_profile(identified, copied)
+
+    assert settings.load_profile("Democracy")["attack_gap"] == 0.65
+    assert settings.load_profile(identified)["attack_gap"] == 0.9
+
+
+def test_a_server_label_is_visible_and_can_adopt_an_existing_id_profile(tmp_path: Path,
+                                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    identified = settings.character_profile("Democracy", 17197)
+    on_s1 = settings.character_profile("Democracy", 17197, "S1")
+    settings.save_profile(identified, dict(settings.PROFILE_DEFAULTS, attack_gap=0.4))
+
+    assert settings.profile_display(on_s1) == "Democracy - S1"
+    assert settings.load_profile(on_s1)["attack_gap"] == 0.4
+    assert settings.has_profile(on_s1)
+
+
 def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "_unreadable", set[str]())
     p = tmp_path / "settings.json"

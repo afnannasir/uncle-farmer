@@ -19,7 +19,7 @@ from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
 from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
-from ..link import AgentError, AgentLink
+from ..link import AgentError, AgentLink, server_name
 from . import chores, keyslots, triggers
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
@@ -68,6 +68,7 @@ class Run(threading.Thread):
         self.on_log, self.on_done = on_log, on_done
         self.stop_event = threading.Event()
         self.character: str | None = None   # known once connected; names the run in the log
+        self.profile: str | None = None     # the character's own settings key, not merely its display name
         self.tally: stats.Tally | None = None   # what this run earns, readable while it runs
         self.bot: Bot | None = None         # the Bot once running (private message commands reach it here)
         self.link: AgentLink | None = None  # this run's connection to the game, while it runs
@@ -167,8 +168,9 @@ class Run(threading.Thread):
         if not snap.get("ok"):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
+        self.profile = settings.character_profile(character, snap["self"].get("id"), server_name(link))
         applog.thread("run %d %s" % (self.pid, character))
-        profile, found = self._profile(link, character)
+        profile, found = self._profile(link, self.profile)
         guard = self._arm(link, agent, profile, app)
         self.log(_("starting {what} as {name}", what=self.title, name=character), speak=True)
         bot = self._make_bot(link, profile, agent, guard, day_end, app)
@@ -230,7 +232,7 @@ class Run(threading.Thread):
             self.log(_("farming stops at {time} at the latest (the drop time resets at {reset})",
                        time=day_end.strftime("%H:%M"), reset=bot.daily_reset))
         bot.character = self.character   # names the game in logs/dialogs.log when several run
-        name = self.character or ""
+        name = self.profile or self.character or ""
 
         def save_profile(data: dict[str, Any]) -> None:
             settings.save_profile(name, data)
@@ -251,7 +253,7 @@ class Run(threading.Thread):
                 # the results count contribution and experience from the first sheet they see: a
                 # fresh one now, or the first reading comes after the first kills and leaves them out
                 bot.ask_sheet(force=True)
-            bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
+            bot.tally = self.tally = stats.Tally(self.profile or self.character or "", self.title, clock=clock_for(bot),
                                                  tool=self._tool())
             if getattr(bot, "daily_stop_at", 0.0):
                 bot.tally.deadline(bot.daily_stop_at)     # Time remaining counts down to it at the latest

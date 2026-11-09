@@ -13,9 +13,13 @@ import socket
 import threading
 from typing import Any, Protocol
 
-from . import gamelang, jsonio as json, paths
+from . import gamelang, jsonio as json, paths, settings
 
 HOST = "127.0.0.1"
+
+# Confirmed against the game client's live server routes.  The agent reports only the port; this
+# turns that stable route into the name players use in the UI.
+SERVER_NAMES = {8767: "S1", 8769: "S2"}
 
 
 class JsonLink(Protocol):
@@ -152,6 +156,18 @@ class AgentLink:
         self.close()
 
 
+def server_name(link: JsonLink) -> str:
+    """The familiar server label for an agent's live game route, if this agent can report it."""
+    try:
+        data = link.json("server")
+    except (AgentError, OSError, ValueError):
+        return ""
+    if not json.is_object(data):
+        return ""
+    port = data.get("port")
+    return SERVER_NAMES.get(port, "") if isinstance(port, int) else ""
+
+
 def games() -> list[tuple[int, str | None, str | None]]:
     """[(pid, character name or None, map name or None)] for every running game with the agent."""
     out: list[tuple[int, str | None, str | None]] = []
@@ -162,7 +178,9 @@ def games() -> list[tuple[int, str | None, str | None]]:
             with AgentLink(pid=pid, timeout=3) as a:
                 s = a.json("mem")
                 if s.get("ok"):
-                    name, where = s["self"]["name"], s["map"]["name"]
+                    me = s["self"]
+                    name = settings.character_profile(me["name"], me.get("id"), server_name(a))
+                    where = s["map"]["name"]
         except (AgentError, OSError, ValueError):
             pass
         out.append((pid, name, where))

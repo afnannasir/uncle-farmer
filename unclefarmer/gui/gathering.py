@@ -37,7 +37,7 @@ def skill_line(p: dict[str, Any]) -> tuple[str | None, str]:
 
 class GatheringDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
-        super().__init__(parent, title=_("{tool} - {name}", tool=_("Gathering"), name=character),
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Gathering"), name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game = game

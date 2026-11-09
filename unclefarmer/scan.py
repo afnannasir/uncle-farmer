@@ -37,7 +37,7 @@ def scan(link: JsonLink, game_folder: str="") -> dict[str, Any]:
     snap: dict[str, Any] = _json(link, "mem") or {}
     me: dict[str, Any] = snap.get("self") or {}
     sheet: dict[str, Any] = me.get("sheet") or {}
-    out: dict[str, Any] = {"when": time.strftime("%Y-%m-%d %H:%M"), "name": me.get("name"),
+    out: dict[str, Any] = {"when": time.strftime("%Y-%m-%d %H:%M"), "name": me.get("name"), "id": me.get("id"),
                            "maxhp": me.get("maxhp"), "level": sheet.get("level")}
 
     binds = gamekeys.read(game_folder)
@@ -147,8 +147,10 @@ def apply(profile: dict[str, Any], s: dict[str, Any]) -> dict[str, Any]:
 def scan_and_save(link: JsonLink, character: str, game_folder: str="") -> tuple[dict[str, Any], dict[str, Any]]:
     """Scan, fold into the character's profile and save. Returns (profile, scan)."""
     s = scan(link, game_folder)
-    p = apply(settings.load_profile(character), s)
-    settings.save_profile(character, p)
+    profile = character if settings.is_character_profile(character) else settings.character_profile(s.get("name") or character,
+                                                                                                       s.get("id"))
+    p = apply(settings.load_profile(profile), s)
+    settings.save_profile(profile, p)
     return p, s
 
 

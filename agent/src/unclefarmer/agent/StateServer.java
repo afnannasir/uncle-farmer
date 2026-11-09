@@ -232,6 +232,7 @@ final class StateServer implements Runnable {
 
         if (verb.equals("state")) return World.snapshot();
         if (verb.equals("ping")) return "pong";
+        if (verb.equals("server")) return Ask.server();
         if (verb.equals("health")) return Health.snapshot();
         if (verb.equals("version")) return "mwagent " + VERSION;
         if (verb.equals("mem")) {

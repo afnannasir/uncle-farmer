@@ -16,11 +16,12 @@ from ..plan import PlanDialog
 from ..profile import ProfileDialog
 from ..scripts import ScriptDialog
 from ..setup import CHECK_UPDATES, SetupDialog
-from .base import FrameParts, character_of
+from .base import FrameParts
 
 
 def import_confirmation(character: str, source: str, exists: bool) -> str:
     """The last clear warning before an import creates or replaces a profile file."""
+    character = settings.profile_display(character)
     if exists:
         return _("Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n\n"
                  "This replaces combat, key, potion, bag, pet, travel and restock choices. "
@@ -175,7 +176,7 @@ class EditingMixin(FrameParts):
         show_text(self, _("Script commands"), script.__doc__ or "")
 
     def edit_profile(self) -> None:
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if not name:
             error(self, _("Log in to the character in the game first, or use Character, Another character."))
             return
@@ -204,7 +205,7 @@ class EditingMixin(FrameParts):
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -234,7 +235,7 @@ class EditingMixin(FrameParts):
             self.run_errand(cmd + "\n", title)
 
     def edit_bag(self) -> None:
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -262,7 +263,7 @@ class EditingMixin(FrameParts):
         """Tools, Store items now: put into the storehouse what the bag manager's storage list says
         (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
         job the Triggers tab can run before or after farming. Storing loses nothing, so no question."""
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if name and not town.store_list(settings.load_profile(name)):
             info(self, _("The storage list is empty. Choose what to move to the storehouse in Character, Bag and "
                          "supplies first."))
@@ -278,7 +279,7 @@ class EditingMixin(FrameParts):
     def clean_bag_now(self) -> None:
         """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
         the player has seen the list and said yes (thrown items are gone for good)."""
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -299,28 +300,30 @@ class EditingMixin(FrameParts):
         self.run_errand("clean_bag\n", _("Cleaning the bag"))
 
     def edit_other_profile(self) -> None:
-        names = settings.profiles()
-        if not names:
+        profiles = settings.profiles()
+        if not profiles:
             info(self, _("No character has settings yet. Log in to one in the game and the bot scans it."))
             return
-        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Another character"), names)) as d:
+        labels = [settings.profile_display(profile) for profile in profiles]
+        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Another character"), labels)) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
-            name = names[d.GetSelection()]
+            name = profiles[d.GetSelection()]
         with ProfileDialog(self, name, self.s.get("game_folder", "")) as d:
             d.ShowModal()
 
     def export_character_settings(self) -> None:
         """Character, Export settings: a portable copy of choices, never game readings."""
-        names = settings.profiles()
-        if not names:
+        profiles = settings.profiles()
+        if not profiles:
             info(self, _("No character has settings to export yet. Log in to one and let the bot scan it first."))
             return
-        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Export character settings"), names)) as d:
+        labels = [settings.profile_display(profile) for profile in profiles]
+        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Export character settings"), labels)) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
-            character = names[d.GetSelection()]
-        filename = paths.safe_name(character) + ".unclefarmer-profile.json"
+            character = profiles[d.GetSelection()]
+        filename = paths.safe_name(settings.profile_display(character)) + ".unclefarmer-profile.json"
         wildcard = _("Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|") + \
                    _("All files (*.*)|*.*")
         with modal(wx.FileDialog(self, _("Export character settings"), wildcard=wildcard, defaultFile=filename,
@@ -335,7 +338,7 @@ class EditingMixin(FrameParts):
             return
         info(self, _("Settings for {character} were exported to:\n{path}\n\nThe file has combat, keys, potions, "
                      "bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone "
-                     "location.", character=character, path=path))
+                     "location.", character=settings.profile_display(character), path=path))
 
     def import_character_settings(self) -> None:
         """Character, Import settings: validate first, confirm, then atomically replace choices."""
@@ -353,13 +356,14 @@ class EditingMixin(FrameParts):
         except ValueError as e:
             error(self, _("Couldn't import the settings: {err}", err=e))
             return
-        names, suggested = import_destinations(source, settings.profiles())
+        profiles, suggested = import_destinations(source, settings.profiles())
+        labels = [settings.profile_display(profile) for profile in profiles]
         with modal(wx.SingleChoiceDialog(self, _("Import settings into this character:"),
-                                         _("Import character settings"), names)) as d:
-            d.SetSelection(names.index(suggested))
+                                         _("Import character settings"), labels)) as d:
+            d.SetSelection(profiles.index(suggested))
             if d.ShowModal() != wx.ID_OK:
                 return
-            character = names[d.GetSelection()]
+            character = profiles[d.GetSelection()]
         exists = settings.has_profile(character)
         if not ask(self, import_confirmation(character, source, exists),
                    _("Import character settings")):
@@ -370,7 +374,7 @@ class EditingMixin(FrameParts):
             error(self, _("Couldn't import the settings: {err}", err=e))
             return
         info(self, _("Settings were imported into {character}. Scan this character before farming if its skills, "
-                     "hotkeys, bag, pets or beasts changed.", character=character))
+                     "hotkeys, bag, pets or beasts changed.", character=settings.profile_display(character)))
 
     # ------------------------------------------------------------ settings
     def first_run(self) -> None:

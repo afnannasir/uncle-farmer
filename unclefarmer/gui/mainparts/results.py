@@ -17,7 +17,7 @@ from .base import FrameParts, foreground_pid
 class ResultsMixin(FrameParts):
     # ------------------------------------------------------------ results and the game's voice
     def live_tally(self, character: str) -> Tally | None:
-        run = next((r for r in self.runs.values() if r.character == character and r.tally), None)
+        run = next((r for r in self.runs.values() if r.profile == character and r.tally), None)
         return run.tally if run else None
 
     def show_results(self) -> None:

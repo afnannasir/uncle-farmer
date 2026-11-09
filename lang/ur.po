@@ -6574,8 +6574,14 @@ msgstr "{name} ({n} naye)"
 msgid "{name} ({n})"
 msgstr "{name} ({n})"
 
+msgid "{name} - character {id}"
+msgstr ""
+
 msgid "{name} - {map}{team}"
 msgstr "{name} - {map}{team}"
+
+msgid "{name} - {server}"
+msgstr ""
 
 msgid "{name} asks: {what}"
 msgstr "{name} poochta hai: {what}"
