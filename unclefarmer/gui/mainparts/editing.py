@@ -16,7 +16,7 @@ from ..plan import PlanDialog
 from ..profile import ProfileDialog
 from ..scripts import ScriptDialog
 from ..setup import CHECK_UPDATES, SetupDialog
-from .base import FrameParts
+from .base import FrameParts, character_of
 
 
 def import_confirmation(character: str, source: str, exists: bool) -> str:
@@ -31,6 +31,14 @@ def import_confirmation(character: str, source: str, exists: bool) -> str:
              "This creates settings for that name only. It doesn't create or log in to a Mist World "
              "character. The choices take effect when that character is scanned or run. Nothing changes "
              "until you choose Yes.", character=character, source=source)
+
+
+def active_profile(owner: FrameParts) -> str | None:
+    """The selected game's distinct profile; simple callers can still provide only a snapshot."""
+    try:
+        return owner.selected_profile() or character_of(owner.snapshot())
+    except AttributeError:
+        return character_of(owner.snapshot())
 
 
 def import_destinations(source: str, profiles: list[str]) -> tuple[list[str], str]:
@@ -176,7 +184,7 @@ class EditingMixin(FrameParts):
         show_text(self, _("Script commands"), script.__doc__ or "")
 
     def edit_profile(self) -> None:
-        name = self.selected_profile()
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first, or use Character, Another character."))
             return
@@ -205,7 +213,7 @@ class EditingMixin(FrameParts):
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
-        name = self.selected_profile()
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -235,7 +243,7 @@ class EditingMixin(FrameParts):
             self.run_errand(cmd + "\n", title)
 
     def edit_bag(self) -> None:
-        name = self.selected_profile()
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -263,7 +271,7 @@ class EditingMixin(FrameParts):
         """Tools, Store items now: put into the storehouse what the bag manager's storage list says
         (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
         job the Triggers tab can run before or after farming. Storing loses nothing, so no question."""
-        name = self.selected_profile()
+        name = active_profile(self)
         if name and not town.store_list(settings.load_profile(name)):
             info(self, _("The storage list is empty. Choose what to move to the storehouse in Character, Bag and "
                          "supplies first."))
@@ -279,7 +287,7 @@ class EditingMixin(FrameParts):
     def clean_bag_now(self) -> None:
         """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
         the player has seen the list and said yes (thrown items are gone for good)."""
-        name = self.selected_profile()
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return

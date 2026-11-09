@@ -6575,13 +6575,13 @@ msgid "{name} ({n})"
 msgstr "{name} ({n})"
 
 msgid "{name} - character {id}"
-msgstr ""
+msgstr "{name} - kirdar {id}"
 
 msgid "{name} - {map}{team}"
 msgstr "{name} - {map}{team}"
 
 msgid "{name} - {server}"
-msgstr ""
+msgstr "{name} - {server}"
 
 msgid "{name} asks: {what}"
 msgstr "{name} poochta hai: {what}"
