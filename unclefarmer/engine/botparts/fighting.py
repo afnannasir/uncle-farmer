@@ -1026,6 +1026,15 @@ class FightingMixin(Parts):
                      speak=True)
             self.skip[mid] = self.clock.time() + 20
             return True
+        if not self._landed_on(f):
+            # The game confirmed no hit of ours on it this whole fight: we never really attacked
+            # it (no lock on it, our casts went elsewhere or nowhere), so it says nothing about
+            # the monster. Live in Dark pit City: six seconds "fighting" a Goblin cast only Soul
+            # Purify on ourselves, and the Goblins - killed there minutes before - were written
+            # off for half an hour while they chased and hit us. Another one now, this one soon.
+            self.log(_("couldn't get to {name} - next one", name=mob["name"]))
+            self.skip[mid] = self.clock.time() + 10
+            return True
         self.log(_("{name} takes no damage, leaving it", name=mob["name"]))
         self.skip[mid] = self.clock.time() + 120
         kind = (snap_map(f.snap), mob["name"].strip().lower())
@@ -1040,6 +1049,15 @@ class FightingMixin(Parts):
             self.skip_names[(snap_map(f.snap), mob["name"].strip().lower())] = self.clock.time() + 1800
             self.log(_("leaving every {name} here alone - it can't be attacked", name=mob["name"]))
         return True
+
+    def _landed_on(self, f: "_Fight") -> bool:
+        """A hit of ours landed on the fought monster this fight, as the game reported it (agent
+        v30 casts: undodged hits, kill_tracker.hit). Without those reports (an older agent) there
+        is no telling, and it counts as landed - the verdict stays as it always was."""
+        tracker = getattr(self, "kill_tracker", None)
+        if tracker is None or not getattr(tracker, "live", False):
+            return True
+        return f.mid in tracker.hit_since(int(1000 * f.start))
 
     def _fight_moved_off(self, f: "_Fight") -> bool:
         """It moved off. With the follow attack the game walks after it, so we keep at it while it

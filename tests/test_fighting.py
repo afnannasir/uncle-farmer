@@ -1439,6 +1439,55 @@ def test_hit_until_down_leaves_a_monster_that_takes_no_damage(clock: Clock) -> N
     assert any("leaving every Wolf here alone" in line for line in b.lines)
 
 
+def test_a_monster_no_hit_of_ours_landed_on_is_not_written_off(clock: Clock) -> None:
+    """Live in Dark pit City (2026-11-08): six seconds "fighting" a Goblin cast only Soul Purify
+    on ourselves - not one hit landed on it - and the bot wrote off every Goblin for half an hour
+    ("can't be attacked") while they chased and hit us, though it had killed Goblins there
+    minutes before. With the game reporting our hits (live tracker) and none on this monster, it
+    is our miss: another monster now, this one again in a few seconds, its kind never."""
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99),
+                  tracker=FakeTracker(live=True, landed={}))
+    mob = monster(-1, x=105.0)
+
+    def snap():
+        clock.advance(0.5)
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert b.skip[-1] == clock.now + 10
+    assert b.skip_names == {}
+    assert not any("takes no damage" in line for line in b.lines)
+    assert any("couldn't get to Wolf - next one" in line for line in b.lines)
+
+
+class _HitOnceTracker(FakeTracker):
+    """The game reported one hit of ours on monster -1, at agent ms `at`, and none since."""
+
+    def __init__(self, at: int) -> None:
+        super().__init__(live=True)
+        self.at = at
+
+    def hit_since(self, ms: int) -> dict[int, int]:
+        return {-1: self.at} if self.at >= ms else {}
+
+
+def test_a_monster_our_hits_land_on_without_damage_is_still_written_off(clock: Clock) -> None:
+    """The real case stays as it was: a hit of ours landed on it (the game said so) and its HP
+    never moved - a town critter the server won't let anyone hurt - so its kind is left alone."""
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99),
+                  tracker=_HitOnceTracker(int(1000 * clock.now)))
+    mob = monster(-1, x=105.0)
+
+    def snap():
+        clock.advance(0.5)
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert b.skip[-1] == clock.now + 120
+    assert any("takes no damage, leaving it" in line for line in b.lines)
+    assert any("leaving every Wolf here alone" in line for line in b.lines)
+
+
 def test_in_a_dungeon_a_monster_with_no_damage_never_writes_off_its_kind(clock: Clock) -> None:
     b = until_bot(profile(attack_range=10.0, no_damage_timeout=0.0, no_damage_casts=99))
     b.in_instance = True          # its one kind of monster is what the visit is for
