@@ -1,4 +1,4 @@
-"""Bot, Schedules: plans and scripts started at set times (unclefarmer/schedule.py does the timing).
+"""Run, Schedules: plans and scripts started at set times (unclefarmer/schedule.py does the timing).
 
 The list says what runs, for whom, when, when next, and whether it is on; Add, Edit, Turn on or
 off, Delete and History act on the selected one. Every change is saved straight away.

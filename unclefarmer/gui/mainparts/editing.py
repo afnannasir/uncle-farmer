@@ -183,7 +183,7 @@ class EditingMixin(FrameParts):
             d.ShowModal()
 
     def walk(self) -> None:
-        """Bot, Walk to: the walking assistant takes the selected game's character to a dungeon
+        """Run, Walk to: the walking assistant takes the selected game's character to a dungeon
         entrance or a map on the fastest Swift fusion beast, never stopping to fight."""
         from ..walk import WalkDialog
         if self.selected_pid() is None:
@@ -248,7 +248,7 @@ class EditingMixin(FrameParts):
             d.ShowModal()
 
     def sell_shards_now(self) -> None:
-        """Tools, Sell shards now: the shards the bag manager says to sell, at this city's Shard
+        """The game menu's Sell shards now: the shards the bag manager says to sell, at this city's Shard
         Market or the nearest one - a job of its own, like selling the collection. Started by hand,
         whatever Character settings says about selling after farming."""
         self.log(_("Sell shards now: started by hand"))
@@ -259,7 +259,7 @@ class EditingMixin(FrameParts):
         self.run_errand("sell_collection\n", _("Selling the collection"))
 
     def store_items_now(self) -> None:
-        """Tools, Store items now: put into the storehouse what the bag manager's storage list says
+        """The game menu's Store items now: put into the storehouse what the bag manager's storage list says
         (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
         job the Triggers tab can run before or after farming. Storing loses nothing, so no question."""
         name = character_of(self.snapshot())
@@ -271,12 +271,12 @@ class EditingMixin(FrameParts):
         self.run_errand("store_items\n", _("Storing items"))
 
     def update_shard_prices_now(self) -> None:
-        """Tools, Update shard prices: read the nearest Shard Market's list into data/shards.json
+        """The game menu's Update shard prices: read the nearest Shard Market's list into data/shards.json
         (only the prices it shows and sends alike; every other price stays as it was)."""
         self.run_errand("update_shard_prices\n", _("Updating shard prices"))
 
     def clean_bag_now(self) -> None:
-        """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
+        """The game menu's Clean the bag now: throw away what is on the bag manager's throw-away list, after
         the player has seen the list and said yes (thrown items are gone for good)."""
         name = character_of(self.snapshot())
         if not name:

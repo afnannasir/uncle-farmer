@@ -443,7 +443,7 @@ Main window
   Ctrl+Shift+H        Schedules: plans and scripts started at set times
   Ctrl+R              Results
   Ctrl+Shift+R        Speak the results
-  Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Bot menu: every game)
+  Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
   Ctrl+G              Gem Maker
   Ctrl+Shift+E        Equipment Enhancer
@@ -460,9 +460,32 @@ Main window
   Ctrl+T              Chat: read and write the game's chat while the bot farms
   F1                  Quick guide
 
+Games list
+  Applications key    The game's menu: Walk to, Scan now, settings, chat, results, mute, and the
+                      jobs run now (sell the collection or shards, clean the bag, store items,
+                      update shard prices). Shift+F10 opens it too
+
 Plans tab
   Enter               Edit the selected plan or script
   Delete              Delete it
+  Applications key    Its menu: Run selected, Edit, Duplicate, Export, Delete, New, Import
+
+Log tab
+  Applications key    Copy the selected text
+
+Plan editor, Farming spots
+  Enter               Edit the selected spot
+  Delete              Remove it
+  Applications key    Its menu: Add, Edit, Move up, Move down, Remove
+
+Schedules
+  Enter               Edit the selected schedule
+  Delete              Delete it
+  Applications key    Its menu: Add, Edit, Turn on or off, History, Delete
+
+Gathering, Gangs and Your places
+  Delete              Remove the selected gang or place
+  Applications key    Its menu: move a gang up or down, rename or remove a place
 
 Bag and supplies, Shards and Other items
   Applications key    Move the selected item to another list
@@ -512,13 +535,15 @@ has. First gangs' Lakes, Mining Areas or Herbal Gardens: your own gang's and oth
 in the order you list them (each once a game day, half an hour inside), then outside: at a place of your own (stand where you gather by hand and press "Add where I stand")
 or one the bot knows, the best area for your level. It fights whatever attacks it, starts again,
 sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full and comes back, and
-stops when Vitality runs out. Tools, Sell the collection now: sells it from wherever you are.
-Tools, Sell shards now: sells the shards the bag manager says to sell, at this city's Shard Market
-(or the nearest one). Tools, Clean the bag now: throws away, where you stand, only what is on the
-bag manager's throw-away list, after you say yes. Tools, Update shard prices: reads the nearest
-Shard Market's prices into the price list the bag manager and the results use; a price that can't
-be read keeps its old value. Tools, Store items now: puts into the storehouse what is on the bag
-manager's storage list (Move to storehouse), keeping what each rule keeps, and nothing else.
+stops when Vitality runs out.
+The game's menu (select it in the Games list, then the Applications key or Shift+F10) runs these
+jobs right away. Sell the collection now: sells it from wherever you are. Sell shards now: sells
+the shards the bag manager says to sell, at this city's Shard Market (or the nearest one). Clean
+the bag now: throws away, where you stand, only what is on the bag manager's throw-away list,
+after you say yes. Update shard prices: reads the nearest Shard Market's prices into the price
+list the bag manager and the results use; a price that can't be read keeps its old value. Store
+items now: puts into the storehouse what is on the bag manager's storage list (Move to
+storehouse), keeping what each rule keeps, and nothing else.
 Character, Settings, Triggers: tick any of these jobs (and Gathering) to run by themselves before
 farming starts, after farming ends, or both - each stage has its own ticks.
 Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
@@ -535,7 +560,7 @@ scripts and settings. Close the games and stop the bots first. Help, Check for u
 time; Settings, Updater turns the start-up check off and picks the release channel.
 
 WALKING
-Bot, Walk to a dungeon or map (Ctrl+W). Dungeon entrance tab: the dungeons whose entrance NPC the
+Run, Walk to a dungeon or map (Ctrl+W). Dungeon entrance tab: the dungeons whose entrance NPC the
 bot knows (a teleport circle or the NPC at the cave mouth); it walks up to the NPC and, if you
 like, opens its menu so you choose. Map tab: any map of the open world (the ones you can walk to and
 back from; closed maps and the maps inside dungeons aren't listed), or a cell on it. Show the route says the way
@@ -548,7 +573,8 @@ Plans tab, New plan (Ctrl+N). Three tabs, three questions. Where to farm: one or
 them once. When to stop: a time, a clock time, a kill count or an item running low (the drop time,
 a full bag and deaths stop it by themselves). Where to end: back where you started it (the
 default), a place you choose, home with the hearthstone, the nearest map without monsters, or
-where it is - every end goes there.
+where it is - every end goes there. In the Plans list, a plan's own menu (the Applications key)
+has Run selected, Edit, Duplicate, Export and Delete.
 
 5. RUN IT
 Bot tab: choose the game in the Games list, choose the plan, press Start (F5). The Pause key
@@ -557,21 +583,21 @@ is doing, HP, MP, the bag and the drop time. Important events are spoken with NV
 keeps everything.
 
 6. MORE THAN ONE GAME
-Bot, Open another game window (Ctrl+O). Every game shows in the Games list with its character;
+Game, Open another game window (Ctrl+O). Every game shows in the Games list with its character;
 each runs its own plan. Inside a game window, Pause starts and stops that game's bot.
 Ctrl+Shift+S stops them all. Each game needs about 1 GB of memory.
-Bot, Schedules (Ctrl+Shift+H) starts a plan or script for a character at a set time: once, every
+Run, Schedules (Ctrl+Shift+H) starts a plan or script for a character at a set time: once, every
 day or on chosen days. Each time runs once; a time missed while Uncle Farmer was closed doesn't run
 later, and a game busy with another run waits up to 15 minutes. History says what happened.
 
 7. RESULTS
-Bot, Results (Ctrl+R): arnebia, shards, contribution, experience, levels and items, for this run,
+Run, Results (Ctrl+R): arnebia, shards, contribution, experience, levels and items, for this run,
 today, a week, a month or ever, and the arnebia the items used up cost (shop items at their fixed
 price, shards at the last Shard Market price, an estimate). Shift+Pause speaks a short summary from
 anywhere.
 
 8. PRIVATE MESSAGES
-Bot, Private messages (Ctrl+Shift+M). Strangers get a few of your reply lines, then a goodbye and
+Messages, Private messages (Ctrl+Shift+M). Strangers get a few of your reply lines, then a goodbye and
 silence. Trusted players can send commands; send "help" to the character to get the list.
 
 9. SCRIPTS
