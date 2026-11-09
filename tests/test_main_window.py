@@ -18,7 +18,7 @@ import pytest
 
 wx = pytest.importorskip("wx")
 
-from unclefarmer import chat, messages, speech, stats, tones  # noqa: E402
+from unclefarmer import chat, messages, settings, speech, stats, tones  # noqa: E402
 from unclefarmer.gui import main  # noqa: E402
 from unclefarmer.gui.mainparts import results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
 from unclefarmer.gui.mainparts.base import LOG_LIMIT, SNAP_FRESH  # noqa: E402
@@ -140,6 +140,20 @@ def bot(kills: int=0, deaths: int=0, paused: bool=False) -> types.SimpleNamespac
     if paused:
         b.paused.set()
     return b
+
+
+def test_a_live_server_label_promotes_the_id_only_game_row_and_never_downgrades() -> None:
+    fallback = settings.character_profile("Killua", 2905)
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    w = Win(games=[(1, fallback, "central plains")], runs={1: FakeRun(1)})
+    snap = {"self": {"id": 2905, "name": "Killua", "hp": 1, "maxhp": 1},
+            "map": {"name": "central plains"}, "_server": "S1"}
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
+
+    snap["_server"] = ""
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
 
 
 @pytest.fixture

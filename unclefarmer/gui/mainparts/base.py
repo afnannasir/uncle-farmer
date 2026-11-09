@@ -64,7 +64,7 @@ def profile_of(snap: dict[str, Any] | None) -> str | None:
     from ... import settings
     me: dict[str, Any] = (snap or {}).get("self") or {}
     name = me.get("name")
-    return settings.character_profile(name, me.get("id")) if name else None
+    return settings.character_profile(name, me.get("id"), (snap or {}).get("_server", "")) if name else None
 
 
 def out_of(now: float | None, top: float | None) -> str:

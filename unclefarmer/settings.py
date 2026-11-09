@@ -474,6 +474,11 @@ def is_character_profile(character: str) -> bool:
     return _profile_parts(character)[2] is not None
 
 
+def profile_server(character: str) -> str:
+    """The known player-facing server label, or empty while only the entity ID is available."""
+    return _profile_parts(character)[1] or ""
+
+
 def profile_path(character: str) -> str:
     name, server, entity_id = _profile_parts(character)
     stem = paths.safe_name(name)

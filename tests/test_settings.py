@@ -107,6 +107,13 @@ def test_a_server_label_is_visible_and_can_adopt_an_existing_id_profile(tmp_path
     assert settings.has_profile(on_s1)
 
 
+def test_a_server_label_can_be_told_from_the_id_only_fallback() -> None:
+    fallback = settings.character_profile("Killua", 2905)
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    assert settings.profile_server(fallback) == ""
+    assert settings.profile_server(on_s1) == "S1"
+
+
 def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "_unreadable", set[str]())
     p = tmp_path / "settings.json"

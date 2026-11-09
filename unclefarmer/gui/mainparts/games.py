@@ -10,7 +10,7 @@ from ... import applog, jsonio, nearby, scan, settings
 from ...engine.runner import Run
 from ...errors import carry_on
 from ...i18n import _
-from ...link import AgentError, AgentLink, agents, games
+from ...link import AgentError, AgentLink, agents, games, server_name
 from ..common import error, first_selected, select_row
 from .base import SNAP_FRESH, FrameParts, Game, duration_text, out_of, profile_of, saved_item
 from typing import Any
@@ -120,7 +120,10 @@ class GamesMixin(FrameParts):
         try:
             with AgentLink(pid=pid, timeout=3) as a:
                 s = a.json("mem")
-                return s if jsonio.is_object(s) and s.get("ok") else None
+                if jsonio.is_object(s) and s.get("ok"):
+                    s["_server"] = server_name(a)
+                    return s
+                return None
         except (AgentError, OSError, ValueError):
             return None
 
@@ -210,7 +213,9 @@ class GamesMixin(FrameParts):
         game = self.games[i]
         profile = profile_of(s)
         same = bool(game[1] and profile and settings.same_character(game[1], profile))
-        if not same or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
+        if same and game[1] and settings.profile_server(game[1]) and not settings.profile_server(profile or ""):
+            profile = game[1]       # a brief failed lookup must not make an announced identity ambiguous again
+        if not same or game[1] != profile or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
             self.games[i] = (game[0], profile, s["map"]["name"])
             self.label_games()
         elif game[1]:
