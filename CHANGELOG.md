@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**Polson Wetland and lava**
+
+- Polson Wetland without Poison Immunity: a trip through it now gets on a fusion beast (any kind)
+  and crosses, fighting nothing on the way, instead of refusing to go. A trip that ends there goes
+  with a spoken warning. Leaving it is never refused.
+- The volcanic caves' lava lake and magma, which take HP from whoever stands in them, count as
+  walls: the bot walks, stands and fights on the islands, and shoots monsters in the lava from the
+  shore when they are within reach.
+
 **Repairs**
 
 - The Alloy Toolbox repairs again: a character whose level wasn't known yet used the cheapest

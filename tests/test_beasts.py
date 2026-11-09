@@ -404,3 +404,31 @@ def test_no_on_foot_line_when_it_rides(monkeypatch: pytest.MonkeyPatch) -> None:
     beasts.ensure(as_bot(b), beasts.TRAVEL)
     assert b.a.rows[0]["active"] is True
     assert not any(line.startswith("on foot") for line in b.lines)
+
+
+# ---------------------------------------------------------------- ride_any (poisoned ground)
+def test_ride_any_takes_a_swift_beast_first_then_a_fierce_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Wolf", "fierce", level=5), row(2, "Horse", "swift", speed=5.0)])
+    b.p["speed_beast"] = "none"                  # the setting doesn't keep us off it on poison
+    assert beasts.ride_any(as_bot(b)) is True
+    assert b.a.rows[1]["active"] is True
+    b = Bot([row(1, "Wolf", "fierce", level=5)])
+    assert beasts.ride_any(as_bot(b)) is True and b.a.rows[0]["active"] is True
+
+
+def test_ride_any_is_content_with_whatever_is_already_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Wolf", "fierce", active=True), row(2, "Horse", "swift", speed=5.0)])
+    assert beasts.ride_any(as_bot(b)) is True and b.keys == []
+
+
+def test_ride_any_waits_out_the_fight_and_says_no_without_a_beast(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Horse", "swift", speed=5.0)])
+    b.last_combat = clock.now - 5
+    assert beasts.ride_any(as_bot(b)) is False and b.keys == []
+    assert beasts.ride_any(as_bot(Bot([]))) is False

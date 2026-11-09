@@ -2454,6 +2454,10 @@ msgstr ""
 msgid "Players near:"
 msgstr ""
 
+msgid ""
+"Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
+msgstr ""
+
 msgid "Potions"
 msgstr ""
 
@@ -3983,6 +3987,10 @@ msgid ""
 msgstr ""
 
 msgid "can build at the {post}"
+msgstr ""
+
+msgid ""
+"can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
 msgstr ""
 
 msgid "can't find {npc} here"

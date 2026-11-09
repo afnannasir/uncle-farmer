@@ -2524,6 +2524,11 @@ msgstr "Mansoobe aur &scripts:"
 msgid "Players near:"
 msgstr "Qareeb ke khilari:"
 
+msgid ""
+"Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
+msgstr ""
+"Polson Wetland: Poison Immunity activate nahi hai - jab bhi hum fusion beast se utre hon, wahan ki zameen zehar deti hai, aur wahan har larai paidal hoti hai"
+
 msgid "Potions"
 msgstr "Potions"
 
@@ -4154,6 +4159,11 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} par build ho sakta hai"
+
+msgid ""
+"can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
+msgstr ""
+"Polson Wetland paar nahi kar sakte: Poison Immunity activate nahi hai aur koi fusion beast nahi chadha (fusion beast par sawaar character ko wahan zehar nahi lagta)"
 
 msgid "can't find {npc} here"
 msgstr "yahan {npc} nahi mil raha"

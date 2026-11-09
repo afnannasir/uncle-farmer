@@ -547,9 +547,19 @@ class WalkingMixin(Parts):
         here = (int(me["x"]), int(me["y"]))
         cell = (int(round(e["x"])), int(round(e["y"])))
         if not m.ok(*cell):
-            cell = m.nearest_walkable(cell[0], cell[1], 3)
-            if not cell:
-                return straight     # standing where the map says wall: the map is wrong, not the monster
+            hazard = getattr(m, "hazard", None)
+            if hazard is not None and hazard[cell[1], cell[0]]:
+                # out in the lava, where we don't walk: fought from the nearest safe ground within
+                # our reach, or left alone when no safe ground is that close
+                rng = max(3.0, self.reach())
+                near = m.nearest_walkable(cell[0], cell[1], int(rng))     # (a square search: corners further)
+                if not near or math.hypot(near[0] - cell[0], near[1] - cell[1]) > rng:
+                    return math.inf
+                cell = near
+            else:
+                cell = m.nearest_walkable(cell[0], cell[1], 3)
+                if not cell:
+                    return straight     # standing where the map says wall: the map is wrong, not the monster
         if m.ok(*here) and m.line_ok(here, cell):
             return straight
         c = self._dists
