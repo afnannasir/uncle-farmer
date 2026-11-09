@@ -206,6 +206,15 @@ class Combos:
         self.fast_until = 0.0
         self.streak = 0
         self.built = 0          # fire elements our builders made since the last release (no T reading)
+        self.talents = set(talents)
+        self.has_blazing_combo = "Blazing Combo" in self.talents
+        self.pending_channelling = False
+        self.available_to_channel_without_penalty = False
+        self.fire_impact_crit = False
+
+    def has_talent(self, name: str) -> bool:
+        t: set[str] = getattr(self, "talents", set[str]())
+        return name in t
 
     def of(self, kind: str) -> list[Rule]:
         return [r for r in self.rules if r["kind"] == kind]
@@ -229,9 +238,10 @@ class Combos:
             self.primed[b] = t + r.get("window", WINDOW)
         self.primed.pop(name, None)
         attack = info.get("role") not in ("heal", "party_buff", "self_buff", "dispel", "defensive", "mobility")
+        skip_streak = self._update_elf_chain(name, t, attack, crit)
         if crit:
             self._critical(name, t, attack)
-        if attack and info.get("role") != "dot":
+        if attack and info.get("role") != "dot" and not skip_streak:
             self._streak(t, crit)
         for r in self.of("release"):
             skill, builders = r["release"]
@@ -244,6 +254,48 @@ class Combos:
             for r in self.of("spend_cd"):
                 self.book.cut_cooldown(r["spend_cd"], spent)
         return prev
+
+    def _update_elf_chain(self, name: str, t: float, attack: bool, crit: bool) -> bool:
+        """Update Elf pending channeling and channel permission. Returns True if streak handling
+        was performed."""
+        cls = getattr(self.book, "cls", None)
+        is_elf = cls == "Elf" or name in ("Fireball", "Fire Impact", "Fire Surge", "Pyroblast", "Blazing Storm", "Ignition", "Sear", "Magma", "Dragon's Breath")
+        if not (is_elf and attack):
+            return False
+        if not self.has_talent("Blazing Combo"):
+            return False
+        was_pending = self.pending_channelling
+        if crit:
+            if name == "Fire Impact":
+                if was_pending:
+                    self.pending_channelling = False
+                    self.available_to_channel_without_penalty = True
+                    self.fire_impact_crit = False
+                    self._grant_channeling(t)
+                    return True
+                self.fire_impact_crit = True
+                self.streak = 1
+                return True
+            if self.fire_impact_crit:
+                self.fire_impact_crit = False
+                self.pending_channelling = False
+                self.available_to_channel_without_penalty = True
+                self._grant_channeling(t)
+                return True
+            self.pending_channelling = True
+        else:
+            self.fire_impact_crit = False
+            if not was_pending:
+                self.available_to_channel_without_penalty = False
+        return name == "Fire Impact" and not was_pending
+
+    def _grant_channeling(self, t: float) -> None:
+        self.streak = 2
+        for r in self.of("streak"):
+            if self.streak >= r["streak"][0]:
+                for b in r["streak"][1]:
+                    self.primed[b] = t + RESET_WINDOW
+                self.streak = 0
 
     def _critical(self, name: str, t: float, attack: bool) -> None:
         """A critical hit: the cooldowns it ends (or primes), and a stretch of shorter global
@@ -266,6 +318,13 @@ class Combos:
                 for b in r["streak"][1]:
                     self.primed[b] = t + RESET_WINDOW
                 self.streak = 0
+
+    def reset_chain(self) -> None:
+        """Reset pending channeling state, channel permissions, and critical streak."""
+        self.pending_channelling = False
+        self.available_to_channel_without_penalty = False
+        self.fire_impact_crit = False
+        self.streak = 0
 
     def is_on(self, skill: str, target: int | None, now: float, lasts: float) -> bool:
         t = self.book.landed.get((skill, target))
@@ -296,6 +355,15 @@ class Combos:
         return 1.0 + self.bonus.get(s["name"], 0) / 100.0
 
     # ---------------------------------------------------------------- choosing
+    def _channel_pick(self, ok: Callable[[str], Skill | None]) -> Skill | None:
+        """Channeling priority without penalty: packs prefer Blazing Storm, single target prefers Pyroblast."""
+        if not (self.available_to_channel_without_penalty or ("Blazing Storm" in self.primed and "Pyroblast" in self.primed)):
+            return None
+        pack = getattr(self.book, "_last_pack_size", 1)
+        if pack >= 2 and ok("Blazing Storm"):
+            return ok("Blazing Storm")
+        return ok("Pyroblast") or ok("Blazing Storm")
+
     def pick(self, skills: Iterable[Skill], target: dict[str, Any], now: float, in_range: Callable[[Skill], bool],
              elements: int | None) -> Skill | None:
         """The skill a combo wants pressed now, from skills (ready, affordable, on our keys), or
@@ -305,6 +373,13 @@ class Combos:
 
         def ok(name: str) -> Skill | None:
             return have.get(name)
+
+        if self.pending_channelling and ok("Fire Impact"):
+            return ok("Fire Impact")
+
+        chan = self._channel_pick(ok)
+        if chan:
+            return chan
 
         # something a cast just set up: frozen / condensed targets, cooldowns a critical hit ended
         for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
