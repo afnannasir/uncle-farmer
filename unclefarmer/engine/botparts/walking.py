@@ -359,6 +359,9 @@ class WalkingMixin(Parts):
         for hop in hops:
             if self.walk_only:
                 beasts.keep_riding(as_bot(self))   # thrown off or refused earlier: back on between hops
+            elif getattr(self, "traveling", False) and not self.in_fight:
+                # the leg's start may have been too soon after a fight to mount: try again on the way
+                beasts.keep_riding(as_bot(self), read_power=False)
             if diagonal:
                 results: Any = [self.walk_diag(hop, leave, near=near)]
             else:

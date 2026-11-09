@@ -777,6 +777,11 @@ class SkillBook:
             return None
         if getattr(self.b, "following", None) and not getattr(self.b, "follow_buffs", False):
             return None           # following someone: buffs only after their `buff` message
+        if fight is None and getattr(self.b, "traveling", False):
+            # On the way somewhere (home after a dungeon, a restock): a buff put up now runs out
+            # before any farming, and on a Swift beast it can't even be cast. A fight on the way
+            # still gets its buffs from the skill picker (fight is given there).
+            return None
         v: dict[str, Any] = me.get("vitals") or {}
         fresh = "buffs" in v and v.get("age_ms", 1e9) < 15000
         read_at = now - v.get("age_ms", 0) / 1000.0

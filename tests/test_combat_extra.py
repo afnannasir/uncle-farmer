@@ -54,6 +54,7 @@ class TB:
         self.a = a
         self.lines: list[str] = []
         self.resting = False
+        self.traveling = False
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -678,3 +679,20 @@ def test_press_pick_none_when_no_fallback_exists() -> None:
     s = pinned(sb(can_flip=False), page=0)
     choice = skill("Bash", role="single_target", page=1)
     assert s._press_pick(choice, [], 0, 1000.0, lambda x: True) is None
+
+
+def test_buff_now_puts_no_buff_up_between_fights_while_travelling(clock: Clock) -> None:
+    # After a dungeon the trip home kept re-casting the Hunter's auras: nothing left to farm.
+    b = skill("Strong-Arm Aura", role="party_buff", text="Increase 25% attack damage for 2 minutes")
+    s = pinned(sb(slots={0: [b]}), page=0)
+    s.b.traveling = True
+    assert s.buff_now({}, clock.now) is None
+    s.b.traveling = False
+    assert s.buff_now({}, clock.now) == ("j", "Strong-Arm Aura")
+
+
+def test_buff_now_still_buffs_for_a_fight_on_the_way(clock: Clock) -> None:
+    b = skill("Strong-Arm Aura", role="party_buff", text="Increase 25% attack damage for 2 minutes")
+    s = pinned(sb(slots={0: [b]}), page=0)
+    s.b.traveling = True
+    assert s.buff_now({}, clock.now, fight=(False, 1)) == ("j", "Strong-Arm Aura")
