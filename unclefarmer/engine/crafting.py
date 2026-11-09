@@ -88,6 +88,21 @@ def in_gang(b: Bot) -> bool:
     return atlas.kind(mid) == "gang" or "gang" in atlas.label(mid).lower()
 
 
+def _same_gang(b: Bot, gang: str | None) -> bool:
+    """True when the bot is inside the gang base that matches `gang`: any gang base when no gang
+    name was asked for, or the named gang entered this run on its current map."""
+    if not gang:
+        return True
+    base: tuple[int, str] | None = getattr(b, "gang_base", None)
+    if base is None:
+        return False
+    rem_map, rem_gang = base
+    if b.map_id() != rem_map:
+        b.gang_base = None
+        return False
+    return rem_gang.strip().lower() == gang.strip().lower()
+
+
 def place(cfg: dict[str, Any]) -> str:
     """Where a tool's craftsman is: "gang" (your gang's), "gang:<name>" (that gang's) or "city"."""
     where: str = cfg.get("where", "gang")
@@ -172,9 +187,10 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
     """Into a gang base's OUTER hall, where the craftsmen are: your own gang's through the nearest
     Gang Entrance, or the gang named `gang` through its "all gangs" list. Already in a gang base
     but in the walled-off inner hall (or the wrong gang's): out and in again."""
-    if in_gang(b) and _reachable(b, role) and not gang:
+    if in_gang(b) and _reachable(b, role) and _same_gang(b, gang):
         return True
     b.close_dialogs()
+    b.gang_base = None
     town.visit(b, "gang_entrance")          # (leaves a gang base first when we are in one)
     mid = b.map_id()
     me = b.me()
@@ -202,6 +218,8 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
         b.log(_("landed in the gang's inner hall, which is walled off from the craftsmen"), speak=True)
         return False
     b.log(_("in {where}", where=b.snap().get("map", {}).get("name") or atlas.label(b.map_id())))
+    if gang:
+        b.gang_base = (int(b.map_id()), gang.strip())
     return True
 
 

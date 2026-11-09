@@ -86,6 +86,7 @@ class Parts:
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
     traveling: bool
+    gang_base: tuple[int, str] | None   # (map id, gang name) of the named gang base entered this run
     # the pet (engine/pets.py) and the fusion beasts (engine/beasts.py)
     pets_refused: dict[int, float]        # pet id -> don't try to summon it before then
     beasts_refused: dict[int, float]      # beast id -> don't try it again before then
