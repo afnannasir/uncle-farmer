@@ -197,6 +197,10 @@ class TravelMixin(Parts):
         done = self._take_leg(leg, avoid, failed)
         now = self.map_id()
         if now != was:
+            if getattr(self, "gang_base", None) is not None:
+                rem_map = self.gang_base[0] if isinstance(self.gang_base, tuple) else None
+                if now != rem_map:
+                    self.gang_base = None
             if travel.is_instance(now) and not travel.is_instance(was):
                 note_way_out(self, now, was, (me.get("x", 0), me.get("y", 0)))
             elif travel.is_instance(was) and not travel.is_instance(now):
@@ -295,6 +299,10 @@ class TravelMixin(Parts):
             if self.map_id() != mid:
                 self.settled_map()
                 self.sleep(1.0)
+                if getattr(self, "gang_base", None) is not None:
+                    rem_map = self.gang_base[0] if isinstance(self.gang_base, tuple) else None
+                    if self.map_id() != rem_map:
+                        self.gang_base = None
                 return True
             if self.hit(self.me()):
                 return False      # attacked: the cast was interrupted
