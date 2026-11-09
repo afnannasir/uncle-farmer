@@ -193,6 +193,7 @@ class Bot(FightingMixin, WalkingMixin):
     switch_wait = KeysMixin.switch_wait
     note_page_turn = KeysMixin.note_page_turn
     last_attack: tuple[str, float] | None = None
+    last_me: dict[str, Any] | None = None      # count_kills' fallback for who we are
     in_instance = False
 
     def __init__(self, link: Link | None=None, prof: dict[str, Any] | None=None, entities: list[dict[str, Any]] | None=None, me: dict[str, Any] | None=None, map_id: int=5121) -> None:
@@ -1685,3 +1686,73 @@ def test_only_a_monster_that_struck_us_or_our_pet_is_an_attacker() -> None:
     assert not at_us(b, {"caster": -3}, me, {pet})          # agent 44 names targets: this struck none
     assert at_us(old, {"caster": -3}, me, set())           # an older agent: as before
     assert at_us(b, {"caster": -3, "targets": [[2002, 1]]}, None, set())             # our id unknown yet
+
+
+# ------------------------------------------------------------------ reused monster ids
+def test_a_death_clears_what_was_held_against_that_id(clock: Clock) -> None:
+    # The game hands a respawned monster an id that just came free: a skip kept past the death
+    # left the next monster of that id alone (only attacking us got it fought).
+    b = target_bot([monster(-1), monster(-2)])
+    b.skip = {-1: clock.now + 120, -2: clock.now + 120}
+    b.unselectable = {-1: (1, (100.0, 100.0), clock.now + 120)}
+    b._forget_the_dead([-1])
+    assert -1 not in b.skip and -1 not in b.unselectable
+    assert b.skip[-2] == clock.now + 120          # still alive: still left alone
+    assert ids(b.targets(b.snap())) == [-1]
+
+
+class DyingTracker(FakeTracker):
+    """A tracker that read deaths (anyone's kills) on its last update."""
+
+    def __init__(self, died: list[int]) -> None:
+        super().__init__(live=True)
+        self.died = died
+        self.own: set[int] = set()
+        self.begun = 0
+
+
+def test_count_kills_forgets_the_skips_of_every_dead_monster(clock: Clock) -> None:
+    b = target_bot([monster(-3)])
+    b.kill_tracker = as_kind(KillTracker, DyingTracker([-3]))     # someone else's kill
+    b.skip = {-3: clock.now + 120}
+    b.last_me = {"id": ME}
+    b.count_kills(None)
+    assert b.skip == {}
+
+
+# ------------------------------------------------------------------ explain_left_out
+def test_explain_left_out_says_why_once_a_minute(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=130.0), monster(-2, x=100.0, y=150.0), monster(-3, x=101.0)])
+    b.skip = {-3: clock.now + 120}
+    assert b.targets(b.snap(), area=(90, 90, 140, 110), limit=10) == []
+    b.explain_left_out()
+    said = [line for line in b.lines if line.startswith("monsters in sight, none to fight")]
+    assert len(said) == 1
+    assert "further to walk than the chase range 1" in said[0]
+    assert "outside the farming area 1" in said[0]
+    assert "left alone for now" in said[0]
+    b.explain_left_out()                          # within the minute: quiet
+    clock.advance(b.LEFT_OUT_EVERY)
+    b.explain_left_out()
+    assert len([line for line in b.lines if line.startswith("monsters in sight")]) == 2
+
+
+def test_explain_left_out_quiet_when_nothing_was_in_sight(clock: Clock) -> None:
+    b = target_bot([])
+    b.targets(b.snap())
+    b.explain_left_out()
+    assert b.lines == []
+
+
+def test_left_out_tells_no_way_from_too_far(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=105.0)])
+    b.walk_dist = lambda snap, e, limit=None: math.inf      # walls all round it
+    b.targets(b.snap(), limit=40)
+    assert b.left_out == {"no way": 1}
+
+
+def test_left_out_counts_the_doomed(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=130.0)])
+    b.dying_in = lambda e: 0.5
+    b.targets(b.snap())
+    assert b.left_out == {"doomed": 1}

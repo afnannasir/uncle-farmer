@@ -157,6 +157,11 @@ class Farm(FarmingMixin):
         self.targets_calls.append((snap, area, only, skip, avoid_rects, limit))
         return list(self.targets_result)
 
+    explained = 0
+
+    def explain_left_out(self) -> None:
+        self.explained += 1
+
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         return mobs[0]
 
@@ -515,6 +520,7 @@ def test_loop_wanders_to_a_random_cell() -> None:
     run_loop(b)
     assert b.walk_calls == [(7, 7)]
     assert calls == [(1, None, b.sn["self"], 40)]
+    assert b.explained == 1           # nothing to fight: the loop says why before it walks on
 
 
 def test_loop_sleeps_when_there_is_nowhere_to_walk() -> None:
