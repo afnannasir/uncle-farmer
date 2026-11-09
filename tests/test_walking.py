@@ -123,7 +123,7 @@ class Map:
     def line_ok(self, a: Cell, b: Cell, min_clear: int=1, allow_directional: bool=False) -> bool:
         return self.line
 
-    def route(self, a: Cell, b: Cell, avoid_directional: bool=False) -> list[Cell] | None:
+    def route(self, a: Cell, b: Cell, avoid_directional: bool=False, gates_fallback: bool=True) -> list[Cell] | None:
         self.route_calls.append((a, b, avoid_directional))
         return self.route_paths.pop(0) if self.route_paths else None
 

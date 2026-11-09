@@ -343,7 +343,12 @@ class WalkingMixin(Parts):
         if not diagonal and plan.line_ok(here, corner) and plan.line_ok(corner, cell):
             return [cell]
         # round the ledges if there is a way round, over them only when there isn't
-        path = (plan.route(here, cell, avoid_directional=True) or plan.route(here, cell)
+        # every way that obeys the one-way gates first (round the ledges, then over them), and
+        # only then a way through a gate: on rolling mountain the ledge-free way north runs
+        # through a one-way Stone Gate the game won't let us through, while the way round over a
+        # slope is open - asking for "no ledges" alone took the gate and stood stuck before it
+        path = (plan.route(here, cell, avoid_directional=True, gates_fallback=False)
+                or plan.route(here, cell)
                 or (m.route(here, cell) if plan is not m else None))
         if not path:
             if replan and not m.ok(*here):

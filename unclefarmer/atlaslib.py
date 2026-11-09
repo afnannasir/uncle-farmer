@@ -1447,11 +1447,17 @@ class MapModel(object):
                 lock = self.__dict__.setdefault("_route_lock", threading.RLock())
         return lock
 
-    def route(self, a: Cell, b: Cell, avoid_directional: bool = False) -> list[Cell] | None:
+    def route(self, a: Cell, b: Cell, avoid_directional: bool = False,
+              gates_fallback: bool = True) -> list[Cell] | None:
         """Path a -> b, obeying one-way gates. On the few maps where the gate
         reading cuts ground off (9 of 149, unverified), a target it can't
         reach is planned the old way, ignoring the gates - that path is
         returned but never cached, or every later call would ignore them too.
+        gates_fallback=False leaves that last resort out (None instead), so a
+        caller can first try other gate-obeying routes: rolling mountain's
+        only ledge-free way north runs through a one-way Stone Gate, and the
+        fallback sent the walk into it while a gated way round, over a slope,
+        was open.
 
         Results are kept on the map object, keyed by both cells and the
         directional flag: patrol walks and travel ask for the same hops again
@@ -1473,12 +1479,14 @@ class MapModel(object):
             key = (a, b, avoid_directional)
             cache = self.__dict__.setdefault("_route_cache", {})
             loose = self.__dict__.setdefault("_route_loose", {})
-            for kept in (cache, loose):
+            for kept in ((cache, loose) if gates_fallback else (cache,)):
                 hit: Any = lru.get(kept, key, _NO_ROUTE)
                 if hit is not _NO_ROUTE:
                     return list(hit) if hit is not None else None
             p = self.gated_route(a, b, avoid_directional)
             if p is None and self.gate.any():
+                if not gates_fallback:
+                    return None             # not cached: a later call may still want the fallback
                 with self.no_gates():
                     p = self.gated_route(a, b, avoid_directional)
                 # kept apart: the gate-less answer is only ever handed out for this same question
