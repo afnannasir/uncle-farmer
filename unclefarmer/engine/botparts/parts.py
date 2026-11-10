@@ -168,6 +168,7 @@ class Parts:
     kill_tracker: "KillTracker"
     in_fight: bool
     skip: dict[int, float]      # monster id -> ignore until
+    notes_map: int | None       # the map the notes about monster ids were made on (reading.snap)
     skip_names: dict[tuple[int, str], float]
     left_out: dict[str, int]    # why targets() last left monsters in sight out -> how many
     killed_kinds: set[tuple[int, str]]

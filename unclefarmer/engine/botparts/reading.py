@@ -79,6 +79,7 @@ class ReadingMixin(Parts):
     _snap_at: float = 0.0
     _snap_self: dict[str, Any] | None = None
     _snap_map_id: int | None = None
+    notes_map: int | None = None      # the map the notes about monster ids were made on (snap)
 
     def check(self) -> None:
         if self._stop.is_set():
@@ -295,6 +296,14 @@ class ReadingMixin(Parts):
         map_info = s.get("map")
         map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
+        here = self._snap_map_id
+        if here and here != self.notes_map:
+            # Another map (0 is none: a change in progress). What the bot holds against monster
+            # ids was learned on the last one, and an id means something else here.
+            left, self.notes_map = self.notes_map, here
+            forget: Callable[[], None] | None = getattr(self, "forget_the_map", None)
+            if left and forget is not None:
+                forget()
         return s
 
     def me(self) -> dict[str, Any]:

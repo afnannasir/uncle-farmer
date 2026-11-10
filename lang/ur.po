@@ -6317,6 +6317,9 @@ msgstr "{cell} ki taraf aage chal rahe hain"
 msgid "walking to monsters"
 msgstr "monsters tak chal rahe hain"
 
+msgid "we are on another map now - leaving the fight with {name}"
+msgstr "ab hum doosre map par hain - {name} se ladai chhor rahe hain"
+
 msgid "weakens the enemy"
 msgstr "dushman ko kamzor karta hai"
 

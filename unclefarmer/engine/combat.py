@@ -561,6 +561,15 @@ class SkillBook:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
 
+    def forget_the_map(self) -> None:
+        """We are on another map: target ids mean other monsters here. What was noted against
+        them goes - who is down, presses on their way to one, where our casts landed."""
+        self.downed.clear()
+        for name in [n for n, t in self.pending_target.items() if t is not None]:
+            self.pending.pop(name, None)
+            self.pending_target.pop(name, None)
+        self.landed.clear()
+
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
         name = re.sub(r"^Level \d+ ", "", c["skill"]).strip()
