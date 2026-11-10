@@ -61,7 +61,7 @@ class GamesMixin(FrameParts):
         listed = {g[0] for g in self.games}
         for pid, run in self.runs.items():
             if pid not in listed:
-                self.games.append((pid, run.character, None))
+                self.games.append((pid, run.profile or run.character, None))
         self.filling = True
         self.game_list.DeleteAllItems()
         for i, game in enumerate(self.games):
@@ -90,7 +90,7 @@ class GamesMixin(FrameParts):
         """Each character remembers what it ran last; choosing its game selects that again."""
         if self.selected_pid() in self.runs:
             return
-        last = self.s.get("last_runs", {}).get(self.selected_character() or "")
+        last = settings.last_run_of(self.s, self.selected_character())
         if last:
             want = saved_item(last)
             if want in self.items:

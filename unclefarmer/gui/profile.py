@@ -476,9 +476,9 @@ class ProfileDialog(Dialog):
 
     # ------------------------------------------------------------ buttons
     def on_scan(self, _evt: wx.Event) -> None:
-        pid = next((g[0] for g in games() if g[1] == self.character), None)
+        pid = next((g[0] for g in games() if settings.is_profile_of(g[1], self.character)), None)
         if pid is None:
-            error(self, _("{name} isn't logged in to a game that has the agent.", name=self.character))
+            error(self, _("{name} isn't logged in to a game that has the agent.", name=settings.profile_display(self.character)))
             return
         try:
             with wx.BusyCursor(), AgentLink(pid=pid, timeout=5) as a:

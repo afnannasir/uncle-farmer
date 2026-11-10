@@ -63,7 +63,7 @@ import time
 from collections.abc import Collection, Iterable
 from typing import Any
 
-from .. import atlas, daily, knowledge, paths
+from .. import atlas, daily, knowledge, paths, settings
 from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
@@ -138,15 +138,31 @@ def wanted(cfg: dict[str, Any], chore: str) -> bool:
 
 
 # ---------------------------------------------------------------------------------------- the done list
+def who(b: object) -> str | None:
+    """The character a bot's chores are kept for: its own profile key when the run knows it (two
+    characters can share a name on different servers), else its name."""
+    return getattr(b, "profile_key", None) or getattr(b, "character", None)
+
+
 def _ledger(name: str | None) -> str:
-    return os.path.join(paths.LOGS, "chores", paths.safe_name(name or "unknown") + ".json")
+    """The done list's file: per character (name and game id, never the server label, so it is the
+    same before and after the label is learned), or per name for a name-only key."""
+    entity_id = settings.profile_id(name)
+    name = settings.profile_name(name)
+    stem = paths.safe_name(name or "unknown") + ("--" + paths.safe_name(entity_id) if entity_id else "")
+    return os.path.join(paths.LOGS, "chores", stem + ".json")
 
 
 def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
-    """{chore: {"at", "note"}} of what is done this game day."""
+    """{chore: {"at", "note"}} of what is done this game day. A character with its own key and no
+    list of its own yet starts from its name's list (written before characters had keys), so the
+    chores done earlier today aren't done twice."""
     day = day or daily.game_day()
+    path = _ledger(name)
+    if not os.path.exists(path) and settings.is_character_profile(name or ""):
+        path = _ledger(settings.profile_name(name))
     try:
-        with open(_ledger(name), encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data: dict[str, Any] = json.load(f)
     except (OSError, ValueError):
         return {}
@@ -180,7 +196,7 @@ def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
 # ---------------------------------------------------------------------------------------- running them
 def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[str] | None = None) -> list[tuple[str, str]]:
     """Every chore cfg turns on (only: just those) that isn't done today. [(chore, what happened)]."""
-    name = b.character
+    name = who(b)
     done = done_today(name)
     out: list[tuple[str, str]] = []
     # A chores run is all walking from one NPC to the next, much of it on one map (a town, the gang
@@ -197,7 +213,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[
 
 def _run(b: Bot, cfg: dict[str, Any], check_only: bool, only: Collection[str] | None,
          done: dict[str, Any], out: list[tuple[str, str]]) -> None:
-    name = b.character
+    name = who(b)
     for chore in CHORES:
         if (only and chore not in only) or not wanted(cfg, chore):
             continue
@@ -808,7 +824,7 @@ def _note_share(name: str | None, count: int, t: float) -> None:
 
 def _share_here(b: Bot, cfg: dict[str, Any]) -> int:
     """One share in this half hour, unless today's are made or this half hour's is. The day's count."""
-    name = b.character
+    name = who(b)
     made, used = shares(name)
     now = b.clock.time()
     if made >= SHARES_A_DAY or slot(now) in used:

@@ -224,7 +224,7 @@ def enter(b: Bot, cave: str) -> bool:
 
 def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     """One cave: in, the fight until the game moves us out, then a line about it."""
-    name = getattr(b, "character", None)
+    name = chores.who(b)
     if not enter(b, cave):
         chores.mark(name, done_key(cave), "not let in")
         return _("{cave}: the game didn't let us in (once a day)", cave=cave)
@@ -261,7 +261,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None 
     character has been in one today. [what happened]."""
     if cave in CAVES:
         cfg = dict(cfg, cave=cave)
-    name = getattr(b, "character", None)
+    name = chores.who(b)
     done = done_today(name)
     if done:
         b.log(_("{cave} is done for today - a character goes into one cave a day", cave=_(done[0])), speak=True)

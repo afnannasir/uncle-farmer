@@ -320,6 +320,19 @@ def test_our_characters_are_found_through_their_own_game() -> None:
     assert w.locate("Nobody") is None
 
 
+def test_a_character_with_its_own_key_is_still_found_and_started_by_its_name() -> None:
+    class Link:
+        def json(self, line: str) -> Any:
+            return {"ok": True, "map": {"id": 5302}, "self": {"x": 10.0, "y": 20.0}}
+
+    key = settings.character_profile("Ali", 2905, "S1")
+    w = Win(games=[(1, key, "")], s={"last_runs": {"Ali": "plan:wolves"}})     # saved before keys
+    w.messengers = {1: SimpleNamespace(link=Link())}
+    assert w.locate("ali") == (5302, 10.0, 20.0)
+    w.items = [("plan", "wolves")]
+    assert w.start_bot(1, "") == "started" and w.started[-1][1] == ("plan", "wolves")
+
+
 def test_the_latest_sighting_of_a_player_counts_while_it_is_recent() -> None:
     w = Win()
     now = w.clock.time()

@@ -479,6 +479,44 @@ def profile_server(character: str) -> str:
     return _profile_parts(character)[1] or ""
 
 
+def profile_name(character: str | None) -> str:
+    """The character's name as the game and the player write it, from a profile key or a name."""
+    return _profile_parts(character or "")[0]
+
+
+def profile_id(character: str | None) -> str | None:
+    """The game's id for the character in a profile key; None for a name-only key."""
+    return _profile_parts(character or "")[2]
+
+
+def stable_key(character: str | None) -> str:
+    """The character's key without the server label: the same before and after the label is learned.
+
+    Daily chores and last-run choices are kept under it, so they don't start over when a game
+    reading first carries the server, or lose it again when one lookup fails."""
+    name, _server, entity_id = _profile_parts(character or "")
+    return character_profile(name, entity_id) if entity_id else name
+
+
+def is_profile_of(game: str | None, profile: str | None) -> bool:
+    """Whether a game's profile key is this profile's character. A name-only (old) profile still
+    matches its name, as it did before characters had their own keys."""
+    if not game or not profile:
+        return False
+    if game == profile or same_character(game, profile):
+        return True
+    return not is_character_profile(profile) and profile_name(game) == profile
+
+
+def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
+    """What a character ran last ("plan:name"): saved under its stable key, else under its name
+    (from before characters had their own keys)."""
+    if not character:
+        return None
+    runs: dict[str, str] = app.get("last_runs") or {}
+    return runs.get(stable_key(character)) or runs.get(profile_name(character))
+
+
 def profile_path(character: str) -> str:
     name, server, entity_id = _profile_parts(character)
     stem = paths.safe_name(name)

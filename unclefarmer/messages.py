@@ -350,7 +350,7 @@ class Messenger(threading.Thread):
 
     def say(self, line: str, speak: bool=False, private: bool=False) -> None:
         """private: a line with someone's message in it - shown and spoken, never written to a file."""
-        self.host.log(line, speak, self.host.character(self.pid), private)
+        self.host.log(line, speak, settings.profile_name(self.host.character(self.pid)) or None, private)
 
     # -------------------------------------------------- arriving
     def received(self, pm: dict[str, Any]):
@@ -496,11 +496,11 @@ class Messenger(threading.Thread):
         run = self.host.run_for(self.pid)
         if run and run.tally:
             return _("This run: {r}", r=stats.short(run.tally.result()))
-        past = stats.runs(self.host.character(self.pid) or "")
+        past = stats.runs(settings.profile_name(self.host.character(self.pid)))
         return _("Last run: {r}", r=stats.short(past[-1])) if past else _("No results yet.")
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
-        who = self.host.character(self.pid) or ""
+        who = settings.profile_name(self.host.character(self.pid))
         since = time.mktime(time.strptime(time.strftime("%Y-%m-%d"), "%Y-%m-%d"))
         rs = stats.runs(who, since)
         run = self.host.run_for(self.pid)
@@ -685,9 +685,17 @@ class Messenger(threading.Thread):
         s = self.snap()
         if not s:
             return None
-        profile = settings.load_profile(s["self"]["name"])
+        name = s["self"]["name"]
+        # the character's own profile: the game list's key when it is this character, else one
+        # from this reading (the name alone would load the old name-only file, which stops
+        # changing once the character's own profile is saved)
+        key = self.host.character(self.pid)
+        if not key or settings.profile_name(key) != name:
+            key = settings.character_profile(name, s["self"].get("id"))
+        profile = settings.load_profile(key)
         b = Bot(self.agent(), profile, self.bot_log, threading.Event(),
                 clock=self.clock)
+        b.character, b.profile_key = name, key
         b.trusted = trust.Trusted(config()["pm_trusted"])
         b.locate = getattr(self.host, "locate", None)         # the window has these; test hosts may not
         b.last_seen = getattr(self.host, "last_seen", None)

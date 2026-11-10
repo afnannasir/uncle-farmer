@@ -38,7 +38,7 @@ AGENT_ACT = 40      # from here `use <uid>` uses a bag item and `select <id>` pi
 AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without the key or its window
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
-AGENT_SERVER = 57   # from here `server` identifies the live S1/S2 route without a game packet
+AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -186,10 +186,10 @@ class Run(threading.Thread):
             return scan.scan_and_save(link, character, self.game_folder())
         except Exception as e:      # a failed scan must never stop a run; the saved profile still works
             carry_on(e, "scanning the character")
-            self.log(_("couldn't scan {name}: {err}", name=character, err=e))
+            self.log(_("couldn't scan {name}: {err}", name=settings.profile_display(character), err=e))
             if not settings.has_profile(character):
                 self.log(_("{name} has no profile yet - using the default keys. Open Character, Settings to check them.",
-                           name=character), speak=True)
+                           name=settings.profile_display(character)), speak=True)
             return settings.load_profile(character), {}
 
     def _arm(self, link: AgentLink, agent: int, profile: dict[str, Any], app: dict[str, Any]) -> str | None:
@@ -234,6 +234,7 @@ class Run(threading.Thread):
             self.log(_("farming stops at {time} at the latest (the drop time resets at {reset})",
                        time=day_end.strftime("%H:%M"), reset=bot.daily_reset))
         bot.character = self.character   # names the game in logs/dialogs.log when several run
+        bot.profile_key = self.profile   # the daily chores are kept per character, not per name
         name = self.profile or self.character or ""
 
         def save_profile(data: dict[str, Any]) -> None:
@@ -255,7 +256,7 @@ class Run(threading.Thread):
                 # the results count contribution and experience from the first sheet they see: a
                 # fresh one now, or the first reading comes after the first kills and leaves them out
                 bot.ask_sheet(force=True)
-            bot.tally = self.tally = stats.Tally(self.profile or self.character or "", self.title, clock=clock_for(bot),
+            bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
                                                  tool=self._tool())
             if getattr(bot, "daily_stop_at", 0.0):
                 bot.tally.deadline(bot.daily_stop_at)     # Time remaining counts down to it at the latest
@@ -295,7 +296,7 @@ class Run(threading.Thread):
             if triggers.farms(script.main, script.subs):
                 self._before_farming()
             cfg = chores.config(bot.p)
-            if cfg.get("before_farming") and chores.due(self.character, cfg):
+            if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
                 with stats.doing(bot, "chores"):
                     chores.run(bot, cfg)

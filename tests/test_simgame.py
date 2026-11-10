@@ -118,7 +118,7 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[...
     said = [line for line in s.lines if "Spider cave: " in line and " kills in " in line]
     assert said, [line for line in s.lines if "Spider cave" in line]
     assert not [line for line in s.lines if "resting before" in line or "restocking" in line]
-    assert dungeon.done_today(simgame.NAME) == ["Spider cave"]
+    assert dungeon.done_today(settings.character_profile(simgame.NAME, simgame.ME)) == ["Spider cave"]   # kept per character
     assert errors_logged() == ""
 
 
