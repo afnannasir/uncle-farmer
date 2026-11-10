@@ -203,6 +203,19 @@ def test_run_init_defaults() -> None:
     assert isinstance(run.started, float)
 
 
+def test_start_keeps_the_games_list_server_when_the_agent_lookup_fails(monkeypatch: pytest.MonkeyPatch,
+                                                                        tmp_path: Path) -> None:
+    monkeypatch.setattr(R, "AGENT_SERVER", 42)      # exercise the server path without newer fake-only features
+    run, _, _, done = make(monkeypatch, tmp_path, agent=42)
+    run.profile = settings.character_profile("Hero", 7, "S1")
+    def no_server(link: object) -> str:
+        return ""
+    monkeypatch.setattr(R, "server_name", no_server)
+    run.run()
+    assert done == ["finished"]
+    assert run.profile == settings.character_profile("Hero", 7, "S1")
+
+
 def test_farmed_only_for_a_farming_run() -> None:
     run = R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
     run.bot = as_kind(Bot, types.SimpleNamespace(farmed=True))

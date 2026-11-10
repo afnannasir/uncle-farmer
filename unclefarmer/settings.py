@@ -464,10 +464,16 @@ def _profile_parts(character: str) -> tuple[str, str | None, str | None]:
 
 
 def same_character(first: str, second: str) -> bool:
-    """Whether two profile keys name the same game character, ignoring a known server label."""
-    first_name, _first_server, first_id = _profile_parts(first)
-    second_name, _second_server, second_id = _profile_parts(second)
-    return bool(first_id and first_name == second_name and first_id == second_id)
+    """Whether two profile keys name the same game character.
+
+    An old, ID-only key can still match either server while it is being upgraded.  Once both keys
+    name a server, though, the server is part of the identity: entity IDs are not known to be
+    global across Mist World's servers.
+    """
+    first_name, first_server, first_id = _profile_parts(first)
+    second_name, second_server, second_id = _profile_parts(second)
+    return bool(first_id and first_name == second_name and first_id == second_id
+                and (not first_server or not second_server or first_server == second_server))
 
 
 def is_character_profile(character: str) -> bool:
@@ -490,12 +496,14 @@ def profile_id(character: str | None) -> str | None:
 
 
 def stable_key(character: str | None) -> str:
-    """The character's key without the server label: the same before and after the label is learned.
+    """The durable key for character-scoped application state.
 
-    Daily chores and last-run choices are kept under it, so they don't start over when a game
-    reading first carries the server, or lose it again when one lookup fails."""
-    name, _server, entity_id = _profile_parts(character or "")
-    return character_profile(name, entity_id) if entity_id else name
+    Keep every confirmed part of the live identity.  In particular, S1 and S2 must not share a
+    last-run choice merely because their character IDs happen to agree.  An ID-only key remains
+    the best available fallback for an older agent that cannot report its server.
+    """
+    name, server, entity_id = _profile_parts(character or "")
+    return character_profile(name, entity_id, server or "") if entity_id else name
 
 
 def is_profile_of(game: str | None, profile: str | None) -> bool:
@@ -509,12 +517,29 @@ def is_profile_of(game: str | None, profile: str | None) -> bool:
 
 
 def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
-    """What a character ran last ("plan:name"): saved under its stable key, else under its name
-    (from before characters had their own keys)."""
+    """What a character ran last ("plan:name"), without borrowing another server's state.
+
+    Older name-only and ID-only entries are adopted as a one-way compatibility fallback.  They
+    stop being safe to adopt as soon as a different confirmed server identity with the same name
+    and ID has its own entry.
+    """
     if not character:
         return None
     runs: dict[str, str] = app.get("last_runs") or {}
-    return runs.get(stable_key(character)) or runs.get(profile_name(character))
+    key = stable_key(character)
+    if key in runs:
+        return runs[key]
+    name, _server, entity_id = _profile_parts(character)
+    if entity_id:
+        other_server = any(profile_name(candidate) == name and profile_id(candidate) == entity_id
+                           and profile_server(candidate) and candidate != key for candidate in runs)
+        if not other_server:
+            legacy = character_profile(name, entity_id)
+            if legacy in runs:
+                return runs[legacy]
+    other_character = any(profile_name(candidate) == name and profile_id(candidate)
+                          and candidate != key for candidate in runs)
+    return None if other_character else runs.get(name)
 
 
 def profile_path(character: str) -> str:

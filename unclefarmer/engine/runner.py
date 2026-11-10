@@ -170,7 +170,12 @@ class Run(threading.Thread):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
         server = server_name(link) if agent >= AGENT_SERVER else ""
-        self.profile = settings.character_profile(character, snap["self"].get("id"), server)
+        observed = settings.character_profile(character, snap["self"].get("id"), server)
+        # The Games list may already know this client's server.  Keep that confirmed identity if
+        # one server lookup briefly fails while starting the run.
+        if not (self.profile and settings.same_character(self.profile, observed)
+                and settings.profile_server(self.profile)):
+            self.profile = observed
         applog.thread("run %d %s" % (self.pid, character))
         profile, found = self._profile(link, self.profile)
         guard = self._arm(link, agent, profile, app)

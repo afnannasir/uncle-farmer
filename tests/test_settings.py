@@ -114,12 +114,13 @@ def test_a_server_label_can_be_told_from_the_id_only_fallback() -> None:
     assert settings.profile_server(on_s1) == "S1"
 
 
-def test_a_profile_key_gives_back_the_name_and_a_key_that_ignores_the_server() -> None:
+def test_a_profile_key_gives_back_the_name_and_a_state_key_that_keeps_the_server() -> None:
     on_s1 = settings.character_profile("Killua", 2905, "S1")
     fallback = settings.character_profile("Killua", 2905)
     assert settings.profile_name(on_s1) == settings.profile_name(fallback) == settings.profile_name("Killua") == "Killua"
     assert settings.profile_name(None) == ""
-    assert settings.stable_key(on_s1) == settings.stable_key(fallback) == fallback
+    assert settings.stable_key(on_s1) == on_s1
+    assert settings.stable_key(fallback) == fallback
     assert settings.stable_key("Killua") == "Killua"
     assert settings.profile_id(on_s1) == "2905" and settings.profile_id("Killua") is None
 
@@ -129,15 +130,28 @@ def test_a_game_matches_its_own_profile_and_an_old_name_only_one() -> None:
     assert settings.is_profile_of(on_s1, settings.character_profile("Killua", 2905))
     assert settings.is_profile_of(on_s1, "Killua")                                    # an old name-only profile
     assert not settings.is_profile_of(on_s1, settings.character_profile("Killua", 77, "S2"))
+    assert not settings.is_profile_of(on_s1, settings.character_profile("Killua", 2905, "S2"))
     assert not settings.is_profile_of(None, "Killua")
 
 
-def test_the_last_run_is_found_under_the_stable_key_or_the_old_name() -> None:
+def test_the_last_run_is_found_under_the_full_key_or_an_unambiguous_old_key() -> None:
     on_s1 = settings.character_profile("Killua", 2905, "S1")
     assert settings.last_run_of({"last_runs": {"Killua": "plan:old"}}, on_s1) == "plan:old"
-    app = {"last_runs": {"Killua": "plan:old", settings.stable_key(on_s1): "plan:new"}}
+    app = {"last_runs": {"Killua": "plan:old", settings.character_profile("Killua", 2905): "plan:new"}}
     assert settings.last_run_of(app, on_s1) == "plan:new"
     assert settings.last_run_of(app, None) is None
+
+
+def test_same_id_on_two_servers_never_shares_a_last_run() -> None:
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    on_s2 = settings.character_profile("Killua", 2905, "S2")
+    app = {"last_runs": {settings.stable_key(on_s1): "plan:s1", settings.stable_key(on_s2): "plan:s2"}}
+    assert settings.last_run_of(app, on_s1) == "plan:s1"
+    assert settings.last_run_of(app, on_s2) == "plan:s2"
+
+    # An old ID-only value cannot be attributed safely once S1 has its own value.
+    app = {"last_runs": {settings.stable_key(on_s1): "plan:s1", settings.character_profile("Killua", 2905): "plan:old"}}
+    assert settings.last_run_of(app, on_s2) is None
 
 
 def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
