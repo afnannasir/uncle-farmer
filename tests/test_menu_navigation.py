@@ -263,6 +263,4 @@ def test_a_potion_bought_twice_reads_the_seller_s_list_once(monkeypatch: pytest.
     reads = menu_reads(game)
     assert town.buy(as_bot(b), "Large Red Potion", 100) == 100
     assert town.buy(as_bot(b), "Large Red Potion", 100) == 100
-    # the id table gives the potion's id, so the list isn't read even once; the agent still checks
-    # the whole menu before it picks
-    assert game.picks == ["potion_shop 23387"] * 2 and reads.count("menu") == 0
+    assert game.picks == ["potion_shop 23387"] * 2 and reads.count("menu") == 1

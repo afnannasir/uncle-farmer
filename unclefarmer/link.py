@@ -95,7 +95,6 @@ class AgentLink:
         if not live:
             raise AgentError("no_game")
         self.port, self.pid, secret = live[0]
-        self._folder: str | None = None
         self.lock = threading.Lock()
         self.sock = socket.create_connection((HOST, self.port), timeout=timeout)
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -141,16 +140,8 @@ class AgentLink:
             # problem, or a garbled reply would look like a bug in the bot's own code.
             raise AgentError("bad reply") from None
         if line.split(" ", 1)[0] in gamelang.COMMANDS:
-            # the game's words back in English (another language pack), by this game's own folder
-            data = gamelang.english(data, game=self.game_folder())
+            data = gamelang.english(data)      # the game's words back in English (another language pack)
         return data
-
-    def game_folder(self) -> str | None:
-        """The folder of the game this link talks to (agent 48 notes it), None when unknown."""
-        if self._folder is None:
-            from . import gameinstall
-            self._folder = gameinstall.folder_of(self.pid, "")
-        return self._folder or None
 
     def close(self) -> None:
         try:

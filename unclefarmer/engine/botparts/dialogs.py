@@ -17,13 +17,6 @@ from .base import (Stopped, note_failure, steps)
 from ...link import GameLink
 from .parts import as_bot, Parts
 
-NPC_PLACE = 2.0     # tiles: an NPC this close to where the game data puts one is that NPC
-
-
-def same_name(name: object) -> str:
-    """A name evened out for comparing: lower case, single spaces."""
-    return " ".join(str(name or "").split()).lower()
-
 
 class DialogsMixin(Parts):
     NPC_SPOT = 10.0       # an NPC sought at a known spot is the one of that name this close to it
@@ -254,26 +247,11 @@ class DialogsMixin(Parts):
         snap = self.snap()
         me = snap["self"]
         x0, y0 = near if near else (me["x"], me["y"])
-        want = same_name(name)
-        entities: list[dict[str, Any]] = snap["entities"]
-        hits = [e for e in entities if same_name(e.get("name")) == want]
-        if not hits:
-            hits = self._npc_at_its_place(entities, want)
+        hits = [e for e in snap["entities"] if (e.get("name") or "").strip().lower() == name.strip().lower()]
         if near and within is not None:
             hits = [e for e in hits if math.hypot(e["x"] - x0, e["y"] - y0) <= within]
         hits.sort(key=lambda e: math.hypot(e["x"] - x0, e["y"] - y0))
         return hits[0] if hits else None
-
-    def _npc_at_its_place(self, entities: list[dict[str, Any]], want: str) -> list[dict[str, Any]]:
-        """No NPC in sight goes by that name: the NPC standing where the game data puts one of
-        that name on this map, whatever it is called now - a game update or a language pack can
-        word a name a little differently, and NPCs never move."""
-        mid = self.map_id()
-        npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
-        spots = [(float(n["x"]), float(n["y"])) for n in npcs
-                 if n.get("map") == mid and same_name(n.get("name")) == want and "x" in n and "y" in n]
-        return [e for e in entities if e.get("kind") == "npc"
-                and any(math.hypot(e["x"] - x, e["y"] - y) <= NPC_PLACE for x, y in spots)]
 
     def look_for_npc(self, name: str) -> dict[str, Any] | None:
         """The NPC isn't in sight and its place isn't in the transport table: the game only shows
@@ -281,10 +259,10 @@ class DialogsMixin(Parts):
         to where the game data puts an NPC of that name on this map, then to the town square, then
         across the whole town, stopping as soon as it comes into view."""
         mid = self.map_id()
-        want = same_name(name)
+        want = name.strip().lower()
         npcs: list[dict[str, Any]] = knowledge.data().get("npcs", [])
         spots: list[tuple[int, int]] = [(int(n["x"]), int(n["y"])) for n in npcs
-                 if n.get("map") == mid and same_name(n.get("name")) == want]
+                 if n.get("map") == mid and (n.get("name") or "").strip().lower() == want]
         sweep: list[tuple[int, int]] = []
         for c in knowledge.cities():
             if c.get("map") == mid:

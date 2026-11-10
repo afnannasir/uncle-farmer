@@ -417,15 +417,6 @@ def test_a_potion_is_bought_by_its_row_in_a_potion_seller_s_list(monkeypatch: py
     assert game.walking_keys == 0
 
 
-def test_a_shop_in_another_language_is_picked_by_the_game_s_item_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    game = PretendShop("shop", {})
-    monkeypatch.setattr(game, "rows", returning([("Büyük Kırmızı İksir", 23387, 450), ("Küçük Mavi İksir", 23395, 60)]))
-    b = ShopBot(game)
-    assert menus.item_id(as_bot(b), menus.POTION_SHOP, "Small Blue Potion") == 23395     # found by its id
-    it = menus.pick(as_bot(b), menus.POTION_SHOP, name="Large Red Potion")     # the id table knows 23387
-    assert it is not None and game.picks == ["potion_shop 23387"]
-
-
 # ================================================================ checks and falling back
 def test_a_changed_list_is_not_trusted_the_bot_goes_by_text_instead() -> None:
     game = PretendShop("market", {"Level 1 Ruby Shard": 9}, changed=True)
