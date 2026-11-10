@@ -305,8 +305,16 @@ class ReadingMixin(Parts):
         return s
 
     def map_id(self) -> int:
-        if self._snap_map_id is not None and self.clock.time() - self._snap_at < 0.15:
+        """The map we are on. In the middle of a map change (a teleport, a death, a cable car) the
+        game reports map 0 for a moment. That is no map: a route asked for on it ended a run with
+        "unexpected error: KeyError('map 0 has no geometry')". So a 0 waits for the change to
+        finish (settled_map), here, for every caller."""
+        if self._snap_map_id and self.clock.time() - self._snap_at < 0.15:
             return self._snap_map_id
+        return self._map_now() or self.settled_map()
+
+    def _map_now(self) -> int:
+        """What the game says this instant: 0 in the middle of a map change."""
         return self._read("mem map", lambda m: "error" not in m)["id"]
 
     def settled_map(self, seconds: float = 15) -> int:
@@ -326,7 +334,7 @@ class ReadingMixin(Parts):
                         return m["id"]
             self.sleep(0.3)
         self.me()                 # still unreadable: stop with the game's own reason
-        return self.map_id()
+        return self._map_now()
 
     def minutes(self) -> float:
         return (self.clock.time() - self.started) / 60.0
