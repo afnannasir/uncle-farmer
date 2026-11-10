@@ -22,7 +22,7 @@ import math
 import os
 import re
 import time
-from collections.abc import Generator, Iterable, Mapping
+from collections.abc import Collection, Generator, Iterable, Mapping
 from typing import TYPE_CHECKING, Any, TypeGuard
 
 from . import jsonio as json, knowledge, paths
@@ -132,6 +132,22 @@ class _Side:
         return out
 
 
+HEAL_TARGETS = ("self", "pet", "others")     # whom our heals landed on
+
+
+def _blank_skill() -> dict[str, int]:
+    return {"uses": 0, "hits": 0, "misses": 0, "crits": 0, "damage": 0, "healed": 0}
+
+
+def _blank_heals() -> dict[str, dict[str, int]]:
+    return {who: {"amount": 0, "times": 0} for who in HEAL_TARGETS}
+
+
+def skill_name(raw: object) -> str:
+    """A cast's skill as the player knows it: the game's "Level 3 " in front taken off."""
+    return re.sub(r"^Level \d+ ", "", str(raw or "")).strip()
+
+
 class CombatStats:
     """Damage the game reported, both ways, from the casts it sends the agent.
 
@@ -139,32 +155,44 @@ class CombatStats:
     4 defence break, 5 critical, 6 heal). Our casts hitting a monster are damage given; a
     monster's cast hitting us is damage received. No "hits" at all (an older agent) leaves the
     whole block null rather than pretending zero.
+
+    Every cast of ours also counts for its skill (skills: how often it was cast, buffs too, the
+    damage and healing it did), and a heal of ours counts for whom it landed on (heals): us, our
+    pet, or someone else. Only skills: a potion is no cast, so the HP it gives is not in here.
     """
 
     def __init__(self, clock: Clock = CLOCK) -> None:
         self.given = _Side()
         self.received = _Side()
+        self.skills: dict[str, dict[str, int]] = {}
+        self.heals = _blank_heals()
         self.last_kill: dict[str, Any] | None = None
         self.live = False
         self.on = True               # off while the run does something else than farming, or is paused
         self.clock = clock
 
     def observe(self, casts: Iterable[dict[str, Any]] | None, me_id: int,
-                names: Mapping[int, str] | None = None) -> None:
+                names: Mapping[int, str] | None = None, pets: Collection[int] = ()) -> None:
+        """Fold in casts read for the first time. pets: our pets' ids, for the heals they get."""
         if not self.on:
             return
         names = names or {}
         for c in casts or []:
+            mine = c.get("caster") == me_id
+            row = self.skills.setdefault(skill_name(c.get("skill")), _blank_skill()) if mine else None
+            if row is not None:
+                row["uses"] += 1        # a buff too: it has no "hits" key, but it was cast
             hits = c.get("hits")
             if not json.is_array(hits):
                 continue
             self.live = True
-            mine = c.get("caster") == me_id
-            skill = re.sub(r"^Level \d+ ", "", str(c.get("skill") or "")).strip()
+            skill = skill_name(c.get("skill"))
             if not hits:
                 # An attack packet with no hit line is the game's miss (a buff has no "hits" key
                 # at all, so it never gets here).
                 (self.given if mine else self.received).miss()
+                if row is not None:
+                    row["misses"] += 1
                 continue
             for h in hits:
                 if not json.is_array(h) or len(h) < 2 or not isinstance(h[1], int):
@@ -172,6 +200,8 @@ class CombatStats:
                 target = h[0]
                 amount = int(h[2]) if len(h) > 2 and isinstance(h[2], (int, float)) else 0
                 kind = _kind(h[1])
+                if row is not None:
+                    self._count(row, kind, abs(amount), target, me_id, pets)
                 if mine and target != me_id:
                     self.given.add(kind, amount, skill, {"id": target, "name": names.get(target)})
                 elif not mine and target == me_id:
@@ -179,6 +209,24 @@ class CombatStats:
                     name = names.get(who) if isinstance(who, int) else None
                     self.received.add(kind, amount, skill, {"id": who, "name": name},
                                       by=name or "monster %s" % who)
+
+    def _count(self, row: dict[str, int], kind: str, amount: int, target: object, me_id: int,
+               pets: Collection[int]) -> None:
+        """One hit of our cast, into its skill's row and, for a heal, into whom it healed."""
+        if kind == "heal":
+            row["healed"] += amount
+            who = "self" if target == me_id else "pet" if target in pets else "others"
+            self.heals[who]["amount"] += amount
+            self.heals[who]["times"] += 1
+        elif target == me_id:
+            return              # a line about us on our own cast is no hit on anything
+        elif kind == "miss":
+            row["misses"] += 1
+        else:
+            row["hits"] += 1
+            row["damage"] += amount
+            if kind == "crit":
+                row["crits"] += 1
 
     def note_kill(self, name: str | None) -> None:
         if not self.on:
@@ -190,6 +238,8 @@ class CombatStats:
         if not self.live:
             return None
         return {"given": self.given.result(), "received": self.received.result(),
+                "skills": {k: dict(v) for k, v in self.skills.items()},
+                "heals": {k: dict(v) for k, v in self.heals.items()},
                 "last_kill": self.last_kill}
 
 
@@ -623,9 +673,10 @@ def characters() -> list[str]:
         return []
 
 
-def runs(character: str, since: float | None = None, kind: str | None = FARMING) -> list[Record]:
-    """Saved records of a character, oldest first; since = a clock time limit; kind = FARMING,
-    TOOL or None for both."""
+def runs(character: str, since: float | None = None, kind: str | None = FARMING,
+         until: float | None = None) -> list[Record]:
+    """Saved records of a character, oldest first; since/until = the clock times a run must have
+    started in (from since, before until); kind = FARMING, TOOL or None for both."""
     out: list[Record] = []
     seen: set[str] = set()
     try:
@@ -635,9 +686,10 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING)
                 r = _record(line)
                 if r is None or (kind is not None and r.get("kind") != kind):
                     continue
-                if since is not None:
+                if since is not None or until is not None:
                     started = start_time(r)
-                    if started is None or started < since:
+                    if started is None or (since is not None and started < since) \
+                            or (until is not None and started >= until):
                         continue        # (a record whose start can't be read can't be in a period)
                 key = line.strip()
                 if key in seen:
@@ -647,6 +699,20 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING)
     except OSError:
         pass
     return out
+
+
+def days(character: str, kind: str | None = FARMING) -> list[str]:
+    """The days ("2026-11-08") a character has runs on, newest first: the day each run started."""
+    found = {str(r.get("start"))[:10] for r in runs(character, kind=kind) if start_time(r) is not None}
+    return sorted(found, reverse=True)
+
+
+def day_bounds(day: str) -> tuple[float, float]:
+    """(start, end) of a day ("2026-11-08") as clock times: its local midnight and the next one
+    (mktime evens out a day with a clock change in it)."""
+    t = time.strptime(day, "%Y-%m-%d")
+    end = time.mktime((t.tm_year, t.tm_mon, t.tm_mday + 1, 0, 0, 0, 0, 0, -1))
+    return time.mktime(t), end
 
 
 def _record(line: str) -> Record | None:
@@ -744,6 +810,30 @@ def _merge_side(dst: dict[str, Any], src: dict[str, Any]) -> None:
         _merge_side(dst.setdefault("by_monster", {}).setdefault(name, _blank_side()), side)
 
 
+def _merge_skills(dst: dict[str, Any], src: Mapping[str, Any]) -> None:
+    """Add one record's skill rows and heals to a total. Records from before they were kept have
+    neither and add nothing; a total has none only when none of its records had them."""
+    skills: object = src.get("skills")
+    if json.is_object(skills):
+        into: dict[str, dict[str, int]] = dst.setdefault("skills", {})
+        for name, row in skills.items():
+            if not json.is_object(row):
+                continue
+            d = into.setdefault(str(name), _blank_skill())
+            for k in d:
+                v: object = row.get(k)
+                d[k] += v if _whole(v) else 0
+    heals: object = src.get("heals")
+    if json.is_object(heals):
+        total: dict[str, dict[str, int]] = dst.setdefault("heals", _blank_heals())
+        for who in HEAL_TARGETS:
+            h: object = heals.get(who)
+            if json.is_object(h):
+                for k in ("amount", "times"):
+                    n: object = h.get(k)
+                    total[who][k] += n if _whole(n) else 0
+
+
 def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
     for n, d in (src or {}).items():
         dst[n] = dst.get(n, 0) + d
@@ -780,6 +870,7 @@ def add_up(results: Iterable[Record]) -> Record:
                 combat = total["combat"] = {"given": _blank_side(), "received": _blank_side(), "last_kill": None}
             _merge_side(combat["given"], c.get("given") or {})
             _merge_side(combat["received"], c.get("received") or {})
+            _merge_skills(combat, c)
             if c.get("last_kill"):
                 combat["last_kill"] = c["last_kill"]
     total["minutes"] = round(total["minutes"], 1)
@@ -914,6 +1005,64 @@ def _combat_lines(c: dict[str, Any] | None) -> list[str]:
     return out
 
 
+def _share(part: int, whole: int) -> str:
+    return "%d%%" % round(100.0 * part / whole) if whole > 0 else "0%"
+
+
+def _skill_lines(c: dict[str, Any] | None, minutes: float) -> list[str]:
+    """Each skill we cast: how often, the damage it did and its share of all our skills' damage,
+    its critical hits and misses, and what it healed. The skills that did the most damage first,
+    then the most cast. Runs from before skills were counted have none, and say so."""
+    if c is None:
+        return []
+    skills: dict[str, dict[str, int]] = c.get("skills") or {}
+    if "skills" not in c:
+        return [_("Skills used: not counted in these runs (only runs from this version on count them)")]
+    rows = [(n, s) for n, s in skills.items() if s.get("uses") or s.get("hits") or s.get("healed")]
+    if not rows:
+        return [_("Skills used: none")]
+    total = sum(s.get("damage", 0) for _n_, s in rows)
+    casts = sum(s.get("uses", 0) for _n_, s in rows)
+    out = [_("Skills used: {casts} casts, {dmg} damage in all", casts=_n(casts), dmg=_n(total))]
+    rate = _rate(casts, minutes)
+    if rate:
+        out[-1] += _(" ({rate} casts an hour)", rate=rate)
+    rows.sort(key=lambda kv: (-kv[1].get("damage", 0), -kv[1].get("uses", 0), kv[0].lower()))
+    for name, s in rows:
+        bits = [_("cast {n} times", n=_n(s.get("uses", 0)))]
+        if s.get("damage"):
+            hits = s.get("hits", 0)
+            bits.append(_("{dmg} damage ({share} of all)", dmg=_n(s["damage"]), share=_share(s["damage"], total)))
+            if hits:
+                bits.append(_("{n} a hit on average", n=_n(s["damage"] / hits)))
+        if s.get("crits"):
+            bits.append(_("{n} critical", n=_n(s["crits"])))
+        if s.get("misses"):
+            bits.append(_("{n} missed", n=_n(s["misses"])))
+        if s.get("healed"):
+            bits.append(_("healed {n}", n=_n(s["healed"])))
+        out.append("    " + (name or _("a skill with no name")) + ": " + ", ".join(bits))
+    return out
+
+
+def _heal_lines(c: dict[str, Any] | None, minutes: float) -> list[str]:
+    """What our own healing skills healed, by whom it landed on: us, our pet, anyone else. Only
+    when something was healed: a class with no heals gets no empty lines. Potions are no skills."""
+    heals: dict[str, dict[str, int]] = (c or {}).get("heals") or {}
+    if not any((heals.get(w) or {}).get("amount") for w in HEAL_TARGETS):
+        return []
+    labels = {"self": _("Healed ourselves"), "pet": _("Healed our pet"), "others": _("Healed others")}
+    out = [_("Healing by our skills (potions not counted):")]
+    for who in HEAL_TARGETS:
+        h = heals.get(who) or {}
+        if not h.get("amount"):
+            continue
+        line = _("{label}: {hp} HP in {n} heals", label=labels[who], hp=_n(h["amount"]), n=_n(h.get("times", 0)))
+        rate = _rate(h["amount"], minutes)
+        out.append("    " + line + (_(" ({rate} an hour)", rate=rate) if rate else ""))
+    return out
+
+
 def _biggest(d: Mapping[str, int] | None) -> list[tuple[str, int]]:
     return sorted(((n, v) for n, v in (d or {}).items() if v), key=lambda kv: (-kv[1], kv[0].lower()))
 
@@ -1036,6 +1185,8 @@ def report(r: Record, title: str) -> str:
     if "combat" in r:
         lines.append(_("Fighting:"))
         lines += _combat_lines(r.get("combat"))
+        lines += _skill_lines(r.get("combat"), m)
+        lines += _heal_lines(r.get("combat"), m)
     return "\n".join(lines)
 
 

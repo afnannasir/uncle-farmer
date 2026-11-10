@@ -1364,11 +1364,17 @@ Results are saved separately for each character. You can review:
 - **Other items:** Items collected during farming.
 - **Purchases and withdrawals:** Items bought from shops or taken from the storehouse.
 - **Potions used:** The supplies consumed during the run.
+- **Skills used:** Every skill your character cast, how many times, how much damage it did and its share of all your skills' damage, its critical hits and misses, and how much it healed. The skills that did the most damage come first.
+- **Healing:** At the end, for classes that heal (such as Priests and Sorcerers): how much your own healing skills healed your character, your pet, and anyone else. Potions are not counted here.
+
+Skills and healing are counted from this version on. Older runs show that they weren't counted.
 
 You can choose which period to review:
 
-- Current run.
+- Current run (or the last one).
 - Today.
+- Yesterday.
+- A day of my choice: pick any day with runs from the **Day** list, which shows each date, its weekday and how many days ago it was.
 - Last 7 days.
 - Last 30 days.
 - All time.

@@ -362,7 +362,8 @@ class FightingMixin(Parts):
         self.kill_tracker.begun = begun
         dead = self.kill_tracker.update(me["id"])
         if tally is not None:
-            tally.combat.observe([c for c in self.kill_tracker.fresh if c["t"] >= begun], me["id"], self.mob_names)
+            tally.combat.observe([c for c in self.kill_tracker.fresh if c["t"] >= begun], me["id"], self.mob_names,
+                                 self.kill_tracker.own)
         self._forget_the_dead(getattr(self.kill_tracker, "died", []))
         now = self.clock.time()
         for mid in dead:
