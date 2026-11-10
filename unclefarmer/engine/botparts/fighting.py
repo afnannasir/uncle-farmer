@@ -1136,7 +1136,8 @@ class FightingMixin(Parts):
         game casts it), or the profile's attack keys. "again" (go round now), "return" (the fight
         ends), or None (pace the next press)."""
         sb, p, m, mid = f.sb, self.p, f.m, f.mid
-        if sb is not None and f.follow and f.dist > f.rng + 0.5:     # (the follow attack needs the skill book)
+        unpenalized = sb is not None and getattr(sb, "available_to_channel_without_penalty", False)
+        if sb is not None and f.follow and f.dist > f.rng + 0.5 and not unpenalized:     # (the follow attack needs the skill book)
             k = sb.follow_key()
             if k:
                 # still walking in: no skill reaches yet, and the base attack's follow key keeps
@@ -1148,6 +1149,13 @@ class FightingMixin(Parts):
         if sb is not None and (teamheal.look_after(as_bot(self), f.snap) or pets.heal_in_fight(as_bot(self), f.snap)):
             return None       # this press healed a teammate (while following) or the pet
         picked = sb.pick(f.snap, m) if sb is not None else None
+        if not picked and sb is not None and f.follow and f.dist > f.rng + 0.5:
+            k = sb.follow_key()
+            if k:
+                self.key(k)
+                f.i += 1
+                self.sleep(0.3)
+                return "again"
         if sb is not None and picked == "wait":
             # sleep until the cooldown ends, or until the next check is due, whichever first
             now = self.clock.time()

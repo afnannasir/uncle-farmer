@@ -27,6 +27,7 @@ from .. import gamekeys, jsonio as json, paths
 from ..clock import clock_for
 from ..i18n import _
 from . import combos as combo_rules
+from . import elf_combos
 
 if TYPE_CHECKING:
     from .botparts.parts import Parts
@@ -81,10 +82,11 @@ def base_reach(skill_range: float) -> float:
     """The distance a class fights from, given its base attack's range: just inside it, and never
     under 4 (a melee class's 5 would otherwise put it on the monster's own tile)."""
     return max(4.0, float(skill_range) - REACH_MARGIN)
-def damage_rate(s: Skill, weight: float, gcd: float) -> float:
+def damage_rate(s: Skill, weight: float, gcd: float, unpenalized: bool = False) -> float:
     """Attack per global cooldown a press takes: a channel is that much longer, so a 4.5 s
     Pyroblast is no filler beside an instant Fireball of the same attack."""
-    return (s.get("attack") or 0) * weight / (1 + (s.get("cast") or 0) / gcd)
+    cast = 0.0 if unpenalized else (s.get("cast") or 0)
+    return (s.get("attack") or 0) * weight / (1 + cast / gcd)
 
 
 # roles never pressed by the farming bot (solo): they need a party, a place, or a moment we can't see
@@ -169,6 +171,8 @@ class _PickView:
         self.gcd = book.gcd()
 
     def in_range(self, s: Skill) -> bool:
+        if elf_combos.unpenalized(s, self.book.available_to_channel_without_penalty):
+            return True
         r = s.get("range")
         return r is None or self.dist <= r + 0.5
 
@@ -214,7 +218,8 @@ class _PickView:
 
     def score(self, s: Skill) -> float:
         """Attack per global cooldown its press takes, a channel counting longer (damage_rate)."""
-        return damage_rate(s, self.weight(s), self.gcd)
+        unpenalized = elf_combos.unpenalized(s, self.book.available_to_channel_without_penalty)
+        return damage_rate(s, self.weight(s), self.gcd, unpenalized=unpenalized)
 
     def first(self, role: str | tuple[str, ...], cond: Callable[[Skill], bool] = lambda s: True) -> Skill | None:
         """The hardest hitter of these roles."""
@@ -252,6 +257,10 @@ class SkillBook:
     _page_at = 0.0
     _uses_points: bool
     _healer: Skill | None
+    _pending_channelling = False
+    _available_to_channel_without_penalty = False
+    _saving_pyroblast_for_next = False
+    _last_pack_size = 1
 
     def __init__(self, bot: Parts) -> None:
         self.b = bot
@@ -284,7 +293,48 @@ class SkillBook:
         self.pts = None          # the last reading
         self.pts_at = 0.0        # when the game answered it (clock_for(self.b).time())
         self.pts_delta = 0       # what our casts since then added (rage) or took away
+        self._pending_channelling = False
+        self._available_to_channel_without_penalty = False
         self.load()
+
+    @property
+    def pending_channelling(self) -> bool:
+        if self.combos is not None:
+            return self.combos.pending_channelling
+        return self._pending_channelling
+
+    @pending_channelling.setter
+    def pending_channelling(self, value: bool) -> None:
+        self._pending_channelling = value
+        if self.combos is not None:
+            self.combos.pending_channelling = value
+
+    @property
+    def available_to_channel_without_penalty(self) -> bool:
+        if self.combos is not None:
+            return self.combos.available_to_channel_without_penalty
+        return self._available_to_channel_without_penalty
+
+    @available_to_channel_without_penalty.setter
+    def available_to_channel_without_penalty(self, value: bool) -> None:
+        self._available_to_channel_without_penalty = value
+        if self.combos is not None:
+            self.combos.available_to_channel_without_penalty = value
+
+    @property
+    def saving_pyroblast_for_next(self) -> bool:
+        if self.combos is not None:
+            return getattr(self.combos, "saving_pyroblast_for_next", False)
+        return self._saving_pyroblast_for_next
+
+    @saving_pyroblast_for_next.setter
+    def saving_pyroblast_for_next(self, value: bool) -> None:
+        self._saving_pyroblast_for_next = value
+        if self.combos is not None:
+            self.combos.saving_pyroblast_for_next = value
+
+    def _channeling_restricted(self, s: Skill) -> bool:
+        return self.combos is not None and self.combos.channeling_restricted(s)
 
     def load(self) -> None:
         try:
@@ -348,7 +398,7 @@ class SkillBook:
                 c = combo_rules.Combos(self, combo_rules.active_talents(sk), on_keys,
                                        crits=self.agent_version >= combo_rules.CRIT_AGENT)
                 c.tell(self.b.log)
-                self.combos = c if c.rules or c.bonus else None
+                self.combos = c if c.rules or c.bonus or self.cls == "Elf" else None
 
     def use_of(self, name: str) -> str:
         """The player's choice for this skill (SKILL_USES): skill_use by name, else
@@ -373,6 +423,10 @@ class SkillBook:
         """The key that walks us to the target and hits it there: the base attack (the hardest
         hitter on the page that is up if there are several) on its follow key. None without one."""
         up = self.page()
+        if self.available_to_channel_without_penalty:
+            pyroblast = elf_combos.pyroblast_follow_key(self.slots, up, self.allowed)
+            if pyroblast is not None:
+                return pyroblast
         base = [x for pg in sorted(self.slots, key=lambda pg: pg != up) for x in self.slots[pg]
                 if x.get("role") == "base_attack" and self.allowed(x)]
         return base[0]["key"] if base and base[0] in self.slots.get(up, []) else None
@@ -625,7 +679,7 @@ class SkillBook:
             if name in MARK_SHOTS or any(name == r[0] for r in releases):
                 self.pts_delta = -self.pts          # "the marks disappear after the attack"
             elif any(name in r[1] for r in releases):
-                self.pts_delta = min(5 - self.pts, self.pts_delta + (touched or 1))   # fire elements
+                self.pts_delta = min(elf_combos.FIRE_ELEMENT_CAP - self.pts, self.pts_delta + (touched or 1))   # fire elements
             else:
                 self.pts_delta += int(info.get("rage_gain") or 0) - int(self.cost(info) or 0)
 
@@ -912,13 +966,23 @@ class SkillBook:
             return None
         return self.press_support(h, now)
 
+    def _pyroblast_wasted_on(self, target: dict[str, Any], v: _PickView) -> bool:
+        return elf_combos.pyroblast_wasted_on(self, target, v)
+
+    def _switch_target(self, new_tid: int | None) -> None:
+        """Handle target transition, preserving combo state across targets."""
+        self.target_id = new_tid
+
+    def _adjust_pyroblast_target(self, choice: Skill | None, target: dict[str, Any], v: _PickView) -> Skill | None:
+        return elf_combos.adjust_pyroblast_target(self, choice, v, lambda: self._pyroblast_wasted_on(target, v))
+
     def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
         """(key, skill name) to press now, or None to fall back to the profile's attack keys."""
         if not self.ok:
             return None
         now = clock_for(self.b).time()
         me = snap["self"]
-        self.target_id = target.get("id")
+        self._switch_target(target.get("id"))
         self.read_casts(me["id"])
         if self.gcd_wait(now):
             # A panic button outside the global cooldown (Concentrated Will, Summon Spirit) still
@@ -936,9 +1000,14 @@ class SkillBook:
         if not skills and not wanted:
             return None
         v = _PickView(self, snap, target, skills, up, now)
+        self._last_pack_size = v.pack
         # 1. in trouble: a shield support() didn't already use; 2. a ranged class with a monster on
         # top of it: jump away
         choice = self._trouble_choice(v)
+        # Pending Fire Impact or unlocked channeling takes priority over other eligible skills
+        if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
+            elements = self.points(now) if self.cls == "Elf" else None
+            choice = self.combos.pick(skills, target, now, v.in_range, elements)
         # the player's own: skills set to "whenever ready" go before the bot's choices
         if not choice and wanted:
             done, answer = self._wanted_choice(v, wanted)
@@ -954,6 +1023,7 @@ class SkillBook:
             choice = self._attack_choice(v, marks)
         if self.combos:
             choice = self.combos.filler(self.combos.before(choice, skills, v.in_range), skills, v.in_range)
+        choice = self._adjust_pyroblast_target(choice, target, v)
         if not choice:
             return None
         return self._press_pick(choice, skills, up, now, v.in_range)
@@ -970,8 +1040,14 @@ class SkillBook:
                 if (s["name"] in seen or not self.allowed(s, urgent) or not self.ready(s, now)
                         or not self.affordable(s, now)):
                     continue
-                if s.get("cast") and getattr(self, "on_the_move", False):
+                if (
+                    s.get("cast")
+                    and not elf_combos.unpenalized(s, self.available_to_channel_without_penalty)
+                    and getattr(self, "on_the_move", False)
+                ):
                     continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
+                if self._channeling_restricted(s):
+                    continue
                 seen.add(s["name"])
                 if s.get("use") == "ready" and s.get("role") not in NEVER_READY:
                     wanted.append(dict(s, page=pg))
@@ -1074,10 +1150,14 @@ class SkillBook:
         gcd = self.gcd()
         cands = [dict(s, page=pg) for pg, row in self.slots.items() for s in row
                  if self.allowed(s) and s.get("role") not in NEVER and s.get("role") not in CALM_ROLES
+                 and not self._channeling_restricted(s)
                  and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
         if not cands:
             return None
-        best = max(cands, key=lambda s: (s["page"] == up, damage_rate(s, weight(s), gcd)))
+        best = max(cands, key=lambda s: (
+            s["page"] == up,
+            damage_rate(s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty)),
+        ))
         return self._press_pick(best, cands, up, now, lambda s: True)
 
     def _press_pick(self, choice: Skill, skills: list[Skill], up: int, now: float,
@@ -1092,7 +1172,9 @@ class SkillBook:
             # the hardest hitter of that kind there, not simply the first one on the page
             weight: Callable[[Skill], float] = self.combos.weight if self.combos else (lambda s: 1.0)
             gcd = self.gcd()
-            choice = max(same, key=lambda s: damage_rate(s, weight(s), gcd))
+            choice = max(same, key=lambda s: damage_rate(
+                s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty),
+            ))
         self.pressed(choice, now)
         if self.cls == "Hunter":
             if choice["name"] in ("Multi Shot", "Rapid Arrows"):

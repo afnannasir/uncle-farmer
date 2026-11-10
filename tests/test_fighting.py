@@ -133,6 +133,7 @@ class Pick:
         self.confirm, self.want_follow, self.ok, self.cls = confirm, want_follow, ok, cls
         self._ready, self._pick = ready, pick
         self._follow_key, self.casts_done = follow_key, casts
+        self.available_to_channel_without_penalty: bool = False
         self.info = info or {}
         self.press_confirmed = False
         self.picked: list[Any] = []
@@ -1650,6 +1651,28 @@ def test_hit_until_down_presses_the_follow_key_while_walking_in(clock: Clock) ->
     b._hit_until_down(mob)
     assert "F" in b.keys_pressed
     assert b.follow_stalls == 1 and b.skip[-1] == clock.now + 10
+
+
+def test_hit_until_down_allows_sb_pick_when_unpenalized(clock: Clock) -> None:
+    b = until_bot(profile(attack_range=4.0, no_damage_timeout=999, no_damage_casts=999))
+    p = Pick(want_follow=True, pick=("m", "Pyroblast"), follow_key="F")
+    p.available_to_channel_without_penalty = True
+    b.skillbook = as_kind(SkillBook, p)
+    b.follow_ok = True
+    b.burst = lambda key, me_id, longest=1.0: (b.keys_pressed.append(key), True)[1]
+    mob = monster(-1, x=108.0, y=100.0)      # within the leash, out of reach
+    b.ui = lambda: {"target": -1}
+
+    def snap() -> dict[str, Any]:
+        clock.advance(0.5)
+        if -1 in p.picked:
+            mob["hp"] = 0
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    b._hit_until_down(mob)
+    assert "F" not in b.keys_pressed
+    assert "m" in b.keys_pressed
+    assert -1 in p.picked
 
 
 def test_hit_until_down_leaves_a_monster_the_game_casts_nothing_at(clock: Clock) -> None:
