@@ -219,7 +219,7 @@ The first example farms Wolf Prairie for 30 minutes. The second stops after 200 
 
 By default, the bot wanders around the map at random. You can change this with `patrol=`.
 
-    patrol=random|full|quick|short
+    patrol=<random|full|quick|short>
 
 Here is what each option does:
 
@@ -238,7 +238,7 @@ For example:
 
 Sometimes you only want to farm in a particular part of a map. Use `area=` to define a rectangular area where the bot is allowed to fight.
 
-    area=x1,y1,x2,y2
+    area=<x1>,<y1>,<x2>,<y2>
 
 The four numbers describe the rectangle using two coordinate points: `x1,y1` and `x2,y2`. Monsters outside this rectangle are ignored.
 
@@ -271,7 +271,7 @@ You can also use `skip=` to avoid specific monsters:
 
 Use `elites=` to decide whether your character should enter elite zones.
 
-    elites=fight|avoid
+    elites=<fight|avoid>
 
 - `fight` allows your character to enter elite zones.
 - `avoid` keeps your character out of them.
@@ -456,7 +456,7 @@ For `shards_gained`, every shard picked up counts, even if it was later thrown a
 
 The `bag()` function tells you how many of a particular item you currently have.
 
-    bag("item name")
+    bag("<item name>")
 
 For example:
 
@@ -672,9 +672,9 @@ Defining a block doesn't run its commands immediately. It simply gives that grou
 
 Whenever you want to run the commands inside a block, use `call` followed by its name.
 
-    call refill
+    call <name>
 
-Uncle Farmer then runs the commands inside the `refill` block.
+For example, `call refill` runs the commands inside the `refill` block.
 
 ### Putting it all together
 
@@ -947,9 +947,9 @@ You can use the following key names:
 
 You can also combine keys, such as:
 
-    lctrl+alt+down
+    key lctrl+alt+down
 
-This represents holding the left Ctrl and Alt keys together with the Down arrow.
+This presses the left Ctrl and Alt keys together with the Down arrow.
 
 Most scripts won't need these commands because Uncle Farmer already handles farming, potions, travel, and menus automatically. Use manual key commands when you need to control a key directly.
 
@@ -1061,7 +1061,7 @@ If something is wrong, the bot reports the line and describes the problem.
 
 For example:
 
-    line 4: farm: unknown option "minuts"
+> line 4: farm: unknown option "minuts"
 
 The cursor also jumps to the line with the problem, making it easier to find and fix the mistake.
 
@@ -1138,7 +1138,8 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Farming
 
-    farm [map= minutes= kills= patrol= area= only= skip= elites= until=]
+    farm [map=<map>] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
+         [only=<names>] [skip=<names>] [elites=<fight|avoid>] [until=<condition>]
 
 ### NPCs, shops and storage
 
