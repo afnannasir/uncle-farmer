@@ -334,6 +334,22 @@ def test_find_npc_nearest_to_a_spot_and_within() -> None:
     assert b.find_npc("Nobody") is None
 
 
+def test_find_npc_ignores_spacing_and_takes_the_npc_at_its_place_when_renamed(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(knowledge, "data", stand_in(knowledge.data, lambda: {"npcs": [
+        {"map": 1, "name": "Pharmacist Mia", "x": 20.0, "y": 30.0},
+        {"map": 2, "name": "Pharmacist Mia", "x": 5.0, "y": 5.0}]}))
+    b = DlgBot()
+    b.entities = [{"name": "Gem  Craftsman audrey", "kind": "npc", "x": 1.0, "y": 1.0},
+                  {"name": "Apothecary Mia", "kind": "npc", "x": 20.5, "y": 29.0},       # renamed, same place
+                  {"name": "Wolf", "kind": "monster", "x": 20.0, "y": 30.0},
+                  {"name": "Old Tom", "kind": "npc", "x": 5.0, "y": 5.0}]               # that spot is on map 2
+    found = b.find_npc("Gem Craftsman Audrey")
+    assert found is not None and found["x"] == 1.0
+    npc = b.find_npc("Pharmacist Mia")
+    assert npc is not None and npc["name"] == "Apothecary Mia"
+    assert b.find_npc("Nobody") is None
+
+
 class FakeModel:
     def ok(self, x: int, y: int) -> bool:
         return True

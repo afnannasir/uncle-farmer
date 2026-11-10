@@ -561,6 +561,15 @@ class SkillBook:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
 
+    def forget_the_map(self) -> None:
+        """We are on another map: target ids mean other monsters here. What was noted against
+        them goes - who is down, presses on their way to one, where our casts landed."""
+        self.downed.clear()
+        for name in [n for n, t in self.pending_target.items() if t is not None]:
+            self.pending.pop(name, None)
+            self.pending_target.pop(name, None)
+        self.landed.clear()
+
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
         name = re.sub(r"^Level \d+ ", "", c["skill"]).strip()
@@ -767,7 +776,19 @@ class SkillBook:
             return None
         x = min(cands, key=lambda x: (x.get("mana_pct") or 99, x.get("cd") or 0))
         self.dispel_try = (now, n)
-        return self.press_support(x, now)
+        press = self.press_support(x, now)
+        return press and (self.self_key(x), press[1])
+
+    @staticmethod
+    def self_key(x: Skill) -> str:
+        """Shift + the skill's key: the game's cast-on-yourself key (config/input.ini,
+        W_SELF_ATTACKn = SHIFT+W_ATTACKn). Every dispel for one ally also removes a buff "from 1
+        enemy", and the plain key (and Alt + key) picks the enemy whenever one is selected - in
+        every fight. Live on Flaming Mountain, 2026-11-10: with a monster selected the plain key
+        cast Soul Purify at the monster three times out of three and the debuff stayed; Shift +
+        key landed on us twice out of twice and it was gone in 1.2 s. With no monster selected
+        both land on us."""
+        return "shift+" + x["key"].rpartition("+")[2]
 
     def buff_now(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | None:
         """(key, name) of a buff to put up now, else None. Long buffs are kept up all the time:

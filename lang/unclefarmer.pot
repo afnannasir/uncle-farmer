@@ -14,9 +14,6 @@ msgstr ""
 msgid " (estimated: it includes shards)"
 msgstr ""
 
-msgid " ({n} thrown away)"
-msgstr ""
-
 msgid " ({rate} an hour)"
 msgstr ""
 
@@ -3497,7 +3494,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-msgid "Today, {n} runs, {m} min: {r}"
+msgid "Today, {n} runs: {r}"
 msgstr ""
 
 msgid "Today: no cave yet."
@@ -4312,6 +4309,9 @@ msgid ""
 "drop time is nearly used up ({m} min left) - going somewhere safe and stopping"
 msgstr ""
 
+msgid "drop time left {time}"
+msgstr ""
+
 msgid "drop time used up"
 msgstr ""
 
@@ -4344,6 +4344,9 @@ msgid "everything"
 msgstr ""
 
 msgid "farm doesn't know '{opt}'. It takes: {opts}"
+msgstr ""
+
+msgid "farmed {time}"
 msgstr ""
 
 msgid "farming is over - closing the game"
@@ -5730,7 +5733,15 @@ msgid ""
 "the game's dialogs can't be read ({why}) - restart the game so the new agent loads"
 msgstr ""
 
+msgid ""
+"the game's english language pack is older than the one Uncle Farmer's names come from ({files} missing): some names may not match"
+msgstr ""
+
 msgid "the game's keys can't be used: {why}"
+msgstr ""
+
+msgid ""
+"the game's language is {lang}: names are turned into English by the game's ids where it has them, else by its language files"
 msgstr ""
 
 msgid "the game's own speech is off while the bot runs"
@@ -6024,6 +6035,9 @@ msgid "walking on to {cell}"
 msgstr ""
 
 msgid "walking to monsters"
+msgstr ""
+
+msgid "we are on another map now - leaving the fight with {name}"
 msgstr ""
 
 msgid "weakens the enemy"
@@ -6496,12 +6510,6 @@ msgstr ""
 msgid "{n} critical"
 msgstr ""
 
-msgid "{n} critical hits"
-msgstr ""
-
-msgid "{n} damage"
-msgstr ""
-
 msgid "{n} days ago"
 msgstr ""
 
@@ -6542,9 +6550,6 @@ msgid "{n} more"
 msgstr ""
 
 msgid "{n} more {gem} would take about {k} more {shard}"
-msgstr ""
-
-msgid "{n} shards"
 msgstr ""
 
 msgid "{n} shards at level {lv}"

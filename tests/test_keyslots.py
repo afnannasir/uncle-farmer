@@ -359,3 +359,23 @@ def test_arrange_swallows_errors_but_not_a_stop(monkeypatch: pytest.MonkeyPatch,
     bot.stop_event.set_ = True
     with pytest.raises(RuntimeError):
         keyslots.arrange(as_bot(bot))
+
+
+# ---------------------------------------------------------------- Shift + attack key (self-cast)
+class _Keys:
+    """Just enough of a Bot for KeysMixin.slot_command / attack_slot."""
+    agent_slots = True
+    _attack_keys = ["y", "u", "h"]
+    p: dict[str, list[str]] = {"attack_keys": []}
+
+
+def test_shift_attack_key_is_a_key_press_not_a_slot() -> None:
+    """The agent's `slot` knows plain, Alt (sustain) and Left Ctrl (lock). The self-cast,
+    Shift + key, has to go out as a real key press - and counts as its own key for the
+    fast-switch wait."""
+    from unclefarmer.engine.botparts.keys import KeysMixin
+    b = _Keys()
+    assert KeysMixin.slot_command(b, "y") == "slot 1"                    # type: ignore[arg-type]
+    assert KeysMixin.slot_command(b, "alt+y") == "slot 1 sustain"        # type: ignore[arg-type]
+    assert KeysMixin.slot_command(b, "shift+y") is None                  # type: ignore[arg-type]
+    assert KeysMixin.attack_slot(b, "shift+y") == "shift+y"              # type: ignore[arg-type]

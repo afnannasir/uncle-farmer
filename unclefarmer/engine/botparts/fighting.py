@@ -393,6 +393,31 @@ class FightingMixin(Parts):
             self.skip.pop(mid, None)
             unselectable.pop(mid, None)
 
+    def forget_the_map(self) -> None:
+        """We are on another map (snap() saw it): everything held against a monster's id goes.
+        An id is a place in one map's list, not a monster: -15 was a flame chicken on Flaming
+        Mountain and something else on Thunder Mountain (live, 2026-11-10). So a skip made on the
+        last map (up to 120 s) would leave a different monster alone here, and a hit of ours on
+        the last map's -15 would make this map's -15 our kill when someone else killed it. (Read
+        from the code, not seen live; the harm is bounded by how long each note lasts.)
+
+        The kills are counted first, while the names of the monsters we left are still known.
+        skip_names and killed_kinds stay: they are kept by map."""
+        self.count_kills()
+        held: dict[int, Any] | set[int] | None
+        for name in ("skip", "mob_names", "counted", "walk_steps", "unselectable", "hp_log",
+                     "_attackers", "pet_suspects"):
+            held = getattr(self, name, None)
+            if held:
+                held.clear()
+        for name in ("hit", "struck", "pet_struck"):
+            held = getattr(self.kill_tracker, name, None)
+            if held:
+                held.clear()
+        sb = self.skillbook
+        if sb is not None:
+            sb.forget_the_map()
+
     def watch_hp(self, snap: dict[str, Any]) -> None:
         """Note every monster's HP with the time, for dying_in()."""
         now = self.clock.time()
@@ -811,6 +836,8 @@ class FightingMixin(Parts):
             self.skip[mid] = self.clock.time() + 120
             return None
         snap = self.snap()
+        if way.left_map(snap):
+            return None           # the walk ended on another map: the farm loop sorts that out
         if self.downed(mid, way.began):
             self.count_kills(snap)        # shot dead on the way: on to the next one at once
             return None
@@ -965,8 +992,13 @@ class FightingMixin(Parts):
         return True
 
     def _fight_over(self, f: "_Fight") -> None:
-        """It is gone or dead: ours (counted), someone else's, or out of sight."""
+        """It is gone or dead: ours (counted), someone else's, or out of sight - or we are
+        the ones who went: on another map (a timed area ended, the game moved us) the monster is
+        where we left it, and neither a kill nor anyone else's."""
         mob = f.mob
+        if f.left_map(f.snap):
+            self.log(_("we are on another map now - leaving the fight with {name}", name=mob["name"]))
+            return
         if self.kill_tracker.live:
             # the game says whose it is: dead with a hit of ours on it (count_kills logs
             # it), else someone else's kill, or it walked out of sight
@@ -1195,6 +1227,7 @@ class _Fight:
 
     def __init__(self, bot: FightingMixin, mob: dict[str, Any]) -> None:
         self.mob, self.mid = mob, mob["id"]
+        self.map: int | None = getattr(bot, "notes_map", None)    # the map this fight is on
         self.seen: dict[str, Any] | None = None   # the monster as the last look saw it (None: gone from view)
         self.look: dict[str, Any] | None = None   # the last look; the loop makes one before anything reads it
         self.rng = bot.reach()
@@ -1230,8 +1263,19 @@ class _Fight:
             raise RuntimeError("the fight read the world before looking")
         return self.look
 
+    def left_map(self, snap: dict[str, Any]) -> bool:
+        """This look is of another map than the fight began on (0 is no map: a change in progress)."""
+        return _other_map(self.map, snap)
+
     def find(self, snap: dict[str, Any]) -> dict[str, Any] | None:
+        if self.left_map(snap):
+            return None           # whatever holds its id on this map is not our monster
         return next((e for e in snap["entities"] if e["id"] == self.mid), None)
+
+
+def _other_map(began: int | None, snap: dict[str, Any]) -> bool:
+    here = snap_map(snap)
+    return bool(began) and isinstance(here, int) and here != 0 and here != began
 
 
 class _Approach:
@@ -1246,7 +1290,12 @@ class _Approach:
         self.opened_early = False      # we stopped short and started casting on the way in
         self.doomed: list[dict[str, Any]] = []
 
+    def left_map(self, snap: dict[str, Any]) -> bool:
+        return _other_map(self.here, snap)
+
     def find(self, snap: dict[str, Any]) -> dict[str, Any] | None:
+        if self.left_map(snap):
+            return None           # whatever holds its id on this map is not our monster
         return next((e for e in snap["entities"] if e["id"] == self.mid), None)
 
     def reachable(self, me: dict[str, Any], e: dict[str, Any], within: float | None = None) -> bool:

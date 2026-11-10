@@ -79,6 +79,7 @@ class ReadingMixin(Parts):
     _snap_at: float = 0.0
     _snap_self: dict[str, Any] | None = None
     _snap_map_id: int | None = None
+    notes_map: int | None = None      # the map the notes about monster ids were made on (snap)
 
     def check(self) -> None:
         if self._stop.is_set():
@@ -295,6 +296,14 @@ class ReadingMixin(Parts):
         map_info = s.get("map")
         map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
+        here = self._snap_map_id
+        if here and here != self.notes_map:
+            # Another map (0 is none: a change in progress). What the bot holds against monster
+            # ids was learned on the last one, and an id means something else here.
+            left, self.notes_map = self.notes_map, here
+            forget: Callable[[], None] | None = getattr(self, "forget_the_map", None)
+            if left and forget is not None:
+                forget()
         return s
 
     def me(self) -> dict[str, Any]:
@@ -305,8 +314,16 @@ class ReadingMixin(Parts):
         return s
 
     def map_id(self) -> int:
-        if self._snap_map_id is not None and self.clock.time() - self._snap_at < 0.15:
+        """The map we are on. In the middle of a map change (a teleport, a death, a cable car) the
+        game reports map 0 for a moment. That is no map: a route asked for on it ended a run with
+        "unexpected error: KeyError('map 0 has no geometry')". So a 0 waits for the change to
+        finish (settled_map), here, for every caller."""
+        if self._snap_map_id and self.clock.time() - self._snap_at < 0.15:
             return self._snap_map_id
+        return self._map_now() or self.settled_map()
+
+    def _map_now(self) -> int:
+        """What the game says this instant: 0 in the middle of a map change."""
         return self._read("mem map", lambda m: "error" not in m)["id"]
 
     def settled_map(self, seconds: float = 15) -> int:
@@ -326,7 +343,7 @@ class ReadingMixin(Parts):
                         return m["id"]
             self.sleep(0.3)
         self.me()                 # still unreadable: stop with the game's own reason
-        return self.map_id()
+        return self._map_now()
 
     def minutes(self) -> float:
         return (self.clock.time() - self.started) / 60.0

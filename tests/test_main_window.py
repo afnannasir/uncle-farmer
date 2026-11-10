@@ -417,21 +417,22 @@ def test_each_game_gets_one_messenger_and_one_chat_feed(monkeypatch: pytest.Monk
 # ================================================================ results and the game's voice
 def test_shift_pause_speaks_the_running_results_else_the_last_run(monkeypatch: pytest.MonkeyPatch, spoken: list[Any]) -> None:
     monkeypatch.setattr(results_part, "foreground_pid", stand_in(results_part.foreground_pid, lambda: None))
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "%d kills" % r["kills"]))
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "%d kills, drop %s" % (r["kills"], drop)))
     monkeypatch.setattr(stats, "runs", stand_in(stats.runs, lambda character: [{"kills": 7}] if character == "Sara" else []))
-    tally = SimpleNamespace(result=lambda: {"kills": 40})
+    tally = SimpleNamespace(result=lambda: {"kills": 40}, drop_left=3600)
     w = Win(games=[(1, "Ali", ""), (2, "Sara", ""), (3, "New", "")], runs={1: FakeRun(1, tally=tally)})
     w.speak_results()
     w.game_list.selection = 1
+    w.snap = (2, {"ok": True, "self": {"sheet": {"drop_seconds": 1200, "age": 0}}}, w.clock.time())   # Sara's game, open
     w.speak_results()
     w.game_list.selection = 2
     w.speak_results()
-    assert spoken == ["Ali: 40 kills", "Sara, last run: 7 kills", "No results yet."]
+    assert spoken == ["Ali: 40 kills, drop 3600", "Sara, last run: 7 kills, drop 1200", "No results yet."]
 
 
 def test_results_are_spoken_every_so_often_while_farming(monkeypatch: pytest.MonkeyPatch, spoken: list[Any]) -> None:
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "ok"))
-    tally = SimpleNamespace(result=returning(dict[str, Any]()), spoken=0.0)
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "ok"))
+    tally = SimpleNamespace(result=returning(dict[str, Any]()), spoken=0.0, drop_left=None)
     w = Win(runs={1: FakeRun(1, tally=tally)}, s={"results_every": 30})
     w.clock.now = 29 * 60
     w.progress()
