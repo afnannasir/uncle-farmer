@@ -1,4 +1,5 @@
-"""Results: what a character earned in a run, today, this week, or ever.
+"""Results: what a character earned in a run, on a day (today, yesterday, any day it has runs),
+in the last 7 or 30 days, or ever.
 
 A read-only text, one fact per line, so a screen reader can walk it line by line. It follows a
 running bot by itself (every 10 seconds) and speaks only when asked. Farming and the jobs that
@@ -17,12 +18,29 @@ import wx
 
 from .. import speech, stats
 from ..clock import CLOCK, Clock
-from ..i18n import _
+from ..i18n import N_, _
 from ..stats import Tally
 from .common import Dialog, Form, copy_text
 
-PERIODS = ("run", "today", "week", "month", "all")
+PERIODS = ("run", "today", "yesterday", "day", "week", "month", "all")
 SHOW = (stats.FARMING, stats.TOOL)
+WEEKDAYS = (N_("Monday"), N_("Tuesday"), N_("Wednesday"), N_("Thursday"), N_("Friday"), N_("Saturday"),
+            N_("Sunday"))
+
+
+def day_of(t: float) -> str:
+    """The local day ("2026-11-08") a clock time falls on."""
+    return time.strftime("%Y-%m-%d", time.localtime(t))
+
+
+def day_label(day: str, today: str) -> str:
+    """A day as the player reads it: "2026-11-08, Sunday (2 days ago)"."""
+    t = time.strptime(day, "%Y-%m-%d")
+    back = round((stats.day_bounds(today)[0] - stats.day_bounds(day)[0]) / 86400)
+    when = (_("today") if back == 0 else _("yesterday") if back == 1 else
+            _("{n} days ago", n=back) if back > 1 else "")
+    text = "%s, %s" % (day, _(WEEKDAYS[t.tm_wday]))
+    return text + (" (%s)" % when if when else "")
 
 
 class ResultsDialog(Dialog):
@@ -40,8 +58,11 @@ class ResultsDialog(Dialog):
         form = Form(self)
         self.who = form.choice(_("&Character:"), self.names,
                                self.names.index(character) if character in self.names else 0)
-        self.when = form.choice(_("&Period:"), [_("This run (or the last one)"), _("Today"),
-                                                _("Last 7 days"), _("Last 30 days"), _("All time")], 0)
+        self.when = form.choice(_("&Period:"), [_("This run (or the last one)"), _("Today"), _("Yesterday"),
+                                                _("A day of my choice"), _("Last 7 days"), _("Last 30 days"),
+                                                _("All time")], 0)
+        self.days: list[str] = []
+        self.day = form.choice(_("&Day:"), [_("no runs yet")], 0)
         self.what = form.choice(_("S&how:"), [_("Farming"), _("Gem Maker, Equipment Enhancer and chores")], 0)
         root.Add(form.grid, 0, wx.EXPAND | wx.ALL, 10)
         root.Add(wx.StaticText(self, label=_("&Results:")), 0, wx.LEFT, 10)
@@ -62,15 +83,34 @@ class ResultsDialog(Dialog):
         root.Add(row, 0, wx.ALL, 10)
         self.SetSizer(root)
 
-        self.who.Bind(wx.EVT_CHOICE, lambda e: self.show())
-        self.when.Bind(wx.EVT_CHOICE, lambda e: self.show())
-        self.what.Bind(wx.EVT_CHOICE, lambda e: self.show())
+        self.who.Bind(wx.EVT_CHOICE, lambda e: self.fill_days())
+        self.when.Bind(wx.EVT_CHOICE, lambda e: self.fill_days())
+        self.day.Bind(wx.EVT_CHOICE, lambda e: self.show())
+        self.what.Bind(wx.EVT_CHOICE, lambda e: self.fill_days())
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, lambda e: self.show(keep_place=True), self.timer)
         self.timer.Start(10000)
         self.Bind(wx.EVT_WINDOW_DESTROY, lambda e: self.timer.Stop())
-        self.show()
+        self.fill_days()
         self.text.SetFocus()
+
+    def fill_days(self) -> None:
+        """The Day list: every day the chosen character has runs of the chosen kind on, newest
+        first (today too while a bot runs), keeping the day picked if it is still there. It can be
+        chosen only with the period "A day of my choice"."""
+        name = self.names[max(0, self.who.GetSelection())]
+        kind = SHOW[max(0, self.what.GetSelection())]
+        today = day_of(self.clock.time())
+        days = stats.days(name, kind)
+        tally = self.live(name)
+        if tally and any(r["kind"] == kind for r in tally.results()) and today not in days:
+            days.insert(0, today)
+        was = self.days[self.day.GetSelection()] if self.days and self.day.GetSelection() >= 0 else None
+        self.days = days
+        self.day.Set([day_label(d, today) for d in days] or [_("no runs yet")])
+        self.day.SetSelection(days.index(was) if was in days else 0)
+        self.day.Enable(PERIODS[max(0, self.when.GetSelection())] == "day" and bool(days))
+        self.show()
 
     def result(self) -> tuple[str | None, str]:
         """(text, what to speak) for the chosen character, period and kind."""
@@ -90,11 +130,23 @@ class ResultsDialog(Dialog):
                           what=past[-1].get("run"), when=past[-1].get("start"))
                 return self.texts(kind, [r for r in past if r["start"] == past[-1]["start"]], title, single=True)
             return None, _("{name}: no runs yet", name=name)
-        since = {"today": time.mktime(time.strptime(time.strftime("%Y-%m-%d"), "%Y-%m-%d")),
-                 "week": now - 7 * 86400, "month": now - 30 * 86400, "all": None}[period]
-        results = stats.runs(name, since, kind=kind) + live
-        label = {"today": _("today"), "week": _("the last 7 days"), "month": _("the last 30 days"),
-                 "all": _("everything")}[period]
+        today = day_of(now)
+        until: float | None = None
+        if period in ("today", "yesterday", "day"):
+            if period == "day":
+                if not self.days:
+                    return None, _("{name}: no runs yet", name=name)
+                day = self.days[max(0, self.day.GetSelection())]
+            else:
+                day = today if period == "today" else day_of(stats.day_bounds(today)[0] - 3600)
+            since, until = stats.day_bounds(day)
+            label = day_label(day, today)
+            if day != today:
+                live = []       # a running bot's results are today's
+        else:
+            since = {"week": now - 7 * 86400, "month": now - 30 * 86400, "all": None}[period]
+            label = {"week": _("the last 7 days"), "month": _("the last 30 days"), "all": _("everything")}[period]
+        results = stats.runs(name, since, kind=kind, until=until) + live
         if not results:
             return None, _("{name}, {period}: no runs", name=name, period=label)
         return self.texts(kind, results, _("{name}, {period}", name=name, period=label))

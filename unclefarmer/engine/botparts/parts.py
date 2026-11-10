@@ -61,6 +61,7 @@ class Parts:
     _phases: list[list[float | str]]
     watches: list[tuple[Callable[[], object], str]]   # (condition, message) checked all the time
     character: str | None
+    profile_key: str | None     # the character's own settings key (name, server, game id) once a run knows it
     agent_version: int
     guarding: bool
     locate: Callable[[str], Where | None] | None       # where one of our games plays a player

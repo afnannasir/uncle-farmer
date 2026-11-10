@@ -135,7 +135,7 @@ class SortLists:
 
 class BagManagerDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any] | None = None) -> None:
-        super().__init__(parent, title=_("Bag and supplies - {name}", name=character),
+        super().__init__(parent, title=_("Bag and supplies - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER, size=wx.Size(820, 600))
         self.character = character
         self.p = profile if profile is not None else settings.load_profile(character)

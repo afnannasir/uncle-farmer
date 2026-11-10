@@ -18,7 +18,7 @@ import pytest
 
 wx = pytest.importorskip("wx")
 
-from unclefarmer import chat, messages, speech, stats, tones  # noqa: E402
+from unclefarmer import chat, messages, settings, speech, stats, tones  # noqa: E402
 from unclefarmer.gui import main  # noqa: E402
 from unclefarmer.gui.mainparts import results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
 from unclefarmer.gui.mainparts.base import LOG_LIMIT, SNAP_FRESH  # noqa: E402
@@ -140,6 +140,20 @@ def bot(kills: int=0, deaths: int=0, paused: bool=False) -> types.SimpleNamespac
     if paused:
         b.paused.set()
     return b
+
+
+def test_a_live_server_label_promotes_the_id_only_game_row_and_never_downgrades() -> None:
+    fallback = settings.character_profile("Killua", 2905)
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    w = Win(games=[(1, fallback, "central plains")], runs={1: FakeRun(1)})
+    snap = {"self": {"id": 2905, "name": "Killua", "hp": 1, "maxhp": 1},
+            "map": {"name": "central plains"}, "_server": "S1"}
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
+
+    snap["_server"] = ""
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
 
 
 @pytest.fixture
@@ -304,6 +318,19 @@ def test_our_characters_are_found_through_their_own_game() -> None:
     assert w.locate(" ali ") == (5302, 10.0, 20.0)
     assert w.locate("Sara") is None                       # her game has no link yet
     assert w.locate("Nobody") is None
+
+
+def test_a_character_with_its_own_key_is_still_found_and_started_by_its_name() -> None:
+    class Link:
+        def json(self, line: str) -> Any:
+            return {"ok": True, "map": {"id": 5302}, "self": {"x": 10.0, "y": 20.0}}
+
+    key = settings.character_profile("Ali", 2905, "S1")
+    w = Win(games=[(1, key, "")], s={"last_runs": {"Ali": "plan:wolves"}})     # saved before keys
+    w.messengers = {1: SimpleNamespace(link=Link())}
+    assert w.locate("ali") == (5302, 10.0, 20.0)
+    w.items = [("plan", "wolves")]
+    assert w.start_bot(1, "") == "started" and w.started[-1][1] == ("plan", "wolves")
 
 
 def test_the_latest_sighting_of_a_player_counts_while_it_is_recent() -> None:

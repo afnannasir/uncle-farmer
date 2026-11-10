@@ -19,7 +19,7 @@ from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
 from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
-from ..link import AgentError, AgentLink
+from ..link import AgentError, AgentLink, server_name
 from . import chores, keyslots, triggers
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
@@ -38,6 +38,7 @@ AGENT_ACT = 40      # from here `use <uid>` uses a bag item and `select <id>` pi
 AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without the key or its window
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
+AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -68,6 +69,7 @@ class Run(threading.Thread):
         self.on_log, self.on_done = on_log, on_done
         self.stop_event = threading.Event()
         self.character: str | None = None   # known once connected; names the run in the log
+        self.profile: str | None = None     # the character's own settings key, not merely its display name
         self.tally: stats.Tally | None = None   # what this run earns, readable while it runs
         self.bot: Bot | None = None         # the Bot once running (private message commands reach it here)
         self.link: AgentLink | None = None  # this run's connection to the game, while it runs
@@ -167,8 +169,10 @@ class Run(threading.Thread):
         if not snap.get("ok"):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
+        server = server_name(link) if agent >= AGENT_SERVER else ""
+        self.profile = settings.character_profile(character, snap["self"].get("id"), server)
         applog.thread("run %d %s" % (self.pid, character))
-        profile, found = self._profile(link, character)
+        profile, found = self._profile(link, self.profile)
         guard = self._arm(link, agent, profile, app)
         self.log(_("starting {what} as {name}", what=self.title, name=character), speak=True)
         bot = self._make_bot(link, profile, agent, guard, day_end, app)
@@ -182,10 +186,10 @@ class Run(threading.Thread):
             return scan.scan_and_save(link, character, self.game_folder())
         except Exception as e:      # a failed scan must never stop a run; the saved profile still works
             carry_on(e, "scanning the character")
-            self.log(_("couldn't scan {name}: {err}", name=character, err=e))
+            self.log(_("couldn't scan {name}: {err}", name=settings.profile_display(character), err=e))
             if not settings.has_profile(character):
                 self.log(_("{name} has no profile yet - using the default keys. Open Character, Settings to check them.",
-                           name=character), speak=True)
+                           name=settings.profile_display(character)), speak=True)
             return settings.load_profile(character), {}
 
     def _arm(self, link: AgentLink, agent: int, profile: dict[str, Any], app: dict[str, Any]) -> str | None:
@@ -230,7 +234,8 @@ class Run(threading.Thread):
             self.log(_("farming stops at {time} at the latest (the drop time resets at {reset})",
                        time=day_end.strftime("%H:%M"), reset=bot.daily_reset))
         bot.character = self.character   # names the game in logs/dialogs.log when several run
-        name = self.character or ""
+        bot.profile_key = self.profile   # the daily chores are kept per character, not per name
+        name = self.profile or self.character or ""
 
         def save_profile(data: dict[str, Any]) -> None:
             settings.save_profile(name, data)
@@ -291,7 +296,7 @@ class Run(threading.Thread):
             if triggers.farms(script.main, script.subs):
                 self._before_farming()
             cfg = chores.config(bot.p)
-            if cfg.get("before_farming") and chores.due(self.character, cfg):
+            if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
                 with stats.doing(bot, "chores"):
                     chores.run(bot, cfg)

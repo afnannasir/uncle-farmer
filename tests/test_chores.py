@@ -742,6 +742,23 @@ def test_the_done_list_is_per_day_and_per_character(tmp_path: Path, monkeypatch:
     assert chores.done_today("Hero")["_shares"] == [1]
 
 
+def test_same_name_characters_keep_their_own_done_lists(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
+    monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")
+    chores.mark("Hero", "bank", "done")                    # written before characters had keys
+    first = chores.settings.character_profile("Hero", 17, "S1")
+    second = chores.settings.character_profile("Hero", 42, "S2")
+    assert "bank" in chores.done_today(first)              # carried on: no bank visit twice today
+    chores.mark(first, "bounty", "done")
+    chores.mark(second, "donation", "done")
+    assert set(chores.done_today(first)) == {"bank", "bounty"}
+    assert set(chores.done_today(second)) == {"bank", "donation"}   # both started from the shared old list
+    chores.mark(second, "bounty", "done")
+    assert set(chores.done_today(first)) == {"bank", "bounty"}       # but each writes only its own
+    assert set(chores.done_today(chores.settings.character_profile("Hero", 17))) == {"bank", "bounty"}   # label or not
+    assert set(chores.done_today("Hero")) == {"bank"}
+
+
 def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
     monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")

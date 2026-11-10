@@ -20,6 +20,9 @@ msgstr ""
 msgid " ({rate} an hour)"
 msgstr ""
 
+msgid " ({rate} casts an hour)"
+msgstr ""
+
 msgid " - estimated: it includes shards"
 msgstr ""
 
@@ -121,6 +124,9 @@ msgid "&Daily chores"
 msgstr ""
 
 msgid "&Date (year-month-day):"
+msgstr ""
+
+msgid "&Day:"
 msgstr ""
 
 msgid "&Defensive skills below HP (%):"
@@ -591,6 +597,9 @@ msgid "A bot is running. Stop it and quit?"
 msgstr ""
 
 msgid "A city s&quare"
+msgstr ""
+
+msgid "A day of my choice"
 msgstr ""
 
 msgid ""
@@ -1592,6 +1601,18 @@ msgstr ""
 
 msgid ""
 "Heal with the class's o&wn heal skill (Sorceress, Priest); red potions only under half HP"
+msgstr ""
+
+msgid "Healed others"
+msgstr ""
+
+msgid "Healed our pet"
+msgstr ""
+
+msgid "Healed ourselves"
+msgstr ""
+
+msgid "Healing by our skills (potions not counted):"
 msgstr ""
 
 msgid "Healing teammates while following"
@@ -2898,6 +2919,16 @@ msgstr ""
 msgid "Skills not in this &list (learned or put on a key later):"
 msgstr ""
 
+msgid "Skills used: none"
+msgstr ""
+
+msgid ""
+"Skills used: not counted in these runs (only runs from this version on count them)"
+msgstr ""
+
+msgid "Skills used: {casts} casts, {dmg} damage in all"
+msgstr ""
+
 msgid "Snow mountain prince"
 msgstr ""
 
@@ -3829,6 +3860,9 @@ msgstr ""
 msgid "Y:"
 msgstr ""
 
+msgid "Yesterday"
+msgstr ""
+
 msgid "You are already on {map}."
 msgstr ""
 
@@ -3849,6 +3883,9 @@ msgid "a monster"
 msgstr ""
 
 msgid "a number the Gem Craftsman will tell"
+msgstr ""
+
+msgid "a skill with no name"
 msgstr ""
 
 msgid "a sub needs a name"
@@ -4066,6 +4103,9 @@ msgid "can't switch the skill page yet ({why}); using the page that is up"
 msgstr ""
 
 msgid "cancel the team's navigation target"
+msgstr ""
+
+msgid "cast {n} times"
 msgstr ""
 
 msgid "charge in"
@@ -4466,6 +4506,9 @@ msgstr ""
 msgid "heal"
 msgstr ""
 
+msgid "healed {n}"
+msgstr ""
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr ""
 
@@ -4793,6 +4836,9 @@ msgid "no red potions left - healing with skills only"
 msgstr ""
 
 msgid "no room with a free place for this level"
+msgstr ""
+
+msgid "no runs yet"
 msgstr ""
 
 msgid "no secret room for this level has a free place"
@@ -6056,6 +6102,9 @@ msgstr ""
 msgid "write it as: {cmd} Milkfish 20"
 msgstr ""
 
+msgid "yesterday"
+msgstr ""
+
 msgid "you"
 msgstr ""
 
@@ -6121,6 +6170,9 @@ msgid "{colour}: {what}"
 msgstr ""
 
 msgid "{col}: shards {shards}; gems {gems}"
+msgstr ""
+
+msgid "{dmg} damage ({share} of all)"
 msgstr ""
 
 msgid "{field}: enter a number from {lo} to {hi}"
@@ -6229,6 +6281,9 @@ msgstr ""
 msgid "{k} shards and {fee} arnebia"
 msgstr ""
 
+msgid "{label}: {hp} HP in {n} heals"
+msgstr ""
+
 msgid "{left} left"
 msgstr ""
 
@@ -6285,7 +6340,13 @@ msgstr ""
 msgid "{name} ({n})"
 msgstr ""
 
+msgid "{name} - character {id}"
+msgstr ""
+
 msgid "{name} - {map}{team}"
+msgstr ""
+
+msgid "{name} - {server}"
 msgstr ""
 
 msgid "{name} asks: {what}"
@@ -6420,6 +6481,9 @@ msgstr ""
 msgid "{n} Value Product incomes were already collected today"
 msgstr ""
 
+msgid "{n} a hit on average"
+msgstr ""
+
 msgid "{n} arnebia"
 msgstr ""
 
@@ -6429,10 +6493,16 @@ msgstr ""
 msgid "{n} contribution"
 msgstr ""
 
+msgid "{n} critical"
+msgstr ""
+
 msgid "{n} critical hits"
 msgstr ""
 
 msgid "{n} damage"
+msgstr ""
+
+msgid "{n} days ago"
 msgstr ""
 
 msgid "{n} deaths"
@@ -6463,6 +6533,9 @@ msgid "{n} minutes"
 msgstr ""
 
 msgid "{n} minutes are up"
+msgstr ""
+
+msgid "{n} missed"
 msgstr ""
 
 msgid "{n} more"
