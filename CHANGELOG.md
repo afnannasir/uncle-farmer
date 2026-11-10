@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+**The game in any language**
+
+- Every language pack now works, other English packs such as en_uk and public english translation
+  included. The bot's names come from the game's own english pack, which rewords many of the
+  server's texts ("Pet Bone Cookie" for "Bone Cookie"); other packs are now turned into that
+  wording, not the server's.
+- NPCs, items and skills are recognised by the game's own ids where it gives them (an NPC by its
+  map and id, an item by its type, a skill by its id), so no wording can hide them. Names are only
+  needed for what has no lasting id, such as monsters.
+- An NPC whose name doesn't match (after a game update renamed it) is found by where it stands.
+- The server's own text (the lines the game speaks without a menu, a menu's server wording, the
+  character sheet) is no longer "translated back", which could change it.
+
+**Results**
+
+- Run, Results: Yesterday and "A day of my choice" (a Day list of every day with runs) besides
+  Today, the last 7 and 30 days and All time.
+- Skills used: how often each skill was cast, its damage and share of all damage, critical hits,
+  misses and what it healed, the most damage first.
+- Healing: at the end, what your own healing skills healed on yourself, your pet and others
+  (potions not counted).
+- The spoken summary (Ctrl+Shift+R, Shift+Pause, the end of a run, private messages) now starts
+  with the time farmed and today's drop time left, then kills, contribution and experience. Damage
+  and loot are in the Results window.
+
+**Characters with the same name**
+
+- Two characters with the same name on different servers (S1, S2) now keep their own settings,
+  daily chores and last plan. The Games list names them "Name - S1". Needs agent 58.
+
+**Dispels**
+
+- A Sorcerer's or Priest's dispel is cast on yourself with Shift + its key: in a fight the plain key
+  cast it at the selected monster and the debuff stayed.
+
 **Shooting while walking when farming**
 
 - Character, Settings, Fighting: "Shoot monsters in reach while walking to the next one". Dungeons

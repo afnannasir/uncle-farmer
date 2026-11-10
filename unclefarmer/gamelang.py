@@ -375,9 +375,9 @@ def english(data: Any, t: Table | None = None) -> Any:
     if isinstance(data, str):
         return t.word(data)
     if jsonio.is_array(data):
-        return [english(x, t) for x in data]
+        return _item_rows([english(x, t) for x in data])
     if jsonio.is_object(data):
-        out = {k: v if k in SERVER_TEXT else english(v, t) for k, v in data.items()}
+        out = _by_id(data, {k: v if k in SERVER_TEXT else english(v, t) for k, v in data.items()})
         if data.get("kind") == "player" and isinstance(data.get("name"), str):
             # a player's own name stays as it is, even when it is also a word of the language; only
             # a pet's ("<kind> <name> belongs to <owner>", players to the game) is turned back
@@ -385,6 +385,120 @@ def english(data: Any, t: Table | None = None) -> Any:
                 out["name"] = data["name"]
         return out
     return data
+
+
+class EnglishWording:
+    """Server text -> what the english folder shows for it ("Bone Cookie" -> "Pet Bone Cookie",
+    "Level 2 Obsidian" through "Level {d} Obsidian"). Going this way is never ambiguous: the game
+    does the same with the english pack chosen. Used to build the id tables from recorded packets,
+    which carry the server's own wording."""
+
+    def __init__(self, english_dir: str) -> None:
+        self.eng = _folder(english_dir)
+        self.templates: list[tuple[re.Pattern[str], str]] = []
+        for key, value in self.eng.items():
+            if _CJK.search(key) or not _KEY_HOLE.search(key) or not value:
+                continue
+            if len(_KEY_HOLE.sub("", key).strip()) < 3:
+                continue
+            rx = _key_regex(key)
+            if rx is not None:
+                self.templates.append((rx, value))
+        self.templates.sort(key=lambda e: -len(re.sub(r"\(\?P<g\d+>[^)]*\)|\\", "", e[0].pattern)))
+
+    def shown(self, raw: str) -> str:
+        if not raw:
+            return raw
+        if raw in self.eng:
+            return _shown(raw, self.eng)
+        for rx, value in self.templates:
+            m = rx.match(raw)
+            if m:
+                def put(h: re.Match[str]) -> str:
+                    got = m.groupdict().get("g" + (h.group(1) or h.group(2)))
+                    if got is None:
+                        return h.group(0)
+                    return self.shown(got) if h.group(0).startswith("{sub") else got
+                return _HOLE.sub(put, value)
+        return raw
+
+
+IDS_FILE = "ids.json"
+NPC_NEAR = 3.0          # tiles: an NPC with a known id counts as that NPC only this close to its place
+
+
+class _Ids:
+    """The game's ids for what the bot names (data/ids.json): items by type, skills by id, NPCs by
+    map and id. Read once."""
+
+    def __init__(self) -> None:
+        raw = _data(IDS_FILE)
+        self.items: dict[int, str] = _by_number(raw.get("items"))
+        self.skills: dict[int, str] = _by_number(raw.get("skills"))
+        # (map, id) -> (name, x, y): an NPC's id is the order its map lists NPCs in, and shifts when
+        # a game update adds some - so it counts only for an NPC standing where that one stands
+        self.npcs: dict[tuple[int, int], tuple[str, float, float]] = {}
+        rows: object = raw.get("npcs")
+        for r in (rows if jsonio.is_array(rows) else []):
+            if jsonio.is_array(r) and len(r) >= 5 and isinstance(r[0], int) and isinstance(r[1], int)                     and isinstance(r[2], str) and isinstance(r[3], (int, float)) and isinstance(r[4], (int, float)):
+                self.npcs[(r[0], r[1])] = (r[2], float(r[3]), float(r[4]))
+
+
+def _by_number(part: object) -> dict[int, str]:
+    """{"23386": "Medium Red Potion"} as {23386: "Medium Red Potion"}; anything else left out."""
+    out: dict[int, str] = {}
+    if jsonio.is_object(part):
+        for k, v in part.items():
+            if isinstance(v, str) and str(k).lstrip("-").isdigit():
+                out[int(k)] = v
+    return out
+
+
+_ids: _Ids | None = None
+
+
+def ids() -> _Ids:
+    global _ids
+    if _ids is None:
+        _ids = _Ids()
+    return _ids
+
+
+def _by_id(data: Any, out: Any) -> Any:
+    """Names the game's ids settle, put over what the words gave: NPCs (map and id), bag and
+    equipment rows (item type), skill, talent and profession rows (skill id). An id the table
+    doesn't hold keeps the translated name."""
+    if not jsonio.is_object(data) or not jsonio.is_object(out):
+        return out
+    table = ids()
+    entities: object = data.get("entities")
+    where: object = data.get("map")
+    mid = where.get("id") if jsonio.is_object(where) else None
+    if jsonio.is_array(entities) and isinstance(mid, int) and jsonio.is_array(out.get("entities")):
+        for e, o in zip(entities, out["entities"]):
+            if jsonio.is_object(e) and jsonio.is_object(o) and e.get("kind") == "npc" and isinstance(e.get("id"), int):
+                known = table.npcs.get((mid, e["id"]))
+                x, y = e.get("x"), e.get("y")
+                if known and isinstance(x, (int, float)) and isinstance(y, (int, float))                         and abs(known[1] - x) <= NPC_NEAR and abs(known[2] - y) <= NPC_NEAR:
+                    o["name"] = known[0]
+    for part, by in (("combat", table.skills), ("talents", table.skills), ("profession", table.skills)):
+        rows: object = out.get(part)
+        if jsonio.is_array(rows):
+            for r in rows:
+                if jsonio.is_object(r) and isinstance(r.get("id"), int) and r["id"] in by:
+                    r["name"] = by[r["id"]]
+    return out
+
+
+def _item_rows(out: Any) -> Any:
+    """Bag and equipment rows (`mem bagfull`, `mem equipment`: uid, type, name): the item's
+    English name from its type."""
+    if jsonio.is_array(out):
+        table = ids().items
+        for r in out:
+            if jsonio.is_object(r) and "uid" in r and isinstance(r.get("type"), int) and r["type"] in table:
+                r["name"] = table[r["type"]]
+    return out
 
 
 def warm() -> None:

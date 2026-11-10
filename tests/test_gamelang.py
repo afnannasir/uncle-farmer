@@ -151,3 +151,46 @@ def test_the_bot_s_known_names_come_from_its_data() -> None:
     names = gamelang.known_names()
     assert len(names) > 1000
     assert all(k == " ".join(k.split()).lower() for k in names)
+
+
+# ---------------------------------------------------------------- the game's ids before any words
+@pytest.fixture
+def id_tables(monkeypatch: pytest.MonkeyPatch) -> None:
+    t = gamelang._Ids.__new__(gamelang._Ids)
+    t.items = {23386: "Medium Red Potion"}
+    t.skills = {1611: "Soul Purify"}
+    t.npcs = {(1081, -19): ("Pharmacist Mia", 67.0, 64.0)}
+    monkeypatch.setattr(gamelang, "_ids", t)
+
+
+@pytest.mark.usefixtures("id_tables")
+def test_ids_settle_npcs_items_and_skills_whatever_the_words(packs: Path) -> None:
+    t = gamelang.Table(str(packs / "xx"), str(packs / "english"), KNOWN)
+    snap = {"map": {"id": 1081, "name": "x"},
+            "entities": [{"id": -19, "kind": "npc", "name": "Eczacı Mia", "x": 67.0, "y": 65.0},  # a shared word
+                         {"id": -19, "kind": "monster", "name": "Kemik Kurabiye", "x": 67, "y": 64},  # words only
+                         {"id": -5, "kind": "npc", "name": "cephanelik", "x": 1, "y": 1}]}      # no id known
+    out = gamelang.english(snap, t)
+    assert [e["name"] for e in out["entities"]] == ["Pharmacist Mia", "Pet Bone Cookie", "Armory"]
+    # after a game update shifted the ids, that id belongs to an NPC standing elsewhere: words decide
+    moved = {"map": {"id": 1081}, "entities": [{"id": -19, "kind": "npc", "name": "cephanelik", "x": 20, "y": 20}]}
+    assert gamelang.english(moved, t)["entities"][0]["name"] == "Armory"
+    skills = gamelang.english({"combat": [{"id": 1611, "kind": 1, "name": "Ruh Arındırma"}],
+                               "talents": [], "profession": [{"id": 9, "name": "cephanelik"}]}, t)
+    assert skills["combat"][0]["name"] == "Soul Purify" and skills["profession"][0]["name"] == "Armory"
+    bag = gamelang.english([{"uid": 5, "type": 23386, "name": "Orta Kırmızı İksir", "count": 3},
+                            {"uid": 6, "type": 1, "name": "Kemik Kurabiye", "count": 1}], t)
+    assert [r["name"] for r in bag] == ["Medium Red Potion", "Pet Bone Cookie"]
+
+
+def test_server_text_is_put_in_the_english_pack_s_wording(packs: Path) -> None:
+    w = gamelang.EnglishWording(str(packs / "english"))
+    assert w.shown("Bone Cookie") == "Pet Bone Cookie"
+    assert w.shown("12 Arnebia piece") == "12 Arnebia"
+    assert w.shown("Something new") == "Something new"
+
+
+def test_the_id_tables_ship_with_the_bot() -> None:
+    table = gamelang.ids()
+    assert len(table.items) > 100 and len(table.skills) > 10 and len(table.npcs) > 50
+    assert all(mid > 0 and nid < 0 for mid, nid in table.npcs)       # NPCs only, never a player
