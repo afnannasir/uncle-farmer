@@ -776,8 +776,9 @@ class SkillBook:
         W_SELF_ATTACKn = SHIFT+W_ATTACKn). Every dispel for one ally also removes a buff "from 1
         enemy", and the plain key (and Alt + key) picks the enemy whenever one is selected - in
         every fight. Live on Flaming Mountain, 2026-11-10: with a monster selected the plain key
-        cast Soul Purify at the monster five times out of five and the debuff stayed; Shift + key
-        landed on us and it was gone in 1.2 s. With nothing selected both land on us."""
+        cast Soul Purify at the monster three times out of three and the debuff stayed; Shift +
+        key landed on us twice out of twice and it was gone in 1.2 s. With no monster selected
+        both land on us."""
         return "shift+" + x["key"].rpartition("+")[2]
 
     def buff_now(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | None:
