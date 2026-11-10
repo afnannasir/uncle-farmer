@@ -1908,11 +1908,7 @@ After updating, check **What's new.txt** to see what has changed.
 
 Uncle Farmer works with any of the game's language packs, using `language\lang.txt`, not just English. It reads the same language files as the game and translates what it sees back into English. This helps it recognize the same potions, skills, monsters, pets, and menus regardless of the selected language.
 
-The English it translates to is the wording of the game's own **english** pack, which rewords many of the server's texts (for example "Pet Bone Cookie" for the server's "Bone Cookie"). Other English packs, such as **en_uk** or **public english translation**, are treated like any other language, so their slightly different names are recognized too. Anything a pack leaves as the server sends it is turned into the english pack's wording as well. Player names are never changed.
-
-Where the game gives a lasting id, Uncle Farmer goes by the id instead of the words: items by their type, skills by their id, and NPCs by their map and id (checked against where the NPC stands, since a game update can renumber a map's NPCs). Names matter only for what has no lasting id, such as monsters.
-
-If an NPC's name still doesn't match (after a game update renamed it, for example), Uncle Farmer finds the NPC by where it stands, since NPCs never move.
+Anything the language pack leaves untranslated is already in English. Player names are never changed.
 
 **Changing the game language**
 
