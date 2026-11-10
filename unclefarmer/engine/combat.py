@@ -170,6 +170,8 @@ class _PickView:
         self.gcd = book.gcd()
 
     def in_range(self, s: Skill) -> bool:
+        if self.book.available_to_channel_without_penalty and s.get("name") in ("Pyroblast", "Blazing Storm"):
+            return True
         r = s.get("range")
         return r is None or self.dist <= r + 0.5
 
@@ -259,6 +261,7 @@ class SkillBook:
     _healer: Skill | None
     _pending_channelling = False
     _available_to_channel_without_penalty = False
+    _saving_pyroblast_for_next = False
     _last_pack_size = 1
 
     def __init__(self, bot: Parts) -> None:
@@ -319,6 +322,18 @@ class SkillBook:
         self._available_to_channel_without_penalty = value
         if self.combos is not None:
             self.combos.available_to_channel_without_penalty = value
+
+    @property
+    def saving_pyroblast_for_next(self) -> bool:
+        if self.combos is not None:
+            return getattr(self.combos, "saving_pyroblast_for_next", False)
+        return self._saving_pyroblast_for_next
+
+    @saving_pyroblast_for_next.setter
+    def saving_pyroblast_for_next(self, value: bool) -> None:
+        self._saving_pyroblast_for_next = value
+        if self.combos is not None:
+            self.combos.saving_pyroblast_for_next = value
 
     def _channeling_restricted(self, s: Skill) -> bool:
         """Channeling skills (Blazing Storm, Pyroblast) are restricted for Elf until the two-crit
@@ -416,6 +431,11 @@ class SkillBook:
         """The key that walks us to the target and hits it there: the base attack (the hardest
         hitter on the page that is up if there are several) on its follow key. None without one."""
         up = self.page()
+        if self.available_to_channel_without_penalty:
+            pyro = [x for pg in sorted(self.slots, key=lambda pg: pg != up) for x in self.slots[pg]
+                    if x.get("name") == "Pyroblast" and self.allowed(x)]
+            if pyro and pyro[0] in self.slots.get(up, []):
+                return pyro[0]["key"]
         base = [x for pg in sorted(self.slots, key=lambda pg: pg != up) for x in self.slots[pg]
                 if x.get("role") == "base_attack" and self.allowed(x)]
         return base[0]["key"] if base and base[0] in self.slots.get(up, []) else None
@@ -603,11 +623,6 @@ class SkillBook:
         for name in [n for n, t in self.pending_target.items() if t == mid]:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
-        if self.combos:
-            self.combos.pending_channelling = False
-            self.combos.fire_impact_crit = False
-            self.combos.streak = 0
-        self._pending_channelling = False
 
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
@@ -942,14 +957,6 @@ class SkillBook:
             return True
         if hasattr(self, "downed") and target.get("id") in self.downed:
             return True
-        dying_fn: Any = getattr(self.b, "dying_in", None)
-        if callable(dying_fn):
-            try:
-                rem: Any = dying_fn(target)
-                if isinstance(rem, (int, float)) and rem < 2.0:
-                    return True
-            except Exception:
-                pass
         base = v.first("base_attack") or v.first("single_target")
         if base:
             weight = self.combos.weight(base) if self.combos else 1.0
@@ -959,21 +966,19 @@ class SkillBook:
         return False
 
     def _switch_target(self, new_tid: int | None) -> None:
-        """Handle target transition, clearing pending sequence while saving channeling permission."""
-        if self.target_id is not None and new_tid != self.target_id:
-            if self.combos:
-                self.combos.pending_channelling = False
-                self.combos.fire_impact_crit = False
-                self.combos.streak = 0
-            self._pending_channelling = False
+        """Handle target transition, preserving combo state across targets."""
         self.target_id = new_tid
 
     def _adjust_pyroblast_target(self, choice: Skill | None, target: dict[str, Any], v: _PickView) -> Skill | None:
-        """Avoid casting Pyroblast on a nearly dying target, falling back to normal attack."""
-        if choice and choice["name"] == "Pyroblast" and self._pyroblast_wasted_on(target, v):
-            alt = v.first("base_attack") or v.first("single_target")
-            if alt and alt["name"] != "Pyroblast":
-                return alt
+        """Avoid casting Pyroblast or Blazing Storm on a nearly dying target, falling back to normal attack."""
+        if choice and choice["name"] in ("Pyroblast", "Blazing Storm"):
+            if (choice["name"] == "Pyroblast" or v.pack < 2) and self._pyroblast_wasted_on(target, v):
+                self.saving_pyroblast_for_next = True
+                alt = v.first("base_attack") or v.first("single_target")
+                if alt and alt["name"] not in ("Pyroblast", "Blazing Storm"):
+                    return alt
+            else:
+                self.saving_pyroblast_for_next = False
         return choice
 
     def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
@@ -1004,8 +1009,8 @@ class SkillBook:
         # 1. in trouble: a shield support() didn't already use; 2. a ranged class with a monster on
         # top of it: jump away
         choice = self._trouble_choice(v)
-        # Pending Fire Impact takes priority over other eligible skills
-        if not choice and self.combos and self.combos.pending_channelling:
+        # Pending Fire Impact or unlocked channeling takes priority over other eligible skills
+        if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
             elements = self.points(now) if self.cls == "Elf" else None
             choice = self.combos.pick(skills, target, now, v.in_range, elements)
         # the player's own: skills set to "whenever ready" go before the bot's choices
@@ -1040,7 +1045,11 @@ class SkillBook:
                 if (s["name"] in seen or not self.allowed(s, urgent) or not self.ready(s, now)
                         or not self.affordable(s, now)):
                     continue
-                if s.get("cast") and getattr(self, "on_the_move", False):
+                if (
+                    s.get("cast")
+                    and not (self.available_to_channel_without_penalty and s.get("name") in ("Pyroblast", "Blazing Storm"))
+                    and getattr(self, "on_the_move", False)
+                ):
                     continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
                 if self._channeling_restricted(s):
                     continue

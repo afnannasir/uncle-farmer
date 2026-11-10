@@ -211,6 +211,7 @@ class Combos:
         self.pending_channelling = False
         self.available_to_channel_without_penalty = False
         self.fire_impact_crit = False
+        self.saving_pyroblast_for_next = False
 
     def has_talent(self, name: str) -> bool:
         t: set[str] = getattr(self, "talents", set[str]())
@@ -264,37 +265,68 @@ class Combos:
             return False
         if not self.has_talent("Blazing Combo"):
             return False
-        was_pending = self.pending_channelling
-        if crit:
-            if name == "Fire Impact":
-                if was_pending:
-                    self.pending_channelling = False
-                    self.available_to_channel_without_penalty = True
-                    self.fire_impact_crit = False
-                    self._grant_channeling(t)
-                    return True
-                self.fire_impact_crit = True
-                self.streak = 1
-                return True
-            if self.fire_impact_crit:
+        if name in ("Pyroblast", "Blazing Storm"):
+            self.saving_pyroblast_for_next = False
+            self.primed.pop(name, None)
+            if not crit:
+                self.available_to_channel_without_penalty = False
                 self.fire_impact_crit = False
                 self.pending_channelling = False
+                self.streak = 0
+                return True
+            else:
                 self.available_to_channel_without_penalty = True
+                self.fire_impact_crit = False
+                self.pending_channelling = True
+                self.streak = 1
+                return True
+        if self.available_to_channel_without_penalty:
+            # Channeling already unlocked: preserve permission until Pyroblast/Blazing Storm is cast
+            return True
+        was_pending = self.pending_channelling
+        had_fire_impact_crit = self.fire_impact_crit
+        saving = getattr(self, "saving_pyroblast_for_next", False)
+        if crit:
+            if was_pending or had_fire_impact_crit:
+                # 2nd crit landed! Unlocks channeling without penalty (whether Fire Impact or fallback normal skill)
+                self.pending_channelling = False
+                self.available_to_channel_without_penalty = True
+                self.fire_impact_crit = False
                 self._grant_channeling(t)
                 return True
-            self.pending_channelling = True
+            elif name == "Fire Impact":
+                # Fire Impact crits first: cannot loop into itself, wait for another skill to crit
+                self.fire_impact_crit = True
+                self.pending_channelling = False
+                self.streak = 1
+                self.primed.pop("Fire Impact", None)
+                return True
+            else:
+                # First crit of another skill: sets pending_channelling to True (primes Fire Impact)
+                if not saving:
+                    self.pending_channelling = True
+                    self.streak = 1
+                return True
         else:
-            self.fire_impact_crit = False
-            if not was_pending:
+            # Non-crit (miss or normal hit)
+            if was_pending or had_fire_impact_crit or name == "Fire Impact":
+                # Follow-up attack missed or hit normally (did not crit): whole sequence restarts
+                self.pending_channelling = False
                 self.available_to_channel_without_penalty = False
-        return name == "Fire Impact" and not was_pending
+                self.fire_impact_crit = False
+                self.streak = 0
+            return True
 
     def _grant_channeling(self, t: float) -> None:
         self.streak = 2
         for r in self.of("streak"):
             if self.streak >= r["streak"][0]:
                 for b in r["streak"][1]:
-                    self.primed[b] = t + RESET_WINDOW
+                    self.primed[b] = float("inf") if self.has_talent("Blazing Combo") else (t + RESET_WINDOW)
+                if self.has_talent("Blazing Combo"):
+                    self.available_to_channel_without_penalty = True
+                    self.pending_channelling = False
+                    self.fire_impact_crit = False
                 self.streak = 0
 
     def _critical(self, name: str, t: float, attack: bool) -> None:
@@ -317,6 +349,10 @@ class Combos:
             if self.streak >= r["streak"][0]:
                 for b in r["streak"][1]:
                     self.primed[b] = t + RESET_WINDOW
+                if self.has_talent("Blazing Combo"):
+                    self.available_to_channel_without_penalty = True
+                    self.pending_channelling = False
+                    self.fire_impact_crit = False
                 self.streak = 0
 
     def reset_chain(self) -> None:
@@ -324,6 +360,7 @@ class Combos:
         self.pending_channelling = False
         self.available_to_channel_without_penalty = False
         self.fire_impact_crit = False
+        self.saving_pyroblast_for_next = False
         self.streak = 0
 
     def is_on(self, skill: str, target: int | None, now: float, lasts: float) -> bool:
@@ -364,6 +401,17 @@ class Combos:
             return ok("Blazing Storm")
         return ok("Pyroblast") or ok("Blazing Storm")
 
+    def _primed_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
+        """Return the highest priority primed skill that is ready, skipping Fire Impact if it critted first."""
+        for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
+            if until < now:
+                self.primed.pop(name, None)
+            elif ok(name):
+                if name == "Fire Impact" and self.fire_impact_crit:
+                    continue  # Do not loop Fire Impact into itself
+                return ok(name)
+        return None
+
     def pick(self, skills: Iterable[Skill], target: dict[str, Any], now: float, in_range: Callable[[Skill], bool],
              elements: int | None) -> Skill | None:
         """The skill a combo wants pressed now, from skills (ready, affordable, on our keys), or
@@ -381,12 +429,9 @@ class Combos:
         if chan:
             return chan
 
-        # something a cast just set up: frozen / condensed targets, cooldowns a critical hit ended
-        for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
-            if until < now:
-                self.primed.pop(name, None)
-            elif ok(name):
-                return ok(name)
+        primed = self._primed_pick(ok, now)
+        if primed:
+            return primed
         for r in self.of("release"):
             skill, _builders = r["release"]
             n = elements if elements is not None else self.built
