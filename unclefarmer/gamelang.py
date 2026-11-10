@@ -7,6 +7,13 @@ with any other language pack it would find no potions and no menus. Instead of t
 every language, the agent's answers are turned back into English here, once, where they arrive
 (link.AgentLink.json). With English chosen nothing is done at all.
 
+"English" means what the game's own english folder shows, not what the server sends: that pack
+rewords thousands of server texts ("Bone Cookie" is shown as "Pet Bone Cookie", "Lesser Cattle Soul
+Stone" as "Lesser Cow Soul Stone", "{d} Arnebia" as "$1 Arnebia"), and the bot's names were all
+learned from it. So another pack - a translation, or another English one such as en_uk - is turned
+into the english folder's wording: what it translated, back through the original to the english
+folder's text, and what it left as the server sent it, into the english folder's text too.
+
 How the game reads a language folder (javap of game.Trans, 2026-10-21):
   - style.txt: "key=value" lines (client templates; not needed here).
   - basic.txt, mapname.txt, terrain.txt, and every file in more\\: the text has runs of 3+ line
@@ -28,7 +35,7 @@ import time
 from collections.abc import Iterator
 from typing import Any
 
-from . import jsonio, settings
+from . import jsonio, paths, settings
 
 _lock = threading.Lock()
 
@@ -88,6 +95,75 @@ def _folder(path: str) -> dict[str, str]:
     return out
 
 
+_SUB = re.compile(r"\{sub(\d)\{(.*?)\}sub\1\}", re.S)
+
+
+def _shown(key: str, eng: dict[str, str]) -> str:
+    """What the english folder shows for an original (Chinese or server text): its value, with any
+    {subN{text}subN} part translated again as the game does; the original when it has no entry."""
+    value = eng.get(key)
+    if not value:
+        return key
+    return _SUB.sub(lambda m: eng.get(m.group(2)) or m.group(2), value)
+
+
+def _key_regex(key: str) -> re.Pattern[str] | None:
+    """A regex for server text as it arrives when no pack translated it: the key with its {d} (a
+    number) and {s} {c} (any text) holes as groups g1, g2 ... in order."""
+    parts: list[str] = []
+    pos = 0
+    for n, m in enumerate(_KEY_HOLE.finditer(key), 1):
+        parts.append(re.escape(key[pos:m.start()]))
+        parts.append("(?P<g%d>-?\\d+(?:\\.\\d+)?)" % n if m.group(0) == "{d}" else "(?P<g%d>.+?)" % n)
+        pos = m.end()
+    parts.append(re.escape(key[pos:]))
+    try:
+        return re.compile("^" + "".join(parts) + "$", re.S)
+    except re.error:
+        return None
+
+
+def _squash(s: str) -> str:
+    return " ".join(s.split()).lower()
+
+
+def known_names() -> dict[str, str]:
+    """{name evened out (lower case, single spaces): the name as the bot writes it} for every NPC,
+    item, map, skill and fusion beast in the bot's data. Where a translation stands for several
+    English originals, the one the bot knows is the one meant; and a name that comes back in
+    another case or spacing ("armory", "Demon  Cave") is written as the bot writes it."""
+    names: list[object] = []
+    k = _data("knowledge.json")
+    for part in ("npcs", "items", "maps"):
+        names += _names(k.get(part))
+    classes: object = _data("skills.json").get("classes")
+    groups: list[object] = list(classes.values()) if jsonio.is_object(classes) else []
+    for rows in groups:
+        names += _names(rows)
+    beasts: object = _data("beasts.json").get("beasts")
+    names += list(beasts) if jsonio.is_object(beasts) else []
+    out: dict[str, str] = {}
+    for name in names:
+        if isinstance(name, str) and name.strip():
+            out.setdefault(_squash(name), name)
+    return out
+
+
+def _data(name: str) -> dict[str, Any]:
+    """One of the bot's data files as a dict; {} when it can't be read."""
+    try:
+        with open(os.path.join(paths.DATA, name), encoding="utf-8") as f:
+            got: object = jsonio.load(f)
+    except (OSError, ValueError):
+        return {}
+    return got if jsonio.is_object(got) else {}
+
+
+def _names(rows: object) -> list[object]:
+    """The "name" of every record in a list of them."""
+    return [r.get("name") for r in rows if jsonio.is_object(r)] if jsonio.is_array(rows) else []
+
+
 def _english_template(key: str, eng: str | None) -> str:
     """The English form of a template entry with $1, $2 ... holes: the english folder's own value,
     else the key with its {d} {s} holes numbered in order."""
@@ -102,10 +178,11 @@ def _english_template(key: str, eng: str | None) -> str:
 
 
 class Table:
-    """translated -> English, for one language."""
+    """translated -> English (the english folder's wording), for one language."""
 
-    def __init__(self, lang_dir: str, english_dir: str) -> None:
+    def __init__(self, lang_dir: str, english_dir: str, known: dict[str, str] | None = None) -> None:
         here, eng = _folder(lang_dir), _folder(english_dir)
+        self.known = known if known is not None else known_names()
         self.exact: dict[str, str] = {}
         # (regex of the translated value, English template)
         self.templates: list[tuple[re.Pattern[str], str]] = []
@@ -115,7 +192,7 @@ class Table:
         for key, value in here.items():
             if not value or value == key:
                 continue
-            original = eng.get(key) if _CJK.search(key) else key
+            original = _shown(key, eng)
             if not original or _CJK.search(original):
                 continue
             if _KEY_HOLE.search(key) or _HOLE.search(value):
@@ -128,11 +205,50 @@ class Table:
                 entry = (rx, _english_template(key, eng.get(key)))
                 (self.suffixes if key.startswith(" ") else self.templates).append(entry)
                 continue
-            # one translation for several originals: an English key (what the server sends) wins
-            if value not in self.exact or (not _CJK.search(key) and not english_keyed.get(value)):
+            # one translation for several originals: a name the bot knows wins, then an English key
+            # (what the server sends)
+            original = self.canon(original)
+            was = self.exact.get(value)
+            mine, theirs = self.is_known(original), was is not None and self.is_known(was)
+            if was is None or (mine and not theirs) or (
+                    mine == theirs and not _CJK.search(key) and not english_keyed.get(value)):
                 self.exact[value] = original
                 english_keyed[value] = not _CJK.search(key)
+        self._untranslated(here, eng)
+        # the most particular template first: "Level {d} Bash Skill Crystal" before "Level {d} {s}"
+        def particular(entry: tuple[re.Pattern[str], str]) -> int:
+            return -len(re.sub(r"\(\?P<g\d+>[^)]*\)|\(\?P=g\d+\)|\\", "", entry[0].pattern))
+        self.templates.sort(key=particular)
+        self.suffixes.sort(key=particular)
         self.cache: dict[str, str] = {}
+
+    def is_known(self, name: str) -> bool:
+        return _squash(name) in self.known
+
+    def canon(self, name: str) -> str:
+        """A name as the bot writes it, when it differs only in case or spacing."""
+        return self.known.get(_squash(name), name)
+
+    def _untranslated(self, here: dict[str, str], eng: dict[str, str]) -> None:
+        """Server text this pack shows as it arrives (no entry, or one that keeps it) but the
+        english folder rewords: into the english folder's wording. Never a text that is itself
+        what the english folder shows for something else, nor one this pack's own entries give."""
+        shown = set(eng.values())
+        for key in eng:
+            if _CJK.search(key) or (here.get(key) or key) != key:
+                continue
+            target = _shown(key, eng) if not _KEY_HOLE.search(key) else None
+            if target is not None:
+                if target != key and key not in shown and key not in self.exact:
+                    self.exact[key] = self.canon(target)
+                continue
+            value = eng.get(key) or ""
+            if not _HOLE.search(value) or len(_KEY_HOLE.sub("", key).strip()) < 3:
+                continue            # "{s}" alone would match anything
+            rx = _key_regex(key)
+            if rx is not None and _english_template(key, value) != _english_template(key, None):
+                entry = (rx, _english_template(key, value))
+                (self.suffixes if key.startswith(" ") else self.templates).append(entry)
 
     @staticmethod
     def _regex(value: str) -> re.Pattern[str] | None:
@@ -175,7 +291,7 @@ class Table:
         got = self.cache.get(s)
         if got is not None:
             return got
-        got = self._work(s)
+        got = self.canon(self._work(s))
         if len(self.cache) > CACHE_MOST:
             self.cache.clear()
         self.cache[s] = got

@@ -83,3 +83,62 @@ def test_english_changes_nothing(game: Path) -> None:
     assert gamelang.table() is None
     data = {"name": "Evcil Büyük Kırmızı İksir"}
     assert gamelang.english(data) is data
+
+
+# ---------------------------------------------------------------- the english folder's wording
+@pytest.fixture
+def packs(tmp_path: Path) -> Path:
+    """An english folder that rewords server text (as the game's own one does), an English variant
+    that leaves it as the server sends it, and a translation."""
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "more" / "item.txt"), [
+        ("Bone Cookie", "Pet Bone Cookie"),
+        ("Lesser Cattle Soul Stone", "Lesser Cow Soul Stone"),
+        ("{d} Arnebia piece", "$1 Arnebia"),
+        ("Level {d} Ruby Shard", "Level $1 Ruby Shard"),
+        ("Cow", "Cow"),
+    ])
+    write(str(lang / "en_uk" / "more" / "item.txt"), [("Bone Cookie", "Bone Cookie")])   # kept as sent
+    write(str(lang / "xx" / "more" / "item.txt"), [
+        ("Bone Cookie", "Kemik Kurabiye"),
+        ("Pharmacist Mia", "Eczacı Mia"),
+        ("Apothecary Mia", "Eczacı Mia"),           # one translation for two originals
+        ("Armory", "cephanelik"),
+        ("armory", "cephanelik"),
+        ("Level {d} {s}", "Seviye $1 $2"),
+        ("Level {d} Ruby Shard", "Seviye $1 Yakut Parçası"),
+    ])
+    return lang
+
+
+KNOWN = {"pharmacist mia": "Pharmacist Mia", "armory": "Armory", "pet bone cookie": "Pet Bone Cookie"}
+
+
+def test_an_english_variant_comes_back_in_the_english_folder_s_wording(packs: Path) -> None:
+    t = gamelang.Table(str(packs / "en_uk"), str(packs / "english"), KNOWN)
+    assert t.word("Bone Cookie") == "Pet Bone Cookie"                 # its entry keeps the server's text
+    assert t.word("Lesser Cattle Soul Stone") == "Lesser Cow Soul Stone"   # no entry: as the server sent it
+    assert t.word("12 Arnebia piece") == "12 Arnebia"                  # a template it doesn't have
+    assert t.word("Cow") == "Cow"
+
+
+def test_a_translation_comes_back_in_the_english_folder_s_wording(packs: Path) -> None:
+    t = gamelang.Table(str(packs / "xx"), str(packs / "english"), KNOWN)
+    assert t.word("Kemik Kurabiye") == "Pet Bone Cookie"               # not the server's "Bone Cookie"
+
+
+def test_a_shared_translation_is_the_name_the_bot_knows_written_its_way(packs: Path) -> None:
+    t = gamelang.Table(str(packs / "xx"), str(packs / "english"), KNOWN)
+    assert t.word("Eczacı Mia") == "Pharmacist Mia"
+    assert t.word("cephanelik") == "Armory"
+
+
+def test_the_most_particular_template_comes_first(packs: Path) -> None:
+    t = gamelang.Table(str(packs / "xx"), str(packs / "english"), KNOWN)
+    assert t.word("Seviye 3 Yakut Parçası") == "Level 3 Ruby Shard"
+
+
+def test_the_bot_s_known_names_come_from_its_data() -> None:
+    names = gamelang.known_names()
+    assert len(names) > 1000
+    assert all(k == " ".join(k.split()).lower() for k in names)
