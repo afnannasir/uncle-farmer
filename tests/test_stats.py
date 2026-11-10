@@ -266,13 +266,28 @@ def test_report_hides_a_zero_rate_for_a_short_run() -> None:
     assert "an hour" not in text                   # too short to be meaningful
 
 
-def test_short_speaks_only_what_changed() -> None:
-    assert stats.short({"kills": 0}) == "0 kills"
-    s = stats.short({"kills": 5, "arnebia": 100, "shards": {"Green Shard": 2, "Ruby Shard": -1},
-                     "contribution": 10, "experience": 20, "levels": 1})
-    assert "5 kills" in s and "100 arnebia" in s and "2 shards" in s
-    assert "10 contribution" in s and "20 experience" in s and "1 level up" in s
+def test_short_speaks_the_time_farmed_and_the_drop_time_first_then_the_gains() -> None:
+    assert stats.short({"kills": 0}) == "farmed 0 min, 0 kills"
+    s = stats.short({"minutes": 135.4, "kills": 5, "arnebia": 100, "shards": {"Green Shard": 2},
+                     "contribution": 10, "experience": 20, "levels": 1,
+                     "combat": {"given": {"damage": 5000, "crits": 3}}}, drop=3 * 3600 + 20 * 60)
+    assert s == "farmed 2 h 15 min, drop time left 3 h 20 min, 5 kills, 10 contribution, 20 experience, 1 level up"
     assert "2 levels up" in stats.short({"kills": 1, "levels": 2})
+
+
+def test_drop_left_reads_the_sheet_minus_its_age() -> None:
+    assert stats.drop_left({"drop_seconds": 600, "age": 30}) == 570
+    assert stats.drop_left({"drop_seconds": 10, "age": 30}) == 0
+    assert stats.drop_left({"drop_seconds": -1}) is None
+    assert stats.drop_left({}) is None and stats.drop_left(None) is None
+
+
+def test_the_tally_keeps_the_last_drop_time_it_saw() -> None:
+    t = stats.Tally("Hero", "Wolves", clock=Clock())
+    assert t.drop_left is None
+    t.note_sheet({"level": 50, "drop_seconds": 7200, "age": 0})
+    t.note_sheet({"level": 50, "drop_seconds": -1})               # a sheet that didn't say keeps the last
+    assert t.drop_left == 7200
 
 
 # ---------------------------------------------------------------- combat damage
@@ -501,7 +516,7 @@ def test_shards_thrown_sold_or_stored_were_still_picked_up(clock: Clock) -> None
     assert "    +6 Ruby Shard (2 sold, 3 stored)" in text
     assert "Shards thrown away: 9" in text and "Shards sold: 2" in text
     assert "Shards put into the storehouse: 3" in text
-    assert "17 shards (9 thrown away)" in stats.short(r)
+    assert "shards" not in stats.short(r)                         # the spoken line leaves the loot out
 
 
 def test_bought_and_withdrawn_supplies_are_not_loot(clock: Clock) -> None:

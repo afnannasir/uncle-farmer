@@ -87,6 +87,7 @@ class FakeTally:
         self.updates: list[bool] = []
         self.finished_with = None
         self.saved = False
+        self.drop_left: int | None = None
 
     def update(self, bot: Parts, force: bool=False) -> None:
         self.updates.append(force)
@@ -147,7 +148,7 @@ def make(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, text: str = "wait 1
     monkeypatch.setattr(R, "Runner", runner or FakeRunner)
     monkeypatch.setattr(stats, "Tally", FakeTally)
     monkeypatch.setattr(stats, "report", stand_in(stats.report, lambda r, title: "report"))
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "short"))
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "short"))
 
     from unclefarmer import daily as daily_mod
     from unclefarmer import phrases as phrases_mod

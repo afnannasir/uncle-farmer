@@ -394,6 +394,7 @@ class Tally:
         self.bag: dict[str, int] = {}               # ... at the last one
         self.sheet0: dict[str, int] | None = None   # {contribution, xp_needed, level, merit} at the first sheet
         self.sheet: dict[str, int] | None = None
+        self.drop_left: int | None = None   # seconds of the day's drop time left, at the last sheet seen
         self.counters = (0, 0)       # the bot's kills and deaths at the last reading
         self.maps: list[int] = []
         self.combat = CombatStats(clock)
@@ -463,6 +464,9 @@ class Tally:
             self.maps.append(mid)
 
     def note_sheet(self, sheet: dict[str, Any] | None) -> None:
+        left = drop_left(sheet)
+        if left is not None:
+            self.drop_left = left
         if not sheet or sheet.get("level", -1) < 0:
             return
         cur: dict[str, int] = {k: sheet.get(k, -1) for k in ("contribution", "xp_needed", "level", "merit")}
@@ -1232,8 +1236,29 @@ def report_tools(results: Iterable[Record], title: str) -> str:
     return "\n\n".join(parts)
 
 
-def short(r: Record) -> str:
-    """One line to speak: only what changed."""
+def drop_left(sheet: Mapping[str, Any] | None) -> int | None:
+    """Seconds of the day's public area drop time left, from a character sheet reading (`mem self`
+    sheet: drop_seconds, and how many seconds old that reading is); None when the sheet hasn't
+    said yet."""
+    if not sheet:
+        return None
+    left: object = sheet.get("drop_seconds")
+    if not _whole(left) or left < 0:
+        return None
+    age: object = sheet.get("age", 0)
+    return max(0, left - (age if _whole(age) else 0))
+
+
+def spoken_time(seconds: float) -> str:
+    """A time to speak: "2 h 15 min", "15 min"."""
+    m = int(max(0.0, seconds) // 60)
+    return _("{h} h {m} min", h=m // 60, m=m % 60) if m >= 60 else _("{m} min", m=m)
+
+
+def short(r: Record, drop: int | None = None) -> str:
+    """One line to speak. Farming: the time farmed and the day's drop time left first (drop:
+    seconds, when a sheet reading has it), then kills and what the sheet gained - the numbers a
+    night is judged by. A job: what it made, used and earned."""
     r = upgrade(dict(r))
     if r.get("kind") == TOOL:
         bits = [r.get("run") or tool_name(r.get("tool") or "?")]
@@ -1247,21 +1272,11 @@ def short(r: Record) -> str:
         if r.get("arnebia"):
             bits.append(_("{n} arnebia", n=_n(r["arnebia"])))
         return ", ".join(bits)
-    bits = [_("{n} kills", n=r.get("kills", 0))]
-    combat: dict[str, Any] = r.get("combat") or {}
-    g: dict[str, Any] = combat.get("given") or {}
-    if g.get("damage"):
-        bits.append(_("{n} damage", n=_n(g["damage"])))
-    if g.get("crits"):
-        bits.append(_("{n} critical hits", n=g["crits"]))
-    if r.get("arnebia"):
-        bits.append(_("{n} arnebia", n=_n(r["arnebia"])))
-    gained: dict[str, int] = r.get("picked") or {}
-    got = sum(v for n, v in gained.items() if is_shard(n))
-    if got:
-        moved: dict[str, dict[str, int]] = r.get("moved") or {}
-        thrown = sum(v for n, v in (moved.get("thrown") or {}).items() if is_shard(n))
-        bits.append(_("{n} shards", n=got) + (_(" ({n} thrown away)", n=thrown) if thrown else ""))
+    minutes: object = r.get("minutes", 0)
+    bits = [_("farmed {time}", time=spoken_time(60 * (minutes if isinstance(minutes, (int, float)) else 0)))]
+    if drop is not None:
+        bits.append(_("drop time left {time}", time=spoken_time(drop)))
+    bits.append(_("{n} kills", n=r.get("kills", 0)))
     if r.get("contribution"):
         bits.append(_("{n} contribution", n=_n(r["contribution"])))
     if r.get("experience"):

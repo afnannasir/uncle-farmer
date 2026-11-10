@@ -86,7 +86,7 @@ class SchedulingMixin(FrameParts):
         detail = reason
         if tally is not None:
             try:
-                detail += "; " + stats.short(tally.result())
+                detail += "; " + stats.short(tally.result(), tally.drop_left)
             except Exception as e:    # the results are a convenience here; the end is still written down
                 carry_on(e, "the results of a scheduled run")
         try:
