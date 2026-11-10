@@ -49,13 +49,14 @@ class _LangState:
         self.table: "Table | None" = None
 
 
-_state = _LangState()
+_state = _LangState()                       # the settings' game folder (a reading with no game named)
+_states: dict[str, _LangState] = {}         # each other game folder: several copies can run at once
 CHECK_EVERY = 30.0          # seconds between looks at lang.txt (a change needs a game restart anyway)
 CACHE_MOST = 20000
 # commands whose answers carry the game's (translated) words; never chat, casts or raw readings,
 # nor `said`: its lines are the server's own packet text (IN op=60), English already - turning
-# them "back" could only change them
-COMMANDS = ("mem", "dialog")
+# them "back" could only change them. `menu` rows carry the item's id too, which settles them.
+COMMANDS = ("mem", "dialog", "menu")
 # fields inside those answers that hold the server's own text, never put through the game's
 # translation: a menu entry's "raw" (what the server sent, beside the shown "text") and the
 # character sheet read from its packet
@@ -226,6 +227,11 @@ class Table:
             return -len(re.sub(r"\(\?P<g\d+>[^)]*\)|\(\?P=g\d+\)|\\", "", entry[0].pattern))
         self.templates.sort(key=particular)
         self.suffixes.sort(key=particular)
+        # the same text in another case: only where one entry fits ("" marks two that differ)
+        self.folded: dict[str, str] = {}
+        for value, original in self.exact.items():
+            k = _squash(value)
+            self.folded[k] = original if self.folded.get(k, original) == original else ""
         self.cache: dict[str, str] = {}
 
     def is_known(self, name: str) -> bool:
@@ -294,6 +300,9 @@ class Table:
         hit = self.exact.get(s)
         if hit is not None:
             return hit
+        folded = self.folded.get(_squash(s))
+        if folded:
+            return folded
         got = self.cache.get(s)
         if got is not None:
             return got
@@ -338,46 +347,78 @@ def forget() -> None:
     """Look at lang.txt again on the next call (a language changed while the app runs)."""
     with _lock:
         _state.key, _state.checked = None, 0.0
+        _states.clear()
 
 
-def table() -> Table | None:
-    """The table for the language the game is set to, or None for English (or no game folder)."""
+def language_of(game: str) -> str:
+    """The language a game folder is set to (language\\lang.txt), "" when it can't be read."""
+    try:
+        with open(os.path.join(game, "language", "lang.txt"), "rb") as f:
+            return f.read().decode("utf-8", "replace").strip().strip("\ufeff").strip()
+    except OSError:
+        return ""
+
+
+def table(game: str | None = None) -> Table | None:
+    """The table for the language a game folder is set to (the settings' game folder when none is
+    given), or None for English (or no game folder)."""
     now = time.time()
     with _lock:
-        if now - _state.checked < CHECK_EVERY:
-            return _state.table
-        _state.checked = now
-        game = _game_folder()
-        lang = ""
-        try:
-            with open(os.path.join(game, "language", "lang.txt"), "rb") as f:
-                lang = f.read().decode("utf-8", "replace").strip().strip("﻿").strip()
-        except OSError:
-            pass
-        lang_dir = os.path.join(game, "language", lang) if lang else ""
-        key = (game, lang)
-        if key == _state.key:
-            return _state.table
-        _state.key = key
+        folder = game if game else _game_folder()
+        state = _state if not game else _states.setdefault(os.path.normcase(game), _LangState())
+        if now - state.checked < CHECK_EVERY:
+            return state.table
+        state.checked = now
+        lang = language_of(folder)
+        lang_dir = os.path.join(folder, "language", lang) if lang else ""
+        key = (folder, lang)
+        if key == state.key:
+            return state.table
+        state.key = key
         if not lang or lang.lower() == "english" or not os.path.isdir(lang_dir):
-            _state.table = None
+            state.table = None
         else:
-            _state.table = Table(lang_dir, os.path.join(game, "language", "english"))
-        return _state.table
+            state.table = Table(lang_dir, os.path.join(folder, "language", "english"))
+        return state.table
 
 
-def english(data: Any, t: Table | None = None) -> Any:
+# The english pack files the bot's names were learned from: without them, the english pack shows
+# much of the server's text unreworded, and names differ from the bot's.
+ENGLISH_PACK_FILES = ("item_looted.txt", "equipment_dropped.txt", "shops.txt", "system.txt", "gang_strings.txt")
+
+
+def notes(game: str) -> list[str]:
+    """What to tell the player once about a game folder's language: another pack (names are turned
+    into English: ids first, then words), or an english pack older than the bot's (names may
+    differ). [] for the stock English."""
+    from .i18n import _
+    lang = language_of(game)
+    out: list[str] = []
+    if lang and lang.lower() != "english":
+        out.append(_("the game's language is {lang}: names are turned into English by the game's ids "
+                     "where it has them, else by its language files", lang=lang))
+    more = os.path.join(game, "language", "english", "more")
+    if os.path.isdir(more):
+        missing = [f for f in ENGLISH_PACK_FILES if not os.path.isfile(os.path.join(more, f))]
+        if missing:
+            out.append(_("the game's english language pack is older than the one Uncle Farmer's names come "
+                         "from ({files} missing): some names may not match", files=", ".join(missing)))
+    return out
+
+
+def english(data: Any, t: Table | None = None, game: str | None = None) -> Any:
     """Every text in an agent answer (lists and dicts inside) back in English. Any: an agent
-    answer is JSON of whatever shape its command gives, and comes back in the same shape."""
-    t = t if t is not None else table()
+    answer is JSON of whatever shape its command gives, and comes back in the same shape. game:
+    the folder of the game that answered (each copy may be set to another language)."""
+    t = t if t is not None else table(game)
     if t is None:
         return data
     if isinstance(data, str):
         return t.word(data)
     if jsonio.is_array(data):
-        return _item_rows([english(x, t) for x in data])
+        return _item_rows([english(x, t, game) for x in data])
     if jsonio.is_object(data):
-        out = _by_id(data, {k: v if k in SERVER_TEXT else english(v, t) for k, v in data.items()})
+        out = _by_id(data, {k: v if k in SERVER_TEXT else english(v, t, game) for k, v in data.items()})
         if data.get("kind") == "player" and isinstance(data.get("name"), str):
             # a player's own name stays as it is, even when it is also a word of the language; only
             # a pet's ("<kind> <name> belongs to <owner>", players to the game) is turned back
@@ -434,6 +475,7 @@ class _Ids:
     def __init__(self) -> None:
         raw = _data(IDS_FILE)
         self.items: dict[int, str] = _by_number(raw.get("items"))
+        self.by_name: dict[str, int | None] | None = None     # English name -> item id, made when asked
         self.skills: dict[int, str] = _by_number(raw.get("skills"))
         # (map, id) -> (name, x, y): an NPC's id is the order its map lists NPCs in, and shifts when
         # a game update adds some - so it counts only for an NPC standing where that one stands
@@ -491,14 +533,32 @@ def _by_id(data: Any, out: Any) -> Any:
 
 
 def _item_rows(out: Any) -> Any:
-    """Bag and equipment rows (`mem bagfull`, `mem equipment`: uid, type, name): the item's
-    English name from its type."""
+    """Bag and equipment rows (`mem bagfull`, `mem equipment`: uid, type, name) and shop and market
+    rows (`menu`: row, id, name, price): the item's English name from its type."""
     if jsonio.is_array(out):
         table = ids().items
         for r in out:
-            if jsonio.is_object(r) and "uid" in r and isinstance(r.get("type"), int) and r["type"] in table:
-                r["name"] = table[r["type"]]
+            if not jsonio.is_object(r):
+                continue
+            kind = r.get("type") if "uid" in r else r.get("id") if "row" in r and "price" in r else None
+            if isinstance(kind, int) and kind in table:
+                r["name"] = table[kind]
     return out
+
+
+def item_type(name: str | None) -> int | None:
+    """The game's id for an item the bot names, from the id table; None when unknown, or when two
+    items go by that name."""
+    if not name:
+        return None
+    table = ids()
+    if table.by_name is None:
+        found: dict[str, int | None] = {}
+        for k, v in table.items.items():
+            n = _squash(v)
+            found[n] = k if n not in found else None
+        table.by_name = found
+    return table.by_name.get(_squash(name))
 
 
 def warm() -> None:

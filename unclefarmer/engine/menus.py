@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from .. import jsonio as json
+from .. import gamelang, jsonio as json
 from ..clock import clock_for
 from ..errors import carry_on
 from ..i18n import _
@@ -138,6 +138,9 @@ def item_id(b: Bot, layout: str, name: str) -> int | None:
     if known is not None:
         return known
     item = find(b, layout, name=name)
+    if item is None:
+        typed = gamelang.item_type(name)        # another language: the game's id for that name
+        item = find(b, layout, item_id=typed) if typed is not None else None
     return int(item["id"]) if item is not None else None
 
 
@@ -218,7 +221,9 @@ def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
     if not can_pick(b):
         return None
     ids = known_ids(b)
-    known = item_id if item_id is not None else ids.get(_key(layout, name)) if name else None
+    # the id given, else the one learned this run, else the game's id from the bot's table: the
+    # agent checks it against the whole menu and refuses (touching nothing) when it isn't there
+    known = item_id if item_id is not None else (ids.get(_key(layout, name)) or gamelang.item_type(name)) if name else None
     if known is not None:
         answer = _pick_by_id(b, layout, known, action, wait)
         if answer.startswith("picked "):
