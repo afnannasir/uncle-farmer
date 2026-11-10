@@ -503,7 +503,7 @@ def stable_key(character: str | None) -> str:
     the best available fallback for an older agent that cannot report its server.
     """
     name, server, entity_id = _profile_parts(character or "")
-    return character_profile(name, entity_id, server) if entity_id else name
+    return character_profile(name, entity_id, server or "") if entity_id else name
 
 
 def is_profile_of(game: str | None, profile: str | None) -> bool:

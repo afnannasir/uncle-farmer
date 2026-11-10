@@ -208,7 +208,9 @@ def test_start_keeps_the_games_list_server_when_the_agent_lookup_fails(monkeypat
     monkeypatch.setattr(R, "AGENT_SERVER", 42)      # exercise the server path without newer fake-only features
     run, _, _, done = make(monkeypatch, tmp_path, agent=42)
     run.profile = settings.character_profile("Hero", 7, "S1")
-    monkeypatch.setattr(R, "server_name", lambda link: "")
+    def no_server(link: object) -> str:
+        return ""
+    monkeypatch.setattr(R, "server_name", no_server)
     run.run()
     assert done == ["finished"]
     assert run.profile == settings.character_profile("Hero", 7, "S1")
