@@ -145,22 +145,49 @@ def who(b: object) -> str | None:
 
 
 def _ledger(name: str | None) -> str:
-    """The done list's file: per character (name and game id, never the server label, so it is the
-    same before and after the label is learned), or per name for a name-only key."""
+    """The done list's file: one for each confirmed character identity, or per name if unknown."""
+    server = settings.profile_server(name or "")
     entity_id = settings.profile_id(name)
     name = settings.profile_name(name)
-    stem = paths.safe_name(name or "unknown") + ("--" + paths.safe_name(entity_id) if entity_id else "")
+    stem = paths.safe_name(name or "unknown")
+    if entity_id:
+        if server:
+            stem += "--" + paths.safe_name(server)
+        stem += "--" + paths.safe_name(entity_id)
     return os.path.join(paths.LOGS, "chores", stem + ".json")
+
+
+def _other_server_ledger(name: str, entity_id: str, own: str) -> bool:
+    """Whether an old ID-only ledger could belong to another now-known server character."""
+    prefix = paths.safe_name(name) + "--"
+    suffix = "--" + paths.safe_name(entity_id) + ".json"
+    try:
+        filenames = os.listdir(os.path.dirname(own))
+    except OSError:
+        return False
+    for filename in filenames:
+        middle = filename[len(prefix):-len(suffix)] if filename.startswith(prefix) and filename.endswith(suffix) else ""
+        if middle and os.path.join(os.path.dirname(own), filename) != own:
+            return True
+    return False
 
 
 def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
     """{chore: {"at", "note"}} of what is done this game day. A character with its own key and no
-    list of its own yet starts from its name's list (written before characters had keys), so the
-    chores done earlier today aren't done twice."""
+    list of its own yet starts from a safe older list, so chores done earlier today aren't done
+    twice without accidentally importing another server's work."""
     day = day or daily.game_day()
     path = _ledger(name)
     if not os.path.exists(path) and settings.is_character_profile(name or ""):
-        path = _ledger(settings.profile_name(name))
+        display_name = settings.profile_name(name)
+        server = settings.profile_server(name or "")
+        entity_id = settings.profile_id(name)
+        id_only = settings.character_profile(display_name, entity_id)
+        old_path = _ledger(id_only)
+        if not server or not os.path.exists(old_path) or not _other_server_ledger(display_name, entity_id or "", path):
+            path = old_path if os.path.exists(old_path) else _ledger(display_name)
+        else:
+            path = _ledger(display_name)
     try:
         with open(path, encoding="utf-8") as f:
             data: dict[str, Any] = json.load(f)

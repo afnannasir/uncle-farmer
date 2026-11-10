@@ -755,8 +755,23 @@ def test_same_name_characters_keep_their_own_done_lists(tmp_path: Path, monkeypa
     assert set(chores.done_today(second)) == {"bank", "donation"}   # both started from the shared old list
     chores.mark(second, "bounty", "done")
     assert set(chores.done_today(first)) == {"bank", "bounty"}       # but each writes only its own
-    assert set(chores.done_today(chores.settings.character_profile("Hero", 17))) == {"bank", "bounty"}   # label or not
+    assert set(chores.done_today(chores.settings.character_profile("Hero", 17))) == {"bank"}   # old fallback stays ambiguous
     assert set(chores.done_today("Hero")) == {"bank"}
+
+
+def test_same_id_on_two_servers_never_shares_a_done_list(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
+    monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")
+    old = chores.settings.character_profile("Hero", 17)
+    first = chores.settings.character_profile("Hero", 17, "S1")
+    second = chores.settings.character_profile("Hero", 17, "S2")
+    chores.mark(old, "bank", "old")                         # written before server identities were known
+    assert "bank" in chores.done_today(first)
+    chores.mark(first, "bounty", "done")
+    assert chores.done_today(second) == {}                    # the old ID-only list may belong to S1
+    chores.mark(second, "donation", "done")
+    assert set(chores.done_today(first)) == {"bank", "bounty"}
+    assert set(chores.done_today(second)) == {"donation"}
 
 
 def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
