@@ -14,9 +14,6 @@ msgstr ""
 msgid " (estimated: it includes shards)"
 msgstr " (andaza: is mein shards shamil hain)"
 
-msgid " ({n} thrown away)"
-msgstr " ({n} phenke)"
-
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
@@ -3629,8 +3626,8 @@ msgstr "Tak (seconds):"
 msgid "Today"
 msgstr "Aaj"
 
-msgid "Today, {n} runs, {m} min: {r}"
-msgstr "Aaj, {n} runs, {m} min: {r}"
+msgid "Today, {n} runs: {r}"
+msgstr "Aaj, {n} runs: {r}"
 
 msgid "Today: no cave yet."
 msgstr "Aaj: abhi koi ghaar nahi."
@@ -4503,6 +4500,9 @@ msgid ""
 msgstr ""
 "drop time taqreeban khatam hai ({m} min baqi) - kisi mehfooz jagah ja kar ruk rahe hain"
 
+msgid "drop time left {time}"
+msgstr "drop time baqi {time}"
+
 msgid "drop time used up"
 msgstr "drop time khatam ho gaya"
 
@@ -4538,6 +4538,9 @@ msgstr "sab kuch"
 
 msgid "farm doesn't know '{opt}'. It takes: {opts}"
 msgstr "farm '{opt}' nahi jaanta. Ye leta hai: {opts}"
+
+msgid "farmed {time}"
+msgstr "{time} farming ki"
 
 msgid "farming is over - closing the game"
 msgstr "kheti khatam - game band kar rahe hain"
@@ -6790,12 +6793,6 @@ msgstr "{n} hissa"
 msgid "{n} critical"
 msgstr "{n} critical"
 
-msgid "{n} critical hits"
-msgstr "{n} critical hits"
-
-msgid "{n} damage"
-msgstr "{n} damage"
-
 msgid "{n} days ago"
 msgstr "{n} din pehle"
 
@@ -6837,9 +6834,6 @@ msgstr "{n} aur"
 
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr "mazeed {n} {gem} ke liye taqreeban {k} mazeed {shard} lagein ge"
-
-msgid "{n} shards"
-msgstr "{n} shards"
 
 msgid "{n} shards at level {lv}"
 msgstr "level {lv} par {n} shards"
@@ -7000,6 +6994,9 @@ msgstr "{who} ka game {what} mein masroof hai"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
+
+#~ msgid " ({n} thrown away)"
+#~ msgstr " ({n} phenke)"
 
 #~ msgid "&Add a supply..."
 #~ msgstr "&Supply shamil karein..."
@@ -7311,6 +7308,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Time: {h} h {m} min, {kills} kills, {deaths} deaths"
 #~ msgstr "Waqt: {h} ghante {m} minute, {kills} kills, {deaths} maut"
 
+#~ msgid "Today, {n} runs, {m} min: {r}"
+#~ msgstr "Aaj, {n} runs, {m} min: {r}"
+
 #~ msgid ""
 #~ "Uncle Farmer character settings (*.unclefarmer-profile.json)|*.unclefarmer-profile.json|"
 #~ msgstr ""
@@ -7450,6 +7450,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "{minutes} minutes in {room}; shared arnebia {n} times today"
 #~ msgstr "{room} mein {minutes} minute; aaj {n} baar arnebia share kiya"
+
+#~ msgid "{n} critical hits"
+#~ msgstr "{n} critical hits"
+
+#~ msgid "{n} damage"
+#~ msgstr "{n} damage"
+
+#~ msgid "{n} shards"
+#~ msgstr "{n} shards"
 
 #~ msgid "{skill} doesn't reach teammates - no more teammate heals this run"
 #~ msgstr ""

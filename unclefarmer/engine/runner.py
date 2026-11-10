@@ -400,7 +400,7 @@ class Run(threading.Thread):
                 for line in stats.report(job, _("Results of {what}", what=job["run"])).splitlines():
                     self.log(line)
             if app.get("results_speak", "end") == "end":
-                self.log(stats.short(r), speak=True)
+                self.log(stats.short(r, self.tally.drop_left), speak=True)
         self.on_done(reason, self)
 
     def _last_readings(self, bot: Bot | None) -> None:

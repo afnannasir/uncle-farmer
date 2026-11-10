@@ -1496,7 +1496,10 @@ If the game does not provide a particular statistic, Uncle Farmer displays `null
 You don't always need to open the Results window to check how things are going.
 
 - Press **Shift+Pause** to hear a one-line summary of the game currently in front. You can do this from anywhere.
+- Press **Ctrl+Shift+R** in Uncle Farmer to hear the same summary for the selected game.
 - When a run ends, Uncle Farmer speaks a short summary automatically.
+
+The summary starts with how long the character has farmed and how much of today's public area drop time is left, then the kills, contribution, experience and any level ups. For example: "farmed 2 h 15 min, drop time left 3 h 20 min, 340 kills, 4,183 contribution, 12,000 experience". The drop time comes from the character sheet; it is left out until the game has shown it. Damage and loot are in the Results window.
 
 You can also change the spoken results settings to hear an update every few minutes or turn these announcements off.
 

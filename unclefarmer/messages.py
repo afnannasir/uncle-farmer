@@ -492,12 +492,18 @@ class Messenger(threading.Thread):
             return _("Not logged in.")
         return _("{map} at {x}, {y}", map=s["map"]["name"], x=int(s["self"]["x"]), y=int(s["self"]["y"]))
 
+    def drop_now(self) -> int | None:
+        """Seconds of today's drop time left, from this game's sheet; None until it has said."""
+        s: dict[str, Any] = self.snap() or {}
+        me: dict[str, Any] = s.get("self") or {}
+        return stats.drop_left(me.get("sheet"))
+
     def cmd_results(self, to: int, name: str, rest: str) -> str | None:
         run = self.host.run_for(self.pid)
         if run and run.tally:
-            return _("This run: {r}", r=stats.short(run.tally.result()))
+            return _("This run: {r}", r=stats.short(run.tally.result(), run.tally.drop_left))
         past = stats.runs(settings.profile_name(self.host.character(self.pid)))
-        return _("Last run: {r}", r=stats.short(past[-1])) if past else _("No results yet.")
+        return _("Last run: {r}", r=stats.short(past[-1], self.drop_now())) if past else _("No results yet.")
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
         who = settings.profile_name(self.host.character(self.pid))
@@ -509,7 +515,7 @@ class Messenger(threading.Thread):
         if not rs:
             return _("Nothing today yet.")
         t = stats.add_up(rs)
-        return _("Today, {n} runs, {m} min: {r}", n=t["runs"], m=int(t["minutes"]), r=stats.short(t))
+        return _("Today, {n} runs: {r}", n=t["runs"], r=stats.short(t, self.drop_now()))
 
     def cmd_bag(self, to: int, name: str, rest: str) -> str | None:
         got = self.agent().json("mem bag")
@@ -525,10 +531,9 @@ class Messenger(threading.Thread):
         s: dict[str, Any] = self.snap() or {}
         me: dict[str, Any] = s.get("self") or {}
         sheet: dict[str, Any] = me.get("sheet") or {}
-        left: int = sheet.get("drop_seconds", -1)
-        if left < 0:
+        left = stats.drop_left(sheet)
+        if left is None:
             return _("Drop time not read yet.")
-        left = max(0, left - sheet.get("age", 0))
         return _("Drop time left: {h} h {m} min", h=left // 3600, m=left % 3600 // 60)
 
     def cmd_pause(self, to: int, name: str, rest: str) -> str | None:
