@@ -767,7 +767,18 @@ class SkillBook:
             return None
         x = min(cands, key=lambda x: (x.get("mana_pct") or 99, x.get("cd") or 0))
         self.dispel_try = (now, n)
-        return self.press_support(x, now)
+        press = self.press_support(x, now)
+        return press and (self.self_key(x), press[1])
+
+    @staticmethod
+    def self_key(x: Skill) -> str:
+        """Shift + the skill's key: the game's cast-on-yourself key (config/input.ini,
+        W_SELF_ATTACKn = SHIFT+W_ATTACKn). Every dispel for one ally also removes a buff "from 1
+        enemy", and the plain key (and Alt + key) picks the enemy whenever one is selected - in
+        every fight. Live on Flaming Mountain, 2026-11-10: with a monster selected the plain key
+        cast Soul Purify at the monster five times out of five and the debuff stayed; Shift + key
+        landed on us and it was gone in 1.2 s. With nothing selected both land on us."""
+        return "shift+" + x["key"].rpartition("+")[2]
 
     def buff_now(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | None:
         """(key, name) of a buff to put up now, else None. Long buffs are kept up all the time:
