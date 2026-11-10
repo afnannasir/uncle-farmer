@@ -426,7 +426,7 @@ def _gang_key(gang: str) -> str:
 
 
 def gang_done_today(b: Bot, gang: str = "") -> dict[str, Any] | None:
-    return chores.done_today(getattr(b, "character", None)).get(_gang_key(gang))
+    return chores.done_today(chores.who(b)).get(_gang_key(gang))
 
 
 def _into_gang(b: Bot, gang: str) -> None:
@@ -630,7 +630,7 @@ def _gang_round(b: Bot, cfg: dict[str, Any], skill: str, end_at: float | None, n
         entered, about, over = False, str(e), False
     about = _("{gang}: {about}", gang=gang_name(gang), about=about)
     if over:
-        chores.mark(getattr(b, "character", None), _gang_key(gang), about)
+        chores.mark(chores.who(b), _gang_key(gang), about)
     if not entered:
         b.close_dialogs()
         b.log(about)

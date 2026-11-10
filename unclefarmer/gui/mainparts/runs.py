@@ -159,7 +159,7 @@ class RunsMixin(FrameParts):
         if pid != self.selected_pid() and not given:
             # started from inside a game window: run what that character ran last, if anything
             name = next((g[1] for g in self.games if g[0] == pid), None)
-            last = self.s.get("last_runs", {}).get(name or "")
+            last = settings.last_run_of(self.s, name)
             if last and saved_item(last) in self.items:
                 item = saved_item(last)
         if not item:
@@ -175,13 +175,14 @@ class RunsMixin(FrameParts):
         self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
         if name:
-            self.s.setdefault("last_runs", {})[name] = "%s:%s" % item
+            self.s.setdefault("last_runs", {})[settings.stable_key(name)] = "%s:%s" % item
         save_file(self, settings.save_app, self.s)      # a failed save must not stop the start
         run = Run(text, item[1], pid, self.on_log, self.on_done, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = item[0]
-        run.character = name        # for the log until the run reads it from the game itself
+        run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
+        run.profile = name
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
@@ -204,7 +205,8 @@ class RunsMixin(FrameParts):
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = "errand"
-        run.character = self.selected_character()
+        run.profile = self.selected_character()
+        run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
@@ -223,7 +225,8 @@ class RunsMixin(FrameParts):
         run.tell = tell
         run.kind = "errand"
         run.follows = follows
-        run.character = self.character(pid)
+        run.profile = self.character(pid)
+        run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()

@@ -11,6 +11,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from . import filelock, jsonio as json, paths
+from .i18n import _
 
 APP_DEFAULTS: dict[str, Any] = {
     "language": "en",
@@ -428,17 +429,141 @@ def save_app(data: dict[str, Any]) -> None:
     _write(paths.SETTINGS, data)
 
 
+_PROFILE_ID_SEPARATOR = "\x1f"
+_PROFILE_ID_KEY = "_unclefarmer_character_identity"
+
+
+def character_profile(name: str, entity_id: object, server: str = "") -> str:
+    """An internal, per-character profile key from a game reading.
+
+    Names are not unique: the same player name can exist on more than one server.  The game gives
+    every logged-in character an entity id, which distinguishes those characters without making a
+    network address part of the player's settings.  Keep the separator out of the visible name so
+    callers can still pass a legacy, name-only profile unchanged.
+    """
+    if not name or entity_id in (None, ""):
+        return name
+    return name + _PROFILE_ID_SEPARATOR + server + _PROFILE_ID_SEPARATOR + str(entity_id) if server \
+        else name + _PROFILE_ID_SEPARATOR + str(entity_id)
+
+
+def profile_display(character: str) -> str:
+    """The unambiguous, screen-reader-friendly label for a profile key."""
+    name, server, entity_id = _profile_parts(character)
+    if server:
+        return _("{name} - {server}", name=name, server=server)
+    return _("{name} - character {id}", name=name, id=entity_id) if entity_id else name
+
+
+def _profile_parts(character: str) -> tuple[str, str | None, str | None]:
+    name, separator, rest = character.partition(_PROFILE_ID_SEPARATOR)
+    if not separator:
+        return name, None, None
+    server, separator, entity_id = rest.partition(_PROFILE_ID_SEPARATOR)
+    return (name, server, entity_id) if separator else (name, None, server)
+
+
+def same_character(first: str, second: str) -> bool:
+    """Whether two profile keys name the same game character, ignoring a known server label."""
+    first_name, _first_server, first_id = _profile_parts(first)
+    second_name, _second_server, second_id = _profile_parts(second)
+    return bool(first_id and first_name == second_name and first_id == second_id)
+
+
+def is_character_profile(character: str) -> bool:
+    return _profile_parts(character)[2] is not None
+
+
+def profile_server(character: str) -> str:
+    """The known player-facing server label, or empty while only the entity ID is available."""
+    return _profile_parts(character)[1] or ""
+
+
+def profile_name(character: str | None) -> str:
+    """The character's name as the game and the player write it, from a profile key or a name."""
+    return _profile_parts(character or "")[0]
+
+
+def profile_id(character: str | None) -> str | None:
+    """The game's id for the character in a profile key; None for a name-only key."""
+    return _profile_parts(character or "")[2]
+
+
+def stable_key(character: str | None) -> str:
+    """The character's key without the server label: the same before and after the label is learned.
+
+    Daily chores and last-run choices are kept under it, so they don't start over when a game
+    reading first carries the server, or lose it again when one lookup fails."""
+    name, _server, entity_id = _profile_parts(character or "")
+    return character_profile(name, entity_id) if entity_id else name
+
+
+def is_profile_of(game: str | None, profile: str | None) -> bool:
+    """Whether a game's profile key is this profile's character. A name-only (old) profile still
+    matches its name, as it did before characters had their own keys."""
+    if not game or not profile:
+        return False
+    if game == profile or same_character(game, profile):
+        return True
+    return not is_character_profile(profile) and profile_name(game) == profile
+
+
+def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
+    """What a character ran last ("plan:name"): saved under its stable key, else under its name
+    (from before characters had their own keys)."""
+    if not character:
+        return None
+    runs: dict[str, str] = app.get("last_runs") or {}
+    return runs.get(stable_key(character)) or runs.get(profile_name(character))
+
+
 def profile_path(character: str) -> str:
-    return os.path.join(paths.PROFILES, paths.safe_name(character) + ".json")
+    name, server, entity_id = _profile_parts(character)
+    stem = paths.safe_name(name)
+    if entity_id:
+        if server:
+            stem += "--" + paths.safe_name(server)
+        stem += "--" + paths.safe_name(entity_id)
+    return os.path.join(paths.PROFILES, stem + ".json")
 
 
 def profiles() -> list[str]:
-    return sorted(n[:-5] for n in os.listdir(paths.PROFILES) if n.endswith(".json"))
+    """Known profile keys, including the identity stored by newer profile files.
+
+    Old name-only files remain selectable.  A newer file carries its key inside the JSON because
+    filenames are deliberately safe and cannot retain the private separator used by the key.
+    """
+    found: list[str] = []
+    for filename in os.listdir(paths.PROFILES):
+        if not filename.endswith(".json"):
+            continue
+        path = os.path.join(paths.PROFILES, filename)
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
+        except (OSError, ValueError):
+            identity = None
+        found.append(identity if isinstance(identity, str) and identity else filename[:-5])
+    return sorted(found, key=lambda value: profile_display(value).casefold())
 
 
 def load_profile(character: str) -> dict[str, Any]:
     """The character's profile; a new one from the defaults if there is none yet."""
-    return _upgrade(_read(profile_path(character), PROFILE_DEFAULTS, Profile))
+    path = profile_path(character)
+    # On first use of an identified character, retain its old name-only choices.  The first save
+    # writes a separate file, so the two same-name characters become independent without deleting
+    # or changing the legacy file.
+    name, server, entity_id = _profile_parts(character)
+    if entity_id and not os.path.exists(path):
+        if server:
+            identified = profile_path(character_profile(name, entity_id))
+            if os.path.exists(identified):
+                return _upgrade(_read(identified, PROFILE_DEFAULTS, Profile))
+        legacy = profile_path(name)
+        if os.path.exists(legacy):
+            return _upgrade(_read(legacy, PROFILE_DEFAULTS, Profile))
+    return _upgrade(_read(path, PROFILE_DEFAULTS, Profile))
 
 
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
@@ -565,11 +690,19 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
 
 
 def save_profile(character: str, data: dict[str, Any]) -> None:
-    _write(profile_path(character), data)
+    saved = copy.deepcopy(data)
+    if _profile_parts(character)[2]:
+        saved[_PROFILE_ID_KEY] = character
+    _write(profile_path(character), saved)
 
 
 def has_profile(character: str) -> bool:
-    return os.path.exists(profile_path(character))
+    if os.path.exists(profile_path(character)):
+        return True
+    name, server, entity_id = _profile_parts(character)
+    if not entity_id:
+        return False
+    return os.path.exists(profile_path(character_profile(name, entity_id))) if server else os.path.exists(profile_path(name))
 
 
 def export_profile(character: str, path: str) -> None:

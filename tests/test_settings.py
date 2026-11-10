@@ -64,6 +64,82 @@ def test_a_profile_with_auto_pet_potions_loads_as_written(tmp_path: Path, monkey
     assert not os.path.exists(str(tmp_path / "pets.json.corrupt"))
 
 
+def test_same_name_characters_keep_independent_profiles_and_are_named_clearly(tmp_path: Path,
+                                                                                monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    first = settings.character_profile("Hero", 1717)
+    second = settings.character_profile("Hero", 4242)
+    settings.save_profile(first, dict(settings.PROFILE_DEFAULTS, attack_gap=0.2))
+    settings.save_profile(second, dict(settings.PROFILE_DEFAULTS, attack_gap=0.8))
+
+    assert settings.load_profile(first)["attack_gap"] == 0.2
+    assert settings.load_profile(second)["attack_gap"] == 0.8
+    assert settings.profile_display(first) == "Hero - character 1717"
+    assert settings.profile_display(second) == "Hero - character 4242"
+    assert settings.profiles() == [first, second]
+
+
+def test_an_identified_character_starts_from_its_legacy_name_only_choices(tmp_path: Path,
+                                                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    settings.save_profile("Hero", dict(settings.PROFILE_DEFAULTS, attack_gap=0.65))
+    identified = settings.character_profile("Hero", 1717)
+
+    copied = settings.load_profile(identified)
+    assert copied["attack_gap"] == 0.65
+    settings.save_profile(identified, copied)
+    copied["attack_gap"] = 0.9
+    settings.save_profile(identified, copied)
+
+    assert settings.load_profile("Hero")["attack_gap"] == 0.65
+    assert settings.load_profile(identified)["attack_gap"] == 0.9
+
+
+def test_a_server_label_is_visible_and_can_adopt_an_existing_id_profile(tmp_path: Path,
+                                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    identified = settings.character_profile("Hero", 1717)
+    on_s1 = settings.character_profile("Hero", 1717, "S1")
+    settings.save_profile(identified, dict(settings.PROFILE_DEFAULTS, attack_gap=0.4))
+
+    assert settings.profile_display(on_s1) == "Hero - S1"
+    assert settings.load_profile(on_s1)["attack_gap"] == 0.4
+    assert settings.has_profile(on_s1)
+
+
+def test_a_server_label_can_be_told_from_the_id_only_fallback() -> None:
+    fallback = settings.character_profile("Killua", 2905)
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    assert settings.profile_server(fallback) == ""
+    assert settings.profile_server(on_s1) == "S1"
+
+
+def test_a_profile_key_gives_back_the_name_and_a_key_that_ignores_the_server() -> None:
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    fallback = settings.character_profile("Killua", 2905)
+    assert settings.profile_name(on_s1) == settings.profile_name(fallback) == settings.profile_name("Killua") == "Killua"
+    assert settings.profile_name(None) == ""
+    assert settings.stable_key(on_s1) == settings.stable_key(fallback) == fallback
+    assert settings.stable_key("Killua") == "Killua"
+    assert settings.profile_id(on_s1) == "2905" and settings.profile_id("Killua") is None
+
+
+def test_a_game_matches_its_own_profile_and_an_old_name_only_one() -> None:
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    assert settings.is_profile_of(on_s1, settings.character_profile("Killua", 2905))
+    assert settings.is_profile_of(on_s1, "Killua")                                    # an old name-only profile
+    assert not settings.is_profile_of(on_s1, settings.character_profile("Killua", 77, "S2"))
+    assert not settings.is_profile_of(None, "Killua")
+
+
+def test_the_last_run_is_found_under_the_stable_key_or_the_old_name() -> None:
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    assert settings.last_run_of({"last_runs": {"Killua": "plan:old"}}, on_s1) == "plan:old"
+    app = {"last_runs": {"Killua": "plan:old", settings.stable_key(on_s1): "plan:new"}}
+    assert settings.last_run_of(app, on_s1) == "plan:new"
+    assert settings.last_run_of(app, None) is None
+
+
 def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "_unreadable", set[str]())
     p = tmp_path / "settings.json"

@@ -10,7 +10,7 @@ import datetime as dt
 
 import wx
 
-from ... import applog, schedule, stats
+from ... import applog, schedule, settings, stats
 from ...errors import carry_on
 from ...engine import plan as plans
 from ...engine.runner import Run
@@ -58,7 +58,7 @@ class SchedulingMixin(FrameParts):
             return schedule.FAILED, _("the {kind} {name} doesn't exist any more",
                                       kind=_("plan") if item[0] == "plan" else _("script"), name=item[1])
         who = s["character"].strip().lower()
-        pid = next((g[0] for g in self.games if (g[1] or "").strip().lower() == who), None)
+        pid = next((g[0] for g in self.games if settings.profile_name(g[1]).strip().lower() == who), None)
         if pid is None:
             return schedule.WAIT, _("{who} isn't logged in to a game that Uncle Farmer sees", who=s["character"])
         busy = self.runs.get(pid)
@@ -95,6 +95,6 @@ class SchedulingMixin(FrameParts):
             self.say(_("Couldn't save the schedules: {err}", err=e))
 
     def open_schedules(self) -> None:
-        names = sorted({g[1] for g in self.games if g[1]} | set(stats.characters()), key=str.lower)
+        names = sorted({settings.profile_name(g[1]) for g in self.games if g[1]} | set(stats.characters()), key=str.lower)
         with SchedulesDialog(self, self.scheduler, self.scheduled_items(), self.item_label, names, self.now) as d:
             d.ShowModal()

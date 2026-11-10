@@ -6,7 +6,7 @@ import os
 import threading
 
 
-from ... import speech, stats
+from ... import settings, speech, stats
 from ...stats import Tally
 from ...i18n import _
 from ...link import AgentError, AgentLink
@@ -21,7 +21,7 @@ class ResultsMixin(FrameParts):
         return run.tally if run else None
 
     def show_results(self) -> None:
-        with ResultsDialog(self, self.selected_character(), self.live_tally) as d:
+        with ResultsDialog(self, settings.profile_name(self.selected_character()) or None, self.live_tally) as d:
             d.ShowModal()
 
     def open_results_folder(self) -> None:
@@ -33,7 +33,7 @@ class ResultsMixin(FrameParts):
         pid = foreground_pid() if front else None
         if pid not in {g[0] for g in self.games}:
             pid = self.selected_pid()
-        name = next((g[1] for g in self.games if g[0] == pid), None)
+        name = settings.profile_name(next((g[1] for g in self.games if g[0] == pid), None)) or None
         run = self.runs.get(pid) if pid is not None else None
         if run and run.tally:
             speech.speak(_("{name}: {results}", name=run.character or name, results=stats.short(run.tally.result())))

@@ -6285,7 +6285,13 @@ msgstr ""
 msgid "{name} ({n})"
 msgstr ""
 
+msgid "{name} - character {id}"
+msgstr ""
+
 msgid "{name} - {map}{team}"
+msgstr ""
+
+msgid "{name} - {server}"
 msgstr ""
 
 msgid "{name} asks: {what}"

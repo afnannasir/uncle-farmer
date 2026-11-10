@@ -33,7 +33,7 @@ def assistant_names():
 
 class ChoresDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str) -> None:
-        super().__init__(parent, title=_("{tool} - {name}", tool=_("Daily chores"), name=character),
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Daily chores"), name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.p = settings.load_profile(character)

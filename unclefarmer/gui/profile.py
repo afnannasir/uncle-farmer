@@ -211,7 +211,7 @@ def pull_label(p: dict[str, Any]) -> str:
 
 class ProfileDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game_folder: str = "") -> None:
-        super().__init__(parent, title=_("Character settings - {name}", name=character),
+        super().__init__(parent, title=_("Character settings - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game_folder = game_folder
@@ -476,9 +476,9 @@ class ProfileDialog(Dialog):
 
     # ------------------------------------------------------------ buttons
     def on_scan(self, _evt: wx.Event) -> None:
-        pid = next((g[0] for g in games() if g[1] == self.character), None)
+        pid = next((g[0] for g in games() if settings.is_profile_of(g[1], self.character)), None)
         if pid is None:
-            error(self, _("{name} isn't logged in to a game that has the agent.", name=self.character))
+            error(self, _("{name} isn't logged in to a game that has the agent.", name=settings.profile_display(self.character)))
             return
         try:
             with wx.BusyCursor(), AgentLink(pid=pid, timeout=5) as a:
@@ -552,7 +552,7 @@ class AdvancedDialog(Dialog):
     """Keys and fine tuning. Changes go into the profile dict; the character window saves it."""
 
     def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any], game_folder: str = "") -> None:
-        super().__init__(parent, title=_("Advanced settings - {name}", name=character),
+        super().__init__(parent, title=_("Advanced settings - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.p = profile
         self.game_folder = game_folder
