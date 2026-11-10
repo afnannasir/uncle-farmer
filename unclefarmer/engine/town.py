@@ -51,8 +51,17 @@ def item_pattern(item: str) -> str:
 Npc = tuple[int, str, float, float]      # (map, name, x, y)
 
 
-def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -> Npc | None:
+Place = tuple[int, tuple[float, float]]     # (map, cell)
+
+
+def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
+            back_to: Place | None = None) -> Npc | None:
     """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y).
+
+    back_to: where the trip goes on to afterwards (a farming run's share trip goes back to its
+    farm). The way there AND back is counted then: on the way there alone, the hearthstone's square
+    looked cheapest from almost anywhere (one teleport), so a farm next to Tulip City sent the trip
+    back to the city the run started in - and then walked the whole way out to the farm again.
 
     From inside a map we can't plan our way out of (a gang base, a dungeon) every other map costs
     the same unknown "leave", so the first NPC in the data's order used to win: a Gem Maker in the
@@ -65,16 +74,26 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -
     rows = b.bag_rows()
     purse = travel.arnebia_in(rows)
     rides, off = travel.ride_rules(b.p)
+
+    def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
+        legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
+                                 transport=rides, vip=b.p.get("vip", False), avoid=off,
+                                 bag=rows if b.p.get("use_travel_items", False) else [],
+                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
+        return None if legs is None else cost
+
     for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
         start_map, start_cell, extra = here, (me["x"], me["y"]), 0.0
         if out is not None and mid != here:
             start_map, start_cell, extra = out[0], out[1], travel.LEAVE_COST
-        legs, cost = travel.plan(start_map, start_cell, mid, (x, y + 1), with_cost=True,
-                                 transport=rides, vip=b.p.get("vip", False), avoid=off,
-                                 bag=rows if b.p.get("use_travel_items", False) else [],
-                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
-        if legs is None or cost is None:
+        cost = cost_of(start_map, start_cell, mid, (x, y + 1))
+        if cost is None:
             continue
+        if back_to is not None:
+            back = cost_of(mid, (x, y + 1), back_to[0], back_to[1])
+            if back is None:
+                continue          # no way on from there: a dead end for this trip
+            cost += back
         cost += extra
         if best is None or cost < best[0]:
             best = (cost, (mid, name, x, y))
@@ -96,18 +115,22 @@ def _step_out_first(b: Bot, target: Npc | None) -> bool:
     return bool(leave()) and b.map_id() != here
 
 
-def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None) -> str:
+def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None,
+          back_to: Place | None = None) -> str:
     """Travel to the nearest NPC of a role (or the named one, or the nearest of candidates) and open
-    its menu. Returns its name."""
+    its menu. Returns its name. back_to: where the trip goes on to afterwards (nearest)."""
+    def find(among: Sequence[Npc] | None) -> Npc | None:
+        return nearest(b, role, among) if back_to is None else nearest(b, role, among, back_to)
+
     if candidates:
-        target = nearest(b, role, candidates)
+        target = find(candidates)
     elif name:
         known = knowledge.describe_npc(name)
         target = (known["map"], known["name"], known["x"], known["y"]) if known else None
     else:
-        target = nearest(b, role)
+        target = find(None)
     if not name and _step_out_first(b, target):
-        target = nearest(b, role, candidates or None)
+        target = find(candidates or None)
     if target is None and candidates:
         raise Stopped(_("none of the {n} places that could do it can be reached from {map}",
                         n=len(candidates), map=atlas.label(b.map_id())))
@@ -1087,7 +1110,7 @@ def _bag_and_hotkeys(b: Bot) -> tuple[dict[str, int], list[str]]:
 
 
 def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
-    """What Tools, Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
+    """What the game menu's Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
     (keeping the number its rule keeps) and the Shard Market buys; and the shards set to sell that
     the market doesn't list (not sold, said)."""
     bag, hot = _bag_and_hotkeys(b)
@@ -1106,7 +1129,7 @@ def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
 
 
 def sell_shards_now(b: Bot) -> int:
-    """Tools, Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
+    """The game menu's Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
     Market - the one in this city when it has one - and nothing else (the bag trip's shard step on
     its own). Says what was sold and what wasn't. Returns how many kinds were sold."""
     todo, other = shards_to_sell(b)
@@ -1138,7 +1161,7 @@ def throw_list(p: dict[str, Any]) -> list[tuple[str, int]]:
 
 
 def clean_bag(b: Bot) -> int:
-    """Tools, Clean the bag now: throw away, right where we stand, what the bag manager's
+    """The game menu's Clean the bag now: throw away, right where we stand, what the bag manager's
     throw-away list says (keeping the number each rule keeps) - only what is on that list, never
     anything else. Says what went, what couldn't be thrown and what wasn't there. Returns how many
     kinds of item left the bag."""
@@ -1195,7 +1218,7 @@ def store_list(p: dict[str, Any]) -> list[tuple[str, int]]:
 
 
 def store_items(b: Bot) -> int:
-    """Tools, Store items now: put into the storehouse what the bag manager's store list says
+    """The game menu's Store items now: put into the storehouse what the bag manager's store list says
     (keeping the number each rule keeps in the bag) - only what is on that list, read as it is now,
     never anything else. The bag trip's storehouse step on its own (deposit, at the nearest
     storehouse). Says what went in, what the storehouse didn't take (full, or refused) and what
@@ -1241,7 +1264,7 @@ def store_items(b: Bot) -> int:
 
 # ---------------------------------------------------------------------------------------- shard prices
 # The Shard Market's prices change; data/shards.json keeps the last ones read, which the bag manager
-# and the results use. Tools, Update shard prices reads the market's list again.
+# and the results use. The game menu's Update shard prices reads the market's list again.
 SHARDS_FILE = "shards.json"
 PRICE_MOST = 100_000_000          # no shard has cost anywhere near this: a reading above it is wrong
 SHOWN_PRICE = re.compile(r"\bunit price\s+(\d{1,9})\s+arnebia", re.I)
@@ -1342,7 +1365,7 @@ def save_shard_prices(prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
 
 
 def update_shard_prices(b: Bot) -> int:
-    """Tools, Update shard prices: read the nearest Shard Market's list and keep its prices in
+    """The game menu's Update shard prices: read the nearest Shard Market's list and keep its prices in
     data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
     (those keep their old price). Returns how many prices changed."""
     shards, markets = shard_catalog()

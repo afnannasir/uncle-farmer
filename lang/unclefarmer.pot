@@ -98,7 +98,7 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
-msgid "&Clean the bag (Tools, Clean the bag now)"
+msgid "&Clean the bag (game menu, Clean the bag now)"
 msgstr ""
 
 msgid "&Close"
@@ -409,7 +409,7 @@ msgstr ""
 msgid "&Script commands"
 msgstr ""
 
-msgid "&Sell shards (Tools, Sell shards now)"
+msgid "&Sell shards (game menu, Sell shards now)"
 msgstr ""
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
@@ -473,7 +473,7 @@ msgstr ""
 msgid "&Unmute this game"
 msgstr ""
 
-msgid "&Update shard prices (Tools, Update shard prices)"
+msgid "&Update shard prices (game menu, Update shard prices)"
 msgstr ""
 
 msgid "&Use the selected skill:"
@@ -928,7 +928,7 @@ msgstr ""
 msgid "Cl&ear"
 msgstr ""
 
-msgid "Clea&n the bag (Tools, Clean the bag now)"
+msgid "Clea&n the bag (game menu, Clean the bag now)"
 msgstr ""
 
 msgid "Clean the &bag now"
@@ -2678,7 +2678,7 @@ msgstr ""
 msgid "S&top"
 msgstr ""
 
-msgid "S&tore items (Tools, Store items now)"
+msgid "S&tore items (game menu, Store items now)"
 msgstr ""
 
 msgid "S&tore items now"
@@ -2756,7 +2756,7 @@ msgstr ""
 msgid "Scripting &guide"
 msgstr ""
 
-msgid "Se&ll shards (Tools, Sell shards now)"
+msgid "Se&ll shards (game menu, Sell shards now)"
 msgstr ""
 
 msgid "Se&ttings"
@@ -2940,7 +2940,7 @@ msgstr ""
 msgid "Spider cave"
 msgstr ""
 
-msgid "St&ore items (Tools, Store items now)"
+msgid "St&ore items (game menu, Store items now)"
 msgstr ""
 
 msgid "St&ore:"
@@ -3586,7 +3586,7 @@ msgstr ""
 msgid "Unpacking"
 msgstr ""
 
-msgid "Up&date shard prices (Tools, Update shard prices)"
+msgid "Up&date shard prices (game menu, Update shard prices)"
 msgstr ""
 
 msgid "Update"

@@ -324,16 +324,16 @@ class ProfileDialog(Dialog):
         panel, box = page(nb, _("Triggers"))
         self.triggers: dict[str, wx.CheckBox] = {}
         labels = {
-            "before": {"sell_shards": _("&Sell shards (Tools, Sell shards now)"),
-                       "clean_bag": _("&Clean the bag (Tools, Clean the bag now)"),
-                       "update_shard_prices": _("&Update shard prices (Tools, Update shard prices)"),
+            "before": {"sell_shards": _("&Sell shards (game menu, Sell shards now)"),
+                       "clean_bag": _("&Clean the bag (game menu, Clean the bag now)"),
+                       "update_shard_prices": _("&Update shard prices (game menu, Update shard prices)"),
                        "gather": _("&Gathering (as set in Tools, Gathering)"),
-                       "store_items": _("S&tore items (Tools, Store items now)")},
-            "after": {"sell_shards": _("Se&ll shards (Tools, Sell shards now)"),
-                      "clean_bag": _("Clea&n the bag (Tools, Clean the bag now)"),
-                      "update_shard_prices": _("Up&date shard prices (Tools, Update shard prices)"),
+                       "store_items": _("S&tore items (game menu, Store items now)")},
+            "after": {"sell_shards": _("Se&ll shards (game menu, Sell shards now)"),
+                      "clean_bag": _("Clea&n the bag (game menu, Clean the bag now)"),
+                      "update_shard_prices": _("Up&date shard prices (game menu, Update shard prices)"),
                       "gather": _("Gat&hering (as set in Tools, Gathering)"),
-                      "store_items": _("St&ore items (Tools, Store items now)")},
+                      "store_items": _("St&ore items (game menu, Store items now)")},
         }
         titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
                   "after": _("After farming (when farming finishes by itself, never after Stop)")}

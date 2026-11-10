@@ -168,7 +168,8 @@ class Game:
 
 @pytest.fixture
 def world(monkeypatch: pytest.MonkeyPatch) -> type[Game]:
-    def visit(b: Game, role: str | None, name: str | None = None, candidates: object = None) -> str | None:
+    def visit(b: Game, role: str | None, name: str | None = None, candidates: object = None,
+              back_to: object = None) -> str | None:
         assert role is not None
         b.talked.append(role)
         b.page = b.roles[role]
@@ -655,6 +656,9 @@ def test_a_farming_run_goes_to_share_and_comes_back(monkeypatch: pytest.MonkeyPa
         def log(self, line: str, speak: bool=False):
             self.lines.append(line)
 
+        def me(self) -> dict[str, Any]:
+            return {"x": 40.0, "y": 50.0}
+
         @contextmanager
         def timed(self, phase: str) -> Generator[None, None, None]:
             yield
@@ -665,10 +669,16 @@ def test_a_farming_run_goes_to_share_and_comes_back(monkeypatch: pytest.MonkeyPa
         def set_modes(self) -> None:
             self.trips.append("modes")
     monkeypatch.setattr(chores, "trip_due", stand_in(chores.trip_due, lambda b: True))
-    monkeypatch.setattr(chores, "share_visit", stand_in(chores.share_visit, lambda b, cfg: (3, "ocean shard 2")))
+    went: list[object] = []
+
+    def visit(b: object, cfg: dict[str, Any], practise: int = 0, back_to: object = None) -> tuple[int, str]:
+        went.append(back_to)
+        return 3, "ocean shard 2"
+    monkeypatch.setattr(chores, "share_visit", stand_in(chores.share_visit, visit))
     t = Trip()
     assert t.share_trip(5302) is True
     assert t.trips == [5302, "modes"] and any("3 of 5" in ln for ln in t.lines)
+    assert went == [(5302, (40.0, 50.0))]          # the instructor is chosen for the way back to the farm too
     monkeypatch.setattr(chores, "trip_due", stand_in(chores.trip_due, lambda b: False))
     assert t.share_trip(5302) is False
 

@@ -256,8 +256,10 @@ class FarmingMixin(Parts):
         if not chores.trip_due(as_bot(self)):
             return False
         self.log(_("off to the secret room to share arnebia"))
+        me = self.me()
+        farm = (map_id, (float(me.get("x", 0)), float(me.get("y", 0))))     # where the trip comes back to
         try:
-            made, _where = chores.share_visit(as_bot(self), chores.config(self.p))
+            made, _where = chores.share_visit(as_bot(self), chores.config(self.p), back_to=farm)
             self.log(_("shared arnebia {n} of {all} times today", n=made, all=chores.SHARES_A_DAY))
         except Stopped as e:
             if self.stop_event.is_set() or getattr(e, "final", False):
