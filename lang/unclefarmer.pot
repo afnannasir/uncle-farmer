@@ -6029,6 +6029,9 @@ msgstr ""
 msgid "walking to monsters"
 msgstr ""
 
+msgid "we are on another map now - leaving the fight with {name}"
+msgstr ""
+
 msgid "weakens the enemy"
 msgstr ""
 

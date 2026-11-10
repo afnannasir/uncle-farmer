@@ -715,3 +715,14 @@ def test_buff_now_still_buffs_for_a_fight_on_the_way(clock: Clock) -> None:
     s = pinned(sb(slots={0: [b]}), page=0)
     s.b.traveling = True
     assert s.buff_now({}, clock.now, fight=(False, 1)) == ("j", "Strong-Arm Aura")
+
+
+# ---------------------------------------------------------------- forget_the_map()
+def test_forget_the_map_drops_what_was_noted_against_target_ids(clock: Clock) -> None:
+    """Target ids are per map: on the next one they are other monsters."""
+    s = sb(downed={-3: clock.now}, landed={("Shadow Arrow", -3): clock.now},
+           pending={"Shadow Arrow": clock.now, "Heal": clock.now},
+           pending_target={"Shadow Arrow": -3, "Heal": None})
+    s.forget_the_map()
+    assert s.downed == {} and s.landed == {}
+    assert s.pending == {"Heal": clock.now} and s.pending_target == {"Heal": None}
