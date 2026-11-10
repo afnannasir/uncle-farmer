@@ -20,6 +20,9 @@ msgstr " ({n} phenke)"
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
+msgid " ({rate} casts an hour)"
+msgstr " (ek ghante mein {rate} casts)"
+
 msgid " - estimated: it includes shards"
 msgstr " - andaza: is mein shards shamil hain"
 
@@ -123,6 +126,9 @@ msgstr "&Roz ke kaam"
 
 msgid "&Date (year-month-day):"
 msgstr "&Tareekh (saal-mahina-din):"
+
+msgid "&Day:"
+msgstr "&Din:"
 
 msgid "&Defensive skills below HP (%):"
 msgstr "HP se neeche &defensive skills (%):"
@@ -597,6 +603,9 @@ msgstr "Ek bot chal raha hai. Rok kar bahar niklein?"
 
 msgid "A city s&quare"
 msgstr "Ek city s&quare"
+
+msgid "A day of my choice"
+msgstr "Meri pasand ka din"
 
 msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
@@ -1624,6 +1633,18 @@ msgid ""
 "Heal with the class's o&wn heal skill (Sorceress, Priest); red potions only under half HP"
 msgstr ""
 "Class ki ap&ni Shifa skill se shifa karein (Sorceress, Priest); laal potions sirf aadhe HP se neeche"
+
+msgid "Healed others"
+msgstr "Doosron ko heal kiya"
+
+msgid "Healed our pet"
+msgstr "Apne pet ko heal kiya"
+
+msgid "Healed ourselves"
+msgstr "Khud ko heal kiya"
+
+msgid "Healing by our skills (potions not counted):"
+msgstr "Hamari skills se healing (potions gine nahi gaye):"
 
 msgid "Healing teammates while following"
 msgstr "Peeche chalte hue teammates ki shifa"
@@ -2988,6 +3009,17 @@ msgid "Skills not in this &list (learned or put on a key later):"
 msgstr ""
 "Is &fehrist mein nahi wali skills (baad mein seekhi gayi ya key par rakhi gayi):"
 
+msgid "Skills used: none"
+msgstr "Istemal hui skills: koi nahi"
+
+msgid ""
+"Skills used: not counted in these runs (only runs from this version on count them)"
+msgstr ""
+"Istemal hui skills: in runs mein gini nahi gayin (sirf is version se aage ki runs inhein ginti hain)"
+
+msgid "Skills used: {casts} casts, {dmg} damage in all"
+msgstr "Istemal hui skills: {casts} casts, kul {dmg} damage"
+
 msgid "Snow mountain prince"
 msgstr "Snow mountain prince"
 
@@ -3994,6 +4026,9 @@ msgstr "X:"
 msgid "Y:"
 msgstr "Y:"
 
+msgid "Yesterday"
+msgstr "Kal"
+
 msgid "You are already on {map}."
 msgstr "Aap pehle se {map} par hain."
 
@@ -4016,6 +4051,9 @@ msgstr "ek monster"
 
 msgid "a number the Gem Craftsman will tell"
 msgstr "ek number jo Gem Craftsman batayega"
+
+msgid "a skill with no name"
+msgstr "baghair naam ki skill"
 
 msgid "a sub needs a name"
 msgstr "sub ko naam chahiye"
@@ -4248,6 +4286,9 @@ msgstr ""
 
 msgid "cancel the team's navigation target"
 msgstr "team ka navigation target mansookh karein"
+
+msgid "cast {n} times"
+msgstr "{n} baar cast hui"
 
 msgid "charge in"
 msgstr "daur kar andar"
@@ -4661,6 +4702,9 @@ msgstr "nikal gaye: {cell} tak chal kar"
 msgid "heal"
 msgstr "shifa"
 
+msgid "healed {n}"
+msgstr "{n} heal kiya"
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr "pet ka HP {pct}% se neeche ho to {skill} se shifa"
 
@@ -5008,6 +5052,9 @@ msgstr "red potions khatam - sirf skills se shifa"
 
 msgid "no room with a free place for this level"
 msgstr "is level ke liye koi khali jagah wala kamra nahi"
+
+msgid "no runs yet"
+msgstr "abhi koi run nahi"
 
 msgid "no secret room for this level has a free place"
 msgstr "is level ke kisi secret room mein khali jagah nahi"
@@ -6337,6 +6384,9 @@ msgstr "aise likhein: {cmd} 50 Large Red Potion"
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "aise likhein: {cmd} Milkfish 20"
 
+msgid "yesterday"
+msgstr "kal"
+
 msgid "you"
 msgstr "aap"
 
@@ -6405,6 +6455,9 @@ msgstr "{colour}: {what}"
 
 msgid "{col}: shards {shards}; gems {gems}"
 msgstr "{col}: shards {shards}; gems {gems}"
+
+msgid "{dmg} damage ({share} of all)"
+msgstr "{dmg} damage (kul ka {share})"
 
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: {lo} se {hi} tak number likhein"
@@ -6515,6 +6568,9 @@ msgstr "{kind} zone: x {x1} se {x2}, y {y1} se {y2}"
 
 msgid "{k} shards and {fee} arnebia"
 msgstr "{k} shards aur {fee} arnebia"
+
+msgid "{label}: {hp} HP in {n} heals"
+msgstr "{label}: {n} heals mein {hp} HP"
 
 msgid "{left} left"
 msgstr "{left} baqi"
@@ -6719,6 +6775,9 @@ msgstr "{n} Value Product ki aamdani li ja sakti hai"
 msgid "{n} Value Product incomes were already collected today"
 msgstr "{n} Value Product incomes aaj pehle hi le li gayi hain"
 
+msgid "{n} a hit on average"
+msgstr "ausatan {n} har hit"
+
 msgid "{n} arnebia"
 msgstr "{n} arnebia"
 
@@ -6728,11 +6787,17 @@ msgstr "level {lv} par {n}"
 msgid "{n} contribution"
 msgstr "{n} hissa"
 
+msgid "{n} critical"
+msgstr "{n} critical"
+
 msgid "{n} critical hits"
 msgstr "{n} critical hits"
 
 msgid "{n} damage"
 msgstr "{n} damage"
+
+msgid "{n} days ago"
+msgstr "{n} din pehle"
 
 msgid "{n} deaths"
 msgstr "{n} maut"
@@ -6763,6 +6828,9 @@ msgstr "{n} minute"
 
 msgid "{n} minutes are up"
 msgstr "{n} minute poore ho gaye"
+
+msgid "{n} missed"
+msgstr "{n} miss"
 
 msgid "{n} more"
 msgstr "{n} aur"

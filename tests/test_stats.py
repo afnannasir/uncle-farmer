@@ -555,3 +555,83 @@ def test_doing_and_moved_leave_a_run_without_results_alone() -> None:
         tally = None
     with stats.doing(as_parts(NoTally()), "chores"):
         stats.moved(as_parts(NoTally()), "thrown", "Green Shard", 3)
+
+
+# ================================================================ skills, heals and days
+PET = 900
+
+
+def test_every_cast_of_ours_counts_for_its_skill_and_heals_for_whom_they_healed() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100], [-2, 5, 300]], skill="Level 2 Fireball", t=1),
+               cast(ME, [], skill="Level 2 Fireball", t=2),                          # the game's miss
+               {"t": 3, "caster": ME, "seq": 1, "skill": "Strong-Arm Aura"},         # a buff: no hits key
+               cast(ME, [[ME, 6, 500]], skill="Healing Wave", t=4),
+               cast(ME, [[PET, 6, 200]], skill="Healing Wave", t=5),
+               cast(ME, [[77, 6, 50]], skill="Healing Wave", t=6),
+               cast(-1, [[ME, 3, 80]], skill="Bite", t=7)],                         # a monster's: not ours
+              ME, pets={PET})
+    r = c.result()
+    assert r is not None
+    assert r["skills"]["Fireball"] == {"uses": 2, "hits": 2, "misses": 1, "crits": 1, "damage": 400, "healed": 0}
+    assert r["skills"]["Strong-Arm Aura"]["uses"] == 1
+    assert r["skills"]["Healing Wave"] == {"uses": 3, "hits": 0, "misses": 0, "crits": 0, "damage": 0, "healed": 750}
+    assert "Bite" not in r["skills"]
+    assert r["heals"] == {"self": {"amount": 500, "times": 1}, "pet": {"amount": 200, "times": 1},
+                          "others": {"amount": 50, "times": 1}}
+    assert r["given"]["damage"] == 400            # heals are no damage
+
+
+def test_add_up_merges_skills_and_heals_and_old_records_add_nothing() -> None:
+    def rec(skills: dict[str, Any] | None, heals: dict[str, Any] | None) -> dict[str, Any]:
+        combat: dict[str, Any] = {"given": {}, "received": {}, "last_kill": None}
+        if skills is not None:
+            combat["skills"], combat["heals"] = skills, heals
+        return {"kind": stats.FARMING, "minutes": 60, "combat": combat}
+
+    row = {"uses": 10, "hits": 9, "misses": 1, "crits": 2, "damage": 900, "healed": 0}
+    heal = {"self": {"amount": 100, "times": 2}, "pet": {"amount": 40, "times": 1}, "others": {"amount": 0, "times": 0}}
+    total = stats.add_up([rec(None, None), rec({"Fireball": row}, heal), rec({"Fireball": row}, heal)])
+    assert total["combat"]["skills"]["Fireball"]["damage"] == 1800
+    assert total["combat"]["skills"]["Fireball"]["uses"] == 20
+    assert total["combat"]["heals"]["self"] == {"amount": 200, "times": 4}
+    assert "skills" not in stats.add_up([rec(None, None)])["combat"]
+
+
+def test_the_report_lists_skills_by_damage_and_ends_with_the_healing() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100]], skill="Arrow"), cast(ME, [[-1, 5, 900]], skill="Big Shot", t=2),
+               cast(ME, [[ME, 6, 300]], skill="Healing Wave", t=3), cast(ME, [[PET, 6, 120]], skill="Healing Wave", t=4)],
+              ME, pets={PET})
+    text = stats.report({"kind": stats.FARMING, "minutes": 30, "kills": 1, "deaths": 0, "combat": c.result()}, "Run")
+    lines = text.splitlines()
+    big = next(i for i, x in enumerate(lines) if x.strip().startswith("Big Shot:"))
+    arrow = next(i for i, x in enumerate(lines) if x.strip().startswith("Arrow:"))
+    assert big < arrow                                                  # the most damage first
+    assert "900 damage (90% of all)" in lines[big] and "1 critical" in lines[big]
+    assert any(x.startswith("Skills used: 4 casts, 1,000 damage in all") for x in lines)
+    assert lines[-3] == "Healing by our skills (potions not counted):"
+    assert lines[-2].strip().startswith("Healed ourselves: 300 HP in 1 heals")
+    assert lines[-1].strip().startswith("Healed our pet: 120 HP in 1 heals")
+
+
+def test_no_heal_lines_without_heals_and_old_runs_say_skills_were_not_counted() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100]], skill="Arrow")], ME)
+    text = stats.report({"kind": stats.FARMING, "minutes": 30, "combat": c.result()}, "Run")
+    assert "Healing by our skills" not in text
+    old = stats.report({"kind": stats.FARMING, "minutes": 30, "combat": {"given": {}, "received": {}}}, "Run")
+    assert "Skills used: not counted in these runs" in old
+
+
+def test_runs_can_end_at_a_time_and_days_lists_the_days_with_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(stats, "RESULTS", str(tmp_path))
+    lines = ['{"kind": "farming", "start": "%s", "minutes": 1}' % s
+             for s in ("2026-11-07 23:59:00", "2026-11-08 00:00:00", "2026-11-08 18:00:00", "2026-11-10 09:00:00")]
+    lines.append('{"kind": "tool", "start": "2026-11-09 10:00:00", "tool": "gem_maker"}')
+    (tmp_path / "Hero.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    since, until = stats.day_bounds("2026-11-08")
+    assert until - since == 86400
+    assert [r["start"] for r in stats.runs("Hero", since, until=until)] == ["2026-11-08 00:00:00", "2026-11-08 18:00:00"]
+    assert stats.days("Hero") == ["2026-11-10", "2026-11-08", "2026-11-07"]
+    assert stats.days("Hero", stats.TOOL) == ["2026-11-09"]
