@@ -357,6 +357,23 @@ class Shard(Strict):
     makes: str
 
 
+class IdsFile(Strict):
+    """The game's ids for what the bot names (gamelang): item types and skill ids to names, and NPCs
+    as [map, id, name, x, y] - an NPC id is negative, and counts only where that NPC stands."""
+    format: Literal[1]
+    built: str
+    about: str
+    items: dict[str, str]
+    skills: dict[str, str]
+    npcs: list[tuple[int, int, str, float, float]]
+
+    @model_validator(mode="after")
+    def ids_are_numbers_and_npcs_negative(self) -> "IdsFile":
+        assert all(k.lstrip("-").isdigit() for k in self.items) and all(k.isdigit() for k in self.skills)
+        assert all(mid > 0 and nid < 0 and name for mid, nid, name, _x, _y in self.npcs)
+        return self
+
+
 class ShardsFile(Strict):
     shards: dict[str, Shard]
     markets: dict[str, tuple[float, float]]
@@ -473,6 +490,7 @@ MODELS: dict[str, type[BaseModel]] = {
     "farms.json": FarmsFile,
     "game_texts.json": GameTextsFile,
     "gathering.json": GatheringFile,
+    "ids.json": IdsFile,
     "knowledge.json": KnowledgeFile,
     "map_kinds.json": MapKindsFile,
     "shards.json": ShardsFile,

@@ -15,7 +15,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
+from .. import applog, daily, gameinstall, gamelang, phrases, scan, settings, stats, trust
 from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
@@ -175,6 +175,8 @@ class Run(threading.Thread):
         profile, found = self._profile(link, self.profile)
         guard = self._arm(link, agent, profile, app)
         self.log(_("starting {what} as {name}", what=self.title, name=character), speak=True)
+        for note in gamelang.notes(self.game_folder()):     # another language pack, or an old english one
+            self.log(note)
         bot = self._make_bot(link, profile, agent, guard, day_end, app)
         self._set_up(bot, snap, profile, found, agent, app)
         return bot

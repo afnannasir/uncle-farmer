@@ -5998,8 +5998,18 @@ msgid ""
 msgstr ""
 "game ke dialogs nahi parhe ja sakte ({why}) - game dobara shuru karein taake naya agent load ho"
 
+msgid ""
+"the game's english language pack is older than the one Uncle Farmer's names come from ({files} missing): some names may not match"
+msgstr ""
+"game ka english zabaan pack us se purana hai jis se Uncle Farmer ke naam aate hain ({files} nahi hain): kuch naam shayad na milein"
+
 msgid "the game's keys can't be used: {why}"
 msgstr "game ki keys istemal nahi ho sakti: {why}"
+
+msgid ""
+"the game's language is {lang}: names are turned into English by the game's ids where it has them, else by its language files"
+msgstr ""
+"game ki zabaan {lang} hai: naam jahan game ke ids hain wahan ids se, warna us ki zabaan ki files se English mein badle jaate hain"
 
 msgid "the game's own speech is off while the bot runs"
 msgstr "bot chalne ke doran game ki apni speech band rehti hai"

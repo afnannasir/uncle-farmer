@@ -5733,7 +5733,15 @@ msgid ""
 "the game's dialogs can't be read ({why}) - restart the game so the new agent loads"
 msgstr ""
 
+msgid ""
+"the game's english language pack is older than the one Uncle Farmer's names come from ({files} missing): some names may not match"
+msgstr ""
+
 msgid "the game's keys can't be used: {why}"
+msgstr ""
+
+msgid ""
+"the game's language is {lang}: names are turned into English by the game's ids where it has them, else by its language files"
 msgstr ""
 
 msgid "the game's own speech is off while the bot runs"
