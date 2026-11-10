@@ -52,8 +52,14 @@ class _LangState:
 _state = _LangState()
 CHECK_EVERY = 30.0          # seconds between looks at lang.txt (a change needs a game restart anyway)
 CACHE_MOST = 20000
-# commands whose answers carry the game's (translated) words; never chat, casts or raw readings
-COMMANDS = ("mem", "dialog", "said")
+# commands whose answers carry the game's (translated) words; never chat, casts or raw readings,
+# nor `said`: its lines are the server's own packet text (IN op=60), English already - turning
+# them "back" could only change them
+COMMANDS = ("mem", "dialog")
+# fields inside those answers that hold the server's own text, never put through the game's
+# translation: a menu entry's "raw" (what the server sent, beside the shown "text") and the
+# character sheet read from its packet
+SERVER_TEXT = frozenset(("raw", "sheet"))
 
 _HOLE = re.compile(r"\{sub\d\{\$(\d+)\}sub\d\}|\$(\d+)")
 _KEY_HOLE = re.compile(r"\{[a-z]\}")
@@ -371,7 +377,7 @@ def english(data: Any, t: Table | None = None) -> Any:
     if jsonio.is_array(data):
         return [english(x, t) for x in data]
     if jsonio.is_object(data):
-        out = {k: english(v, t) for k, v in data.items()}
+        out = {k: v if k in SERVER_TEXT else english(v, t) for k, v in data.items()}
         if data.get("kind") == "player" and isinstance(data.get("name"), str):
             # a player's own name stays as it is, even when it is also a word of the language; only
             # a pet's ("<kind> <name> belongs to <owner>", players to the game) is turned back

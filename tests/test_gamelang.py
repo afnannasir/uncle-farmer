@@ -77,6 +77,15 @@ def test_an_agent_answer_is_english_but_players_keep_their_names(game: Path) -> 
     assert out["self"]["hp"] == 5
 
 
+def test_the_server_s_own_text_is_left_as_it_came(game: Path) -> None:
+    assert "said" not in gamelang.COMMANDS          # IN op=60 lines: English from the server
+    entry = {"raw": "Pet Large Red Potion", "text": "Evcil Büyük Kırmızı İksir"}
+    sheet = {"counter_name": "Evet", "level": 50}
+    out = gamelang.english({"top": {"entries": [[entry]]}, "self": {"sheet": sheet}})
+    assert out["top"]["entries"][0][0] == {"raw": "Pet Large Red Potion", "text": "Pet Large Red Potion"}
+    assert out["self"]["sheet"] == sheet
+
+
 def test_english_changes_nothing(game: Path) -> None:
     (game / "language" / "lang.txt").write_text("english", encoding="utf-8")
     gamelang.forget()
