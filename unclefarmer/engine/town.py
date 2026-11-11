@@ -24,7 +24,7 @@ from ..clock import clock_for
 from ..i18n import _
 from . import bagrules, menus
 from .bot import CONFIRM, Bot, Stopped
-from .botparts.travel import ways_out
+from .botparts.travel import rides_free, ways_out
 from .transactions import InventoryTransaction
 
 
@@ -77,7 +77,7 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
 
     def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
         legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
-                                 transport=rides, vip=b.p.get("vip", False), avoid=off,
+                                 transport=rides, vip=rides_free(b), avoid=off,
                                  bag=rows if b.p.get("use_travel_items", False) else [],
                                  hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
         return None if legs is None else cost
