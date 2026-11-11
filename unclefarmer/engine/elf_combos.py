@@ -23,7 +23,7 @@ FIRE_ELEMENT_CAP = 5
 
 ELF_RULES: tuple[Rule, ...] = (
     {"talent": None, "release": (IGNITION, (PYROBLAST, BLAZING_STORM))},
-    {"talent": FLAME_COMBO, "reset": ("Fireball", FIRE_IMPACT), "require_active_cd": True},
+    {"talent": FLAME_COMBO, "reset": ("Fireball", FIRE_IMPACT), "prime": False},
     {"talent": BLAZING_COMBO, "streak": (2, CHANNEL_SKILLS)},
 )
 
@@ -133,13 +133,8 @@ class ElfCombos:
         return (self.has_talent(BLAZING_COMBO) and skill["name"] in CHANNEL_SKILLS
                 and not self.available_to_channel_without_penalty)
 
-    def flame_combo_priority(self, now: float) -> bool:
-        """Fire Impact's cooldown was reset and its follow-up window is still open."""
-        until = self.primed.get(FIRE_IMPACT)
-        return until is not None and now <= until and self.has_talent(FLAME_COMBO)
-
     def _elf_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
-        if (self.pending_channelling or self.flame_combo_priority(now)) and (fire_impact := ok(FIRE_IMPACT)):
+        if self.pending_channelling and (fire_impact := ok(FIRE_IMPACT)):
             return fire_impact
         return self._channel_pick(ok)
 

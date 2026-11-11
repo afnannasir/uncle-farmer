@@ -487,15 +487,10 @@ class SkillBook:
             return False
         return at - self.used.get(self.cd_group(x), 0) >= self._cooldown(x) + 0.3
 
-    def clear_cooldown(self, name: str, *, only_if_active_at: float | None = None) -> bool:
-        """Apply a talent reset, optionally requiring a tracked cooldown at the cast time."""
+    def clear_cooldown(self, name: str) -> bool:
+        """Apply a talent reset to the skill's tracked cooldown."""
         x = self.skill(name) or {"name": name}
         group = self.cd_group(x)
-        if only_if_active_at is not None:
-            last = self.used.get(group)
-            # The extra 0.3 s in ready() is a press buffer, not part of the game's cooldown.
-            if last is None or not 0 <= only_if_active_at - last < self._cooldown(x):
-                return False
         self.used.pop(name, None)
         self.used.pop(group, None)
         refused: dict[str, float] = getattr(self, "refused", {})
@@ -987,8 +982,7 @@ class SkillBook:
         # top of it: jump away
         choice = self._trouble_choice(v)
         # Fire Impact follow-ups and unlocked channels go before the player's ready attacks.
-        if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty
-                                           or self.combos.flame_combo_priority(now)):
+        if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
             elements = self.points(now) if self.cls == "Elf" else None
             choice = self.combos.pick(skills, target, now, v.in_range, elements)
         # the player's own: skills set to "whenever ready" go before the bot's choices

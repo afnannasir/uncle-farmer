@@ -252,10 +252,9 @@ class Combos(ElfCombos):
             a, b = r["reset"]
             if name in _names(a) or (a == "*" and attack):
                 if not r.get("keep_cd"):
-                    active_at = t if r.get("require_active_cd") else None
-                    if not self.book.clear_cooldown(b, only_if_active_at=active_at):
-                        continue
-                self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
+                    self.book.clear_cooldown(b)
+                if r.get("prime", True):
+                    self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
         for r in self.of("fast"):
             if r["fast"][0] == name:
                 self.fast_until = t + r["fast"][1]

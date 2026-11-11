@@ -439,31 +439,44 @@ def test_scenario_22_fireball_and_flame_combo_resets_fire_impact(clock: Clock) -
     assert g.log[:8] == ["Fire Impact*", "Fireball*"] * 4
 
 
-@pytest.mark.parametrize(("active", "result", "cooldown_age", "priority"), [
-    (True, 5, 1.5, True),
-    (True, 5, None, False),
-    (True, 5, 6.1, False),  # already ended, even though the bot's 0.3 s press buffer remains
-    (True, 1, 1.5, False),
-    (False, 5, 1.5, False),
+@pytest.mark.parametrize(("active", "result", "cooldown_age"), [
+    (True, 5, 1.5),
+    (True, 5, None),
+    (True, 5, 6.1),
+    (True, 1, 1.5),
+    (False, 5, 1.5),
 ])
-def test_flame_combo_only_prioritizes_fire_impact_after_a_cooldown_reset(
-    clock: Clock, active: bool, result: int, cooldown_age: float | None, priority: bool,
+def test_flame_combo_resets_cooldown_without_prioritizing_fire_impact(
+    clock: Clock, active: bool, result: int, cooldown_age: float | None,
 ) -> None:
     g = Game(clock, ["Fireball", "Fire Impact"], ["Flame Combo"] if active else [])
     sb = combat.SkillBook(as_parts(Bot(g, {"skill_use": {"Fireball": "ready"}})))
     assert sb.combos is not None
+    impact = sb.skill("Fire Impact")
+    assert impact is not None
     if cooldown_age is not None:
         sb.used["Fire Impact"] = clock.now - cooldown_age
     old_cooldown = sb.used.get("Fire Impact")
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-5, result, 10000]]}, ME)
-    assert ("Fire Impact" in sb.combos.primed) is priority
-    assert sb.used.get("Fire Impact") == (None if priority else old_cooldown)
+    reset = active and result == 5
+    assert "Fire Impact" not in sb.combos.primed
+    assert sb.used.get("Fire Impact") == (None if reset else old_cooldown)
+    assert sb.ready(impact, clock.now) is (reset or cooldown_age is None)
 
     clock.advance(2)
     mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
     me = {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}
-    picked = sb.pick({"self": me, "entities": [me, mob]}, mob)
-    assert isinstance(picked, tuple) and picked[1] == ("Fire Impact" if priority else "Fireball")
+    snap = {"self": me, "entities": [me, mob]}
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == "Fireball"
+    # Normal selection can use the reset skill immediately when Fireball is cooling down.
+    clock.advance(2)
+    sb.used["Fireball"] = clock.now
+    picked = sb.pick(snap, mob)
+    if reset or cooldown_age is None or cooldown_age >= 6:
+        assert isinstance(picked, tuple) and picked[1] == "Fire Impact"
+    else:
+        assert picked in (None, "wait")
 
 
 @pytest.mark.parametrize("already_unlocked", [False, True])
@@ -477,7 +490,8 @@ def test_flame_combo_and_blazing_combo_share_one_fire_impact(
     sb.available_to_channel_without_penalty = already_unlocked
     sb.used["Fire Impact"] = clock.now - 1.5
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-5, 5, 10000]]}, ME)
-    assert sb.combos.flame_combo_priority(clock.now)
+    assert "Fire Impact" not in sb.used
+    assert "Fire Impact" not in sb.combos.primed
     assert sb.pending_channelling is not already_unlocked
     assert sb.available_to_channel_without_penalty is already_unlocked
     assert sb.combos.streak == (0 if already_unlocked else 1)
@@ -488,11 +502,13 @@ def test_flame_combo_and_blazing_combo_share_one_fire_impact(
     snap = {"self": me, "entities": [me, *mobs]}
     clock.advance(2)
     picked = sb.pick(snap, mob)
-    assert isinstance(picked, tuple) and picked[1] == "Fire Impact"
+    assert isinstance(picked, tuple) and picked[1] == (channel if already_unlocked else "Fire Impact")
+    if already_unlocked:
+        return
 
     clock.advance(0.25)
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fire Impact", "hits": [[-5, 5, 12000]]}, ME)
-    assert not sb.combos.flame_combo_priority(clock.now)
+    assert "Fire Impact" not in sb.combos.primed
     assert not sb.pending_channelling
     assert sb.available_to_channel_without_penalty
     clock.advance(2)
