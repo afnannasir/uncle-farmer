@@ -161,3 +161,38 @@ def test_two_different_originals_are_not_touched_by_the_spacing_rule(tmp_path: P
     write(str(lang / "xx" / "more" / "b.txt"), [("exit", "Salir"), (" quit", "Salir")])
     t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
     assert t.word("Salir") == "Leave"
+
+
+def marked_game(tmp_path: Path) -> gamelang.Table:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("(限制)", " (restricted) "), ("(锁定)", " (locked) ")])
+    write(str(lang / "xx" / "basic.txt"), [("(限制)", " (restringido) "), ("(锁定)", " (bloqueado) ")])
+    write(str(lang / "xx" / "more" / "item.txt"), [
+        ("Memory Butterfly", "Mariposa de memoria"),
+        ("{d} Memory Butterfly", "$1 Mariposa de memoria"),
+        ("Level {d} Turquoise Shard", "Fragmento de turquesa de nivel $1"),
+        ("{d} Level {d} Turquoise Shard", "$1 Fragmento de turquesa de nivel $2"),
+    ])
+    return gamelang.Table(str(lang / "xx"), str(lang / "english"))
+
+
+def test_a_name_with_the_client_s_mark_after_it_comes_back_name_and_mark(tmp_path: Path) -> None:
+    # The storehouse's "deposit item" list in Spanish, live 2026-11-11: the marked entries stayed
+    # Spanish, and the shard's came back "1 Level 2 (restringido)  Turquoise Shard" - the hole of
+    # its name had taken the mark. Depositing it said 'the menu has no entry like "...Level\ 2    # Turquoise\ Shard..."'.
+    t = marked_game(tmp_path)
+    assert t.word("78 Mariposa de memoria (restringido) ") == "78 Memory Butterfly (restricted)"
+    assert t.word("1 Fragmento de turquesa de nivel 2 (restringido) ") == "1 Level 2 Turquoise Shard (restricted)"
+    assert t.word("1 Fragmento de turquesa de nivel 2 (restringido)  (bloqueado) ") ==         "1 Level 2 Turquoise Shard (restricted) (locked)"
+    assert t.word("78 Mariposa de memoria") == "78 Memory Butterfly"           # unmarked: as before
+    assert t.word(" (restringido) ") == " (restricted) "                       # the mark alone: as before
+    assert t.word("Algo nuevo (restringido) ") == "Algo nuevo (restricted)"    # a name it doesn't know
+
+
+def test_a_pack_that_leaves_the_marks_as_they_are_still_has_them_split_off(tmp_path: Path) -> None:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("(限制)", " (restricted) ")])
+    write(str(lang / "xx" / "more" / "item.txt"), [("{d} Memory Butterfly", "$1 Mariposa de memoria")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("78 Mariposa de memoria(限制)") == "78 Memory Butterfly (restricted)"
+
