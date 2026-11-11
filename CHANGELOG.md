@@ -1,6 +1,6 @@
 # What's new
 
-## Unreleased
+## 1.1.0
 
 **Shooting while walking when farming**
 
@@ -55,6 +55,27 @@
 - Settings, Updater: all the update settings, this copy's version, and Save and check for updates now.
 - Tabs that hold more than the window shows now scroll, and windows never open bigger than the
   screen (on a small screen the Fighting tab's Gear choices were out of reach).
+
+**Also in this version**
+
+- Results: any day's results (Yesterday or a day you pick), casts and damage for each skill, and
+  healing done to yourself, your pet and others. Spoken results say the time farmed and the drop
+  time left first.
+- Characters with the same name on different servers keep separate profiles, chores and state.
+- Elf: Ignition is used only right before Pyroblast or Blazing Storm with three fire elements, and
+  a Fireball critical hit with Flame Combo makes Fire Impact ready at once.
+- Sorcerers and Priests cast their dispels on themselves (Shift + key), so their debuffs come off.
+- Shard and collection sales are much faster, and bag-rule discards go in one step each.
+- Travel: walks round one-way gates, no false "no way" after a map exit, the Holy Blood City cable
+  car is paid for, a free VIP ride that goes nowhere is paid for instead, and share trips pick the
+  instructor cheapest there and back.
+- After a fight the beast is mounted again, travel no longer wastes buffs, and skipped monsters are
+  forgotten after a death or a map change.
+- Daily chores fixed from recorded runs; the Gem Craftsman no longer leaves the gang base first;
+  the Equipment Enhancer never offers rings, medals, badges, emblems or bags.
+- Fixes for crashes on map changes and at start, kill counts from the last run, locked log files,
+  summer-time schedules, and game languages (equipment names, Shard Broker wording).
+- Needs the new game agent (58): restart the game after updating.
 
 ## 1.0.1
 
