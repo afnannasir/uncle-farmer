@@ -6,6 +6,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+import pytest
+
 from conftest import as_parts, Bot, Clock, fight, followed_by, Game, ME
 
 from unclefarmer.engine import combat, combos
@@ -112,10 +114,12 @@ def test_elf_fire_impact_after_a_fireball_crit(clock: Clock) -> None:
 
 def test_elf_ignition_after_three_fire_elements(clock: Clock) -> None:
     crit: Callable[[str, int], bool] = lambda name, n: True
-    g, _b, _sb = fight(clock, ["Fireball", "Fire Impact", "Blazing Storm", "Ignition"], [], 60, pack=4, crit=crit)
+    g, _b, _sb = fight(clock, ["Fireball", "Fire Impact", "Blazing Storm", "Ignition"],
+                     ["Blazing Combo"], 60, pack=4, crit=crit)
     plain = [x.rstrip("*") for x in g.log]
     i = plain.index("Ignition")
-    assert plain[:i].count("Blazing Storm") >= 3 and plain[i + 1] != "Ignition", g.log
+    assert plain[:i].count("Blazing Storm") >= 3, g.log
+    assert all(plain[j + 1] == "Blazing Storm" for j, name in enumerate(plain[:-1]) if name == "Ignition"), g.log
 
 
 def test_elf_blazing_combo_after_two_crits(clock: Clock) -> None:
@@ -400,33 +404,116 @@ def test_scenario_19_channeling_skills_do_not_bypass_fire_impact_priority(clock:
 
 def test_scenario_20_ignition_unavailable_below_3_fire_elements(clock: Clock) -> None:
     """20. Ignition remains unavailable with 0, 1, or 2 Fire Elements."""
-    _g, _b, sb = fight(clock, ["Fireball", "Fire Impact", "Blazing Storm", "Ignition"], ["Elven Fire"], 0.1)
+    _g, _b, sb = fight(clock, ELF, ["Blazing Combo"], 0)
     assert sb.combos is not None
-    mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
+    sb.available_to_channel_without_penalty = True
     for n in (0, 1, 2):
         sb.combos.built = n
-        assert sb.combos.pick(sb.slots[0], mob, clock.now, lambda s: True, elements=n) is None
+        assert not sb.combos.ignition_before({"name": "Pyroblast"}, elements=None)
 
 
-def test_scenario_21_ignition_eligible_at_3_or_more_fire_elements(clock: Clock) -> None:
-    """21. Ignition remains eligible at 3 or more Fire Elements, following existing release logic."""
-    _g, _b, sb = fight(clock, ["Fireball", "Fire Impact", "Blazing Storm", "Ignition"], ["Elven Fire"], 0.1)
+@pytest.mark.parametrize(("permission", "planned", "eligible"), [
+    (True, "Pyroblast", True),
+    (True, "Blazing Storm", True),
+    (False, "Pyroblast", False),
+    (False, "Blazing Storm", False),
+    (True, "Fireball", False),
+    (True, "Fire Impact", False),
+])
+def test_scenario_21_ignition_requires_permission_and_a_planned_channel(
+    clock: Clock, permission: bool, planned: str, eligible: bool,
+) -> None:
+    _g, _b, sb = fight(clock, [*ELF, "Blazing Storm"], ["Blazing Combo"], 0)
     assert sb.combos is not None
     assert combos.RELEASE_AT == 3
-    mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
+    sb.available_to_channel_without_penalty = permission
     for n in (3, 4, 5):
         sb.combos.built = n
-        picked = sb.combos.pick(sb.slots[0], mob, clock.now, lambda s: True, elements=n)
-        assert picked is not None and picked["name"] == "Ignition"
+        assert sb.combos.ignition_before({"name": planned}, elements=None) is eligible
 
 
 def test_scenario_22_fireball_and_flame_combo_resets_fire_impact(clock: Clock) -> None:
-    """22. Existing Fireball and Flame Combo behavior still works."""
-    crit: Callable[[str, int], bool] = lambda name, n: name == "Fireball"
-    g, _b, _sb = fight(clock, ["Fireball", "Fire Impact"], ["Flame Combo"], 30, crit=crit,
-                       resets={"Fireball": ("Flame Combo", "Fire Impact")})
-    assert g.log.count("Fireball*") >= 3
-    assert g.log.count("Fire Impact") >= 3
+    """Confirmed Fireball resets allow alternation even when Fire Impact itself crits."""
+    g, _b, _sb = fight(clock, ["Fireball", "Fire Impact"], ["Flame Combo"], 30,
+                       crit=lambda _name, _n: True, resets={"Fireball": ("Flame Combo", "Fire Impact")})
+    assert g.log[:8] == ["Fire Impact*", "Fireball*"] * 4
+
+
+@pytest.mark.parametrize(("active", "result", "cooldown_age"), [
+    (True, 5, 1.5),
+    (True, 5, None),
+    (True, 5, 6.1),
+    (True, 1, 1.5),
+    (False, 5, 1.5),
+])
+def test_flame_combo_resets_cooldown_without_prioritizing_fire_impact(
+    clock: Clock, active: bool, result: int, cooldown_age: float | None,
+) -> None:
+    g = Game(clock, ["Fireball", "Fire Impact"], ["Flame Combo"] if active else [])
+    sb = combat.SkillBook(as_parts(Bot(g, {"skill_use": {"Fireball": "ready"}})))
+    assert sb.combos is not None
+    impact = sb.skill("Fire Impact")
+    assert impact is not None
+    if cooldown_age is not None:
+        sb.used["Fire Impact"] = clock.now - cooldown_age
+    old_cooldown = sb.used.get("Fire Impact")
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-5, result, 10000]]}, ME)
+    reset = active and result == 5
+    assert "Fire Impact" not in sb.combos.primed
+    assert sb.used.get("Fire Impact") == (None if reset else old_cooldown)
+    assert sb.ready(impact, clock.now) is (reset or cooldown_age is None)
+
+    clock.advance(2)
+    mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
+    me = {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}
+    snap = {"self": me, "entities": [me, mob]}
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == "Fireball"
+    # Normal selection can use the reset skill immediately when Fireball is cooling down.
+    clock.advance(2)
+    sb.used["Fireball"] = clock.now
+    picked = sb.pick(snap, mob)
+    if reset or cooldown_age is None or cooldown_age >= 6:
+        assert isinstance(picked, tuple) and picked[1] == "Fire Impact"
+    else:
+        assert picked in (None, "wait")
+
+
+@pytest.mark.parametrize("already_unlocked", [False, True])
+@pytest.mark.parametrize(("pack", "channel"), [(1, "Pyroblast"), (2, "Blazing Storm")])
+def test_flame_combo_and_blazing_combo_share_one_fire_impact(
+    clock: Clock, already_unlocked: bool, pack: int, channel: str,
+) -> None:
+    g = Game(clock, [*ELF, "Blazing Storm"], ["Flame Combo", "Blazing Combo"])
+    sb = combat.SkillBook(as_parts(Bot(g)))
+    assert sb.combos is not None
+    sb.available_to_channel_without_penalty = already_unlocked
+    sb.used["Fire Impact"] = clock.now - 1.5
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-5, 5, 10000]]}, ME)
+    assert "Fire Impact" not in sb.used
+    assert "Fire Impact" not in sb.combos.primed
+    assert sb.pending_channelling is not already_unlocked
+    assert sb.available_to_channel_without_penalty is already_unlocked
+    assert sb.combos.streak == (0 if already_unlocked else 1)
+
+    mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
+    me = {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}
+    mobs = [mob] if pack == 1 else [mob, dict(mob, id=-6, y=51)]
+    snap = {"self": me, "entities": [me, *mobs]}
+    clock.advance(2)
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == (channel if already_unlocked else "Fire Impact")
+    if already_unlocked:
+        return
+
+    clock.advance(0.25)
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fire Impact", "hits": [[-5, 5, 12000]]}, ME)
+    assert "Fire Impact" not in sb.combos.primed
+    assert not sb.pending_channelling
+    assert sb.available_to_channel_without_penalty
+    clock.advance(2)
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == channel
 
 
 # ---------------------------------------------------------------- Solution 3 Tests (Scenarios 1-12)

@@ -40,7 +40,7 @@ from collections.abc import Callable, Collection, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, TypeGuard
 
 from ..i18n import _
-from .elf_combos import ELF_RULES, FIRE_ELEMENT_CAP, ElfCombos
+from .elf_combos import ELF_RULES, FIRE_ELEMENT_CAP, IGNITION, ElfCombos, unpenalized
 from .elf_combos import RELEASE_AT as RELEASE_AT
 
 if TYPE_CHECKING:
@@ -253,7 +253,8 @@ class Combos(ElfCombos):
             if name in _names(a) or (a == "*" and attack):
                 if not r.get("keep_cd"):
                     self.book.clear_cooldown(b)
-                self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
+                if r.get("prime", True):
+                    self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
         for r in self.of("fast"):
             if r["fast"][0] == name:
                 self.fast_until = t + r["fast"][1]
@@ -292,6 +293,15 @@ class Combos(ElfCombos):
         return 1.0 + self.bonus.get(s["name"], 0) / 100.0
 
     # ---------------------------------------------------------------- choosing
+    def _release_ready(self, elements: int | None) -> bool:
+        return (elements if elements is not None else self.built) >= RELEASE_AT
+
+    def ignition_before(self, planned: Skill, elements: int | None) -> bool:
+        """Ignition spends fire elements on the channel the combat picker already chose."""
+        return (unpenalized(planned, self.available_to_channel_without_penalty)
+                and self._release_ready(elements)
+                and any(rule["release"][0] == IGNITION for rule in self.of("release")))
+
     def _primed_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
         """Return the highest priority primed skill that is ready, skipping Fire Impact if it critted first."""
         for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
@@ -307,13 +317,13 @@ class Combos(ElfCombos):
              elements: int | None) -> Skill | None:
         """The skill a combo wants pressed now, from skills (ready, affordable, on our keys), or
         None. target = the monster we fight; elements = fire elements the T key reported."""
-        have = {s["name"]: s for s in skills if in_range(s)}
+        have = {s["name"]: s for s in skills if s["name"] != IGNITION and in_range(s)}
         tid = target.get("id")
 
         def ok(name: str) -> Skill | None:
             return have.get(name)
 
-        elf_choice = self._elf_pick(ok)
+        elf_choice = self._elf_pick(ok, now)
         if elf_choice:
             return elf_choice
 
@@ -322,8 +332,7 @@ class Combos(ElfCombos):
             return primed
         for r in self.of("release"):
             skill, _builders = r["release"]
-            n = elements if elements is not None else self.built
-            if n >= RELEASE_AT and ok(skill):
+            if self._release_ready(elements) and ok(skill):
                 return ok(skill)
         for r in self.of("while_on"):
             skill, debuff = r["while_on"]

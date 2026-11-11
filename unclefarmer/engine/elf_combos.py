@@ -13,15 +13,17 @@ if TYPE_CHECKING:
 PYROBLAST = "Pyroblast"
 BLAZING_STORM = "Blazing Storm"
 FIRE_IMPACT = "Fire Impact"
+IGNITION = "Ignition"
 BLAZING_COMBO = "Blazing Combo"
+FLAME_COMBO = "Flame Combo"
 CHANNEL_SKILLS = (BLAZING_STORM, PYROBLAST)
-ELF_ATTACKS = ("Fireball", FIRE_IMPACT, "Fire Surge", *CHANNEL_SKILLS, "Ignition", "Sear", "Magma", "Dragon's Breath")
+ELF_ATTACKS = ("Fireball", FIRE_IMPACT, "Fire Surge", *CHANNEL_SKILLS, IGNITION, "Sear", "Magma", "Dragon's Breath")
 RELEASE_AT = 3  # fire elements needed for Ignition
 FIRE_ELEMENT_CAP = 5
 
 ELF_RULES: tuple[Rule, ...] = (
-    {"talent": None, "release": ("Ignition", (PYROBLAST, BLAZING_STORM))},
-    {"talent": "Flame Combo", "reset": ("Fireball", FIRE_IMPACT)},
+    {"talent": None, "release": (IGNITION, (PYROBLAST, BLAZING_STORM))},
+    {"talent": FLAME_COMBO, "reset": ("Fireball", FIRE_IMPACT), "prime": False},
     {"talent": BLAZING_COMBO, "streak": (2, CHANNEL_SKILLS)},
 )
 
@@ -131,7 +133,7 @@ class ElfCombos:
         return (self.has_talent(BLAZING_COMBO) and skill["name"] in CHANNEL_SKILLS
                 and not self.available_to_channel_without_penalty)
 
-    def _elf_pick(self, ok: Callable[[str], Skill | None]) -> Skill | None:
+    def _elf_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
         if self.pending_channelling and (fire_impact := ok(FIRE_IMPACT)):
             return fire_impact
         return self._channel_pick(ok)
