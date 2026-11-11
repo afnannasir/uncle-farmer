@@ -58,6 +58,48 @@ def test_names_and_menu_lines_come_back_in_english(game: Path) -> None:
     assert t.word("Something new") == "Something new"
 
 
+def test_a_translation_comes_back_in_the_english_packs_wording(tmp_path: Path) -> None:
+    """The bot's names are the english pack's, and that pack rewords some of the server's. Live
+    with the Spanish pack (2026-11-11): "Mercado de fragmentos" came back as the server's "Shard
+    Marketplace", and a run stopped with "couldn't talk to Shard Broker" beside that NPC."""
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "more" / "NPC.txt"), [
+        ("Shard Marketplace", "Shard Broker"),
+        ("Bone Cookie", "Pet Bone Cookie"),
+        ("Lesser Cattle Soul Stone", "Lesser Cow Soul Stone"),
+        ("{d} Cattle", "$1 Cows"),                    # a template: not an exact name's business
+    ])
+    write(str(lang / "xx" / "more" / "NPC.txt"), [
+        ("Shard Marketplace", "Mercado de fragmentos"),
+        ("Bone Cookie", "Galleta de Hueso"),
+        ("Lesser Cattle Soul Stone", "Piedra menor de alma de vaca"),
+        ("Frog", "Rana"),                             # the english pack says nothing: the key stands
+    ])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Mercado de fragmentos") == "Shard Broker"
+    assert t.word("Galleta de Hueso") == "Pet Bone Cookie"
+    assert t.word("Piedra menor de alma de vaca") == "Lesser Cow Soul Stone"
+    assert t.word("Rana") == "Frog"
+
+
+def test_a_reworded_name_is_found_inside_a_joined_name(tmp_path: Path) -> None:
+    """A pet's name is its kind and its own name, turned back part by part: the kind too is the
+    english pack's wording."""
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "more" / "pet.txt"), [("Cattle", "Cow")])
+    write(str(lang / "xx" / "more" / "pet.txt"), [("Cattle", "Vaca"), (" belongs to {s}", " pertenece a $1")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Vaca Lola pertenece a Hero") == "Cow Lola belongs to Hero"
+
+
+def test_shown_keeps_the_key_when_the_english_pack_has_holes_or_nothing(tmp_path: Path) -> None:
+    eng = {"Bone Cookie": "Pet Bone Cookie", "Arnebia piece": "$1 Arnebia", "Empty": ""}
+    assert gamelang._shown("Bone Cookie", eng) == "Pet Bone Cookie"
+    assert gamelang._shown("Arnebia piece", eng) == "Arnebia piece"
+    assert gamelang._shown("Empty", eng) == "Empty"
+    assert gamelang._shown("Frog", eng) == "Frog"
+
+
 def test_a_pet_s_name_is_turned_back_part_by_part(game: Path) -> None:
     t = gamelang.table()
     assert t is not None
