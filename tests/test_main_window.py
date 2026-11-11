@@ -119,6 +119,18 @@ class Win:
         self.shutdowns += 1
 
 
+def test_restock_now_tool_dispatches_the_shared_script_job() -> None:
+    from unclefarmer.gui.mainparts import editing
+
+    calls: list[tuple[str, str]] = []
+    def run_errand(text: str, title: str) -> None:
+        calls.append((text, title))
+
+    frame: Any = SimpleNamespace(run_errand=run_errand)
+    editing.EditingMixin.restock_now(frame)
+    assert calls == [("restock\n", "Restocking supplies")]
+
+
 class FakeRun:
     def __init__(self, pid: int, title: str="wolves", character: str="Ali", bot: Any = None, tally: Any = None) -> None:
         self.pid, self.title, self.character, self.bot, self.tally = pid, title, character, bot, tally

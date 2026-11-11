@@ -263,6 +263,10 @@ class EditingMixin(FrameParts):
         self.log(_("Sell shards now: started by hand"))
         self.run_errand("sell_shards\n", _("Selling shards"))
 
+    def restock_now(self) -> None:
+        """Run an explicit supply top-up through the same job as farming triggers."""
+        self.run_errand("restock\n", _("Restocking supplies"))
+
     def sell_collection_now(self) -> None:
         """Sell the selected character's gathered fish, ore, or herbs right away."""
         self.run_errand("sell_collection\n", _("Selling the collection"))

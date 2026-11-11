@@ -587,7 +587,7 @@ def test_open_section_walks_in(monkeypatch: pytest.MonkeyPatch) -> None:
     chosen: list[str] = []
     b.dialog = lambda: {"open": 1, "top": menu(opt("item storage"))}
     b.choose = lambda pattern: chosen.append(pattern) or {"text": "entry"}
-    b.wait_dialog = lambda seconds=3.0, want_open=True: {"open": 1}
+    b.wait_menu_change = lambda before, seconds=0.4, depth=1: {"open": 1, "top": menu(opt("1; 50 Potion"))}
     assert town.open_section(as_bot(b), "item storage") is True
     assert chosen == ["item storage"]
 
@@ -596,6 +596,17 @@ def test_open_section_without_a_dialog() -> None:
     b = TownBot()
     b.dialog = lambda: {"open": 0, "top": None}
     assert town.open_section(as_bot(b), "x") is False
+
+
+@pytest.mark.parametrize("returned_depth", [0, 1])
+def test_open_section_rejects_closed_or_underlying_menus(returned_depth: int) -> None:
+    b = TownBot()
+    b.dialog = lambda: {"open": 2, "top": menu(opt("item storage"))}
+    b.choose = lambda pattern: {"text": "entry"}
+    # The result exposes fewer menus than the section we selected.
+    b.wait_menu_change = lambda before, seconds=0.4, depth=2: {
+        "open": returned_depth, "top": menu(opt("other"))}
+    assert town.open_section(as_bot(b), "item storage") is False
 
 
 def test_open_section_when_the_entry_is_absent() -> None:

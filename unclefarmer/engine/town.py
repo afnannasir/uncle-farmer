@@ -238,11 +238,17 @@ def pick(b: Bot, pattern: str, quantity: int | None = None) -> bool:
 
 
 def open_section(b: Bot, pattern: str) -> bool:
-    """Go one level into a menu (e.g. "item storage"), if the open menu has that entry."""
+    """Choose a section and wait for its menu, rather than accepting the still-open parent."""
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], pattern) is not None:
-        b.choose(pattern)
-        return bool(b.wait_dialog(3.0))
+        before: dict[str, Any] = d["top"]
+        depth = max(1, int(d["open"]))
+        if b.choose(pattern) is None:
+            return False
+        after = b.wait_menu_change(before, seconds=3.0, depth=depth)
+        top: dict[str, Any] = after.get("top") or {}
+        return bool(int(after.get("open") or 0) >= depth and top
+                    and (top.get("sig") != before.get("sig") or top.get("rows") != before.get("rows")))
     return False
 
 
@@ -254,7 +260,7 @@ def in_town(b: Bot, npcs: Sequence[Npc]) -> list[Npc]:
     return list(npcs) if town_map is None else [n for n in npcs if n[0] == town_map]
 
 
-def withdraw(b: Bot, item: str, n: int):
+def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None):
     """Take up to n of item out of the storehouse (the trip's town's, during a restock). Returns
     how many arrived in the bag, counted at the storehouse: a potion drunk on the way there is not a
     potion the storehouse failed to hand over (that used to send the trip on to a shop)."""
@@ -266,6 +272,10 @@ def withdraw(b: Bot, item: str, n: int):
     visit(b, "storehouse", candidates=houses)
     before = counts(b).get(item.lower(), 0)
     try:
+        if stock is not None:
+            n = _restock_quantity(b, item, stock)
+            if n <= 0:
+                return 0
         if not open_section(b, r"^\s*item storage"):
             b.log(_("the storehouse menu has no item storage"), speak=True)
             return 0
@@ -277,7 +287,15 @@ def withdraw(b: Bot, item: str, n: int):
         pick(b, item_pattern(item), n)
     finally:
         b.close_dialogs()
-    got = max(0, counts(b).get(item.lower(), 0) - before)
+    if stock is not None:
+        transaction = InventoryTransaction({item.lower(): before})
+        transaction.expect(item, n)
+        after = transaction.settle(b)
+    else:
+        after = counts(b)
+    got = max(0, after.get(item.lower(), 0) - before)
+    if stock is not None and got > 0:
+        getattr(b, "storehouse_lacks", set[str]()).discard(item.lower())
     b.log(_("took {n} {item} out of the storehouse", n=got, item=item))
     stats.moved(b, "withdrawn", item, got)
     return got
@@ -373,7 +391,7 @@ def _buy_menu(b: Bot, item: str) -> bool:
     return True
 
 
-def buy(b: Bot, item: str, n: int) -> int:
+def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
     """Buy n of item at the nearest shop that sells it: the shops seen selling it and every one of
     the kind that should (a potion seller, a grocer), nearest by travel first. Before, only the one
     shop whose menu the game data held was ever used - a Priest farming Flaming Mountain went to
@@ -389,17 +407,10 @@ def buy(b: Bot, item: str, n: int) -> int:
         return 0
     have = counts(b)
     before = have.get(item.lower(), 0)
-    price = knowledge.unit_price(item)
-    money = have.get(stats.ARNEBIA)
-    if price and money is not None and n * price > money:
-        afford = money // price
-        if afford <= 0:
-            b.log(_("not enough arnebia for one {item}: {price} each, {money} in the bag",
-                    item=item, price=price, money=money), speak=True)
+    if stock is None:
+        n = _affordable_quantity(b, item, n, have)
+        if n <= 0:
             return 0
-        b.log(_("buying {n} {item}, not {want}: that is what {money} arnebia pays for at {price} each",
-                n=afford, item=item, want=n, money=money, price=price))
-        n = afford
     tried: list[Npc] = []
     for _try in range(BUY_TRIES):
         target = nearest(b, None, [s for s in shops if s not in tried])
@@ -408,6 +419,11 @@ def buy(b: Bot, item: str, n: int) -> int:
         tried.append(target)
         visit(b, None, candidates=[target])
         try:
+            if stock is not None:
+                n = _affordable_quantity(b, item, _restock_quantity(b, item, stock), counts(b))
+                if n <= 0:
+                    return 0
+                before = counts(b).get(item.lower(), 0)
             # a potion seller's verified list: the item by its index, no walk down the list
             if menus.pick(b, menus.POTION_SHOP, name=item) is not None:
                 note_shop(target, item, True)
@@ -421,12 +437,34 @@ def buy(b: Bot, item: str, n: int) -> int:
                 pick(b, item_pattern(item), n)
         finally:
             b.close_dialogs()
-        got = counts(b).get(item.lower(), 0) - before
+        if stock is not None:
+            transaction = InventoryTransaction({item.lower(): before})
+            transaction.expect(item, n)
+            after = transaction.settle(b)
+        else:
+            after = counts(b)
+        got = after.get(item.lower(), 0) - before
         b.log(_("bought {n} {item}", n=got, item=item))
         stats.moved(b, "bought", item, got)
         return got
     b.log(_("no shop near enough lists {item} - see logs\\dialogs.log", item=item), speak=True)
     return 0
+
+
+def _affordable_quantity(b: Bot, item: str, n: int, have: dict[str, int]) -> int:
+    """Apply the shop's existing currency limit to a requested quantity."""
+    price = knowledge.unit_price(item)
+    money = have.get(stats.ARNEBIA)
+    if price and money is not None and n * price > money:
+        afford = money // price
+        if afford <= 0:
+            b.log(_("not enough arnebia for one {item}: {price} each, {money} in the bag",
+                    item=item, price=price, money=money), speak=True)
+            return 0
+        b.log(_("buying {n} {item}, not {want}: that is what {money} arnebia pays for at {price} each",
+                n=afford, item=item, want=n, money=money, price=price))
+        return afford
+    return n
 
 
 def sell(b: Bot, item: str, n: int | None=None):
@@ -585,7 +623,7 @@ def _sources(r: dict[str, Any]) -> tuple[bool, bool]:
     return source in ("both", "storage"), source in ("both", "buy")
 
 
-def possible(b: Bot, r: dict[str, Any], why: list[str]) -> bool:
+def possible(b: Bot, r: dict[str, Any], why: list[str], *, retry: bool = False) -> bool:
     """Whether a trip could get any of this rule's item: the storehouse isn't known to be out of it,
     or there is arnebia to buy it; and a trip that got none of it lately (RESTOCK_RETRY) isn't
     made again before more arnebia has come in. Why not goes into why."""
@@ -596,11 +634,11 @@ def possible(b: Bot, r: dict[str, Any], why: list[str]) -> bool:
     failed: dict[str, tuple[float, int]] = getattr(b, "restock_failed", {})
     last = failed.get(item)
     now = clock_for(b).time()
-    if last is not None and now - last[0] < RESTOCK_RETRY and (money or 0) <= last[1]:
+    if not retry and last is not None and now - last[0] < RESTOCK_RETRY and (money or 0) <= last[1]:
         why.append(_("the last trip for {item} got none, and nothing has changed since", item=r["item"]))
         return False
     lacks: set[str] = getattr(b, "storehouse_lacks", set())
-    from_store = store and item not in lacks
+    from_store = store and (retry or item not in lacks)
     price = knowledge.unit_price(item) or 1
     from_shop = shop and (money is None or money >= price)
     if from_store or from_shop:
@@ -648,6 +686,11 @@ def restock_town(b: Bot, todo: Sequence[Need]) -> int | None:
     return near[0] if near else None
 
 
+def restock_now(b: Bot) -> bool:
+    """The explicit Tools, trigger and script job, protected by the bot's restock guard."""
+    return b.restock_now(start=True)
+
+
 def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     """Top up every rule that needs it: storehouse first (free), then the shop, all in one town
     (restock_town) - never on to another town. A rule that can't be met (no arnebia, the
@@ -667,16 +710,20 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     able: list[Need] = []
     for t in todo:
         why: list[str] = []
-        if possible(b, t[0], why):
+        if possible(b, t[0], why, retry=start):
             able.append(t)
             skipped.discard(t[0]["item"])
-        elif t[0]["item"] not in skipped:
+        elif start or t[0]["item"] not in skipped:
             skipped.add(t[0]["item"])
             b.log(_("not restocking {item}: {why}", item=t[0]["item"], why=why[0] if why else "?"), speak=True)
     if not able:
+        if start:
+            message = (_("Restock now: no supplies could be restocked.") if todo
+                       else _("Restock now: nothing to restock; no supplies need purchasing or withdrawal."))
+            b.log(message, speak=True)
         return False
     # once we're going anyway, top up everything that's short (and can be had)
-    todo = [t for t in needs(b, rules, True) if bagrules.supply_rule(t[0]) != "tell" and possible(b, t[0], [])]
+    todo = [t for t in needs(b, rules, True) if bagrules.supply_rule(t[0]) != "tell" and possible(b, t[0], [], retry=start)]
     where = restock_town(b, todo)
     what = ", ".join("%s %d/%d" % (r["item"], h, w) for r, h, w in todo)
     if where is None:
@@ -687,7 +734,11 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     b.restock_town = where
     try:
         for r, have, want in todo:
-            got = _fill(b, r, want - have)
+            if start:
+                got = _try_trip(b, _("couldn't restock {item}: {why}"), r["item"],
+                                lambda r=r, want=want: _fill(b, r, want - counts(b).get(r["item"].strip().lower(), 0), stock=want)) or 0
+            else:
+                got = _fill(b, r, want - have)
             item = r["item"].strip().lower()
             if got <= 0 and counts(b).get(item, 0) <= int(r.get("min") or 0):
                 b.__dict__.setdefault("restock_failed", {})[item] = (clock_for(b).time(),
@@ -696,22 +747,51 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
                 getattr(b, "restock_failed", {}).pop(item, None)
     finally:
         b.restock_town = None
-    still = [(r["item"], h) for r, h, _w in needs(b, rules, False)]
+    still = [(r["item"], h) for r, h, _w in needs(b, rules, start)
+             if not start or bagrules.supply_rule(r) != "tell"]
     if still:
         b.log(_("still short after restocking: {what}", what=", ".join("%s %d" % s for s in still)), speak=True)
+    elif start:
+        b.log(_("Restock now: supplies are at their configured targets."), speak=True)
     return True
 
 
-def _fill(b: Bot, r: dict[str, Any], missing: int) -> int:
+def _restock_quantity(b: Bot, item: str, stock: int) -> int:
+    """Recount at the service and cap the top-up by the game's known bag load and learned weight."""
+    sheet: dict[str, Any] = b.me().get("sheet") or {}
+    if getattr(b, "agent_sheet", False):
+        fresh = b.ask_sheet(force=True)
+        if isinstance(fresh, dict):
+            sheet = fresh
+    missing = max(0, stock - counts(b).get(item.strip().lower(), 0))
+    maximum, load = sheet.get("maxload"), sheet.get("load")
+    if maximum is not None and maximum > 0 and load is not None:
+        room = max(0, maximum - load)
+        weight = bagrules.weights().get(item.strip().lower())
+        if room <= 0 or weight and weight > 0:
+            fits = int(room / weight) if weight and weight > 0 else 0
+            if fits < missing:
+                b.log(_("bag capacity allows {n} more {item}", n=fits, item=item), speak=True)
+            missing = min(missing, fits)
+    return missing
+
+
+def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) -> int:
     """Withdraw, then buy what is still missing, as the rule's source allows. How many came in."""
     if missing <= 0:
         return 0
     store, shop = _sources(r)
+    item = r["item"].strip() if stock is not None else r["item"]
     got = 0
+    options: dict[str, int] = {"stock": stock} if stock is not None else {}
     if store:
-        got += withdraw(b, r["item"], missing)
-    if missing - got > 0 and shop:
-        got += buy(b, r["item"], missing - got) or 0
+        got += withdraw(b, item, missing, **options)
+    if stock is not None:
+        missing = max(0, stock - counts(b).get(item.lower(), 0))
+    else:
+        missing -= got
+    if missing > 0 and shop:
+        got += buy(b, item, missing, **options) or 0
     return got
 
 
@@ -1084,7 +1164,7 @@ def _try_trip(b: Bot, failed: str, name: str, action: Callable[[], int]) -> int 
     try:
         return action()
     except Stopped as e:
-        if b.stop_event.is_set():
+        if b.stop_event.is_set() or e.final:
             raise
         b.log(failed.format(item=name, why=e))
         return None

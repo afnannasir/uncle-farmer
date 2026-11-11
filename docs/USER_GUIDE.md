@@ -108,7 +108,7 @@ This is where you control your farming runs. It shows:
 - Nearby players and their distance from you, measured in steps.
 - Your bag contents, drop time, and kill count for the current run.
 
-Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has Walk to, Scan now, Character settings, Bag and supplies, Chat, Private messages, Results, mute and unmute, and the jobs that run right away: **Sell the collection now**, **Sell shards now**, **Clean the bag now**, **Store items now**, and **Update shard prices**. An entry that can't be used right now, such as a job while that game's bot is running, is greyed out.
+Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has Walk to, Scan now, Character settings, Bag and supplies, Chat, Private messages, Results, mute and unmute, and the jobs that run right away: **Sell the collection now**, **Sell shards now**, **Clean the bag now**, **Store items now**, **Restock now**, and **Update shard prices**. An entry that can't be used right now, such as a job while that game's bot is running, is greyed out.
 
 ### Plans tab
 
@@ -418,13 +418,14 @@ The storage list is read when the job starts. This means changes you make to the
 
 Open **Character, Settings, Triggers** to configure jobs that run before or after farming.
 
-There are two lists, and both contain the same five jobs:
+There are two lists, and both contain the same six jobs:
 
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
 - **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
 - **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
+- **Restock supplies:** Runs **Restock now** from the game's menu in the Games list. It fills every supply that is switched on in **Character, Bag and supplies** up to its "fill up to" amount, from the storehouse first and then a shop, even when it is not yet down to its refill point.
 
 
 ## Fighting and staying alive

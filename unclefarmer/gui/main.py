@@ -340,6 +340,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             (_("Sell s&hards now"), lambda e: self.sell_shards_now(), available and not running),
             (_("Clean the &bag now"), lambda e: self.clean_bag_now(), available and not running),
             (_("S&tore items now"), lambda e: self.store_items_now(), available and not running),
+            (_("Restock &now"), lambda e: self.restock_now(), available and not running),
             (_("Update shard &prices"), lambda e: self.update_shard_prices_now(), available and not running),
         ])
 
@@ -543,7 +544,9 @@ the bag now: throws away, where you stand, only what is on the bag manager's thr
 after you say yes. Update shard prices: reads the nearest Shard Market's prices into the price
 list the bag manager and the results use; a price that can't be read keeps its old value. Store
 items now: puts into the storehouse what is on the bag manager's storage list (Move to
-storehouse), keeping what each rule keeps, and nothing else.
+storehouse), keeping what each rule keeps, and nothing else. Restock now: fills the enabled
+supplies to their targets, withdrawing or buying only what is missing, even when they are not
+down to their refill points yet.
 Character, Settings, Triggers: tick any of these jobs (and Gathering) to run by themselves before
 farming starts, after farming ends, or both - each stage has its own ticks.
 Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many

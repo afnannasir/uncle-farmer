@@ -388,6 +388,9 @@ msgstr "&Jawab, har line mein ek:"
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Agli ladai se pehle HP se neeche &aram (%):"
 
+msgid "&Restock supplies (game menu, Restock now)"
+msgstr "&Supplies dobara bharein (game menu, Restock now)"
+
 msgid "&Results"
 msgstr "&Nataij"
 
@@ -1399,6 +1402,11 @@ msgstr "Larai:"
 
 msgid "Fill &up to:"
 msgstr "&Yahan tak bharein:"
+
+msgid ""
+"Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
+msgstr ""
+"Chalu supplies ko un ki muqarrar miktar tak bharta hai, chahe un ki khudkar refill ki had abhi na aayi ho."
 
 msgid "Fishing"
 msgstr "Fishing (machhli)"
@@ -2720,6 +2728,37 @@ msgstr "HP (%) tak &aaram karein:"
 
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Zaban badalne ke liye Uncle Farmer restart karein."
+
+msgid "Restoc&k supplies (game menu, Restock now)"
+msgstr "Supplies dobara &bharein (game menu, Restock now)"
+
+msgid "Restock &now"
+msgstr "Abhi restock &karein"
+
+msgid "Restock now"
+msgstr "Abhi restock karein"
+
+msgid "Restock now: a restock is already running."
+msgstr "Abhi restock karein: restock ka kaam pehle se chal raha hai."
+
+msgid "Restock now: no supplies could be restocked."
+msgstr "Abhi restock karein: supplies dobara nahin bhari ja sakin."
+
+msgid ""
+"Restock now: no supply rules are configured in Character, Bag and supplies."
+msgstr ""
+"Abhi restock karein: Character, Bag aur supplies mein koi supply rule tay nahin kiya gaya."
+
+msgid ""
+"Restock now: nothing to restock; no supplies need purchasing or withdrawal."
+msgstr ""
+"Abhi restock karein: restock ki zarurat nahin; koi supply khareedne ya storehouse se nikalne ki zarurat nahin."
+
+msgid "Restock now: supplies are at their configured targets."
+msgstr "Abhi restock karein: supplies apni muqarrar miktar par hain."
+
+msgid "Restocking supplies"
+msgstr "Supplies dobara bhar rahe hain"
 
 msgid "Results"
 msgstr "Nataij"
@@ -4163,6 +4202,9 @@ msgstr "{why} ke baad {map} par wapas"
 msgid "bad pattern: {why}"
 msgstr "ghalat pattern: {why}"
 
+msgid "bag capacity allows {n} more {item}"
+msgstr "bag mein {n} mazeed {item} ki jagah hai"
+
 msgid "bag items and targets go by keys again: {why}"
 msgstr "baste ki cheezein aur target ab phir keys se: {why}"
 
@@ -4411,6 +4453,9 @@ msgstr "skills panel mein {skill} tak nahi pohanch sake"
 
 msgid "couldn't respawn - please do it by hand"
 msgstr "respawn nahi ho saka - baraye meharbani khud karein"
+
+msgid "couldn't restock {item}: {why}"
+msgstr "{item} restock nahin ho saka: {why}"
 
 msgid "couldn't save the shard prices: {err}"
 msgstr "shards ki qeematein mahfooz nahi ho sakin: {err}"
@@ -5239,9 +5284,6 @@ msgstr "collection mein se kuch nahi bika"
 msgid "nothing to collect today"
 msgstr "aaj lene ko kuch nahi"
 
-msgid "nothing to restock"
-msgstr "restock karne ke liye kuch nahi"
-
 msgid "now (waiting to start)"
 msgstr "abhi (shuru hone ke intezar mein)"
 
@@ -5461,6 +5503,9 @@ msgstr "aaram"
 
 msgid "restocking in {map}: {what}"
 msgstr "{map} mein dobara stock ho raha hai: {what}"
+
+msgid "restocking supplies"
+msgstr "supplies dobara bharna"
 
 msgid "restocking: {what}"
 msgstr "dobara stock ho raha hai: {what}"
@@ -6140,8 +6185,10 @@ msgstr "{kind} {name} ab maujood nahi"
 msgid "the {npc} didn't take me anywhere"
 msgstr "{npc} mujhe kahin nahi le gaya"
 
-msgid "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
-msgstr "{npc} mujhe muft nahi le gaya - check karein ke aap ka VIP abhi active hai. Is run ke baqi safar ka kiraya diya jayega"
+msgid ""
+"the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
+msgstr ""
+"{npc} mujhe muft nahi le gaya - check karein ke aap ka VIP abhi active hai. Is run ke baqi safar ka kiraya diya jayega"
 
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} andar jaane ka koi rasta nahi deta ({about})"
@@ -7385,6 +7432,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "not yet today"
 #~ msgstr "aaj abhi nahi"
+
+#~ msgid "nothing to restock"
+#~ msgstr "restock karne ke liye kuch nahi"
 
 #~ msgid "pet HP {pct}% - pressing {key}"
 #~ msgstr "pet HP {pct}% - {key} daba rahe hain"

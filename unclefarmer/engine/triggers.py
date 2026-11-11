@@ -1,5 +1,5 @@
 """Character settings, Triggers: Tools jobs the bot runs by itself before farming starts and after
-it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering and Store items now.
+it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering, Store items now and Restock now.
 
 Each job has two ticks of its own, one per stage (profile keys `<job>_before_farming` and
 `<job>_after_farming`); the two never touch each other, so a job ticked at both stages runs once
@@ -44,10 +44,11 @@ JOBS: tuple[tuple[str, str], ...] = (
     ("update_shard_prices", N_("updating shard prices")),
     ("gather", N_("gathering")),
     ("store_items", N_("storing items")),
+    ("restock", N_("restocking supplies")),
 )
 # the town function each job is (looked up when it runs); gathering is gathering.run with its settings
 TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
-             "update_shard_prices": "update_shard_prices", "store_items": "store_items"}
+             "update_shard_prices": "update_shard_prices", "store_items": "store_items", "restock": "restock_now"}
 FARMING_COMMANDS = ("farm", "dungeon")
 
 

@@ -1,7 +1,7 @@
 # pyright: reportPrivateUsage=false
 # White-box tests: they call the run's before/after stages and use test_runner's stand-ins.
-"""Character settings, Triggers: five Tools jobs (Sell shards now, Clean the bag now, Update shard
-prices, Gathering, Store items now), each with its own tick before farming and after farming. The
+"""Character settings, Triggers: six Tools jobs (Sell shards now, Clean the bag now, Update shard
+prices, Gathering, Store items now, Restock now), each with its own tick before farming and after farming. The
 two ticks are independent: a job ticked at both runs once before and once after. The jobs run one
 after the other in a fixed order, the same code the Tools menu runs, and never for a run that isn't
 farming."""
@@ -21,11 +21,11 @@ from unclefarmer.engine import gathering, runner as R, script as script_mod, tow
 from unclefarmer.engine.bot import Stopped
 from unclefarmer.link import AgentError
 
-ORDER = ["sell_shards", "clean_bag", "update_shard_prices", "gather", "store_items"]
+ORDER = ["sell_shards", "clean_bag", "update_shard_prices", "gather", "store_items", "restock"]
 
 
 class Jobs:
-    """The five jobs as stand-ins: what ran (with the stage it ran in), what each raises."""
+    """The jobs as stand-ins: what ran (with the stage it ran in), what each raises."""
 
     def __init__(self, monkeypatch: pytest.MonkeyPatch) -> None:
         self.ran: list[str] = []
@@ -91,7 +91,7 @@ def test_every_job_has_two_independent_settings_off_by_default() -> None:
     for job in ORDER:
         for stage in triggers.STAGES:
             assert p[triggers.setting(job, stage)] is False
-    assert len(triggers.SETTINGS) == 10 and len(set(triggers.SETTINGS)) == 10
+    assert len(triggers.SETTINGS) == 12 and len(set(triggers.SETTINGS)) == 12
     assert "sell_shards_after_farming" in triggers.SETTINGS        # the old names kept: nothing to move
 
 

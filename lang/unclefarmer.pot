@@ -385,6 +385,9 @@ msgstr ""
 msgid "&Rest before the next fight below HP (%):"
 msgstr ""
 
+msgid "&Restock supplies (game menu, Restock now)"
+msgstr ""
+
 msgid "&Results"
 msgstr ""
 
@@ -1372,6 +1375,10 @@ msgid "Fighting:"
 msgstr ""
 
 msgid "Fill &up to:"
+msgstr ""
+
+msgid ""
+"Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
 msgstr ""
 
 msgid "Fishing"
@@ -2640,6 +2647,35 @@ msgid "Rest &until HP (%):"
 msgstr ""
 
 msgid "Restart Uncle Farmer to switch the language."
+msgstr ""
+
+msgid "Restoc&k supplies (game menu, Restock now)"
+msgstr ""
+
+msgid "Restock &now"
+msgstr ""
+
+msgid "Restock now"
+msgstr ""
+
+msgid "Restock now: a restock is already running."
+msgstr ""
+
+msgid "Restock now: no supplies could be restocked."
+msgstr ""
+
+msgid ""
+"Restock now: no supply rules are configured in Character, Bag and supplies."
+msgstr ""
+
+msgid ""
+"Restock now: nothing to restock; no supplies need purchasing or withdrawal."
+msgstr ""
+
+msgid "Restock now: supplies are at their configured targets."
+msgstr ""
+
+msgid "Restocking supplies"
 msgstr ""
 
 msgid "Results"
@@ -3992,6 +4028,9 @@ msgstr ""
 msgid "bad pattern: {why}"
 msgstr ""
 
+msgid "bag capacity allows {n} more {item}"
+msgstr ""
+
 msgid "bag items and targets go by keys again: {why}"
 msgstr ""
 
@@ -4222,6 +4261,9 @@ msgid "couldn't reach {skill} in the skills panel"
 msgstr ""
 
 msgid "couldn't respawn - please do it by hand"
+msgstr ""
+
+msgid "couldn't restock {item}: {why}"
 msgstr ""
 
 msgid "couldn't save the shard prices: {err}"
@@ -5010,9 +5052,6 @@ msgstr ""
 msgid "nothing to collect today"
 msgstr ""
 
-msgid "nothing to restock"
-msgstr ""
-
 msgid "now (waiting to start)"
 msgstr ""
 
@@ -5224,6 +5263,9 @@ msgid "resting"
 msgstr ""
 
 msgid "restocking in {map}: {what}"
+msgstr ""
+
+msgid "restocking supplies"
 msgstr ""
 
 msgid "restocking: {what}"
@@ -5868,7 +5910,8 @@ msgstr ""
 msgid "the {npc} didn't take me anywhere"
 msgstr ""
 
-msgid "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
+msgid ""
+"the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""
 
 msgid "the {npc} offers no way in ({about})"

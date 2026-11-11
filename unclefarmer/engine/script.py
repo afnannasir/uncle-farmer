@@ -1012,8 +1012,7 @@ class Runner:
         triggers.run_job(b, "store_items")
 
     def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
-        if not town.restock(b, b.p.get("restock") or [], start=True):
-            b.log(_("nothing to restock"))
+        triggers.run_job(b, "restock")
 
     def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])
