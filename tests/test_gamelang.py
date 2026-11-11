@@ -83,3 +83,39 @@ def test_english_changes_nothing(game: Path) -> None:
     assert gamelang.table() is None
     data = {"name": "Evcil Büyük Kırmızı İksir"}
     assert gamelang.english(data) is data
+
+
+def test_the_same_original_with_a_space_at_an_edge_does_not_win(tmp_path: Path) -> None:
+    """Live with the Spanish pack (2026-11-11): Item2.txt has " Platinum wedding ring" and
+    equipment.txt "Platinum wedding ring", both "anillo de boda de platino". Item2.txt is read
+    first, and 17 of a character's 19 pieces of equipment came back with a space in front."""
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "more" / "Item2.txt"), [
+        (" Platinum wedding ring", "anillo de boda de platino"),
+        ("Total Monster Kills: ", "Total de monstruos asesinados: "),      # spaced like its translation: kept
+    ])
+    write(str(lang / "xx" / "more" / "equipment.txt"), [("Platinum wedding ring", "anillo de boda de platino")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("anillo de boda de platino") == "Platinum wedding ring"
+    assert t.word("Total de monstruos asesinados: ") == "Total Monster Kills: "
+
+
+def test_an_original_spaced_like_its_translation_wins_whatever_the_order(tmp_path: Path) -> None:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "more" / "a.txt"), [("Celestial robe", "Tunica"), (" unread messages", " sin leer")])
+    write(str(lang / "xx" / "more" / "b.txt"), [(" Celestial robe", "Tunica"), ("unread messages", " sin leer")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Tunica") == "Celestial robe"                # the first one was right: it stays
+    assert t.word(" sin leer") == " unread messages"           # spaced like " sin leer"
+
+
+def test_two_different_originals_are_not_touched_by_the_spacing_rule(tmp_path: Path) -> None:
+    """"Salir" is Leave, exit and quit: that is a real ambiguity, and the first still wins."""
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "more" / "a.txt"), [("Leave", "Salir")])
+    write(str(lang / "xx" / "more" / "b.txt"), [("exit", "Salir"), (" quit", "Salir")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Salir") == "Leave"

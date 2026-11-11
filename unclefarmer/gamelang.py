@@ -101,6 +101,11 @@ def _english_template(key: str, eng: str | None) -> str:
     return _KEY_HOLE.sub(number, key)
 
 
+def _edges(s: str) -> tuple[bool, bool]:
+    """Does the text begin, and end, with a space?"""
+    return s[:1].isspace(), s[-1:].isspace()
+
+
 class Table:
     """translated -> English, for one language."""
 
@@ -129,9 +134,17 @@ class Table:
                 (self.suffixes if key.startswith(" ") else self.templates).append(entry)
                 continue
             # one translation for several originals: an English key (what the server sends) wins
-            if value not in self.exact or (not _CJK.search(key) and not english_keyed.get(value)):
+            held = self.exact.get(value)
+            if held is None or (not _CJK.search(key) and not english_keyed.get(value)):
                 self.exact[value] = original
                 english_keyed[value] = not _CJK.search(key)
+            elif held != original and held.strip() == original.strip()                     and _edges(original) == _edges(value) != _edges(held):
+                # The same text twice, once with a space at an edge (Spanish: " Platinum wedding
+                # ring" in Item2.txt and "Platinum wedding ring" in equipment.txt, both "anillo
+                # de boda de platino"; 668 such in that pack). The file read first used to win,
+                # and equipment came back as " Platinum wedding ring". The one spaced like its
+                # translation is the one the game showed.
+                self.exact[value] = original
         self.cache: dict[str, str] = {}
 
     @staticmethod
