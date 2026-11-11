@@ -35,6 +35,15 @@ def ways_out(b: object) -> WaysOut:
     return cast(WaysOut, got) if isinstance(got, dict) else {}
 
 
+def rides_free(b: object) -> bool:
+    """Plan this character's rides as a VIP's, free: the profile says VIP, and no ride's free entry
+    has been refused this run. The profile itself is never changed - a VIP that ran out is the
+    player's to untick (or renew), and the next run says so again."""
+    p: object = getattr(b, "p", None)
+    told = isinstance(p, dict) and bool(cast("dict[str, Any]", p).get("vip", False))
+    return told and not getattr(b, "vip_refused", False)
+
+
 def note_way_out(b: object, inside: int, to_map: int, cell: tuple[float, float]) -> None:
     """Remember that leaving map `inside` puts us on to_map at cell (where we came in from)."""
     known = ways_out(b)
@@ -251,7 +260,7 @@ class TravelMixin(Parts):
             rides, off = travel.ride_rules(self.p)
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
                            transport=rides, avoid=avoid | off,
-                           vip=self.p.get("vip", False), bag=bag,
+                           vip=rides_free(self), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
                            items=self.p.get("use_travel_items", False), arnebia=purse)
@@ -274,7 +283,12 @@ class TravelMixin(Parts):
                     self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
                              speak=True)
         elif leg["do"] == "npc":
+            free = rides_free(self)
             if not self.ride(leg):
+                if free and not rides_free(self):
+                    # the free entry was refused (_vip_refused): no fault of this NPC's, so it is
+                    # neither counted against it nor left out - the next plan pays its fare
+                    return False
                 failed[leg["id"]] = failed.get(leg["id"], 0) + 1
                 if failed[leg["id"]] < self.RIDE_TRIES and self.map_id() == leg["map"]:
                     # once more before walking the long way round: a walk across several maps
@@ -569,6 +583,8 @@ class TravelMixin(Parts):
                 self.note_dialog(d, "after choosing, no confirm entry")
                 self.log(_("the {npc} said no - see logs\\dialogs.log", npc=leg["npc"]), speak=True)
                 self.close_dialogs()
+                if leg.get("vip"):
+                    self._vip_refused(leg)
                 return False
             self.choose(CONFIRM)
         end = self.clock.time() + 15
@@ -587,6 +603,19 @@ class TravelMixin(Parts):
                     self.sleep(1.0)
                 return True
             self.sleep(0.3)
-        self.log(_("the {npc} didn't take me anywhere", npc=leg["npc"]), speak=True)
+        if leg.get("vip"):
+            self._vip_refused(leg)
+        else:
+            self.log(_("the {npc} didn't take me anywhere", npc=leg["npc"]), speak=True)
         self.close_dialogs()
         return False
+
+    def _vip_refused(self, leg: dict[str, Any]) -> None:
+        """The menu's free entry for VIPs was chosen and no ride came of it: the profile says VIP
+        and the game doesn't (it ran out, or the box was ticked for another character). Say so,
+        and for the rest of this run plan every ride at its fare (rides_free) - without this the
+        free entry was tried again, the NPC left out, and the trip walked the long way round.
+        Told by what happened, not by the game's words: those change with its language."""
+        self.vip_refused = True
+        self.log(_("the {npc} didn't take me for free - check that your VIP is still active. "
+                   "Paying the fares for the rest of this run", npc=leg["npc"]), speak=True)

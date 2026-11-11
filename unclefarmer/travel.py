@@ -319,10 +319,11 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
             for i, _p in enumerate(_ports(mid)):
                 g[("p", mid, i)].append((UNSEEN_NPC, stand, None))
         land: Row = t["lands"]
-        choose: list[str] = t["choose_vip"] if vip and t.get("choose_vip") else t["choose"]
+        free = bool(vip and t.get("choose_vip"))      # the menu's free entry, for VIPs
+        choose: list[str] = t["choose_vip"] if free else t["choose"]
         leg: Leg = {"do": "npc", "map": mid, "npc": t["npc"], "at": t.get("at"), "stand": t.get("stand"),
                "choose": choose, "dest": t["dest"], "ride": t.get("ride"), "id": t["id"], "kind": t["kind"],
-               "cost": t.get("cost")}
+               "cost": t.get("cost"), "vip": free}
         node: Node = ("l", t["id"])
         g[stand].append((TALK.get(t["kind"], 60), node, leg))
         landed: dict[str, float] = land["ports"]

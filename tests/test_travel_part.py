@@ -22,7 +22,7 @@ from unclefarmer import atlas, dungeons, knowledge
 from unclefarmer import travel as travel_mod
 from unclefarmer.engine import beasts
 from unclefarmer.engine.botparts.base import CONFIRM, Stopped
-from unclefarmer.engine.botparts.travel import TravelMixin
+from unclefarmer.engine.botparts.travel import TravelMixin, rides_free
 from collections.abc import Callable, Collection
 from typing import Any
 from unclefarmer.atlaslib import Cell, MapModel
@@ -1025,6 +1025,68 @@ def test_ride_gives_up_when_the_transport_never_moves_us(clock: Clock) -> None:
     assert b.ride(npc_leg()) is False
     assert any("didn't take me anywhere" in line for line in b.lines)
     assert 0.3 in b.sleeps
+
+
+# A profile that says VIP on a character the game doesn't count as one (it ran out, or the box was
+# ticked for another character): the menu's free entry is chosen and nothing happens. Seen live on
+# a Priest whose profile came from a VIP Sorceress's - "the Cable Car manager didn't take me
+# anywhere" twice, the NPC left out, and the trip walked round by the lifting platforms.
+def vip_leg() -> dict[str, Any]:
+    return {**npc_leg(), "vip": True}
+
+
+def test_a_refused_free_vip_ride_says_so_and_plans_fares_from_then_on(clock: Clock) -> None:
+    b = Bot(clock)
+    b.p["vip"] = True
+    assert rides_free(b)
+    assert b.ride(vip_leg()) is False
+    assert any("didn't take me for free" in line and "VIP" in line for line in b.lines)
+    assert not any("didn't take me anywhere" in line for line in b.lines)     # one line, not two
+    assert not rides_free(b)
+    assert b.p["vip"] is True and b.saved == []      # the player's box stays as they ticked it
+
+
+def test_a_refused_free_vip_ride_is_not_held_against_the_npc(clock: Clock) -> None:
+    b = Bot(clock)
+    b.p["vip"] = True
+    avoid: set[Any] = set()
+    failed: dict[Any, int] = {}
+    assert b._take_leg(vip_leg(), avoid, failed) is False
+    assert avoid == set() and failed == {}           # the next plan rides the same NPC, at its fare
+    assert not any("once more" in line or "leaving out" in line for line in b.lines)
+    # ... and the paid entry failing after that counts as any ride's failure does
+    assert b._take_leg(npc_leg(), avoid, failed) is False
+    assert failed == {3: 1} and any("didn't take me anywhere" in line for line in b.lines)
+
+
+def test_a_free_vip_ride_the_npc_never_offered_is_not_called_a_vip_refusal() -> None:
+    for attr in ("talk_value", "choose_ok"):         # couldn't talk to it / no such entry in its menu
+        b = Bot()
+        b.p["vip"] = True
+        setattr(b, attr, False)
+        avoid: set[Any] = set()
+        failed: dict[Any, int] = {}
+        assert b._take_leg(vip_leg(), avoid, failed) is False
+        assert rides_free(b) and failed == {3: 1}
+        assert not any("for free" in line for line in b.lines)
+
+
+def test_a_free_vip_ride_answered_with_a_no_is_a_vip_refusal_too() -> None:
+    b = Bot()
+    b.p["vip"] = True
+    b.wait_dialog_value = {"open": 1, "top": {}}
+    b.dialog_value = {"open": 1, "top": {"rows": [[entry("no chance")]]}}
+    b.find_entry = lambda top, pattern: None
+    assert b.ride(vip_leg()) is False
+    assert any("said no" in line for line in b.lines) and any("for free" in line for line in b.lines)
+    assert not rides_free(b)
+
+
+def test_a_ride_that_fails_without_vip_changes_nothing_about_vip(clock: Clock) -> None:
+    b = Bot(clock)
+    assert b.ride(npc_leg()) is False and not rides_free(b)
+    assert not any("for free" in line for line in b.lines)
+    assert not getattr(b, "vip_refused", False)
 
 
 def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map() -> None:

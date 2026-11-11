@@ -88,6 +88,7 @@ class Parts:
     trip_checked: float
     traveling: bool
     gang_base: tuple[int, str] | None   # (map id, gang name) of the named gang base entered this run
+    vip_refused: bool           # a ride's free VIP entry took us nowhere this run: fares from now on
     # the pet (engine/pets.py) and the fusion beasts (engine/beasts.py)
     pets_refused: dict[int, float]        # pet id -> don't try to summon it before then
     beasts_refused: dict[int, float]      # beast id -> don't try it again before then
