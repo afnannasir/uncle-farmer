@@ -59,6 +59,7 @@ from dataclasses import dataclass, field
 from typing import Any, TypeVar
 
 from .. import atlas, knowledge
+from ..clock import clock_for
 from ..i18n import _
 from . import bagrules, menus, town
 from .bot import Bot, Stopped
@@ -77,12 +78,29 @@ RUNE = "Gem Protection Rune"
 SETTLE = 2.0             # seconds the bag is given to show a combine's result before it counts as none
 IDLE_ROUNDS = 2          # rounds in a row that change nothing, with gems still to combine, tried again
 MAX_ROUNDS = 1000        # a safety net only: every round that counts changed the bag, and buying is bounded
+OFFER_WAIT = 5.0         # seconds the Forger's page for an item is given to show what its next level takes
+MENU_POLL = 0.15         # seconds between reads of a menu that is still changing
 
 
 # ---------------------------------------------------------------------------------------- getting there
 def in_gang(b: Bot) -> bool:
     mid = b.map_id()
     return atlas.kind(mid) == "gang" or "gang" in atlas.label(mid).lower()
+
+
+def _same_gang(b: Bot, gang: str | None) -> bool:
+    """True when the bot is inside the gang base that matches `gang`: any gang base when no gang
+    name was asked for, or the named gang entered this run on its current map."""
+    if not gang:
+        return True
+    base: tuple[int, str] | None = getattr(b, "gang_base", None)
+    if base is None:
+        return False
+    rem_map, rem_gang = base
+    if b.map_id() != rem_map:
+        b.gang_base = None
+        return False
+    return rem_gang.strip().lower() == gang.strip().lower()
 
 
 def place(cfg: dict[str, Any]) -> str:
@@ -100,11 +118,23 @@ def _reachable(b: Bot, role: str) -> bool:
 
 
 def reachable_cell(b: Bot, cell: tuple[int, int]) -> bool:
-    """We stand in the part of this map that cell is in: a gang base's two halves are walled apart."""
+    """We can walk from here to cell. A gang base's inner hall walks out to the outer hall through
+    its inner door, but nothing walks back in (a one-way door strip; the way in is the Gang
+    Entrance), so this follows the one-way gates, not just which part of the map cell is in."""
     me = b.me()
     try:
         m = atlas.model(b.map_id())
-        return m.comp_of(int(me["x"]), int(me["y"])) == m.comp_of(*cell)
+        here = (int(me["x"]), int(me["y"]))
+        if m.comp_of(*here) != m.comp_of(*cell):
+            return False
+        if not hasattr(m, "gated_route"):
+            return True                   # a map with no gates to follow (no data for them)
+        start = here if m.ok(*here) else m.nearest_walkable(here[0], here[1], 4)
+        goal = (int(cell[0]), int(cell[1]))
+        goal = goal if m.ok(*goal) else m.nearest_walkable(goal[0], goal[1], 4)
+        if start is None or goal is None:
+            return True                   # no walkable cell to judge by: let the walk find out
+        return m.gated_route((start[0], start[1]), (goal[0], goal[1])) is not None
     except STOPPING:
         raise
     except Exception as e:
@@ -157,9 +187,10 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
     """Into a gang base's OUTER hall, where the craftsmen are: your own gang's through the nearest
     Gang Entrance, or the gang named `gang` through its "all gangs" list. Already in a gang base
     but in the walled-off inner hall (or the wrong gang's): out and in again."""
-    if in_gang(b) and _reachable(b, role) and not gang:
+    if in_gang(b) and _reachable(b, role) and _same_gang(b, gang):
         return True
     b.close_dialogs()
+    b.gang_base = None
     town.visit(b, "gang_entrance")          # (leaves a gang base first when we are in one)
     mid = b.map_id()
     me = b.me()
@@ -187,6 +218,8 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
         b.log(_("landed in the gang's inner hall, which is walled off from the craftsmen"), speak=True)
         return False
     b.log(_("in {where}", where=b.snap().get("map", {}).get("name") or atlas.label(b.map_id())))
+    if gang:
+        b.gang_base = (int(b.map_id()), gang.strip())
     return True
 
 
@@ -269,6 +302,19 @@ def tick(b: Bot, pattern: str, want: bool = True) -> bool:
 
 def spare_arnebia(b: Bot) -> int:
     return town.counts(b).get("arnebia", 0) - int(b.p.get("gem_keep_arnebia", 20000))
+
+
+def wait_text(b: Bot, pattern: str, seconds: float) -> tuple[re.Match[str] | None, str]:
+    """Read the open menu until its text matches pattern (the server sends the next page a moment
+    after a choice, and the page before stays up until then). (the match or None, the last text read)."""
+    rx = re.compile(pattern, re.I)
+    end = clock_for(b).time() + seconds
+    while True:
+        text = menu_text(b)
+        m = rx.search(text)
+        if m is not None or clock_for(b).time() >= end:
+            return m, text
+        b.sleep(MENU_POLL)
 
 
 def _num(rx: str, text: str, default: D, cast: Callable[[str], N] = int) -> N | D:
@@ -972,6 +1018,31 @@ def _item_row(b: Bot, name: str) -> tuple[Entry | None, int | None]:
 # Forger's menu each try; this is for the window's notes.
 CRYSTAL_LEVELS = ((100, 8), (90, 7), (80, 6), (70, 5), (60, 4), (45, 3), (30, 2), (15, 1))
 MAX_ENHANCE = 12          # +12 (Godbless) is the highest enhancement level
+# Equipment the Forger never enhances (players' word for it), by the game's own names (its english
+# language pack, more\equipment.txt; the diamond ring's name carries the "lzs" mark-up): the three
+# wedding rings, the Mist god Emblem, the four bags (soft pouch, hot bag, weightless sack, Realm
+# Pack: levels 40, 60, 80, 100), the two food-shaped commemorative badges (Five-Nuts Osmanthus Cake,
+# Crispy potato and vegetable pie) - and every medal and badge (NOT_ENHANCEABLE_WORD): the pack has
+# 30 medals (attack medals one to five star, contribution, demon chasing, hunting, arena, tactical,
+# tutor ...) and the War badges, and no other equipment with either word in its name.
+NOT_ENHANCEABLE = frozenset({"gold wedding ring", "platinum wedding ring", "diamond wedding ring",
+                             "mist god emblem",
+                             "soft pouch", "hot bag", "weightless sack", "realm pack",
+                             "five-nuts osmanthus cake", "crispy potato and vegetable pie"})
+NOT_ENHANCEABLE_WORD = re.compile(r"\b(medal|badge)\b", re.I)
+
+
+def gear_name(name: str) -> str:
+    """An equipment name as the player reads it: the game's "lzs" mark-up taken out
+    ("lzs0lzs2243lzs1lzsdiamond wedding ring" -> "diamond wedding ring")."""
+    return re.sub(r"(lzs\d*)+", "", name).strip()
+
+
+def enhanceable(name: str) -> bool:
+    """False for equipment the Forger never enhances (wedding rings, medals and badges, the Mist god
+    Emblem, the bags), so it isn't offered."""
+    shown = gear_name(name)
+    return shown.lower() not in NOT_ENHANCEABLE and not NOT_ENHANCEABLE_WORD.search(shown)
 
 
 def _crystals(b: Bot, kind: str, level: int) -> int:
@@ -1089,7 +1160,8 @@ def enhance(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
                       protect_from=int(cfg.get("protect_from", 8)), max_fails=int(cfg.get("max_fails", 5)),
                       making=cfg.get("make_crystals", True), stock=int(cfg.get("crystal_stock", 0)),
                       refill=int(cfg.get("crystal_refill", 10)))
-    items: list[str] = cfg.get("items", [])
+    # a wedding ring ticked before the list stopped offering one is left out, not walked to the Forger for
+    items: list[str] = [i for i in cfg.get("items", []) if enhanceable(i)]
     for item in items:
         fails = 0
         while not b.stop_event.is_set():
@@ -1125,10 +1197,17 @@ def _forger_offer(b: Bot, job: _EnhanceJob, item: str) -> tuple[str, None] | tup
     b.choose(re.escape(item.strip()))
     if not b.wait_dialog(3.0):
         return "next", None
-    text = menu_text(b)
+    # the item list stays up until the Forger's page for the item comes: wait for what it takes,
+    # never guess it (a guessed Level 1 would have the bot make the wrong crystals)
+    need, text = wait_text(b, r"requires\s+(\d+)\s+Level\s+(\d+)", OFFER_WAIT)
+    if need is None:
+        b.log(_("the Forger didn't say which crystal {item} needs - skipping it", item=item), speak=True)
+        b.log(_("on the Forger's screen: {screen}", screen=text or _("nothing")))
+        b.close_dialogs()
+        return "next", None
     o = _Offer(frm=_num(r"from\s+(\d+)\s+to", text, level or 0),
-               need_n=_num(r"requires\s+(\d+)\s+Level", text, 1),
-               need_lv=_num(r"requires\s+\d+\s+Level\s+(\d+)", text, 1),
+               need_n=int(need.group(1)),
+               need_lv=int(need.group(2)),
                kind="Weapon" if re.search(r"Weapon Enhance Crystal", text, re.I) else "Equipment",
                cost=_num(r"costs\s+(\d+)\s+arnebia", text, 0),
                chance=_num(r"([\d.]+)%\s*success rate", text, None, float),

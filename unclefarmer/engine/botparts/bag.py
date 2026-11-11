@@ -14,6 +14,8 @@ from .. import bagrules
 from .base import (CONFIRM, Stopped, agent_strike)
 from .parts import as_bot, Parts
 
+DIRECT_DISCARD_AGENT = 57
+
 
 class BagMixin(Parts):
     agent_act: bool = False
@@ -128,6 +130,50 @@ class BagMixin(Parts):
         from ... import stats
         stats.moved(self, "thrown", name, gone)      # picked up, then thrown: the results say so
         return gone
+
+    def throw_items(self, todo: list[tuple[str, int]]) -> list[tuple[str, int]] | None:
+        """Discard a complete bag-rule plan without opening the bag menu for every item.
+
+        None means no direct request was sent, so callers may safely use the keyboard path. A list
+        means the agent accepted the plan (or a send became uncertain): it is reconciled once from
+        the game's bag state, and callers must not submit the same items again.
+        """
+        if not todo or not self.agent_act or getattr(self, "agent_version", 0) < DIRECT_DISCARD_AGENT:
+            return None
+        rows = self.a.json("mem bagfull")
+        rows = rows if jsonio.is_array(rows) else []
+        before: dict[str, int] = {}
+        for row in rows:
+            key = (row.get("name") or "").strip().lower()
+            before[key] = before.get(key, 0) + int(row.get("count") or 0)
+
+        uids: list[int] = []
+        for name, n in todo:
+            left = n
+            key = name.strip().lower()
+            for row in rows:
+                if (row.get("name") or "").strip().lower() != key:
+                    continue
+                take = min(left, int(row.get("count") or 0))
+                uids.extend([int(row["uid"])] * take)
+                left -= take
+                if left == 0:
+                    break
+            if left:
+                return None                  # the bag changed before any direct request went out
+
+        from ..transactions import InventoryTransaction
+        transaction = InventoryTransaction(before)
+        for name, n in todo:
+            transaction.expect(name, -n)
+        reply = self.a.send("discarddirectall " + " ".join(str(uid) for uid in uids))
+        if reply.startswith("sent all "):
+            agent_strike(self, "discard", True)
+        else:
+            self.log(_("the game didn't accept the direct discard request: {why}", why=reply))
+            if agent_strike(self, "discard", False):
+                self.agent_act = False
+        return transaction.removed(transaction.settle(as_bot(self)))
 
     def bag_cursor(self, name: str) -> str | None:
         """Put the bag panel's cursor on the item (panel 0, category 0, the short way round).
@@ -277,8 +323,11 @@ class BagMixin(Parts):
                 bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
         start: dict[str, Any] = self.bag_start or {}
         gained = {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
-        thrown = 0
-        for name, action, n in bagrules.plan(self.p, bag, hot, gained):
-            if action == "throw":
-                thrown += self.throw_item(name, n)
-        return thrown > 0
+        todo = [(name, n) for name, action, n in bagrules.plan(self.p, bag, hot, gained) if action == "throw"]
+        moved = self.throw_items(todo)
+        if moved is not None:
+            from ... import stats
+            for name, n in moved:
+                stats.moved(self, "thrown", name, n)
+            return bool(moved)
+        return sum(self.throw_item(name, n) for name, n in todo) > 0   # every item, not just the first

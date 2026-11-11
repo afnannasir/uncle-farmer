@@ -118,7 +118,7 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[...
     said = [line for line in s.lines if "Spider cave: " in line and " kills in " in line]
     assert said, [line for line in s.lines if "Spider cave" in line]
     assert not [line for line in s.lines if "resting before" in line or "restocking" in line]
-    assert dungeon.done_today(simgame.NAME) == ["Spider cave"]
+    assert dungeon.done_today(settings.character_profile(simgame.NAME, simgame.ME)) == ["Spider cave"]   # kept per character
     assert errors_logged() == ""
 
 
@@ -151,4 +151,33 @@ def test_a_ranged_character_shoots_on_the_way_in_a_dungeon(sim_env: Callable[...
     assert not s.timed_out and not game.errors and not game.unknown
     assert shots, [line for line in s.lines if "Spider cave" in line]
     assert game.world.truth["kills"] >= 15
+    assert errors_logged() == ""
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("on", [True, False])
+def test_a_ranged_character_farming_shoots_on_the_way_when_set(sim_env: Callable[..., simgame.SimGame],
+                                                               monkeypatch: pytest.MonkeyPatch, on: bool):
+    # Character, Settings, Fighting: "Shoot monsters in reach while walking to the next one"
+    from unclefarmer import settings
+    from unclefarmer.engine.botparts.fighting import FightingMixin
+    monkeypatch.setattr(simgame, "SKILLS", [("Arcane Shot", 0.0, 2600, 20.0), ("Aimed Shot", 6.0, 5200, 20.0)])
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, attack_range=19.5,
+                                             shoot_while_walking=on))
+    shots: list[int] = []
+    real = FightingMixin.move_shot
+
+    def counted(self: FightingMixin, snap: dict[str, Any], me: dict[str, Any]) -> int | None:
+        shot = real(self, snap, me)
+        if shot is not None:
+            shots.append(shot)
+        return shot
+    monkeypatch.setattr(FightingMixin, "move_shot", counted)
+    game = sim_env(monsters=30)
+    s = simgame.Soak(game, "end_at here\nfarm minutes=10", watchdog=120).go()
+    assert s.reason == "finished", list(s.lines)[-15:]
+    assert not s.timed_out and not game.errors and not game.unknown
+    assert bool(shots) is on
+    assert bool(s.said("shooting monsters in reach on the way to the next one")) is on
+    assert game.world.truth["kills"] >= 10
     assert errors_logged() == ""

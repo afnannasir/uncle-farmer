@@ -6,13 +6,13 @@ import threading
 
 import wx
 
-from ... import applog, jsonio, nearby, scan
+from ... import applog, jsonio, nearby, scan, settings
 from ...engine.runner import Run
 from ...errors import carry_on
 from ...i18n import _
-from ...link import AgentError, AgentLink, agents, games
+from ...link import AgentError, AgentLink, agents, games, server_name
 from ..common import error, first_selected, select_row
-from .base import SNAP_FRESH, FrameParts, Game, character_of, duration_text, out_of, saved_item
+from .base import SNAP_FRESH, FrameParts, Game, duration_text, out_of, profile_of, saved_item
 from typing import Any
 
 
@@ -30,6 +30,10 @@ class GamesMixin(FrameParts):
         i = self.selected_index()
         return self.games[i][1] if i is not None else None
 
+    def selected_profile(self) -> str | None:
+        """The selected game profile, but only while a character is actually logged in."""
+        return self.selected_character() if profile_of(self.snapshot()) else None
+
     def game_row(self, game: Game) -> tuple[str, str, str]:
         pid, name, where = game
         run = self.runs.get(pid)
@@ -39,7 +43,7 @@ class GamesMixin(FrameParts):
             state = _("Paused {what}", what=run.title)
         else:
             state = _("Running {what}", what=run.title)
-        return (name or _("Not logged in"), where or "", state)
+        return (settings.profile_display(name) if name else _("Not logged in"), where or "", state)
 
     def label_games(self) -> None:
         """Rewrite the rows in place (running or not) without moving the selection."""
@@ -57,7 +61,7 @@ class GamesMixin(FrameParts):
         listed = {g[0] for g in self.games}
         for pid, run in self.runs.items():
             if pid not in listed:
-                self.games.append((pid, run.character, None))
+                self.games.append((pid, run.profile or run.character, None))
         self.filling = True
         self.game_list.DeleteAllItems()
         for i, game in enumerate(self.games):
@@ -86,7 +90,7 @@ class GamesMixin(FrameParts):
         """Each character remembers what it ran last; choosing its game selects that again."""
         if self.selected_pid() in self.runs:
             return
-        last = self.s.get("last_runs", {}).get(self.selected_character() or "")
+        last = settings.last_run_of(self.s, self.selected_character())
         if last:
             want = saved_item(last)
             if want in self.items:
@@ -116,7 +120,10 @@ class GamesMixin(FrameParts):
         try:
             with AgentLink(pid=pid, timeout=3) as a:
                 s = a.json("mem")
-                return s if jsonio.is_object(s) and s.get("ok") else None
+                if jsonio.is_object(s) and s.get("ok"):
+                    s["_server"] = server_name(a)
+                    return s
+                return None
         except (AgentError, OSError, ValueError):
             return None
 
@@ -184,7 +191,7 @@ class GamesMixin(FrameParts):
         s = self.cached(pid, 10.0)
         tried = self.snap is not None and self.snap[0] == pid and self.clock.time() - self.snap[2] <= 10.0
         if s is None and not tried:
-            values.setdefault("activity", _("Reading the game..."))
+            values.setdefault("activity", _("Reading the game"))
             self.show_status(**values)
             return
         self.render(pid, s, values)
@@ -204,11 +211,17 @@ class GamesMixin(FrameParts):
             self.show_status(**values)
             return
         game = self.games[i]
-        if game[1] != me["name"] or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
-            self.games[i] = (game[0], me["name"], s["map"]["name"])
+        profile = profile_of(s)
+        same = bool(game[1] and profile and settings.same_character(game[1], profile))
+        if same and game[1] and settings.profile_server(game[1]) and not settings.profile_server(profile or ""):
+            profile = game[1]       # a brief failed lookup must not make an announced identity ambiguous again
+        if not same or game[1] != profile or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
+            self.games[i] = (game[0], profile, s["map"]["name"])
             self.label_games()
+        elif game[1]:
+            profile = game[1]       # retain the server label gathered with this game's first reading
         if not run:
-            self.auto_scan_async(me["name"], pid)     # never while the bot runs: it has the keyboard
+            self.auto_scan_async(profile or me["name"], pid)     # never while the bot runs: it has the keyboard
             values["activity"] = _("Ready")
         sheet: dict[str, Any] = me.get("sheet") or {}
         vit: dict[str, Any] = me.get("vitals") or {}
@@ -270,7 +283,7 @@ class GamesMixin(FrameParts):
         threading.Thread(target=work, daemon=True).start()
 
     def scan_now(self) -> None:
-        name = character_of(self.snapshot())
+        name = self.selected_profile()
         if not name:
             error(self, _("Log in to a character in the game first."))
             return
@@ -281,4 +294,4 @@ class GamesMixin(FrameParts):
         self.scanned.pop(name, None)
         with wx.BusyCursor():
             self.auto_scan(name)
-        self.say(_("{name} scanned.", name=name))
+        self.say(_("{name} scanned.", name=settings.profile_display(name)))

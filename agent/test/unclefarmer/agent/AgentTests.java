@@ -43,7 +43,9 @@ public final class AgentTests {
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
+        directShardPacketUsesTheVerifiedLayout();
         commandsAnswerWithoutTheGame();
+        theStateServerListensOnLoopbackOnly();
         theLoggedShopAndMarketMenusAreRecognised();
         aVerifiedIndexIsChosenOnlyForItsItem();
         aChangedOrUnexpectedMenuIsRefused();
@@ -289,6 +291,10 @@ public final class AgentTests {
 
     private static void usePacketIsTheUseKeysRequest(Map<String, String> contract) {
         eq(bytes(Act.packet(1234567)), contract.get("use_packet"), "use sends what the use key sends");
+        eq(bytes(Act.discardPacket(1234567, 1)), "18 0 0 18 214 135 255 255 255 255",
+                "discarding one sends what the game's discard sends");
+        eq(bytes(Act.discardPacket(1234567, 3)), "18 0 0 18 214 135 255 255 255 253",
+                "three of a stack go in one packet with minus three");
     }
 
     private static String bytes(byte[] packet) {
@@ -341,6 +347,14 @@ public final class AgentTests {
         eq(StateServer.handle("use 5", armed, mine, guarded), "refused: send 'arm' first", "use needs arm");
         eq(StateServer.handle("select 5", armed, mine, guarded), "refused: send 'arm' first", "select needs arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "refused: send 'arm' first", "slot needs arm");
+        eq(StateServer.handle("shardsell 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "shardsell needs arm");
+        eq(StateServer.handle("sharddirect 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "sharddirect needs arm");
+        eq(StateServer.handle("sharddirectall 20385 1", armed, mine, guarded), "refused: send 'arm' first",
+                "sharddirectall needs arm");
+        eq(StateServer.handle("discarddirectall 5", armed, mine, guarded), "refused: send 'arm' first",
+                "discarddirectall needs arm");
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "error: the attack page can't be read",
                 "slot without a game says so instead of throwing");
@@ -367,9 +381,45 @@ public final class AgentTests {
                 "pick a bad id");
         eq(StateServer.handle("pick shard_market", armed, mine, guarded), "error: pick <layout> <id> [buy|sell]",
                 "pick what");
+        eq(StateServer.handle("shardsell 20385", armed, mine, guarded), "error: shardsell <item id> <count>",
+                "shardsell needs both numbers");
+        eq(StateServer.handle("shardsell x 1", armed, mine, guarded), "bad number in: shardsell x 1",
+                "shardsell checks the item id");
+        eq(StateServer.handle("sharddirect 20385", armed, mine, guarded), "error: sharddirect <item id> <count>",
+                "sharddirect needs both numbers");
+        eq(StateServer.handle("sharddirectall 20385", armed, mine, guarded),
+                "error: sharddirectall <item id> <count> ...", "sharddirectall needs pairs");
+        eq(StateServer.handle("sharddirectall x 1", armed, mine, guarded), "bad number in: sharddirectall x 1",
+                "sharddirectall checks item ids");
+        eq(StateServer.handle("discarddirectall", armed, mine, guarded), "error: discarddirectall <uid> ...",
+                "discarddirectall needs ids");
+        eq(StateServer.handle("discarddirectall x", armed, mine, guarded), "bad number in: discarddirectall x",
+                "discarddirectall checks item ids");
         boolean[] unarmed = {false};
         eq(StateServer.handle("pick shard_trade 20385 sell", unarmed, mine, guarded), "refused: send 'arm' first",
                 "pick needs arm");
+    }
+
+    /** The state server takes keys and chat from whoever connects, so it must never be reachable
+     *  from another machine: it binds 127.0.0.1 and nothing wider (not 0.0.0.0, not a LAN address). */
+    private static void theStateServerListensOnLoopbackOnly() throws Exception {
+        java.net.ServerSocket server = StateServer.bind();
+        check(server != null, "the state server found a free port in its range");
+        if (server == null) return;
+        try {
+            eq(server.getInetAddress().getHostAddress(), "127.0.0.1", "the state server binds 127.0.0.1");
+            check(server.getInetAddress().isLoopbackAddress(), "a loopback address, nothing off this machine");
+            check(server.getLocalPort() >= StateServer.FIRST_PORT && server.getLocalPort() <= StateServer.LAST_PORT,
+                    "a port in the agent's own range");
+        } finally {
+            server.close();
+        }
+    }
+
+    private static void directShardPacketUsesTheVerifiedLayout() {
+        eq(bytes(Dialogs.shardPacket(-44, 20485, 24, 1)),
+                "34 255 255 255 212 31 0 0 0 3 0 0 80 5 0 0 0 24 0 0 0 1",
+                "direct shard sell is the verified broker command");
     }
 
     // ---------------------------------------------------------------- shop and Shard Market menus

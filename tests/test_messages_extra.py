@@ -563,24 +563,26 @@ def test_cmd_where() -> None:
 
 # ---------------------------------------------------------------- results
 def test_cmd_results_this_run_last_run_and_none(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(messages.stats, "short", stand_in(messages.stats.short, lambda r: "S"))
+    monkeypatch.setattr(messages.stats, "short", stand_in(messages.stats.short, lambda r, drop=None: "S %s" % drop))
     monkeypatch.setattr(messages.stats, "runs", stand_in(messages.stats.runs, lambda character, since=None, kind=None: []))
-    run = types.SimpleNamespace(tally=types.SimpleNamespace(result=lambda: {"kills": 1}))
-    assert make(FakeHost(run=run)).cmd_results(1, "Ann", "") == "This run: S"
+    run = types.SimpleNamespace(tally=types.SimpleNamespace(result=lambda: {"kills": 1}, drop_left=900))
+    assert make(FakeHost(run=run)).cmd_results(1, "Ann", "") == "This run: S 900"
     assert make().cmd_results(1, "Ann", "") == "No results yet."
     monkeypatch.setattr(messages.stats, "runs", stand_in(messages.stats.runs, lambda character, since=None: [{"kills": 0}]))
-    assert make().cmd_results(1, "Ann", "") == "Last run: S"
+    m = make()
+    m.fake.mem = {"ok": True, "map": {"name": "Town"}, "self": {"sheet": {"drop_seconds": 600, "age": 0}}}
+    assert m.cmd_results(1, "Ann", "") == "Last run: S 600"         # today's drop time, from the game
 
 
 def test_cmd_today_empty_and_totals(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(messages.stats, "runs", stand_in(messages.stats.runs, lambda character, since=None, kind=None: []))
-    monkeypatch.setattr(messages.stats, "short", stand_in(messages.stats.short, lambda r: "S"))
+    monkeypatch.setattr(messages.stats, "short", stand_in(messages.stats.short, lambda r, drop=None: "S"))
     assert make().cmd_today(1, "Ann", "") == "Nothing today yet."
     run = types.SimpleNamespace(tally=types.SimpleNamespace(
         results=lambda: [{"kills": 1, "kind": "farming"}, {"kind": "tool"}]))     # a job on the way: not farming
     monkeypatch.setattr(messages.stats, "add_up",
                         stand_in(messages.stats.add_up, lambda results: {"runs": 2, "minutes": 90.5}))
-    assert make(FakeHost(run=run)).cmd_today(1, "Ann", "") == "Today, 2 runs, 90 min: S"
+    assert make(FakeHost(run=run)).cmd_today(1, "Ann", "") == "Today, 2 runs: S"
 
 
 # ---------------------------------------------------------------- bag and drop time

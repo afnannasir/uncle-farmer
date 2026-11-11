@@ -14,7 +14,7 @@ from typing import Any
 import wx
 
 from .. import settings
-from ..engine.crafting import CRYSTAL_LEVELS, MAX_ENHANCE, shortfall
+from ..engine.crafting import CRYSTAL_LEVELS, MAX_ENHANCE, enhanceable, gear_name, shortfall
 from ..engine.town import shard_catalog
 from ..i18n import _
 from .common import Dialog, Form, enable_label, group, labeled, ok_cancel, page, pick, save_file, tabs
@@ -331,12 +331,13 @@ class EnhancerDialog(ToolDialog):
         nb = tabs(self)
 
         panel, box = page(nb, _("Equipment"))
-        # the game marks some names up ("lzs0lzs2243lzs1lzsdiamond wedding ring"): keep the words
+        # the game marks some names up ("lzs0lzs2243lzs1lzsdiamond wedding ring"): keep the words;
+        # and what the Forger never enhances (the wedding rings) isn't offered at all
         scan: dict[str, Any] = self.p.get("scan") or {}
         worn: list[str] = scan.get("gear", [])
-        chosen: list[str] = c.get("items", [])
-        gear = [re.sub(r"(lzs\d*)+", "", g).strip() for g in worn]
-        gear = [g for g in gear if g]
+        chosen: list[str] = [g for g in c.get("items", []) if enhanceable(g)]
+        gear = [gear_name(g) for g in worn]
+        gear = [g for g in gear if g and enhanceable(g)]
         self.gear = sorted(set(gear + [g for g in chosen if g not in gear]), key=str.lower)
         self.items = labeled(panel, box, _("&Equipment to enhance:"), lambda w: wx.CheckListBox(w, size=wx.Size(-1, 170)), 1)
         self.items.Set(self.gear)

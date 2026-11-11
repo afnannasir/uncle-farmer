@@ -123,7 +123,7 @@ class Map:
     def line_ok(self, a: Cell, b: Cell, min_clear: int=1, allow_directional: bool=False) -> bool:
         return self.line
 
-    def route(self, a: Cell, b: Cell, avoid_directional: bool=False) -> list[Cell] | None:
+    def route(self, a: Cell, b: Cell, avoid_directional: bool=False, gates_fallback: bool=True) -> list[Cell] | None:
         self.route_calls.append((a, b, avoid_directional))
         return self.route_paths.pop(0) if self.route_paths else None
 
@@ -505,6 +505,81 @@ def test_walk_to_snapshots_the_map_before_crossing(model: Map) -> None:
     assert seen == [42]
 
 
+def test_walk_to_returns_map_once_the_map_changed_between_attempts(model: Map) -> None:
+    # The first walk is broken off; before the next one the game has put us on another map (an
+    # exit crossed on the way): its cells mean nothing on this map, so no plan, no stuck.
+    b = MapBot(model, pos=(1, 1), map_id=5)
+    walks: list[tuple[float, float]] = []
+
+    def walk_diag(target: tuple[float, float], map_before: int | None = None, tol: float = 0.5,
+                  timeout: float | None = None, near: Callable[[dict[str, Any]], bool] | None = None) -> str:
+        walks.append(target)
+        b._mid = 6
+        return "stuck"
+    b.walk_diag = walk_diag
+    b.get_unstuck = lambda at: b.unstuck_calls.append(at) or False
+    assert b.walk_to((10, 10)) == "map"
+    assert len(walks) == 1 and b.stuck_in_a_row == 0
+
+
+def test_walk_to_returns_map_when_mounting_up_ended_on_another_map(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.engine import beasts
+    b = MapBot(model, pos=(1, 1), map_id=5)
+    b.traveling = True
+
+    def ensure(b: Any, purpose: Any = None) -> None:
+        b._mid = 6                     # the mount waited out a fight; a teleport landed meanwhile
+    monkeypatch.setattr(beasts, "ensure", stand_in(beasts.ensure, ensure))
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    assert b.walk_to((10, 10)) == "map"
+
+
+def test_walk_to_plans_once_more_from_a_wall_start_cell(model: Map) -> None:
+    # Right after an exit crossing the position read can belong to the new map while the map
+    # read is the old one: the start is a wall with no way out. Not a "no way" Stopped: read
+    # again once the map settles and plan from there.
+    model.walk[1, 1] = False                    # (1,1) is a wall here, nothing walkable near it
+    model.diag = False
+    model.line = False
+    model.route_paths = [[], [], [(2, 2), (10, 10)]]   # no way from (1,1); from (2,2) there is
+    b = MapBot(model, pos=(1, 1))
+    settles: list[int] = []
+
+    def settled_map(seconds: float = 15) -> int:
+        settles.append(1)
+        b.pos = (2, 2)                          # the fresh reading
+        return b._mid
+    b.settled_map = settled_map
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    assert b.walk_to((10, 10)) == "arrived"
+    assert settles == [1] and model.route_calls[-1][0] == (2, 2)
+
+
+def test_walk_to_from_a_wall_start_on_a_settled_new_map_returns_map(model: Map) -> None:
+    model.walk[1, 1] = False
+    model.diag = False
+    model.line = False
+    b = MapBot(model, pos=(1, 1), map_id=5)
+
+    def settled_map(seconds: float = 15) -> int:
+        b._mid = 6
+        return 6
+    b.settled_map = settled_map
+    assert b.walk_to((10, 10)) == "map"
+
+
+def test_walk_to_from_a_wall_start_stops_after_the_one_replan(model: Map) -> None:
+    model.walk[1, 1] = False                    # still a wall after reading again: a real "no way"
+    model.diag = False
+    model.line = False
+    b = MapBot(model, pos=(1, 1))
+    settles: list[int] = []
+    b.settled_map = lambda seconds=15: settles.append(1) or b._mid
+    with pytest.raises(Stopped) as e:
+        b.walk_to((10, 10))
+    assert settles == [1] and "no way from 1,1" in str(e.value)
+
+
 def test_walk_to_returns_near_without_fighting(model: Map) -> None:
     b = MapBot(model, pos=(1, 1))
     b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "near"
@@ -880,3 +955,45 @@ def test_a_hung_game_counts_as_no_stuck(clock: Clock) -> None:
     clock.advance(1.6)                              # ...but standing still after that is a stuck
     tick = clock.now - 0.05
     assert w._no_progress(tick, best_at) == (best_at, True)
+
+
+# ---------------------------------------------------------------- mounting on the way
+def _riding_calls(monkeypatch: pytest.MonkeyPatch) -> list[bool]:
+    from unclefarmer.engine import beasts
+    calls: list[bool] = []
+
+    def keep_riding(b: object, read_power: bool = True) -> None:
+        calls.append(read_power)
+
+    monkeypatch.setattr(beasts, "keep_riding", stand_in(beasts.keep_riding, keep_riding))
+    return calls
+
+
+def test_travel_tries_the_mount_again_between_hops(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A dungeon puts us out seconds after the last kill: the leg's start is too soon after the
+    # fight to mount, so the walk itself must try again or the whole map is walked on foot.
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.traveling = True
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    assert b._walk_hops_go([(5, 5), (9, 9)], True, None, None) is False
+    assert calls == [False, False]          # each hop, and never the T key (read_power off)
+
+
+def test_no_mount_tries_outside_travel_or_in_a_fight(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    b._walk_hops_go([(5, 5)], True, None, None)          # farming walks: not travelling
+    b.traveling, b.in_fight = True, True
+    b._walk_hops_go([(5, 5)], True, None, None)
+    assert calls == []
+
+
+def test_the_walking_assistant_still_reads_fusion_power(model: Map, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = _riding_calls(monkeypatch)
+    b = MapBot(model, pos=(1, 1))
+    b.walk_only = b.traveling = True
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "arrived"
+    b._walk_hops_go([(5, 5)], True, None, None)
+    assert calls == [True]

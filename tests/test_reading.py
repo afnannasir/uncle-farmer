@@ -558,6 +558,36 @@ def test_map_id_without_an_id_raises_a_key_error(clock: Clock) -> None:
         b.map_id()
 
 
+def test_map_id_waits_out_a_map_change(clock: Clock) -> None:
+    """Mid map change the game says map 0. A route asked for on it stopped a run with
+    KeyError('map 0 has no geometry'); map_id() waits for the real map instead."""
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem map"] = Seq({"id": 0}, {"id": 0}, {"id": 5121}, {"id": 5121})
+    b.link.answers["mem self"] = {"id": 1}
+    assert b.map_id() == 5121
+    assert b.sleeps == [0.3]
+
+
+def test_map_id_ignores_a_snapshot_taken_mid_change(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b._snap_map_id, b._snap_at = 0, clock.now       # a `mem` reply read during the change
+    b.link.answers["mem map"] = {"id": 5121}
+    assert b.map_id() == 5121
+
+
+def test_map_id_stops_the_run_when_the_character_is_gone(clock: Clock) -> None:
+    """Map 0 that never ends is no character at all (logged out, kicked): the run stops with the
+    game's own reason, not with a KeyError from the map code."""
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem map"] = {"id": 0}
+    b.link.answers["mem self"] = {"error": "noplayer: id 0 not in the entity map"}
+    with pytest.raises(Stopped):
+        b.map_id()
+
+
 # ==================================================================== settled_map
 def test_settled_map_returns_the_first_settled_map(clock: Clock) -> None:
     b = Read()
@@ -773,3 +803,41 @@ def test_ui_returns_empty_on_error() -> None:
     b = Read()
     b.link.answers["mem ui"] = {"error": "no ui"}
     assert b.ui() == {}
+
+
+# ==================================================================== snap: a new map forgets the monster notes
+def _maps(b: Read, *ids: int) -> list[int]:
+    """snap() once per map id; how often forget_the_map was called after each."""
+    calls: list[int] = []
+    b.forget_the_map = lambda: calls.append(1)        # type: ignore[attr-defined]
+    seen: list[int] = []
+    for mid in ids:
+        b.link.answers["mem"] = {"ok": True, "self": {"id": 1}, "map": {"id": mid}, "entities": []}
+        b.snap()
+        seen.append(len(calls))
+    return seen
+
+
+def test_snap_on_another_map_forgets_the_monster_notes(clock: Clock) -> None:
+    """Monster ids are per map: what was held against -15 on one map is not about -15 on the next."""
+    b = Read()
+    ticking(b, clock)
+    assert _maps(b, 5241, 5241, 1141, 1141, 5241) == [0, 0, 1, 1, 2]     # not for the run's first map
+    assert b.notes_map == 5241
+
+
+def test_snap_does_not_take_map_zero_for_a_map(clock: Clock) -> None:
+    """0 is a map change in progress: through it and back onto the same map, nothing is forgotten."""
+    b = Read()
+    ticking(b, clock)
+    assert _maps(b, 5241, 0, 5241) == [0, 0, 0]
+    assert b.notes_map == 5241
+
+
+def test_snap_works_for_a_bot_with_no_monster_notes(clock: Clock) -> None:
+    b = Read()                                        # no forget_the_map at all (a tool's bot)
+    ticking(b, clock)
+    for mid in (5241, 1141):
+        b.link.answers["mem"] = {"ok": True, "self": {"id": 1}, "map": {"id": mid}, "entities": []}
+        b.snap()
+    assert b.notes_map == 1141

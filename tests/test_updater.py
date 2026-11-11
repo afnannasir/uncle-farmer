@@ -9,6 +9,7 @@ unpacking a fake zip, applying it over a folder, and the result/log bookkeeping.
 from __future__ import annotations
 
 import hashlib
+import io
 import os
 import re
 import stat
@@ -110,6 +111,7 @@ def fake_open(monkeypatch: pytest.MonkeyPatch,
 # ---------------------------------------------------------------- version helper
 @pytest.mark.parametrize("value, want", [
     ("1.2.3", (1, 2, 3)), ("v0.2.1", (0, 2, 1)), ("1.2.3.4.5", (1, 2, 3, 4)), ("", (0,)), ("junk", (0,)),
+    ("1.0.1-dev.129", (1, 0, 1, 129)),                     # a dev build: its release's numbers, then the build
 ])
 def test_version_tuple(value: str, want: tuple[int] | tuple[int, int, int] | tuple[int, int, int, int]) -> None:
     assert updater.version_tuple(value) == want
@@ -788,6 +790,29 @@ def test_open_sends_the_token_only_when_set(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setenv("UNCLEFARMER_GITHUB_TOKEN", "secret")
     updater._open("https://x", "application/json", 5)
     assert captured["req"].get_header("Authorization") == "Bearer secret"
+
+
+@pytest.mark.parametrize("update_channel, body, url", [
+    ("master", b"{}", "https://api.github.com/repos/afnannasir/uncle-farmer/releases/latest"),
+    ("dev", b"[]", "https://api.github.com/repos/afnannasir/uncle-farmer/releases?per_page=30"),
+])
+def test_the_update_check_asks_only_our_own_repository(monkeypatch: pytest.MonkeyPatch, update_channel: str,
+                                                       body: bytes, url: str) -> None:
+    """Every copy installs what this address offers, so it must stay the project's own repository
+    on GitHub's API. The addresses are written out, not built from REPO, LATEST or RELEASES: a
+    changed owner, host or path fails here instead of being followed."""
+    assert updater.REPO == "afnannasir/uncle-farmer"
+    asked: list[str] = []
+
+    class Opener:
+        def open(self, req: urllib.request.Request, timeout: float | None = None) -> io.BytesIO:
+            asked.append(req.full_url)
+            return io.BytesIO(body)
+
+    monkeypatch.setattr(updater.urllib.request, "build_opener", stand_in(updater.urllib.request.build_opener, lambda *handlers: as_kind(urllib.request.OpenerDirector, Opener())))
+    monkeypatch.delenv("UNCLEFARMER_GITHUB_TOKEN", raising=False)
+    assert updater.latest(update_channel=update_channel) is None
+    assert asked == [url]
 
 
 def test_redirect_drops_the_token_off_github() -> None:

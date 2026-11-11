@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import pytest
-from conftest import as_parts, data, fight, Bot
+from conftest import as_parts, data, fight, Bot, Game, ME
 
 from unclefarmer.engine import combat
 from unclefarmer.engine.combat import Skill
@@ -15,6 +15,96 @@ from typing import Any, cast
 def test_fireball_fills_not_the_long_pyroblast(clock: Clock) -> None:
     g, _b, _sb = fight(clock, ["Fireball", "Fire Impact", "Pyroblast"], [], 40)
     assert "Pyroblast" not in g.log and g.log.count("Fireball") > 10, g.log
+
+
+@pytest.fixture
+def elf_ignition(clock: Clock) -> tuple[combat.SkillBook, dict[str, Any], dict[str, Any]]:
+    skills = ["Fireball", "Fire Impact", "Pyroblast", "Blazing Storm", "Ignition"]
+    sb = combat.SkillBook(as_parts(Bot(Game(clock, skills, ["Blazing Combo"]))))
+    mob = {"id": -5, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1}
+    me = {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}
+    return sb, {"self": me, "entities": [me, mob]}, mob
+
+
+@pytest.mark.parametrize(("pack", "channel"), [(1, "Pyroblast"), (2, "Blazing Storm")])
+@pytest.mark.parametrize("elements", [0, 1, 2, 3, 5])
+def test_ignition_sets_up_the_planned_channel(
+    clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]],
+    pack: int, channel: str, elements: int,
+) -> None:
+    sb, snap, mob = elf_ignition
+    assert sb.combos is not None
+    sb.available_to_channel_without_penalty = True
+    sb.combos.built = 5  # a fresh T-key reading takes precedence over the fallback count
+    sb.pts, sb.pts_at = elements, clock.now
+    if pack == 2:
+        snap["entities"].append(dict(mob, id=-6, y=51))
+
+    picked = sb.pick(snap, mob)
+    if elements >= 3:
+        assert isinstance(picked, tuple) and picked[1] == "Ignition"
+        clock.advance(0.25)
+        sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Ignition"}, ME)
+        assert sb.points(clock.now) == sb.combos.built == 0
+        assert sb.available_to_channel_without_penalty
+        picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == channel
+
+
+@pytest.mark.parametrize("use", ["auto", "ready"])
+def test_ignition_cannot_bypass_permission_through_ordinary_picks(
+    clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]], use: str,
+) -> None:
+    sb, snap, mob = elf_ignition
+    ignition = sb.skill("Ignition")
+    assert sb.combos is not None and ignition is not None
+    sb.combos.built = 5
+    sb.combos.primed["Ignition"] = clock.now + 5
+    ignition.update(use=use, role="single_target", attack=100000)
+    skills, _wanted = sb._usable(0, False, clock.now)
+    assert sb.combos.pick(skills, mob, clock.now, lambda _s: True, elements=5) is None
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] != "Ignition"
+    fallback = sb.fallback(clock.now)
+    assert fallback is not None and fallback[1] != "Ignition"
+
+
+@pytest.mark.parametrize(("blocked_by", "expected"), [
+    ("channel cooldown", "Fireball"),
+    ("low target HP", "Fireball"),
+    ("pending Fire Impact", "Fire Impact"),
+    ("Ignition cooldown", "Pyroblast"),
+    ("Ignition range", "Pyroblast"),
+    ("Ignition affordability", "Pyroblast"),
+    ("Ignition disabled", "Pyroblast"),
+])
+def test_ignition_requires_a_usable_setup_and_channel(
+    clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]],
+    blocked_by: str, expected: str,
+) -> None:
+    sb, snap, mob = elf_ignition
+    ignition = sb.skill("Ignition")
+    assert sb.combos is not None and ignition is not None
+    sb.available_to_channel_without_penalty = True
+    sb.combos.built = 3
+    ignition["use"] = "ready"
+    if blocked_by == "channel cooldown":
+        sb.used.update(Pyroblast=clock.now, **{"Blazing Storm": clock.now, "Fire Impact": clock.now})
+    elif blocked_by == "low target HP":
+        mob["hp"] = 100
+    elif blocked_by == "pending Fire Impact":
+        sb.pending_channelling = True
+    elif blocked_by == "Ignition cooldown":
+        sb.used["Ignition"] = clock.now
+    elif blocked_by == "Ignition range":
+        ignition["range"] = 1.0
+    elif blocked_by == "Ignition affordability":
+        ignition["combo_cost"] = 5
+        sb.pts, sb.pts_at = 3, clock.now
+    else:
+        ignition["use"] = "never"
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] == expected
 
 
 def test_a_running_dot_is_not_cast_again(clock: Clock) -> None:

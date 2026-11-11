@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import os
 import threading
+from typing import Any
 
-
-from ... import speech, stats
+from ... import settings, speech, stats
 from ...stats import Tally
 from ...i18n import _
 from ...link import AgentError, AgentLink
@@ -21,7 +21,7 @@ class ResultsMixin(FrameParts):
         return run.tally if run else None
 
     def show_results(self) -> None:
-        with ResultsDialog(self, self.selected_character(), self.live_tally) as d:
+        with ResultsDialog(self, settings.profile_name(self.selected_character()) or None, self.live_tally) as d:
             d.ShowModal()
 
     def open_results_folder(self) -> None:
@@ -33,14 +33,19 @@ class ResultsMixin(FrameParts):
         pid = foreground_pid() if front else None
         if pid not in {g[0] for g in self.games}:
             pid = self.selected_pid()
-        name = next((g[1] for g in self.games if g[0] == pid), None)
+        name = settings.profile_name(next((g[1] for g in self.games if g[0] == pid), None)) or None
         run = self.runs.get(pid) if pid is not None else None
         if run and run.tally:
-            speech.speak(_("{name}: {results}", name=run.character or name, results=stats.short(run.tally.result())))
+            speech.speak(_("{name}: {results}", name=run.character or name,
+                           results=stats.short(run.tally.result(), run.tally.drop_left)))
             return
         past = stats.runs(name) if name else []
         if past:
-            speech.speak(_("{name}, last run: {results}", name=name, results=stats.short(past[-1])))
+            # the drop time is today's, from the game open now (the last run may be from yesterday)
+            snap = self.snapshot(pid) if pid is not None else None
+            me: dict[str, Any] = (snap or {}).get("self") or {}
+            drop = stats.drop_left(me.get("sheet"))
+            speech.speak(_("{name}, last run: {results}", name=name, results=stats.short(past[-1], drop)))
         else:
             speech.speak(_("No results yet."))
 
@@ -53,7 +58,7 @@ class ResultsMixin(FrameParts):
             t = run.tally
             if t and self.clock.time() - t.spoken >= every * 60:
                 t.spoken = self.clock.time()
-                speech.speak(_("{name}: {results}", name=run.character, results=stats.short(t.result())))
+                speech.speak(_("{name}: {results}", name=run.character, results=stats.short(t.result(), t.drop_left)))
 
     def keep_silent(self) -> None:
         """game_speech "always": silence every game with the agent, each time one starts. On a

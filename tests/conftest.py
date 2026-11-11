@@ -340,6 +340,7 @@ class Bot:
         self.p = dict(settings.PROFILE_DEFAULTS, points_key="")
         self.p.update(profile or {})
         self.retreating = self.resting = False
+        self.clock: Clock | None = getattr(game, "clock", None)
         self.lines: list[str] = []
 
     def log(self, line: str, speak: bool = False) -> None:

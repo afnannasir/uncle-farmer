@@ -12,6 +12,7 @@ from ...i18n import _
 from ...link import AgentError
 
 DIRECTIONS: dict[tuple[int, int], str] = {(1, 0): "right", (-1, 0): "left", (0, 1): "down", (0, -1): "up"}  # y grows south
+MOVE_SHOT_REACH = 8.0   # shooting while walking only for a character that hits from this far
 NPC_HP = 20000000   # town NPCs report exactly this much HP; never a target
 CONFIRM = r"(?i)^\s*(ok|yes|confirm|sure|accept|确定|是)\b"   # the only follow-up entry ride() accepts
 

@@ -19,7 +19,7 @@ from unclefarmer.engine import bagrules, crafting, town
 from unclefarmer.engine.botparts.base import Stopped
 from typing import Any
 from collections.abc import Callable
-from conftest import failing, as_bot, as_kind, returning, stand_in
+from conftest import Clock, failing, as_bot, as_kind, returning, stand_in
 from unclefarmer.atlaslib import MapModel
 
 
@@ -77,6 +77,7 @@ class Bot:
         self.closed = 0
         self.map = 1
         self.map_name = ""
+        self.gang_base: tuple[int, str] | None = None
         self.pos = (0.0, 0.0)
         self.stop_event = threading.Event()
         self.map_change = True
@@ -91,6 +92,7 @@ class Bot:
         self.a = Link(self)
         self.on_choose: Callable[[str], dict[str, Any] | None] | None = None
         self.on_key: Callable[[str], object] | None = None
+        self.clock: Clock | None = None           # clock_for(): the system clock unless a test sets one
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -166,6 +168,9 @@ class Bot:
 
     def travel(self, mid: int) -> None:
         self.visited.append(mid)
+        self.map = mid
+        if self.gang_base is not None and mid != self.gang_base[0]:
+            self.gang_base = None
 
     def wait_map_change(self, mid: int, seconds: float) -> bool:
         self.map_change_args = (mid, seconds)
@@ -1141,6 +1146,50 @@ def test_enhance_item_already_at_the_target(monkeypatch: pytest.MonkeyPatch) -> 
     assert any("Sniper Belt is +12: done" in line for line in b.lines)
 
 
+@pytest.mark.parametrize("name", ["gold wedding ring", "Platinum wedding ring",
+                                  "lzs0lzs2243lzs1lzsdiamond wedding ring", "Diamond Wedding Ring"])
+def test_wedding_rings_are_never_offered_for_enhancing(name: str) -> None:
+    assert not crafting.enhanceable(name)
+
+
+# names as the game's english pack writes them (more\equipment.txt)
+@pytest.mark.parametrize("name", ["One Star Attack Medal", "Two Star Attack Medal", "Five Star Attack Medal",
+                                  "Contribution Medal", "Medal of the Demon Chasing girl",
+                                  "Medal of the demon Hunting boy", "Gold medal of Hunting", "_Arena Blue medal",
+                                  "Tutor Medal", "Mist god Emblem",
+                                  "soft pouch", "hot bag", "weightless sack", "Realm Pack",
+                                  "Five-Nuts Osmanthus Cake", "Crispy potato and vegetable pie", "War badge 3"])
+def test_medals_badges_the_emblem_and_the_bags_are_never_offered_for_enhancing(name: str) -> None:
+    assert not crafting.enhanceable(name)
+
+
+@pytest.mark.parametrize("name", ["Horror Belt", "Terrifying Scepter", "Horror ring (left)"])
+def test_ordinary_gear_is_offered_for_enhancing(name: str) -> None:
+    assert crafting.enhanceable(name)
+
+
+def test_gear_name_drops_the_games_markup() -> None:
+    assert crafting.gear_name("lzs0lzs2243lzs1lzsdiamond wedding ring") == "diamond wedding ring"
+    assert crafting.gear_name("Horror Belt") == "Horror Belt"
+
+
+def test_enhance_leaves_out_a_wedding_ring_ticked_in_an_old_profile(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot(top=menu(["enhance equipment"], ["Epic Sniper Belt | enhancement level: 12"]))
+    b.open = True
+    asked: list[str] = []
+    real = crafting._forger_offer
+
+    def offer(bot: Bot, job: object, item: str) -> object:
+        asked.append(item)
+        return real(as_bot(bot), job, item)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
+    monkeypatch.setattr(crafting, "_forger_offer", offer)
+    crafting.enhance(as_bot(b), {"items": ["diamond wedding ring", "Sniper Belt"], "where": "gang", "up_to": 12})
+    assert asked == ["Sniper Belt"]
+    assert any("Sniper Belt is +12: done" in line for line in b.lines)
+
+
 def test_enhance_check_only_reports(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot(top=menu(["enhance equipment"],
                      ["Epic Sniper Belt;rare | enhancement level: 5"],
@@ -1158,6 +1207,61 @@ def test_enhance_check_only_reports(monkeypatch: pytest.MonkeyPatch) -> None:
     assert any("Sniper Belt: +5 to +6 needs 1 Level 5 Equipment Enhance Crystal" in line for line in b.lines)
     assert fetched == [True]
     assert "start forging" not in b.chooses
+
+
+ITEM_LIST = "enhance equipment | Epic Sniper Belt;rare | enhancement level: 10"
+OFFER_PAGE = ("forging Epic Sniper Belt;rare , Enhancement level increased from 10 to 11, requires 1 Level 7 "
+              "Equipment Enhance Crystal, costs 9523 arnebia | 5.0% success rate")
+
+
+def _late_forger(monkeypatch: pytest.MonkeyPatch, pages: list[str]) -> tuple[Bot, Clock]:
+    """A Forger whose page for the item comes late: menu_text reads pages in turn (the last one
+    stays), on a clock that moves with the bot's sleeps."""
+    b = Bot(bag=[{"name": "Arnebia", "count": 100000}])
+    clock = Clock()
+    b.clock = clock
+
+    def sleep(seconds: float) -> None:
+        b.sleeps.append(seconds)
+        clock.advance(seconds)
+
+    b.sleep = sleep
+    b.choose = lambda pattern: b.chooses.append(pattern) or entry("x")
+    b.wait_dialog = lambda seconds=3.0, want_open=True: {"open": 1}
+    b.dialog = lambda: {"ok": True, "open": 1, "top": None}
+    monkeypatch.setattr(crafting, "open_craftsman", stand_in(crafting.open_craftsman, lambda b, role, where: "gang"))
+    monkeypatch.setattr(crafting, "_item_row", stand_in(crafting._item_row, lambda b, name: (entry("x"), 10)))
+    reads = iter(pages)
+    last = [pages[0]]
+
+    def read() -> str:
+        last[0] = next(reads, last[0])
+        return last[0]
+
+    monkeypatch.setattr(crafting, "menu_text", stand_in(crafting.menu_text, lambda b: read()))
+    return b, clock
+
+
+def test_enhance_waits_for_a_late_forger_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    b, clock = _late_forger(monkeypatch, [ITEM_LIST, ITEM_LIST, OFFER_PAGE])
+    monkeypatch.setattr(crafting, "fetch_shards", stand_in(crafting.fetch_shards, returning(0)))
+    crafting.enhance(as_bot(b), {"items": ["Sniper Belt"], "where": "gang", "up_to": 12,
+                                 "make_crystals": False}, check_only=True)
+    assert any("Sniper Belt: +10 to +11 needs 1 Level 7 Equipment Enhance Crystal" in line for line in b.lines)
+    assert not any("Level 1" in line for line in b.lines)
+    assert clock.now - 1000.0 < crafting.OFFER_WAIT
+
+
+def test_enhance_skips_an_item_whose_forger_page_never_comes(monkeypatch: pytest.MonkeyPatch) -> None:
+    b, clock = _late_forger(monkeypatch, [ITEM_LIST])
+    monkeypatch.setattr(crafting, "stock_crystals", stand_in(crafting.stock_crystals, failing("no crystal level known")))
+    crafting.enhance(as_bot(b), {"items": ["Sniper Belt", "Iron Ring"], "where": "gang", "up_to": 12,
+                                 "make_crystals": True, "crystal_stock": 5})
+    skipped = [line for line in b.lines if "didn't say which crystal" in line]
+    assert len(skipped) == 2 and "Sniper Belt" in skipped[0] and "Iron Ring" in skipped[1]
+    assert sum(line == "on the Forger's screen: " + ITEM_LIST for line in b.lines) == 2
+    assert "start forging" not in b.chooses
+    assert clock.now - 1000.0 >= 2 * crafting.OFFER_WAIT
 
 
 def test_enhance_stops_without_spare_arnebia(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1443,3 +1547,196 @@ def test_enhance_stops_when_stocking_makes_no_crystals(monkeypatch: pytest.Monke
                          "make_crystals": True, "crystal_stock": 2, "protect": "never"})
     assert any("out of Level 5 Equipment Enhance Crystals - stopping" in line for line in b.lines)
     assert "start forging" not in b.chooses
+
+
+# ---------------------------------------------------------------------------------------- UF-44 regression tests
+def test_uf44_gem_maker_level_1_named_gang_avoids_repeated_exits(gang_atlas: pytest.MonkeyPatch, monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot(bag=[{"name": "Level 1 Topaz Shard", "count": 400}])
+    b.pos = (59.0, 93.0)
+
+    def fake_visit(bot: Bot, role: str | None, name: str | None = None, candidates: object = None) -> str:
+        bot.visited.append((role, name, candidates))
+        bot.map = 4002
+        bot.map_name = "Harvest Base"
+        bot.top = menu(["All gangs"])
+        bot.open = True
+        return "NPC"
+
+    monkeypatch.setattr(town, "visit", fake_visit)
+    monkeypatch.setattr(crafting, "in_gang", stand_in(crafting.in_gang, lambda b: b.map_id() == 4002))
+    monkeypatch.setattr(crafting, "_reachable", stand_in(crafting._reachable, lambda b, role: True))
+    monkeypatch.setattr(crafting, "_pick_gang", stand_in(crafting._pick_gang, lambda b, gang: True))
+
+    def wait_dialog(seconds: float = 2.0, want_open: bool = True):
+        b.top = menu(["Enter the Outer hall of the gang"])
+        return b.dialog()
+
+    b.wait_dialog = wait_dialog
+
+    # Initial gang entry into Harvest
+    assert crafting.enter_gang(as_bot(b), "Harvest", "gem_craftsman") is True
+    assert len([v for v in b.visited if v == ("gang_entrance", None, None)]) == 1
+
+    def fake_make_gems(bot: Bot, wanted: dict[str, int], opener: Callable[[], object] | None = None) -> int:
+        if opener:
+            opener()
+        total_made = 0
+        for shard_name, max_n in wanted.items():
+            gem_name = town.gem_of(shard_name)
+            if not gem_name:
+                continue
+            have = sum(r.get("count", 0) for r in bot.bag if r.get("name") == shard_name)
+            n = min(have, max_n)
+            made = n // 4
+            if made > 0:
+                add(bot, shard_name, -made * 4)
+                add(bot, gem_name, made)
+                total_made += made
+        return total_made
+
+    monkeypatch.setattr(town, "make_gems", fake_make_gems)
+
+    cfg = {
+        "colour": "Topaz",
+        "level": 1,
+        "count": 100,
+        "where": "other_gang",
+        "gang_name": "Harvest",
+        "supply": "none",
+    }
+    crafting.gem_maker(as_bot(b), cfg)
+
+    # After initial entry, the bot must NOT visit gang_entrance again
+    entrance_visits = [v for v in b.visited if v == ("gang_entrance", None, None)]
+    assert len(entrance_visits) == 1
+    assert sum(r.get("count", 0) for r in b.bag if r.get("name") == "Level 1 Topaz") == 100
+
+
+def test_uf44_gem_maker_level_3_named_gang_avoids_repeated_exits(gang_atlas: pytest.MonkeyPatch, monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot(bag=[{"name": "Level 1 Topaz Shard", "count": 360}])
+    b.pos = (59.0, 93.0)
+
+    def fake_visit(bot: Bot, role: str | None, name: str | None = None, candidates: object = None) -> str:
+        bot.visited.append((role, name, candidates))
+        bot.map = 4002
+        bot.map_name = "Harvest Base"
+        bot.top = menu(["All gangs"])
+        bot.open = True
+        return "NPC"
+
+    monkeypatch.setattr(town, "visit", fake_visit)
+    monkeypatch.setattr(crafting, "in_gang", stand_in(crafting.in_gang, lambda b: b.map_id() == 4002))
+    monkeypatch.setattr(crafting, "_reachable", stand_in(crafting._reachable, lambda b, role: True))
+    monkeypatch.setattr(crafting, "_pick_gang", stand_in(crafting._pick_gang, lambda b, gang: True))
+
+    def wait_dialog(seconds: float = 2.0, want_open: bool = True):
+        b.top = menu(["Enter the Outer hall of the gang"])
+        return b.dialog()
+
+    b.wait_dialog = wait_dialog
+
+    # Initial gang entry into Harvest
+    assert crafting.enter_gang(as_bot(b), "Harvest", "gem_craftsman") is True
+    assert len([v for v in b.visited if v == ("gang_entrance", None, None)]) == 1
+
+    def fake_make_gems(bot: Bot, wanted: dict[str, int], opener: Callable[[], object] | None = None) -> int:
+        if opener:
+            opener()
+        total_made = 0
+        for shard_name, max_n in wanted.items():
+            gem_name = town.gem_of(shard_name)
+            if not gem_name:
+                continue
+            have = sum(r.get("count", 0) for r in bot.bag if r.get("name") == shard_name)
+            n = min(have, max_n)
+            made = n // 4
+            if made > 0:
+                add(bot, shard_name, -made * 4)
+                add(bot, gem_name, made)
+                total_made += made
+        return total_made
+
+    def fake_raise_gems(bot: Bot, colour: str, lv: int, k: int, boost: bool, protect: bool, where: str,
+                        check_only: bool = False, blocked: list[str] | None = None) -> tuple[int, int]:
+        crafting.open_craftsman(as_bot(bot), "gem_craftsman", where)
+        add(bot, f"Level {lv} {colour}", -3 * k)
+        add(bot, f"Level {lv + 1} {colour}", k)
+        return (k, 0)
+
+    monkeypatch.setattr(town, "make_gems", fake_make_gems)
+    monkeypatch.setattr(crafting, "raise_gems", fake_raise_gems)
+
+    cfg = {
+        "colour": "Topaz",
+        "level": 3,
+        "count": 10,
+        "where": "other_gang",
+        "gang_name": "Harvest",
+        "supply": "none",
+        "boost": False,
+        "protect": False,
+    }
+    crafting.gem_maker(as_bot(b), cfg)
+
+    # Bot must NOT repeatedly visit gang_entrance between raising phases
+    entrance_visits = [v for v in b.visited if v == ("gang_entrance", None, None)]
+    assert len(entrance_visits) == 1
+    assert sum(r.get("count", 0) for r in b.bag if r.get("name") == "Level 3 Topaz") == 10
+
+
+def test_uf44_safety_and_state_invalidation(gang_atlas: pytest.MonkeyPatch, monkeypatch: pytest.MonkeyPatch) -> None:
+    # 1. No gang name specified: existing behavior remains unchanged
+    b1 = Bot()
+    b1.map = 4001
+    monkeypatch.setattr(crafting, "in_gang", stand_in(crafting.in_gang, lambda b: True))
+    monkeypatch.setattr(crafting, "_reachable", stand_in(crafting._reachable, lambda b, role: True))
+    assert crafting.enter_gang(as_bot(b1), None, "gem_craftsman") is True
+    assert b1.visited == []
+
+    # Setup for visiting gangs
+    def fake_visit(bot: Bot, role: str | None, name: str | None = None, candidates: object = None) -> str:
+        bot.visited.append((role, name, candidates))
+        bot.map = 4002
+        bot.map_name = "Harvest Base"
+        bot.top = menu(["All gangs"])
+        bot.open = True
+        return "NPC"
+
+    monkeypatch.setattr(town, "visit", fake_visit)
+    monkeypatch.setattr(crafting, "_pick_gang", stand_in(crafting._pick_gang, lambda b, gang: True))
+
+    # 2. A different gang is requested: leaves and enters the requested gang
+    b2 = Bot()
+    b2.wait_dialog = lambda seconds = 2.0, want_open = True: (setattr(b2, "top", menu(["Enter the Outer hall of the gang"])) or b2.dialog())
+    assert crafting.enter_gang(as_bot(b2), "Harvest", "gem_craftsman") is True
+    assert len(b2.visited) == 1
+    assert getattr(b2, "gang_base", None) == (4002, "Harvest")
+
+    assert crafting.enter_gang(as_bot(b2), "Iron Wolves", "gem_craftsman") is True
+    assert len(b2.visited) == 2
+    assert getattr(b2, "gang_base", None) == (4002, "Iron Wolves")
+
+    # 3. Starting inside an unknown gang base does NOT assume it is the requested gang
+    b3 = Bot()
+    b3.map = 4002
+    b3.wait_dialog = lambda seconds = 2.0, want_open = True: (setattr(b3, "top", menu(["Enter the Outer hall of the gang"])) or b3.dialog())
+    assert getattr(b3, "gang_base", None) is None
+    assert crafting.enter_gang(as_bot(b3), "Harvest", "gem_craftsman") is True
+    assert len(b3.visited) == 1
+
+    # 4. Gang state is cleared when leaving the gang-base map
+    b3.travel(1)
+    assert getattr(b3, "gang_base", None) is None
+
+    # 5. Gang state is reset at the beginning of a new run
+    b4 = Bot()
+    assert getattr(b4, "gang_base", None) is None
+
+    # 6. The requested role is unreachable: does not return early
+    b5 = Bot()
+    b5.map = 4002
+    b5.gang_base = (4002, "Harvest")
+    b5.wait_dialog = lambda seconds = 2.0, want_open = True: (setattr(b5, "top", menu(["Enter the Outer hall of the gang"])) or b5.dialog())
+    monkeypatch.setattr(crafting, "_reachable", stand_in(crafting._reachable, lambda b, role: False))
+    assert crafting.enter_gang(as_bot(b5), "Harvest", "gem_craftsman") is False
+    assert len(b5.visited) == 1

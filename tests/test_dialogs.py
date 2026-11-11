@@ -165,6 +165,70 @@ def test_choose_already_on_the_entry_only_enters() -> None:
     assert b.keys == ["enter"]
 
 
+class TimelineBot(DlgBot):
+    """The screen after a direct choice, as the game shows it: (seconds after the choice, dialog).
+    The game closes the chosen menu itself; the server's answer comes a moment later."""
+
+    def __init__(self, top: dict[str, Any], timeline: list[tuple[float, dict[str, Any]]], open_before: int=1) -> None:
+        super().__init__(top=top)
+        self.timeline = timeline
+        self.open_before = open_before
+        self.chosen_at: float | None = None
+
+    def dialog(self) -> dict[str, Any]:
+        if self.chosen_at is None:
+            return {"ok": True, "open": self.open_before, "top": self.top}
+        shown: dict[str, Any] = {"ok": True, "open": 0, "top": None}
+        for after, d in self.timeline:
+            if self.test_clock.now - self.chosen_at >= after:
+                shown = d
+        return shown
+
+
+def chose_directly(b: TimelineBot, monkeypatch: pytest.MonkeyPatch) -> float:
+    """Choose b's only entry with the agent's direct choose; the seconds the choice took."""
+    def choose_at(bot: Any, top: dict[str, Any], row: int, col: int) -> bool:
+        b.chosen_at = b.test_clock.now
+        return True
+    monkeypatch.setattr(dialogs_mod.menus, "choose_at", choose_at)
+    started = b.test_clock.now
+    assert b.choose(r"^Alpha$") is not None
+    return b.test_clock.now - started
+
+
+def test_a_direct_choice_waits_past_the_close_for_the_servers_confirm(monkeypatch: pytest.MonkeyPatch) -> None:
+    confirm = {"ok": True, "open": 1, "top": {"sig": 2, **menu([entry("Confirm")])}}
+    b = TimelineBot({"sig": 1, **menu([entry("Alpha")])}, [(0.0, {"ok": True, "open": 0, "top": None}),
+                                                          (0.1, confirm)])
+    took = chose_directly(b, monkeypatch)
+    assert 0.1 <= took < 0.2                       # on as soon as the answer is up
+    assert b.dialog()["top"]["sig"] == 2           # the caller's next reading sees the confirm
+
+
+def test_a_direct_choice_that_only_closes_keeps_the_full_pause(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = TimelineBot({"sig": 1, **menu([entry("Alpha")])}, [(0.0, {"ok": True, "open": 0, "top": None})])
+    assert chose_directly(b, monkeypatch) >= 0.4
+
+
+def test_the_menu_underneath_is_not_taken_for_the_answer(monkeypatch: pytest.MonkeyPatch) -> None:
+    parent = {"ok": True, "open": 1, "top": {"sig": 7, **menu([entry("Parent")])}}
+    b = TimelineBot({"sig": 1, **menu([entry("Alpha")])}, [(0.0, parent)], open_before=2)
+    assert chose_directly(b, monkeypatch) >= 0.4
+
+
+def test_a_menu_replaced_in_place_ends_the_wait(monkeypatch: pytest.MonkeyPatch) -> None:
+    page2 = {"ok": True, "open": 1, "top": {"sig": 3, **menu([entry("Next")])}}
+    b = TimelineBot({"sig": 1, **menu([entry("Alpha")])}, [(0.05, page2)])
+    assert chose_directly(b, monkeypatch) < 0.1
+
+
+def test_a_direct_choice_waits_only_until_the_quantity_box_opens(monkeypatch: pytest.MonkeyPatch) -> None:
+    top = {"sig": 1, **menu([entry("Alpha")])}
+    b = TimelineBot(top, [(0.0, {"ok": True, "open": 1, "top": top})])   # the menu stays, a box opens over it
+    b.a = JsonOnly(lambda line: {"ok": True, "open": True} if line == "input" else {})
+    assert chose_directly(b, monkeypatch) == 0.0
+
+
 def test_choose_no_match_closes_and_says_so() -> None:
     b = DlgBot(top=menu([entry("Alpha")]))
     assert b.choose(r"^Nope$") is None

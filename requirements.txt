@@ -2,11 +2,11 @@
 #     py -3.14 -m venv .venv
 #     .venv\Scripts\pip install -r requirements.txt
 # Made from uv.lock by export_requirements.py: don't edit it, run that after `uv lock`.
-annotated-types==0.8.0 ; sys_platform == 'win32' \
+annotated-types==0.8.0 \
     --hash=sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7 \
     --hash=sha256:f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0
     # via pydantic
-numpy==2.5.4 ; sys_platform == 'win32' \
+numpy==2.5.4 \
     --hash=sha256:067374eb538c34c745436365cf7b0112595c1d326f21ce4ff340f61230239fbb \
     --hash=sha256:298eca75243f2cbbfdb460560b9fb2a1792a33cf2ab4286efd43d92e8d3df508 \
     --hash=sha256:2ca144f15135b6212a5c47b1e2aeca6e412f102f95a2d5d88d8aec77eb255de3 \
@@ -23,45 +23,45 @@ numpy==2.5.4 ; sys_platform == 'win32' \
     # via
     #   unclefarmer
     #   wxpython
-orjson==3.13.0 ; sys_platform == 'win32' \
+orjson==3.13.0 \
     --hash=sha256:6adcaa85d79977659a448b4123a88eb33511a11ed2db243535ad7ea88a6668e0 \
     --hash=sha256:7804dd1d6161da0e53b284c2aebf20f23e78eaac617300803e1467d1828d987f \
     --hash=sha256:83705c12b4afde10c62a5dd3fe6fdb21b7900bd0dcd5af1c85612ae94d0ee590 \
     --hash=sha256:d1de5eb04485110c5da4c657e49168995d55e076b1ce60f1a042e254f4186c4f \
     --hash=sha256:f5c05a8fee59309f537590a1ff12d3c1009c485e96a50a9ac60dd085c09d0fc0
     # via unclefarmer
-pydantic==2.14.2 ; sys_platform == 'win32' \
-    --hash=sha256:7efbf7507b937931cd32a5755acb00ea1cf5ccb1d4e8067a5850d5069e382118 \
-    --hash=sha256:fb7b2db6cefe8414dd612edeede49c4c433acb0432b0f92b95024e45f66c505d
+pydantic==2.14.3 \
+    --hash=sha256:1054f237f4d4733e5a30e1e2333bd33a2004ab9ab1510bd053a9a31bb48e232d \
+    --hash=sha256:3f7b347782ab7e4cf4c798496ae3a82787d9f21ec12676a9c564355eeef8daa8
     # via unclefarmer
-pydantic-core==2.50.2 ; sys_platform == 'win32' \
-    --hash=sha256:04cf672960b8c4fc28bb159c8cdd101fbd311c520237a5c0360448b851adfb41 \
-    --hash=sha256:0d090ae76d5b09c003600c7779b3adcf3d1b49268f616c5c51d844e54c8e318d \
-    --hash=sha256:18f008ef58cd30782f81b6e0119e20b7e884edcefbc2d370162ebe033f6e5c99 \
-    --hash=sha256:1b0e8dc3932cf4e9ed5727570325cacc716b9409ffc794a221c0ccc72e8eb775 \
-    --hash=sha256:36917e29c0b815d6b940bc91560fcf453b5b85d55c579796373f0ea11d1c111a \
-    --hash=sha256:4ea01f30e119f1ec7a2034e85c40f491d469896aef02cd6436fd9292fe1be3fb \
-    --hash=sha256:6e731bf5a5e8e25398544d7709e39068ec4230b0177e4db7fa955692fd415ba3 \
-    --hash=sha256:8431ecb131489cbdaf6f51f7ade47475f73aff4f1912552f75ba19a6cfe233a8 \
-    --hash=sha256:91315aea7adb51821d4a3378ede953bfdd76e3bf71551de4a82d7638cef7dc02 \
-    --hash=sha256:9a8a62281fd9c6a373b3fd3d473685e6838d43341eecde5f47729748e2c11ee3 \
-    --hash=sha256:9b01a092955c1c7530196ad526755cff4f2d11f37ca9a6fc9ebe37ca49a48977 \
-    --hash=sha256:b62c89545d21d930c333208fd548e7b4f262228ba3a322fd75c987a75ab11f31 \
-    --hash=sha256:cc488daac19e6f5292180fac5e0ef7efffabeef4e096af9a17a75a7d3d6781f6 \
-    --hash=sha256:d79aaa468193c1bed6b0560d3c5c9f9e369e3efb0b128b38a2537e2d51d42773
+pydantic-core==2.50.4 \
+    --hash=sha256:13b6dd62b5279f5b9d72f3bf918a35443ee8bd549241d9dc52d79a2c3b6d7016 \
+    --hash=sha256:22e874666bdbd96d6bf629d32cd8ab376fedf1fd62585b52a42b9fa9fa6c20b6 \
+    --hash=sha256:601fce6cea9ddeaa85329e12e7f351def38d233075f42a3012b9c48071b02941 \
+    --hash=sha256:6118e5a5550e36582e19bac1a403711a748f9f18251b054c326d3db02aaa7a18 \
+    --hash=sha256:65376dbe1ab4dbc768ca2b72b7c13993562c035f5925fd3bc7ff9c8c585c515d \
+    --hash=sha256:6619d49a89a15cd04334f76fec530c155923bfc60da74ff5d815a52629e1aa6c \
+    --hash=sha256:71395a43da5584bb70556f380387e15f845c0dcf76373c1afbfa0025737576ac \
+    --hash=sha256:aead3b74b68396bf0feab5d57e050b730ded7df55853c1e048a87e00aaf033c6 \
+    --hash=sha256:b0cdb655fbd1562c2dfc9986f9103a106f7058cd0915afc6e656d4b1d73f3387 \
+    --hash=sha256:da779ae50b46f3f7d1e1b5f362fdc0ad376a49fd55f6f3122dc2b6149936cdf7 \
+    --hash=sha256:df1c174796cd63eb6b139f7daf783affe1f3ed659605850e843b24764c21bfc5 \
+    --hash=sha256:e5bd109d095aaae989a0463d5ef0fcc43e9ddd5de125e656d3c119a79e466380 \
+    --hash=sha256:e6da138a1ecc1341c8b788a5ee822670b03788e1f5decf7af9d461de6e508b8e \
+    --hash=sha256:f08ee8248aad2d054e5bc4c73554d4505464698f6d754f16198dbc5764e9821d
     # via pydantic
-typing-extensions==4.16.0 ; sys_platform == 'win32' \
+typing-extensions==4.16.0 \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
     --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
     # via
     #   pydantic
     #   pydantic-core
     #   typing-inspection
-typing-inspection==0.4.4 ; sys_platform == 'win32' \
+typing-inspection==0.4.4 \
     --hash=sha256:547274fa6b0a561ccf549cc9524b999a578e737d015d8709d021f9d0d13bea47 \
     --hash=sha256:65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147
     # via pydantic
-wxpython==4.3.2 ; sys_platform == 'win32' \
+wxpython==4.3.2 \
     --hash=sha256:03c20c625acd9bc97f1fbe12db8ba74c35a20306c1ae04480d4c4c2af62ca499 \
     --hash=sha256:5531baa9344488a15081a6b2eaeb67af047d12a814cf657c082360ccc37204fb \
     --hash=sha256:71db87ca19d0c629f407431387044d56d227d62335d21f9c1ecd38a1000ebda9 \

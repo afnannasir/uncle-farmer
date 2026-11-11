@@ -43,7 +43,7 @@ class TalkMixin(FrameParts):
         want = (name or "").strip().lower()
         for pid, m in list(self.messengers.items()):
             link = m.link
-            if link is None or (self.character(pid) or "").strip().lower() != want:
+            if link is None or settings.profile_name(self.character(pid)).strip().lower() != want:
                 continue
             try:
                 s = link.json("mem")
@@ -103,7 +103,7 @@ class TalkMixin(FrameParts):
                 return _("No plan called {name}.", name=plan)
             item = found[0]
         else:
-            last = self.s.get("last_runs", {}).get(self.character(pid) or "")
+            last = settings.last_run_of(self.s, self.character(pid))
             if not last or saved_item(last) not in self.items:
                 return _("Which plan? Send: start <plan name>")
             item = saved_item(last)
@@ -161,7 +161,7 @@ class TalkMixin(FrameParts):
         w = self.chat_windows.get(pid)
         if w:
             w.add(line)
-        me = (self.character(pid) or "").lower()
+        me = settings.profile_name(self.character(pid)).lower()
         mine = line.get("mine") or (line["name"] or "").lower() == me
         if mine or self.game_in_front(pid):
             return              # the player is in that game's window: no tones, nothing read out
@@ -182,7 +182,8 @@ class TalkMixin(FrameParts):
             return
         w = self.chat_windows.get(pid)
         if w is None:
-            w = ChatFrame(self, pid, self.character(pid))
+            key = self.character(pid)
+            w = ChatFrame(self, pid, settings.profile_display(key) if key else None)
             self.chat_windows[pid] = w
         w.Show()
         w.Raise()

@@ -444,6 +444,24 @@ final class Memory {
         return false;
     }
 
+    /** Null when every requested discard still has a matching bag unit; otherwise why not.
+     * Repeated uids mean several units from the same stack. */
+    static String discardable(int[] uids) throws Unavailable {
+        Object bag = get(world(), W_BAG, ArrayList.class);
+        if (bag == null) throw new Unavailable("nobag");
+        HashMap<Integer, Integer> have = new HashMap<Integer, Integer>();
+        for (Object item : copy((ArrayList<?>) bag)) {
+            if (item != null) have.put(Integer.valueOf(intField(item, E_ID)), Integer.valueOf(intField(item, BAG_COUNT)));
+        }
+        for (int uid : uids) {
+            Integer key = Integer.valueOf(uid);
+            Integer left = have.get(key);
+            if (left == null || left.intValue() <= 0) return "error: no item " + uid + " in the bag";
+            have.put(key, Integer.valueOf(left.intValue() - 1));
+        }
+        return null;
+    }
+
     /** Our own entity id, straight from the world object. */
     static int selfId() throws Unavailable {
         return intField(world(), W_SELF_ID);

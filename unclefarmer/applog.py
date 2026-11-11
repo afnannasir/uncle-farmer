@@ -4,8 +4,9 @@ teardown.log: Lifecycle).
 
 The level (Settings, Logging) decides which lines are written; the size and number of old files
 decide when each file is rotated. Every write is best-effort: a full disk or a locked file must
-never take the app down. The first failure says so once on stderr, and a traceback that cannot be
-written goes to stderr instead - a crash must never be lost.
+never take the app down (a file that can't be rotated just grows until it can). The first failure
+says so once on stderr, and a traceback that cannot be written goes to stderr instead - a crash
+must never be lost.
 """
 
 from __future__ import annotations
@@ -33,6 +34,8 @@ _warned = False
 _level = LEVELS.index(DEFAULT_LEVEL)
 _max_bytes = int(DEFAULT_MAX_MB * 1024 * 1024)
 _backups = DEFAULT_BACKUPS
+ROTATE_RETRY = 60.0         # seconds before a rotation that failed is tried again
+_rotate_after: dict[str, float] = {}     # path -> when its failed rotation may be tried again
 
 
 def configure(settings: Mapping[str, object] | None = None) -> None:
@@ -85,8 +88,13 @@ def _complain(what: str, exc: BaseException, fallback: str = "") -> None:
 
 
 def _make_room(path: str) -> None:
-    """Rotate path to path.1 (shifting the old ones) once it has reached the set size."""
-    if not _max_bytes:
+    """Rotate path to path.1 (shifting the old ones) once it has reached the set size.
+
+    A rename that fails (another program - an antivirus, an editor - holding one of the files) stops
+    the rotation without losing a line: the caller still appends, the file grows a little past the
+    size, and the rotation is tried again ROTATE_RETRY seconds later. Only the old files up to the
+    first one missing are shifted, so a rotation tried again never pushes the older ones out."""
+    if not _max_bytes or time.monotonic() < _rotate_after.get(path, 0.0):
         return
     try:
         size = os.path.getsize(path)
@@ -94,15 +102,15 @@ def _make_room(path: str) -> None:
         return
     if size < _max_bytes:
         return
-    for i in range(_backups, 1, -1):
-        try:
-            os.replace("%s.%d" % (path, i - 1), "%s.%d" % (path, i))
-        except FileNotFoundError:
-            pass
     try:
+        gap = next((i for i in range(1, _backups) if not os.path.exists("%s.%d" % (path, i))), _backups)
+        for i in range(gap, 1, -1):
+            os.replace("%s.%d" % (path, i - 1), "%s.%d" % (path, i))
         os.replace(path, path + ".1")
-    except FileNotFoundError:
-        pass
+    except OSError:
+        _rotate_after[path] = time.monotonic() + ROTATE_RETRY
+    else:
+        _rotate_after.pop(path, None)
 
 
 def _append(what: str, path: str, text: str, fallback: str = "") -> OSError | None:

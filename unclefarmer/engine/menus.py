@@ -43,7 +43,10 @@ if TYPE_CHECKING:
 
 MENU_AGENT = 53                 # the agent version with `menu` and `pick`
 CHOOSE_AGENT = 55               # `choose <row> <col> <sig>` and `dialog` "sig"
+SHARD_SELL_AGENT = 56           # agent-side market row -> sell -> quantity transaction
+SHARD_DIRECT_AGENT = 56         # agent sends a validated direct-sale plan from the open market
 WAITING = ("refused: no menu is open", "refused: the open menu is ")   # pick: the menu hasn't come up yet
+MENU_POLL = 0.01              # retry direct picks promptly; the agent refuses an unready/wrong menu
 SHARD_MARKET = "shard_market"
 SHARD_TRADE = "shard_trade"
 POTION_SHOP = "potion_shop"
@@ -104,7 +107,7 @@ def find(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
             return hits[0]
         if clock_for(b).time() >= end:
             return None
-        b.sleep(0.15)
+        b.sleep(MENU_POLL)
 
 
 def why_not(b: Bot, layout: str) -> str:
@@ -129,6 +132,57 @@ def known_ids(b: Bot) -> dict[tuple[str, str], int]:
     return ids
 
 
+def item_id(b: Bot, layout: str, name: str) -> int | None:
+    """The verified id for a named item, learning it from the open menu once when needed."""
+    known = known_ids(b).get(_key(layout, name))
+    if known is not None:
+        return known
+    item = find(b, layout, name=name)
+    return int(item["id"]) if item is not None else None
+
+
+SOLD, UNSURE, NOT_SOLD = "sold", "unsure", "not sold"
+
+
+def shard_sell(b: Bot, item_id: int, count: int) -> str:
+    """Sell through the agent's stateful shard transaction. SOLD; NOT_SOLD when nothing was entered
+    (an older agent, or a menu that wasn't the verified one), which leaves the caller's own menu
+    path in charge; UNSURE once the quantity may have gone to the game, which must never be sold
+    again by another path - only the bag can tell."""
+    if int(getattr(b, "agent_version", 0) or 0) < SHARD_SELL_AGENT:
+        return NOT_SOLD
+    answer = b.a.send("shardsell %d %d" % (item_id, count))
+    if answer.startswith("sold "):
+        return SOLD
+    if answer.startswith("refused: the Shard Market did not finish the sale") or answer.startswith("entered"):
+        return UNSURE
+    return NOT_SOLD
+
+
+def shard_sell_direct_all(b: Bot, sales: list[tuple[int, int]]) -> bool:
+    """Queue one verified Shard Market plan through the direct-sale command."""
+    if not sales or int(getattr(b, "agent_version", 0) or 0) < SHARD_DIRECT_AGENT:
+        return False
+    words = " ".join("%d %d" % pair for pair in sales)
+    return b.a.send("sharddirectall " + words).startswith("sent all ")
+
+
+def market_item_ids(b: Bot, names: list[str]) -> list[int] | None:
+    """The requested names' IDs from one verified Shard Market reading, in the same order."""
+    menu = read(b)
+    if menu is None or menu.get("layout") != SHARD_MARKET or not menu.get("verified"):
+        return None
+    out: list[int] = []
+    for name in names:
+        hits = _matching(menu, name, None, None)
+        if len(hits) != 1:
+            return None
+        item = int(hits[0]["id"])
+        known_ids(b)[_key(SHARD_MARKET, name)] = item
+        out.append(item)
+    return out
+
+
 def _pick_by_id(b: Bot, layout: str, item_id: int, action: str | None, wait: float) -> str:
     """`pick` by the id, without reading the menu first; while the menu hasn't come up yet (the
     server answers a choice a moment later), again until wait runs out. The agent's answer."""
@@ -138,7 +192,7 @@ def _pick_by_id(b: Bot, layout: str, item_id: int, action: str | None, wait: flo
         answer = b.a.send(cmd)
         if not answer.startswith(WAITING) or clock_for(b).time() >= end:
             return answer
-        b.sleep(0.15)
+        b.sleep(MENU_POLL)
 
 
 def _picked(answer: str, item_id: int, name: str | None, action: str | None) -> Item:
@@ -152,7 +206,8 @@ def _picked(answer: str, item_id: int, name: str | None, action: str | None) -> 
 
 
 def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = None,
-         action: str | None = None, wait: float = 0.0, then_text: bool = True) -> Item | None:
+         action: str | None = None, wait: float = 0.0, then_text: bool = True,
+         settle: bool = True) -> Item | None:
     """Choose the item by its verified index. Returns the item chosen, or None when the index can't
     be used - then nothing was chosen. The reason is logged once per run and layout (then_text:
     the caller goes on by the menu's text), and the menu goes to logs/dialogs.log, so a changed
@@ -169,7 +224,8 @@ def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
         if answer.startswith("picked "):
             it = _picked(answer, known, name, action)
             b.log(_("choosing \"{entry}\"", entry=it.get("name") or known))
-            b.sleep(0.4)              # as after Enter: the game's answer comes a moment later
+            if settle:
+                b.sleep(0.4)          # as after Enter: the game's answer comes a moment later
             return it
         if item_id is not None:
             _fell_back(b, layout, answer, then_text)
@@ -185,7 +241,8 @@ def pick(b: Bot, layout: str, name: str | None = None, item_id: int | None = Non
         _fell_back(b, layout, answer, then_text)
         return None
     b.log(_("choosing \"{entry}\"", entry=it.get("name") or it["id"]))
-    b.sleep(0.4)                  # as after Enter: the game's answer comes a moment later
+    if settle:
+        b.sleep(0.4)              # as after Enter: the game's answer comes a moment later
     return it
 
 

@@ -290,3 +290,33 @@ def test_describe_an_unknown_transport_kind_is_just_an_npc() -> None:
                             "dest": 1702, "cost": None}])
     assert "NPC with the Someone" in out[0]
     assert "arnebia" not in out[0]
+
+
+# The Holy Blood City cable car to Giant Rock City, as the game shows its menu (read live on
+# 2026-11-08): both rows go to Giant Rock City, so the entry must tell the VIP row from the paying one.
+HOLY_BLOOD_CAR_MENU = ["Go to Giant Rock City; VIP are free", "Go to Giant Rock City; Costs 2000 Arnebia"]
+
+
+def _row_chosen(patterns: list[str], rows: list[str]) -> int | None:
+    """The row the bot's menu search (find_entry: the first row any pattern matches) would take."""
+    for i, text in enumerate(rows):
+        if any(travel.matches(p, text) for p in patterns):
+            return i
+    return None
+
+
+@pytest.mark.parametrize(("vip", "row"), [(False, 1), (True, 0)])
+def test_the_holy_blood_city_cable_car_takes_the_row_the_character_can_ride(vip: bool, row: int) -> None:
+    legs = travel.plan(1122, (56, 57), 1042, None, transport=True, avoid=set(), vip=vip, bag=[], items=False)
+    assert legs is not None
+    car = next(leg for leg in legs if leg["do"] == "npc" and leg.get("id") == 6)
+    assert _row_chosen(car["choose"], HOLY_BLOOD_CAR_MENU) == row
+
+
+def test_every_paid_ride_has_its_own_vip_entry() -> None:
+    """A paid ride's menu has a free VIP row next to the paying row (same destination), so one entry
+    for both would take the VIP row for everyone - the Holy Blood City cable car did."""
+    for t in travel.transports():
+        if t.get("kind") in ("airship", "cable_car") and isinstance(t.get("cost"), int) and t["cost"] > 0:
+            assert t.get("choose_vip"), "ride %s has no VIP entry" % t["id"]
+            assert all("cost" in p.lower() for p in t["choose"]), "ride %s: %s" % (t["id"], t["choose"])

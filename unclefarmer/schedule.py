@@ -2,7 +2,8 @@
 on chosen days of the week.
 
 Kept in schedules.json beside settings.json: the player's own, never in a release (the updater
-leaves it alone). Times are the computer's local time. Nothing here starts anything itself: the
+leaves it alone). Times are the computer's local time; a time the clock skips when summer time
+begins counts as the first minute after the gap (real()). Nothing here starts anything itself: the
 main window calls tick() every few seconds with a start() of its own, the same start the Start
 button uses, so a scheduled run is an ordinary run - its log, results, daily stop and end place.
 
@@ -38,6 +39,7 @@ SCHEDULES = os.path.join(paths.APP, "schedules.json")
 LATE = dt.timedelta(minutes=15)     # an occurrence still starts this long after its time, never later
 HISTORY_KEEP = 50                   # entries kept per schedule, newest last
 STAMP = "%Y-%m-%d %H:%M"            # how times are written in the file
+ZONE: dt.tzinfo | None = None       # the time zone times are in; None: the computer's own
 ONCE, DAILY, WEEKLY = "once", "daily", "weekly"
 REPEATS = (ONCE, DAILY, WEEKLY)
 REPEAT_NAMES = {ONCE: N_("Once"), DAILY: N_("Every day"), WEEKLY: N_("On chosen days")}
@@ -85,6 +87,29 @@ def unstamp(text: object) -> dt.datetime | None:
         return None
 
 
+def real(t: dt.datetime) -> dt.datetime:
+    """t, or when the clock never shows it (the hour skipped when summer time begins), the first
+    minute after the gap: 02:30 on that night is 03:00. Times the clock shows twice (when summer
+    time ends) are left as they are: the first of the two counts."""
+    minute = dt.timedelta(minutes=1)
+    for _i in range(3 * 60):            # no zone skips more than a couple of hours
+        if _wall(t) == t:
+            return t
+        t = (t + minute).replace(second=0, microsecond=0)
+    return t
+
+
+def _wall(t: dt.datetime) -> dt.datetime:
+    """What the clock reads at the moment the wall time t is taken for: t itself, unless t is in
+    a gap."""
+    try:
+        if ZONE is None:
+            return t.astimezone().replace(tzinfo=None)
+        return t.replace(tzinfo=ZONE).astimezone(dt.timezone.utc).astimezone(ZONE).replace(tzinfo=None)
+    except (OverflowError, OSError, ValueError):     # a hand-edited year the computer can't place
+        return t
+
+
 def occurrences(s: Schedule, after: dt.datetime, until: dt.datetime) -> Iterator[dt.datetime]:
     """Every time the schedule comes round in (after, until], oldest first."""
     try:
@@ -97,7 +122,7 @@ def occurrences(s: Schedule, after: dt.datetime, until: dt.datetime) -> Iterator
             day = parse_date(str(s.get("date", "")))
         except ValueError:
             return
-        t = dt.datetime.combine(day, dt.time(hour, minute))
+        t = real(dt.datetime.combine(day, dt.time(hour, minute)))
         if after < t <= until:
             yield t
         return
@@ -110,8 +135,10 @@ def occurrences(s: Schedule, after: dt.datetime, until: dt.datetime) -> Iterator
         t = dt.datetime.combine(day, dt.time(hour, minute))
         if t > until:
             return
-        if t > after and day.weekday() in days:
-            yield t
+        if day.weekday() in days:
+            t = real(t)
+            if after < t <= until:
+                yield t
         day += dt.timedelta(days=1)
 
 

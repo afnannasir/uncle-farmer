@@ -19,12 +19,17 @@ import threading
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any
 
-from .. import atlas, jsonio as json, knowledge, paths, stats, travel
+from .. import atlas, gamelang, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
 from ..i18n import _
 from . import bagrules, menus
 from .bot import CONFIRM, Bot, Stopped
-from .botparts.travel import ways_out
+from .botparts.travel import rides_free, ways_out
+from .transactions import InventoryTransaction
+
+
+NUMBER_AGENT = 56
+INPUT_POLL = 0.025
 
 
 def counts(b: Bot) -> dict[str, int]:
@@ -36,18 +41,34 @@ def counts(b: Bot) -> dict[str, int]:
     return out
 
 
+# The marks the client writes after an item's name in a list it builds itself, any of them
+# (gamelang.MARKS): the storehouse's "deposit item" list reads "78 Memory Butterfly (restricted) ".
+ITEM_MARKS = r"(\s*\((" + "|".join(re.escape(m.strip("()")) for m in gamelang.MARKS) + r")\))*"
+
+
 def item_pattern(item: str) -> str:
-    """Matches the item in a menu entry ("187 Large Red Potion", "Large Red Potion; Unit price ...")
-    but not a longer name containing it ("Pet Large Red Potion")."""
-    return r"(^|[;|]\s*|\d\s+)" + re.escape(item.strip()) + r"\s*($|[|;,])"
+    """Matches the item in a menu entry ("187 Large Red Potion", "Large Red Potion; Unit price ...",
+    "78 Memory Butterfly (restricted) ") but not a longer name containing it ("Pet Large Red
+    Potion"). Without the marks nothing restricted, locked or bound could be put into the
+    storehouse: "the menu has no entry like ..."."""
+    return r"(^|[;|]\s*|\d\s+)" + re.escape(item.strip()) + ITEM_MARKS + r"\s*($|[|;,])"
 
 
 # ---------------------------------------------------------------------------------------- getting there
 Npc = tuple[int, str, float, float]      # (map, name, x, y)
 
 
-def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -> Npc | None:
+Place = tuple[int, tuple[float, float]]     # (map, cell)
+
+
+def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
+            back_to: Place | None = None) -> Npc | None:
     """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y).
+
+    back_to: where the trip goes on to afterwards (a farming run's share trip goes back to its
+    farm). The way there AND back is counted then: on the way there alone, the hearthstone's square
+    looked cheapest from almost anywhere (one teleport), so a farm next to Tulip City sent the trip
+    back to the city the run started in - and then walked the whole way out to the farm again.
 
     From inside a map we can't plan our way out of (a gang base, a dungeon) every other map costs
     the same unknown "leave", so the first NPC in the data's order used to win: a Gem Maker in the
@@ -59,17 +80,27 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None) -
     best: tuple[float, Npc] | None = None
     rows = b.bag_rows()
     purse = travel.arnebia_in(rows)
+    rides, off = travel.ride_rules(b.p)
+
+    def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
+        legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
+                                 transport=rides, vip=rides_free(b), avoid=off,
+                                 bag=rows if b.p.get("use_travel_items", False) else [],
+                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
+        return None if legs is None else cost
+
     for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
         start_map, start_cell, extra = here, (me["x"], me["y"]), 0.0
         if out is not None and mid != here:
             start_map, start_cell, extra = out[0], out[1], travel.LEAVE_COST
-        legs, cost = travel.plan(start_map, start_cell, mid, (x, y + 1), with_cost=True,
-                                 transport=b.p.get("use_transport", True), vip=b.p.get("vip", False),
-                                 avoid=travel.kept_off(b.p),
-                                 bag=rows if b.p.get("use_travel_items", False) else [],
-                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
-        if legs is None or cost is None:
+        cost = cost_of(start_map, start_cell, mid, (x, y + 1))
+        if cost is None:
             continue
+        if back_to is not None:
+            back = cost_of(mid, (x, y + 1), back_to[0], back_to[1])
+            if back is None:
+                continue          # no way on from there: a dead end for this trip
+            cost += back
         cost += extra
         if best is None or cost < best[0]:
             best = (cost, (mid, name, x, y))
@@ -91,18 +122,22 @@ def _step_out_first(b: Bot, target: Npc | None) -> bool:
     return bool(leave()) and b.map_id() != here
 
 
-def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None) -> str:
+def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None,
+          back_to: Place | None = None) -> str:
     """Travel to the nearest NPC of a role (or the named one, or the nearest of candidates) and open
-    its menu. Returns its name."""
+    its menu. Returns its name. back_to: where the trip goes on to afterwards (nearest)."""
+    def find(among: Sequence[Npc] | None) -> Npc | None:
+        return nearest(b, role, among) if back_to is None else nearest(b, role, among, back_to)
+
     if candidates:
-        target = nearest(b, role, candidates)
+        target = find(candidates)
     elif name:
         known = knowledge.describe_npc(name)
         target = (known["map"], known["name"], known["x"], known["y"]) if known else None
     else:
-        target = nearest(b, role)
+        target = find(None)
     if not name and _step_out_first(b, target):
-        target = nearest(b, role, candidates or None)
+        target = find(candidates or None)
     if target is None and candidates:
         raise Stopped(_("none of the {n} places that could do it can be reached from {map}",
                         n=len(candidates), map=atlas.label(b.map_id())))
@@ -112,10 +147,17 @@ def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequenc
     mid, npc, x, y = target
     b.log(_("going to {npc} on {map}", npc=npc, map=atlas.label(mid)))
     stats.reading(b)            # the results: loot before the trip, fares on it, the trade after it
-    b.travel(mid)
-    stats.reading(b)
-    if not b.talk(npc, (x, y)):
-        raise Stopped(_("couldn't talk to {npc}", npc=npc))
+    # The walk up to the NPC is travelling too: most visits stay on one map (the next buyer in the
+    # same town), where travel() has nothing to plan, so this keeps the Swift fusion beast on for it.
+    was = getattr(b, "traveling", False)
+    b.traveling = True
+    try:
+        b.travel(mid)
+        stats.reading(b)
+        if not b.talk(npc, (x, y)):
+            raise Stopped(_("couldn't talk to {npc}", npc=npc))
+    finally:
+        b.traveling = was
     return npc
 
 
@@ -126,8 +168,17 @@ def wait_input(b: Bot, want_open: bool = True, seconds: float = 3.0) -> bool:
         s = b.a.json("input")
         if s.get("ok") and bool(s.get("open")) == want_open:
             return True
-        b.sleep(0.15)
+        b.sleep(INPUT_POLL)
     return False
+
+
+def wait_menu_change(b: Bot, before: dict[str, Any] | None) -> None:
+    """Use the state-aware wait when the bot has it, preserving the established fallback otherwise."""
+    waiter = getattr(b, "wait_menu_change", None)
+    if callable(waiter):
+        waiter(before)
+    else:
+        b.sleep(0.4)
 
 
 def type_text(b: Bot, text: str) -> bool:
@@ -148,6 +199,17 @@ def type_number(b: Bot, n: int) -> bool:
     """Answer the game's "how many?" box. True once it has taken the number."""
     if not wait_input(b, True):
         return False
+    before_menu = b.dialog().get("top")
+    if int(getattr(b, "agent_version", 0) or 0) >= NUMBER_AGENT:
+        answer = b.a.send("number %d" % int(n))
+        if not answer.startswith("entered"):
+            b.log(_("couldn't type into the game: {why}", why=answer), speak=True)
+            return False
+        if not wait_input(b, False):
+            b.log(_("the game didn't take the number"), speak=True)
+            return False
+        wait_menu_change(b, before_menu)
+        return True
     b.a.send("typeclear")
     r = b.a.send("type %d" % int(n))
     if not r.startswith("typed"):
@@ -158,7 +220,7 @@ def type_number(b: Bot, n: int) -> bool:
     if not wait_input(b, False):
         b.log(_("the game didn't take the number"), speak=True)
         return False
-    b.sleep(0.4)
+    wait_menu_change(b, before_menu)
     # some menus ask "are you sure?" after the number
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], CONFIRM) is not None:
@@ -325,7 +387,19 @@ def buy(b: Bot, item: str, n: int) -> int:
         b.log(_("no shop in {map} sells {item} - not going to another town for it",
                 map=atlas.label(getattr(b, "restock_town", 0) or 0), item=item), speak=True)
         return 0
-    before = counts(b).get(item.lower(), 0)
+    have = counts(b)
+    before = have.get(item.lower(), 0)
+    price = knowledge.unit_price(item)
+    money = have.get(stats.ARNEBIA)
+    if price and money is not None and n * price > money:
+        afford = money // price
+        if afford <= 0:
+            b.log(_("not enough arnebia for one {item}: {price} each, {money} in the bag",
+                    item=item, price=price, money=money), speak=True)
+            return 0
+        b.log(_("buying {n} {item}, not {want}: that is what {money} arnebia pays for at {price} each",
+                n=afford, item=item, want=n, money=money, price=price))
+        n = afford
     tried: list[Npc] = []
     for _try in range(BUY_TRIES):
         target = nearest(b, None, [s for s in shops if s not in tried])
@@ -433,37 +507,42 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
         if not knowledge.service_npcs(role):
             b.log(_("I don't know where a {role} is", role=role.replace("_", " ")))
             continue
-        before = counts(b).get("arnebia", 0)
-        npc = None
-        sold_any = 0
+        transaction = InventoryTransaction.begin(b)
+        before = transaction.before.get("arnebia", 0)
+        attempted: set[str] = set()
         for _round in range(60):
-            # a row at a time, the menu opened afresh each time: after a sale its rows are old
-            b.close_dialogs()
-            if npc is None:
-                npc = visit(b, role)
-            elif not b.talk(npc):
-                break
-            b.wait_dialog(3.0)
+            # Most buyer sales leave this fixed menu open. If this game version closes it,
+            # reopen the same buyer before reading the next verified list.
+            if _round == 0 or not b.dialog().get("open"):
+                visit(b, role)
+                if not b.wait_dialog(3.0):
+                    break
             rows = buyer_rows(b)
-            if not rows:
-                break                         # "You have no fish and shrimp to sell"
-            todo = collection_left(b.p, rows)
+            if not rows and _round > 0:
+                # something else is on screen after a sale (a message, another menu): ask the
+                # buyer afresh once before taking an empty list for "nothing left to sell"
+                b.close_dialogs()
+                visit(b, role)
+                if not b.wait_dialog(3.0):
+                    break
+                rows = buyer_rows(b)
+            todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
             if not todo:
                 break
             item, n = todo[0]
-            have = counts(b).get(item.lower(), 0)
             if not pick(b, r"^\s*\d+\s+" + re.escape(item) + r"\s*;\s*Unit price", n):
                 b.log(_("the {role} didn't take {item}", role=role.replace("_", " "), item=item))
                 break
-            gone = have - counts(b).get(item.lower(), 0)
-            if gone <= 0:
-                break
-            sold_any += 1
-            b.log(_("sold {n} {item}", n=gone, item=item))
-            stats.moved(b, "sold", item, gone)
+            attempted.add(item.lower())
+            transaction.expect(item, -n)
         b.close_dialogs()
-        got = counts(b).get("arnebia", 0) - before
-        if sold_any:
+        after = transaction.settle(b) if transaction.expected else transaction.before
+        moved = transaction.removed(after)
+        got = after.get("arnebia", 0) - before
+        for item, n in moved:
+            b.log(_("sold {n} {item}", n=n, item=item))
+            stats.moved(b, "sold", item, n)
+        if moved:
             earned += max(0, got)
             b.log(_("sold the {kind} for {n} arnebia", kind=_collection_word(kind), n=max(0, got)), speak=True)
     return earned
@@ -522,11 +601,15 @@ def possible(b: Bot, r: dict[str, Any], why: list[str]) -> bool:
         return False
     lacks: set[str] = getattr(b, "storehouse_lacks", set())
     from_store = store and item not in lacks
-    from_shop = shop and (money is None or money > 0)
+    price = knowledge.unit_price(item) or 1
+    from_shop = shop and (money is None or money >= price)
     if from_store or from_shop:
         return True
     if store and not shop:
         why.append(_("the storehouse has no {item}", item=r["item"]))
+    elif shop and money is not None and 0 < money < price:
+        why.append(_("not enough arnebia to buy {item}: {price} each, {money} in the bag",
+                     item=r["item"], price=price, money=money))
     elif shop and money is not None and money <= 0:
         why.append(_("no arnebia to buy {item}", item=r["item"]))
     else:
@@ -673,18 +756,21 @@ def market_candidates(markets: dict[str, list[float]]) -> list[Npc]:
 
 
 TRADE_MOST = 2000      # the Shard Market's "how many" box takes at most this many at a time
+MARKET_OPEN = 0.3      # a broker's fixed market list follows their conversation promptly
 
 
-def market_lists(b: Bot, name: str) -> bool:
+def market_lists(b: Bot, name: str, wait: float = 0.0) -> bool:
     """The Shard Market's list is open and has the shard: by the verified layout when the agent
-    reads it (agent 53), else by the entries' text."""
-    if menus.find(b, menus.SHARD_MARKET, name=name) is not None:
+    reads it (agent 53), else by the entries' text. `wait` gives the completed previous trade a
+    moment to show the market after opening a conversation."""
+    if menus.find(b, menus.SHARD_MARKET, name=name, wait=wait) is not None:
         return True
     d = b.dialog()
     return bool(d["open"] and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None)
 
 
-def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
+def shard_trade(b: Bot, name: str, action: str, n: int,
+                reopen: Callable[[], bool] | None = None) -> int:
     """With the Shard Market's list open: buy or sell n of a shard, in steps the "how many" box
     takes (TRADE_MOST); the list opens again after each. Each step goes by the verified index when
     the agent can (the shard's row, then the buy or sell row of that same shard's id), else by the
@@ -693,11 +779,27 @@ def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
     bought or sold. Returns how many were asked for in the steps taken."""
     done = 0
     while done < n:
+        # A completed sale closes the broker in the real client. Reopen the fixed market before
+        # another 2,000-item batch instead of waiting for a list that cannot return by itself.
+        if done and reopen is not None and not reopen():
+            break
         step = min(n - done, TRADE_MOST)
-        listed = menus.pick(b, menus.SHARD_MARKET, name=name)
+        # The agent's one-command sale sells only: a buy always goes the menu way below.
+        item_id = menus.item_id(b, menus.SHARD_MARKET, name) if action == "sell" else None
+        if item_id is not None:
+            sold = menus.shard_sell(b, item_id, step)
+            if sold == menus.SOLD:
+                done += step
+                continue
+            if sold == menus.UNSURE:
+                done += step          # the bag check afterwards says what really went
+                break
+        # Each choice is direct (the agent verifies the fixed market's item id and row), so do
+        # not pause after it.  The next direct choice waits for the game's real next menu instead.
+        listed = menus.pick(b, menus.SHARD_MARKET, name=name, settle=False)
         if listed is not None:
             if menus.pick(b, menus.SHARD_TRADE, item_id=int(listed["id"]), action=action, wait=3.0,
-                          then_text=False) is None:
+                          then_text=False, settle=False) is None:
                 b.log(_("the Shard Market's buy and sell menu for {item} didn't come up as expected - "
                         "nothing chosen there, see logs\\dialogs.log", item=name), speak=True)
                 b.close_dialogs()
@@ -713,13 +815,49 @@ def shard_trade(b: Bot, name: str, action: str, n: int) -> int:
     return done
 
 
+def _sell_shard_batch(b: Bot, todo: list[tuple[str, int]], open_market: Callable[[str], bool]) -> bool:
+    """Hand one verified plan to the agent in a single command. True when it was sent - not proof
+    that the server sold it all: the caller reads the bag afterwards and sells only what is left."""
+    if not open_market(todo[0][0]):
+        return False
+    ids = menus.market_item_ids(b, [name for name, _n in todo])
+    if ids is None:
+        return False
+    plan = [(item_id, min(remaining, TRADE_MOST))
+            for item_id, (_name, count) in zip(ids, todo)
+            for remaining in range(count, 0, -TRADE_MOST)]
+    return menus.shard_sell_direct_all(b, plan)
+
+
+def _left_to_sell(todo: list[tuple[str, int]], before: dict[str, int], now: dict[str, int]) -> list[tuple[str, int]]:
+    """What of the plan the bag says is still unsold: never more than was meant to go, so a keep
+    rule ("sell N, keep the rest") holds even when part of a batch went through."""
+    left: list[tuple[str, int]] = []
+    for name, n in todo:
+        gone = max(0, before.get(name.lower(), 0) - now.get(name.lower(), 0))
+        if n - gone > 0:
+            left.append((name, n - gone))
+    return left
+
+
+def _sell_shard_steps(b: Bot, todo: list[tuple[str, int]], open_market: Callable[[str], bool]) -> None:
+    """The per-shard path: for an older agent, and for whatever a batch left unsold."""
+    for name, n in todo:
+        if not open_market(name):
+            b.log(_("the Shard Market didn't list {item}", item=name))
+            continue
+        shard_trade(b, name, "sell", n, reopen=lambda name=name: open_market(name))
+    b.close_dialogs()
+
+
 def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = None) -> int:
     """Sell shards of the given types at the nearest Shard Market (live menu, seen in our logs:
     talk -> a row per shard "<name> | Unit price N arnebia" -> "buy" / "sell" -> "Please enter the
     quantity to sell, up to 2000"). at_most: {lower-cased name: how many} - the bag rule's "sell N,
     keep the rest". Returns how many kinds were sold."""
     _s, markets = shard_catalog()
-    have = counts(b)
+    transaction = InventoryTransaction.begin(b)
+    have = transaction.before
     todo: list[tuple[str, int]] = []
     for n in names:
         in_bag = have.get(n.lower(), 0)
@@ -731,27 +869,52 @@ def sell_shards(b: Bot, names: Iterable[str], at_most: dict[str, int] | None = N
         b.log(_("I don't know where a Shard Market is"), speak=True)
         return 0
     candidates = market_candidates(markets)
-    sold = 0
-    for name, n in todo:
-        listed = market_lists(b, name)            # read once; again only after going to a market
-        for _try in range(2):
-            if listed:
-                break
-            b.close_dialogs()
-            visit(b, None, candidates=candidates)
-            listed = market_lists(b, name)
-        if not listed:
-            b.log(_("the Shard Market didn't list {item}", item=name))
-            continue
-        before = counts(b).get(name.lower(), 0)
-        shard_trade(b, name, "sell", n)
-        gone = before - counts(b).get(name.lower(), 0)
-        if gone > 0:
-            sold += 1
-            b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
-            stats.moved(b, "sold", name, gone)
+    broker: str | None = None
+
+    def open_market(name: str) -> bool:
+        """Open the broker's fixed market only when it is not already on screen."""
+        nonlocal broker
+        # With a current agent the pick that follows checks the whole list itself, so the screen's
+        # own text is enough here (no extra `menu` read) - but it must list the shard: a popup left
+        # on screen is not the market and would stop every sale.
+        if menus.can_pick(b):
+            d = b.dialog()
+            if d.get("open") and d.get("top") and b.find_entry(d["top"], item_pattern(name)) is not None:
+                return True
+        elif market_lists(b, name):
+            return True
+        b.close_dialogs()
+        if broker is None:
+            broker = visit(b, None, candidates=candidates)
+        elif not b.talk(broker):
+            return False
+        return market_lists(b, name, MARKET_OPEN)
+
+    # A whole market plan in one agent command is fastest. The bag then says what really went,
+    # and only that which is still unsold goes the step-by-step way.
+    left = todo
+    if _sell_shard_batch(b, todo, open_market):
+        for name, n in todo:
+            transaction.expect(name, -n)
+        left = _left_to_sell(todo, transaction.before, transaction.settle(b))
+        if left:
+            b.log(_("the Shard Market didn't take all of it at once - selling the rest one by one"))
+    if left:
+        _sell_shard_steps(b, left, open_market)
     b.close_dialogs()
-    return sold
+    return _note_shard_sales(b, transaction, todo)
+
+
+def _note_shard_sales(b: Bot, transaction: InventoryTransaction, todo: list[tuple[str, int]]) -> int:
+    """What the bag says was sold, logged and counted. Returns how many kinds went."""
+    if not transaction.expected:
+        for name, n in todo:
+            transaction.expect(name, -n)
+    moved = transaction.removed(transaction.settle(b))
+    for name, gone in moved:
+        b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
+        stats.moved(b, "sold", name, gone)
+    return len(moved)
 
 
 # ---------------------------------------------------------------------------------------- gems
@@ -954,7 +1117,7 @@ def _bag_and_hotkeys(b: Bot) -> tuple[dict[str, int], list[str]]:
 
 
 def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
-    """What Tools, Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
+    """What the game menu's Sell shards now would sell: [(shard, how many)] that the bag manager says to sell
     (keeping the number its rule keeps) and the Shard Market buys; and the shards set to sell that
     the market doesn't list (not sold, said)."""
     bag, hot = _bag_and_hotkeys(b)
@@ -973,7 +1136,7 @@ def shards_to_sell(b: Bot) -> tuple[list[tuple[str, int]], list[str]]:
 
 
 def sell_shards_now(b: Bot) -> int:
-    """Tools, Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
+    """The game menu's Sell shards now: sell the shards the bag manager says to sell at the nearest Shard
     Market - the one in this city when it has one - and nothing else (the bag trip's shard step on
     its own). Says what was sold and what wasn't. Returns how many kinds were sold."""
     todo, other = shards_to_sell(b)
@@ -992,8 +1155,7 @@ def sell_shards_now(b: Bot) -> int:
     if left:
         b.log(_("not sold: {list}", list=", ".join(left)), speak=True)
     if done:
-        b.log(_("sold {list}; {n} arnebia came in", list=", ".join("%d %s" % (k, s) for s, k in done),
-                n=max(0, after.get(stats.ARNEBIA, 0) - before.get(stats.ARNEBIA, 0))), speak=True)
+        b.log(_("sold {list}", list=", ".join("%d %s" % (k, s) for s, k in done)), speak=True)
     return len(done)
 
 
@@ -1006,7 +1168,7 @@ def throw_list(p: dict[str, Any]) -> list[tuple[str, int]]:
 
 
 def clean_bag(b: Bot) -> int:
-    """Tools, Clean the bag now: throw away, right where we stand, what the bag manager's
+    """The game menu's Clean the bag now: throw away, right where we stand, what the bag manager's
     throw-away list says (keeping the number each rule keeps) - only what is on that list, never
     anything else. Says what went, what couldn't be thrown and what wasn't there. Returns how many
     kinds of item left the bag."""
@@ -1023,6 +1185,20 @@ def clean_bag(b: Bot) -> int:
     if not todo:
         b.log(_("nothing in the bag is on the throw-away list (or only what its rules keep)"), speak=True)
         return 0
+    if b.stop_event.is_set():
+        raise Stopped(_("stopped"))
+    discard = getattr(b, "throw_items", None)
+    direct = discard(todo) if discard else None
+    if direct is not None:
+        thrown = direct
+        failed = [name for name, _n in todo if not any(done == name for done, _gone in thrown)]
+        for name, gone in thrown:
+            stats.moved(b, "thrown", name, gone)
+        if failed:
+            b.log(_("couldn't throw away: {list}", list=", ".join(failed)), speak=True)
+        if thrown:
+            b.log(_("threw away {list}", list=", ".join("%d %s" % (k, s) for s, k in thrown)), speak=True)
+        return len(thrown)
     thrown: list[tuple[str, int]] = []
     failed: list[str] = []
     for name, n in todo:
@@ -1040,9 +1216,62 @@ def clean_bag(b: Bot) -> int:
     return len(thrown)
 
 
+def store_list(p: dict[str, Any]) -> list[tuple[str, int]]:
+    """The bag manager's store list ("Move to storehouse"): [(item, how many it keeps in the bag)],
+    only what the player put there themselves."""
+    rules: dict[str, object] = p.get("bag_rules") or {}
+    return sorted((name, int(r.get("keep") or 0)) for name, r in rules.items()
+                  if json.is_object(r) and r.get("action") == "store")
+
+
+def store_items(b: Bot) -> int:
+    """The game menu's Store items now: put into the storehouse what the bag manager's store list says
+    (keeping the number each rule keeps in the bag) - only what is on that list, read as it is now,
+    never anything else. The bag trip's storehouse step on its own (deposit, at the nearest
+    storehouse). Says what went in, what the storehouse didn't take (full, or refused) and what
+    wasn't in the bag. Returns how many kinds of item were stored."""
+    listed = store_list(b.p)
+    if not listed:
+        b.log(_("the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"),
+              speak=True)
+        return 0
+    bag, hot = _bag_and_hotkeys(b)
+    names = {name for name, _keep in listed}
+    todo = [(name, n) for name, action, n in bagrules.plan(b.p, bag, hot, None)
+            if action == "store" and name.lower() in names and bagrules.rule(b.p, name)["chosen"]]
+    have = {k.lower() for k, v in bag.items() if v > 0}
+    missing = sorted(name for name in names if name not in have)
+    kept = sorted(name for name in names if name in have and name not in {t.lower() for t, _n in todo})
+    if missing:
+        b.log(_("not in the bag: {list}", list=", ".join(missing)))
+    if kept:
+        b.log(_("kept in the bag, as their rules say: {list}", list=", ".join(kept)))
+    if not todo:
+        b.log(_("nothing in the bag is on the storage list (or only what its rules keep)"), speak=True)
+        return 0
+    b.log(_("storing: {list}", list=", ".join("%d %s" % (n, s) for s, n in todo)))
+    stored: list[tuple[str, int]] = []
+    failed: list[str] = []
+    for name, n in todo:
+        if b.stop_event.is_set():
+            raise Stopped(_("stopped"))
+        put = _try_trip(b, _("couldn't store {item}: {why}"), name, lambda name=name, n=n: deposit(b, name, n))
+        if put:
+            stored.append((name, put))
+            if put < n:
+                failed.append(_("{item} ({n} of {want}: the storehouse took no more)", item=name, n=put, want=n))
+        else:
+            failed.append(name)
+    if failed:
+        b.log(_("not stored (the storehouse may be full): {list}", list=", ".join(failed)), speak=True)
+    if stored:
+        b.log(_("stored {list}", list=", ".join("%d %s" % (k, s) for s, k in stored)), speak=True)
+    return len(stored)
+
+
 # ---------------------------------------------------------------------------------------- shard prices
 # The Shard Market's prices change; data/shards.json keeps the last ones read, which the bag manager
-# and the results use. Tools, Update shard prices reads the market's list again.
+# and the results use. The game menu's Update shard prices reads the market's list again.
 SHARDS_FILE = "shards.json"
 PRICE_MOST = 100_000_000          # no shard has cost anywhere near this: a reading above it is wrong
 SHOWN_PRICE = re.compile(r"\bunit price\s+(\d{1,9})\s+arnebia", re.I)
@@ -1143,7 +1372,7 @@ def save_shard_prices(prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
 
 
 def update_shard_prices(b: Bot) -> int:
-    """Tools, Update shard prices: read the nearest Shard Market's list and keep its prices in
+    """The game menu's Update shard prices: read the nearest Shard Market's list and keep its prices in
     data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
     (those keep their old price). Returns how many prices changed."""
     shards, markets = shard_catalog()

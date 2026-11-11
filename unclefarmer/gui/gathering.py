@@ -14,7 +14,8 @@ import wx
 from .. import atlas, settings
 from ..engine import gathering
 from ..i18n import _
-from .common import Dialog, Reader, standing, with_code, Form, buttons, error, group, info, labeled, page, save_file, tabs, modal
+from .common import (Dialog, Reader, standing, with_code, Form, buttons, error, group, info, labeled, modal, opens,
+                     page, popup_actions, save_file, tabs)
 from .crafting import CHECK, START
 from .plan import NOT_SEEN
 from typing import Any
@@ -36,7 +37,7 @@ def skill_line(p: dict[str, Any]) -> tuple[str | None, str]:
 
 class GatheringDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
-        super().__init__(parent, title=_("{tool} - {name}", tool=_("Gathering"), name=character),
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Gathering"), name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game = game
@@ -55,9 +56,8 @@ class GatheringDialog(Dialog):
         self.gangs: list[str] = list(gathering.gangs(c))
         self.gang_list = labeled(f.parent, f.box, _("Gangs, in &order (the bot goes to each in turn):"),
                                  lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
-        buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own), (_("Add a gang by &name..."), self.on_add_gang),
-                (_("Move &up"), lambda e: self.move_gang(-1)), (_("Move &down"), lambda e: self.move_gang(1)),
-                (_("&Remove"), self.on_remove_gang))
+        buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own),
+                (opens(_("Add a gang by &name")), self.on_add_gang))
         f = group(panel, box, _("Paying to go in"))
         self.fee = f.number(_("Pay at most this &entry fee (arnebia):"), c["gang_fee_max"], 0, 1000000000)
         self.keep_arnebia = f.number(_("Never spend arnebia belo&w:"), self.p.get("gem_keep_arnebia", 20000),
@@ -74,8 +74,7 @@ class GatheringDialog(Dialog):
         self.where = f.choice(_("&Place:"), [], 0)
         self.list = labeled(f.parent, f.box, _("&Your places:"),
                             lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
-        buttons(f.parent, f.box, (_("&Add where I stand"), self.on_add), (_("Re&name..."), self.on_rename),
-                (_("Re&move"), self.on_remove))
+        buttons(f.parent, f.box, (_("&Add where I stand"), self.on_add))
         self.fill_places(c["place"])
 
         panel, box = page(nb, _("Selling"))
@@ -111,12 +110,31 @@ class GatheringDialog(Dialog):
         root.Add(row, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 560))
+        self.gang_list.Bind(wx.EVT_CONTEXT_MENU, self.gang_context_menu)
+        self.list.Bind(wx.EVT_LISTBOX_DCLICK, self.on_rename)
+        self.list.Bind(wx.EVT_CONTEXT_MENU, self.place_context_menu)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_list_key)
 
     # ------------------------------------------------------------ gangs
     def fill_gangs(self, select: int | None = None) -> None:
         self.gang_list.Set([g or _("Our own gang") for g in self.gangs])
         if self.gangs and select is not None:
             self.gang_list.SetSelection(max(0, min(select, len(self.gangs) - 1)))
+
+    def gang_context_menu(self, event: wx.ContextMenuEvent) -> None:
+        pos = event.GetPosition()
+        if pos != wx.DefaultPosition:
+            index = self.gang_list.HitTest(self.gang_list.ScreenToClient(pos))
+            if index != wx.NOT_FOUND:
+                self.gang_list.SetSelection(index)
+        i = self.gang_list.GetSelection()
+        selected = 0 <= i < len(self.gangs)
+        popup_actions(self.gang_list, [
+            (_("Add our &own gang"), self.on_add_own, True), (opens(_("Add a gang by &name")), self.on_add_gang, True),
+            (_("Move &up"), lambda _event: self.move_gang(-1), selected and i > 0),
+            (_("Move &down"), lambda _event: self.move_gang(1), selected and i + 1 < len(self.gangs)),
+            (_("&Remove"), self.on_remove_gang, selected),
+        ])
 
     def _add_gang(self, gang: str) -> None:
         if gang.lower() in [g.lower() for g in self.gangs]:
@@ -167,6 +185,30 @@ class GatheringDialog(Dialog):
         self.where.Set(names)
         self.where.SetSelection(self.choices.index(chosen) if chosen in self.choices else 0)
         self.list.Set(["%s - %s" % (gathering.label(p), _(p["skill"])) for p in self.own])
+
+    def place_context_menu(self, event: wx.ContextMenuEvent) -> None:
+        pos = event.GetPosition()
+        if pos != wx.DefaultPosition:
+            index = self.list.HitTest(self.list.ScreenToClient(pos))
+            if index != wx.NOT_FOUND:
+                self.list.SetSelection(index)
+        selected = 0 <= self.list.GetSelection() < len(self.own)
+        popup_actions(self.list, [
+            (_("&Add where I stand"), self.on_add, True), (opens(_("Re&name")), self.on_rename, selected),
+            (_("Re&move"), self.on_remove, selected),
+        ])
+
+    def on_list_key(self, event: wx.KeyEvent) -> None:
+        """Give list controls reliable Delete behavior without taking keys from fields or buttons."""
+        focus = wx.Window.FindFocus()
+        if event.GetKeyCode() != wx.WXK_DELETE:
+            event.Skip()
+        elif focus is self.gang_list:
+            self.on_remove_gang(event)
+        elif focus is self.list:
+            self.on_remove(event)
+        else:
+            event.Skip()
 
     def on_add(self, _evt: wx.Event) -> None:
         here = standing(self.game())

@@ -40,6 +40,8 @@ from collections.abc import Callable, Collection, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, TypeGuard
 
 from ..i18n import _
+from .elf_combos import ELF_RULES, FIRE_ELEMENT_CAP, IGNITION, ElfCombos, unpenalized
+from .elf_combos import RELEASE_AT as RELEASE_AT
 
 if TYPE_CHECKING:
     from .combat import SkillBook
@@ -51,7 +53,6 @@ CRIT = 5                 # hit result (& 7) the game gives a critical hit
 CRIT_AGENT = 28          # the first agent that reports hit results with our casts
 WINDOW = 4.0             # a "then" follow-up waits this long for its skill, no longer
 RESET_WINDOW = 8.0       # a skill whose cooldown a critical hit just ended is pressed within this
-RELEASE_AT = 3           # fire elements before Ignition goes (5 at most)
 ON_MARGIN = 1.5          # a skill kept on the target is cast again this long before it runs out
 
 # Talents name skills by the names the skill list uses, except here.
@@ -81,10 +82,7 @@ RULES: list[Rule] = [
     {"talent": "Ice Finger", "reset": ("Ice Orb", "Ice Lance"), "keep_cd": True},
     {"talent": "Freezing Cold", "cd_less": ("Ice Storm", 1.5)},
     {"talent": "Crisp Wisdom", "reset": ("*", "Ice Orb")},
-    # Elf
-    {"talent": None, "release": ("Ignition", ("Pyroblast", "Blazing Storm"))},
-    {"talent": "Flame Combo", "reset": ("Fireball", "Fire Impact")},
-    {"talent": "Blazing Combo", "streak": (2, ("Blazing Storm", "Pyroblast"))},
+    *ELF_RULES,
     # Priest
     {"talent": None, "reset": ("Divine Nova", "Divine Fire")},
     {"talent": "Wisdom", "reset": ("*", "Divine Nova")},
@@ -192,8 +190,10 @@ def damage_bonus(talents: Collection[str], on_keys: Collection[str]) -> dict[str
     return out
 
 
-class Combos:
+class Combos(ElfCombos):
     """The combos for one character, with what our last casts set up."""
+
+    _reset_window = RESET_WINDOW
 
     def __init__(self, book: SkillBook, talents: Collection[str], on_keys: Collection[str], crits: bool) -> None:
         self.book = book
@@ -204,8 +204,7 @@ class Combos:
         self.primed: dict[str, float] = {}        # skill -> until: pressed next if it is ready
         self.last: tuple[str, float] | None = None    # (name, time) of our newest cast
         self.fast_until = 0.0
-        self.streak = 0
-        self.built = 0          # fire elements our builders made since the last release (no T reading)
+        super().__init__(talents)
 
     def of(self, kind: str) -> list[Rule]:
         return [r for r in self.rules if r["kind"] == kind]
@@ -229,14 +228,15 @@ class Combos:
             self.primed[b] = t + r.get("window", WINDOW)
         self.primed.pop(name, None)
         attack = info.get("role") not in ("heal", "party_buff", "self_buff", "dispel", "defensive", "mobility")
+        skip_streak = self._update_elf_chain(name, t, attack, crit)
         if crit:
             self._critical(name, t, attack)
-        if attack and info.get("role") != "dot":
+        if attack and info.get("role") != "dot" and not skip_streak:
             self._streak(t, crit)
         for r in self.of("release"):
             skill, builders = r["release"]
             if name in builders:
-                self.built = min(5, self.built + (hits or 1))
+                self.built = min(FIRE_ELEMENT_CAP, self.built + (hits or 1))
             elif name == skill:
                 self.built = 0
         spent = info.get("combo_cost") or 0
@@ -253,7 +253,8 @@ class Combos:
             if name in _names(a) or (a == "*" and attack):
                 if not r.get("keep_cd"):
                     self.book.clear_cooldown(b)
-                self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
+                if r.get("prime", True):
+                    self.primed[b] = t + (WINDOW if r.get("keep_cd") else RESET_WINDOW)
         for r in self.of("fast"):
             if r["fast"][0] == name:
                 self.fast_until = t + r["fast"][1]
@@ -261,11 +262,7 @@ class Combos:
     def _streak(self, t: float, crit: bool) -> None:
         """Critical hits in a row: enough of them prime the streak's skills."""
         self.streak = self.streak + 1 if crit else 0
-        for r in self.of("streak"):
-            if self.streak >= r["streak"][0]:
-                for b in r["streak"][1]:
-                    self.primed[b] = t + RESET_WINDOW
-                self.streak = 0
+        self._prime_streak(t + RESET_WINDOW)
 
     def is_on(self, skill: str, target: int | None, now: float, lasts: float) -> bool:
         t = self.book.landed.get((skill, target))
@@ -296,26 +293,46 @@ class Combos:
         return 1.0 + self.bonus.get(s["name"], 0) / 100.0
 
     # ---------------------------------------------------------------- choosing
+    def _release_ready(self, elements: int | None) -> bool:
+        return (elements if elements is not None else self.built) >= RELEASE_AT
+
+    def ignition_before(self, planned: Skill, elements: int | None) -> bool:
+        """Ignition spends fire elements on the channel the combat picker already chose."""
+        return (unpenalized(planned, self.available_to_channel_without_penalty)
+                and self._release_ready(elements)
+                and any(rule["release"][0] == IGNITION for rule in self.of("release")))
+
+    def _primed_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
+        """Return the highest priority primed skill that is ready, skipping Fire Impact if it critted first."""
+        for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
+            if until < now:
+                self.primed.pop(name, None)
+            elif ok(name):
+                if self._elf_blocks_primed(name):
+                    continue
+                return ok(name)
+        return None
+
     def pick(self, skills: Iterable[Skill], target: dict[str, Any], now: float, in_range: Callable[[Skill], bool],
              elements: int | None) -> Skill | None:
         """The skill a combo wants pressed now, from skills (ready, affordable, on our keys), or
         None. target = the monster we fight; elements = fire elements the T key reported."""
-        have = {s["name"]: s for s in skills if in_range(s)}
+        have = {s["name"]: s for s in skills if s["name"] != IGNITION and in_range(s)}
         tid = target.get("id")
 
         def ok(name: str) -> Skill | None:
             return have.get(name)
 
-        # something a cast just set up: frozen / condensed targets, cooldowns a critical hit ended
-        for name, until in sorted(self.primed.items(), key=lambda kv: -kv[1]):
-            if until < now:
-                self.primed.pop(name, None)
-            elif ok(name):
-                return ok(name)
+        elf_choice = self._elf_pick(ok, now)
+        if elf_choice:
+            return elf_choice
+
+        primed = self._primed_pick(ok, now)
+        if primed:
+            return primed
         for r in self.of("release"):
             skill, _builders = r["release"]
-            n = elements if elements is not None else self.built
-            if n >= RELEASE_AT and ok(skill):
+            if self._release_ready(elements) and ok(skill):
                 return ok(skill)
         for r in self.of("while_on"):
             skill, debuff = r["while_on"]

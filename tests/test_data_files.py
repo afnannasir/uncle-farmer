@@ -300,6 +300,7 @@ class KnowledgeItem(Strict):
     description: str | None = None
     effect: str | None = None
     prices: list[ItemPrice] | None = None
+    price: int | None = Field(default=None, gt=0)      # the shops' list price in arnebia (no menu recorded)
 
 
 class KnowledgeMap(Strict):

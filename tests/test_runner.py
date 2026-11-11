@@ -87,6 +87,7 @@ class FakeTally:
         self.updates: list[bool] = []
         self.finished_with = None
         self.saved = False
+        self.drop_left: int | None = None
 
     def update(self, bot: Parts, force: bool=False) -> None:
         self.updates.append(force)
@@ -105,6 +106,10 @@ class FakeTally:
 
 
 class FakeRunner:
+    # what the real Runner holds after reading the script: its lines and subs (no farm command here)
+    main: list[script_mod.Node] = []
+    subs: dict[str, list[script_mod.Node]] = {}
+
     def __init__(self, bot: FakeBot, text: str) -> None:
         self.bot, self.text = bot, text
 
@@ -113,6 +118,8 @@ class FakeRunner:
 
 
 class FarmingRunner(FakeRunner):
+    main = [script_mod.Node("farm", 1)]
+
     def run(self) -> None:
         super().run()
         self.bot.farmed = True
@@ -141,7 +148,7 @@ def make(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, text: str = "wait 1
     monkeypatch.setattr(R, "Runner", runner or FakeRunner)
     monkeypatch.setattr(stats, "Tally", FakeTally)
     monkeypatch.setattr(stats, "report", stand_in(stats.report, lambda r, title: "report"))
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "short"))
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "short"))
 
     from unclefarmer import daily as daily_mod
     from unclefarmer import phrases as phrases_mod
@@ -194,6 +201,19 @@ def test_run_init_defaults() -> None:
     assert run.after_stop == "nothing" and run.walk is False
     assert run.daemon is True and run.name == "unclefarmer-run-42"
     assert isinstance(run.started, float)
+
+
+def test_start_keeps_the_games_list_server_when_the_agent_lookup_fails(monkeypatch: pytest.MonkeyPatch,
+                                                                        tmp_path: Path) -> None:
+    monkeypatch.setattr(R, "AGENT_SERVER", 42)      # exercise the server path without newer fake-only features
+    run, _, _, done = make(monkeypatch, tmp_path, agent=42)
+    run.profile = settings.character_profile("Hero", 7, "S1")
+    def no_server(link: object) -> str:
+        return ""
+    monkeypatch.setattr(R, "server_name", no_server)
+    run.run()
+    assert done == ["finished"]
+    assert run.profile == settings.character_profile("Hero", 7, "S1")
 
 
 def test_farmed_only_for_a_farming_run() -> None:

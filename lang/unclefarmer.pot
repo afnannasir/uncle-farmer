@@ -14,10 +14,10 @@ msgstr ""
 msgid " (estimated: it includes shards)"
 msgstr ""
 
-msgid " ({n} thrown away)"
+msgid " ({rate} an hour)"
 msgstr ""
 
-msgid " ({rate} an hour)"
+msgid " ({rate} casts an hour)"
 msgstr ""
 
 msgid " - estimated: it includes shards"
@@ -29,19 +29,19 @@ msgstr ""
 msgid "&About Uncle Farmer"
 msgstr ""
 
-msgid "&Add a supply..."
+msgid "&Add"
 msgstr ""
 
-msgid "&Add an item..."
+msgid "&Add a supply"
+msgstr ""
+
+msgid "&Add an item"
 msgstr ""
 
 msgid "&Add where I stand"
 msgstr ""
 
-msgid "&Add..."
-msgstr ""
-
-msgid "&Another character..."
+msgid "&Another character"
 msgstr ""
 
 msgid "&Answer strangers:"
@@ -56,16 +56,16 @@ msgstr ""
 msgid "&Attack style:"
 msgstr ""
 
-msgid "&Bag and supplies...\tCtrl+B"
+msgid "&Bag and supplies"
 msgstr ""
 
 msgid "&Bot"
 msgstr ""
 
-msgid "&Bot\tCtrl+1"
+msgid "&Browse"
 msgstr ""
 
-msgid "&Browse..."
+msgid "&Build at:"
 msgstr ""
 
 msgid "&Call them by their name"
@@ -77,10 +77,13 @@ msgstr ""
 msgid "&Cave:"
 msgstr ""
 
-msgid "&Change key..."
+msgid "&Change key"
 msgstr ""
 
 msgid "&Character"
+msgstr ""
+
+msgid "&Character settings"
 msgstr ""
 
 msgid "&Character:"
@@ -95,6 +98,9 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
+msgid "&Clean the bag (game menu, Clean the bag now)"
+msgstr ""
+
 msgid "&Close"
 msgstr ""
 
@@ -105,16 +111,19 @@ msgid "&Commands for trusted players"
 msgstr ""
 
 msgid ""
-"&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
+"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
 msgstr ""
 
 msgid "&Copy the address"
 msgstr ""
 
-msgid "&Daily chores...\tCtrl+Shift+D"
+msgid "&Daily chores"
 msgstr ""
 
 msgid "&Date (year-month-day):"
+msgstr ""
+
+msgid "&Day:"
 msgstr ""
 
 msgid "&Defensive skills below HP (%):"
@@ -132,10 +141,7 @@ msgstr ""
 msgid "&Dungeon:"
 msgstr ""
 
-msgid "&Edit..."
-msgstr ""
-
-msgid "&Edit...\tCtrl+E"
+msgid "&Edit"
 msgstr ""
 
 msgid "&Email address:"
@@ -144,10 +150,13 @@ msgstr ""
 msgid "&End:"
 msgstr ""
 
-msgid "&Equipment Enhancer...\tCtrl+Shift+E"
+msgid "&Equipment Enhancer"
 msgstr ""
 
 msgid "&Equipment to enhance:"
+msgstr ""
+
+msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr ""
 
 msgid "&File"
@@ -162,6 +171,9 @@ msgstr ""
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr ""
 
+msgid "&Game"
+msgstr ""
+
 msgid "&Game folder:"
 msgstr ""
 
@@ -171,7 +183,10 @@ msgstr ""
 msgid "&Gang name (another gang's):"
 msgstr ""
 
-msgid "&Gem Maker...\tCtrl+G"
+msgid "&Gathering (as set in Tools, Gathering)"
+msgstr ""
+
+msgid "&Gem Maker"
 msgstr ""
 
 msgid "&Gem:"
@@ -207,19 +222,22 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
-msgid "&History..."
+msgid "&History"
 msgstr ""
 
 msgid "&How many:"
 msgstr ""
 
-msgid "&Import character settings..."
+msgid "&Import"
 msgstr ""
 
-msgid "&Import plan..."
+msgid "&Import character settings"
 msgstr ""
 
-msgid "&Insert command..."
+msgid "&Import plan"
+msgstr ""
+
+msgid "&Insert command"
 msgstr ""
 
 msgid "&Install"
@@ -253,7 +271,7 @@ msgstr ""
 msgid "&Level:"
 msgstr ""
 
-msgid "&Log\tCtrl+3"
+msgid "&Log"
 msgstr ""
 
 msgid "&Log:"
@@ -265,6 +283,9 @@ msgstr ""
 msgid "&Map:"
 msgstr ""
 
+msgid "&Messages"
+msgstr ""
+
 msgid "&Messages:"
 msgstr ""
 
@@ -274,7 +295,7 @@ msgstr ""
 msgid "&Mute the game's own speech:"
 msgstr ""
 
-msgid "&Mute this game\tCtrl+M"
+msgid "&Mute this game"
 msgstr ""
 
 msgid "&Names or ids (separated by commas):"
@@ -286,13 +307,13 @@ msgstr ""
 msgid "&New chat with (name or id):"
 msgstr ""
 
-msgid "&New plan..."
-msgstr ""
-
-msgid "&New plan...\tCtrl+N"
+msgid "&New plan"
 msgstr ""
 
 msgid "&Number of gems:"
+msgstr ""
+
+msgid "&Offer version {v} again (you chose to skip it)"
 msgstr ""
 
 msgid "&Only fight (names, separated by commas):"
@@ -319,7 +340,7 @@ msgstr ""
 msgid "&Pet:"
 msgstr ""
 
-msgid "&Pick from monsters near me..."
+msgid "&Pick from monsters near me"
 msgstr ""
 
 msgid "&Place:"
@@ -331,19 +352,16 @@ msgstr ""
 msgid "&Plans"
 msgstr ""
 
-msgid "&Plans\tCtrl+2"
-msgstr ""
-
 msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 
-msgid "&Private messages...\tCtrl+Shift+M"
+msgid "&Private messages"
 msgstr ""
 
 msgid "&Protection runes (a failure keeps the level):"
 msgstr ""
 
-msgid "&Quick guide\tF1"
+msgid "&Quick guide"
 msgstr ""
 
 msgid "&Read keys from the game"
@@ -367,13 +385,19 @@ msgstr ""
 msgid "&Rest before the next fight below HP (%):"
 msgstr ""
 
-msgid "&Results...\tCtrl+R"
+msgid "&Results"
 msgstr ""
 
 msgid "&Results:"
 msgstr ""
 
 msgid "&Room (part of its name; empty: the highest level free room):"
+msgstr ""
+
+msgid "&Run"
+msgstr ""
+
+msgid "&Run selected"
 msgstr ""
 
 msgid "&Save"
@@ -388,7 +412,7 @@ msgstr ""
 msgid "&Script commands"
 msgstr ""
 
-msgid "&Sell the collection now"
+msgid "&Sell shards (game menu, Sell shards now)"
 msgstr ""
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
@@ -400,13 +424,14 @@ msgstr ""
 msgid "&Send"
 msgstr ""
 
-msgid "&Settings..."
-msgstr ""
-
-msgid "&Settings...\tCtrl+P"
+msgid "&Settings"
 msgstr ""
 
 msgid "&Shields and big heals below HP (%):"
+msgstr ""
+
+msgid ""
+"&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
 msgstr ""
 
 msgid "&Show the time after each message"
@@ -419,9 +444,6 @@ msgid "&Speak important events with NVDA"
 msgstr ""
 
 msgid "&Start"
-msgstr ""
-
-msgid "&Start\tF5"
 msgstr ""
 
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
@@ -451,7 +473,10 @@ msgstr ""
 msgid "&Travel on fusion beast:"
 msgstr ""
 
-msgid "&Unmute this game\tCtrl+U"
+msgid "&Unmute this game"
+msgstr ""
+
+msgid "&Update shard prices (game menu, Update shard prices)"
 msgstr ""
 
 msgid "&Use the selected skill:"
@@ -463,7 +488,7 @@ msgstr ""
 msgid "&View"
 msgstr ""
 
-msgid "&View as script..."
+msgid "&View as script"
 msgstr ""
 
 msgid "&Walk whenever the maps connect on foot"
@@ -505,6 +530,9 @@ msgstr ""
 msgid "(Taken from {twin}, the same size.)"
 msgstr ""
 
+msgid "(a development build)"
+msgstr ""
+
 msgid "(and {n} more with no price then)"
 msgstr ""
 
@@ -533,9 +561,6 @@ msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ""
 
 msgid ", {n} threads"
-msgstr ""
-
-msgid "...or after this many casts that do &no damage:"
 msgstr ""
 
 msgid "1 game, bot running"
@@ -568,7 +593,10 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr ""
 
-msgid "A city s&quare..."
+msgid "A city s&quare"
+msgstr ""
+
+msgid "A day of my choice"
 msgstr ""
 
 msgid ""
@@ -621,13 +649,13 @@ msgstr ""
 msgid "Activity:"
 msgstr ""
 
-msgid "Ad&vanced..."
+msgid "Ad&vanced"
 msgstr ""
 
 msgid "Add a gang"
 msgstr ""
 
-msgid "Add a gang by &name..."
+msgid "Add a gang by &name"
 msgstr ""
 
 msgid "Add a gang to gather in, or untick gathering in gangs' areas."
@@ -664,7 +692,7 @@ msgstr ""
 msgid "After a &time limit"
 msgstr ""
 
-msgid "After farming (when a run finishes by itself, never after Stop)"
+msgid "After farming (when farming finishes by itself, never after Stop)"
 msgstr ""
 
 msgid "Agent"
@@ -674,6 +702,9 @@ msgid "All"
 msgstr ""
 
 msgid "All files (*.*)|*.*"
+msgstr ""
+
+msgid "All mode"
 msgstr ""
 
 msgid "All time"
@@ -699,6 +730,9 @@ msgid "Always leave this many in the &bag:"
 msgstr ""
 
 msgid "An older Uncle Farmer agent is installed. Press Install to update it."
+msgstr ""
+
+msgid "Animal Shed feeding"
 msgstr ""
 
 msgid "Another character"
@@ -745,12 +779,6 @@ msgstr ""
 msgid "Automatic, by class"
 msgstr ""
 
-msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
-msgstr ""
-
-msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
-msgstr ""
-
 msgid "Back where the run started"
 msgstr ""
 
@@ -764,6 +792,9 @@ msgid "Bag:"
 msgstr ""
 
 msgid "Battlefield merit"
+msgstr ""
+
+msgid "Before farming (when a plan or a script that farms starts)"
 msgstr ""
 
 msgid "Before moving on to the next spot (only with more than one spot)"
@@ -797,16 +828,13 @@ msgstr ""
 msgid "Buffs on."
 msgstr ""
 
-msgid "Build in the gang's &highland too (the outer and inner halls always)"
-msgstr ""
-
 msgid "Busy - send stop first."
 msgstr ""
 
 msgid "C&hannel:"
 msgstr ""
 
-msgid "C&hat...\tCtrl+T"
+msgid "C&hat"
 msgstr ""
 
 msgid "C&lock:"
@@ -860,7 +888,7 @@ msgstr ""
 msgid "Chat settings"
 msgstr ""
 
-msgid "Check for &updates..."
+msgid "Check for &updates"
 msgstr ""
 
 msgid "Check the bag for restocking every (seconds):"
@@ -906,7 +934,10 @@ msgstr ""
 msgid "Cl&ear"
 msgstr ""
 
-msgid "Clean the &bag now (throw-away list)..."
+msgid "Clea&n the bag (game menu, Clean the bag now)"
+msgstr ""
+
+msgid "Clean the &bag now"
 msgstr ""
 
 msgid "Clean the bag"
@@ -933,10 +964,10 @@ msgstr ""
 msgid "Close the game"
 msgstr ""
 
-msgid "Closing every Mist World window for the update..."
+msgid "Closing every Mist World window for the update"
 msgstr ""
 
-msgid "Closing every Mist World window to reinstall the agent..."
+msgid "Closing every Mist World window to reinstall the agent"
 msgstr ""
 
 msgid "Closing the game."
@@ -975,7 +1006,7 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
-msgid "Contact the &developer..."
+msgid "Contact the &developer"
 msgstr ""
 
 msgid "Contact the developer"
@@ -991,6 +1022,9 @@ msgid "Copied"
 msgstr ""
 
 msgid "Copied {email}."
+msgstr ""
+
+msgid "Copy &selection"
 msgstr ""
 
 msgid "Couldn't apply the settings: {err}"
@@ -1066,13 +1100,10 @@ msgstr ""
 msgid "Crystals"
 msgstr ""
 
-msgid "D&ungeons...\tCtrl+Shift+G"
+msgid "D&ungeons"
 msgstr ""
 
-msgid "D&uplicate..."
-msgstr ""
-
-msgid "D&uplicate...\tCtrl+D"
+msgid "D&uplicate"
 msgstr ""
 
 msgid "Daily chores"
@@ -1127,13 +1158,16 @@ msgstr ""
 msgid "Don't go"
 msgstr ""
 
+msgid "Don't refill, just tell me"
+msgstr ""
+
 msgid "Done this game day (it starts at 00:00 GMT):"
 msgstr ""
 
 msgid "Double beep"
 msgstr ""
 
-msgid "Downloading Uncle Farmer {v}..."
+msgid "Downloading Uncle Farmer {v}"
 msgstr ""
 
 msgid "Drink below (%):"
@@ -1172,10 +1206,13 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
-msgid "E&xport character settings..."
+msgid "E&xport"
 msgstr ""
 
-msgid "E&xport plan..."
+msgid "E&xport character settings"
+msgstr ""
+
+msgid "E&xport plan"
 msgstr ""
 
 msgid "Earnings so far: {n} arnebia (picked up and sold)"
@@ -1212,6 +1249,9 @@ msgid "Ends on the nearest map without monsters."
 msgstr ""
 
 msgid "Ends where it is."
+msgstr ""
+
+msgid "Enemies"
 msgstr ""
 
 msgid "Enhance &up to (+):"
@@ -1391,6 +1431,12 @@ msgstr ""
 msgid "Gang"
 msgstr ""
 
+msgid "Gang construction"
+msgstr ""
+
+msgid "Gang mode"
+msgstr ""
+
 msgid "Gang name"
 msgstr ""
 
@@ -1403,7 +1449,10 @@ msgstr ""
 msgid "Gangs, in &order (the bot goes to each in turn):"
 msgstr ""
 
-msgid "Gathe&ring...\tCtrl+Shift+F"
+msgid "Gat&hering (as set in Tools, Gathering)"
+msgstr ""
+
+msgid "Gathe&ring"
 msgstr ""
 
 msgid "Gather &outside (after the gangs' areas, or without them)"
@@ -1474,6 +1523,9 @@ msgid "Go anyway"
 msgstr ""
 
 msgid "Go round them in turn until the plan stops"
+msgstr ""
+
+msgid "Go somewhere safe and stop"
 msgstr ""
 
 msgid "Go through them once, then end"
@@ -1548,6 +1600,18 @@ msgid ""
 "Heal with the class's o&wn heal skill (Sorceress, Priest); red potions only under half HP"
 msgstr ""
 
+msgid "Healed others"
+msgstr ""
+
+msgid "Healed our pet"
+msgstr ""
+
+msgid "Healed ourselves"
+msgstr ""
+
+msgid "Healing by our skills (potions not counted):"
+msgstr ""
+
 msgid "Healing teammates while following"
 msgstr ""
 
@@ -1576,6 +1640,9 @@ msgid "Home."
 msgstr ""
 
 msgid "How the game works"
+msgstr ""
+
+msgid "How they run"
 msgstr ""
 
 msgid ""
@@ -1653,6 +1720,12 @@ msgstr ""
 msgid "Import character settings"
 msgstr ""
 
+msgid "Import or export character settings"
+msgstr ""
+
+msgid "Import or export plans"
+msgstr ""
+
 msgid "Import plan"
 msgstr ""
 
@@ -1725,6 +1798,9 @@ msgid "Keep &old files:"
 msgstr ""
 
 msgid "Keep away from bosses"
+msgstr ""
+
+msgid "Keep farming, just tell me"
 msgstr ""
 
 msgid "Keep the class's b&uffs up"
@@ -1834,7 +1910,7 @@ msgstr ""
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr ""
 
-msgid "Looking for a new version..."
+msgid "Looking for a new version"
 msgstr ""
 
 msgid "Looking for your application."
@@ -1961,6 +2037,9 @@ msgstr ""
 msgid "Monsters that hit us:"
 msgstr ""
 
+msgid "Moral Mode"
+msgstr ""
+
 msgid "Most to pay per shard (arnebia):"
 msgstr ""
 
@@ -1997,6 +2076,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr ""
 
+msgid "NPCs"
+msgstr ""
+
 msgid "Nearby"
 msgstr ""
 
@@ -2009,10 +2091,10 @@ msgstr ""
 msgid "Never spend arnebia belo&w:"
 msgstr ""
 
-msgid "New &script...\tCtrl+Shift+N"
+msgid "New &script"
 msgstr ""
 
-msgid "New sc&ript..."
+msgid "New sc&ript"
 msgstr ""
 
 msgid "New schedule"
@@ -2198,6 +2280,10 @@ msgid "Nowhere, use what's in the bag"
 msgstr ""
 
 msgid ""
+"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+msgstr ""
+
+msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 
@@ -2231,7 +2317,7 @@ msgstr ""
 msgid "Only while the Chat window is open"
 msgstr ""
 
-msgid "Open another game &window\tCtrl+O"
+msgid "Open another game &window"
 msgstr ""
 
 msgid ""
@@ -2264,6 +2350,9 @@ msgstr ""
 msgid "Opening another game window. Log in, then choose it in the Games list."
 msgstr ""
 
+msgid "Or after this many casts that do &no damage:"
+msgstr ""
+
 msgid "Or type its &name:"
 msgstr ""
 
@@ -2277,6 +2366,9 @@ msgid "Other items picked up:"
 msgstr ""
 
 msgid "Our blue potions"
+msgstr ""
+
+msgid "Our gang's &highland number (the one under Occupied Highlands):"
 msgstr ""
 
 msgid "Our own gang"
@@ -2298,10 +2390,19 @@ msgstr ""
 msgid "Own HP"
 msgstr ""
 
-msgid "P&ause or go on\tF6"
+msgid "Own side"
+msgstr ""
+
+msgid "P&ause or go on"
 msgstr ""
 
 msgid "P&ets (ticked ones come out, first ready one first):"
+msgstr ""
+
+msgid "Pacifist mode"
+msgstr ""
+
+msgid "Pacifist mode with counterattack"
 msgstr ""
 
 msgid "Patrol loops: {loops}"
@@ -2402,6 +2503,10 @@ msgstr ""
 msgid "Players near:"
 msgstr ""
 
+msgid ""
+"Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
+msgstr ""
+
 msgid "Potions"
 msgstr ""
 
@@ -2435,6 +2540,9 @@ msgstr ""
 msgid "Private messages to you"
 msgstr ""
 
+msgid "Program version: {v}"
+msgstr ""
+
 msgid "Put into the storehouse:"
 msgstr ""
 
@@ -2466,7 +2574,7 @@ msgstr ""
 msgid "Re&move debuffs with the class's dispel"
 msgstr ""
 
-msgid "Re&name..."
+msgid "Re&name"
 msgstr ""
 
 msgid "Read MP near the potion mark every (seconds):"
@@ -2482,9 +2590,6 @@ msgid "Reading channels out"
 msgstr ""
 
 msgid "Reading the game"
-msgstr ""
-
-msgid "Reading the game..."
 msgstr ""
 
 msgid "Ready"
@@ -2567,6 +2672,9 @@ msgstr ""
 msgid "Running {what}"
 msgstr ""
 
+msgid "Runs from source: it never updates itself (use git pull)."
+msgstr ""
+
 msgid "Runs: {n}"
 msgstr ""
 
@@ -2588,7 +2696,10 @@ msgstr ""
 msgid "S&top"
 msgstr ""
 
-msgid "S&top\tShift+F5"
+msgid "S&tore items (game menu, Store items now)"
+msgstr ""
+
+msgid "S&tore items now"
 msgstr ""
 
 msgid "S&tore:"
@@ -2603,7 +2714,10 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-msgid "Save as scri&pt..."
+msgid "Save and check for updates &now"
+msgstr ""
+
+msgid "Save as scri&pt"
 msgstr ""
 
 msgid "Save as script"
@@ -2618,7 +2732,7 @@ msgstr ""
 msgid "Scan complete."
 msgstr ""
 
-msgid "Sche&dules...\tCtrl+Shift+H"
+msgid "Sche&dules"
 msgstr ""
 
 msgid "Scheduled {what} for {who} couldn't start: {why}"
@@ -2660,7 +2774,10 @@ msgstr ""
 msgid "Scripting &guide"
 msgstr ""
 
-msgid "Se&ttings..."
+msgid "Se&ll shards (game menu, Sell shards now)"
+msgstr ""
+
+msgid "Se&ttings"
 msgstr ""
 
 msgid "Secret room"
@@ -2672,6 +2789,9 @@ msgstr ""
 msgid "Select a plan first."
 msgstr ""
 
+msgid "Sell and store by these lists, then come back"
+msgstr ""
+
 msgid "Sell it and come back"
 msgstr ""
 
@@ -2679,6 +2799,9 @@ msgid "Sell s&hards now"
 msgstr ""
 
 msgid "Sell shards now: started by hand"
+msgstr ""
+
+msgid "Sell the &collection now"
 msgstr ""
 
 msgid "Selling"
@@ -2754,6 +2877,9 @@ msgstr ""
 msgid "Sho&w:"
 msgstr ""
 
+msgid "Shop only"
+msgstr ""
+
 msgid "Shop:"
 msgstr ""
 
@@ -2790,6 +2916,16 @@ msgstr ""
 msgid "Skills not in this &list (learned or put on a key later):"
 msgstr ""
 
+msgid "Skills used: none"
+msgstr ""
+
+msgid ""
+"Skills used: not counted in these runs (only runs from this version on count them)"
+msgstr ""
+
+msgid "Skills used: {casts} casts, {dmg} damage in all"
+msgstr ""
+
 msgid "Snow mountain prince"
 msgstr ""
 
@@ -2814,7 +2950,7 @@ msgstr ""
 msgid "South edge (y):"
 msgstr ""
 
-msgid "Spea&k the results\tCtrl+Shift+R"
+msgid "Spea&k the results"
 msgstr ""
 
 msgid "Speak &progress while running"
@@ -2830,6 +2966,9 @@ msgid "Speech and language"
 msgstr ""
 
 msgid "Spider cave"
+msgstr ""
+
+msgid "St&ore items (game menu, Store items now)"
 msgstr ""
 
 msgid "St&ore:"
@@ -2874,7 +3013,7 @@ msgstr ""
 msgid "Stop &at (HH:MM, this computer's clock):"
 msgstr ""
 
-msgid "Stop &every bot\tCtrl+Shift+S"
+msgid "Stop &every bot"
 msgstr ""
 
 msgid "Stop after this many &stuck walks in a row:"
@@ -2940,8 +3079,20 @@ msgstr ""
 msgid "Stops {rules}."
 msgstr ""
 
+msgid "Store items now: started by hand"
+msgstr ""
+
 msgid ""
 "Stored or sold on a bag trip: on the Full bag page, choose to sell and store when the bag is full"
+msgstr ""
+
+msgid "Storehouse only"
+msgstr ""
+
+msgid "Storehouse, then the shop"
+msgstr ""
+
+msgid "Storing items"
 msgstr ""
 
 msgid "Strangers"
@@ -2978,6 +3129,9 @@ msgid "Target west"
 msgstr ""
 
 msgid "Team"
+msgstr ""
+
+msgid "Team mode"
 msgstr ""
 
 msgid "Teleport to the team leader"
@@ -3187,6 +3341,10 @@ msgstr ""
 msgid "The script was saved, but the old file couldn't be removed: {err}"
 msgstr ""
 
+msgid ""
+"The storage list is empty. Choose what to move to the storehouse in Character, Bag and supplies first."
+msgstr ""
+
 msgid "The storehouse first, then the Shard Broker"
 msgstr ""
 
@@ -3234,6 +3392,13 @@ msgid "They come from {source}, a bagful at a time."
 msgstr ""
 
 msgid "This character has no gathering skill to add a place for."
+msgstr ""
+
+msgid "This copy"
+msgstr ""
+
+msgid ""
+"This copy doesn't look for updates online. New versions come as a zip: unpack it over this folder."
 msgstr ""
 
 msgid "This copy runs from its source code: update it with git pull."
@@ -3291,6 +3456,10 @@ msgstr ""
 msgid "Tick the monsters to fight:"
 msgstr ""
 
+msgid ""
+"Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
+msgstr ""
+
 msgid "Time (HH:MM):"
 msgstr ""
 
@@ -3325,7 +3494,7 @@ msgstr ""
 msgid "Today"
 msgstr ""
 
-msgid "Today, {n} runs, {m} min: {r}"
+msgid "Today, {n} runs: {r}"
 msgstr ""
 
 msgid "Today: no cave yet."
@@ -3352,6 +3521,9 @@ msgstr ""
 msgid "Travel and pets"
 msgstr ""
 
+msgid "Triggers"
+msgstr ""
+
 msgid "Trusted players"
 msgstr ""
 
@@ -3374,6 +3546,10 @@ msgstr ""
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr ""
 
+msgid ""
+"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+msgstr ""
+
 msgid "Uncle Farmer"
 msgstr ""
 
@@ -3390,6 +3566,9 @@ msgstr ""
 
 msgid ""
 "Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
+msgstr ""
+
+msgid "Uncle Farmer {v}"
 msgstr ""
 
 msgid ""
@@ -3432,16 +3611,29 @@ msgstr ""
 msgid "Unmute every &game"
 msgstr ""
 
-msgid "Unpacking..."
+msgid "Unpacking"
+msgstr ""
+
+msgid "Up&date shard prices (game menu, Update shard prices)"
 msgstr ""
 
 msgid "Update"
 msgstr ""
 
+msgid "Update log: {log}"
+msgstr ""
+
 msgid "Update shard &prices"
 msgstr ""
 
+msgid "Updater"
+msgstr ""
+
 msgid "Updates"
+msgstr ""
+
+msgid ""
+"Updates come from GitHub ({repo}) and install themselves after you say yes."
 msgstr ""
 
 msgid "Updating shard prices"
@@ -3517,7 +3709,7 @@ msgstr ""
 msgid "Voice messages need the new agent in this game: restart the game."
 msgstr ""
 
-msgid "Wa&lk to a dungeon or map...\tCtrl+W"
+msgid "Wa&lk to a dungeon or map"
 msgstr ""
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
@@ -3665,6 +3857,9 @@ msgstr ""
 msgid "Y:"
 msgstr ""
 
+msgid "Yesterday"
+msgstr ""
+
 msgid "You are already on {map}."
 msgstr ""
 
@@ -3687,11 +3882,17 @@ msgstr ""
 msgid "a number the Gem Craftsman will tell"
 msgstr ""
 
+msgid "a skill with no name"
+msgstr ""
+
 msgid "a sub needs a name"
 msgstr ""
 
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
+msgstr ""
+
+msgid "about to be killed by someone else"
 msgstr ""
 
 msgid "about {price}"
@@ -3706,7 +3907,7 @@ msgstr ""
 msgid "after a dodge or block"
 msgstr ""
 
-msgid "after farming, automatically: {job}"
+msgid "after farming"
 msgstr ""
 
 msgid "after {n} kills"
@@ -3718,7 +3919,10 @@ msgstr ""
 msgid "alive again on {map}"
 msgstr ""
 
-msgid "all the gear repaired"
+msgid "all the gear repaired with a {tool}"
+msgstr ""
+
+msgid "already donated today"
 msgstr ""
 
 msgid "already done today"
@@ -3806,6 +4010,9 @@ msgstr ""
 msgid "basic attack"
 msgstr ""
 
+msgid "before farming"
+msgstr ""
+
 msgid "blocks are nested too deeply (over {max})"
 msgstr ""
 
@@ -3840,10 +4047,18 @@ msgstr ""
 msgid "built {n} times; no place took more today (places: {places})"
 msgstr ""
 
-msgid "built {n} times; not enough arnebia above your reserve for more"
+msgid "built {n} times; the game's two builds a day are made"
 msgstr ""
 
-msgid "can build at the {post} (10000 arnebia, 2500 gang contribution each)"
+msgid ""
+"buying {n} {item}, not {want}: that is what {money} arnebia pays for at {price} each"
+msgstr ""
+
+msgid "can build at the {post}"
+msgstr ""
+
+msgid ""
+"can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
 msgstr ""
 
 msgid "can't find {npc} here"
@@ -3885,6 +4100,9 @@ msgid "can't switch the skill page yet ({why}); using the page that is up"
 msgstr ""
 
 msgid "cancel the team's navigation target"
+msgstr ""
+
+msgid "cast {n} times"
 msgstr ""
 
 msgid "charge in"
@@ -3942,6 +4160,9 @@ msgstr ""
 msgid "couldn't get back to {place}: {why}"
 msgstr ""
 
+msgid "couldn't get into highland {n}"
+msgstr ""
+
 msgid "couldn't get into the gang {gang}'s base"
 msgstr ""
 
@@ -3967,12 +4188,6 @@ msgid "couldn't get to {npc}"
 msgstr ""
 
 msgid "couldn't get to {place}: {why}"
-msgstr ""
-
-msgid "couldn't get to {where} to build"
-msgstr ""
-
-msgid "couldn't get to {where} to build: {why}"
 msgstr ""
 
 msgid "couldn't leave the gang's area - waiting for its half hour to end"
@@ -4094,6 +4309,9 @@ msgid ""
 "drop time is nearly used up ({m} min left) - going somewhere safe and stopping"
 msgstr ""
 
+msgid "drop time left {time}"
+msgstr ""
+
 msgid "drop time used up"
 msgstr ""
 
@@ -4128,6 +4346,9 @@ msgstr ""
 msgid "farm doesn't know '{opt}'. It takes: {opts}"
 msgstr ""
 
+msgid "farmed {time}"
+msgstr ""
+
 msgid "farming is over - closing the game"
 msgstr ""
 
@@ -4138,6 +4359,12 @@ msgid "farming stops at {time} at the latest (the drop time resets at {reset})"
 msgstr ""
 
 msgid "farming {map}"
+msgstr ""
+
+msgid "fed {beast}"
+msgstr ""
+
+msgid "fed {beast}, but no arnebia came in"
 msgstr ""
 
 msgid "fighting"
@@ -4186,6 +4413,9 @@ msgstr ""
 msgid "full loop"
 msgstr ""
 
+msgid "further to walk than the chase range"
+msgstr ""
+
 msgid "fusion power {n} - on foot until it has come back"
 msgstr ""
 
@@ -4208,6 +4438,9 @@ msgid "gang map"
 msgstr ""
 
 msgid "gathered at {place}"
+msgstr ""
+
+msgid "gathering"
 msgstr ""
 
 msgid "gathering check: {notes}"
@@ -4276,6 +4509,9 @@ msgstr ""
 msgid "heal"
 msgstr ""
 
+msgid "healed {n}"
+msgstr ""
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr ""
 
@@ -4311,6 +4547,9 @@ msgstr ""
 msgid "hunting bounty"
 msgstr ""
 
+msgid "in an elite or boss zone we keep out of"
+msgstr ""
+
 msgid "in the city"
 msgstr ""
 
@@ -4340,6 +4579,9 @@ msgid "joined {who}'s team ({team}): {who} is trusted"
 msgstr ""
 
 msgid "keep_drop takes the minutes of drop time to save, 0 to 1440: {what}"
+msgstr ""
+
+msgid "kept in the bag, as their rules say: {list}"
 msgstr ""
 
 msgid "key {key}"
@@ -4378,6 +4620,12 @@ msgid "leaving {map} first, to find the nearest from outside"
 msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
+msgstr ""
+
+msgid "left alone for now (took no damage, couldn't be reached or selected)"
+msgstr ""
+
+msgid "left out by the only-fight / never-fight names"
 msgstr ""
 
 msgid ""
@@ -4486,10 +4734,16 @@ msgstr ""
 msgid "mode set: {mode}"
 msgstr ""
 
+msgid "monsters in sight, none to fight: {why}"
+msgstr ""
+
 msgid "moved off {place} too often"
 msgstr ""
 
 msgid "moved out of {map}"
+msgstr ""
+
+msgid "moved {n} tiles while paused - going on from here"
 msgstr ""
 
 msgid "movement"
@@ -4514,6 +4768,9 @@ msgid "no Swift fusion beast on this character - walking on foot"
 msgstr ""
 
 msgid "no answer"
+msgstr ""
+
+msgid "no answer from the game"
 msgstr ""
 
 msgid "no arnebia shared this time: {why}"
@@ -4584,6 +4841,9 @@ msgstr ""
 msgid "no room with a free place for this level"
 msgstr ""
 
+msgid "no runs yet"
+msgstr ""
+
 msgid "no secret room for this level has a free place"
 msgstr ""
 
@@ -4615,6 +4875,9 @@ msgid "no way from {a} to {b} - go there yourself and start again"
 msgstr ""
 
 msgid "no way from {a} to {b} on {map}"
+msgstr ""
+
+msgid "no way to walk there"
 msgstr ""
 
 msgid "no {item} in the storehouse"
@@ -4660,6 +4923,12 @@ msgstr ""
 msgid "not enough arnebia above your reserve for the gang area's {fee} arnebia"
 msgstr ""
 
+msgid "not enough arnebia for one {item}: {price} each, {money} in the bag"
+msgstr ""
+
+msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
+msgstr ""
+
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
 
@@ -4682,6 +4951,12 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid "not fed: {why}"
+msgstr ""
+
+msgid "not in the bag: {list}"
+msgstr ""
+
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
@@ -4700,6 +4975,12 @@ msgstr ""
 msgid "not sold: {list}"
 msgstr ""
 
+msgid "not stored (the storehouse may be full): {list}"
+msgstr ""
+
+msgid "nothing"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -4708,6 +4989,9 @@ msgid "nothing can follow 'else' in the same if"
 msgstr ""
 
 msgid "nothing done"
+msgstr ""
+
+msgid "nothing in the bag is on the storage list (or only what its rules keep)"
 msgstr ""
 
 msgid ""
@@ -4738,6 +5022,9 @@ msgstr ""
 msgid "nowhere to build now (places: {places})"
 msgstr ""
 
+msgid "of a kind that can't be attacked here"
+msgstr ""
+
 msgid "off"
 msgstr ""
 
@@ -4745,6 +5032,35 @@ msgid "off to the secret room to share arnebia"
 msgstr ""
 
 msgid "on"
+msgstr ""
+
+msgid "on another map than when paused - going on from here"
+msgstr ""
+
+msgid ""
+"on foot for {secs} s more: the server still counts the last fight as combat"
+msgstr ""
+
+msgid "on foot: no Swift fusion beast to ride"
+msgstr ""
+
+msgid "on foot: our Swift fusion beast has expired"
+msgstr ""
+
+msgid "on foot: the fusion beast list couldn't be read"
+msgstr ""
+
+msgid "on foot: the game won't let {beast} on for {secs} s more"
+msgstr ""
+
+msgid ""
+"on foot: the travel fusion beast is set to none in the character settings"
+msgstr ""
+
+msgid "on foot: {beast} isn't among our fusion beasts"
+msgstr ""
+
+msgid "on the Forger's screen: {screen}"
 msgstr ""
 
 msgid "on this map"
@@ -4783,6 +5099,9 @@ msgstr ""
 msgid "other"
 msgstr ""
 
+msgid "our gang's highland"
+msgstr ""
+
 msgid "our hits land on {name} - fighting that one"
 msgstr ""
 
@@ -4796,6 +5115,9 @@ msgid "out of Level {lv} {kind} Enhance Crystals - stopping"
 msgstr ""
 
 msgid "out of {kind} potions - stopping"
+msgstr ""
+
+msgid "outside the farming area"
 msgstr ""
 
 msgid "outside: no place for this character - add one where you stand"
@@ -4995,6 +5317,13 @@ msgstr ""
 msgid "shield"
 msgstr ""
 
+msgid "shooting monsters in reach on the way to the next one"
+msgstr ""
+
+msgid ""
+"shooting while walking is on, but this character fights from close by - it stops for each monster"
+msgstr ""
+
 msgid "short"
 msgstr ""
 
@@ -5019,7 +5348,7 @@ msgstr ""
 msgid "sold the {kind} for {n} arnebia"
 msgstr ""
 
-msgid "sold {list}; {n} arnebia came in"
+msgid "sold {list}"
 msgstr ""
 
 msgid "sold {n} {item}"
@@ -5077,6 +5406,15 @@ msgid "stopped: {why}"
 msgstr ""
 
 msgid "stops healing"
+msgstr ""
+
+msgid "stored {list}"
+msgstr ""
+
+msgid "storing items"
+msgstr ""
+
+msgid "storing: {list}"
 msgstr ""
 
 msgid "stuck near {cell} and every way out failed - stopping"
@@ -5159,7 +5497,13 @@ msgstr ""
 msgid "that didn't work: {err}"
 msgstr ""
 
+msgid "the Animal Shed has nothing to feed now"
+msgstr ""
+
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
+msgstr ""
+
+msgid "the Forger didn't say which crystal {item} needs - skipping it"
 msgstr ""
 
 msgid "the Forger has no enhance equipment"
@@ -5206,7 +5550,7 @@ msgstr ""
 msgid "the Head of the inner hall offers no donation"
 msgstr ""
 
-msgid "the Information Board: {lines}"
+msgid "the Highland Entrance offers no Occupied Highlands"
 msgstr ""
 
 msgid "the PK mode is locked here - leaving it as {mode}"
@@ -5222,6 +5566,10 @@ msgid "the Shard Market"
 msgstr ""
 
 msgid "the Shard Market didn't list {item}"
+msgstr ""
+
+msgid ""
+"the Shard Market didn't take all of it at once - selling the rest one by one"
 msgstr ""
 
 msgid "the Shard Market doesn't sell {shard}"
@@ -5316,7 +5664,7 @@ msgstr ""
 msgid "the deposit income can be collected"
 msgstr ""
 
-msgid "the donation didn't go through - already donated today?"
+msgid "the donation didn't go through: {why}"
 msgstr ""
 
 msgid ""
@@ -5324,6 +5672,9 @@ msgid ""
 msgstr ""
 
 msgid "the game can't be read: {why}"
+msgstr ""
+
+msgid "the game didn't accept the direct discard request: {why}"
 msgstr ""
 
 msgid "the game didn't ask to confirm"
@@ -5414,10 +5765,7 @@ msgstr ""
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr ""
 
-msgid "the highland"
-msgstr ""
-
-msgid "the inner hall"
+msgid "the inner hall's East and West posts"
 msgstr ""
 
 msgid "the instructor offers no secret room now"
@@ -5450,9 +5798,6 @@ msgstr ""
 msgid "the open menu isn't the Shard Market's list"
 msgstr ""
 
-msgid "the outer hall"
-msgstr ""
-
 msgid "the pet"
 msgstr ""
 
@@ -5470,6 +5815,10 @@ msgid "the script is too long (over {max} characters)"
 msgstr ""
 
 msgid "the shard price list (data\\shards.json) can't be read"
+msgstr ""
+
+msgid ""
+"the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 
 msgid "the storehouse"
@@ -5519,6 +5868,9 @@ msgstr ""
 msgid "the {npc} didn't take me anywhere"
 msgstr ""
 
+msgid "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
+msgstr ""
+
 msgid "the {npc} offers no way in ({about})"
 msgstr ""
 
@@ -5526,6 +5878,9 @@ msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr ""
 
 msgid "the {npc}'s next menu didn't open"
+msgstr ""
+
+msgid "the {post}: {what}"
 msgstr ""
 
 msgid "the {role} didn't take {item}"
@@ -5538,6 +5893,14 @@ msgid "the {tool} can't repair this gear: {what}"
 msgstr ""
 
 msgid "the {tool} didn't open its question - not repaired"
+msgstr ""
+
+msgid ""
+"the {tool} is still in the bag after the repair ({n}) - the game may not have used it"
+msgstr ""
+
+msgid ""
+"the {tool} only repairs gear up to level {limit}, and this character is level {level}"
 msgstr ""
 
 msgid "there are no team applications waiting"
@@ -5582,6 +5945,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 
+msgid "too close to a boss"
+msgstr ""
+
 msgid "took {n} {item} out of the storehouse"
 msgstr ""
 
@@ -5595,6 +5961,12 @@ msgid "travel to {map} didn't arrive"
 msgstr ""
 
 msgid "trying the {npc} once more"
+msgstr ""
+
+msgid "trying the {tool} instead"
+msgstr ""
+
+msgid "type your gang's highland number in Tools, Daily chores"
 msgstr ""
 
 msgid "unbalanced quotes"
@@ -5627,6 +5999,9 @@ msgstr ""
 msgid "until= needs a condition, for example: until=kills >= 100"
 msgstr ""
 
+msgid "updating shard prices"
+msgstr ""
+
 msgid "using the hearthstone key"
 msgstr ""
 
@@ -5655,6 +6030,9 @@ msgid "walking on to {cell}"
 msgstr ""
 
 msgid "walking to monsters"
+msgstr ""
+
+msgid "we are on another map now - leaving the fight with {name}"
 msgstr ""
 
 msgid "weakens the enemy"
@@ -5699,6 +6077,9 @@ msgstr ""
 msgid "would enter {room}"
 msgstr ""
 
+msgid "would feed: {beast}"
+msgstr ""
+
 msgid "would go to: {cave}"
 msgstr ""
 
@@ -5728,6 +6109,9 @@ msgid "write it as: {cmd} 50 Large Red Potion"
 msgstr ""
 
 msgid "write it as: {cmd} Milkfish 20"
+msgstr ""
+
+msgid "yesterday"
 msgstr ""
 
 msgid "you"
@@ -5797,6 +6181,9 @@ msgstr ""
 msgid "{col}: shards {shards}; gems {gems}"
 msgstr ""
 
+msgid "{dmg} damage ({share} of all)"
+msgstr ""
+
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr ""
 
@@ -5835,6 +6222,9 @@ msgid ""
 msgstr ""
 
 msgid "{item} ({count}, {where})"
+msgstr ""
+
+msgid "{item} ({n} of {want}: the storehouse took no more)"
 msgstr ""
 
 msgid "{item} didn't take me anywhere"
@@ -5900,6 +6290,9 @@ msgstr ""
 msgid "{k} shards and {fee} arnebia"
 msgstr ""
 
+msgid "{label}: {hp} HP in {n} heals"
+msgstr ""
+
 msgid "{left} left"
 msgstr ""
 
@@ -5956,7 +6349,13 @@ msgstr ""
 msgid "{name} ({n})"
 msgstr ""
 
+msgid "{name} - character {id}"
+msgstr ""
+
 msgid "{name} - {map}{team}"
+msgstr ""
+
+msgid "{name} - {server}"
 msgstr ""
 
 msgid "{name} asks: {what}"
@@ -6088,6 +6487,12 @@ msgstr ""
 msgid "{n} Value Product incomes can be collected"
 msgstr ""
 
+msgid "{n} Value Product incomes were already collected today"
+msgstr ""
+
+msgid "{n} a hit on average"
+msgstr ""
+
 msgid "{n} arnebia"
 msgstr ""
 
@@ -6097,10 +6502,10 @@ msgstr ""
 msgid "{n} contribution"
 msgstr ""
 
-msgid "{n} critical hits"
+msgid "{n} critical"
 msgstr ""
 
-msgid "{n} damage"
+msgid "{n} days ago"
 msgstr ""
 
 msgid "{n} deaths"
@@ -6133,13 +6538,13 @@ msgstr ""
 msgid "{n} minutes are up"
 msgstr ""
 
+msgid "{n} missed"
+msgstr ""
+
 msgid "{n} more"
 msgstr ""
 
 msgid "{n} more {gem} would take about {k} more {shard}"
-msgstr ""
-
-msgid "{n} shards"
 msgstr ""
 
 msgid "{n} shards at level {lv}"
@@ -6236,6 +6641,15 @@ msgid "{skill} stopped - starting it again"
 msgstr ""
 
 msgid "{skill}, {rank}; character level {level}"
+msgstr ""
+
+msgid "{stage}, automatically: {job}"
+msgstr ""
+
+msgid "{stage}: done {ok}"
+msgstr ""
+
+msgid "{stage}: done {ok}; didn't finish {bad}"
 msgstr ""
 
 msgid "{state} {what} for {m} min on {map}, HP {hp}%{mp}, {k} kills"

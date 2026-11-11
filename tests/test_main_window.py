@@ -18,7 +18,7 @@ import pytest
 
 wx = pytest.importorskip("wx")
 
-from unclefarmer import chat, messages, speech, stats, tones  # noqa: E402
+from unclefarmer import chat, messages, settings, speech, stats, tones  # noqa: E402
 from unclefarmer.gui import main  # noqa: E402
 from unclefarmer.gui.mainparts import results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
 from unclefarmer.gui.mainparts.base import LOG_LIMIT, SNAP_FRESH  # noqa: E402
@@ -91,6 +91,7 @@ class Win:
         self.game_list, self.log_filter, self.log_box = Widget(0), Widget(0), Widget()
         self.fields = {"activity": Widget()}
         self.start_btn, self.stop_btn, self.pause_btn, self.what = Widget(), Widget(), Widget(), Widget()
+        self.plan_list, self.nb = Widget(), Widget()
         self.said: list[str] = []
         self.started: list[tuple[int | None, Any, bool]] = []     # (pid, what to run, asked remotely)
         self.stopped: list[int | None] = []
@@ -141,6 +142,20 @@ def bot(kills: int=0, deaths: int=0, paused: bool=False) -> types.SimpleNamespac
     return b
 
 
+def test_a_live_server_label_promotes_the_id_only_game_row_and_never_downgrades() -> None:
+    fallback = settings.character_profile("Killua", 2905)
+    on_s1 = settings.character_profile("Killua", 2905, "S1")
+    w = Win(games=[(1, fallback, "central plains")], runs={1: FakeRun(1)})
+    snap = {"self": {"id": 2905, "name": "Killua", "hp": 1, "maxhp": 1},
+            "map": {"name": "central plains"}, "_server": "S1"}
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
+
+    snap["_server"] = ""
+    w.render(1, snap, {})
+    assert w.games[0][1] == on_s1
+
+
 @pytest.fixture
 def spoken(monkeypatch: pytest.MonkeyPatch) -> list[Any]:
     out: list[str] = []
@@ -166,6 +181,33 @@ def test_the_selected_game_is_the_list_s_selection() -> None:
     assert (w.selected_pid(), w.selected_character()) == (2, "Sara")
     w.game_list.selection = -1                   # nothing selected
     assert w.selected_pid() is None and w.selected_character() is None
+
+
+def test_plan_commands_follow_the_visible_plan_control() -> None:
+    w = Win()
+    w.items = [("plan", "wolves"), ("script", "daily")]
+    w.what, w.plan_list, w.nb = Widget(0), Widget(1), Widget(1)
+    assert w.active_item() == ("script", "daily")
+    w.nb.selection = 0
+    assert w.active_item() == ("plan", "wolves")
+
+
+def test_menu_actions_follow_the_selected_game_and_plan_state() -> None:
+    none = main.action_menu_states(available=False, running=False, any_running=True, has_items=True,
+                                   has_messengers=False, selected=None)
+    assert not none["run_start"] and none["run_stop_all"] and none["run_results"]
+    assert none["messages_private"] and none["character_import"] and not none["tools_gather"]
+
+    stopped = main.action_menu_states(available=True, running=False, any_running=False, has_items=True,
+                                      has_messengers=True, selected=("plan", "wolves"))
+    assert stopped["run_start"] and stopped["run_walk"] and stopped["character_scan"]
+    assert stopped["tools_gem"] and stopped["plans_duplicate"] and stopped["plans_export"]
+
+    running = main.action_menu_states(available=True, running=True, any_running=True, has_items=True,
+                                      has_messengers=True, selected=("script", "daily"))
+    assert running["run_stop"] and running["run_pause"] and running["run_stop_all"]
+    assert not running["run_start"] and not running["run_walk"] and not running["character_scan"]
+    assert not running["tools_dungeon"] and not running["plans_duplicate"] and not running["plans_export"]
 
 
 def test_a_reading_is_reused_only_for_its_game_and_while_fresh() -> None:
@@ -278,6 +320,19 @@ def test_our_characters_are_found_through_their_own_game() -> None:
     assert w.locate("Nobody") is None
 
 
+def test_a_character_with_its_own_key_is_still_found_and_started_by_its_name() -> None:
+    class Link:
+        def json(self, line: str) -> Any:
+            return {"ok": True, "map": {"id": 5302}, "self": {"x": 10.0, "y": 20.0}}
+
+    key = settings.character_profile("Ali", 2905, "S1")
+    w = Win(games=[(1, key, "")], s={"last_runs": {"Ali": "plan:wolves"}})     # saved before keys
+    w.messengers = {1: SimpleNamespace(link=Link())}
+    assert w.locate("ali") == (5302, 10.0, 20.0)
+    w.items = [("plan", "wolves")]
+    assert w.start_bot(1, "") == "started" and w.started[-1][1] == ("plan", "wolves")
+
+
 def test_the_latest_sighting_of_a_player_counts_while_it_is_recent() -> None:
     w = Win()
     now = w.clock.time()
@@ -362,21 +417,22 @@ def test_each_game_gets_one_messenger_and_one_chat_feed(monkeypatch: pytest.Monk
 # ================================================================ results and the game's voice
 def test_shift_pause_speaks_the_running_results_else_the_last_run(monkeypatch: pytest.MonkeyPatch, spoken: list[Any]) -> None:
     monkeypatch.setattr(results_part, "foreground_pid", stand_in(results_part.foreground_pid, lambda: None))
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "%d kills" % r["kills"]))
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "%d kills, drop %s" % (r["kills"], drop)))
     monkeypatch.setattr(stats, "runs", stand_in(stats.runs, lambda character: [{"kills": 7}] if character == "Sara" else []))
-    tally = SimpleNamespace(result=lambda: {"kills": 40})
+    tally = SimpleNamespace(result=lambda: {"kills": 40}, drop_left=3600)
     w = Win(games=[(1, "Ali", ""), (2, "Sara", ""), (3, "New", "")], runs={1: FakeRun(1, tally=tally)})
     w.speak_results()
     w.game_list.selection = 1
+    w.snap = (2, {"ok": True, "self": {"sheet": {"drop_seconds": 1200, "age": 0}}}, w.clock.time())   # Sara's game, open
     w.speak_results()
     w.game_list.selection = 2
     w.speak_results()
-    assert spoken == ["Ali: 40 kills", "Sara, last run: 7 kills", "No results yet."]
+    assert spoken == ["Ali: 40 kills, drop 3600", "Sara, last run: 7 kills, drop 1200", "No results yet."]
 
 
 def test_results_are_spoken_every_so_often_while_farming(monkeypatch: pytest.MonkeyPatch, spoken: list[Any]) -> None:
-    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r: "ok"))
-    tally = SimpleNamespace(result=returning(dict[str, Any]()), spoken=0.0)
+    monkeypatch.setattr(stats, "short", stand_in(stats.short, lambda r, drop=None: "ok"))
+    tally = SimpleNamespace(result=returning(dict[str, Any]()), spoken=0.0, drop_left=None)
     w = Win(runs={1: FakeRun(1, tally=tally)}, s={"results_every": 30})
     w.clock.now = 29 * 60
     w.progress()

@@ -27,6 +27,7 @@ from .. import gamekeys, jsonio as json, paths
 from ..clock import clock_for
 from ..i18n import _
 from . import combos as combo_rules
+from . import elf_combos
 
 if TYPE_CHECKING:
     from .botparts.parts import Parts
@@ -81,10 +82,11 @@ def base_reach(skill_range: float) -> float:
     """The distance a class fights from, given its base attack's range: just inside it, and never
     under 4 (a melee class's 5 would otherwise put it on the monster's own tile)."""
     return max(4.0, float(skill_range) - REACH_MARGIN)
-def damage_rate(s: Skill, weight: float, gcd: float) -> float:
+def damage_rate(s: Skill, weight: float, gcd: float, unpenalized: bool = False) -> float:
     """Attack per global cooldown a press takes: a channel is that much longer, so a 4.5 s
     Pyroblast is no filler beside an instant Fireball of the same attack."""
-    return (s.get("attack") or 0) * weight / (1 + (s.get("cast") or 0) / gcd)
+    cast = 0.0 if unpenalized else (s.get("cast") or 0)
+    return (s.get("attack") or 0) * weight / (1 + cast / gcd)
 
 
 # roles never pressed by the farming bot (solo): they need a party, a place, or a moment we can't see
@@ -169,6 +171,8 @@ class _PickView:
         self.gcd = book.gcd()
 
     def in_range(self, s: Skill) -> bool:
+        if elf_combos.unpenalized(s, self.book.available_to_channel_without_penalty):
+            return True
         r = s.get("range")
         return r is None or self.dist <= r + 0.5
 
@@ -214,7 +218,8 @@ class _PickView:
 
     def score(self, s: Skill) -> float:
         """Attack per global cooldown its press takes, a channel counting longer (damage_rate)."""
-        return damage_rate(s, self.weight(s), self.gcd)
+        unpenalized = elf_combos.unpenalized(s, self.book.available_to_channel_without_penalty)
+        return damage_rate(s, self.weight(s), self.gcd, unpenalized=unpenalized)
 
     def first(self, role: str | tuple[str, ...], cond: Callable[[Skill], bool] = lambda s: True) -> Skill | None:
         """The hardest hitter of these roles."""
@@ -252,6 +257,10 @@ class SkillBook:
     _page_at = 0.0
     _uses_points: bool
     _healer: Skill | None
+    _pending_channelling = False
+    _available_to_channel_without_penalty = False
+    _saving_pyroblast_for_next = False
+    _last_pack_size = 1
 
     def __init__(self, bot: Parts) -> None:
         self.b = bot
@@ -284,7 +293,48 @@ class SkillBook:
         self.pts = None          # the last reading
         self.pts_at = 0.0        # when the game answered it (clock_for(self.b).time())
         self.pts_delta = 0       # what our casts since then added (rage) or took away
+        self._pending_channelling = False
+        self._available_to_channel_without_penalty = False
         self.load()
+
+    @property
+    def pending_channelling(self) -> bool:
+        if self.combos is not None:
+            return self.combos.pending_channelling
+        return self._pending_channelling
+
+    @pending_channelling.setter
+    def pending_channelling(self, value: bool) -> None:
+        self._pending_channelling = value
+        if self.combos is not None:
+            self.combos.pending_channelling = value
+
+    @property
+    def available_to_channel_without_penalty(self) -> bool:
+        if self.combos is not None:
+            return self.combos.available_to_channel_without_penalty
+        return self._available_to_channel_without_penalty
+
+    @available_to_channel_without_penalty.setter
+    def available_to_channel_without_penalty(self, value: bool) -> None:
+        self._available_to_channel_without_penalty = value
+        if self.combos is not None:
+            self.combos.available_to_channel_without_penalty = value
+
+    @property
+    def saving_pyroblast_for_next(self) -> bool:
+        if self.combos is not None:
+            return getattr(self.combos, "saving_pyroblast_for_next", False)
+        return self._saving_pyroblast_for_next
+
+    @saving_pyroblast_for_next.setter
+    def saving_pyroblast_for_next(self, value: bool) -> None:
+        self._saving_pyroblast_for_next = value
+        if self.combos is not None:
+            self.combos.saving_pyroblast_for_next = value
+
+    def _channeling_restricted(self, s: Skill) -> bool:
+        return self.combos is not None and self.combos.channeling_restricted(s)
 
     def load(self) -> None:
         try:
@@ -348,7 +398,7 @@ class SkillBook:
                 c = combo_rules.Combos(self, combo_rules.active_talents(sk), on_keys,
                                        crits=self.agent_version >= combo_rules.CRIT_AGENT)
                 c.tell(self.b.log)
-                self.combos = c if c.rules or c.bonus else None
+                self.combos = c if c.rules or c.bonus or self.cls == "Elf" else None
 
     def use_of(self, name: str) -> str:
         """The player's choice for this skill (SKILL_USES): skill_use by name, else
@@ -373,6 +423,10 @@ class SkillBook:
         """The key that walks us to the target and hits it there: the base attack (the hardest
         hitter on the page that is up if there are several) on its follow key. None without one."""
         up = self.page()
+        if self.available_to_channel_without_penalty:
+            pyroblast = elf_combos.pyroblast_follow_key(self.slots, up, self.allowed)
+            if pyroblast is not None:
+                return pyroblast
         base = [x for pg in sorted(self.slots, key=lambda pg: pg != up) for x in self.slots[pg]
                 if x.get("role") == "base_attack" and self.allowed(x)]
         return base[0]["key"] if base and base[0] in self.slots.get(up, []) else None
@@ -410,17 +464,17 @@ class SkillBook:
         m = re.search(r"share[sd]? CD with ([A-Z][\w' ]+?)(?:[,.;]|$)", s.get("text", ""), re.I)
         return m.group(1).strip() if m else s["name"]
 
-    def ready(self, s: Skill, now: float) -> bool:
-        cd = s.get("cd") or 0
+    def _cooldown(self, s: Skill) -> float:
         combos = getattr(self, "combos", None)
-        if combos:
-            cd = max(0.0, cd - combos.cd_less(s["name"]))
+        return max(0.0, (s.get("cd") or 0) - (combos.cd_less(s["name"]) if combos else 0))
+
+    def ready(self, s: Skill, now: float) -> bool:
         refused: dict[str, float] = getattr(self, "refused", {})     # a book a test made without __init__
         if refused.get(s["name"], 0) > now:
             return False
         if now - self.pending.get(s["name"], 0) < 1.5 + (s.get("cast") or 0):
             return False          # pressed a moment ago; its cast may still be on the way
-        return now - self.used.get(self.cd_group(s), 0) >= cd + 0.3
+        return now - self.used.get(self.cd_group(s), 0) >= self._cooldown(s) + 0.3
 
     def skill(self, name: str) -> Skill | None:
         slots: dict[int, list[Skill]] = getattr(self, "slots", {})     # none before load() read the keys
@@ -431,17 +485,17 @@ class SkillBook:
         x = self.skill(name)
         if x is None or x.get("use") == "never":
             return False
-        combos: combo_rules.Combos | None = getattr(self, "combos", None)
-        cd = max(0.0, (x.get("cd") or 0) - (combos.cd_less(name) if combos else 0))
-        return at - self.used.get(self.cd_group(x), 0) >= cd + 0.3
+        return at - self.used.get(self.cd_group(x), 0) >= self._cooldown(x) + 0.3
 
-    def clear_cooldown(self, name: str) -> None:
-        """The game ended this skill's cooldown early (a talent's critical-hit reset)."""
+    def clear_cooldown(self, name: str) -> bool:
+        """Apply a talent reset to the skill's tracked cooldown."""
         x = self.skill(name) or {"name": name}
+        group = self.cd_group(x)
         self.used.pop(name, None)
-        self.used.pop(self.cd_group(x), None)
+        self.used.pop(group, None)
         refused: dict[str, float] = getattr(self, "refused", {})
         refused.pop(name, None)
+        return True
 
     def cut_cooldown(self, name: str, seconds: float) -> None:
         """The game took seconds off this skill's cooldown."""
@@ -561,6 +615,15 @@ class SkillBook:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
 
+    def forget_the_map(self) -> None:
+        """We are on another map: target ids mean other monsters here. What was noted against
+        them goes - who is down, presses on their way to one, where our casts landed."""
+        self.downed.clear()
+        for name in [n for n, t in self.pending_target.items() if t is not None]:
+            self.pending.pop(name, None)
+            self.pending_target.pop(name, None)
+        self.landed.clear()
+
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
         name = re.sub(r"^Level \d+ ", "", c["skill"]).strip()
@@ -616,7 +679,7 @@ class SkillBook:
             if name in MARK_SHOTS or any(name == r[0] for r in releases):
                 self.pts_delta = -self.pts          # "the marks disappear after the attack"
             elif any(name in r[1] for r in releases):
-                self.pts_delta = min(5 - self.pts, self.pts_delta + (touched or 1))   # fire elements
+                self.pts_delta = min(elf_combos.FIRE_ELEMENT_CAP - self.pts, self.pts_delta + (touched or 1))   # fire elements
             else:
                 self.pts_delta += int(info.get("rage_gain") or 0) - int(self.cost(info) or 0)
 
@@ -666,7 +729,7 @@ class SkillBook:
         """[(skill, page)] on our keys that heal, buff, dispel or shield us, that the player lets
         the bot press (urgent: the ones kept for emergencies too)."""
         return [dict(x, page=pg) for pg, row in self.slots.items() for x in row
-                if x.get("role") in SELF_ROLES and self.allowed(x, urgent)]
+                if x.get("role") in SELF_ROLES and x["name"] != elf_combos.IGNITION and self.allowed(x, urgent)]
 
     @staticmethod
     def quick_heal(x: Skill) -> bool:
@@ -767,7 +830,19 @@ class SkillBook:
             return None
         x = min(cands, key=lambda x: (x.get("mana_pct") or 99, x.get("cd") or 0))
         self.dispel_try = (now, n)
-        return self.press_support(x, now)
+        press = self.press_support(x, now)
+        return press and (self.self_key(x), press[1])
+
+    @staticmethod
+    def self_key(x: Skill) -> str:
+        """Shift + the skill's key: the game's cast-on-yourself key (config/input.ini,
+        W_SELF_ATTACKn = SHIFT+W_ATTACKn). Every dispel for one ally also removes a buff "from 1
+        enemy", and the plain key (and Alt + key) picks the enemy whenever one is selected - in
+        every fight. Live on Flaming Mountain, 2026-11-10: with a monster selected the plain key
+        cast Soul Purify at the monster three times out of three and the debuff stayed; Shift +
+        key landed on us twice out of twice and it was gone in 1.2 s. With no monster selected
+        both land on us."""
+        return "shift+" + x["key"].rpartition("+")[2]
 
     def buff_now(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | None:
         """(key, name) of a buff to put up now, else None. Long buffs are kept up all the time:
@@ -777,6 +852,11 @@ class SkillBook:
             return None
         if getattr(self.b, "following", None) and not getattr(self.b, "follow_buffs", False):
             return None           # following someone: buffs only after their `buff` message
+        if fight is None and getattr(self.b, "traveling", False):
+            # On the way somewhere (home after a dungeon, a restock): a buff put up now runs out
+            # before any farming, and on a Swift beast it can't even be cast. A fight on the way
+            # still gets its buffs from the skill picker (fight is given there).
+            return None
         v: dict[str, Any] = me.get("vitals") or {}
         fresh = "buffs" in v and v.get("age_ms", 1e9) < 15000
         read_at = now - v.get("age_ms", 0) / 1000.0
@@ -886,13 +966,23 @@ class SkillBook:
             return None
         return self.press_support(h, now)
 
+    def _pyroblast_wasted_on(self, target: dict[str, Any], v: _PickView) -> bool:
+        return elf_combos.pyroblast_wasted_on(self, target, v)
+
+    def _switch_target(self, new_tid: int | None) -> None:
+        """Handle target transition, preserving combo state across targets."""
+        self.target_id = new_tid
+
+    def _adjust_pyroblast_target(self, choice: Skill | None, target: dict[str, Any], v: _PickView) -> Skill | None:
+        return elf_combos.adjust_pyroblast_target(self, choice, v, lambda: self._pyroblast_wasted_on(target, v))
+
     def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
         """(key, skill name) to press now, or None to fall back to the profile's attack keys."""
         if not self.ok:
             return None
         now = clock_for(self.b).time()
         me = snap["self"]
-        self.target_id = target.get("id")
+        self._switch_target(target.get("id"))
         self.read_casts(me["id"])
         if self.gcd_wait(now):
             # A panic button outside the global cooldown (Concentrated Will, Summon Spirit) still
@@ -907,12 +997,20 @@ class SkillBook:
             return mine
         up = self.page()
         skills, wanted = self._usable(up, self.low_hp(me), now)
+        ignition = next((s for s in skills if s["name"] == elf_combos.IGNITION), None)
+        if ignition is not None:
+            skills.remove(ignition)
         if not skills and not wanted:
             return None
         v = _PickView(self, snap, target, skills, up, now)
+        self._last_pack_size = v.pack
         # 1. in trouble: a shield support() didn't already use; 2. a ranged class with a monster on
         # top of it: jump away
         choice = self._trouble_choice(v)
+        # Fire Impact follow-ups and unlocked channels go before the player's ready attacks.
+        if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
+            elements = self.points(now) if self.cls == "Elf" else None
+            choice = self.combos.pick(skills, target, now, v.in_range, elements)
         # the player's own: skills set to "whenever ready" go before the bot's choices
         if not choice and wanted:
             done, answer = self._wanted_choice(v, wanted)
@@ -928,9 +1026,10 @@ class SkillBook:
             choice = self._attack_choice(v, marks)
         if self.combos:
             choice = self.combos.filler(self.combos.before(choice, skills, v.in_range), skills, v.in_range)
+        choice = self._adjust_pyroblast_target(choice, target, v)
         if not choice:
             return None
-        return self._press_pick(choice, skills, up, now, v.in_range)
+        return self._press_pick(choice, skills, up, now, v.in_range, ignition=ignition)
 
     def _usable(self, up: int, urgent: bool, now: float) -> tuple[list[Skill], list[Skill]]:
         """(skills the bot may pick now, the player's "whenever ready" ones), from both pages; a
@@ -944,10 +1043,16 @@ class SkillBook:
                 if (s["name"] in seen or not self.allowed(s, urgent) or not self.ready(s, now)
                         or not self.affordable(s, now)):
                     continue
-                if s.get("cast") and getattr(self, "on_the_move", False):
+                if (
+                    s.get("cast")
+                    and not elf_combos.unpenalized(s, self.available_to_channel_without_penalty)
+                    and getattr(self, "on_the_move", False)
+                ):
                     continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
+                if self._channeling_restricted(s):
+                    continue
                 seen.add(s["name"])
-                if s.get("use") == "ready" and s.get("role") not in NEVER_READY:
+                if s["name"] != elf_combos.IGNITION and s.get("use") == "ready" and s.get("role") not in NEVER_READY:
                     wanted.append(dict(s, page=pg))
                 if s.get("role") not in NEVER:
                     skills.append(dict(s, page=pg))
@@ -1048,14 +1153,19 @@ class SkillBook:
         gcd = self.gcd()
         cands = [dict(s, page=pg) for pg, row in self.slots.items() for s in row
                  if self.allowed(s) and s.get("role") not in NEVER and s.get("role") not in CALM_ROLES
+                 and s["name"] != elf_combos.IGNITION
+                 and not self._channeling_restricted(s)
                  and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
         if not cands:
             return None
-        best = max(cands, key=lambda s: (s["page"] == up, damage_rate(s, weight(s), gcd)))
+        best = max(cands, key=lambda s: (
+            s["page"] == up,
+            damage_rate(s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty)),
+        ))
         return self._press_pick(best, cands, up, now, lambda s: True)
 
     def _press_pick(self, choice: Skill, skills: list[Skill], up: int, now: float,
-                    in_range: Callable[[Skill], bool]) -> Press | None:
+                    in_range: Callable[[Skill], bool], *, ignition: Skill | None = None) -> Press | None:
         """Get the chosen skill's page up (else the best of its kind on this page) and record the
         press: (key, name), or None."""
         if choice["page"] != up and not self.flip_to(choice["page"]):
@@ -1066,7 +1176,14 @@ class SkillBook:
             # the hardest hitter of that kind there, not simply the first one on the page
             weight: Callable[[Skill], float] = self.combos.weight if self.combos else (lambda s: 1.0)
             gcd = self.gcd()
-            choice = max(same, key=lambda s: damage_rate(s, weight(s), gcd))
+            choice = max(same, key=lambda s: damage_rate(
+                s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty),
+            ))
+        # Resolve the attack's page first: a failed flip may have changed the planned skill.
+        if (ignition is not None and self.combos and in_range(ignition)
+                and self.combos.ignition_before(choice, self.points(now) if self.cls == "Elf" else None)
+                and (ignition["page"] == choice["page"] or self.flip_to(ignition["page"]))):
+            choice = ignition
         self.pressed(choice, now)
         if self.cls == "Hunter":
             if choice["name"] in ("Multi Shot", "Rapid Arrows"):

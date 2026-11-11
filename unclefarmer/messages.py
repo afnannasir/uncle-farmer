@@ -350,7 +350,7 @@ class Messenger(threading.Thread):
 
     def say(self, line: str, speak: bool=False, private: bool=False) -> None:
         """private: a line with someone's message in it - shown and spoken, never written to a file."""
-        self.host.log(line, speak, self.host.character(self.pid), private)
+        self.host.log(line, speak, settings.profile_name(self.host.character(self.pid)) or None, private)
 
     # -------------------------------------------------- arriving
     def received(self, pm: dict[str, Any]):
@@ -492,15 +492,21 @@ class Messenger(threading.Thread):
             return _("Not logged in.")
         return _("{map} at {x}, {y}", map=s["map"]["name"], x=int(s["self"]["x"]), y=int(s["self"]["y"]))
 
+    def drop_now(self) -> int | None:
+        """Seconds of today's drop time left, from this game's sheet; None until it has said."""
+        s: dict[str, Any] = self.snap() or {}
+        me: dict[str, Any] = s.get("self") or {}
+        return stats.drop_left(me.get("sheet"))
+
     def cmd_results(self, to: int, name: str, rest: str) -> str | None:
         run = self.host.run_for(self.pid)
         if run and run.tally:
-            return _("This run: {r}", r=stats.short(run.tally.result()))
-        past = stats.runs(self.host.character(self.pid) or "")
-        return _("Last run: {r}", r=stats.short(past[-1])) if past else _("No results yet.")
+            return _("This run: {r}", r=stats.short(run.tally.result(), run.tally.drop_left))
+        past = stats.runs(settings.profile_name(self.host.character(self.pid)))
+        return _("Last run: {r}", r=stats.short(past[-1], self.drop_now())) if past else _("No results yet.")
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
-        who = self.host.character(self.pid) or ""
+        who = settings.profile_name(self.host.character(self.pid))
         since = time.mktime(time.strptime(time.strftime("%Y-%m-%d"), "%Y-%m-%d"))
         rs = stats.runs(who, since)
         run = self.host.run_for(self.pid)
@@ -509,7 +515,7 @@ class Messenger(threading.Thread):
         if not rs:
             return _("Nothing today yet.")
         t = stats.add_up(rs)
-        return _("Today, {n} runs, {m} min: {r}", n=t["runs"], m=int(t["minutes"]), r=stats.short(t))
+        return _("Today, {n} runs: {r}", n=t["runs"], r=stats.short(t, self.drop_now()))
 
     def cmd_bag(self, to: int, name: str, rest: str) -> str | None:
         got = self.agent().json("mem bag")
@@ -525,10 +531,9 @@ class Messenger(threading.Thread):
         s: dict[str, Any] = self.snap() or {}
         me: dict[str, Any] = s.get("self") or {}
         sheet: dict[str, Any] = me.get("sheet") or {}
-        left: int = sheet.get("drop_seconds", -1)
-        if left < 0:
+        left = stats.drop_left(sheet)
+        if left is None:
             return _("Drop time not read yet.")
-        left = max(0, left - sheet.get("age", 0))
         return _("Drop time left: {h} h {m} min", h=left // 3600, m=left % 3600 // 60)
 
     def cmd_pause(self, to: int, name: str, rest: str) -> str | None:
@@ -685,9 +690,17 @@ class Messenger(threading.Thread):
         s = self.snap()
         if not s:
             return None
-        profile = settings.load_profile(s["self"]["name"])
+        name = s["self"]["name"]
+        # the character's own profile: the game list's key when it is this character, else one
+        # from this reading (the name alone would load the old name-only file, which stops
+        # changing once the character's own profile is saved)
+        key = self.host.character(self.pid)
+        if not key or settings.profile_name(key) != name:
+            key = settings.character_profile(name, s["self"].get("id"))
+        profile = settings.load_profile(key)
         b = Bot(self.agent(), profile, self.bot_log, threading.Event(),
                 clock=self.clock)
+        b.character, b.profile_key = name, key
         b.trusted = trust.Trusted(config()["pm_trusted"])
         b.locate = getattr(self.host, "locate", None)         # the window has these; test hosts may not
         b.last_seen = getattr(self.host, "last_seen", None)

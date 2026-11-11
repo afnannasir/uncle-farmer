@@ -201,6 +201,22 @@ def test_the_pid_picks_its_own_game(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     assert a.pid == 2 and seen == [("127.0.0.1", 17312)]
 
 
+def test_the_link_only_ever_dials_this_computer(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The agent hands out keys and chat to whoever connects: the app talks to it on 127.0.0.1 alone
+    (the agent binds there too, AgentTests' theStateServerListensOnLoopbackOnly). Written out, not
+    read from link.HOST, so a changed address fails here instead of being followed."""
+    assert link.HOST == "127.0.0.1"
+    sock = Sock([b"ok\n"])
+    seen: list[tuple[str | None, bytes | str | int | None]] = []
+    monkeypatch.setattr(link.paths, "AGENT_RUN", str(tmp_path))
+    monkeypatch.setattr(link, "_alive", stand_in(link._alive, lambda pid: pid == 1))
+    monkeypatch.setattr(link.socket, "create_connection",
+                        stand_in(link.socket.create_connection, lambda address, timeout=None: seen.append(address) or sock))
+    port_file(tmp_path, 1, 17311, "aa", 1000)
+    link.AgentLink()
+    assert seen == [("127.0.0.1", 17311)]
+
+
 def test_close_swallows_an_error_and_the_context_manager_closes(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     sock = Sock([b"ok\n"])
     patch(monkeypatch, tmp_path, sock)

@@ -11,6 +11,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from . import filelock, jsonio as json, paths
+from .i18n import _
 
 APP_DEFAULTS: dict[str, Any] = {
     "language": "en",
@@ -85,8 +86,18 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "mp_check_every": 10,     # seconds between MP readings with that key when MP is near the potion mark (30 otherwise)
     "close_popups": True,     # close windows the game opens on its own (team invites...) with Escape
     "end_with_hearthstone": True,   # end a run with the hearthstone when one is at hand, else walk
-    "sell_shards_after_farming": False,   # Tools, Sell shards now, by itself after a farming run that finished
-    "clean_bag_after_farming": False,     # Tools, Clean the bag now, by itself after a farming run that finished
+    # Character settings, Triggers (engine/triggers.py): Tools jobs run by themselves before a farming
+    # run starts / after one finished. Every job has a tick per stage, the two independent.
+    "sell_shards_before_farming": False,  # the game menu's Sell shards now, before a farming run starts
+    "clean_bag_before_farming": False,    # the game menu's Clean the bag now, before a farming run starts
+    "update_shard_prices_before_farming": False,   # the game menu's Update shard prices, before a farming run starts
+    "gather_before_farming": False,       # Tools, Gathering (as set there), before a farming run starts
+    "store_items_before_farming": False,  # the game menu's Store items now, before a farming run starts
+    "sell_shards_after_farming": False,   # the game menu's Sell shards now, by itself after a farming run that finished
+    "clean_bag_after_farming": False,     # the game menu's Clean the bag now, by itself after a farming run that finished
+    "update_shard_prices_after_farming": False,    # the game menu's Update shard prices, after a farming run that finished
+    "gather_after_farming": False,        # Tools, Gathering (as set there), after a farming run that finished
+    "store_items_after_farming": False,   # the game menu's Store items now, after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
@@ -111,6 +122,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "fight_back": True,       # when hit while walking or travelling, fight back, then go on
     "nearest_monster": True,  # always fight the nearest monster (off: melee picks a calm one beside a pack)
     "fight_locked": False,    # fight monsters another player (or their pet) is already killing, while a hit can still land in time (off: leave the close calls too)
+    "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
     "pk_key": "b",            # cycles the PK mode
@@ -245,8 +257,16 @@ class Profile(BaseModel):
     mp_check_every: int = PROFILE_DEFAULTS["mp_check_every"]
     close_popups: bool = PROFILE_DEFAULTS["close_popups"]
     end_with_hearthstone: bool = PROFILE_DEFAULTS["end_with_hearthstone"]
+    sell_shards_before_farming: bool = PROFILE_DEFAULTS["sell_shards_before_farming"]
+    clean_bag_before_farming: bool = PROFILE_DEFAULTS["clean_bag_before_farming"]
+    update_shard_prices_before_farming: bool = PROFILE_DEFAULTS["update_shard_prices_before_farming"]
+    gather_before_farming: bool = PROFILE_DEFAULTS["gather_before_farming"]
+    store_items_before_farming: bool = PROFILE_DEFAULTS["store_items_before_farming"]
     sell_shards_after_farming: bool = PROFILE_DEFAULTS["sell_shards_after_farming"]
     clean_bag_after_farming: bool = PROFILE_DEFAULTS["clean_bag_after_farming"]
+    update_shard_prices_after_farming: bool = PROFILE_DEFAULTS["update_shard_prices_after_farming"]
+    gather_after_farming: bool = PROFILE_DEFAULTS["gather_after_farming"]
+    store_items_after_farming: bool = PROFILE_DEFAULTS["store_items_after_farming"]
     hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
     hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
     bag_up: str = PROFILE_DEFAULTS["bag_up"]
@@ -273,6 +293,7 @@ class Profile(BaseModel):
     fight_back: bool = PROFILE_DEFAULTS["fight_back"]
     nearest_monster: bool = PROFILE_DEFAULTS["nearest_monster"]
     fight_locked: bool = PROFILE_DEFAULTS["fight_locked"]
+    shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
@@ -408,17 +429,166 @@ def save_app(data: dict[str, Any]) -> None:
     _write(paths.SETTINGS, data)
 
 
+_PROFILE_ID_SEPARATOR = "\x1f"
+_PROFILE_ID_KEY = "_unclefarmer_character_identity"
+
+
+def character_profile(name: str, entity_id: object, server: str = "") -> str:
+    """An internal, per-character profile key from a game reading.
+
+    Names are not unique: the same player name can exist on more than one server.  The game gives
+    every logged-in character an entity id, which distinguishes those characters without making a
+    network address part of the player's settings.  Keep the separator out of the visible name so
+    callers can still pass a legacy, name-only profile unchanged.
+    """
+    if not name or entity_id in (None, ""):
+        return name
+    return name + _PROFILE_ID_SEPARATOR + server + _PROFILE_ID_SEPARATOR + str(entity_id) if server \
+        else name + _PROFILE_ID_SEPARATOR + str(entity_id)
+
+
+def profile_display(character: str) -> str:
+    """The unambiguous, screen-reader-friendly label for a profile key."""
+    name, server, entity_id = _profile_parts(character)
+    if server:
+        return _("{name} - {server}", name=name, server=server)
+    return _("{name} - character {id}", name=name, id=entity_id) if entity_id else name
+
+
+def _profile_parts(character: str) -> tuple[str, str | None, str | None]:
+    name, separator, rest = character.partition(_PROFILE_ID_SEPARATOR)
+    if not separator:
+        return name, None, None
+    server, separator, entity_id = rest.partition(_PROFILE_ID_SEPARATOR)
+    return (name, server, entity_id) if separator else (name, None, server)
+
+
+def same_character(first: str, second: str) -> bool:
+    """Whether two profile keys name the same game character.
+
+    An old, ID-only key can still match either server while it is being upgraded.  Once both keys
+    name a server, though, the server is part of the identity: entity IDs are not known to be
+    global across Mist World's servers.
+    """
+    first_name, first_server, first_id = _profile_parts(first)
+    second_name, second_server, second_id = _profile_parts(second)
+    return bool(first_id and first_name == second_name and first_id == second_id
+                and (not first_server or not second_server or first_server == second_server))
+
+
+def is_character_profile(character: str) -> bool:
+    return _profile_parts(character)[2] is not None
+
+
+def profile_server(character: str) -> str:
+    """The known player-facing server label, or empty while only the entity ID is available."""
+    return _profile_parts(character)[1] or ""
+
+
+def profile_name(character: str | None) -> str:
+    """The character's name as the game and the player write it, from a profile key or a name."""
+    return _profile_parts(character or "")[0]
+
+
+def profile_id(character: str | None) -> str | None:
+    """The game's id for the character in a profile key; None for a name-only key."""
+    return _profile_parts(character or "")[2]
+
+
+def stable_key(character: str | None) -> str:
+    """The durable key for character-scoped application state.
+
+    Keep every confirmed part of the live identity.  In particular, S1 and S2 must not share a
+    last-run choice merely because their character IDs happen to agree.  An ID-only key remains
+    the best available fallback for an older agent that cannot report its server.
+    """
+    name, server, entity_id = _profile_parts(character or "")
+    return character_profile(name, entity_id, server or "") if entity_id else name
+
+
+def is_profile_of(game: str | None, profile: str | None) -> bool:
+    """Whether a game's profile key is this profile's character. A name-only (old) profile still
+    matches its name, as it did before characters had their own keys."""
+    if not game or not profile:
+        return False
+    if game == profile or same_character(game, profile):
+        return True
+    return not is_character_profile(profile) and profile_name(game) == profile
+
+
+def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
+    """What a character ran last ("plan:name"), without borrowing another server's state.
+
+    Older name-only and ID-only entries are adopted as a one-way compatibility fallback.  They
+    stop being safe to adopt as soon as a different confirmed server identity with the same name
+    and ID has its own entry.
+    """
+    if not character:
+        return None
+    runs: dict[str, str] = app.get("last_runs") or {}
+    key = stable_key(character)
+    if key in runs:
+        return runs[key]
+    name, _server, entity_id = _profile_parts(character)
+    if entity_id:
+        other_server = any(profile_name(candidate) == name and profile_id(candidate) == entity_id
+                           and profile_server(candidate) and candidate != key for candidate in runs)
+        if not other_server:
+            legacy = character_profile(name, entity_id)
+            if legacy in runs:
+                return runs[legacy]
+    other_character = any(profile_name(candidate) == name and profile_id(candidate)
+                          and candidate != key for candidate in runs)
+    return None if other_character else runs.get(name)
+
+
 def profile_path(character: str) -> str:
-    return os.path.join(paths.PROFILES, paths.safe_name(character) + ".json")
+    name, server, entity_id = _profile_parts(character)
+    stem = paths.safe_name(name)
+    if entity_id:
+        if server:
+            stem += "--" + paths.safe_name(server)
+        stem += "--" + paths.safe_name(entity_id)
+    return os.path.join(paths.PROFILES, stem + ".json")
 
 
 def profiles() -> list[str]:
-    return sorted(n[:-5] for n in os.listdir(paths.PROFILES) if n.endswith(".json"))
+    """Known profile keys, including the identity stored by newer profile files.
+
+    Old name-only files remain selectable.  A newer file carries its key inside the JSON because
+    filenames are deliberately safe and cannot retain the private separator used by the key.
+    """
+    found: list[str] = []
+    for filename in os.listdir(paths.PROFILES):
+        if not filename.endswith(".json"):
+            continue
+        path = os.path.join(paths.PROFILES, filename)
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+            identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
+        except (OSError, ValueError):
+            identity = None
+        found.append(identity if isinstance(identity, str) and identity else filename[:-5])
+    return sorted(found, key=lambda value: profile_display(value).casefold())
 
 
 def load_profile(character: str) -> dict[str, Any]:
     """The character's profile; a new one from the defaults if there is none yet."""
-    return _upgrade(_read(profile_path(character), PROFILE_DEFAULTS, Profile))
+    path = profile_path(character)
+    # On first use of an identified character, retain its old name-only choices.  The first save
+    # writes a separate file, so the two same-name characters become independent without deleting
+    # or changing the legacy file.
+    name, server, entity_id = _profile_parts(character)
+    if entity_id and not os.path.exists(path):
+        if server:
+            identified = profile_path(character_profile(name, entity_id))
+            if os.path.exists(identified):
+                return _upgrade(_read(identified, PROFILE_DEFAULTS, Profile))
+        legacy = profile_path(name)
+        if os.path.exists(legacy):
+            return _upgrade(_read(legacy, PROFILE_DEFAULTS, Profile))
+    return _upgrade(_read(path, PROFILE_DEFAULTS, Profile))
 
 
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
@@ -545,11 +715,19 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
 
 
 def save_profile(character: str, data: dict[str, Any]) -> None:
-    _write(profile_path(character), data)
+    saved = copy.deepcopy(data)
+    if _profile_parts(character)[2]:
+        saved[_PROFILE_ID_KEY] = character
+    _write(profile_path(character), saved)
 
 
 def has_profile(character: str) -> bool:
-    return os.path.exists(profile_path(character))
+    if os.path.exists(profile_path(character)):
+        return True
+    name, server, entity_id = _profile_parts(character)
+    if not entity_id:
+        return False
+    return os.path.exists(profile_path(character_profile(name, entity_id))) if server else os.path.exists(profile_path(name))
 
 
 def export_profile(character: str, path: str) -> None:

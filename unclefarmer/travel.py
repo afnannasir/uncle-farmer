@@ -319,10 +319,11 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
             for i, _p in enumerate(_ports(mid)):
                 g[("p", mid, i)].append((UNSEEN_NPC, stand, None))
         land: Row = t["lands"]
-        choose: list[str] = t["choose_vip"] if vip and t.get("choose_vip") else t["choose"]
+        free = bool(vip and t.get("choose_vip"))      # the menu's free entry, for VIPs
+        choose: list[str] = t["choose_vip"] if free else t["choose"]
         leg: Leg = {"do": "npc", "map": mid, "npc": t["npc"], "at": t.get("at"), "stand": t.get("stand"),
                "choose": choose, "dest": t["dest"], "ride": t.get("ride"), "id": t["id"], "kind": t["kind"],
-               "cost": t.get("cost")}
+               "cost": t.get("cost"), "vip": free}
         node: Node = ("l", t["id"])
         g[stand].append((TALK.get(t["kind"], 60), node, leg))
         landed: dict[str, float] = land["ports"]
@@ -331,11 +332,22 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
     return g
 
 
+def ride_rules(p: Mapping[str, Any]) -> tuple[bool, set[int]]:
+    """(transport, avoid) for plan(), from the profile's two switches: "Use airships" decides the
+    airships, "Use cable cars and teleport circles" every other ride. Every planner call that
+    takes the profile's rides takes them from here, so one switch never turns off the other's
+    rides. (The walk-first plan under "Walk whenever the maps connect on foot" takes none.)"""
+    airships = bool(p.get("use_airships", True))
+    others = bool(p.get("use_transport", True))
+    off = {t["id"] for t in transports()
+           if not (airships if t.get("kind") == "airship" else others)}
+    return airships or others, off
+
+
 def kept_off(p: Mapping[str, Any]) -> set[int]:
-    """The transports a profile leaves out: every airship when "Use airships" is off."""
-    if p.get("use_airships", True):
-        return set()
-    return {t["id"] for t in transports() if t.get("kind") == "airship"}
+    """The transports a profile leaves out: the airships when "Use airships" is off, every other
+    ride when "Use cable cars and teleport circles" is (ride_rules)."""
+    return ride_rules(p)[1]
 
 
 def arnebia_in(bag: Sequence[Row] | None) -> int | None:

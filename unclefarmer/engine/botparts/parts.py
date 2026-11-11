@@ -61,6 +61,7 @@ class Parts:
     _phases: list[list[float | str]]
     watches: list[tuple[Callable[[], object], str]]   # (condition, message) checked all the time
     character: str | None
+    profile_key: str | None     # the character's own settings key (name, server, game id) once a run knows it
     agent_version: int
     guarding: bool
     locate: Callable[[str], Where | None] | None       # where one of our games plays a player
@@ -86,10 +87,14 @@ class Parts:
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
     traveling: bool
+    gang_base: tuple[int, str] | None   # (map id, gang name) of the named gang base entered this run
+    vip_refused: bool           # a ride's free VIP entry took us nowhere this run: fares from now on
     # the pet (engine/pets.py) and the fusion beasts (engine/beasts.py)
     pets_refused: dict[int, float]        # pet id -> don't try to summon it before then
     beasts_refused: dict[int, float]      # beast id -> don't try it again before then
     beast_refusals: dict[int, int]        # beast id -> refusals in a row (the wait grows with them)
+    crossing_poison: bool       # a travel leg into or across Polson Wetland without the talent (travel.py)
+    warned_poison: bool         # the Polson Wetland warning was said this run
     said_beast_waits: bool      # "the fusion beast waits until no attack for QUIET seconds" said
     pet_hp_log: list[tuple[float, float]]  # (time, HP) of the pet out, the last few seconds
     pet_hp_id: int | None       # the pet those readings are of
@@ -141,6 +146,7 @@ class Parts:
     away_reason: str | None     # why we left the farm's map ourselves (the bag trip), for the way back
     started: float
     resumed_at: float
+    pause_moves: int            # pauses the player moved us in (check): a walk plans again on a change
     daily_stop_at: float
     daily_reset: str
     daily_done: bool
@@ -163,7 +169,9 @@ class Parts:
     kill_tracker: "KillTracker"
     in_fight: bool
     skip: dict[int, float]      # monster id -> ignore until
+    notes_map: int | None       # the map the notes about monster ids were made on (reading.snap)
     skip_names: dict[tuple[int, str], float]
+    left_out: dict[str, int]    # why targets() last left monsters in sight out -> how many
     killed_kinds: set[tuple[int, str]]
     last_sheet: float
     load_share: float | None
@@ -251,6 +259,8 @@ class Parts:
                     limit: float | None = None) -> list[dict[str, Any]]: ...
         def count_kills(self, snap: dict[str, Any] | None = None) -> list[int]: ...
         def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]: ...
+        def explain_left_out(self) -> None: ...
+        def reach(self) -> float: ...
         def attackers(self) -> set[int]: ...
         def note_pick(self, snap: dict[str, Any], mob: dict[str, Any], mobs: list[dict[str, Any]]) -> None: ...
         def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float,
@@ -260,6 +270,8 @@ class Parts:
         def close_dialogs(self) -> None: ...
         def clear_popups(self, force: bool = False) -> bool: ...
         def wait_dialog(self, seconds: float = 3.0, want_open: bool = True) -> dict[str, Any] | None: ...
+        def wait_menu_change(self, before: dict[str, Any] | None, seconds: float = 0.4,
+                             depth: int = 1) -> dict[str, Any]: ...
         def approach(self, name: str, at: tuple[float, float] | None = None,
                      stand: tuple[float, float] | None = None) -> dict[str, Any] | None: ...
         def talk(self, name: str, at: tuple[float, float] | None = None,
@@ -268,6 +280,7 @@ class Parts:
         def entry_texts(e: dict[str, Any]) -> list[str]: ...
         # bag.py
         def use_item(self, name: str) -> bool: ...
+        def throw_items(self, todo: list[tuple[str, int]]) -> list[tuple[str, int]] | None: ...
         def bag_check(self) -> bool: ...
         # farming.py
         def drop_time_check(self, sheet: dict[str, Any]) -> None: ...

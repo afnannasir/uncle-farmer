@@ -266,13 +266,28 @@ def test_report_hides_a_zero_rate_for_a_short_run() -> None:
     assert "an hour" not in text                   # too short to be meaningful
 
 
-def test_short_speaks_only_what_changed() -> None:
-    assert stats.short({"kills": 0}) == "0 kills"
-    s = stats.short({"kills": 5, "arnebia": 100, "shards": {"Green Shard": 2, "Ruby Shard": -1},
-                     "contribution": 10, "experience": 20, "levels": 1})
-    assert "5 kills" in s and "100 arnebia" in s and "2 shards" in s
-    assert "10 contribution" in s and "20 experience" in s and "1 level up" in s
+def test_short_speaks_the_time_farmed_and_the_drop_time_first_then_the_gains() -> None:
+    assert stats.short({"kills": 0}) == "farmed 0 min, 0 kills"
+    s = stats.short({"minutes": 135.4, "kills": 5, "arnebia": 100, "shards": {"Green Shard": 2},
+                     "contribution": 10, "experience": 20, "levels": 1,
+                     "combat": {"given": {"damage": 5000, "crits": 3}}}, drop=3 * 3600 + 20 * 60)
+    assert s == "farmed 2 h 15 min, drop time left 3 h 20 min, 5 kills, 10 contribution, 20 experience, 1 level up"
     assert "2 levels up" in stats.short({"kills": 1, "levels": 2})
+
+
+def test_drop_left_reads_the_sheet_minus_its_age() -> None:
+    assert stats.drop_left({"drop_seconds": 600, "age": 30}) == 570
+    assert stats.drop_left({"drop_seconds": 10, "age": 30}) == 0
+    assert stats.drop_left({"drop_seconds": -1}) is None
+    assert stats.drop_left({}) is None and stats.drop_left(None) is None
+
+
+def test_the_tally_keeps_the_last_drop_time_it_saw() -> None:
+    t = stats.Tally("Hero", "Wolves", clock=Clock())
+    assert t.drop_left is None
+    t.note_sheet({"level": 50, "drop_seconds": 7200, "age": 0})
+    t.note_sheet({"level": 50, "drop_seconds": -1})               # a sheet that didn't say keeps the last
+    assert t.drop_left == 7200
 
 
 # ---------------------------------------------------------------- combat damage
@@ -501,7 +516,7 @@ def test_shards_thrown_sold_or_stored_were_still_picked_up(clock: Clock) -> None
     assert "    +6 Ruby Shard (2 sold, 3 stored)" in text
     assert "Shards thrown away: 9" in text and "Shards sold: 2" in text
     assert "Shards put into the storehouse: 3" in text
-    assert "17 shards (9 thrown away)" in stats.short(r)
+    assert "shards" not in stats.short(r)                         # the spoken line leaves the loot out
 
 
 def test_bought_and_withdrawn_supplies_are_not_loot(clock: Clock) -> None:
@@ -555,3 +570,83 @@ def test_doing_and_moved_leave_a_run_without_results_alone() -> None:
         tally = None
     with stats.doing(as_parts(NoTally()), "chores"):
         stats.moved(as_parts(NoTally()), "thrown", "Green Shard", 3)
+
+
+# ================================================================ skills, heals and days
+PET = 900
+
+
+def test_every_cast_of_ours_counts_for_its_skill_and_heals_for_whom_they_healed() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100], [-2, 5, 300]], skill="Level 2 Fireball", t=1),
+               cast(ME, [], skill="Level 2 Fireball", t=2),                          # the game's miss
+               {"t": 3, "caster": ME, "seq": 1, "skill": "Strong-Arm Aura"},         # a buff: no hits key
+               cast(ME, [[ME, 6, 500]], skill="Healing Wave", t=4),
+               cast(ME, [[PET, 6, 200]], skill="Healing Wave", t=5),
+               cast(ME, [[77, 6, 50]], skill="Healing Wave", t=6),
+               cast(-1, [[ME, 3, 80]], skill="Bite", t=7)],                         # a monster's: not ours
+              ME, pets={PET})
+    r = c.result()
+    assert r is not None
+    assert r["skills"]["Fireball"] == {"uses": 2, "hits": 2, "misses": 1, "crits": 1, "damage": 400, "healed": 0}
+    assert r["skills"]["Strong-Arm Aura"]["uses"] == 1
+    assert r["skills"]["Healing Wave"] == {"uses": 3, "hits": 0, "misses": 0, "crits": 0, "damage": 0, "healed": 750}
+    assert "Bite" not in r["skills"]
+    assert r["heals"] == {"self": {"amount": 500, "times": 1}, "pet": {"amount": 200, "times": 1},
+                          "others": {"amount": 50, "times": 1}}
+    assert r["given"]["damage"] == 400            # heals are no damage
+
+
+def test_add_up_merges_skills_and_heals_and_old_records_add_nothing() -> None:
+    def rec(skills: dict[str, Any] | None, heals: dict[str, Any] | None) -> dict[str, Any]:
+        combat: dict[str, Any] = {"given": {}, "received": {}, "last_kill": None}
+        if skills is not None:
+            combat["skills"], combat["heals"] = skills, heals
+        return {"kind": stats.FARMING, "minutes": 60, "combat": combat}
+
+    row = {"uses": 10, "hits": 9, "misses": 1, "crits": 2, "damage": 900, "healed": 0}
+    heal = {"self": {"amount": 100, "times": 2}, "pet": {"amount": 40, "times": 1}, "others": {"amount": 0, "times": 0}}
+    total = stats.add_up([rec(None, None), rec({"Fireball": row}, heal), rec({"Fireball": row}, heal)])
+    assert total["combat"]["skills"]["Fireball"]["damage"] == 1800
+    assert total["combat"]["skills"]["Fireball"]["uses"] == 20
+    assert total["combat"]["heals"]["self"] == {"amount": 200, "times": 4}
+    assert "skills" not in stats.add_up([rec(None, None)])["combat"]
+
+
+def test_the_report_lists_skills_by_damage_and_ends_with_the_healing() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100]], skill="Arrow"), cast(ME, [[-1, 5, 900]], skill="Big Shot", t=2),
+               cast(ME, [[ME, 6, 300]], skill="Healing Wave", t=3), cast(ME, [[PET, 6, 120]], skill="Healing Wave", t=4)],
+              ME, pets={PET})
+    text = stats.report({"kind": stats.FARMING, "minutes": 30, "kills": 1, "deaths": 0, "combat": c.result()}, "Run")
+    lines = text.splitlines()
+    big = next(i for i, x in enumerate(lines) if x.strip().startswith("Big Shot:"))
+    arrow = next(i for i, x in enumerate(lines) if x.strip().startswith("Arrow:"))
+    assert big < arrow                                                  # the most damage first
+    assert "900 damage (90% of all)" in lines[big] and "1 critical" in lines[big]
+    assert any(x.startswith("Skills used: 4 casts, 1,000 damage in all") for x in lines)
+    assert lines[-3] == "Healing by our skills (potions not counted):"
+    assert lines[-2].strip().startswith("Healed ourselves: 300 HP in 1 heals")
+    assert lines[-1].strip().startswith("Healed our pet: 120 HP in 1 heals")
+
+
+def test_no_heal_lines_without_heals_and_old_runs_say_skills_were_not_counted() -> None:
+    c = stats.CombatStats()
+    c.observe([cast(ME, [[-1, 3, 100]], skill="Arrow")], ME)
+    text = stats.report({"kind": stats.FARMING, "minutes": 30, "combat": c.result()}, "Run")
+    assert "Healing by our skills" not in text
+    old = stats.report({"kind": stats.FARMING, "minutes": 30, "combat": {"given": {}, "received": {}}}, "Run")
+    assert "Skills used: not counted in these runs" in old
+
+
+def test_runs_can_end_at_a_time_and_days_lists_the_days_with_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(stats, "RESULTS", str(tmp_path))
+    lines = ['{"kind": "farming", "start": "%s", "minutes": 1}' % s
+             for s in ("2026-11-07 23:59:00", "2026-11-08 00:00:00", "2026-11-08 18:00:00", "2026-11-10 09:00:00")]
+    lines.append('{"kind": "tool", "start": "2026-11-09 10:00:00", "tool": "gem_maker"}')
+    (tmp_path / "Hero.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    since, until = stats.day_bounds("2026-11-08")
+    assert until - since == 86400
+    assert [r["start"] for r in stats.runs("Hero", since, until=until)] == ["2026-11-08 00:00:00", "2026-11-08 18:00:00"]
+    assert stats.days("Hero") == ["2026-11-10", "2026-11-08", "2026-11-07"]
+    assert stats.days("Hero", stats.TOOL) == ["2026-11-09"]

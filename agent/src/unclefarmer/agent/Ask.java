@@ -3,6 +3,7 @@ package unclefarmer.agent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
 
 /**
  * The own-HP key's request without the key: `ask vitals` and `ask petvitals`.
@@ -74,6 +75,21 @@ final class Ask {
             Log.error(what, t);
             return "error: " + Protocol.jsonEscape(String.valueOf(t));
         }
+    }
+
+    /** The remote port of the game's own connection, read without sending a packet. */
+    static String server() {
+        Object ch = gameChannel();
+        if (ch == null) return "{\"ok\":false,\"error\":\"the game's connection wasn't found\"}";
+        try {
+            Object address = ch.getClass().getMethod("remoteAddress").invoke(ch);
+            if (address instanceof InetSocketAddress) {
+                return "{\"ok\":true,\"port\":" + ((InetSocketAddress) address).getPort() + "}";
+            }
+        } catch (Throwable ignored) {
+            // A different channel implementation can have no usable remote address.
+        }
+        return "{\"ok\":false,\"error\":\"the game's server address wasn't found\"}";
     }
 
     /** Our character sheet without the key: the server answers with the sheet (IN op=62) about a

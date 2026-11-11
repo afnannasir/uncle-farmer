@@ -45,6 +45,10 @@ class RunsMixin(FrameParts):
         i = self.plan_list.GetSelection()
         return self.items[i] if 0 <= i < len(self.items) else None
 
+    def active_item(self) -> Item | None:
+        """The plan command's target: the Plans list there, otherwise the Bot tab's choice."""
+        return self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+
     def show_summary(self) -> None:
         item = self.listed_item()
         if not item:
@@ -61,6 +65,9 @@ class RunsMixin(FrameParts):
         self.summary.ChangeValue(text)
 
     def on_plan_key(self, evt: wx.KeyEvent) -> None:
+        if wx.Window.FindFocus() is not self.plan_list:
+            evt.Skip()
+            return
         k = evt.GetKeyCode()
         if k in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
             self.edit_selected()
@@ -89,7 +96,6 @@ class RunsMixin(FrameParts):
             item = ("plan" if self.runs[pid].kind == "plan" else "script", self.runs[pid].title)
             if item in self.items:
                 self.what.SetSelection(self.items.index(item))
-
     def is_paused(self, pid: int | None) -> bool:
         run = self.runs.get(pid) if pid is not None else None
         return bool(run and run.bot is not None and run.bot.paused.is_set())
@@ -153,7 +159,7 @@ class RunsMixin(FrameParts):
         if pid != self.selected_pid() and not given:
             # started from inside a game window: run what that character ran last, if anything
             name = next((g[1] for g in self.games if g[0] == pid), None)
-            last = self.s.get("last_runs", {}).get(name or "")
+            last = settings.last_run_of(self.s, name)
             if last and saved_item(last) in self.items:
                 item = saved_item(last)
         if not item:
@@ -169,13 +175,14 @@ class RunsMixin(FrameParts):
         self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
         if name:
-            self.s.setdefault("last_runs", {})[name] = "%s:%s" % item
+            self.s.setdefault("last_runs", {})[settings.stable_key(name)] = "%s:%s" % item
         save_file(self, settings.save_app, self.s)      # a failed save must not stop the start
         run = Run(text, item[1], pid, self.on_log, self.on_done, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = item[0]
-        run.character = name        # for the log until the run reads it from the game itself
+        run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
+        run.profile = name
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
@@ -198,7 +205,8 @@ class RunsMixin(FrameParts):
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = "errand"
-        run.character = self.selected_character()
+        run.profile = self.selected_character()
+        run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
@@ -217,7 +225,8 @@ class RunsMixin(FrameParts):
         run.tell = tell
         run.kind = "errand"
         run.follows = follows
-        run.character = self.character(pid)
+        run.profile = self.character(pid)
+        run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()

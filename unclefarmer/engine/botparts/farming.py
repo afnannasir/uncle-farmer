@@ -15,7 +15,7 @@ from ... import atlas
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, keyslots, pets
-from .base import (Respawned, Stopped)
+from .base import (MOVE_SHOT_REACH, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
 
@@ -103,6 +103,13 @@ class FarmingMixin(Parts):
             self.timing = {"_since": self.clock.time(), "_kills": self.kills, "_contribution": self.contribution_now()}
         start, start_kills = self.clock.time(), self.kills
         self.log(_("farming {map}", map=atlas.label(map_id)))
+        if not instance and self.p.get("shoot_while_walking", False):
+            # once a farm: a character that fights from close by can't use it, and must hear why
+            if self.reach() >= MOVE_SHOT_REACH:
+                self.log(_("shooting monsters in reach on the way to the next one"))
+            else:
+                self.log(_("shooting while walking is on, but this character fights from close by - "
+                           "it stops for each monster"))
         self.set_modes()
         self.modes_done = True
 
@@ -156,7 +163,8 @@ class FarmingMixin(Parts):
                     self.note_pick(snap, mob, mobs)
                     self.fight(mob)
                     continue
-                # Nothing in sight: keep moving.
+                # Nothing to fight: keep moving (and say why, when monsters were in sight).
+                self.explain_left_out()
                 me = snap["self"]
                 if loop:
                     if loop_i is None:
@@ -248,8 +256,10 @@ class FarmingMixin(Parts):
         if not chores.trip_due(as_bot(self)):
             return False
         self.log(_("off to the secret room to share arnebia"))
+        me = self.me()
+        farm = (map_id, (float(me.get("x", 0)), float(me.get("y", 0))))     # where the trip comes back to
         try:
-            made, _where = chores.share_visit(as_bot(self), chores.config(self.p))
+            made, _where = chores.share_visit(as_bot(self), chores.config(self.p), back_to=farm)
             self.log(_("shared arnebia {n} of {all} times today", n=made, all=chores.SHARES_A_DAY))
         except Stopped as e:
             if self.stop_event.is_set() or getattr(e, "final", False):

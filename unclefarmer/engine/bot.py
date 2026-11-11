@@ -94,6 +94,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.maxmp = 0                # max MP, from the last character sheet seen
         self.mp_peak = 0              # highest MP read this run: the maximum until a sheet is seen
         self.load_share = None        # bag load percent at the last sheet reading
+        self.load_seen = []           # (sheet time, kills, load) near the full mark: bag_stalled's history
         self.last_popup_check = 0.0
         self.tally = None             # stats.Tally: what this run earned, when the runner keeps one
         self.paused = threading.Event()   # the Pause button or a trusted player's "pause": hold still until cleared
@@ -112,6 +113,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.walk_only = False            # the walking assistant (go): Swift beast all the way, no fights
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target
+        self.gang_base = None             # (map id, gang name) of the named gang entered this run
+        self.vip_refused = False          # a ride's free VIP entry took us nowhere: fares from now on
         self.in_instance = False          # farming a dungeon: no trips out, no resting, leaving ends it
         self.pack_min = 3                 # monsters close together that make an area skill worth it
         self.timing = None                # phase -> seconds this hour (farm sets it up; see timed())

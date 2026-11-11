@@ -61,6 +61,8 @@ class PretendShop:
         self.picks: list[str] = []
         self.walking_keys = 0
         self.trades: list[tuple[str, str, int]] = []      # (buy|sell, item, how many)
+        self.direct_takes: int | None = None    # the server takes only this many of a direct plan's sales
+        self.shardsell_reply: str | None = None  # what `shardsell` answers after it has entered the number
 
     # ------------------------------------------------------------ the menus as the game holds them
     def rows(self) -> list[tuple[str, int, int]]:
@@ -125,9 +127,32 @@ class PretendShop:
             return "mwagent %d" % self.version
         if line.startswith("pick "):
             return self.pick(line.split()[1:])
+        if line.startswith("shardsell "):
+            _verb, item_id, count = line.split()
+            item = self.name_of(int(item_id))
+            if self.screen != "market" or item_id not in [str(i) for _n, i, _p in self.rows()]:
+                return "refused: the open menu is %s, not shard_market" % self.layout()
+            self.trades.append(("sell", item, int(count)))
+            self.bag[item] = self.bag.get(item, 0) - int(count)
+            self.screen = self.kind
+            return self.shardsell_reply or "sold %s %s" % (item_id, count)
+        if line.startswith("sharddirectall "):
+            values = line.split()[1:]
+            if self.screen != "market" or len(values) % 2:
+                return "refused: the open menu is %s, not shard_market" % self.layout()
+            pairs = list(zip(values[::2], values[1::2]))
+            for item_id, count in pairs[:self.direct_takes]:
+                item = self.name_of(int(item_id))
+                self.trades.append(("sell", item, int(count)))
+                self.bag[item] = self.bag.get(item, 0) - int(count)
+            self.screen = "none"            # a finished sale closes the broker
+            return "sent all %d" % len(pairs)
         if line.startswith("type "):
             self.typed = int(line.split()[1])
             return "typed"
+        if line.startswith("number ") and self.screen == "input":
+            self.typed = int(line.split()[1])
+            line = "typeenter"
         if line == "typeenter" and self.screen == "input":
             item = self.name_of(self.trade_id)
             self.bag[item] = self.bag.get(item, 0) + (self.typed if self.action == "buy" else -self.typed)
@@ -232,6 +257,18 @@ class ShopBot:
     def close_dialogs(self) -> None:
         self.a.screen = "none"
 
+    def talk(self, name: str, at: tuple[float, float] | None = None) -> dict[str, Any] | None:
+        self.a.screen = self.a.kind
+        return self.dialog()
+
+
+def reopening(game: PretendShop, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Going to the broker opens the market again (a finished sale closes it)."""
+    def visit(*_args: Any, **_kw: Any) -> str:
+        game.screen = game.kind
+        return "Shard Broker"
+    monkeypatch.setattr(town, "visit", visit)
+
 
 PHILLIPS = (1041, "Apothecary Phillips", 0.0, 0.0)
 
@@ -257,6 +294,73 @@ def test_a_shard_is_sold_by_its_verified_rows_without_walking_down_the_list() ->
     assert game.trades == [("sell", "Level 1 Turquoise Shard", 30)]
     assert game.walking_keys == 0
     assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
+
+
+def test_new_agent_sells_verified_shards_in_one_agent_transaction() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30, "Level 1 Sapphire Shard": 5}, version=56)
+    b = ShopBot(game)
+    town.sell_shards(as_bot(b), ["Level 1 Turquoise Shard", "Level 1 Sapphire Shard"])
+    assert "sharddirectall 20665 30 20405 5" in game.sent
+    assert game.picks == [] and game.trades == [("sell", "Level 1 Turquoise Shard", 30),
+                                                 ("sell", "Level 1 Sapphire Shard", 5)]
+    assert "sold 30 Level 1 Turquoise Shard at the Shard Market" in b.lines
+    assert "sold 5 Level 1 Sapphire Shard at the Shard Market" in b.lines
+
+
+def test_direct_shard_sale_splits_more_than_the_trade_limit_in_order() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 2001}, version=56)
+    b = ShopBot(game)
+    town.sell_shards(as_bot(b), ["Level 1 Turquoise Shard"])
+    assert "sharddirectall 20665 2000 20665 1" in game.sent
+    assert game.trades == [("sell", "Level 1 Turquoise Shard", 2000),
+                           ("sell", "Level 1 Turquoise Shard", 1)]
+
+
+def test_what_a_direct_plan_left_unsold_goes_step_by_step_and_never_more_than_planned(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    # The server took only the first sale of the plan; the bag says so, and the rest is sold the
+    # menu way - only what is left, so a "sell N, keep the rest" rule still holds.
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 50, "Level 1 Sapphire Shard": 40}, version=56)
+    game.direct_takes = 1
+    reopening(game, monkeypatch)
+    b = ShopBot(game)
+    town.sell_shards(as_bot(b), ["Level 1 Turquoise Shard", "Level 1 Sapphire Shard"],
+                     at_most={"level 1 turquoise shard": 30, "level 1 sapphire shard": 25})
+    assert game.trades == [("sell", "Level 1 Turquoise Shard", 30), ("sell", "Level 1 Sapphire Shard", 25)]
+    assert game.bag["Level 1 Turquoise Shard"] == 20 and game.bag["Level 1 Sapphire Shard"] == 15
+    assert "sold 25 Level 1 Sapphire Shard at the Shard Market" in b.lines
+
+
+def test_a_shard_sale_the_agent_is_unsure_of_is_never_sold_again_another_way(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30}, version=56)
+    game.direct_takes = 0
+    reopening(game, monkeypatch)
+    game.shardsell_reply = "refused: the Shard Market did not finish the sale"
+    sell(game, "Level 1 Turquoise Shard", 30)
+    assert game.trades == [("sell", "Level 1 Turquoise Shard", 30)]
+    assert game.picks == []
+
+
+def test_buying_shards_never_uses_the_agent_s_sell_command(monkeypatch: pytest.MonkeyPatch) -> None:
+    game = PretendShop("market", {"Arnebia": 10_000_000}, version=56)
+    b = ShopBot(game)
+    monkeypatch.setattr(crafting, "fee_per_shard", returning(0))
+    monkeypatch.setattr(crafting, "spare_arnebia", returning(10_000_000))
+    assert crafting.buy_shards(as_bot(b), "Level 1 Topaz Shard", 40) == 40
+    assert game.trades == [("buy", "Level 1 Topaz Shard", 40)]
+    assert not any(line.startswith(("shardsell", "sharddirect")) for line in game.sent)
+
+
+def test_shard_chain_uses_the_next_menu_state_instead_of_fixed_pick_pauses() -> None:
+    game = PretendShop("market", {"Level 1 Turquoise Shard": 30})
+    b = ShopBot(game)
+    before = b.clock.now
+    item = menus.pick(as_bot(b), menus.SHARD_MARKET, name="Level 1 Turquoise Shard", settle=False)
+    assert item is not None
+    assert menus.pick(as_bot(b), menus.SHARD_TRADE, item_id=item["id"], action="sell", settle=False) is not None
+    assert game.picks == ["shard_market 20665", "shard_trade 20665 sell"]
+    assert b.clock.now == before
 
 
 def test_by_index_takes_no_walking_keys_where_by_text_took_one_per_row() -> None:

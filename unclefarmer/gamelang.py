@@ -51,6 +51,23 @@ COMMANDS = ("mem", "dialog", "said")
 _HOLE = re.compile(r"\{sub\d\{\$(\d+)\}sub\d\}|\$(\d+)")
 _KEY_HOLE = re.compile(r"\{[a-z]\}")
 _CJK = re.compile("[㐀-鿿]")
+# What the client writes after an item's name in a list it builds itself (the storehouse's "deposit
+# item": "78 Memory Butterfly (restricted) "), as the english folder shows them.
+MARKS = ("(restricted)", "(locked)", "(bound)")
+
+
+def _shown(key: str, eng: dict[str, str]) -> str:
+    """What the english pack shows for a text the server sends. The bot learned its names from
+    a game set to English, and that pack rewords some of the server's: "Shard Marketplace" is
+    shown as "Shard Broker", "Bone Cookie" as "Pet Bone Cookie", "Lesser Cattle Soul Stone" as
+    "Lesser Cow Soul Stone" (351 of its 9,227 plain entries). A translation used to come back
+    as the server's wording, which the bot doesn't know: live with the Spanish pack (2026-11-11)
+    it stood beside "Mercado de fragmentos" and stopped with "couldn't talk to Shard Broker".
+    A reworded entry with $1 holes belongs to the templates, not here."""
+    shown = eng.get(key)
+    if shown and not _HOLE.search(shown) and not _CJK.search(shown):
+        return shown
+    return key
 
 
 def _blocks(path: str) -> Iterator[tuple[str, str]]:
@@ -101,6 +118,11 @@ def _english_template(key: str, eng: str | None) -> str:
     return _KEY_HOLE.sub(number, key)
 
 
+def _edges(s: str) -> tuple[bool, bool]:
+    """Does the text begin, and end, with a space?"""
+    return s[:1].isspace(), s[-1:].isspace()
+
+
 class Table:
     """translated -> English, for one language."""
 
@@ -115,7 +137,7 @@ class Table:
         for key, value in here.items():
             if not value or value == key:
                 continue
-            original = eng.get(key) if _CJK.search(key) else key
+            original = eng.get(key) if _CJK.search(key) else _shown(key, eng)
             if not original or _CJK.search(original):
                 continue
             if _KEY_HOLE.search(key) or _HOLE.search(value):
@@ -129,9 +151,22 @@ class Table:
                 (self.suffixes if key.startswith(" ") else self.templates).append(entry)
                 continue
             # one translation for several originals: an English key (what the server sends) wins
-            if value not in self.exact or (not _CJK.search(key) and not english_keyed.get(value)):
+            held = self.exact.get(value)
+            if held is None or (not _CJK.search(key) and not english_keyed.get(value)):
                 self.exact[value] = original
                 english_keyed[value] = not _CJK.search(key)
+            elif (held != original and held.strip() == original.strip()
+                  and _edges(original) == _edges(value) != _edges(held)):
+                # The same text twice, once with a space at an edge (Spanish: " Platinum wedding
+                # ring" in Item2.txt and "Platinum wedding ring" in equipment.txt, both "anillo
+                # de boda de platino"; 668 such in that pack). The file read first used to win,
+                # and equipment came back as " Platinum wedding ring". The one spaced like its
+                # translation is the one the game showed.
+                self.exact[value] = original
+        # (the mark in this language, in English), each without its edge spaces
+        self.marks: list[tuple[str, str]] = [
+            ((here.get(key) or key).strip(), shown.strip())
+            for key, shown in eng.items() if shown.strip() in MARKS]
         self.cache: dict[str, str] = {}
 
     @staticmethod
@@ -181,7 +216,23 @@ class Table:
         self.cache[s] = got
         return got
 
+    def _marked(self, s: str) -> str | None:
+        """A name with one of the client's marks after it ("78 Mariposa de memoria (restringido) "),
+        turned back as the name and the mark apart; None when s ends with no mark. Whole, the name
+        stayed as it was, or a name with holes took the mark for part of itself ("1 Fragmento de
+        turquesa de nivel 2 (restringido) " came back "1 Level 2 (restringido)  Turquoise Shard"),
+        so nothing restricted could be put into the storehouse in another language."""
+        body = s.rstrip()
+        for mark, eng in self.marks:
+            head = body[:-len(mark)]
+            if mark and body.endswith(mark) and head.strip() and (mark[0] == "(" or head[-1].isspace()):
+                return self.word(head.rstrip()) + " " + eng
+        return None
+
     def _work(self, s: str) -> str:
+        marked = self._marked(s)
+        if marked is not None:
+            return marked
         for rx, eng in self.templates:
             m = rx.match(s)
             if m:
