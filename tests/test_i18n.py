@@ -206,6 +206,20 @@ def test_write_template_merges_translations_and_compiles(tmp_path: Path, monkeyp
     assert "#~ msgstr \"Weg\"" in po.read_text(encoding="utf-8")
 
 
+def test_write_template_preserves_a_menu_translation_when_its_shortcut_moves_out_of_the_key(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def extracted(_root: str) -> list[str]:
+        return ["&Start"]
+
+    monkeypatch.setattr(paths, "LANG", str(tmp_path))
+    monkeypatch.setattr(catalog, "extract", extracted)
+    po = tmp_path / "de.po"
+    po.write_text(catalog.render_po({"language": "de"}, [("&Start\tF5", "&Starten\tF5")]), encoding="utf-8")
+    i18n.write_template()
+    _header, entries = catalog.parse_po(po.read_text(encoding="utf-8"))
+    assert entries == [("&Start", "&Starten")]
+
+
 def test_long_obsolete_entries_survive_every_rewrite_unchanged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     # Long entries are written as continued "#~ ..." lines; reading those back cut the opening
     # quote, and each rewrite added another \" to the end of the text.

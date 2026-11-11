@@ -158,13 +158,11 @@ def ensure(b: Bot, purpose: Any = None) -> None:
     cheap when it is already right; never stops the run if the panel can't be worked. A beast goes
     on only after QUIET seconds without an attack."""
     rows = owned(b)
+    if purpose == TRAVEL and _travel_waits(b, rows):
+        return
     if not rows:
         return
     refused = b.beasts_refused
-    if purpose == TRAVEL and clock_for(b).time() - getattr(b, "last_combat", 0) < AFTER_FIGHT:
-        return      # still in combat as far as the server is concerned: walk on, mount later
-    if purpose == TRAVEL and _on_foot_for_a_fight(b):
-        return
     pw = power(b.me())
     low_power = pw is not None and pw < MIN_POWER
     pick = b.p.get("speed_beast" if purpose == TRAVEL else "fight_beast", "auto" if purpose == TRAVEL else "none")
@@ -187,6 +185,8 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         b.said_low_power = False
     active = next((r for r in rows if r["active"]), None)
     if want is None:
+        if purpose == TRAVEL and not (low_power and pick != "none"):
+            _say_why_no_mount(b, rows, pick)
         # Nothing fits. A Swift beast must not stay on for a fight: its skills are off.
         if purpose == FIGHT and active and active["kind"] == "swift":
             if _press(b, rows, active):
@@ -195,6 +195,51 @@ def ensure(b: Bot, purpose: Any = None) -> None:
     if active and active["id"] == want["id"]:
         return
     _put_on(b, rows, want, active, purpose)
+
+
+def _travel_waits(b: Bot, rows: list[dict[str, Any]]) -> bool:
+    """True when travel must stay on foot before any beast is looked at: the panel unread, the
+    server still counting the last fight as combat (walks check again), monsters on us."""
+    if not rows:
+        _on_foot(b, "panel", _("on foot: the fusion beast list couldn't be read"))
+        return True
+    since = clock_for(b).time() - getattr(b, "last_combat", 0)
+    if since < AFTER_FIGHT:
+        _on_foot(b, "fight", _("on foot for {secs} s more: the server still counts the last fight as combat",
+                               secs=int(AFTER_FIGHT - since + 0.99)))
+        return True
+    return _on_foot_for_a_fight(b)
+
+
+def _on_foot(b: Bot, reason: str, line: str) -> None:
+    """Travel stays on foot for `reason`: logged once per reason in a run, so a slow trip says
+    why without a line at every leg."""
+    said: set[str] = b.__dict__.setdefault("on_foot_said", set())
+    if reason not in said:
+        said.add(reason)
+        b.log(line)
+
+
+def _say_why_no_mount(b: Bot, rows: list[dict[str, Any]], pick: str) -> None:
+    """No beast fits for travel: say which rule kept us on foot (see _on_foot)."""
+    if pick == "none":
+        _on_foot(b, "setting", _("on foot: the travel fusion beast is set to none in the character settings"))
+        return
+    clock = clock_for(b)
+    swift = [r for r in rows if r["kind"] == "swift" and (pick == "auto" or r["name"] == pick)]
+    if not swift:
+        _on_foot(b, "none", _("on foot: no Swift fusion beast to ride") if pick == "auto"
+                 else _("on foot: {beast} isn't among our fusion beasts", beast=pick))
+        return
+    now_ms = clock.time() * 1000
+    waits = [r for r in swift if r.get("usable_at") and r["usable_at"] > now_ms]
+    if waits:
+        r = min(waits, key=lambda r: r["usable_at"])
+        _on_foot(b, "cooldown", _("on foot: the game won't let {beast} on for {secs} s more",
+                                  beast=r["name"], secs=int((r["usable_at"] - now_ms) / 1000 + 0.99)))
+    elif all(r.get("expires_at") and r["expires_at"] < now_ms for r in swift):
+        _on_foot(b, "expired", _("on foot: our Swift fusion beast has expired"))
+    # otherwise refused a moment ago: _refused already said so
 
 
 def _put_on(b: Bot, rows: list[dict[str, Any]], want: dict[str, Any], active: dict[str, Any] | None,
@@ -229,21 +274,41 @@ def _on_foot_for_a_fight(b: Bot) -> bool:
     return True
 
 
-def keep_riding(b: Bot) -> None:
-    """While the walking assistant walks: back onto the Swift beast if we came off it (or the
-    game refused it a moment ago), checked every few seconds so it costs almost nothing. Fusion
-    power is read with the T key every POWER_EVERY, so once it runs out, ensure() waits on foot
-    until it has come back over MIN_POWER instead of asking the game every few seconds."""
+def keep_riding(b: Bot, read_power: bool = True) -> None:
+    """While travelling: back onto the Swift beast if we came off it, the game refused it a moment
+    ago, or a fight just before the walk kept it off (AFTER_FIGHT: a dungeon that puts us out
+    seconds after the last kill), checked every few seconds so it costs almost nothing. The walking
+    assistant (read_power) reads fusion power with the T key every POWER_EVERY, so once it runs
+    out, ensure() waits on foot until it has come back over MIN_POWER instead of asking the game
+    every few seconds; other travel leaves the T key alone (what it does differs by class)."""
     now = clock_for(b).time()
     if now - getattr(b, "last_ride_check", 0) < RIDE_CHECK:
         return
     b.last_ride_check = now
     key = b.p.get("points_key")
-    if key and now - getattr(b, "last_points_key", 0) >= POWER_EVERY:
+    if read_power and key and now - getattr(b, "last_points_key", 0) >= POWER_EVERY:
         b.last_points_key = now
         b.key(key, 30)
         b.sleep(0.4)          # the answer is a round trip away
     ensure(b, TRAVEL)
+
+
+def ride_any(b: Bot) -> bool:
+    """On a fusion beast, any kind, for poisoned ground (Polson Wetland): a fused character takes
+    no poison damage there. The fastest Swift one, else the strongest Fierce one; the travel-beast
+    setting doesn't matter here, the poison does. True once one is on (or already was)."""
+    rows = owned(b)
+    active = next((r for r in rows if r["active"]), None)
+    if active is not None:
+        return True
+    if not rows or clock_for(b).time() - getattr(b, "last_combat", 0) < AFTER_FIGHT:
+        return False      # nothing to ride, or the server still counts the last fight as combat
+    clock = clock_for(b)
+    want = choose(rows, TRAVEL, b.beasts_refused, clock) or choose(rows, FIGHT, b.beasts_refused, clock)
+    if want is None:
+        return False
+    _put_on(b, rows, want, None, TRAVEL)
+    return any(r["active"] for r in owned(b))
 
 
 def off(b: Bot) -> None:

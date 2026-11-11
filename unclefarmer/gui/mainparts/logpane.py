@@ -48,6 +48,11 @@ class LogMixin(FrameParts):
         if copy_text(self.log_box.GetValue()):
             speech.speak(_("Copied"))
 
+    def copy_log_selection(self) -> None:
+        start, end = self.log_box.GetSelection()
+        if start != end and copy_text(self.log_box.GetValue()[start:end]):
+            speech.speak(_("Copied"))
+
     def clear_log(self) -> None:
         if not self.log_lines:
             return

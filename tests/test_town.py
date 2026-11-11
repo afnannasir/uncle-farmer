@@ -255,6 +255,22 @@ def test_item_pattern_escapes_regex_metacharacters() -> None:
     assert re.search(p, "5 A+B (x)")
 
 
+def test_item_pattern_takes_the_marks_the_storehouse_list_writes_after_a_name() -> None:
+    # The storehouse's "deposit item" list, built by the client: count, name, then " (restricted) "
+    # on what can't be traded (seen live 2026-11-11). Without the marks no such item was found:
+    # 'the menu has no entry like "...Level\ 1\ Ruby\ Shard..."' when storing shards.
+    p = town.item_pattern("Level 2 Turquoise Shard")
+    assert re.search(p, "1 Level 2 Turquoise Shard (restricted) ")
+    assert re.search(p, "1 Level 2 Turquoise Shard (Restricted)", re.I)
+    assert re.search(p, "3 Level 2 Turquoise Shard (restricted)  (locked) ")
+    assert re.search(p, "3 Level 2 Turquoise Shard (bound)")
+    assert re.search(p, "1 Level 2 Turquoise Shard")                        # and still none at all
+    q = town.item_pattern("Large Red Potion")
+    assert not re.search(q, "47 Pet Large Red Potion (restricted) ")        # a longer name, marked
+    assert not re.search(q, "47 Large Red Potion (large) ")                 # not one of the game's marks
+    assert not re.search(q, "47 Large Red Potion (restricted) Plus")
+
+
 # ============================================================ gem_of
 @pytest.mark.parametrize("shard,gem", [("Level 1 Obsidian Shard", "Level 1 Obsidian"),
                                        ("level 3 ruby shard", "Level 3 ruby"),

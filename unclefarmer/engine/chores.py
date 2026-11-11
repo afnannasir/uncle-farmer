@@ -63,7 +63,7 @@ import time
 from collections.abc import Collection, Iterable
 from typing import Any
 
-from .. import atlas, daily, knowledge, paths
+from .. import atlas, daily, knowledge, paths, settings
 from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
@@ -138,15 +138,58 @@ def wanted(cfg: dict[str, Any], chore: str) -> bool:
 
 
 # ---------------------------------------------------------------------------------------- the done list
+def who(b: object) -> str | None:
+    """The character a bot's chores are kept for: its own profile key when the run knows it (two
+    characters can share a name on different servers), else its name."""
+    return getattr(b, "profile_key", None) or getattr(b, "character", None)
+
+
 def _ledger(name: str | None) -> str:
-    return os.path.join(paths.LOGS, "chores", paths.safe_name(name or "unknown") + ".json")
+    """The done list's file: one for each confirmed character identity, or per name if unknown."""
+    server = settings.profile_server(name or "")
+    entity_id = settings.profile_id(name)
+    name = settings.profile_name(name)
+    stem = paths.safe_name(name or "unknown")
+    if entity_id:
+        if server:
+            stem += "--" + paths.safe_name(server)
+        stem += "--" + paths.safe_name(entity_id)
+    return os.path.join(paths.LOGS, "chores", stem + ".json")
+
+
+def _other_server_ledger(name: str, entity_id: str, own: str) -> bool:
+    """Whether an old ID-only ledger could belong to another now-known server character."""
+    prefix = paths.safe_name(name) + "--"
+    suffix = "--" + paths.safe_name(entity_id) + ".json"
+    try:
+        filenames = os.listdir(os.path.dirname(own))
+    except OSError:
+        return False
+    for filename in filenames:
+        middle = filename[len(prefix):-len(suffix)] if filename.startswith(prefix) and filename.endswith(suffix) else ""
+        if middle and os.path.join(os.path.dirname(own), filename) != own:
+            return True
+    return False
 
 
 def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
-    """{chore: {"at", "note"}} of what is done this game day."""
+    """{chore: {"at", "note"}} of what is done this game day. A character with its own key and no
+    list of its own yet starts from a safe older list, so chores done earlier today aren't done
+    twice without accidentally importing another server's work."""
     day = day or daily.game_day()
+    path = _ledger(name)
+    if not os.path.exists(path) and settings.is_character_profile(name or ""):
+        display_name = settings.profile_name(name)
+        server = settings.profile_server(name or "")
+        entity_id = settings.profile_id(name)
+        id_only = settings.character_profile(display_name, entity_id)
+        old_path = _ledger(id_only)
+        if not server or not os.path.exists(old_path) or not _other_server_ledger(display_name, entity_id or "", path):
+            path = old_path if os.path.exists(old_path) else _ledger(display_name)
+        else:
+            path = _ledger(display_name)
     try:
-        with open(_ledger(name), encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data: dict[str, Any] = json.load(f)
     except (OSError, ValueError):
         return {}
@@ -180,7 +223,7 @@ def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
 # ---------------------------------------------------------------------------------------- running them
 def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[str] | None = None) -> list[tuple[str, str]]:
     """Every chore cfg turns on (only: just those) that isn't done today. [(chore, what happened)]."""
-    name = b.character
+    name = who(b)
     done = done_today(name)
     out: list[tuple[str, str]] = []
     # A chores run is all walking from one NPC to the next, much of it on one map (a town, the gang
@@ -197,7 +240,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[
 
 def _run(b: Bot, cfg: dict[str, Any], check_only: bool, only: Collection[str] | None,
          done: dict[str, Any], out: list[tuple[str, str]]) -> None:
-    name = b.character
+    name = who(b)
     for chore in CHORES:
         if (only and chore not in only) or not wanted(cfg, chore):
             continue
@@ -752,9 +795,10 @@ def _share(b: Bot, cfg: dict[str, Any]):
     return (made or 0) + 1, True
 
 
-def _enter_room(b: Bot, cfg: dict[str, Any], check_only: bool):
-    """From an instructor into the chosen secret room. (entered, what to say)."""
-    town.visit(b, "instructor")
+def _enter_room(b: Bot, cfg: dict[str, Any], check_only: bool, back_to: town.Place | None = None):
+    """From an instructor into the chosen secret room. (entered, what to say). back_to: where the
+    trip goes afterwards (a farming run's farm): the instructor cheapest there and back is chosen."""
+    town.visit(b, "instructor", back_to=back_to)
     if b.choose(r"^\s*Secret room training") is None:
         return False, _("the instructor offers no secret room training")
     b.wait_dialog(3.0)
@@ -808,7 +852,7 @@ def _note_share(name: str | None, count: int, t: float) -> None:
 
 def _share_here(b: Bot, cfg: dict[str, Any]) -> int:
     """One share in this half hour, unless today's are made or this half hour's is. The day's count."""
-    name = b.character
+    name = who(b)
     made, used = shares(name)
     now = b.clock.time()
     if made >= SHARES_A_DAY or slot(now) in used:
@@ -835,15 +879,17 @@ def _wait_slot(b: Bot):
     return True
 
 
-def share_visit(b: Bot, cfg: dict[str, Any], practise: int = 0) -> tuple[int, str]:
+def share_visit(b: Bot, cfg: dict[str, Any], practise: int = 0,
+                back_to: town.Place | None = None) -> tuple[int, str]:
     """One visit: into a room, an assistant out (the game lets us share only then), a share in this
     half hour, another as the next one starts when that is near (or every half hour while
-    practising for `practise` minutes), then out. (shares made today, where)."""
+    practising for `practise` minutes), then out. (shares made today, where). back_to: where the
+    trip goes afterwards (a farming run's farm), so the instructor is chosen for there and back."""
     name = getattr(b, "character", None)
     b.share_tried = slot(b.clock.time())
     where = atlas.label(b.map_id())
     if atlas.kind(b.map_id()) != "secret_room":
-        entered, where = _enter_room(b, cfg, False)
+        entered, where = _enter_room(b, cfg, False, back_to)
         if not entered:
             raise Stopped(where)
     try:

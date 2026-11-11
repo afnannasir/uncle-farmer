@@ -264,6 +264,7 @@ class Traveller:
     def __init__(self, purse: int | None, vip: bool = False) -> None:
         self.p: dict[str, Any] = {"use_transport": True, "vip": vip}
         self.purse = purse
+        self.vip_refused = False
 
     def me(self) -> dict[str, Any]:
         return {"x": SQUARE[0], "y": SQUARE[1]}
@@ -278,6 +279,22 @@ def test_the_bot_plans_only_rides_it_can_pay_for(purse: int | None, vip: bool, r
     plan_legs: Any = TravelMixin._plan_legs        # pyright: ignore[reportPrivateUsage]
     legs: list[dict[str, Any]] = plan_legs(as_bot(Traveller(purse, vip)), CENTRAL, 1081, None, set())
     assert bool(rides(legs)) is rides_it
+
+
+@pytest.mark.parametrize("purse, rides_it", [(5000, True), (500, False)])
+def test_after_a_refused_free_ride_the_bot_plans_the_fare(purse: int, rides_it: bool) -> None:
+    plan_legs: Any = TravelMixin._plan_legs        # pyright: ignore[reportPrivateUsage]
+    who = Traveller(purse, vip=True)
+    free = rides(plan_legs(as_bot(who), CENTRAL, 1081, None, set()))
+    row = travel.transports()[int(free[0]["id"])]
+    assert free[0]["vip"] is True and free[0]["choose"] == row["choose_vip"]
+    who.vip_refused = True                         # what TravelMixin._vip_refused leaves behind
+    paid = rides(plan_legs(as_bot(who), CENTRAL, 1081, None, set()))
+    assert bool(paid) is rides_it                  # the same ride at its fare, if the bag has it
+    if paid:
+        assert paid[0]["id"] == free[0]["id"] and paid[0]["vip"] is False
+        assert paid[0]["choose"] == row["choose"]
+    assert who.p["vip"] is True
 
 
 # ================================================================ "Use airships" off

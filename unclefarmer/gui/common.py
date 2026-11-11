@@ -29,6 +29,7 @@ from ..i18n import _
 W = TypeVar("W", bound=wx.Window)
 D = TypeVar("D", bound=wx.Dialog)
 Handler = Callable[[wx.CommandEvent], object]      # a button's, check box's or choice's handler
+ContextAction = tuple[str, Handler, bool]
 Reader = Callable[[], "dict[str, Any] | None"]     # reads the game now (the main window's snapshot)
 
 
@@ -101,6 +102,31 @@ _ACCESSIBLE: "weakref.WeakKeyDictionary[wx.Window, wx.Accessible]" = weakref.Wea
 
 def _name(label: str) -> str:
     return label.replace("&", "").rstrip(":").strip()
+
+
+def opens(label: str) -> str:
+    """A dialog-opening action, with decoration kept outside its translated label."""
+    return label + "..."
+
+
+def shortcut_label(label: str, shortcut: str) -> str:
+    """Show a menu shortcut without making it part of the translated label."""
+    return label + ("\t" + shortcut if shortcut else "")
+
+
+def popup_actions(control: wx.Window, entries: list[ContextAction], *, restore_focus: bool = True) -> None:
+    """Show native actions for one control, release the temporary menu, then restore focus."""
+    menu = wx.Menu()
+    try:
+        for label, handler, enabled in entries:
+            item = menu.Append(wx.ID_ANY, label)
+            item.Enable(enabled)
+            menu.Bind(wx.EVT_MENU, handler, item)
+        control.PopupMenu(menu)
+    finally:
+        menu.Destroy()
+    if restore_focus and not control.IsBeingDeleted():
+        control.SetFocus()
 
 
 def field_label(ctrl: wx.Window) -> wx.StaticText | None:

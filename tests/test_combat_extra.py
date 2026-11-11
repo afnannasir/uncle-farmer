@@ -54,6 +54,7 @@ class TB:
         self.a = a
         self.lines: list[str] = []
         self.resting = False
+        self.traveling = False
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -432,8 +433,27 @@ def test_dispel_now_presses_a_self_dispel(clock: Clock) -> None:
     d = skill("Purification", role="dispel", text="removes a curse from 1 ally")
     s = pinned(sb(slots={0: [d]}), page=0)
     me = {"vitals": {"debuffs": 1, "age_ms": 0}}
-    assert s.dispel_now(me, clock.now) == ("j", "Purification")
+    # Shift + key: the game's cast-on-yourself key. The plain key goes at the selected monster.
+    assert s.dispel_now(me, clock.now) == ("shift+j", "Purification")
     assert s.dispel_try == (clock.now, 1)
+
+
+def test_dispel_now_self_casts_whatever_the_attack_style(clock: Clock) -> None:
+    """Swapped hot keys put Alt on the keys we press; the self-cast is still Shift + the bare key."""
+    d = skill("Soul Purify", role="dispel", key="alt+y", still="y",
+              text="remove all magic debuffs and curse debuffs from 1 ally, or remove 1 buff from 1 enemy")
+    s = pinned(sb(slots={0: [d]}), page=0)
+    assert s.dispel_now({"vitals": {"debuffs": 1, "age_ms": 0}}, clock.now) == ("shift+y", "Soul Purify")
+    d = skill("Holy Light", role="dispel", key="y", still="alt+y", text="remove all debuffs from 1 ally")
+    s = pinned(sb(slots={0: [d]}), page=0)
+    assert s.dispel_now({"vitals": {"debuffs": 1, "age_ms": 0}}, clock.now) == ("shift+y", "Holy Light")
+
+
+def test_other_support_presses_keep_the_stationary_key(clock: Clock) -> None:
+    """Only the dispel has an enemy use; heals and buffs go out as they always did."""
+    h = skill("Healing Wave", role="heal", key="alt+h", still="h")
+    s = pinned(sb(slots={0: [h]}), page=0)
+    assert s.press_support(dict(h, page=0), clock.now) == ("h", "Healing Wave")
 
 
 def test_dispel_now_gives_up_on_a_debuff_it_cannot_remove(clock: Clock) -> None:
@@ -703,3 +723,31 @@ def test_press_pick_none_when_no_fallback_exists() -> None:
     s = pinned(sb(can_flip=False), page=0)
     choice = skill("Bash", role="single_target", page=1)
     assert s._press_pick(choice, [], 0, 1000.0, lambda x: True) is None
+
+
+def test_buff_now_puts_no_buff_up_between_fights_while_travelling(clock: Clock) -> None:
+    # After a dungeon the trip home kept re-casting the Hunter's auras: nothing left to farm.
+    b = skill("Strong-Arm Aura", role="party_buff", text="Increase 25% attack damage for 2 minutes")
+    s = pinned(sb(slots={0: [b]}), page=0)
+    s.b.traveling = True
+    assert s.buff_now({}, clock.now) is None
+    s.b.traveling = False
+    assert s.buff_now({}, clock.now) == ("j", "Strong-Arm Aura")
+
+
+def test_buff_now_still_buffs_for_a_fight_on_the_way(clock: Clock) -> None:
+    b = skill("Strong-Arm Aura", role="party_buff", text="Increase 25% attack damage for 2 minutes")
+    s = pinned(sb(slots={0: [b]}), page=0)
+    s.b.traveling = True
+    assert s.buff_now({}, clock.now, fight=(False, 1)) == ("j", "Strong-Arm Aura")
+
+
+# ---------------------------------------------------------------- forget_the_map()
+def test_forget_the_map_drops_what_was_noted_against_target_ids(clock: Clock) -> None:
+    """Target ids are per map: on the next one they are other monsters."""
+    s = sb(downed={-3: clock.now}, landed={("Shadow Arrow", -3): clock.now},
+           pending={"Shadow Arrow": clock.now, "Heal": clock.now},
+           pending_target={"Shadow Arrow": -3, "Heal": None})
+    s.forget_the_map()
+    assert s.downed == {} and s.landed == {}
+    assert s.pending == {"Heal": clock.now} and s.pending_target == {"Heal": None}

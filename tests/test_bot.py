@@ -202,3 +202,35 @@ def test_the_first_bag_check_near_full_reads_a_clean_load_history(monkeypatch: p
     assert b.bag_check() is False
     assert b.load_share == load
     assert b.load_seen == [(b.last_sheet, 0, load)]
+
+
+# ------------------------------------------------------------------ the real Bot forgets monster ids on another map
+class MapLink(Link):
+    """A game that says which map we are on."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.map = 5241
+
+    def json(self, line: str) -> Any:
+        if line in ("mem", "mem state"):
+            return {"ok": True, "self": {"x": 1.0, "y": 1.0}, "map": {"id": self.map}, "entities": []}
+        return {}
+
+
+def test_the_real_bot_forgets_monster_ids_when_the_map_changes() -> None:
+    """snap() (reading) finds forget_the_map (fighting) on the assembled Bot: the two parts only
+    meet there, and a missing hook would do nothing without a word."""
+    link = MapLink()
+    b = Bot(link, {"name": "Hero"}, lambda line, speak=False: None, threading.Event())
+    b.snap()
+    b.skip[-15] = 1e12
+    b.mob_names[-15] = "Lich"
+    b.snap()                                  # still there: kept
+    assert b.skip == {-15: 1e12} and b.notes_map == 5241
+    link.map = 0
+    b.snap()                                  # a change in progress is no map: kept
+    assert b.skip == {-15: 1e12}
+    link.map = 1141
+    b.snap()
+    assert b.skip == {} and b.mob_names == {} and b.notes_map == 1141

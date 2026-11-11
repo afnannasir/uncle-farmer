@@ -331,3 +331,104 @@ def test_press_retries_and_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     b.a.accept = False
     rows = beasts.owned(as_bot(b))
     assert beasts._press(as_bot(b), rows, rows[0]) is False
+
+
+def test_keep_riding_for_travel_leaves_the_points_key_alone(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Swift", "swift", speed=5.0)])
+    b.p["points_key"] = "t"
+    beasts.keep_riding(as_bot(b), read_power=False)
+    assert "t" not in b.keys
+    assert b.a.rows[0]["active"] is True
+
+
+def test_keep_riding_mounts_once_the_fight_is_far_enough_behind(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Swift", "swift", speed=5.0)])
+    b.last_combat = clock.now - 5                # out of the cave 5 s after the last kill
+    beasts.keep_riding(as_bot(b), read_power=False)
+    assert b.a.rows[0]["active"] is False        # still "in combat" for the server: on foot
+    clock.advance(beasts.AFTER_FIGHT)
+    beasts.keep_riding(as_bot(b), read_power=False)
+    assert b.a.rows[0]["active"] is True
+
+
+# ---------------------------------------------------------------- why travel stays on foot
+def test_on_foot_after_a_fight_says_why_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Swift", "swift", speed=5.0)])
+    b.last_combat = clock.now - 5
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    said = [line for line in b.lines if line.startswith("on foot")]
+    assert len(said) == 1 and "15 s" in said[0]
+
+
+def test_on_foot_says_the_games_cooldown(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Horse", "swift", speed=5.0, usable_at=(clock.now + 90) * 1000)])
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert b.a.rows[0]["active"] is False
+    assert any("Horse" in line and "90 s" in line for line in b.lines)
+
+
+def test_on_foot_without_a_swift_beast_or_by_setting(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Wolf", "fierce")])
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert any("no Swift fusion beast" in line for line in b.lines)
+    b = Bot([row(1, "Horse", "swift", speed=5.0)])
+    b.p["speed_beast"] = "none"
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert any("set to none" in line for line in b.lines)
+    assert b.a.rows[0]["active"] is False
+
+
+def test_on_foot_when_the_panel_cant_be_read(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([])
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert any("couldn't be read" in line for line in b.lines)
+
+
+def test_no_on_foot_line_when_it_rides(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Horse", "swift", speed=5.0)])
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert b.a.rows[0]["active"] is True
+    assert not any(line.startswith("on foot") for line in b.lines)
+
+
+# ---------------------------------------------------------------- ride_any (poisoned ground)
+def test_ride_any_takes_a_swift_beast_first_then_a_fierce_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Wolf", "fierce", level=5), row(2, "Horse", "swift", speed=5.0)])
+    b.p["speed_beast"] = "none"                  # the setting doesn't keep us off it on poison
+    assert beasts.ride_any(as_bot(b)) is True
+    assert b.a.rows[1]["active"] is True
+    b = Bot([row(1, "Wolf", "fierce", level=5)])
+    assert beasts.ride_any(as_bot(b)) is True and b.a.rows[0]["active"] is True
+
+
+def test_ride_any_is_content_with_whatever_is_already_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Wolf", "fierce", active=True), row(2, "Horse", "swift", speed=5.0)])
+    assert beasts.ride_any(as_bot(b)) is True and b.keys == []
+
+
+def test_ride_any_waits_out_the_fight_and_says_no_without_a_beast(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([row(1, "Horse", "swift", speed=5.0)])
+    b.last_combat = clock.now - 5
+    assert beasts.ride_any(as_bot(b)) is False and b.keys == []
+    assert beasts.ride_any(as_bot(Bot([]))) is False

@@ -1,4 +1,4 @@
-"""Bot, Schedules: plans and scripts started at set times (unclefarmer/schedule.py does the timing).
+"""Run, Schedules: plans and scripts started at set times (unclefarmer/schedule.py does the timing).
 
 The list says what runs, for whom, when, when next, and whether it is on; Add, Edit, Turn on or
 off, Delete and History act on the selected one. Every change is saved straight away.
@@ -13,7 +13,8 @@ import wx
 
 from .. import schedule
 from ..i18n import _
-from .common import Dialog, Form, ask, buttons, error, first_selected, labeled, ok_cancel, pick, select_row, show_text
+from .common import (ContextAction, Dialog, Form, ask, buttons, error, first_selected, labeled, ok_cancel,
+                     opens, pick, popup_actions, select_row, show_text)
 
 Item = tuple[str, str]          # ("plan" | "script", name), as the Plans tab lists them
 Now = Callable[[], dt.datetime]
@@ -123,9 +124,7 @@ class SchedulesDialog(Dialog):
         for i, (title, width) in enumerate(((_("Plan or script"), 180), (_("Character"), 120), (_("When"), 200),
                                             (_("Next"), 150), (_("On"), 50))):
             self.list.InsertColumn(i, title, width=width)
-        self.btns = buttons(self, box, (_("&Add..."), lambda e: self.add()), (_("&Edit..."), lambda e: self.edit()),
-                            (_("Turn on or o&ff"), lambda e: self.toggle()), (_("&Delete"), lambda e: self.delete()),
-                            (_("&History..."), lambda e: self.history()))
+        self.add_btn = buttons(self, box, (opens(_("&Add")), lambda e: self.add()))[0]
         note = wx.StaticText(self, label=_(
             "A scheduled plan starts in the game the character is logged in to, as the Start button would. "
             "A time missed while Uncle Farmer was closed doesn't run later; a game busy with another run "
@@ -142,14 +141,31 @@ class SchedulesDialog(Dialog):
         self.SetMinSize(wx.Size(640, 400))
         self.list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.edit())
         self.list.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: self.sync())
-        self.list.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        self.list.Bind(wx.EVT_CONTEXT_MENU, self.context_menu)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
         self.fill()
 
     def on_key(self, evt: wx.KeyEvent) -> None:
-        if evt.GetKeyCode() == wx.WXK_DELETE:
+        if wx.Window.FindFocus() is self.list and evt.GetKeyCode() == wx.WXK_DELETE:
             self.delete()
         else:
             evt.Skip()
+
+    def context_menu(self, event: wx.ContextMenuEvent) -> None:
+        pos = event.GetPosition()
+        if pos != wx.DefaultPosition:
+            index, _flags = self.list.HitTest(self.list.ScreenToClient(pos))
+            if index != wx.NOT_FOUND:
+                state = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+                self.list.SetItemState(index, state, state)
+        selected = self.selected() is not None
+        entries: list[ContextAction] = [
+                (opens(_("&Add")), lambda e: self.add(), bool(self.items)),
+                (opens(_("&Edit")), lambda e: self.edit(), selected),
+                (_("Turn on or o&ff"), lambda e: self.toggle(), selected),
+                (opens(_("&History")), lambda e: self.history(), selected),
+                (_("&Delete"), lambda e: self.delete(), selected)]
+        popup_actions(self.list, entries)
 
     def selected(self) -> schedule.Schedule | None:
         i = first_selected(self.list)
@@ -170,10 +186,7 @@ class SchedulesDialog(Dialog):
         self.sync()
 
     def sync(self) -> None:
-        some = self.selected() is not None
-        for b in self.btns[1:]:
-            b.Enable(some)
-        self.btns[0].Enable(bool(self.items))
+        self.add_btn.Enable(bool(self.items))
 
     def add(self) -> None:
         if not self.items:

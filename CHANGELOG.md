@@ -1,6 +1,33 @@
 # What's new
 
-## Unreleased
+## 1.1.0
+
+**Shooting while walking when farming**
+
+- Character, Settings, Fighting: "Shoot monsters in reach while walking to the next one". Dungeons
+  already did this; now field farming can too. A character that fights from afar shoots whatever it
+  would fight that comes into reach on its walk, instead of stopping for each one. It never shoots
+  monsters outside the farm area, bosses, or monsters another player is killing, and never on a
+  trip. Off by default. A character that fights from close by is told it can't use it.
+
+**Pausing**
+
+- A pause of more than two minutes no longer ends the run as "lost the connection to the game"
+  when it goes on: the game's agent dropped a link that asked nothing for two minutes, and a paused
+  run asked nothing. A paused run now checks in every 30 seconds, so a pause can last as long as
+  you like.
+- Moved the character while paused: going on, the bot now plans its walk again from where you
+  left it on the map (and says how far it was moved), instead of pressing on along the old line
+  and maybe calling itself stuck.
+
+**Polson Wetland and lava**
+
+- Polson Wetland without Poison Immunity: a trip through it now gets on a fusion beast (any kind)
+  and crosses, fighting nothing on the way, instead of refusing to go. A trip that ends there goes
+  with a spoken warning. Leaving it is never refused.
+- The volcanic caves' lava lake and magma, which take HP from whoever stands in them, count as
+  walls: the bot walks, stands and fights on the islands, and shoots monsters in the lava from the
+  shore when they are within reach.
 
 **Repairs**
 
@@ -28,6 +55,27 @@
 - Settings, Updater: all the update settings, this copy's version, and Save and check for updates now.
 - Tabs that hold more than the window shows now scroll, and windows never open bigger than the
   screen (on a small screen the Fighting tab's Gear choices were out of reach).
+
+**Also in this version**
+
+- Results: any day's results (Yesterday or a day you pick), casts and damage for each skill, and
+  healing done to yourself, your pet and others. Spoken results say the time farmed and the drop
+  time left first.
+- Characters with the same name on different servers keep separate profiles, chores and state.
+- Elf: Ignition is used only right before Pyroblast or Blazing Storm with three fire elements, and
+  a Fireball critical hit with Flame Combo makes Fire Impact ready at once.
+- Sorcerers and Priests cast their dispels on themselves (Shift + key), so their debuffs come off.
+- Shard and collection sales are much faster, and bag-rule discards go in one step each.
+- Travel: walks round one-way gates, no false "no way" after a map exit, the Holy Blood City cable
+  car is paid for, a free VIP ride that goes nowhere is paid for instead, and share trips pick the
+  instructor cheapest there and back.
+- After a fight the beast is mounted again, travel no longer wastes buffs, and skipped monsters are
+  forgotten after a death or a map change.
+- Daily chores fixed from recorded runs; the Gem Craftsman no longer leaves the gang base first;
+  the Equipment Enhancer never offers rings, medals, badges, emblems or bags.
+- Fixes for crashes on map changes and at start, kill counts from the last run, locked log files,
+  summer-time schedules, and game languages (equipment names, Shard Broker wording).
+- Needs the new game agent (58): restart the game after updating.
 
 ## 1.0.1
 

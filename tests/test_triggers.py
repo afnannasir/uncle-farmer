@@ -1,7 +1,7 @@
 # pyright: reportPrivateUsage=false
 # White-box tests: they call the run's before/after stages and use test_runner's stand-ins.
 """Character settings, Triggers: six Tools jobs (Sell shards now, Clean the bag now, Update shard
-prices, Gathering, Store items now, Restock Now), each with its own tick before farming and after farming. The
+prices, Gathering, Store items now, Restock now), each with its own tick before farming and after farming. The
 two ticks are independent: a job ticked at both runs once before and once after. The jobs run one
 after the other in a fixed order, the same code the Tools menu runs, and never for a run that isn't
 farming."""

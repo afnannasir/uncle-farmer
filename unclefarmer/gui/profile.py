@@ -16,9 +16,12 @@ from ..engine import combat, potions, triggers
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
-                     labeled, ok_cancel, page, pick, read_decimal, save_file, select_row, tabs)
+                     labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
 
 STYLES = ("auto", "follow", "stationary")
+PK_MODE_LABELS = (N_("Pacifist mode"), N_("Pacifist mode with counterattack"), N_("Moral Mode"),
+                  N_("Gang mode"), N_("Team mode"), N_("All mode"))
+TARGET_MODE_LABELS = (N_("All"), N_("Own side"), N_("Enemies"), N_("NPCs"))
 
 # A skill's choices in Advanced settings, in combat.SKILL_USES order.
 USE_LABELS = (N_("The bot decides"), N_("Never"), N_("Only when HP is low"), N_("Whenever it's ready"))
@@ -208,7 +211,7 @@ def pull_label(p: dict[str, Any]) -> str:
 
 class ProfileDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game_folder: str = "") -> None:
-        super().__init__(parent, title=_("Character settings - {name}", name=character),
+        super().__init__(parent, title=_("Character settings - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game_folder = game_folder
@@ -221,7 +224,7 @@ class ProfileDialog(Dialog):
         self.travel_page(nb)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
-        ok_cancel(self, root, _("Save"), extra=[(_("Ad&vanced..."), self.on_advanced)])
+        ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced)])
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 520))
         # Bound on the dialog, not the button: Enter in a text box sends OK to the dialog directly,
@@ -245,13 +248,16 @@ class ProfileDialog(Dialog):
                                      pick(STYLES, p.get("attack_style", "auto")))
         self.fight_beast = f.choice(_("Fight as &fusion beast:"), [""])
         pk = p["pk_mode"] + 1 if p.get("set_modes") else 0
-        self.pk_mode = f.choice(_("&PK mode:"), [_("Leave as it is")] + [_(n)[:1].upper() + _(n)[1:] for n in settings.PK_MODES],
+        self.pk_mode = f.choice(_("&PK mode:"), [_("Leave as it is")] + [_(n) for n in PK_MODE_LABELS],
                                 pk if 0 <= pk <= len(settings.PK_MODES) else 0)
         self.fight_back = f.check(_("Fight &back when attacked while travelling"), p["fight_back"])
         self.nearest_monster = f.check(_("Always fight the &nearest monster (off: melee picks a calm one beside a pack)"),
                                        p.get("nearest_monster", True))
         self.fight_locked = f.check(_("Fight monsters another player is &already killing"),
                                     p.get("fight_locked", False))
+        self.shoot_while_walking = f.check(
+            _("&Shoot monsters in reach while walking to the next one (a character that fights from afar)"),
+            p.get("shoot_while_walking", False))
         self.skills_by_slot = f.check(_("Press s&kills through the game, not the keyboard"),
                                       p.get("skills_by_slot", True))
         self.walk_diagonal = f.check(_("Walk d&iagonally across open ground (both direction keys at once)"),
@@ -318,18 +324,18 @@ class ProfileDialog(Dialog):
         panel, box = page(nb, _("Triggers"))
         self.triggers: dict[str, wx.CheckBox] = {}
         labels = {
-            "before": {"sell_shards": _("&Sell shards (Tools, Sell shards now)"),
-                       "clean_bag": _("&Clean the bag (Tools, Clean the bag now)"),
-                       "update_shard_prices": _("&Update shard prices (Tools, Update shard prices)"),
+            "before": {"sell_shards": _("&Sell shards (game menu, Sell shards now)"),
+                       "clean_bag": _("&Clean the bag (game menu, Clean the bag now)"),
+                       "update_shard_prices": _("&Update shard prices (game menu, Update shard prices)"),
                        "gather": _("&Gathering (as set in Tools, Gathering)"),
-                       "store_items": _("S&tore items (Tools, Store items now)"),
-                       "restock": _("&Restock supplies (Tools, Restock Now)")},
-            "after": {"sell_shards": _("Se&ll shards (Tools, Sell shards now)"),
-                      "clean_bag": _("Clea&n the bag (Tools, Clean the bag now)"),
-                      "update_shard_prices": _("Up&date shard prices (Tools, Update shard prices)"),
+                       "store_items": _("S&tore items (game menu, Store items now)"),
+                       "restock": _("&Restock supplies (game menu, Restock now)")},
+            "after": {"sell_shards": _("Se&ll shards (game menu, Sell shards now)"),
+                      "clean_bag": _("Clea&n the bag (game menu, Clean the bag now)"),
+                      "update_shard_prices": _("Up&date shard prices (game menu, Update shard prices)"),
                       "gather": _("Gat&hering (as set in Tools, Gathering)"),
-                      "store_items": _("St&ore items (Tools, Store items now)"),
-                      "restock": _("Restoc&k supplies (Tools, Restock Now)")},
+                      "store_items": _("St&ore items (game menu, Store items now)"),
+                      "restock": _("Restoc&k supplies (game menu, Restock now)")},
         }
         titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
                   "after": _("After farming (when farming finishes by itself, never after Stop)")}
@@ -344,7 +350,7 @@ class ProfileDialog(Dialog):
             "ticked in both lists runs once before and once after farming. A job that can't finish is said "
             "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
             "as it is at that moment."), lines=4)
-        f.readonly(_("Restock Now"), _("Fills enabled supplies to their configured targets, even above their "
+        f.readonly(_("Restock now"), _("Fills enabled supplies to their configured targets, even above their "
                                       "automatic refill thresholds."), lines=2)
 
     # ------------------------------------------------------------ from the scan
@@ -474,9 +480,9 @@ class ProfileDialog(Dialog):
 
     # ------------------------------------------------------------ buttons
     def on_scan(self, _evt: wx.Event) -> None:
-        pid = next((g[0] for g in games() if g[1] == self.character), None)
+        pid = next((g[0] for g in games() if settings.is_profile_of(g[1], self.character)), None)
         if pid is None:
-            error(self, _("{name} isn't logged in to a game that has the agent.", name=self.character))
+            error(self, _("{name} isn't logged in to a game that has the agent.", name=settings.profile_display(self.character)))
             return
         try:
             with wx.BusyCursor(), AgentLink(pid=pid, timeout=5) as a:
@@ -508,6 +514,7 @@ class ProfileDialog(Dialog):
         p["fight_back"] = self.fight_back.GetValue()
         p["nearest_monster"] = self.nearest_monster.GetValue()
         p["fight_locked"] = self.fight_locked.GetValue()
+        p["shoot_while_walking"] = self.shoot_while_walking.GetValue()
         p["skills_by_slot"] = self.skills_by_slot.GetValue()
         p["walk_diagonal"] = self.walk_diagonal.GetValue()
         p["use_buffs"] = self.use_buffs.GetValue()
@@ -549,7 +556,7 @@ class AdvancedDialog(Dialog):
     """Keys and fine tuning. Changes go into the profile dict; the character window saves it."""
 
     def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any], game_folder: str = "") -> None:
-        super().__init__(parent, title=_("Advanced settings - {name}", name=character),
+        super().__init__(parent, title=_("Advanced settings - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.p = profile
         self.game_folder = game_folder
@@ -581,7 +588,7 @@ class AdvancedDialog(Dialog):
             self.key_list.SetItem(i, 1, self.keys[k] or _("none"))
         select_row(self.key_list, 0)
         self.key_list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.change_key())
-        buttons(panel, box, (_("&Change key..."), lambda e: self.change_key()),
+        buttons(panel, box, (opens(_("&Change key")), lambda e: self.change_key()),
                 (_("&Read keys from the game"), self.on_read))
         f = Form(panel)
         self.attack_keys = f.text(_("&Attack keys when skills can't be read:"), " ".join(self.p["attack_keys"]))
@@ -715,7 +722,7 @@ class AdvancedDialog(Dialog):
         self.fight_timeout = f.number(_("&Give up a fight after (seconds):"), p["fight_timeout"], 5, 600)
         self.no_damage = f.number(_("Give up when the enemy takes no &damage for (seconds):"),
                                   p["no_damage_timeout"], 3, 120)
-        self.no_damage_casts = f.number(_("...or after this many casts that do &no damage:"),
+        self.no_damage_casts = f.number(_("Or after this many casts that do &no damage:"),
                                         p.get("no_damage_casts", 3), 1, 20)
         self.press_burst = f.check(_("Press a skill again and &again until the game casts it"),
                                    p.get("press_burst", True))
@@ -724,7 +731,7 @@ class AdvancedDialog(Dialog):
         keep = p.get("boss_distance", 40)
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
-        self.target_mode = f.choice(_("&Target keys pick:"), [_(n)[:1].upper() + _(n)[1:] for n in settings.TARGET_MODES],
+        self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)

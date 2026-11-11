@@ -17,15 +17,15 @@ import wx
 from .. import settings, speech, stats
 from ..engine import bagrules
 from ..engine.town import shard_catalog
-from ..i18n import _
-from .common import (Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel, page, pick,
-                     save_file, tabs)
+from ..i18n import N_, _
+from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel,
+                     opens, page, pick, popup_actions, save_file, tabs)
 
-SOURCE_LABELS = (("both", "Storehouse, then the shop"), ("storage", "Storehouse only"),
-                 ("buy", "Shop only"), ("tell", "Don't refill, just tell me"))
-FULL_LABELS = (("stop", "Go somewhere safe and stop"),
-               ("unload", "Sell and store by these lists, then come back"),
-               ("nothing", "Keep farming, just tell me"))
+SOURCE_LABELS = (("both", N_("Storehouse, then the shop")), ("storage", N_("Storehouse only")),
+                 ("buy", N_("Shop only")), ("tell", N_("Don't refill, just tell me")))
+FULL_LABELS = (("stop", N_("Go somewhere safe and stop")),
+               ("unload", N_("Sell and store by these lists, then come back")),
+               ("nothing", N_("Keep farming, just tell me")))
 
 
 class SortLists:
@@ -77,6 +77,14 @@ class SortLists:
         """A Move to button's (or menu entry's) handler."""
         return lambda e: self.move(to)
 
+    def menu(self, action: str) -> None:
+        """Offer moving the focused item without making a player tab through every target button."""
+        self.current = action
+        if not self.selected(action):
+            return
+        entries: list[ContextAction] = [(b, self.mover(a), True) for a, _l, b in self.columns if a != action]
+        popup_actions(self.lists[action], entries)
+
     def focused(self, evt: wx.FocusEvent, action: str) -> None:
         self.current = action
         self.show(action)
@@ -110,18 +118,6 @@ class SortLists:
         if self.on_select:
             self.on_select()
 
-    def menu(self, action: str) -> None:
-        self.current = action
-        if not self.selected(action):
-            return
-        m = wx.Menu()
-        for a, _l, b in self.columns:
-            if a != action:
-                item = m.Append(wx.ID_ANY, b)
-                m.Bind(wx.EVT_MENU, self.mover(a), item)
-        self.lists[action].PopupMenu(m)
-        m.Destroy()
-
     def move(self, to: str) -> None:
         src = self.current
         name = self.selected(src)
@@ -139,7 +135,7 @@ class SortLists:
 
 class BagManagerDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any] | None = None) -> None:
-        super().__init__(parent, title=_("Bag and supplies - {name}", name=character),
+        super().__init__(parent, title=_("Bag and supplies - {name}", name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER, size=wx.Size(820, 600))
         self.character = character
         self.p = profile if profile is not None else settings.load_profile(character)
@@ -242,7 +238,7 @@ class BagManagerDialog(Dialog):
         self.leave = f.number(_("Always leave this many in the &bag:"), 0, 0, 1000000)
         box.Add(f.grid, 0, wx.TOP, 10)
         self.leave.Bind(wx.EVT_SPINCTRL, lambda e: self.set_leave())
-        buttons(panel, box, (_("&Add an item..."), lambda e: self.add_item()))
+        buttons(panel, box, (opens(_("&Add an item")), lambda e: self.add_item()))
         self.show_leave()
 
     def show_leave(self) -> None:
@@ -292,7 +288,7 @@ class BagManagerDialog(Dialog):
         for spin in (self.low, self.fill):
             spin.Bind(wx.EVT_SPINCTRL, lambda e: self.set_supply())
         self.source.Bind(wx.EVT_CHOICE, lambda e: self.set_supply())
-        buttons(panel, box, (_("&Add a supply..."), lambda e: self.add_supply()),
+        buttons(panel, box, (opens(_("&Add a supply")), lambda e: self.add_supply()),
                 (_("&Remove"), lambda e: self.remove_supply()))
 
     def supply_label(self, r: dict[str, Any]) -> str:

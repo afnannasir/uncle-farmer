@@ -114,6 +114,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target
         self.gang_base = None             # (map id, gang name) of the named gang entered this run
+        self.vip_refused = False          # a ride's free VIP entry took us nowhere: fares from now on
         self.in_instance = False          # farming a dungeon: no trips out, no resting, leaving ends it
         self.pack_min = 3                 # monsters close together that make an area skill worth it
         self.timing = None                # phase -> seconds this hour (farm sets it up; see timed())

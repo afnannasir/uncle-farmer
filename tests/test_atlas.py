@@ -220,6 +220,36 @@ def test_route_obeys_gates_and_falls_back(tiny: MapModel) -> None:
     assert tiny.route((4, 1), (4, 2)) == [(4, 1), (4, 2)]
 
 
+def test_route_without_the_gate_fallback(tiny: MapModel) -> None:
+    assert tiny.route((2, 3), (4, 3), gates_fallback=False) is None   # no way that obeys the gate
+    assert tiny.route((4, 1), (4, 2), gates_fallback=False) == [(4, 1), (4, 2)]
+    # asking without the fallback first must not hide it from a later ordinary call
+    assert tiny.route((2, 3), (4, 3)) == [(2, 3), (3, 3), (4, 3)]
+
+
+def test_rolling_mountain_is_walked_round_not_through_its_one_way_stone_gate() -> None:
+    """Rolling mountain (1102): the only ledge-free way north to the exit to Dark pit City runs
+    through the Stone Gate at y 30 (x 20-31), which lets nobody step north off it (measured live
+    2026-11-08: north from y 30 doesn't move at x 25, 27, 29 or 33; south does). Asked for a
+    ledge-free way, route() fell back to ignoring the gates and the walk stood stuck at the gate
+    (LaSombra's "stuck before entering Dark pit City"). The way round, over the slope at x 80-89,
+    obeys the gate - and that is the way the bot took live, into Dark pit City."""
+    from unclefarmer.engine.botparts.walking import WalkingMixin
+
+    m = atlas.model(1102)
+    assert m.gate[30, 27] == 2                              # no step north off the gate
+    exit_stand = (98, 6)                                    # the exit to Dark pit City (5721)
+    for start in ((27, 30), (27, 43), (3, 94)):
+        hops = WalkingMixin._walk_hops(m, m, 1102, start, exit_stand, True)
+        assert hops is not None
+        cells = [start, *hops]
+        assert not any(a[1] >= 30 and b[1] < 30 and 20 <= a[0] <= 31 for a, b in zip(cells, cells[1:])), \
+            "the walk from %s goes north through the Stone Gate: %s" % (start, hops)
+    path = m.route((27, 30), exit_stand)
+    assert path is not None
+    assert not any(m.gate_blocks(a, b) for a, b in zip(path, path[1:]))
+
+
 def test_dijkstra_steps_and_path(tiny: MapModel) -> None:
     dist, prev = tiny.dijkstra((2, 3))
     assert tiny.path(prev, (3, 3)) == [(2, 3), (3, 3)]

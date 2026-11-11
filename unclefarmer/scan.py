@@ -37,7 +37,7 @@ def scan(link: JsonLink, game_folder: str="") -> dict[str, Any]:
     snap: dict[str, Any] = _json(link, "mem") or {}
     me: dict[str, Any] = snap.get("self") or {}
     sheet: dict[str, Any] = me.get("sheet") or {}
-    out: dict[str, Any] = {"when": time.strftime("%Y-%m-%d %H:%M"), "name": me.get("name"),
+    out: dict[str, Any] = {"when": time.strftime("%Y-%m-%d %H:%M"), "name": me.get("name"), "id": me.get("id"),
                            "maxhp": me.get("maxhp"), "level": sheet.get("level")}
 
     binds = gamekeys.read(game_folder)

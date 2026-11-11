@@ -7,6 +7,7 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import contextlib
+import math
 import queue
 import time
 from collections.abc import Callable, Generator
@@ -15,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 from ... import gamemem, jsonio
 from ...errors import carry_on
 from ...i18n import _
-from .base import (GameBroken, Stopped)
+from .base import (STOPPING, GameBroken, Stopped)
 from ...clock import Flag, StopFlag
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -27,6 +28,10 @@ AGENT_HEALTH = 36       # from here the agent counts the game's out-of-memory er
 HEALTH_EVERY = 10.0     # seconds between health reads while running
 MEMORY_EVERY = 1800.0   # seconds between the game-memory lines in the log
 MEMORY_LOW_MB = 200     # address space left when the game is close to freezing: said once
+# A paused run asks the agent something this often: the agent drops a connection that has asked
+# nothing for 120 s (StateServer.IDLE_MS), so a pause any longer lost the run its link.
+PAUSE_KEEPALIVE = 30.0
+PAUSE_MOVED = 0.75      # tiles: moved by hand this far while paused, walks plan again from there
 
 
 class ReadingMixin(Parts):
@@ -50,7 +55,8 @@ class ReadingMixin(Parts):
     requests: "queue.Queue[Callable[[Bot], object]]"
     agent_state: bool
     resumed_at = 0.0      # when a pause last ended (check)
-    broken = None         # why the game stopped working, once it has (GameBroken)
+    pause_moves = 0       # pauses the player moved the character in: walks plan again on a change
+    broken = None        # why the game stopped working, once it has (GameBroken)
     _health_at = 0.0
     _memory_at = 0.0
     _memory_logged = 0.0
@@ -73,6 +79,7 @@ class ReadingMixin(Parts):
     _snap_at: float = 0.0
     _snap_self: dict[str, Any] | None = None
     _snap_map_id: int | None = None
+    notes_map: int | None = None      # the map the notes about monster ids were made on (snap)
 
     def check(self) -> None:
         if self._stop.is_set():
@@ -93,11 +100,18 @@ class ReadingMixin(Parts):
             # ... and so is its speech: a run mutes the game, and the player can't play it silent
             talking = self._game.send("speech") == "off" and self._game.send("speech on") == "on"
             self._count_pause(True)
+            before = self._where()
             self.log(_("paused"))
             try:
+                # The agent drops a connection that asks nothing for two minutes: a long pause
+                # used to end the run as "lost the connection" the moment it went on.
+                asked = self.clock.time()
                 while self._pause.is_set():
                     if self.clock.wait(self._stop, 0.3):
                         raise Stopped(_("stopped by you"), final=True)
+                    if self.clock.time() - asked >= PAUSE_KEEPALIVE:
+                        asked = self.clock.time()
+                        self._game.send("version")
             finally:
                 if guarded:
                     self._game.send("guardmods on")
@@ -105,12 +119,54 @@ class ReadingMixin(Parts):
                     self._game.send("speech off")      # muted again, as it was (unless the player muted it)
                 self._speech_at = 0.0              # the points key's speech check reads it afresh
             self._count_pause(False)
+            self._snap_at = 0.0                    # nothing read before the pause holds now
+            moved = self._moved_since(before)
             self.log(_("going on"))
             # the walk we were in goes on: its keys down again, and its stuck and no-damage clocks
             # (walking, fighting) count from now, not from before the pause
             self.resumed_at = self.clock.time()
+            if moved:
+                # Moved by hand while paused: the walk's path was planned from where we stood. It
+                # plans again from here (the walks see pause_moves change and let go at once)
+                # instead of pressing on along a line that may now run into a wall and read as stuck.
+                self.pause_moves += 1
             for k in walking:
                 self.hold(k)
+
+    def _where(self) -> tuple[int | None, float, float] | None:
+        """(map id, x, y) as the game has it now; None when it can't be read just now. One read,
+        no waiting for a busy game: snap() waits through sleep(), which would pause again inside
+        the pause."""
+        try:
+            s = self._game.json("mem state" if getattr(self, "agent_state", False) else "mem")
+        except STOPPING:
+            raise                   # a stop or a lost agent is never "somewhere unknown"
+        except Exception as e:      # a reading for the pause's sake must never stop a run
+            carry_on(e, "reading where we are around a pause")
+            return None
+        if not jsonio.is_object(s) or not s.get("ok"):
+            return None
+        me, where = s.get("self"), s.get("map")
+        if not jsonio.is_object(me) or not jsonio.is_object(where):
+            return None
+        x, y, mid = me.get("x"), me.get("y"), where.get("id")
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+            return None
+        return (mid if isinstance(mid, int) else None), float(x), float(y)
+
+    def _moved_since(self, before: tuple[int | None, float, float] | None) -> bool:
+        """Did the player move the character while it was paused? Said in the log when so."""
+        after = self._where()
+        if before is None or after is None:
+            return False
+        if before[0] != after[0]:
+            self.log(_("on another map than when paused - going on from here"))
+            return True
+        tiles = math.hypot(after[1] - before[1], after[2] - before[2])
+        if tiles < PAUSE_MOVED:
+            return False
+        self.log(_("moved {n} tiles while paused - going on from here", n="%.0f" % max(1.0, tiles)))
+        return True
 
     def _count_pause(self, paused: bool) -> None:
         """Paused, the game is the player's: what they kill, pick up or earn by hand is not the
@@ -240,6 +296,14 @@ class ReadingMixin(Parts):
         map_info = s.get("map")
         map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
+        here = self._snap_map_id
+        if here and here != self.notes_map:
+            # Another map (0 is none: a change in progress). What the bot holds against monster
+            # ids was learned on the last one, and an id means something else here.
+            left, self.notes_map = self.notes_map, here
+            forget: Callable[[], None] | None = getattr(self, "forget_the_map", None)
+            if left and forget is not None:
+                forget()
         return s
 
     def me(self) -> dict[str, Any]:
@@ -250,8 +314,16 @@ class ReadingMixin(Parts):
         return s
 
     def map_id(self) -> int:
-        if self._snap_map_id is not None and self.clock.time() - self._snap_at < 0.15:
+        """The map we are on. In the middle of a map change (a teleport, a death, a cable car) the
+        game reports map 0 for a moment. That is no map: a route asked for on it ended a run with
+        "unexpected error: KeyError('map 0 has no geometry')". So a 0 waits for the change to
+        finish (settled_map), here, for every caller."""
+        if self._snap_map_id and self.clock.time() - self._snap_at < 0.15:
             return self._snap_map_id
+        return self._map_now() or self.settled_map()
+
+    def _map_now(self) -> int:
+        """What the game says this instant: 0 in the middle of a map change."""
         return self._read("mem map", lambda m: "error" not in m)["id"]
 
     def settled_map(self, seconds: float = 15) -> int:
@@ -271,7 +343,7 @@ class ReadingMixin(Parts):
                         return m["id"]
             self.sleep(0.3)
         self.me()                 # still unreadable: stop with the game's own reason
-        return self.map_id()
+        return self._map_now()
 
     def minutes(self) -> float:
         return (self.clock.time() - self.started) / 60.0

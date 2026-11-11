@@ -16,7 +16,7 @@ import wx
 from .. import atlas, settings, travel
 from ..engine import dungeon
 from ..i18n import N_, _
-from .common import Dialog, Reader, buttons, standing, with_code, enable_label, error, group, info, page, save_file, tabs, modal
+from .common import Dialog, Reader, buttons, standing, with_code, enable_label, error, group, info, modal, opens, page, save_file, tabs
 from .crafting import CHECK, START
 from .plan import END_CHOICES, NOT_SEEN
 
@@ -30,7 +30,7 @@ PATROL_LABELS = (("quick", N_("Quick loop (the whole cave, lanes further apart)"
 
 class DungeonDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game: Reader) -> None:
-        super().__init__(parent, title=_("{tool} - {name}", tool=_("Dungeons"), name=character),
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Dungeons"), name=settings.profile_display(character)),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.character = character
         self.game = game
@@ -106,7 +106,7 @@ class DungeonDialog(Dialog):
         self.end_x = f.number(_("X:"), cell[0], 0, 2000)
         self.end_y = f.number(_("Y:"), cell[1], 0, 2000)
         self.end_buttons = buttons(f.parent, f.box, (_("Use where I &stand now"), self.on_end_here),
-                                   (_("A city s&quare..."), self.on_end_square))
+                                   (opens(_("A city s&quare")), self.on_end_square))
         self.end_how.Bind(wx.EVT_CHOICE, lambda e: self.sync_end())
 
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)

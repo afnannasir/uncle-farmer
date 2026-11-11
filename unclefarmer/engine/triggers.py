@@ -1,5 +1,5 @@
 """Character settings, Triggers: Tools jobs the bot runs by itself before farming starts and after
-it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering, Store items now and Restock Now.
+it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering, Store items now and Restock now.
 
 Each job has two ticks of its own, one per stage (profile keys `<job>_before_farming` and
 `<job>_after_farming`); the two never touch each other, so a job ticked at both stages runs once

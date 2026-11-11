@@ -21,6 +21,7 @@ from .base import FrameParts, character_of
 
 def import_confirmation(character: str, source: str, exists: bool) -> str:
     """The last clear warning before an import creates or replaces a profile file."""
+    character = settings.profile_display(character)
     if exists:
         return _("Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n\n"
                  "This replaces combat, key, potion, bag, pet, travel and restock choices. "
@@ -30,6 +31,14 @@ def import_confirmation(character: str, source: str, exists: bool) -> str:
              "This creates settings for that name only. It doesn't create or log in to a Mist World "
              "character. The choices take effect when that character is scanned or run. Nothing changes "
              "until you choose Yes.", character=character, source=source)
+
+
+def active_profile(owner: FrameParts) -> str | None:
+    """The selected game's distinct profile; simple callers can still provide only a snapshot."""
+    try:
+        return owner.selected_profile() or character_of(owner.snapshot())
+    except AttributeError:
+        return character_of(owner.snapshot())
 
 
 def import_destinations(source: str, profiles: list[str]) -> tuple[list[str], str]:
@@ -73,7 +82,7 @@ class EditingMixin(FrameParts):
                 self.fill_runs(("plan", d.plan["name"]))
 
     def copy_plan(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item or item[0] != "plan":
             self.say(_("Select a plan first."))
             return
@@ -91,7 +100,7 @@ class EditingMixin(FrameParts):
         self.fill_runs(("script", name) if name else None)
 
     def edit_selected(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item:
             self.new_plan()
             return
@@ -106,7 +115,7 @@ class EditingMixin(FrameParts):
             self.fill_runs(("script", name))
 
     def delete_selected(self) -> None:
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item:
             return
         if not ask(self, _("Delete {name}? This can't be undone.", name=item[1])):
@@ -123,7 +132,7 @@ class EditingMixin(FrameParts):
 
     def export_plan(self) -> None:
         """Plans, Export: make a portable copy of the selected saved plan."""
-        item = self.listed_item() if self.nb.GetSelection() == 1 else self.selected_item()
+        item = self.active_item()
         if not item or item[0] != "plan":
             self.say(_("Select a plan first."))
             return
@@ -175,7 +184,7 @@ class EditingMixin(FrameParts):
         show_text(self, _("Script commands"), script.__doc__ or "")
 
     def edit_profile(self) -> None:
-        name = character_of(self.snapshot())
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first, or use Character, Another character."))
             return
@@ -183,7 +192,7 @@ class EditingMixin(FrameParts):
             d.ShowModal()
 
     def walk(self) -> None:
-        """Bot, Walk to: the walking assistant takes the selected game's character to a dungeon
+        """Run, Walk to: the walking assistant takes the selected game's character to a dungeon
         entrance or a map on the fastest Swift fusion beast, never stopping to fight."""
         from ..walk import WalkDialog
         if self.selected_pid() is None:
@@ -204,7 +213,7 @@ class EditingMixin(FrameParts):
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
-        name = character_of(self.snapshot())
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -234,7 +243,7 @@ class EditingMixin(FrameParts):
             self.run_errand(cmd + "\n", title)
 
     def edit_bag(self) -> None:
-        name = character_of(self.snapshot())
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -248,7 +257,7 @@ class EditingMixin(FrameParts):
             d.ShowModal()
 
     def sell_shards_now(self) -> None:
-        """Tools, Sell shards now: the shards the bag manager says to sell, at this city's Shard
+        """The game menu's Sell shards now: the shards the bag manager says to sell, at this city's Shard
         Market or the nearest one - a job of its own, like selling the collection. Started by hand,
         whatever Character settings says about selling after farming."""
         self.log(_("Sell shards now: started by hand"))
@@ -258,11 +267,15 @@ class EditingMixin(FrameParts):
         """Run an explicit supply top-up through the same job as farming triggers."""
         self.run_errand("restock\n", _("Restocking supplies"))
 
+    def sell_collection_now(self) -> None:
+        """Sell the selected character's gathered fish, ore, or herbs right away."""
+        self.run_errand("sell_collection\n", _("Selling the collection"))
+
     def store_items_now(self) -> None:
-        """Tools, Store items now: put into the storehouse what the bag manager's storage list says
+        """The game menu's Store items now: put into the storehouse what the bag manager's storage list says
         (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
         job the Triggers tab can run before or after farming. Storing loses nothing, so no question."""
-        name = character_of(self.snapshot())
+        name = active_profile(self)
         if name and not town.store_list(settings.load_profile(name)):
             info(self, _("The storage list is empty. Choose what to move to the storehouse in Character, Bag and "
                          "supplies first."))
@@ -271,14 +284,14 @@ class EditingMixin(FrameParts):
         self.run_errand("store_items\n", _("Storing items"))
 
     def update_shard_prices_now(self) -> None:
-        """Tools, Update shard prices: read the nearest Shard Market's list into data/shards.json
+        """The game menu's Update shard prices: read the nearest Shard Market's list into data/shards.json
         (only the prices it shows and sends alike; every other price stays as it was)."""
         self.run_errand("update_shard_prices\n", _("Updating shard prices"))
 
     def clean_bag_now(self) -> None:
-        """Tools, Clean the bag now: throw away what is on the bag manager's throw-away list, after
+        """The game menu's Clean the bag now: throw away what is on the bag manager's throw-away list, after
         the player has seen the list and said yes (thrown items are gone for good)."""
-        name = character_of(self.snapshot())
+        name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
@@ -299,28 +312,30 @@ class EditingMixin(FrameParts):
         self.run_errand("clean_bag\n", _("Cleaning the bag"))
 
     def edit_other_profile(self) -> None:
-        names = settings.profiles()
-        if not names:
+        profiles = settings.profiles()
+        if not profiles:
             info(self, _("No character has settings yet. Log in to one in the game and the bot scans it."))
             return
-        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Another character"), names)) as d:
+        labels = [settings.profile_display(profile) for profile in profiles]
+        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Another character"), labels)) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
-            name = names[d.GetSelection()]
+            name = profiles[d.GetSelection()]
         with ProfileDialog(self, name, self.s.get("game_folder", "")) as d:
             d.ShowModal()
 
     def export_character_settings(self) -> None:
         """Character, Export settings: a portable copy of choices, never game readings."""
-        names = settings.profiles()
-        if not names:
+        profiles = settings.profiles()
+        if not profiles:
             info(self, _("No character has settings to export yet. Log in to one and let the bot scan it first."))
             return
-        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Export character settings"), names)) as d:
+        labels = [settings.profile_display(profile) for profile in profiles]
+        with modal(wx.SingleChoiceDialog(self, _("Character:"), _("Export character settings"), labels)) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
-            character = names[d.GetSelection()]
-        filename = paths.safe_name(character) + ".unclefarmer-profile.json"
+            character = profiles[d.GetSelection()]
+        filename = paths.safe_name(settings.profile_display(character)) + ".unclefarmer-profile.json"
         wildcard = _("Uncle Farmer character settings and profiles (*.unclefarmer-profile.json;*.json)|*.unclefarmer-profile.json;*.json|") + \
                    _("All files (*.*)|*.*")
         with modal(wx.FileDialog(self, _("Export character settings"), wildcard=wildcard, defaultFile=filename,
@@ -335,7 +350,7 @@ class EditingMixin(FrameParts):
             return
         info(self, _("Settings for {character} were exported to:\n{path}\n\nThe file has combat, keys, potions, "
                      "bag, pet, travel and restock choices. It doesn't contain scans or the learned hearthstone "
-                     "location.", character=character, path=path))
+                     "location.", character=settings.profile_display(character), path=path))
 
     def import_character_settings(self) -> None:
         """Character, Import settings: validate first, confirm, then atomically replace choices."""
@@ -353,13 +368,14 @@ class EditingMixin(FrameParts):
         except ValueError as e:
             error(self, _("Couldn't import the settings: {err}", err=e))
             return
-        names, suggested = import_destinations(source, settings.profiles())
+        profiles, suggested = import_destinations(source, settings.profiles())
+        labels = [settings.profile_display(profile) for profile in profiles]
         with modal(wx.SingleChoiceDialog(self, _("Import settings into this character:"),
-                                         _("Import character settings"), names)) as d:
-            d.SetSelection(names.index(suggested))
+                                         _("Import character settings"), labels)) as d:
+            d.SetSelection(profiles.index(suggested))
             if d.ShowModal() != wx.ID_OK:
                 return
-            character = names[d.GetSelection()]
+            character = profiles[d.GetSelection()]
         exists = settings.has_profile(character)
         if not ask(self, import_confirmation(character, source, exists),
                    _("Import character settings")):
@@ -370,7 +386,7 @@ class EditingMixin(FrameParts):
             error(self, _("Couldn't import the settings: {err}", err=e))
             return
         info(self, _("Settings were imported into {character}. Scan this character before farming if its skills, "
-                     "hotkeys, bag, pets or beasts changed.", character=character))
+                     "hotkeys, bag, pets or beasts changed.", character=settings.profile_display(character)))
 
     # ------------------------------------------------------------ settings
     def first_run(self) -> None:
@@ -432,7 +448,7 @@ class EditingMixin(FrameParts):
         if not games:
             self._install_agent(folder, [])
             return
-        self.say(_("Closing every Mist World window to reinstall the agent..."))
+        self.say(_("Closing every Mist World window to reinstall the agent"))
         agentfix.close_then(games, lambda left: self._install_agent(folder, left))
 
     def _install_agent(self, folder: str, left: list[int]) -> None:
