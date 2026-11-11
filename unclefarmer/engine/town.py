@@ -19,7 +19,7 @@ import threading
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any
 
-from .. import atlas, jsonio as json, knowledge, paths, stats, travel
+from .. import atlas, gamelang, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
 from ..i18n import _
 from . import bagrules, menus
@@ -41,10 +41,17 @@ def counts(b: Bot) -> dict[str, int]:
     return out
 
 
+# The marks the client writes after an item's name in a list it builds itself, any of them
+# (gamelang.MARKS): the storehouse's "deposit item" list reads "78 Memory Butterfly (restricted) ".
+ITEM_MARKS = r"(\s*\((" + "|".join(re.escape(m.strip("()")) for m in gamelang.MARKS) + r")\))*"
+
+
 def item_pattern(item: str) -> str:
-    """Matches the item in a menu entry ("187 Large Red Potion", "Large Red Potion; Unit price ...")
-    but not a longer name containing it ("Pet Large Red Potion")."""
-    return r"(^|[;|]\s*|\d\s+)" + re.escape(item.strip()) + r"\s*($|[|;,])"
+    """Matches the item in a menu entry ("187 Large Red Potion", "Large Red Potion; Unit price ...",
+    "78 Memory Butterfly (restricted) ") but not a longer name containing it ("Pet Large Red
+    Potion"). Without the marks nothing restricted, locked or bound could be put into the
+    storehouse: "the menu has no entry like ..."."""
+    return r"(^|[;|]\s*|\d\s+)" + re.escape(item.strip()) + ITEM_MARKS + r"\s*($|[|;,])"
 
 
 # ---------------------------------------------------------------------------------------- getting there
