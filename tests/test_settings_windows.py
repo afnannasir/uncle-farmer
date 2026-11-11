@@ -80,7 +80,7 @@ def test_travel_and_pets_keeps_only_travel_and_pets(frame: Any) -> None:
         travel = labels(tab(d, "Travel and pets"))
         assert not any("farming" in t.lower() or "Tools," in t for t in travel)
         assert "End the run with the hearthstone" in travel
-        assert len(labels(tab(d, "Triggers"))) == 10
+        assert len(labels(tab(d, "Triggers"))) == 2 * len(triggers.JOBS)
     finally:
         d.Destroy()
 

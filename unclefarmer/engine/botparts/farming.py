@@ -391,7 +391,13 @@ class FarmingMixin(Parts):
     def restock_now(self, start: bool = False) -> bool:
         """Top up the profile's restock rules if they need it (storehouse first, then shops)."""
         rules: list[dict[str, Any]] = self.p.get("restock") or []
-        if not rules or getattr(self, "restocking", False):
+        if getattr(self, "restocking", False):
+            if start:
+                self.log(_("Restock Now: a restock is already running."), speak=True)
+            return False
+        if not rules:
+            if start:
+                self.log(_("Restock Now: no supply rules are configured in Character, Bag and supplies."), speak=True)
             return False
         from .. import town
         self.restocking = True            # its own walks to town must not restock again on the way

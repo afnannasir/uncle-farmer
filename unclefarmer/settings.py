@@ -92,11 +92,13 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "update_shard_prices_before_farming": False,   # Tools, Update shard prices, before a farming run starts
     "gather_before_farming": False,       # Tools, Gathering (as set there), before a farming run starts
     "store_items_before_farming": False,  # Tools, Store items now, before a farming run starts
+    "restock_before_farming": False,      # Tools, Restock Now, before a farming run starts
     "sell_shards_after_farming": False,   # Tools, Sell shards now, by itself after a farming run that finished
     "clean_bag_after_farming": False,     # Tools, Clean the bag now, by itself after a farming run that finished
     "update_shard_prices_after_farming": False,    # Tools, Update shard prices, after a farming run that finished
     "gather_after_farming": False,        # Tools, Gathering (as set there), after a farming run that finished
     "store_items_after_farming": False,   # Tools, Store items now, after a farming run that finished
+    "restock_after_farming": False,       # Tools, Restock Now, after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
@@ -260,11 +262,13 @@ class Profile(BaseModel):
     update_shard_prices_before_farming: bool = PROFILE_DEFAULTS["update_shard_prices_before_farming"]
     gather_before_farming: bool = PROFILE_DEFAULTS["gather_before_farming"]
     store_items_before_farming: bool = PROFILE_DEFAULTS["store_items_before_farming"]
+    restock_before_farming: bool = PROFILE_DEFAULTS["restock_before_farming"]
     sell_shards_after_farming: bool = PROFILE_DEFAULTS["sell_shards_after_farming"]
     clean_bag_after_farming: bool = PROFILE_DEFAULTS["clean_bag_after_farming"]
     update_shard_prices_after_farming: bool = PROFILE_DEFAULTS["update_shard_prices_after_farming"]
     gather_after_farming: bool = PROFILE_DEFAULTS["gather_after_farming"]
     store_items_after_farming: bool = PROFILE_DEFAULTS["store_items_after_farming"]
+    restock_after_farming: bool = PROFILE_DEFAULTS["restock_after_farming"]
     hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
     hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
     bag_up: str = PROFILE_DEFAULTS["bag_up"]

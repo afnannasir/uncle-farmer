@@ -322,12 +322,14 @@ class ProfileDialog(Dialog):
                        "clean_bag": _("&Clean the bag (Tools, Clean the bag now)"),
                        "update_shard_prices": _("&Update shard prices (Tools, Update shard prices)"),
                        "gather": _("&Gathering (as set in Tools, Gathering)"),
-                       "store_items": _("S&tore items (Tools, Store items now)")},
+                       "store_items": _("S&tore items (Tools, Store items now)"),
+                       "restock": _("&Restock supplies (Tools, Restock Now)")},
             "after": {"sell_shards": _("Se&ll shards (Tools, Sell shards now)"),
                       "clean_bag": _("Clea&n the bag (Tools, Clean the bag now)"),
                       "update_shard_prices": _("Up&date shard prices (Tools, Update shard prices)"),
                       "gather": _("Gat&hering (as set in Tools, Gathering)"),
-                      "store_items": _("St&ore items (Tools, Store items now)")},
+                      "store_items": _("St&ore items (Tools, Store items now)"),
+                      "restock": _("Restoc&k supplies (Tools, Restock Now)")},
         }
         titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
                   "after": _("After farming (when farming finishes by itself, never after Stop)")}
@@ -342,6 +344,8 @@ class ProfileDialog(Dialog):
             "ticked in both lists runs once before and once after farming. A job that can't finish is said "
             "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
             "as it is at that moment."), lines=4)
+        f.readonly(_("Restock Now"), _("Fills enabled supplies to their configured targets, even above their "
+                                      "automatic refill thresholds."), lines=2)
 
     # ------------------------------------------------------------ from the scan
     def potion_shower(self, kind: str) -> Handler:

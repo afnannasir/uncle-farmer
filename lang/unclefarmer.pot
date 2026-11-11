@@ -382,6 +382,9 @@ msgstr ""
 msgid "&Rest before the next fight below HP (%):"
 msgstr ""
 
+msgid "&Restock supplies (Tools, Restock Now)"
+msgstr ""
+
 msgid "&Results...\tCtrl+R"
 msgstr ""
 
@@ -1356,6 +1359,10 @@ msgid "Fighting:"
 msgstr ""
 
 msgid "Fill &up to:"
+msgstr ""
+
+msgid ""
+"Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
 msgstr ""
 
 msgid "Fishing"
@@ -2578,6 +2585,35 @@ msgid "Rest &until HP (%):"
 msgstr ""
 
 msgid "Restart Uncle Farmer to switch the language."
+msgstr ""
+
+msgid "Restoc&k supplies (Tools, Restock Now)"
+msgstr ""
+
+msgid "Restock &Now"
+msgstr ""
+
+msgid "Restock Now"
+msgstr ""
+
+msgid "Restock Now: a restock is already running."
+msgstr ""
+
+msgid "Restock Now: no supplies could be restocked."
+msgstr ""
+
+msgid ""
+"Restock Now: no supply rules are configured in Character, Bag and supplies."
+msgstr ""
+
+msgid ""
+"Restock Now: nothing to restock; no supplies need purchasing or withdrawal."
+msgstr ""
+
+msgid "Restock Now: supplies are at their configured targets."
+msgstr ""
+
+msgid "Restocking supplies"
 msgstr ""
 
 msgid "Results"
@@ -3896,6 +3932,9 @@ msgstr ""
 msgid "bad pattern: {why}"
 msgstr ""
 
+msgid "bag capacity allows {n} more {item}"
+msgstr ""
+
 msgid "bag items and targets go by keys again: {why}"
 msgstr ""
 
@@ -4119,6 +4158,9 @@ msgid "couldn't reach {skill} in the skills panel"
 msgstr ""
 
 msgid "couldn't respawn - please do it by hand"
+msgstr ""
+
+msgid "couldn't restock {item}: {why}"
 msgstr ""
 
 msgid "couldn't save the shard prices: {err}"
@@ -4874,9 +4916,6 @@ msgstr ""
 msgid "nothing to collect today"
 msgstr ""
 
-msgid "nothing to restock"
-msgstr ""
-
 msgid "now (waiting to start)"
 msgstr ""
 
@@ -5056,6 +5095,9 @@ msgid "resting"
 msgstr ""
 
 msgid "restocking in {map}: {what}"
+msgstr ""
+
+msgid "restocking supplies"
 msgstr ""
 
 msgid "restocking: {what}"

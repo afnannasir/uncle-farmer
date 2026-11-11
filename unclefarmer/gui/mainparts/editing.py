@@ -254,6 +254,10 @@ class EditingMixin(FrameParts):
         self.log(_("Sell shards now: started by hand"))
         self.run_errand("sell_shards\n", _("Selling shards"))
 
+    def restock_now(self) -> None:
+        """Run an explicit supply top-up through the same job as farming triggers."""
+        self.run_errand("restock\n", _("Restocking supplies"))
+
     def store_items_now(self) -> None:
         """Tools, Store items now: put into the storehouse what the bag manager's storage list says
         (Character, Bag and supplies, "Move to storehouse"), keeping what each rule keeps - the same
