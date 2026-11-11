@@ -58,33 +58,6 @@ def test_names_and_menu_lines_come_back_in_english(game: Path) -> None:
     assert t.word("Something new") == "Something new"
 
 
-def test_a_pet_s_name_is_turned_back_part_by_part(game: Path) -> None:
-    t = gamelang.table()
-    assert t is not None
-    assert t.word("Kurbağa Hopper ait olduğu kişi Kahraman") == "Frog Hopper belongs to Kahraman"
-
-
-def test_an_agent_answer_is_english_but_players_keep_their_names(game: Path) -> None:
-    snap = {"self": {"id": 7, "kind": "player", "name": "Kahraman", "hp": 5},
-            "entities": [{"id": -1, "kind": "monster", "name": "kızıl akrep"},
-                         {"id": 9, "kind": "player", "name": "Kahraman"},
-                         {"id": 10000001, "kind": "player", "name": "Kurbağa x ait olduğu kişi Kahraman"}],
-            "map": {"id": 5121, "name": "Haritada doğ"}}
-    out = gamelang.english(snap)
-    assert out["self"]["name"] == "Kahraman"
-    assert [e["name"] for e in out["entities"]] == ["Crimson Scorpion", "Kahraman",
-                                                    "Frog x belongs to Kahraman"]
-    assert out["self"]["hp"] == 5
-
-
-def test_english_changes_nothing(game: Path) -> None:
-    (game / "language" / "lang.txt").write_text("english", encoding="utf-8")
-    gamelang.forget()
-    assert gamelang.table() is None
-    data = {"name": "Evcil Büyük Kırmızı İksir"}
-    assert gamelang.english(data) is data
-
-
 def test_a_translation_comes_back_in_the_english_packs_wording(tmp_path: Path) -> None:
     """The bot's names are the english pack's, and that pack rewords some of the server's. Live
     with the Spanish pack (2026-11-11): "Mercado de fragmentos" came back as the server's "Shard
@@ -125,3 +98,30 @@ def test_shown_keeps_the_key_when_the_english_pack_has_holes_or_nothing(tmp_path
     assert gamelang._shown("Arnebia piece", eng) == "Arnebia piece"
     assert gamelang._shown("Empty", eng) == "Empty"
     assert gamelang._shown("Frog", eng) == "Frog"
+
+
+def test_a_pet_s_name_is_turned_back_part_by_part(game: Path) -> None:
+    t = gamelang.table()
+    assert t is not None
+    assert t.word("Kurbağa Hopper ait olduğu kişi Kahraman") == "Frog Hopper belongs to Kahraman"
+
+
+def test_an_agent_answer_is_english_but_players_keep_their_names(game: Path) -> None:
+    snap = {"self": {"id": 7, "kind": "player", "name": "Kahraman", "hp": 5},
+            "entities": [{"id": -1, "kind": "monster", "name": "kızıl akrep"},
+                         {"id": 9, "kind": "player", "name": "Kahraman"},
+                         {"id": 10000001, "kind": "player", "name": "Kurbağa x ait olduğu kişi Kahraman"}],
+            "map": {"id": 5121, "name": "Haritada doğ"}}
+    out = gamelang.english(snap)
+    assert out["self"]["name"] == "Kahraman"
+    assert [e["name"] for e in out["entities"]] == ["Crimson Scorpion", "Kahraman",
+                                                    "Frog x belongs to Kahraman"]
+    assert out["self"]["hp"] == 5
+
+
+def test_english_changes_nothing(game: Path) -> None:
+    (game / "language" / "lang.txt").write_text("english", encoding="utf-8")
+    gamelang.forget()
+    assert gamelang.table() is None
+    data = {"name": "Evcil Büyük Kırmızı İksir"}
+    assert gamelang.english(data) is data

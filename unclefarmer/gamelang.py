@@ -53,6 +53,20 @@ _KEY_HOLE = re.compile(r"\{[a-z]\}")
 _CJK = re.compile("[㐀-鿿]")
 
 
+def _shown(key: str, eng: dict[str, str]) -> str:
+    """What the english pack shows for a text the server sends. The bot learned its names from
+    a game set to English, and that pack rewords some of the server's: "Shard Marketplace" is
+    shown as "Shard Broker", "Bone Cookie" as "Pet Bone Cookie", "Lesser Cattle Soul Stone" as
+    "Lesser Cow Soul Stone" (351 of its 9,227 plain entries). A translation used to come back
+    as the server's wording, which the bot doesn't know: live with the Spanish pack (2026-11-11)
+    it stood beside "Mercado de fragmentos" and stopped with "couldn't talk to Shard Broker".
+    A reworded entry with $1 holes belongs to the templates, not here."""
+    shown = eng.get(key)
+    if shown and not _HOLE.search(shown) and not _CJK.search(shown):
+        return shown
+    return key
+
+
 def _blocks(path: str) -> Iterator[tuple[str, str]]:
     """(key, value) of every block of a language file, as the game reads it."""
     try:
@@ -99,20 +113,6 @@ def _english_template(key: str, eng: str | None) -> str:
         n[0] += 1
         return "$%d" % n[0]
     return _KEY_HOLE.sub(number, key)
-
-
-def _shown(key: str, eng: dict[str, str]) -> str:
-    """What the english pack shows for a text the server sends. The bot learned its names from
-    a game set to English, and that pack rewords some of the server's: "Shard Marketplace" is
-    shown as "Shard Broker", "Bone Cookie" as "Pet Bone Cookie", "Lesser Cattle Soul Stone" as
-    "Lesser Cow Soul Stone" (351 of its 9,227 plain entries). A translation used to come back
-    as the server's wording, which the bot doesn't know: live with the Spanish pack (2026-11-11)
-    it stood beside "Mercado de fragmentos" and stopped with "couldn't talk to Shard Broker".
-    A reworded entry with $1 holes belongs to the templates, not here."""
-    shown = eng.get(key)
-    if shown and not _HOLE.search(shown) and not _CJK.search(shown):
-        return shown
-    return key
 
 
 class Table:
