@@ -312,6 +312,9 @@ msgstr "&Nayi baat-cheet (naam ya id):"
 msgid "&New plan"
 msgstr "&Naya plan"
 
+msgid "&No, keep current language"
+msgstr "&Nahin, mojooda zaban rakhein"
+
 msgid "&Number of gems:"
 msgstr "&Gems ki tadaad:"
 
@@ -513,6 +516,9 @@ msgstr "&Email likhein"
 
 msgid "&Write to the files in the logs folder:"
 msgstr "logs folder ki files mein &likhein:"
+
+msgid "&Yes, switch language"
+msgstr "&Haan, zaban badlein"
 
 msgid "&Your places:"
 msgstr "&Aap ki jagahein:"
@@ -4052,6 +4058,9 @@ msgstr "Sab se bura mila hit: {hit}"
 msgid "Worst normal hit received: {hit}"
 msgstr "Sab se bura normal hit mila: {hit}"
 
+msgid "Would you like to switch to {language}?"
+msgstr "Kya aap {language} istemal karna chahein ge?"
+
 msgid "Write the character's name: the game it is logged in to runs it."
 msgstr ""
 "Kirdaar ka naam likhein: jis game mein woh logged in hai wahi ise chalata hai."
@@ -4075,6 +4084,11 @@ msgid ""
 "You have the development build {v}. The newest stable release, {stable}, is older; the next stable release newer than your build will be offered."
 msgstr ""
 "Aap ke paas development build {v} hai. Sab se naya stable release, {stable}, is se purana hai; aap ki build se naya agla stable release pesh kiya jayega."
+
+msgid ""
+"Your system language is supported. Would you like to use {language} in Uncle Farmer?"
+msgstr ""
+"Aap ke system ki zaban dastiyab hai. Kya aap Uncle Farmer mein {language} istemal karna chahein ge?"
 
 msgid "a chat line"
 msgstr "ek chat line"

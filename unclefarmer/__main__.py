@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import wx
@@ -83,6 +83,8 @@ def _start(boot: Lifecycle) -> wx.App | None:
         import wx
         app = wx.App(False)
         i18n.attach_wx(config.get("language", "en"))
+    with boot.step("first-launch language"):
+        _first_launch_language(config)
     with boot.step("main window"):
         from .gui.main import MainFrame
         frame = MainFrame()
@@ -90,6 +92,32 @@ def _start(boot: Lifecycle) -> wx.App | None:
         instance.mark_window(frame.GetHandle())     # what a second launch looks for (focus_existing)
     boot.note("main loop starting")
     return app
+
+
+def _first_launch_language(config: dict[str, Any]) -> None:
+    """Ask once, before building the main window so an accepted language applies immediately."""
+    from . import i18n, settings
+    from .i18n import _
+    if config.get("language_prompted", True):
+        return
+    current = config.get("language", "en")
+    offered = i18n.match_locale(i18n.system_locale())
+    if offered is not None and offered[0] != current and current == settings.APP_DEFAULTS["language"]:
+        import wx
+        from .gui.common import modal
+        code, name = offered
+        with modal(wx.MessageDialog(None,
+                   _("Your system language is supported. Would you like to use {language} in Uncle Farmer?", language=name),
+                   _("Would you like to switch to {language}?", language=name),
+                   wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)) as dialog:
+            dialog.SetYesNoLabels(_("&Yes, switch language"), _("&No, keep current language"))
+            if dialog.ShowModal() == wx.ID_YES:
+                config["language"] = code
+    config["language_prompted"] = True
+    settings.save_app(config)
+    if config.get("language", "en") != current:
+        i18n.load(config["language"])
+        i18n.attach_wx(config["language"])
 
 
 def _finish(down: Lifecycle) -> None:

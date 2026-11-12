@@ -15,6 +15,7 @@ from .i18n import _
 
 APP_DEFAULTS: dict[str, Any] = {
     "language": "en",
+    "language_prompted": False,
     "game_folder": "",
     "speak": True,            # announce important events through NVDA when it is running
     "last_run": "",           # what was selected to run last time
@@ -197,6 +198,7 @@ class AppSettings(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     language: str = APP_DEFAULTS["language"]
+    language_prompted: bool = APP_DEFAULTS["language_prompted"]
     game_folder: str = APP_DEFAULTS["game_folder"]
     speak: bool = APP_DEFAULTS["speak"]
     last_run: str = APP_DEFAULTS["last_run"]
@@ -426,7 +428,9 @@ def _write(path: str, data: dict[str, Any]) -> None:
 
 
 def load_app() -> dict[str, Any]:
-    return _read(paths.SETTINGS, APP_DEFAULTS, AppSettings)
+    # An existing installation predates the first-launch prompt: keep its preferences.
+    defaults = {**APP_DEFAULTS, "language_prompted": os.path.exists(paths.SETTINGS)}
+    return _read(paths.SETTINGS, defaults, AppSettings)
 
 
 def save_app(data: dict[str, Any]) -> None:
