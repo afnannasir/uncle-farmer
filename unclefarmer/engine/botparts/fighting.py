@@ -578,9 +578,18 @@ class FightingMixin(Parts):
                   boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
         """Why targets() leaves this monster out before any walking distance is worked out (a key
         of LEFT_OUT), or None when it may be a target."""
-        if self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
+        if e["id"] in hitting:
+            # It is hitting us or our pet: what the bot held against it (or its kind) before is
+            # stale. A monster that keeps striking us could be ignored for up to two minutes while
+            # it did (a "took no damage" skip, a stuck walk, or an unselectable note from where it
+            # stood): the one thing a fight must never do is stand there and take it. The
+            # unselectable note itself stays, so a monster the game won't take is still given up
+            # with its growing wait; the player's own filters (only/skip names, areas) apply below.
+            self.skip.pop(e["id"], None)
+            self.skip_names.pop((snap_map(snap), e["name"].strip().lower()), None)
+        elif self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
             return "skip"
-        if self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
+        elif self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
             return "kind"       # its kind took no damage and never attacked: a critter, not a monster
         if (only and not re.search(only, e["name"], re.I)) or (skip and re.search(skip, e["name"], re.I)):
             return "names"
@@ -1110,7 +1119,9 @@ class FightingMixin(Parts):
         is in a straight line within the leash and we are closing in; else the farm loop picks the
         nearest again (a melee fight broke off and restarted this way 238 times in two nights).
         True when the fight ends here."""
-        if f.dist <= f.rng + 3:
+        # The follow attack walks us the last stretch (up to its leash); standing still, a monster
+        # past our own reach is the farm loop's to walk up again, not something to keep pressing at.
+        if f.dist <= f.rng + (3.0 if f.follow else 0.5):
             f.closing = None
             return False
         if f.dist > f.leash or not self.clear_shot(f.snap["self"], f.m, snap_map(f.snap)):
@@ -1120,7 +1131,7 @@ class FightingMixin(Parts):
             return False
         if self.clock.time() - f.closing[0] <= self.FOLLOW_STALL:
             return False
-        if not f.reached:
+        if f.follow and not f.reached:
             # one corner the straight line hides (a ledge, a one-way door) can stop it;
             # only a few in a row say the follow attack doesn't walk us here at all
             self.skip[f.mid] = self.clock.time() + 10
@@ -1129,6 +1140,9 @@ class FightingMixin(Parts):
                 self.follow_ok = False
                 self.log(_("the follow attack doesn't walk us to the monster here - walking "
                            "up to them ourselves"))
+        # Not following, out of every attack's range and not closing in: hand it back to the farm
+        # loop, which walks up and starts the fight again. No skip: standing there pressing at it
+        # (or pressing nothing) only reached the no-damage timeout and wrote the monster off.
         return True
 
     def _fight_press(self, f: "_Fight") -> str | None:
@@ -1176,7 +1190,12 @@ class FightingMixin(Parts):
             # never the profile's keys; with none at all (every skill Never, or cooling down) wait
             # instead of spinning on the agent.
             spare = getattr(sb, "fallback", None)
-            press = spare(self.clock.time()) if spare is not None else None
+
+            def reached(s: dict[str, Any]) -> bool:
+                return sb.reaches(s, f.dist)
+            # At a monster past the skill's own range the server refuses the cast: leave that one
+            # for the farm loop to walk up to, never press at nothing.
+            press = spare(self.clock.time(), reached) if spare is not None else None
             if press:
                 self.key(press[0])
             else:
