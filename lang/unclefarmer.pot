@@ -310,6 +310,9 @@ msgstr ""
 msgid "&New plan"
 msgstr ""
 
+msgid "&No, keep current language"
+msgstr ""
+
 msgid "&Number of gems:"
 msgstr ""
 
@@ -507,6 +510,9 @@ msgid "&Write an email"
 msgstr ""
 
 msgid "&Write to the files in the logs folder:"
+msgstr ""
+
+msgid "&Yes, switch language"
 msgstr ""
 
 msgid "&Your places:"
@@ -3884,6 +3890,9 @@ msgstr ""
 msgid "Worst normal hit received: {hit}"
 msgstr ""
 
+msgid "Would you like to switch to {language}?"
+msgstr ""
+
 msgid "Write the character's name: the game it is logged in to runs it."
 msgstr ""
 
@@ -3904,6 +3913,10 @@ msgstr ""
 
 msgid ""
 "You have the development build {v}. The newest stable release, {stable}, is older; the next stable release newer than your build will be offered."
+msgstr ""
+
+msgid ""
+"Your system language is supported. Would you like to use {language} in Uncle Farmer?"
 msgstr ""
 
 msgid "a chat line"
