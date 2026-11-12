@@ -49,7 +49,10 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "character_export": True, "character_import": True,
         "tools_gem": available and not running, "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
-        "tools_dungeon": available and not running, "plans_new": True, "plans_new_script": True,
+        "tools_dungeon": available and not running,
+        **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
+                                                     "tools_store", "tools_restock", "tools_prices")},
+        "plans_new": True, "plans_new_script": True,
         "plans_edit": bool(selected), "plans_duplicate": plan, "plans_delete": bool(selected),
         "plans_export": plan, "plans_import": True,
     }
@@ -212,22 +215,61 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             return shortcut_label(label, shortcut), handler
 
         self.action_items: dict[str, wx.MenuItem] = {}
+        accelerators: list[wx.AcceleratorEntry] = []
 
-        def add(menu: wx.Menu, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = ()) -> None:
+        def add(menu: wx.Menu, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = (),
+                *, context: bool = False) -> None:
             # No separator lines: a screen reader counts each one as an entry, so a menu of four
             # read "1 of 5".
             for index, (label, handler) in enumerate(entries):
                 item = menu.Append(wx.ID_ANY, label)
-                self.Bind(wx.EVT_MENU, handler, item)
+                if context:
+                    self.Bind(wx.EVT_MENU, self.context_handler(item, handler), item)
+                else:
+                    self.Bind(wx.EVT_MENU, handler, item)
+                shortcut = label.partition("\t")[2]
+                if shortcut:
+                    entry = wx.AcceleratorEntry()
+                    if entry.FromString(shortcut):
+                        entry.Set(entry.GetFlags(), entry.GetKeyCode(), item.GetId())
+                        accelerators.append(entry)
                 if keys:
                     self.action_items[keys[index]] = item
 
-        def menu(title: str, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = ()) -> wx.Menu:
+        self.context_menu = wx.Menu()
+
+        def menu(title: str, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = (),
+                 *, context: bool = False) -> wx.Menu:
             result = wx.Menu()
-            add(result, entries, keys)
-            bar.Append(result, title)
+            add(result, entries, keys, context=context)
+            if context:
+                self.context_menu.AppendSubMenu(result, title)
+            else:
+                bar.Append(result, title)
             return result
 
+        tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
+                           command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
+                           command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
+                           command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
+                           command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
+                           command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
+                           command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
+                           command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
+                           command(_("S&tore items now"), lambda e: self.store_items_now()),
+                           command(_("Restock &now"), lambda e: self.restock_now()),
+                           command(_("Update shard &prices"), lambda e: self.update_shard_prices_now())],
+                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon",
+                           "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices"),
+                          context=True)
+        character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
+                                             command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
+                                             command(_("S&can now"), lambda e: self.scan_now()),
+                                             command(_("&Another character"), lambda e: self.edit_other_profile()),
+                                             command(_("E&xport character settings"), lambda e: self.export_character_settings()),
+                                             command(_("&Import character settings"), lambda e: self.import_character_settings())],
+                         ("character_settings", "character_bag", "character_scan", "character_other",
+                          "character_export", "character_import"), context=True)
         menu(_("&File"), [command(_("&Settings"), lambda e: self.open_setup()),
                           command(_("Open the &log folder"), lambda e: os.startfile(_logs())),
                           command(_("Open the &results folder"), lambda e: self.open_results_folder()),
@@ -244,7 +286,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
                          command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
                         ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules",
-                         "run_results", "run_speak_results"))
+                         "run_results", "run_speak_results"), context=True)
         game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
                          command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
                          command(_("Mute e&very game"), lambda e: self.set_game_speech(False, every=True)),
@@ -255,22 +297,6 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("C&hat"), lambda e: self.open_chat(), "Ctrl+T"),
                          command(_("Let everyone get replies &again"), lambda e: self.forget_answered())],
                          ("messages_private", "messages_chat", "messages_reset"))
-        character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
-                                             command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
-                                             command(_("S&can now"), lambda e: self.scan_now()),
-                                             command(_("&Another character"), lambda e: self.edit_other_profile())],
-                         ("character_settings", "character_bag", "character_scan", "character_other"))
-        character_transfer = wx.Menu()
-        add(character_transfer, [command(_("E&xport character settings"), lambda e: self.export_character_settings()),
-                                 command(_("&Import character settings"), lambda e: self.import_character_settings())],
-            ("character_export", "character_import"))
-        character.AppendSubMenu(character_transfer, _("Import or export character settings"))
-        tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
-                           command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
-                           command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
-                           command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
-                           command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G")],
-                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon"))
         plans = menu(_("&Plans"), [command(_("&New plan"), lambda e: self.new_plan(), "Ctrl+N"),
                                     command(_("New &script"), lambda e: self.new_script(), "Ctrl+Shift+N"),
                                     command(_("&Edit"), lambda e: self.edit_selected(), "Ctrl+E"),
@@ -283,7 +309,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             ("plans_export", "plans_import"))
         plans.AppendSubMenu(plan_transfer, _("Import or export plans"))
         self.action_menus = {"run": run_menu, "game": game_menu, "messages": messages_menu,
-                             "character": character, "character_transfer": character_transfer, "tools": tools_menu,
+                             "character": character, "tools": tools_menu,
                              "plans": plans, "plan_transfer": plan_transfer}
         for current in self.action_menus.values():
             current.Bind(wx.EVT_MENU_OPEN, self.sync_action_menus)
@@ -302,8 +328,25 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
+        self.SetAcceleratorTable(wx.AcceleratorTable(accelerators))
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.destroy_context_menu)
+        self.sync_action_menus()
 
-    def sync_action_menus(self, event: wx.MenuEvent) -> None:
+    def context_handler(self, item: wx.MenuItem, handler: Handler) -> Handler:
+        """Popup choices and their accelerators share the current selection's availability checks."""
+        def invoke(event: wx.CommandEvent) -> object:
+            self.sync_action_menus()
+            if item.IsEnabled():
+                return handler(event)
+            return None
+        return invoke
+
+    def destroy_context_menu(self, event: wx.WindowDestroyEvent) -> None:
+        if event.GetEventObject() is self:
+            self.context_menu.Destroy()
+        event.Skip()
+
+    def sync_action_menus(self, event: wx.MenuEvent | None = None) -> None:
         """Make every selection-dependent menu action agree with the focused game and plan."""
         pid = self.selected_pid()
         running = pid in self.runs
@@ -313,7 +356,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                                      has_items=bool(self.items), has_messengers=bool(self.messengers), selected=selected)
         for key, value in enabled.items():
             self.action_items[key].Enable(value)
-        event.Skip()
+        if event is not None:
+            event.Skip()
 
     def game_context_menu(self, event: wx.ContextMenuEvent) -> None:
         pos = event.GetPosition()
@@ -322,27 +366,12 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             if index != wx.NOT_FOUND:
                 state = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
                 self.game_list.SetItemState(index, state, state)
-        pid = self.selected_pid()
-        running = pid in self.runs
-        available = pid is not None
-        popup_actions(self.game_list, [
-            (shortcut_label(_("Wa&lk to a dungeon or map"), "Ctrl+W"), lambda e: self.walk(), available and not running),
-            (_("S&can now"), lambda e: self.scan_now(), available and not running),
-            (shortcut_label(_("&Character settings"), "Ctrl+P"), lambda e: self.edit_profile(), available),
-            (shortcut_label(_("&Bag and supplies"), "Ctrl+B"), lambda e: self.edit_bag(), available),
-            (shortcut_label(_("C&hat"), "Ctrl+T"), lambda e: self.open_chat(), available),
-            (shortcut_label(_("&Private messages"), "Ctrl+Shift+M"), lambda e: self.edit_messages(), True),
-            (shortcut_label(_("&Results"), "Ctrl+R"), lambda e: self.show_results(), True),
-            (shortcut_label(_("Spea&k the results"), "Ctrl+Shift+R"), lambda e: self.speak_results(), True),
-            (shortcut_label(_("&Mute this game"), "Ctrl+M"), lambda e: self.set_game_speech(False), available),
-            (shortcut_label(_("&Unmute this game"), "Ctrl+U"), lambda e: self.set_game_speech(True), available),
-            (_("Sell the &collection now"), lambda e: self.sell_collection_now(), available and not running),
-            (_("Sell s&hards now"), lambda e: self.sell_shards_now(), available and not running),
-            (_("Clean the &bag now"), lambda e: self.clean_bag_now(), available and not running),
-            (_("S&tore items now"), lambda e: self.store_items_now(), available and not running),
-            (_("Restock &now"), lambda e: self.restock_now(), available and not running),
-            (_("Update shard &prices"), lambda e: self.update_shard_prices_now(), available and not running),
-        ])
+        self.sync_action_menus()
+        try:
+            self.game_list.PopupMenu(self.context_menu)
+        finally:
+            if not self.game_list.IsBeingDeleted():
+                self.game_list.SetFocus()
 
     def plan_context_menu(self, event: wx.ContextMenuEvent) -> None:
         pos = event.GetPosition()
@@ -462,9 +491,8 @@ Main window
   F1                  Quick guide
 
 Games list
-  Applications key    The game's menu: Walk to, Scan now, settings, chat, results, mute, and the
-                      jobs run now (sell the collection or shards, clean the bag, store items,
-                      update shard prices). Shift+F10 opens it too
+  Applications key    The game's menu: Tools, Character and Run submenus
+  Shift+F10           The same context menu; arrows open submenus, Escape closes them
 
 Plans tab
   Enter               Edit the selected plan or script
@@ -505,6 +533,10 @@ File, Settings, Game tab: choose the Mist World folder (or press "Find the runni
 runs), then press Install and restart the game. Do this once per computer.
 
 2. YOUR CHARACTER
+Select your game in the Games list and press the Applications key or Shift+F10, or right-click it.
+Its context menu holds Tools, Character and Run. These submenu names are used throughout this
+guide. Their keyboard shortcuts still work without opening the menu. Game and Messages stay in
+the menu bar for sound, chat and private messages.
 Log in to the game. The bot scans the character by itself: class, skills, keys, potions, fusion
 beasts and pets. Character, Settings (Ctrl+P) holds the choices that are yours to make: how to
 fight, which potion, which beast, which pets. Keys and timings are under Advanced; most players
@@ -537,7 +569,7 @@ in the order you list them (each once a game day, half an hour inside), then out
 or one the bot knows, the best area for your level. It fights whatever attacks it, starts again,
 sells the collection to the Aquaculture, Ore or Herb Buyer when the bag is full and comes back, and
 stops when Vitality runs out.
-The game's menu (select it in the Games list, then the Applications key or Shift+F10) runs these
+The game's Tools submenu (select it in the Games list, then the Applications key or Shift+F10) runs these
 jobs right away. Sell the collection now: sells it from wherever you are. Sell shards now: sells
 the shards the bag manager says to sell, at this city's Shard Market (or the nearest one). Clean
 the bag now: throws away, where you stand, only what is on the bag manager's throw-away list,
