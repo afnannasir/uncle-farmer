@@ -83,9 +83,6 @@ msgstr ""
 msgid "&Character"
 msgstr ""
 
-msgid "&Character settings"
-msgstr ""
-
 msgid "&Character:"
 msgstr ""
 
@@ -1731,9 +1728,6 @@ msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 
 msgid "Import character settings"
-msgstr ""
-
-msgid "Import or export character settings"
 msgstr ""
 
 msgid "Import or export plans"
@@ -3499,7 +3493,7 @@ msgid "Tick the monsters to fight:"
 msgstr ""
 
 msgid ""
-"Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
+"Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
 msgstr ""
 
 msgid "Time (HH:MM):"

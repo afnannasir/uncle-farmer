@@ -108,7 +108,13 @@ This is where you control your farming runs. It shows:
 - Nearby players and their distance from you, measured in steps.
 - Your bag contents, drop time, and kill count for the current run.
 
-Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has Walk to, Scan now, Character settings, Bag and supplies, Chat, Private messages, Results, mute and unmute, and the jobs that run right away: **Sell the collection now**, **Sell shards now**, **Clean the bag now**, **Store items now**, **Restock now**, and **Update shard prices**. An entry that can't be used right now, such as a job while that game's bot is running, is greyed out.
+Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
+
+- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
+- **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
+
+Use the arrow keys to open a submenu, **Enter** to choose an action, and **Escape** to close it. The existing shortcuts, including **F5**, **F6**, **Ctrl+P** and **Ctrl+B**, also work without opening the menu. An entry that can't be used right now, such as a tool while that game's bot is running, is greyed out. Chat and private messages remain under **Messages** in the menu bar; mute and unmute remain under **Game**.
 
 ### Plans tab
 
@@ -126,15 +132,14 @@ The menu bar has these menus:
 
 - **File:** Settings, the log and results folders, and Exit.
 - **View:** The three tabs.
-- **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 - **Game:** Mute and unmute this game or every game, and Open another game window.
 - **Messages:** Private messages, Chat, and Let everyone get replies again.
-- **Character:** Settings, Bag and supplies, Scan now, Another character, and the **Import or export character settings** submenu.
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, and Dungeons.
 - **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
 - **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
 
 Entries that can't be used right now are greyed out. For example, Start is greyed out while the selected game's bot is running, and Duplicate needs a plan, not a script, to be selected.
+
+**Tools**, **Character** and **Run** are in the selected game's context menu instead of the menu bar. References to these menu names elsewhere in this guide mean those submenus.
 
 ### Help and keyboard shortcuts
 
