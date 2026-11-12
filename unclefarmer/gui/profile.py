@@ -346,7 +346,7 @@ class ProfileDialog(Dialog):
                 self.triggers[key] = f.check(labels[stage][job], p.get(key, False) is True)
         f = group(panel, box, _("How they run"))
         f.readonly(_("About:"), _(
-            "Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job "
+            "Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job "
             "ticked in both lists runs once before and once after farming. A job that can't finish is said "
             "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
             "as it is at that moment."), lines=4)
