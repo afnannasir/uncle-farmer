@@ -352,6 +352,18 @@ class MapKindsFile(RootModel[dict[str, MapKind]]):
     pass
 
 
+class SafeZonesFile(RootModel[dict[str, list[tuple[int, int, int, int, Literal["town", "exit_front", "exit", "other"], str]]]]):
+    """data/safe_zones.json (built offline from the map table): every z=-3 row, by map."""
+
+    @model_validator(mode="after")
+    def rects_are_ordered(self) -> SafeZonesFile:
+        for mid, rows in self.root.items():
+            assert mid.isdigit(), "map id %r" % mid
+            for x1, y1, x2, y2, _kind, _label in rows:
+                assert 0 < x1 <= x2 and 0 < y1 <= y2, "rect %s on map %s" % ((x1, y1, x2, y2), mid)
+        return self
+
+
 class Shard(Strict):
     price: int = Field(ge=0)
     makes: str
@@ -475,6 +487,7 @@ MODELS: dict[str, type[BaseModel]] = {
     "gathering.json": GatheringFile,
     "knowledge.json": KnowledgeFile,
     "map_kinds.json": MapKindsFile,
+    "safe_zones.json": SafeZonesFile,
     "shards.json": ShardsFile,
     "short_loops.json": ShortLoopsFile,
     "skills.json": SkillsFile,

@@ -22,6 +22,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      day: bank, bounty, pet_rebirth, donation, construction, secret_room
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
+    lose_xp [check]                  die to guards until the next level needs the experience set
+                                     in Tools, XP loser (check: only read the numbers and look)
     dungeon [check] [<cave>]         the cave named (Spider cave, Scorpion Cave), else the one chosen in
                                      Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
     sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
@@ -98,7 +100,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
@@ -758,7 +760,7 @@ PREPARE = {
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
-    "gather": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
+    "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
@@ -981,6 +983,9 @@ class Runner:
 
     def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
         triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
+
+    def _do_lose_xp(self, node: Node, b: Bot, o: dict[str, Any]):
+        triggers.run_job(b, "lose_xp", o.get("check", False))
 
     def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
         dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))

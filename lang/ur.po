@@ -14,6 +14,9 @@ msgstr ""
 msgid " (estimated: it includes shards)"
 msgstr " (andaza: is mein shards shamil hain)"
 
+msgid " (locked here)"
+msgstr " (yahan band hai)"
+
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
@@ -154,6 +157,9 @@ msgstr "&Equipment Enhancer"
 msgid "&Equipment to enhance:"
 msgstr "&Enhance karne ke liye equipment:"
 
+msgid "&Experience:"
+msgstr "&Experience:"
+
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "Animal Shed par gang ke breed beast ko &khilao"
 
@@ -210,6 +216,11 @@ msgstr "&Rukhsati, har line mein ek:"
 
 msgid "&HP potion:"
 msgstr "&HP potion:"
+
+msgid ""
+"&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"
+msgstr ""
+"Maare hue monsters ko seekhi hui Draw Blood, Skinning ya Cut Flesh se &harvest karein"
 
 msgid "&Heal skill below HP (%):"
 msgstr "HP se neeche &Shifa skill (%):"
@@ -275,6 +286,9 @@ msgstr "&Log"
 
 msgid "&Log:"
 msgstr "&Log:"
+
+msgid "&Lose experience:"
+msgstr "Experience &kam karein:"
 
 msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr "&Zaroorat par crystal shards se Enhance Crystals banayein"
@@ -513,6 +527,9 @@ msgstr "&Email likhein"
 
 msgid "&Write to the files in the logs folder:"
 msgstr "logs folder ki files mein &likhein:"
+
+msgid "&XP loser"
+msgstr "&XP loser"
 
 msgid "&Yes, switch language"
 msgstr "&Haan, zaban badlein"
@@ -1050,6 +1067,9 @@ msgstr "{email} copy ho gaya."
 msgid "Copy &selection"
 msgstr "Chuna hua &copy karein"
 
+msgid "Corpses"
+msgstr "Laashein"
+
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
 
@@ -1127,6 +1147,9 @@ msgstr ""
 msgid "Crystals"
 msgstr "Crystals"
 
+msgid "Cut Flesh"
+msgstr "Cut Flesh (gosht)"
+
 msgid "D&ungeons"
 msgstr "D&ungeons"
 
@@ -1197,6 +1220,9 @@ msgstr "Dohri beep"
 msgid "Downloading Uncle Farmer {v}"
 msgstr "Uncle Farmer {v} download ho raha hai"
 
+msgid "Draw Blood"
+msgstr "Draw Blood (khoon)"
+
 msgid "Drink below (%):"
 msgstr "Kitne (%) se neeche peeyein:"
 
@@ -1232,6 +1258,9 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 
 msgid "E&xit"
 msgstr "Bahar &niklein"
+
+msgid "E&xperience card to keep running while farming:"
+msgstr "Farming ke dauran chalne wala e&xperience card:"
 
 msgid "E&xport"
 msgstr "E&xport karein"
@@ -1350,6 +1379,9 @@ msgstr ""
 
 msgid "Experience"
 msgstr "Tajurba"
+
+msgid "Experience cards"
+msgstr "Experience cards"
 
 msgid "Expert"
 msgstr "Expert"
@@ -1681,6 +1713,9 @@ msgstr "Ghar, hearthstone ke sath"
 msgid "Home."
 msgstr "Ghar."
 
+msgid "How it works:"
+msgstr "Kaise kaam karta hai:"
+
 msgid "How the game works"
 msgstr "Game kaise kaam karti hai"
 
@@ -1970,6 +2005,12 @@ msgstr "Naya version dhoond raha hoon"
 msgid "Looking for your application."
 msgstr "Aap ki application dhoond raha hoon."
 
+msgid "Lose e&xperience (as set in Tools, XP loser)"
+msgstr "E&xperience kam karein (jaisa Tools, XP loser mein hai)"
+
+msgid "Lose experience (as set in Tools, XP lose&r)"
+msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
+
 msgid "Low HP"
 msgstr "Kam HP"
 
@@ -2100,6 +2141,11 @@ msgstr "Hum par hamla karne wale monsters:"
 
 msgid "Moral Mode"
 msgstr "Moral Mode"
+
+msgid ""
+"Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run"
+msgstr ""
+"Morality {n} hai (black name): maut par pehna hua gear ja sakta hai, is liye XP loser nahi chalega"
 
 msgid "Most to pay per shard (arnebia):"
 msgstr "Har shard ke liye zyada se zyada (arnebia):"
@@ -2340,6 +2386,9 @@ msgstr "Ittila"
 msgid "Notices"
 msgstr "Ittilaat"
 
+msgid "Now:"
+msgstr "Abhi:"
+
 msgid "Nowhere to get them from: it makes what the bag allows."
 msgstr "Kahan se laayein koi jagah nahi: jo basta ijazat de wohi banata hai."
 
@@ -2483,6 +2532,11 @@ msgstr "Jawabi hamle ke sath pur-aman mode"
 
 msgid "Patrol loops: {loops}"
 msgstr "Patrol loops: {loops}"
+
+msgid ""
+"Pause the card while a&way from the monsters: town trips, the walk back after a death, the end of farming (each pause costs a minute of the card; never in a dungeon)"
+msgstr ""
+"Monsters se d&oor hon to card rok dein: shehar ke chakkar, maut ke baad wapsi, farming ka khatma (har rokne par card ka ek minute jata hai; dungeon mein kabhi nahi)"
 
 msgid "Paused"
 msgstr "Waqfa"
@@ -3056,6 +3110,9 @@ msgstr ""
 msgid "Skills used: {casts} casts, {dmg} damage in all"
 msgstr "Istemal hui skills: {casts} casts, kul {dmg} damage"
 
+msgid "Skinning"
+msgstr "Skinning (khaal)"
+
 msgid "Snow mountain prince"
 msgstr "Snow mountain prince"
 
@@ -3147,6 +3204,9 @@ msgstr "&Rukne ka waqt (HH:MM, is computer ki ghadi):"
 msgid "Stop &every bot"
 msgstr "Har &bot rokein"
 
+msgid "Stop after at most this many &deaths:"
+msgstr "Zyada se zyada itni &maut ke baad rukein:"
+
 msgid "Stop after this many &stuck walks in a row:"
 msgstr "Lagataar itni baar &phansi walks ke baad rukein:"
 
@@ -3176,6 +3236,9 @@ msgstr "Pehle bot ko rokein. Chalte waqt woh keyboard istemal karta hai."
 
 msgid "Stop the plan"
 msgstr "Mansooba rok dein"
+
+msgid "Stop when &Vitality is down to (0: until it runs out):"
+msgstr "Jab &Vitality itni reh jaye to rukein (0: khatam hone tak):"
 
 msgid "Stop when HP stays &low"
 msgstr "Jab HP &kam reh jaye to rukein"
@@ -3338,6 +3401,11 @@ msgstr "Bot waqt par nahi ruka, is liye aap ke saath nahi chal raha."
 
 msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "jaise hi itna {what} kam hota hai, bot ise pee leta hai."
+
+msgid ""
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+msgstr ""
+"Bot ek guard dhoondta hai (nazar mein, jahan pehle dekha gaya, ya qareebi shehar mein), PK mode all mode par karta hai, guard ko ek baar maarta hai aur character ko marne deta hai: na potion, na heal, na jawabi larai. Woh shehar mein dobara zinda hota hai aur tab tak dobara jata hai jab tak agle level ko kam az kam itni experience na chahiye. Pehle pet wapas rakha jata hai, aur aakhir mein PK mode wapas lagaya jata hai. Har maut ki tarah gear ghista hai; black-name character (Morality -1000 ya kam) marne par pehna hua gear kho sakta hai, is liye XP loser us ke liye nahi chalega."
 
 msgid "The bot isn't running."
 msgstr "Bot nahi chal raha."
@@ -3716,6 +3784,11 @@ msgstr "&On hai"
 msgid "Type a message first."
 msgstr "Pehle paigham likhein."
 
+msgid ""
+"Type how much experience: the most the next level should need, or how much to lose."
+msgstr ""
+"Kitni experience likhein: agle level ko kam az kam kitni chahiye, ya kitni kam karni hai."
+
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
 
@@ -3869,6 +3942,9 @@ msgstr "&Maujooda map istemal karein"
 msgid "Use the &default ({time})"
 msgstr "&Default ({time}) istemal karein"
 
+msgid "Use the class's teleport &skill (Mage, Elf)"
+msgstr "Class ki teleport &skill istemal karein (Mage, Elf)"
+
 msgid "Use the day's free &rebirths on one pet"
 msgstr "Din ke muft &rebirth ek pet par istemal karein"
 
@@ -3889,6 +3965,9 @@ msgid ""
 "Uses the hearthstone; if it can't, ends on the nearest map without monsters."
 msgstr ""
 "Hearthstone istemal karta hai; agar na ho sake to sab se qareebi monster-free map par khatam hota hai."
+
+msgid "Vitality is down to {n}"
+msgstr "Vitality {n} reh gayi"
 
 msgid "Vitality is down to {n}, where you set gathering outside to stop"
 msgstr ""
@@ -4062,6 +4141,17 @@ msgstr ""
 msgid "X:"
 msgstr "X:"
 
+msgid "XP loser"
+msgstr "XP loser"
+
+msgid ""
+"XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}"
+msgstr ""
+"XP loser: agle level ko {xp} experience chahiye; guards se mar rahe hain jab tak {goal} na chahiye"
+
+msgid "XP loser: {end} ({n} deaths)"
+msgstr "XP loser: {end} ({n} maut)"
+
 msgid "Y:"
 msgstr "Y:"
 
@@ -4168,6 +4258,9 @@ msgstr "{npc} ke paas pohanch gaye"
 msgid "arrived on {map}"
 msgstr "{map} par pohanch gaye"
 
+msgid "arrived on {map} at {x},{y}"
+msgstr "{map} par {x},{y} par pohanch gaye"
+
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} par {x},{y} par pohanch gaye - yahan se aage ka rasta bana rahe hain"
@@ -4200,6 +4293,9 @@ msgstr "hamla {how}"
 
 msgid "avoiding elites"
 msgstr "elites se bachte hue"
+
+msgid "back on the farm"
+msgstr "farm par wapas"
 
 msgid "back to {map}"
 msgstr "{map} par wapas"
@@ -4310,6 +4406,17 @@ msgid ""
 msgstr ""
 "{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega"
 
+msgid "can't read the experience card from the character sheet yet"
+msgstr "character sheet se experience card abhi nahi parha ja sakta"
+
+msgid ""
+"can't read the experience from the character sheet - restart the game so the new agent loads"
+msgstr ""
+"character sheet se experience nahi parhi ja sakti - game dobara shuru karein taake naya agent load ho"
+
+msgid "can't read the experience from the character sheet any more"
+msgstr "character sheet se experience ab nahi parhi ja sakti"
+
 msgid ""
 "can't read the game's bag cursor - restart the game so the new agent loads"
 msgstr ""
@@ -4319,6 +4426,11 @@ msgid "can't read the game's modes ({why}) - not changing them"
 msgstr ""
 "game ke modes nahi parhe ja sakte ({why}) - unhein tabdeel nahi kar rahe"
 
+msgid ""
+"can't read the profession skills ({why}) - corpse harvesting tries again in 5 minutes"
+msgstr ""
+"profession skills nahi parhi ja sakin ({why}) - corpse harvesting 5 minute baad dobara koshish karegi"
+
 msgid "can't read this expression: {expr}"
 msgstr "yeh expression parh nahi sakte: {expr}"
 
@@ -4326,6 +4438,9 @@ msgid ""
 "can't see this character's quick phrases in the game folder ({folder}) - leaving them all alone"
 msgstr ""
 "game folder ({folder}) mein is character ke quick phrases nazar nahi aa rahe - unhein bilkul nahi chheda"
+
+msgid "can't select the guard: {why}"
+msgstr "guard chuna nahi ja saka: {why}"
 
 msgid "can't switch the skill page yet ({why}); using the page that is up"
 msgstr ""
@@ -4337,8 +4452,16 @@ msgstr "team ka navigation target mansookh karein"
 msgid "cast {n} times"
 msgstr "{n} baar cast hui"
 
+msgid "casting {skill} to {place}"
+msgstr "{place} ke liye {skill} chala rahe hain"
+
 msgid "charge in"
 msgstr "daur kar andar"
+
+msgid ""
+"check: the next level needs {xp} experience, goal {goal}; {n} guards in sight here, {k} remembered spots; PK mode {pk}{locked}"
+msgstr ""
+"jaanch: agle level ko {xp} experience chahiye, maqsad {goal}; yahan nazar mein {n} guards, {k} yaad ki hui jagahein; PK mode {pk}{locked}"
 
 msgid "choose what? write: choose Tulip City"
 msgstr "kya choose karna hai? likhein: choose Tulip City"
@@ -4379,8 +4502,29 @@ msgstr ""
 msgid "cooldown {n} s"
 msgstr "cooldown {n} s"
 
+msgid "corpse harvesting"
+msgstr "corpse harvesting"
+
+msgid ""
+"corpse harvesting is on, but this character has no Draw Blood, Skinning or Cut Flesh - learn one (Learn Profession Skill) from the gang's Guru Elder or Master Pepper"
+msgstr ""
+"corpse harvesting on hai, lekin is character ke paas Draw Blood, Skinning ya Cut Flesh nahi - gang ke Guru Elder ya Master Pepper se ek seekhein (Learn Profession Skill)"
+
+msgid ""
+"corpse harvesting needs the game's agent {need} or newer (this game has {have}) - restart the game so the new agent loads"
+msgstr ""
+"corpse harvesting ke liye game ka agent {need} ya naya chahiye (is game mein {have} hai) - game dobara shuru karein taake naya agent load ho"
+
+msgid ""
+"corpse harvesting needs the game's agent {need} or newer - restart the game so the new agent loads"
+msgstr ""
+"corpse harvesting ke liye game ka agent {need} ya naya chahiye - game dobara shuru karein taake naya agent load ho"
+
 msgid "couldn't add the {shard}"
 msgstr "{shard} shamil nahi kar sake"
+
+msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
+msgstr "{skill} cast nahi ho saki ({why}) - 5 minute baad dobara koshish"
 
 msgid "couldn't finish at the game's end: {err}"
 msgstr "game ke end par mukammal nahi kar sake: {err}"
@@ -4437,6 +4581,9 @@ msgstr "menu entry tak nahi ja sake"
 
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "Gem Craftsman ki shard synthesis khol nahi sake"
+
+msgid "couldn't put the PK mode back to {mode} - please set it by hand"
+msgstr "PK mode wapas {mode} par nahi ho saka - meharbani kar ke khud lagayein"
 
 msgid "couldn't put things on empty keys: {err}"
 msgstr "khali keys par cheezein nahi rakh sake: {err}"
@@ -4513,6 +4660,10 @@ msgstr "attack ka woh page nahi khol sake jis par {skill} hai"
 msgid "couldn't type into the game: {why}"
 msgstr "game mein type nahi kar sake: {why}"
 
+msgid "couldn't {what} the experience card: {why} - trying again in a minute"
+msgstr ""
+"experience card {what} nahi ho saka: {why} - ek minute baad dobara koshish"
+
 msgid "critical"
 msgstr "critical"
 
@@ -4538,12 +4689,18 @@ msgstr "{map} par mar gaye ({n} ab tak)"
 msgid "died {n} times - stopping; this place may be too hard"
 msgstr "{n} dafa mar gaye - rok rahe hain; yeh jagah shayad bohot mushkil hai"
 
+msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
+msgstr "{n} baar mare: agle level ko ab {xp} experience chahiye (maqsad {goal})"
+
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr ""
 "yahan kaam khatam - {map} ja rahe hain, jahan koi monster paida nahi hota"
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "ho gaya: {n} {gem} banaye; basta mein {have}"
+
+msgid "done: the next level needs at least {goal} experience"
+msgstr "ho gaya: agle level ko kam az kam {goal} experience chahiye"
 
 msgid "done: {what}"
 msgstr "ho gaya: {what}"
@@ -4569,6 +4726,9 @@ msgstr "drop: aaj kitna drop time baqi hai."
 msgid "dungeon - you leave by its chest, not on foot"
 msgstr "dungeon - yahan se aap is ke chest ke zariye nikalte hain, paidal nahi"
 
+msgid "dying costs no more experience on this level - stopped"
+msgstr "is level par marne se ab experience kam nahi hoti - ruk gaye"
+
 msgid "elites is fight or avoid"
 msgstr "elites fight ya avoid hai"
 
@@ -4589,11 +4749,28 @@ msgstr "har roz {time} baje"
 msgid "everything"
 msgstr "sab kuch"
 
+msgid "experience card paused ({card}): {why}"
+msgstr "experience card roka gaya ({card}): {why}"
+
+msgid "experience card running again ({card}): {why}"
+msgstr "experience card phir chal raha hai ({card}): {why}"
+
+msgid "experience card started: {card} ({left} more in the bag; {now})"
+msgstr "experience card shuru: {card} (bag mein {left} aur; {now})"
+
+msgid ""
+"experience cards need the game's agent {need} or newer (this game has {have}) - restart the game so the new agent loads"
+msgstr ""
+"experience cards ko game ka agent {need} ya naya chahiye (is game mein {have} hai) - game dobara shuru karein taake naya agent load ho"
+
 msgid "farm doesn't know '{opt}'. It takes: {opts}"
 msgstr "farm '{opt}' nahi jaanta. Ye leta hai: {opts}"
 
 msgid "farmed {time}"
 msgstr "{time} farming ki"
+
+msgid "farming is over"
+msgstr "farming khatam"
 
 msgid "farming is over - closing the game"
 msgstr "kheti khatam - game band kar rahe hain"
@@ -4727,6 +4904,12 @@ msgstr "pet ke baghair dungeons mein ja raha hai (Tools, Dungeons)"
 
 msgid "going on"
 msgstr "jari hai"
+
+msgid "going to where a guard was seen: {map}"
+msgstr "jahan guard dekha gaya wahan ja rahe hain: {map}"
+
+msgid "going to {map}"
+msgstr "{map} ja rahe hain"
 
 msgid "going to {map} to find {name}"
 msgstr "{name} ko dhoondne {map} ja rahe hain"
@@ -4879,6 +5062,9 @@ msgstr ""
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "atak se nikalne ke liye {map} chhod kar {dest} ja rahe hain"
 
+msgid "leaving {skill} out of this trip and planning again"
+msgstr "is safar se {skill} ko chhor kar dobara mansooba bana rahe hain"
+
 msgid "left alone for now (took no damage, couldn't be reached or selected)"
 msgstr "abhi ke liye chhora (damage nahi hua, pohanch ya select nahi ho saka)"
 
@@ -4941,11 +5127,20 @@ msgstr "pehle kisi kirdaar mein log in karein"
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ka khayal: HP {hp}/{max}"
 
+msgid "looking for a guard on {map}"
+msgstr "{map} par guard dhoond rahe hain"
+
 msgid "looking for the gang {gang} at the Gang Entrance"
 msgstr "Gang Entrance par gang {gang} dhoond rahe hain"
 
 msgid "looking for the {name} circle at the {n} entrances marked on {map}"
 msgstr "{map} par nishan zada {n} entrances par {name} circle dhoond rahe hain"
+
+msgid "lose this much experience"
+msgstr "itni experience kam karein"
+
+msgid "losing experience"
+msgstr "experience kam karna"
 
 msgid "lost sight of {name}"
 msgstr "{name} nazar se ojhal ho gaya"
@@ -5039,6 +5234,10 @@ msgstr "is baar arnebia share nahi hua: {why}"
 msgid "no arnebia to buy {item}"
 msgstr "{item} khareedne ke liye arnebia nahi"
 
+msgid "no attack key in Character settings - the guard can't be hit"
+msgstr ""
+"Character settings mein koi attack key nahi - guard ko maara nahi ja sakta"
+
 msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 "abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)"
@@ -5063,6 +5262,14 @@ msgstr ""
 
 msgid "no free rebirth left today"
 msgstr "aaj koi muft rebirth baqi nahi"
+
+msgid ""
+"no guard found here, at the spots where guards were seen, or in the nearest town"
+msgstr ""
+"koi guard nahi mila - na yahan, na un jagahon par jahan guards dekhe gaye, na qareebi shehar mein"
+
+msgid "no guard here - going to the nearest town, {map}"
+msgstr "yahan koi guard nahi - qareebi shehar ja rahe hain, {map}"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
@@ -5148,8 +5355,15 @@ msgstr ""
 msgid "no way from {a} to {b} on {map}"
 msgstr "{map} par {a} se {b} tak koi rasta nahi"
 
+msgid "no way out of the safe zone on {map} to cast {skill}"
+msgstr ""
+"{map} par {skill} chalane ke liye safe zone se bahar nikalne ka koi rasta nahi"
+
 msgid "no way to walk there"
 msgstr "wahan paidal jaane ka koi rasta nahi"
+
+msgid "no {card} in the bag - farming on without an experience card"
+msgstr "bag mein koi {card} nahi - experience card ke baghair farming jaari"
 
 msgid "no {item} in the storehouse"
 msgstr "storehouse mein koi {item} nahi"
@@ -5190,6 +5404,10 @@ msgid ""
 "not choosing in the menu directly ({why}) - moving to the entry with the keys"
 msgstr ""
 "menu mein seedha nahi chun rahe ({why}) - keys se entry tak ja rahe hain"
+
+msgid "not enough MP for {skill} ({mp} of {top}) - going another way"
+msgstr ""
+"{skill} ke liye MP kafi nahi ({top} mein se {mp}) - doosre raste se ja rahe hain"
 
 msgid "not enough arnebia above your reserve for a {n} arnebia donation"
 msgstr "{n} arnebia ke chande ke liye aap ke reserve se upar kaafi arnebia nahi"
@@ -5238,6 +5456,10 @@ msgstr "baste mein nahi: {list}"
 
 msgid "not in the price list, left out: {list}"
 msgstr "qeemat ki fehrist mein nahi, chhor diye: {list}"
+
+msgid ""
+"not known yet (the bot reads it from the character sheet when it starts)"
+msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
 
 msgid "not read, old price kept: {list}"
 msgstr "parhe nahi gaye, purani qeemat rakhi: {list}"
@@ -5413,6 +5635,9 @@ msgstr "page {page} key {key} ({skill})"
 msgid "patrol is random, full, quick or short"
 msgstr "patrol random, full, quick ya short hai"
 
+msgid "pause"
+msgstr "rokna"
+
 msgid ""
 "pause: I stop where I am and hold still until you send resume. The run is not ended."
 msgstr ""
@@ -5522,6 +5747,9 @@ msgid ""
 "results: what this run has got so far (kills, arnebia, shards, experience), or the last run's if none is going."
 msgstr ""
 "results: is run ne ab tak kya kamaya (kills, arnebia, shards, tajurba), ya agar koi run nahi chal raha to pichle run ka."
+
+msgid "resume"
+msgstr "dobara chalana"
 
 msgid "resume: I go on with the paused run."
 msgstr "resume: main waqfe wala run jari rakhta hoon."
@@ -5691,6 +5919,9 @@ msgstr ""
 msgid "stopped"
 msgstr "ruk gaya"
 
+msgid "stopped after {n} deaths, as you set"
+msgstr "{n} maut ke baad ruk gaye, jaisa aap ne rakha"
+
 msgid "stopped by you"
 msgstr "aap ne rok diya"
 
@@ -5853,8 +6084,18 @@ msgstr "andarune hall ka sardar chanda nahi le raha"
 msgid "the Highland Entrance offers no Occupied Highlands"
 msgstr "Highland Entrance par Occupied Highlands nahi hai"
 
+msgid "the PK mode can't be changed on {map} - looking for guards elsewhere"
+msgstr ""
+"{map} par PK mode badla nahi ja sakta - kahin aur guards dhoond rahe hain"
+
+msgid "the PK mode can't be changed where the guards are"
+msgstr "jahan guards hain wahan PK mode badla nahi ja sakta"
+
 msgid "the PK mode is locked here - leaving it as {mode}"
 msgstr "yahan PK mode locked hai - {mode} hi rehne de rahe hain"
+
+msgid "the PK mode is still all mode - please set it back by hand"
+msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
 
 msgid "the Pet Trainer offers no rebirth"
 msgstr "Pet Trainer rebirth nahi de raha"
@@ -5955,6 +6196,11 @@ msgstr "bag ka chakkar"
 
 msgid "the bag's gems are as high as they go"
 msgstr "baste ke gems apni aakhri had tak hain"
+
+msgid ""
+"the character sheet didn't show the experience card {what} - looking again in a minute"
+msgstr ""
+"character sheet ne experience card {what} nahi dikhaya - ek minute baad dobara dekhenge"
 
 msgid "the character sheet is read with the key again: {why}"
 msgstr "kirdaar ki sheet ab phir key se padhi ja rahi hai: {why}"
@@ -6079,6 +6325,9 @@ msgid ""
 msgstr ""
 "equipment ki marammat chahiye: {tool} sirf basta mein hai, is liye is lardai ke baad (foran marammat ke liye ise hotkey par lagayein)"
 
+msgid "the guard didn't strike back - trying another"
+msgstr "guard ne jawab mein nahi maara - doosra aazma rahe hain"
+
 msgid "the hearthstone didn't take me home"
 msgstr "hearthstone mujhe ghar nahi le gaya"
 
@@ -6109,6 +6358,14 @@ msgstr ""
 
 msgid "the menu has no entry like \"{want}\""
 msgstr "menu mein aisa koi entry nahi: \"{want}\""
+
+msgid ""
+"the next level already needs {xp} experience (goal {goal}) - nothing to lose"
+msgstr ""
+"agle level ko pehle hi {xp} experience chahiye (maqsad {goal}) - kam karne ko kuch nahi"
+
+msgid "the next level needs {n} experience"
+msgstr "agle level ko {n} experience chahiye"
 
 msgid "the officer offers no hunting bounty"
 msgstr "afsar hunting bounty nahi de raha"
@@ -6184,6 +6441,9 @@ msgid ""
 msgstr ""
 "phenkne wali list khaali hai - Kirdaar, Basta aur supplies mein cheezein chunein"
 
+msgid "the top level - nothing to lose"
+msgstr "sab se ooncha level - kam karne ko kuch nahi"
+
 msgid "the {item} on key {key} are used up"
 msgstr "key {key} wali {item} khatam ho gayi"
 
@@ -6242,6 +6502,11 @@ msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
 msgstr ""
 "is character ke paas jama karne ki koi skill nahi: gang ke Guru Elder ya Master Pepper se Fishing, Mining ya Collect Herbs (in mein se ek) seekhein"
+
+msgid ""
+"this character is at the top level: there is no next level to stay away from"
+msgstr ""
+"yeh character sab se oonche level par hai: koi agla level nahi jis se door raha jaye"
 
 msgid "this expression is too complex (over {n} parts or {d} deep)"
 msgstr "yeh expression bohat mushkil hai ({n} parts ya {d} gehri se zyada)"
@@ -6310,6 +6575,9 @@ msgstr "ghair mutawaqqa error: {err}"
 msgid "unfollow: I stop following you."
 msgstr "unfollow: main aap ka peecha karna band kar deta hoon."
 
+msgid "unknown"
+msgstr "maloom nahi"
+
 msgid "unknown command: {cmd}"
 msgstr "najaana command: {cmd}"
 
@@ -6326,6 +6594,9 @@ msgstr "najaana map: {map}"
 msgid "unmute: the game talks again."
 msgstr "unmute: game phir bolne lagta hai."
 
+msgid "until the next level needs at least"
+msgstr "jab tak agle level ko kam az kam itni chahiye"
+
 msgid "until the plan stops"
 msgstr "jab tak mansooba na ruke"
 
@@ -6334,6 +6605,11 @@ msgstr "until= ko condition chahiye, misal: until=kills >= 100"
 
 msgid "updating shard prices"
 msgstr "shards ki qeematein update kar rahe hain"
+
+msgid ""
+"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+msgstr ""
+"{card} istemal kiya, magar character sheet par koi experience card chalta nahi dikhta - ek minute baad dobara koshish"
 
 msgid "using the hearthstone key"
 msgstr "hearthstone key istemal kar rahe hain"
@@ -6361,6 +6637,9 @@ msgstr "dushman tak chalo"
 
 msgid "walking on to {cell}"
 msgstr "{cell} ki taraf aage chal rahe hain"
+
+msgid "walking out of the safe zone to cast {skill}"
+msgstr "{skill} chalane ke liye safe zone se bahar ja rahe hain"
 
 msgid "walking to monsters"
 msgstr "monsters tak chal rahe hain"
@@ -6471,12 +6750,18 @@ msgstr "{n} baar inkaar ke baad {beast} le liya gaya"
 msgid "{better} is ready again - putting {pet} away for it"
 msgstr "{better} phir tayyar hai - iske liye {pet} ko wapas bhej rahe hain"
 
+msgid "{bonus}% more experience, {m} min {s} s left"
+msgstr "{bonus}% zyada experience, {m} min {s} s baqi"
+
 msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 "{boss} (boss) {n} qadam door hai - us se {keep} qadam door reh rahe hain"
 
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
+
+msgid "{card} ({n} in the bag)"
+msgstr "{card} (bag mein {n})"
 
 msgid "{cave} - level {n} - {where}"
 msgstr "{cave} - level {n} - {where}"
@@ -6990,14 +7275,47 @@ msgid ""
 msgstr ""
 "{skill} ne lagataar {n} baar {pet} ka HP nahi barhaya - shayad aap par lag raha hai. {minutes} minute pet potions, phir dobara {skill}{skill} ne lagataar {n} baar {pet} ka HP nahi barhaya - shayad aap par lag raha hai. {minutes} minute pet potions, phir dobara {skill}"
 
+msgid "{skill} doesn't list {place} for this character"
+msgstr "{skill} is character ke liye {place} nahi dikhati"
+
+msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
+msgstr "{skill} kisi skill key par nahi (khali keys par skills lagana band hai)"
+
+msgid ""
+"{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
+msgstr ""
+"{skill} kisi skill key par nahi aur koi skill key khali nahi - istemal ke liye ise kisi key par lagayein"
+
+msgid "{skill} not cast at {name}: {why}"
+msgstr "{skill} {name} par nahi chali: {why}"
+
+msgid "{skill} on our kills while Vitality lasts ({n} now)"
+msgstr "{skill} hamare shikar par, jab tak Vitality hai (abhi {n})"
+
+msgid "{skill} opened no menu (cooling down, or not enough MP?)"
+msgstr "{skill} ne koi menu nahi khola (cooldown, ya MP kafi nahi?)"
+
 msgid "{skill} put on the empty skill key {key} (page {page})"
 msgstr "{skill} khali skill key {key} par rakh diya (page {page})"
 
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} ruk gayi - dobara shuru kar rahe hain"
 
+msgid ""
+"{skill} was broken off before it ended (something hit us) - fighting first"
+msgstr ""
+"{skill} khatam hone se pehle toot gayi (kisi ne hamein mara) - pehle lar rahe hain"
+
+msgid ""
+"{skill} went out at {n} corpses in a row and the game never answered - trying again in 5 minutes"
+msgstr ""
+"{skill} lagatar {n} laashon par gayi aur game ne koi jawab nahi diya - 5 minute baad dobara koshish"
+
 msgid "{skill}, {rank}; character level {level}"
 msgstr "{skill}, {rank}; character ka level {level}"
+
+msgid "{skill}: {name}"
+msgstr "{skill}: {name}"
 
 msgid "{stage}, automatically: {job}"
 msgstr "{stage}, khud ba khud: {job}"
@@ -7052,6 +7370,9 @@ msgstr "{who} kisi aise game mein logged in nahi jo Uncle Farmer ko nazar aaye"
 
 msgid "{who}'s game is busy with {what}"
 msgstr "{who} ka game {what} mein masroof hai"
+
+msgid "{why} - no more {skill} this run ({n} done)"
+msgstr "{why} - is run mein mazeed {skill} nahi ({n} hue)"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."

@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from ...stats import Tally
     from ..bot import Bot
     from ..combat import SkillBook
+    from ..corpses import Harvest
+    from ..xpcard import Cards
     from ..kills import KillTracker
 
 
@@ -78,12 +80,16 @@ class Parts:
     failure_notes: set[tuple[str, str]]   # (where, error kind) of ignored failures already logged
     follow_buffs: bool          # following, and the leader's `buff` message turned buffs on
     gather_casts: int           # gathering casts seen this run
+    corpses: Harvest            # corpse harvesting this run (engine/corpses.py)
+    xpcard: Cards               # experience cards this run (engine/xpcard.py)
+    harvests: int               # corpses harvested this run
     last_beast_change: float    # when the bot last changed or got off its beast
     last_ride_check: float
     phrases: dict[int, str]     # the game's quick phrases by slot (engine/runner.py)
     said_low_power: bool
     said_no_mount: bool         # "attacked - staying on foot" said, until nothing attacks us
     said_no_vitality: bool
+    dying_on_purpose: bool      # the XP loser's run (engine/xploss.py): deaths are not news
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
     traveling: bool
@@ -237,6 +243,7 @@ class Parts:
         def ask_vitals(self, what: str) -> bool | None: ...
         def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]: ...
         def rest_up(self, me: dict[str, Any]) -> bool: ...
+        def mp_now(self, me: dict[str, Any], now: float) -> tuple[float, float] | None: ...
         # walking.py
         def walk_to(self, cell: tuple[float, float], map_change: bool = False,
                     near: Callable[[dict[str, Any]], bool] | None = None) -> str: ...

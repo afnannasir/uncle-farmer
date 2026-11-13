@@ -118,38 +118,75 @@ def skills(bot: Bot):
     if not empty:
         tell_no_room(bot, want, keyed, rows)
         return False
-    keys = gamekeys.attack_key_list()
     placed = False
     for name in want:
         if not empty:
             tell_no_room(bot, want[want.index(name):], keyed, rows)
             break
         slot = empty[0]
-        page, n = divmod(slot - 1, 10)
-        index = next(i for i, r in enumerate(rows) if r["name"] == name)
-        if not bot.panel_cursor(4, index, len(rows)):
-            bot.log(_("couldn't reach {skill} in the skills panel", skill=name))
-            break
-        if not sb.flip_to(page):
-            break
-        bot.key("lctrl+alt+" + keys[n])
-        bot.sleep(0.6)
-        now = bot.a.json("mem skills")
-        keys_now: dict[str, int] = (now.get("attack_keys") or {}) if json.is_object(now) else {}
-        got = keys_now.get(str(slot))
-        if got != ids[name]:
-            bot.log(_("the game didn't put {skill} on key {key} - leaving the keys as they are",
-                      skill=name, key=keys[n]), speak=True)
+        if not _place(bot, sb, rows, ids[name], name, slot):
             break
         empty.pop(0)
         keyed[slot] = ids[name]
         placed = True
-        bot.log(_("{skill} put on the empty skill key {key} (page {page})", skill=name, key=keys[n], page=page + 1),
-                speak=True)
     sb.flip_to(0)
     if placed:
         bot.skillbook = combat.SkillBook(bot)    # read the keys again
     return placed
+
+
+def _place(bot: Bot, sb: combat.SkillBook, rows: list[dict[str, Any]], sid: int, name: str, slot: int) -> bool:
+    """Put one skill on skill key `slot` (1-20) the game's way; True once the game shows it there."""
+    keys = gamekeys.attack_key_list()
+    page, n = divmod(slot - 1, 10)
+    index = next(i for i, r in enumerate(rows) if r["name"] == name)
+    if not bot.panel_cursor(4, index, len(rows)):
+        bot.log(_("couldn't reach {skill} in the skills panel", skill=name))
+        return False
+    if not sb.flip_to(page):
+        return False
+    bot.key("lctrl+alt+" + keys[n])
+    bot.sleep(0.6)
+    now = bot.a.json("mem skills")
+    keys_now: dict[str, int] = (now.get("attack_keys") or {}) if json.is_object(now) else {}
+    if keys_now.get(str(slot)) != sid:
+        bot.log(_("the game didn't put {skill} on key {key} - leaving the keys as they are",
+                  skill=name, key=keys[n]), speak=True)
+        return False
+    bot.log(_("{skill} put on the empty skill key {key} (page {page})", skill=name, key=keys[n], page=page + 1),
+            speak=True)
+    return True
+
+
+def put_skill(bot: Bot, name: str) -> bool:
+    """One learned skill on a skill key, for something the bot needs now (a teleport skill for
+    travel): True when it is on a key already or was put on an empty one. Never onto a key in use;
+    with no empty key it says so and leaves the keys alone."""
+    sk = bot.a.json("mem skills")
+    if not json.is_object(sk) or "combat" not in sk:
+        return False
+    rows: list[dict[str, Any]] = sk["combat"]
+    ids: dict[str, int] = {r["name"]: r["id"] for r in rows}
+    if name not in ids:
+        return False
+    attack_keys: dict[str, int] = sk.get("attack_keys", {})
+    keyed = {int(i): sid for i, sid in attack_keys.items() if sid}
+    if ids[name] in keyed.values():
+        return True
+    empty = [i for i in range(1, 21) if i not in keyed]
+    if not empty:
+        bot.log(_("{skill} isn't on a skill key and no skill key is empty - put it on one to use it",
+                  skill=name), speak=True)
+        return False
+    if not bot.p.get("fill_empty_keys", True):
+        bot.log(_("{skill} isn't on a skill key (putting skills on empty keys is off)", skill=name), speak=True)
+        return False
+    sb = bot.skillbook or combat.SkillBook(bot)
+    ok = _place(bot, sb, rows, ids[name], name, empty[0])
+    sb.flip_to(0)
+    bot.goto_panel(0)
+    bot.skillbook = combat.SkillBook(bot)    # read the keys again
+    return ok
 
 
 def tell_no_room(bot: Bot, want: list[str], keyed: dict[int, int], rows: list[dict[str, Any]]) -> None:

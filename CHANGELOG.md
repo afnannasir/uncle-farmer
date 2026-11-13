@@ -1,5 +1,79 @@
 # What's new
 
+## Unreleased
+
+**Experience cards**
+
+- Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".
+  Choose which card: the list holds only the cards the last scan found in the bag (1.3x, 1.5x,
+  1.75x, 2x, 2.5x, 3x), with how many you have, or None. On the farm, a paused card is resumed, and
+  when none is running a card of the chosen kind is used - only that kind, never a stronger one
+  from the bag. When that kind runs out, the bot says so once and keeps farming without a card.
+- "Pause the card while away from the monsters": a running card is paused when a farming run
+  travels to another map - to town for potions or repairs, back after a death, home at the end -
+  and when the run ends. It runs again once farming starts on the farm. A pause costs a minute of
+  the card, so a card with under a minute and a half left is not paused, and nothing is paused in a
+  dungeon (the game doesn't allow it there). Both off by default.
+- The bot reads the card's state and time left from the character sheet and pauses or resumes it
+  the way the sheet's own entry does, so it never presses it the wrong way.
+- Needs the new game agent (60): restart the game after updating.
+
+**XP loser**
+
+- Tools, XP loser (Ctrl+Shift+X), for a character that shouldn't level up: say how much experience
+  the next level should need at least, or how much to lose. The bot finds a guard - in sight, where
+  one was seen before, or in the nearest town - switches the PK mode to all mode, hits the guard
+  once and lets it kill the character, with no potions, heals or fighting back. It respawns in the
+  city and goes again until the character sheet shows the goal.
+- It stops at the goal, after the most deaths you allow (30 unless you say), or when dying no
+  longer costs experience. The pet is put away first and the PK mode put back at the end.
+- Guards seen are remembered, so the next run knows where to go.
+- Also a Triggers job (before or after farming) and a script command, `lose_xp [check]`.
+- Not for a black-name character, who can lose worn gear when dying: the bot reads Morality from
+  the character sheet and refuses to start for one.
+- Only guards outside a town's safe zone are fought (the ones in front of the gates): the guards
+  walking the streets can't be, and no attack works from inside the zone. The bot switches to all
+  mode before it looks, stands outside the zone, gets off its fusion beast, and walks right up to
+  a guard when a wall is in the way. From inside a town it heads for the town's edges first.
+
+**Safe zones**
+
+- The bot now knows every safe zone in the game - towns, villages, the zones in front of some exits
+  - from the game's own map table (data/safe_zones.json). Standing in one, no attack key works,
+  and nothing standing in one can be fought.
+
+**Teleport skills**
+
+- A Mage's Teleportation (city squares) and an Elf's Elven Teleportation (Soul Burial Village,
+  mist gods Ruins and the other high-level lands) are used for travel whenever they make the trip
+  shorter. They cost only mana, never an item.
+- The bot walks out of a town's safe zone first, deals with anything attacking (any hit breaks the
+  10-second channel), gets off its fusion beast, presses the skill and picks the place from the
+  game's list. A skill on no key is put on an empty skill key. A teleport counts only when the new
+  map arrives; a broken channel means fight, then try again, and after three broken tries the bot
+  goes another way.
+- Each character's list of places is learned from the game's menu the first time, since it grows
+  with the skill's level. Nearest-shop choices count the teleport too.
+- Character, Travel: "Use the class's teleport skill (Mage, Elf)", on by default.
+
+**Corpse harvesting**
+
+- Character, Settings, Fighting, Corpses: "Harvest the monsters we kill with the learned Draw Blood,
+  Skinning or Cut Flesh". The bot finds which one the character has learned in its profession skills
+  and casts it straight through the game, the way the game's own key would: no Z, X or C key needed,
+  nothing to bind, and nothing selected. Between fights, with nothing attacking you or your pet, it
+  takes the corpse of a monster it killed in the last minute, within the game's reach, once per
+  corpse, the nearest first.
+- The cast is held for a moment and then let go, as a key press is. The first test night sent it
+  once and never let go: the game then treated the character as still attacking, every walk
+  failed until the next fight (hundreds of "stuck" lines, hearthstones, an early stop), and casts
+  sent in the short pause after a kill were mostly ignored.
+- It stops for the rest of the run when Vitality runs out (the game says "lack of vitality"), or
+  when the character sheet's Vitality is down to the number you set. It never spends diamonds.
+- If the game answers none of four casts in a row, the bot says so and tries again five minutes
+  later. A character with no corpse skill is told where to learn one. Off by default.
+- Needs the new game agent (61 or newer): restart the game after updating.
+
 ## 1.1.0
 
 **Shooting while walking when farming**

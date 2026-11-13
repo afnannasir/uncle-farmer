@@ -28,6 +28,7 @@ def traveller(talents: list[dict[str, Any]] | None, here: int = FERTILE_WILDS) -
     with every leg it takes recorded instead of walked."""
     b = Bot()
     b._map = here
+    b.p["use_teleport_skills"] = False    # these count the talent's `mem skills` reads alone
     asked: list[str] = []
 
     def answer(line: str) -> Any:

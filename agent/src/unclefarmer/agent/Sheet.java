@@ -37,6 +37,14 @@ final class Sheet {
     /** Below the top level: "level 50|||; upgrading requires 30000 experience". */
     private static final Pattern XP_NEEDED = Pattern.compile("upgrading requires (\\d+) experience");
     private static final Pattern MERIT = Pattern.compile("battlefield merit points (\\d+)");
+    /** A running experience card: "30% EXP bonus; press to pause.28 minutes 55 seconds remaining",
+     *  a paused one "30% EXP bonus.Paused; press to resume.28 minutes 55 seconds remaining" (the
+     *  recorder's captures, 2026-11-11). No such entry: no card running. */
+    private static final Pattern EXP_BONUS = Pattern.compile(
+            "(\\d+)% EXP bonus\\W+(Paused; press to resume|press to pause)\\W+"
+            + "(?:(\\d+) hours?)?\\s*(?:(\\d+) minutes?)?\\s*(?:(\\d+) seconds?)?\\s*remaining");
+    /** "Morality 2000;white name": at -1000 or lower (a black name) a death can cost worn gear. */
+    private static final Pattern MORALITY = Pattern.compile("\\bMorality (-?\\d+)");
     /** "public area drop 6 hours 48 minutes 16 seconds  remaining" / "... 7 hours  remaining": the
      *  day's drop time - loot only drops in public areas while it lasts. */
     private static final Pattern DROP = Pattern.compile(
@@ -60,6 +68,10 @@ final class Sheet {
     static volatile long contribution = -1;
     static volatile long xpNeeded = -1;      // -1: at the top level (the sheet has no such line)
     static volatile long merit = -1;
+    static volatile int expBonus;           // the running card's bonus in percent (0: no card)
+    static volatile boolean expPaused;
+    static volatile int expSeconds = -1;    // the card's time left (-1: no card)
+    static volatile long morality = Long.MIN_VALUE;   // MIN_VALUE: not on the sheet
     static volatile String counterName = "";
     static volatile double counter = -1;
     static volatile long seen;
@@ -126,6 +138,21 @@ final class Sheet {
         xpNeeded = xp.find() ? Long.parseLong(xp.group(1)) : -1;
         Matcher mr = MERIT.matcher(text);
         merit = mr.find() ? Long.parseLong(mr.group(1)) : -1;
+        Matcher eb = EXP_BONUS.matcher(text);
+        if (eb.find()) {
+            expBonus = Integer.parseInt(eb.group(1));
+            expPaused = eb.group(2).startsWith("Paused");
+            int h = eb.group(3) == null ? 0 : Integer.parseInt(eb.group(3));
+            int mi = eb.group(4) == null ? 0 : Integer.parseInt(eb.group(4));
+            int se = eb.group(5) == null ? 0 : Integer.parseInt(eb.group(5));
+            expSeconds = h * 3600 + mi * 60 + se;
+        } else {
+            expBonus = 0;
+            expPaused = false;
+            expSeconds = -1;
+        }
+        Matcher mo = MORALITY.matcher(text);
+        morality = mo.find() ? Long.parseLong(mo.group(1)) : Long.MIN_VALUE;
         Matcher fp = FUSION.matcher(text);
         if (fp.find()) fusion = Double.parseDouble(fp.group(1));
         Matcher vt = VITALITY.matcher(text);
