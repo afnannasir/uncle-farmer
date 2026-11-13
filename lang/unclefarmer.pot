@@ -798,6 +798,9 @@ msgstr ""
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 
+msgid "Automatic login"
+msgstr ""
+
 msgid "Automatic, by class"
 msgstr ""
 
@@ -1077,6 +1080,9 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
+msgstr ""
+
+msgid "Couldn't log in automatically: {err}"
 msgstr ""
 
 msgid "Couldn't open it: {err}"
@@ -1935,6 +1941,19 @@ msgstr ""
 msgid "Log files"
 msgstr ""
 
+msgid "Log in"
+msgstr ""
+
+msgid "Log in as another &character"
+msgstr ""
+
+msgid "Log in as another character"
+msgstr ""
+
+msgid ""
+"Log in to a character first so Uncle Farmer can learn its saved account."
+msgstr ""
+
 msgid "Log in to a character in the game first."
 msgstr ""
 
@@ -1945,7 +1964,13 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr ""
 
+msgid "Log out of this game window before logging in as another character."
+msgstr ""
+
 msgid "Logging"
+msgstr ""
+
+msgid "Logging in as {name}"
 msgstr ""
 
 msgid "Look for a new &version when Uncle Farmer starts"
@@ -2813,6 +2838,9 @@ msgstr ""
 msgid "Save changes to the script?"
 msgstr ""
 
+msgid "Saved account email:"
+msgstr ""
+
 msgid "Saved. It's in the Plans tab as a script."
 msgstr ""
 
@@ -2874,6 +2902,9 @@ msgid "Select a game first."
 msgstr ""
 
 msgid "Select a plan first."
+msgstr ""
+
+msgid "Selecting {name}"
 msgstr ""
 
 msgid "Sell and store by these lists, then come back"
@@ -3234,6 +3265,10 @@ msgid "Teleport to the team leader"
 msgstr ""
 
 msgid "Tell them now and then that I'm a&way"
+msgstr ""
+
+msgid ""
+"That character needs to be identified from the game before it can be used for automatic login."
 msgstr ""
 
 msgid ""
@@ -3672,6 +3707,10 @@ msgid ""
 "Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 msgstr ""
 
+msgid ""
+"Uncle Farmer uses the game's existing saved sign-in, waits for this character in the server's character list, then selects it. No password is shown or saved."
+msgstr ""
+
 msgid "Uncle Farmer {v}"
 msgstr ""
 
@@ -3822,6 +3861,9 @@ msgstr ""
 msgid "Wa&lk to a dungeon or map"
 msgstr ""
 
+msgid "Waiting for {name} in the character list"
+msgstr ""
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 
@@ -3871,6 +3913,9 @@ msgid ""
 msgstr ""
 
 msgid "West edge (x):"
+msgstr ""
+
+msgid "What happens:"
 msgstr ""
 
 msgid "What is on the hotkey (else the strongest in the bag)"
