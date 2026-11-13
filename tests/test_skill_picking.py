@@ -214,6 +214,21 @@ def test_real_fight_one_bunched_gap_doesnt_fool_the_estimate(recorded: dict[str,
     assert 1.1 < sb.gcd() < 1.3
 
 
+def test_a_skill_is_not_picked_past_its_own_range(clock: Clock) -> None:
+    """A Hunter's Arcane Shot reaches 20 yards. At 20 it is cast; past 20 the server refuses it,
+    so it must not be picked (the old +0.5 let it be pressed at 20.5)."""
+    g = Game(clock, ["Arcane Shot"])
+    sb = combat.SkillBook(as_parts(Bot(g)))
+    me = {"id": ME, "x": 50.0, "y": 50.0, "hp": 1000, "maxhp": 1000}
+    mob = {"id": -5, "x": 70.0, "y": 50.0, "hp": 500, "maxhp": 500, "name": "Wolf", "kind": "monster", "side": 1}
+    snap: dict[str, Any] = {"self": me, "entities": [me, mob]}
+    assert isinstance(sb.pick(snap, mob), tuple)          # exactly at its range: still a shot
+    clock.advance(1.0)                                    # its press and cooldown are behind us
+    mob["x"] = 70.4                                       # it stepped back 0.4 yards
+    assert sb.pick(snap, mob) is None
+    assert sb.fallback(clock.now, lambda s: sb.reaches(s, 20.4)) is None
+
+
 # ---------------------------------------------------------------------------------- area skills in front
 MULTI: Skill = {"name": "Multi Shot", "role": "aoe", "targets": 4, "range": 20.0,
                 "text": "Attack 4 targets within 20 yards and 90 degrees, have a chance to mark the enemy"}
