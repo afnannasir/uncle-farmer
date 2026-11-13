@@ -317,4 +317,3 @@ class GamesMixin(FrameParts):
         with wx.BusyCursor():
             self.auto_scan(name)
         self.say(_("{name} scanned.", name=settings.profile_display(name)))
-
