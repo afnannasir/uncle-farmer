@@ -12,7 +12,7 @@ from typing import Any, TypedDict
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, potions, triggers
+from ..engine import combat, potions, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
@@ -278,6 +278,17 @@ class ProfileDialog(Dialog):
         self.panic_after = f.number(_("For (seconds):"), int(p["panic_after"]), 1, 120)
         self.panic.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), self.panic_after.Enable(self.panic.GetValue())))
         self.panic_after.Enable(self.panic.GetValue())
+        f = group(panel, box, _("Corpses"))
+        self.corpse_skill, self.corpse_vitality = f.optional(
+            _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
+            p.get("corpse_skill", False),
+            _("Stop when &Vitality is down to (0: until it runs out):"), p.get("corpse_keep_vitality", 0), 0, 100)
+        f = group(panel, box, _("Experience cards"))
+        self.xp_card = f.choice(_("E&xperience card to keep running while farming:"), [""])
+        self.xp_card_values: list[str] = [""]
+        self.xp_card_pause = f.check(_("Pause the card while a&way from the monsters: town trips, the walk back after a "
+                                       "death, the end of farming (each pause costs a minute of the card; never in a "
+                                       "dungeon)"), p.get("xp_card_pause", False))
         f = group(panel, box, _("Gear"))
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
@@ -329,13 +340,15 @@ class ProfileDialog(Dialog):
                        "update_shard_prices": _("&Update shard prices (game menu, Update shard prices)"),
                        "gather": _("&Gathering (as set in Tools, Gathering)"),
                        "store_items": _("S&tore items (game menu, Store items now)"),
-                       "restock": _("&Restock supplies (game menu, Restock now)")},
+                       "restock": _("&Restock supplies (game menu, Restock now)"),
+                       "lose_xp": _("Lose e&xperience (as set in Tools, XP loser)")},
             "after": {"sell_shards": _("Se&ll shards (game menu, Sell shards now)"),
                       "clean_bag": _("Clea&n the bag (game menu, Clean the bag now)"),
                       "update_shard_prices": _("Up&date shard prices (game menu, Update shard prices)"),
                       "gather": _("Gat&hering (as set in Tools, Gathering)"),
                       "store_items": _("St&ore items (game menu, Store items now)"),
-                      "restock": _("Restoc&k supplies (game menu, Restock now)")},
+                      "restock": _("Restoc&k supplies (game menu, Restock now)"),
+                      "lose_xp": _("Lose experience (as set in Tools, XP lose&r)")},
         }
         titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
                   "after": _("After farming (when farming finishes by itself, never after Stop)")}
@@ -392,6 +405,19 @@ class ProfileDialog(Dialog):
                 self.pets.append({"name": name, "use": False})
         self.show_pets()
         self.fill_potions()
+        self.fill_xp_cards()
+
+    def fill_xp_cards(self) -> None:
+        """The experience cards the last scan saw in the bag, weakest first, and None. A card that
+        isn't in the bag is no choice: a chosen one that ran out goes back to None."""
+        s: dict[str, Any] = self.p.get("scan") or {}
+        found = xpcard.cards_in(s.get("bag", []))
+        self.xp_card_values = [""] + [name for _power, name, _count in found]
+        self.xp_card.Set([_("None")] + [_("{card} ({n} in the bag)", card=name, n=count)
+                                        for _power, name, count in found])
+        want = (self.p.get("xp_card_name") or "").strip().lower()
+        pick = next((i for i, v in enumerate(self.xp_card_values) if v and v.lower() == want), 0)
+        self.xp_card.SetSelection(pick)
 
     def fill_potions(self) -> None:
         """Potion choices from the last scan: what is on the hotkeys and in the bag."""
@@ -528,6 +554,10 @@ class ProfileDialog(Dialog):
         p["stop_on_panic"] = self.panic.GetValue()
         p["panic_below"] = self.panic_below.GetValue()
         p["panic_after"] = float(self.panic_after.GetValue())
+        p["corpse_skill"] = self.corpse_skill.GetValue()
+        p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
+        p["xp_card_name"] = self.xp_card_values[max(0, self.xp_card.GetSelection())]
+        p["xp_card_pause"] = self.xp_card_pause.GetValue()
         p["repair_with"] = "toolbox" if self.repair.GetValue() else "off"
         p["stop_when_gear_broken"] = self.gear_stop.GetValue()
         for kind, ui in self.potion_ui.items():
@@ -759,6 +789,8 @@ class AdvancedDialog(Dialog):
         self.vip = f.check(_("I'm a &VIP (cable cars and airships are free)"), p.get("vip", False))
         self.travel_items = f.check(_("Use &teleport stones and the hearthstone from the bag"),
                                     p.get("use_travel_items", False))
+        self.teleport_skills = f.check(_("Use the class's teleport &skill (Mage, Elf)"),
+                                       p.get("use_teleport_skills", True))
         f = group(panel, box, _("Ending a run"))
         self.end_safe = f.check(_("End on a map &without monsters"), p.get("end_safe", True))
 
@@ -845,6 +877,7 @@ class AdvancedDialog(Dialog):
         p["use_airships"] = self.use_airships.GetValue()
         p["vip"] = self.vip.GetValue()
         p["use_travel_items"] = self.travel_items.GetValue()
+        p["use_teleport_skills"] = self.teleport_skills.GetValue()
         p["end_safe"] = self.end_safe.GetValue()
         p["points_every"] = points_every
         p["mp_check_every"] = self.mp_every.GetValue()

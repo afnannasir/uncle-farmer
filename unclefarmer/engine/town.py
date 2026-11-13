@@ -22,7 +22,7 @@ from typing import Any
 from .. import atlas, gamelang, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
 from ..i18n import _
-from . import bagrules, menus
+from . import bagrules, menus, teleskill
 from .bot import CONFIRM, Bot, Stopped
 from .botparts.travel import rides_free, ways_out
 from .transactions import InventoryTransaction
@@ -81,12 +81,13 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
     rows = b.bag_rows()
     purse = travel.arnebia_in(rows)
     rides, off = travel.ride_rules(b.p)
+    spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
 
     def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
         legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
                                  transport=rides, vip=rides_free(b), avoid=off,
                                  bag=rows if b.p.get("use_travel_items", False) else [],
-                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse)
+                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse, spells=spells)
         return None if legs is None else cost
 
     for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):

@@ -323,7 +323,7 @@ The other tabs under **Advanced** contain more detailed options, including:
 - When the character rests.
 - When defensive skills, shields, and the healing skill are used.
 - Which potions and Rice Rolls the pet uses.
-- How the character travels, including walking, cable cars, airships, travel items, and VIP travel.
+- How the character travels, including walking, cable cars, airships, teleport skills, travel items, and VIP travel.
 - Which keys are used for dialogs, discarding items, and the Action menu.
 
 ### How the bot chooses a route
@@ -333,6 +333,17 @@ When travelling, Uncle Farmer combines walking with cable cars and airships when
 For example, a journey from Giant Rock City to Tulip City might go underground to reach a cable car, then continue on foot after arriving.
 
 The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, and the character must have enough arnebia in the bag to pay the fare. VIP travel is free.
+
+**Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
+
+When it teleports, the bot:
+
+1. Walks out of the town first if it is standing in one. No skill works in a town's safe zone.
+2. Deals with anything attacking it. Any hit breaks the 10-second channel.
+3. Gets off the fusion beast.
+4. Presses the skill's key and chooses the place from the game's list. If the skill is on no key, the bot puts it on an empty skill key, as it does for heals and buffs.
+
+The first time, the bot learns which places this character's skill lists (the list grows with the skill's level) and remembers them. If something hits it during the channel, it fights back and tries again. After three broken tries it goes another way.
 
 If those conditions are not met, the bot plans the route on foot instead.
 

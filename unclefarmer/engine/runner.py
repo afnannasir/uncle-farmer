@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyslots, triggers
+from . import chores, keyslots, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
 from .botparts.parts import Sighting, Where
@@ -388,6 +388,7 @@ class Run(threading.Thread):
                     carry_on(e, "finishing the results without the bot")
                     self.log(_("couldn't finish the results: {err}", err=e))
         if self.link:
+            self._pause_card(bot)
             self._let_go(app, bot, self.link)
         self.log(_("stopped: {why}", why=reason), speak=True)
         tell = getattr(self, "tell", None)
@@ -407,6 +408,17 @@ class Run(threading.Thread):
             if app.get("results_speak", "end") == "end":
                 self.log(stats.short(r, self.tally.drop_left), speak=True)
         self.on_done(reason, self)
+
+    def _pause_card(self, bot: Bot | None) -> None:
+        """A farming run over: its running experience card paused (xp_card_pause), so the minutes
+        aren't spent standing in town. Not after Stop: the player is there, and every wait would
+        end at once. Best effort - the game may already be gone."""
+        if bot is None or self.walk or self.stop_event.is_set() or not getattr(bot, "farmed", False):
+            return
+        try:
+            xpcard.away(bot, _("farming is over"))
+        except Exception as e:
+            carry_on(e, "pausing the experience card at the end")
 
     def _last_readings(self, bot: Bot | None) -> None:
         """Before the results close: the kills the game reported since the bot last looked, and a

@@ -225,13 +225,15 @@ class EditingMixin(FrameParts):
         from ..chores import ChoresDialog
         from ..dungeon import DungeonDialog
         from ..gathering import GatheringDialog
+        from ..xploss import XpLoserDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
                            "gather": (GatheringDialog, "gather", _("Gathering")),
-                           "dungeon": (DungeonDialog, "dungeon", _("Dungeons"))}[which]
+                           "dungeon": (DungeonDialog, "dungeon", _("Dungeons")),
+                           "xploss": (XpLoserDialog, "lose_xp", _("XP loser"))}[which]
         # "Add where I stand" and "Use where I stand now" read the game
-        extra = (self.snapshot,) if which in ("gather", "dungeon") else ()
+        extra = (self.snapshot,) if which in ("gather", "dungeon", "xploss") else ()
         with cls(self, name, *extra) as d:
             code = d.ShowModal()
             cfg = getattr(d, "cfg", None)

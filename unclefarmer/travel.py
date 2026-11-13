@@ -9,6 +9,8 @@ The graph:
             the map data doesn't say where you land, every port of the next map, at a guessed cost)
           walking to a transport NPC, talking, choosing, riding -> where it lands (transports.json)
           from where we stand: a travel item (hearthstone, teleport stones) -> a city square
+          from where we stand (or the nearest cell outside a safe zone): a teleport skill (a
+            Mage's Teleportation, an Elf's Elven Teleportation) -> one of the places it lists
 Costs are in walking steps; talking, riding and teleporting add fixed overheads so they are used
 only when they really save walking (or when there's no other way). The plan is rebuilt after every
 leg, so a guess that turns out wrong costs nothing more than a re-plan.
@@ -29,6 +31,7 @@ plan() returns a list of legs; the bot carries out only the first one and asks a
   {"do": "exit", "map", "exit", "stand", "rect", "dest"}                walk off through a map exit
   {"do": "npc",  "map", "npc", "at", "stand", "choose": [...], "dest", "ride", "id", "kind"}
   {"do": "item", "item", "choose": [...], "dest", "lands"}             use a travel item
+  {"do": "skill", "skill", "place", "choose": [...], "dest", "lands", "cast_at"?}   cast a teleport skill
   {"do": "leave", "map"}                                                leave an instance (Action menu)
   {"do": "exit", ..., "dest": None}                                     walk out of a gang base (gang_exit)
   {"do": "walk", "map", "cell"}                                         the last stretch to a cell
@@ -44,6 +47,8 @@ import os
 import re
 from collections.abc import Callable, Collection, Hashable, Mapping, Sequence
 from typing import Any, Literal, TypeAlias, overload
+
+import numpy as np
 
 
 from . import atlas, jsonio as json, lru, paths
@@ -69,6 +74,7 @@ TALK = {"cable_car": 60, "airship": 120, "circle": 40, "menu": 60}   # talking +
 UNSEEN_NPC = 40         # extra walking assumed when we don't know where the NPC stands yet
 TELEPORT = 250          # using a travel item: casting, loading, and the item it costs
 HEARTH = 200            # the hearthstone is free to reuse, but has a long cast
+SPELL = 120             # a teleport skill: a 10 s channel, the map loading and the mana it costs
 
 # Where each square is: teleport stones, the hearthstone and city respawns land here (marker 1 of
 # the city's map; checked against the atlas reports).
@@ -97,6 +103,38 @@ ITEMS: dict[str, list[tuple[str | None, str]]] = {
 # Black Gold stone: villages and ruins, landing not measured yet (re-planned on arrival)
 BLACK_GOLD: list[tuple[str, tuple[int, int, int]]] = [("soul burial village", (1531, 97, 184)), ("plague abyss", (1733, 60, 60)),
               ("orchid woods village", (1631, 150, 155)), ("mist gods ruins", (1561, 200, 200))]
+
+# Teleport skills -> the places their menu lists -> where each lands: the place's marker cell in the
+# map table (the code the game sends is map * 1000 + marker). Recorded 2026-11-13: a level-5
+# Teleportation (Mage) listed the seven squares below, and a top-level (9) Elven Teleportation (Elf)
+# the nine places below; landings measured on Giant rock square and mist gods Ruins. A character's
+# own list depends on the skill's level: the bot learns it from the menu (botparts.travel) and
+# plans with this only before it has.
+SPELLS: dict[str, dict[str, tuple[int, int, int]]] = {
+    "Teleportation": {name: SQUARES[name] for name in (
+        "sunset square", "giant rock square", "white sand square", "tulip square", "moon square",
+        "holy blood square", "gouge knife square")},
+    "Elven Teleportation": {
+        "soul burial village": (1531, 85, 198), "plague abyss": (1731, 50, 223),
+        "orchid woods village": (1631, 151, 119), "city of the ancient tower": (1731, 166, 75),
+        "mist gods ruins": (1561, 200, 197), "west sealing tower": (1761, 100, 100),
+        "hermit camp": (1661, 76, 87), "east sealing tower": (1761, 400, 100),
+        "portal of the demon world": (1762, 45, 129)},
+}
+Spell = tuple[str, str]       # (teleport skill, place in its menu)
+
+
+def spell_landing(skill: str, place: str) -> tuple[int, int, int] | None:
+    """Where a teleport skill's place lands (map, x, y): the skill's own table, else a city square
+    (a higher-level Teleportation may list more of them), else None (not known: not planned)."""
+    name = place.strip().lower()
+    return SPELLS.get(skill, {}).get(name) or SQUARES.get(name)
+
+
+def spell_choice(place: str) -> str:
+    """The menu pattern for a place: the whole name ("east sealing tower" never picks the west one)."""
+    return r"\b%s\b" % re.escape(place.strip())
+
 
 _transports: list[Row] | None = None
 
@@ -447,20 +485,21 @@ PLAN_CACHE_MAX = 128
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
          hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False, arnebia: int | None = None,
-         with_cost: Literal[False] = False) -> Plan: ...
+         with_cost: Literal[False] = False, spells: Sequence[Spell] = ()) -> Plan: ...
 @overload
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
          hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False, arnebia: int | None = None, *,
-         with_cost: Literal[True]) -> CostedPlan: ...
+         with_cost: Literal[True], spells: Sequence[Spell] = ()) -> CostedPlan: ...
 def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
          transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
          hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False,
-         arnebia: int | None = None, with_cost: bool = False) -> Plan | CostedPlan:
+         arnebia: int | None = None, with_cost: bool = False, spells: Sequence[Spell] = ()) -> Plan | CostedPlan:
     """The legs from (here_map, here_cell) to goal_map (and goal_cell), or None if unreachable.
 
     bag: the bag rows ({"name", "count"}) so travel items can be used; hearth_home: the square the
-    hearthstone takes us to (learned); avoid: transport ids and item names that failed; arnebia:
+    hearthstone takes us to (learned); spells: the (teleport skill, place) pairs the character can
+    cast to; avoid: transport ids, item names and spells that failed; arnebia:
     the arnebia on hand, so no ride is planned that the character can't pay for (None: not known,
     every ride counts as payable).
 
@@ -476,11 +515,11 @@ def plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Se
     key = (here_map, (int(here_cell[0]), int(here_cell[1])), goal_map,
            (int(goal_cell[0]), int(goal_cell[1])) if goal_cell is not None else None,
            bool(transport), frozenset(avoid), bool(vip), have, hearth_home, bool(hearth_key),
-           bool(items), bool(team), bool(with_cost), _fare_band(arnebia, vip))
+           bool(items), bool(team), bool(with_cost), _fare_band(arnebia, vip), frozenset(spells))
     boxed = lru.get(_plan_cache, key)
     if boxed is None:
         boxed = (_plan(here_map, here_cell, goal_map, goal_cell, transport, avoid, vip, bag,
-                       hearth_home, hearth_key, items, team, with_cost, arnebia),)
+                       hearth_home, hearth_key, items, team, with_cost, arnebia, spells),)
         lru.put(_plan_cache, key, boxed, PLAN_CACHE_MAX)
     return copy.deepcopy(boxed[0])
 
@@ -497,7 +536,7 @@ def _fare_band(arnebia: int | None, vip: bool) -> tuple[int, ...] | None:
 def _plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: Sequence[float] | None = None,
           transport: bool = True, avoid: Collection[Hashable] = (), vip: bool = False, bag: Sequence[Row] | None = None,
           hearth_home: str | None = None, hearth_key: bool = False, items: bool = True, team: bool = False,
-          with_cost: bool = False, arnebia: int | None = None) -> Plan | CostedPlan:
+          with_cost: bool = False, arnebia: int | None = None, spells: Sequence[Spell] = ()) -> Plan | CostedPlan:
     if here_map == goal_map:
         return _same_map(here_map, here_cell, goal_cell, with_cost)
     g = _static_graph()
@@ -513,6 +552,8 @@ def _plan(here_map: int, here_cell: Sequence[float], goal_map: int, goal_cell: S
     item_edges: Graph = {}
     if items:
         first += _item_starts(here_map, bag, hearth_home, hearth_key, avoid, item_edges)
+    if spells:
+        first += _spell_starts(here_map, here_cell, spells, avoid, item_edges)
     at_goal = _goal_test(goal_map, goal_cell)
     found, best, prev = _search(first, edges, item_edges, at_goal)
     if found is None:
@@ -598,6 +639,67 @@ def _item_starts(here_map: int, bag: Sequence[Row] | None, hearth_home: str | No
     return first
 
 
+_spot_cache: dict[tuple[int, Cell], tuple[tuple[int, Cell] | None]] = {}
+SPOT_CACHE_MAX = 64
+
+
+def cast_spot(mid: int, cell: Sequence[float]) -> tuple[int, Cell] | None:
+    """Where a skill can be cast from: (steps there, cell). Here (0 steps) outside a safe zone;
+    in one, the nearest walkable cell outside every safe zone (never an exit, which would leave
+    the map). None: no such cell can be walked to."""
+    here: Cell = (int(cell[0] + 0.5), int(cell[1] + 0.5))
+    if not atlas.in_safe_zone(mid, cell[0], cell[1]):
+        return 0, here
+    key = (int(mid), here)
+    boxed = lru.get(_spot_cache, key)
+    if boxed is None:
+        boxed = (_nearest_unsafe(mid, here),)
+        lru.put(_spot_cache, key, boxed, SPOT_CACHE_MAX)
+    return boxed[0]
+
+
+def _nearest_unsafe(mid: int, here: Cell) -> tuple[int, Cell] | None:
+    m = atlas.model(mid)
+    dist = m.steps_arr(here)
+    w = m.W
+    h = len(dist) // w
+    blocked = np.zeros((h, w), dtype=bool)
+    for x1, y1, x2, y2 in atlas.safe_zones(mid):
+        blocked[max(0, y1):min(h, y2 + 1), max(0, x1):min(w, x2 + 1)] = True
+    blocked |= np.asarray(m.portal, dtype=bool)[:h, :w]
+    ok = (dist >= 0) & ~blocked.ravel()
+    if not ok.any():
+        return None
+    i = int(np.argmin(np.where(ok, dist, np.iinfo(np.int32).max)))
+    return int(dist[i]), (i % w, i // w)
+
+
+def _spell_starts(here_map: int, here_cell: Sequence[float], spells: Sequence[Spell],
+                  avoid: Collection[Hashable], item_edges: Graph) -> list[Edge]:
+    """(cost, node, leg) for each place a teleport skill can take us, cast here or (standing in a
+    safe zone, where no skill works) from the nearest cell outside it; item_edges gets the walks
+    from each landing to that map's ports."""
+    spot = cast_spot(here_map, here_cell)
+    if spot is None:
+        return []
+    steps, at = spot
+    first: list[Edge] = []
+    for skill, place in spells:
+        land = spell_landing(skill, place)
+        if land is None or skill in avoid or (skill, place) in avoid or land[0] == here_map:
+            continue
+        lm, lx, ly = land
+        node: Node = ("i", "%s: %s" % (skill, place), lm, lx, ly)
+        leg: Leg = {"do": "skill", "skill": skill, "place": place, "choose": [spell_choice(place)],
+                    "dest": lm, "lands": [lx, ly]}
+        if steps:
+            leg["cast_at"] = [at[0], at[1]]
+        first.append((SPELL + steps, node, leg))
+        for i, walk in _landing_ports(lm, (lx, ly)).items():
+            item_edges.setdefault(node, []).append((walk, ("p", lm, int(i)), None))
+    return first
+
+
 def _goal_test(goal_map: int, goal_cell: Sequence[float] | None) -> Callable[[Node], float | None]:
     """at_goal(node): the steps still to walk from a node on goal_map (to the goal cell, if there
     is one), or None for a node elsewhere or one with no way to the cell."""
@@ -672,6 +774,8 @@ def describe(legs: list[dict[str, Any]]) -> list[str]:
         elif leg["do"] == "item":
             out.append("use %s%s to %s" % (leg["item"], (" (%s)" % leg["choose"][0]) if leg["choose"] else "",
                                            atlas.label(leg["dest"])))
+        elif leg["do"] == "skill":
+            out.append("%s to %s (%s)" % (leg["skill"], leg["place"], atlas.label(leg["dest"])))
         elif leg["do"] == "leave":
             out.append("%s: leave through the Action menu" % atlas.label(leg["map"]))
         else:

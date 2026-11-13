@@ -1,5 +1,6 @@
 """Character settings, Triggers: Tools jobs the bot runs by itself before farming starts and after
-it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering, Store items now and Restock now.
+it ends - Sell shards now, Clean the bag now, Update shard prices, Gathering, Store items now, Restock now
+and the XP loser.
 
 Each job has two ticks of its own, one per stage (profile keys `<job>_before_farming` and
 `<job>_after_farming`); the two never touch each other, so a job ticked at both stages runs once
@@ -30,7 +31,7 @@ from .. import stats
 from ..errors import carry_on
 from ..i18n import N_, _
 from ..link import AgentError
-from . import gathering, town
+from . import gathering, town, xploss
 from .botparts.base import GameBroken, Stopped
 
 if TYPE_CHECKING:
@@ -45,6 +46,7 @@ JOBS: tuple[tuple[str, str], ...] = (
     ("gather", N_("gathering")),
     ("store_items", N_("storing items")),
     ("restock", N_("restocking supplies")),
+    ("lose_xp", N_("losing experience")),
 )
 # the town function each job is (looked up when it runs); gathering is gathering.run with its settings
 TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
@@ -76,6 +78,8 @@ def run_job(b: Bot, job: str, check_only: bool = False) -> object:
     with stats.doing(b, job):
         if job == "gather":
             return gathering.run(b, gathering.config(b.p), check_only)
+        if job == "lose_xp":
+            return xploss.run(b, xploss.config(b.p), check_only)
         fn: Callable[[Bot], object] = getattr(town, TOWN_JOBS[job])
         return fn(b)
 

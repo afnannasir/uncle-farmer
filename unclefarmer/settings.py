@@ -101,6 +101,8 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "gather_after_farming": False,        # Tools, Gathering (as set there), after a farming run that finished
     "store_items_after_farming": False,   # the game menu's Store items now, after a farming run that finished
     "restock_after_farming": False,       # the game menu's Restock now, after a farming run that finished
+    "lose_xp_before_farming": False,      # Tools, XP loser (as set there), before a farming run starts
+    "lose_xp_after_farming": False,       # Tools, XP loser (as set there), after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
@@ -126,6 +128,10 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "nearest_monster": True,  # always fight the nearest monster (off: melee picks a calm one beside a pack)
     "fight_locked": False,    # fight monsters another player (or their pet) is already killing, while a hit can still land in time (off: leave the close calls too)
     "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
+    "corpse_skill": False,    # farming: the learned Draw Blood, Skinning or Cut Flesh on our kills (engine/corpses.py)
+    "corpse_keep_vitality": 0,  # ... until Vitality is down to this (0: until it runs out)
+    "xp_card_name": "",       # farming: keep this experience card running, that kind only ("": none) (engine/xpcard.py)
+    "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
     "pk_key": "b",            # cycles the PK mode
@@ -176,6 +182,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "use_airships": True,     # airships too (they may cost Arnebia)
     "vip": False,             # VIPs ride cable cars and airships free (the menu's free entry)
     "use_travel_items": False, # teleport stones / hearthstone from the bag: only when the player allows (off: never)
+    "use_teleport_skills": True,  # a Mage's / Elf's teleport skill (mana only, no item): when it saves walking
     "hearth_home": "",        # the square the hearthstone takes this character to (learned)
     "action_menu_key": "lctrl+enter",   # the game's Action menu (W_LOCAL_OPTION): has "leave" in instances
     # Restock: [{"item": "Large Red Potion", "min": 20, "stock": 200, "storage_first": true, "buy": true}]
@@ -273,6 +280,8 @@ class Profile(BaseModel):
     gather_after_farming: bool = PROFILE_DEFAULTS["gather_after_farming"]
     store_items_after_farming: bool = PROFILE_DEFAULTS["store_items_after_farming"]
     restock_after_farming: bool = PROFILE_DEFAULTS["restock_after_farming"]
+    lose_xp_before_farming: bool = PROFILE_DEFAULTS["lose_xp_before_farming"]
+    lose_xp_after_farming: bool = PROFILE_DEFAULTS["lose_xp_after_farming"]
     hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
     hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
     bag_up: str = PROFILE_DEFAULTS["bag_up"]
@@ -300,6 +309,10 @@ class Profile(BaseModel):
     nearest_monster: bool = PROFILE_DEFAULTS["nearest_monster"]
     fight_locked: bool = PROFILE_DEFAULTS["fight_locked"]
     shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
+    corpse_skill: bool = PROFILE_DEFAULTS["corpse_skill"]
+    corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
+    xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
+    xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
@@ -338,6 +351,7 @@ class Profile(BaseModel):
     use_airships: bool = PROFILE_DEFAULTS["use_airships"]
     vip: bool = PROFILE_DEFAULTS["vip"]
     use_travel_items: bool = PROFILE_DEFAULTS["use_travel_items"]
+    use_teleport_skills: bool = PROFILE_DEFAULTS["use_teleport_skills"]
     hearth_home: str = PROFILE_DEFAULTS["hearth_home"]
     action_menu_key: str = PROFILE_DEFAULTS["action_menu_key"]
     restock: list[Any] = PROFILE_DEFAULTS["restock"]
@@ -599,6 +613,12 @@ def load_profile(character: str) -> dict[str, Any]:
     return _upgrade(_read(path, PROFILE_DEFAULTS, Profile))
 
 
+def _upgrade_xp_card(p: dict[str, Any]) -> None:
+    """2026-11-12: the on/off "xp_card" (it used the strongest card in the bag) became the card the
+    player chooses (xp_card_name). The old tick named no card, so it carries no choice over."""
+    p.pop("xp_card", None)
+
+
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
     """A profile saved by an older version, brought up to date: each step below once, in order."""
     for step in UPGRADES:
@@ -719,6 +739,7 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_once("bag_really_full", "bag_full_at", (90, None), 100),
     _upgrade_dropped,
     _upgrade_class_reach,
+    _upgrade_xp_card,
 ]
 
 
