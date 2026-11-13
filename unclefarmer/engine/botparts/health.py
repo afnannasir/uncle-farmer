@@ -309,7 +309,9 @@ class HealthMixin(Parts):
         self.deaths += 1
         self.let_go()
         where = atlas.label(self.map_id())
-        self.log(_("died on {map} ({n} so far)", map=where, n=self.deaths), speak=True)
+        # the XP loser dies on purpose: its own lines say how it goes, a death each time is no news
+        self.log(_("died on {map} ({n} so far)", map=where, n=self.deaths),
+                 speak=not getattr(self, "dying_on_purpose", False))
         limit = self.p.get("max_deaths", 3) if self.p.get("stop_on_deaths", True) else 0
         last = bool(limit) and self.deaths > limit
         order: list[str] = []

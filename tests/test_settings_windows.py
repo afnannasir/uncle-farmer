@@ -121,3 +121,43 @@ def test_every_tab_scrolls_and_windows_fit_the_screen(frame: Any) -> None:
                 assert isinstance(nb.GetPage(i), common.Page), nb.GetPageText(i)
         finally:
             d.Destroy()
+
+
+def test_experience_card_choices_are_the_cards_in_the_bag(frame: Any) -> None:
+    """Only the cards the last scan saw in the bag can be chosen, weakest first, and None: the bot
+    uses the chosen kind only, never the strongest in the bag."""
+    from unclefarmer.gui.profile import ProfileDialog
+    p = settings.load_profile("Hero")
+    p["scan"] = {"bag": [{"name": "Red Potion", "count": 9},
+                         {"name": "3x experience acceleration card", "count": 2},
+                         {"name": "1.3x experience acceleration card", "count": 41}]}
+    p["xp_card_name"] = "3x experience acceleration card"
+    settings.save_profile("Hero", p)
+    d = ProfileDialog(frame, "Hero")
+    try:
+        assert d.xp_card.GetStrings() == ["None", "1.3x experience acceleration card (41 in the bag)",
+                                        "3x experience acceleration card (2 in the bag)"]
+        assert d.xp_card.GetSelection() == 2
+        d.xp_card.SetSelection(1)
+        d.on_ok(wx.CommandEvent())
+    finally:
+        d.Destroy()
+    assert settings.load_profile("Hero")["xp_card_name"] == "1.3x experience acceleration card"
+
+    p = settings.load_profile("Hero")
+    p["scan"] = {"bag": [{"name": "3x experience acceleration card", "count": 1}]}   # the 1.3x ran out
+    settings.save_profile("Hero", p)
+    d = ProfileDialog(frame, "Hero")
+    try:
+        assert d.xp_card.GetStrings() == ["None", "3x experience acceleration card (1 in the bag)"]
+        assert d.xp_card.GetSelection() == 0          # not in the bag: no choice of it
+    finally:
+        d.Destroy()
+
+
+def test_the_old_experience_card_tick_names_no_card() -> None:
+    p = settings.load_profile("Hero")
+    p["xp_card"] = True                    # saved before 2026-11-12: "the strongest in the bag"
+    settings.save_profile("Hero", p)
+    got = settings.load_profile("Hero")
+    assert "xp_card" not in got and got["xp_card_name"] == ""

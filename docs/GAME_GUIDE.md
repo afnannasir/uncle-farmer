@@ -41,6 +41,44 @@ West of the continent is Loki Union (capital Tulip City), east is Garth Empire (
 City), each with higher-level areas and two more cities. Cable cars and airships link the
 capitals and cities.
 
+**Teleport skills** (recorded by hand 2026-11-13). A Mage's *Teleportation* (skill id 1061) takes
+the caster to a city square; an Elf's *Elven Teleportation* goes to The Land of Reiki. Both are a
+10-second channel costing 30% mana, and like every skill they only work outside a safe zone.
+- Pressing the skill key sends OUT op=15 `[time:8][skill:2] 05 02`. The server answers IN op=47
+  `[skill:2]` followed by one `code,name` line per destination; the client shows it as "Please
+  select a location to teleport".
+- Choosing one sends OUT op=15 `[time:8][skill:2] 00 [code:4]`. The code is the destination map
+  * 1000 + its marker, the same numbering as exits, and you land on that marker. Then IN op=49
+  shows the channel bar ("Channeling Teleportation", 10 s), the cast's end ("Level 5
+  Teleportation"), and op=6 brings the new map.
+- The list grows with the skill's level. At level 5 a Mage has seven squares: Sunset Square
+  (Mario Basin 1021, 73,286), Giant rock square (central plains 1041, 200,205), White Sand square
+  (Fertile Wilds 1061, 66,136), tulip square (Tuneful Wetland 1081, 338,165), Moon Square (Glorious
+  Grassland 1101, 200,202), holy blood square (High climbing grassland 1121, 62,165) and gouge
+  knife square (hilly terrain 1141, 84,87). Read the list from the server each time, never a
+  fixed table: it is whatever this character's level gives.
+- An Elf's *Elven Teleportation* is skill id 1261 and works the same way (its key press ended
+  `05 01` where the Mage's ended `05 02`). Its places are the high-level lands rather than
+  cities. At the level recorded there were nine, all marker cells in the map table: Soul Burial
+  Village (thousand miles of rivers 1531, 85,198), Plague Abyss (Ancient Ruins 1731, 50,223),
+  Orchid woods Village (Valley of Luxuriant forests 1631, 151,119), City of the Ancient tower
+  (Ancient Ruins 1731, 166,75), mist gods Ruins (far off regions 1561, 200,197), West Sealing Tower
+  (ancient Sealed Land 1761, 100,100), Hermit Camp (forest in the deep mountain 1661, 76,87), East
+  Sealing Tower (ancient Sealed Land 1761, 400,100) and portal of the demon world (portal of the
+  demon world 1762, 45,129). This is the whole list: the recorded Elf is level 100 with the skill
+  at its top level (9). Choosing mist gods Ruins (1561001) channelled 10 s ("Level 9 Elven
+  Teleportation") and landed on far off regions at about 201,197, the marker.
+- **Any attack on the caster breaks the channel**, for both classes. Recorded: a monster's hit
+  landed 0.8 s into an Elf's channel; no cast-end line came and the map never changed; the next
+  try, with nothing hitting, went through. No packet says the channel broke. You can only tell
+  because the cast-end line and the new map don't come. So: teleport only with nothing attacking,
+  deal with attackers first, and count a teleport as done only when the new map arrives.
+- Uncle Farmer travels with them (travel.SPELLS, engine/teleskill.py): from outside a safe zone,
+  with nothing attacking and off the beast, it presses the key, chooses the place, and counts it
+  done only when the new map arrives. Each character's list is learned from the menu.
+- *Teleportation Portal* / *Elven Teleportation Portal* open a portal to the same places for
+  allies, lasting 1 minute.
+
 
 ## Experience and loot
 
@@ -55,6 +93,16 @@ capitals and cities.
 *For the bot:* the best farming maps for a character have monsters from 9 levels below to about 5
 levels above it.
 
+- **Experience cards** ("1.3x experience acceleration card", and 1.5x, 1.75x, 2x, 2.5x and 3x):
+  using one from the bag gives more experience for 30 minutes. The character sheet shows it as
+  "30% EXP bonus; press to pause" with the time left. Pressing that entry pauses it ("Paused; press to resume") and pressing it again
+  resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon, and a server
+  restart wipes the bonus even while it is paused.
+
+*For the bot:* with an experience card chosen, it keeps a card of that kind running on the farm
+(never a stronger one from the bag), and with the pause tick it pauses the card while a farming
+run is away from the monsters.
+
 
 ## Combat rules
 
@@ -68,6 +116,10 @@ levels above it.
 - **Control:** stun, restrain/ensnare, knock-out/freeze (broken by damage), transfix/fire-trap,
   silence. Too much of one kind gives 15 seconds of immunity to it. Bosses and city guards are
   immune to control.
+- **Safe zones:** towns, villages and the small zones in front of some exits. Standing in one, an
+  attack key only says "Safe zone disabled skills", and nothing standing in one can be fought - a
+  city's street guards included. The guards in front of a city's gates stand outside its zone. The
+  bot knows every zone from the game's map table (data/safe_zones.json, atlas.in_safe_zone).
 - **Morality:** starts at 0, from -2000 to 2000, and sets the name's colour. Killing players costs
   morality; red and black names can drop items when killed, and black names risk 20% equipment
   wreck on every death. Farming monsters on public maps gives +5 every 10 minutes.
@@ -89,7 +141,8 @@ levels above it.
   contribution in the gang) and arnebia.
 - **Profession skills** (Z, X, C, then Space):
   - corpse harvesting, one of: Draw Blood (blood, for red potions), Skinning (pelts, for blue
-    potions), Cut Flesh (jerky, for food);
+    potions), Cut Flesh (jerky, for food); its key alone casts it at the selected target, which must
+    be a fresh corpse (a monster at exactly 0 HP) within 20 tiles - no Space; costs Vitality;
   - production and collection, one of: Mining, Fishing, Collect Herbs, only in their areas (mining
     areas, lakes, herbal gardens, and the gang's own production area); an important source of
     arnebia;

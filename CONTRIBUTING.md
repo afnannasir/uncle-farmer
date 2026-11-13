@@ -534,29 +534,11 @@ Without UPX, the build stops with a message instead of silently building somethi
 
 ### Caches
 
-The workflow uses caches to make later builds faster.
-
-**uv cache**
-
 setup-uv keeps the downloaded package cache, keyed by `uv.lock` and `pyproject.toml`.
 
 Only the tests job saves this cache. The `.venv` folder is never cached. Each job creates a fresh environment using `uv sync --locked`.
 
-**Nuitka cache**
-
-The build keeps Nuitka's cache, including its MSVC object cache, UPX-compressed files, and downloads.
-
-The cache is stored per branch and per `uv.lock`.
-
-The first build after a lock change compiles everything and takes about 18 minutes. Later builds only compile what changed.
-
-Cache entries are identified by the content being compiled, so stale entries cause a cache miss rather than an incorrect build.
-
-To start fresh, delete the `nuitka-...` entries under:
-
-```text
-GitHub Actions -> Caches
-```
+Nuitka's compile cache is not kept: builds are rare, so each Windows build compiles everything from nothing, which takes about 18 minutes.
 
 ### Build artifacts
 

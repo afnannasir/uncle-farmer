@@ -51,7 +51,8 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "character_export": True, "character_import": True,
         "tools_gem": available and not running, "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
-        "tools_dungeon": available and not running, "tools_silencer": available,
+        "tools_dungeon": available and not running, "tools_xploss": available and not running,
+        "tools_silencer": available,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
                                                      "tools_store", "tools_restock", "tools_prices")},
         "plans_new": True, "plans_new_script": True,
@@ -257,6 +258,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
                            command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
+                           command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
                            command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
                            command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
                            command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
@@ -264,7 +266,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Restock &now"), lambda e: self.restock_now()),
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer())],
-                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon",
+                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
                            "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer"),
                           context=True)
@@ -510,6 +512,7 @@ Main window
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
   Ctrl+Shift+G        Dungeons: Scorpion Cave and Spider cave, once a day
+  Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -617,6 +620,13 @@ pet's blue potions and Rice Rolls, your blue and red potions) from the storehous
 it rides to the entrance, goes in, goes round the whole cave fighting whatever is in reach (area
 skills on two or more close together, potions instead of resting, the pet kept out and fed) until
 the game moves it out, and ends where the Where to end tab says, as a plan does.
+Tools, XP loser (Ctrl+Shift+X): for a character that shouldn't level up. Say how much experience
+the next level should need at least (or how much to lose); the bot finds a guard - in sight, where
+one was seen before, or in the nearest town - switches the PK mode to all mode, hits the guard once
+and lets it kill the character (no potions, heals or fighting back), respawns in the city and goes
+again until the character sheet says so, or after the most deaths you allow. The pet is put away
+first and the PK mode put back at the end. Not for a black-name character: it can lose worn gear
+when it dies. The Triggers tab can run it before or after farming.
 
 UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and

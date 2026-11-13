@@ -34,6 +34,9 @@ Row kinds, by terrain id:
                9999999 is the gang-base "leave" exit (back to wherever
                you came from).
 
+Every z=-3 row, whatever its id, is a SAFE ZONE: the client takes no
+attack key on those cells (atlas.safe_zones, data/safe_zones.json).
+
 The trailing float is elevation on ground rows and a direction mask
 (1/2/4/8 and sums) on door, fall and climb rows: 1 = west, 2 = north,
 4 = east, 8 = south. On an unpaired door (301-332) the mask is the

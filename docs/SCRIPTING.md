@@ -799,6 +799,15 @@ For example:
 
 This runs only the bank and donation chores.
 
+### Losing experience
+
+The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set).
+
+    lose_xp          die to guards until the goal is met
+    lose_xp check    only read the experience and look for guards; nothing changes
+
+It switches the PK mode to all mode while it runs and puts it back at the end. No potions, heals or fighting back while it waits to die. It stops at the goal, after the most deaths you allow, or when dying no longer costs experience.
+
 ### Gathering and selling collections
 
 The `gather` command handles fishing, mining, or herb collecting according to your settings under **Tools → Gathering**.
@@ -1158,6 +1167,7 @@ Use this section when you need a quick reminder of a command or its syntax.
     enhance [check]
     chores [check] [only=...]
     gather [check]
+    lose_xp [check]
     sell_collection [fish|ore|herb|all]
     sell_shards
     clean_bag

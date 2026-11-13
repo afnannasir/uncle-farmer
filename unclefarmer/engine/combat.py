@@ -171,10 +171,7 @@ class _PickView:
         self.gcd = book.gcd()
 
     def in_range(self, s: Skill) -> bool:
-        if elf_combos.unpenalized(s, self.book.available_to_channel_without_penalty):
-            return True
-        r = s.get("range")
-        return r is None or self.dist <= r + 0.5
+        return self.book.reaches(s, self.dist)
 
     def area_hits(self, s: Skill) -> int:
         """How many monsters an area skill would hit now, by its shape (see CONE): an arc towards
@@ -399,6 +396,17 @@ class SkillBook:
                                        crits=self.agent_version >= combo_rules.CRIT_AGENT)
                 c.tell(self.b.log)
                 self.combos = c if c.rules or c.bonus or self.cls == "Elf" else None
+
+    def reaches(self, s: Skill, dist: float) -> bool:
+        """Whether this skill's own range reaches a target that far away. A cast from past it is
+        refused by the server (the fight then only wastes a burst), so the distance is measured
+        against the skill's range exactly: the 0.5 that used to be added let a 20-yard skill be
+        pressed at 20.5 (live: a Hunter whose monster stepped past 20 kept casting at it).
+        Pyroblast after Fire Impact is the one skill allowed past its range (unpenalized channel)."""
+        if elf_combos.unpenalized(s, self.available_to_channel_without_penalty):
+            return True
+        r = s.get("range")
+        return r is None or dist <= r
 
     def use_of(self, name: str) -> str:
         """The player's choice for this skill (SKILL_USES): skill_use by name, else
@@ -1142,18 +1150,24 @@ class SkillBook:
             return unknown[1]
         return best
 
-    def fallback(self, now: float) -> Press | None:
+    def fallback(self, now: float, reaches: Callable[[Skill], bool] | None = None) -> Press | None:
         """A press when pick() found nothing: the hardest-hitting attack the player allows whose own
         cooldown is over, even one refuse() set aside for a while. Pressing the profile's attack
         keys instead would cast whatever sits on them, a skill set to Never included; pressing
         nothing let a simulated Hunter whose two skills were both set aside stand and die. None
-        when there is no such skill (only Never ones, or all cooling down)."""
+        when there is no such skill (only Never ones, or all cooling down).
+
+        reaches: which of them this target is in range of now (fighting: reaches(s, distance)).
+        Without it every skill counts, as before; with it a press is never made at a monster out
+        of the skill's own range, where the server would refuse the cast."""
         up = self.page()
         weight: Callable[[Skill], float] = self.combos.weight if self.combos else (lambda s: 1.0)
         gcd = self.gcd()
+        in_range: Callable[[Skill], bool] = reaches or (lambda s: True)
         cands = [dict(s, page=pg) for pg, row in self.slots.items() for s in row
                  if self.allowed(s) and s.get("role") not in NEVER and s.get("role") not in CALM_ROLES
                  and s["name"] != elf_combos.IGNITION
+                 and in_range(s)
                  and not self._channeling_restricted(s)
                  and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
         if not cands:
@@ -1162,7 +1176,7 @@ class SkillBook:
             s["page"] == up,
             damage_rate(s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty)),
         ))
-        return self._press_pick(best, cands, up, now, lambda s: True)
+        return self._press_pick(best, cands, up, now, in_range)
 
     def _press_pick(self, choice: Skill, skills: list[Skill], up: int, now: float,
                     in_range: Callable[[Skill], bool], *, ignition: Skill | None = None) -> Press | None:

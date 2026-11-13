@@ -719,6 +719,14 @@ def test_the_fallback_presses_an_allowed_attack_never_a_never_one() -> None:
     assert s.fallback(1000.0) is None                  # only a Never one: nothing at all
 
 
+def test_the_fallback_never_presses_a_skill_out_of_its_range() -> None:
+    # the monster stepped past the skill's reach: the game refuses every cast there, so pressing
+    # is the whole fight's no-damage wait for nothing. In range, the same skill is the fallback.
+    s = pinned(sb(slots={0: [skill("Arcane Shot", role="base_attack", range=20.0)]}), page=0)
+    assert s.fallback(1000.0, lambda _x: False) is None
+    assert s.fallback(1000.0, lambda _x: True) == ("j", "Arcane Shot")
+
+
 def test_press_pick_none_when_no_fallback_exists() -> None:
     s = pinned(sb(can_flip=False), page=0)
     choice = skill("Bash", role="single_target", page=1)

@@ -38,8 +38,11 @@ public final class AgentTests {
         askPacketIsTheOwnHpKeysRequest(contract);
         usePacketIsTheUseKeysRequest(contract);
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
+        theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
         professionRanksAreKeptFromTheLoginList();
+        corpseSkillsTakeOnlyAFreshCorpseInReach();
+        aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
@@ -282,6 +285,44 @@ public final class AgentTests {
         eq(World.inbound(sheet(us, 1500)), false, "a request that never went out holds nothing back");
     }
 
+    /** The card's sheet entry, running and paused, as the recorder caught them (2026-11-11), and
+     *  `xpbonus` sending its one toggle byte only when the sheet says the card is the other way. */
+    private static void theExperienceCardIsReadAndToggledOnlyFromAFreshSheet() {
+        int us = 1234567;
+        World.outbound(concat(Ask.packet(6, us), new byte[] {0, 0}));
+        String head = "(1(Someone)1)|||((," + us + ";))|||Hunter|||;|||male |||. level 79|||HP 1/2|||MP 3/4|||";
+        String running = head + "14\r22\r\r\r\r\r\rPause EXP bonus will be deducted by one minute, and pause is"
+                + " invalid in dungeon. Are you sure you want to pause?\r\r\r\r30% EXP bonus; press to pause\r"
+                + "28 minutes 55 seconds remaining\r8\r14,16|||Morality 2000;white name";
+        World.inbound(concat(new byte[] {62}, running.getBytes(Protocol.UTF8)));
+        eq(Sheet.expBonus, 30, "the running card's bonus");
+        eq(Sheet.expPaused, false, "running");
+        eq(Sheet.expSeconds, 28 * 60 + 55, "its time left");
+        eq(Sheet.morality, 2000L, "Morality");
+        String paused = head + "12\r22\r\r\r\r\r\r\r\r\r\r30% EXP bonus\rPaused; press to resume\r1 hour 2 minutes"
+                + " remaining|||Morality -1200;black name";
+        World.inbound(concat(new byte[] {62}, paused.getBytes(Protocol.UTF8)));
+        eq(Sheet.expPaused, true, "paused");
+        eq(Sheet.expSeconds, 3720, "an hour and two minutes");
+        eq(Sheet.morality, -1200L, "a black name");
+        World.inbound(concat(new byte[] {62}, head.getBytes(Protocol.UTF8)));
+        eq(Sheet.expBonus, 0, "no entry: no card");
+        eq(Sheet.expSeconds, -1, "and no time left");
+
+        eq(bytes(Ask.expTogglePacket()), "37 22", "pause and resume send 25 16");
+        long now = 1_000_000L;
+        eq(Ask.xpBonusRefusal("pause", true, now, now - 1000, 0, 30, false), null, "pause a running card");
+        eq(Ask.xpBonusRefusal("resume", true, now, now - 1000, 0, 30, true), null, "resume a paused one");
+        check(Ask.xpBonusRefusal("pause", true, now, now - 1000, 0, 30, true) != null, "not pause it twice");
+        check(Ask.xpBonusRefusal("resume", true, now, now - 1000, 0, 30, false) != null, "not resume a running one");
+        check(Ask.xpBonusRefusal("pause", true, now, now - 1000, 0, 0, false) != null, "no card, nothing sent");
+        check(Ask.xpBonusRefusal("pause", true, now, now - Ask.EXP_SHEET_MS - 1, 0, 30, false) != null, "an old sheet");
+        check(Ask.xpBonusRefusal("pause", true, now, now - 1000, now - 500, 30, false) != null,
+              "no second toggle before a sheet that came after the first");
+        check(Ask.xpBonusRefusal("pause", false, now, now - 1000, 0, 30, false) != null, "someone else's sheet");
+        check(Ask.xpBonusRefusal("flip", true, now, now - 1000, 0, 30, false).startsWith("error"), "pause or resume only");
+    }
+
     /** An IN op=62 character sheet as the server sends it (the parts Sheet reads). */
     private static byte[] sheet(int id, long contribution) {
         String text = "(1(Someone)1)|||((," + id + ";))|||Hunter|||;|||male |||. level 79|||; Contribution "
@@ -348,6 +389,7 @@ public final class AgentTests {
         eq(StateServer.handle("use 5", armed, mine, guarded), "refused: send 'arm' first", "use needs arm");
         eq(StateServer.handle("select 5", armed, mine, guarded), "refused: send 'arm' first", "select needs arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "refused: send 'arm' first", "slot needs arm");
+        eq(StateServer.handle("cast 21 -7", armed, mine, guarded), "refused: send 'arm' first", "cast needs arm");
         eq(StateServer.handle("shardsell 20385 1", armed, mine, guarded), "refused: send 'arm' first",
                 "shardsell needs arm");
         eq(StateServer.handle("sharddirect 20385 1", armed, mine, guarded), "refused: send 'arm' first",
@@ -369,6 +411,10 @@ public final class AgentTests {
                 "select without a game says so instead of throwing");
         eq(StateServer.handle("use", armed, mine, guarded), "error: use <id>", "use what");
         eq(StateServer.handle("select x", armed, mine, guarded), "bad number in: select x", "select a bad id");
+        check(StateServer.handle("cast 21 -7", armed, mine, guarded).startsWith("error: nowin"),
+                "cast without a game says so instead of throwing");
+        eq(StateServer.handle("cast 21", armed, mine, guarded), "error: cast <skill> <target>", "cast at what");
+        eq(StateServer.handle("cast x -7", armed, mine, guarded), "bad number in: cast x -7", "cast a bad skill");
         eq(StateServer.handle("ask", armed, mine, guarded), "error: ask vitals|petvitals|sheet", "ask what");
         eq(StateServer.handle("ask vitals", armed, mine, guarded), "error: the game's connection wasn't found",
                 "ask without a game says so instead of throwing");
@@ -788,7 +834,111 @@ public final class AgentTests {
         check(got.contains("\"targets\":" + contract.get("cast_targets")), "with its targets: " + got);
         check(!got.contains("\"hits\""), "and no hits section, which this packet doesn't have: " + got);
         check(got.contains("[-6,"), "the one struck to 0 died: " + got);
+        check(World.castSince(4152, before), "a held corpse cast sees its caster's cast come back");
+        check(!World.castSince(4153, before), "not someone else's");
+        check(!World.castSince(4152, System.currentTimeMillis() + 1000), "nor one from before it started");
+        check(World.castSince(4152, before, "Mind Whip"), "the held skill's own cast ends a hold");
+        check(!World.castSince(4152, before, "Draw Blood"),
+                "another skill of ours doesn't (the last shots of a fight come back after the kill)");
+        check(!World.castSince(4152, before, "Whip"), "nor a name that only ends the same way");
+        World.inbound(op41("4152,9,Level 2 Draw Blood\n-6,-1\r\n0\r\n0"));
+        check(World.castSince(4152, before, "Draw Blood"), "a ranked name of the skill counts");
         eq(World.targets(new String[] {"4152,8,Buff\n4152,64200"}), null, "a cast with no target line has none");
+    }
+
+    private static byte[] op41(String text) {
+        byte[] body = text.getBytes(Protocol.UTF8);
+        byte[] m = new byte[body.length + 1];
+        m[0] = 41;
+        System.arraycopy(body, 0, m, 1, body.length);
+        return m;
+    }
+
+    /** The profession key's corpse rules (game.i.a, javap 2026-11-11): exactly 0 HP, within 20 tiles. */
+    private static void corpseSkillsTakeOnlyAFreshCorpseInReach() {
+        eq(String.valueOf(Memory.corpseCheck(0, 3.0)), "null", "a fresh corpse close by");
+        eq(String.valueOf(Memory.corpseCheck(0, 4.5)), "null", "a fresh corpse at the edge of harvesting range");
+        eq(Memory.corpseCheck(0, 4.6), "is too far to harvest from here",
+                "past it: the server answers nothing from there (live 2026-11-12: 1.1-4.5 tiles)");
+        eq(Memory.corpseCheck(0, 20.5), "is out of reach", "past 20 tiles");
+        eq(Memory.corpseCheck(1, 3.0), "is alive", "a monster still alive");
+        eq(Memory.corpseCheck(-1, 3.0), "is no fresh corpse (harvested or dried)", "the game's other dead state");
+        eq(Memory.corpseCheck(-2, 3.0), "is no fresh corpse (harvested or dried)", "and the third");
+        check(Act.castMethod(Object.class) == null, "no cast method on a class without one");
+    }
+
+    /** A stand-in for game.i with the cast method (world.a(ISIZ)) and the attack keys' release. */
+    static final class CastWorld {
+        final java.util.List<String> calls = java.util.Collections.synchronizedList(new java.util.ArrayList<String>());
+        void a(int target, short skill, int pk, boolean stand) { calls.add("cast " + target); if (stand) calls.add("standing"); }
+        void a(long delay) { calls.add("up"); }
+        void a(int s, boolean sus, boolean lk, long delay) { calls.add("down " + s); }
+        int count(String what) {
+            int n = 0;
+            synchronized (calls) {
+                for (String c : calls) if (c.equals(what)) n++;
+            }
+            return n;
+        }
+    }
+
+    /** Live night 2026-11-12: one cast and no release left the "attacking" bit up, and every walk
+     *  failed. A held cast is sent again until a reason comes, then let go exactly once. */
+    private static void aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo() throws Exception {
+        java.lang.reflect.Method down = Act.castMethod(CastWorld.class);
+        java.lang.reflect.Method up = Act.releaseMethod(CastWorld.class);
+        check(down != null && up != null, "the cast method and the release are found by their shapes");
+
+        final CastWorld answered = new CastWorld();
+        Act.hold(answered, down, up, -7, (short) 21, 0, Act.CAST_STANDING, 10L, 2000L, new Act.StillOn() {
+            @Override
+            public String why() {
+                return answered.count("cast -7") >= 3 ? "cast" : null;
+            }
+        });
+        eq(answered.count("cast -7"), 1, "the first cast goes out before the command answers");
+        Thread.sleep(300L);
+        eq(answered.count("cast -7"), 3, "sent again until our cast came back");
+        eq(answered.count("up"), 1, "then the key is let go, once");
+        eq(answered.count("standing"), answered.count("cast -7"), "every send casts standing: no walk to the corpse");
+        eq(String.valueOf(answered.calls.get(answered.calls.size() - 1)), "up", "and nothing is sent after it");
+
+        CastWorld unanswered = new CastWorld();
+        Act.hold(unanswered, down, up, -8, (short) 21, 0, false, 10L, 100L, new Act.StillOn() {
+            @Override
+            public String why() {
+                return null;
+            }
+        });
+        Thread.sleep(400L);
+        check(unanswered.count("cast -8") >= 3, "a cast never answered is held for the whole hold");
+        eq(unanswered.count("up"), 1, "and still let go when the hold is up");
+
+        CastWorld fight = new CastWorld();
+        Act.hold(fight, down, up, -9, (short) 21, 0, false, 10L, 5000L, new Act.StillOn() {
+            @Override
+            public String why() {
+                return null;
+            }
+        });
+        Act.press(fight, 2, false, false, 20L);
+        Thread.sleep(200L);
+        int sent = fight.count("cast -9");
+        Thread.sleep(100L);
+        eq(fight.count("cast -9"), sent, "an attack key press ends the held cast");
+        eq(fight.count("up"), 1, "with the press's own release only");
+
+        CastWorld again = new CastWorld();
+        Act.hold(again, down, up, -10, (short) 21, 0, false, 10L, 5000L, new Act.StillOn() {
+            @Override
+            public String why() {
+                return null;
+            }
+        });
+        Act.endCast(true);
+        Act.endCast(true);
+        Thread.sleep(100L);
+        eq(again.count("up"), 1, "ending a held cast twice lets go once");
     }
 
     /** IN op=17 lists the profession skills as "id,rank,name"; the client drops the rank (agent 49). */
