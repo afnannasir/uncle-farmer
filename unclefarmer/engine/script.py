@@ -51,6 +51,11 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     key <key> [milliseconds]         press a key: a-z 0-9 . , ; / space enter esc tab f1-f12 up down left right
     hold <key> <seconds>             hold a key down
     wait <seconds>
+    sound_watch <ids>                set the game's WATCH filter: IDs/ranges, all, or off
+    sound_mute <ids>                 set the game's MUTE filter (persists until changed)
+    sound_wait <ids> [timeout=N]     wait for a new matching sound request; seconds, default 30
+                                     sets sound_received, sound_id, sound_x, sound_y, sound_muted
+                                     temporary listening ends after the wait; WATCH stays unchanged
     say <text>                       write to the log; {expression} is filled in: say HP is {hp_pct}%
     set <name> = <expression>
     heal                             press your HP key now
@@ -83,7 +88,8 @@ import shlex
 import time
 from typing import Any
 
-from .. import atlas, dungeons, jsonio, knowledge, stats
+from .. import atlas, dungeons, jsonio, knowledge, sounds, stats
+from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
 from . import chores, crafting, dungeon, follow, survey, town, triggers
@@ -101,11 +107,13 @@ def _at(rest: str, n: int):
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
 COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
-            "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
+            "stop_when", "stop", "break", "call", "elif", "else", "end",
+            "sound_watch", "sound_mute", "sound_wait") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
-             "levels_gained", "shards_gained")
+             "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
+             "sound_muted", "sound_positioned")
 
 
 class ScriptError(Exception):
@@ -755,6 +763,22 @@ def _prep_say(node: Node, rest: str, n: int):
                           for i, m in enumerate(re.split(r"\{([^}]*)\}", rest))]
 
 
+def _prep_sound(node: Node, rest: str, n: int):
+    timeout = 30.0
+    parts = rest.rsplit(" timeout=", 1) if node.kind == "sound_wait" else [rest]
+    if len(parts) == 2:
+        timeout = _number(parts[1], n, "timeout")
+        if timeout < 0:
+            raise ScriptError(n, _("Sound wait timeout cannot be negative."))
+    try:
+        ids = sounds.IdSet.parse(parts[0])
+    except ValueError as error:
+        raise ScriptError(n, str(error)) from error
+    if node.kind == "sound_wait" and ids.is_empty():
+        raise ScriptError(n, _("sound_wait needs at least one sound ID, or all."))
+    node.opts.update(ids=ids.text, timeout=timeout)
+
+
 PREPARE = {
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
@@ -764,6 +788,7 @@ PREPARE = {
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
+    "sound_watch": _prep_sound, "sound_mute": _prep_sound, "sound_wait": _prep_sound,
 }     # call, sub and stop take nothing to check
 
 
@@ -772,7 +797,8 @@ class Runner:
     def __init__(self, bot: Bot, text: str):
         self.bot = bot
         self.main, self.subs, self.on_stop = parse(text)
-        self.vars: dict[str, Any] = {}       # the script's own `set` values
+        self.vars: dict[str, Any] = dict(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
+                                         sound_muted=False, sound_positioned=False)
         self.call_depth = 0
         self.watched: set[Node] = set()
 
@@ -936,6 +962,59 @@ class Runner:
 
     def _do_stop(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _End(node.args)
+
+    def _do_sound_watch(self, node: Node, b: Bot, o: dict[str, Any]):
+        try:
+            sounds.watch(b.a, o["ids"])
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+
+    def _do_sound_mute(self, node: Node, b: Bot, o: dict[str, Any]):
+        try:
+            sounds.mute(b.a, o["ids"])
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+
+    def _do_sound_wait(self, node: Node, b: Bot, o: dict[str, Any]):
+        self.vars.update(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
+                         sound_muted=False, sound_positioned=False)
+        ids = sounds.IdSet.parse(o["ids"])
+        listening = False
+        try:
+            # Establish the cursor before subscribing: historical requests never trigger a wait.
+            cursor = sounds.events(b.a, 0)["now"]
+            status = sounds.listen(b.a, ids.text)
+            listening = True
+            if not status["hooked"]:
+                raise Stopped(_("Sound observer is unavailable: {reason}", reason=status["reason"]))
+            deadline = clock_for(b).time() + o["timeout"]
+            while True:
+                b.check()
+                batch = sounds.events(b.a, cursor)
+                cursor = batch["now"]
+                if batch["lost"]:
+                    raise Stopped(_("Sound events were lost because the observer buffer filled. Start the wait again."))
+                for event in batch["events"]:
+                    if ids.has(event["id"]):
+                        self.vars.update(sound_received=True, sound_id=event["id"],
+                                         sound_x=event["x"] if event["x"] is not None else 0.0,
+                                         sound_y=event["y"] if event["y"] is not None else 0.0,
+                                         sound_muted=event["muted"],
+                                         sound_positioned=event["x"] is not None and event["y"] is not None)
+                        return
+                remaining = deadline - clock_for(b).time()
+                if remaining <= 0:
+                    return
+                b.sleep(min(0.1, remaining))
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+        finally:
+            if listening:
+                try:
+                    sounds.listen(b.a, "off")
+                except (AgentError, OSError):
+                    # Closing a failed link also releases its subscription on the agent.
+                    b.log(_("Could not release sound listening; it is released when the connection closes."))
 
     def _do_travel(self, node: Node, b: Bot, o: dict[str, Any]):
         b.travel(o["map"], o.get("cell"))

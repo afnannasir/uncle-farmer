@@ -311,6 +311,9 @@ msgstr "Game ki apni awaaz &band karein:"
 msgid "&Mute this game"
 msgstr "Is game ki awaaz &band karein"
 
+msgid "&Muted Sounds:"
+msgstr "&Khamosh Sounds:"
+
 msgid "&Names or ids (separated by commas):"
 msgstr "&Naam ya id (comma se alag):"
 
@@ -458,6 +461,9 @@ msgstr ""
 
 msgid "&Show the time after each message"
 msgstr "Har paigham ke baad &waqt dikhayein"
+
+msgid "&Sounds:"
+msgstr "&Sounds:"
 
 msgid "&Speak"
 msgstr "&Sunayein"
@@ -646,6 +652,9 @@ msgstr ""
 msgid "A script called {name} exists. Replace it?"
 msgstr "{name} naam ka script pehle se mojood hai. Isay badal dein?"
 
+msgid "A sound's mute setting must be on or off."
+msgstr "Sound ki khamoshi on ya off honi chahiye."
+
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Team dungeon: game 2 se 3 khilariyon ke group andar aane deta hai."
 
@@ -709,6 +718,12 @@ msgstr "Kam az kam ek kheti ki jagah shamil karein."
 
 msgid "Add our &own gang"
 msgstr "&Apna gang shamil karein"
+
+msgid "Add selected to Saved Sounds"
+msgstr "Chuna hua sound Mahfooz Sounds mein shamil karein"
+
+msgid "Added to the draft. Choose Save to apply."
+msgstr "Draft mein shamil ho gaya. Lagane ke liye Mahfooz karein."
 
 msgid ""
 "Added {place} on {map}. Stand where you gather by hand: the bot stands on that very spot."
@@ -816,6 +831,9 @@ msgstr ""
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
 
+msgid "Available sound IDs could not be read. Adding sounds is unavailable."
+msgstr "Dastiyab sound IDs nahi parhi ja sakin. Sounds shamil nahi kar sakte."
+
 msgid "Back where the run started"
 msgstr "Wahan wapas jahan run shuru hua tha"
 
@@ -901,6 +919,9 @@ msgstr "Key badlein"
 
 msgid "Change target mode"
 msgstr "Target mode tabdeel karein"
+
+msgid "Changes are a draft until Save."
+msgstr "Mahfooz tak tabdeeliyan draft hain."
 
 msgid "Channels"
 msgstr "Channels"
@@ -1003,6 +1024,9 @@ msgstr "Dialog band karein"
 msgid "Close the game"
 msgstr "Game band karein"
 
+msgid "Close without saving"
+msgstr "Bina save kiye band karein"
+
 msgid "Closing every Mist World window for the update"
 msgstr "Update ke liye Mist World ki har window band ho rahi hai"
 
@@ -1046,6 +1070,12 @@ msgstr "Trusted players ke commands"
 msgid "Commands: {list}"
 msgstr "Hukm: {list}"
 
+msgid "Connected"
+msgstr "Jurr gaya"
+
+msgid "Connecting..."
+msgstr "Jurr raha hai..."
+
 msgid "Contact the &developer"
 msgstr "&Developer se raabta"
 
@@ -1069,6 +1099,16 @@ msgstr "Chuna hua &copy karein"
 
 msgid "Corpses"
 msgstr "Laashein"
+
+msgid "Could not read known sound IDs: {error}"
+msgstr "Maloom sound IDs nahi parh sake: {error}"
+
+msgid "Could not read the saved sound list: {error}"
+msgstr "Mahfooz sound list nahi parh sake: {error}"
+
+msgid ""
+"Could not release sound listening; it is released when the connection closes."
+msgstr "Sound sunna band nahi ho saka; connection band hone par band ho jayega."
 
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
@@ -1271,6 +1311,9 @@ msgstr "Character settings e&xport karein"
 msgid "E&xport plan"
 msgstr "Mansooba e&xport karein"
 
+msgid "Each sound needs an ID, a name, and a mute setting."
+msgstr "Har sound ko ID, naam aur khamoshi ki tarteeb chahiye."
+
 msgid "Earnings so far: {n} arnebia (picked up and sold)"
 msgstr "Ab tak ki kamai: {n} arnebia (uthaye aur beche gaye)"
 
@@ -1318,6 +1361,12 @@ msgstr "Enhance Crystals"
 
 msgid "Enter a name for the plan."
 msgstr "Mansoobe ka naam likhein."
+
+msgid "Enter a sound ID between 1 and 99999."
+msgstr "1 se 99999 tak sound ID likhein."
+
+msgid "Enter sound IDs, ranges, all, or off."
+msgstr "Sound IDs, ranges, all, ya off likhein."
 
 msgid "Enter the daily stop time as HH:MM, for example 04:50."
 msgstr "Roz rukne ka waqt HH:MM mein likhein, misal 04:50."
@@ -1713,6 +1762,9 @@ msgstr "Ghar, hearthstone ke sath"
 msgid "Home."
 msgstr "Ghar."
 
+msgid "Hook unavailable: {reason}"
+msgstr "Hook dastiyab nahi: {reason}"
+
 msgid "How it works:"
 msgstr "Kaise kaam karta hai:"
 
@@ -1788,6 +1840,9 @@ msgid ""
 msgstr ""
 "main {map} par {x}, {y} par hoon lekin aap ko nahi dekh sakta. Game mein E dabao, Shift+C se copy karo aur bhejo: come <jo aap ne copy kiya>"
 
+msgid "ID {id}, X {x}, Y {y}: {state}"
+msgstr "ID {id}, X {x}, Y {y}: {state}"
+
 msgid "Ice prince"
 msgstr "Ice prince"
 
@@ -1856,6 +1911,9 @@ msgstr ""
 
 msgid "International"
 msgstr "International"
+
+msgid "Invalid sound reply from the game agent."
+msgstr "Game agent ka sound jawab durust nahi."
 
 msgid "It also stops by itself:"
 msgstr "Ye khud bhi ruk jata hai:"
@@ -1972,6 +2030,14 @@ msgstr "Market par &qeemat ki hadd"
 
 msgid "Limits"
 msgstr "Haddein"
+
+msgid ""
+"Listen for game sound requests, select an ID, then add it to Saved Sounds. This tab does not change muting. Save changes on the Saved Sounds tab."
+msgstr ""
+"Game ki sound darkhwastein dekhein, ID chunein aur Mahfooz Sounds mein shamil karein. Yeh tab khamoshi nahi badalta. Mahfooz Sounds tab mein tabdeeliyan mahfooz karein."
+
+msgid "Listen for sounds"
+msgstr "Sounds ki nigrani karein"
 
 msgid "Location:"
 msgstr "Jagah:"
@@ -2158,6 +2224,12 @@ msgstr "&Upar le jayein"
 
 msgid "Move do&wn"
 msgstr "&Neeche le jayein"
+
+msgid "Move to Mute List"
+msgstr "Mute List mein bhejein"
+
+msgid "Move to Sounds List"
+msgstr "Sounds List mein bhejein"
 
 msgid "Move to kee&p"
 msgstr "Rakh&ne mein le jayein"
@@ -2722,6 +2794,9 @@ msgstr "Naye paigham padh kar sunayein"
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Ladaai mein rage, marks ya combos har (second) par padhein:"
 
+msgid "Reading available sound IDs..."
+msgstr "Dastiyab sound IDs parh rahe hain..."
+
 msgid "Reading channels out"
 msgstr "Channels padh kar sunana"
 
@@ -2730,6 +2805,9 @@ msgstr "Game padhna"
 
 msgid "Ready"
 msgstr "Tayyar"
+
+msgid "Recent sound &requests (latest 200):"
+msgstr "Haliya sound &darkhwastein (aakhri 200):"
 
 msgid "Record &voice"
 msgstr "&voice record karein"
@@ -2751,6 +2829,9 @@ msgstr "Agent dobara install karein"
 msgid "Release &channel:"
 msgstr "Release ka &channel:"
 
+msgid "Remove"
+msgstr "Hata dein"
+
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
 msgstr ""
@@ -2758,6 +2839,9 @@ msgstr ""
 
 msgid "Rename"
 msgstr "Naam badlein"
+
+msgid "Rename sound"
+msgstr "Sound ka naam badlein"
 
 msgid "Repair &gear with toolboxes from the bag"
 msgstr "Basta ke toolboxes se &gear repair karein"
@@ -2901,6 +2985,9 @@ msgstr "Script ki tabdeeliyan mahfooz karein?"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
+
+msgid "Saving and applying sound settings..."
+msgstr "Sound settings save aur lagu ho rahi hain..."
 
 msgid "Scan complete."
 msgstr "Scan mukammal."
@@ -3134,6 +3221,63 @@ msgstr "Snowflake princess"
 msgid "Sold:"
 msgstr "Beche gaye:"
 
+msgid "Some sound requests were missed because the event buffer filled."
+msgstr "Event buffer bharne se kuch sound darkhwastein reh gayin."
+
+msgid "Sound &ID:"
+msgstr "Sound &ID:"
+
+msgid "Sound ID {id} is already in the list."
+msgstr "Sound ID {id} list mein pehle se hai."
+
+msgid "Sound IDs must be between 1 and 99999; ranges must go upwards."
+msgstr "Sound IDs 1 se 99999 hon; ranges barhti tarteeb mein hon."
+
+msgid "Sound IDs must be whole numbers between 1 and 99999."
+msgstr "Sound IDs 1 se 99999 tak poore adad hon."
+
+msgid "Sound Silencer"
+msgstr "Sound Silencer"
+
+msgid "Sound Silencer - {name}"
+msgstr "Sound Silencer - {name}"
+
+msgid "Sound controls are unavailable."
+msgstr "Sound controls dastiyab nahi."
+
+msgid ""
+"Sound controls require an updated game agent. Install it and restart the game."
+msgstr ""
+"Sound controls ke liye naya game agent install karke game dobara chalayein."
+
+msgid "Sound controls: {error}"
+msgstr "Sound controls: {error}"
+
+msgid ""
+"Sound events were lost because the observer buffer filled. Start the wait again."
+msgstr ""
+"Observer buffer bharne se sound events kho gaye. Intezar dobara shuru karein."
+
+msgid "Sound name:"
+msgstr "Sound ka naam:"
+
+msgid "Sound names must be at most 100 characters without control characters."
+msgstr "Sound naam 100 haroof tak hon aur control haroof na hon."
+
+msgid "Sound observer is unavailable: {reason}"
+msgstr "Sound observer dastiyab nahi: {reason}"
+
+msgid "Sound settings saved and mute rules applied."
+msgstr "Sound settings save aur khamoshi ke qawaid lagu ho gaye."
+
+msgid ""
+"Sound settings were saved, but active muting could not be confirmed: {error}"
+msgstr ""
+"Sound settings save ho gayin, lekin khamoshi lagu hone ki tasdeeq nahi hui: {error}"
+
+msgid "Sound wait timeout cannot be negative."
+msgstr "Sound ke intezar ka waqt manfi nahi ho sakta."
+
 msgid "South edge (y):"
 msgstr "Junoobi kinara (y):"
 
@@ -3347,6 +3491,12 @@ msgstr "Yeh jagah pehle se aap ki list mein hai."
 msgid "That schedule is gone"
 msgstr "Woh schedule ab nahi raha"
 
+msgid "That sound ID is already in the lists."
+msgstr "Yeh sound ID lists mein pehle se hai."
+
+msgid "That sound ID is not in this game's available sound files."
+msgstr "Yeh sound ID is game ki dastiyab sound files mein nahi hai."
+
 msgid "That takes about {k} more {shard}{cost}, plus the craftsman's fees."
 msgstr ""
 "Is mein takreeban {k} mazeed {shard}{cost} lagega, aur craftsman ki fees alag."
@@ -3517,6 +3667,9 @@ msgid ""
 msgstr ""
 "Pichhle scan mein jama karne ki koi skill nahi mili. Gang ke Guru Elder ya Master Pepper se Fishing, Mining ya Collect Herbs (in mein se ek) seekhein, phir dobara scan karein."
 
+msgid "The listener is busy or disconnected. Try again."
+msgstr "Listener masroof hai ya connection toot gaya. Dobara koshish karein."
+
 msgid "The nearest city's"
 msgstr "Sab se qareebi shehar ka"
 
@@ -3559,6 +3712,9 @@ msgstr "Script theek padhi ja rahi hai."
 
 msgid "The script was saved, but the old file couldn't be removed: {err}"
 msgstr "Script mahfooz ho gayi, lekin purani file hataayi nahi ja saki: {err}"
+
+msgid "The sound list must be a list of sound entries."
+msgstr "Sound list mein sound entries honi chahiye."
 
 msgid ""
 "The storage list is empty. Choose what to move to the storehouse in Character, Bag and supplies first."
@@ -3614,6 +3770,9 @@ msgstr "Phir (minutes) tak &khamosh rahein:"
 
 msgid "There's no plan to run."
 msgstr "Chalane ke liye koi plan nahi."
+
+msgid "These sound IDs are not available in this game: {ids}"
+msgstr "Yeh sound IDs is game mein dastiyab nahi: {ids}"
 
 msgid "They come from {source}, a bagful at a time."
 msgstr "Ye {source} se aate hain, ek waqt mein poora basta."
@@ -5205,6 +5364,9 @@ msgstr "movement"
 msgid "mute: the game stops talking (only my game)."
 msgstr "mute: game bolna band kar deta hai (sirf mera game)."
 
+msgid "muted request"
+msgstr "khamosh darkhwast"
+
 msgid "never again"
 msgstr "dobara kabhi nahi"
 
@@ -5876,6 +6038,12 @@ msgstr "{n} {item} bech diye"
 
 msgid "sold {n} {item} at the Shard Market"
 msgstr "Shard Market par {n} {item} bech diye"
+
+msgid "sound request"
+msgstr "sound darkhwast"
+
+msgid "sound_wait needs at least one sound ID, or all."
+msgstr "sound_wait ko kam az kam ek sound ID, ya all chahiye."
 
 msgid "stand still"
 msgstr "khare raho"
@@ -6566,6 +6734,9 @@ msgstr "us ke bajaye {tool} aazma rahe hain"
 msgid "type your gang's highland number in Tools, Daily chores"
 msgstr "Tools, Daily chores mein apni gang ki highland ka number likho"
 
+msgid "unavailable"
+msgstr "dastiyab nahi"
+
 msgid "unbalanced quotes"
 msgstr "quotes balance mein nahi hain"
 
@@ -6973,6 +7144,9 @@ msgstr "{name} (script)"
 msgid "{name} (speed +{speed}, level {level})"
 msgstr "{name} (speed +{speed}, level {level})"
 
+msgid "{name} ({id})"
+msgstr "{name} ({id})"
+
 msgid "{name} ({n} new)"
 msgstr "{name} ({n} naye)"
 
@@ -7329,6 +7503,11 @@ msgstr "{stage}: ho gaye {ok}; poore nahi hue {bad}"
 msgid "{state} {what} for {m} min on {map}, HP {hp}%{mp}, {k} kills"
 msgstr "{map} par {m} min se {state} {what}, HP {hp}%{mp}, {k} kills"
 
+msgid ""
+"{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
+msgstr ""
+"{state}. Khamosh IDs: {mute}. Dekhe: {observed}; roke: {dropped}; chalte hue khamosh: {live}; ghair supported: {unsupported}."
+
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"
 
@@ -7452,6 +7631,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Log\tCtrl+3"
 #~ msgstr "&Log\tCtrl+3"
 
+#~ msgid "&Mute IDs:"
+#~ msgstr "&Khamosh IDs:"
+
 #~ msgid "&Mute this game\tCtrl+M"
 #~ msgstr "Is game ki awaaz &band karein\tCtrl+M"
 
@@ -7500,6 +7682,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&View as script..."
 #~ msgstr "&Script ki tarah dekhein..."
 
+#~ msgid "&Watch IDs:"
+#~ msgstr "&Nigrani IDs:"
+
 #~ msgid "...or after this many casts that do &no damage:"
 #~ msgstr "...ya itne casts ke baad jin se koi &damage na ho:"
 
@@ -7514,6 +7699,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "After farming (when a run finishes by itself, never after Stop)"
 #~ msgstr "Farming ke baad (jab run khud khatam ho, Stop ke baad kabhi nahi)"
+
+#~ msgid "Apply &mute"
+#~ msgstr "&Khamoshi lagayein"
+
+#~ msgid "Apply &watch"
+#~ msgstr "&Nigrani lagayein"
 
 #~ msgid "Automatically clea&n the bag after farming (Tools, Clean the bag now)"
 #~ msgstr "Farming ke baad khud basta &saaf karein (Tools, Clean the bag now)"
@@ -7589,6 +7780,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Installed. Restart Mist World to load it."
 #~ msgstr "Install ho gaya. Load karne ke liye Mist World restart karein."
 
+#~ msgid "Live Sounds"
+#~ msgstr "Live Sounds"
+
 #~ msgid "Looking for a new version..."
 #~ msgstr "Naya version dhoond raha hoon..."
 
@@ -7649,6 +7843,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "\n"
 #~ "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
 
+#~ msgid "S&ound controls"
+#~ msgstr "S&ound controls"
+
 #~ msgid "S&top\tShift+F5"
 #~ msgstr "R&ok\tShift+F5"
 
@@ -7657,6 +7854,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Save as scri&pt..."
 #~ msgstr "Scri&pt ki tarah mahfooz karein..."
+
+#~ msgid "Saved Sounds"
+#~ msgstr "Mahfooz Sounds"
 
 #~ msgid "Sche&dules...\tCtrl+Shift+H"
 #~ msgstr "Sche&dules...\tCtrl+Shift+H"
@@ -7672,6 +7872,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Sharing arnebia (both players get some)"
 #~ msgstr "Arnebia share karna (dono khilariyon ko milta hai)"
+
+#~ msgid "Sound controls - {name}"
+#~ msgstr "Sound controls - {name}"
 
 #~ msgid "Spea&k the results\tCtrl+Shift+R"
 #~ msgstr "Nataij su&nayein\tCtrl+Shift+R"
@@ -7714,6 +7917,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Wa&lk to a dungeon or map...\tCtrl+W"
 #~ msgstr "Dungeon ya map tak &chalain...\tCtrl+W"
+
+#~ msgid ""
+#~ "Watch sounds to see their IDs and positions; mute IDs to silence them. Use all, off, or IDs/ranges such as 1,5|7;10-20. Changes affect this game and remain after this window closes, until changed or the game exits."
+#~ msgstr ""
+#~ "Sounds ki IDs aur jagah dekhne ke liye nigrani karein; khamoshi ke liye IDs dein. all, off, ya 1,5|7;10-20 jaisi IDs/ranges likhein. Tabdeeli is game par lagti hai aur window band hone ke baad bhi rehti hai, jab tak badlein ya game band ho."
 
 #~ msgid ""
 #~ "When nothing is in sight, walk to where a monster is due back (learned while farming)"
@@ -7847,6 +8055,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "{minutes} minutes in {room}; shared arnebia {n} times today"
 #~ msgstr "{room} mein {minutes} minute; aaj {n} baar arnebia share kiya"
 
+#~ msgid "{name} (ID {id})"
+#~ msgstr "{name} (ID {id})"
+
 #~ msgid "{n} critical hits"
 #~ msgstr "{n} critical hits"
 
@@ -7862,3 +8073,8 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "{skill} doesn't reach the pet - pet potions only"
 #~ msgstr "{skill} pet tak nahin pohanchti - ab sirf pet potions"
+
+#~ msgid ""
+#~ "{state}. Watching: {watch}. Muting: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
+#~ msgstr ""
+#~ "{state}. Nigrani: {watch}. Khamoshi: {mute}. Dekhe: {observed}; roke: {dropped}; chalte hue khamosh: {live}; ghair supported: {unsupported}."
