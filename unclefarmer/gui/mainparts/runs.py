@@ -2,18 +2,49 @@
 
 from __future__ import annotations
 
+import time
 
 import wx
 
 from ... import settings
 from ...engine import plan as plans
 from ...engine.runner import Run
-from ...engine.script import check as check_script
+from ...engine.script import check as check_script, login_target
 from ...i18n import _
 from ..common import error, save_file
 from ..plan import plan_text
 from .base import FrameParts, Item, foreground_pid, saved_item
 from collections.abc import Callable
+
+LOGIN_OPEN_RETRY = 90.0
+
+
+def run_text_and_profile(item: Item, profile: str | None) -> tuple[str | None, str | None, str | None]:
+    """Read one item and resolve its optional ``login`` directive before a run is made.
+
+    The returned error is already suitable for a dialog or a remote reply.
+    """
+    try:
+        if item[0] == "plan":
+            text = plans.to_script(plans.load(item[1]))
+        else:
+            with open(plans.script_path(item[1]), encoding="utf-8") as f:
+                text = f.read()
+    except (OSError, ValueError) as e:
+        return None, None, _("Couldn't open it: {err}", err=e)
+    problem = check_script(text)
+    if problem:
+        return None, None, problem
+    target = login_target(text) if item[0] == "script" else None
+    if target:
+        matches = [known for known, _email in settings.automatic_login_profiles()
+                   if target.casefold() in (known.casefold(), settings.profile_display(known).casefold())]
+        if len(matches) != 1:
+            return None, None, _("The script's login character is not a known saved character: {name}", name=target)
+        target = matches[0]
+    if profile and target and not settings.same_character(profile, target):
+        return None, None, _("The scheduled character and the script's login character are different.")
+    return text, profile or target, None
 
 
 class RunsMixin(FrameParts):
@@ -137,7 +168,40 @@ class RunsMixin(FrameParts):
         else:
             self.start(pid)
 
-    def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False) -> str | None:
+    def automatic_login_window(self, profile: str) -> tuple[int | None, str]:
+        """Find a window for *profile*, opening exactly one if no usable client exists.
+
+        The eventual sign-in remains in :class:`Run`, after the game's agent is reachable.  This
+        boundary only owns choosing or opening a client, which lets schedules and scripts follow
+        the identical guarded sequence.
+        """
+        self.refresh_games()
+        pending = getattr(self, "pending_logins", None)
+        if pending is None:
+            pending = self.pending_logins = {}
+        pid = next((g[0] for g in self.games if settings.is_profile_of(g[1], profile)), None)
+        if pid is not None:
+            pending.pop(profile, None)
+            return pid, ""
+        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs]
+        if len(signed_out) == 1:
+            pending.pop(profile, None)
+            return signed_out[0], ""
+        label = settings.profile_display(profile)
+        if len(signed_out) > 1:
+            return None, _("{name} has more than one signed-out game; close the extras or log in first", name=label)
+        opened = pending.get(profile)
+        if opened is not None and time.monotonic() - opened < LOGIN_OPEN_RETRY:
+            return None, _("opening a game for {name}", name=label)
+        problem = self.open_client_for_login()
+        if problem:
+            pending.pop(profile, None)
+            return None, problem
+        pending[profile] = time.monotonic()
+        return None, _("opening a game for {name}", name=label)
+
+    def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False,
+              profile: str | None = None) -> str | None:
         """Start a bot. remote: asked by private message - no message boxes; returns what to answer."""
         def fail(text: str) -> str | None:
             if remote:
@@ -146,11 +210,22 @@ class RunsMixin(FrameParts):
             return None
         given = item
         item = item or self.selected_item()
+        if not item:
+            self.say(_("Make a plan first, in the Plans tab."))
+            return _("There's no plan to run.")
+        text, profile, problem = run_text_and_profile(item, profile)
+        if problem or text is None:
+            return fail(problem or _("Couldn't open it."))
         if pid is None:
             pid = self.selected_pid()
             if pid is None:
                 self.refresh_games()
                 pid = self.selected_pid()
+            if pid is None and profile:
+                pid, waiting = self.automatic_login_window(profile)
+                if pid is None:
+                    self.say(waiting)
+                    return waiting if remote else None
         if pid is None:
             self.say(_("No game with the agent is running."))
             return None
@@ -162,18 +237,6 @@ class RunsMixin(FrameParts):
             last = settings.last_run_of(self.s, name)
             if last and saved_item(last) in self.items:
                 item = saved_item(last)
-        if not item:
-            self.say(_("Make a plan first, in the Plans tab."))
-            return _("There's no plan to run.")
-        try:
-            text = self.item_text(item)
-        except (OSError, ValueError) as e:
-            return fail(_("Couldn't open it: {err}", err=e))
-        problem = check_script(text)
-        if problem:
-            return fail(problem)
-        plan = plans.load(item[1]) if item[0] == "plan" else {}
-        target = plan.get("character") if isinstance(plan.get("character"), str) else ""
         self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
         if name:
@@ -184,7 +247,7 @@ class RunsMixin(FrameParts):
         run.last_seen = self.last_seen
         run.kind = item[0]
         run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
-        run.profile = target or name
+        run.profile = profile or name
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()

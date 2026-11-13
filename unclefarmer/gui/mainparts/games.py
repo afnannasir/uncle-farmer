@@ -57,6 +57,12 @@ class GamesMixin(FrameParts):
             return
         old = self.selected_pid()
         self.games = games()
+        advertised = {pid: (port, secret) for port, pid, secret in agents()}
+        confirmed = {pid for pid, _name, _where in self.games}
+        # A crashed game can leave its port record behind and Windows can later reuse its PID.
+        # Do not make poll() refresh recursively for that record. A restarted agent has a new
+        # port or secret, so poll() will immediately notice it again.
+        self.unavailable_agents = {pid: record for pid, record in advertised.items() if pid not in confirmed}
         # a game whose bot is still running stays in the list even if it didn't answer just now
         listed = {g[0] for g in self.games}
         for pid, run in self.runs.items():
@@ -170,7 +176,8 @@ class GamesMixin(FrameParts):
         if self.destroyed:
             return
         # a client opened or closed since the list was made: remake it (port files only, cheap)
-        live = {a[1] for a in agents()} | set(self.runs)
+        live = {pid for port, pid, secret in agents()
+                if self.unavailable_agents.get(pid) != (port, secret)} | set(self.runs)
         if live != {g[0] for g in self.games}:
             self.refresh_games()
             return

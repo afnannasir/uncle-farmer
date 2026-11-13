@@ -20,7 +20,7 @@ wx = pytest.importorskip("wx")
 
 from unclefarmer import chat, messages, settings, speech, stats, tones  # noqa: E402
 from unclefarmer.gui import main  # noqa: E402
-from unclefarmer.gui.mainparts import results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
+from unclefarmer.gui.mainparts import games as games_part, results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
 from unclefarmer.gui.mainparts.base import LOG_LIMIT, SNAP_FRESH  # noqa: E402
 
 from conftest import returning, stand_in, Clock  # noqa: E402
@@ -69,6 +69,21 @@ class Widget:
     def SetItem(self, i: int, col: int, text: str) -> None:
         self.items[(i, col)] = text
 
+    def DeleteAllItems(self) -> None:
+        self.items.clear()
+
+    def InsertItem(self, i: int, text: str) -> None:
+        self.items[(i, 0)] = text
+
+    def SetItemState(self, i: int, _state: int, _mask: int) -> None:
+        self.selection = i
+
+    def Focus(self, _i: int) -> None:
+        pass
+
+    def EnsureVisible(self, _i: int) -> None:
+        pass
+
 
 class Win:
     """A stand-in main window. Whatever it doesn't define is MainFrame's own method, bound here."""
@@ -77,6 +92,7 @@ class Win:
         self.clock = Clock()
         self.s = dict(s or {})
         self.games = list(games)
+        self.unavailable_agents: dict[int, tuple[int, str]] = {}
         self.runs = dict(runs or {})
         self.messengers: dict[int, Any] = {}       # a game's messenger, or the test's stand-in for one
         self.chats: dict[int, Any] = {}
@@ -530,3 +546,35 @@ def test_an_empty_game_folder_setting_is_filled_in_from_the_installed_agent(monk
     assert editing.EditingMixin.remember_game_folder(frame) == "D:/Game"
     assert frame.s["game_folder"] == "D:/Game" and saved == [{"game_folder": "D:/Game"}]
     assert editing.EditingMixin.remember_game_folder(frame) == "D:/Game" and len(saved) == 1   # once
+
+
+def test_automatic_login_opens_only_one_client_then_uses_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A schedule tick cannot make a new window every time the game is still loading."""
+    opened: list[None] = []
+    frame = types.SimpleNamespace(games=[], runs={}, pending_logins={})
+    frame.refresh_games = lambda: None
+    frame.open_client_for_login = lambda: opened.append(None) or None
+    monkeypatch.setattr(runs_part.time, "monotonic", lambda: 10.0)
+
+    first = runs_part.RunsMixin.automatic_login_window(frame, "Hero\x1fS1\x1f1")
+    second = runs_part.RunsMixin.automatic_login_window(frame, "Hero\x1fS1\x1f1")
+    frame.games = [(44, None, None)]
+    ready = runs_part.RunsMixin.automatic_login_window(frame, "Hero\x1fS1\x1f1")
+
+    assert first == (None, "opening a game for Hero - S1")
+    assert second == first and opened == [None]
+    assert ready == (44, "") and frame.pending_logins == {}
+
+
+def test_a_stale_agent_record_does_not_make_the_game_refresh_loop(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An old port file with a reused PID must not prevent the main window from appearing."""
+    reads: list[None] = []
+    monkeypatch.setattr(games_part, "games", lambda: reads.append(None) or [])
+    monkeypatch.setattr(games_part, "agents", lambda: [(9000, 42, "old")])
+    window = Win()
+
+    window.refresh_games()
+    window.poll()
+
+    assert reads == [None]
+    assert window.unavailable_agents == {42: (9000, "old")}

@@ -20,6 +20,7 @@ final class AutomaticLogin {
     private static final Pattern EMAIL = Pattern.compile("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}",
             Pattern.CASE_INSENSITIVE);
     private static final long PICKER_TIMEOUT_MILLIS = 30000L;
+    private static final long WORLD_TIMEOUT_MILLIS = 30000L;
     private static final Object LOCK = new Object();
     private static volatile boolean running;
     private static volatile String status = "idle";
@@ -80,7 +81,13 @@ final class AutomaticLogin {
                                 status = "character is not in the account picker";
                                 return;
                             }
-                            status = select(menu, id) ? "selecting character" : "character selection could not start";
+                            if (!select(menu, id)) {
+                                status = "character selection could not start";
+                                return;
+                            }
+                            status = "loading character";
+                            long worldDeadline = System.currentTimeMillis() + WORLD_TIMEOUT_MILLIS;
+                            status = waitForCharacter(id, worldDeadline) ? "ready" : "timed out loading character";
                             return;
                         }
                         Thread.sleep(50L);
@@ -96,6 +103,17 @@ final class AutomaticLogin {
         }, "Uncle Farmer automatic login");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    /** The picker action only begins loading. Do not let the Python bot read the old empty world. */
+    private static boolean waitForCharacter(int id, long deadline) throws InterruptedException {
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                if (Memory.selfId() == id && Memory.snapshot().startsWith("{\"ok\":true")) return true;
+            } catch (Memory.Unavailable ignored) { }
+            Thread.sleep(50L);
+        }
+        return false;
     }
 
     /** The exact native constructor the Login button uses for an existing saved account. */
@@ -123,10 +141,19 @@ final class AutomaticLogin {
             Field clientChannel = network.getDeclaredField("c");
             clientChannel.setAccessible(true);
             clientChannel.set(client, channel);
+            startCompanionConnection();
             return null;
         } catch (Throwable ignored) {
             return "saved-account login could not start";
         }
+    }
+
+    /** The game's saved-account Login action also starts its companion connection after Netty. */
+    private static void startCompanionConnection() throws ReflectiveOperationException {
+        Class<?> companion = Class.forName("game.x");
+        Object connection = companion.getConstructor().newInstance();
+        companion.getMethod("a", companion).invoke(null, connection);
+        companion.getMethod("a").invoke(null);
     }
 
     private static String connectedAccount() {
@@ -166,28 +193,34 @@ final class AutomaticLogin {
                 && page instanceof Integer && ((Integer) page).intValue() == 2 ? menu : null;
     }
 
+    /** The picker is a normal dialog grid: find the requested character before selecting it. */
     private static boolean hasCharacter(Object menu, int wanted) {
         Object groups = field(menu, "g");
         if (!(groups instanceof Collection)) return false;
         for (Object group : (Collection<?>) groups) {
-            if (!(group instanceof Collection)) continue;
-            for (Object entry : (Collection<?>) group) {
-                if (characterId(entry) == wanted) return true;
+            if (group instanceof Collection) {
+                for (Object entry : (Collection<?>) group) {
+                    if (characterId(entry) == wanted) return true;
+                }
             }
         }
         return false;
     }
 
-    /** Calls the public model action that the game window uses after the player picks a row. */
+    /** Calls the client's character-picker action, not the ordinary dialog Enter action. */
     private static boolean select(Object menu, int id) {
         Frame window = Memory.window();
         Object model = window == null ? null : field(window, Memory.WIN_WORLD);
         if (model == null) return false;
         try {
             Method select = model.getClass().getMethod("a", menu.getClass(), window.getClass(), int.class);
-            select.invoke(model, menu, window, Integer.valueOf(id));
+            synchronized (model) {
+                Object result = select.invoke(model, menu, window, Integer.valueOf(id));
+                if (result instanceof Boolean && !((Boolean) result).booleanValue()) return false;
+            }
             return true;
-        } catch (Throwable ignored) {
+        } catch (Throwable error) {
+            Log.error("automatic character selection", error);
             return false;
         }
     }

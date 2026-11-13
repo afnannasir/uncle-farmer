@@ -39,7 +39,7 @@ AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without th
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
-AGENT_LOGIN = 59    # from here native saved-account login can select a known character without keys
+AGENT_LOGIN = 66    # from here native saved-account login checks the client's character-entry result and waits for its world
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -203,13 +203,13 @@ class Run(threading.Thread):
         reply = link.json("autologin %s %s" % (email, entity_id))
         if not reply.get("ok"):
             raise Stopped(str(reply.get("error") or _("automatic login could not start")))
-        self.log(_("waiting for {name} in the character list", name=settings.profile_display(character)))
+        self.log(_("starting automatic login"), speak=True)
         while not self.stop_event.wait(0.25):
             state = link.json("autologinstatus")
             if state.get("running"):
                 continue
-            if state.get("status") == "selecting character":
-                self.log(_("selecting {name}", name=settings.profile_display(character)))
+            if state.get("status") == "ready":
+                self.log(_("automatic login finished"))
                 return
             raise Stopped(str(state.get("status") or _("automatic login stopped")))
         raise Stopped(_("stopped by you"))

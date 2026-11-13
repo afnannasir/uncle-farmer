@@ -86,9 +86,6 @@ msgstr ""
 msgid "&Character"
 msgstr ""
 
-msgid "&Character to sign in:"
-msgstr ""
-
 msgid "&Character:"
 msgstr ""
 
@@ -926,6 +923,9 @@ msgid ""
 "Choose &skills from what the game says about them (off: press the attack keys in turn)"
 msgstr ""
 
+msgid "Choose a character."
+msgstr ""
+
 msgid "Choose a city square:"
 msgstr ""
 
@@ -1080,6 +1080,9 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
+msgstr ""
+
+msgid "Couldn't open it."
 msgstr ""
 
 msgid "Couldn't open it: {err}"
@@ -3282,6 +3285,10 @@ msgid ""
 "The agent isn't installed in the game yet, and without it a second game closes right after it starts. Open Settings now?"
 msgstr ""
 
+msgid ""
+"The agent isn't installed in the game yet. Install it in Settings first."
+msgstr ""
+
 msgid "The area is now 40 tiles around you."
 msgstr ""
 
@@ -3314,9 +3321,6 @@ msgid "The bot reads the real one from the Forger every try."
 msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
-msgstr ""
-
-msgid "The character already in the game"
 msgstr ""
 
 msgid "The collection"
@@ -3437,6 +3441,9 @@ msgstr ""
 msgid "The schedule isn't complete"
 msgstr ""
 
+msgid "The scheduled character and the script's login character are different."
+msgstr ""
+
 msgid ""
 "The script has a mistake:\n"
 "{p}\n"
@@ -3448,6 +3455,9 @@ msgid "The script reads correctly."
 msgstr ""
 
 msgid "The script was saved, but the old file couldn't be removed: {err}"
+msgstr ""
+
+msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 
 msgid ""
@@ -3970,9 +3980,6 @@ msgstr ""
 msgid "Would you like to switch to {language}?"
 msgstr ""
 
-msgid "Write the character's name: the game it is logged in to runs it."
-msgstr ""
-
 msgid "X:"
 msgstr ""
 
@@ -4120,6 +4127,9 @@ msgid "attacks {how}"
 msgstr ""
 
 msgid "automatic login could not start"
+msgstr ""
+
+msgid "automatic login finished"
 msgstr ""
 
 msgid "automatic login stopped"
@@ -4916,6 +4926,9 @@ msgstr ""
 msgid "log in to a character first"
 msgstr ""
 
+msgid "login must be the first command in a script"
+msgstr ""
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr ""
 
@@ -5358,6 +5371,9 @@ msgstr ""
 msgid "open games started without this version's agent: {n}"
 msgstr ""
 
+msgid "opening a game for {name}"
+msgstr ""
+
 msgid "ore"
 msgstr ""
 
@@ -5561,9 +5577,6 @@ msgstr ""
 msgid "selecting"
 msgstr ""
 
-msgid "selecting {name}"
-msgstr ""
-
 msgid "selling shards"
 msgstr ""
 
@@ -5642,6 +5655,9 @@ msgid ""
 msgstr ""
 
 msgid "started"
+msgstr ""
+
+msgid "starting automatic login"
 msgstr ""
 
 msgid "starting {what} as {name}"
@@ -6350,9 +6366,6 @@ msgstr ""
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr ""
 
-msgid "waiting for {name} in the character list"
-msgstr ""
-
 msgid "walk to the enemy"
 msgstr ""
 
@@ -6423,6 +6436,9 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr ""
 
 msgid "write it as: hold key seconds"
+msgstr ""
+
+msgid "write it as: login  or  login <character>"
 msgstr ""
 
 msgid ""
@@ -6704,6 +6720,10 @@ msgid "{name} copy"
 msgstr ""
 
 msgid "{name} down ({n} so far)"
+msgstr ""
+
+msgid ""
+"{name} has more than one signed-out game; close the extras or log in first"
 msgstr ""
 
 msgid ""
@@ -7058,7 +7078,7 @@ msgstr ""
 msgid "{where} failed: {err} (carrying on)"
 msgstr ""
 
-msgid "{who} isn't logged in to a game that Uncle Farmer sees"
+msgid "{who} isn't logged in to one available game"
 msgstr ""
 
 msgid "{who}'s game is busy with {what}"

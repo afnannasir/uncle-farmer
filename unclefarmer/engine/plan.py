@@ -2,7 +2,6 @@
 
     {
       "name": "Turkey cave",
-      "character": "",                 # optional saved character profile to sign in before the run
       "spots": [ {"map": 5302, "minutes": 0, "kills": 0, "patrol": "full", "area": null,
                   "only": "", "skip": "", "elites": "fight"} ],
       "rotation": "round",               # several spots: "round" (in turn, again and again) or "once"
@@ -31,7 +30,6 @@ from .. import atlas, filelock, jsonio as json, paths
 
 PLAN_DEFAULTS: dict[str, Any] = {
     "name": "",
-    "character": "",
     "spots": [],
     "rotation": "round",
     "stop_after_minutes": 0,
@@ -79,7 +77,6 @@ class Plan(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     name: str = PLAN_DEFAULTS["name"]
-    character: str = PLAN_DEFAULTS["character"]
     spots: list[Spot] = Field(default_factory=list[Spot])
     rotation: str = PLAN_DEFAULTS["rotation"]
     stop_after_minutes: int = PLAN_DEFAULTS["stop_after_minutes"]

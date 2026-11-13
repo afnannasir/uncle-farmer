@@ -86,9 +86,6 @@ msgstr "&Key tabdeel karein"
 msgid "&Character"
 msgstr "&Kirdaar"
 
-msgid "&Character to sign in:"
-msgstr ""
-
 msgid "&Character:"
 msgstr "&Kirdaar:"
 
@@ -943,6 +940,9 @@ msgid ""
 msgstr ""
 "Game jo skills ke baare mein kehta hai us se &skills chunein (band: attack keys baari baari dabayein)"
 
+msgid "Choose a character."
+msgstr ""
+
 msgid "Choose a city square:"
 msgstr "City square chunein:"
 
@@ -1099,6 +1099,9 @@ msgstr "Mansooba import nahi ho saka: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Tarteeb import nahi ho sakin: {err}"
+
+msgid "Couldn't open it."
+msgstr ""
 
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
@@ -3387,6 +3390,10 @@ msgid ""
 msgstr ""
 "Agent abhi game mein install nahi hai, aur is ke baghair doosra game shuru hote hi band ho jata hai. Abhi Tarteeb kholen?"
 
+msgid ""
+"The agent isn't installed in the game yet. Install it in Settings first."
+msgstr ""
+
 msgid "The area is now 40 tiles around you."
 msgstr "Ilaqa ab aap ke ird gird 40 tiles ka hai."
 
@@ -3421,9 +3428,6 @@ msgstr "Bot har koshish par Forger se asal wala parhta hai."
 
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
-
-msgid "The character already in the game"
-msgstr ""
 
 msgid "The collection"
 msgstr "Collection"
@@ -3552,6 +3556,9 @@ msgstr "Kamra"
 msgid "The schedule isn't complete"
 msgstr "Schedule mukammal nahi hai"
 
+msgid "The scheduled character and the script's login character are different."
+msgstr ""
+
 msgid ""
 "The script has a mistake:\n"
 "{p}\n"
@@ -3568,6 +3575,9 @@ msgstr "Script theek padhi ja rahi hai."
 
 msgid "The script was saved, but the old file couldn't be removed: {err}"
 msgstr "Script mahfooz ho gayi, lekin purani file hataayi nahi ja saki: {err}"
+
+msgid "The script's login character is not a known saved character: {name}"
+msgstr ""
 
 msgid ""
 "The storage list is empty. Choose what to move to the storehouse in Character, Bag and supplies first."
@@ -4143,10 +4153,6 @@ msgstr "Sab se bura normal hit mila: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "Kya aap {language} istemal karna chahein ge?"
 
-msgid "Write the character's name: the game it is logged in to runs it."
-msgstr ""
-"Kirdaar ka naam likhein: jis game mein woh logged in hai wahi ise chalata hai."
-
 msgid "X:"
 msgstr "X:"
 
@@ -4301,6 +4307,9 @@ msgid "attacks {how}"
 msgstr "hamla {how}"
 
 msgid "automatic login could not start"
+msgstr ""
+
+msgid "automatic login finished"
 msgstr ""
 
 msgid "automatic login stopped"
@@ -5139,6 +5148,9 @@ msgstr "{b} mein se {a} load"
 msgid "log in to a character first"
 msgstr "pehle kisi kirdaar mein log in karein"
 
+msgid "login must be the first command in a script"
+msgstr ""
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ka khayal: HP {hp}/{max}"
 
@@ -5610,6 +5622,9 @@ msgstr "sirf {n} {kind} potions baqi hain"
 msgid "open games started without this version's agent: {n}"
 msgstr "khuli games jo is version ke agent ke baghair shuru huin: {n}"
 
+msgid "opening a game for {name}"
+msgstr ""
+
 msgid "ore"
 msgstr "ore (kachi dhaat)"
 
@@ -5820,9 +5835,6 @@ msgstr "secret room: {who}"
 msgid "selecting"
 msgstr "select kar rahe hain"
 
-msgid "selecting {name}"
-msgstr ""
-
 msgid "selling shards"
 msgstr "shards bech rahe hain"
 
@@ -5905,6 +5917,9 @@ msgstr ""
 
 msgid "started"
 msgstr "shuru hua"
+
+msgid "starting automatic login"
+msgstr ""
 
 msgid "starting {what} as {name}"
 msgstr "{what} ko {name} ke tor par shuru kar rahe hain"
@@ -6656,9 +6671,6 @@ msgstr "voice message"
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "{name} ka voice message - Chat (Ctrl+T) mein sunein"
 
-msgid "waiting for {name} in the character list"
-msgstr ""
-
 msgid "walk to the enemy"
 msgstr "dushman tak chalo"
 
@@ -6733,6 +6745,9 @@ msgstr "aise likhein: chores [check] [only=bank,donation]"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
+
+msgid "write it as: login  or  login <character>"
+msgstr ""
 
 msgid ""
 "write it as: sell_collection  or  sell_collection fish (fish, ore or herb)"
@@ -7023,6 +7038,10 @@ msgstr "{name} naqal"
 
 msgid "{name} down ({n} so far)"
 msgstr "{name} gir gaya ({n} ab tak)"
+
+msgid ""
+"{name} has more than one signed-out game; close the extras or log in first"
+msgstr ""
 
 msgid ""
 "{name} has no profile yet - using the default keys. Open Character, Settings to check them."
@@ -7392,8 +7411,8 @@ msgstr ""
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} nakam raha: {err} (jari hai)"
 
-msgid "{who} isn't logged in to a game that Uncle Farmer sees"
-msgstr "{who} kisi aise game mein logged in nahi jo Uncle Farmer ko nazar aaye"
+msgid "{who} isn't logged in to one available game"
+msgstr ""
 
 msgid "{who}'s game is busy with {what}"
 msgstr "{who} ka game {what} mein masroof hai"
@@ -7752,6 +7771,10 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "Jab inner hall ki do posts build na kar sakein, gang ki apni &highland repair karo"
 
+#~ msgid "Write the character's name: the game it is logged in to runs it."
+#~ msgstr ""
+#~ "Kirdaar ka naam likhein: jis game mein woh logged in hai wahi ise chalata hai."
+
 #~ msgid "after farming, automatically: {job}"
 #~ msgstr "farming ke baad, khud se: {job}"
 
@@ -7889,3 +7912,6 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "{skill} doesn't reach the pet - pet potions only"
 #~ msgstr "{skill} pet tak nahin pohanchti - ab sirf pet potions"
+
+#~ msgid "{who} isn't logged in to a game that Uncle Farmer sees"
+#~ msgstr "{who} kisi aise game mein logged in nahi jo Uncle Farmer ko nazar aaye"
