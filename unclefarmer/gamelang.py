@@ -134,6 +134,8 @@ class Table:
         # templates whose original starts with a space (" belongs to {s}")
         self.suffixes: list[tuple[re.Pattern[str], str]] = []
         english_keyed: dict[str, bool] = {}
+        # (minus how much of the template is its own words, the order read, the template)
+        fixed: list[tuple[int, int, tuple[re.Pattern[str], str]]] = []
         for key, value in here.items():
             if not value or value == key:
                 continue
@@ -148,7 +150,10 @@ class Table:
                 if rx is None:
                     continue
                 entry = (rx, _english_template(key, eng.get(key)))
-                (self.suffixes if key.startswith(" ") else self.templates).append(entry)
+                if key.startswith(" "):
+                    self.suffixes.append(entry)
+                else:
+                    fixed.append((-len(literal), len(fixed), entry))
                 continue
             # one translation for several originals: an English key (what the server sends) wins
             held = self.exact.get(value)
@@ -163,6 +168,12 @@ class Table:
                 # and equipment came back as " Platinum wedding ring". The one spaced like its
                 # translation is the one the game showed.
                 self.exact[value] = original
+        # The template with the most words of its own first: _work takes the first that fits, and
+        # in the order read a short one hid the right one. Turkish has "Seviye $1" ("Level $1")
+        # before "Seviye $1 Akuamarin Parçası", so a bag's "Seviye 1 Akuamarin Parçası" came back
+        # "Level 1 Akuamarin Parçası" and no levelled shard was sold or stored (a player's report,
+        # 2026-11-12: "I was only able to sell the crystal piece of equipment").
+        self.templates = [entry for _words, _i, entry in sorted(fixed, key=lambda row: row[:2])]
         # (the mark in this language, in English), each without its edge spaces
         self.marks: list[tuple[str, str]] = [
             ((here.get(key) or key).strip(), shown.strip())
