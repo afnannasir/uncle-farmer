@@ -11,7 +11,7 @@ from ...engine.runner import Run
 from ...errors import carry_on
 from ...i18n import _
 from ...link import AgentError, AgentLink, agents, games, server_name
-from ..common import Dialog, error, first_selected, group, ok_cancel, select_row
+from ..common import error, first_selected, select_row
 from .base import SNAP_FRESH, FrameParts, Game, duration_text, out_of, profile_of, saved_item
 from typing import Any
 
@@ -213,8 +213,7 @@ class GamesMixin(FrameParts):
         me = s.get("self") if s is not None else None
         if s is None or not jsonio.is_object(me) or not me.get("name") or not jsonio.is_object(s.get("map")) \
                 or not s["map"].get("name"):
-            values.setdefault("activity", getattr(self, "login_status", {}).get(
-                pid, _("The game is running but no character is logged in.")))
+            values.setdefault("activity", _("The game is running but no character is logged in."))
             self.show_status(**values)
             return
         game = self.games[i]
@@ -234,7 +233,6 @@ class GamesMixin(FrameParts):
             except (OSError, ValueError) as e:
                 applog.write("couldn't remember the saved account for %s: %r" % (profile, e), "WARNING")
         if not run:
-            getattr(self, "login_status", {}).pop(pid, None)
             self.auto_scan_async(profile or me["name"], pid)     # never while the bot runs: it has the keyboard
             values["activity"] = _("Ready")
         sheet: dict[str, Any] = me.get("sheet") or {}
@@ -310,85 +308,3 @@ class GamesMixin(FrameParts):
             self.auto_scan(name)
         self.say(_("{name} scanned.", name=settings.profile_display(name)))
 
-    # ------------------------------------------------------------ automatic login
-    def automatic_login(self) -> None:
-        """Choose a remembered character for the selected signed-out game window."""
-        pid = self.selected_pid()
-        if pid is None:
-            self.say(_("No game with the agent is running."))
-            return
-        if pid in self.runs:
-            error(self, _("Stop the bot first."))
-            return
-        if self.selected_character():
-            error(self, _("Log out of this game window before logging in as another character."))
-            return
-        choices = settings.automatic_login_profiles()
-        if not choices:
-            error(self, _("Log in to a character first so Uncle Farmer can learn its saved account."))
-            return
-        choice = self._choose_automatic_login(choices)
-        if choice is None:
-            return
-        character, email = choice
-        character_id = settings.profile_id(character)
-        if character_id is None:
-            error(self, _("That character needs to be identified from the game before it can be used for automatic login."))
-            return
-        self.login_status[pid] = _("Logging in as {name}", name=settings.profile_display(character))
-        self.show_status(activity=self.login_status[pid])
-
-        def work() -> None:
-            try:
-                with AgentLink(pid=pid, timeout=5) as agent:
-                    if agent.send("arm") != "armed":
-                        raise AgentError("the game refused the login request")
-                    reply = agent.json("autologin " + email + " " + character_id)
-                    if not jsonio.is_object(reply) or not reply.get("ok"):
-                        raise ValueError(reply.get("error", "automatic login could not start"))
-                    while True:
-                        threading.Event().wait(1.0)
-                        state = agent.json("autologinstatus")
-                        if not jsonio.is_object(state):
-                            raise ValueError("automatic login returned an invalid status")
-                        message = state.get("status") if isinstance(state.get("status"), str) else ""
-                        wx.CallAfter(self._automatic_login_progress, pid, character, message)
-                        if state.get("running"):
-                            continue
-                        if message == "selecting character":
-                            return
-                        raise ValueError(message or "automatic login stopped")
-            except (AgentError, OSError, ValueError) as e:
-                wx.CallAfter(self._automatic_login_error, pid, str(e))
-
-        threading.Thread(target=work, daemon=True).start()
-
-    def _choose_automatic_login(self, choices: list[tuple[str, str]]) -> tuple[str, str] | None:
-        labels = [settings.profile_display(character) for character, _email in choices]
-        with Dialog(self, title=_("Log in as another character")) as dialog:
-            root = wx.BoxSizer(wx.VERTICAL)
-            form = group(dialog, root, _("Automatic login"))
-            pick = form.choice(_("&Character:"), labels)
-            form.readonly(_("What happens:"),
-                          _("Uncle Farmer uses the game's existing saved sign-in, waits for this character in "
-                            "the server's character list, then selects it. No password is shown or saved."), 3)
-            ok_cancel(dialog, root, _("Log in"))
-            dialog.SetSizerAndFit(root)
-            return choices[pick.GetSelection()] if dialog.ShowModal() == wx.ID_OK else None
-
-    def _automatic_login_progress(self, pid: int, character: str, status: str) -> None:
-        if self.destroyed or pid not in {game[0] for game in self.games}:
-            return
-        messages = {
-            "waiting for character picker": _("Waiting for {name} in the character list", name=settings.profile_display(character)),
-            "selecting character": _("Selecting {name}", name=settings.profile_display(character)),
-        }
-        if status in messages:
-            self.login_status[pid] = messages[status]
-            if pid == self.selected_pid():
-                self.show_status(activity=messages[status])
-
-    def _automatic_login_error(self, pid: int, detail: str) -> None:
-        self.login_status.pop(pid, None)
-        if not self.destroyed and pid in {game[0] for game in self.games}:
-            error(self, _("Couldn't log in automatically: {err}", err=detail))

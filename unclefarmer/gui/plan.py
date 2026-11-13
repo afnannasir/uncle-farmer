@@ -8,7 +8,7 @@ from typing import Any
 
 import wx
 
-from .. import atlas, jsonio, travel
+from .. import atlas, jsonio, settings, travel
 from ..engine import plan as plans
 from ..engine.script import check as check_script
 from ..i18n import _
@@ -299,6 +299,12 @@ class PlanDialog(Dialog):
         panel, box = page(nb, _("Where to farm"))
         f = Form(panel)
         self.name = f.text(_("Plan &name:"), p["name"])
+        self.characters = [""] + [c for c, _email in settings.automatic_login_profiles()]
+        self.character = f.choice(_("&Character to sign in:"),
+                                  [_('The character already in the game')] +
+                                  [settings.profile_display(c) for c in self.characters[1:]],
+                                  self.characters.index(p.get("character", ""))
+                                  if p.get("character", "") in self.characters else 0)
         box.Add(f.grid, 0, wx.EXPAND)
         self.steps = labeled(panel, box, _("Farming &spots:"), lambda w: wx.ListBox(w, size=wx.Size(520, 140)), 1)
         buttons(panel, box, (opens(_("&Add")), self.on_add))
@@ -533,7 +539,8 @@ class PlanDialog(Dialog):
             x, y = self.end_x.GetValue(), self.end_y.GetValue()
             end["cell"] = [x, y] if (x or y) else None
         p = self.plan
-        p.update(name=self.name.GetValue().strip(), rotation=ROTATIONS[max(0, self.rotation.GetSelection())],
+        p.update(name=self.name.GetValue().strip(), character=self.characters[self.character.GetSelection()],
+                 rotation=ROTATIONS[max(0, self.rotation.GetSelection())],
                  stop_after_minutes=self.limit_min.GetValue() if self.limit_min_on.GetValue() else 0,
                  stop_at_clock=clock,
                  stop_after_kills=self.limit_kills.GetValue() if self.limit_kills_on.GetValue() else 0,

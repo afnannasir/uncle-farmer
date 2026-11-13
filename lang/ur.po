@@ -86,6 +86,9 @@ msgstr "&Key tabdeel karein"
 msgid "&Character"
 msgstr "&Kirdaar"
 
+msgid "&Character to sign in:"
+msgstr ""
+
 msgid "&Character:"
 msgstr "&Kirdaar:"
 
@@ -813,9 +816,6 @@ msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 "Attack keys: keys ko space se alag kar ke likhein, misal ke taur par: j y . h"
 
-msgid "Automatic login"
-msgstr ""
-
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
 
@@ -1099,9 +1099,6 @@ msgstr "Mansooba import nahi ho saka: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Tarteeb import nahi ho sakin: {err}"
-
-msgid "Couldn't log in automatically: {err}"
-msgstr ""
 
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
@@ -1988,19 +1985,6 @@ msgstr "Log"
 msgid "Log files"
 msgstr "Log files"
 
-msgid "Log in"
-msgstr ""
-
-msgid "Log in as another &character"
-msgstr ""
-
-msgid "Log in as another character"
-msgstr ""
-
-msgid ""
-"Log in to a character first so Uncle Farmer can learn its saved account."
-msgstr ""
-
 msgid "Log in to a character in the game first."
 msgstr "Pehle game mein character se login karein."
 
@@ -2012,14 +1996,8 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Pehle game mein character se login karein."
 
-msgid "Log out of this game window before logging in as another character."
-msgstr ""
-
 msgid "Logging"
 msgstr "Logging"
-
-msgid "Logging in as {name}"
-msgstr ""
 
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer shuru hone par naya &version dekhein"
@@ -2990,9 +2968,6 @@ msgstr "Pehle game chunein."
 msgid "Select a plan first."
 msgstr "Pehle plan chunein."
 
-msgid "Selecting {name}"
-msgstr ""
-
 msgid "Sell and store by these lists, then come back"
 msgstr "In lists ke mutabiq bechein aur store karein, phir wapas aayein"
 
@@ -3368,10 +3343,6 @@ msgid "Tell them now and then that I'm a&way"
 msgstr "Unhein waqt be waqt batayein ke main &ghair hazir hoon"
 
 msgid ""
-"That character needs to be identified from the game before it can be used for automatic login."
-msgstr ""
-
-msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
 msgstr ""
 "Yeh game ke 200 huroof se lamba hai: yeh {n} hisson mein jayega, har 2 second mein ek (Global par 3), jitni jaldi game ijazat de."
@@ -3450,6 +3421,9 @@ msgstr "Bot har koshish par Forger se asal wala parhta hai."
 
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
+
+msgid "The character already in the game"
+msgstr ""
 
 msgid "The collection"
 msgstr "Collection"
@@ -3853,10 +3827,6 @@ msgid ""
 msgstr ""
 "Uncle Farmer mansooba exports aur mansoobay (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 
-msgid ""
-"Uncle Farmer uses the game's existing saved sign-in, waits for this character in the server's character list, then selects it. No password is shown or saved."
-msgstr ""
-
 msgid "Uncle Farmer {v}"
 msgstr "Uncle Farmer {v}"
 
@@ -4028,9 +3998,6 @@ msgstr ""
 msgid "Wa&lk to a dungeon or map"
 msgstr "Dungeon ya map tak &chalain"
 
-msgid "Waiting for {name} in the character list"
-msgstr ""
-
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Khuli zameen par &tirchha chalein (dono direction keys ek saath)"
 
@@ -4084,9 +4051,6 @@ msgstr ""
 
 msgid "West edge (x):"
 msgstr "Maghribi kinara (x):"
-
-msgid "What happens:"
-msgstr ""
 
 msgid "What is on the hotkey (else the strongest in the bag)"
 msgstr "Jo hotkey par hai (warna basta mein sab se taqatwar)"
@@ -4335,6 +4299,12 @@ msgstr ""
 
 msgid "attacks {how}"
 msgstr "hamla {how}"
+
+msgid "automatic login could not start"
+msgstr ""
+
+msgid "automatic login stopped"
+msgstr ""
 
 msgid "avoiding elites"
 msgstr "elites se bachte hue"
@@ -5850,6 +5820,9 @@ msgstr "secret room: {who}"
 msgid "selecting"
 msgstr "select kar rahe hain"
 
+msgid "selecting {name}"
+msgstr ""
+
 msgid "selling shards"
 msgstr "shards bech rahe hain"
 
@@ -6328,6 +6301,9 @@ msgid ""
 msgstr ""
 "game ki memory khatam ho gayi aur woh ruk gaya ({where}) - Mist World restart karein"
 
+msgid "the game refused the login request"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
 
@@ -6426,6 +6402,9 @@ msgstr "pet"
 
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr "pet ki amiability {n} hai lekin baste mein {item} nahi"
+
+msgid "the plan's character has no saved account. Log in to it once first."
+msgstr ""
 
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
@@ -6676,6 +6655,9 @@ msgstr "voice message"
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "{name} ka voice message - Chat (Ctrl+T) mein sunein"
+
+msgid "waiting for {name} in the character list"
+msgstr ""
 
 msgid "walk to the enemy"
 msgstr "dushman tak chalo"

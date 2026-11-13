@@ -86,6 +86,9 @@ msgstr ""
 msgid "&Character"
 msgstr ""
 
+msgid "&Character to sign in:"
+msgstr ""
+
 msgid "&Character:"
 msgstr ""
 
@@ -798,9 +801,6 @@ msgstr ""
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 
-msgid "Automatic login"
-msgstr ""
-
 msgid "Automatic, by class"
 msgstr ""
 
@@ -1080,9 +1080,6 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
-msgstr ""
-
-msgid "Couldn't log in automatically: {err}"
 msgstr ""
 
 msgid "Couldn't open it: {err}"
@@ -1941,19 +1938,6 @@ msgstr ""
 msgid "Log files"
 msgstr ""
 
-msgid "Log in"
-msgstr ""
-
-msgid "Log in as another &character"
-msgstr ""
-
-msgid "Log in as another character"
-msgstr ""
-
-msgid ""
-"Log in to a character first so Uncle Farmer can learn its saved account."
-msgstr ""
-
 msgid "Log in to a character in the game first."
 msgstr ""
 
@@ -1964,13 +1948,7 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr ""
 
-msgid "Log out of this game window before logging in as another character."
-msgstr ""
-
 msgid "Logging"
-msgstr ""
-
-msgid "Logging in as {name}"
 msgstr ""
 
 msgid "Look for a new &version when Uncle Farmer starts"
@@ -2904,9 +2882,6 @@ msgstr ""
 msgid "Select a plan first."
 msgstr ""
 
-msgid "Selecting {name}"
-msgstr ""
-
 msgid "Sell and store by these lists, then come back"
 msgstr ""
 
@@ -3268,10 +3243,6 @@ msgid "Tell them now and then that I'm a&way"
 msgstr ""
 
 msgid ""
-"That character needs to be identified from the game before it can be used for automatic login."
-msgstr ""
-
-msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
 msgstr ""
 
@@ -3343,6 +3314,9 @@ msgid "The bot reads the real one from the Forger every try."
 msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
+msgstr ""
+
+msgid "The character already in the game"
 msgstr ""
 
 msgid "The collection"
@@ -3707,10 +3681,6 @@ msgid ""
 "Uncle Farmer plan exports and plans (*.unclefarmer-plan.json;*.json)|*.unclefarmer-plan.json;*.json|"
 msgstr ""
 
-msgid ""
-"Uncle Farmer uses the game's existing saved sign-in, waits for this character in the server's character list, then selects it. No password is shown or saved."
-msgstr ""
-
 msgid "Uncle Farmer {v}"
 msgstr ""
 
@@ -3861,9 +3831,6 @@ msgstr ""
 msgid "Wa&lk to a dungeon or map"
 msgstr ""
 
-msgid "Waiting for {name} in the character list"
-msgstr ""
-
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 
@@ -3913,9 +3880,6 @@ msgid ""
 msgstr ""
 
 msgid "West edge (x):"
-msgstr ""
-
-msgid "What happens:"
 msgstr ""
 
 msgid "What is on the hotkey (else the strongest in the bag)"
@@ -4153,6 +4117,12 @@ msgid ""
 msgstr ""
 
 msgid "attacks {how}"
+msgstr ""
+
+msgid "automatic login could not start"
+msgstr ""
+
+msgid "automatic login stopped"
 msgstr ""
 
 msgid "avoiding elites"
@@ -5591,6 +5561,9 @@ msgstr ""
 msgid "selecting"
 msgstr ""
 
+msgid "selecting {name}"
+msgstr ""
+
 msgid "selling shards"
 msgstr ""
 
@@ -6040,6 +6013,9 @@ msgid ""
 "the game ran out of memory and stopped working ({where}) - restart Mist World"
 msgstr ""
 
+msgid "the game refused the login request"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr ""
 
@@ -6132,6 +6108,9 @@ msgid "the pet"
 msgstr ""
 
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
+msgstr ""
+
+msgid "the plan's character has no saved account. Log in to it once first."
 msgstr ""
 
 msgid "the ride from {map} never arrived"
@@ -6369,6 +6348,9 @@ msgid "voice message"
 msgstr ""
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
+msgstr ""
+
+msgid "waiting for {name} in the character list"
 msgstr ""
 
 msgid "walk to the enemy"

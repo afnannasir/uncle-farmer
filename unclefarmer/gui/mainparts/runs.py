@@ -172,6 +172,8 @@ class RunsMixin(FrameParts):
         problem = check_script(text)
         if problem:
             return fail(problem)
+        plan = plans.load(item[1]) if item[0] == "plan" else {}
+        target = plan.get("character") if isinstance(plan.get("character"), str) else ""
         self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
         if name:
@@ -182,7 +184,7 @@ class RunsMixin(FrameParts):
         run.last_seen = self.last_seen
         run.kind = item[0]
         run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
-        run.profile = name
+        run.profile = target or name
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
