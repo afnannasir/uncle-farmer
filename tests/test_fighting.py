@@ -767,6 +767,34 @@ def test_targets_honour_the_skip_maps(clock: Clock) -> None:
     assert ids(b.targets(b.snap())) == []
 
 
+def test_a_monster_that_is_attacking_us_is_never_left_out_by_a_skip(clock: Clock) -> None:
+    """A write-off from an earlier fight must not make the bot stand next to a monster that is
+    hitting it: the skip (and its kind's) goes the moment it attacks."""
+    b = target_bot([monster(-1, x=105.0)])
+    b._attackers = {-1}
+    b.skip = {-1: clock.now + 100}
+    b.skip_names[(5121, "wolf")] = clock.now + 100
+    b.unselectable = {-1: (1, (105.0, 100.0), clock.now + 60)}
+    assert ids(b.targets(b.snap())) == [-1]
+    assert b.skip == {} and b.skip_names == {}
+    assert b.unselectable == {-1: (1, (105.0, 100.0), clock.now + 60)}   # still tried, not forgotten
+
+
+def test_an_attacker_we_got_stuck_walking_to_keeps_its_skip(clock: Clock) -> None:
+    """One shooting at us from where we can't walk: dropping its skip would pick it again at once
+    and get stuck again at once, over and over. Once its stuck wait is over it is a target again."""
+    b = target_bot([monster(-1, x=105.0)])
+    b._attackers = {-1}
+    b._walk_failed(-1)
+    assert ids(b.targets(b.snap())) == []
+    assert -1 in b.skip
+    clock.advance(121)
+    assert ids(b.targets(b.snap())) == [-1]
+    b._walk_failed(-1)
+    b._forget_the_dead([-1])                   # its id is free for the next monster
+    assert ids(b.targets(b.snap())) == [-1]
+
+
 def test_targets_honour_only_and_skip_name_filters(clock: Clock) -> None:
     b = target_bot([monster(-1, name="Wolf"), monster(-2, name="Bear")])
     assert ids(b.targets(b.snap(), only="wolf")) == [-1]
@@ -1635,6 +1663,30 @@ def test_hit_until_down_lets_the_farm_loop_walk_up_a_target_out_of_reach(clock: 
     b._hit_until_down(mob)
     assert -1 not in b.skip                  # not written off: the farm loop walks up again
     assert not any("lost our target" in line for line in b.lines)
+
+
+def test_a_target_that_steps_past_our_reach_goes_back_to_the_farm_loop(clock: Clock) -> None:
+    """A Hunter fights from 19.5 of its 20-yard skill. When the monster steps past 20 the fight
+    used to keep pressing at it (up to rng + 3) until the no-damage timeout wrote it off; it must
+    end at once instead, so the farm loop walks up and starts again."""
+    b = until_bot(profile(attack_range=10.0, no_damage_timeout=999, no_damage_casts=999,
+                          fight_timeout=30.0))
+    b.skillbook = as_kind(SkillBook, Pick(want_follow=False, pick=None))
+    mob = monster(-1, x=109.0)                 # in reach on the fight's first look
+    looks = {"n": 0}
+
+    def snap() -> dict[str, Any]:
+        clock.advance(0.5)
+        looks["n"] += 1
+        if looks["n"] >= 2:
+            mob["x"] = 112.5                   # 12.5: past reach, inside the old rng + 3 window
+        return {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
+    b.snap = snap
+    began = clock.now
+    b._hit_until_down(mob)
+    assert -1 not in b.skip                    # not written off: the farm loop walks up
+    assert clock.now - began < 6.0             # and it did not stand there the whole fight timeout
+    assert getattr(b, "follow_stalls", 0) == 0   # no follow attack here to blame
 
 
 def test_hit_until_down_presses_the_follow_key_while_walking_in(clock: Clock) -> None:

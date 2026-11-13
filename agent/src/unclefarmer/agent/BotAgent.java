@@ -26,6 +26,7 @@ public final class BotAgent {
             Health.install();
             SpeechSwitch.install(inst);
             VoicePlayer.install(inst);
+            SoundControl.install(inst);
             PrivateChat.init(inst);
         } catch (Throwable ignored) { }
         try {
@@ -37,6 +38,7 @@ public final class BotAgent {
             Agent.start(new ChannelHunter(inst));
             Keys.start();
             StateServer.start();
+            SoundControl.start();
             Titles.start();
         } catch (Throwable t) {
             // The game must start even if the agent is broken.

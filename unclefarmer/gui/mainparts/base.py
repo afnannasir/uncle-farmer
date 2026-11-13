@@ -21,6 +21,7 @@ from ...clock import CLOCK, Clock
 from ...i18n import _
 
 if TYPE_CHECKING:
+    from ...soundrestore import SoundRestore
     from ... import chat, messages, updater
     from ...engine.botparts.parts import Sighting, Where
     from ...engine.runner import Run
@@ -81,6 +82,7 @@ def duration_text(seconds: float) -> str:
 
 
 class FrameParts(wx.Frame):
+    sound_restorer: SoundRestore
     clock: Clock = CLOCK
     # ---------------------------------------------------------------- state
     s: dict[str, Any]                       # the app settings (settings.load_app)

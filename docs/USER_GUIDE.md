@@ -703,6 +703,29 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 ## Tools
 
+### Sound Silencer
+
+Select a game and choose **Tools, Sound Silencer** from its context menu. The dialog directly shows
+the numeric Sound ID input, Add button, Sounds and Muted Sounds lists, and Save button.
+It uses the existing audio hook; no duplicate hook or live-listening subscription is installed.
+The game can remain open while the dialog is open.
+
+Add one available numeric ID at a time
+(1–99999), then use right-click or Shift+F10 to **Move to Mute List**, **Move to Sounds List**,
+**Rename**, or **Remove**. Named entries appear as `Background Music (1234)`; unnamed entries show
+only their numeric ID. Optional names may be cleared; IDs and mute flags are preserved.
+Duplicate IDs are rejected. All edits remain a draft until **Save**. Closing discards changes
+since the last Save. Save stores both lists and names in settings.json and then applies the
+saved mute rules, then closes after successful application, like the other tools. If saving or
+application fails, the dialog stays open with its error and editable draft. If the game disconnects,
+the choices are still saved and the dialog clearly
+reports that live muting could not be confirmed. Disk-save failure leaves live audio unchanged.
+
+Saved rules are app-wide and restore automatically when the app starts or a new game connects.
+Scripts may change live muting afterward. Corrupt configuration is logged and does not silently
+clear live mute rules. Existing audio lines use supported MUTE controls and subsequent signed-PCM
+writes become silence; already-buffered audio without hardware MUTE may finish first.
+
 Uncle Farmer includes several tools for tasks outside regular farming. You can run them manually from the **Tools** menu or use them in scripts.
 
 Some tools can use craftsmen from your own gang, another gang, or the nearest city. Gang craftsmen are found in the **Outer Hall** of the gang's base, and their services cost less.
@@ -2009,3 +2032,27 @@ It uses Roman Urdu, meaning Urdu written with Latin letters rather than the Urdu
 
 Uncle Farmer also keeps wx in English left-to-right mode, so its interface does not switch to a right-to-left layout.
 
+
+### Reacting to sounds in scripts
+
+`sound_watch <ids>` changes the game's global watch filter. `sound_mute <ids>` changes its mute
+filter. Both persist until changed or the game exits. `sound_wait <ids> timeout=30` waits for a
+new matching request and keeps Stop/Pause responsive. It uses a temporary connection subscription,
+so it does not replace other sound listeners. A timeout sets `sound_received`
+to false. Missing positions set `sound_positioned` to false.
+
+```text
+sound_wait 1000-1010 timeout=30
+if sound_received
+    say Sound {sound_id} requested
+    if sound_positioned
+        say Position {sound_x}, {sound_y}
+    end
+end
+```
+
+Use IDs observed in your game; the IDs above are an example. `sound_muted` describes muting at
+request time. These commands observe requests, not proof that audio reached the speakers.
+For sounds already playing, supported MUTE controls are changed immediately. The PCM hook also
+silences subsequent signed-PCM writes without changing the game's sample buffer. Audio already
+buffered in a device without a MUTE control may finish before silence begins.

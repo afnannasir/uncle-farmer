@@ -308,6 +308,9 @@ msgstr ""
 msgid "&Mute this game"
 msgstr ""
 
+msgid "&Muted Sounds:"
+msgstr ""
+
 msgid "&Names or ids (separated by commas):"
 msgstr ""
 
@@ -451,6 +454,9 @@ msgid ""
 msgstr ""
 
 msgid "&Show the time after each message"
+msgstr ""
+
+msgid "&Sounds:"
 msgstr ""
 
 msgid "&Speak"
@@ -638,6 +644,9 @@ msgstr ""
 msgid "A script called {name} exists. Replace it?"
 msgstr ""
 
+msgid "A sound's mute setting must be on or off."
+msgstr ""
+
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr ""
 
@@ -699,6 +708,12 @@ msgid "Add at least one farming spot."
 msgstr ""
 
 msgid "Add our &own gang"
+msgstr ""
+
+msgid "Add selected to Saved Sounds"
+msgstr ""
+
+msgid "Added to the draft. Choose Save to apply."
 msgstr ""
 
 msgid ""
@@ -801,6 +816,9 @@ msgstr ""
 msgid "Automatic, by class"
 msgstr ""
 
+msgid "Available sound IDs could not be read. Adding sounds is unavailable."
+msgstr ""
+
 msgid "Back where the run started"
 msgstr ""
 
@@ -884,6 +902,9 @@ msgid "Change key"
 msgstr ""
 
 msgid "Change target mode"
+msgstr ""
+
+msgid "Changes are a draft until Save."
 msgstr ""
 
 msgid "Channels"
@@ -989,6 +1010,9 @@ msgstr ""
 msgid "Close the game"
 msgstr ""
 
+msgid "Close without saving"
+msgstr ""
+
 msgid "Closing every Mist World window for the update"
 msgstr ""
 
@@ -1031,6 +1055,12 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
+msgid "Connected"
+msgstr ""
+
+msgid "Connecting..."
+msgstr ""
+
 msgid "Contact the &developer"
 msgstr ""
 
@@ -1053,6 +1083,16 @@ msgid "Copy &selection"
 msgstr ""
 
 msgid "Corpses"
+msgstr ""
+
+msgid "Could not read known sound IDs: {error}"
+msgstr ""
+
+msgid "Could not read the saved sound list: {error}"
+msgstr ""
+
+msgid ""
+"Could not release sound listening; it is released when the connection closes."
 msgstr ""
 
 msgid "Couldn't apply the settings: {err}"
@@ -1255,6 +1295,9 @@ msgstr ""
 msgid "E&xport plan"
 msgstr ""
 
+msgid "Each sound needs an ID, a name, and a mute setting."
+msgstr ""
+
 msgid "Earnings so far: {n} arnebia (picked up and sold)"
 msgstr ""
 
@@ -1301,6 +1344,12 @@ msgid "Enhance Crystals"
 msgstr ""
 
 msgid "Enter a name for the plan."
+msgstr ""
+
+msgid "Enter a sound ID between 1 and 99999."
+msgstr ""
+
+msgid "Enter sound IDs, ranges, all, or off."
 msgstr ""
 
 msgid "Enter the daily stop time as HH:MM, for example 04:50."
@@ -1686,6 +1735,9 @@ msgstr ""
 msgid "Home."
 msgstr ""
 
+msgid "Hook unavailable: {reason}"
+msgstr ""
+
 msgid "How it works:"
 msgstr ""
 
@@ -1755,6 +1807,9 @@ msgid ""
 "I'm on {map} at {x}, {y} but can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
 
+msgid "ID {id}, X {x}, Y {y}: {state}"
+msgstr ""
+
 msgid "Ice prince"
 msgstr ""
 
@@ -1815,6 +1870,9 @@ msgid ""
 msgstr ""
 
 msgid "International"
+msgstr ""
+
+msgid "Invalid sound reply from the game agent."
 msgstr ""
 
 msgid "It also stops by itself:"
@@ -1930,6 +1988,13 @@ msgid "Limit the &price at the market"
 msgstr ""
 
 msgid "Limits"
+msgstr ""
+
+msgid ""
+"Listen for game sound requests, select an ID, then add it to Saved Sounds. This tab does not change muting. Save changes on the Saved Sounds tab."
+msgstr ""
+
+msgid "Listen for sounds"
 msgstr ""
 
 msgid "Location:"
@@ -2107,6 +2172,12 @@ msgid "Move &up"
 msgstr ""
 
 msgid "Move do&wn"
+msgstr ""
+
+msgid "Move to Mute List"
+msgstr ""
+
+msgid "Move to Sounds List"
 msgstr ""
 
 msgid "Move to kee&p"
@@ -2650,6 +2721,9 @@ msgstr ""
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr ""
 
+msgid "Reading available sound IDs..."
+msgstr ""
+
 msgid "Reading channels out"
 msgstr ""
 
@@ -2657,6 +2731,9 @@ msgid "Reading the game"
 msgstr ""
 
 msgid "Ready"
+msgstr ""
+
+msgid "Recent sound &requests (latest 200):"
 msgstr ""
 
 msgid "Record &voice"
@@ -2678,11 +2755,17 @@ msgstr ""
 msgid "Release &channel:"
 msgstr ""
 
+msgid "Remove"
+msgstr ""
+
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
 msgstr ""
 
 msgid "Rename"
+msgstr ""
+
+msgid "Rename sound"
 msgstr ""
 
 msgid "Repair &gear with toolboxes from the bag"
@@ -2823,6 +2906,9 @@ msgid "Saved account email:"
 msgstr ""
 
 msgid "Saved. It's in the Plans tab as a script."
+msgstr ""
+
+msgid "Saving and applying sound settings..."
 msgstr ""
 
 msgid "Scan complete."
@@ -3046,6 +3132,60 @@ msgstr ""
 msgid "Sold:"
 msgstr ""
 
+msgid "Some sound requests were missed because the event buffer filled."
+msgstr ""
+
+msgid "Sound &ID:"
+msgstr ""
+
+msgid "Sound ID {id} is already in the list."
+msgstr ""
+
+msgid "Sound IDs must be between 1 and 99999; ranges must go upwards."
+msgstr ""
+
+msgid "Sound IDs must be whole numbers between 1 and 99999."
+msgstr ""
+
+msgid "Sound Silencer"
+msgstr ""
+
+msgid "Sound Silencer - {name}"
+msgstr ""
+
+msgid "Sound controls are unavailable."
+msgstr ""
+
+msgid ""
+"Sound controls require an updated game agent. Install it and restart the game."
+msgstr ""
+
+msgid "Sound controls: {error}"
+msgstr ""
+
+msgid ""
+"Sound events were lost because the observer buffer filled. Start the wait again."
+msgstr ""
+
+msgid "Sound name:"
+msgstr ""
+
+msgid "Sound names must be at most 100 characters without control characters."
+msgstr ""
+
+msgid "Sound observer is unavailable: {reason}"
+msgstr ""
+
+msgid "Sound settings saved and mute rules applied."
+msgstr ""
+
+msgid ""
+"Sound settings were saved, but active muting could not be confirmed: {error}"
+msgstr ""
+
+msgid "Sound wait timeout cannot be negative."
+msgstr ""
+
 msgid "South edge (y):"
 msgstr ""
 
@@ -3255,6 +3395,12 @@ msgstr ""
 msgid "That schedule is gone"
 msgstr ""
 
+msgid "That sound ID is already in the lists."
+msgstr ""
+
+msgid "That sound ID is not in this game's available sound files."
+msgstr ""
+
 msgid "That takes about {k} more {shard}{cost}, plus the craftsman's fees."
 msgstr ""
 
@@ -3416,6 +3562,9 @@ msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
 msgstr ""
 
+msgid "The listener is busy or disconnected. Try again."
+msgstr ""
+
 msgid "The nearest city's"
 msgstr ""
 
@@ -3458,6 +3607,9 @@ msgid "The script was saved, but the old file couldn't be removed: {err}"
 msgstr ""
 
 msgid "The script's login character is not a known saved character: {name}"
+msgstr ""
+
+msgid "The sound list must be a list of sound entries."
 msgstr ""
 
 msgid ""
@@ -3505,6 +3657,9 @@ msgid "Then stay &quiet for (minutes):"
 msgstr ""
 
 msgid "There's no plan to run."
+msgstr ""
+
+msgid "These sound IDs are not available in this game: {ids}"
 msgstr ""
 
 msgid "They come from {source}, a bagful at a time."
@@ -5010,6 +5165,9 @@ msgstr ""
 msgid "mute: the game stops talking (only my game)."
 msgstr ""
 
+msgid "muted request"
+msgstr ""
+
 msgid "never again"
 msgstr ""
 
@@ -5645,6 +5803,12 @@ msgid "sold {n} {item}"
 msgstr ""
 
 msgid "sold {n} {item} at the Shard Market"
+msgstr ""
+
+msgid "sound request"
+msgstr ""
+
+msgid "sound_wait needs at least one sound ID, or all."
 msgstr ""
 
 msgid "stand still"
@@ -6302,6 +6466,9 @@ msgstr ""
 msgid "type your gang's highland number in Tools, Daily chores"
 msgstr ""
 
+msgid "unavailable"
+msgstr ""
+
 msgid "unbalanced quotes"
 msgstr ""
 
@@ -6698,6 +6865,9 @@ msgstr ""
 msgid "{name} (speed +{speed}, level {level})"
 msgstr ""
 
+msgid "{name} ({id})"
+msgstr ""
+
 msgid "{name} ({n} new)"
 msgstr ""
 
@@ -7042,6 +7212,10 @@ msgid "{stage}: done {ok}; didn't finish {bad}"
 msgstr ""
 
 msgid "{state} {what} for {m} min on {map}, HP {hp}%{mp}, {k} kills"
+msgstr ""
+
+msgid ""
+"{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 
 msgid "{tool} - {name}"

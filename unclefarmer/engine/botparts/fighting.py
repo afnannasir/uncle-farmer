@@ -65,6 +65,7 @@ class FightingMixin(Parts):
     _attackers: set[int]
     _pet_attackers: set[int]
     unselectable: dict[int, tuple[int, tuple[float, float], float]]
+    walk_failed: dict[int, float]   # monster id -> until when: its walk got stuck (_walk_failed)
     _attackers_at: float
     last_points_key: float
     mob_names: dict[int, str]
@@ -389,9 +390,11 @@ class FightingMixin(Parts):
         if not died:
             return
         unselectable: dict[int, Any] = getattr(self, "unselectable", {})
+        walk_failed: dict[int, float] = getattr(self, "walk_failed", {})
         for mid in died:
             self.skip.pop(mid, None)
             unselectable.pop(mid, None)
+            walk_failed.pop(mid, None)
 
     def forget_the_map(self) -> None:
         """We are on another map (snap() saw it): everything held against a monster's id goes.
@@ -405,7 +408,7 @@ class FightingMixin(Parts):
         skip_names and killed_kinds stay: they are kept by map."""
         self.count_kills()
         held: dict[int, Any] | set[int] | None
-        for name in ("skip", "mob_names", "counted", "walk_steps", "unselectable", "hp_log",
+        for name in ("skip", "mob_names", "counted", "walk_steps", "unselectable", "walk_failed", "hp_log",
                      "_attackers", "pet_suspects"):
             held = getattr(self, name, None)
             if held:
@@ -578,9 +581,21 @@ class FightingMixin(Parts):
                   boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
         """Why targets() leaves this monster out before any walking distance is worked out (a key
         of LEFT_OUT), or None when it may be a target."""
-        if self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
+        if e["id"] in hitting and getattr(self, "walk_failed", {}).get(e["id"], 0) <= now:
+            # It is hitting us or our pet: what the bot held against it (or its kind) before is
+            # stale. A monster that keeps striking us could be ignored for up to two minutes while
+            # it did (a "took no damage" skip, or an unselectable note from where it stood): the
+            # one thing a fight must never do is stand there and take it. The unselectable note
+            # itself stays, so a monster the game won't take is still given up with its growing
+            # wait; the player's own filters (only/skip names, areas) apply below. A walk to it
+            # that got stuck keeps its skip: one shooting at us from where we can't walk would
+            # be picked again at once (attackers come first), stuck again at once, and the farm
+            # loop would spin on it instead of fighting anything else.
+            self.skip.pop(e["id"], None)
+            self.skip_names.pop((snap_map(snap), e["name"].strip().lower()), None)
+        elif self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
             return "skip"
-        if self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
+        elif self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
             return "kind"       # its kind took no damage and never attacked: a critter, not a monster
         if (only and not re.search(only, e["name"], re.I)) or (skip and re.search(skip, e["name"], re.I)):
             return "names"
@@ -833,7 +848,7 @@ class FightingMixin(Parts):
         finally:
             self.approaching = False
         if walked == "stuck":
-            self.skip[mid] = self.clock.time() + 120
+            self._walk_failed(mid)
             return None
         snap = self.snap()
         if way.left_map(snap):
@@ -854,6 +869,15 @@ class FightingMixin(Parts):
         if walked == "near" and not way.reachable(self.me(), m, way.engage) and not way.opened_early:
             return None           # stopped beside another one: the farm loop picks again
         return m
+
+    def _walk_failed(self, mid: int) -> None:
+        """The walk up to it got stuck: left alone 120 s, even while it attacks us (_left_out)."""
+        until = self.clock.time() + 120
+        self.skip[mid] = until
+        rows: dict[int, float] = self.__dict__.setdefault("walk_failed", {})
+        rows[mid] = until
+        if len(rows) > 500:
+            self.walk_failed = {k: v for k, v in rows.items() if v > self.clock.time()}
 
     def _taken(self, snap: dict[str, Any], mob: dict[str, Any]) -> None:
         """It is gone before our fight began: counted if a hit of ours killed it, else someone else's."""
@@ -883,7 +907,7 @@ class FightingMixin(Parts):
         snap = self.snap()
         m = next((e for e in snap["entities"] if e["id"] == mid), None)
         if walked == "stuck":
-            self.skip[mid] = self.clock.time() + 120
+            self._walk_failed(mid)
             return None, False
         if m is None or m["hp"] <= 0:
             self._taken(snap, mob)
@@ -1110,7 +1134,9 @@ class FightingMixin(Parts):
         is in a straight line within the leash and we are closing in; else the farm loop picks the
         nearest again (a melee fight broke off and restarted this way 238 times in two nights).
         True when the fight ends here."""
-        if f.dist <= f.rng + 3:
+        # The follow attack walks us the last stretch (up to its leash); standing still, a monster
+        # past our own reach is the farm loop's to walk up again, not something to keep pressing at.
+        if f.dist <= f.rng + (3.0 if f.follow else 0.5):
             f.closing = None
             return False
         if f.dist > f.leash or not self.clear_shot(f.snap["self"], f.m, snap_map(f.snap)):
@@ -1120,7 +1146,7 @@ class FightingMixin(Parts):
             return False
         if self.clock.time() - f.closing[0] <= self.FOLLOW_STALL:
             return False
-        if not f.reached:
+        if f.follow and not f.reached:
             # one corner the straight line hides (a ledge, a one-way door) can stop it;
             # only a few in a row say the follow attack doesn't walk us here at all
             self.skip[f.mid] = self.clock.time() + 10
@@ -1129,6 +1155,9 @@ class FightingMixin(Parts):
                 self.follow_ok = False
                 self.log(_("the follow attack doesn't walk us to the monster here - walking "
                            "up to them ourselves"))
+        # Not following, out of every attack's range and not closing in: hand it back to the farm
+        # loop, which walks up and starts the fight again. No skip: standing there pressing at it
+        # (or pressing nothing) only reached the no-damage timeout and wrote the monster off.
         return True
 
     def _fight_press(self, f: "_Fight") -> str | None:
@@ -1176,7 +1205,12 @@ class FightingMixin(Parts):
             # never the profile's keys; with none at all (every skill Never, or cooling down) wait
             # instead of spinning on the agent.
             spare = getattr(sb, "fallback", None)
-            press = spare(self.clock.time()) if spare is not None else None
+
+            def reached(s: dict[str, Any]) -> bool:
+                return sb.reaches(s, f.dist)
+            # At a monster past the skill's own range the server refuses the cast: leave that one
+            # for the farm loop to walk up to, never press at nothing.
+            press = spare(self.clock.time(), reached) if spare is not None else None
             if press:
                 self.key(press[0])
             else:

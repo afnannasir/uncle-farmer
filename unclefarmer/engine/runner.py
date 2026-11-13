@@ -39,7 +39,7 @@ AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without th
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
-AGENT_LOGIN = 66    # from here native saved-account login checks the client's character-entry result and waits for its world
+AGENT_LOGIN = 67    # from here automatic login includes the companion game connection
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
