@@ -91,7 +91,7 @@ class EditScheduleDialog(Dialog):
             raise ValueError(_("Choose a plan or script to run."))
         keys = getattr(self, "character_keys", ())
         selection = self.who.GetSelection()
-        who = keys[selection] if 0 <= selection < len(keys) else self.who.GetValue().strip()
+        who = keys[selection] if 0 <= selection < len(keys) else self.who.GetStringSelection().strip()
         if not who:
             raise ValueError(_("Choose a character."))
         repeat = schedule.REPEATS[self.repeat.GetSelection()]

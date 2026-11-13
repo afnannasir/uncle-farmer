@@ -581,7 +581,7 @@ def remember_character_account(character: str, email: str) -> bool:
 
 def automatic_login_profiles() -> list[tuple[str, str]]:
     """Identified profiles with a saved account learned from a live connected character."""
-    choices = []
+    choices: list[tuple[str, str]] = []
     for character in profiles():
         email = load_profile(character).get("login_email")
         if is_character_profile(character) and isinstance(email, str) and email:

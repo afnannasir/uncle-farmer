@@ -128,10 +128,11 @@ class GamesMixin(FrameParts):
                 s = a.json("mem")
                 if jsonio.is_object(s) and s.get("ok"):
                     s["_server"] = server_name(a)
+                    account: object = {}
                     try:
                         account = jsonio.loads(a.send("loginaccount"))
                     except ValueError:
-                        account = {}
+                        pass
                     if jsonio.is_object(account) and account.get("ok") and isinstance(account.get("email"), str):
                         s["_account"] = account["email"]
                     return s

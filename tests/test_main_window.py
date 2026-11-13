@@ -12,7 +12,7 @@ import threading
 import types
 from types import SimpleNamespace
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 import pytest
 
@@ -551,7 +551,7 @@ def test_an_empty_game_folder_setting_is_filled_in_from_the_installed_agent(monk
 def test_automatic_login_opens_only_one_client_then_uses_it(monkeypatch: pytest.MonkeyPatch) -> None:
     """A schedule tick cannot make a new window every time the game is still loading."""
     opened: list[None] = []
-    frame = types.SimpleNamespace(games=[], runs={}, pending_logins={})
+    frame = cast(Any, types.SimpleNamespace(games=[], runs={}, pending_logins={}))
     frame.refresh_games = lambda: None
     frame.open_client_for_login = lambda: opened.append(None) or None
     monkeypatch.setattr(runs_part.time, "monotonic", lambda: 10.0)
@@ -570,7 +570,8 @@ def test_a_stale_agent_record_does_not_make_the_game_refresh_loop(monkeypatch: p
     """An old port file with a reused PID must not prevent the main window from appearing."""
     reads: list[None] = []
     monkeypatch.setattr(games_part, "games", lambda: reads.append(None) or [])
-    monkeypatch.setattr(games_part, "agents", lambda: [(9000, 42, "old")])
+    agent_rows: list[tuple[int, int, str]] = [(9000, 42, "old")]
+    monkeypatch.setattr(games_part, "agents", lambda: agent_rows)
     window = Win()
 
     window.refresh_games()
