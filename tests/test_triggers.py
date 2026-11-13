@@ -91,7 +91,7 @@ def test_every_job_has_two_independent_settings_off_by_default() -> None:
     for job in ORDER:
         for stage in triggers.STAGES:
             assert p[triggers.setting(job, stage)] is False
-    assert len(triggers.SETTINGS) == 12 and len(set(triggers.SETTINGS)) == 12
+    assert len(triggers.SETTINGS) == 2 * len(triggers.JOBS) == len(set(triggers.SETTINGS))
     assert "sell_shards_after_farming" in triggers.SETTINGS        # the old names kept: nothing to move
 
 
