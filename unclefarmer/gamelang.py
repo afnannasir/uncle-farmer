@@ -54,6 +54,7 @@ _CJK = re.compile("[㐀-鿿]")
 # What the client writes after an item's name in a list it builds itself (the storehouse's "deposit
 # item": "78 Memory Butterfly (restricted) "), as the english folder shows them.
 MARKS = ("(restricted)", "(locked)", "(bound)")
+_COUNT = re.compile(r"^(\d+) (\S.*)$", re.S)        # "16 <name>": a count the client put before a name
 
 
 def _shown(key: str, eng: dict[str, str]) -> str:
@@ -240,6 +241,21 @@ class Table:
                 return self.word(head.rstrip()) + " " + eng
         return None
 
+    def _counted(self, s: str) -> str | None:
+        """A name with a count before it ("16 Seviye 1 Üzüm Taşı Parçası"), turned back as the
+        count and the name apart; None when s isn't one, or its name is one the table doesn't
+        know. The storehouse's "deposit item" list is written so by the client, and only some
+        packs have a line of their own for a counted name (Spanish: "$1 Fragmento de aguamarina
+        de nivel $2"). Turkish has none: live 2026-11-13 the list's "16 Seviye 1 Üzüm Taşı
+        Parçası (sınırlı) " stayed Turkish, and depositing the shard said "the menu has no entry
+        like ...". Only when no template of the pack fits the whole text: tried first, it took
+        "3 часов 7 минут 12 секунд" apart at the 3 and broke 239 phrases that came back right."""
+        m = _COUNT.match(s)
+        if m is None:
+            return None
+        name = self.word(m.group(2))
+        return None if name == m.group(2) else m.group(1) + " " + name
+
     def _work(self, s: str) -> str:
         marked = self._marked(s)
         if marked is not None:
@@ -248,6 +264,9 @@ class Table:
             m = rx.match(s)
             if m:
                 return self._fill(eng, m)
+        counted = self._counted(s)
+        if counted is not None:
+            return counted
         # a name joined from parts: the longest known first part, then the rest
         cuts = [i for i in range(len(s) - 1, 0, -1) if s[i] == " "]
         for i in cuts:
