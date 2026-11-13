@@ -196,3 +196,31 @@ def test_a_pack_that_leaves_the_marks_as_they_are_still_has_them_split_off(tmp_p
     t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
     assert t.word("78 Mariposa de memoria(限制)") == "78 Memory Butterfly (restricted)"
 
+
+def test_the_template_with_the_most_words_of_its_own_wins(tmp_path: Path) -> None:
+    # Turkish, 2026-11-12: basic.txt's "Level {d}" is read before the shards' own lines, and its
+    # "Seviye $1" took "Seviye 1 Akuamarin Parçası" whole - the bag's shard came back "Level 1
+    # Akuamarin Parçası", so no bag rule knew it and the Shard Market "didn't list" it. A player
+    # could sell only the Equipment Enhance Crystal Shard, the one shard with no level in its name.
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "basic.txt"), [("Level {d}", "Seviye $1")])
+    write(str(lang / "xx" / "more" / "item.txt"), [
+        ("Level {d} Aquamarine Shard", "Seviye $1 Akuamarin Parçası"),
+        ("Level {d} Ruby Shard", "Seviye $1 Yakut Parçası"),
+        ("Equipment Enhance Crystal Shard", "Ekipman Geliştirme Kristal Parçası"),
+    ])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Seviye 1 Akuamarin Parçası") == "Level 1 Aquamarine Shard"
+    assert t.word("Seviye 3 Yakut Parçası") == "Level 3 Ruby Shard"
+    assert t.word("Ekipman Geliştirme Kristal Parçası") == "Equipment Enhance Crystal Shard"
+    assert t.word("Seviye 12") == "Level 12"                  # the short one still does its own job
+
+
+def test_templates_with_as_many_words_keep_the_order_they_were_read_in(tmp_path: Path) -> None:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "more" / "a.txt"), [("First {d} one", "Abc $1 xyz"), ("Other {d} one", "Abc $1 xyz")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Abc 4 xyz") == "First 4 one"
+
