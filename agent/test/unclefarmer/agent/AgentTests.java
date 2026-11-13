@@ -60,6 +60,7 @@ public final class AgentTests {
         theVoiceFixCanBeSwitchedOff();
         theVoicePlayerRateFixMatchesTheGamesCode();
         theSpeechSwitchStillSilences();
+        SoundTests.run();
 
         System.out.println("agent tests: " + (run - failed) + " of " + run + " passed");
         if (failed > 0) System.exit(1);

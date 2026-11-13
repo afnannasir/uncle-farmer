@@ -67,7 +67,7 @@ for _name in ("open_tool", "sell_collection_now", "sell_shards_now", "clean_bag_
               "restock_now", "update_shard_prices_now", "edit_profile", "edit_bag", "scan_now",
               "edit_other_profile", "export_character_settings", "import_character_settings", "start", "stop",
               "toggle_pause", "stop_all", "walk", "open_schedules", "show_results", "speak_results",
-              "go_tab", "open_chat"):
+              "go_tab", "open_chat", "open_silencer"):
     setattr(MenuFrame, _name, command_spy(_name))
 
 
@@ -86,7 +86,10 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     bar = frame.GetMenuBar()
     assert [bar.GetMenuLabelText(index) for index in range(bar.GetMenuCount())] == [
         "File", "View", "Game", "Messages", "Plans", "Help"]
-    assert frame.action_menus["tools"].GetMenuItemCount() == 11
+    assert frame.action_menus["tools"].GetMenuItemCount() == 12
+    tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
+    assert tool_labels.count("Sound Silencer") == 1
+    assert "Sound controls" not in tool_labels
     assert frame.action_menus["character"].GetMenuItemCount() == 6
     assert frame.action_menus["run"].GetMenuItemCount() == 8
     for group in ("tools", "character", "run"):
@@ -102,7 +105,8 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     ("tools_dungeon", "open_tool", ("dungeon",)), ("tools_collection", "sell_collection_now", ()),
     ("tools_shards", "sell_shards_now", ()), ("tools_clean", "clean_bag_now", ()),
     ("tools_store", "store_items_now", ()), ("tools_restock", "restock_now", ()),
-    ("tools_prices", "update_shard_prices_now", ()), ("character_settings", "edit_profile", ()),
+    ("tools_prices", "update_shard_prices_now", ()), ("tools_silencer", "open_silencer", ()),
+    ("character_settings", "edit_profile", ()),
     ("character_bag", "edit_bag", ()), ("character_scan", "scan_now", ()),
     ("character_other", "edit_other_profile", ()), ("character_export", "export_character_settings", ()),
     ("character_import", "import_character_settings", ()), ("run_start", "start", ()),
@@ -169,4 +173,18 @@ def test_popup_reopens_without_duplicating_or_destroying_its_submenus(
         frame.game_context_menu(event)
     assert shown == [frame.context_menu] * 3
     assert frame.context_menu.GetMenuItemCount() == 3
-    assert frame.action_menus["tools"].GetMenuItemCount() == 11
+    assert frame.action_menus["tools"].GetMenuItemCount() == 12
+    tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
+    assert tool_labels.count("Sound Silencer") == 1
+    assert "Sound controls" not in tool_labels
+
+
+def test_sound_controls_available_during_farming_but_require_selected_game(frame: Any) -> None:
+    frame.runs[1] = object()
+    frame.sync_action_menus()
+    assert frame.action_items["tools_silencer"].IsEnabled()
+    frame.GetEventHandler().ProcessEvent(wx.CommandEvent(wx.EVT_MENU.typeId, frame.action_items["tools_silencer"].GetId()))
+    assert frame.calls == [("open_silencer", (), {})]
+    frame.game_list.SetItemState(0, 0, wx.LIST_STATE_SELECTED)
+    frame.sync_action_menus()
+    assert not frame.action_items["tools_silencer"].IsEnabled()

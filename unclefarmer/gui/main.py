@@ -25,6 +25,8 @@ from .mainparts.runs import RunsMixin
 from .mainparts.scheduling import SchedulingMixin
 from .mainparts.talk import TalkMixin
 from .mainparts.updates import UpdatesMixin
+from .silencer import SilencerDialog
+from ..soundrestore import SoundRestore
 
 HOTKEY_ID = 0xBF01
 RESULTS_HOTKEY_ID = 0xBF02
@@ -49,7 +51,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "character_export": True, "character_import": True,
         "tools_gem": available and not running, "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
-        "tools_dungeon": available and not running,
+        "tools_dungeon": available and not running, "tools_silencer": available,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
                                                      "tools_store", "tools_restock", "tools_prices")},
         "plans_new": True, "plans_new_script": True,
@@ -72,6 +74,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.messengers = {}     # pid -> messages.Messenger, private messages of that game
         self.chats = {}          # pid -> chat.Feed, that game's chat (memory only, never saved)
         self.chat_windows = {}   # pid -> its open Chat window
+        self.silencer_windows: dict[int, SilencerDialog] = {}
+        self.sound_restorer = SoundRestore()
         self.games = []          # [(pid, character, map name)]
         self.items = []          # [("plan"|"script", name)]
         self.log_lines = []      # [(text, important)]
@@ -258,9 +262,11 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
                            command(_("S&tore items now"), lambda e: self.store_items_now()),
                            command(_("Restock &now"), lambda e: self.restock_now()),
-                           command(_("Update shard &prices"), lambda e: self.update_shard_prices_now())],
+                           command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
+                           command(_("Sound Silencer"), lambda e: self.open_silencer())],
                           ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon",
-                           "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices"),
+                           "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
+                           "tools_silencer"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
                                              command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
@@ -408,6 +414,24 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         with ContactDialog(self) as d:
             d.ShowModal()
 
+    def open_silencer(self) -> None:
+        pid = self.selected_pid()
+        if pid is None:
+            return
+        window = self.silencer_windows.get(pid)
+        if window is None:
+            name = self.character(pid)
+            def closed() -> None:
+                self.silencer_windows.pop(pid, None)
+            window = SilencerDialog(self, pid, settings.profile_display(name) if name else None, closed)
+            self.silencer_windows[pid] = window
+        try:
+            window.ShowModal()
+        finally:
+            if window:
+                window.finish()
+                window.Destroy()
+
     def go_tab(self, i: int) -> None:
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
@@ -439,6 +463,12 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             for f in self.chats.values():
                 f.stop()
         self.destroyed = True         # pending CallLater/CallAfter work must not touch the window
+        with down.step("stop the sound readers", must=False):
+            restorer = getattr(self, "sound_restorer", None)
+            if restorer is not None:
+                restorer.close()
+            for window in list(getattr(self, "silencer_windows", {}).values()):
+                window.Close()
         with down.step("release the hotkeys", must=False):
             for hotkey in self.hotkeys:
                 if not self.UnregisterHotKey(hotkey):
