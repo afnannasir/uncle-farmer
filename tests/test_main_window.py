@@ -570,8 +570,10 @@ def test_a_stale_agent_record_does_not_make_the_game_refresh_loop(monkeypatch: p
     """An old port file with a reused PID must not prevent the main window from appearing."""
     reads: list[None] = []
     monkeypatch.setattr(games_part, "games", lambda: reads.append(None) or [])
-    agent_rows: list[tuple[int, int, str]] = [(9000, 42, "old")]
-    monkeypatch.setattr(games_part, "agents", lambda: agent_rows)
+    def agent_rows() -> list[tuple[int, int, str]]:
+        return [(9000, 42, "old")]
+
+    monkeypatch.setattr(games_part, "agents", agent_rows)
     window = Win()
 
     window.refresh_games()
