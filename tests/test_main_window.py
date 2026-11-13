@@ -569,7 +569,11 @@ def test_automatic_login_opens_only_one_client_then_uses_it(monkeypatch: pytest.
 def test_a_stale_agent_record_does_not_make_the_game_refresh_loop(monkeypatch: pytest.MonkeyPatch) -> None:
     """An old port file with a reused PID must not prevent the main window from appearing."""
     reads: list[None] = []
-    monkeypatch.setattr(games_part, "games", lambda: reads.append(None) or [])
+    def no_games() -> list[tuple[int, str | None, str | None]]:
+        reads.append(None)
+        return []
+
+    monkeypatch.setattr(games_part, "games", no_games)
     def agent_rows() -> list[tuple[int, int, str]]:
         return [(9000, 42, "old")]
 
