@@ -780,6 +780,21 @@ def test_a_monster_that_is_attacking_us_is_never_left_out_by_a_skip(clock: Clock
     assert b.unselectable == {-1: (1, (105.0, 100.0), clock.now + 60)}   # still tried, not forgotten
 
 
+def test_an_attacker_we_got_stuck_walking_to_keeps_its_skip(clock: Clock) -> None:
+    """One shooting at us from where we can't walk: dropping its skip would pick it again at once
+    and get stuck again at once, over and over. Once its stuck wait is over it is a target again."""
+    b = target_bot([monster(-1, x=105.0)])
+    b._attackers = {-1}
+    b._walk_failed(-1)
+    assert ids(b.targets(b.snap())) == []
+    assert -1 in b.skip
+    clock.advance(121)
+    assert ids(b.targets(b.snap())) == [-1]
+    b._walk_failed(-1)
+    b._forget_the_dead([-1])                   # its id is free for the next monster
+    assert ids(b.targets(b.snap())) == [-1]
+
+
 def test_targets_honour_only_and_skip_name_filters(clock: Clock) -> None:
     b = target_bot([monster(-1, name="Wolf"), monster(-2, name="Bear")])
     assert ids(b.targets(b.snap(), only="wolf")) == [-1]
