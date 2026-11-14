@@ -780,6 +780,34 @@ def test_a_monster_that_is_attacking_us_is_never_left_out_by_a_skip(clock: Clock
     assert b.unselectable == {-1: (1, (105.0, 100.0), clock.now + 60)}   # still tried, not forgotten
 
 
+def test_fight_back_gives_up_on_a_blade_the_keys_never_take(clock: Clock) -> None:
+    """Each fight back used to try it six times over, on every step of the walk: now it is one
+    try and one quick retry, then it waits out its note."""
+    b = target_bot([monster(-1, x=105.0, name="Hay Cutter")])
+    b._attackers = {-1}
+    b.modes_done = True
+    b.fight = lambda mob: b.note_unselectable(mob)
+    for _step in range(5):
+        b.fight_back()
+    tries = [line for line in b.lines if "select Hay Cutter" in line]
+    assert len(tries) == 2
+    assert b.unselectable[-1][0] == 2
+
+
+def test_an_attacker_the_keys_refused_twice_waits_out_its_note(clock: Clock) -> None:
+    """A Hay Cutter blade strikes us from where the target keys never take it: with its skip
+    dropped on every hit, the walk's fight back re-tried it many times a second. Refused twice
+    where it stands, it waits out its note like any other monster - and is tried again after."""
+    b = target_bot([monster(-1, x=105.0)])
+    b._attackers = {-1}
+    b.unselectable = {-1: (2, (105.0, 100.0), clock.now + 30)}
+    b.skip = {-1: clock.now + 30}
+    assert ids(b.targets(b.snap())) == []
+    assert b.left_out == {"skip": 1}
+    clock.now += 31
+    assert ids(b.targets(b.snap())) == [-1]
+
+
 def test_an_attacker_we_got_stuck_walking_to_keeps_its_skip(clock: Clock) -> None:
     """One shooting at us from where we can't walk: dropping its skip would pick it again at once
     and get stuck again at once, over and over. Once its stuck wait is over it is a target again."""

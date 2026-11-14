@@ -6351,6 +6351,9 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr ""
 
+msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
+msgstr ""
+
 msgid "the {item} on key {key} are used up"
 msgstr ""
 
@@ -6427,6 +6430,9 @@ msgid "this text is too long: {expr}"
 msgstr ""
 
 msgid "threw away {list}"
+msgstr ""
+
+msgid "through the teleport at {cell}"
 msgstr ""
 
 msgid "throwing away {n} {item} (the bag manager says so)"

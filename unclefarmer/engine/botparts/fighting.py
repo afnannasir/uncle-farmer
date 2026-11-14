@@ -581,13 +581,19 @@ class FightingMixin(Parts):
                   boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
         """Why targets() leaves this monster out before any walking distance is worked out (a key
         of LEFT_OUT), or None when it may be a target."""
+        if e["id"] in hitting and self._refused_again(e, now):
+            # Striking us from a spot where the target keys have refused it twice (Machining
+            # Plant's Hay Cutter blades): trying again at once fails at once, and the walk's fight
+            # back would spin on it many times a second. It is tried again when its growing wait
+            # runs out. A single refusal still gets its one quick retry (below).
+            return "skip"
         if e["id"] in hitting and getattr(self, "walk_failed", {}).get(e["id"], 0) <= now:
             # It is hitting us or our pet: what the bot held against it (or its kind) before is
             # stale. A monster that keeps striking us could be ignored for up to two minutes while
             # it did (a "took no damage" skip, or an unselectable note from where it stood): the
-            # one thing a fight must never do is stand there and take it. The unselectable note
-            # itself stays, so a monster the game won't take is still given up with its growing
-            # wait; the player's own filters (only/skip names, areas) apply below. A walk to it
+            # one thing a fight must never do is stand there and take it. A current unselectable
+            # note is the exception (above), so a monster the game won't take is still given up
+            # with its growing wait; the player's own filters (only/skip names, areas) apply below. A walk to it
             # that got stuck keeps its skip: one shooting at us from where we can't walk would
             # be picked again at once (attackers come first), stuck again at once, and the farm
             # loop would spin on it instead of fighting anything else.
@@ -834,6 +840,11 @@ class FightingMixin(Parts):
         del rows[e["id"]]
         self.skip.pop(e["id"], None)
         return False
+
+    def _refused_again(self, e: dict[str, Any], now: float) -> bool:
+        """Left alone by note_unselectable after more than one refusal where it stands."""
+        u = getattr(self, "unselectable", {}).get(e["id"])
+        return u is not None and u[0] >= 2 and self.untrackable(e, now)
 
     def _approach(self, mob: dict[str, Any], way: "_Approach") -> dict[str, Any] | None:
         """Walk up to the monster unless it is in reach already. The monster as it is now, or None
