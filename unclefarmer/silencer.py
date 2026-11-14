@@ -63,7 +63,9 @@ def mute_text(rows: object) -> str:
 
 def _apply(link: JsonLink, text: str) -> None:
     status = sounds.mute(link, text)
-    if not status["hooked"]:
+    # Nothing muted needs no hook: from agent 68 the game's sound dispatcher is only hooked once
+    # something is muted or watched, so "off" leaves a game that never used the silencer untouched.
+    if not status["hooked"] and text != "off":
         raise AgentError(_("Sound observer is unavailable: {reason}", reason=status["reason"]))
 
 

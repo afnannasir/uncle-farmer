@@ -38,7 +38,6 @@ public final class BotAgent {
             Agent.start(new ChannelHunter(inst));
             Keys.start();
             StateServer.start();
-            SoundControl.start();
             Titles.start();
         } catch (Throwable t) {
             // The game must start even if the agent is broken.
