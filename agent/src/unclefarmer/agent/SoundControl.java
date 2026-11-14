@@ -46,7 +46,11 @@ public final class SoundControl {
     private static final AtomicLong observed = new AtomicLong();
     private static final AtomicLong dropped = new AtomicLong();
     private static volatile boolean hooked;
-    private static volatile String reason = "waiting for the game sound dispatcher";
+    static final String IDLE = "not in use yet: hooked the first time a sound is watched or muted";
+    static final String NOT_READY = "sound dispatcher is not initialised";
+    static final String NO_WINDOW = "the game window is not open yet";
+    private static volatile String reason = IDLE;
+    private static boolean knownLoaded;
     private static final int KEEP = 1024;
     private static final String[] events = new String[KEEP];
     private static long sequence;
@@ -55,29 +59,27 @@ public final class SoundControl {
 
     static void install(Instrumentation inst) { inst.addTransformer(new SoundWrites(), false); }
 
-    static void start() {
-        Thread t = new Thread(new Runnable() {
-            @Override public void run() {
+    /**
+     * Hooks the game's sound dispatcher the first time sounds are wanted: the Sound Silencer's
+     * window or saved mutes, or a sound script. A game whose player never uses them keeps its own
+     * dispatcher untouched (every sound it plays went through the proxy before, and so did every
+     * crash report that happened to start a sound thread). Answers whether sounds are hooked now.
+     */
+    static synchronized boolean need() {
+        if (hooked) return true;
+        // A not-yet-initialised dispatcher or window can be tried again; ambiguity cannot.
+        if (!reason.equals(IDLE) && !reason.equals(NOT_READY) && !reason.equals(NO_WINDOW)) return false;
+        try {
+            if (!knownLoaded) {
                 loadKnown(Paths.get(System.getProperty("user.dir")));
-                for (int attempt = 0; attempt < 150; attempt++) {
-                    try {
-                        for (Frame f : Frame.getFrames()) {
-                            if (f.getClass().getName().equals(Keys.WIN_CLASS)) {
-                                if (hook(f.getClass())) return;
-                                // A not-yet-initialised dispatcher can be retried; ambiguity cannot.
-                                if (!reason.equals("sound dispatcher is not initialised")) return;
-                            }
-                        }
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) { Thread.currentThread().interrupt(); return;
-                    } catch (Throwable e) { reason = "sound discovery failed: " + e.getClass().getSimpleName(); }
-                }
-                reason = "sound dispatcher discovery timed out";
-                Log.info(reason);
+                knownLoaded = true;
             }
-        }, "unclefarmer-sounds");
-        t.setDaemon(true);
-        t.start();
+            for (Frame f : Frame.getFrames()) {
+                if (f.getClass().getName().equals(Keys.WIN_CLASS)) return hook(f.getClass());
+            }
+            reason = NO_WINDOW;
+        } catch (Throwable e) { reason = "sound discovery failed: " + e.getClass().getSimpleName(); }
+        return false;
     }
 
     static synchronized boolean hook(Class<?> window) {
@@ -94,7 +96,7 @@ public final class SoundControl {
             }
             candidate.setAccessible(true);
             Object value = candidate.get(null);
-            if (value == null) { reason = "sound dispatcher is not initialised"; return false; }
+            if (value == null) { reason = NOT_READY; return false; }
             if (!(Proxy.isProxyClass(value.getClass()) && Proxy.getInvocationHandler(value) instanceof Dispatcher)) {
                 Object proxy = Proxy.newProxyInstance(window.getClassLoader(), new Class<?>[] {ExecutorService.class}, new Dispatcher((ExecutorService) value));
                 candidate.set(null, proxy);
@@ -271,15 +273,26 @@ public final class SoundControl {
         }
         return b.append("]}").toString();
     }
-    static String watch(String text) { watching = IdSet.parse(text); return status(); }
+    static String watch(String text) {
+        IdSet ids = IdSet.parse(text);
+        watching = ids;
+        if (!ids.isEmpty()) need();
+        return status();
+    }
     static synchronized String listen(Object owner, String text) {
         IdSet ids = IdSet.parse(text);
         if (ids.isEmpty()) listeners.remove(owner); else listeners.put(owner, ids);
         subscriptions = listeners.values().toArray(new IdSet[0]);
+        if (!ids.isEmpty()) need();
         return status();
     }
     static void unlisten(Object owner) { listen(owner, "off"); }
-    static String mute(String text) { muting = IdSet.parse(text); return status(); }
+    static String mute(String text) {
+        IdSet ids = IdSet.parse(text);
+        muting = ids;
+        if (!ids.isEmpty()) need();
+        return status();
+    }
 
     private static synchronized boolean apply(Seen s, boolean mute) {
         SourceDataLine line = s.live;
@@ -338,6 +351,6 @@ public final class SoundControl {
     static synchronized void resetForTests() {
         watching = IdSet.parse("off"); muting = IdSet.parse("off"); listeners.clear(); subscriptions = new IdSet[0];
         captures.clear(); shapes.clear(); negative.clear(); seen.clear(); observed.set(0); dropped.set(0); sequence = 0;
-        java.util.Arrays.fill(events, null); active.remove(); zeros.remove(); hooked = false; reason = "test reset";
+        java.util.Arrays.fill(events, null); active.remove(); zeros.remove(); hooked = false; reason = IDLE; knownLoaded = false;
     }
 }
