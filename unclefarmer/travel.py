@@ -83,7 +83,24 @@ SQUARES: dict[str, tuple[int, int, int]] = {"giant rock square": (1041, 200, 205
            "violet square": (1161, 248, 107), "holy blood square": (1121, 62, 165),
            "gouge knife square": (1141, 84, 87), "dark night square": (1181, 225, 230)}
 
-# Travel items -> (menu entry to choose or None, landing). Single-city stones need no menu.
+# The villages and ruins outside the cities: where a stone named after one, or Elven Teleportation
+# (SPELLS), lands - the place's marker cell in the map table (the code the game sends is map * 1000
+# + marker); measured on mist gods Ruins.
+PLACES: dict[str, tuple[int, int, int]] = {
+    "soul burial village": (1531, 85, 198), "plague abyss": (1731, 50, 223),
+    "orchid woods village": (1631, 151, 119), "city of the ancient tower": (1731, 166, 75),
+    "mist gods ruins": (1561, 200, 197), "west sealing tower": (1761, 100, 100),
+    "hermit camp": (1661, 76, 87), "east sealing tower": (1761, 400, 100),
+    "portal of the demon world": (1762, 45, 129)}
+
+
+def place_landing(name: str) -> tuple[int, int, int]:
+    """Where a square or a place (PLACES) is."""
+    return SQUARES.get(name) or PLACES[name]
+
+
+# Travel items -> (menu entry to choose or None, the square or place it lands on). Single-place
+# stones need no menu.
 ITEMS: dict[str, list[tuple[str | None, str]]] = {
     "Sunset City Teleportation stone": [(None, "sunset square")],
     "Giant rock City Teleportation stone": [(None, "giant rock square")],
@@ -99,10 +116,26 @@ ITEMS: dict[str, list[tuple[str | None, str]]] = {
         "holy blood square", "gouge knife square", "violet square")],
     "Garth Empire Teleportation stone": [("holy blood square", "holy blood square"),
                                          ("gouge knife square", "gouge knife square")],
+    # one place each, named after it ("teleports to West Sealing Tower")
+    "Soul Burial Village Teleportation stone": [(None, "soul burial village")],
+    "Plague Abyss Teleportation stone": [(None, "plague abyss")],
+    "Orchid woods Village Teleportation stone": [(None, "orchid woods village")],
+    "City of the Ancient tower Teleportation stone": [(None, "city of the ancient tower")],
+    "mist gods Ruins Teleportation stone": [(None, "mist gods ruins")],
+    "West Sealing Tower Teleportation stone": [(None, "west sealing tower")],
+    "Hermit Camp Teleportation stone": [(None, "hermit camp")],
+    "East Sealing Tower Teleportation stone": [(None, "east sealing tower")],
+    "portal of the demon world Teleportation stone": [(None, "portal of the demon world")],
+    # "teleports to seal": its menu "select teleport location" lists the two Sealing Towers and the
+    # portal of the demon world (seen in the game 2026-11-14)
+    "seal Teleportation stone": [("west sealing tower", "west sealing tower"),
+                                 ("east sealing tower", "east sealing tower"),
+                                 ("portal of the demon world", "portal of the demon world")],
 }
 # Black Gold stone: villages and ruins, landing not measured yet (re-planned on arrival)
 BLACK_GOLD: list[tuple[str, tuple[int, int, int]]] = [("soul burial village", (1531, 97, 184)), ("plague abyss", (1733, 60, 60)),
-              ("orchid woods village", (1631, 150, 155)), ("mist gods ruins", (1561, 200, 200))]
+              ("orchid woods village", (1631, 150, 155)), ("mist gods ruins", (1561, 200, 200)),
+              ("city of the ancient tower", PLACES["city of the ancient tower"])]
 
 # Teleport skills -> the places their menu lists -> where each lands: the place's marker cell in the
 # map table (the code the game sends is map * 1000 + marker). Recorded 2026-11-13: a level-5
@@ -114,12 +147,7 @@ SPELLS: dict[str, dict[str, tuple[int, int, int]]] = {
     "Teleportation": {name: SQUARES[name] for name in (
         "sunset square", "giant rock square", "white sand square", "tulip square", "moon square",
         "holy blood square", "gouge knife square")},
-    "Elven Teleportation": {
-        "soul burial village": (1531, 85, 198), "plague abyss": (1731, 50, 223),
-        "orchid woods village": (1631, 151, 119), "city of the ancient tower": (1731, 166, 75),
-        "mist gods ruins": (1561, 200, 197), "west sealing tower": (1761, 100, 100),
-        "hermit camp": (1661, 76, 87), "east sealing tower": (1761, 400, 100),
-        "portal of the demon world": (1762, 45, 129)},
+    "Elven Teleportation": dict(PLACES),
 }
 Spell = tuple[str, str]       # (teleport skill, place in its menu)
 
@@ -422,7 +450,7 @@ def item_options(bag: Sequence[Row] | None, hearth_home: str | None = None, hear
         if have.get(item.lower(), 0) <= 0:
             continue
         for pick, square in choices:
-            out.append((item, [pick] if pick else [], SQUARES[square], TELEPORT))
+            out.append((item, [pick] if pick else [], place_landing(square), TELEPORT))
     if have.get("black gold teleportation stone", 0) > 0:
         for pick, land in BLACK_GOLD:
             out.append(("Black Gold Teleportation stone", [pick], land, TELEPORT + 50))
