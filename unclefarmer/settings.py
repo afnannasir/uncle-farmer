@@ -120,6 +120,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for
     "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
@@ -317,6 +318,7 @@ class Profile(BaseModel):
     corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
     xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
+    open_chests: bool = PROFILE_DEFAULTS["open_chests"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
