@@ -229,3 +229,11 @@ def test_filter_manager_save_persists_and_closes(window: Any, monkeypatch: pytes
         manager.on_save(wx.CommandEvent())
         assert ended == [wx.ID_OK] and not manager.timer.IsRunning()
         assert frame.ch_lines == [] and filters.load(settings.load_app()) == [rule]
+
+
+def test_filter_manager_cancel_stops_its_timer(window: Any) -> None:
+    frame, _host, _feed = window
+    with FilterManager(frame, [], frame.feed, gui.line_text, frame.save_filters) as manager:
+        timer = manager.timer
+        assert timer.IsRunning()
+    assert not timer.IsRunning()     # closed without saving: nothing refreshes a window that is gone
