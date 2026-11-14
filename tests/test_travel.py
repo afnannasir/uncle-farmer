@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from unclefarmer import travel
+from unclefarmer import atlas, travel
 from typing import Any
 
 from conftest import stand_in
@@ -320,3 +320,52 @@ def test_every_paid_ride_has_its_own_vip_entry() -> None:
         if t.get("kind") in ("airship", "cable_car") and isinstance(t.get("cost"), int) and t["cost"] > 0:
             assert t.get("choose_vip"), "ride %s has no VIP entry" % t["id"]
             assert all("cost" in p.lower() for p in t["choose"]), "ride %s: %s" % (t["id"], t["choose"])
+
+
+# ---------------------------------------------------------------- exits the map data names no landing for
+def test_ancient_ruins_is_walked_through_not_looped_through_its_small_hall() -> None:
+    # The small hall (1732)'s doors back have no landing in the data. Taken as "anywhere", the
+    # hall looked like a short cut to the far exit, and the game put us back by its doors: a loop.
+    legs = travel.plan(1731, (50, 397), 1761)
+    assert legs is not None and [(leg["map"], leg["dest"]) for leg in legs] == [(1731, 1761)]
+
+
+def test_a_door_with_no_landing_is_paired_with_the_door_it_stands_beside() -> None:
+    hall, ruins = atlas.maps()[1732], atlas.maps()[1731]
+    # each door back from the hall stands beside the arrival from one door of the ruins
+    assert [travel._paired_doors(1732, hall["exits"][i], ruins) for i in range(4)] == [[0], [1], [3], [4]]
+    assert travel._paired_doors(1732, {"dest": 1731, "stand": None}, ruins) == [0, 1, 3, 4]   # any door back
+    assert travel._paired_doors(1732, hall["exits"][0], atlas.maps()[1041]) == []          # none back
+
+
+def test_a_learned_landing_is_kept_on_disk_and_planned_with() -> None:
+    assert travel.unknown_landing(1732, 0) == (1731, 201)
+    assert travel.unknown_landing(1731, 0) is None              # its landing is in the data
+    assert travel.unknown_landing(1732, 99) is None
+    assert not travel.learn_landing(1732, 0, 1041, (5, 5))      # landed somewhere else entirely
+    assert travel.learn_landing(1732, 0, 1731, (85.4, 300.6))
+    assert not travel.learn_landing(1732, 0, 1731, (85, 301))   # nothing new
+    travel._landings = None                                     # as a new session reads it
+    assert travel.landing(1731, 201) == (85, 301)
+    assert travel.landing(1731, None) is None and travel.landing(1731, 999) is None
+    legs = travel.plan(1732, (2, 10), 1761)
+    assert legs is not None and legs[0]["map"] == 1732 and legs[-1]["dest"] == 1761
+
+
+def test_a_damaged_landings_file_is_read_as_far_as_it_makes_sense() -> None:
+    import os
+    from unclefarmer import paths
+    with open(os.path.join(paths.PROFILES, travel.LANDINGS_FILE), "w", encoding="utf-8") as f:
+        f.write('{"1731|201": [85, 301], "nonsense": [1, 2], "1731|202": "x", "1731|203": [true, 2]}')
+    travel._landings = None
+    assert travel.landings() == {(1731, 201): (85, 301)}
+    with open(os.path.join(paths.PROFILES, travel.LANDINGS_FILE), "w", encoding="utf-8") as f:
+        f.write("not json")
+    travel._landings = None
+    assert travel.landings() == {}
+
+
+def test_an_exit_left_out_is_not_planned_through() -> None:
+    travel._plan_cache.clear()
+    legs = travel.plan(1731, (50, 397), 1761, avoid={("exit", 1731, 8), ("exit", 1731, 9)})
+    assert legs is None or all((leg.get("map"), leg.get("exit")) not in ((1731, 8), (1731, 9)) for leg in legs)

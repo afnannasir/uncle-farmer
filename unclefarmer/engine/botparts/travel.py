@@ -281,13 +281,7 @@ class TravelMixin(Parts):
     def _take_leg(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
         """The route's first leg. What failed is left out of the next plan. True: the trip is done."""
         if leg["do"] == "exit":
-            self.cross_exit(leg)
-            if leg.get("dest") is None and self.map_id() == leg["map"]:
-                failed["gang_exit"] = failed.get("gang_exit", 0) + 1
-                if failed["gang_exit"] >= 2:
-                    avoid.add("gang_exit")
-                    self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
-                             speak=True)
+            self._take_exit(leg, avoid, failed)
         elif leg["do"] == "npc":
             free = rides_free(self)
             if not self.ride(leg):
@@ -316,6 +310,32 @@ class TravelMixin(Parts):
             # "map": something moved us off this map on the last stretch - plan again from there
             return self.walk_to(tuple(leg["cell"])) != "map"
         return False
+
+    def _take_exit(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> None:
+        """Cross a map exit. An exit this trip already crossed is a loop: left out of the next
+        plan. Where an exit the map data names no landing for put us is learned (travel.learn_landing)."""
+        door: tuple[str, int, int] = ("exit", int(leg["map"]), int(leg["exit"]))
+        if leg.get("dest") is not None and door in failed:
+            # this trip already went out through this exit and came back round to it: a loop
+            # (a landing the map data doesn't name, guessed wrong) - plan without it
+            avoid.add(door)
+            self.log(_("{map}: the exit to {dest} brought me round in a loop - planning without it",
+                       map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"])))
+            return
+        self.cross_exit(leg)
+        if leg.get("dest") is not None and self.map_id() == leg["dest"]:
+            failed[door] = 1          # crossed (a try that didn't cross is no loop)
+            at = self.me()
+            if travel.learn_landing(leg["map"], leg["exit"], leg["dest"], (at.get("x", 0), at.get("y", 0))):
+                self.log(_("learned where the exit from {map} lands on {dest}: {x},{y}",
+                           map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"]),
+                           x=int(at.get("x", 0)), y=int(at.get("y", 0))))
+        if leg.get("dest") is None and self.map_id() == leg["map"]:
+            failed["gang_exit"] = failed.get("gang_exit", 0) + 1
+            if failed["gang_exit"] >= 2:
+                avoid.add("gang_exit")
+                self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
+                         speak=True)
 
     def wait_ride(self, here: int) -> int:
         """Ride it out: on a map the game carries us off by itself (atlas.is_ride), wait for the

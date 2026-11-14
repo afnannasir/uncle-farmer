@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**Travel**
+
+- Map exits whose landing the game's map data doesn't give no longer send the bot round in
+  loops. On the way to ancient Sealed Land, the small hall of Ancient Ruins looked like a short
+  cut and the bot went in and out of it for a minute before giving up. Such an exit is now taken
+  to land beside the door it stands next to, as the doors with a known landing do.
+- Where the bot really lands through such an exit is learned and kept in
+  profiles/_learned_landings.json, and planned with from then on.
+- An exit the same trip already went through is left out of the next plan, so no loop through
+  one can go on.
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".
