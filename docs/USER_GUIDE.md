@@ -1097,16 +1097,18 @@ To get started, open **Tools → Dungeons** or press **Ctrl+Shift+G**.
 
 ### Which caves can you visit?
 
-There are currently two caves available:
+There are four caves available:
 
 - **Spider Cave:** For characters at level 40 or higher. Its entrance is at Water Curtained Cave.
 - **Scorpion Cave:** For characters at level 60 or higher. Its entrance is at Thousand Miles of Rivers.
+- **Bottomless Pit:** For characters at level 80 or higher. Its entrance is at Valley of Luxuriant Forests. This cave hasn't been tested in the game yet: if something goes wrong there, please report it.
+- **White Bone Cave:** For characters at level 90 or higher. Its entrance is at Ancient Sealed Land, which the bot reaches by the cable car.
 
 You can enter only one dungeon per character each game day. That means visiting Spider Cave uses up your daily dungeon visit, so you cannot enter Scorpion Cave afterward on the same day.
 
 Once inside, you have 15 minutes to defeat as many monsters as possible.
 
-Caves for levels 80, 90, and 100 are planned for a future update.
+If the bot or the game was restarted while your character was inside a cave, start the dungeon run again from where you are. Uncle Farmer sees that it is already inside and keeps hunting until the game moves your character out, without leaving to check supplies.
 
 ### Choose your cave
 

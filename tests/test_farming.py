@@ -692,6 +692,22 @@ def test_finish_start_walks_back_when_far(monkeypatch: pytest.MonkeyPatch) -> No
     assert any("going back to Map 5 (5) (10,20)" in line for line in b.spoken)
 
 
+def test_finish_started_inside_a_dungeon_now_left_goes_safe(monkeypatch: pytest.MonkeyPatch) -> None:
+    # a run started inside Scorpion Cave that the timer moved out: no way back in, so no travel
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    zone_stub(monkeypatch)
+    b = Farm()
+    b.start_place = (1539, 155, 90)
+    monkeypatch.setattr(Farm, "spawns", False)
+    b.map = 1531
+    b.hearthstone = False
+    b.leave_monsters = lambda: b.leave_calls.append(True)
+    b.finish()
+    assert any("started inside" in line for line in b.lines)
+    assert b.travels == [] and b.leave_calls == [True]
+
+
 def test_finish_start_does_not_walk_when_already_there(monkeypatch: pytest.MonkeyPatch) -> None:
     labels(monkeypatch)
     monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
