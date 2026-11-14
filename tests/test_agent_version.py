@@ -43,4 +43,5 @@ def test_java_agent_version_covers_every_python_gate() -> None:
 
 def test_automatic_login_has_its_own_protocol_version() -> None:
     from unclefarmer.engine.runner import AGENT_LOGIN
-    assert AGENT_LOGIN == _java_version()
+    # its own bump past the Sound Silencer's 63, and an agent this copy ships answers it
+    assert 63 < AGENT_LOGIN <= _java_version()

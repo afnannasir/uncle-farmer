@@ -84,6 +84,14 @@ def test_agent_failure_keeps_saved_choices_and_reports_unconfirmed(app_file: Pat
     assert silencer.load() == [row()]
 
 
+def test_a_list_with_nothing_muted_needs_no_hook(app_file: Path):
+    # agent 68 hooks the game's sounds only once something is muted or watched
+    link = Link(hooked=False)
+    silencer.save([row(muted=False)], link)
+    silencer.apply_saved(link)
+    assert silencer.load() == [row(muted=False)]
+
+
 def test_disk_failure_does_not_apply_mute(app_file: Path, monkeypatch: pytest.MonkeyPatch):
     def fail(_data: dict[str, Any]) -> None:
         raise OSError("disk full")

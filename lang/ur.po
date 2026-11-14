@@ -6779,6 +6779,10 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
 
+msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
+msgstr ""
+"{cell} par aage ka raasta abhi band hai - us ka stage abhi saaf nahi hua"
+
 msgid "the {item} on key {key} are used up"
 msgstr "key {key} wali {item} khatam ho gayi"
 
@@ -6862,6 +6866,9 @@ msgstr "yeh text bohat lamba hai: {expr}"
 
 msgid "threw away {list}"
 msgstr "{list} phenk diye"
+
+msgid "through the teleport at {cell}"
+msgstr "{cell} wale teleport se guzar gaye"
 
 msgid "throwing away {n} {item} (the bag manager says so)"
 msgstr "{n} {item} phenk rahe hain (bag manager kehta hai)"
