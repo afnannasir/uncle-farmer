@@ -82,6 +82,7 @@ def duration_text(seconds: float) -> str:
 
 
 class FrameParts(wx.Frame):
+    pending_update: updater.ApplyProcess | None
     sound_restorer: SoundRestore
     clock: Clock = CLOCK
     # ---------------------------------------------------------------- state

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import threading
+import traceback
+from contextlib import AbstractContextManager
 
 import wx
 
@@ -163,28 +165,34 @@ class UpdatesMixin(FrameParts):
         def work() -> None:
             folder: str | None = None
             err: Exception | None = None
+            claim = updater.claimed("update")
+            held = False
             try:
-                # one claim over both steps: the staging folder is never cleaned between them
-                with updater.claimed("update"):
-                    zip_path = updater.download(rel, progress)
-                    try:
-                        wx.CallAfter(self._update_progress, dlg, state, 99, 99, _("Unpacking"))
-                    except RuntimeError:
-                        pass
-                    folder = updater.unpack(zip_path)
-            except (updater.UpdateError, OSError) as e:
+                # The completion callback owns the claim until the copier has taken it over.
+                claim.__enter__()
+                held = True
+                zip_path = updater.download(rel, progress)
+                wx.CallAfter(self._update_progress, dlg, state, 99, 99, _("Unpacking"))
+                folder = updater.unpack(zip_path)
+            except Exception as e:
                 err = e
-                updater.log("the update to %s stopped: %s" % (rel["version"], e),
+                updater.log("the update to %s stopped: %s\n%s" % (rel["version"], e, traceback.format_exc()),
                             "INFO" if str(e) == "cancelled" else "WARNING")
             try:
-                wx.CallAfter(self._update_done, dlg, rel, folder, err)
+                wx.CallAfter(self._update_done, dlg, rel, folder, err, claim if held else None)
             except RuntimeError:
-                pass
-        threading.Thread(target=work, daemon=True).start()
+                if held:
+                    claim.__exit__(None, None, None)
+                updater.log("the update window closed before completion", "WARNING")
+        try:
+            threading.Thread(target=work, daemon=True).start()
+        except Exception as err:
+            updater.log("could not start the download worker\n" + traceback.format_exc(), "ERROR")
+            self._update_done(dlg, rel, None, err)
 
     def _update_progress(self, dlg: wx.ProgressDialog, state: dict[str, bool], done: int, total: int,
                          message: str | None = None) -> None:
-        if self.destroyed:
+        if self.destroyed or not self.updating:
             state["cancel"] = True
             return
         value = min(99, done * 100 // max(1, total))
@@ -193,20 +201,69 @@ class UpdatesMixin(FrameParts):
             state["cancel"] = True
 
     def _update_done(self, dlg: wx.ProgressDialog, rel: updater.Release, folder: str | None,
-                     err: Exception | None) -> None:
+                     err: Exception | None, claim: AbstractContextManager[None] | None = None) -> None:
         self.updating = False
         if self.destroyed:
+            if claim is not None:
+                claim.__exit__(None, None, None)
             return
         dlg.Destroy()
         if err is not None or folder is None:        # (no folder comes only with an error)
+            if claim is not None:
+                claim.__exit__(None, None, None)
             if str(err) != "cancelled":
                 error(self, _("The update didn't download: {why}", why=err))
             updater.clean()
             return
+        self._apply_downloaded_update(rel, folder, claim)
+
+    def _apply_downloaded_update(self, rel: updater.Release, folder: str,
+                                 claim: AbstractContextManager[None] | None) -> None:
+        handed_on = False
+        handle: updater.ApplyProcess | None = None
         try:
-            updater.start_apply(folder, rel["version"])
-        except OSError as e:
-            error(self, _("The update couldn't start: {why}", why=e))
-            return
-        self.close_reason = "the update to %s is ready: the updater takes over" % rel["version"]
-        self.Close()
+            if self.destroyed:
+                return
+            games = agentfix.running_pids()
+            if games:
+                if not ask_ok(self, _("The update reinstalls Uncle Farmer's agent, which the open games have loaded, "
+                                      "so every Mist World window must close first.\n\nPress OK to close them ({n} "
+                                      "open) and update. Start Mist World again after the update.", n=len(games)), _("Update")):
+                    return
+                self.updating = True
+                agentfix.close_then(games, lambda left: self._games_closed_for_apply(rel, folder, claim, left))
+                handed_on = True
+                return
+            handle = updater.start_apply(folder, rel["version"])
+            self.pending_update = handle
+            self.close_reason = "the update to %s is ready: the paused copier awaits shutdown" % rel["version"]
+            self.Close()
+            if self.destroyed:
+                updater.schedule_apply(handle)
+            else:
+                handle.cancel()
+                updater.log("the update is ready but not applied: closing was cancelled")
+        except Exception as e:
+            updater.log("the update couldn't start: %s\n%s" % (e, traceback.format_exc()), "ERROR")
+            if handle is not None:
+                handle.cancel()
+                if self.destroyed:
+                    updater.schedule_apply(handle)  # recover after the instance lock is released
+            if not self.destroyed:
+                error(self, _("The update couldn't start: {why}", why=e))
+        finally:
+            self.pending_update = None
+            self.updating = False
+            if claim is not None and not handed_on:
+                claim.__exit__(None, None, None)
+
+    def _games_closed_for_apply(self, rel: updater.Release, folder: str,
+                                claim: AbstractContextManager[None] | None, left: list[int]) -> None:
+        if left:
+            self.updating = False
+            if claim is not None:
+                claim.__exit__(None, None, None)
+            if not self.destroyed:
+                error(self, _("Mist World windows that didn't close: {n}. Close them, then update.", n=len(left)))
+        else:
+            self._apply_downloaded_update(rel, folder, claim)

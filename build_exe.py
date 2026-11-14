@@ -14,14 +14,13 @@ copy. The finished folder is checked (verify) before the build counts as done.
 
 from __future__ import annotations
 
-import glob
 import os
 import shutil
 import subprocess
 import sys
 
 from docs_html import build as build_docs
-from unclefarmer import __version__, native
+from unclefarmer import __version__, native, updater
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(ROOT, "dist")
@@ -35,10 +34,7 @@ BUILT = os.path.join(DIST, "UncleFarmer.dist")
 PYTHON_FLAG = "--python-flag=-O"
 # What a finished folder must hold (verify): the exe and Python, the GUI and number libraries, the
 # game agent, the screen reader bridge, the C map searches, and the data, translations and guides.
-REQUIRED = ("UncleFarmer.exe", "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll", "agent/unclefarmer-agent.jar",
-            "nvdaControllerClient64.dll", "unclefarmer/native/_routing-*.dll", "data/knowledge.json",
-            "data/atlas.json", "data/skills.json", "lang/unclefarmer.pot", "lang/ur/LC_MESSAGES/unclefarmer.mo",
-            "docs/USER_GUIDE.md", "README.html", "LICENSE", "numpy", "orjson", "pydantic_core", "wx")
+REQUIRED = updater.REQUIRED
 
 
 def upx_dir() -> str:
@@ -82,6 +78,7 @@ def main(full: bool = False) -> None:
     # The jar is rebuilt every time: it is gitignored, so "it exists" says nothing about whether
     # it matches the sources (a stale jar ships the previous agent version and missing commands).
     os.makedirs(DIST, exist_ok=True)
+    build_bootstrap(DIST)  # Fail on a missing C toolchain before the expensive Nuitka build.
     subprocess.check_call([sys.executable, os.path.join(ROOT, "agent", "build_agent.py"), JAR])
     if os.path.exists(BUILT):
         shutil.rmtree(BUILT)
@@ -93,7 +90,7 @@ def main(full: bool = False) -> None:
     subprocess.check_call([
         sys.executable, "-m", "nuitka", os.path.join(ROOT, "UncleFarmer.pyw"),
         "--standalone", "--windows-console-mode=disable", "--assume-yes-for-downloads",
-        "--output-filename=UncleFarmer.exe", "--output-dir=" + DIST, "--remove-output",
+        "--output-filename=" + updater.recovery.PAYLOAD, "--output-dir=" + DIST, "--remove-output",
         "--windows-product-name=Uncle Farmer",
         "--windows-product-version=" + windows_version(__version__),
         "--jobs=%d" % jobs, "--lto=auto", PYTHON_FLAG,
@@ -103,6 +100,7 @@ def main(full: bool = False) -> None:
     if os.path.exists(OUT):
         shutil.rmtree(OUT)
     os.rename(BUILT, OUT)
+    shutil.move(os.path.join(DIST, updater.EXE), os.path.join(OUT, updater.EXE))
     # game_texts.json is built from the player's own game folder on first use, never shipped
     shutil.copytree(os.path.join(ROOT, "data"), os.path.join(OUT, "data"),
                     ignore=shutil.ignore_patterns("game_texts.json"))
@@ -136,9 +134,23 @@ def verify(folder: str) -> None:
     """Stop the build when the finished folder lacks something it must hold (REQUIRED): a Nuitka run
     that "succeeded" can still leave out a library, and a missing jar or data file is only found
     by a player otherwise."""
-    missing = [p for p in REQUIRED if not glob.glob(os.path.join(folder, *p.split("/")))]
+    missing = updater.missing_runtime(folder)
     if missing:
         sys.exit("the built folder %s lacks: %s" % (folder, ", ".join(missing)))
+
+
+def build_bootstrap(folder: str) -> None:
+    """Small, stable native front door: no Python/application DLL dependency."""
+    from build_native import compiler
+    command = compiler()
+    if command is None:
+        sys.exit("a C compiler is required for the independent updater recovery launcher")
+    source = os.path.join(ROOT, "unclefarmer", "native", "bootstrap.c")
+    env = dict(os.environ)
+    if os.path.isabs(command[0]):
+        env["PATH"] = os.path.dirname(command[0]) + os.pathsep + env.get("PATH", "")
+    subprocess.check_call(command + ["-O2", "-std=c11", "-Wall", "-Wextra", "-Werror", "-municode", "-mwindows",
+                                     source, "-o", os.path.join(folder, updater.EXE)], env=env)
 
 
 if __name__ == "__main__":

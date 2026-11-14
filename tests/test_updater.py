@@ -73,22 +73,27 @@ class Resp:
 def release(**over: Any) -> dict[str, Any]:
     rel: dict[str, Any] = {"tag_name": "v0.3.0", "body": "  notes here \n", "draft": False, "prerelease": False,
            "assets": [{"name": "UncleFarmer-0.3.0.zip", "size": 123, "digest": "sha256:ABCdef",
-                       "browser_download_url": "https://example/dl.zip", "url": "https://api/asset"}]}
+                       "state": "uploaded", "browser_download_url": "https://example/dl.zip", "url": "https://api/asset"}]}
     rel.update(over)
     return rel
 
 
-def for_download(asset: str = "a.zip", size: int = 0, sha256: str = "") -> updater.Release:
+def for_download(asset: str = "a.zip", size: int = 0, sha256: str = "", version: str = "0.3.0") -> updater.Release:
     """A release as download() is handed one; an empty sha256 means GitHub gave no digest."""
-    return {"version": "0.3.0", "tag": "v0.3.0", "notes": "", "asset": asset, "size": size, "url": "u",
+    return {"version": version, "tag": "v" + version, "notes": "", "asset": asset, "size": size, "url": "u",
             "sha256": sha256}
 
 
-def popen_with(record: Callable[[list[str], dict[str, object]], object]) -> Callable[..., None]:
+def popen_with(record: Callable[[list[str], dict[str, object]], object]) -> Callable[..., Any]:
     """subprocess.Popen for the updater: hands each launch to record instead of starting it
     (Popen is a class with overloaded constructors, so stand_in can't take its signature)."""
-    def popen(args: list[str], **k: object) -> None:
+    def popen(args: list[str], **k: object) -> Any:
         record(args, k)
+        if "--apply-update" in args:
+            updater.json.save(os.path.join(args[2], "update", updater.BUSY),
+                              {"pid": 4242, "what": "update copier", "since": time.time(), "token": args[-1]})
+        from types import SimpleNamespace
+        return SimpleNamespace(pid=4242, poll=lambda: None, terminate=lambda: None)
     return popen
 
 
@@ -195,7 +200,7 @@ def test_latest_without_a_digest_has_no_checksum(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(updater, "REPO", "owner/repo")
     monkeypatch.delenv("UNCLEFARMER_GITHUB_TOKEN", raising=False)
     rel = release(assets=[{"name": "UncleFarmer-0.3.0.zip", "size": 1,
-                           "browser_download_url": "u"}])
+                           "state": "uploaded", "browser_download_url": "u"}])
     fake_open(monkeypatch, Resp(updater.json.dumps(rel).encode()))
     latest = updater.latest()
     assert latest is not None and latest["sha256"] == ""
@@ -300,7 +305,7 @@ def test_unpack_refuses_a_file_outside_the_folder(monkeypatch: pytest.MonkeyPatc
     z = tmp_path / "evil.zip"
     with zipfile.ZipFile(z, "w") as zf:
         zf.writestr("../evil.txt", "boom")
-    with pytest.raises(updater.UpdateError, match="outside its folder"):
+    with pytest.raises(updater.UpdateError, match="unsafe update archive entry"):
         updater.unpack(str(z))
 
 
@@ -313,6 +318,7 @@ def make_app(tmp_path: Path) -> Path:
     (app / "agent" / "run" / "port.txt").write_text("live", encoding="utf-8")
     (app / "settings.json").write_text("mine", encoding="utf-8")
     (app / "profile.txt").write_text("keep me", encoding="utf-8")
+    (app / updater.EXE).write_text("old exe", encoding="utf-8")
     return app
 
 
@@ -327,6 +333,30 @@ def make_release(tmp_path: Path) -> Path:
     (src / "data" / "d.json").write_text("{}", encoding="utf-8")
     (src / "settings.json").write_text("release", encoding="utf-8")
     (src / "main.exe").write_text("bin", encoding="utf-8")
+    for pattern in updater.REQUIRED:
+        path = src / pattern.replace("*", "314")
+        if pattern in updater.RUNTIME_DIRS:
+            path = path / "__init__.py"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"new")
+    updater.write_build(str(src), "0.5.0", "master")
+    return src
+
+
+def copier_environment(monkeypatch: pytest.MonkeyPatch, app: Path, version: str = "0.5.0") -> Path:
+    (app / updater.EXE).write_bytes(b"old exe")
+    for pattern in updater.REQUIRED:
+        path = app / pattern.replace("*", "314")
+        if pattern in updater.RUNTIME_DIRS:
+            path /= "__init__.py"
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"old runtime")
+    updater.write_build(str(app), "0.4.0", "master")
+    src = make_release(app / "update")
+    updater.write_build(str(src), version, "master")
+    monkeypatch.setattr(updater, "frozen", lambda: True)
+    monkeypatch.setattr(updater.sys, "executable", str(src / updater.EXE))
     return src
 
 
@@ -351,7 +381,7 @@ def test_apply_puts_the_old_folder_back_when_the_copy_fails(monkeypatch: pytest.
     def boom(*a: object, **k: object) -> NoReturn:
         raise OSError("disk full")
 
-    monkeypatch.setattr(updater.shutil, "copytree", boom)
+    monkeypatch.setattr(updater.shutil, "copy2", boom)
     with pytest.raises(OSError, match="disk full"):
         updater.apply(str(app), str(src), lambda text: None)
     assert (app / "_internal" / "old.dll").read_text(encoding="utf-8") == "old"
@@ -363,16 +393,20 @@ def test_start_apply_launches_the_new_exe(monkeypatch: pytest.MonkeyPatch, tmp_p
     calls: list[tuple[list[str], dict[str, object]]] = []
     monkeypatch.setattr(updater.subprocess, "Popen", popen_with(lambda args, k: calls.append((args, k))))
     monkeypatch.setattr(updater.paths, "APP", str(tmp_path))
-    updater.start_apply(str(tmp_path / "new"), "0.3.0")
+    monkeypatch.setattr(updater, "UPDATE", str(tmp_path / "update"))
+    monkeypatch.setattr(updater, "NEW", str(tmp_path / "update/new"))
+    src = copier_environment(monkeypatch, tmp_path, "0.3.0")
+    updater.start_apply(str(src), "0.3.0")
     args, kw = calls[0]
-    assert args == [os.path.join(str(tmp_path / "new"), updater.EXE), "--apply-update", str(tmp_path),
-                    str(os.getpid()), "0.3.0"]
-    assert kw["cwd"] == str(tmp_path / "new")
+    assert args[:5] == [str(src / updater.recovery.PAYLOAD), "--apply-update", str(tmp_path), str(os.getpid()), "0.3.0"]
+    assert re.fullmatch(r"[0-9a-f]{32}", args[5])
+    assert kw["cwd"] == str(src)
 
 
 def test_run_apply_writes_the_result_and_restarts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     app = tmp_path / "app"
     app.mkdir()
+    copier_environment(monkeypatch, app)
     monkeypatch.setattr(updater, "_wait_for_exit", stand_in(updater._wait_for_exit, lambda pid: None))
     monkeypatch.setattr(updater, "apply", stand_in(updater.apply, lambda app, src, log: log("did it")))
     spawned: list[list[str]] = []
@@ -388,6 +422,7 @@ def test_run_apply_writes_the_result_and_restarts(monkeypatch: pytest.MonkeyPatc
 def test_run_apply_reports_a_failure_and_still_restarts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     app = tmp_path / "app"
     app.mkdir()
+    copier_environment(monkeypatch, app)
 
     def boom(a: str, s: str, log: Callable[[str], None]) -> NoReturn:
         raise RuntimeError("nope")
@@ -698,6 +733,7 @@ def test_unpack_stops_when_the_old_copy_is_still_in_use(home: Path, tmp_path: Pa
 
 
 def test_the_update_copier_holds_the_staging_folder_until_it_exits(home: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    copier_environment(monkeypatch, home)
     monkeypatch.setattr(updater, "_wait_for_exit", stand_in(updater._wait_for_exit, lambda pid, seconds=120: None))
     monkeypatch.setattr(updater, "apply", stand_in(updater.apply, lambda app, src, log: None))
     monkeypatch.setattr(updater.subprocess, "Popen", popen_with(lambda args, k: None))
@@ -710,22 +746,35 @@ def test_a_whole_update_leaves_only_the_app_and_its_logs(home: Path, tmp_path: P
                                                          monkeypatch: pytest.MonkeyPatch) -> None:
     """Download, unpack, the copier, the restarted app's result and cleanup: what is left at the end."""
     keep = keepsakes(home)
+    release_folder = make_release(tmp_path / "fixture")
+    for pattern in updater.REQUIRED:
+        path = home / pattern.replace("*", "314")
+        if pattern in updater.RUNTIME_DIRS:
+            path /= "__init__.py"
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"old runtime")
+    updater.write_build(str(home), "0.4.0", "master")
     z = tmp_path / "UncleFarmer-0.5.0.zip"
     with zipfile.ZipFile(z, "w") as zf:
-        zf.writestr("Uncle Farmer/UncleFarmer.exe", "new exe")
-        zf.writestr("Uncle Farmer/data/d.json", "{}")
-        zf.writestr("Uncle Farmer/settings.json", "from the release")
+        for path in release_folder.rglob("*"):
+            if path.is_file():
+                zf.write(path, "Uncle Farmer/" + path.relative_to(release_folder).as_posix())
     body = z.read_bytes()
     fake_open(monkeypatch, Resp(body, {"Content-Length": str(len(body))}))
     launched: list[list[str]] = []
     monkeypatch.setattr(updater.subprocess, "Popen", popen_with(lambda args, k: launched.append(args)))
     monkeypatch.setattr(updater, "_wait_for_exit", stand_in(updater._wait_for_exit, lambda pid, seconds=120: None))
+    monkeypatch.setattr(updater, "frozen", lambda: True)
     with updater.claimed("update"):
-        folder = updater.unpack(updater.download(for_download(asset=z.name, size=len(body),
+        folder = updater.unpack(updater.download(for_download(asset=z.name, version="0.5.0", size=len(body),
                                                               sha256=hashlib.sha256(body).hexdigest())))
-    updater.start_apply(folder, "0.5.0")
+    handle = updater.start_apply(folder, "0.5.0")
+    handle.activate()
     monkeypatch.setattr(updater.sys, "executable", os.path.join(folder, updater.EXE))   # the copier's own exe
-    updater.run_apply(launched[0][2:])
+    arguments = launched[0][2:]
+    arguments[1] = "4242"  # emulate an exited parent; this test runs both roles in one process
+    updater.run_apply(arguments)
     # here the copier ran in this process; in a real update it is another one, which has exited
     held = updater.json.loads((home / "update" / updater.BUSY).read_text(encoding="utf-8"))
     assert held["what"] == "update copier"
@@ -735,13 +784,14 @@ def test_a_whole_update_leaves_only_the_app_and_its_logs(home: Path, tmp_path: P
     assert result == {"version": "0.5.0", "ok": True, "error": ""}
     assert updater.clean(wait=1) is True
     assert not (home / "update").exists()
-    assert (home / "UncleFarmer.exe").read_text(encoding="utf-8") == "new exe"
+    assert (home / updater.EXE).read_text(encoding="utf-8") == keep[home / updater.EXE]
+    assert (home / updater.recovery.PAYLOAD).read_text(encoding="utf-8") == "new"
     assert (home / "data" / "d.json").exists()
-    del keep[home / "UncleFarmer.exe"]
+    del keep[home / "_internal" / "core.dll"]  # obsolete runtime is intentionally replaced
     assert untouched(keep)                           # settings, profiles, plans and logs as they were
     text = update_log(home)
     for stage in ("download of UncleFarmer-0.5.0.zip", "unpacked", "copier for 0.5.0 started", "copier: updating",
-                  "copier: updated UncleFarmer.exe", "the update to 0.5.0 finished", "staging folder cleaned"):
+                  "copier: updated UncleFarmerApp.exe", "the update to 0.5.0 finished", "staging folder cleaned"):
         assert stage in text, stage
 
 
@@ -764,6 +814,7 @@ def test_the_logs_folder_is_made_when_missing(home: Path, tmp_path: Path, monkey
 def test_the_copier_makes_the_apps_logs_folder_when_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     app = tmp_path / "bare"
     app.mkdir()
+    copier_environment(monkeypatch, app)
     monkeypatch.setattr(updater, "_wait_for_exit", stand_in(updater._wait_for_exit, lambda pid, seconds=120: None))
     monkeypatch.setattr(updater, "apply", stand_in(updater.apply, lambda app, src, log: log("copied")))
     monkeypatch.setattr(updater.subprocess, "Popen", popen_with(lambda args, k: None))
@@ -789,6 +840,8 @@ def test_open_sends_the_token_only_when_set(monkeypatch: pytest.MonkeyPatch) -> 
     assert captured["timeout"] == 5
     monkeypatch.setenv("UNCLEFARMER_GITHUB_TOKEN", "secret")
     updater._open("https://x", "application/json", 5)
+    assert captured["req"].get_header("Authorization") is None
+    updater._open("https://api.github.com/repos/owner/repo", "application/json", 5)
     assert captured["req"].get_header("Authorization") == "Bearer secret"
 
 

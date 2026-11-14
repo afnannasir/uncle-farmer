@@ -26,6 +26,7 @@ from .mainparts.scheduling import SchedulingMixin
 from .mainparts.talk import TalkMixin
 from .mainparts.updates import UpdatesMixin
 from .silencer import SilencerDialog
+from .. import updater
 from ..soundrestore import SoundRestore
 
 HOTKEY_ID = 0xBF01
@@ -77,6 +78,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.chat_windows = {}   # pid -> its open Chat window
         self.silencer_windows: dict[int, SilencerDialog] = {}
         self.sound_restorer = SoundRestore()
+        self.pending_update: updater.ApplyProcess | None = None
         self.games = []          # [(pid, character, map name)]
         self.unavailable_agents = {}  # pid -> (port, secret) for stale or unreachable agent records
         self.items = []          # [("plan"|"script", name)]
@@ -461,12 +463,17 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                     run.join(BOT_STOP_WAIT)
                     if run.is_alive():
                         down.problem("the bot of game %d still runs after %g s" % (run.pid, BOT_STOP_WAIT))
+        pending = getattr(self, "pending_update", None)
+        if pending is not None and evt.CanVeto() and (any(run.is_alive() for run in self.runs.values())
+                                                     or pending.process.poll() is not None):
+            evt.Veto()
+            down.end("update cancelled: shutdown is not safe (a bot is still running or the copier stopped)")
+            return
         with down.step("ask the private messages and chat readers to stop", must=False):
             for m in self.messengers.values():
                 m.stop()
             for f in self.chats.values():
                 f.stop()
-        self.destroyed = True         # pending CallLater/CallAfter work must not touch the window
         with down.step("stop the sound readers", must=False):
             restorer = getattr(self, "sound_restorer", None)
             if restorer is not None:
@@ -484,7 +491,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             with down.step("stop the schedules timer", must=False):
                 timer.Stop()
         with down.step("destroy the window", must=False):
-            self.Destroy()
+            self.destroyed = self.Destroy()  # only successful destruction authorizes the paused updater
 
 
 def _logs() -> str:
