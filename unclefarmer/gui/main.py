@@ -78,6 +78,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.silencer_windows: dict[int, SilencerDialog] = {}
         self.sound_restorer = SoundRestore()
         self.games = []          # [(pid, character, map name)]
+        self.unavailable_agents = {}  # pid -> (port, secret) for stale or unreachable agent records
         self.items = []          # [("plan"|"script", name)]
         self.log_lines = []      # [(text, important)]
         self.last_line = {}      # pid -> the latest log line of that game's run
@@ -88,6 +89,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.snap = None         # (pid, snapshot, when): the last reading of a game
         self.snap_busy = False
         self.scanning = set()    # characters being scanned on a worker thread
+        self.pending_logins = {} # profile -> when automatic login opened its client
         self.updating = False
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
         self.hotkeys: list[int] = []     # the global hotkeys this window holds
