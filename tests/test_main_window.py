@@ -585,3 +585,62 @@ def test_a_stale_agent_record_does_not_make_the_game_refresh_loop(monkeypatch: p
 
     assert reads == [None]
     assert window.unavailable_agents == {42: (9000, "old")}
+
+
+def test_a_start_from_inside_a_game_runs_the_last_plans_own_steps(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The last-run swap must read that plan's text, never run the selected plan under its name."""
+    made: list[tuple[str, str]] = []
+
+    class Run:
+        def __init__(self, text: str, title: str, pid: int, *a: object, **k: object) -> None:
+            made.append((text, title))
+            self.title = title
+
+        def start(self) -> None:
+            pass
+
+    def read(item: Any, profile: str | None) -> tuple[str, str | None, None]:
+        return "steps of %s" % item[1], profile, None
+
+    monkeypatch.setattr(runs_part, "Run", Run)
+    monkeypatch.setattr(runs_part, "run_text_and_profile", read)
+    def saved(*args: object) -> bool:
+        return True
+    monkeypatch.setattr(runs_part, "save_file", saved)
+    frame: Any = SimpleNamespace(
+        s={"last_runs": {"Ali": "plan:wolves"}}, games=[(1, "Ali", ""), (2, "Sara", "")], runs={}, last_line={},
+        items=[("plan", "turkey"), ("plan", "wolves")], clock=Clock(), said=[],
+        selected_item=lambda: None, selected_pid=lambda: 2, label_games=lambda: None, update_buttons=lambda: None,
+        poll=lambda: None, on_log=None, on_done=None, locate=None, last_seen=None)
+    frame.say = frame.said.append
+    frame._item_for_game = types.MethodType(runs_part.RunsMixin._item_for_game, frame)
+
+    assert runs_part.RunsMixin.start(frame, 1) == "Starting wolves."    # nothing selected: the last run
+    frame.selected_item = lambda: ("plan", "turkey")
+    frame.runs = {}
+    assert runs_part.RunsMixin.start(frame, 1) == "Starting wolves."    # another one selected
+    assert made == [("steps of wolves", "wolves"), ("steps of wolves", "wolves")]
+
+
+def test_a_game_that_was_slow_once_comes_back_to_the_list(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A live game that missed one refresh is pinged again later, not hidden until it restarts."""
+    listed: list[list[tuple[int, str | None, str | None]]] = [[], [(42, "Ali", "Town")]]
+    pinged: list[int] = []
+    monkeypatch.setattr(games_part, "games", lambda: listed.pop(0))
+    monkeypatch.setattr(games_part, "agents", lambda: [(9000, 42, "live")])
+    def answers(pid: int) -> bool:
+        pinged.append(pid)
+        return True
+    monkeypatch.setattr(games_part, "_answers", answers)
+    window: Any = Win()
+    window.refresh_games()
+    assert window.games == [] and window.unavailable_agents == {42: (9000, "live")}
+
+    window.poll = types.MethodType(games_part.GamesMixin.poll, window)
+    window.SetStatusText = lambda text: None  # pyright: ignore[reportUnknownLambdaType]
+    window.snap_busy = True                               # no game reading in this test
+    window.poll()                                         # too soon: no ping, no rebuild
+    assert pinged == []
+    window.clock.advance(games_part.UNAVAILABLE_RETRY)
+    window.poll()
+    assert pinged == [42] and window.games == [(42, "Ali", "Town")] and window.unavailable_agents == {}

@@ -200,6 +200,24 @@ class RunsMixin(FrameParts):
         pending[profile] = time.monotonic()
         return None, _("opening a game for {name}", name=label)
 
+    def _game_to_start(self, profile: str | None) -> tuple[int | None, str]:
+        """The selected game, else the character's own (opening one to log in): (pid, why we wait)."""
+        pid = self.selected_pid()
+        if pid is None:
+            self.refresh_games()
+            pid = self.selected_pid()
+        if pid is None and profile:
+            return self.automatic_login_window(profile)
+        return pid, ""
+
+    def _item_for_game(self, pid: int, item: Item | None) -> Item | None:
+        """Started from inside a game window: what that character ran last, if anything."""
+        if pid == self.selected_pid():
+            return item
+        name = next((g[1] for g in self.games if g[0] == pid), None)
+        last = settings.last_run_of(self.s, name)
+        return saved_item(last) if last and saved_item(last) in self.items else item
+
     def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False,
               profile: str | None = None) -> str | None:
         """Start a bot. remote: asked by private message - no message boxes; returns what to answer."""
@@ -209,34 +227,34 @@ class RunsMixin(FrameParts):
             error(self, text)
             return None
         given = item
+        wanted = profile                 # the scheduled character, before a script's login can name one
         item = item or self.selected_item()
-        if not item:
-            self.say(_("Make a plan first, in the Plans tab."))
-            return _("There's no plan to run.")
-        text, profile, problem = run_text_and_profile(item, profile)
-        if problem or text is None:
-            return fail(problem or _("Couldn't open it."))
+        text: str | None = None
+        if item:
+            # read first: a script's `login` line names the character whose game it needs
+            text, profile, problem = run_text_and_profile(item, wanted)
+            if problem or text is None:
+                return fail(problem or _("Couldn't open it."))
         if pid is None:
-            pid = self.selected_pid()
-            if pid is None:
-                self.refresh_games()
-                pid = self.selected_pid()
-            if pid is None and profile:
-                pid, waiting = self.automatic_login_window(profile)
-                if pid is None:
-                    self.say(waiting)
-                    return waiting if remote else None
+            pid, waiting = self._game_to_start(profile)
+            if pid is None and waiting:
+                self.say(waiting)
+                return waiting if remote else None
         if pid is None:
             self.say(_("No game with the agent is running."))
             return None
         if pid in self.runs:
             return _("Already running.")
-        if pid != self.selected_pid() and not given:
-            # started from inside a game window: run what that character ran last, if anything
-            name = next((g[1] for g in self.games if g[0] == pid), None)
-            last = settings.last_run_of(self.s, name)
-            if last and saved_item(last) in self.items:
-                item = saved_item(last)
+        chosen = item if given else self._item_for_game(pid, item)
+        if chosen != item:
+            item, text = chosen, None    # that item's own steps, never the selected one's
+        if not item:
+            self.say(_("Make a plan first, in the Plans tab."))
+            return _("There's no plan to run.")
+        if text is None:
+            text, profile, problem = run_text_and_profile(item, wanted)
+            if problem or text is None:
+                return fail(problem or _("Couldn't open it."))
         self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
         if name:

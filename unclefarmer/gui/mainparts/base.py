@@ -93,6 +93,7 @@ class FrameParts(wx.Frame):
     chat_windows: "dict[int, ChatFrame]"
     games: list[Game]
     unavailable_agents: dict[int, tuple[int, str]]  # agent records which did not answer the last refresh
+    unavailable_checked: float = 0.0                 # when they were last tried (clock time)
     items: list[Item]
     log_lines: list[tuple[str, bool]]       # (text, important)
     last_line: dict[int, str]               # pid -> the latest log line of that game's run

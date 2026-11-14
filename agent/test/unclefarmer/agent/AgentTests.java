@@ -385,6 +385,10 @@ public final class AgentTests {
                 "refused: send 'arm' first", "automatic login needs arm");
         check(StateServer.handle("autologinstatus", armed, mine, guarded).startsWith("{\"ok\":"),
                 "automatic login status");
+        for (String sound : new String[] {"soundstatus", "sounds 0", "soundwatch off", "soundmute off", "soundlisten off"}) {
+            check(!StateServer.handle(sound, armed, mine, guarded).startsWith("unknown command"),
+                    "the Sound Silencer command stays: " + sound);
+        }
         eq(StateServer.handle("ping", armed, mine, guarded), "pong", "ping");
         eq(StateServer.handle("voicefix off", armed, mine, guarded), "unknown", "no voice player loaded: nothing to switch");
         eq(StateServer.handle("frobnicate", armed, mine, guarded), "unknown command: frobnicate", "unknown");
