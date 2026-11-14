@@ -28,6 +28,10 @@ class WalkingMixin(Parts):
 
     ATTACK_LIMIT = 20     # times one walk may be broken off by a hit before it gives up as stuck
 
+    JUMP_WAIT = 3.0       # seconds on a teleport pad before it counts as shut (the server moved
+    JUMP_NEAR = 4.0       # us 0.4 s after the step); within this of the landing = moved
+    JUMP_LIMIT = 6        # pads one walk may take: a loop of pads must not walk forever
+
     DIST_LIMIT = 150      # steps the walking-distance search looks out to; further counts as out of reach
     # One round of a walk's readings taking this long means the game hung (a map loading, a pause
     # of its own), not that a wall is in the way: that time doesn't count towards a stuck. The
@@ -246,17 +250,11 @@ class WalkingMixin(Parts):
         # profile turns it off, or this walk already got stuck once: then one axis at a time.
         diagonal = self.p.get("walk_diagonal", True)
         replanned = False     # planned again once from a start cell the map calls a wall
+        self._walk_jumps = 0  # teleport pads taken on this walk (JUMP_LIMIT)
         while attempt < 4:
-            # Moved on to another map (an exit crossed, a teleport, the game's own move): this
-            # map's walls say nothing about where we stand now, so let the caller plan from there.
-            if self.map_id() != mid:
+            if self._left_map(mid):
                 self.stuck_in_a_row = 0
                 return "map"
-            if getattr(self, "traveling", False) and not self.in_fight:
-                beasts.ensure(as_bot(self), beasts.TRAVEL)   # back on the mount once a fight is behind us
-                if self.map_id() != mid:
-                    self.stuck_in_a_row = 0
-                    return "map"
             me = self.me()
             here = (int(me["x"]), int(me["y"]))
             if not m.ok(*here):
@@ -289,6 +287,10 @@ class WalkingMixin(Parts):
                 # forever, so walk_to never returned. Give up the walk and let the caller plan.
                 self.log(_("hit {n} times on the way - giving up this walk", n=attacks))
                 return "stuck"
+            stuck = self._pad_outcome(m, hops, here, cell, stuck)
+            if stuck in ("jumped", "short"):
+                attempt += stuck == "short"
+                continue          # landed past a teleport pad, or stopped short of one: plan again
             if stuck == "stuck":
                 diagonal = False
             if not stuck:
@@ -301,6 +303,17 @@ class WalkingMixin(Parts):
                 return "stuck"
             attempt += 1
         return "stuck"
+
+    def _left_map(self, mid: int) -> bool:
+        """Moved on to another map (an exit crossed, a teleport, the game's own move): this map's
+        walls say nothing about where we stand now, so the caller plans from there. On a trip the
+        mount is taken again first, once a fight is behind us (mounting can take a moment)."""
+        if self.map_id() != mid:
+            return True
+        if getattr(self, "traveling", False) and not self.in_fight:
+            beasts.ensure(as_bot(self), beasts.TRAVEL)
+            return self.map_id() != mid
+        return False
 
     def _walk_interrupted(self, why: str, cell: tuple[int, int], attacks: int) -> int:
         """A walk broken off before it got anywhere: attacked (fight, and one more attack on this
@@ -371,11 +384,73 @@ class WalkingMixin(Parts):
                 or plan.route(here, cell)
                 or (m.route(here, cell) if plan is not m else None))
         if not path:
+            plan, path = WalkingMixin._walk_detour(plan, here, cell)
+        if not path:
             if replan and not m.ok(*here):
                 return None
             raise Stopped(_("no way from {a} to {b} on {map}", a="%d,%d" % here,
                             b="%d,%d" % cell, map=atlas.label(mid)))
         return plan.diag_hops(path) if diagonal else plan.waypoints(path)
+
+    @staticmethod
+    def _walk_detour(plan: Any, here: tuple[int, int], cell: tuple[int, int]) -> tuple[Any, list[tuple[int, int]] | None]:
+        """No way over the map as drawn: through a stage barrier (Demon's Prison's gate 9), else
+        to the teleport pad that leads on (fully mountain's mountain gate) - the walk then ends on
+        the pad and walk_to plans again from where it lands. (model the path is on, path), path
+        None when neither helps."""
+        opened = plan.barriers_open() if hasattr(plan, "barriers_open") else None
+        for model in (plan, opened) if opened is not None else (plan,):
+            if model is not plan:
+                path = model.route(here, cell)
+                if path:
+                    return model, path
+            pad = model.jump_leg(here, cell) if hasattr(model, "jump_leg") else None
+            if pad is not None:
+                path = model.route(here, pad)
+                if path:
+                    return model, path
+        return plan, None
+
+    def _pad_outcome(self, m: Any, hops: list[tuple[int, int]], here: tuple[int, int],
+                     cell: tuple[int, int], stuck: str | bool) -> str | bool:
+        """What a walk round that went to a teleport pad (_walk_detour) comes to: "jumped" (the
+        game moved us on: plan again from the landing), "stuck" (the pad is still shut, or this
+        walk has taken JUMP_LIMIT pads), "short" (it ended before the pad). Any other round's
+        result comes back as it was."""
+        jump_at = getattr(m, "jump_at", None)
+        last = hops[-1] if hops else here      # no hops: we already stand on the pad
+        if jump_at is None or last == cell or jump_at(last) is None:
+            return stuck
+        took = self._took_jump(m, last)
+        if took:
+            self._walk_jumps = getattr(self, "_walk_jumps", 0) + 1
+            if self._walk_jumps > self.JUMP_LIMIT:
+                return "stuck"
+            self.stuck_in_a_row = 0
+            self.log(_("through the teleport at {cell}", cell="%d,%d" % last))
+            return "jumped"
+        if took is False:
+            self.log(_("the way on at {cell} is still shut - its stage isn't cleared yet", cell="%d,%d" % last))
+            return "stuck"
+        return stuck or "short"
+
+    def _took_jump(self, m: Any, pad: tuple[int, int]) -> bool | None:
+        """After a walk to a teleport pad: True once the game has moved us to its landing, False
+        when we still stand on the pad (shut until its stage is cleared), None when the walk
+        ended somewhere else (planned again as usual). Waits a moment: the move comes from the
+        server."""
+        j = m.jump_at(pad)
+        if j is None:
+            return None
+        deadline = self.clock.time() + self.JUMP_WAIT
+        while True:
+            me = self.me()
+            if math.hypot(me["x"] - j["to"][0], me["y"] - j["to"][1]) <= self.JUMP_NEAR:
+                return True
+            on_pad = j["x1"] - 1 <= me["x"] <= j["x2"] + 1 and j["y1"] - 1 <= me["y"] <= j["y2"] + 1
+            if not on_pad or self.clock.time() >= deadline:
+                return False if on_pad else None
+            self.clock.wait(self.stop_event, 0.1)
 
     def _walk_hops_go(self, hops: list[tuple[int, int]], diagonal: bool, leave: int | None,
                       near: Callable[[dict[str, Any]], bool] | None) -> str | bool:
