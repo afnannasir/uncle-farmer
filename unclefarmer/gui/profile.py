@@ -763,6 +763,7 @@ class AdvancedDialog(Dialog):
         keep = p.get("boss_distance", 40)
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
@@ -863,6 +864,7 @@ class AdvancedDialog(Dialog):
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["open_chests"] = self.open_chests.GetValue()
         p["smart_skills"] = self.smart.GetValue()
         others = "never" if self.skill_others.GetSelection() == 1 else "auto"
         p["skill_use_others"] = others

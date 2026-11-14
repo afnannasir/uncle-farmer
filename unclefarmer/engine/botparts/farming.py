@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, corpses, keyslots, pets, xpcard
+from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
 from .base import (MOVE_SHOT_REACH, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -155,6 +155,8 @@ class FarmingMixin(Parts):
                     continue
                 xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
+                    continue
+                if chests.open_nearby(as_bot(self), snap):
                     continue
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
