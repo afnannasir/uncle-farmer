@@ -74,6 +74,18 @@
   later. A character with no corpse skill is told where to learn one. Off by default.
 - Needs the new game agent (61 or newer): restart the game after updating.
 
+**Treasure chests**
+
+- Farming now opens the treasure chests that turn up on the map ("There's a Shining Small Chest in
+  Margit Rainforest..."). A chest in sight is walked to, selected, and opened with Enter and "Open
+  the chest", once any fight is over; never one near a boss, nor one more than 80 steps away. The
+  bot says each chest it opens, and the results count them. Before, the bot took a chest for a
+  town NPC (it has exactly an NPC's HP) and walked past it. On by default; Advanced, Fighting,
+  "Open the chests that turn up while farming".
+- `chestwatch.py`: a read-only watcher that writes down what the agent sees of chests (and of
+  anything else that isn't an ordinary monster), the game's chest broadcasts and what the bag gains,
+  for whoever teaches the bot more about chests.
+
 ## 1.1.0
 
 **Shooting while walking when farming**

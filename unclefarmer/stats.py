@@ -345,6 +345,7 @@ class _Part:
         self.gains = {"contribution": 0, "merit": 0}
         self.xp = self.levels = 0
         self.kills = self.deaths = 0
+        self.chests = 0                       # treasure chests opened while farming
 
     def add_changes(self, was: Mapping[str, int], now: Mapping[str, int]) -> None:
         """One bag reading's change since the last: into the net changes, and the arnebia also
@@ -362,7 +363,7 @@ class _Part:
 
     def busy(self) -> bool:
         return bool(any(self.changes.values()) or any(any(v.values()) for v in self.moved.values())
-                    or any(self.gains.values()) or self.xp or self.kills or self.deaths)
+                    or any(self.gains.values()) or self.xp or self.kills or self.deaths or self.chests)
 
 
 class Tally:
@@ -463,6 +464,12 @@ class Tally:
         self.counters = (kills, deaths)
         if mid and mid not in self.maps and self.doing == FARMING:
             self.maps.append(mid)
+
+    def note_chest(self) -> None:
+        """The bot opened a treasure chest (its loot comes in with the bag's next reading)."""
+        part = self._part()
+        if part is not None and self.doing == FARMING:
+            part.chests += 1
 
     def note_sheet(self, sheet: dict[str, Any] | None) -> None:
         left = drop_left(sheet)
@@ -589,7 +596,7 @@ class Tally:
             "kind": FARMING if farming else TOOL,
             "start": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.started)),
             "minutes": round(seconds / 60.0, 1),
-            "kills": part.kills, "deaths": part.deaths,
+            "kills": part.kills, "deaths": part.deaths, "chests": part.chests,
             "arnebia": sum(d for n, d in changes.items() if n.lower() == ARNEBIA),
             "shards": {n: d for n, d in changes.items() if is_shard(n)},
             "items": {n: d for n, d in changes.items() if n.lower() != ARNEBIA and not is_shard(n)},
@@ -847,13 +854,13 @@ def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
 def add_up(results: Iterable[Record]) -> Record:
     """One result from many (a day, a week) of one kind."""
     results = [upgrade(dict(r)) for r in results]
-    total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0,
+    total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0, "chests": 0,
              "arnebia": 0, "arnebia_in": 0, "arnebia_out": 0, "sales": 0,
              "shards": {}, "shard_value": 0, "contribution": 0, "merit": 0, "experience": 0,
              "levels": 0, "items": {}, "picked": {}, "used": {}, "moved": {}, "spent": {}, "level": -1, "xp_needed": -1,
              "combat": None, "kind": results[0]["kind"] if results else FARMING}
     for r in results:
-        for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "arnebia_in", "arnebia_out", "sales",
+        for k in ("minutes", "paused_minutes", "kills", "deaths", "chests", "arnebia", "arnebia_in", "arnebia_out", "sales",
                   "shard_value", "contribution", "merit", "experience", "levels"):
             v = r.get(k, 0)
             total[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
@@ -917,6 +924,8 @@ def _time_lines(r: Record) -> list[str]:
     the time paused."""
     out = [_("Time used: {used}, {kills} kills, {deaths} deaths", used=_clock(r.get("minutes", 0) or 0),
              kills=r.get("kills", 0), deaths=r.get("deaths", 0))]
+    if r.get("chests"):
+        out.append(_("Chests opened: {n}", n=r["chests"]))
     if "runs" in r:
         out.append(_("Runs: {n}", n=r["runs"]))
     elif "remaining_minutes" in r:
@@ -1278,6 +1287,8 @@ def short(r: Record, drop: int | None = None) -> str:
     if drop is not None:
         bits.append(_("drop time left {time}", time=spoken_time(drop)))
     bits.append(_("{n} kills", n=r.get("kills", 0)))
+    if r.get("chests"):
+        bits.append(_("1 chest opened") if r["chests"] == 1 else _("{n} chests opened", n=r["chests"]))
     if r.get("contribution"):
         bits.append(_("{n} contribution", n=_n(r["contribution"])))
     if r.get("experience"):

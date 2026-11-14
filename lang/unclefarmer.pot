@@ -335,6 +335,9 @@ msgstr ""
 msgid "&Only fight (names, separated by commas):"
 msgstr ""
 
+msgid "&Open the chests that turn up while farming"
+msgstr ""
+
 msgid "&Open the log folder"
 msgstr ""
 
@@ -589,6 +592,9 @@ msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ""
 
 msgid ", {n} threads"
+msgstr ""
+
+msgid "1 chest opened"
 msgstr ""
 
 msgid "1 game, bot running"
@@ -935,6 +941,9 @@ msgid "Check for &updates"
 msgstr ""
 
 msgid "Check the bag for restocking every (seconds):"
+msgstr ""
+
+msgid "Chests opened: {n}"
 msgstr ""
 
 msgid "Chime"
@@ -4171,6 +4180,9 @@ msgstr ""
 msgid "a chat line"
 msgstr ""
 
+msgid "a chest in sight, {n} steps away: going to open it"
+msgstr ""
+
 msgid "a condition or value is missing"
 msgstr ""
 
@@ -4452,6 +4464,9 @@ msgid "choose what? write: choose Tulip City"
 msgstr ""
 
 msgid "choosing \"{entry}\""
+msgstr ""
+
+msgid "chose \"Open the chest\" but the chest is still there"
 msgstr ""
 
 msgid "cleaning the bag"
@@ -5529,6 +5544,9 @@ msgstr ""
 msgid "open games started without this version's agent: {n}"
 msgstr ""
 
+msgid "opened a chest ({n} this run)"
+msgstr ""
+
 msgid "opening a game for {name}"
 msgstr ""
 
@@ -6125,6 +6143,9 @@ msgstr ""
 
 msgid ""
 "the character sheet shows no Vitality yet (restart the game so it loads the new agent) - gathering until it runs out"
+msgstr ""
+
+msgid "the chest is gone: someone else opened it"
 msgstr ""
 
 msgid "the day's chores first"
@@ -7026,6 +7047,9 @@ msgid "{n} arnebia"
 msgstr ""
 
 msgid "{n} at level {lv}"
+msgstr ""
+
+msgid "{n} chests opened"
 msgstr ""
 
 msgid "{n} contribution"

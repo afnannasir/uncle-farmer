@@ -18,7 +18,7 @@ from typing import Any
 from .. import trust
 from ..clock import CLOCK, Clock, StopFlag
 from ..link import GameLink
-from . import repair
+from . import chests, repair
 from .kills import KillTracker
 from .botparts.base import (CONFIRM, DIRECTIONS, NPC_HP, Respawned, Stopped, potion_kind, skill_things,
                             snap_map)
@@ -103,6 +103,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.doing_request = False
         self.trusted = trust.Trusted()    # names or ids whose team invites are accepted
         self.gear = repair.Gear()         # wear warnings and repairs
+        self.chests = chests.Chests()     # the chests opened, and those left alone a while
         self.resting = False              # standing still to get HP back: a heal skill tops up to rest_until
         self.start_place = None           # (map, x, y) where the run started
         self.drop_keep = None             # minutes of drop time this run saves (keep_drop), else the profile's
