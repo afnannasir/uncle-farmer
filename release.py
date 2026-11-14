@@ -68,7 +68,7 @@ def make_zip(v: str, path: str | None = None) -> str:
             if top in updater.NEVER or (rel != "." and top == "agent" and "run" in rel.split(os.sep)):
                 sys.exit("the built folder holds %s - a player's own files never go into a release" % rel)
             for f in files:
-                if rel == "." and f.lower() in updater.NEVER:
+                if rel == "." and f.lower() in updater.NEVER and f.lower() != updater.EXE.casefold():
                     sys.exit("the built folder holds %s - a player's own files never go into a release" % f)
                 if f == "game_texts.json":
                     sys.exit("the built folder holds game_texts.json, which is made from each player's game")

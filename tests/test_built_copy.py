@@ -226,6 +226,24 @@ def test_a_build_installs_the_update(window: dict[str, list[str]]) -> None:
     assert window["info"] == []
 
 
+def test_failed_copier_start_keeps_original_window_open(window: dict[str, list[str]],
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    w = Window()
+    closed: list[bool] = []
+    def close() -> bool:
+        closed.append(True)
+        w.destroyed = True
+        return True
+    def fail(*args: Any) -> Any:
+        raise OSError("copier did not start")
+    monkeypatch.setattr(w, "Close", close, raising=False)
+    monkeypatch.setattr(updater, "start_apply", fail)
+    w._update_done(SimpleNamespace(Destroy=lambda: None), REL, "stage", None)
+    assert not closed and not w.destroyed and not w.updating
+    assert window["error"] and "copier did not start" in window["error"][0]
+
+
 @pytest.mark.usefixtures("source")
 def test_a_source_copy_is_told_to_use_git_and_downloads_nothing(window: dict[str, list[str]]) -> None:
     w = Window()

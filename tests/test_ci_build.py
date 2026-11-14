@@ -30,7 +30,7 @@ def fake_folder(root: Path, leave_out: str = "") -> Path:
         if pattern == leave_out:
             continue
         name = pattern.replace("*", "x")
-        path = out / name if "." in os.path.basename(name) else out / name / "__init__.py"
+        path = out / name / "__init__.py" if pattern in build_exe.updater.RUNTIME_DIRS else out / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("x", encoding="utf-8")
     return out
@@ -245,6 +245,7 @@ def test_every_build_carries_its_build_json(tmp_path: Path, monkeypatch: pytest.
     (zip_path,) = (tmp_path / "ci").glob("*.zip")
     with zipfile.ZipFile(zip_path) as z:
         built = json.loads(z.read("Uncle Farmer/build.json"))
+    assert "UncleFarmer.exe" in built.pop("files")
     assert built == {"version": __version__ + want_version, "channel": want_channel, "commit": SHA}
     assert "release_version=%s%s\n" % (__version__, want_version) in github_output.read_text(encoding="utf-8")
 

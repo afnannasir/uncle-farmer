@@ -20,10 +20,43 @@ if TYPE_CHECKING:
 
 
 def main() -> None:
+    if "--recover-update" in sys.argv:
+        # The native bootstrap invokes this only in the immutable rescue runtime.
+        # Do not import updater, wx, settings or normal application modules here.
+        import os
+        from . import update_recovery as recovery
+        recovery_app: str | None = None
+        trusted_recovery = False
+        try:
+            index = sys.argv.index("--recover-update")
+            if len(sys.argv) != index + 2:
+                raise recovery.RecoveryError("expected one recovery application directory")
+            recovery_app = os.path.abspath(sys.argv[index + 1])
+            expected = os.path.join(recovery_app, recovery.HERE, "runtime", recovery.PAYLOAD)
+            packaged = "__compiled__" in globals() or bool(getattr(sys, "frozen", False))
+            if not packaged or os.path.normcase(os.path.abspath(sys.executable)) != os.path.normcase(expected):
+                raise recovery.RecoveryError("recovery must run in the independent rescue runtime")
+            trusted_recovery = True
+            recovery.recover(recovery_app)
+        except Exception as error:
+            import traceback
+            if trusted_recovery and recovery_app is not None:
+                try:
+                    recovery.log_error(recovery_app, traceback.format_exc())
+                except Exception:
+                    pass  # stderr still reports failure if the recovery log is unwritable.
+            print("Update recovery stopped; files and backups preserved: %s" % error, file=sys.stderr)
+            sys.exit(1)
+        return
     if "--apply-update" in sys.argv:
         from . import updater
         updater.run_apply(sys.argv[sys.argv.index("--apply-update") + 1:])
         return
+    from . import paths, update_recovery as recovery
+    if paths.frozen():
+        transaction = recovery.load(paths.APP)
+        if transaction and transaction["state"] not in recovery.TERMINAL:
+            sys.exit("An update needs recovery. Start UncleFarmer.exe, not UncleFarmerApp.exe.")
     if "--self-test" in sys.argv:
         from . import selftest
         i = sys.argv.index("--self-test")
@@ -131,6 +164,9 @@ def _finish(down: Lifecycle) -> None:
         filelock.release_all()
     with down.step("release the one-copy lock", must=False):
         instance.release()
+    from . import updater
+    with down.step("hand the update to the paused copier", must=False):
+        updater.finish_apply()
     down.end("closed")
 
 
