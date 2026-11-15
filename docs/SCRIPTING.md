@@ -874,6 +874,7 @@ The `dungeon` command runs the cave configured under **Tools → Dungeons**.
 
     dungeon                       run the configured cave
     dungeon Spider cave           run Spider cave instead of the configured cave
+    dungeon Bottomless pit        the caves are Spider cave, Scorpion Cave, Bottomless pit and White Bone Cave
     dungeon check                 only look at what is short and which cave it would enter
 
 A character enters one cave per game day. The bot checks supplies first, then spends all 15 minutes inside.

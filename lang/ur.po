@@ -915,6 +915,9 @@ msgstr "Ladaiyon ke darmiyan"
 msgid "Bot"
 msgstr "Bot"
 
+msgid "Bottomless pit"
+msgstr "Bottomless pit"
+
 msgid "Bought:"
 msgstr "Kharide gaye:"
 
@@ -4418,6 +4421,9 @@ msgid "While farming, go and share just before each half &hour, then come back"
 msgstr ""
 "Farming ke dauran har aadhe &ghante se zara pehle ja kar share karein, phir wapas aayein"
 
+msgid "White Bone Cave"
+msgstr "White Bone Cave"
+
 msgid "Wildcard"
 msgstr "Wildcard"
 
@@ -4546,6 +4552,12 @@ msgstr "aaj donation ho chuki hai"
 
 msgid "already done today"
 msgstr "aaj pehle hi ho chuka"
+
+msgid "already inside {cave}"
+msgstr "pehle se {cave} ke andar"
+
+msgid "already inside {cave}: hunting until the game moves us out"
+msgstr "pehle se {cave} ke andar: jab tak game bahar na nikale, shikar jaari"
 
 msgid "area attack"
 msgstr "area hamla"
@@ -6645,6 +6657,11 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 
+msgid ""
+"the game says this character has already been in an experience dungeon today"
+msgstr ""
+"game kehta hai ke yeh kirdaar aaj pehle hi experience dungeon mein ja chuka hai"
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
 
@@ -6750,6 +6767,11 @@ msgstr ""
 
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
+
+msgid ""
+"the run started inside {map}, which can't be walked back into - ending on the nearest map without monsters"
+msgstr ""
+"run {map} ke andar shuru hua tha, jahan paidal wapas nahi ja sakte - monsters ke baghair qareeb tareen map par khatam"
 
 msgid ""
 "the run started where monsters spawn ({map} {x},{y}) - ending on the nearest map without them"

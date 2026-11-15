@@ -40,6 +40,18 @@
   game update) is said in the log with the corrected atlas line to report. The bot goes on from
   where it really is either way.
 
+**Dungeons**
+
+- Tools, Dungeons has two more experience dungeons: the White Bone Cave (level 90, entered at
+  ancient Sealed Land, reached by the cable car; tested: 204 kills in a visit) and the Bottomless
+  pit (level 80, entered at Valley of Luxuriant forests; untested so far). The highest cave my
+  level lets in picks them too.
+- Starting a dungeon run while already inside one of the caves (after the bot or the game was
+  restarted mid-visit) now hunts on until the game moves the character out, instead of leaving.
+  The end place "where the run started" then ends on the nearest map without monsters.
+- When the game turns the character away because the day's experience dungeon is used, the bot
+  says so.
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".

@@ -16,8 +16,15 @@ What the game showed (hand runs logged 2026-10-27, one with a Hunter, one with a
     taking whatever is in reach, area skills on whatever is close together.
   - Pets are allowed (a pet was out in both runs); the loot was only Arnebia.
   - A character goes into ONE cave a game day, whichever it is, not one of each: the player
-    chooses which (or the highest one the character's level lets in). More caves come at levels
-    80, 90 and 100; each is one row in CAVES.
+    chooses which (or the highest one the character's level lets in). Two more come at levels 80
+    and 90: the Bottomless pit (its NPC "bottomless pit" at 150,19 on Valley of Luxuriant forests)
+    and the White Bone Cave (its NPC "White Bone Cave" at 61,110 on ancient Sealed Land, reached
+    by the cable car). The game's files mark only the pit's team entrances and not the White Bone
+    Cave's at all, so their rows in CAVES carry the entrance. Each cave is one row in CAVES.
+    The White Bone Cave was run by the bot (2026-11-14: 204 kills); the Bottomless pit is
+    untested - its entrance is known, but no run of ours has gone in yet.
+  - Turned away because the day's cave is used, the game says "You have already entered an
+    experience dungeon today".
 
 So a visit is: the supplies topped up before setting out (the pet's blue potions and Rice Rolls,
 our own blues and reds - a pet that fights and a lower character's potions are a good part of the
@@ -34,6 +41,7 @@ farming.
 from __future__ import annotations
 
 import copy
+import re
 from typing import Any
 
 from .. import atlas, dungeons, jsonio, knowledge
@@ -42,11 +50,18 @@ from . import chores, pets, town
 from .bot import Bot, Stopped
 from .botparts.base import potion_kind
 
-CAVES: dict[str, dict[str, Any]] = {          # lowest level first; the caves at 80, 90 and 100 go here
+CAVES: dict[str, dict[str, Any]] = {          # lowest level first
     "Spider cave": {"map": 1503, "level": 40},
     "Scorpion Cave": {"map": 1539, "level": 60},
+    # entrance: where the game's files (data/dungeons.json) don't say
+    "Bottomless pit": {"map": 1636, "level": 80,
+                       "entrance": {"map": 1631, "npc": "bottomless pit", "at": [150, 19]}},
+    "White Bone Cave": {"map": 1792, "level": 90,
+                        "entrance": {"map": 1761, "npc": "White Bone Cave", "at": [61, 110]}},
 }
-CAVE_NAMES = (N_("Scorpion Cave"), N_("Spider cave"))     # CAVES' names, for translators
+CAVE_NAMES = (N_("Scorpion Cave"), N_("Spider cave"), N_("Bottomless pit"),
+              N_("White Bone Cave"))     # CAVES' names, for translators
+ALREADY = r"already entered an experience dungeon today"    # the game's answer when the day's cave is used
 BEST = "best"             # the cave setting's default: the highest one the character's level lets in
 MINUTES = 15              # the game's timer inside
 OVERTIME = 2.0            # minutes past the timer before leaving through the Action menu ourselves
@@ -202,15 +217,30 @@ def level_of(b: Bot) -> int:
     return int(sheet.get("level") or b.me().get("level") or 0)
 
 
+def entrance(cave: str) -> dict[str, Any] | None:
+    """Where a cave is entered, as dungeons.entrances() gives it: the cave's own row in CAVES where
+    the game's files don't say, else data/dungeons.json. None when unknown."""
+    row = CAVES.get(cave, {}).get("entrance")
+    if row:
+        return {"name": cave, "dungeon_maps": [CAVES[cave]["map"]], "spots": [], **row}
+    return dungeons.find(cave)
+
+
+def turned_away(b: Bot, since: int) -> bool:
+    """The game said, after since, that the day's experience dungeon is used."""
+    return any(re.search(ALREADY, line, re.I) for line in chores.said_since(b, since))
+
+
 def enter(b: Bot, cave: str) -> bool:
     """Walk to the cave's entrance, talk, choose "Enter the dungeon" and wait to land inside. True
     when inside; False when the game didn't let us in (the day's entry used, a level too low)."""
-    entry = dungeons.find(cave)
+    entry = entrance(cave)
     if entry is None:
         raise Stopped(_("I don't know where {cave} is entered", cave=cave))
     b.go_dungeon(entry, talk=True)
     b.wait_dialog(3.0)
     mid = b.map_id()
+    since = chores.said_mark(b)
     if b.choose(ENTER) is None:
         b.close_dialogs()
         b.log(_("{npc} offered no \"Enter the dungeon\"", npc=entry.get("npc") or cave), speak=True)
@@ -218,6 +248,9 @@ def enter(b: Bot, cave: str) -> bool:
     b.wait_map_change(mid, LANDING)
     if b.map_id() != CAVES[cave]["map"]:
         b.close_dialogs()
+        if turned_away(b, since):
+            b.log(_("the game says this character has already been in an experience dungeon today"),
+                  speak=True)
         return False
     return True
 
@@ -229,9 +262,14 @@ def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
         chores.mark(name, done_key(cave), "not let in")
         return _("{cave}: the game didn't let us in (once a day)", cave=cave)
     chores.mark(name, done_key(cave), "entered")
+    b.log(_("in {cave}: {n} minutes to kill all we can", cave=cave, n=MINUTES), speak=True)
+    return hunt(b, cfg, cave)
+
+
+def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
+    """Inside a cave: the fight until the game moves us out, then a line about it."""
     mid = CAVES[cave]["map"]
     began, kills = b.clock.time(), b.kills
-    b.log(_("in {cave}: {n} minutes to kill all we can", cave=cave, n=MINUTES), speak=True)
 
     def out() -> bool:
         return b.map_id() != mid or b.clock.time() - began >= (MINUTES + OVERTIME) * 60
@@ -261,6 +299,9 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None 
     character has been in one today. [what happened]."""
     if cave in CAVES:
         cfg = dict(cfg, cave=cave)
+    inside = cave_of(b.map_id())
+    if inside is not None:
+        return rejoin(b, cfg, inside, check_only)
     name = chores.who(b)
     done = done_today(name)
     if done:
@@ -284,6 +325,23 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None 
         return [visit(b, cfg, cave)]
     finally:
         b.pets_for_run = was            # the rest of the run goes by Character, Settings again
+
+
+def rejoin(b: Bot, cfg: dict[str, Any], cave: str, check_only: bool = False) -> list[str]:
+    """A run started inside a cave (the bot or the game restarted mid-visit): the day's cave is
+    this one, used or not, so it is hunted till the game moves us out - leaving to check the day
+    or top up the supplies would lose the rest of the visit. How long is left isn't known: the
+    timer's full length is the longest wait before leaving ourselves."""
+    if check_only:
+        return [_("already inside {cave}", cave=_(cave))]
+    chores.mark(chores.who(b), done_key(cave), "entered")
+    b.log(_("already inside {cave}: hunting until the game moves us out", cave=_(cave)), speak=True)
+    was = getattr(b, "pets_for_run", None)
+    try:
+        choose_pet(b, cfg)
+        return [hunt(b, cfg, cave)]
+    finally:
+        b.pets_for_run = was
 
 
 def choose_pet(b: Bot, cfg: dict[str, Any]) -> None:
@@ -312,7 +370,7 @@ def cave_of(map_id: int | None) -> str | None:
 
 def entrance_text(cave: str) -> str:
     """Where a cave is entered, for the window."""
-    e = dungeons.find(cave)
+    e = entrance(cave)
     if not e:
         return _("entrance unknown")
     at = e.get("at")
