@@ -313,7 +313,7 @@ def test_scenario_12_channeling_skills_can_retrigger_fire_impact_priority(clock:
 
 
 def test_scenario_13_channeling_permission_active_throughout_chain(clock: Clock) -> None:
-    """13. Channeling permission remains active throughout the Elven Fire chain."""
+    """13. Channeling permission is consumed even when the channel critically hits."""
     g = Game(clock, ELF, ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
@@ -322,7 +322,7 @@ def test_scenario_13_channeling_permission_active_throughout_chain(clock: Clock)
     assert sb.available_to_channel_without_penalty is True
     clock.advance(1.5)
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Pyroblast", "hits": [[-5, 5, 12000]]}, ME)
-    assert sb.available_to_channel_without_penalty is True
+    assert sb.available_to_channel_without_penalty is False
 
 
 def test_scenario_14_channeling_permission_resets_on_chain_completion(clock: Clock) -> None:
@@ -713,6 +713,8 @@ def test_solution3_pack_vs_single_target_channeling(clock: Clock) -> None:
     pick_single = sb.pick(snap_single, mob)
     assert isinstance(pick_single, tuple) and pick_single[1] == "Pyroblast"
 
+    sb.pending.clear()
+    sb.available_to_channel_without_penalty = True  # separate unlocked cycle for the pack case
     clock.advance(2.0)
     sb.press_confirmed = True
     sb.last_cast = clock.now - 2.0
@@ -728,7 +730,7 @@ def test_solution3_pack_vs_single_target_channeling(clock: Clock) -> None:
 
 
 def test_solution3_pyroblast_crit_primes_fire_impact(clock: Clock) -> None:
-    """When Pyroblast crits, permission remains active throughout chain and primes Fire Impact."""
+    """When Pyroblast crits, permission is consumed and the next critical sequence starts."""
     g = Game(clock, ELF, ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
@@ -736,7 +738,7 @@ def test_solution3_pyroblast_crit_primes_fire_impact(clock: Clock) -> None:
 
     # Pyroblast deals a critical hit
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Pyroblast", "hits": [[-6, 5, 45000]]}, ME)
-    assert sb.available_to_channel_without_penalty is True
+    assert sb.available_to_channel_without_penalty is False
     assert sb.pending_channelling is True
 
 
@@ -1093,13 +1095,10 @@ def test_solution3_monster_to_monster_crit_sequence_14_monsters(clock: Clock) ->
 
 
 def test_follow_key_overwrites_with_pyroblast_and_falls_back_on_miss(clock: Clock) -> None:
-    """When available_to_channel_without_penalty is True, follow_key returns Pyroblast's key;
-    if Pyroblast misses, available_to_channel_without_penalty becomes False and follow_key falls back
-    to Fireball."""
+    """Following never bypasses channel reservation through an untracked Pyroblast key."""
     g = Game(clock, ["Fireball", "Fire Impact", "Pyroblast"], ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
-    pyro_key = next(s["key"] for s in sb.slots[0] if s["name"] == "Pyroblast")
     base_key = next(s["key"] for s in sb.slots[0] if s["name"] == "Fireball")
 
     # Initial state: base attack follow key
@@ -1115,8 +1114,8 @@ def test_follow_key_overwrites_with_pyroblast_and_falls_back_on_miss(clock: Cloc
     clock.advance(1.2)
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fire Impact", "hits": [[-1, 5, 20000]]}, ME)
     assert sb.available_to_channel_without_penalty is True
-    # follow_key is overwritten with Pyroblast's key
-    assert sb.follow_key() == pyro_key
+    # Movement uses the base key; channels go through the picker and shared reservation.
+    assert sb.follow_key() == base_key
 
     # Pyroblast misses (hit result code 2 = dodged)
     clock.advance(1.5)
@@ -1199,7 +1198,8 @@ def test_elf_crit_across_monsters_and_no_time_limit(clock: Clock) -> None:
     }
     pick = sb.pick(snap_c, mob_c)
     assert isinstance(pick, tuple) and pick[1] == "Pyroblast"
-    assert sb.follow_key() == pick[0]
+    assert sb.follow_key() != pick[0]
+    assert not sb.available_to_channel_without_penalty
 
     # Non-crit Pyroblast completes cast: consumes permission
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Pyroblast", "hits": [[-3, 1, 30000]]}, ME)

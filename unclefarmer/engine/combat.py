@@ -331,6 +331,9 @@ class SkillBook:
             self.combos.saving_pyroblast_for_next = value
 
     def _channeling_restricted(self, s: Skill) -> bool:
+        if self.cls == "Elf" and s["name"] in elf_combos.CHANNEL_SKILLS:
+            return (not self.available_to_channel_without_penalty
+                    or any(name in self.pending for name in elf_combos.CHANNEL_SKILLS))
         return self.combos is not None and self.combos.channeling_restricted(s)
 
     def load(self) -> None:
@@ -431,10 +434,6 @@ class SkillBook:
         """The key that walks us to the target and hits it there: the base attack (the hardest
         hitter on the page that is up if there are several) on its follow key. None without one."""
         up = self.page()
-        if self.available_to_channel_without_penalty:
-            pyroblast = elf_combos.pyroblast_follow_key(self.slots, up, self.allowed)
-            if pyroblast is not None:
-                return pyroblast
         base = [x for pg in sorted(self.slots, key=lambda pg: pg != up) for x in self.slots[pg]
                 if x.get("role") == "base_attack" and self.allowed(x)]
         return base[0]["key"] if base and base[0] in self.slots.get(up, []) else None
@@ -948,6 +947,11 @@ class SkillBook:
         return self.ready_in(now) > 0
 
     def pressed(self, choice: Skill, now: float) -> None:
+        if self.cls == "Elf" and choice["name"] in elf_combos.CHANNEL_SKILLS:
+            self.available_to_channel_without_penalty = False
+            if self.combos:
+                for channel in elf_combos.CHANNEL_SKILLS:
+                    self.combos.primed.pop(channel, None)
         self.last_press = now
         self.press_confirmed = False
         if self.confirm:
@@ -1195,9 +1199,12 @@ class SkillBook:
             ))
         # Resolve the attack's page first: a failed flip may have changed the planned skill.
         if (ignition is not None and self.combos and in_range(ignition)
+                and (not self.b.p.get("points_key") or self.points(now) is not None)
                 and self.combos.ignition_before(choice, self.points(now) if self.cls == "Elf" else None)
                 and (ignition["page"] == choice["page"] or self.flip_to(ignition["page"]))):
             choice = ignition
+        if self._channeling_restricted(choice):
+            return None
         self.pressed(choice, now)
         if self.cls == "Hunter":
             if choice["name"] in ("Multi Shot", "Rapid Arrows"):

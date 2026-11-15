@@ -61,8 +61,9 @@ class ElfCombos:
             return False
         if name in CHANNEL_SKILLS:
             self.saving_pyroblast_for_next = False
-            self.primed.pop(name, None)
-            self.available_to_channel_without_penalty = crit
+            for channel in CHANNEL_SKILLS:
+                self.primed.pop(channel, None)
+            self.available_to_channel_without_penalty = False
             self.fire_impact_crit = False
             self.pending_channelling = crit
             self.streak = int(crit)
@@ -139,11 +140,12 @@ class ElfCombos:
         return self._channel_pick(ok)
 
     def _elf_blocks_primed(self, name: str) -> bool:
-        return name == FIRE_IMPACT and self.fire_impact_crit  # Fire Impact cannot loop into itself
+        return ((name == FIRE_IMPACT and self.fire_impact_crit)
+                or (name in CHANNEL_SKILLS and not self.available_to_channel_without_penalty))
 
     def _channel_pick(self, ok: Callable[[str], Skill | None]) -> Skill | None:
         """Channeling priority without penalty: packs prefer Blazing Storm, single target prefers Pyroblast."""
-        if not self.available_to_channel_without_penalty and not all(name in self.primed for name in CHANNEL_SKILLS):
+        if not self.available_to_channel_without_penalty:
             return None
         pack = getattr(self.book, "_last_pack_size", 1)
         if pack >= 2 and (storm := ok(BLAZING_STORM)):
@@ -153,15 +155,6 @@ class ElfCombos:
 
 def unpenalized(skill: Skill, available: bool) -> bool:
     return available and skill.get("name") in CHANNEL_SKILLS
-
-
-def pyroblast_follow_key(slots: dict[int, list[Skill]], up: int, allowed: Callable[[Skill], bool]) -> str | None:
-    """The allowed Pyroblast key, if it is on the page that is up."""
-    pyro = [x for pg in sorted(slots, key=lambda pg: pg != up) for x in slots[pg]
-            if x.get("name") == PYROBLAST and allowed(x)]
-    if pyro and pyro[0] in slots.get(up, []):
-        return pyro[0]["key"]
-    return None
 
 
 class _ChannelView(Protocol):

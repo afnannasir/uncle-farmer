@@ -319,7 +319,7 @@ def test_area_skills_are_weighed_by_damage_not_by_how_many_they_could_take(clock
     # for the time: an Elf in a pack cast only Blazing Storm
     g, _b, _sb = fight(clock, ELF, [], 30, pack=4, dist=6.0, mob_hp=250000)
     assert g.log.count("Fire Surge") >= 3, g.log         # it was never cast at all
-    assert "Blazing Storm" in g.log, g.log            # the filler while Fire Surge cools down
+    assert "Blazing Storm" not in g.log, g.log        # no channel permission without Blazing Combo
 
 
 def test_an_area_skill_with_no_damage_figure_still_waits_for_a_pack(clock: Clock) -> None:
@@ -327,3 +327,58 @@ def test_an_area_skill_with_no_damage_figure_still_waits_for_a_pack(clock: Clock
     two, _b, _sb = fight(clock, ["Magic Sphere", "Icicle"], [], 30, pack=2, dist=6.0, mob_hp=250000)
     three, _b, _sb = fight(clock, ["Magic Sphere", "Icicle"], [], 30, pack=3, dist=6.0, mob_hp=250000)
     assert "Icicle" not in two.log and "Icicle" in three.log, (two.log, three.log)
+
+
+@pytest.mark.parametrize("channel", ["Pyroblast", "Blazing Storm"])
+def test_elf_channel_permission_is_shared_and_spent_on_press(clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]], channel: str) -> None:
+    sb, _snap, mob = elf_ignition
+    assert sb.combos is not None
+    sb.available_to_channel_without_penalty = True
+    skill = sb.skill(channel)
+    assert skill is not None
+    sb.pressed(skill, clock.now)
+    assert not sb.available_to_channel_without_penalty
+    skills, wanted = sb._usable(0, False, clock.now)
+    assert not any(s["name"] in ("Pyroblast", "Blazing Storm") for s in skills + wanted)
+    clock.advance(1)
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": channel, "hits": [[mob["id"], 5, 500]]}, ME)
+    assert not sb.available_to_channel_without_penalty
+    sb._fold_cast({"t": int((clock.now + 1) * 1000), "caster": ME, "skill": "Fire Impact", "hits": [[mob["id"], 5, 500]]}, ME)
+    assert sb.available_to_channel_without_penalty
+
+
+def test_ignition_waits_for_fresh_elements(clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]]) -> None:
+    sb, snap, mob = elf_ignition
+    assert sb.combos is not None
+    sb.b.p["points_key"] = "t"
+    sb.available_to_channel_without_penalty = True
+    sb.combos.built = 5
+    sb.pts, sb.pts_at = 0, clock.now
+    clock.advance(combat.POINTS_FRESH + 1)
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] != "Ignition"
+
+
+@pytest.mark.parametrize("pack", [1, 2])
+def test_elf_picker_cannot_select_second_channel_before_confirmation(clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]], pack: int) -> None:
+    sb, snap, mob = elf_ignition
+    assert sb.combos is not None
+    sb.available_to_channel_without_penalty = True
+    if pack == 2:
+        snap["entities"].append(dict(mob, id=-6, y=51))
+    first = sb.pick(snap, mob)
+    assert isinstance(first, tuple) and first[1] == ("Pyroblast" if pack == 1 else "Blazing Storm")
+    assert not sb.available_to_channel_without_penalty
+    clock.advance(0.31)
+    second = sb.pick(snap, mob)
+    assert not isinstance(second, tuple) or second[1] not in ("Pyroblast", "Blazing Storm", "Ignition")
+
+
+def test_stale_primed_channels_cannot_restore_permission(clock: Clock, elf_ignition: tuple[combat.SkillBook, dict[str, Any], dict[str, Any]]) -> None:
+    sb, snap, mob = elf_ignition
+    assert sb.combos is not None
+    sb.combos.primed.update(Pyroblast=clock.now + 10, **{"Blazing Storm": clock.now + 10})
+    direct = sb.combos.pick(sb.slots[0], mob, clock.now, lambda s: True, elements=0)
+    assert direct is None or direct["name"] not in ("Pyroblast", "Blazing Storm")
+    picked = sb.pick(snap, mob)
+    assert isinstance(picked, tuple) and picked[1] not in ("Pyroblast", "Blazing Storm", "Ignition")
