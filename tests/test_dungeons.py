@@ -78,17 +78,24 @@ def test_is_entrance() -> None:
     assert not dungeons.is_entrance(e, "something else entirely")
 
 
+# a dungeon the game's files place nowhere: every real one has its entrance now
+UNPLACED: dict[str, Any] = {"entrances": [{"name": "Hidden Cave", "map": 7, "npc": None, "at": None,
+                                          "spots": [[180, 80, "dungeon entrance"]]}],
+                            "not_found": []}
+
+
 def test_learn_remembers_where_a_circle_was(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     learned = tmp_path / "_learned_entrances.json"
     monkeypatch.setattr(dungeons, "LEARNED", str(learned))
     monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
-    e = found("Baru Grottoe")
+    monkeypatch.setattr(dungeons, "data", stand_in(dungeons.data, lambda: UNPLACED))
+    e = found("Hidden Cave")
     assert e["at"] is None
-    dungeons.learn({"name": e["name"], "map": e["map"]}, "Baru Grottoe Teleportation circle", 180.4, 80.6)
+    dungeons.learn({"name": e["name"], "map": e["map"]}, "Hidden Cave Teleportation circle", 180.4, 80.6)
     assert learned.exists()
-    got = found("Baru Grottoe")
+    got = found("Hidden Cave")
     assert got["at"] == [180, 81]
-    assert got["npc"] == "Baru Grottoe Teleportation circle"
+    assert got["npc"] == "Hidden Cave Teleportation circle"
 
 
 def test_learn_does_not_override_a_known_entrance(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -104,7 +111,8 @@ def test_a_broken_learned_file_is_ignored(tmp_path: Path, monkeypatch: pytest.Mo
     learned = tmp_path / "_learned_entrances.json"
     learned.write_text("{not json", encoding="utf-8")
     monkeypatch.setattr(dungeons, "LEARNED", str(learned))
-    assert found("Baru Grottoe")["at"] is None
+    monkeypatch.setattr(dungeons, "data", stand_in(dungeons.data, lambda: UNPLACED))
+    assert found("Hidden Cave")["at"] is None
 
 
 def test_data_missing_file_gives_the_empty_shape(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -113,3 +121,18 @@ def test_data_missing_file_gives_the_empty_shape(tmp_path: Path, monkeypatch: py
     dungeons._d = None
     assert dungeons.entrances() == []
     assert dungeons.not_found() == []
+
+
+def test_entrances_measured_in_the_game_are_placed() -> None:
+    # Read from the game's entities on each map (2026-11-15). Lisa's Ukulele is entered through
+    # an NPC, not a circle; open sea, space battleship and Treasure pavilion stand far from the
+    # two entrances the game's files mark on far off regions, so a search there never finds them.
+    want = {"Lisa's Ukulele": ("Villager Lisa", [179, 128]),
+            "open sea": ("open sea Teleportation circle", [245, 180]),
+            "space battleship": ("space battleship Teleportation circle", [277, 180]),
+            "Treasure pavilion": ("Treasure pavilion Teleportation circle", [277, 220]),
+            "bottomless pit": ("bottomless pit", [150, 19])}
+    for name, (npc, at) in want.items():
+        e = dungeons.find(name)
+        assert e is not None and e["npc"] == npc and e["at"] == at, name
+        assert dungeons.is_entrance(e, npc)
