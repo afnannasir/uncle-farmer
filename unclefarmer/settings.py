@@ -43,7 +43,7 @@ APP_DEFAULTS: dict[str, Any] = {
 # character can make the bot act on facts that are not true there.
 PROFILE_EXPORT_FORMAT = "unclefarmer-character-settings"
 PROFILE_EXPORT_VERSION = 1
-CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home"))
+CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home", "login_email"))
 
 # One per character. Everything the bot needs to know about how YOU play.
 PROFILE_DEFAULTS: dict[str, Any] = {
@@ -121,6 +121,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for
     "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
@@ -192,6 +193,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     # below its min (and then everything short is topped up). Storehouse first (free), then the shop.
     "restock": [],
     "restock_check_every": 30,   # seconds between bag checks while farming
+    "login_email": "",          # the saved Mist World account this character was last seen on
 }
 
 # The shape of each file, checked by Pydantic when it is read (see _read below). A value of the
@@ -319,6 +321,7 @@ class Profile(BaseModel):
     corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
     xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
+    open_chests: bool = PROFILE_DEFAULTS["open_chests"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
@@ -362,6 +365,7 @@ class Profile(BaseModel):
     action_menu_key: str = PROFILE_DEFAULTS["action_menu_key"]
     restock: list[Any] = PROFILE_DEFAULTS["restock"]
     restock_check_every: int = PROFILE_DEFAULTS["restock_check_every"]
+    login_email: str = PROFILE_DEFAULTS["login_email"]
 
 
 # The game's own order (game.i.l(int) and k(int), read 2026-10-01). The bot reads the current value
@@ -568,6 +572,29 @@ def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
     other_character = any(profile_name(candidate) == name and profile_id(candidate)
                           and candidate != key for candidate in runs)
     return None if other_character else runs.get(name)
+
+
+def remember_character_account(character: str, email: str) -> bool:
+    """Record the saved account a live character belongs to, returning whether it changed."""
+    key = stable_key(character)
+    if not is_character_profile(key):
+        raise ValueError("the character has no game id")
+    profile = load_profile(key)
+    changed = profile.get("login_email") != email
+    if changed:
+        profile["login_email"] = email
+        save_profile(key, profile)
+    return changed
+
+
+def automatic_login_profiles() -> list[tuple[str, str]]:
+    """Identified profiles with a saved account learned from a live connected character."""
+    choices: list[tuple[str, str]] = []
+    for character in profiles():
+        email = load_profile(character).get("login_email")
+        if is_character_profile(character) and isinstance(email, str) and email:
+            choices.append((character, email))
+    return sorted(choices, key=lambda choice: profile_display(choice[0]).casefold())
 
 
 def profile_path(character: str) -> str:

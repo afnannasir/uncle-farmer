@@ -98,7 +98,15 @@ class FilterManager(Dialog):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, lambda e: self.refresh_hidden(), self.timer)
         self.timer.Start(1000)
+        # Cancel, Escape or the parent window closing destroy it without on_save: a running timer
+        # would go on calling refresh_hidden on a window that is gone.
+        self.Bind(wx.EVT_WINDOW_DESTROY, lambda e: self.timer.Stop())
         self.refresh()
+
+    def Destroy(self) -> bool:  # noqa: N802 (wx's name)
+        # A dialog's own Destroy is carried out later, at idle time: stop the timer now.
+        self.timer.Stop()
+        return super().Destroy()
 
     def selected(self) -> filters.Filter | None:
         i = self.list.GetSelection()

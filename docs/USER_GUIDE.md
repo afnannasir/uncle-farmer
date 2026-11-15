@@ -361,6 +361,16 @@ You can change the 40-step distance or turn boss avoidance off in **Advanced →
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
+### Treasure chests
+
+Now and then a treasure chest appears on a farming map, and the game announces it to everyone: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
+
+When a chest comes into sight while farming, Uncle Farmer walks to it and opens it the way you would: it selects the chest, presses Enter and chooses **Open the chest**. It says "opened a chest" with the number opened so far, and the results count the chests opened.
+
+It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+
+You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
+
 ### Settings for each character
 
 Every character has its own settings.

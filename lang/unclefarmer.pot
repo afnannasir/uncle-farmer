@@ -353,6 +353,9 @@ msgstr ""
 msgid "&Only fight (names, separated by commas):"
 msgstr ""
 
+msgid "&Open the chests that turn up while farming"
+msgstr ""
+
 msgid "&Open the log folder"
 msgstr ""
 
@@ -604,6 +607,9 @@ msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ""
 
 msgid ", {n} threads"
+msgstr ""
+
+msgid "1 chest opened"
 msgstr ""
 
 msgid "1 game, bot running"
@@ -974,6 +980,9 @@ msgstr ""
 msgid "Check the bag for restocking every (seconds):"
 msgstr ""
 
+msgid "Chests opened: {n}"
+msgstr ""
+
 msgid "Chime"
 msgstr ""
 
@@ -982,6 +991,9 @@ msgid ""
 msgstr ""
 
 msgid "Choose Before farming or After farming."
+msgstr ""
+
+msgid "Choose a character."
 msgstr ""
 
 msgid "Choose a city square:"
@@ -1163,6 +1175,9 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
+msgstr ""
+
+msgid "Couldn't open it."
 msgstr ""
 
 msgid "Couldn't open it: {err}"
@@ -2988,6 +3003,9 @@ msgstr ""
 msgid "Save changes to the script?"
 msgstr ""
 
+msgid "Saved account email:"
+msgstr ""
+
 msgid "Saved. It's in the Plans tab as a script."
 msgstr ""
 
@@ -3517,6 +3535,10 @@ msgid ""
 "The agent isn't installed in the game yet, and without it a second game closes right after it starts. Open Settings now?"
 msgstr ""
 
+msgid ""
+"The agent isn't installed in the game yet. Install it in Settings first."
+msgstr ""
+
 msgid "The area is now 40 tiles around you."
 msgstr ""
 
@@ -3679,6 +3701,9 @@ msgstr ""
 msgid "The schedule isn't complete"
 msgstr ""
 
+msgid "The scheduled character and the script's login character are different."
+msgstr ""
+
 msgid ""
 "The script has a mistake:\n"
 "{p}\n"
@@ -3690,6 +3715,9 @@ msgid "The script reads correctly."
 msgstr ""
 
 msgid "The script was saved, but the old file couldn't be removed: {err}"
+msgstr ""
+
+msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 
 msgid "The sound list must be a list of sound entries."
@@ -4236,9 +4264,6 @@ msgstr ""
 msgid "Would you like to switch to {language}?"
 msgstr ""
 
-msgid "Write the character's name: the game it is logged in to runs it."
-msgstr ""
-
 msgid "X:"
 msgstr ""
 
@@ -4276,6 +4301,9 @@ msgid ""
 msgstr ""
 
 msgid "a chat line"
+msgstr ""
+
+msgid "a chest in sight, {n} steps away: going to open it"
 msgstr ""
 
 msgid "a condition or value is missing"
@@ -4386,6 +4414,15 @@ msgid ""
 msgstr ""
 
 msgid "attacks {how}"
+msgstr ""
+
+msgid "automatic login could not start"
+msgstr ""
+
+msgid "automatic login finished"
+msgstr ""
+
+msgid "automatic login stopped"
 msgstr ""
 
 msgid "avoiding elites"
@@ -4550,6 +4587,9 @@ msgid "choose what? write: choose Tulip City"
 msgstr ""
 
 msgid "choosing \"{entry}\""
+msgstr ""
+
+msgid "chose \"Open the chest\" but the chest is still there"
 msgstr ""
 
 msgid "cleaning the bag"
@@ -5185,6 +5225,9 @@ msgstr ""
 msgid "log in to a character first"
 msgstr ""
 
+msgid "login must be the first command in a script"
+msgstr ""
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr ""
 
@@ -5633,6 +5676,12 @@ msgstr ""
 msgid "open games started without this version's agent: {n}"
 msgstr ""
 
+msgid "opened a chest ({n} this run)"
+msgstr ""
+
+msgid "opening a game for {name}"
+msgstr ""
+
 msgid "ore"
 msgstr ""
 
@@ -5929,6 +5978,9 @@ msgid ""
 msgstr ""
 
 msgid "started"
+msgstr ""
+
+msgid "starting automatic login"
 msgstr ""
 
 msgid "starting {what} as {name}"
@@ -6234,6 +6286,9 @@ msgid ""
 "the character sheet shows no Vitality yet (restart the game so it loads the new agent) - gathering until it runs out"
 msgstr ""
 
+msgid "the chest is gone: someone else opened it"
+msgstr ""
+
 msgid "the day's chores first"
 msgstr ""
 
@@ -6298,6 +6353,9 @@ msgstr ""
 
 msgid ""
 "the game ran out of memory and stopped working ({where}) - restart Mist World"
+msgstr ""
+
+msgid "the game refused the login request"
 msgstr ""
 
 msgid "the game won't let us hit {name} from here - next one"
@@ -6394,6 +6452,9 @@ msgstr ""
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr ""
 
+msgid "the plan's character has no saved account. Log in to it once first."
+msgstr ""
+
 msgid "the ride from {map} never arrived"
 msgstr ""
 
@@ -6450,6 +6511,9 @@ msgid ""
 msgstr ""
 
 msgid "the top level - nothing to lose"
+msgstr ""
+
+msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""
 
 msgid "the {item} on key {key} are used up"
@@ -6528,6 +6592,9 @@ msgid "this text is too long: {expr}"
 msgstr ""
 
 msgid "threw away {list}"
+msgstr ""
+
+msgid "through the teleport at {cell}"
 msgstr ""
 
 msgid "throwing away {n} {item} (the bag manager says so)"
@@ -6704,6 +6771,9 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr ""
 
 msgid "write it as: hold key seconds"
+msgstr ""
+
+msgid "write it as: login  or  login <character>"
 msgstr ""
 
 msgid ""
@@ -6997,6 +7067,10 @@ msgid "{name} down ({n} so far)"
 msgstr ""
 
 msgid ""
+"{name} has more than one signed-out game; close the extras or log in first"
+msgstr ""
+
+msgid ""
 "{name} has no profile yet - using the default keys. Open Character, Settings to check them."
 msgstr ""
 
@@ -7126,6 +7200,9 @@ msgid "{n} arnebia"
 msgstr ""
 
 msgid "{n} at level {lv}"
+msgstr ""
+
+msgid "{n} chests opened"
 msgstr ""
 
 msgid "{n} contribution"
@@ -7358,7 +7435,7 @@ msgstr ""
 msgid "{where} failed: {err} (carrying on)"
 msgstr ""
 
-msgid "{who} isn't logged in to a game that Uncle Farmer sees"
+msgid "{who} isn't logged in to one available game"
 msgstr ""
 
 msgid "{who}'s game is busy with {what}"

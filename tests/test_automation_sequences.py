@@ -2,18 +2,21 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 import wx
 
-from conftest import as_bot, returning
+from conftest import as_bot, returning, Clock
 from test_script import FakeBot
 from test_triggers import triggered
 from test_schedule import Window, daily, fresh, T0, outcomes
 from unclefarmer import paths, settings, schedule
 from unclefarmer.engine import triggers, runner, dungeon
 from unclefarmer.gui import triggers as gui, schedules
+from unclefarmer.gui.mainparts.runs import RunsMixin
+from unclefarmer.gui.mainparts import runs as runs_gui
 
 
 def profile(*rows: dict[str, Any], stage: str = "before") -> dict[str, Any]:
@@ -181,6 +184,33 @@ def test_scheduler_reuses_occurrence_and_busy_handling_for_automation(item: str,
     assert window.runs[22].schedule == (entry["id"], "2026-11-02 06:00")
     window.schedule_tick()
     assert len(window.started) == 1 and outcomes(entry) == [schedule.STARTED]
+
+
+@pytest.mark.parametrize(("item", "text"), [(("tool", "restock"), "restock\n"),
+                                           (("trigger", "before"), "before"), (("trigger", "after"), "after")])
+def test_automation_start_preserves_saved_login_and_marks_before_start(
+    item: tuple[str, str], text: str, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    key = settings.character_profile("Hero", 2001, "S1")
+    mark = ("automation", "2026-11-15 05:00")
+    started: list[tuple[str | None, tuple[str, str] | None, str]] = []
+    class StubRun:
+        def __init__(self, source: str, title: str, *_args: object, **_kwargs: object) -> None:
+            self.text, self.title = source, title
+            self.profile: str | None = None
+            self.schedule: tuple[str, str] | None = None
+
+        def start(self) -> None:
+            started.append((self.profile, self.schedule, self.text))
+    monkeypatch.setattr(runs_gui, "Run", StubRun)
+    frame: Any = SimpleNamespace(
+        s={"last_run": "plan:Keep"}, games=[(1, key, "Town")], runs={}, last_line={}, clock=Clock(),
+        selected_item=returning(None), selected_pid=returning(1), label_games=returning(None),
+        update_buttons=returning(None), poll=returning(None), on_log=returning(None), on_done=returning(None),
+        locate=returning(None), last_seen=returning(None))
+    assert RunsMixin.start(frame, 1, item, remote=True, profile=key, schedule_mark=mark) == "Starting %s." % item[1]
+    assert started == [(key, mark, text)]
+    assert frame.s == {"last_run": "plan:Keep"}
 
 
 def test_gui_reordering_and_scheduler_tab_selection(tmp_path: Path) -> None:
