@@ -10,6 +10,33 @@
   kills were missed this way. The game reports these deaths in a message of their own, which the
   agent now reads (agent 69). Close the game and start it again to load the new agent.
 
+**The log says why a monster was left**
+
+- Every fight the bot picks and ends without a kill now records why, in the farming record
+  (`logs/field-<day>.jsonl`): stuck on the way, taken by someone else, another monster came into
+  reach, no clear shot, moved out of range, took no damage, and so on. Until now about a third of
+  the picks ended with no kill and nothing in the record to say why.
+- A search walk that starts with monsters in sight records how many there were, how many were left
+  out for each reason, and where the ones with no way to walk to were standing.
+- The "monsters in sight, none to fight" line names the map.
+- The night report (`nightwatch.py report`) adds these up: no-kill fights by reason with the time
+  each cost, monsters left out by reason, and the "no way to walk there" ones by map.
+- Nothing changes in how the bot fights. The times a monster is left alone are the same as before;
+  they are set in one place now instead of twelve.
+- Fixed in passing: a fight the bot had to stop for on its way to the picked monster (fighting
+  back) made the picked fight count as "never reached" in the night report, even when it was.
+- "no way to walk there" now reads "no way to walk there, or only a very long way round". Two
+  recorded nights (turkey cave and Margit Rainforest) were replayed: every monster the bot had
+  called unreachable could be walked to, by a way round of 150 to 400 steps. The bot is right to
+  leave those; the map data has no hole there.
+
+**No more picking the same monster over and over**
+
+- When the bot stops on its way to a monster because another one has come into reach, it now
+  fights that one at once. It used to hand the choice back, and when the first monster was the
+  shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
+  again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode

@@ -5554,6 +5554,9 @@ msgstr "chook gaya"
 msgid "mode set: {mode}"
 msgstr "mode set: {mode}"
 
+msgid "monsters in sight, none to fight ({map}): {why}"
+msgstr "monsters nazar mein hain, larne ko koi nahi ({map}): {why}"
+
 msgid "monsters in sight, none to fight: {why}"
 msgstr "monsters nazar mein hain, larne ko koi nahi: {why}"
 
@@ -5729,8 +5732,8 @@ msgid "no way out of the safe zone on {map} to cast {skill}"
 msgstr ""
 "{map} par {skill} chalane ke liye safe zone se bahar nikalne ka koi rasta nahi"
 
-msgid "no way to walk there"
-msgstr "wahan paidal jaane ka koi rasta nahi"
+msgid "no way to walk there, or only a very long way round"
+msgstr "wahan paidal jaane ka koi rasta nahi, ya sirf bohat lamba chakkar"
 
 msgid "no {card} in the bag - farming on without an experience card"
 msgstr "bag mein koi {card} nahi - experience card ke baghair farming jaari"
@@ -7933,6 +7936,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Up&date shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
+
+#~ msgid "no way to walk there"
+#~ msgstr "wahan paidal jaane ka koi rasta nahi"
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"

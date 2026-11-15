@@ -5318,6 +5318,9 @@ msgstr ""
 msgid "mode set: {mode}"
 msgstr ""
 
+msgid "monsters in sight, none to fight ({map}): {why}"
+msgstr ""
+
 msgid "monsters in sight, none to fight: {why}"
 msgstr ""
 
@@ -5477,7 +5480,7 @@ msgstr ""
 msgid "no way out of the safe zone on {map} to cast {skill}"
 msgstr ""
 
-msgid "no way to walk there"
+msgid "no way to walk there, or only a very long way round"
 msgstr ""
 
 msgid "no {card} in the bag - farming on without an experience card"

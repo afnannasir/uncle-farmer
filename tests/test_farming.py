@@ -159,8 +159,11 @@ class Farm(FarmingMixin):
 
     explained = 0
 
-    def explain_left_out(self) -> None:
+    def explain_left_out(self, map_id: int | None = None) -> None:
         self.explained += 1
+
+    def sight_note(self) -> dict[str, Any]:
+        return {}
 
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         return mobs[0]
@@ -168,7 +171,8 @@ class Farm(FarmingMixin):
     def note_pick(self, snap: dict[str, Any], mob: dict[str, Any], mobs: list[dict[str, Any]]) -> None:
         pass
 
-    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str) -> None:
+    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str,
+                    seen: dict[str, Any] | None = None) -> None:
         pass
 
     def walk_to(self, cell: tuple[float, float], map_change: bool=False, near: Callable[[dict[str, Any]], bool] | None=None) -> str:

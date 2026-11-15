@@ -169,7 +169,8 @@ class FarmingMixin(Parts):
                     self.fight(mob)
                     continue
                 # Nothing to fight: keep moving (and say why, when monsters were in sight).
-                self.explain_left_out()
+                self.explain_left_out(map_id)
+                seen = self.sight_note()      # before the walk's own looks replace it
                 me = snap["self"]
                 if loop:
                     if loop_i is None:
@@ -184,7 +185,7 @@ class FarmingMixin(Parts):
                 started = self.clock.time()
                 with self.timed("search"):
                     result = self.walk_to(cell, near=sighted)
-                self.note_search(map_id, me, cell, started, result)
+                self.note_search(map_id, me, cell, started, result, seen)
             except Respawned:
                 loop_i = None
                 if self._respawned(map_id):

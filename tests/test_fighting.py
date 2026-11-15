@@ -15,6 +15,7 @@ import contextlib
 import json
 import math
 import os
+import re
 import threading
 import types
 from typing import Any
@@ -24,7 +25,7 @@ import pytest
 from unclefarmer.clock import CLOCK, StopFlag, Waitable
 from unclefarmer import paths, settings
 from unclefarmer.engine.botparts import fighting
-from unclefarmer.engine.botparts.base import NPC_HP
+from unclefarmer.engine.botparts.base import NPC_HP, Respawned, Stopped
 from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.keys import KeysMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
@@ -1022,6 +1023,211 @@ def test_a_search_walk_goes_to_the_field_log(clock: Clock) -> None:
     assert rec["kind"] == "search" and rec["to"] == [140, 120] and rec["s"] == 4.0 and rec["result"] == "near"
 
 
+# ------------------------------------------------------------------ why a picked fight had no kill
+def picked(b: Bot, mob: dict[str, Any]) -> None:
+    """The farm loop's pick of mob, as note_pick leaves it for fight()."""
+    snap = b.snap()
+    b.note_pick(snap, mob, [mob])
+
+
+def quiet_beasts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(fighting.beasts, "ensure", stand_in(fighting.beasts.ensure, lambda b, purpose: None))
+
+
+def test_every_reason_the_fight_code_gives_is_a_known_one() -> None:
+    with open(fighting.__file__, encoding="utf-8") as f:
+        source = f.read()
+    given = set(re.findall(r'self\.ended\("([^"]+)"', source)) | set(re.findall(r'self\.leave\([^,()]+, "([^"]+)"', source))
+    assert len(given) > 15                       # the patterns still find them
+    assert given <= set(fighting.NO_KILL)
+    assert set(fighting.LEFT_FOR) <= set(fighting.NO_KILL)
+    assert "self.skip[" not in source.replace("self.skip[mid] = until", "")    # leave() is the one place
+
+
+def test_leave_sets_the_skip_and_the_first_reason_stands(clock: Clock) -> None:
+    b = target_bot([])
+    b.field_record = {"id": -1}
+    assert b.leave(-1, "no damage") == clock.now + 120
+    assert b.skip == {-1: clock.now + 120}
+    b.leave(-2, "doomed", 4.0)
+    assert b.skip[-2] == clock.now + 4.0
+    assert b.field_record == {"id": -1, "why": "no damage"}
+    b.field_record = None
+    b.leave(-3, "stuck")                         # a fight nobody picked: the skip alone
+    assert b.skip[-3] == clock.now + 120
+
+
+def test_a_picked_fight_with_no_kill_says_why(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = fight_bot()                              # reach 4: the monster at 120 is out of reach
+    b.walk_to = lambda cell, map_change=False, near=None: "stuck"
+    mob = monster(-1, x=120.0)
+    b.entities = [mob]
+    picked(b, mob)
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["why"] == "stuck" and rec["killed"] is False and rec["kills"] == 0
+    assert b.field_record is None
+
+
+@pytest.mark.parametrize("ending, why", [("taken", "taken"), ("doomed", "doomed"), ("unselectable", "unselectable"),
+                                         ("beside another", "another")])
+def test_each_way_out_before_the_fight_names_itself(monkeypatch: pytest.MonkeyPatch, clock: Clock, ending: str,
+                                                    why: str) -> None:
+    quiet_beasts(monkeypatch)
+    b = fight_bot(attack_range=10.0)
+    mob = monster(-1, x=105.0 if ending == "unselectable" else 130.0)
+    b.entities = [mob]
+    picked(b, mob)
+    if ending == "taken":
+        b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": []}
+        b.count_kills = lambda snap=None: []
+    elif ending == "doomed":
+        near_walk(b)
+        b.doomed = lambda e, me, steps=None, rng=None: True
+        b.dying_in = lambda e: 3.0
+    elif ending == "unselectable":
+        b.select_target = lambda mob, by_keys=False: False
+    else:
+        b.walk_to = lambda cell, map_change=False, near=None: "near"      # stopped for another one in reach
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["why"] == why and rec["killed"] is False
+
+
+def test_a_picked_fight_that_killed_its_monster_has_no_why(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
+    mob = b.snap()["entities"][0]
+    picked(b, mob)
+
+    def fake_fight(mob: dict[str, Any]) -> None:
+        clock.now += 2.0
+        b.kills += 1
+        b.counted[-1] = clock.now                 # count_kills: dead with a hit of ours on it
+        b.ended("down")
+    b._fight = fake_fight
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["killed"] is True and rec["kills"] == 1 and "why" not in rec
+
+
+def test_another_monsters_kill_during_the_fight_is_not_this_ones(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
+    mob = b.snap()["entities"][0]
+    b.counted[-1] = clock.now - 20                # an earlier monster of the same id, before this pick
+    picked(b, mob)
+
+    def fake_fight(mob: dict[str, Any]) -> None:
+        clock.now += 1.0
+        b.kills += 1
+        b.counted[-7] = clock.now                 # one that died of our damage over time meanwhile
+        b.ended("leash")
+    b._fight = fake_fight
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["kills"] == 1 and rec["killed"] is False and rec["why"] == "leash"
+
+
+def test_the_monster_our_hits_moved_the_fight_to_counts_as_its_kill(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
+    mob = b.snap()["entities"][0]
+    picked(b, mob)
+
+    def fake_fight(mob: dict[str, Any]) -> None:
+        rec = b.field_record
+        assert rec is not None
+        rec["moved_to"] = -2                      # "our hits land on ... - fighting that one"
+        clock.now += 1.0
+        b.kills += 1
+        b.counted[-2] = clock.now
+    b._fight = fake_fight
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["killed"] is True and rec["moved_to"] == -2 and "why" not in rec
+
+
+def test_an_ending_nobody_named_shows_as_a_question_mark(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
+    mob = b.snap()["entities"][0]
+    picked(b, mob)
+    b._fight = lambda mob: None
+    b.fight(mob)
+    [rec] = read_field_log()
+    assert rec["why"] == "?" and rec["killed"] is False
+
+
+def test_a_stop_in_the_fight_is_its_reason(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
+    mob = b.snap()["entities"][0]
+    for raised, why in ((Stopped("stopped by you"), "stopped"), (Respawned(), "died"), (KeyError("x"), "error")):
+        picked(b, mob)
+
+        def fake_fight(mob: dict[str, Any], raised: Exception = raised) -> None:
+            raise raised
+        b._fight = fake_fight
+        with pytest.raises(type(raised)):
+            b.fight(mob)
+        assert read_field_log()[-1]["why"] == why
+        assert b.in_fight is False and b.field_record is None
+
+
+def test_a_fight_on_the_way_leaves_the_picked_fights_record_its_own(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
+    """Fighting back during the walk up ran fight() inside fight(), and the picked fight's record
+    was gone when it came back: its reach time was never written, so it counted as never reached."""
+    quiet_beasts(monkeypatch)
+    b = target_bot([monster(-1, x=130.0), monster(-2, x=103.0)], attack_range=10.0)
+    far, close = b.snap()["entities"]
+    picked(b, far)
+    seen: list[Any] = []
+
+    def fake_fight(mob: dict[str, Any]) -> None:
+        if mob["id"] == -1:
+            b.fight(close)                        # attacked on the way: fight back
+            rec = b.field_record
+            seen.append(rec)
+            assert rec is not None
+            rec["reach_at"] = clock.now
+        else:
+            seen.append(b.field_record)
+            b.leave(-2, "no damage")              # the reason of a fight nobody picked
+    b._fight = fake_fight
+    b.fight(far)
+    [rec] = read_field_log()
+    assert seen[0] is None and seen[1] is not None
+    assert rec["id"] == -1 and "reach_s" in rec and rec["why"] == "?"
+    assert b.skip[-2] == clock.now + 120
+
+
+def test_a_search_record_says_what_was_in_sight_and_left_out(clock: Clock) -> None:
+    b = target_bot([monster(-1, x=130.0), monster(-2, x=160.0, y=150.0), monster(-3, x=101.0)])
+    b.skip = {-3: clock.now + 120}
+    walk = b.walk_dist
+    b.walk_dist = lambda snap, e, limit=None: math.inf if e["id"] == -2 else walk(snap, e, limit)   # walled in
+    assert b.targets(b.snap(), limit=10) == []
+    seen = b.sight_note()
+    assert seen == {"sight": 3, "left": {"far": 1, "no way": 1, "skip": 1}, "no_way": [[160.0, 150.0]]}
+    b.entities = []
+    assert b.targets(b.snap()) == []              # the walk's own looks: nothing in sight any more
+    assert b.sight_note() == {}
+    b.note_search(5121, {"x": 100.0, "y": 100.0}, (140, 120), clock.now, "arrived", seen)
+    [rec] = read_field_log()
+    assert rec["sight"] == 3 and rec["left"] == {"far": 1, "no way": 1, "skip": 1}
+    assert rec["no_way"] == [[160.0, 150.0]]
+
+
+def test_only_the_first_few_places_with_no_way_are_kept(clock: Clock) -> None:
+    b = target_bot([monster(-i, x=100.0 + i) for i in range(1, 9)])
+    b.walk_dist = lambda snap, e, limit=None: math.inf
+    assert b.targets(b.snap()) == []
+    note = b.sight_note()
+    assert note["left"] == {"no way": 8} and len(note["no_way"]) == b.NO_WAY_KEPT
+
+
 def test_burst_true_when_the_game_confirms(clock: Clock) -> None:
     b = Bot()
     sb = Pick()
@@ -1288,7 +1494,9 @@ def test_fight_walks_up_when_the_pull_stopped_beyond_the_keys_reach(clock: Clock
     assert b.hit_calls == [-1]
 
 
-def test_fight_stops_beside_another_monster_the_farm_filter_takes() -> None:
+def test_fight_takes_the_other_monster_its_walk_stopped_for() -> None:
+    """Handed back to the farm loop, the same far monster was picked again whenever it was the
+    nearer walk, and the walk stopped for this one again at once: up to 66 picks in 3 s, live."""
     b = fight_bot(attack_range=4.0)
     b.farm_filter = (None, "", "", [])
     other = monster(-2, x=103.0, y=100.0)
@@ -1297,9 +1505,33 @@ def test_fight_stops_beside_another_monster_the_farm_filter_takes() -> None:
     near_walk(b)
     b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_),
                       "entities": [monster(-1, x=120.0), other]}
+    b.field_record = {"id": -1}
     b._fight(monster(-1, x=120.0))
     assert b.walked == []                    # the near() stop happened inside walk_to
+    assert b.selects == [-2] and b.hit_calls == [-2]
+    assert b.field_record["moved_to"] == -2 and "why" not in b.field_record and "reach_at" in b.field_record
+
+
+@pytest.mark.parametrize("what", ["gone", "dead", "out of reach"])
+def test_fight_picks_again_when_the_other_monster_is_no_longer_there(what: str) -> None:
+    b = fight_bot(attack_range=4.0)
+    b.farm_filter = (None, "", "", [])
+    other = monster(-2, x=103.0, y=100.0)
+    b.targets = lambda snap, area=None, only=None, skip=None, avoid_rects=(), limit=None: [other]
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    near_walk(b)
+    looks: list[int] = []
+
+    def snap() -> dict[str, Any]:
+        looks.append(1)
+        now = {"gone": [], "dead": [dict(other, hp=0)], "out of reach": [dict(other, x=140.0)]}[what]
+        return {"map": {"id": 5121}, "self": dict(b.self_),
+                "entities": [monster(-1, x=120.0)] + ([other] if len(looks) == 1 else now)}
+    b.snap = snap
+    b.field_record = {"id": -1}
+    b._fight(monster(-1, x=120.0))
     assert b.hit_calls == [] and b.selects == []
+    assert b.field_record == {"id": -1, "why": "another"}
 
 
 def move_bot(ready: float = 0.0) -> tuple[Bot, Pick]:
@@ -1900,8 +2132,10 @@ def test_explain_left_out_says_why_once_a_minute(clock: Clock) -> None:
     assert "left alone for now" in said[0]
     b.explain_left_out()                          # within the minute: quiet
     clock.advance(b.LEFT_OUT_EVERY)
-    b.explain_left_out()
-    assert len([line for line in b.lines if line.startswith("monsters in sight")]) == 2
+    b.explain_left_out(5121)                      # the farm loop says which map
+    said = [line for line in b.lines if line.startswith("monsters in sight")]
+    assert len(said) == 2
+    assert said[1].startswith("monsters in sight, none to fight (%s): " % fighting.atlas.label(5121))
 
 
 def test_explain_left_out_quiet_when_nothing_was_in_sight(clock: Clock) -> None:
