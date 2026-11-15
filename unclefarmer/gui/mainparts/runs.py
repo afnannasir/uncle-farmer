@@ -7,7 +7,7 @@ import time
 import wx
 
 from ... import settings
-from ...engine import plan as plans
+from ...engine import plan as plans, triggers
 from ...engine.runner import Run
 from ...engine.script import check as check_script, login_target
 from ...i18n import _
@@ -24,6 +24,10 @@ def run_text_and_profile(item: Item, profile: str | None) -> tuple[str | None, s
 
     The returned error is already suitable for a dialog or a remote reply.
     """
+    if item[0] == "tool" and item[1] in dict(triggers.TOOLS):
+        return item[1] + "\n", profile, None
+    if item[0] == "trigger" and item[1] in triggers.STAGES:
+        return item[1], profile, None
     try:
         if item[0] == "plan":
             text = plans.to_script(plans.load(item[1]))
@@ -51,6 +55,10 @@ class RunsMixin(FrameParts):
     # ------------------------------------------------------------ what to run
     def item_label(self, item: Item) -> str:
         kind, name = item
+        if kind == "tool":
+            return triggers.what(name)
+        if kind == "trigger":
+            return _("Before farming") if name == "before" else _("After farming")
         return name if kind == "plan" else _("{name} (script)", name=name)
 
     def fill_runs(self, select: Item | None = None) -> None:
@@ -109,6 +117,10 @@ class RunsMixin(FrameParts):
 
     def item_text(self, item: Item) -> str:
         kind, name = item
+        if kind == "tool" and name in dict(triggers.TOOLS):
+            return name + "\n"
+        if kind == "trigger" and name in triggers.STAGES:
+            return name
         if kind == "plan":
             return plans.to_script(plans.load(name))
         with open(plans.script_path(name), encoding="utf-8") as f:
@@ -219,7 +231,7 @@ class RunsMixin(FrameParts):
         return saved_item(last) if last and saved_item(last) in self.items else item
 
     def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False,
-              profile: str | None = None) -> str | None:
+              profile: str | None = None, schedule_mark: tuple[str, str] | None = None) -> str | None:
         """Start a bot. remote: asked by private message - no message boxes; returns what to answer."""
         def fail(text: str) -> str | None:
             if remote:
@@ -255,15 +267,17 @@ class RunsMixin(FrameParts):
             text, profile, problem = run_text_and_profile(item, wanted)
             if problem or text is None:
                 return fail(problem or _("Couldn't open it."))
-        self.s["last_run"] = "%s:%s" % item
         name = next((g[1] for g in self.games if g[0] == pid), None)
-        if name:
-            self.s.setdefault("last_runs", {})[settings.stable_key(name)] = "%s:%s" % item
-        save_file(self, settings.save_app, self.s)      # a failed save must not stop the start
+        if item[0] in ("plan", "script"):
+            self.s["last_run"] = "%s:%s" % item
+            if name:
+                self.s.setdefault("last_runs", {})[settings.stable_key(name)] = "%s:%s" % item
+            save_file(self, settings.save_app, self.s)      # a failed save must not stop the start
         run = Run(text, item[1], pid, self.on_log, self.on_done, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = item[0]
+        run.schedule = schedule_mark  # set before the thread can complete a short tool
         run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
         run.profile = profile or name
         self.runs[pid] = run

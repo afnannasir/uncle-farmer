@@ -1,4 +1,4 @@
-"""Scheduled runs: a plan or script started for a character at a set time - once, every day, or
+"""Scheduled runs: a plan, script, tool or trigger sequence for a character - once, every day, or
 on chosen days of the week.
 
 Kept in schedules.json beside settings.json: the player's own, never in a release (the updater

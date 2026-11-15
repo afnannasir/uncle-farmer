@@ -64,7 +64,7 @@ class MarkingRunner(FarmingRunner):
         super().run()
 
 
-def triggered(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profile: dict[str, bool],
+def triggered(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profile: dict[str, Any],
               runner: type[FakeRunner] = MarkingRunner, **kw: Any) -> tuple[R.Run, list[tuple[str, bool]], Jobs]:
     run, _links, logs, _done = make(monkeypatch, tmp_path, runner=runner, **kw)
     from unclefarmer import scan as scan_mod

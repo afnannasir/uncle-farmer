@@ -57,20 +57,23 @@ def test_triggers_tab_saves_both_stages_independently(frame: Any) -> None:
     settings.save_profile("Hero", p)
     d = ProfileDialog(frame, "Hero")
     try:
-        assert set(d.triggers) == set(triggers.SETTINGS)
-        assert [k for k, box in d.triggers.items() if box.GetValue()] == ["sell_shards_after_farming",
-                                                                        "clean_bag_after_farming"]
-        d.triggers["sell_shards_before_farming"].SetValue(True)      # the same job before farming too
-        d.triggers["store_items_before_farming"].SetValue(True)
-        d.triggers["store_items_after_farming"].SetValue(True)
-        d.triggers["clean_bag_after_farming"].SetValue(False)
-        assert d.triggers["sell_shards_after_farming"].GetValue() is True     # nothing unticked the other
+        assert set(d.trigger_editors) == set(triggers.STAGES)
+        before, after = d.trigger_editors["before"], d.trigger_editors["after"]
+        assert [row["action"] for row in after.rows if row["enabled"]] == ["sell_shards", "clean_bag"]
+        for row in before.rows:
+            row["enabled"] = row["action"] in ("sell_shards", "store_items")
+        for row in after.rows:
+            row["enabled"] = row["action"] in ("sell_shards", "store_items")
+        before.rows[0].update(delay=600, deterministic=True)
+        assert after.rows[0]["enabled"] and not after.rows[0]["deterministic"]
         d.on_ok(wx.CommandEvent())
     finally:
         d.Destroy()
     saved = settings.load_profile("Hero")
     assert triggers.ticked(saved, "before") == ["sell_shards", "store_items"]
     assert triggers.ticked(saved, "after") == ["sell_shards", "store_items"]
+    assert triggers.sequence(saved, "before")["steps"][0]["delay"] == 600
+    assert triggers.sequence(saved, "before")["steps"][0]["deterministic"] is True
 
 
 def test_travel_and_pets_keeps_only_travel_and_pets(frame: Any) -> None:
@@ -80,7 +83,7 @@ def test_travel_and_pets_keeps_only_travel_and_pets(frame: Any) -> None:
         travel = labels(tab(d, "Travel and pets"))
         assert not any("farming" in t.lower() or "Tools," in t for t in travel)
         assert "End the run with the hearthstone" in travel
-        assert len(labels(tab(d, "Triggers"))) == 2 * len(triggers.JOBS)
+        assert all(editor.list.GetCount() == len(triggers.JOBS) for editor in d.trigger_editors.values())
     finally:
         d.Destroy()
 

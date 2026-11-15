@@ -54,6 +54,7 @@ Follow these steps to get started:
 
 1. Extract the downloaded folder wherever you like, such as your Documents folder. Keep all the files and folders together.
 2. Run `UncleFarmer.exe`. The first time you start it, Uncle Farmer offers to open Settings.
+   (`bootstrap.exe` beside it installs updates and starts Uncle Farmer again afterwards; you don't need to start it yourself.)
 3. Open the **Game** tab in Settings. Select your Mist World folder (the one containing `mw.exe`), or start the game first and press **Find the running game**.
 4. Press **Install**.
 5. Restart Mist World.
@@ -444,7 +445,29 @@ The storage list is read when the job starts. This means changes you make to the
 
 Open **Character, Settings, Triggers** to configure jobs that run before or after farming.
 
-There are two lists, and both contain the same six jobs:
+There are independent **Before farming** and **After farming** lists. Enabled actions run from
+top to bottom, one at a time. Use **Move up** and **Move down** to change that order. Existing
+profiles keep their enabled jobs and original order until you edit them.
+
+Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
+or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
+delay begins only after that action completes successfully and applies before the next enabled
+action. Zero means no wait; the final action has no trailing delay. Stop cancels the wait.
+
+DETERMINISTIC is set **separately on each action**. If that action fails, the remaining sequence
+is skipped. A checked Before action that fails also prevents farming from starting. An unchecked
+action's ordinary failure is logged and execution continues without its delay. A lost/frozen
+game or pressing Stop ends the sequence regardless of this setting. Actions use the existing
+tools' completion/error contracts: zero items processed or no refill trip needed is not an error.
+Scripts run synchronously in the existing script interpreter; a missing or broken script is a
+failed action, and its stop conditions do not leak into the surrounding workflow.
+
+For example, put Clean the bag before Daily chores and set Clean the bag's delay to `600`.
+If cleaning completes at 04:50, chores can start at 05:00. This is ten minutes after completion,
+not a promise of a fixed reset time if the preceding work takes longer. Farming's daily-stop
+deadline does not cut short an After sequence; normal Stop, pause and connection checks remain.
+
+The familiar default jobs include:
 
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
@@ -1342,6 +1365,16 @@ Windows may prevent you from moving or deleting these files while the program is
 Want Uncle Farmer to start farming without having to press **Start** yourself? You can use schedules to run a plan or script automatically at a time you choose.
 
 Open **Run → Schedules** or press **Ctrl+Shift+H**.
+
+The Scheduler has three tabs: **Plans and scripts**, **Tools**, and **Triggers**. Tools schedules
+run executable tools independently, using that character's saved tool configuration. Triggers
+schedules run the character's current Before or After sequence, preserving its order, delays
+and each action's DETERMINISTIC setting. An empty enabled sequence is reported as an error.
+Tools and trigger sequences can run independently of farming's daily-stop window and do not
+recursively run Before/After automation. They do not replace the character's last selected
+farming plan. Tools that only open configuration windows, such as Sound Silencer, are not
+scheduled executable jobs. All tabs share the existing once/daily/weekday timing, history,
+busy-game protection and missed-occurrence rules below.
 
 ### Setting up a schedule
 

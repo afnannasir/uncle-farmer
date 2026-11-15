@@ -7,11 +7,41 @@ flush requests or loses/corrupts every recovery copy.
 
 ## Startup and packaging
 
-`UncleFarmer.exe` is now a small native Windows launcher built from
-`unclefarmer/native/bootstrap.c`. The Nuitka application is
-`UncleFarmerApp.exe`, beside its normal flat runtime DLLs and data. The launcher
-imports Windows system DLLs and never loads the application's Python runtime.
-Both executables are required by the build/release verifier.
+`bootstrap.exe` is a small native Windows updater/bootstrapper built from
+`unclefarmer/native/bootstrap.c`. The Nuitka application is `UncleFarmer.exe`,
+beside its normal flat runtime DLLs and data, and is what players start. The
+bootstrap imports Windows system DLLs only (kernel32, shell32, msvcrt) and never
+loads the application's Python runtime. Both executables are required by the
+build/release verifier.
+
+The bootstrap has three modes:
+
+- `bootstrap.exe --update <copier> <pid> <version> <token>`: how the app starts an
+  update. The bootstrap checks that `<copier>` is `UncleFarmer.exe` inside this
+  installation's `update
+ew` folder, runs it as
+  `--apply-update <app> <pid> <version> <token> --bootstrap` inside a
+  kill-on-close job (the app's cancel ends the bootstrap and with it the paused
+  copier) and waits for it. The copier waits for the old app `<pid>` to exit and
+  swaps the files transactionally, as below. Exit code 0 means the app may start
+  again (the update committed, or failed and rolled back cleanly: the restarted
+  app shows the result); `updater.RESTART_WITHHELD` means it must not (the old
+  app still runs, or a rollback was incomplete). On 0 the bootstrap runs recovery
+  if a journal or the armed marker exists, starts `UncleFarmer.exe` and exits.
+- `bootstrap.exe --relaunch <pid>`: waits up to two minutes for that process to
+  end, then recovers if needed, starts `UncleFarmer.exe` and exits. A copier that
+  ran without the bootstrap (see migration) restarts the app this way, and so
+  does an app that finds an unfinished update at startup.
+- `bootstrap.exe [args]`: recovers if needed, then starts `UncleFarmer.exe [args]`.
+
+The application's own startup check: when the journal is unfinished (or no
+journal copy can be read), `UncleFarmer.exe` starts `bootstrap.exe --relaunch`
+with its own PID and exits before it takes any lock or loads the GUI. After a
+recovery the bootstrap passes `--recovered`; an app started that way that still
+finds an unfinished update shows an error naming `bootstrap.exe` instead of
+handing it back again, so the two can never loop. If an interruption leaves
+`UncleFarmer.exe` itself unable to load, starting `bootstrap.exe` by hand runs
+the same recovery.
 
 Before the first download or application mutation, the updater prepares and
 verifies an independent runtime under `.recovery/runtime`. It copies a complete
@@ -27,33 +57,44 @@ The direct copier entry can initialize a missing rescue cache from its own
 already-running staged release before it modifies any installed entries.
 One full rescue runtime remains on disk after successful updates.
 
-The launcher checks the persistent armed marker and journal copies before it
-starts the main runtime. It invokes the isolated runtime with `--recover-update`
-and the installation path, waits for a successful recovery exit, then starts the
-normal payload. The recovery helper's working directory is the rescue directory,
+The bootstrap checks the persistent armed marker and journal copies before it
+starts the application. It invokes the isolated runtime with `--recover-update`
+and the installation path, waits for a successful recovery exit, then starts
+`UncleFarmer.exe`. The recovery helper's working directory is the rescue directory,
 not the installation being repaired. A failed helper prevents normal launch.
 The recovery entry dispatch runs before updater, GUI, settings or normal paths
 imports; its implementation uses the Python standard library in the independent
-runtime. Direct normal payload startup refuses an unfinished transaction.
+runtime. A normal `UncleFarmer.exe` start hands an unfinished transaction to the bootstrap.
 
-The native launcher and `.recovery` are protected from ordinary replacement and
-cleanup. The replaceable payload executable is installed immediately before
+`bootstrap.exe` and `.recovery` are protected from ordinary replacement and
+cleanup. The replaceable application executable is installed immediately before
 `build.json`. Existing NEVER and KEEP_IN protections remain in effect.
 New installations need a build containing both executables. An older updater
 cannot retroactively gain crash protection during the initial migration to this
-packaging. Launcher protocol changes need a deliberate compatible migration;
-ordinary updates do not replace the stable launcher or rescue runtime in place.
+packaging. Bootstrap protocol changes need a deliberate compatible migration
+(a new `BOOTSTRAP_MARKER`); ordinary updates do not replace a current bootstrap or
+the rescue runtime in place.
 
-The one migration that does happen: a copy from before this packaging has its
-Nuitka app as `UncleFarmer.exe`. Its old updater starts the new release's copier,
-and once that transaction is `COMMITTED` the copier replaces the old
-`UncleFarmer.exe` with the release's launcher. It does this with one same-volume
-rename, and only when the installed file lacks `updater.LAUNCHER_MARKER`, which
-`bootstrap.c` embeds. A rolled-back transaction keeps the old exe, because that
-copy has no `UncleFarmerApp.exe` for a launcher to start. Without this step, the
-old copy would keep starting its old code.
+The one migration that does happen: a copy from before `bootstrap.exe` (1.1.0
+and older) has no bootstrap. Its old updater starts the new release's
+`UncleFarmer.exe` copier directly; the transaction replaces `UncleFarmer.exe` like
+any other application entry, and once it is `COMMITTED` the copier copies the
+release's `bootstrap.exe` into place with one same-volume rename, only when the
+installed file is missing or lacks `updater.BOOTSTRAP_MARKER`, which `bootstrap.c`
+embeds. A failure there is logged and costs only the restart path: the copier
+then starts `UncleFarmer.exe` directly. A new app whose folder has no current
+bootstrap also runs the copier directly.
 
-`build_exe.py` compiles the native launcher before starting the expensive Nuitka
+Dev builds of 2026-11-14 used an earlier layout: the native front door was
+`UncleFarmer.exe` and the app `UncleFarmerApp.exe`. Their updaters require
+`UncleFarmerApp.exe` in a release, so they refuse this one without changing
+anything; players unzip it over the folder once. After that, the next update
+removes the leftover `UncleFarmerApp.exe` (`updater.LEGACY_APP`), renews a rescue
+runtime whose `UncleFarmer.exe` is the old front door (only while no started
+replacement needs it), and still reads journals written under the old protected
+list (`update_recovery.LEGACY_PROTECTED`).
+
+`build_exe.py` compiles `bootstrap.exe` before starting the expensive Nuitka
 build, using the repository's existing GCC/MinGW or Zig C compiler discovery.
 A missing compatible C toolchain is a build error. A source checkout does not
 perform application self-updates; it continues to use git.
@@ -212,7 +253,8 @@ Verification results:
   Pyright: **0 errors, 0 warnings**, recorded in `logs/crash-types-last.txt`.
 - PE import inspection of the actual compiled native launcher found only
   `KERNEL32.dll` and `msvcrt.dll`; no application/Python DLL imports.
-  Evidence: `logs/crash-native-imports.txt`.
+  Evidence: `logs/crash-native-imports.txt`. (Since `bootstrap.exe` parses its
+  arguments with `CommandLineToArgvW` it also imports `SHELL32.dll`, a system DLL.)
 - `git diff --check` passed.
 
 Evidence is retained in `logs/crash-release-check.txt`,
@@ -236,8 +278,9 @@ physical power-loss testing remain integration/release checks.
 3. At each selected boundary, use the hypervisor's hard power-off/reset operation
    without a guest shutdown. Do not do this on the user's working laptop or live
    installation. Restore the baseline VM snapshot before each independent case.
-4. Boot the VM and launch its actual `UncleFarmer.exe`, not the internal payload or
-   a source interpreter. Confirm that native recovery runs before normal startup,
+4. Boot the VM and launch its actual `UncleFarmer.exe` (it hands an unfinished update
+   to `bootstrap.exe`), or `bootstrap.exe` when the reset left `UncleFarmer.exe`
+   unable to load, not a source interpreter. Confirm that native recovery runs before normal startup,
    examine the journal/result/log, compare the entire managed tree with one known
    version, and verify user data. Repeat a hard reset during recovery, then launch again.
 5. Include locked-file/antivirus cases, low-space cases and a reset during cleanup.
@@ -250,11 +293,11 @@ physical power-loss testing remain integration/release checks.
 
 - `unclefarmer/update_recovery.py`: standard-library journal, validation, Win32
   durability/locking, manifests, reconciliation, repeatable rollback and cleanup.
-- `unclefarmer/native/bootstrap.c`: independent stable launcher and pre-runtime recovery.
+- `unclefarmer/native/bootstrap.c`: `bootstrap.exe`, the independent stable updater/bootstrapper and pre-runtime recovery.
 - `unclefarmer/updater.py`: snapshot preparation, early states, durable apply journal,
-  verified backups, preserved launcher, free-space accounting and cleanup protection.
+  verified backups, preserved bootstrap, free-space accounting and cleanup protection.
 - `unclefarmer/__main__.py`: minimal rescue dispatch and unfinished-update startup guard.
-- `build_exe.py`, `release.py`: two-executable packaging and launcher build/protection.
+- `build_exe.py`, `release.py`: two-executable packaging and bootstrap build/protection.
 - `tests/test_update_recovery.py`: termination, NTFS, corruption and native-bootstrap tests.
 - `tests/test_updater.py`, `tests/test_updater_hardening.py`: updated payload/backup
   contracts and integrated download-to-restart regression coverage.
