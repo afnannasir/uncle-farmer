@@ -339,7 +339,18 @@ class ProfileDialog(Dialog):
         self.trigger_editors: dict[str, SequenceEditor] = {}
         for stage in triggers.STAGES:
             child, body = page(notebook, _("Before farming") if stage == "before" else _("After farming"))
-            editor = SequenceEditor(child, triggers.sequence(self.p, stage))
+            try:
+                cfg = triggers.sequence(self.p, stage)
+            except ValueError as e:
+                # a saved list that can't be read (a hand-edited profile): shown from the old
+                # ticks instead, so the window still opens; OK saves a good list over it
+                legacy = {k: v for k, v in self.p.items() if k != "trigger_sequences"}
+                cfg = triggers.sequence(legacy, stage)
+                wx.CallAfter(error, self, _("The saved {stage} list couldn't be read ({err}). It is shown from the "
+                                            "old trigger ticks; OK saves this list in its place.",
+                                            stage=_("Before farming") if stage == "before" else _("After farming"),
+                                            err=e))
+            editor = SequenceEditor(child, cfg)
             self.trigger_editors[stage] = editor
             body.Add(editor, 1, wx.EXPAND)
         note = wx.StaticText(panel, label=_("Actions run from top to bottom. A failed DETERMINISTIC Before action also prevents farming. After runs automatically only when farming ends by itself."))

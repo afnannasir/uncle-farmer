@@ -23,7 +23,7 @@ class StepEditor(Dialog):
         self.action = form.choice(_("&Action:"), [triggers.what(a) for a in self.actions], self.actions.index(row["action"]))
         self.enabled = form.check(_("&Enabled"), row["enabled"])
         self.strict = form.check(_("&DETERMINISTIC: stop the sequence if this action fails"), row["deterministic"])
-        self.delay = form.decimal(_("Delay after success (&seconds):"), row["delay"], 0, float("inf"))
+        self.delay = form.decimal(_("Delay after success (&seconds):"), row["delay"], 0, triggers.MAX_DELAY)
         box.Add(form.grid, 0, wx.EXPAND | wx.ALL, 12)
         note = wx.StaticText(self, label=_("The delay runs before the next enabled action. Zero starts it immediately; the last action has no delay."))
         note.Wrap(480)

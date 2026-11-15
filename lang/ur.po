@@ -977,6 +977,11 @@ msgstr "Kirdaar"
 msgid "Character settings - {name}"
 msgstr "Kirdaar ki tarteeb - {name}"
 
+msgid ""
+"Character settings, Triggers: the {stage} list can't be read ({err}) - open Character settings and save it again"
+msgstr ""
+"Character settings, Triggers: {stage} ki list parhi nahi ja saki ({err}) - Character settings khol kar dobara save karein"
+
 msgid "Character sheet"
 msgstr "Kirdaar ki sheet"
 
@@ -3701,8 +3706,8 @@ msgstr "Computer {n} second mein band hoga. Shutdown mansookh karein?"
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Baqi bots khatam hone par computer band ho jayega."
 
-msgid "The delay must be a finite number of seconds, zero or greater."
-msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
+msgid "The delay must be between 0 and {most} seconds."
+msgstr "Delay 0 aur {most} seconds ke darmiyan honi chahiye."
 
 msgid ""
 "The delay runs before the next enabled action. Zero starts it immediately; the last action has no delay."
@@ -3826,6 +3831,11 @@ msgstr "Mansooba mahfooz ho gaya, lekin purani file hataayi nahi ja saki: {err}"
 
 msgid "The room"
 msgstr "Kamra"
+
+msgid ""
+"The saved {stage} list couldn't be read ({err}). It is shown from the old trigger ticks; OK saves this list in its place."
+msgstr ""
+"Mehfooz ki hui {stage} list parhi nahi ja saki ({err}). Yeh purane trigger ticks se dikhayi gayi hai; OK is ki jagah yeh list save karega."
 
 msgid "The schedule isn't complete"
 msgstr "Schedule mukammal nahi hai"
@@ -7901,6 +7911,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "St&ore items (game menu, Store items now)"
 #~ msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
+
+#~ msgid "The delay must be a finite number of seconds, zero or greater."
+#~ msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
 
 #~ msgid ""
 #~ "Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."

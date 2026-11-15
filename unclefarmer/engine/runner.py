@@ -162,6 +162,12 @@ class Run(threading.Thread):
         finally:
             try:
                 self._after_farming()
+            except triggers.TriggerFailed as e:
+                # an After step that had to work didn't: said and recorded, but farming did end by
+                # itself, so the after-stop action (close the game, shut the PC down) still runs
+                reason = str(e)
+                self.failed = True
+                self.log(reason, speak=True)
             except (Stopped, AgentError, OSError, ValueError) as e:
                 reason = str(e)
                 self.failed = not self.stop_event.is_set()
@@ -175,7 +181,10 @@ class Run(threading.Thread):
     # ---------------------------------------------------------------- starting
     def _start(self, app: dict[str, Any]) -> Bot:
         """The game connected and checked, the character scanned, the keys armed: the Bot, set up."""
-        independent = getattr(self, "kind", "") in ("tool", "trigger")
+        # a tool or a trigger list farms nothing by itself (a step that farms is held to the window
+        # by farming_window); Dungeons is farming, so it keeps the daily stop as a plan does
+        kind = getattr(self, "kind", "")
+        independent = kind == "trigger" or (kind == "tool" and self.text.strip() != "dungeon")
         day_end, blocked = daily.plan(app) if not self.walk and not independent else (None, None)
         character: str
         if blocked:
@@ -351,7 +360,7 @@ class Run(threading.Thread):
         if kind == "trigger":
             if not triggers.ticked(bot.p, self.text):
                 raise triggers.TriggerFailed(_("No enabled triggers are configured for this sequence."))
-            results = triggers.run_stage(bot, self.text, self.log, self.stop_event.is_set)
+            results = triggers.run_stage(bot, self.text, self.log, self.stop_event.is_set, self.farming_window)
             self.failed = any(not success for _job, success in results)
             self.ended_by_itself = not self.stop_event.is_set()
             return _("Trigger sequence completed with failures.") if self.failed else None
@@ -408,7 +417,23 @@ class Run(threading.Thread):
         if self.before_farming_done or bot is None:
             return
         self.before_farming_done = True
-        triggers.run_stage(bot, "before", self.log, self.stop_event.is_set)
+        triggers.run_stage(bot, "before", self.log, self.stop_event.is_set, self.farming_window)
+
+    def farming_window(self) -> None:
+        """Before a trigger step that farms: Stopped when the day's farming is over (the daily
+        stop has passed and the drop time hasn't reset yet), else the daily stop armed for the
+        step - again after a stop that already fired, since a new game day may have begun."""
+        bot = self.bot
+        if bot is None:
+            return
+        day_end, blocked = daily.plan(settings.load_app())
+        if blocked:
+            raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
+                            "after that", reset=blocked))
+        if day_end:
+            bot.daily_stop_at = day_end.timestamp()
+            bot.daily_reset = daily.reset_clock()
+            bot.daily_done = False
 
     def _after_farming(self) -> None:
         """The Character settings' after-farming triggers (engine/triggers.py: Sell shards now,
@@ -424,13 +449,9 @@ class Run(threading.Thread):
                 or getattr(self, "kind", "") in ("tool", "trigger")):
             return
         self.after_farming_done = True
-        # Farming's deadline must not interrupt a delayed reset/chores workflow after farming.
-        deadline = getattr(bot, "daily_stop_at", 0.0)
-        bot.daily_stop_at = 0.0
-        try:
-            triggers.run_stage(bot, "after", self.log, self.stop_event.is_set)
-        finally:
-            bot.daily_stop_at = deadline
+        # the daily stop stays in force: only the waits between steps run past it (run_stage), and
+        # a step that farms is held to the day's window (farming_window)
+        triggers.run_stage(bot, "after", self.log, self.stop_event.is_set, self.farming_window)
 
     def _crashed(self, e: Exception) -> str:
         carry_on(e, "the run")

@@ -56,6 +56,9 @@ TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems"))
                 ("sell_collection", N_("selling the collection")))
 
 
+MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)
+
+
 class TriggerFailed(Stopped):
     """A deterministic dependency failed; farming must not start after failed preparation."""
 
@@ -63,8 +66,9 @@ class TriggerFailed(Stopped):
 def step(action: str, delay: object = 0, enabled: object = True, deterministic: object = False) -> dict[str, Any]:
     if action not in dict(TOOLS) and not (action.startswith("script:") and action[7:].strip()):
         raise ValueError(_("Choose a tool or a saved script."))
-    if isinstance(delay, bool) or not isinstance(delay, (int, float)) or not math.isfinite(delay) or delay < 0:
-        raise ValueError(_("The delay must be a finite number of seconds, zero or greater."))
+    if (isinstance(delay, bool) or not isinstance(delay, (int, float)) or not math.isfinite(delay) or delay < 0
+            or delay > MAX_DELAY):
+        raise ValueError(_("The delay must be between 0 and {most} seconds.", most=int(MAX_DELAY)))
     if not isinstance(enabled, bool) or not isinstance(deterministic, bool):
         raise ValueError(_("The trigger's enabled setting must be true or false."))
     return {"action": action, "delay": float(delay), "enabled": enabled, "deterministic": deterministic}
@@ -98,10 +102,21 @@ def setting(job: str, stage: str) -> str:
 SETTINGS: tuple[str, ...] = tuple(setting(job, stage) for stage in STAGES for job, _w in JOBS)
 
 
+def steps(p: dict[str, Any], stage: str) -> list[dict[str, Any]]:
+    """The stage's saved steps for a run. A list that can't be read (a hand-edited profile) ends
+    the stage with a line saying where to fix it, not an 'unexpected error'."""
+    try:
+        rows: list[dict[str, Any]] = sequence(p, stage)["steps"]
+    except ValueError as e:
+        raise TriggerFailed(_("Character settings, Triggers: the {stage} list can't be read ({err}) - open "
+                              "Character settings and save it again",
+                              stage=_("Before farming") if stage == "before" else _("After farming"), err=e)) from e
+    return rows
+
+
 def ticked(p: dict[str, Any], stage: str) -> list[str]:
     """The jobs ticked for that stage, in the order they run. Only a real True counts."""
-    rows: list[dict[str, Any]] = sequence(p, stage)["steps"]
-    return [row["action"] for row in rows if row["enabled"]]
+    return [row["action"] for row in steps(p, stage) if row["enabled"]]
 
 
 def what(job: str) -> str:
@@ -111,23 +126,45 @@ def what(job: str) -> str:
     return _(dict(TOOLS).get(job, job))
 
 
+def action_text(b: Bot, action: str) -> str:
+    """The script a step that isn't one of JOBS runs: a saved script's text, or the tool's own
+    command (Dungeons with the ending place saved in Tools, Dungeons, as the Tools menu runs it)."""
+    from .plan import script_path
+    if action.startswith("script:"):
+        try:
+            with open(script_path(action[7:]), encoding="utf-8-sig") as source:
+                return source.read()
+        except OSError as e:
+            raise Stopped(_("Couldn't open it: {err}", err=e)) from e
+    if action == "dungeon":
+        from . import dungeon
+        return dungeon.script(dungeon.config(b.p))
+    if action in dict(TOOLS):
+        return action + "\n"
+    raise ValueError(_("Choose a tool or a saved script."))
+
+
+def step_farms(b: Bot, action: str) -> bool:
+    """Does the step farm (a dungeon, or a saved script with a farm or dungeon line)? Such a step
+    is held to the day's farming window like any farming run. A script that can't be read or
+    parsed farms nothing: running it fails on its own."""
+    if action in dict(JOBS):
+        return False
+    from .script import ScriptError, parse
+    try:
+        main, subs, _on_stop = parse(action_text(b, action))
+    except (Stopped, ScriptError, ValueError):
+        return False
+    return farms(main, subs)
+
+
 def run_action(b: Bot, action: str) -> None:
     if action in dict(JOBS):
         # Existing returns are counts, summaries or 'a trip was made', not success booleans.
         run_job(b, action)
         return
     from .script import Runner, ScriptError
-    from .plan import script_path
-    if action.startswith("script:"):
-        try:
-            with open(script_path(action[7:]), encoding="utf-8-sig") as source:
-                text = source.read()
-        except OSError as e:
-            raise Stopped(_("Couldn't open it: {err}", err=e)) from e
-    elif action in dict(TOOLS):
-        text = action + "\n"
-    else:
-        raise ValueError(_("Choose a tool or a saved script."))
+    text = action_text(b, action)
     watches = b.watches
     b.watches = []
     try:
@@ -165,13 +202,35 @@ def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
     return False
 
 
-def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[], bool]) -> list[tuple[str, bool]]:
+def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None) -> None:
+    """One step: a step that farms first asks farming_window (the day's farming window), then it runs."""
+    if farming_window is not None and step_farms(b, action):
+        farming_window()
+    run_action(b, action)
+
+
+def wait(b: Bot, seconds: float) -> None:
+    """The wait after a step. It farms nothing, so the daily stop may pass during it (a step that
+    farms after it is held to the window by run_stage's farming_window); Stop and a lost game
+    still end it, and end the enclosing Run - the next step never starts."""
+    deadline: float = getattr(b, "daily_stop_at", 0.0)     # (a stand-in bot may have none)
+    b.daily_stop_at = 0.0
+    try:
+        b.sleep(seconds)
+    finally:
+        b.daily_stop_at = deadline
+
+
+def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[], bool],
+              farming_window: Callable[[], None] | None = None) -> list[tuple[str, bool]]:
     """Execute enabled steps in saved order, returning [(action, finished)] for attempted actions.
     A failed deterministic action raises TriggerFailed; unchecked ordinary failures continue.
     Stop/fatal connection errors end the stage. An interrupted delay propagates to the enclosing
-    Run, so no subsequent action starts and cleanup plus scheduled history still run."""
-    cfg = sequence(b.p, stage)
-    rows: list[dict[str, Any]] = [row for row in cfg["steps"] if row["enabled"]]
+    Run, so no subsequent action starts and cleanup plus scheduled history still run.
+    farming_window (the runner's): called before a step that farms (step_farms); it raises
+    Stopped when the day's farming is over and otherwise arms the daily stop for the step, so no
+    step farms across the drop-time reset. A delay alone may run past the daily stop."""
+    rows: list[dict[str, Any]] = [row for row in steps(b.p, stage) if row["enabled"]]
     jobs = [row["action"] for row in rows]
     done: list[tuple[str, bool]] = []
     if not jobs:
@@ -182,7 +241,7 @@ def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[]
             break
         log(_("{stage}, automatically: {job}", stage=head, job=what(job)))
         try:
-            run_action(b, job)
+            run_step(b, job, farming_window)
             done.append((job, True))
         except GameBroken:
             done.append((job, False))
@@ -211,7 +270,7 @@ def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[]
         if done[-1][1] and index + 1 < len(rows) and rows[index]["delay"]:
             delay = rows[index]["delay"]
             log(_("Waiting {seconds} seconds after {job}", seconds=delay, job=what(job)))
-            b.sleep(delay)  # cancellation/lost game ends the enclosing Run, never advances a step
+            wait(b, delay)
     ok = [what(j) for j, fine in done if fine]
     bad = [what(j) for j, fine in done if not fine]
     if bad:

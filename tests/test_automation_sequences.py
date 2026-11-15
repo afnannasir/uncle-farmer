@@ -126,17 +126,134 @@ def test_strict_preparation_failure_prevents_farming(monkeypatch: pytest.MonkeyP
     assert not run.ended_by_itself
 
 
-def test_after_sequence_wait_survives_farming_deadline(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+class DayBot(FakeBot):
+    """A FakeBot with the daily stop fields of the real Bot."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.daily_stop_at = 0.0
+        self.daily_done = False
+        self.daily_reset = ""
+
+
+def test_only_the_wait_runs_past_the_daily_stop(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the steps keep farming's deadline; only the wait between them may pass it
+    bot = DayBot()
+    bot.daily_stop_at = 1234.0
+    bot.p = profile(triggers.step("clean_bag", 600), triggers.step("restock"), stage="after")
+    seen: list[tuple[str, float]] = []
+    def action(_b: Any, name: str) -> None:
+        seen.append((name, bot.daily_stop_at))
+    def sleep(_seconds: float) -> None:
+        seen.append(("wait", bot.daily_stop_at))
+    monkeypatch.setattr(triggers, "run_action", action)
+    monkeypatch.setattr(bot, "sleep", sleep, raising=False)
+    triggers.run_stage(as_bot(bot), "after", bot.log, bot.stop_event.is_set)
+    assert seen == [("clean_bag", 1234.0), ("wait", 0.0), ("restock", 1234.0)]
+    assert bot.daily_stop_at == 1234.0
+
+
+def test_the_after_list_keeps_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     cfg = profile(triggers.step("clean_bag", 600), triggers.step("restock"), stage="after")
     run, _logs, jobs = triggered(monkeypatch, tmp_path, cfg)
-    observed: list[float] = []
-    def stage(bot: Any, name: str, log: Any, stopped: Any) -> list[tuple[str, bool]]:
+    observed: list[object] = []
+    def stage(bot: Any, name: str, log: Any, stopped: Any, window: Any = None) -> list[tuple[str, bool]]:
         if name == "after":
-            observed.append(bot.daily_stop_at)
+            observed.append(getattr(bot, "daily_stop_at", "untouched"))
         return []
     monkeypatch.setattr(triggers, "run_stage", stage)
     run.run()
-    assert observed == [0] and jobs.ran == ["FARMING"]
+    assert jobs.ran == ["FARMING"] and observed == ["untouched"]     # not lifted for the whole list
+
+
+@pytest.mark.parametrize("deterministic", [False, True])
+def test_a_step_that_farms_waits_for_the_days_window(deterministic: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    bot = FakeBot()
+    bot.p = profile(triggers.step("dungeon", deterministic=deterministic), triggers.step("restock"), stage="after")
+    ran: list[str] = []
+    def action(_b: Any, name: str) -> None:
+        ran.append(name)
+    monkeypatch.setattr(triggers, "run_action", action)
+    asked: list[str] = []
+    def window() -> None:
+        asked.append("window")
+        raise runner.Stopped("the day's farming is over")
+    if deterministic:
+        with pytest.raises(triggers.TriggerFailed):
+            triggers.run_stage(as_bot(bot), "after", bot.log, bot.stop_event.is_set, window)
+        assert ran == []
+    else:
+        done = triggers.run_stage(as_bot(bot), "after", bot.log, bot.stop_event.is_set, window)
+        assert done == [("dungeon", False), ("restock", True)] and ran == ["restock"]
+    assert asked == ["window"]                 # asked for the farming step only, not for restock
+
+
+def test_which_steps_farm(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    bot = FakeBot()
+    no_settings: dict[str, Any] = {}
+    monkeypatch.setattr(dungeon, "config", returning(no_settings))
+    (Path(paths.SCRIPTS) / "farms.mwf").write_text("restock\nif kills < 5\n  farm minutes=30\nend\n", encoding="utf-8")
+    (Path(paths.SCRIPTS) / "town.mwf").write_text("restock\nsell_shards\n", encoding="utf-8")
+    b = as_bot(bot)
+    assert triggers.step_farms(b, "dungeon") and triggers.step_farms(b, "script:farms")
+    assert not triggers.step_farms(b, "script:town") and not triggers.step_farms(b, "restock")
+    assert not triggers.step_farms(b, "chores") and not triggers.step_farms(b, "script:gone")
+
+
+def test_the_farming_window_stops_near_the_reset_and_arms_the_stop(monkeypatch: pytest.MonkeyPatch) -> None:
+    import datetime as dt
+    run = runner.Run("before", "before", 77, returning(None), returning(None))
+    bot = DayBot()
+    bot.daily_stop_at, bot.daily_done = 5.0, True
+    run.bot = as_bot(bot)
+    monkeypatch.setattr(runner.daily, "plan", returning((None, "05:00")))
+    with pytest.raises(runner.Stopped):
+        run.farming_window()
+    end = dt.datetime(2026, 11, 16, 4, 50)
+    monkeypatch.setattr(runner.daily, "plan", returning((end, None)))
+    run.farming_window()
+    assert bot.daily_stop_at == end.timestamp() and bot.daily_done is False
+
+
+def test_a_failed_after_step_still_lets_the_after_stop_run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    cfg = profile(triggers.step("restock", deterministic=True), triggers.step("clean_bag"), stage="after")
+    run, logs, jobs = triggered(monkeypatch, tmp_path, cfg)
+    jobs.raises["restock"] = runner.Stopped("supplies unavailable")
+    run.run()
+    assert jobs.ran == ["FARMING", "restock"] and run.failed
+    assert run.ended_by_itself                 # farming ended by itself: close the game / shut down still apply
+    assert any("restock" in line or "restocking" in line for line, _speak in logs)
+
+
+@pytest.mark.parametrize("text, checked", [("dungeon\n", True), ("restock\n", False)])
+def test_a_scheduled_dungeon_keeps_the_daily_stop(text: str, checked: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    run = runner.Run(text, text.strip(), 77, returning(None), returning(None))
+    run.kind = "tool"
+    monkeypatch.setattr(runner.daily, "plan", returning((None, "05:00")))
+    class Reached(Exception):
+        pass
+    def link(**_kw: Any) -> None:
+        raise Reached()
+    monkeypatch.setattr(runner, "AgentLink", link)
+    with pytest.raises(runner.Stopped if checked else Reached):
+        run._start({})  # pyright: ignore[reportPrivateUsage]
+
+
+def test_delays_stop_at_an_hour_and_the_dungeon_step_keeps_its_end_place(monkeypatch: pytest.MonkeyPatch) -> None:
+    assert triggers.step("restock", triggers.MAX_DELAY)["delay"] == 3600.0
+    with pytest.raises(ValueError):
+        triggers.step("restock", triggers.MAX_DELAY + 1)
+    monkeypatch.setattr(dungeon, "config", returning({"end": {"how": "here"}}))
+    assert triggers.action_text(as_bot(FakeBot()), "dungeon") == dungeon.script({"end": {"how": "here"}})
+
+
+def test_a_broken_saved_list_says_where_to_fix_it() -> None:
+    bot = FakeBot()
+    bot.p = {"trigger_sequences": {"before": "nonsense"}}
+    with pytest.raises(triggers.TriggerFailed, match="Character settings"):
+        triggers.run_stage(as_bot(bot), "before", bot.log, bot.stop_event.is_set)
+    with pytest.raises(triggers.TriggerFailed):
+        triggers.ticked(bot.p, "before")
 
 
 def test_standalone_sequence_does_not_start_farming_or_recurse(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
