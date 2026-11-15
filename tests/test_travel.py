@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from unclefarmer import travel
+from unclefarmer import atlas, travel
 from typing import Any
 
 from conftest import stand_in
@@ -361,3 +361,97 @@ def test_a_sealing_tower_stone_is_the_way_to_the_white_bone_cave() -> None:
     legs = travel.plan(1081, (338, 165), 1761, (61, 110), bag=bag, items=True)
     assert legs is not None and legs[0]["do"] == "item"
     assert legs[0]["item"] == "West Sealing Tower Teleportation stone" and legs[0]["dest"] == 1761
+
+# ---------------------------------------------------------------- exits the map data names no landing for
+def test_ancient_ruins_is_walked_through_not_looped_through_its_small_hall() -> None:
+    # The small hall (1732)'s doors back had no landing in the data. Taken as "anywhere", the
+    # hall looked like a short cut to the far exit, and the game put us back by its doors: a loop.
+    legs = travel.plan(1731, (50, 397), 1761)
+    assert legs is not None and [(leg["map"], leg["dest"]) for leg in legs] == [(1731, 1761)]
+
+
+def test_the_measured_arrivals_get_their_ports_and_routes() -> None:
+    # data/atlas.json carries the landings measured in the game (marker, sources, point, comp) and
+    # nothing else: the port and its routes are worked out when the atlas is read
+    ruins = atlas.maps()[1731]
+    measured = {a["marker"]: tuple(a["point"]) for a in ruins["arrivals"] if a["marker"] > 100}
+    assert measured == {101: (50, 259), 102: (51, 148), 201: (83, 300), 202: (102, 299),
+                        203: (132, 303), 204: (133, 340)}
+    for marker, at in measured.items():
+        k = travel._arrival_port(1731, marker)
+        assert k is not None and (travel._ports(1731)[k]["x"], travel._ports(1731)[k]["y"]) == at
+        routes = [r for r in ruins["routes"] if r["a"] == k]
+        assert routes and all(r["steps"] > 0 and r["back_steps"] > 0 for r in routes)
+    assert travel.unknown_landing(1732, 0) is None and travel.unknown_landing(1733, 0) is None
+    a = travel._arrival_port(1731, 201)
+    door_a = next(r for r in ruins["routes"] if r["a"] == a and r["b"] == 0)
+    assert door_a["steps"] <= 5                    # landed beside the door we came in by
+
+
+def test_completing_the_arrivals_twice_adds_nothing() -> None:
+    ruins = atlas.maps()[1731]
+    ports, routes = len(travel._ports(1731)), len(ruins["routes"])
+    travel._complete_arrivals(ruins)
+    assert (len(ruins["ports"]), len(ruins["routes"])) == (ports, routes)
+
+
+def test_a_door_with_no_landing_is_paired_with_the_door_it_stands_beside() -> None:
+    hall, ruins = atlas.maps()[1732], atlas.maps()[1731]
+    # each door back from the hall stands beside the arrival from one door of the ruins (the
+    # landings measured since agree: each is a step or two from its twin)
+    assert [travel._paired_doors(1732, hall["exits"][i], ruins) for i in range(4)] == [[0], [1], [3], [4]]
+    assert travel._paired_doors(1732, {"dest": 1731, "stand": None}, ruins) == [0, 1, 3, 4]   # any door back
+    assert travel._paired_doors(1732, hall["exits"][0], atlas.maps()[1041]) == []          # none back
+
+
+def test_a_learned_landing_is_kept_on_disk_and_planned_with() -> None:
+    # Pull Cave's way out to Brute Valley: no landing in the data, and no door back to pair with
+    assert travel.unknown_landing(5042, 0) == (5041, 3)
+    assert travel.unknown_landing(1731, 0) is None              # its landing is in the data
+    assert travel.unknown_landing(5042, 99) is None
+    assert not travel.learn_landing(5042, 0, 1041, (5, 5))      # landed somewhere else entirely
+    assert travel.learn_landing(5042, 0, 5041, (396.6, 90.4))
+    assert not travel.learn_landing(5042, 0, 5041, (397, 90))   # nothing new
+    travel._landings = None                                     # as a new session reads it
+    assert travel.landing(5041, 3) == (397, 90)
+    assert travel.landing(5041, None) is None and travel.landing(5041, 999) is None
+    legs = travel.plan(5042, (150, 80), 5041, (255, 297))
+    assert legs is not None and legs[0]["map"] == 5042 and legs[-1]["map"] == 5041
+
+
+def test_a_damaged_landings_file_is_read_as_far_as_it_makes_sense() -> None:
+    import os
+    from unclefarmer import paths
+    with open(os.path.join(paths.PROFILES, travel.LANDINGS_FILE), "w", encoding="utf-8") as f:
+        f.write('{"1731|201": [85, 301], "nonsense": [1, 2], "1731|202": "x", "1731|203": [true, 2]}')
+    travel._landings = None
+    assert travel.landings() == {(1731, 201): (85, 301)}
+    with open(os.path.join(paths.PROFILES, travel.LANDINGS_FILE), "w", encoding="utf-8") as f:
+        f.write("not json")
+    travel._landings = None
+    assert travel.landings() == {}
+
+
+def test_an_exit_left_out_is_not_planned_through() -> None:
+    travel._plan_cache.clear()
+    legs = travel.plan(1731, (50, 397), 1761, avoid={("exit", 1731, 8), ("exit", 1731, 9)})
+    assert legs is None or all((leg.get("map"), leg.get("exit")) not in ((1731, 8), (1731, 9)) for leg in legs)
+
+
+def test_a_learned_landing_is_written_as_the_atlas_arrival_to_report() -> None:
+    from unclefarmer import jsonio
+    row = jsonio.loads(travel.arrival_row(5042, 0, (396.6, 90.4)))
+    assert row == {"marker": 3, "sources": [5042], "point": [397, 90],
+                   "comp": int(atlas.model(5041).comp_of(397, 90))}
+    assert travel.arrival_row(1731, 0, (1, 1)) == ""             # its landing is in the data
+
+
+def test_a_landing_far_from_the_atlas_is_given_as_the_arrival_to_report() -> None:
+    from unclefarmer import jsonio
+    assert travel.wrong_landing(1732, 0, 1731, (84, 301)) is None          # where the atlas says
+    off = travel.wrong_landing(1732, 0, 1731, (120, 300))
+    assert off is not None and off[0] == (83, 300)
+    assert jsonio.loads(off[1])["point"] == [120, 300] and jsonio.loads(off[1])["marker"] == 201
+    assert travel.wrong_landing(1732, 0, 1041, (120, 300)) is None         # not where that exit leads
+    assert travel.wrong_landing(5042, 0, 5041, (10, 10)) is None           # no landing in the atlas
+    assert travel.wrong_landing(1732, 99, 1731, (1, 1)) is None

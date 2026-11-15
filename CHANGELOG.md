@@ -21,6 +21,25 @@
   the Black Gold stone's fifth place, City of the Ancient tower (next to the way into ancient
   Sealed Land).
 
+**Travel**
+
+- Map exits whose landing the game's map data doesn't give no longer send the bot round in
+  loops. On the way to ancient Sealed Land, the small hall of Ancient Ruins looked like a short
+  cut and the bot went in and out of it for a minute before giving up.
+- The six landings of Ancient Ruins' small hall and of Plague Abyss back into Ancient Ruins were
+  measured in the game and added to the atlas. The atlas only carries each arrival's marker,
+  sources, point and walkable area; the bot works out its port and its routes to the map's other
+  ports when it reads the atlas, so they never go stale.
+- An exit with no landing in the data is taken to land beside the door it stands next to, as the
+  measured ones do. Where the bot really lands through one is learned and kept in
+  profiles/_learned_landings.json, and the log gives it as the atlas line to report, so it can be
+  added to the atlas for everyone.
+- An exit the same trip already went through is left out of the next plan, so no loop through
+  one can go on.
+- A landing further than a few cells from where the atlas says (a measurement gone wrong, or a
+  game update) is said in the log with the corrected atlas line to report. The bot goes on from
+  where it really is either way.
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".
