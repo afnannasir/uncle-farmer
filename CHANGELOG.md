@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+**Updates start Uncle Farmer again**
+
+- After an update, Uncle Farmer opens again by itself. The updater is its own small program now,
+  `bootstrap.exe`: it waits for Uncle Farmer to close, has the files replaced, starts the updated
+  `UncleFarmer.exe` and closes. `UncleFarmer.exe` is the program itself again, the one you start.
+- If an update was ever cut off (a power cut, a crash), starting `UncleFarmer.exe` hands it to
+  `bootstrap.exe` first, which finishes it or puts the old version back, then starts Uncle Farmer.
+- Dev builds from 2026-11-14 on (where the program was `UncleFarmerApp.exe`) can't install this
+  update themselves: unzip it over the folder once by hand.
+- Why it didn't open again before: after an update, the recovery check that runs before Uncle
+  Farmer starts always refused to run in the built program (it looked for the wrong file name, and
+  the folder's short name "UNCLEF~1" didn't match "Uncle Farmer"), so nothing was started.
+- An update no longer fails to start on a slower PC: the new copy may take up to 30 seconds to get
+  ready (it had 5, and a freshly unpacked build needs 3 to 6), and the two programs no longer
+  trip over each other's hand-over files ("Access is denied").
+
 **Trigger lists and scheduled tools**
 
 - Character settings, Triggers: Before farming and After farming are ordered lists now. Each step is

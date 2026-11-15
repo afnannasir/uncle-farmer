@@ -16,10 +16,17 @@ Updating goes in three steps:
 
   1. latest() asks GitHub for the newest release of the channel; the window says what's new and asks.
   2. download() + unpack() put the new folder in update/new, next to the exe.
-  3. start_apply() verifies a paused NEW UncleFarmer.exe from update/new. Only after the window
-     closes and __main__ releases its locks is copying authorized. The helper also verifies that
-     the old process exited, prepares a complete release on the same volume, and swaps entries
-     with rollback. It reports the result and restarts the application separately.
+  3. start_apply() hands the update to bootstrap.exe (the installed, never-replaced native
+     bootstrapper, native/bootstrap.c). It runs the NEW UncleFarmer.exe from update/new as a paused
+     copier. Only after the window closes and __main__ releases its locks is copying authorized.
+     The copier verifies that the old process exited, prepares a complete release on the same
+     volume, swaps entries with rollback and reports the result. bootstrap.exe waits for the
+     copier to end, recovers an interrupted update if one is pending, starts the updated
+     UncleFarmer.exe and exits.
+
+Two executables: UncleFarmer.exe is the application (Nuitka) and the one players start;
+bootstrap.exe is the updater/bootstrapper. A copy without a current bootstrap.exe (one older than
+it) runs the copier directly, and the copier restarts the app through the bootstrap it installed.
 
 update/ is the staging folder: only the download, the unpacked copy, the result and busy.json
 (who is using it) live there, and clean() empties and removes it once nothing uses it. Every step
@@ -75,11 +82,21 @@ ASSET = re.compile(r"^UncleFarmer-[\w.\-]+\.zip$", re.I)
 DEV_VERSION = re.compile(r"^\d+\.\d+\.\d+-dev\.\d+$")
 CHANNELS = ("master", "dev")
 DEFAULT_CHANNEL = "master"
-EXE = "UncleFarmer.exe"
-# In the native front door (native/bootstrap.c). A copy older than the two-exe layout has its Nuitka
-# app as UncleFarmer.exe instead; the first update into the new layout puts the front door there.
-LAUNCHER_MARKER = b"UNCLEFARMER-NATIVE-LAUNCHER-1"
-LAUNCHER_SECONDS = 60.0
+EXE = recovery.PAYLOAD             # UncleFarmer.exe: the application, which an update replaces
+BOOTSTRAP = recovery.BOOTSTRAP     # bootstrap.exe: runs the update and starts the app again
+# In bootstrap.exe (native/bootstrap.c): its protocol version. A missing bootstrap, or one without
+# this marker, is put in place after a committed update; a current one is never replaced.
+BOOTSTRAP_MARKER = b"UNCLEFARMER-BOOTSTRAP-2"
+BOOTSTRAP_SECONDS = 60.0
+BOOTSTRAP_MOST = 4 * 1024 * 1024   # a larger file is the application, never the bootstrap
+# For a while (dev builds of 2026-11-14 on) the native front door was UncleFarmer.exe and the app
+# UncleFarmerApp.exe. Such a front door carries this marker; the old app name is removed on update.
+LEGACY_LAUNCHER_MARKER = b"UNCLEFARMER-NATIVE-LAUNCHER-1"
+LEGACY_APP = "UncleFarmerApp.exe"
+RESTART_WITHHELD = 3               # the copier's exit code when bootstrap.exe must not start the app
+# How long the paused copier may take to say it is ready. A freshly unpacked build needs 3-6 s to
+# start (Nuitka unpacking, an antivirus scan of an exe it has never seen); 5 s failed real updates.
+READY_SECONDS = 30
 BUILD_FILE = "build.json"   # beside the exe in a CI build: which build this copy is
 UPDATE = os.path.join(paths.APP, "update")
 NEW = os.path.join(UPDATE, "new")
@@ -91,16 +108,17 @@ LOG = os.path.join(paths.LOGS, "update.log")
 # that can be removed when absent from a release; new builds record their full shipped inventory.
 REPLACE = ("_internal", "unclefarmer", "numpy", "orjson", "pydantic_core", "wx")
 KEEP_IN = {"agent": ("run",), "data": ("game_texts.json",)}
-# never copied, even if a release carried them: the player's own things
+# never copied, even if a release carried them: the player's own things, plus bootstrap.exe, which
+# an ordinary update never replaces in place (_install_bootstrap)
 NEVER = {"profiles", "plans", "scripts", "logs", "messages", "results", "survey", "update", "settings.json",
-         "schedules.json", ".recovery", "unclefarmer.exe"}
+         "schedules.json", ".recovery", BOOTSTRAP}
 
 _lock = threading.Lock()    # the staging folder, inside this process: a claim or a cleanup at a time
 _claims: int = 0            # nested claims of this process (busy.json is written for the first)
 APPLY_SECONDS = 180.0       # one budget for preparation, retries and installing the whole release
 SPACE_MARGIN = 16 * 1024 * 1024
 # The runtime's flat Nuitka layout. build_exe uses the same list to verify its output.
-REQUIRED = ("UncleFarmer.exe", recovery.PAYLOAD, "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll", "agent/unclefarmer-agent.jar",
+REQUIRED = (EXE, BOOTSTRAP, "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll", "agent/unclefarmer-agent.jar",
             "nvdaControllerClient64.dll", "unclefarmer/native/_routing-*.dll", "data/knowledge.json",
             "data/atlas.json", "data/skills.json", "lang/unclefarmer.pot", "lang/ur/LC_MESSAGES/unclefarmer.mo",
             "docs/USER_GUIDE.md", "README.html", "LICENSE", "numpy", "orjson", "pydantic_core", "wx")
@@ -173,7 +191,7 @@ def write_build(folder: str, version: str, build_channel: str, commit: str = "")
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump({"version": version, "channel": channel(build_channel), "commit": commit,
                    "files": sorted(n.replace(os.sep, "/") for n in _inventory(folder)
-                                   if n.split(os.sep)[0].casefold() not in NEVER or n.casefold() == EXE.casefold())}, f)
+                                   if n.split(os.sep)[0].casefold() not in NEVER or n.casefold() == BOOTSTRAP)}, f)
     return path
 
 
@@ -424,7 +442,21 @@ def _mark_busy(staging: str, what: str) -> None:
     _staging(staging, os.path.dirname(staging))
     _safe_entry(os.path.join(staging, BUSY), staging)
     os.makedirs(staging, exist_ok=True)
-    json.save(os.path.join(staging, BUSY), {"pid": os.getpid(), "what": what, "since": time.time()})
+    _save_shared(os.path.join(staging, BUSY), {"pid": os.getpid(), "what": what, "since": time.time()})
+
+
+def _save_shared(path: str, data: dict[str, Any], seconds: float = 5.0) -> None:
+    """json.save for a file another process polls (busy.json, apply.json). Windows refuses to
+    replace a file while a reader has it open (Access is denied), so retry for a moment."""
+    deadline = time.monotonic() + seconds
+    while True:
+        try:
+            json.save(path, data)
+            return
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.02)
 
 
 @contextmanager
@@ -600,6 +632,8 @@ def _ensure_recovery_runtime_locked(app: str, source: str) -> None:
         armed = os.path.join(root, "armed")
         recovery.safe(armed, app)
         recovery.atomic(armed, {"protocol": 1}, envelope=False)
+    if os.path.isdir(runtime) and _legacy_runtime(runtime):
+        _retire_runtime(app, root, runtime, manifest)
     if os.path.isdir(runtime):
         with open(manifest, encoding="utf-8") as stream:
             expected = json.load(stream)
@@ -613,23 +647,44 @@ def _ensure_recovery_runtime_locked(app: str, source: str) -> None:
             recovery.safe(abandoned, app)
             recovery.fingerprint(abandoned)
             shutil.rmtree(abandoned)
-    files = _verify_release(source)
-    needed = sum(size for name, size in files.items() if name.split(os.sep)[0].casefold() not in NEVER
-                 or name.casefold() == EXE.casefold()) + SPACE_MARGIN
+    # bootstrap.exe runs the rescue copy's UncleFarmer.exe; the copy needs no bootstrap of its own
+    files = _verify_release(source, bootstrap=False)
+    needed = sum(size for name, size in files.items() if name.split(os.sep)[0].casefold() not in NEVER) + SPACE_MARGIN
     if shutil.disk_usage(root).free < needed:
         raise UpdateError("not enough free space for the independent recovery runtime")
     deadline = time.monotonic() + APPLY_SECONDS
     temporary = tempfile.mkdtemp(prefix="runtime-preparing-", dir=root)
     # A killed preparation leaves only private artifacts. No installed entry was touched.
     for name in os.listdir(source):
-        if name.casefold() not in NEVER or name.casefold() == EXE.casefold():
+        if name.casefold() not in NEVER:
             _copy_entry(os.path.join(source, name), os.path.join(temporary, name), log, deadline)
-    _verify_release(temporary)
+    _verify_release(temporary, bootstrap=False)
     recovery.durable_tree(temporary)
     json.save(manifest, recovery.fingerprint(temporary))
     recovery.flush(manifest)
     recovery.rename(temporary, runtime)
     arm()
+
+
+def _legacy_runtime(runtime: str) -> bool:
+    """A rescue copy from the UncleFarmerApp.exe layout: its UncleFarmer.exe is the old front door."""
+    exe = os.path.join(runtime, EXE)
+    return not os.path.isfile(exe) or _has_marker(exe, LEGACY_LAUNCHER_MARKER)
+
+
+def _retire_runtime(app: str, root: str, runtime: str, manifest: str) -> None:
+    """Replace a legacy rescue copy, only while no started replacement could still need it."""
+    current = recovery.load(app)
+    if current and current["state"] not in recovery.TERMINAL and current["entries"]:
+        raise UpdateError("an unfinished update must be recovered before the recovery runtime is renewed")
+    retired = os.path.join(root, "runtime-preparing-retired-%s" % secrets.token_hex(8))
+    recovery.safe(retired, app)
+    recovery.fingerprint(runtime)       # reject nested reparse points before moving or removing it
+    recovery.rename(runtime, retired)   # a killed removal leaves only a private "preparing" leftover
+    if os.path.exists(manifest):
+        os.remove(manifest)
+    shutil.rmtree(retired)
+    log("the recovery runtime from the older two-exe layout was renewed")
 
 
 @contextmanager
@@ -784,7 +839,8 @@ class ApplyProcess:
     version: str
 
     def cancel(self) -> None:
-        """No authorization was issued: this child may be stopped without interrupting copying."""
+        """No authorization was issued: this child may be stopped without interrupting copying.
+        When it is bootstrap.exe, the copier it runs ends with it (a kill-on-close job)."""
         try:
             if self.process.poll() is None:
                 self.process.terminate()
@@ -798,7 +854,7 @@ class ApplyProcess:
         _staging(self.staging, self.app)
         target = os.path.join(self.staging, "apply.json")
         _safe_entry(target, self.staging)
-        json.save(target, {"token": self.token})
+        _save_shared(target, {"token": self.token})
 
 
 _pending_apply: ApplyProcess | None = None
@@ -815,12 +871,21 @@ def start_apply(new_folder: str, version: str) -> ApplyProcess:
     # The running installation is known to boot. A staged copier may fail its
     # handshake, so it must not become the first/only rescue runtime here.
     ensure_recovery_runtime(paths.APP, paths.APP)
-    args = [os.path.join(new_folder, recovery.PAYLOAD), "--apply-update", paths.APP, str(os.getpid()), version, token]
-    process = subprocess.Popen(args, cwd=new_folder, close_fds=True,
+    copier = os.path.join(new_folder, EXE)
+    bootstrap = os.path.join(paths.APP, BOOTSTRAP)
+    if is_bootstrap(bootstrap):
+        # bootstrap.exe runs the copier, then starts the updated app and exits (native/bootstrap.c)
+        args = [bootstrap, "--update", copier, str(os.getpid()), version, token]
+        cwd = paths.APP
+    else:
+        # no current bootstrap yet: the copier runs alone and restarts the app itself (_restart)
+        args = [copier, "--apply-update", paths.APP, str(os.getpid()), version, token]
+        cwd = new_folder
+    process = subprocess.Popen(args, cwd=cwd, close_fds=True,
                                creationflags=getattr(subprocess, "DETACHED_PROCESS", 0) |
                                getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
     handle = ApplyProcess(process, UPDATE, paths.APP, token, version)
-    deadline = time.monotonic() + 5
+    deadline = time.monotonic() + READY_SECONDS
     try:
         while time.monotonic() < deadline:
             if process.poll() is not None:
@@ -832,11 +897,12 @@ def start_apply(new_folder: str, version: str) -> ApplyProcess:
                         signal = _obj(json.load(f))
                 except (OSError, ValueError):
                     signal = None
-            if signal and signal.get("pid") == process.pid and signal.get("token") == token:
+            # the copier's own pid, or bootstrap.exe's when it runs the copier
+            if signal and process.pid in (signal.get("pid"), signal.get("launcher")) and signal.get("token") == token:
                 log("the update copier for %s started and is paused for app shutdown" % version)
                 return handle
             time.sleep(0.05)
-        raise OSError("the update copier did not report readiness within five seconds")
+        raise OSError("the update copier did not report readiness within %d seconds" % READY_SECONDS)
     except Exception:
         handle.cancel()
         raise
@@ -930,11 +996,14 @@ def _inventory(folder: str, deadline: float | None = None) -> dict[str, int]:
     return result
 
 
-def _verify_release(src: str, version: str | None = None, deadline: float | None = None) -> dict[str, int]:
+def _verify_release(src: str, version: str | None = None, deadline: float | None = None, *,
+                    bootstrap: bool = True) -> dict[str, int]:
+    """bootstrap=False: an installed copy or the rescue runtime, which may lack bootstrap.exe (an
+    older copy gets it only after its update commits)."""
     if not os.path.isdir(src) or _link(src):
         raise UpdateError("the staged release is not a safe directory")
     files = _inventory(src, deadline)
-    missing = missing_runtime(src)
+    missing = [m for m in missing_runtime(src) if bootstrap or m != BOOTSTRAP]
     if missing:
         raise UpdateError("the update is missing or has an invalid required entry: %s" % ", ".join(missing))
     try:
@@ -993,7 +1062,8 @@ def _shipped_files(app: str) -> set[str]:
 
 def _old_managed(app: str) -> set[str]:
     """Only a build's own inventory and recognizable runtime files may become obsolete."""
-    names = {n.casefold() for n in os.listdir(app) if n.casefold() in REPLACE or n.casefold().endswith((".dll", ".pyd"))}
+    names = {n.casefold() for n in os.listdir(app) if n.casefold() in REPLACE or n.casefold().endswith((".dll", ".pyd"))
+             or n.casefold() == LEGACY_APP.casefold()}
     names.update(n.split("/")[0] for n in _shipped_files(app))
     return names - NEVER
 
@@ -1014,8 +1084,11 @@ def _keep_learned_data(app: str, target: str, report: Callable[[str], None], dea
 def _prepare_tree(app: str, src: str, prepared: str, report: Callable[[str], None], deadline: float) -> None:
     for name in sorted(os.listdir(src)):
         key = name.casefold()
-        if key == EXE.casefold():
-            _copy_entry(os.path.join(app, EXE), os.path.join(prepared, EXE), report, deadline)
+        if key == BOOTSTRAP:
+            # never installed by the transaction: the prepared copy only completes the release check
+            installed = os.path.join(app, BOOTSTRAP)
+            _copy_entry(installed if os.path.isfile(installed) else os.path.join(src, name),
+                        os.path.join(prepared, BOOTSTRAP), report, deadline)
             continue
         if key in NEVER:
             continue
@@ -1107,7 +1180,7 @@ def _install_tree(app: str, src: str, prepared: str, backup: str, report: Callab
             report(("updated " if key in KEEP_IN or not os.path.isdir(destination) else "replaced ") + name)
             _before_deadline(deadline)
         recovery.save(app, transaction, "VERIFYING", "verify-installed")
-        _verify_release(app, transaction["target"], deadline)
+        _verify_release(app, transaction["target"], deadline, bootstrap=False)
         if not recovery.complete(app, transaction):
             raise UpdateError("the installed files do not match the complete staged release")
         recovery.durable_tree_for_entries(app, transaction)
@@ -1135,8 +1208,7 @@ def apply(app: str, src: str, log: Callable[[str], None], *, deadline: float | N
             _apply_locked(os.path.abspath(app), src, log, deadline=deadline)
             durable = recovery.load(os.path.abspath(app))
             if durable and durable["state"] == "COMMITTED":
-                # only after the commit: a rolled-back copy has no UncleFarmerApp.exe for a front door to start
-                _migrate_launcher(os.path.abspath(app), src, log)
+                _install_bootstrap(os.path.abspath(app), src, log)
     except recovery.RecoveryError as error:
         raise UpdateError(str(error)) from error
 
@@ -1199,45 +1271,54 @@ def _apply_locked(app: str, src: str, log: Callable[[str], None], *, deadline: f
                 log("temporary update files retained at %s: %s" % (work, error))
 
 
-def is_launcher(path: str) -> bool:
-    """Whether this exe is the native front door (not an older copy's Nuitka app)."""
+def _has_marker(path: str, marker: bytes) -> bool:
     try:
+        if os.path.getsize(path) > BOOTSTRAP_MOST:
+            return False
         with open(path, "rb") as f:
-            return LAUNCHER_MARKER in f.read()
+            return marker in f.read()
     except OSError:
         return False
 
 
-def _migrate_launcher(app: str, src: str, log: Callable[[str], None]) -> None:
-    """Put the release's front door in place of an older copy's Nuitka UncleFarmer.exe, once.
+def is_bootstrap(path: str) -> bool:
+    """Whether this file is a current bootstrap.exe (it speaks --update and --relaunch)."""
+    return _has_marker(path, BOOTSTRAP_MARKER)
 
-    The transactional install never touches UncleFarmer.exe (it is protected, so a running front door
-    is never replaced). A copy from before the two-exe layout would keep its old app there and start
-    it again: the old code, with the shortcut and the restart both pointing at it."""
-    installed, shipped = os.path.join(app, EXE), os.path.join(src, EXE)
-    if is_launcher(installed) or not is_launcher(shipped):
+
+def _install_bootstrap(app: str, src: str, log: Callable[[str], None]) -> None:
+    """Put the release's bootstrap.exe in place when the copy has none, or an older one.
+
+    The transaction never touches bootstrap.exe (it is protected: a running bootstrap is never
+    replaced), so a copy from before it, or from before this protocol, gets it here, once, after
+    the commit. A failure costs only the automatic restart through it: the update is installed,
+    and the copier then starts UncleFarmer.exe directly."""
+    installed, shipped = os.path.join(app, BOOTSTRAP), os.path.join(src, BOOTSTRAP)
+    if is_bootstrap(installed) or not is_bootstrap(shipped):
         return
-    _safe_entry(installed, app)
-    staged = os.path.join(app, recovery.HERE, "launcher-%s.tmp" % secrets.token_hex(8))
-    recovery.safe(staged, app)
-    shutil.copyfile(shipped, staged)
-    recovery.flush(staged)
-    deadline = time.monotonic() + LAUNCHER_SECONDS
     try:
-        while True:
-            try:
-                os.replace(staged, installed)       # one same-volume rename over the old exe
-                break
-            except PermissionError:
-                if time.monotonic() >= deadline:
-                    raise UpdateError("the old UncleFarmer.exe stayed in use; the update is installed, "
-                                      "but start UncleFarmerApp.exe until the next update") from None
-                time.sleep(0.2)
-    finally:
-        if os.path.exists(staged):
-            os.remove(staged)
-    recovery.flush(installed)
-    log("the native UncleFarmer.exe front door replaced the old app executable")
+        _safe_entry(installed, app)
+        staged = os.path.join(app, recovery.HERE, "bootstrap-%s.tmp" % secrets.token_hex(8))
+        recovery.safe(staged, app)
+        shutil.copyfile(shipped, staged)
+        recovery.flush(staged)
+        deadline = time.monotonic() + BOOTSTRAP_SECONDS
+        try:
+            while True:
+                try:
+                    os.replace(staged, installed)       # one same-volume rename
+                    break
+                except PermissionError:
+                    if time.monotonic() >= deadline:
+                        raise
+                    time.sleep(0.2)
+        finally:
+            if os.path.exists(staged):
+                os.remove(staged)
+        recovery.flush(installed)
+        log("installed %s" % BOOTSTRAP)
+    except Exception as error:
+        log("could not install %s (the app restarts without it): %s: %s" % (BOOTSTRAP, type(error).__name__, error))
 
 
 def _copier_app(src: str) -> str | None:
@@ -1267,12 +1348,17 @@ def _report_result(app: str, result: UpdateResult) -> None:
 
 
 def _restart(app: str) -> str | None:
+    """Start the app again once this process has ended: through bootstrap.exe --relaunch (it waits
+    for this process, recovers if needed, starts UncleFarmer.exe and exits), else directly."""
     try:
         target = os.path.join(app, EXE)
         _safe_entry(target, app)
         if not os.path.isfile(target):
             raise UpdateError("the application executable is unavailable")
-        subprocess.Popen([target], cwd=app, close_fds=True,
+        bootstrap = os.path.join(app, BOOTSTRAP)
+        _safe_entry(bootstrap, app)
+        args = [bootstrap, "--relaunch", str(os.getpid())] if is_bootstrap(bootstrap) else [target]
+        subprocess.Popen(args, cwd=app, close_fds=True,
                          creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
         return None
     except Exception as error:
@@ -1297,30 +1383,48 @@ def _await_activation(update: str, token: str) -> None:
     raise UpdateError("the application did not authorize the update")
 
 
-def _finish_copier(app: str, pid: int | None, result: UpdateResult, *, safe_restart: bool = True) -> None:
-    """Report and recovery must not block one another, even when either operation fails."""
+def _finish_copier(app: str, pid: int | None, result: UpdateResult, *, safe_restart: bool = True,
+                   launch: bool = True) -> bool:
+    """Report, and say whether the app may start again (the old one has ended and nothing is half
+    restored). launch: start it here (_restart); bootstrap.exe starts it when it ran this copier.
+    Report and restart must not block one another, even when either operation fails."""
     _report_result(app, result)
     if not safe_restart:
         applog.update("FAILED rollback: automatic restart withheld; use the retained backup named in the update result",
                        "ERROR", logs=os.path.join(app, "logs"))
-        return
+        return False
     try:
-        if pid is None or not _alive(pid):
-            restart_error = _restart(app)
-            if restart_error:
-                result["ok"] = False
-                result["error"] += "; could not restart the app: " + restart_error
-                _report_result(app, result)
+        if pid is not None and _alive(pid):
+            return False
+        if not launch:
+            applog.update("copier: done; bootstrap.exe starts the app again", logs=os.path.join(app, "logs"))
+            return True
+        restart_error = _restart(app)
+        if restart_error:
+            result["ok"] = False
+            result["error"] += "; could not restart the app: " + restart_error
+            _report_result(app, result)
+            return False
+        return True
     except Exception:
         applog.update("FAILED to check recovery process\n" + traceback.format_exc(), "ERROR",
                        logs=os.path.join(app, "logs"))
+        return False
 
 
-def run_apply(argv: list[str]) -> None:
-    """Validate the staged helper, wait for authorization and exit, then report/recover separately."""
+def run_apply(argv: list[str]) -> int:
+    """Validate the staged helper, wait for authorization and exit, then report/recover separately.
+
+    argv: <app folder> <old pid> <version> [<token>] [--bootstrap]. --bootstrap: bootstrap.exe runs
+    this copier and starts the app afterwards. Returns the exit code: 0 when the app may start
+    again, RESTART_WITHHELD when it must not."""
+    by_bootstrap = bool(argv) and argv[-1] == "--bootstrap"
+    if by_bootstrap:
+        argv = argv[:-1]
     app: str | None = None
     pid: int | None = None
     safe_restart = True
+    restart = False
     result: UpdateResult = {"version": "?", "ok": False, "error": ""}
     try:
         src = os.path.dirname(os.path.abspath(sys.executable))
@@ -1342,16 +1446,20 @@ def run_apply(argv: list[str]) -> None:
             raise UpdateError("updates cannot run from source")
         _verify_release(src, argv[2])
         update = _staging(os.path.join(app, "update"), app)
-        _mark_busy(update, "update copier")
         if len(argv) == 4:
             token = argv[3]
             if re.fullmatch(r"[0-9a-f]{32}", token) is None:
                 raise UpdateError("invalid update authorization token")
             _staging(update, app)
             _safe_entry(os.path.join(update, BUSY), update)
-            json.save(os.path.join(update, BUSY), {"pid": os.getpid(), "what": "update copier",
-                                                  "since": time.time(), "token": token})
+            signal: dict[str, Any] = {"pid": os.getpid(), "what": "update copier", "since": time.time(), "token": token}
+            if by_bootstrap:
+                signal["launcher"] = os.getppid()     # the process the app started and watches
+            # one write: the app is polling this file, and each replace races its reads
+            _save_shared(os.path.join(update, BUSY), signal)
             _await_activation(update, token)
+        else:
+            _mark_busy(update, "update copier")
         def report(text: str) -> None:
             applog.update("copier: " + text, logs=os.path.join(app or "", "logs"))
         report("updating %s to %s" % (app, result["version"]))
@@ -1368,7 +1476,8 @@ def run_apply(argv: list[str]) -> None:
                        logs=os.path.join(app, "logs") if app else paths.LOGS)
     finally:
         if app is not None:
-            _finish_copier(app, pid, result, safe_restart=safe_restart)
+            restart = _finish_copier(app, pid, result, safe_restart=safe_restart, launch=not by_bootstrap)
+    return 0 if restart else RESTART_WITHHELD
 
 
 def take_result() -> UpdateResult | None:
