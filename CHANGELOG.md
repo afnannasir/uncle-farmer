@@ -18,6 +18,13 @@
   ready (it had 5, and a freshly unpacked build needs 3 to 6), and the two programs no longer
   trip over each other's hand-over files ("Access is denied").
 
+**Fewer duplicate buttons and menu entries**
+
+- The Plans menu keeps New plan and New script. Edit (Ctrl+E), Duplicate (Ctrl+D), Delete, Export
+  and Import are on the plans list's context menu (the Applications key or Shift+F10).
+- Bag and supplies: the Move to Keep, Store, Sell and Throw Away buttons are gone; each list's
+  context menu moves the selected item.
+
 **Trigger lists and scheduled tools**
 
 - Character settings, Triggers: Before farming and After farming are ordered lists now. Each step is

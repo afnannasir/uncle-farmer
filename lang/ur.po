@@ -261,9 +261,6 @@ msgstr "&Import karein"
 msgid "&Import character settings"
 msgstr "Character settings &import karein"
 
-msgid "&Import plan"
-msgstr "Mansooba &import karein"
-
 msgid "&Insert command"
 msgstr "&Command shamil karein"
 
@@ -1388,9 +1385,6 @@ msgstr "E&xport karein"
 msgid "E&xport character settings"
 msgstr "Character settings e&xport karein"
 
-msgid "E&xport plan"
-msgstr "Mansooba e&xport karein"
-
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr "Har sound ko ID, naam aur khamosh intikhab chahiye."
 
@@ -1962,9 +1956,6 @@ msgstr ""
 
 msgid "Import character settings"
 msgstr "Character settings import karein"
-
-msgid "Import or export plans"
-msgstr "Mansoobe import ya export karein"
 
 msgid "Import plan"
 msgstr "Mansooba import karein"
@@ -7853,6 +7844,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Gathering (as set in Tools, Gathering)"
 #~ msgstr "&Jama karna (jaisa Tools, Gathering mein set hai)"
 
+#~ msgid "&Import plan"
+#~ msgstr "Mansooba &import karein"
+
 #~ msgid "&Plan or script:"
 #~ msgstr "&Mansooba ya script:"
 
@@ -7877,6 +7871,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Clea&n the bag (game menu, Clean the bag now)"
 #~ msgstr "Basta saa&f karein (game menu, Clean the bag now)"
 
+#~ msgid "E&xport plan"
+#~ msgstr "Mansooba e&xport karein"
+
 #~ msgid ""
 #~ "Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
 #~ msgstr ""
@@ -7887,6 +7884,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "How they run"
 #~ msgstr "Yeh kaise chalte hain"
+
+#~ msgid "Import or export plans"
+#~ msgstr "Mansoobe import ya export karein"
 
 #~ msgid "Lose e&xperience (as set in Tools, XP loser)"
 #~ msgstr "E&xperience kam karein (jaisa Tools, XP loser mein hai)"
