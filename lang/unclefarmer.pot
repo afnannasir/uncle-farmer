@@ -259,9 +259,6 @@ msgstr ""
 msgid "&Import character settings"
 msgstr ""
 
-msgid "&Import plan"
-msgstr ""
-
 msgid "&Insert command"
 msgstr ""
 
@@ -1363,9 +1360,6 @@ msgstr ""
 msgid "E&xport character settings"
 msgstr ""
 
-msgid "E&xport plan"
-msgstr ""
-
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr ""
 
@@ -1918,9 +1912,6 @@ msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
 
 msgid "Import character settings"
-msgstr ""
-
-msgid "Import or export plans"
 msgstr ""
 
 msgid "Import plan"
