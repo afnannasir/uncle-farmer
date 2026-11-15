@@ -444,6 +444,36 @@ def test_bag_cleanup_still_unloads_when_kept_items_fill_the_bag(monkeypatch: pyt
     assert sum(b.sleeps) == 3.0
 
 
+def test_bag_cleanup_keeps_the_last_good_reading_over_a_broken_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_queue = [{"load": 100, "maxload": 100}, {"load": 50, "maxload": 0}, None,
+                      {"load": -1, "maxload": 100}, {"load": 30, "maxload": 100}]
+    b.throw_by_rules = lambda: True
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: 1))
+    assert b.bag_check() is False          # no division by a zero maxload on the way
+    assert b.load_share == 30
+
+
+def test_bag_cleanup_waits_at_most_the_settle_time_for_slow_readings(clock: Clock,
+                                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    reads: list[int] = []
+
+    def by_key(force: bool = False) -> dict[str, Any]:
+        reads.append(1)
+        clock.advance(3)                   # the sheet key: open, wait for it, close
+        return {"load": 100, "maxload": 100}
+    b.refresh_sheet = by_key
+    b.throw_by_rules = lambda: True
+    trips: list[int] = []
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: trips.append(1) or 1))
+    assert b.bag_check() is True
+    assert trips == [1]
+    assert len(reads) == 3                 # the check, one re-read after the throw, the one after the trip
+
+
 def test_bag_check_stops_when_the_trip_frees_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.p["when_bag_full"] = "trip"
