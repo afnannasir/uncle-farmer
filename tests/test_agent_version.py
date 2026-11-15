@@ -18,7 +18,7 @@ JAVA = ROOT / "agent" / "src" / "unclefarmer" / "agent" / "StateServer.java"
 
 def _java_version() -> int:
     text = JAVA.read_text(encoding="utf-8")
-    found = re.search(r"static\s+final\s+int\s+VERSION\s*=\s*(\d+)\s*;", text)
+    found = re.search(r"static\s+final\s+int\s+VERSION\s*=\s*(\d+)\s*;\s*// Current protocol version", text)
     assert found is not None, "StateServer.VERSION not found in %s" % JAVA
     return int(found.group(1))
 

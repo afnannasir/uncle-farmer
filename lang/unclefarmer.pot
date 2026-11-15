@@ -6540,7 +6540,8 @@ msgstr ""
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr ""
 
-msgid "the plan's character has no saved account. Log in to it once first."
+msgid ""
+"the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 
 msgid "the ride from {map} never arrived"
