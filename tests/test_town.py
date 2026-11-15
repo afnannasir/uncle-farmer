@@ -851,10 +851,11 @@ def test_restock_storage_then_buy_for_the_rest(monkeypatch: pytest.MonkeyPatch) 
     b = TownBot(bag=[{"name": "Potion", "count": 0}])
     rules = [{"item": "Potion", "min": 5, "stock": 10, "source": "both", "on": True}]
     calls: list[tuple[str, str, int]] = []
-    monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: calls.append(("withdraw", item, n)) or 4))
+    stored = iter([4, 0])
+    monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: calls.append(("withdraw", item, n)) or next(stored, 0)))
     monkeypatch.setattr(town, "buy", stand_in(town.buy, lambda b, item, n: calls.append(("buy", item, n)) or 6))
     assert town.restock(as_bot(b), rules) is True
-    assert calls == [("withdraw", "Potion", 10), ("buy", "Potion", 6)]
+    assert calls == [("withdraw", "Potion", 10), ("withdraw", "Potion", 6), ("buy", "Potion", 6)]
 
 
 def test_restock_storage_only_never_buys(monkeypatch: pytest.MonkeyPatch) -> None:
