@@ -418,6 +418,32 @@ def test_bag_check_trips_to_town_and_reports_success(monkeypatch: pytest.MonkeyP
     assert any("going to sell and store" in line for line in b.lines)
 
 
+def test_bag_cleanup_waits_for_delayed_load_update(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_queue = [{"load": 100, "maxload": 100}, {"load": 100, "maxload": 100},
+                      {"load": 40, "maxload": 100}]
+    b.throw_by_rules = lambda: True
+
+    def no_trip(b: Any) -> int:
+        pytest.fail("left the farming map before the cleanup load update arrived")
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, no_trip))
+    assert b.bag_check() is False
+    assert b.load_share == 40
+
+
+def test_bag_cleanup_still_unloads_when_kept_items_fill_the_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_fixed = {"load": 100, "maxload": 100}
+    b.throw_by_rules = lambda: True
+    trips: list[int] = []
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: trips.append(1) or 1))
+    assert b.bag_check() is True
+    assert trips == [1]
+    assert sum(b.sleeps) == 3.0
+
+
 def test_bag_check_stops_when_the_trip_frees_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     b.p["when_bag_full"] = "trip"

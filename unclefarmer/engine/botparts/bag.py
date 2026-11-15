@@ -265,10 +265,15 @@ class BagMixin(Parts):
         if share < full and not self.bag_stalled(sheet, full):
             return False
         if self.throw_by_rules():
-            sheet = self.refresh_sheet(force=True) or sheet
-            if sheet.get("maxload") and 100.0 * sheet.get("load", 0) / sheet["maxload"] < full:
-                return False
-            share = 100.0 * sheet["load"] / sheet["maxload"]
+            # Item removal can arrive before the sheet's new load. Give it time to settle
+            # before deciding that the remaining items require a town trip.
+            for _attempt in range(12):
+                sheet = self.refresh_sheet(force=True) or sheet
+                share = 100.0 * sheet["load"] / sheet["maxload"]
+                self.load_share = share
+                if share < full:
+                    return False
+                self.sleep(0.25)
         what = self.p.get("when_bag_full", "stop")
         if what == "nothing":
             if not self.said_bag_full:
