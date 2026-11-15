@@ -39,6 +39,14 @@
   shutting the PC down still happens, since farming itself ended by itself.
 - A saved list that can't be read says where to fix it, and Character settings still opens.
 
+**Gem Maker: make most finishes each level first**
+
+- Making the most from the bag no longer moves up a level while gems of a lower level could still
+  be combined (left over after a batch, or kept by a protected failure); it combines those, and
+  turns leftover shards into gems, first. One or two gems that can't make a combine stay, as do
+  the gems you keep.
+- Making a set number of gems still uses only the tries that number needs.
+
 **Golden Pegasus**
 
 - The Golden Pegasus fusion beast (Swift, speed +3.2, level 100) is known now: the bot rides it to
