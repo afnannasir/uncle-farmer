@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+**Every class's talents, as the game lists them**
+
+- The Warrior's defensive talents were missing (Defensive Stance, Sturdy Sentry, Defensive
+  Barrier): the Orc has talents of the same names, and only the Orc's were kept. The Warrior has
+  its ten talents again.
+- The Orc's Defensive Stance carried the Warrior's text; it now says it can't be used with
+  Rampage Stance, as the game does.
+- Talents whose text says "Require ..." all say which talent they need (four Hunter and Mage
+  talents and the Warrior's Precise Block didn't).
+- The gang talents (Imperious, Focus, Ravage, Havoc, Anger, Brutal ... and their Aggressive and
+  Defensive ranks) are in their own Gang group instead of the general talents, with the second
+  "Anger (Aggressive)" rank that was missing.
+  These are the talents a gang develops at its Head of inner hall (gang Affairs Management, Gang
+  Skill Management), three per gang at most.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode
