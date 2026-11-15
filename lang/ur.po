@@ -32,6 +32,9 @@ msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
+msgid "&Action:"
+msgstr "&Kaam:"
+
 msgid "&Add"
 msgstr "&Shamil karein"
 
@@ -104,9 +107,6 @@ msgstr "&Jaanch (F5)"
 msgid "&Check only"
 msgstr "&Sirf check"
 
-msgid "&Clean the bag (game menu, Clean the bag now)"
-msgstr "&Basta saaf karein (game menu, Clean the bag now)"
-
 msgid "&Close"
 msgstr "&Band karein"
 
@@ -123,6 +123,9 @@ msgstr ""
 
 msgid "&Copy the address"
 msgstr "Pata &copy karein"
+
+msgid "&DETERMINISTIC: stop the sequence if this action fails"
+msgstr "&DETERMINISTIC: yeh kaam nakaam ho to silsila rok dein"
 
 msgid "&Daily chores"
 msgstr "&Roz ke kaam"
@@ -204,9 +207,6 @@ msgstr "&Games:"
 
 msgid "&Gang name (another gang's):"
 msgstr "&Gang ka naam (kisi doosre gang ka):"
-
-msgid "&Gathering (as set in Tools, Gathering)"
-msgstr "&Jama karna (jaisa Tools, Gathering mein set hai)"
 
 msgid "&Gem Maker"
 msgstr "&Gem Maker"
@@ -383,9 +383,6 @@ msgstr "&Mere qareeb ke monsters mein se chunein"
 msgid "&Place:"
 msgstr "&Jagah:"
 
-msgid "&Plan or script:"
-msgstr "&Mansooba ya script:"
-
 msgid "&Plans"
 msgstr "&Mansoobe"
 
@@ -426,9 +423,6 @@ msgstr "&Jawab dein"
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Agli ladai se pehle HP se neeche &aram (%):"
 
-msgid "&Restock supplies (game menu, Restock now)"
-msgstr "&Supplies dobara bharein (game menu, Restock now)"
-
 msgid "&Restore selected message"
 msgstr "Chuna hua paighaam &waapas dikhaayein"
 
@@ -459,9 +453,6 @@ msgstr "&Schedules:"
 
 msgid "&Script commands"
 msgstr "&Script ke commands"
-
-msgid "&Sell shards (game menu, Sell shards now)"
-msgstr "&Shards bechein (game menu, Sell shards now)"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Jama kiya hua Aquaculture, Ore ya Herb Buyer ko &bechein"
@@ -530,9 +521,6 @@ msgstr "Fusion beast par &safar:"
 
 msgid "&Unmute this game"
 msgstr "Is game ki awaaz &chalu karein"
-
-msgid "&Update shard prices (game menu, Update shard prices)"
-msgstr "Shards ki qeematein &update karein (game menu, Update shard prices)"
 
 msgid "&Use the selected skill:"
 msgstr "Chuni hui skill &istemal karein:"
@@ -712,6 +700,14 @@ msgstr "Amal"
 msgid "Action menu"
 msgstr "Amal menu"
 
+msgid "Actions in execution &order:"
+msgstr "Chalne ki &tarteeb mein kaam:"
+
+msgid ""
+"Actions run from top to bottom. A failed DETERMINISTIC Before action also prevents farming. After runs automatically only when farming ends by itself."
+msgstr ""
+"Kaam oopar se neeche chalte hain. Before mein DETERMINISTIC kaam nakaam ho to farming bhi nahin chalti. After khud tab chalta hai jab farming khud khatam ho."
+
 msgid "Activity:"
 msgstr "Sargarmi:"
 
@@ -772,8 +768,8 @@ msgstr "&Kills ki ginti ke baad"
 msgid "After a &time limit"
 msgstr "&Waqt ki hadd ke baad"
 
-msgid "After farming (when farming finishes by itself, never after Stop)"
-msgstr "Farming ke baad (jab farming khud khatam ho, Stop ke baad kabhi nahi)"
+msgid "After farming"
+msgstr "Farming ke baad"
 
 msgid "Agent"
 msgstr "Agent"
@@ -882,8 +878,8 @@ msgstr "Basta:"
 msgid "Battlefield merit"
 msgstr "Battlefield merit"
 
-msgid "Before farming (when a plan or a script that farms starts)"
-msgstr "Farming se pehle (jab farm karne wala plan ya script shuru ho)"
+msgid "Before farming"
+msgstr "Farming se pehle"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Agli jagah par jane se pehle (sirf jab ek se zyada jagah ho)"
@@ -1003,6 +999,9 @@ msgid ""
 msgstr ""
 "Game jo skills ke baare mein kehta hai us se &skills chunein (band: attack keys baari baari dabayein)"
 
+msgid "Choose Before farming or After farming."
+msgstr "Farming se pehle ya farming ke baad chunein."
+
 msgid "Choose a city square:"
 msgstr "City square chunein:"
 
@@ -1015,8 +1014,11 @@ msgstr "Filter milaane ki qisam chunein."
 msgid "Choose a map."
 msgstr "Map chunein."
 
-msgid "Choose a plan or script to run."
-msgstr "Chalane ke liye mansooba ya script chunein."
+msgid "Choose a tool or a saved script."
+msgstr "Tool ya mahfooz script chunein."
+
+msgid "Choose an action to run."
+msgstr "Chalaane ke liye kaam chunein."
 
 msgid "Choose in a dialog"
 msgstr "Dialog mein chunein"
@@ -1038,9 +1040,6 @@ msgstr "Shehar ke chowk"
 
 msgid "Cl&ear"
 msgstr "Saaf kar&ein"
-
-msgid "Clea&n the bag (game menu, Clean the bag now)"
-msgstr "Basta saa&f karein (game menu, Clean the bag now)"
 
 msgid "Clean the &bag now"
 msgstr "Basta abhi &saaf karein"
@@ -1265,6 +1264,9 @@ msgstr "Maut"
 msgid "Deaths before stopping:"
 msgstr "Rokne se pehle kitni maut:"
 
+msgid "Delay after success (&seconds):"
+msgstr "Kaamyaabi ke baad waqfa (&seconds):"
+
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "{what} ({who}) ka schedule hataayein?"
 
@@ -1382,6 +1384,9 @@ msgstr "Schedule tabdeel karein"
 
 msgid "Elite"
 msgstr "Elite"
+
+msgid "Enable/&disable"
+msgstr "Chalu/&band karein"
 
 msgid "Enable/&disable filter"
 msgstr "Filter chalu/&band karein"
@@ -1556,11 +1561,6 @@ msgstr "Larai:"
 msgid "Fill &up to:"
 msgstr "&Yahan tak bharein:"
 
-msgid ""
-"Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
-msgstr ""
-"Chalu supplies ko un ki muqarrar miktar tak bharta hai, chahe un ki khudkar refill ki had abhi na aayi ho."
-
 msgid "Filter list"
 msgstr "Filter fehrist"
 
@@ -1644,9 +1644,6 @@ msgstr "Gangs ke production ilaqe (Lake, Mining Area ya Herbal Garden)"
 
 msgid "Gangs, in &order (the bot goes to each in turn):"
 msgstr "Gangs, &tarteeb se (bot baari baari har ek mein jata hai):"
-
-msgid "Gat&hering (as set in Tools, Gathering)"
-msgstr "Jama ka&rna (jaisa Tools, Gathering mein set hai)"
 
 msgid "Gathe&ring"
 msgstr "Jama ka&rna"
@@ -1856,9 +1853,6 @@ msgstr "Kaise kaam karta hai:"
 
 msgid "How the game works"
 msgstr "Game kaise kaam karti hai"
-
-msgid "How they run"
-msgstr "Yeh kaise chalte hain"
 
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
@@ -2157,12 +2151,6 @@ msgstr "Naya version dhoond raha hoon"
 msgid "Looking for your application."
 msgstr "Aap ki application dhoond raha hoon."
 
-msgid "Lose e&xperience (as set in Tools, XP loser)"
-msgstr "E&xperience kam karein (jaisa Tools, XP loser mein hai)"
-
-msgid "Lose experience (as set in Tools, XP lose&r)"
-msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
-
 msgid "Low HP"
 msgstr "Kam HP"
 
@@ -2399,6 +2387,9 @@ msgstr "Agli level ke liye {n} zyada tajurba chahiye"
 msgid "Next panel"
 msgstr "Agla panel"
 
+msgid "No"
+msgstr "Nahin"
+
 msgid "No Gem Maker, Equipment Enhancer or chores runs."
 msgstr "Gem Maker, Equipment Enhancer ya roz ke kaam ka koi run nahi."
 
@@ -2429,6 +2420,9 @@ msgstr "GitHub par Uncle Farmer ki koi development build abhi nahi dikh rahi."
 
 msgid "No email program opened. Write to {email} from your email."
 msgstr "Koi email program nahi khula. Apni email se {email} par likhein."
+
+msgid "No enabled triggers are configured for this sequence."
+msgstr "Is silsilay mein koi chalu trigger muqarrar nahin hai."
 
 msgid "No farming spots yet."
 msgstr "Abhi koi kheti ki jagah nahi."
@@ -2782,9 +2776,6 @@ msgstr "Mansooba"
 msgid "Plan &name:"
 msgstr "Mansoobe ka &naam:"
 
-msgid "Plan or script"
-msgstr "Mansooba ya script"
-
 msgid ""
 "Plan {name} was exported to:\n"
 "{path}"
@@ -2806,6 +2797,9 @@ msgstr "Mansoobe"
 
 msgid "Plans and &scripts:"
 msgstr "Mansoobe aur &scripts:"
+
+msgid "Plans and scripts"
+msgstr "Plans aur scripts"
 
 msgid "Players near:"
 msgstr "Qareeb ke khilari:"
@@ -2972,14 +2966,8 @@ msgstr "HP (%) tak &aaram karein:"
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Zaban badalne ke liye Uncle Farmer restart karein."
 
-msgid "Restoc&k supplies (game menu, Restock now)"
-msgstr "Supplies dobara &bharein (game menu, Restock now)"
-
 msgid "Restock &now"
 msgstr "Abhi restock &karein"
-
-msgid "Restock now"
-msgstr "Abhi restock karein"
 
 msgid "Restock now: a restock is already running."
 msgstr "Abhi restock karein: restock ka kaam pehle se chal raha hai."
@@ -3063,9 +3051,6 @@ msgstr "Aane wale messages &bol kar sunayein:"
 msgid "S&top"
 msgstr "R&ok"
 
-msgid "S&tore items (game menu, Store items now)"
-msgstr "Cheezein s&torehouse mein rakhein (game menu, Store items now)"
-
 msgid "S&tore items now"
 msgstr "Cheezen abhi s&tore karein"
 
@@ -3143,9 +3128,6 @@ msgstr "Script: {name}"
 
 msgid "Scripting &guide"
 msgstr "Scripting &rahnumai"
-
-msgid "Se&ll shards (game menu, Sell shards now)"
-msgstr "Shards bec&hein (game menu, Sell shards now)"
 
 msgid "Se&ttings"
 msgstr "&Tarteeb"
@@ -3409,9 +3391,6 @@ msgstr "Awaaz aur zaban"
 msgid "Spider cave"
 msgstr "Spider cave"
 
-msgid "St&ore items (game menu, Store items now)"
-msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
-
 msgid "St&ore:"
 msgstr "Jama &karein:"
 
@@ -3607,6 +3586,9 @@ msgstr "Yeh jagah pehle se aap ki list mein hai."
 msgid "That schedule is gone"
 msgstr "Woh schedule ab nahi raha"
 
+msgid "That script no longer exists. Choose another action."
+msgstr "Woh script ab mojood nahin. Doosra kaam chunein."
+
 msgid "That sound ID is already in the lists."
 msgstr "Yeh sound ID lists mein pehle se hai."
 
@@ -3690,6 +3672,14 @@ msgstr "Computer {n} second mein band hoga. Shutdown mansookh karein?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Baqi bots khatam hone par computer band ho jayega."
+
+msgid "The delay must be a finite number of seconds, zero or greater."
+msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
+
+msgid ""
+"The delay runs before the next enabled action. Zero starts it immediately; the last action has no delay."
+msgstr ""
+"Waqfa aglay chalu kaam se pehle hota hai. Zero par foran shuru hota hai; aakhri kaam ke baad waqfa nahin hota."
 
 msgid ""
 "The east edge must be greater than the west edge, and the south edge greater than the north edge."
@@ -3854,6 +3844,12 @@ msgid ""
 msgstr ""
 "Phenkne wali list khaali hai. Pehle Kirdaar, Basta aur supplies mein chunein ke kya phenkna hai."
 
+msgid "The trigger sequence settings are invalid."
+msgstr "Trigger silsilay ki tarteeb durust nahin hai."
+
+msgid "The trigger's enabled setting must be true or false."
+msgstr "Trigger ke chalu hone ki tarteeb true ya false honi chahiye."
+
 msgid "The update couldn't start: {why}"
 msgstr "Update shuru nahi ho saka: {why}"
 
@@ -3968,11 +3964,6 @@ msgstr "Kam az kam aik din par nishan lagayein."
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
 
-msgid ""
-"Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
-msgstr ""
-"Tick kiye gaye kaam isi tarteeb se ek ke baad ek chalte hain, har ek bilkul game ke Tools submenu ki tarah. Dono lists mein tick kiya gaya kaam farming se pehle ek baar aur baad mein ek baar chalta hai. Jo kaam poora na ho sake woh bataya jata hai aur agla phir bhi chalta hai; Stop sab rok deta hai. Store items bag manager ki storage list ko usi waqt jaisi hai waise istemal karta hai."
-
 msgid "Time (HH:MM):"
 msgstr "Waqt (HH:MM):"
 
@@ -4023,6 +4014,9 @@ msgstr "&Baqi sab ki awaaz:"
 msgid "Tone from &trusted players:"
 msgstr "&Bharosemand khilariyon ki awaaz:"
 
+msgid "Tools"
+msgstr "Auzar"
+
 msgid "Total arnebia spent on items used: {n}"
 msgstr "Istemal shuda cheezon par kul kharch arnebia: {n}"
 
@@ -4035,6 +4029,12 @@ msgstr "Safar"
 
 msgid "Travel and pets"
 msgstr "Safar aur pets"
+
+msgid "Trigger action"
+msgstr "Trigger ka kaam"
+
+msgid "Trigger sequence completed with failures."
+msgstr "Trigger silsila kuch nakaamiyon ke saath khatam hua."
 
 msgid "Triggers"
 msgstr "Triggers"
@@ -4155,9 +4155,6 @@ msgstr "Har &game ki awaaz chalu karein"
 msgid "Unpacking"
 msgstr "Unpack ho raha hai"
 
-msgid "Up&date shard prices (game menu, Update shard prices)"
-msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
-
 msgid "Update"
 msgstr "Update"
 
@@ -4263,6 +4260,9 @@ msgstr ""
 
 msgid "Wa&lk to a dungeon or map"
 msgstr "Dungeon ya map tak &chalain"
+
+msgid "Waiting {seconds} seconds after {job}"
+msgstr "{job} ke baad {seconds} seconds ka intezar"
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Khuli zameen par &tirchha chalein (dono direction keys ek saath)"
@@ -4437,6 +4437,9 @@ msgstr "XP loser: {end} ({n} maut)"
 
 msgid "Y:"
 msgstr "Y:"
+
+msgid "Yes"
+msgstr "Haan"
 
 msgid "Yesterday"
 msgstr "Kal"
@@ -4950,6 +4953,9 @@ msgstr ""
 msgid "critical"
 msgstr "critical"
 
+msgid "daily chores"
+msgstr "Roz ke kaam"
+
 msgid "daily chores finished: {list}"
 msgstr "roz ke kaam mukammal: {list}"
 
@@ -5019,6 +5025,9 @@ msgid ""
 "end_at takes start, safe, hearthstone, here, or a map (and 'at x,y'): {what}"
 msgstr ""
 "end_at start, safe, hearthstone, here, ya koi map leta hai (aur 'at x,y'): {what}"
+
+msgid "enhancing equipment"
+msgstr "Samaan behtar karna"
 
 msgid "entrance unknown"
 msgstr "daakhla maloom nahi"
@@ -5451,6 +5460,9 @@ msgstr "{n} {gem} banaye {used} {shard} se"
 
 msgid "made {n} {gem}; {have} in the bag"
 msgstr "{n} {gem} banaye; basta mein {have}"
+
+msgid "making gems"
+msgstr "Gems banana"
 
 msgid "making gems: {list}"
 msgstr "gems bana rahe hain: {list}"
@@ -6058,6 +6070,9 @@ msgstr "qataar {n}"
 msgid "running"
 msgstr "chal raha"
 
+msgid "running a dungeon"
+msgstr "Dungeon chalaana"
+
 msgid "running on_stop"
 msgstr "on_stop chal raha hai"
 
@@ -6069,6 +6084,9 @@ msgstr "script mukammal ho gayi"
 
 msgid "script stopped itself"
 msgstr "script ne khud ko rok diya"
+
+msgid "script {name}"
+msgstr "Script {name}"
 
 msgid "searching"
 msgstr "dhoond rahe hain"
@@ -6096,6 +6114,9 @@ msgstr "shards bech rahe hain"
 
 msgid "selling shards: {list}"
 msgstr "shards bech rahe hain: {list}"
+
+msgid "selling the collection"
+msgstr "Collection bechna"
 
 msgid "selling to the nearest {role}"
 msgstr "sab se qareebi {role} ko bech rahe hain"
@@ -7506,6 +7527,9 @@ msgstr "{n} istemal hue"
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr "baste mein {n} {shard}; ek Level {lv} crystal mein {per} lagta hai"
 
+msgid "{n}. {action} — {state}; delay {seconds} s; deterministic: {strict}"
+msgstr "{n}. {action} — {state}; waqfa {seconds} s; deterministic: {strict}"
+
 msgid "{opt} isn't a valid name pattern"
 msgstr "{opt} valid name pattern nahi hai"
 
@@ -7630,6 +7654,9 @@ msgstr "{stage}: ho gaye {ok}"
 msgid "{stage}: done {ok}; didn't finish {bad}"
 msgstr "{stage}: ho gaye {ok}; poore nahi hue {bad}"
 
+msgid "{stage}: sequence stopped because {job} failed"
+msgstr "{stage}: {job} nakaam hua is liye silsila ruk gaya"
+
 msgid "{state} {what} for {m} min on {map}, HP {hp}%{mp}, {k} kills"
 msgstr "{map} par {m} min se {state} {what}, HP {hp}%{mp}, {k} kills"
 
@@ -7722,6 +7749,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Character settings"
 #~ msgstr "&Kirdaar ki tarteeb"
 
+#~ msgid "&Clean the bag (game menu, Clean the bag now)"
+#~ msgstr "&Basta saaf karein (game menu, Clean the bag now)"
+
 #~ msgid ""
 #~ "&Construction builds a day (10,000 arnebia, 2,500 gang contribution each):"
 #~ msgstr "Roz ki &tameer (har baar 10,000 arnebia, 2,500 gang contribution):"
@@ -7742,6 +7772,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "&Equipment Enhancer...\tCtrl+Shift+E"
 #~ msgstr "&Equipment Enhancer...\tCtrl+Shift+E"
+
+#~ msgid "&Gathering (as set in Tools, Gathering)"
+#~ msgstr "&Jama karna (jaisa Tools, Gathering mein set hai)"
 
 #~ msgid "&Gem Maker...\tCtrl+G"
 #~ msgstr "&Gem Maker...\tCtrl+G"
@@ -7779,6 +7812,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Pick from monsters near me..."
 #~ msgstr "&Mere qareeb ke monsters mein se chunein..."
 
+#~ msgid "&Plan or script:"
+#~ msgstr "&Mansooba ya script:"
+
 #~ msgid "&Plans\tCtrl+2"
 #~ msgstr "&Mansoobe\tCtrl+2"
 
@@ -7788,8 +7824,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Quick guide\tF1"
 #~ msgstr "&Mukhtasar guide\tF1"
 
+#~ msgid "&Restock supplies (game menu, Restock now)"
+#~ msgstr "&Supplies dobara bharein (game menu, Restock now)"
+
 #~ msgid "&Results...\tCtrl+R"
 #~ msgstr "&Nataij...\tCtrl+R"
+
+#~ msgid "&Sell shards (game menu, Sell shards now)"
+#~ msgstr "&Shards bechein (game menu, Sell shards now)"
 
 #~ msgid "&Sell the collection now"
 #~ msgstr "Collection abhi &bechein"
@@ -7809,6 +7851,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Unmute this game\tCtrl+U"
 #~ msgstr "Is game ki awaaz &chalu karein\tCtrl+U"
 
+#~ msgid "&Update shard prices (game menu, Update shard prices)"
+#~ msgstr "Shards ki qeematein &update karein (game menu, Update shard prices)"
+
 #~ msgid "&View as script..."
 #~ msgstr "&Script ki tarah dekhein..."
 
@@ -7821,6 +7866,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "A city s&quare..."
 #~ msgstr "Ek city s&quare..."
 
+#~ msgid ""
+#~ "Actions run from top to bottom. A strict Before sequence must succeed before farming starts. After runs automatically only when farming ends by itself."
+#~ msgstr ""
+#~ "Kaam oopar se neeche chalte hain. Before mein sakht shart wala kaam farming se pehle kaamyaab hona chahiye. After khud tab chalta hai jab farming khud khatam ho."
+
 #~ msgid "Ad&vanced..."
 #~ msgstr "Maz&eed..."
 
@@ -7829,6 +7879,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "After farming (when a run finishes by itself, never after Stop)"
 #~ msgstr "Farming ke baad (jab run khud khatam ho, Stop ke baad kabhi nahi)"
+
+#~ msgid "After farming (when farming finishes by itself, never after Stop)"
+#~ msgstr "Farming ke baad (jab farming khud khatam ho, Stop ke baad kabhi nahi)"
 
 #~ msgid "Apply &mute"
 #~ msgstr "&Khamoshi lagayein"
@@ -7842,6 +7895,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Automatically se&ll shards after farming (Tools, Sell shards now)"
 #~ msgstr "Farming ke baad khud shards &bechein (Tools, Sell shards now)"
 
+#~ msgid "Before farming (when a plan or a script that farms starts)"
+#~ msgstr "Farming se pehle (jab farm karne wala plan ya script shuru ho)"
+
 #~ msgid "Build in the gang's &highland too (the outer and inner halls always)"
 #~ msgstr ""
 #~ "Gang ke &highland mein bhi tameer karein (bahar aur andar wale hall hamesha)"
@@ -7854,6 +7910,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Check for &updates..."
 #~ msgstr "&Updates dekhein..."
+
+#~ msgid "Choose a plan or script to run."
+#~ msgstr "Chalane ke liye mansooba ya script chunein."
+
+#~ msgid "Clea&n the bag (game menu, Clean the bag now)"
+#~ msgstr "Basta saa&f karein (game menu, Clean the bag now)"
 
 #~ msgid "Clean the &bag now (throw-away list)"
 #~ msgstr "&Basta abhi saaf karein (phenkne wali list)"
@@ -7894,6 +7956,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "E&xport plan..."
 #~ msgstr "Mansooba e&xport karein..."
 
+#~ msgid ""
+#~ "Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
+#~ msgstr ""
+#~ "Chalu supplies ko un ki muqarrar miktar tak bharta hai, chahe un ki khudkar refill ki had abhi na aayi ho."
+
+#~ msgid "Gat&hering (as set in Tools, Gathering)"
+#~ msgstr "Jama ka&rna (jaisa Tools, Gathering mein set hai)"
+
 #~ msgid "Gathe&ring...\tCtrl+Shift+F"
 #~ msgstr "Jama ka&rna...\tCtrl+Shift+F"
 
@@ -7903,6 +7973,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Gather in the &gang's area first, once a game day (30 minutes inside)"
 #~ msgstr ""
 #~ "Pehle &gang ke ilaqe mein jama karein, game ke din mein ek baar (andar 30 minute)"
+
+#~ msgid "How they run"
+#~ msgstr "Yeh kaise chalte hain"
 
 #~ msgid "Import or export character settings"
 #~ msgstr "Kirdaar ki tarteeb import ya export karein"
@@ -7915,6 +7988,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Looking for a new version..."
 #~ msgstr "Naya version dhoond raha hoon..."
+
+#~ msgid "Lose e&xperience (as set in Tools, XP loser)"
+#~ msgstr "E&xperience kam karein (jaisa Tools, XP loser mein hai)"
+
+#~ msgid "Lose experience (as set in Tools, XP lose&r)"
+#~ msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
 
 #~ msgid "New &script...\tCtrl+Shift+N"
 #~ msgstr "Naya &script...\tCtrl+Shift+N"
@@ -7941,6 +8020,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Pet MP"
 #~ msgstr "Pet MP"
+
+#~ msgid "Plan or script"
+#~ msgstr "Mansooba ya script"
 
 #~ msgid "Practice"
 #~ msgstr "Mashq"
@@ -7973,11 +8055,20 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "\n"
 #~ "Is se combat, keys, potions, bag, pet, travel aur restock ki choices badalengi. {character} ka apna scan aur seekha hua hearthstone ka maqam rahega. Yes chunne tak kuch nahi badlega."
 
+#~ msgid "Restoc&k supplies (game menu, Restock now)"
+#~ msgstr "Supplies dobara &bharein (game menu, Restock now)"
+
+#~ msgid "Restock now"
+#~ msgstr "Abhi restock karein"
+
 #~ msgid "S&ound controls"
 #~ msgstr "S&ound controls"
 
 #~ msgid "S&top\tShift+F5"
 #~ msgstr "R&ok\tShift+F5"
+
+#~ msgid "S&tore items (game menu, Store items now)"
+#~ msgstr "Cheezein s&torehouse mein rakhein (game menu, Store items now)"
 
 #~ msgid "S&tore items now (storage list)"
 #~ msgstr "Cheezein abhi s&torehouse mein rakhein (storage list)"
@@ -7990,6 +8081,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Sche&dules...\tCtrl+Shift+H"
 #~ msgstr "Sche&dules...\tCtrl+Shift+H"
+
+#~ msgid "Se&ll shards (game menu, Sell shards now)"
+#~ msgstr "Shards bec&hein (game menu, Sell shards now)"
 
 #~ msgid "Se&ttings..."
 #~ msgstr "&Tarteeb..."
@@ -8008,6 +8102,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Spea&k the results\tCtrl+Shift+R"
 #~ msgstr "Nataij su&nayein\tCtrl+Shift+R"
+
+#~ msgid "St&ore items (game menu, Store items now)"
+#~ msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
 
 #~ msgid "Stop &every bot\tCtrl+Shift+S"
 #~ msgstr "Har &bot rokein\tCtrl+Shift+S"
@@ -8028,6 +8125,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "Tick kiye gaye kaam isi tarteeb se ek ke baad ek chalte hain, har ek bilkul Tools menu ki tarah. Dono lists mein tick kiya gaya kaam farming se pehle ek baar aur baad mein ek baar chalta hai. Jo kaam poora na ho sake woh bataya jata hai aur agla phir bhi chalta hai; Stop sab rok deta hai. Store items bag manager ki storage list ko usi waqt jaisi hai waise istemal karta hai."
 
+#~ msgid ""
+#~ "Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
+#~ msgstr ""
+#~ "Tick kiye gaye kaam isi tarteeb se ek ke baad ek chalte hain, har ek bilkul game ke Tools submenu ki tarah. Dono lists mein tick kiya gaya kaam farming se pehle ek baar aur baad mein ek baar chalta hai. Jo kaam poora na ho sake woh bataya jata hai aur agla phir bhi chalta hai; Stop sab rok deta hai. Store items bag manager ki storage list ko usi waqt jaisi hai waise istemal karta hai."
+
 #~ msgid "Time between pet potions (&seconds):"
 #~ msgstr "Pet potions ke darmiyan waqt (&second):"
 
@@ -8044,6 +8146,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Unpacking..."
 #~ msgstr "Unpack ho raha hai..."
+
+#~ msgid "Up&date shard prices (game menu, Update shard prices)"
+#~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
 
 #~ msgid "Wa&lk to a dungeon or map...\tCtrl+W"
 #~ msgstr "Dungeon ya map tak &chalain...\tCtrl+W"

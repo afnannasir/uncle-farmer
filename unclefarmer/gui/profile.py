@@ -17,6 +17,7 @@ from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
                      labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
+from .triggers import SequenceEditor
 
 STYLES = ("auto", "follow", "stationary")
 PK_MODE_LABELS = (N_("Pacifist mode"), N_("Pacifist mode with counterattack"), N_("Moral Mode"),
@@ -329,42 +330,19 @@ class ProfileDialog(Dialog):
         self.pet_care = pet_care(panel, box, p)
 
     def triggers_page(self, nb: wx.Notebook) -> None:
-        """Tools jobs the bot runs by itself (engine/triggers.py): one tick per job and stage, the
-        two stages independent - a job ticked in both runs once before and once after farming."""
-        p = self.p
+        """Independent, ordered preparation and completion sequences."""
         panel, box = page(nb, _("Triggers"))
-        self.triggers: dict[str, wx.CheckBox] = {}
-        labels = {
-            "before": {"sell_shards": _("&Sell shards (game menu, Sell shards now)"),
-                       "clean_bag": _("&Clean the bag (game menu, Clean the bag now)"),
-                       "update_shard_prices": _("&Update shard prices (game menu, Update shard prices)"),
-                       "gather": _("&Gathering (as set in Tools, Gathering)"),
-                       "store_items": _("S&tore items (game menu, Store items now)"),
-                       "restock": _("&Restock supplies (game menu, Restock now)"),
-                       "lose_xp": _("Lose e&xperience (as set in Tools, XP loser)")},
-            "after": {"sell_shards": _("Se&ll shards (game menu, Sell shards now)"),
-                      "clean_bag": _("Clea&n the bag (game menu, Clean the bag now)"),
-                      "update_shard_prices": _("Up&date shard prices (game menu, Update shard prices)"),
-                      "gather": _("Gat&hering (as set in Tools, Gathering)"),
-                      "store_items": _("St&ore items (game menu, Store items now)"),
-                      "restock": _("Restoc&k supplies (game menu, Restock now)"),
-                      "lose_xp": _("Lose experience (as set in Tools, XP lose&r)")},
-        }
-        titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
-                  "after": _("After farming (when farming finishes by itself, never after Stop)")}
+        notebook = tabs(panel)
+        box.Add(notebook, 1, wx.EXPAND)
+        self.trigger_editors: dict[str, SequenceEditor] = {}
         for stage in triggers.STAGES:
-            f = group(panel, box, titles[stage])
-            for job, _what in triggers.JOBS:
-                key = triggers.setting(job, stage)
-                self.triggers[key] = f.check(labels[stage][job], p.get(key, False) is True)
-        f = group(panel, box, _("How they run"))
-        f.readonly(_("About:"), _(
-            "Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job "
-            "ticked in both lists runs once before and once after farming. A job that can't finish is said "
-            "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
-            "as it is at that moment."), lines=4)
-        f.readonly(_("Restock now"), _("Fills enabled supplies to their configured targets, even above their "
-                                      "automatic refill thresholds."), lines=2)
+            child, body = page(notebook, _("Before farming") if stage == "before" else _("After farming"))
+            editor = SequenceEditor(child, triggers.sequence(self.p, stage))
+            self.trigger_editors[stage] = editor
+            body.Add(editor, 1, wx.EXPAND)
+        note = wx.StaticText(panel, label=_("Actions run from top to bottom. A failed DETERMINISTIC Before action also prevents farming. After runs automatically only when farming ends by itself."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.TOP, 8)
 
     # ------------------------------------------------------------ from the scan
     def potion_shower(self, kind: str) -> Handler:
@@ -568,8 +546,7 @@ class ProfileDialog(Dialog):
         p["stop_when_out_of_potions"] = self.potions_out.GetValue()
         p["speed_beast"] = self.speed_values[max(0, self.speed_beast.GetSelection())]
         p["end_with_hearthstone"] = self.end_hearth.GetValue()
-        for key, box in self.triggers.items():
-            p[key] = box.GetValue()
+        p["trigger_sequences"] = {stage: editor.value() for stage, editor in self.trigger_editors.items()}
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()

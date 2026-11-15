@@ -47,6 +47,7 @@ CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home"))
 
 # One per character. Everything the bot needs to know about how YOU play.
 PROFILE_DEFAULTS: dict[str, Any] = {
+    "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
     # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
     # the one pointing at the monster it chose, then checks the game selected that monster.
@@ -232,6 +233,8 @@ class AppSettings(BaseModel):
 class Profile(BaseModel):
     """profiles/<character>.json."""
     model_config = ConfigDict(extra="allow")
+
+    trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
 
     move_keys: dict[str, str] = PROFILE_DEFAULTS["move_keys"]
     target_keys: dict[str, str] = PROFILE_DEFAULTS["target_keys"]

@@ -1,4 +1,4 @@
-"""Scheduled runs in the main window: the timer that starts what is due, and Run, Schedules.
+"""Scheduled plans, scripts, tools and trigger sequences: one shared timer and run lifecycle.
 
 A scheduled plan or script is started by start(), the Start button's own path, in the game its
 character is logged in to; schedule.Scheduler decides when, and keeps it from running twice.
@@ -12,7 +12,7 @@ import wx
 
 from ... import applog, schedule, settings, stats
 from ...errors import carry_on
-from ...engine import plan as plans
+from ...engine import plan as plans, triggers
 from ...engine.runner import Run
 from ...i18n import _
 from ..schedules import SchedulesDialog
@@ -49,7 +49,9 @@ class SchedulingMixin(FrameParts):
             self.say(line)
 
     def scheduled_items(self) -> list[tuple[str, str]]:
-        return [("plan", n) for n in plans.names()] + [("script", n) for n in plans.script_names()]
+        return ([("plan", n) for n in plans.names()] + [("script", n) for n in plans.script_names()]
+                + [("tool", job) for job, _label in triggers.TOOLS]
+                + [("trigger", stage) for stage in triggers.STAGES])
 
     def start_scheduled(self, s: schedule.Schedule, due: dt.datetime) -> tuple[str, str]:
         """Start one due occurrence: (schedule.STARTED | WAIT | FAILED, what happened)."""
@@ -64,7 +66,7 @@ class SchedulingMixin(FrameParts):
         busy = self.runs.get(pid)
         if busy is not None:
             return schedule.WAIT, _("{who}'s game is busy with {what}", who=s["character"], what=busy.title)
-        answer = self.start(pid, item, remote=True) or ""
+        answer = self.start(pid, item, remote=True, schedule_mark=(s["id"], schedule.stamp(due))) or ""
         run = self.runs.get(pid)
         if run is None or run.title != item[1]:
             return schedule.FAILED, answer or _("it didn't start")
@@ -76,7 +78,7 @@ class SchedulingMixin(FrameParts):
         mark: tuple[str, str] | None = getattr(run, "schedule", None)
         if mark is None:
             return
-        if reason.startswith(_("unexpected error: {err}", err="").rstrip()):
+        if getattr(run, "failed", False) or reason.startswith(_("unexpected error: {err}", err="").rstrip()):
             outcome = schedule.FAILED
         elif run.ended_by_itself:
             outcome = "finished"
