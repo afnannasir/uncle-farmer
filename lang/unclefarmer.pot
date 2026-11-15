@@ -5005,7 +5005,8 @@ msgid ""
 "learned but on no skill key, so never used: {skills} - put them on a key (Ctrl+Alt+key in the skills panel)"
 msgstr ""
 
-msgid "learned where the exit from {map} lands on {dest}: {x},{y}"
+msgid ""
+"learned where the exit from {map} lands on {dest}: {x},{y} - the atlas doesn't have it yet, please report it: {row}"
 msgstr ""
 
 msgid "leave (or quit team): I leave the team I'm in."
@@ -6847,6 +6848,10 @@ msgstr ""
 
 msgid ""
 "{map}: the exit to {dest} brought me round in a loop - planning without it"
+msgstr ""
+
+msgid ""
+"{map}: the exit to {dest} put me at {x},{y}, not at {ax},{ay} as the atlas says - please report it: {row}"
 msgstr ""
 
 msgid ""

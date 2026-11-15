@@ -160,7 +160,38 @@ def transports() -> list[Row]:
 
 
 def _ports(mid: int) -> list[Row]:
-    return atlas.maps().get(int(mid), {}).get("ports", [])
+    m = atlas.maps().get(int(mid), {})
+    if not m.get("_arrivals_done"):
+        _complete_arrivals(m)
+    return m.get("ports", [])
+
+
+def _complete_arrivals(m: Row) -> None:
+    """Give each arrival of map m that has a point, but no port yet, its port and its routes to the
+    map's other ports, worked out from the map model as the stored ones are (_steps_from). An
+    arrival measured in the game is added to data/atlas.json as its marker, sources, point and
+    comp alone: the routes are never copied in by hand, so they can't go stale."""
+    m["_arrivals_done"] = True
+    ports: list[Row] = m.setdefault("ports", [])
+    have = {p.get("marker") for p in ports if p["kind"] == "arrival"}
+    for a in m.get("arrivals", []):
+        point = a.get("point")
+        if not point or a.get("marker") in have:
+            continue
+        mid, cell = int(m["id"]), (int(point[0]), int(point[1]))
+        others = [(p["x"], p["y"]) for p in ports]
+        n = len(ports)
+        sources: list[int] = a.get("sources") or []
+        ports.append({"kind": "arrival", "x": cell[0], "y": cell[1], "marker": a.get("marker"),
+                      "name": "arrival from " + ", ".join(atlas.label(src) for src in sources),
+                      "comp": a.get("comp", 0)})
+        have.add(a.get("marker"))
+        there = _steps_from(mid, cell, others)
+        routes: list[Row] = m.setdefault("routes", [])
+        for k, pt in enumerate(others):
+            back = _steps_from(mid, pt, [cell]).get(cell)
+            if pt in there and back is not None:
+                routes.append({"a": n, "b": k, "steps": there[pt], "back_steps": back})
 
 
 def _arrival_port(mid: int, marker: object) -> int | None:
@@ -240,10 +271,10 @@ def _paired_doors(mid: int, e: Row, d: Row) -> list[int]:
     return twins or back
 
 
-# Landings learned: exits whose landing the map data doesn't name (Ancient Ruins' small hall leads
-# back into the big one by four doors, and the game puts us beside the doors we came in by - not
-# "anywhere", which planned a loop between the two maps). Where the bot landed is remembered by
-# (destination map, the exit's marker) in profiles/_learned_landings.json.
+# Landings learned: exits whose landing neither the map data nor the atlas's measured arrivals name
+# (the country halls, Pull Cave). Where the bot landed is remembered by (destination map, the
+# exit's marker) in profiles/_learned_landings.json until the landing is added to the atlas
+# (arrival_row gives it in the atlas's own form, for the player to report).
 LANDINGS_FILE = "_learned_landings.json"
 _landings: tuple[str, dict[tuple[int, int], Point]] | None = None
 
@@ -315,6 +346,51 @@ def learn_landing(mid: int, exit_i: int, landed_map: int, cell: Sequence[float])
     return True
 
 
+LANDING_SLACK = 6     # cells from the atlas's arrival point a landing may be (measured: 2 at most)
+
+
+def _arrival_json(dest: int, marker: int, source: int, at: tuple[int, int]) -> str:
+    """An arrival as data/atlas.json carries it: marker, sources, point, comp."""
+    try:
+        comp = int(atlas.model(dest).comp_of(at[0], at[1]))
+    except (IndexError, KeyError, OSError, ValueError):
+        comp = 0
+    return json.dumps({"marker": marker, "sources": [int(source)], "point": list(at), "comp": comp})
+
+
+def arrival_row(mid: int, exit_i: int, cell: Sequence[float]) -> str:
+    """A landing learned through exit exit_i of mid, as the arrival data/atlas.json would carry for
+    it, ready for a player to report: the atlas is shipped with the bot, so a landing added there
+    reaches everyone with the next version. "" for an exit whose landing is known."""
+    key = unknown_landing(mid, exit_i)
+    if key is None:
+        return ""
+    return _arrival_json(key[0], key[1], mid, (int(round(cell[0])), int(round(cell[1]))))
+
+
+def wrong_landing(mid: int, exit_i: int, landed_map: int, cell: Sequence[float]) -> tuple[Point, str] | None:
+    """The atlas's arrival point and the corrected arrival to report, when crossing exit exit_i of
+    mid put us further than LANDING_SLACK from where the atlas says it lands (a measurement gone
+    wrong, or the game changed): the bot plans on from where it really is either way, but the
+    atlas is everyone's, so the player is asked to report it. None when the landing agrees, or
+    the atlas has none for this exit."""
+    exits: list[Row] = atlas.maps().get(int(mid), {}).get("exits", [])
+    if not 0 <= exit_i < len(exits):
+        return None
+    e = exits[exit_i]
+    marker = e.get("marker")
+    if e.get("dest") != int(landed_map) or not isinstance(marker, int) or isinstance(marker, bool):
+        return None
+    k = _arrival_port(int(landed_map), marker)
+    if k is None:
+        return None
+    p = _ports(int(landed_map))[k]
+    at = (int(round(cell[0])), int(round(cell[1])))
+    if math.hypot(p["x"] - at[0], p["y"] - at[1]) <= LANDING_SLACK:
+        return None
+    return (p["x"], p["y"]), _arrival_json(int(landed_map), marker, mid, at)
+
+
 def _static_graph() -> Graph:
     """Edges that don't depend on where we start: node -> [(cost, node, leg)]."""
     global _static, _static_for
@@ -322,7 +398,7 @@ def _static_graph() -> Graph:
         return _static
     g: collections.defaultdict[Node, list[Edge]] = collections.defaultdict(list)
     for mid, m in atlas.maps().items():
-        ports: list[Row] = m.get("ports", [])
+        ports: list[Row] = _ports(mid)          # with the measured arrivals completed
         routes: list[Row] = m.get("routes", [])
         for r in routes:
             a, b, steps = r["a"], r["b"], r["steps"]
@@ -350,10 +426,11 @@ def _static_graph() -> Graph:
                 for k, steps in _landing_ports(e["dest"], seen).items():
                     g[("p", mid, i)].append((CROSSING + steps, ("p", e["dest"], k), leg))
                 continue
-            # The map data names no landing point for this exit (the country halls, Ancient Ruins,
-            # Pull Cave...). Doors come in pairs: where the data does name one, it is beside the
-            # next map's door back (Ancient Ruins' small hall: each arrival a step or two from
-            # its exit back). So land beside the next map's doors back to this one, any of them.
+            # Nothing names a landing point for this exit (the country halls, Pull Cave). Doors
+            # come in pairs: where the data does name one, it is beside the next map's door back
+            # (Ancient Ruins' small hall: each arrival a step or two from its exit back - and the
+            # six landings measured since back into Ancient Ruins are each beside their twin).
+            # So land beside the next map's doors back to this one: _paired_doors.
             # Only a map with no door back is landed on "somewhere": every port, at a guessed walk.
             there: list[Row] = d.get("ports", [])
             back = _paired_doors(mid, e, d)

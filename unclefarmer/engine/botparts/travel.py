@@ -326,10 +326,18 @@ class TravelMixin(Parts):
         if leg.get("dest") is not None and self.map_id() == leg["dest"]:
             failed[door] = 1          # crossed (a try that didn't cross is no loop)
             at = self.me()
-            if travel.learn_landing(leg["map"], leg["exit"], leg["dest"], (at.get("x", 0), at.get("y", 0))):
-                self.log(_("learned where the exit from {map} lands on {dest}: {x},{y}",
+            cell = (at.get("x", 0), at.get("y", 0))
+            row = travel.arrival_row(leg["map"], leg["exit"], cell)
+            off = travel.wrong_landing(leg["map"], leg["exit"], leg["dest"], cell)
+            if off is not None:
+                self.log(_("{map}: the exit to {dest} put me at {x},{y}, not at {ax},{ay} as the atlas says "
+                           "- please report it: {row}", map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"]),
+                           x=int(cell[0]), y=int(cell[1]), ax=int(off[0][0]), ay=int(off[0][1]), row=off[1]))
+            elif travel.learn_landing(leg["map"], leg["exit"], leg["dest"], cell):
+                self.log(_("learned where the exit from {map} lands on {dest}: {x},{y} - the atlas doesn't "
+                           "have it yet, please report it: {row}",
                            map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"]),
-                           x=int(at.get("x", 0)), y=int(at.get("y", 0))))
+                           x=int(cell[0]), y=int(cell[1]), row=row))
         if leg.get("dest") is None and self.map_id() == leg["map"]:
             failed["gang_exit"] = failed.get("gang_exit", 0) + 1
             if failed["gang_exit"] >= 2:
