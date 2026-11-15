@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Golden Pegasus**
+
+- The Golden Pegasus fusion beast (Swift, speed +3.2, level 100) is known now: the bot rides it to
+  travel, gets off it for a fight, and offers it in "Travel on fusion beast" after a scan. It was
+  newer than the bot's list of beasts, so it was never chosen.
+- When the only fusion beast that could carry us is one the bot doesn't know yet, the log names it
+  once a run and asks for its description, instead of only saying there is no Swift beast.
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".
