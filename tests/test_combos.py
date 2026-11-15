@@ -358,9 +358,9 @@ def test_scenario_15_interrupted_sequence_clears_stale_state(clock: Clock) -> No
     snap = {"self": {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}, "entities": [
         {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}, mob_new,
     ]}
-    sb.pick(snap, mob_new)
-    assert sb.pending_channelling is True
-    assert sb.available_to_channel_without_penalty is True
+    picked = sb.pick(snap, mob_new)
+    assert isinstance(picked, tuple) and picked[1] == "Pyroblast"
+    assert sb.available_to_channel_without_penalty is False
     if sb.combos:
         sb.combos.reset_chain()
     assert sb.pending_channelling is False
@@ -385,8 +385,8 @@ def test_scenario_16_17_18_blazing_storm_multi_hit_cast_level_folding(clock: Clo
     assert sb.combos is not None and sb.combos.streak == 1
 
 
-def test_scenario_19_channeling_skills_do_not_bypass_fire_impact_priority(clock: Clock) -> None:
-    """19. Channeling skills do not bypass the normal Fire Impact priority mechanism."""
+def test_scenario_19_unlocked_channel_precedes_pending_fire_impact(clock: Clock) -> None:
+    """19. Shared channel permission gives the required channel priority over Fire Impact."""
     g = Game(clock, ["Fireball", "Fire Impact", "Pyroblast", "Blazing Storm"], ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
@@ -399,7 +399,7 @@ def test_scenario_19_channeling_skills_do_not_bypass_fire_impact_priority(clock:
         {"id": -6, "x": 54, "y": 50, "hp": 50000, "maxhp": 50000, "name": "Wolf", "kind": "monster", "side": 1},
     ]}
     pick = sb.pick(snap, mob)
-    assert isinstance(pick, tuple) and pick[1] == "Fire Impact"
+    assert isinstance(pick, tuple) and pick[1] == "Blazing Storm"
 
 
 def test_scenario_20_ignition_unavailable_below_3_fire_elements(clock: Clock) -> None:
@@ -601,8 +601,8 @@ def test_solution3_06_and_07_talent_activation_required(clock: Clock) -> None:
     assert sb_without.available_to_channel_without_penalty is False
 
 
-def test_solution3_08_pyroblast_not_wasted_on_nearly_dying_monster(clock: Clock) -> None:
-    """8. Pyroblast is not wasted on a monster expected to die from normal attacks."""
+def test_solution3_08_unlocked_pyroblast_precedes_low_hp_fallback(clock: Clock) -> None:
+    """8. A low-HP fallback cannot overwrite an unlocked channel."""
     g = Game(clock, ELF, ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
@@ -614,8 +614,8 @@ def test_solution3_08_pyroblast_not_wasted_on_nearly_dying_monster(clock: Clock)
     sb.press_confirmed = True
     sb.last_cast = clock.now - 2.0
     pick = sb.pick(snap, mob_dying)
-    assert isinstance(pick, tuple) and pick[1] == "Fireball"
-    assert sb.available_to_channel_without_penalty is True
+    assert isinstance(pick, tuple) and pick[1] == "Pyroblast"
+    assert sb.available_to_channel_without_penalty is False
 
 
 def test_solution3_09_pyroblast_saved_for_next_monster(clock: Clock) -> None:
@@ -632,7 +632,7 @@ def test_solution3_09_pyroblast_saved_for_next_monster(clock: Clock) -> None:
     sb.press_confirmed = True
     sb.last_cast = clock.now - 2.0
     pick1 = sb.pick(snap1, mob_dying)
-    assert isinstance(pick1, tuple) and pick1[1] == "Fireball"
+    assert isinstance(pick1, tuple) and pick1[1] not in ("Pyroblast", "Blazing Storm", "Ignition")
 
     # Fallback normal attack lands on dying target without critting; permission preserved
     sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-5, 1, 1500]]}, ME)
@@ -678,7 +678,7 @@ def test_solution3_channeling_priority_over_wanted_skills(clock: Clock) -> None:
 
 
 def test_solution3_10_pyroblast_respects_normal_restrictions(clock: Clock) -> None:
-    """10. Pyroblast still respects cooldown, range, affordability, and channeling restrictions."""
+    """10. Permission bypasses the individual channel cooldown."""
     g = Game(clock, ["Fireball", "Fire Impact", "Pyroblast"], ["Elven Fire", "Blazing Combo"], version=28)
     b = Bot(g)
     sb = combat.SkillBook(as_parts(b))
@@ -689,7 +689,7 @@ def test_solution3_10_pyroblast_respects_normal_restrictions(clock: Clock) -> No
     sb.available_to_channel_without_penalty = True
     sb.used["Pyroblast"] = clock.now
     skills, _ = sb._usable(0, False, clock.now)
-    assert "Pyroblast" not in {s["name"] for s in skills}
+    assert "Pyroblast" in {s["name"] for s in skills}
 
 
 def test_solution3_11_ignition_threshold_remains_3_fire_elements(clock: Clock) -> None:
@@ -769,8 +769,8 @@ def test_solution3_blazing_storm_saved_on_single_dying_monster(clock: Clock) -> 
         {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}, mob_dying,
     ]}
     pick = sb.pick(snap, mob_dying)
-    assert isinstance(pick, tuple) and pick[1] == "Fireball"
-    assert sb.saving_pyroblast_for_next is True
+    assert isinstance(pick, tuple) and pick[1] not in ("Pyroblast", "Blazing Storm", "Ignition")
+    assert sb.available_to_channel_without_penalty is True
 
 
 def test_solution3_full_cross_monster_combo_lifecycle(clock: Clock) -> None:
@@ -815,20 +815,23 @@ def test_solution3_full_cross_monster_combo_lifecycle(clock: Clock) -> None:
     assert sb.pending_channelling is False
     assert sb.available_to_channel_without_penalty is True
 
-    # Step 5: Mob 2 is dying from that hit; finish with basic attack, save Pyroblast for mob3
+    # Step 5: The unlocked channel retains priority even on a low-HP monster.
     sb.press_confirmed = True
     sb.last_cast = clock.now - 2.0
     mob2_low = dict(mob2, hp=500)
     snap2_low = {"self": {"id": ME, "x": 50, "y": 50, "hp": 100000, "maxhp": 100000}, "entities": [mob2_low]}
     p2_fin = sb.pick(snap2_low, mob2_low)
-    assert isinstance(p2_fin, tuple) and p2_fin[1] == "Fireball"
-    assert sb.saving_pyroblast_for_next is True
-    assert sb.available_to_channel_without_penalty is True
+    assert isinstance(p2_fin, tuple) and p2_fin[1] == "Pyroblast"
+    assert sb.available_to_channel_without_penalty is False
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Pyroblast", "hits": [[-2, 3, 500]]}, ME)
 
     # Mob 2 dies
     clock.advance(1.0)
     sb.forget_target(-2)
-    assert sb.available_to_channel_without_penalty is True
+    assert sb.available_to_channel_without_penalty is False
+    for attack in ("Fireball", "Fire Impact"):
+        clock.advance(1.5)
+        sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": attack, "hits": [[-3, 5, 1000]]}, ME)
 
     # Step 6: Mob 3 targeted; Pyroblast selected without channeling
     sb.press_confirmed = True
@@ -877,7 +880,7 @@ def test_solution3_monster_to_monster_crit_sequence_14_monsters(clock: Clock) ->
     - Handles missed hits by resetting pending_channelling = False without granting channeling.
     - Handles successful Fire Impact crits by setting available_to_channel_without_penalty = True.
     - Continues rotation: Pyroblast on single target, Blazing Storm on groups, without channeling penalty.
-    - Saves Pyroblast on dying target (< base attack damage) and uses normal attack fallback.
+    - Uses the unlocked channel ahead of low-HP fallback and requires a new critical sequence afterward.
     """
     import random
     g = Game(clock, ["Fireball", "Fire Impact", "Pyroblast", "Blazing Storm"], ["Elven Fire", "Flame Combo", "Blazing Combo"], version=28)
@@ -1034,16 +1037,18 @@ def test_solution3_monster_to_monster_crit_sequence_14_monsters(clock: Clock) ->
     sb.press_confirmed = True
     sb.last_cast = clock.now - 2.0
 
-    # Pyroblast preserved, Fireball used to finish off low-HP Mob 7
-    assert sb.pick(snap_mob7, mob7) == ("y", "Fireball")
-    assert sb.saving_pyroblast_for_next is True
-    assert sb.available_to_channel_without_penalty is True
+    # The unlocked channel takes priority on Mob 7; Mob 8 needs a new unlock.
+    assert sb.pick(snap_mob7, mob7) == ("h", "Pyroblast")
+    assert sb.available_to_channel_without_penalty is False
 
     clock.advance(1.2)
-    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Fireball", "hits": [[-8, 1, 7800]]}, ME)
-    assert sb.available_to_channel_without_penalty is True
+    sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": "Pyroblast", "hits": [[-8, 1, 7800]]}, ME)
+    assert sb.available_to_channel_without_penalty is False
     sb.forget_target(-8)
-    assert sb.available_to_channel_without_penalty is True
+    assert sb.available_to_channel_without_penalty is False
+    for attack in ("Fireball", "Fire Impact"):
+        clock.advance(1.5)
+        sb._fold_cast({"t": int(clock.now * 1000), "caster": ME, "skill": attack, "hits": [[-9, 5, 1000]]}, ME)
 
     clock.advance(rng.uniform(1.5, 3.0))
 
