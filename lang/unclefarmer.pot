@@ -2631,6 +2631,12 @@ msgstr ""
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr ""
 
+msgid "PK mode back to {mode}"
+msgstr ""
+
+msgid "PK mode: all mode (guards can be hit only in it)"
+msgstr ""
+
 msgid "Pacifist mode"
 msgstr ""
 
@@ -4709,6 +4715,9 @@ msgstr ""
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr ""
 
+msgid "couldn't put the PK mode back ({why})"
+msgstr ""
+
 msgid "couldn't put the PK mode back to {mode} - please set it by hand"
 msgstr ""
 
@@ -6200,7 +6209,8 @@ msgstr ""
 msgid "the PK mode is locked here - leaving it as {mode}"
 msgstr ""
 
-msgid "the PK mode is still all mode - please set it back by hand"
+msgid ""
+"the PK mode is locked on this map: it turns back to all mode when you leave - please set it to {mode} then"
 msgstr ""
 
 msgid "the Pet Trainer offers no rebirth"

@@ -2707,6 +2707,12 @@ msgstr "&Waqfa ya jari"
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr "P&ets (tick wale bahar aate hain, pehle jo tayyar ho pehle):"
 
+msgid "PK mode back to {mode}"
+msgstr "PK mode wapas {mode} par kar diya"
+
+msgid "PK mode: all mode (guards can be hit only in it)"
+msgstr "PK mode: all mode (guards ko sirf isi mein mara ja sakta hai)"
+
 msgid "Pacifist mode"
 msgstr "Pur-aman mode"
 
@@ -4923,6 +4929,9 @@ msgstr "menu entry tak nahi ja sake"
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "Gem Craftsman ki shard synthesis khol nahi sake"
 
+msgid "couldn't put the PK mode back ({why})"
+msgstr "PK mode wapas nahi ho saka ({why})"
+
 msgid "couldn't put the PK mode back to {mode} - please set it by hand"
 msgstr "PK mode wapas {mode} par nahi ho saka - meharbani kar ke khud lagayein"
 
@@ -6484,8 +6493,10 @@ msgstr "jahan guards hain wahan PK mode badla nahi ja sakta"
 msgid "the PK mode is locked here - leaving it as {mode}"
 msgstr "yahan PK mode locked hai - {mode} hi rehne de rahe hain"
 
-msgid "the PK mode is still all mode - please set it back by hand"
-msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
+msgid ""
+"the PK mode is locked on this map: it turns back to all mode when you leave - please set it to {mode} then"
+msgstr ""
+"is map par PK mode locked hai: yahan se nikalte hi all mode ho jayega - tab meharbani kar ke {mode} lagayein"
 
 msgid "the Pet Trainer offers no rebirth"
 msgstr "Pet Trainer rebirth nahi de raha"
@@ -7922,3 +7933,6 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Up&date shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
+
+#~ msgid "the PK mode is still all mode - please set it back by hand"
+#~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"

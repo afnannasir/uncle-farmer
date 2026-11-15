@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+**XP loser stays in all mode, and puts your PK mode back**
+
+- Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode
+  back to your profile's (a monster in the way, a ride's NPC), so the hit came in a peaceful mode
+  and the guard never answered. The XP loser now keeps all mode for the whole run and checks it
+  right before every hit.
+- When the run ends - done, out of guards, or stopped by you - your PK mode is put back. After
+  Stop it used to stay in all mode ("please set it back by hand"). On a map that holds its own PK
+  mode, Uncle Farmer says which mode to set once you leave it.
+
 **Updates start Uncle Farmer again**
 
 - After an update, Uncle Farmer opens again by itself. The updater is its own small program now,
