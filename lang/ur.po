@@ -5890,6 +5890,11 @@ msgid ""
 "on foot: the travel fusion beast is set to none in the character settings"
 msgstr "paidal: character settings mein safar ka fusion beast none par set hai"
 
+msgid ""
+"on foot: {beasts} isn't in the bot's list of fusion beasts yet, so it can't tell whether it is a Swift one - please report its description"
+msgstr ""
+"paidal: {beasts} abhi bot ki fusion beasts ki list mein nahi hai, is liye bot nahi jaanta ke yeh Swift hai ya nahi - meharbani karke is ki description report karein"
+
 msgid "on foot: {beast} isn't among our fusion beasts"
 msgstr "paidal: {beast} hamare fusion beasts mein nahi hai"
 

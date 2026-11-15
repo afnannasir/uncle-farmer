@@ -5628,6 +5628,10 @@ msgid ""
 "on foot: the travel fusion beast is set to none in the character settings"
 msgstr ""
 
+msgid ""
+"on foot: {beasts} isn't in the bot's list of fusion beasts yet, so it can't tell whether it is a Swift one - please report its description"
+msgstr ""
+
 msgid "on foot: {beast} isn't among our fusion beasts"
 msgstr ""
 

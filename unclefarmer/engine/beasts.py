@@ -228,6 +228,13 @@ def _say_why_no_mount(b: Bot, rows: list[dict[str, Any]], pick: str) -> None:
     clock = clock_for(b)
     swift = [r for r in rows if r["kind"] == "swift" and (pick == "auto" or r["name"] == pick)]
     if not swift:
+        strange = [r["name"] for r in rows if r["kind"] == "unknown" and (pick == "auto" or r["name"] == pick)]
+        if strange:
+            # a beast newer than data/beasts.json: the bot can't tell a Swift one from the rest
+            _on_foot(b, "unknown", _("on foot: {beasts} isn't in the bot's list of fusion beasts yet, so it "
+                                     "can't tell whether it is a Swift one - please report its description",
+                                     beasts=", ".join(strange)))
+            return
         _on_foot(b, "none", _("on foot: no Swift fusion beast to ride") if pick == "auto"
                  else _("on foot: {beast} isn't among our fusion beasts", beast=pick))
         return
