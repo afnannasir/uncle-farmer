@@ -15,7 +15,7 @@ import wx
 from .. import schedule, settings
 from ..i18n import _
 from .common import (ContextAction, Dialog, Form, ask, buttons, error, first_selected, labeled, ok_cancel,
-                     opens, pick, popup_actions, select_row, show_text)
+                     opens, page, pick, popup_actions, select_row, show_text, tabs)
 
 Item = tuple[str, str]          # ("plan" | "script", name), as the Plans tab lists them
 Now = Callable[[], dt.datetime]
@@ -59,7 +59,7 @@ class EditScheduleDialog(Dialog):
         root = wx.BoxSizer(wx.VERTICAL)
         f = Form(self)
         saved = tuple(str(s.get("item", "")).partition(":")[::2])
-        self.what = f.choice(_("&Plan or script:"), [label(i) for i in self.items], pick(self.items, saved))
+        self.what = f.choice(_("&Action:"), [label(i) for i in self.items], pick(self.items, saved))
         current = str(s.get("character") or "")
         labels = [settings.profile_display(character) for character in self.character_keys]
         selected = pick(self.character_keys, current)
@@ -89,7 +89,7 @@ class EditScheduleDialog(Dialog):
         """The fields, checked; ValueError with a message for the player otherwise."""
         i = self.what.GetSelection()
         if not 0 <= i < len(self.items):
-            raise ValueError(_("Choose a plan or script to run."))
+            raise ValueError(_("Choose an action to run."))
         keys = getattr(self, "character_keys", ())
         selection = self.who.GetSelection()
         who = keys[selection] if 0 <= selection < len(keys) else cast(Any, self.who).GetValue().strip()
@@ -127,11 +127,22 @@ class SchedulesDialog(Dialog):
         self.scheduler, self.items, self.label, self.characters, self.now = scheduler, list(items), label, list(characters), now
         root = wx.BoxSizer(wx.VERTICAL)
         box = wx.BoxSizer(wx.VERTICAL)
-        self.list = labeled(self, box, _("&Schedules:"), lambda p: wx.ListCtrl(
-            p, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 200)), 1)
-        for i, (title, width) in enumerate(((_("Plan or script"), 180), (_("Character"), 120), (_("When"), 200),
-                                            (_("Next"), 150), (_("On"), 50))):
-            self.list.InsertColumn(i, title, width=width)
+        self.nb = tabs(self)
+        self.lists: list[wx.ListCtrl] = []
+        self.views: list[list[schedule.Schedule]] = [[], [], []]
+        for title in (_("Plans and scripts"), _("Tools"), _("Triggers")):
+            panel, body = page(self.nb, title)
+            control = labeled(panel, body, _("&Schedules:"), lambda p: wx.ListCtrl(
+                p, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 200)), 1)
+            for i, (name, width) in enumerate(((_("Action"), 180), (_("Character"), 120), (_("When"), 200),
+                                               (_("Next"), 150), (_("On"), 50))):
+                control.InsertColumn(i, name, width=width)
+            self.lists.append(control)
+            control.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.edit())
+            control.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: self.sync())
+            control.Bind(wx.EVT_CONTEXT_MENU, self.context_menu)
+        box.Add(self.nb, 1, wx.EXPAND)
+        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, lambda e: (self.sync(), e.Skip()))
         self.add_btn = buttons(self, box, (opens(_("&Add")), lambda e: self.add()))[0]
         note = wx.StaticText(self, label=_(
             "A scheduled plan starts in the game the character is logged in to, as the Start button would. "
@@ -147,11 +158,16 @@ class SchedulesDialog(Dialog):
         root.Add(row, 0, wx.EXPAND | wx.ALL, 12)
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 400))
-        self.list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.edit())
-        self.list.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: self.sync())
-        self.list.Bind(wx.EVT_CONTEXT_MENU, self.context_menu)
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
         self.fill()
+
+    @property
+    def list(self) -> wx.ListCtrl:
+        return self.lists[max(0, self.nb.GetSelection())]
+
+    def available(self) -> list[Item]:
+        kinds = (("plan", "script"), ("tool",), ("trigger",))[max(0, self.nb.GetSelection())]
+        return [item for item in self.items if item[0] in kinds]
 
     def on_key(self, evt: wx.KeyEvent) -> None:
         if wx.Window.FindFocus() is self.list and evt.GetKeyCode() == wx.WXK_DELETE:
@@ -168,7 +184,7 @@ class SchedulesDialog(Dialog):
                 self.list.SetItemState(index, state, state)
         selected = self.selected() is not None
         entries: list[ContextAction] = [
-                (opens(_("&Add")), lambda e: self.add(), bool(self.items)),
+                (opens(_("&Add")), lambda e: self.add(), bool(self.available())),
                 (opens(_("&Edit")), lambda e: self.edit(), selected),
                 (_("Turn on or o&ff"), lambda e: self.toggle(), selected),
                 (opens(_("&History")), lambda e: self.history(), selected),
@@ -177,30 +193,35 @@ class SchedulesDialog(Dialog):
 
     def selected(self) -> schedule.Schedule | None:
         i = first_selected(self.list)
-        return self.scheduler.items[i] if 0 <= i < len(self.scheduler.items) else None
+        visible = self.views[max(0, self.nb.GetSelection())]
+        return visible[i] if 0 <= i < len(visible) else None
 
     def fill(self, select: str | None = None) -> None:
-        self.list.DeleteAllItems()
         now = self.now()
-        for i, s in enumerate(self.scheduler.items):
-            self.list.InsertItem(i, self.label(schedule.item_of(s)))
-            self.list.SetItem(i, 1, settings.profile_display(s["character"]))
-            self.list.SetItem(i, 2, schedule.describe_when(s))
-            self.list.SetItem(i, 3, when_next(s, now))
-            self.list.SetItem(i, 4, _("on") if s.get("enabled") else _("off"))
-        ids = [s["id"] for s in self.scheduler.items]
-        if ids:
-            select_row(self.list, ids.index(select) if select in ids else 0)
+        for index, control in enumerate(self.lists):
+            control.DeleteAllItems()
+            kinds = (("plan", "script"), ("tool",), ("trigger",))[index]
+            self.views[index] = [s for s in self.scheduler.items if schedule.item_of(s)[0] in kinds]
+            for i, s in enumerate(self.views[index]):
+                control.InsertItem(i, self.label(schedule.item_of(s)))
+                control.SetItem(i, 1, settings.profile_display(s["character"]))
+                control.SetItem(i, 2, schedule.describe_when(s))
+                control.SetItem(i, 3, when_next(s, now))
+                control.SetItem(i, 4, _("on") if s.get("enabled") else _("off"))
+            ids = [s["id"] for s in self.views[index]]
+            if ids:
+                select_row(control, ids.index(select) if select in ids else 0)
         self.sync()
 
     def sync(self) -> None:
-        self.add_btn.Enable(bool(self.items))
+        if hasattr(self, "add_btn"):
+            self.add_btn.Enable(bool(self.available()))
 
     def add(self) -> None:
-        if not self.items:
+        if not self.available():
             error(self, _("Make a plan or script first, in the Plans tab."))
             return
-        with EditScheduleDialog(self, self.items, self.label, self.characters, self.now) as d:
+        with EditScheduleDialog(self, self.available(), self.label, self.characters, self.now) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             try:
