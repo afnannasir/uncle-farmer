@@ -93,6 +93,8 @@ final class World {
                 position(m);
             } else if (op == 41) {
                 combat(m);
+            } else if (op == 42) {
+                hpSet(m);
             } else if (op == 62) {
                 return Sheet.inbound(m);
             } else if (op == 51) {
@@ -187,7 +189,8 @@ final class World {
      *  bot's reads, and with them our own casts and the hits that make a kill ours. */
     private static final int CASTS_KEPT = 256;
 
-    /** Monster deaths seen in op=41 ("id,0" lines): [id, ms], newest last. With our casts' hits
+    /** Monster deaths seen in op=41 ("id,0" lines) and op=42 (HP set to 0 by a tick, see
+     *  {@link #hpSet}): [id, ms], newest last. With our casts' hits
      *  they tell the bot which monsters it killed or helped kill, whoever struck last - and the
      *  ones its area skills killed that it never selected. */
     private static final java.util.ArrayDeque<long[]> DEATHS = new java.util.ArrayDeque<long[]>();
@@ -413,6 +416,23 @@ final class World {
                 // Not an id,hp line.
             }
         }
+    }
+
+    /**
+     * op=42 sets an entity's HP outside a cast: int id, int HP now, int change, then a sound and
+     * one more short (game.N.K hands them to game.i.a(int, int, int, short, short), which marks
+     * the entity dead at 0 HP). Damage over time and other ticks arrive here, and a monster that
+     * dies to one gets no "id,0" line in op=41: until this was read, such a death was nobody's
+     * kill. In one night of a character with damage over time, 119 monsters died this way, 117 of
+     * them after a hit of its own, and not one was counted. The 6-byte form (id and a short) is
+     * another message (game.i.b) and says nothing about HP.
+     */
+    private static void hpSet(byte[] m) {
+        if (m.length < 9) return;
+        int id = Protocol.readInt(m, 1);
+        if (id >= 0 || Protocol.readInt(m, 5) > 0) return;
+        ENTITIES.remove(Integer.valueOf(id));
+        died(id);
     }
 
     private static void changeMap(byte[] m) {

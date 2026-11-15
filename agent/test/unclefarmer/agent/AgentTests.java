@@ -40,6 +40,7 @@ public final class AgentTests {
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
+        aTickToZeroIsADeath();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
         aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
@@ -856,6 +857,32 @@ public final class AgentTests {
         World.inbound(op41("4152,9,Level 2 Draw Blood\n-6,-1\r\n0\r\n0"));
         check(World.castSince(4152, before, "Draw Blood"), "a ranked name of the skill counts");
         eq(World.targets(new String[] {"4152,8,Buff\n4152,64200"}), null, "a cast with no target line has none");
+    }
+
+    /** IN op=42 sets an entity's HP outside a cast (damage over time): id, HP now, the change, a
+     *  sound, one more short. A monster a tick takes to 0 has no "id,0" line in op=41, so this is
+     *  the only word of its death (a packet of a live night: 2a ffffffde 00000000 fffffc8e 30e3 36c8). */
+    private static void aTickToZeroIsADeath() {
+        long before = System.currentTimeMillis() - 1;
+        World.inbound(op42(-934, 882, -500, 12515, 14024));
+        check(!World.casts(before).contains("[-934,"), "a tick that leaves it HP is no death");
+        World.inbound(op42(-934, 0, -882, 12515, 14024));
+        String got = World.casts(before);
+        check(got.contains("[-934,"), "a tick that takes a monster to 0 HP is a death: " + got);
+        World.inbound(op42(4934, 0, -100, 0, 0));
+        check(!World.casts(before).contains("[4934,"), "a player at 0 HP is no kill");
+        World.inbound(new byte[] {42, -1, -1, -4, 89, 0, 0, 0, 0});          // id -935, HP 0, nothing after
+        check(World.casts(before).contains("[-935,"), "the short form with only the HP counts too");
+        World.inbound(new byte[] {42, -1, -1, -4, 88, 0, 0});                // id -936 and a short: not HP
+        World.inbound(new byte[] {42, -1, -1, -4, 87});                      // cut off
+        got = World.casts(before);
+        check(!got.contains("[-936,") && !got.contains("[-937,"), "the id-and-short message is no HP report: " + got);
+    }
+
+    private static byte[] op42(int id, int hp, int change, int sound, int extra) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(17);
+        b.put((byte) 42).putInt(id).putInt(hp).putInt(change).putShort((short) sound).putShort((short) extra);
+        return b.array();
     }
 
     private static byte[] op41(String text) {

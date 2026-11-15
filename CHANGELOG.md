@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Kills by damage over time are counted**
+
+- A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps
+  biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
+  landed on it" and the results came out short. In one night of a character with such skills, 117
+  kills were missed this way. The game reports these deaths in a message of their own, which the
+  agent now reads (agent 69). Close the game and start it again to load the new agent.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode
