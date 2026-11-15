@@ -35,6 +35,9 @@ class Clock:
         self.now += seconds
         return False
 
+    def sleep(self, seconds: float) -> None:
+        self.now += seconds
+
 
 class Agent:
     def __init__(self, game: Game) -> None:
@@ -56,6 +59,9 @@ class Agent:
                 return "refused: %d isn't in a clear line" % mid
             self.g.target = mid
             return "selected"
+        if verb == "key":                  # straight to the game: no stop check, as the real link
+            self.g.tap(rest.split()[0])
+            return "tapped"
         return "ok"
 
 
@@ -100,6 +106,8 @@ class Game:
         self.my_reach = 2.0
         self.riding = False                     # on a Swift beast: its skills are off
         self.hit_from: list[tuple[float, float]] = []   # where we stood at each attack press
+        self.walk_resets_pk = False             # a walk meets a monster in the way: set_modes() runs
+        self.pk_at_hit: list[int] = []
 
     # time passing: angry guards strike
     def sleep(self, s: float) -> None:
@@ -136,6 +144,8 @@ class Game:
     def walk_to(self, cell: tuple[float, float], map_change: bool = False,
                 near: Callable[[dict[str, Any]], bool] | None = None) -> str:
         self.x, self.y = cell[0] - 1.0, cell[1]
+        if self.walk_resets_pk:
+            self.pk = int(self.p.get("pk_mode", 1))     # what the bot's set_modes() would press for
         return "arrived"
 
     def random_cell(self, map_id: int, area: Any, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
@@ -148,6 +158,10 @@ class Game:
             self.x, self.y = float(cell[0]), float(cell[1])
 
     def key(self, k: str, ms: int = 60) -> None:
+        self.check()
+        self.tap(k)
+
+    def tap(self, k: str) -> None:
         self.pressed.append(k)
         self.p_during.append(dict(self.p))
         if k == self.p["pk_key"]:
@@ -157,6 +171,7 @@ class Game:
         if k != self.p["attack_keys"][0] or self.target is None or self.riding:
             return
         self.hit_from.append((self.x, self.y))
+        self.pk_at_hit.append(self.pk)
         if xploss.atlas.in_safe_zone(self.mid, self.x, self.y):
             return                         # "Safe zone disabled skills"
         e = next((e for e in self.entities if e["id"] == self.target), None)
@@ -284,6 +299,65 @@ def test_all_mode_comes_before_looking_for_guards() -> None:
     g.guards_need_all = True               # the game lists guards as enemies only in all mode
     assert lose(g, until_needed=1500) == "done"
     assert g.deaths == 1 and g.pk == 1
+
+
+def test_a_walk_that_resets_the_pk_mode_still_hits_in_all_mode() -> None:
+    g = Game()
+    g.walk_resets_pk = True                # a monster in the way on the walk to the guard
+    assert lose(g, until_needed=1500) == "done"
+    assert g.pk_at_hit and all(pk == xploss.ALL_MODE for pk in g.pk_at_hit)
+    during = g.p_during[g.pressed.index("j")]
+    assert during["pk_mode"] == xploss.ALL_MODE        # so the bot's set_modes() keeps all mode
+    assert g.pk == 1 and "pk_mode" not in g.p
+
+
+def test_a_stopped_run_still_puts_the_pk_mode_back() -> None:
+    g = Game()
+
+    def stop_at_death() -> None:
+        g.stop_event.set()                 # the player presses Stop while we lie dead
+        g.check()
+    g.handle_death = stop_at_death
+    g.entities = [guard(x=101.0)]
+    with pytest.raises(Stopped, match="stopped by you"):
+        lose(g, until_needed=1500)
+    assert g.pk == 1 and "PK mode back to" in g.text()
+    assert "please set it" not in g.text()
+
+
+def test_started_on_a_locked_map_comes_back_to_the_profiles_mode(monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game()
+    g.p.update(pk_mode=0, set_modes=True)
+    g.pk, g.pk_locked = 3, True            # this map holds its own mode (3); the profile farms in 0
+    g.entities = []
+    xploss.note(1561, [guard()])
+
+    def nearest(b: Any, role: str | None, candidates: Any = None, back_to: Any = None) -> Any:
+        return candidates[0] if candidates else None
+    monkeypatch.setattr(xploss.town, "nearest", nearest)
+    orig = g.travel
+
+    def travel(dst: int, cell: Any = None) -> None:
+        orig(dst, cell)
+        g.pk, g.pk_locked = 1, False       # off the map: the game gives our own mode back
+        g.entities = [guard(x=float(cell[0]) + 1, y=float(cell[1]))]
+    g.travel = travel
+    assert lose(g, until_needed=1500) == "done"
+    assert g.pk == 0 and "PK mode back to" in g.text()
+
+
+def test_ending_on_a_locked_map_says_what_to_do() -> None:
+    g = Game()
+
+    def respawn_locked() -> None:
+        g.deaths += 1
+        g.xp += g.loss
+        g.hp, g.angry, g.target = 1000, set(), None
+        g.pk_locked = True                 # the city we wake in holds its own mode
+        raise Respawned()
+    g.handle_death = respawn_locked
+    assert lose(g, until_needed=1500) == "done"
+    assert any(speak and "locked on this map" in line for line, speak in g.lines)
 
 
 def test_gets_off_the_beast_before_the_hit() -> None:

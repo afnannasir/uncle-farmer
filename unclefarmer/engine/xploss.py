@@ -72,8 +72,12 @@ _seen_lock = threading.Lock()
 # For the run, over the profile: the city's respawn and no crystals (handle_death), no potions, heal
 # skills, buffs or fighting back (they would only keep the guard busy longer), and no stop for HP or
 # deaths - dying is the point.
+# pk_mode: the bot's set_modes() puts the PK mode back to the profile's before a fight with a
+# monster in the way of a walk and after an NPC talk (a ride); for this run that is all mode, or the
+# walk to the guard switched it back to a peaceful mode and the hit made no guard strike.
 DYING: dict[str, Any] = {"respawn": "city", "use_resurrection_crystal": False, "stop_on_deaths": False,
-                         "stop_on_panic": False, "hp_below": 0, "smart_skills": False, "fight_back": False}
+                         "stop_on_panic": False, "hp_below": 0, "smart_skills": False, "fight_back": False,
+                         "pk_mode": ALL_MODE}
 
 
 def config(p: dict[str, Any]) -> dict[str, Any]:
@@ -209,24 +213,57 @@ def pk_name(mode: object) -> str:
     return "?"
 
 
+def saved_pk(p: dict[str, Any]) -> int | None:
+    """The PK mode the profile farms with, or None when it leaves the mode as it is."""
+    v = p.get("pk_mode")
+    return v if p.get("set_modes", True) and isinstance(v, int) and 0 <= v < len(PK_MODES) else None
+
+
 def modes(b: Bot) -> dict[str, Any]:
     m = b.a.json("mem modes")
     return m if json.is_object(m) and "error" not in m else {}
 
 
-def set_pk(b: Bot, want: int) -> bool:
-    """Press the PK mode key until the game's mode is `want`. False when it is locked or won't change."""
+def set_pk(b: Bot, want: int, after_stop: bool = False) -> bool:
+    """Press the PK mode key until the game's mode is `want`. False when it is locked or won't change.
+    after_stop: the run is ending - press through the agent directly, as b.key() and b.sleep()
+    refuse every press once the run was stopped, and the mode must still go back."""
     m = modes(b)
     if m.get("pk") == want:
         return True
     if not m or m.get("pk_locked"):
         return False
+    key = b.p.get("pk_key") or "b"
     for _i in range(len(PK_MODES) + 1):
-        b.key(b.p.get("pk_key") or "b")
-        b.sleep(0.3)
+        if after_stop:
+            if not b.a.send("key %s 60" % key).startswith("tapped"):
+                return False
+            b.clock.sleep(0.3)
+        else:
+            b.key(key)
+            b.sleep(0.3)
         if modes(b).get("pk") == want:
             return True
     return False
+
+
+def put_back_pk(b: Bot, was: int) -> None:
+    """At the end of the run, whatever ended it: the PK mode back to what it was."""
+    try:
+        m = modes(b)
+        if m.get("pk") == was:
+            return
+        if m.get("pk_locked"):
+            # the game holds this map's own mode and gives ours (all mode) back when we leave
+            b.log(_("the PK mode is locked on this map: it turns back to all mode when you leave - "
+                    "please set it to {mode} then", mode=pk_name(was)), speak=True)
+            return
+        if set_pk(b, was, after_stop=True):
+            b.log(_("PK mode back to {mode}", mode=pk_name(was)))
+            return
+    except Exception as e:   # the game closed or the link broke: nothing more can be pressed
+        b.log(_("couldn't put the PK mode back ({why})", why=e))
+    b.log(_("couldn't put the PK mode back to {mode} - please set it by hand", mode=pk_name(was)), speak=True)
 
 
 # ---------------------------------------------------------------------------------------- the run
@@ -341,6 +378,10 @@ class _Run:
         # put the beast away, then attack); the travel there leaves us on the Swift one, whose
         # skills are off, so the attack key did nothing
         beasts.off(b)
+        # the walk here may have changed it (a new map's own mode, a fight on the way): a hit in
+        # any other mode makes no guard strike back
+        if not self.all_mode():
+            return False
         reply = b.a.send("select %d" % g["id"])
         if reply != "selected" and reach > CLOSE and ("clear line" in reply or "reach" in reply):
             # guards stand at gates and walls: from the attack's range a wall is often in between
@@ -387,7 +428,10 @@ class _Run:
         mid = b.map_id()
         if mid in self.locked:
             return False
+        if modes(b).get("pk") == ALL_MODE:
+            return True
         if set_pk(b, ALL_MODE):
+            b.log(_("PK mode: all mode (guards can be hit only in it)"))
             return True
         self.locked.add(mid)
         b.log(_("the PK mode can't be changed on {map} - looking for guards elsewhere", map=atlas.label(mid)))
@@ -462,7 +506,9 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
                 pk=pk_name(m.get("pk")),
                 locked=_(" (locked here)") if m.get("pk_locked") else ""), speak=True)
         return "checked"
-    was_pk = m.get("pk")
+    # on a map that holds its own PK mode, the game keeps ours aside and "pk" is the map's: then
+    # the one the bot farms with is the one to come back to
+    was_pk = m.get("pk") if not m.get("pk_locked") else saved_pk(b.p)
     saved = b.p
     b.p = {**saved, **DYING}
     b.dying_on_purpose = True
@@ -477,12 +523,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
         b.dying_on_purpose = False
         b.p = saved
         if isinstance(was_pk, int) and was_pk != ALL_MODE:
-            try:
-                if not set_pk(b, was_pk):
-                    b.log(_("couldn't put the PK mode back to {mode} - please set it by hand",
-                            mode=pk_name(was_pk)), speak=True)
-            except Stopped:
-                b.log(_("the PK mode is still all mode - please set it back by hand"), speak=True)
+            put_back_pk(b, was_pk)
     end = {
         "done": _("done: the next level needs at least {goal} experience", goal=target),
         "deaths": _("stopped after {n} deaths, as you set", n=r.deaths),
