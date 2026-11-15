@@ -320,3 +320,44 @@ def test_every_paid_ride_has_its_own_vip_entry() -> None:
         if t.get("kind") in ("airship", "cable_car") and isinstance(t.get("cost"), int) and t["cost"] > 0:
             assert t.get("choose_vip"), "ride %s has no VIP entry" % t["id"]
             assert all("cost" in p.lower() for p in t["choose"]), "ride %s: %s" % (t["id"], t["choose"])
+
+
+# ---------------------------------------------------------------- the villages' and ruins' stones
+def test_every_place_stone_lands_on_its_place_with_no_menu() -> None:
+    for name in travel.PLACES:
+        stones = [item for item, choices in travel.ITEMS.items() if choices == [(None, name)]]
+        assert len(stones) == 1, name
+        assert travel.item_options([{"name": stones[0], "count": 1}]) == [
+            (stones[0], [], travel.PLACES[name], travel.TELEPORT)]
+
+
+def test_the_place_stones_are_the_games_own_items() -> None:
+    from unclefarmer import knowledge
+    for item in travel.ITEMS:
+        assert knowledge.item(item), item
+
+
+def test_the_seal_stone_offers_the_sealing_towers_and_the_demon_portal() -> None:
+    opts = travel.item_options([{"name": "seal Teleportation stone", "count": 1}])
+    assert [(o[1], o[2]) for o in opts] == [(["west sealing tower"], (1761, 100, 100)),
+                                            (["east sealing tower"], (1761, 400, 100)),
+                                            (["portal of the demon world"], (1762, 45, 129))]
+
+
+def test_black_gold_also_goes_to_the_city_of_the_ancient_tower() -> None:
+    opts = travel.item_options([{"name": "Black Gold Teleportation stone", "count": 1}])
+    assert (["city of the ancient tower"], (1731, 166, 75)) in [(o[1], o[2]) for o in opts]
+    assert len(opts) == 5
+
+
+def test_elven_teleportation_lands_where_the_places_stones_do() -> None:
+    assert travel.SPELLS["Elven Teleportation"] == travel.PLACES
+    assert travel.spell_landing("Elven Teleportation", "West Sealing Tower") == (1761, 100, 100)
+
+
+def test_a_sealing_tower_stone_is_the_way_to_the_white_bone_cave() -> None:
+    travel._plan_cache.clear()
+    bag = [{"name": "West Sealing Tower Teleportation stone", "count": 1}]
+    legs = travel.plan(1081, (338, 165), 1761, (61, 110), bag=bag, items=True)
+    assert legs is not None and legs[0]["do"] == "item"
+    assert legs[0]["item"] == "West Sealing Tower Teleportation stone" and legs[0]["dest"] == 1761

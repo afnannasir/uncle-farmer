@@ -10,6 +10,17 @@
 - When the only fusion beast that could carry us is one the bot doesn't know yet, the log names it
   once a run and asks for its description, instead of only saying there is no Swift beast.
 
+**Teleport stones**
+
+- With "Use teleport stones and the hearthstone from the bag" ticked (Character, Settings, Travel),
+  the bot also uses the stones of the villages and ruins outside the cities: Soul Burial Village,
+  Plague Abyss, Orchid woods Village, City of the Ancient tower, mist gods Ruins, West Sealing
+  Tower, Hermit Camp, East Sealing Tower and portal of the demon world. A West Sealing Tower stone
+  goes straight to ancient Sealed Land, where the White Bone Cave is entered.
+- The seal Teleportation stone (West or East Sealing Tower, or the portal of the demon world), and
+  the Black Gold stone's fifth place, City of the Ancient tower (next to the way into ancient
+  Sealed Land).
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".
