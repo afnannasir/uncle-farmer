@@ -18,6 +18,14 @@
   ready (it had 5, and a freshly unpacked build needs 3 to 6), and the two programs no longer
   trip over each other's hand-over files ("Access is denied").
 
+**Gem Maker: make most finishes each level first**
+
+- Making the most from the bag no longer moves up a level while gems of a lower level could still
+  be combined (left over after a batch, or kept by a protected failure); it combines those, and
+  turns leftover shards into gems, first. One or two gems that can't make a combine stay, as do
+  the gems you keep.
+- Making a set number of gems still uses only the tries that number needs.
+
 **Trigger lists and scheduled tools**
 
 - Character settings, Triggers: Before farming and After farming are ordered lists now. Each step is

@@ -189,7 +189,7 @@ def rounds(monkeypatch: pytest.MonkeyPatch) -> list[int]:
 ONE_KIND = {"colour": "Topaz", "level": 4, "count": 1, "amount": 1, "supply": "none", "where": "gang"}
 
 
-@pytest.mark.parametrize("mode", ["bag", "target"])
+@pytest.mark.parametrize("mode", ["bag"])
 @pytest.mark.parametrize("partial_batch", [False, True])
 def test_lower_level_is_finished_before_the_next_level_is_attempted(
         craftsman: Any, monkeypatch: pytest.MonkeyPatch, mode: str, partial_batch: bool) -> None:
@@ -233,6 +233,26 @@ def test_three_hundred_gems_are_finished_level_by_level(craftsman: Any, monkeypa
     assert count(b, "Level 2 Topaz") == 1
     assert count(b, "Level 4 Topaz") == 2
     assert count(b, "Level 6 Topaz") == 1
+
+
+def test_a_target_spends_only_the_tries_it_needs(craftsman: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Target mode (make N gems) keeps its per-level cap: every try costs a fee and a rune. Draining
+    every lower level first (review of #129) took 74 tries for one Level 4 gem instead of 26 and
+    left 6 Level 3 gems nobody asked for."""
+    b, c = craftsman({"Level 1 Topaz": 81, crafting.RUNE: 1000}, itertools.cycle([False, True]))
+    tries: list[int] = []
+    combine = c.combine
+
+    def counted(n: int, boost_box: bool, protect: bool, auto: bool = False) -> None:
+        tries.append(n)
+        combine(n, boost_box, protect, auto)
+
+    monkeypatch.setattr(c, "combine", counted)
+    crafting.gem_maker(as_bot(b), dict(ONE_KIND, mode="target", level=4, up_to=4, amount=1, protect=True))
+    assert count(b, "Level 4 Topaz") == 1
+    assert sum(tries) == 26
+    assert count(b, "Level 1 Topaz") == 54
+    assert count(b, "Level 2 Topaz") == count(b, "Level 3 Topaz") == 0
 
 
 def test_sequential_bag_processing_preserves_gems_kept_at_each_level(craftsman: Any,

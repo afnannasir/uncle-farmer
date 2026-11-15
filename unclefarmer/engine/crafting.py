@@ -950,7 +950,8 @@ def _gem_check(b: Bot, job: _GemJob) -> None:
 
 def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
     """One round of making: the colour's shards up to the target level into gems, then gems up a
-    level at a time. Exhaust lower levels first; limit the final upgrade to what the target needs.
+    level at a time, only as many tries as the target still needs (all of them for "most"): every
+    try costs a fee (and a rune when protected), so lower levels are never used up for their own sake.
     Returns how much was made or tried; blocked gets what stood in the way for good (raise_gems)."""
     colour, level = job.colour, job.level
     did = 0
@@ -961,8 +962,7 @@ def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
     for lv in range(1, level):
         gems = gem_levels(b, colour)
         k = gems.get(lv, 0) // 3
-        if not job.most and lv == level - 1:
-            # Earlier levels must be drained even when the estimate already sees enough above.
+        if not job.most:
             short, _need = shortfall(gems, shard_levels(b, colour), level,
                                      job.target - gems.get(level, 0), job.protect)
             k = min(k, 2 * short.get(lv + 1, 0))      # half the tries work
@@ -971,9 +971,6 @@ def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
             did += made + lost
         if b.stop_event.is_set():
             raise Stopped(_("stopped"))
-        if (gem_levels(b, colour).get(lv, 0) >= 3
-                or shard_levels(b, colour).get(lv, 0) >= town.SHARDS_PER_GEM):
-            break
     return did
 
 
