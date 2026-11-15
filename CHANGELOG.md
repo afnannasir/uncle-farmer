@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**The walk to death wormhole finds its circle**
+
+- The walking assistant reached hidden water cave but never found the death wormhole's circle:
+  the game calls it "Wormhole teleportation Circle", a name that doesn't start with the
+  dungeon's, so the bot walked past it. The circle's name is in the dungeon list now.
+- The five circles of hidden water cave (death wormhole, wolf head mountain, bubble cube, ice
+  maze, Herbal Mountain) have their places now, measured in the game: the walk goes straight to
+  the right one instead of trying each stone room in turn.
+- When none of the marked entrances is the dungeon's circle, the log now names the other
+  circles seen on the way, so a circle with an unexpected name is easy to report.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode

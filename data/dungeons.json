@@ -226,7 +226,10 @@
    ],
    "map": 1602,
    "npc": "Bubble Cube Teleportation Circle",
-   "at": null,
+   "at": [
+    96,
+    49
+   ],
    "spots": [
     [
      25,
@@ -359,8 +362,11 @@
     1603
    ],
    "map": 1602,
-   "npc": null,
-   "at": null,
+   "npc": "Wormhole teleportation Circle",
+   "at": [
+    26,
+    49
+   ],
    "spots": [
     [
      25,
@@ -666,7 +672,10 @@
    ],
    "map": 1602,
    "npc": "Herbal Mountain Teleportation Circle",
-   "at": null,
+   "at": [
+    93,
+    107
+   ],
    "spots": [
     [
      25,
@@ -703,7 +712,10 @@
    ],
    "map": 1602,
    "npc": "Ice maze Teleportation Circle",
-   "at": null,
+   "at": [
+    28,
+    107
+   ],
    "spots": [
     [
      25,
@@ -1219,7 +1231,10 @@
    ],
    "map": 1602,
    "npc": "Wolf head mountain teleportation circle",
-   "at": null,
+   "at": [
+    61,
+    49
+   ],
    "spots": [
     [
      25,

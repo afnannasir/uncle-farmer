@@ -4816,6 +4816,9 @@ msgstr "chun raha hoon \"{entry}\""
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr "\"Open the chest\" chuna lekin chest abhi bhi wahan hai"
 
+msgid "circles seen on {map}: {names}"
+msgstr "{map} par nazar aaye circles: {names}"
+
 msgid "cleaning the bag"
 msgstr "basta saaf kar rahe hain"
 

@@ -78,6 +78,23 @@ def test_is_entrance() -> None:
     assert not dungeons.is_entrance(e, "something else entirely")
 
 
+def test_death_wormhole_circle_has_its_own_name() -> None:
+    # The game names it "Wormhole teleportation Circle": it doesn't start with the dungeon's name.
+    e = dungeons.find("death wormhole")
+    assert e is not None
+    assert dungeons.is_entrance(e, "Wormhole teleportation Circle")
+    assert not dungeons.is_entrance(e, "Bubble Cube Teleportation Circle")
+
+
+def test_hidden_water_cave_circles_are_placed() -> None:
+    # Measured in the game: the five circles of hidden water cave (1602), one per stone room.
+    want = {"death wormhole": [26, 49], "wolf head mountain": [61, 49], "bubble cube": [96, 49],
+            "ice maze": [28, 107], "Herbal Mountain": [93, 107]}
+    for name, at in want.items():
+        e = dungeons.find(name)
+        assert e is not None and e["map"] == 1602 and e["at"] == at, name
+
+
 def test_learn_remembers_where_a_circle_was(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     learned = tmp_path / "_learned_entrances.json"
     monkeypatch.setattr(dungeons, "LEARNED", str(learned))
