@@ -310,19 +310,11 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("Let everyone get replies &again"), lambda e: self.forget_answered())],
                          ("messages_private", "messages_chat", "messages_reset"))
         plans = menu(_("&Plans"), [command(_("&New plan"), lambda e: self.new_plan(), "Ctrl+N"),
-                                    command(_("New &script"), lambda e: self.new_script(), "Ctrl+Shift+N"),
-                                    command(_("&Edit"), lambda e: self.edit_selected(), "Ctrl+E"),
-                                    command(_("D&uplicate"), lambda e: self.copy_plan(), "Ctrl+D"),
-                                    command(_("&Delete"), lambda e: self.delete_selected())],
-                     ("plans_new", "plans_new_script", "plans_edit", "plans_duplicate", "plans_delete"))
-        plan_transfer = wx.Menu()
-        add(plan_transfer, [command(_("E&xport plan"), lambda e: self.export_plan()),
-                            command(_("&Import plan"), lambda e: self.import_plan())],
-            ("plans_export", "plans_import"))
-        plans.AppendSubMenu(plan_transfer, _("Import or export plans"))
+                                    command(_("New &script"), lambda e: self.new_script(), "Ctrl+Shift+N")],
+                     ("plans_new", "plans_new_script"))
         self.action_menus = {"run": run_menu, "game": game_menu, "messages": messages_menu,
                              "character": character, "tools": tools_menu,
-                             "plans": plans, "plan_transfer": plan_transfer}
+                             "plans": plans}
         for current in self.action_menus.values():
             current.Bind(wx.EVT_MENU_OPEN, self.sync_action_menus)
         menu(_("&Help"), [command(_("&Quick guide"), lambda e: show_text(self, _("Quick guide"), GUIDE), "F1"),
@@ -340,6 +332,12 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
+        plan_shortcuts: list[tuple[int, Handler]] = [(ord("E"), lambda e: self.edit_selected()),
+                                                     (ord("D"), lambda e: self.copy_plan())]
+        for key, handler in plan_shortcuts:
+            command_id = wx.Window.NewControlId()
+            self.Bind(wx.EVT_MENU, handler, id=command_id)
+            accelerators.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, key, command_id))
         self.SetAcceleratorTable(wx.AcceleratorTable(accelerators))
         self.Bind(wx.EVT_WINDOW_DESTROY, self.destroy_context_menu)
         self.sync_action_menus()
@@ -367,7 +365,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         enabled = action_menu_states(available=available, running=running, any_running=bool(self.runs),
                                      has_items=bool(self.items), has_messengers=bool(self.messengers), selected=selected)
         for key, value in enabled.items():
-            self.action_items[key].Enable(value)
+            if key in self.action_items:
+                self.action_items[key].Enable(value)
         if event is not None:
             event.Skip()
 

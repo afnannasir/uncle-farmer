@@ -64,7 +64,6 @@ class SortLists:
         sizer.Add(row, 1, wx.EXPAND)
         self.details = labeled(parent, sizer, _("Details:"),
                                lambda w: wx.TextCtrl(w, style=wx.TE_READONLY | wx.TE_MULTILINE, size=wx.Size(-1, 48)))
-        self.buttons = buttons(parent, sizer, *[(b, self.mover(a)) for a, _l, b in columns])
         self.fill()
 
     def bind_list(self, lb: wx.ListBox, action: str) -> None:
@@ -113,8 +112,6 @@ class SortLists:
         self.current = action
         name = self.selected(action)
         self.details.ChangeValue(self.describe(name) if name else "")
-        for (a, _l, _b), b in zip(self.columns, self.buttons):
-            b.Enable(bool(name) and a != action)
         if self.on_select:
             self.on_select()
 
