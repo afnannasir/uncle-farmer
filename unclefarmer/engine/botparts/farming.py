@@ -11,7 +11,7 @@ import random
 from collections.abc import Callable, Sequence
 from typing import Any
 
-from ... import atlas
+from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
@@ -359,6 +359,11 @@ class FarmingMixin(Parts):
                                  speak=True)
                         return self._finish_safe()
                     mid, cell = self.start_place[0], (self.start_place[1], self.start_place[2])
+                    if self.map_id() != mid and travel.is_instance(mid):
+                        # a run started inside a dungeon that has moved us out: no way back in
+                        self.log(_("the run started inside {map}, which can't be walked back into - ending "
+                                   "on the nearest map without monsters", map=atlas.label(mid)))
+                        return self._finish_safe()
                     if self.spawns_at(mid, cell):
                         # (a city in a field, such as central plains: a start outside its walls is
                         # monster ground, and the nearest map without monsters may be underground)

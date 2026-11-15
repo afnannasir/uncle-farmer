@@ -898,6 +898,9 @@ msgstr ""
 msgid "Bot"
 msgstr ""
 
+msgid "Bottomless pit"
+msgstr ""
+
 msgid "Bought:"
 msgstr ""
 
@@ -4236,6 +4239,9 @@ msgstr ""
 msgid "While farming, go and share just before each half &hour, then come back"
 msgstr ""
 
+msgid "White Bone Cave"
+msgstr ""
+
 msgid "Wildcard"
 msgstr ""
 
@@ -4356,6 +4362,12 @@ msgid "already donated today"
 msgstr ""
 
 msgid "already done today"
+msgstr ""
+
+msgid "already inside {cave}"
+msgstr ""
+
+msgid "already inside {cave}: hunting until the game moves us out"
 msgstr ""
 
 msgid "area attack"
@@ -5140,6 +5152,10 @@ msgid ""
 "learned but on no skill key, so never used: {skills} - put them on a key (Ctrl+Alt+key in the skills panel)"
 msgstr ""
 
+msgid ""
+"learned where the exit from {map} lands on {dest}: {x},{y} - the atlas doesn't have it yet, please report it: {row}"
+msgstr ""
+
 msgid "leave (or quit team): I leave the team I'm in."
 msgstr ""
 
@@ -5626,6 +5642,10 @@ msgstr ""
 
 msgid ""
 "on foot: the travel fusion beast is set to none in the character settings"
+msgstr ""
+
+msgid ""
+"on foot: {beasts} isn't in the bot's list of fusion beasts yet, so it can't tell whether it is a Swift one - please report its description"
 msgstr ""
 
 msgid "on foot: {beast} isn't among our fusion beasts"
@@ -6337,6 +6357,10 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr ""
 
+msgid ""
+"the game says this character has already been in an experience dungeon today"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr ""
 
@@ -6435,6 +6459,10 @@ msgid "the plan's character has no saved account. Log in to it once first."
 msgstr ""
 
 msgid "the ride from {map} never arrived"
+msgstr ""
+
+msgid ""
+"the run started inside {map}, which can't be walked back into - ending on the nearest map without monsters"
 msgstr ""
 
 msgid ""
@@ -6981,6 +7009,14 @@ msgid "{map}: leaving through the Action menu"
 msgstr ""
 
 msgid "{map}: taking the {npc} to {dest}"
+msgstr ""
+
+msgid ""
+"{map}: the exit to {dest} brought me round in a loop - planning without it"
+msgstr ""
+
+msgid ""
+"{map}: the exit to {dest} put me at {x},{y}, not at {ax},{ay} as the atlas says - please report it: {row}"
 msgstr ""
 
 msgid ""

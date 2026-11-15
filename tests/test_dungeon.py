@@ -152,9 +152,11 @@ def test_the_old_ticked_list_becomes_its_first_cave_and_nonsense_the_best_one() 
 def test_best_is_the_highest_cave_the_level_lets_in() -> None:
     best = dungeon.config({})
     assert dungeon.pick(best, 79) == "Scorpion Cave"
+    assert dungeon.pick(best, 80) == "Bottomless pit"
+    assert dungeon.pick(best, 95) == "White Bone Cave"
     assert dungeon.pick(best, 59) == "Spider cave"
     assert dungeon.pick(best, 30) is None
-    assert dungeon.pick(best, 0) == "Scorpion Cave"           # level unknown: the highest
+    assert dungeon.pick(best, 0) == "White Bone Cave"         # level unknown: the highest
     assert dungeon.pick(dungeon.config({"dungeon": {"cave": "Spider cave"}}), 79) == "Spider cave"
 
 
@@ -232,10 +234,10 @@ def test_not_let_in_is_written_down_and_no_other_cave_is_tried(shop: None) -> No
     g = Game(lets_in=False, bag={"pet large blue potion": 30, "pet rice roll": 5,
                                  "large blue potion": 80, "large red potion": 40})
     notes = dungeon.run(as_bot(g), dungeon.config({}))
-    assert g.walked == ["Scorpion Cave"]
+    assert g.walked == ["Bottomless pit"]                     # the best a level 80 has
     assert g.farmed == []
     assert len(notes) == 1 and "didn't let us in" in notes[0]
-    assert chores.done_today("Hero")["_dungeon Scorpion Cave"]["note"] == "not let in"
+    assert chores.done_today("Hero")["_dungeon Bottomless pit"]["note"] == "not let in"
 
 
 def test_one_cave_a_day_whichever_it_was(shop: None) -> None:
@@ -267,7 +269,7 @@ def test_a_cave_above_the_characters_level_is_said_and_not_tried(shop: None) -> 
 
 def test_check_only_says_where_it_would_go_and_goes_nowhere(shop: None) -> None:
     g = Game()
-    assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["would go to: Scorpion Cave"]
+    assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["would go to: Bottomless pit"]
     assert g.walked == [] and g.restocks == []
 
 
@@ -309,10 +311,27 @@ def test_settings_never_share_the_defaults() -> None:
 def test_every_cave_has_a_known_entrance_and_a_patrol() -> None:
     from unclefarmer import atlas, dungeons
     for cave, v in dungeon.CAVES.items():
-        e = dungeons.find(cave)
+        e = dungeon.entrance(cave)
         assert e is not None and v["map"] in e["dungeon_maps"]
         assert atlas.patrol_loop(v["map"], "quick")
     assert dungeon.cave_of(1503) == "Spider cave" and dungeon.cave_of(1) is None
+    assert dungeons.find("Spider cave") == dungeon.entrance("Spider cave")     # the game's files say
+
+
+def test_the_two_caves_the_games_files_dont_place_carry_their_entrance() -> None:
+    from unclefarmer import atlas, travel
+    for cave, mid, at in (("Bottomless pit", 1631, (150, 19)), ("White Bone Cave", 1761, (61, 110))):
+        e = dungeon.entrance(cave)
+        assert e is not None and e["map"] == mid and tuple(e["at"]) == at and e["npc"]
+        assert atlas.model(mid).ok(*at)
+        assert travel.plan(1041, (200, 205), mid, at) is not None      # walked or by cable car
+        assert "(%d)" % mid in dungeon.entrance_text(cave) and "%d,%d" % at in dungeon.entrance_text(cave)
+    assert dungeon.entrance("Atlantis") is None and dungeon.entrance_text("Atlantis") == "entrance unknown"
+
+
+def test_the_new_caves_parse_in_a_script() -> None:
+    for line in ("dungeon Bottomless pit", "dungeon white bone cave", "dungeon check Bottomless pit"):
+        assert not script.check(line + "\n")
 
 
 def test_the_supply_choices_are_the_games_items() -> None:
@@ -369,3 +388,54 @@ def test_no_pet_at_all_is_said(shop: None) -> None:
     g = Game(pets=False)
     dungeon.run(as_bot(g), dungeon.config({}), check_only=True)
     assert any("going without one" in line for line in g.lines)
+
+
+class SaidAgent(Agent):
+    """Also what the game said after an action (the agent's `said`)."""
+
+    def __init__(self, said: list[str]) -> None:
+        super().__init__(False)
+        self.said = said
+
+    def json(self, line: str) -> Any:
+        if line.startswith("said"):
+            return {"now": 5, "said": [{"text": t} for t in self.said]}
+        return super().json(line)
+
+
+def test_turned_away_for_the_day_says_why(shop: None) -> None:
+    g = Game(lets_in=False)
+    g.a = SaidAgent(["You have already entered an experience dungeon today"])
+    assert dungeon.enter(as_bot(g), "Spider cave") is False
+    assert any("already been in an experience dungeon today" in line for line in g.lines)
+
+
+def test_not_let_in_for_another_reason_says_nothing_of_the_day(shop: None) -> None:
+    g = Game(lets_in=False)
+    g.a = SaidAgent(["Your level is too low"])
+    assert dungeon.enter(as_bot(g), "Spider cave") is False
+    assert not [line for line in g.lines if "already been" in line]
+
+
+def test_a_run_started_inside_a_cave_hunts_on_without_leaving_or_shopping(shop: None) -> None:
+    # the bot (or the game) restarted mid-visit: the day's cave is this one, and going out to
+    # check the day or top up would lose the rest of it
+    g = Game(bag={})
+    g.character = "Restarted inside"
+    g.mid = 1792
+    g.cave = "White Bone Cave"
+    g._enter()
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+    assert g.walked == [] and g.restocks == []
+    assert g.farmed == [{"map": 1792, "patrol": "quick", "instance": True, "pack": 2, "chase": 90}]
+    assert notes and "White Bone Cave" in notes[0] and g.mid == 1531
+    assert any("already inside White Bone Cave" in line for line in g.lines)
+    assert dungeon.done_today("Restarted inside") == ["White Bone Cave"]
+
+
+def test_check_only_inside_a_cave_says_so_and_does_nothing(shop: None) -> None:
+    g = Game()
+    g.character = "Checking inside"
+    g.mid = 1636
+    assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["already inside Bottomless pit"]
+    assert g.farmed == [] and dungeon.done_today("Checking inside") == []

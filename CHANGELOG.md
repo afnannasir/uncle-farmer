@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+**Golden Pegasus**
+
+- The Golden Pegasus fusion beast (Swift, speed +3.2, level 100) is known now: the bot rides it to
+  travel, gets off it for a fight, and offers it in "Travel on fusion beast" after a scan. It was
+  newer than the bot's list of beasts, so it was never chosen.
+- When the only fusion beast that could carry us is one the bot doesn't know yet, the log names it
+  once a run and asks for its description, instead of only saying there is no Swift beast.
+
+**Teleport stones**
+
+- With "Use teleport stones and the hearthstone from the bag" ticked (Character, Settings, Travel),
+  the bot also uses the stones of the villages and ruins outside the cities: Soul Burial Village,
+  Plague Abyss, Orchid woods Village, City of the Ancient tower, mist gods Ruins, West Sealing
+  Tower, Hermit Camp, East Sealing Tower and portal of the demon world. A West Sealing Tower stone
+  goes straight to ancient Sealed Land, where the White Bone Cave is entered.
+- The seal Teleportation stone (West or East Sealing Tower, or the portal of the demon world), and
+  the Black Gold stone's fifth place, City of the Ancient tower (next to the way into ancient
+  Sealed Land).
+
+**Travel**
+
+- Map exits whose landing the game's map data doesn't give no longer send the bot round in
+  loops. On the way to ancient Sealed Land, the small hall of Ancient Ruins looked like a short
+  cut and the bot went in and out of it for a minute before giving up.
+- The six landings of Ancient Ruins' small hall and of Plague Abyss back into Ancient Ruins were
+  measured in the game and added to the atlas. The atlas only carries each arrival's marker,
+  sources, point and walkable area; the bot works out its port and its routes to the map's other
+  ports when it reads the atlas, so they never go stale.
+- An exit with no landing in the data is taken to land beside the door it stands next to, as the
+  measured ones do. Where the bot really lands through one is learned and kept in
+  profiles/_learned_landings.json, and the log gives it as the atlas line to report, so it can be
+  added to the atlas for everyone.
+- An exit the same trip already went through is left out of the next plan, so no loop through
+  one can go on.
+- A landing further than a few cells from where the atlas says (a measurement gone wrong, or a
+  game update) is said in the log with the corrected atlas line to report. The bot goes on from
+  where it really is either way.
+
+**Dungeons**
+
+- Tools, Dungeons has two more experience dungeons: the White Bone Cave (level 90, entered at
+  ancient Sealed Land, reached by the cable car; tested: 204 kills in a visit) and the Bottomless
+  pit (level 80, entered at Valley of Luxuriant forests; untested so far). The highest cave my
+  level lets in picks them too.
+- Starting a dungeon run while already inside one of the caves (after the bot or the game was
+  restarted mid-visit) now hunts on until the game moves the character out, instead of leaving.
+  The end place "where the run started" then ends on the nearest map without monsters.
+- When the game turns the character away because the day's experience dungeon is used, the bot
+  says so.
+
 **Experience cards**
 
 - Character, Settings, Fighting, Experience cards: "Experience card to keep running while farming".

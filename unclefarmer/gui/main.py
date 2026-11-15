@@ -520,7 +520,7 @@ Main window
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
-  Ctrl+Shift+G        Dungeons: Scorpion Cave and Spider cave, once a day
+  Ctrl+Shift+G        Dungeons: the experience caves, one a day
   Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
@@ -623,7 +623,8 @@ supplies to their targets, withdrawing or buying only what is missing, even when
 down to their refill points yet.
 Character, Settings, Triggers: tick any of these jobs (and Gathering) to run by themselves before
 farming starts, after farming ends, or both - each stage has its own ticks.
-Tools, Dungeons (Ctrl+Shift+G): Scorpion Cave and Spider cave, each once a game day, for as many
+Tools, Dungeons (Ctrl+Shift+G): Spider cave, Scorpion Cave, Bottomless pit or White Bone Cave,
+one a game day, for as many
 kills as their 15 minutes give. Before setting out it tops up what you set on the Supplies tab (the
 pet's blue potions and Rice Rolls, your blue and red potions) from the storehouse or the shop; then
 it rides to the entrance, goes in, goes round the whole cave fighting whatever is in reach (area

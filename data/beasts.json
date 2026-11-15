@@ -391,6 +391,21 @@
    "radiation_proof": false,
    "text": "Unicorn Lord; speed modifier 3.2; strengthen HP 20200 MP 27400 physical Defense 126 magic Defense 123; plus: Disable Skill; level 100;The transformation does not cost any fusion power; A sacred creature with a snow-white body; has a taller and stronger body than its kind."
   },
+  "Golden Pegasus": {
+   "kind": "swift",
+   "speed": 3.2,
+   "level": 100,
+   "free": false,
+   "no_skills": true,
+   "hp": 20200,
+   "mp": 27400,
+   "attack": 0,
+   "magic_attack": 0,
+   "defense": 126,
+   "magic_defense": 123,
+   "radiation_proof": false,
+   "text": "Golden Pegasus; speed modifier 3.2; strengthen HP 20200 MP 27400 physical Defense 126 magic Defense 123; plus: Disable Skill; level 100;The Golden Pegasus is adorned with radiant golden mane and wings, as if every strand were forged from sunlight itself. When its massive wings spread, they form a blazing arc of golden brilliance that fills the sky with light and wind. Its powerful legs strike the ground with authority, each step echoing strength and majesty."
+  },
   "Rock Spirit Beast Guardian": {
    "kind": "fierce",
    "speed": 0.0,
