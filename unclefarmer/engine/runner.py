@@ -78,6 +78,7 @@ class Run(threading.Thread):
         self.speech_choice: str | None = None  # "on"/"off" when the player muted or unmuted this game by hand
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
+        self.failed = False          # scheduled automation records a failure, not a successful stop
         self.after_stop = "nothing"   # what the app setting said to do then: nothing | close_game | shutdown
         self.before_farming_done = False  # the Character settings' before-farming triggers ran (once a run)
         self.after_farming_done = False   # the Character settings' after-farming triggers ran (once a run)
@@ -90,7 +91,7 @@ class Run(threading.Thread):
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
         plan or script that farmed. A tool (Gem Maker, Enhancer), the walking assistant, `come` or
         `follow`, or a script that never farmed, ends and leaves the game and the PC alone."""
-        return getattr(self, "kind", "") != "errand" and bool(getattr(self.bot, "farmed", False))
+        return getattr(self, "kind", "") not in ("errand", "tool", "trigger") and bool(getattr(self.bot, "farmed", False))
 
     def stop(self) -> None:
         self.stop_event.set()
@@ -138,24 +139,53 @@ class Run(threading.Thread):
             # The game is frozen: guarding or walking on would only look stuck, and closing the game
             # or the PC as if farming had ended hides what happened. The player restarts the game.
             reason = str(e)
+            self.failed = True
+        except triggers.TriggerFailed as e:
+            reason = str(e)
+            self.failed = True
         except Stopped as e:
+            if getattr(self, "kind", "") in ("tool", "trigger") and not self.stop_event.is_set():
+                self.failed = True
             reason = self._stopped(e)
         except ScriptError as e:
             reason = str(e)
+            self.failed = True
         except AgentError as e:
+            self.failed = True
             reason = _("lost the connection to the game") if str(e) != "no_game" else _("the game isn't running with the agent")
         except OSError as e:
+            self.failed = True
             reason = _("lost the connection to the game: {err}", err=e)
         except Exception as e:   # never let the thread die silently
+            self.failed = True
             reason = self._crashed(e)
         finally:
-            self._after_farming()
+            try:
+                self._after_farming()
+            except triggers.TriggerFailed as e:
+                # an After step that had to work didn't: said and recorded, but farming did end by
+                # itself, so the after-stop action (close the game, shut the PC down) still runs
+                reason = str(e)
+                self.failed = True
+                self.log(reason, speak=True)
+            except (Stopped, AgentError, OSError, ValueError) as e:
+                reason = str(e)
+                self.failed = not self.stop_event.is_set()
+                self.ended_by_itself = False
+            except Exception as e:
+                reason = self._crashed(e)
+                self.failed = True
+                self.ended_by_itself = False
             self._end(app, reason)
 
     # ---------------------------------------------------------------- starting
     def _start(self, app: dict[str, Any]) -> Bot:
         """The game connected and checked, the character scanned, the keys armed: the Bot, set up."""
-        day_end, blocked = daily.plan(app) if not self.walk else (None, None)
+        # a tool or a trigger list farms nothing by itself (a step that farms is held to the window
+        # by farming_window); Dungeons is farming, so it keeps the daily stop as a plan does
+        kind = getattr(self, "kind", "")
+        independent = kind == "trigger" or (kind == "tool" and self.text.strip() != "dungeon")
+        day_end, blocked = daily.plan(app) if not self.walk and not independent else (None, None)
         character: str
         if blocked:
             raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
@@ -318,7 +348,7 @@ class Run(threading.Thread):
     def _tool(self) -> str | None:
         """The job (stats.TOOLS) this run is when it is one from the Tools menu, else None: its
         results are kept apart from farming."""
-        if getattr(self, "kind", "") != "errand":
+        if getattr(self, "kind", "") not in ("errand", "tool"):
             return None
         words = self.text.split()
         return words[0] if words and words[0] in stats.TOOLS else None
@@ -326,8 +356,20 @@ class Run(threading.Thread):
     # ---------------------------------------------------------------- running and stopping
     def _play(self, bot: Bot) -> str | None:
         """The plan or script itself, then the end of a finished run. A reason when not "finished"."""
-        script = Runner(bot, self.text)          # read first: a script that doesn't parse does nothing
-        if getattr(self, "kind", "") != "errand" and not self.walk:
+        kind = getattr(self, "kind", "")
+        if kind == "trigger":
+            if not triggers.ticked(bot.p, self.text):
+                raise triggers.TriggerFailed(_("No enabled triggers are configured for this sequence."))
+            results = triggers.run_stage(bot, self.text, self.log, self.stop_event.is_set, self.farming_window)
+            self.failed = any(not success for _job, success in results)
+            self.ended_by_itself = not self.stop_event.is_set()
+            return _("Trigger sequence completed with failures.") if self.failed else None
+        text = self.text
+        if kind == "tool" and text.strip() == "dungeon":
+            from . import dungeon
+            text = dungeon.script(dungeon.config(bot.p))  # preserve the tool's saved ending place too
+        script = Runner(bot, text)          # read first: a script that doesn't parse does nothing
+        if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
                 self._before_farming()
             cfg = chores.config(bot.p)
@@ -369,14 +411,29 @@ class Run(threading.Thread):
         return reason
 
     def _before_farming(self) -> None:
-        """The Character settings' before-farming triggers (engine/triggers.py), each one ticked,
-        one after the other, before the plan or script's first line - once a run. A job that
-        fails is said and farming still starts; Stop, a frozen or lost game end the run here."""
+        """Run the saved preparation sequence once. An ordinary unchecked failure is logged;
+        a failed deterministic action, Stop or a lost/frozen game prevents farming."""
         bot = self.bot
         if self.before_farming_done or bot is None:
             return
         self.before_farming_done = True
-        triggers.run_stage(bot, "before", self.log, self.stop_event.is_set)
+        triggers.run_stage(bot, "before", self.log, self.stop_event.is_set, self.farming_window)
+
+    def farming_window(self) -> None:
+        """Before a trigger step that farms: Stopped when the day's farming is over (the daily
+        stop has passed and the drop time hasn't reset yet), else the daily stop armed for the
+        step - again after a stop that already fired, since a new game day may have begun."""
+        bot = self.bot
+        if bot is None:
+            return
+        day_end, blocked = daily.plan(settings.load_app())
+        if blocked:
+            raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
+                            "after that", reset=blocked))
+        if day_end:
+            bot.daily_stop_at = day_end.timestamp()
+            bot.daily_reset = daily.reset_clock()
+            bot.daily_done = False
 
     def _after_farming(self) -> None:
         """The Character settings' after-farming triggers (engine/triggers.py: Sell shards now,
@@ -385,13 +442,16 @@ class Run(threading.Thread):
         itself - the plan done, a stop rule, the daily stop - as the after-stop action is: never
         after Stop, a lost or frozen game, `come`/`follow`, a tool or the walking assistant. Before
         the results close (each job's earnings are its own, apart from farming) and before the game
-        is closed or the PC shut down. Once a run. A job that fails is logged and the next one still
-        runs; Stop ends them all."""
+        is closed or the PC shut down. Once a run. Failed deterministic actions stop the remaining
+        sequence; ordinary unchecked failures are logged and continue. Stop ends them all."""
         bot = self.bot
-        if self.after_farming_done or bot is None or self.walk or not self.ended_by_itself or not self.farmed():
+        if (self.after_farming_done or bot is None or self.walk or not self.ended_by_itself or not self.farmed()
+                or getattr(self, "kind", "") in ("tool", "trigger")):
             return
         self.after_farming_done = True
-        triggers.run_stage(bot, "after", self.log, self.stop_event.is_set)
+        # the daily stop stays in force: only the waits between steps run past it (run_stage), and
+        # a step that farms is held to the day's window (farming_window)
+        triggers.run_stage(bot, "after", self.log, self.stop_event.is_set, self.farming_window)
 
     def _crashed(self, e: Exception) -> str:
         carry_on(e, "the run")

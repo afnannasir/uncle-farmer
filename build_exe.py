@@ -90,7 +90,7 @@ def main(full: bool = False) -> None:
     subprocess.check_call([
         sys.executable, "-m", "nuitka", os.path.join(ROOT, "UncleFarmer.pyw"),
         "--standalone", "--windows-console-mode=disable", "--assume-yes-for-downloads",
-        "--output-filename=" + updater.recovery.PAYLOAD, "--output-dir=" + DIST, "--remove-output",
+        "--output-filename=" + updater.EXE, "--output-dir=" + DIST, "--remove-output",
         "--windows-product-name=Uncle Farmer",
         "--windows-product-version=" + windows_version(__version__),
         "--jobs=%d" % jobs, "--lto=auto", PYTHON_FLAG,
@@ -100,7 +100,7 @@ def main(full: bool = False) -> None:
     if os.path.exists(OUT):
         shutil.rmtree(OUT)
     os.rename(BUILT, OUT)
-    shutil.move(os.path.join(DIST, updater.EXE), os.path.join(OUT, updater.EXE))
+    shutil.move(os.path.join(DIST, updater.BOOTSTRAP), os.path.join(OUT, updater.BOOTSTRAP))
     # game_texts.json is built from the player's own game folder on first use, never shipped
     shutil.copytree(os.path.join(ROOT, "data"), os.path.join(OUT, "data"),
                     ignore=shutil.ignore_patterns("game_texts.json"))
@@ -140,7 +140,9 @@ def verify(folder: str) -> None:
 
 
 def build_bootstrap(folder: str) -> None:
-    """Small, stable native front door: no Python/application DLL dependency."""
+    """bootstrap.exe: the small, stable native updater/bootstrapper (native/bootstrap.c), with no
+    Python or application DLL dependency. It runs an update's copier, recovers an interrupted
+    update and starts UncleFarmer.exe afterwards."""
     from build_native import compiler
     command = compiler()
     if command is None:
@@ -150,7 +152,7 @@ def build_bootstrap(folder: str) -> None:
     if os.path.isabs(command[0]):
         env["PATH"] = os.path.dirname(command[0]) + os.pathsep + env.get("PATH", "")
     subprocess.check_call(command + ["-O2", "-std=c11", "-Wall", "-Wextra", "-Werror", "-municode", "-mwindows",
-                                     source, "-o", os.path.join(folder, updater.EXE)], env=env)
+                                     source, "-o", os.path.join(folder, updater.BOOTSTRAP), "-lshell32"], env=env)
 
 
 if __name__ == "__main__":

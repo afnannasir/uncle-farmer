@@ -22,9 +22,13 @@ from typing import Any, cast
 
 HERE = ".recovery"
 JOURNAL = "transaction.json"
-PAYLOAD = "UncleFarmerApp.exe"
-PROTECTED = {"unclefarmer.exe", HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
+PAYLOAD = "UncleFarmer.exe"     # the application, which updates replace
+BOOTSTRAP = "bootstrap.exe"     # native/bootstrap.c: runs updates and recovery, never replaced by one
+PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
              "survey", "update", "settings.json", "schedules.json"}
+# Journals written while the native front door was UncleFarmer.exe (and the app UncleFarmerApp.exe)
+# protected that name instead. Such a journal is still read, so its backups are never orphaned.
+LEGACY_PROTECTED = PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}
 KEEP = {"agent": "run", "data": "game_texts.json"}
 TERMINAL = {"COMMITTED", "ROLLED_BACK"}
 EARLY = {"DOWNLOADING", "EXTRACTING", "STAGING", "STAGED"}
@@ -37,6 +41,13 @@ class RecoveryError(Exception):
 
 def checkpoint(operation: str) -> None:
     """Operation boundary for process-termination integration tests (no production side effects)."""
+
+
+def same_path(a: str, b: str) -> bool:
+    """One file or folder, however it is spelled: case, separators, and the 8.3 short names Windows
+    hands a frozen app in sys.executable when a folder name has spaces ("UNCLEF~1" for "Uncle
+    Farmer"). realpath resolves to the long, final name (a tail that does not exist yet is kept)."""
+    return os.path.normcase(os.path.realpath(a)) == os.path.normcase(os.path.realpath(b))
 
 
 def safe(path: str, root: str) -> None:
@@ -149,7 +160,7 @@ def validate(data: object, app: str) -> dict[str, Any]:
     record = cast(dict[str, Any], data)
     if (type(record.get("format")) is not int or record.get("format") != 1 or not isinstance(record.get("id"), str)
             or re.fullmatch(r"[0-9a-f]{32}", record["id"]) is None or record.get("state") not in STATES
-            or os.path.normcase(record.get("app", "")) != os.path.normcase(os.path.abspath(app))
+            or not isinstance(record.get("app"), str) or not same_path(record["app"], app)
             or not isinstance(record.get("entries"), list) or type(record.get("owner")) is not int
             or type(record.get("owner_stamp")) is not int
             or not isinstance(record.get("previous"), str) or not isinstance(record.get("target"), str)):
@@ -158,12 +169,12 @@ def validate(data: object, app: str) -> dict[str, Any]:
         raise RecoveryError("empty application replacement plan")
     if not 0 < record["owner"] <= 0xFFFFFFFF or record["owner_stamp"] <= 0:
         raise RecoveryError("invalid transaction process identity")
-    if record.get("protected") != protected_names():
+    if record.get("protected") not in (protected_names(), protected_names(LEGACY_PROTECTED)):
         raise RecoveryError("invalid journal preservation rules")
     expected = os.path.join(app, HERE, record["id"])
     if (not isinstance(record.get("backup"), str) or not isinstance(record.get("staging"), str)
-            or os.path.normcase(record["backup"]) != os.path.normcase(os.path.join(expected, "old"))
-            or os.path.normcase(record["staging"]) != os.path.normcase(os.path.join(expected, "new"))):
+            or not same_path(record["backup"], os.path.join(expected, "old"))
+            or not same_path(record["staging"], os.path.join(expected, "new"))):
         raise RecoveryError("invalid recovery journal paths")
     record.update(app=os.path.abspath(app), backup=os.path.join(expected, "old"), staging=os.path.join(expected, "new"))
     names: set[str] = set()
@@ -189,8 +200,8 @@ def validate(data: object, app: str) -> dict[str, Any]:
     return record
 
 
-def protected_names() -> list[str]:
-    return sorted(PROTECTED | {folder + "/" + name for folder, name in KEEP.items()})
+def protected_names(names: set[str] = PROTECTED) -> list[str]:
+    return sorted(names | {folder + "/" + name for folder, name in KEEP.items()})
 
 
 def _verify_preserved_entry(entry: dict[str, Any]) -> None:

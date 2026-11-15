@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+**Updates start Uncle Farmer again**
+
+- After an update, Uncle Farmer opens again by itself. The updater is its own small program now,
+  `bootstrap.exe`: it waits for Uncle Farmer to close, has the files replaced, starts the updated
+  `UncleFarmer.exe` and closes. `UncleFarmer.exe` is the program itself again, the one you start.
+- If an update was ever cut off (a power cut, a crash), starting `UncleFarmer.exe` hands it to
+  `bootstrap.exe` first, which finishes it or puts the old version back, then starts Uncle Farmer.
+- Dev builds from 2026-11-14 on (where the program was `UncleFarmerApp.exe`) can't install this
+  update themselves: unzip it over the folder once by hand.
+- Why it didn't open again before: after an update, the recovery check that runs before Uncle
+  Farmer starts always refused to run in the built program (it looked for the wrong file name, and
+  the folder's short name "UNCLEF~1" didn't match "Uncle Farmer"), so nothing was started.
+- An update no longer fails to start on a slower PC: the new copy may take up to 30 seconds to get
+  ready (it had 5, and a freshly unpacked build needs 3 to 6), and the two programs no longer
+  trip over each other's hand-over files ("Access is denied").
+
+**Trigger lists and scheduled tools**
+
+- Character settings, Triggers: Before farming and After farming are ordered lists now. Each step is
+  a tool or a saved script, can be switched off, moved up or down, wait up to an hour before the
+  next step, and be marked DETERMINISTIC (if it fails, the rest of the list stops, and before
+  farming, farming doesn't start). The old ticks carry over in their old order.
+- Schedules has Tools and Triggers tabs: a tool or a whole trigger list can run on a schedule by itself.
+- A step that farms (Dungeons, or a script with a farm or dungeon line) keeps the daily stop: it
+  isn't started between the daily stop and the drop-time reset, and it stops at the daily stop like
+  any farming run. Only the waits between steps may run past it. A scheduled Dungeons run keeps it too.
+- When an After farming step fails, it is said and the run counts as failed, but closing the game or
+  shutting the PC down still happens, since farming itself ended by itself.
+- A saved list that can't be read says where to fix it, and Character settings still opens.
+
 **Golden Pegasus**
 
 - The Golden Pegasus fusion beast (Swift, speed +3.2, level 100) is known now: the bot rides it to

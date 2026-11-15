@@ -2,8 +2,8 @@
 
     python -m unclefarmer            the app
     python -m unclefarmer --strings  refresh lang/unclefarmer.pot, merge the .po files, compile them
-    UncleFarmer.exe --apply-update <app folder> <pid> <version>
-                                     (the updater's own step: see updater.py)
+    UncleFarmer.exe --apply-update <app folder> <pid> <version> [<token>] [--bootstrap]
+                                     (the updater's own step, run by bootstrap.exe: see updater.py)
     UncleFarmer.exe --self-test <report.json>
                                      check the copy without a window (selftest.py; CI runs it)
 """
@@ -32,9 +32,12 @@ def main() -> None:
             if len(sys.argv) != index + 2:
                 raise recovery.RecoveryError("expected one recovery application directory")
             recovery_app = os.path.abspath(sys.argv[index + 1])
-            expected = os.path.join(recovery_app, recovery.HERE, "runtime", recovery.PAYLOAD)
+            expected = os.path.join(recovery_app, recovery.HERE, "runtime")
             packaged = "__compiled__" in globals() or bool(getattr(sys, "frozen", False))
-            if not packaged or os.path.normcase(os.path.abspath(sys.executable)) != os.path.normcase(expected):
+            # The folder, not the file: Nuitka's sys.executable is a python.exe beside UncleFarmer.exe
+            # (comparing the exe name refused every real rescue). same_path: it may also be the 8.3
+            # short name of the folder bootstrap.exe passed ("UNCLEF~1" for "Uncle Farmer").
+            if not packaged or not recovery.same_path(os.path.dirname(os.path.abspath(sys.executable)), expected):
                 raise recovery.RecoveryError("recovery must run in the independent rescue runtime")
             trusted_recovery = True
             recovery.recover(recovery_app)
@@ -50,13 +53,13 @@ def main() -> None:
         return
     if "--apply-update" in sys.argv:
         from . import updater
-        updater.run_apply(sys.argv[sys.argv.index("--apply-update") + 1:])
-        return
-    from . import paths, update_recovery as recovery
-    if paths.frozen():
-        transaction = recovery.load(paths.APP)
-        if transaction and transaction["state"] not in recovery.TERMINAL:
-            sys.exit("An update needs recovery. Start UncleFarmer.exe, not UncleFarmerApp.exe.")
+        sys.exit(updater.run_apply(sys.argv[sys.argv.index("--apply-update") + 1:]))
+    from . import paths
+    recovered = "--recovered" in sys.argv       # bootstrap.exe has just run the recovery
+    if recovered:
+        sys.argv.remove("--recovered")
+    if paths.frozen() and _unfinished_update(paths.APP):
+        _hand_to_bootstrap(paths.APP, recovered)
     if "--self-test" in sys.argv:
         from . import selftest
         i = sys.argv.index("--self-test")
@@ -80,6 +83,41 @@ def main() -> None:
     # leaves it unannotated; nothing here reads what it returns
     app.MainLoop()  # pyright: ignore[reportUnknownMemberType]
     _finish(applog.teardown)
+
+
+def _unfinished_update(app: str) -> bool:
+    """An interrupted update (or a journal nobody can read) that bootstrap.exe has to recover first."""
+    from . import update_recovery as recovery
+    try:
+        transaction = recovery.load(app)
+    except recovery.RecoveryError:
+        return True
+    return transaction is not None and transaction["state"] not in recovery.TERMINAL
+
+
+def _hand_to_bootstrap(app: str, recovered: bool) -> None:
+    """Let bootstrap.exe recover the update and start this app again; this copy ends. Never twice
+    in a row: when bootstrap.exe has just recovered and the update is still unfinished, say so."""
+    import os
+    import subprocess
+    from . import update_recovery as recovery
+    bootstrap = os.path.join(app, recovery.BOOTSTRAP)
+    if not recovered and os.path.isfile(bootstrap):
+        try:
+            subprocess.Popen([bootstrap, "--relaunch", str(os.getpid())], cwd=app, close_fds=True,
+                             creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
+            sys.exit(0)
+        except OSError:
+            pass
+    text = ("An update of Uncle Farmer was interrupted and could not be finished. Your files and the "
+            "backups are kept in the .recovery folder; start bootstrap.exe in the Uncle Farmer folder to "
+            "try again, and send the files in .recovery to the developer if it keeps failing.")
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(None, text, "Uncle Farmer", 0x10)     # MB_ICONERROR
+    except (AttributeError, OSError):
+        pass
+    sys.exit(text)
 
 
 def _about() -> str:

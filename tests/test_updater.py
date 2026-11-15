@@ -411,6 +411,7 @@ def test_run_apply_writes_the_result_and_restarts(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setattr(updater, "apply", stand_in(updater.apply, lambda app, src, log: log("did it")))
     spawned: list[list[str]] = []
     monkeypatch.setattr(updater.subprocess, "Popen", popen_with(lambda args, k: spawned.append(args)))
+    alive_only(monkeypatch)    # 4242 stands for the exited app, whatever real process has that id now
     updater.run_apply([str(app), "4242", "0.5.0"])
     with open(app / "update" / "result.json", encoding="utf-8") as f:
         result = updater.json.load(f)
@@ -774,6 +775,7 @@ def test_a_whole_update_leaves_only_the_app_and_its_logs(home: Path, tmp_path: P
     monkeypatch.setattr(updater.sys, "executable", os.path.join(folder, updater.EXE))   # the copier's own exe
     arguments = launched[0][2:]
     arguments[1] = "4242"  # emulate an exited parent; this test runs both roles in one process
+    alive_only(monkeypatch)    # whatever real process has that id now
     updater.run_apply(arguments)
     # here the copier ran in this process; in a real update it is another one, which has exited
     held = updater.json.loads((home / "update" / updater.BUSY).read_text(encoding="utf-8"))
@@ -784,14 +786,15 @@ def test_a_whole_update_leaves_only_the_app_and_its_logs(home: Path, tmp_path: P
     assert result == {"version": "0.5.0", "ok": True, "error": ""}
     assert updater.clean(wait=1) is True
     assert not (home / "update").exists()
-    assert (home / updater.EXE).read_text(encoding="utf-8") == keep[home / updater.EXE]
-    assert (home / updater.recovery.PAYLOAD).read_text(encoding="utf-8") == "new"
+    assert (home / updater.EXE).read_text(encoding="utf-8") == "new"           # the app is replaced
+    assert (home / updater.BOOTSTRAP).read_text(encoding="utf-8") == "old runtime"  # the bootstrap never
     assert (home / "data" / "d.json").exists()
     del keep[home / "_internal" / "core.dll"]  # obsolete runtime is intentionally replaced
+    del keep[home / updater.EXE]
     assert untouched(keep)                           # settings, profiles, plans and logs as they were
     text = update_log(home)
     for stage in ("download of UncleFarmer-0.5.0.zip", "unpacked", "copier for 0.5.0 started", "copier: updating",
-                  "copier: updated UncleFarmerApp.exe", "the update to 0.5.0 finished", "staging folder cleaned"):
+                  "copier: updated UncleFarmer.exe", "the update to 0.5.0 finished", "staging folder cleaned"):
         assert stage in text, stage
 
 

@@ -719,49 +719,239 @@ def test_required_dll_cannot_be_a_directory(app: Path, tmp_path: Path) -> None:
         updater.apply(str(app), str(src), lambda text: None)
 
 
-LAUNCHER = b"MZ native front door " + updater.LAUNCHER_MARKER
+BOOTSTRAP = b"MZ native bootstrap " + updater.BOOTSTRAP_MARKER
+OLD_FRONT_DOOR = b"MZ native front door " + updater.LEGACY_LAUNCHER_MARKER
 
 
-def legacy_and_release(app: Path, tmp_path: Path) -> Path:
-    """A copy from before the two-exe layout (its Nuitka app is UncleFarmer.exe) and a new release."""
-    flat(app, "old")
-    (app / updater.recovery.PAYLOAD).unlink()
-    (app / updater.EXE).write_bytes(b"old nuitka app")
+def release_with_bootstrap(tmp_path: Path) -> Path:
     src = flat(tmp_path / "release")
-    (src / updater.EXE).write_bytes(LAUNCHER)
+    (src / updater.BOOTSTRAP).write_bytes(BOOTSTRAP)
     return src
 
 
-def test_an_older_copy_gets_the_native_front_door_once(app: Path, tmp_path: Path) -> None:
-    src = legacy_and_release(app, tmp_path)
-    updater.apply(str(app), str(src), lambda text: None)
-    assert (app / updater.EXE).read_bytes() == LAUNCHER
-    assert (app / updater.recovery.PAYLOAD).read_bytes() == b"new"
-    assert not list((app / updater.recovery.HERE).glob("launcher-*.tmp"))
+def test_names_are_the_app_and_the_bootstrap() -> None:
+    assert updater.EXE == updater.recovery.PAYLOAD == "UncleFarmer.exe"
+    assert updater.BOOTSTRAP == updater.recovery.BOOTSTRAP == "bootstrap.exe"
+    assert updater.BOOTSTRAP in updater.NEVER and updater.EXE.casefold() not in updater.NEVER
+    assert updater.BOOTSTRAP in updater.recovery.PROTECTED and "unclefarmer.exe" not in updater.recovery.PROTECTED
 
 
-def test_an_installed_front_door_is_never_replaced(app: Path, tmp_path: Path) -> None:
+def test_a_copy_without_a_bootstrap_gets_the_new_app_and_the_bootstrap(app: Path, tmp_path: Path) -> None:
+    """A copy from before bootstrap.exe (1.1.0 and older): its Nuitka app is UncleFarmer.exe, and stays so."""
     flat(app, "old")
-    mine = b"MZ an older front door " + updater.LAUNCHER_MARKER
-    (app / updater.EXE).write_bytes(mine)
-    src = flat(tmp_path / "release")
-    (src / updater.EXE).write_bytes(LAUNCHER)
+    (app / updater.BOOTSTRAP).unlink()
+    src = release_with_bootstrap(tmp_path)
     updater.apply(str(app), str(src), lambda text: None)
-    assert (app / updater.EXE).read_bytes() == mine
+    assert (app / updater.EXE).read_bytes() == b"new"
+    assert (app / updater.BOOTSTRAP).read_bytes() == BOOTSTRAP
+    assert not list((app / updater.recovery.HERE).glob("bootstrap-*.tmp"))
 
 
-def test_a_rolled_back_update_keeps_the_old_app_executable(app: Path, tmp_path: Path,
-                                                           monkeypatch: pytest.MonkeyPatch) -> None:
-    """Without the commit there is no UncleFarmerApp.exe, so a front door could start nothing."""
-    src = legacy_and_release(app, tmp_path)
+def test_the_front_door_layout_gets_its_app_back_as_unclefarmer_exe(app: Path, tmp_path: Path) -> None:
+    """A dev copy of 2026-11-14: UncleFarmer.exe was the front door, UncleFarmerApp.exe the app."""
+    flat(app, "old")
+    (app / updater.BOOTSTRAP).unlink()
+    (app / updater.EXE).write_bytes(OLD_FRONT_DOOR)
+    (app / updater.LEGACY_APP).write_bytes(b"old nuitka app")
+    src = release_with_bootstrap(tmp_path)
+    updater.apply(str(app), str(src), lambda text: None)
+    assert (app / updater.EXE).read_bytes() == b"new"
+    assert (app / updater.BOOTSTRAP).read_bytes() == BOOTSTRAP
+    assert not (app / updater.LEGACY_APP).exists()
+
+
+def test_an_installed_bootstrap_is_never_replaced(app: Path, tmp_path: Path) -> None:
+    flat(app, "old")
+    mine = b"MZ an older build of the same protocol " + updater.BOOTSTRAP_MARKER
+    (app / updater.BOOTSTRAP).write_bytes(mine)
+    src = release_with_bootstrap(tmp_path)
+    updater.apply(str(app), str(src), lambda text: None)
+    assert (app / updater.BOOTSTRAP).read_bytes() == mine
+    assert (app / updater.EXE).read_bytes() == b"new"
+
+
+def test_a_rolled_back_update_installs_no_bootstrap(app: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    flat(app, "old")
+    (app / updater.BOOTSTRAP).unlink()
+    (app / updater.EXE).write_bytes(b"old nuitka app")
+    src = release_with_bootstrap(tmp_path)
     def fail(*args: object, **kwargs: object) -> None:
         raise updater.UpdateError("injected")
     monkeypatch.setattr(updater, "_install_tree", fail)
     with pytest.raises(updater.UpdateError):
         updater.apply(str(app), str(src), lambda text: None)
     assert (app / updater.EXE).read_bytes() == b"old nuitka app"
+    assert not (app / updater.BOOTSTRAP).exists()
 
 
-def test_the_built_front_door_carries_the_marker() -> None:
+def test_a_bootstrap_that_cannot_be_installed_never_fails_the_update(app: Path, tmp_path: Path,
+                                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    flat(app, "old")
+    (app / updater.BOOTSTRAP).unlink()
+    src = release_with_bootstrap(tmp_path)
+    def refuse(*args: object, **kwargs: object) -> None:
+        raise PermissionError("held")
+    monkeypatch.setattr(updater.shutil, "copyfile", refuse)
+    lines: list[str] = []
+    updater.apply(str(app), str(src), lines.append)
+    assert (app / updater.EXE).read_bytes() == b"new"
+    assert not (app / updater.BOOTSTRAP).exists()
+    assert any("could not install bootstrap.exe" in line for line in lines)
+    durable = updater.recovery.load(str(app))
+    assert durable is not None and durable["state"] == "COMMITTED"
+
+
+def test_the_built_bootstrap_carries_the_marker() -> None:
     source = (Path(updater.__file__).parent / "native" / "bootstrap.c").read_text(encoding="utf-8")
-    assert '"%s"' % updater.LAUNCHER_MARKER.decode() in source and "__attribute__((used))" in source
+    assert '"%s"' % updater.BOOTSTRAP_MARKER.decode() in source and "__attribute__((used))" in source
+    assert 'L"%s"' % updater.EXE in source
+
+
+def test_the_app_is_too_large_to_pass_for_the_bootstrap(tmp_path: Path) -> None:
+    big = tmp_path / "big.exe"
+    big.write_bytes(b"\0" * (updater.BOOTSTRAP_MOST + 1) + updater.BOOTSTRAP_MARKER)
+    assert not updater.is_bootstrap(str(big))
+    assert not updater.is_bootstrap(str(tmp_path / "missing.exe"))
+
+
+@pytest.mark.parametrize("with_bootstrap", [True, False])
+def test_start_apply_hands_the_update_to_the_bootstrap(app: Path, copier: Any, monkeypatch: pytest.MonkeyPatch,
+                                                       with_bootstrap: bool) -> None:
+    src, _ = copier
+    if with_bootstrap:
+        (app / updater.BOOTSTRAP).write_bytes(BOOTSTRAP)
+    seen: list[tuple[list[str], str]] = []
+    def start(args: list[str], **kwargs: Any) -> Any:
+        seen.append((args, kwargs["cwd"]))
+        # bootstrap.exe's copier names it as its launcher; a copier run alone names itself
+        signal: dict[str, Any] = dict(pid=999 if with_bootstrap else 12345, token=args[-1])
+        if with_bootstrap:
+            signal["launcher"] = 12345
+        updater.json.save(str(app / "update/busy.json"), signal)
+        return types.SimpleNamespace(pid=12345, poll=returning(None), terminate=returning(None))
+    monkeypatch.setattr(updater.subprocess, "Popen", start)
+    handle = updater.start_apply(str(src), "0.5.0")
+    ((args, cwd),) = seen
+    pid = str(updater.os.getpid())
+    if with_bootstrap:
+        assert args == [str(app / updater.BOOTSTRAP), "--update", str(src / updater.EXE), pid, "0.5.0", handle.token]
+        assert cwd == str(app)
+    else:
+        assert args == [str(src / updater.EXE), "--apply-update", str(app), pid, "0.5.0", handle.token]
+        assert cwd == str(src)
+
+
+def test_a_copier_run_by_the_bootstrap_leaves_the_restart_to_it(app: Path, copier: Any) -> None:
+    assert updater.run_apply([str(app), "4242", "0.5.0", "--bootstrap"]) == 0
+    assert copier[1] == []          # bootstrap.exe starts the app
+    assert updater.json.loads((app / "update/result.json").read_bytes())["ok"] is True
+    assert (app / updater.EXE).read_bytes() == b"new"
+
+
+def test_a_copier_run_by_the_bootstrap_says_so_in_its_signal(app: Path, copier: Any,
+                                                              monkeypatch: pytest.MonkeyPatch) -> None:
+    signals: list[Any] = []
+    def authorized(update: str, token: str) -> None:
+        signals.append(updater.json.loads((Path(update) / "busy.json").read_bytes()))
+    monkeypatch.setattr(updater, "_await_activation", authorized)
+    monkeypatch.setattr(updater.os, "getppid", returning(777))
+    assert updater.run_apply([str(app), "4242", "0.5.0", "a" * 32, "--bootstrap"]) == 0
+    assert signals[0]["launcher"] == 777 and signals[0]["token"] == "a" * 32
+
+
+@pytest.mark.parametrize("trouble", ["old app alive", "rollback incomplete"])
+def test_the_bootstrap_is_told_not_to_restart(app: Path, copier: Any, monkeypatch: pytest.MonkeyPatch,
+                                              trouble: str) -> None:
+    arguments = [str(app), "4242", "0.5.0", "--bootstrap"]
+    if trouble == "old app alive":
+        monkeypatch.setattr(updater, "_alive", returning(True))
+    elif trouble == "rollback incomplete":
+        def failed(*args: Any, **kwargs: Any) -> Any:
+            raise updater.RollbackError("rollback incomplete")
+        monkeypatch.setattr(updater, "apply", failed)
+    assert updater.run_apply(arguments) == updater.RESTART_WITHHELD
+    assert copier[1] == []
+
+
+def test_a_failed_update_still_lets_the_bootstrap_start_the_old_app(app: Path, copier: Any,
+                                                                    monkeypatch: pytest.MonkeyPatch) -> None:
+    def failed(*args: Any, **kwargs: Any) -> Any:
+        raise updater.UpdateError("disk full")
+    monkeypatch.setattr(updater, "apply", failed)
+    assert updater.run_apply([str(app), "4242", "0.5.0", "--bootstrap"]) == 0
+    assert "disk full" in updater.json.loads((app / "update/result.json").read_bytes())["error"]
+
+
+def test_a_copier_run_alone_restarts_through_the_bootstrap_it_installed(app: Path, copier: Any) -> None:
+    src, launches = copier
+    (src / updater.BOOTSTRAP).write_bytes(BOOTSTRAP)
+    (app / updater.BOOTSTRAP).unlink()
+    assert updater.run_apply([str(app), "4242", "0.5.0"]) == 0
+    assert (app / updater.BOOTSTRAP).read_bytes() == BOOTSTRAP
+    assert launches == [[str(app / updater.BOOTSTRAP), "--relaunch", str(updater.os.getpid())]]
+
+
+def test_a_legacy_recovery_runtime_is_renewed(app: Path) -> None:
+    flat(app, "old")
+    root = app / updater.recovery.HERE
+    runtime = root / "runtime"
+    runtime.mkdir(parents=True)
+    (runtime / updater.EXE).write_bytes(OLD_FRONT_DOOR)
+    (runtime / updater.LEGACY_APP).write_bytes(b"old nuitka app")
+    updater.json.save(str(root / "runtime-manifest.json"), updater.recovery.fingerprint(str(runtime)))
+    updater.ensure_recovery_runtime(str(app), str(app))
+    assert (runtime / updater.EXE).read_bytes() == b"old"
+    assert not (runtime / updater.LEGACY_APP).exists()
+    assert not (runtime / updater.BOOTSTRAP).exists()
+    assert not list(root.glob("runtime-preparing-*"))
+    assert updater.json.loads((root / "runtime-manifest.json").read_bytes()) == updater.recovery.fingerprint(str(runtime))
+
+
+def test_a_journal_from_the_front_door_layout_still_validates(app: Path) -> None:
+    record = updater.recovery.begin(str(app), "0.4.0", "0.5.0")
+    record["protected"] = updater.recovery.protected_names(updater.recovery.LEGACY_PROTECTED)
+    updater.recovery.save(str(app), record, "ROLLED_BACK", "legacy")
+    loaded = updater.recovery.load(str(app))
+    assert loaded is not None and loaded["state"] == "ROLLED_BACK"
+
+
+def test_handshake_files_survive_a_reader_holding_them_open(app: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Found by the real-binary test: the app reads busy.json every 50 ms, and Windows refuses to
+    replace a file while it is open, so the copier failed with Access is denied."""
+    save = updater.json.save
+    refusals = [PermissionError(5, "Access is denied")] * 3
+    def busy_reader(path: str, data: Any, **kwargs: Any) -> None:
+        if refusals:
+            raise refusals.pop()
+        save(path, data, **kwargs)
+    monkeypatch.setattr(updater.json, "save", busy_reader)
+    target = app / "busy.json"
+    updater._save_shared(str(target), {"pid": 1})
+    assert updater.json.loads(target.read_bytes()) == {"pid": 1} and not refusals
+    refusals[:] = [PermissionError(5, "Access is denied")] * 1000
+    with pytest.raises(PermissionError):
+        updater._save_shared(str(target), {"pid": 2}, seconds=0.1)
+
+
+def test_a_real_reader_does_not_break_the_handshake(app: Path) -> None:
+    import threading
+    target = app / "update" / "busy.json"
+    target.parent.mkdir()
+    updater.json.save(str(target), {"n": 0})
+    stop = threading.Event()
+    def poll() -> None:
+        while not stop.is_set():
+            try:
+                with open(target, encoding="utf-8") as f:
+                    f.read()
+            except OSError:
+                pass
+    reader = threading.Thread(target=poll)
+    reader.start()
+    try:
+        for n in range(200):
+            updater._save_shared(str(target), {"n": n})
+    finally:
+        stop.set()
+        reader.join()
+    assert updater.json.loads(target.read_bytes()) == {"n": 199}
