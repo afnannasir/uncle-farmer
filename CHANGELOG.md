@@ -39,6 +39,13 @@
   shutting the PC down still happens, since farming itself ended by itself.
 - A saved list that can't be read says where to fix it, and Character settings still opens.
 
+**No town trip right after throwing things away**
+
+- When the bag filled up and the bag manager's rules threw things away right where you farm, the
+  sheet could still show the old load for a moment, and the bot went to town anyway. It now reads
+  the load again for up to 3 seconds and keeps farming once it is under your mark. A bag that is
+  really full of things you keep still gets the trip (or stop) you chose.
+
 **Gem Maker: make most finishes each level first**
 
 - Making the most from the bag no longer moves up a level while gems of a lower level could still
