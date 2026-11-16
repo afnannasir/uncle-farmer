@@ -4609,6 +4609,9 @@ msgstr ""
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr ""
 
+msgid "circles seen on {map}: {names}"
+msgstr ""
+
 msgid "cleaning the bag"
 msgstr ""
 
