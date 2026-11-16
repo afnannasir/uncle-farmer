@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+**Stop before the next level**
+
+- For characters you keep at their level: Character, Settings, Fighting has a new group, **Drop
+  time and experience**, with **Stop before the next level** (off by default) and how much
+  experience the next level must still need (100,000 by default). The character sheet is read
+  after every kill; once the next level needs less, Uncle Farmer says so, leaves the monsters and
+  ends the run. The After farming list runs next, so the XP loser can win some experience back.
+- A run that starts with the next level already that close doesn't set out: it says so before
+  the Before farming list and does nothing else, instead of going all the way to the farm.
+- Inside a dungeon it only says so, once: leaving would lose the visit. It doesn't go into an
+  experience dungeon once the next level is that close, and the day's cave is still yours.
+- A plan's When to stop page can set it for that plan, in place of the character's setting, as
+  it can the drop time to save; scripts have `keep_level <experience>` (0: no such stop).
+- **Stop when the day's drop time runs out** and **Drop time to save** moved from Bag and
+  supplies, Full bag, to the same new group in Character, Settings, Fighting, beside the other
+  reasons to stop. Your settings stay as they were.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode

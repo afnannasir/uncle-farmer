@@ -371,6 +371,7 @@ class Run(threading.Thread):
         script = Runner(bot, text)          # read first: a script that doesn't parse does nothing
         if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
+                self._level_first(bot, script.main)
                 self._before_farming()
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
@@ -409,6 +410,17 @@ class Run(threading.Thread):
                 self.ended_by_itself = (not self.stop_event.is_set() and not getattr(e, "stay", False)
                                         and not getattr(e, "asked", False))
         return reason
+
+    @staticmethod
+    def _level_first(bot: Bot, main: list[Any]) -> None:
+        """Before anything else in a run that farms: the plan's own keep_level (its script's
+        top-level line, which only runs after the Before farming list), then "Stop before the
+        next level" checked from where we stand - a run that would stop on its first sheet at
+        the farm doesn't set out."""
+        for node in main:
+            if getattr(node, "kind", "") == "keep_level":
+                bot.level_keep = node.opts["xp"]
+        bot.level_before_start()
 
     def _before_farming(self) -> None:
         """Run the saved preparation sequence once. An ordinary unchecked failure is logged;

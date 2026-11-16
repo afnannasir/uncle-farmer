@@ -233,12 +233,13 @@ You can set conditions that tell Uncle Farmer when to end a farming run. These i
 Some conditions are handled automatically through your character settings. These include:
 
 - The game's drop time running out.
+- The next level coming close, if you ask for it.
 - Your bag becoming full.
 - Reaching the last death you allow.
 - Your gear breaking.
 - Using up your last potion.
 
-You can configure these character-related conditions in the character settings.
+You can configure these character-related conditions in the character settings. A plan can also save its own amount of drop time, or stop before the next level, instead of the character's setting.
 
 ### Where to end
 
@@ -372,6 +373,21 @@ It finishes any fight first, leaves a chest that is within the boss distance of 
 
 You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
 
+### Drop time and the next level
+
+Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:
+
+- **Stop when the day's drop time runs out** (on by default), with **Drop time to save (minutes)**: the run ends while that much of the day's public area drop time is still left. With 0 it uses all of it.
+- **Stop before the next level** (off by default), with **Stop when the next level needs less than (experience)** (100,000 by default): for characters you keep at their level. The character sheet says how much experience the next level still needs, and Uncle Farmer reads it after every kill. Once it is under your number, it says "the next level needs only 85000 experience - going somewhere safe and stopping", leaves the monsters and ends the run. At the top level there is nothing to read, and it never stops for this.
+
+It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back.
+
+A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
+
+Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
+
+A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
+
 ### Settings for each character
 
 Every character has its own settings.
@@ -414,7 +430,7 @@ Choose which potions and food Uncle Farmer should refill, and where it should ge
 
 ### Full bag
 
-Choose what Uncle Farmer should do when the bag becomes full. This page also includes the option to stop when the day's drop time runs out.
+Choose what Uncle Farmer should do when the bag becomes full. The option to stop when the day's drop time runs out is under **Character → Settings → Fighting**, with the other reasons to stop (see "Drop time and the next level").
 
 A full bag means the bag has reached its carrying limit. By default, the bot keeps farming until the load reaches that limit. It can also treat the bag as full if the load stops increasing just below the limit while monsters continue to die.
 

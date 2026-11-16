@@ -67,6 +67,7 @@ class Bot(BagMixin):
         self.bag_start = None
         self.finish_calls = 0
         self._dropped: list[dict[str, Any]] = []
+        self._levelled: list[dict[str, Any]] = []      # sheets level_check was given
         self._sheet_calls: list[bool] = []
         self._sheet_queue: list[dict[str, Any] | None] = []
         self._sheet_fixed: dict[str, Any] | None = None
@@ -115,6 +116,9 @@ class Bot(BagMixin):
 
     def drop_time_check(self, sheet: dict[str, Any]) -> None:
         self._dropped.append(sheet)
+
+    def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
+        self._levelled.append(sheet)
 
     def finish(self) -> None:
         self.finish_calls += 1
@@ -363,6 +367,13 @@ def test_bag_check_ignores_a_sheet_with_no_load_limit() -> None:
     assert b.bag_check() is False
     b._sheet_fixed = {"load": -1, "maxload": 100}
     assert b.bag_check() is False
+
+
+def test_bag_check_gives_every_sheet_to_the_drop_time_and_the_level_checks() -> None:
+    b = Bot()
+    b._sheet_fixed = {"load": 50, "maxload": 100, "xp_needed": 250000}
+    b.bag_check()
+    assert b._dropped == [b._sheet_fixed] and b._levelled == [b._sheet_fixed]
 
 
 def test_bag_check_leaves_a_bag_below_the_mark_alone() -> None:

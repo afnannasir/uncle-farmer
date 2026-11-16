@@ -292,6 +292,15 @@ class ProfileDialog(Dialog):
         self.xp_card_pause = f.check(_("Pause the card while a&way from the monsters: town trips, the walk back after a "
                                        "death, the end of farming (each pause costs a minute of the card; never in a "
                                        "dungeon)"), p.get("xp_card_pause", False))
+        f = group(panel, box, _("Drop time and experience"))
+        self.drop_stop, self.drop_keep = f.optional(
+            _("Stop when the day's drop &time runs out"), p.get("stop_on_drop_time", True),
+            _("Drop time to save (minutes):"), p.get("drop_keep_minutes", 0), 0, 1440)
+        self.level_stop, self.level_keep = f.optional(
+            _("Stop bef&ore the next level (never inside a dungeon: there it only says so)"),
+            p.get("stop_before_level", False),
+            _("Stop when the next level needs less than (experience):"),
+            max(1, int(p.get("level_keep_xp", 100000) or 100000)), 1, settings.LEVEL_KEEP_MOST)
         f = group(panel, box, _("Gear"))
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
@@ -549,6 +558,10 @@ class ProfileDialog(Dialog):
         p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
         p["xp_card_name"] = self.xp_card_values[max(0, self.xp_card.GetSelection())]
         p["xp_card_pause"] = self.xp_card_pause.GetValue()
+        p["stop_on_drop_time"] = self.drop_stop.GetValue()
+        p["drop_keep_minutes"] = self.drop_keep.GetValue()
+        p["stop_before_level"] = self.level_stop.GetValue()
+        p["level_keep_xp"] = self.level_keep.GetValue()
         p["repair_with"] = "toolbox" if self.repair.GetValue() else "off"
         p["stop_when_gear_broken"] = self.gear_stop.GetValue()
         for kind, ui in self.potion_ui.items():

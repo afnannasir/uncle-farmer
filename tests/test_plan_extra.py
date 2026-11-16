@@ -240,3 +240,11 @@ def test_to_script_keeps_the_plans_own_drop_time(label: str) -> None:
     assert "end_at start\nkeep_drop 60\n" in plan.to_script(p)
     p["drop_keep_minutes"] = 0
     assert "keep_drop" not in plan.to_script(p)       # 0: the character's own setting
+
+
+def test_to_script_keeps_the_plans_own_level_stop(label: str) -> None:
+    p = a_plan()
+    p["level_keep_xp"] = 500000
+    assert "\nkeep_level 500000\n" in plan.to_script(p)
+    p["level_keep_xp"] = 0
+    assert "keep_level" not in plan.to_script(p)      # 0: the character's own setting
