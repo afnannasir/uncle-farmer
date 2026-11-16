@@ -53,6 +53,13 @@
 - **Stop when the day's drop time runs out** and **Drop time to save** moved from Bag and
   supplies, Full bag, to the same new group in Character, Settings, Fighting, beside the other
   reasons to stop. Your settings stay as they were.
+**From a secret room, the nearest shop is the one outside the door**
+
+- A run that started inside a secret room chose its Shard Broker, storehouse or other shop as if
+  every city were as far: leaving a secret room puts you back where you came in, which the map
+  data can't say. A room entered from Tulip City sent the bot by cable car to central plains'
+  Shard Broker, right past Tulip City's. It now leaves the room first, then picks the nearest one
+  from where it comes out, as it already did from a gang base.
 
 **XP loser stays in all mode, and puts your PK mode back**
 
