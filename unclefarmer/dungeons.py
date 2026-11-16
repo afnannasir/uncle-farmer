@@ -71,6 +71,8 @@ def not_found() -> list[dict[str, Any]]:
 def find(name: str | None) -> dict[str, Any] | None:
     """The entrance for a dungeon name (or its NPC's name); None if unknown or ambiguous."""
     want = _norm(name)
+    if not want:
+        return None           # an empty name would match every entrance with no NPC listed
     hits = [e for e in entrances() if want in (_norm(e["name"]), _norm(e.get("npc")))]
     return hits[0] if len(hits) == 1 else None
 

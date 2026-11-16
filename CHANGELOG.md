@@ -26,6 +26,17 @@
   "Anger (Aggressive)" rank that was missing.
   These are the talents a gang develops at its Head of inner hall (gang Affairs Management, Gang
   Skill Management), three per gang at most.
+**Fourteen more dungeon entrances placed**
+
+- The entrances of fourteen dungeons are in the dungeon list now, read in the game: the walking
+  assistant goes straight to them instead of trying each entrance marked on the map.
+- Three of them couldn't be found before: open sea, space battleship and Treasure pavilion
+  stand in the south-east of far off regions, far from the two entrances the game's files mark
+  there ("none of the entrances marked on far off regions is the open sea circle").
+- Lisa's Ukulele has no circle: you go in by talking to Villager Lisa, which the bot now knows.
+- The others: Dryad Jungle, zagrama canyon, Machine Fortress, Silver Peak, bottomless pit
+  (Valley of Luxuriant forests), fully mountain, Machining plant (far off regions), graceful
+  mountain (water curtained cave), Baru Grottoe and Elemental Maze (thousand miles of rivers).
 
 **XP loser stays in all mode, and puts your PK mode back**
 
