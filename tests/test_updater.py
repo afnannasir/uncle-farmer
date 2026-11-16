@@ -72,7 +72,7 @@ class Resp:
 
 def release(**over: Any) -> dict[str, Any]:
     rel: dict[str, Any] = {"tag_name": "v0.3.0", "body": "  notes here \n", "draft": False, "prerelease": False,
-           "assets": [{"name": "UncleFarmer-0.3.0.zip", "size": 123, "digest": "sha256:ABCdef",
+           "assets": [{"name": "UncleFarmer-0.3.0.zip", "size": 123, "digest": "sha256:" + "ABCdef" * 10 + "ABCD",
                        "state": "uploaded", "browser_download_url": "https://example/dl.zip", "url": "https://api/asset"}]}
     rel.update(over)
     return rel
@@ -183,7 +183,7 @@ def test_latest_reads_a_public_release(monkeypatch: pytest.MonkeyPatch) -> None:
     got = updater.latest()
     assert got == {"version": "0.3.0", "tag": "v0.3.0", "notes": "notes here",
                    "asset": "UncleFarmer-0.3.0.zip", "size": 123,
-                   "url": "https://example/dl.zip", "sha256": "abcdef"}
+                   "url": "https://example/dl.zip", "sha256": ("abcdef" * 10 + "abcd")}
 
 
 def test_latest_with_a_token_uses_the_api_asset_url(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -193,7 +193,7 @@ def test_latest_with_a_token_uses_the_api_asset_url(monkeypatch: pytest.MonkeyPa
     got = updater.latest()
     assert got is not None
     assert got["url"] == "https://api/asset"
-    assert got["sha256"] == "abcdef"
+    assert got["sha256"] == "abcdef" * 10 + "abcd"
 
 
 def test_latest_without_a_digest_has_no_checksum(monkeypatch: pytest.MonkeyPatch) -> None:

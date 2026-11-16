@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+**Safer updates**
+
+- Uncle Farmer no longer seems to freeze after a download: the update is prepared in the
+  background ("Preparing the update to ..."), and the window closes by itself once it is ready.
+  Closing it meanwhile waits for that, and pressing Update again starts nothing twice.
+- A connection cut in the middle of GitHub's answer is now an ordinary "update check failed"
+  instead of silently ending the update check.
+- A read-only file in the Uncle Farmer folder (for example data/game_texts.json) stopped every
+  update half-way, after a minute of retries. The update now names the file at once, changes
+  nothing, and works again once the file is writable. Read-only leftovers of such a failed try no
+  longer block later updates.
+- Leftovers of an earlier update are cleaned up reliably: a stale "update in use" note of this
+  copy, or of a long-gone program that Windows gave the same process number, no longer keeps
+  the update folder for hours.
+- An Uncle Farmer folder whose name has brackets in it ("Uncle Farmer [2]") is no longer taken
+  for an incomplete copy.
+- An update archive far larger than any release, or one the disk has no room for, is refused
+  before it is unpacked; a checksum GitHub gives in an unexpected shape stops the update instead
+  of being skipped.
+
 **XP loser attacks the guard with your basic attack**
 
 - The XP loser pressed whatever skill was on your first attack key, once. For a Hunter that is

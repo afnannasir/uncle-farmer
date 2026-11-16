@@ -18,8 +18,7 @@ The bootstrap has three modes:
 
 - `bootstrap.exe --update <copier> <pid> <version> <token>`: how the app starts an
   update. The bootstrap checks that `<copier>` is `UncleFarmer.exe` inside this
-  installation's `update
-ew` folder, runs it as
+  installation's `update/new` folder, runs it as
   `--apply-update <app> <pid> <version> <token> --bootstrap` inside a
   kill-on-close job (the app's cancel ends the bootstrap and with it the paused
   copier) and waits for it. The copier waits for the old app `<pid>` to exit and
@@ -191,7 +190,24 @@ and [file caching documentation](https://learn.microsoft.com/en-us/windows/win32
 Path checks are repeated, but are not a handle-relative security system against a
 separate malicious writer racing every filesystem operation. Unsupported long-path
 or access/readonly restrictions fail safely; no broader long-path policy or ACL
-changes are made by this feature. Permanent disk failure, loss of the rescue runtime
+changes are made by this feature.
+
+Read-only files are refused, on purpose, before anything is copied. Every copy an
+update makes (the rescue runtime, the prepared release, the verified backups,
+including the preserved `data/game_texts.json` and `agent/run`) is flushed with
+`FlushFileBuffers`, which Windows allows only through a handle that may write, so a
+read-only file among the entries an update copies could only be made durable by
+changing the player's attribute, which the updater never does. The installation step
+checks only the entries it backs up and replaces, so a read-only file it never touches
+(the player's own note beside the exe) does not stop it; the one-time rescue runtime
+copies everything but the player's folders, so its preparation names such a file too.
+Both the app (before it closes)
+and the copier (before the journal begins) name such files and stop with nothing
+changed; the player makes them writable and updates again. Read-only copies left in
+`.recovery` by an older version's failed attempt are made writable and removed
+when that finished transaction is cleaned up, so they never block a later update.
+
+Permanent disk failure, loss of the rescue runtime
 and all valid journals/plans, or permanently blocked restoration may require manual
 recovery from retained files. Never remove `.recovery` to bypass a failed recovery.
 

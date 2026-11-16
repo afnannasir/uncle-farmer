@@ -100,9 +100,11 @@ def _hand_to_bootstrap(app: str, recovered: bool) -> None:
     in a row: when bootstrap.exe has just recovered and the update is still unfinished, say so."""
     import os
     import subprocess
-    from . import update_recovery as recovery
+    from . import update_recovery as recovery, updater
     bootstrap = os.path.join(app, recovery.BOOTSTRAP)
-    if not recovered and os.path.isfile(bootstrap):
+    # Only a current bootstrap (its protocol marker) speaks --relaunch: an older one would take it
+    # for an app argument and start this app again, which hands back again, in a loop.
+    if not recovered and updater.is_bootstrap(bootstrap):
         try:
             subprocess.Popen([bootstrap, "--relaunch", str(os.getpid())], cwd=app, close_fds=True,
                              creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
