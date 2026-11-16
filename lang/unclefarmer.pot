@@ -4679,6 +4679,9 @@ msgstr ""
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr ""
 
+msgid "couldn't confirm the repair with a {tool} - not marked repaired"
+msgstr ""
+
 msgid "couldn't finish at the game's end: {err}"
 msgstr ""
 

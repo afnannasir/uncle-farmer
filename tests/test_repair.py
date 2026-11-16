@@ -11,6 +11,7 @@ from unclefarmer import settings
 from unclefarmer.engine import repair
 from unclefarmer.engine.botparts.base import Stopped
 from typing import Any
+from collections.abc import Callable
 
 
 class Link:
@@ -18,8 +19,11 @@ class Link:
         self.equipment = [dict(r) for r in (equipment or [])]
         self.wear = wear                    # None: an agent with no `wear` support
         self.wear_seen = 0
+        self.bag_reader: Callable[[], list[dict[str, Any]]] = lambda: []
 
     def json(self, line: str) -> Any:
+        if line == "mem bag":
+            return self.bag_reader()
         if line == "mem equipment":
             return [dict(r) for r in self.equipment]
         if line.startswith("wear "):
@@ -52,6 +56,7 @@ class Bot:
         self.choose_ret: dict[str, Any] | None = {"text": "picked"}
         self.closed = 0
         self.notes: list[str] = []
+        link.bag_reader = self.bag_rows
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -86,6 +91,14 @@ class Bot:
 
     def choose(self, pat: str) -> dict[str, Any] | None:
         self.chosen.append(pat)
+        if self.choose_ret is not None:
+            # A successful fake server response consumes the selected toolbox.
+            # Rejected/unchanged responses have separate regression fixtures.
+            name = self.used or next((n for n, k in self.hotkeys.items() if k in self.keys), "")
+            for row in self.bag:
+                if (row.get("name") or "").lower() == name.lower():
+                    row["count"] -= 1
+                    break
         return self.choose_ret
 
     def sleep(self, s: float) -> None:
@@ -207,6 +220,7 @@ def test_repair_succeeds_with_a_hotkey_toolbox() -> None:
     b = Bot(Link([{"uid": 1, "name": "Sword", "equipped": 1}], None))
     b.hotkeys = {"small toolbox": "4"}
     b.bag = [{"name": "Small Toolbox", "count": 2}]
+    b.last_me = {"sheet": {"level": 50}}  # the Small Toolbox covers this gear
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
     b.gear.warned = {1: "low"}
     assert repair.repair(as_bot(b)) is True
@@ -251,6 +265,7 @@ def test_repair_bag_toolbox_used_between_fights() -> None:
     b = Bot(Link([{"uid": 1, "name": "Sword", "equipped": 1}], None))
     b.in_fight = False
     b.bag = [{"name": "Small Toolbox", "count": 1}]
+    b.last_me = {"sheet": {"level": 50}}  # the Small Toolbox covers this gear
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
     assert repair.repair(as_bot(b)) is True
     assert b.used == "Small Toolbox"
@@ -278,7 +293,7 @@ def test_repair_nothing_to_do_clears_the_warning() -> None:
     b.wait_dialog_out = dlg("No repairable equipment")
     b.gear.warned = {1: "low"}
     assert repair.repair(as_bot(b)) is False
-    assert b.gear.warned == {} and b.gear.repaired_at > 0
+    assert b.gear.warned == {} and b.gear.repaired_at == 0  # no repair was performed
 
 
 def test_repair_too_high_fails() -> None:
@@ -349,6 +364,7 @@ def test_check_repairs_on_a_warning(monkeypatch: pytest.MonkeyPatch) -> None:
                  [{"uid": 1, "t": 1_000_500, "broken": False}]))
     b.hotkeys = {"small toolbox": "4"}
     b.bag = [{"name": "Small Toolbox", "count": 1}]
+    b.last_me = {"sheet": {"level": 50}}  # the Small Toolbox covers this gear
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
     assert repair.check(as_bot(b)) is True
     assert b.gear.repaired_at == clock.now
@@ -365,6 +381,7 @@ def test_check_repairs_again_after_the_gap(monkeypatch: pytest.MonkeyPatch) -> N
                  [{"uid": 1, "t": 1_000_500, "broken": False}]))
     b.hotkeys = {"small toolbox": "4"}
     b.bag = [{"name": "Small Toolbox", "count": 2}]
+    b.last_me = {"sheet": {"level": 50}}  # the Small Toolbox covers this gear
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
     assert repair.check(as_bot(b)) is True
     clock.advance(repair.AFTER_REPAIR + 1)
@@ -389,6 +406,7 @@ def test_check_waits_after_a_failed_repair(monkeypatch: pytest.MonkeyPatch) -> N
 def tool_run(link: Link) -> Bot:
     """A tool's run on the same game: a new bot, the same agent (its warnings kept)."""
     b = Bot(link)
+    b.last_me = {"sheet": {"level": 75}}
     b.hotkeys = {"large toolbox": "6"}
     b.bag = [{"name": "Large Toolbox", "count": 3}]
     b.wait_dialog_out = dlg("Do you want to repair all the equipment that is already equipped?")
