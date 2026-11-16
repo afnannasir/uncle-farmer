@@ -350,6 +350,12 @@ class ProfileDialog(Dialog):
                                             "old trigger ticks; OK saves this list in its place.",
                                             stage=_("Before farming") if stage == "before" else _("After farming"),
                                             err=e))
+            if stage == "before":
+                self.skip_before = wx.CheckBox(child, label=_(
+                    "Skip this list when the run starts on its first farming &map (a Stop, then a start "
+                    "again where it was farming)"))
+                self.skip_before.SetValue(bool(self.p.get("skip_before_on_farm", False)))
+                body.Add(self.skip_before, 0, wx.BOTTOM, 6)
             editor = SequenceEditor(child, cfg)
             self.trigger_editors[stage] = editor
             body.Add(editor, 1, wx.EXPAND)
@@ -560,6 +566,7 @@ class ProfileDialog(Dialog):
         p["speed_beast"] = self.speed_values[max(0, self.speed_beast.GetSelection())]
         p["end_with_hearthstone"] = self.end_hearth.GetValue()
         p["trigger_sequences"] = {stage: editor.value() for stage, editor in self.trigger_editors.items()}
+        p["skip_before_on_farm"] = self.skip_before.GetValue()
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()

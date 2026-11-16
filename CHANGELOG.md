@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**A start again on the farm goes straight back to farming**
+
+- Character settings, Triggers, Before farming has a new tick, **Skip this list when the run
+  starts on its first farming map** (off by default). After a Stop, starting the plan again where
+  the character was farming used to run the whole Before farming list first - Update shard prices
+  always walks to a Shard Broker, so that was a trip to town and back every time. With the tick,
+  a run that starts on its first farming map leaves the list out and says so.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode

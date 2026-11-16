@@ -449,6 +449,14 @@ There are independent **Before farming** and **After farming** lists. Enabled ac
 top to bottom, one at a time. Use **Move up** and **Move down** to change that order. Existing
 profiles keep their enabled jobs and original order until you edit them.
 
+Above the Before farming list, **Skip this list when the run starts on its first farming map**
+(off by default) is for a Stop and a start again where the character was farming: when the run
+starts on the map its plan farms first (the first spot of the plan, or the first `farm` line of a
+script), the Before farming list is left out and farming starts at once, instead of a trip to
+town and back. The log says "already on Margit Rainforest (5281), where this run farms first -
+the Before farming list is skipped". A run that starts anywhere else, or one that first goes into
+a dungeon, runs the list as usual. The After farming list isn't affected.
+
 Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
 or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
 delay begins only after that action completes successfully and applies before the next enabled

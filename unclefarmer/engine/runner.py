@@ -15,7 +15,7 @@ import time
 from collections.abc import Callable
 from typing import Any
 
-from .. import applog, daily, gameinstall, phrases, scan, settings, stats, trust
+from .. import applog, atlas, daily, gameinstall, phrases, scan, settings, stats, trust
 from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
@@ -370,7 +370,7 @@ class Run(threading.Thread):
             text = dungeon.script(dungeon.config(bot.p))  # preserve the tool's saved ending place too
         script = Runner(bot, text)          # read first: a script that doesn't parse does nothing
         if kind not in ("errand", "tool") and not self.walk:
-            if triggers.farms(script.main, script.subs):
+            if triggers.farms(script.main, script.subs) and not self._on_the_farm(bot, script):
                 self._before_farming()
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
@@ -409,6 +409,21 @@ class Run(threading.Thread):
                 self.ended_by_itself = (not self.stop_event.is_set() and not getattr(e, "stay", False)
                                         and not getattr(e, "asked", False))
         return reason
+
+    @staticmethod
+    def _on_the_farm(bot: Bot, script: Runner) -> bool:
+        """With "Skip this list when the run starts on its first farming map" ticked: the run
+        starts on the map it farms first (a Stop and a start again where it was farming), so the
+        Before farming list - often a trip to town and back - is left out. True (and said) then."""
+        if not bot.p.get("skip_before_on_farm", False):
+            return False
+        first = triggers.first_farm_map(script.main, script.subs)
+        here = bot.map_id()
+        if first is None or first not in (triggers.HERE, here):
+            return False
+        bot.log(_("already on {map}, where this run farms first - the Before farming list is skipped",
+                  map=atlas.label(here)))
+        return True
 
     def _before_farming(self) -> None:
         """Run the saved preparation sequence once. An ordinary unchecked failure is logged;

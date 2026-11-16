@@ -77,6 +77,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "stop_on_drop_time": True,  # end the run when the day's drop time is down to drop_keep_minutes
     "drop_keep_minutes": 0,   # drop time to leave unused (minutes)
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
+    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -265,6 +266,7 @@ class Profile(BaseModel):
     stop_on_drop_time: bool = PROFILE_DEFAULTS["stop_on_drop_time"]
     drop_keep_minutes: int = PROFILE_DEFAULTS["drop_keep_minutes"]
     drop_tail_seconds: int = PROFILE_DEFAULTS["drop_tail_seconds"]
+    skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]

@@ -3213,6 +3213,10 @@ msgstr ""
 msgid "Skinning"
 msgstr ""
 
+msgid ""
+"Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
+msgstr ""
+
 msgid "Snow mountain prince"
 msgstr ""
 
@@ -4376,6 +4380,10 @@ msgid "already inside {cave}"
 msgstr ""
 
 msgid "already inside {cave}: hunting until the game moves us out"
+msgstr ""
+
+msgid ""
+"already on {map}, where this run farms first - the Before farming list is skipped"
 msgstr ""
 
 msgid "area attack"
