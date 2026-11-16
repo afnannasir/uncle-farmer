@@ -93,6 +93,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.scanning = set()    # characters being scanned on a worker thread
         self.pending_logins = {} # profile -> when automatic login opened its client
         self.updating = False
+        self.preparing_update = False   # the update copier is being started on a worker (updates.py)
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
         self.hotkeys: list[int] = []     # the global hotkeys this window holds
 
@@ -448,6 +449,13 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         down = applog.teardown
         down.begin("close requested (%s)" % (self.close_reason or (
             "the window" if evt.CanVeto() else "Windows is ending the session")))
+        if getattr(self, "preparing_update", False) and evt.CanVeto():
+            # the copier is being started (updates.py): the window closes by itself once it is ready,
+            # and a close now would leave a paused copier nobody authorizes or cancels
+            evt.Veto()
+            self.say(_("The update is being prepared: Uncle Farmer closes by itself in a moment."))
+            down.end("cancelled: an update is being prepared")
+            return
         if self.runs:
             if not ask(self, _("A bot is running. Stop it and quit?")):
                 evt.Veto()

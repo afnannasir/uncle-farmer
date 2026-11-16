@@ -649,7 +649,7 @@ def test_the_app_hands_an_unfinished_update_to_the_bootstrap(
         trees: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch) -> None:
     from unclefarmer import __main__ as entry
     app, _ = trees
-    (app / recovery.BOOTSTRAP).write_bytes(b"bootstrap")
+    (app / recovery.BOOTSTRAP).write_bytes(b"bootstrap " + updater.BOOTSTRAP_MARKER)
     recovery.begin(str(app), "0.4.0", "0.5.0", "DOWNLOADING")        # an interrupted, unfinished update
     launched: list[list[str]] = []
     def popen(args: list[str], **kwargs: object) -> None:
@@ -670,7 +670,7 @@ def test_the_app_never_hands_the_update_back_right_after_a_recovery(
     import ctypes
     from unclefarmer import __main__ as entry, paths
     app, _ = trees
-    (app / recovery.BOOTSTRAP).write_bytes(b"bootstrap")
+    (app / recovery.BOOTSTRAP).write_bytes(b"bootstrap " + updater.BOOTSTRAP_MARKER)
     recovery.begin(str(app), "0.4.0", "0.5.0", "DOWNLOADING")
     launched: list[list[str]] = []
     shown: list[str] = []
