@@ -364,3 +364,83 @@ def test_step_editor_exposes_per_action_strictness_and_validates_delay() -> None
         with pytest.raises(ValueError):
             editor.read()
     app.ProcessPendingEvents()
+
+
+@pytest.mark.parametrize("mouse", [False, True])
+def test_trigger_context_actions_edit_toggle_and_remove_selected_row(monkeypatch: pytest.MonkeyPatch, mouse: bool) -> None:
+    app = wx.GetApp() or wx.App(False)
+    parent = wx.Frame(None)
+    editor = gui.SequenceEditor(parent, profile(triggers.step("restock"), triggers.step("clean_bag", 7, deterministic=True))["trigger_sequences"]["before"])
+    entries: list[Any] = []
+    def capture_actions(owner: wx.Window, actions: list[gui.ContextAction]) -> None:
+        entries.extend(actions)
+    monkeypatch.setattr(gui, "popup_actions", capture_actions)
+    editor.list.SetSelection(0 if mouse else 1)
+    event = wx.ContextMenuEvent(wx.EVT_CONTEXT_MENU.typeId)
+    if mouse:
+        monkeypatch.setattr(editor.list, "HitTest", returning(1))
+        event.SetPosition(editor.list.ClientToScreen(wx.Point(5, 5)))
+    else:
+        event.SetPosition(wx.DefaultPosition)
+    editor.context_menu(event)
+    assert editor.list.GetSelection() == 1
+    assert len(entries) == 3 and all(action[2] for action in entries)
+    rows = editor.value()["steps"]
+    class EditDialog:
+        def __init__(self, parent: Any, row: dict[str, Any]) -> None:
+            assert row == rows[1]
+            self.fields = dict(row, delay=12)
+        def __enter__(self) -> Any:
+            return self
+        def __exit__(self, *args: Any) -> None:
+            pass
+        def ShowModal(self) -> int:
+            return wx.ID_OK
+    monkeypatch.setattr(gui, "StepEditor", EditDialog)
+    entries[0][1](wx.CommandEvent())
+    assert editor.rows[1]["delay"] == 12 and editor.rows[1]["deterministic"]
+    entries[1][1](wx.CommandEvent())
+    assert not editor.rows[1]["enabled"] and editor.rows[0] == rows[0]
+    entries[2][1](wx.CommandEvent())
+    assert editor.value()["steps"] == [rows[0]]
+    buttons = [child.GetLabel() for child in editor.GetChildren() if isinstance(child, wx.Button)]
+    assert len(buttons) == 3  # Add, Move up, Move down
+    parent.Destroy()
+    app.ProcessPendingEvents()
+
+
+def test_empty_trigger_context_actions_are_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = wx.GetApp() or wx.App(False)
+    parent = wx.Frame(None)
+    editor = gui.SequenceEditor(parent, {"steps": []})
+    entries: list[Any] = []
+    def capture_actions(owner: wx.Window, actions: list[gui.ContextAction]) -> None:
+        entries.extend(actions)
+    monkeypatch.setattr(gui, "popup_actions", capture_actions)
+    event = wx.ContextMenuEvent(wx.EVT_CONTEXT_MENU.typeId)
+    event.SetPosition(wx.DefaultPosition)
+    editor.context_menu(event)
+    assert len(entries) == 3 and not any(action[2] for action in entries)
+    parent.Destroy()
+    app.ProcessPendingEvents()
+
+
+def test_main_menu_has_no_plans_menu_and_retains_plan_shortcuts(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui.main import MainFrame
+    app = wx.GetApp() or wx.App(False)
+    frame = MainFrame.__new__(MainFrame)
+    wx.Frame.__init__(frame, None)
+    monkeypatch.setattr(frame, "sync_action_menus", returning(None))
+    captured: list[tuple[int, int]] = []
+    real_table = wx.AcceleratorTable
+    def capture(entries: Any) -> Any:
+        captured.extend((e.GetFlags(), e.GetKeyCode()) for e in entries)
+        return real_table(entries)
+    monkeypatch.setattr(wx, "AcceleratorTable", capture)
+    frame.build_menu()
+    assert frame.GetMenuBar().FindMenu("Plans") == wx.NOT_FOUND
+    assert "plans" not in frame.action_menus
+    assert (wx.ACCEL_CTRL, ord("N")) in captured
+    assert (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("N")) in captured
+    frame.Destroy()
+    app.ProcessPendingEvents()

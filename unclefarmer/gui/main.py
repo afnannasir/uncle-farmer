@@ -309,12 +309,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("C&hat"), lambda e: self.open_chat(), "Ctrl+T"),
                          command(_("Let everyone get replies &again"), lambda e: self.forget_answered())],
                          ("messages_private", "messages_chat", "messages_reset"))
-        plans = menu(_("&Plans"), [command(_("&New plan"), lambda e: self.new_plan(), "Ctrl+N"),
-                                    command(_("New &script"), lambda e: self.new_script(), "Ctrl+Shift+N")],
-                     ("plans_new", "plans_new_script"))
         self.action_menus = {"run": run_menu, "game": game_menu, "messages": messages_menu,
-                             "character": character, "tools": tools_menu,
-                             "plans": plans}
+                             "character": character, "tools": tools_menu}
         for current in self.action_menus.values():
             current.Bind(wx.EVT_MENU_OPEN, self.sync_action_menus)
         menu(_("&Help"), [command(_("&Quick guide"), lambda e: show_text(self, _("Quick guide"), GUIDE), "F1"),
@@ -332,12 +328,16 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
                                                                         v=__version__)))])
         self.SetMenuBar(bar)
-        plan_shortcuts: list[tuple[int, Handler]] = [(ord("E"), lambda e: self.edit_selected()),
-                                                     (ord("D"), lambda e: self.copy_plan())]
-        for key, handler in plan_shortcuts:
+        plan_shortcuts: list[tuple[int, int, Handler]] = [
+            (wx.ACCEL_CTRL, ord("E"), lambda e: self.edit_selected()),
+            (wx.ACCEL_CTRL, ord("D"), lambda e: self.copy_plan()),
+            (wx.ACCEL_CTRL, ord("N"), lambda e: self.new_plan()),
+            (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("N"), lambda e: self.new_script()),
+        ]
+        for flags, key, handler in plan_shortcuts:
             command_id = wx.Window.NewControlId()
             self.Bind(wx.EVT_MENU, handler, id=command_id)
-            accelerators.append(wx.AcceleratorEntry(wx.ACCEL_CTRL, key, command_id))
+            accelerators.append(wx.AcceleratorEntry(flags, key, command_id))
         self.SetAcceleratorTable(wx.AcceleratorTable(accelerators))
         self.Bind(wx.EVT_WINDOW_DESTROY, self.destroy_context_menu)
         self.sync_action_menus()
