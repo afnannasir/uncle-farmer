@@ -1000,6 +1000,87 @@ def test_a_plans_drop_time_to_save_beats_the_characters() -> None:
     assert finished == [True]
 
 
+# ========================================================== level_check ("Stop before the next level")
+def test_level_stop_off_does_nothing() -> None:
+    b = Farm(profile={"stop_before_level": False})
+    b.finish = lambda: pytest.fail("finish must not run")
+    b.level_check({"xp_needed": 5})
+    assert b.level_goal() is None and b.lines == []
+
+
+def test_level_stop_says_once_how_far_the_next_level_is() -> None:
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    b.finish = lambda: pytest.fail("finish must not run")
+    b.level_check({"xp_needed": 250000})
+    assert any("the next level needs 250000 experience; farming stops under 100000" in line for line in b.lines)
+    n = len(b.lines)
+    b.level_check({"xp_needed": 240000})
+    assert len(b.lines) == n
+
+
+def test_level_stop_ends_the_run_under_the_goal() -> None:
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    finished: list[bool] = []
+    b.finish = lambda: finished.append(True)
+    with pytest.raises(Stopped) as e:
+        b.level_check({"xp_needed": 99999})
+    assert "stopped before the next level" in str(e.value)
+    assert finished == [True]
+    assert any("the next level needs only 99999 experience - going somewhere safe and stopping" in line
+               for line in b.spoken)
+
+
+def test_level_stop_does_nothing_at_the_top_level_or_without_a_reading() -> None:
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    b.finish = lambda: pytest.fail("finish must not run")
+    for sheet in ({}, {"xp_needed": -1}, {"xp_needed": None}):
+        b.level_check(sheet)
+    assert b.lines == []
+
+
+def test_level_stop_inside_a_dungeon_only_says_so_once() -> None:
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    b.finish = lambda: pytest.fail("a dungeon visit must not be left")
+    b.level_check({"xp_needed": 5000}, inside=True)
+    b.level_check({"xp_needed": 4000}, inside=True)
+    said = [line for line in b.spoken if "the dungeon goes on" in line]
+    assert len(said) == 1 and "needs only 5000 experience" in said[0]
+
+
+def test_a_run_too_close_to_the_next_level_does_not_set_out() -> None:
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    b.refresh_sheet = lambda force=False: {"xp_needed": 60000}
+    b.finish = lambda: pytest.fail("nothing ran: no end place")
+    with pytest.raises(Stopped) as e:
+        b.level_before_start()
+    assert e.value.stay is True                                  # stays where it is
+    assert any("not starting to farm" in line for line in b.spoken)
+
+
+def test_a_run_far_from_the_next_level_sets_out() -> None:
+    for profile, need in (({"stop_before_level": True, "level_keep_xp": 100000}, 250000),
+                          ({"stop_before_level": True, "level_keep_xp": 100000}, -1),
+                          ({"stop_before_level": False}, 5)):
+        b = Farm(profile=profile)
+        b.refresh_sheet = lambda force=False, need=need: {"xp_needed": need}
+        b.level_before_start()                                   # no Stopped
+        assert b.spoken == []
+
+
+def test_a_plans_level_stop_beats_the_characters() -> None:
+    b = Farm(profile={"stop_before_level": False, "level_keep_xp": 100000})
+    b.level_keep = 500000                     # keep_level 500000 from the plan
+    b.finish = lambda: None
+    assert b.level_goal() == 500000
+    with pytest.raises(Stopped):
+        b.level_check({"xp_needed": 400000})
+    b = Farm(profile={"stop_before_level": True, "level_keep_xp": 100000})
+    b.level_keep = 0                          # keep_level 0: no such stop this run
+    b.finish = lambda: pytest.fail("finish must not run")
+    assert b.level_goal() is None
+    b.level_check({"xp_needed": 5})
+
+
 # ================================================================== a dungeon (instance=True)
 def instance_loop(bot: Farm, passes: int=1, map_id: int=1, loop: list[tuple[int, int]] | None=None, last_supply_check: float | None=None) -> None:
     bot.in_instance = True

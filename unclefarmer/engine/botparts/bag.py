@@ -258,6 +258,7 @@ class BagMixin(Parts):
         if not sheet:
             return False
         self.drop_time_check(sheet)
+        self.level_check(sheet)
         if not sheet.get("maxload") or sheet["maxload"] <= 0 or sheet.get("load", -1) < 0:
             return False
         full = self.p.get("bag_full_at", 100)

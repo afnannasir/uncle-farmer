@@ -70,6 +70,8 @@ class Game:
         self.left = 0
         self.slept: list[float] = []
         self.move_shots = False
+        self.goal: int | None = None          # what level_goal answers ("Stop before the next level")
+        self.xp_needed = -1                   # the sheet's "upgrading requires N experience" (-1: none)
 
     def sleep(self, seconds: float) -> None:
         self.slept.append(seconds)
@@ -78,8 +80,11 @@ class Game:
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
 
+    def level_goal(self) -> int | None:
+        return self.goal
+
     def refresh_sheet(self, force: bool=False) -> dict[str, Any] | None:
-        return {"level": self.level}
+        return {"level": self.level, "xp_needed": self.xp_needed}
 
     def me(self) -> dict[str, Any]:
         return {"level": self.level}
@@ -314,6 +319,31 @@ def test_a_cave_above_the_characters_level_is_said_and_not_tried(shop: None) -> 
     assert g.walked == [] and any("needs level 60" in line for line in g.lines)
     dungeon.run(as_bot(g), dungeon.config({}))              # the best it can: Spider cave
     assert g.walked == ["Spider cave"]
+
+
+def test_a_cave_is_not_gone_into_when_the_next_level_is_close(shop: None) -> None:
+    # "Stop before the next level": a visit gives a lot of experience and can't be stopped inside
+    bag = {"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40}
+    g = Game(bag=bag)
+    g.character = "Close to a level"
+    g.goal, g.xp_needed = 100000, 40000
+    assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}})) == []
+    assert g.walked == [] and g.restocks == []
+    assert any("the next level needs only 40000 experience - not going into Spider cave" in line
+               for line in g.lines)
+    assert dungeon.done_today("Close to a level") == []       # the day's cave is still to use
+
+
+def test_a_cave_is_gone_into_when_the_next_level_is_far_or_there_is_no_such_stop(shop: None) -> None:
+    bag = {"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40}
+    for name, goal, need in (("Far from a level", 100000, 500000), ("No level stop", None, 10),
+                             ("Top level", 100000, -1)):
+        g = Game(bag=dict(bag))
+        g.character = name
+        g.goal, g.xp_needed = goal, need
+        g._enter()
+        dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+        assert g.walked == ["Spider cave"], name
 
 
 def test_check_only_says_where_it_would_go_and_goes_nowhere(shop: None) -> None:

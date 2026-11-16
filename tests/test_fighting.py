@@ -2298,3 +2298,10 @@ def test_an_approach_that_ends_on_another_map_blames_no_one(clock: Clock) -> Non
     assert b._approach(mob, way) is None
     assert b.lines == []                                  # not "taken by someone else"
     assert b.skip == {}
+
+
+@pytest.mark.parametrize("channel", ["Pyroblast", "Blazing Storm"])
+def test_elf_channel_sends_one_key_without_a_burst(channel: str) -> None:
+    b, f = press_bot(Pick(cls="Elf", pick=("j", channel)))
+    assert b._fight_press(f) is None
+    assert b.keys_pressed == ["j"]

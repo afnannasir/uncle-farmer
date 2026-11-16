@@ -33,6 +33,8 @@ class FarmingMixin(Parts):
     farmed: bool
     bag_start: dict[str, int] | None
     said_drop: bool
+    said_level: bool
+    said_level_inside: bool
     in_instance: bool = False     # farm(instance=True) sets these for its own run
     pack_min: int = 3
     MODE_WAIT = 0.3       # seconds a mode key's press has to show in the game's modes
@@ -264,9 +266,11 @@ class FarmingMixin(Parts):
     def instance_reads(self) -> None:
         """What bag_check reads between fights, without what it may do about it: inside a dungeon
         a full bag or the day's drop time can't send us out - the visit would be lost."""
-        self.refresh_sheet()
+        sheet = self.refresh_sheet()
         if self.tally:
             self.tally.update(self)
+        if sheet:
+            self.level_check(sheet, inside=True)
 
     def share_trip(self, map_id: int) -> bool:
         """Leave the farm for a short secret room visit when one is due (chores.trip_due: just
@@ -316,6 +320,61 @@ class FarmingMixin(Parts):
                    m=max(0, int(left // 60))), speak=True)
         self.finish()
         raise Stopped(_("drop time used up"))
+
+    def level_goal(self) -> int | None:
+        """The experience the next level must still need for farming to go on: this run's
+        (keep_level from a plan or script, 0 = no such stop for this run), else the character's
+        "Stop before the next level"; None when there is no such stop."""
+        plan_keep = getattr(self, "level_keep", None)
+        if plan_keep is not None:
+            return int(plan_keep) or None
+        if not self.p.get("stop_before_level", False):
+            return None
+        return int(self.p.get("level_keep_xp", 0) or 0) or None
+
+    def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
+        """End the run before the next level: the sheet's "upgrading requires N experience"
+        (xp_needed, read after every kill from agent 43) is under the goal. For players who keep a
+        character at its level (the XP loser in the After farming list can then put experience
+        back). Inside a dungeon it only says so, once: leaving would lose the visit. Nothing at
+        the top level (the sheet has no such line: -1)."""
+        goal = self.level_goal()
+        need = sheet.get("xp_needed")
+        if not goal or not isinstance(need, (int, float)) or need < 0:
+            return
+        need = int(need)
+        if need >= goal:
+            if not getattr(self, "said_level", False):
+                self.said_level = True
+                self.log(_("the next level needs {n} experience; farming stops under {goal}", n=need, goal=goal))
+            return
+        if inside:
+            if not getattr(self, "said_level_inside", False):
+                self.said_level_inside = True
+                self.log(_("the next level needs only {n} experience - the dungeon goes on, leaving would "
+                           "lose the visit", n=need), speak=True)
+            return
+        self.log(_("the next level needs only {n} experience - going somewhere safe and stopping", n=need),
+                 speak=True)
+        self.finish()
+        raise Stopped(_("stopped before the next level"))
+
+    def level_before_start(self) -> None:
+        """Before a farming run sets out (before the Before farming list): with the next level
+        already closer than the goal, say so and don't start - otherwise the whole way to the farm
+        is made for the first sheet there to send it back. Stays where it is: nothing ran, so no
+        end place, no After farming list, no closing the game."""
+        goal = self.level_goal()
+        if not goal:
+            return
+        sheet = self.refresh_sheet(force=True) or {}
+        need = sheet.get("xp_needed")
+        if not isinstance(need, (int, float)) or not 0 <= need < goal:
+            return
+        self.log(_("the next level needs only {n} experience - not starting to farm", n=int(need)), speak=True)
+        stop = Stopped(_("stopped before the next level"))
+        stop.stay = True
+        raise stop
 
     def leave_monsters(self) -> None:
         """End a run somewhere no monster spawns: if this map has monster zones, travel to the

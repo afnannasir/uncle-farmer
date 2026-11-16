@@ -253,10 +253,27 @@ def test_visit_from_a_gang_base_with_no_known_way_out_steps_out_first() -> None:
 
 
 def test_visit_from_a_dungeon_leaves_it_to_travel() -> None:
-    b = PlaceBot(201, (10, 10))
+    b = PlaceBot(1503, (10, 10))                 # Spider cave: a travel item may beat its Action menu
     b.leave_to = (CENTRAL, ENTRANCE_1041)
     town.visit(as_bot(b), "storehouse")
     assert b.left == 0 and len(b.travels) == 1
+
+
+TULIP = 1081                                    # Tuneful Wetland, Tulip City's square
+
+
+def test_visit_from_a_secret_room_steps_out_first() -> None:
+    # Live, 2026-11-16: a run started in Hole secret room (206), entered from Tulip City. Every
+    # Shard Broker cost the same "leave" from inside, central plains' won, and the bot rode the
+    # cable car to it - the room had put it back right beside Tulip City's.
+    b = PlaceBot(206, (10, 10))
+    assert crafting.atlas.kind(206) == "secret_room"
+    b.leave_to = (TULIP, (370.0, 175.0))
+    npc = town.visit(as_bot(b), "shard_market")
+    assert b.left == 1
+    assert b.travels == [TULIP]
+    assert npc == next(n[1] for n in knowledge.service_npcs("shard_market") if n[0] == TULIP)
+    assert any("leaving Hole secret room (206) first" in line for line in b.lines)
 
 
 def test_visit_on_the_same_map_doesnt_step_out() -> None:

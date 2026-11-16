@@ -583,3 +583,29 @@ def test_models_reject_malformed_edits() -> None:
         ShardsFile.model_validate({"shards": {}, "markets": {}, "shard": {}})
     with pytest.raises(ValidationError):
         ShardsFile.model_validate({"shards": {"Ruby Shard": {"price": "free", "makes": ""}}, "markets": {}})
+
+
+def test_every_class_has_its_ten_talents() -> None:
+    # Two talent paths of five per class, as the game's talent list has them. The Warrior and the
+    # Orc share three talent names (Defensive Stance, Sturdy Sentry, Defensive Barrier): each
+    # class keeps its own, and each Defensive Stance excludes its own class's other stance.
+    talents = json.loads((DATA / "skills.json").read_text(encoding="utf-8"))["talents"]
+    classes = json.loads((DATA / "skills.json").read_text(encoding="utf-8"))["classes"]
+    for cls in classes:
+        assert len(talents[cls]) == 10, cls
+    stance = {c: next(t for t in talents[c] if t["name"] == "Defensive Stance") for c in ("Warrior", "Orc")}
+    assert stance["Warrior"]["excludes"] == ["Combat Stance"]
+    assert stance["Orc"]["excludes"] == ["Rampage Stance"]
+    orders = [t["order"] for rows in talents.values() for t in rows]
+    assert len(orders) == len(set(orders))
+
+
+def test_a_talent_that_requires_another_says_so() -> None:
+    # "Require Aspect of the Wild" in the text is the talent's requires, in every class.
+    talents = json.loads((DATA / "skills.json").read_text(encoding="utf-8"))["talents"]
+    for rows in talents.values():
+        names = {t["name"].lower(): t["name"] for t in rows}
+        for t in rows:
+            for low, name in names.items():
+                if "require " + low in t["text"].lower():
+                    assert t["requires"] == name, t["name"]

@@ -434,6 +434,8 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None 
     if level and level < CAVES[cave]["level"]:
         b.log(_("{cave} needs level {n}", cave=_(cave), n=CAVES[cave]["level"]), speak=True)
         return []
+    if too_close_to_level(b, cave):
+        return []
     was = getattr(b, "pets_for_run", None)
     try:
         choose_pet(b, cfg)
@@ -443,6 +445,22 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, cave: str | None 
         return [visit(b, cfg, cave)]
     finally:
         b.pets_for_run = was            # the rest of the run goes by Character, Settings again
+
+
+def too_close_to_level(b: Bot, cave: str) -> bool:
+    """With "Stop before the next level" (or a plan's keep_level), a cave isn't gone into once the
+    next level needs less than that: a visit gives a lot of experience, and inside there is no
+    stopping without losing it. True (and said) when it stays out."""
+    goal = b.level_goal()
+    if not goal:
+        return False
+    sheet: dict[str, Any] = b.refresh_sheet(force=True) or {}
+    need = sheet.get("xp_needed")
+    if not isinstance(need, (int, float)) or not 0 <= need < goal:
+        return False
+    b.log(_("the next level needs only {n} experience - not going into {cave}", n=int(need), cave=_(cave)),
+          speak=True)
+    return True
 
 
 def rejoin(b: Bot, cfg: dict[str, Any], cave: str, check_only: bool = False) -> list[str]:

@@ -85,7 +85,7 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     assert [item.GetItemLabelText() for item in frame.context_menu.GetMenuItems()] == ["Tools", "Character", "Run"]
     bar = frame.GetMenuBar()
     assert [bar.GetMenuLabelText(index) for index in range(bar.GetMenuCount())] == [
-        "File", "View", "Game", "Messages", "Plans", "Help"]
+        "File", "View", "Game", "Messages", "Help"]
     assert frame.action_menus["tools"].GetMenuItemCount() == 13
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1

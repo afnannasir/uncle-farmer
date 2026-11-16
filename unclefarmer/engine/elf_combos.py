@@ -61,8 +61,9 @@ class ElfCombos:
             return False
         if name in CHANNEL_SKILLS:
             self.saving_pyroblast_for_next = False
-            self.primed.pop(name, None)
-            self.available_to_channel_without_penalty = crit
+            for channel in CHANNEL_SKILLS:
+                self.primed.pop(channel, None)
+            self.available_to_channel_without_penalty = False
             self.fire_impact_crit = False
             self.pending_channelling = crit
             self.streak = int(crit)
@@ -127,6 +128,8 @@ class ElfCombos:
         self.fire_impact_crit = False
         self.saving_pyroblast_for_next = False
         self.streak = 0
+        for channel in CHANNEL_SKILLS:
+            self.primed.pop(channel, None)
 
     def channeling_restricted(self, skill: Skill) -> bool:
         """Blazing Combo gates the channeling skills until the two-crit sequence completes."""
@@ -134,34 +137,33 @@ class ElfCombos:
                 and not self.available_to_channel_without_penalty)
 
     def _elf_pick(self, ok: Callable[[str], Skill | None], now: float) -> Skill | None:
+        if self.available_to_channel_without_penalty:
+            return self.channel_pick(ok)
         if self.pending_channelling and (fire_impact := ok(FIRE_IMPACT)):
             return fire_impact
-        return self._channel_pick(ok)
+        return self.channel_pick(ok)
 
     def _elf_blocks_primed(self, name: str) -> bool:
-        return name == FIRE_IMPACT and self.fire_impact_crit  # Fire Impact cannot loop into itself
+        return ((name == FIRE_IMPACT and self.fire_impact_crit)
+                or (name in CHANNEL_SKILLS and (not self.available_to_channel_without_penalty
+                                               or name != self.channel_name())))
 
-    def _channel_pick(self, ok: Callable[[str], Skill | None]) -> Skill | None:
-        """Channeling priority without penalty: packs prefer Blazing Storm, single target prefers Pyroblast."""
-        if not self.available_to_channel_without_penalty and not all(name in self.primed for name in CHANNEL_SKILLS):
+    def channel_pick(self, ok: Callable[[str], Skill | None]) -> Skill | None:
+        """Channeling priority without penalty: packs require Blazing Storm, single target requires Pyroblast."""
+        if not self.available_to_channel_without_penalty:
             return None
-        pack = getattr(self.book, "_last_pack_size", 1)
-        if pack >= 2 and (storm := ok(BLAZING_STORM)):
-            return storm
-        return ok(PYROBLAST) or ok(BLAZING_STORM)
+        return ok(self.channel_name())
+
+    def channel_name(self) -> str:
+        """Keep an Ignition setup committed to its channel; otherwise choose by pack size."""
+        primed = [name for name in CHANNEL_SKILLS if name in self.primed]
+        if len(primed) == 1:
+            return primed[0]
+        return BLAZING_STORM if getattr(self.book, "_last_pack_size", 1) >= 2 else PYROBLAST
 
 
 def unpenalized(skill: Skill, available: bool) -> bool:
     return available and skill.get("name") in CHANNEL_SKILLS
-
-
-def pyroblast_follow_key(slots: dict[int, list[Skill]], up: int, allowed: Callable[[Skill], bool]) -> str | None:
-    """The allowed Pyroblast key, if it is on the page that is up."""
-    pyro = [x for pg in sorted(slots, key=lambda pg: pg != up) for x in slots[pg]
-            if x.get("name") == PYROBLAST and allowed(x)]
-    if pyro and pyro[0] in slots.get(up, []):
-        return pyro[0]["key"]
-    return None
 
 
 class _ChannelView(Protocol):
@@ -178,6 +180,8 @@ def pyroblast_wasted_on(book: SkillBook, target: dict[str, Any], v: _ChannelView
         return True
     if hasattr(book, "downed") and target.get("id") in book.downed:
         return True
+    if hp == target.get("maxhp"):
+        return False
     base = v.first("base_attack") or v.first("single_target")
     if base:
         weight = book.combos.weight(base) if book.combos else 1.0
