@@ -5144,363 +5144,6 @@
     "text": "Immune to Poisoned Terrain Effect Damage",
     "requires": null,
     "excludes": []
-   },
-   {
-    "name": "Imperious",
-    "order": 91,
-    "text": "Increase 2% attack damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Focus",
-    "order": 92,
-    "text": "Increase 4 points of hit chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage",
-    "order": 93,
-    "text": "Increase 49 points of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc",
-    "order": 94,
-    "text": "Increase 25 points of Defense Break Chance and 40 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Anger",
-    "order": 95,
-    "text": "Increase 7 points of Critical Hit.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Brutal",
-    "order": 96,
-    "text": "Increase 5 points of Critical Hit and 11 points of Critical Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Shielded",
-    "order": 97,
-    "text": "Reduce 3% of all damage taken.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Dexterous",
-    "order": 98,
-    "text": "Increase 6 points of dodge.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough",
-    "order": 99,
-    "text": "Increase 30 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi",
-    "order": 100,
-    "text": "Increase 10 points of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Aggressive)",
-    "order": 101,
-    "text": "Increase 2% attack damage. Increase 2 points of Defense Break Chance and 10 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Aggressive)",
-    "order": 102,
-    "text": "Increase 2% attack damage. Increase 5 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi (Aggressive)",
-    "order": 103,
-    "text": "Increase 2% attack damage. Increase 1 point of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Focus (Defensive)",
-    "order": 104,
-    "text": "Reduce 2% of all damage taken. Increase 2 points of hit chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Defensive)",
-    "order": 105,
-    "text": "Reduce 2% of all damage taken. Increase 16 points of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Defensive)",
-    "order": 106,
-    "text": "Reduce 2% of all damage taken. Increase 12 points of Defense Break Chance and 17 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Anger (Defensive)",
-    "order": 107,
-    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Brutal (Defensive)",
-    "order": 108,
-    "text": "Reduce 2% of all damage taken. Increase 2 points of Critical Hit and 6 points of Critical Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Dexterous (Defensive)",
-    "order": 109,
-    "text": "Reduce 2% of all damage taken. Increase 3 points of dodge.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Defensive)",
-    "order": 110,
-    "text": "Reduce 3% of all damage taken. Increase 5 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi (Defensive)",
-    "order": 111,
-    "text": "Reduce 2% of all damage taken. Increase 4 points of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Focus (Aggressive)",
-    "order": 112,
-    "text": "Increase 2% attack damage and 1 point of hit chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Aggressive)",
-    "order": 113,
-    "text": "Increase 2% attack damage and 7 point of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Brutal (Aggressive)",
-    "order": 114,
-    "text": "Increase 2% attack damage. Increase 1 points of Critical Hit and 2 points of Critical Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Anger (Aggressive)",
-    "order": 125,
-    "text": "Increase 2% attack damage and 2 points of Critical Hit.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Aggressive)-2",
-    "order": 116,
-    "text": "Increase 2% attack damage. Increase 9 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Defensive)-2",
-    "order": 117,
-    "text": "Reduce 2% of all damage taken. Increase 19 points of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Defensive)-2",
-    "order": 118,
-    "text": "Reduce 2% of all damage taken. Increase 15 points of Defense Break Chance and 21 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Brutal (Defensive)-2",
-    "order": 119,
-    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit and 5 points of Critical Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Dexterous (Defensive)-2",
-    "order": 120,
-    "text": "Reduce 2% of all damage taken. Increase 4 points of dodge.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Defensive)-2",
-    "order": 121,
-    "text": "Reduce 3% of all damage taken. Increase 9 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi (Defensive)-2",
-    "order": 122,
-    "text": "Reduce 2% of all damage taken. Increase 5 points of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Aggressive)-2",
-    "order": 123,
-    "text": "Increase 2% attack damage and 10 point of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Aggressive)-3",
-    "order": 124,
-    "text": "Increase 2% attack damage. Increase 8 points of Defense Break Chance and 18 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Aggressive)-3",
-    "order": 126,
-    "text": "Increase 2% attack damage. Increase 14 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi (Aggressive)-2",
-    "order": 127,
-    "text": "Increase 2% attack damage. Increase 3 point of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Defensive)-3",
-    "order": 128,
-    "text": "Reduce 2% of all damage taken. Increase 22 points of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Defensive)-3",
-    "order": 129,
-    "text": "Reduce 2% of all damage taken. Increase 18 points of Defense Break Chance and 25 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Anger (Defensive)-2",
-    "order": 130,
-    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Dexterous (Defensive)-3",
-    "order": 131,
-    "text": "Reduce 2% of all damage taken. Increase 5 points of dodge.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Defensive)-3",
-    "order": 132,
-    "text": "Reduce 3% of all damage taken. Increase 14 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tai chi (Defensive)-3",
-    "order": 133,
-    "text": "Reduce 2% of all damage taken. Increase 6 points of critical hit resist.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Focus (Aggressive)-2",
-    "order": 134,
-    "text": "Increase 2% attack damage and 5 point of hit chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Aggressive)-3",
-    "order": 135,
-    "text": "Increase 2% attack damage and 14 point of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Aggressive)-4",
-    "order": 136,
-    "text": "Increase 2% attack damage. Increase 11 points of Defense Break Chance and 20 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Aggressive)-4",
-    "order": 137,
-    "text": "Increase 2% attack damage. Increase 18 points of Toughness.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Ravage (Defensive)-4",
-    "order": 138,
-    "text": "Reduce 2% of all damage taken. Increase 26 points of Defense Break Chance.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Havoc (Defensive)-4",
-    "order": 139,
-    "text": "Reduce 2% of all damage taken. Increase 21 points of Defense Break Chance and 28 points of Defense Break Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Brutal (Defensive)-3",
-    "order": 140,
-    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit and 6 points of Critical Damage.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Dexterous (Defensive)-4",
-    "order": 141,
-    "text": "Reduce 2% of all damage taken. Increase 6 points of dodge.",
-    "requires": null,
-    "excludes": []
-   },
-   {
-    "name": "Tough (Defensive)-4",
-    "order": 142,
-    "text": "Reduce 3% of all damage taken. Increase 18 points of Toughness.",
-    "requires": null,
-    "excludes": []
    }
   ],
   "Warrior": [
@@ -5533,10 +5176,33 @@
     "excludes": []
    },
    {
+    "name": "Defensive Stance",
+    "order": 15,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 additional rage for each additional 1% damage taken. Combat Stance and Defensive Stance cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Combat Stance"
+    ]
+   },
+   {
+    "name": "Sturdy Sentry",
+    "order": 16,
+    "text": "Give several buffs to Defensive Stance. Increase 10 points of dodge. Reduce 2% chance of taking physical critical hit. Reduce 3% chance of taking Defense Break. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
+    "name": "Defensive Barrier",
+    "order": 17,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 more additional rage for each 2% damage taken. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
     "name": "Precise Block",
     "order": 18,
     "text": "Increase 8% physical defense and 10% magic defense, require defensive stance.",
-    "requires": null,
+    "requires": "Defensive Stance",
     "excludes": []
    },
    {
@@ -5555,29 +5221,6 @@
    }
   ],
   "Orc": [
-   {
-    "name": "Defensive Stance",
-    "order": 25,
-    "text": "Reduce 3% attack damage. When you take damage, you gain 1 additional rage for each additional 1% damage taken. Combat Stance and Defensive Stance cannot be used at the same time.",
-    "requires": null,
-    "excludes": [
-     "Combat Stance"
-    ]
-   },
-   {
-    "name": "Sturdy Sentry",
-    "order": 26,
-    "text": "Give several buffs to Defensive Stance. Increase 10 points of dodge. Reduce 2% chance of taking physical critical hit. Reduce 3% chance of taking Defense Break. Require Defensive Stance.",
-    "requires": "Defensive Stance",
-    "excludes": []
-   },
-   {
-    "name": "Defensive Barrier",
-    "order": 27,
-    "text": "Reduce 3% attack damage. When you take damage, you gain 1 more additional rage for each 2% damage taken. Require Defensive Stance.",
-    "requires": "Defensive Stance",
-    "excludes": []
-   },
    {
     "name": "Rampage Stance",
     "order": 21,
@@ -5604,6 +5247,29 @@
     "order": 24,
     "text": "Increase 20% damage during Enrage.",
     "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Defensive Stance",
+    "order": 25,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 additional rage for each additional 1% damage taken. Rampage Stance and Defensive Stance cannot be used at the same time.",
+    "requires": null,
+    "excludes": [
+     "Rampage Stance"
+    ]
+   },
+   {
+    "name": "Sturdy Sentry",
+    "order": 26,
+    "text": "Give several buffs to Defensive Stance. Increase 10 points of dodge. Reduce 2% chance of taking physical critical hit. Reduce 3% chance of taking Defense Break. Require Defensive Stance.",
+    "requires": "Defensive Stance",
+    "excludes": []
+   },
+   {
+    "name": "Defensive Barrier",
+    "order": 27,
+    "text": "Reduce 3% attack damage. When you take damage, you gain 1 more additional rage for each 2% damage taken. Require Defensive Stance.",
+    "requires": "Defensive Stance",
     "excludes": []
    },
    {
@@ -5714,21 +5380,21 @@
     "name": "Survival Expert",
     "order": 42,
     "text": "When you hit the target, recover HP equal to 5% damage dealt. Require Aspect of the Wild",
-    "requires": null,
+    "requires": "Aspect of the Wild",
     "excludes": []
    },
    {
     "name": "Wild Rage",
     "order": 43,
     "text": "Increase 5% attack damage. Require Aspect of the Wild",
-    "requires": null,
+    "requires": "Aspect of the Wild",
     "excludes": []
    },
    {
     "name": "Call of the Wilderness",
     "order": 44,
     "text": "When Arcane Shot deals a critical hit, resets the CD of the next Rapid Arrows. Require Aspect of the Wild",
-    "requires": null,
+    "requires": "Aspect of the Wild",
     "excludes": []
    },
    {
@@ -5788,7 +5454,7 @@
     "name": "Desolate Winter",
     "order": 52,
     "text": "Increase 22% Ice Lance Damage, require Ice Lineage.",
-    "requires": null,
+    "requires": "Ice Lineage",
     "excludes": []
    },
    {
@@ -6064,6 +5730,372 @@
     "name": "Jungle Perseverance",
     "order": 90,
     "text": "Increase 10 points of Toughness and 10 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   }
+  ],
+  "Gang": [
+   {
+    "name": "Imperious",
+    "order": 91,
+    "text": "Increase 2% attack damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus",
+    "order": 92,
+    "text": "Increase 4 points of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage",
+    "order": 93,
+    "text": "Increase 49 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc",
+    "order": 94,
+    "text": "Increase 25 points of Defense Break Chance and 40 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger",
+    "order": 95,
+    "text": "Increase 7 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal",
+    "order": 96,
+    "text": "Increase 5 points of Critical Hit and 11 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Shielded",
+    "order": 97,
+    "text": "Reduce 3% of all damage taken.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous",
+    "order": 98,
+    "text": "Increase 6 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough",
+    "order": 99,
+    "text": "Increase 30 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi",
+    "order": 100,
+    "text": "Increase 10 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)",
+    "order": 101,
+    "text": "Increase 2% attack damage. Increase 2 points of Defense Break Chance and 10 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)",
+    "order": 102,
+    "text": "Increase 2% attack damage. Increase 5 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Aggressive)",
+    "order": 103,
+    "text": "Increase 2% attack damage. Increase 1 point of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Defensive)",
+    "order": 104,
+    "text": "Reduce 2% of all damage taken. Increase 2 points of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)",
+    "order": 105,
+    "text": "Reduce 2% of all damage taken. Increase 16 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)",
+    "order": 106,
+    "text": "Reduce 2% of all damage taken. Increase 12 points of Defense Break Chance and 17 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Defensive)",
+    "order": 107,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)",
+    "order": 108,
+    "text": "Reduce 2% of all damage taken. Increase 2 points of Critical Hit and 6 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)",
+    "order": 109,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)",
+    "order": 110,
+    "text": "Reduce 3% of all damage taken. Increase 5 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)",
+    "order": 111,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Aggressive)",
+    "order": 112,
+    "text": "Increase 2% attack damage and 1 point of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)",
+    "order": 113,
+    "text": "Increase 2% attack damage and 7 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Aggressive)",
+    "order": 114,
+    "text": "Increase 2% attack damage. Increase 1 points of Critical Hit and 2 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Aggressive)",
+    "order": 115,
+    "text": "Increase 2% attack damage and 2 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-2",
+    "order": 116,
+    "text": "Increase 2% attack damage. Increase 9 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-2",
+    "order": 117,
+    "text": "Reduce 2% of all damage taken. Increase 19 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-2",
+    "order": 118,
+    "text": "Reduce 2% of all damage taken. Increase 15 points of Defense Break Chance and 21 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)-2",
+    "order": 119,
+    "text": "Reduce 2% of all damage taken. Increase 3 points of Critical Hit and 5 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-2",
+    "order": 120,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-2",
+    "order": 121,
+    "text": "Reduce 3% of all damage taken. Increase 9 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)-2",
+    "order": 122,
+    "text": "Reduce 2% of all damage taken. Increase 5 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)-2",
+    "order": 123,
+    "text": "Increase 2% attack damage and 10 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)-3",
+    "order": 124,
+    "text": "Increase 2% attack damage. Increase 8 points of Defense Break Chance and 18 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Aggressive)",
+    "order": 125,
+    "text": "Increase 2% attack damage and 2 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-3",
+    "order": 126,
+    "text": "Increase 2% attack damage. Increase 14 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Aggressive)-2",
+    "order": 127,
+    "text": "Increase 2% attack damage. Increase 3 point of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-3",
+    "order": 128,
+    "text": "Reduce 2% of all damage taken. Increase 22 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-3",
+    "order": 129,
+    "text": "Reduce 2% of all damage taken. Increase 18 points of Defense Break Chance and 25 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Anger (Defensive)-2",
+    "order": 130,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-3",
+    "order": 131,
+    "text": "Reduce 2% of all damage taken. Increase 5 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-3",
+    "order": 132,
+    "text": "Reduce 3% of all damage taken. Increase 14 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tai chi (Defensive)-3",
+    "order": 133,
+    "text": "Reduce 2% of all damage taken. Increase 6 points of critical hit resist.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Focus (Aggressive)-2",
+    "order": 134,
+    "text": "Increase 2% attack damage and 5 point of hit chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Aggressive)-3",
+    "order": 135,
+    "text": "Increase 2% attack damage and 14 point of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Aggressive)-4",
+    "order": 136,
+    "text": "Increase 2% attack damage. Increase 11 points of Defense Break Chance and 20 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Aggressive)-4",
+    "order": 137,
+    "text": "Increase 2% attack damage. Increase 18 points of Toughness.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Ravage (Defensive)-4",
+    "order": 138,
+    "text": "Reduce 2% of all damage taken. Increase 26 points of Defense Break Chance.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Havoc (Defensive)-4",
+    "order": 139,
+    "text": "Reduce 2% of all damage taken. Increase 21 points of Defense Break Chance and 28 points of Defense Break Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Brutal (Defensive)-3",
+    "order": 140,
+    "text": "Reduce 2% of all damage taken. Increase 4 points of Critical Hit and 6 points of Critical Damage.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Dexterous (Defensive)-4",
+    "order": 141,
+    "text": "Reduce 2% of all damage taken. Increase 6 points of dodge.",
+    "requires": null,
+    "excludes": []
+   },
+   {
+    "name": "Tough (Defensive)-4",
+    "order": 142,
+    "text": "Reduce 3% of all damage taken. Increase 18 points of Toughness.",
     "requires": null,
     "excludes": []
    }
