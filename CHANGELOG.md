@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**XP loser attacks the guard with your basic attack**
+
+- The XP loser pressed whatever skill was on your first attack key, once. For a Hunter that is
+  often Escape, which jumped away from the guard. Other first-key skills started no fight at all,
+  and the guard was left as "didn't strike back".
+- It now uses your class's basic attack: Bash, Valiant Strike, Blade Strike, Arcane Shot, Magic
+  Sphere, Fireball, Retribution or Shadow Arrow. If that skill is on no key, it is put on an empty
+  one first. If it is on the other skill page, the page is turned. It is pressed again every second
+  until you fall, so a press the game drops (just after getting off the beast) no longer ends the try.
+- The log says which key it attacks with.
+
 **The walk to death wormhole finds its circle**
 
 - The walking assistant reached hidden water cave but never found the death wormhole's circle:
