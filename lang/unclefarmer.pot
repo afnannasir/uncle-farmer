@@ -4445,6 +4445,9 @@ msgid ""
 "attacked {secs} s ago - the fusion beast waits until {quiet} s without an attack"
 msgstr ""
 
+msgid "attacking guards with the {key} key"
+msgstr ""
+
 msgid "attacks {how}"
 msgstr ""
 

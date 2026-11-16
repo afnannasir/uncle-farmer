@@ -21,8 +21,12 @@ What the game says and does (its help pages, the NPC texts, and game.i read with
 The run: put the pet away (it would fight the guard), switch the PK mode to all, then for each
 death: find a guard - in sight, else a spot where one was seen before (profiles/_learned_guards.json,
 filled whenever a guard is in sight), else the nearest town - walk into reach, outside the safe zone
-(right up to it when a wall is in the way), get off the fusion beast, select it and press the first attack key once; drink nothing and fight nothing until dead; respawn in the city; read
-the sheet again. A guard that doesn't strike back is hit again, then left for another. It ends when
+(right up to it when a wall is in the way), get off the fusion beast, select it and attack it with
+the class's basic attack (Bash, Valiant Strike, Blade Strike, Arcane Shot, Magic Sphere, Fireball,
+Retribution, Shadow Arrow), pressed again every second until dead - never the first attack key as
+it is set, which can be a jump (a Hunter's Escape) or a skill that needs more than a target; drink
+nothing and fight nothing else; respawn in the city; read the sheet again. A guard that doesn't
+strike back is walked to and hit again, then left for another. It ends when
 the next level needs at least the goal, after max_deaths deaths, or when deaths stop costing
 experience (the level's start: the game takes no level away). The PK mode the game had is put back
 at the end, whatever ended it.
@@ -41,7 +45,7 @@ from typing import Any
 from .. import atlas, jsonio as json, paths
 from ..i18n import N_, _
 from ..settings import PK_MODES
-from . import beasts, pets, town
+from . import beasts, combat, pets, town
 from .bot import Bot, Respawned, Stopped
 
 MODES = ("until", "lose")
@@ -60,7 +64,12 @@ GUARDS_SEEN = "_learned_guards.json"   # in the profiles folder: the player's ow
 SPOTS_PER_MAP = 12
 SAME_SPOT = 6.0           # tiles: a guard seen this close to a known spot is that spot
 HIT_WAIT = 10.0           # seconds a guard has to strike back after a hit
-HITS = 3                  # hits on one guard before trying another
+PRESS_EVERY = 1.0         # seconds between presses of the basic attack while we wait to fall
+HITS = 2                  # walks up to one guard (each with HIT_WAIT of attacks) before trying another
+# skills never used to start the guard's fight when the basic attack isn't on a key: they move us
+# (a Hunter's Escape jumps away), aim at ourselves, or hit nobody
+NOT_AN_ATTACK = {"mobility", "engage", "teleport", "resurrect", "heal", "party_buff", "self_buff",
+                 "dispel", "defensive", "taunt", "reactive"}
 SKIP = 120.0              # seconds a guard that wouldn't fight is left alone
 STALLS = 2                # deaths in a row that cost no experience: none left to lose on this level
 SEARCH = 240.0            # seconds spent walking around a map looking for a guard
@@ -190,6 +199,34 @@ def gate_cells(mid: int, me: dict[str, Any]) -> list[tuple[int, int]]:
     return out
 
 
+# ---------------------------------------------------------------------------------------- the attack
+def attack_key(b: Bot) -> tuple[str, int | None, float | None]:
+    """The key that hits the guard, as (key, skill page or None, range or None): the class's basic
+    attack (data/skills.json role "base_attack"), put on an empty skill key when it is on none (as
+    a teleport is); else the first skill on the keys that attacks a target; else the profile's
+    first attack key. The first attack key itself is no good: a Hunter's is often Escape, which
+    jumps away from the guard, and a Mage's Ice Orb started no fight (live 2026-11-13/15)."""
+    sb = b.skillbook or combat.SkillBook(b)
+    b.skillbook = sb
+    if sb.ok and sb.cls:
+        name = next((s["name"] for s in combat.knowledge().get(sb.cls, []) if s.get("role") == "base_attack"), None)
+        got = b.spell_slot(name) if name else None
+        if got is not None:
+            x = got[1]
+            return str(x["key"]), (int(x["slot"]) - 1) // 10, x.get("range")
+        sb = b.skillbook or sb
+    if sb.ok:
+        up = sb.page()
+        for page in sorted(sb.slots, key=lambda pg: pg != up):
+            for x in sb.slots[page]:
+                if x.get("role") not in NOT_AN_ATTACK:
+                    return str(x["key"]), page, x.get("range")
+    keys: list[str] = list(b.p.get("attack_keys") or [])
+    if not keys:
+        raise Stopped(_("no attack key in Character settings - the guard can't be hit"), final=True)
+    return keys[0], None, None
+
+
 # ---------------------------------------------------------------------------------------- the game's numbers
 def xp_needed(b: Bot) -> int | None:
     """The experience the next level still needs, read now: -1 at the top level, None unknown."""
@@ -274,6 +311,7 @@ class _Run:
         self.deaths0 = int(getattr(b, "deaths", 0) or 0)
         self.skip: dict[int, float] = {}
         self.locked: set[int] = set()       # maps where the PK mode can't be changed
+        self.attack: tuple[str, int | None, float | None] | None = None   # attack_key(), read once
 
     # -- finding a guard
     def look(self) -> dict[str, Any] | None:
@@ -368,12 +406,18 @@ class _Run:
             g.update(now)
         return there(b.me())
 
-    def strike(self, g: dict[str, Any]) -> bool:
-        """Into reach, select it, one press of the first attack key. False when it can't be hit."""
+    def strike(self, g: dict[str, Any]) -> str | None:
+        """Into reach, select it, one press of the basic attack. The key pressed, or None when it
+        can't be hit."""
         b = self.b
-        reach = max(1.5, min(float(b.reach()), 18.0) - 0.5)
+        if self.attack is None:
+            self.attack = attack_key(b)
+            b.log(_("attacking guards with the {key} key", key=self.attack[0]))
+        key, page, rng = self.attack
+        far = float(rng) if rng else float(b.reach())
+        reach = max(1.5, min(far, 18.0) - 0.5)
         if not self.approach(g, reach):
-            return False
+            return None
         # off the fusion beast first, as a player does it by hand (recorded 2026-11-13: ride up,
         # put the beast away, then attack); the travel there leaves us on the Swift one, whose
         # skills are off, so the attack key did nothing
@@ -381,35 +425,40 @@ class _Run:
         # the walk here may have changed it (a new map's own mode, a fight on the way): a hit in
         # any other mode makes no guard strike back
         if not self.all_mode():
-            return False
+            return None
         reply = b.a.send("select %d" % g["id"])
         if reply != "selected" and reach > CLOSE and ("clear line" in reply or "reach" in reply):
             # guards stand at gates and walls: from the attack's range a wall is often in between
             # (live 2026-11-13: "refused: -39 isn't in a clear line"), so walk right up to it
             if not self.approach(g, CLOSE):
-                return False
+                return None
             reply = b.a.send("select %d" % g["id"])
         if reply != "selected":
             b.log(_("can't select the guard: {why}", why=reply))
-            return False
-        keys: list[str] = list(b.p.get("attack_keys") or [])
-        if not keys:
-            raise Stopped(_("no attack key in Character settings - the guard can't be hit"), final=True)
-        b.key(keys[0])
-        return True
+            return None
+        sb = b.skillbook
+        if page is not None and sb is not None and sb.page() != page:
+            sb.flip_to(page)              # the basic attack sits on the other skill page
+        b.key(key)
+        return key
 
-    def wait_for_death(self, g: dict[str, Any]) -> bool:
-        """After a hit: wait, drinking nothing. True when the guard is striking (or we died)."""
+    def wait_for_death(self, key: str) -> bool:
+        """After a hit: press the basic attack again every second, drinking nothing. True when the
+        guard is striking (or we died); False when HIT_WAIT passed without a hit on us."""
         b = self.b
         hp0 = int(b.me().get("hp", 0) or 0)
         end = b.clock.time() + HIT_WAIT
+        pressed = b.clock.time()
         while b.clock.time() < end:
             b.check()
-            me = b.me()
-            if int(me.get("hp", 1) or 0) <= 0:
+            hp = int(b.me().get("hp", 1) or 0)
+            if hp <= 0:
                 self.died()
-            if int(me.get("hp", 0) or 0) < hp0:
-                end = max(end, b.clock.time() + HIT_WAIT)   # it is hitting: keep waiting
+            if hp < hp0:
+                end = max(end, b.clock.time() + HIT_WAIT)   # it is hitting: keep at it until we fall
+            if b.clock.time() - pressed >= PRESS_EVERY:
+                b.key(key)                  # one press may be lost (a cast lock after the beast)
+                pressed = b.clock.time()
             b.sleep(LOOK)
         return int(b.me().get("hp", 0) or 0) < hp0
 
@@ -456,10 +505,11 @@ class _Run:
                 if not self.all_mode():
                     continue              # walked onto a map where it is locked: look elsewhere
                 for _hit in range(HITS):
-                    if not self.strike(g):
+                    key = self.strike(g)
+                    if key is None:
                         break
-                    while self.wait_for_death(g):
-                        pass              # it is striking: wait on until we fall (Respawned)
+                    while self.wait_for_death(key):
+                        pass              # it is striking: keep hitting until we fall (Respawned)
                 self.skip[int(g["id"])] = b.clock.time() + SKIP
                 b.log(_("the guard didn't strike back - trying another"))
             except Respawned:
