@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Sales counted in the run that earned them**
+
+- The arnebia a sale brings in is counted in the results again. The game takes the shards out
+  of the bag first and pays a moment later: when the money came in after the sale was over, the
+  results put it under the next job (for example "Updating shard prices"), and the farming run's
+  earnings left it out. Selling shards, selling fish, ore and herbs, and selling to a shop now
+  wait for the money (three seconds at most).
+
 **Safer updates**
 
 - Uncle Farmer no longer seems to freeze after a download: the update is prepared in the

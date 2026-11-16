@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
 SETTLE_SECONDS = 3.0
 SETTLE_POLL = 0.05
+MONEY_STEADY = 0.5      # seconds the bag's arnebia must stay the same before a sale's money is all in
+ARNEBIA = "arnebia"
 
 
 def _int_dict() -> dict[str, int]:
@@ -69,6 +71,29 @@ class InventoryTransaction:
             if clock_for(b).time() >= end:
                 return after
             b.sleep(SETTLE_POLL)
+
+    def paid(self, b: Bot, after: dict[str, int], seconds: float = SETTLE_SECONDS) -> dict[str, int]:
+        """After a sale: wait for its arnebia too. The game takes the items out of the bag first
+        and pays a moment later (seen live 2026-11-16: the 2,026,635 arnebia of a shard sale came
+        in after the sale was over, and the results counted them in the next job). Returns the
+        first bag snapshot whose arnebia has risen and then stayed the same for MONEY_STEADY
+        seconds, or the latest one after `seconds`; at once when the bag has no arnebia row."""
+        if ARNEBIA not in self.before and ARNEBIA not in after:
+            return after
+        clock = clock_for(b)
+        end = clock.time() + seconds
+        money = after.get(ARNEBIA, 0)
+        since = clock.time()
+        while True:
+            if money > self.before.get(ARNEBIA, 0) and clock.time() - since >= MONEY_STEADY:
+                return after
+            if clock.time() >= end:
+                return after
+            b.sleep(SETTLE_POLL)
+            after = counts(b)
+            if after.get(ARNEBIA, 0) != money:
+                money = after.get(ARNEBIA, 0)
+                since = clock.time()
 
     def removed(self, after: Mapping[str, int]) -> list[tuple[str, int]]:
         """The actual removals among the items this transaction requested."""
