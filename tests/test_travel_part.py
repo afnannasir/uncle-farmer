@@ -838,6 +838,20 @@ def test_go_dungeon_gives_up_when_no_spot_is_the_circle(monkeypatch: pytest.Monk
     assert "none of the entrances marked on map5 is the Cave circle" in str(e.value)
 
 
+def test_go_dungeon_names_the_other_circles_it_saw(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b._map = 5
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    b.entities = [{"id": -1, "name": "Odd teleportation Circle", "x": 31.0, "y": 31.0},
+                  {"id": -2, "name": "Duck", "x": 30.0, "y": 30.0}]
+    b.walk_to = lambda cell, map_change=False, near=None: "arrived"
+    b.travel = lambda dst, cell=None: None
+    with pytest.raises(Stopped):
+        b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
+    assert any("circles seen on map5: Odd teleportation Circle" in line for line in b.lines)
+
+
 def test_go_dungeon_stops_if_it_leaves_the_map_while_looking(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))

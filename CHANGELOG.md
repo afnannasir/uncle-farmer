@@ -2,6 +2,72 @@
 
 ## Unreleased
 
+**The walk to death wormhole finds its circle**
+
+- The walking assistant reached hidden water cave but never found the death wormhole's circle:
+  the game calls it "Wormhole teleportation Circle", a name that doesn't start with the
+  dungeon's, so the bot walked past it. The circle's name is in the dungeon list now.
+- The five circles of hidden water cave (death wormhole, wolf head mountain, bubble cube, ice
+  maze, Herbal Mountain) have their places now, measured in the game: the walk goes straight to
+  the right one instead of trying each stone room in turn.
+- When none of the marked entrances is the dungeon's circle, the log now names the other
+  circles seen on the way, so a circle with an unexpected name is easy to report.
+**Every class's talents, as the game lists them**
+
+- The Warrior's defensive talents were missing (Defensive Stance, Sturdy Sentry, Defensive
+  Barrier): the Orc has talents of the same names, and only the Orc's were kept. The Warrior has
+  its ten talents again.
+- The Orc's Defensive Stance carried the Warrior's text; it now says it can't be used with
+  Rampage Stance, as the game does.
+- Talents whose text says "Require ..." all say which talent they need (four Hunter and Mage
+  talents and the Warrior's Precise Block didn't).
+- The gang talents (Imperious, Focus, Ravage, Havoc, Anger, Brutal ... and their Aggressive and
+  Defensive ranks) are in their own Gang group instead of the general talents, with the second
+  "Anger (Aggressive)" rank that was missing.
+  These are the talents a gang develops at its Head of inner hall (gang Affairs Management, Gang
+  Skill Management), three per gang at most.
+**Fourteen more dungeon entrances placed**
+
+- The entrances of fourteen dungeons are in the dungeon list now, read in the game: the walking
+  assistant goes straight to them instead of trying each entrance marked on the map.
+- Three of them couldn't be found before: open sea, space battleship and Treasure pavilion
+  stand in the south-east of far off regions, far from the two entrances the game's files mark
+  there ("none of the entrances marked on far off regions is the open sea circle").
+- Lisa's Ukulele has no circle: you go in by talking to Villager Lisa, which the bot now knows.
+- The others: Dryad Jungle, zagrama canyon, Machine Fortress, Silver Peak, bottomless pit
+  (Valley of Luxuriant forests), fully mountain, Machining plant (far off regions), graceful
+  mountain (water curtained cave), Baru Grottoe and Elemental Maze (thousand miles of rivers).
+**Stop before the next level**
+
+- For characters you keep at their level: Character, Settings, Fighting has a new group, **Drop
+  time and experience**, with **Stop before the next level** (off by default) and how much
+  experience the next level must still need (100,000 by default). The character sheet is read
+  after every kill; once the next level needs less, Uncle Farmer says so, leaves the monsters and
+  ends the run. The After farming list runs next, so the XP loser can win some experience back.
+- A run that starts with the next level already that close doesn't set out: it says so before
+  the Before farming list and does nothing else, instead of going all the way to the farm.
+- Inside a dungeon it only says so, once: leaving would lose the visit. It doesn't go into an
+  experience dungeon once the next level is that close, and the day's cave is still yours.
+- A plan's When to stop page can set it for that plan, in place of the character's setting, as
+  it can the drop time to save; scripts have `keep_level <experience>` (0: no such stop).
+- **Stop when the day's drop time runs out** and **Drop time to save** moved from Bag and
+  supplies, Full bag, to the same new group in Character, Settings, Fighting, beside the other
+  reasons to stop. Your settings stay as they were.
+**From a secret room, the nearest shop is the one outside the door**
+
+- A run that started inside a secret room chose its Shard Broker, storehouse or other shop as if
+  every city were as far: leaving a secret room puts you back where you came in, which the map
+  data can't say. A room entered from Tulip City sent the bot by cable car to central plains'
+  Shard Broker, right past Tulip City's. It now leaves the room first, then picks the nearest one
+  from where it comes out, as it already did from a gang base.
+**A start again on the farm goes straight back to farming**
+
+- Character settings, Triggers, Before farming has a new tick, **Skip this list when the run
+  starts on its first farming map** (off by default). After a Stop, starting the plan again where
+  the character was farming used to run the whole Before farming list first - Update shard prices
+  always walks to a Shard Broker, so that was a trip to town and back every time. With the tick,
+  a run that starts on its first farming map leaves the list out and says so.
+
 **XP loser stays in all mode, and puts your PK mode back**
 
 - Guards strike back only when hit in all mode, but a walk to the guard could switch the PK mode

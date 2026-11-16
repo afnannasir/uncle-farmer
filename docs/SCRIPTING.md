@@ -377,9 +377,23 @@ For example:
 
 This tells the bot to end the run while an hour of the day's drop time remains. The bot may continue running for a few minutes after leaving the monsters.
 
-This setting applies to the current run only and takes priority over your character's own **Drop time to save** setting under **Bag and supplies → Full bag**.
+This setting applies to the current run only and takes priority over your character's own **Drop time to save** setting under **Character → Settings → Fighting**.
 
 You can also configure the same setting in a plan's **When to stop** page.
+
+### Stopping before the next level
+
+You can use `keep_level` to end the run before the character reaches its next level.
+
+    keep_level <experience>
+
+For example:
+
+    keep_level 100000
+
+This tells the bot to go somewhere safe and end the run once the next level needs less than 100,000 experience. The character sheet gives that number, and the bot reads it after every kill. Inside a dungeon it only says so, since leaving would lose the visit; and it doesn't go into an experience dungeon once the next level is that close. `keep_level 0` means no such stop for this run.
+
+This setting applies to the current run only and takes priority over your character's own **Stop before the next level** setting under **Character → Settings → Fighting**. You can also set it on a plan's **When to stop** page.
 
 ### Running commands when the run ends
 
@@ -1204,6 +1218,7 @@ Use this section when you need a quick reminder of a command or its syntax.
     stop [message]
     on_stop ... end
     keep_drop <minutes>
+    keep_level <experience>
 
 ### Decisions and loops
 

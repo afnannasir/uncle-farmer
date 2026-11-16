@@ -7,7 +7,7 @@ import wx
 
 from ..engine import plan, triggers
 from ..i18n import _
-from .common import Dialog, Form, buttons, error, labeled, ok_cancel, opens, read_decimal
+from .common import ContextAction, Dialog, Form, buttons, error, labeled, ok_cancel, opens, popup_actions, read_decimal
 
 
 class StepEditor(Dialog):
@@ -54,13 +54,25 @@ class SequenceEditor(wx.Panel):
         self.rows: list[dict[str, Any]] = [dict(row) for row in cfg["steps"]]
         box = wx.BoxSizer(wx.VERTICAL)
         self.list = labeled(self, box, _("Actions in execution &order:"), lambda w: wx.ListBox(w, size=wx.Size(-1, 150)), 1)
-        buttons(self, box, (opens(_("&Add")), lambda e: self.edit()),
-                (opens(_("&Edit")), lambda e: self.edit(self.list.GetSelection())),
-                (_("&Remove"), lambda e: self.remove()), (_("Enable/&disable"), lambda e: self.toggle()))
+        buttons(self, box, (opens(_("&Add")), lambda e: self.edit()))
         buttons(self, box, (_("Move &up"), lambda e: self.move(-1)), (_("Move &down"), lambda e: self.move(1)))
         self.list.Bind(wx.EVT_LISTBOX_DCLICK, lambda e: self.edit(self.list.GetSelection()))
+        self.list.Bind(wx.EVT_CONTEXT_MENU, self.context_menu)
         self.SetSizer(box)
         self.fill()
+
+    def context_menu(self, event: wx.ContextMenuEvent) -> None:
+        pos = event.GetPosition()
+        if pos != wx.DefaultPosition:
+            index = self.list.HitTest(self.list.ScreenToClient(pos))
+            self.list.SetSelection(index)
+        selected = 0 <= self.list.GetSelection() < len(self.rows)
+        entries: list[ContextAction] = [
+            (opens(_("&Edit")), lambda e: self.edit(self.list.GetSelection()), selected),
+            (_("Enable/&disable"), lambda e: self.toggle(), selected),
+            (_("&Remove"), lambda e: self.remove(), selected),
+        ]
+        popup_actions(self.list, entries)
 
     def fill(self, select: int = 0) -> None:
         self.list.Set([_("{n}. {action} — {state}; delay {seconds} s; deterministic: {strict}", n=i + 1, action=triggers.what(row["action"]),

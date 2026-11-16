@@ -202,6 +202,36 @@ def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
     return False
 
 
+HERE = 0                 # first_farm_map: the first farm line names no map, so it farms where it stands
+
+
+def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> int | None:
+    """The map a parsed script farms on first: its first farm line, in reading order and however
+    deep in its blocks (a plan's spots sit inside a repeat), then its subs'. HERE when that line
+    names no map; None when the script first goes into a dungeon, or doesn't farm."""
+    def walk(body: list[Any]) -> tuple[bool, int | None]:
+        for node in body:
+            kind = getattr(node, "kind", "")
+            if kind == "farm":
+                mid = (getattr(node, "opts", {}) or {}).get("map")
+                return True, int(mid) if mid else HERE
+            if kind == "dungeon":
+                return True, None
+            inner = list(getattr(node, "body", []) or [])
+            for _cond, branch in getattr(node, "branches", []) or []:
+                inner += branch
+            found, mid = walk(inner)
+            if found:
+                return found, mid
+        return False, None
+
+    for body in [nodes] + list((subs or {}).values()):
+        found, mid = walk(body)
+        if found:
+            return mid
+    return None
+
+
 def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None) -> None:
     """One step: a step that farms first asks farming_window (the day's farming window), then it runs."""
     if farming_window is not None and step_farms(b, action):

@@ -626,9 +626,10 @@ class TravelMixin(Parts):
             self.travel(mid)
             m = atlas.model(mid)
 
+            circles: set[str] = set()   # other circles passed, named if none of them is this one
+
             def seen(_me: Any = None) -> dict[str, Any] | None:
-                return next((e for e in self.snap()["entities"]
-                             if e.get("id", 0) < 0 and dungeons.is_entrance(entry, e.get("name"))), None)
+                return self._entrance_in_sight(entry, circles)
 
             npc = seen()
             todo = [tuple(s[:2]) for s in entry.get("spots", [])]
@@ -650,6 +651,9 @@ class TravelMixin(Parts):
                                     name=entry["name"]))
                 npc = seen()
             if npc is None:
+                if circles:
+                    self.log(_("circles seen on {map}: {names}", map=atlas.label(mid),
+                               names=", ".join(sorted(circles))))
                 raise Stopped(_("none of the entrances marked on {map} is the {name} circle",
                                 map=atlas.label(mid), name=entry["name"]))
             dungeons.learn(entry, npc["name"], npc["x"], npc["y"])
@@ -663,6 +667,19 @@ class TravelMixin(Parts):
                 raise Stopped(_("couldn't talk to {npc}", npc=npc["name"]))
         finally:
             self.walk_only = was
+
+    def _entrance_in_sight(self, entry: dict[str, Any], circles: set[str]) -> dict[str, Any] | None:
+        """The dungeon's circle if the game shows it; every other circle in sight goes into circles."""
+        found = None
+        for e in self.snap()["entities"]:
+            name = e.get("name") or ""
+            if e.get("id", 0) >= 0:
+                continue
+            if dungeons.is_entrance(entry, name):
+                found = found or e
+            elif "circle" in name.lower():
+                circles.add(name)
+        return found
 
     def ride(self, leg: dict[str, Any]) -> bool:
         """Talk to a transport NPC, choose the destination, confirm, and wait to be moved."""

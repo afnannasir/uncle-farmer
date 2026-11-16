@@ -109,12 +109,16 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
 
 
 def _step_out_first(b: Bot, target: Npc | None) -> bool:
-    """In a gang base whose way out we haven't seen yet (the run started inside it), with the chosen
-    NPC on another map: walk out first, so the nearest one is chosen from where we come out rather
-    than by the data's order. (Dungeons are left as travel plans it: a travel item may beat the
-    Action menu there.) True when we left (choose again)."""
+    """In a gang base or a secret room whose way out we haven't seen yet (the run started inside
+    it), with the chosen NPC on another map: get out first, so the nearest one is chosen from where
+    we come out rather than by the data's order. Both send us back to where we came in from, which
+    the map data can't say: from a secret room entered from Tulip City, every Shard Broker cost the
+    same "leave", and the one on central plains won - a cable car ride away from Tulip City's.
+    (Dungeons are left as travel plans it: a travel item may beat the Action menu there.) True
+    when we left (choose again)."""
     here = b.map_id()
-    if target is None or target[0] == here or travel.gang_exit(here) is None or here in ways_out(b):
+    closed = travel.gang_exit(here) is not None or atlas.kind(here) == "secret_room"
+    if target is None or target[0] == here or not closed or here in ways_out(b):
         return False
     leave = getattr(b, "leave_here", None)
     if leave is None:
@@ -786,11 +790,19 @@ def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) 
     got = 0
     options: dict[str, int] = {"stock": stock} if stock is not None else {}
     if store:
-        got += withdraw(b, item, missing, **options)
+        # Normal and restricted items can occupy separate storage rows. One
+        # withdrawal takes only one row; reopen the list before resorting to a shop.
+        while missing > 0:
+            taken = withdraw(b, item, missing, **options)
+            got += taken
+            remaining = (max(0, stock - counts(b).get(item.lower(), 0)) if stock is not None
+                         else max(0, missing - taken))
+            progressed = taken > 0 and remaining < missing
+            missing = remaining
+            if not progressed:
+                break
     if stock is not None:
         missing = max(0, stock - counts(b).get(item.lower(), 0))
-    else:
-        missing -= got
     if missing > 0 and shop:
         got += buy(b, item, missing, **options) or 0
     return got

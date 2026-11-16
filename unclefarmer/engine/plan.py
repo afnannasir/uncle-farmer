@@ -10,11 +10,12 @@
       "stop_after_kills": 0,
       "stop_when_item": "", "stop_when_item_below": 0,   # e.g. potions running out
       "drop_keep_minutes": 0,            # drop time to leave unused; 0 = the character's setting
+      "level_keep_xp": 0,                # stop when the next level needs less; 0 = the character's setting
       "end": {"how": "start"}            # where every end goes: start | place (+ map, cell) |
     }                                    # hearthstone | safe | here
 
 How long a plan farms is decided in one place, its stop rules (plus the character's own: drop
-time, a full bag, deaths, broken gear). With one spot it farms there until it stops; a spot's own
+time, the next level, a full bag, deaths, broken gear). With one spot it farms there until it stops; a spot's own
 minutes or kills only matter with several spots: how long before moving on to the next.
 """
 
@@ -38,6 +39,7 @@ PLAN_DEFAULTS: dict[str, Any] = {
     "stop_when_item": "",
     "stop_when_item_below": 0,
     "drop_keep_minutes": 0,
+    "level_keep_xp": 0,
     "end": {"how": "start"},
 }
 
@@ -85,6 +87,7 @@ class Plan(BaseModel):
     stop_when_item: str = PLAN_DEFAULTS["stop_when_item"]
     stop_when_item_below: int = PLAN_DEFAULTS["stop_when_item_below"]
     drop_keep_minutes: int = PLAN_DEFAULTS["drop_keep_minutes"]
+    level_keep_xp: int = PLAN_DEFAULTS["level_keep_xp"]
     end: End = Field(default_factory=End)
 
 
@@ -134,12 +137,21 @@ def end_line(end: dict[str, Any] | None) -> str:
     return "end_at %s" % (how if how in END_HOWS and how != "place" else "start")
 
 
+def keep_lines(plan: dict[str, Any]) -> list[str]:
+    """The plan's own drop time to save and next-level stop, ahead of the character's (0: theirs)."""
+    lines: list[str] = []
+    if plan.get("drop_keep_minutes"):
+        lines.append("keep_drop %d" % int(plan["drop_keep_minutes"]))
+    if plan.get("level_keep_xp"):
+        lines.append("keep_level %d" % int(plan["level_keep_xp"]))
+    return lines
+
+
 def to_script(plan: dict[str, Any]) -> str:
     lines = ["# %s" % (plan.get("name") or "plan"),
              "# Made with the plan editor. Saving it as a script lets you edit it by hand.", "",
              end_line(plan.get("end"))]
-    if plan.get("drop_keep_minutes"):
-        lines.append("keep_drop %d" % int(plan["drop_keep_minutes"]))
+    lines += keep_lines(plan)
     if plan.get("stop_after_minutes"):
         lines.append("stop_when minutes >= %s : time limit reached" % plan["stop_after_minutes"])
     if plan.get("stop_at_clock"):

@@ -70,7 +70,10 @@
    ],
    "map": 1531,
    "npc": "Baru Grottoe Teleportation circle",
-   "at": null,
+   "at": [
+    178,
+    102
+   ],
    "spots": [
     [
      180,
@@ -188,8 +191,11 @@
     1636
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "bottomless pit",
+   "at": [
+    150,
+    19
+   ],
    "spots": [
     [
      172,
@@ -226,7 +232,10 @@
    ],
    "map": 1602,
    "npc": "Bubble Cube Teleportation Circle",
-   "at": null,
+   "at": [
+    96,
+    49
+   ],
    "spots": [
     [
      25,
@@ -359,8 +368,11 @@
     1603
    ],
    "map": 1602,
-   "npc": null,
-   "at": null,
+   "npc": "Wormhole teleportation Circle",
+   "at": [
+    26,
+    49
+   ],
    "spots": [
     [
      25,
@@ -460,8 +472,11 @@
     1632
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "Dryad Jungle Teleportation circle",
+   "at": [
+    166,
+    156
+   ],
    "spots": [
     [
      172,
@@ -498,7 +513,10 @@
    ],
    "map": 1531,
    "npc": "Elemental Maze Teleportation circle",
-   "at": null,
+   "at": [
+    177,
+    78
+   ],
    "spots": [
     [
      180,
@@ -519,8 +537,11 @@
     1563
    ],
    "map": 1561,
-   "npc": null,
-   "at": null,
+   "npc": "fully mountain Teleportation circle",
+   "at": [
+    90,
+    25
+   ],
    "spots": [
     [
      153,
@@ -602,8 +623,11 @@
     1504
    ],
    "map": 1502,
-   "npc": null,
-   "at": null,
+   "npc": "Graceful Mountain Teleportation circle",
+   "at": [
+    34,
+    39
+   ],
    "spots": [
     [
      54,
@@ -666,7 +690,10 @@
    ],
    "map": 1602,
    "npc": "Herbal Mountain Teleportation Circle",
-   "at": null,
+   "at": [
+    93,
+    107
+   ],
    "spots": [
     [
      25,
@@ -703,7 +730,10 @@
    ],
    "map": 1602,
    "npc": "Ice maze Teleportation Circle",
-   "at": null,
+   "at": [
+    28,
+    107
+   ],
    "spots": [
     [
      25,
@@ -739,8 +769,11 @@
     1634
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "Villager Lisa",
+   "at": [
+    179,
+    128
+   ],
    "spots": [
     [
      172,
@@ -776,8 +809,11 @@
     1635
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "Machine Fortress Teleportation circle",
+   "at": [
+    122,
+    128
+   ],
    "spots": [
     [
      172,
@@ -813,8 +849,11 @@
     1562
    ],
    "map": 1561,
-   "npc": null,
-   "at": null,
+   "npc": "Machining plant Teleportation circle",
+   "at": [
+    148,
+    15
+   ],
    "spots": [
     [
      153,
@@ -976,8 +1015,11 @@
     1564
    ],
    "map": 1561,
-   "npc": null,
-   "at": null,
+   "npc": "open sea Teleportation circle",
+   "at": [
+    245,
+    180
+   ],
    "spots": [
     [
      153,
@@ -1059,8 +1101,11 @@
     1637
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "Silver Peak Teleportation circle",
+   "at": [
+    151,
+    189
+   ],
    "spots": [
     [
      172,
@@ -1096,8 +1141,11 @@
     1565
    ],
    "map": 1561,
-   "npc": null,
-   "at": null,
+   "npc": "space battleship Teleportation circle",
+   "at": [
+    277,
+    180
+   ],
    "spots": [
     [
      153,
@@ -1160,8 +1208,11 @@
     1566
    ],
    "map": 1561,
-   "npc": null,
-   "at": null,
+   "npc": "Treasure pavilion Teleportation circle",
+   "at": [
+    277,
+    220
+   ],
    "spots": [
     [
      153,
@@ -1219,7 +1270,10 @@
    ],
    "map": 1602,
    "npc": "Wolf head mountain teleportation circle",
-   "at": null,
+   "at": [
+    61,
+    49
+   ],
    "spots": [
     [
      25,
@@ -1279,8 +1333,11 @@
     1633
    ],
    "map": 1631,
-   "npc": null,
-   "at": null,
+   "npc": "Zagrama Canyon Teleportation circle",
+   "at": [
+    127,
+    156
+   ],
    "spots": [
     [
      172,

@@ -173,13 +173,13 @@ def test_follow_key_none_when_the_base_attack_is_on_the_other_page() -> None:
     assert s.follow_key() is None
 
 
-def test_follow_key_overwrites_with_pyroblast_when_channel_available() -> None:
+def test_follow_key_keeps_channels_in_the_reserved_picker() -> None:
     base = skill("Fireball", role="base_attack", key="j")
     pyro = skill("Pyroblast", role="single_target", key="m")
     s = pinned(sb(slots={0: [base, pyro]}), page=0)
     assert s.follow_key() == "j"
     s.available_to_channel_without_penalty = True
-    assert s.follow_key() == "m"
+    assert s.follow_key() == "j"
 
 
 def test_follow_key_falls_back_to_base_attack_when_pyroblast_on_other_page() -> None:

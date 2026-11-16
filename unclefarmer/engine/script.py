@@ -90,6 +90,7 @@ import time
 from typing import Any
 
 from .. import atlas, dungeons, jsonio, knowledge, sounds, stats
+from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
@@ -107,7 +108,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
@@ -540,6 +541,16 @@ def _prep_keep_drop(node: Node, rest: str, n: int):
     node.opts["minutes"] = int(word)
 
 
+def _prep_keep_level(node: Node, rest: str, n: int):
+    """keep_level <experience>: this run stops once the next level needs less experience than
+    that (the character's "Stop before the next level" otherwise). 0: no such stop this run."""
+    word = rest.strip().replace(",", "")
+    if not word.isdigit() or int(word) > LEVEL_KEEP_MOST:
+        raise ScriptError(n, _("keep_level takes the experience the next level must still need, 0 to {most}: {what}",
+                               most=LEVEL_KEEP_MOST, what=rest))
+    node.opts["xp"] = int(word)
+
+
 def _map_of(where: str, n: int):
     """The map a script names (by name or number), or the line's error."""
     mid = atlas.resolve(" ".join(_split(where, n)))
@@ -796,7 +807,7 @@ def _prep_sound(node: Node, rest: str, n: int):
 PREPARE = {
     "login": _prep_login,
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
-    "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
+    "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
@@ -1161,6 +1172,9 @@ class Runner:
 
     def _do_keep_drop(self, node: Node, b: Bot, o: dict[str, Any]):
         b.drop_keep = o["minutes"]        # this run's, ahead of the character's (drop_time_check)
+
+    def _do_keep_level(self, node: Node, b: Bot, o: dict[str, Any]):
+        b.level_keep = o["xp"]            # this run's, ahead of the character's (level_check)
 
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")

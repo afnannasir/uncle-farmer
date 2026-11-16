@@ -265,3 +265,78 @@ def test_the_script_command_runs_the_same_job(monkeypatch: pytest.MonkeyPatch, j
     b = ScriptBot()
     script_mod.Runner(as_bot(b), job + "\n").run()                          # Tools menu: run_errand("<job>\n")
     assert jobs.ran == [job] and jobs.doing == [job]
+
+
+# ---------------------------------------------------------------- the next level, first of all
+def test_a_run_too_close_to_the_next_level_runs_no_preparation(monkeypatch: pytest.MonkeyPatch,
+                                                               tmp_path: Path) -> None:
+    import test_runner
+
+    def too_close(self: Any) -> None:
+        stop = Stopped("stopped before the next level")
+        stop.stay = True
+        raise stop
+    monkeypatch.setattr(test_runner.FakeBot, "level_before_start", too_close)
+    run, _logs, jobs = triggered(monkeypatch, tmp_path, ticks(before=ORDER, after=ORDER))
+    run.run()
+    assert jobs.ran == []                         # no Before farming, no farming, no After farming
+
+
+def test_the_plans_keep_level_counts_before_the_first_check() -> None:
+    class Seen:
+        level_keep: int | None = None
+        checked_with: int | None = None
+
+        def level_before_start(self) -> None:
+            self.checked_with = self.level_keep
+    b = Seen()
+    main, _subs, _stop = script_mod.parse("end_at start\nkeep_level 250000\nfarm minutes=5\n")
+    R.Run._level_first(as_bot(b), main)
+    assert b.checked_with == 250000
+
+
+# ---------------------------------------------------------------- already on the farm
+def test_first_farm_map_reads_the_first_farm_line_wherever_it_is() -> None:
+    def first(text: str) -> int | None:
+        main, subs, _stop = script_mod.parse(text)
+        return triggers.first_farm_map(main, subs)
+    assert first("end_at start\nfarm map=5281\n") == 5281
+    assert first("repeat\n  farm map=5281 minutes=30\n  farm map=5121 minutes=30\nend\n") == 5281
+    assert first("travel 1041\nfarm minutes=10\n") == triggers.HERE          # farms where it stands
+    assert first("dungeon\nfarm map=5281\n") is None                         # a cave first: never skipped
+    assert first("sub hunt\n  farm map=5121\nend\ncall hunt\n") == 5121
+    assert first("sell_shards\nwait 2\n") is None
+
+
+class FarmHereRunner(MarkingRunner):
+    """A plan whose first spot is the map the stand-in bot stands on (map 1)."""
+    main = [script_mod.Node("farm", 1)]
+
+
+class FarmElsewhereRunner(MarkingRunner):
+    """A plan whose first spot is another map."""
+    node = script_mod.Node("farm", 1)
+    node.opts["map"] = 5281
+    main = [node]
+
+
+def test_on_the_first_farming_map_the_before_list_is_skipped_when_ticked(monkeypatch: pytest.MonkeyPatch,
+                                                                         tmp_path: Path) -> None:
+    profile = dict(ticks(before=["sell_shards", "update_shard_prices"], after=["sell_shards"]),
+                   skip_before_on_farm=True)
+    run, logs, jobs = triggered(monkeypatch, tmp_path, profile, runner=FarmHereRunner)
+    run.run()
+    assert jobs.ran == ["FARMING", "sell_shards"]                  # no Before farming; After still runs
+    assert said(logs, "the Before farming list is skipped") == 1
+
+
+def test_the_before_list_still_runs_off_the_farm_or_unticked(monkeypatch: pytest.MonkeyPatch,
+                                                             tmp_path: Path) -> None:
+    on = dict(ticks(before=["sell_shards"]), skip_before_on_farm=True)
+    run, logs, jobs = triggered(monkeypatch, tmp_path, on, runner=FarmElsewhereRunner)
+    run.run()
+    assert jobs.ran == ["sell_shards", "FARMING"] and said(logs, "is skipped") == 0
+    off = dict(ticks(before=["sell_shards"]), skip_before_on_farm=False)
+    run2, _logs2, jobs2 = triggered(monkeypatch, tmp_path, off, runner=FarmHereRunner)
+    run2.run()
+    assert jobs2.ran == ["sell_shards", "FARMING"]

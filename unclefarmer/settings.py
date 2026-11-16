@@ -46,6 +46,8 @@ PROFILE_EXPORT_VERSION = 1
 CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home", "login_email"))
 
 # One per character. Everything the bot needs to know about how YOU play.
+LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next level" and keep_level take
+
 PROFILE_DEFAULTS: dict[str, Any] = {
     "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
@@ -77,6 +79,9 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "stop_on_drop_time": True,  # end the run when the day's drop time is down to drop_keep_minutes
     "drop_keep_minutes": 0,   # drop time to leave unused (minutes)
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
+    "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
+    "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
+    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -265,6 +270,9 @@ class Profile(BaseModel):
     stop_on_drop_time: bool = PROFILE_DEFAULTS["stop_on_drop_time"]
     drop_keep_minutes: int = PROFILE_DEFAULTS["drop_keep_minutes"]
     drop_tail_seconds: int = PROFILE_DEFAULTS["drop_tail_seconds"]
+    stop_before_level: bool = PROFILE_DEFAULTS["stop_before_level"]
+    level_keep_xp: int = PROFILE_DEFAULTS["level_keep_xp"]
+    skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]
