@@ -109,12 +109,16 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
 
 
 def _step_out_first(b: Bot, target: Npc | None) -> bool:
-    """In a gang base whose way out we haven't seen yet (the run started inside it), with the chosen
-    NPC on another map: walk out first, so the nearest one is chosen from where we come out rather
-    than by the data's order. (Dungeons are left as travel plans it: a travel item may beat the
-    Action menu there.) True when we left (choose again)."""
+    """In a gang base or a secret room whose way out we haven't seen yet (the run started inside
+    it), with the chosen NPC on another map: get out first, so the nearest one is chosen from where
+    we come out rather than by the data's order. Both send us back to where we came in from, which
+    the map data can't say: from a secret room entered from Tulip City, every Shard Broker cost the
+    same "leave", and the one on central plains won - a cable car ride away from Tulip City's.
+    (Dungeons are left as travel plans it: a travel item may beat the Action menu there.) True
+    when we left (choose again)."""
     here = b.map_id()
-    if target is None or target[0] == here or travel.gang_exit(here) is None or here in ways_out(b):
+    closed = travel.gang_exit(here) is not None or atlas.kind(here) == "secret_room"
+    if target is None or target[0] == here or not closed or here in ways_out(b):
         return False
     leave = getattr(b, "leave_here", None)
     if leave is None:
