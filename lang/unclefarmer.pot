@@ -5014,6 +5014,10 @@ msgstr ""
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr ""
 
+msgid ""
+"getting ready at the door of {cave}: its timer starts the moment we are in"
+msgstr ""
+
 msgid "going back to where farming started"
 msgstr ""
 
@@ -5027,6 +5031,9 @@ msgid "going back to {map}{at}"
 msgstr ""
 
 msgid "going home with the hearthstone"
+msgstr ""
+
+msgid "going into a dungeon"
 msgstr ""
 
 msgid "going into the dungeons without a pet (Tools, Dungeons)"
@@ -7329,6 +7336,14 @@ msgid "{opt} isn't a valid name pattern"
 msgstr ""
 
 msgid "{pct}% full ({load} of {max})"
+msgstr ""
+
+msgid ""
+"{pet} can come out in {n} seconds - waiting for it at the door, where no timer runs"
+msgstr ""
+
+msgid ""
+"{pet} can't come out for {n} more minutes - going in without it; it is called inside as soon as it can"
 msgstr ""
 
 msgid "{pet} didn't come out (no pets allowed here?) - trying again later"

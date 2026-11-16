@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+**The experience caves: ready at the door, fighting from the first second**
+
+- Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
+  in thirteen visits, 1 to 15 November). The bot now gets ready at the cave's door, before it
+  chooses "Enter the dungeon", where no timer runs:
+  - it gets off the travel beast (or onto the fusion beast the character fights in);
+  - it calls the pet, which comes in with you. A pet that can come out within three minutes is
+    waited for at the door; one that needs longer is called inside as soon as it can;
+  - it reads the skills, puts the long buffs up and tops up HP and MP;
+  - it puts potions back on empty keys and lets a paused experience card run again. A new
+    experience card is still started inside, so that none is spent when the game turns you away.
+- Why it stood so long: the pet was called first, and the game ignores a "get off the beast"
+  pressed right after a pet has come out. The bot then waited for its next try, 8.5 seconds every
+  time. The beast is now seen to before the pet, in the caves and at the start of every farm.
+- After landing inside, the bot no longer waits a second for the map to settle, and the target
+  key is set in a few hundredths of a second a press instead of a third of a second.
+
 **Kills by damage over time are counted**
 
 - A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps

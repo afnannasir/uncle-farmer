@@ -153,6 +153,19 @@ def test_on_the_farm_a_paused_card_runs_again() -> None:
     assert g.said("experience card running again (30% more experience")
 
 
+def test_at_a_dungeons_door_a_paused_card_runs_again_but_no_new_one_is_used() -> None:
+    g = Game(bonus=30, paused=True, seconds=1735)
+    xpcard.at_the_door(as_bot(g))
+    assert g.sent == ["xpbonus resume"] and not g.paused
+    g = Game(bag=fresh_bag())                 # none running: turned away, a new one would be wasted
+    xpcard.at_the_door(as_bot(g))
+    assert g.used == [] and g.sent == []
+    g = Game(bonus=30, paused=True)
+    g.p.update(xp_card_name="", xp_card_pause=False)
+    xpcard.at_the_door(as_bot(g))
+    assert g.sent == []                       # both ticks off: the card is the player's
+
+
 def test_with_no_card_running_the_chosen_kind_starts_never_the_strongest() -> None:
     g = Game(bag=fresh_bag())                 # a 3x card is in the bag too
     xpcard.on_farm(as_bot(g))

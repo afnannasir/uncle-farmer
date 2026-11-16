@@ -273,6 +273,27 @@ def test_set_modes_presses_until_the_game_agrees() -> None:
     assert "mode set: enemies" in b.lines
 
 
+def test_a_mode_press_is_taken_the_moment_it_shows_not_after_a_fixed_wait() -> None:
+    # three presses from "NPCs" round to "enemies" were the first second of a cave's 15 minutes
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 3})
+    order = [0, 1, 2]
+
+    def press(k: str, ms: int | None = None) -> None:
+        b.keys.append(k)
+        b.link.modes["target"] = order[len(b.keys) - 1]
+    b.key = press
+    b.set_modes()
+    assert b.keys == ["v", "v", "v"] and "mode set: enemies" in b.lines
+    assert b.sleeps == [b.MODE_LOOK] * 3
+
+
+def test_a_mode_press_that_shows_late_is_waited_for_as_long_as_before() -> None:
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 0})
+    b.set_modes()                             # the key changes nothing here
+    assert sum(b.sleeps[:6]) == pytest.approx(b.MODE_WAIT)
+    assert len(b.sleeps) == 6 * len(b.keys)
+
+
 def test_set_modes_leaves_a_locked_pk_mode_alone() -> None:
     b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2, "pk_locked": True})
     b.set_modes()

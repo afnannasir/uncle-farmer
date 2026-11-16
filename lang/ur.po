@@ -5239,6 +5239,11 @@ msgstr "equipment toot gaya, toolbox nahi"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Level {lv} {kind} Enhance Crystals ko {n} tak le ja rahe hain"
 
+msgid ""
+"getting ready at the door of {cave}: its timer starts the moment we are in"
+msgstr ""
+"{cave} ke darwaze par tayyari ho rahi hai: andar jate hi iska timer shuru ho jata hai"
+
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
 
@@ -5254,6 +5259,9 @@ msgstr "{map} par wapas ja rahe hain{at}"
 
 msgid "going home with the hearthstone"
 msgstr "hearthstone se ghar ja rahe hain"
+
+msgid "going into a dungeon"
+msgstr "dungeon mein ja rahe hain"
 
 msgid "going into the dungeons without a pet (Tools, Dungeons)"
 msgstr "pet ke baghair dungeons mein ja raha hai (Tools, Dungeons)"
@@ -7674,6 +7682,16 @@ msgstr "{opt} valid name pattern nahi hai"
 
 msgid "{pct}% full ({load} of {max})"
 msgstr "{pct}% bhara ({load} / {max})"
+
+msgid ""
+"{pet} can come out in {n} seconds - waiting for it at the door, where no timer runs"
+msgstr ""
+"{pet} {n} second mein bahar aa sakta hai - darwaze par iska intezar hai, jahan koi timer nahi chalta"
+
+msgid ""
+"{pet} can't come out for {n} more minutes - going in without it; it is called inside as soon as it can"
+msgstr ""
+"{pet} mazeed {n} minute tak bahar nahi aa sakta - iske baghair andar ja rahe hain; jaise hi mumkin hua ise andar bula liya jayega"
 
 msgid "{pet} didn't come out (no pets allowed here?) - trying again later"
 msgstr ""

@@ -1186,9 +1186,20 @@ One thing to remember: pet supplies are checked only when the pet option is enab
 
 ### What happens during the dungeon run?
 
-Once your supplies are ready, Uncle Farmer travels to the entrance and selects **Enter the dungeon**.
+Once your supplies are ready, Uncle Farmer travels to the entrance.
 
-After your character reaches the safe landing area inside, the dungeon run begins. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
+**Getting ready at the door**
+
+The 15 minutes start the moment your character is inside, so Uncle Farmer gets everything ready before it selects **Enter the dungeon**:
+
+- It gets off the travel beast, or onto the fusion beast your character fights in.
+- It calls your pet, which comes in with you. If the pet can come out within three minutes, Uncle Farmer waits for it at the door. If it needs longer, Uncle Farmer goes in and calls it inside as soon as it can.
+- It puts your long buffs up and tops up HP and MP.
+- It puts potions back on empty keys and lets a paused experience card run again. A new experience card is started inside, so none is spent if the game turns your character away.
+
+Then it selects **Enter the dungeon**.
+
+After your character reaches the safe landing area inside, the dungeon run begins at once. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
 
 **Finding monsters**
 

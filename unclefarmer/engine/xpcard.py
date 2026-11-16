@@ -163,6 +163,22 @@ def on_farm(b: Bot, now: float | None = None) -> None:
         _use(b, st, keep)
 
 
+def at_the_door(b: Bot) -> None:
+    """Before a dungeon's door, where its timer isn't running yet: a paused card runs again now,
+    not at the farm loop's first look inside (the fresh sheet, the press and the sheet showing it
+    are about a second of standing there). A new card is never used here: turned away at the door
+    (the day's visit used up by hand), it would run for nothing - on_farm starts it inside."""
+    keep, pause = wanted(b.p)
+    if not (keep or pause):
+        return
+    st = state(b)
+    if b.clock.time() < st.rest_until or not _usable(b, st):
+        return
+    card = card_of(_sheet(b, fresh=False))
+    if card is not None and card["bonus"] > 0 and card["paused"]:
+        _toggle(b, st, "resume", _("going into a dungeon"))
+
+
 def away(b: Bot, why: str) -> None:
     """Leaving the monsters (why: where to): pause a running card, with xp_card_pause on."""
     if not wanted(b.p)[1]:
