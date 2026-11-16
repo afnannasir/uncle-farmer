@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**Channelled skills wait for a gap between the monsters' swings**
+
+- Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the
+  channel's time is lost. In two Mage nights, 30 to 37% of all Ice Arrows broke this way. Monsters
+  swing on a fixed clock (about every 2 seconds), so the bot now remembers when each monster last
+  swung at you and starts a channel only when it will end before the next swing. Otherwise it uses
+  a skill with no channel: for the Mage that is Magic Sphere, which does the same damage at once.
+- Tried on the recorded nights first: the rule would have held back about half of the arrows that
+  broke, and half of the arrows it held back would have broken. The older idea of "no channel for a
+  while after a hit" held back as many good channels as broken ones.
+- The Elf's Pyroblast and Blazing Storm keep their own timing (Blazing Combo makes them instant).
+
 **The experience caves: ready at the door, fighting from the first second**
 
 - Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
