@@ -4641,6 +4641,9 @@ msgid ""
 msgstr ""
 "{secs} s pehle hamla hua - fusion beast {quiet} s bina hamle ke guzarne tak intezar karta hai"
 
+msgid "attacking guards with the {key} key"
+msgstr "guards par {key} key se hamla"
+
 msgid "attacks {how}"
 msgstr "hamla {how}"
 
