@@ -93,7 +93,8 @@ def test_hidden_water_cave_circles_are_placed() -> None:
     for name, at in want.items():
         e = dungeons.find(name)
         assert e is not None and e["map"] == 1602 and e["at"] == at, name
-n
+
+
 # a dungeon the game's files place nowhere: every real one has its entrance now
 UNPLACED: dict[str, Any] = {"entrances": [{"name": "Hidden Cave", "map": 7, "npc": None, "at": None,
                                           "spots": [[180, 80, "dungeon entrance"]]}],

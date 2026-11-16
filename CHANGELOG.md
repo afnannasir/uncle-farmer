@@ -60,6 +60,13 @@
   data can't say. A room entered from Tulip City sent the bot by cable car to central plains'
   Shard Broker, right past Tulip City's. It now leaves the room first, then picks the nearest one
   from where it comes out, as it already did from a gang base.
+**A start again on the farm goes straight back to farming**
+
+- Character settings, Triggers, Before farming has a new tick, **Skip this list when the run
+  starts on its first farming map** (off by default). After a Stop, starting the plan again where
+  the character was farming used to run the whole Before farming list first - Update shard prices
+  always walks to a Shard Broker, so that was a trip to town and back every time. With the tick,
+  a run that starts on its first farming map leaves the list out and says so.
 
 **XP loser stays in all mode, and puts your PK mode back**
 

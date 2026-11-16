@@ -3313,6 +3313,11 @@ msgstr "Istemal hui skills: {casts} casts, kul {dmg} damage"
 msgid "Skinning"
 msgstr "Skinning (khaal)"
 
+msgid ""
+"Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
+msgstr ""
+"Yeh list chhor dein jab run apne pehle farming &map par shuru ho (Stop, phir wahin dobara shuru jahan farming ho rahi thi)"
+
 msgid "Snow mountain prince"
 msgstr "Snow mountain prince"
 
@@ -4576,6 +4581,11 @@ msgstr "pehle se {cave} ke andar"
 
 msgid "already inside {cave}: hunting until the game moves us out"
 msgstr "pehle se {cave} ke andar: jab tak game bahar na nikale, shikar jaari"
+
+msgid ""
+"already on {map}, where this run farms first - the Before farming list is skipped"
+msgstr ""
+"pehle se {map} par hain, jahan yeh run pehle farming karta hai - Before farming list chhor di gayi"
 
 msgid "area attack"
 msgstr "area hamla"
