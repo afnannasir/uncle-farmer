@@ -1201,7 +1201,8 @@ class FightingMixin(Parts):
             now = self.clock.time()
             self.sleep(max(0.02, min(sb.ready_in(now), f.check_at - now, 0.5)))
             return "again"
-        if sb is not None and isinstance(picked, tuple) and sb.confirm and p.get("press_burst", True):
+        if (sb is not None and isinstance(picked, tuple) and sb.confirm and p.get("press_burst", True)
+                and not (sb.cls == "Elf" and picked[1] in ("Pyroblast", "Blazing Storm"))):
             if self._fight_burst(f, sb, picked):
                 return "return"
         elif picked:
