@@ -103,11 +103,29 @@ def atomic(path: str, value: dict[str, Any], *, envelope: bool = True) -> None:
             stream.write(data)
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        _replace(temporary, path)
         flush(path)
     finally:
         if os.path.exists(temporary):
             os.remove(temporary)
+
+
+REPLACE_TRIES = 8           # about 1.3 s in all: a reader without the lock (startup, the bootstrap) lets go by then
+
+
+def _replace(source: str, target: str) -> None:
+    """os.replace, retried a few times on PermissionError: Windows refuses to replace a file another
+    process has open this moment (Access is denied). Bounded: the last refusal is raised, and the
+    complete new copy stays a temporary file the caller removes, so the old file is either kept
+    whole or replaced whole."""
+    for attempt in range(REPLACE_TRIES):
+        try:
+            os.replace(source, target)
+            return
+        except PermissionError:
+            if attempt == REPLACE_TRIES - 1:
+                raise
+            time.sleep(min(0.01 * 2 ** attempt, 0.5))
 
 
 def fingerprint(path: str) -> dict[str, str] | None:
@@ -196,8 +214,33 @@ def validate(data: object, app: str) -> dict[str, Any]:
                     for k, v in cast(dict[object, object], manifest).items())):
                 raise RecoveryError("invalid recovery manifest")
         _verify_preserved_entry(entry)
+    _validate_progress(record)
     safe(expected, app)
     return record
+
+
+def _validate_progress(record: dict[str, Any]) -> None:
+    """waiting, backed_up and replaced, as plan() and _install_tree write them: lists of planned
+    entry names, each at most once. Every planned entry is either still waiting or replaced (never
+    both: an entry moves from one to the other in one journal write); backed_up holds only entries
+    that had an old version, and every replaced entry that had one was backed up first."""
+    planned = {str(e["name"]): e for e in cast(list[dict[str, Any]], record["entries"])}
+    lists: dict[str, list[str]] = {}
+    for key in ("waiting", "backed_up", "replaced"):
+        value = record.get(key)
+        if not isinstance(value, list):
+            raise RecoveryError("invalid recovery progress: " + key)
+        names = cast(list[object], value)
+        if (any(not isinstance(n, str) or n not in planned for n in names)
+                or len({cast(str, n) for n in names}) != len(names)):
+            raise RecoveryError("invalid recovery progress: " + key)
+        lists[key] = cast(list[str], names)
+    waiting, replaced, backed_up = set(lists["waiting"]), set(lists["replaced"]), set(lists["backed_up"])
+    if waiting & replaced or waiting | replaced != set(planned):
+        raise RecoveryError("recovery progress does not match the plan")
+    if (any(planned[n]["old"] is None for n in backed_up)
+            or any(planned[n]["old"] is not None and n not in backed_up for n in replaced)):
+        raise RecoveryError("recovery progress does not match the backups")
 
 
 def protected_names(names: set[str] = PROTECTED) -> list[str]:
@@ -349,6 +392,12 @@ def cleanup(app: str, record: dict[str, Any]) -> None:
         checkpoint("cleanup-finished")
 
 
+def remove_private_tree(path: str, app: str) -> None:
+    """Remove a private tree under .recovery (a finished transaction's work, an abandoned or retired
+    rescue copy): no links followed, read-only copies included."""
+    _remove_private_tree(path, app)
+
+
 def _remove_private_tree(path: str, app: str) -> None:
     safe(path, app)
     if os.path.isdir(path):
@@ -356,7 +405,16 @@ def _remove_private_tree(path: str, app: str) -> None:
             _remove_private_tree(os.path.join(path, name), app)
         os.rmdir(path)
     else:
-        os.remove(path)
+        try:
+            os.remove(path)
+        except PermissionError:
+            # A read-only copy (a preserved data/ or agent/run file the player made read-only keeps
+            # that attribute in its backup). safe() above refused links and hard links, so the
+            # attribute changes on this private copy only; a file in use still refuses, and stays.
+            if os.stat(path).st_mode & stat.S_IWRITE:
+                raise
+            os.chmod(path, stat.S_IREAD | stat.S_IWRITE)
+            os.remove(path)
     checkpoint("cleanup-removed:" + os.path.relpath(path, app))
 
 

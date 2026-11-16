@@ -2830,6 +2830,9 @@ msgstr ""
 msgid "Potions"
 msgstr "Potions"
 
+msgid "Preparing the update to {v}"
+msgstr "{v} ka update tayyar ho raha hai"
+
 msgid "Press a skill again and &again until the game casts it"
 msgstr "Skill ko dobara dabayein aur &dobara, jab tak game usay cast na kare"
 
@@ -3909,6 +3912,11 @@ msgstr "Update shuru nahi ho saka: {why}"
 
 msgid "The update didn't download: {why}"
 msgstr "Update download nahi hua: {why}"
+
+msgid ""
+"The update is being prepared: Uncle Farmer closes by itself in a moment."
+msgstr ""
+"Update tayyar ho raha hai: Uncle Farmer thori der mein khud band ho jaye ga."
 
 msgid ""
 "The update reinstalls Uncle Farmer's agent, which the open games have loaded, so every Mist World window must close first.\n"

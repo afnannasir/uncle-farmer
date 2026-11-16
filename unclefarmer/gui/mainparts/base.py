@@ -109,6 +109,7 @@ class FrameParts(wx.Frame):
     pending_logins: dict[str, float]        # profile -> when automatic login opened its client
     shutdown_wanted: bool
     updating: bool
+    preparing_update: bool = False          # the update copier is being started on a worker (updates.py)
     close_reason: str                       # why the window closes, when it isn't the player
     hotkeys: list[int]                      # the global hotkeys the window holds
     # ---------------------------------------------------------------- widgets

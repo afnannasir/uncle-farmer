@@ -2749,6 +2749,9 @@ msgstr ""
 msgid "Potions"
 msgstr ""
 
+msgid "Preparing the update to {v}"
+msgstr ""
+
 msgid "Press a skill again and &again until the game casts it"
 msgstr ""
 
@@ -3772,6 +3775,10 @@ msgid "The update couldn't start: {why}"
 msgstr ""
 
 msgid "The update didn't download: {why}"
+msgstr ""
+
+msgid ""
+"The update is being prepared: Uncle Farmer closes by itself in a moment."
 msgstr ""
 
 msgid ""
