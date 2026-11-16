@@ -786,11 +786,19 @@ def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) 
     got = 0
     options: dict[str, int] = {"stock": stock} if stock is not None else {}
     if store:
-        got += withdraw(b, item, missing, **options)
+        # Normal and restricted items can occupy separate storage rows. One
+        # withdrawal takes only one row; reopen the list before resorting to a shop.
+        while missing > 0:
+            taken = withdraw(b, item, missing, **options)
+            got += taken
+            remaining = (max(0, stock - counts(b).get(item.lower(), 0)) if stock is not None
+                         else max(0, missing - taken))
+            progressed = taken > 0 and remaining < missing
+            missing = remaining
+            if not progressed:
+                break
     if stock is not None:
         missing = max(0, stock - counts(b).get(item.lower(), 0))
-    else:
-        missing -= got
     if missing > 0 and shop:
         got += buy(b, item, missing, **options) or 0
     return got

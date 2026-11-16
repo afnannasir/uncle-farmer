@@ -111,15 +111,19 @@ def test_partial_storehouse_withdrawal_buys_only_the_remaining_shortfall(
     b.p["restock"] = [dict(RULE, source="both")]
     withdrawals: list[int] = []
     tb = b
+    stored = 10
 
     def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
+        nonlocal stored
         withdrawals.append(n)
-        tb.add(item, 10)
-        return 10
+        amount = min(n, stored)
+        stored -= amount
+        tb.add(item, amount)
+        return amount
 
     monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, withdraw))
     town.restock_now(as_bot(b))
-    assert withdrawals == [40] and requested == [30]
+    assert withdrawals == [40, 30] and requested == [30]
     assert town.counts(as_bot(b))[ITEM.lower()] == 100
 
 
