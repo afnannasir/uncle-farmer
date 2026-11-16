@@ -96,6 +96,9 @@ class FakeBot:
     def defend(self) -> None:
         self.defend_calls += 1
 
+    def level_before_start(self) -> None:
+        pass                            # "Stop before the next level" is off for these runs
+
     def refresh_sheet(self, force: bool=False) -> dict[str, Any] | None:
         pass
 

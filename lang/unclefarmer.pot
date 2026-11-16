@@ -1318,16 +1318,13 @@ msgstr ""
 msgid "Drink below (%):"
 msgstr ""
 
-msgid "Drop time"
+msgid "Drop time and experience"
 msgstr ""
 
 msgid "Drop time left: {h} h {m} min"
 msgstr ""
 
 msgid "Drop time not read yet."
-msgstr ""
-
-msgid "Drop time to &save (minutes):"
 msgstr ""
 
 msgid "Drop time to save (minutes):"
@@ -3369,6 +3366,13 @@ msgstr ""
 msgid "Stop and send &voice"
 msgstr ""
 
+msgid ""
+"Stop bef&ore the next level (never inside a dungeon: there it only says so)"
+msgstr ""
+
+msgid "Stop before the next &level (instead of the character's setting)"
+msgstr ""
+
 msgid "Stop every day"
 msgstr ""
 
@@ -3393,7 +3397,10 @@ msgstr ""
 msgid "Stop when HP stays &low"
 msgstr ""
 
-msgid "Stop when the day's &drop time runs out"
+msgid "Stop when the day's drop &time runs out"
+msgstr ""
+
+msgid "Stop when the next level needs less than (experience):"
 msgstr ""
 
 msgid "Stop when the potions run &out (unless a restock rule brings more)"
@@ -5146,6 +5153,10 @@ msgstr ""
 msgid "keep_drop takes the minutes of drop time to save, 0 to 1440: {what}"
 msgstr ""
 
+msgid ""
+"keep_level takes the experience the next level must still need, 0 to {most}: {what}"
+msgstr ""
+
 msgid "kept in the bag, as their rules say: {list}"
 msgstr ""
 
@@ -6046,6 +6057,9 @@ msgstr ""
 msgid "stopped after {n} deaths, as you set"
 msgstr ""
 
+msgid "stopped before the next level"
+msgstr ""
+
 msgid "stopped by you"
 msgstr ""
 
@@ -6470,7 +6484,24 @@ msgid ""
 "the next level already needs {xp} experience (goal {goal}) - nothing to lose"
 msgstr ""
 
+msgid ""
+"the next level needs only {n} experience - going somewhere safe and stopping"
+msgstr ""
+
+msgid "the next level needs only {n} experience - not going into {cave}"
+msgstr ""
+
+msgid "the next level needs only {n} experience - not starting to farm"
+msgstr ""
+
+msgid ""
+"the next level needs only {n} experience - the dungeon goes on, leaving would lose the visit"
+msgstr ""
+
 msgid "the next level needs {n} experience"
+msgstr ""
+
+msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 
 msgid "the officer offers no hunting bounty"
@@ -6769,7 +6800,10 @@ msgid "went to {name} as they asked"
 msgstr ""
 
 msgid ""
-"when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
+"when the day's drop time is used up; before the next level, if you asked for it; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
+msgstr ""
+
+msgid "when the next level needs less than {n} experience"
 msgstr ""
 
 msgid "when {item} is below {n}"

@@ -107,6 +107,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.resting = False              # standing still to get HP back: a heal skill tops up to rest_until
         self.start_place = None           # (map, x, y) where the run started
         self.drop_keep = None             # minutes of drop time this run saves (keep_drop), else the profile's
+        self.level_keep = None            # experience before the next level this run stops at (keep_level), else the profile's
         self.daily_stop_at = 0.0          # epoch seconds: the run ends then, whatever it is doing
         self.daily_reset = ""             # the game's day reset, "HH:MM" on this computer's clock
         self.daily_done = False

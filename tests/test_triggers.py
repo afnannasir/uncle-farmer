@@ -265,3 +265,31 @@ def test_the_script_command_runs_the_same_job(monkeypatch: pytest.MonkeyPatch, j
     b = ScriptBot()
     script_mod.Runner(as_bot(b), job + "\n").run()                          # Tools menu: run_errand("<job>\n")
     assert jobs.ran == [job] and jobs.doing == [job]
+
+
+# ---------------------------------------------------------------- the next level, first of all
+def test_a_run_too_close_to_the_next_level_runs_no_preparation(monkeypatch: pytest.MonkeyPatch,
+                                                               tmp_path: Path) -> None:
+    import test_runner
+
+    def too_close(self: Any) -> None:
+        stop = Stopped("stopped before the next level")
+        stop.stay = True
+        raise stop
+    monkeypatch.setattr(test_runner.FakeBot, "level_before_start", too_close)
+    run, _logs, jobs = triggered(monkeypatch, tmp_path, ticks(before=ORDER, after=ORDER))
+    run.run()
+    assert jobs.ran == []                         # no Before farming, no farming, no After farming
+
+
+def test_the_plans_keep_level_counts_before_the_first_check() -> None:
+    class Seen:
+        level_keep: int | None = None
+        checked_with: int | None = None
+
+        def level_before_start(self) -> None:
+            self.checked_with = self.level_keep
+    b = Seen()
+    main, _subs, _stop = script_mod.parse("end_at start\nkeep_level 250000\nfarm minutes=5\n")
+    R.Run._level_first(as_bot(b), main)
+    assert b.checked_with == 250000

@@ -8,7 +8,7 @@ from typing import Any
 
 import wx
 
-from .. import atlas, jsonio, travel
+from .. import atlas, jsonio, settings, travel
 from ..engine import plan as plans
 from ..engine.script import check as check_script
 from ..i18n import _
@@ -270,6 +270,8 @@ def plan_text(p: dict[str, Any]) -> str:
         stops.append(_("when {item} is below {n}", item=p["stop_when_item"], n=p.get("stop_when_item_below", 0)))
     if p.get("drop_keep_minutes"):
         stops.append(_("with {n} minutes of drop time saved", n=p["drop_keep_minutes"]))
+    if p.get("level_keep_xp"):
+        stops.append(_("when the next level needs less than {n} experience", n=p["level_keep_xp"]))
     if stops:
         lines.append(_("Stops {rules}.", rules=", ".join(stops)))
     lines.append(end_text(p.get("end")))
@@ -327,13 +329,19 @@ class PlanDialog(Dialog):
         self.keep_drop_on, self.keep_drop = f.optional(
             _("&Save some of the day's drop time (instead of the character's setting)"), bool(keep),
             _("Drop time to save (minutes):"), keep or 60, 1, 1440)
+        level = p.get("level_keep_xp", 0)
+        self.keep_level_on, self.keep_level = f.optional(
+            _("Stop before the next &level (instead of the character's setting)"), bool(level),
+            _("Stop when the next level needs less than (experience):"), level or 100000, 1,
+            settings.LEVEL_KEEP_MOST)
         self.watch(self.clock_on, (self.limit_clock,))
         self.watch(self.item_on, (self.item, self.item_below))
         labeled(panel, box, _("It also stops by itself:"),
                 lambda w: wx.TextCtrl(w, value=_(
-                    "when the day's drop time is used up; when the bag is full of things you keep; after "
-                    "the last death you allow; when broken gear can't be repaired. Those are set per "
-                    "character, in Character, Settings and Bag and supplies."),
+                    "when the day's drop time is used up; before the next level, if you asked for it; when "
+                    "the bag is full of things you keep; after the last death you allow; when broken gear "
+                    "can't be repaired. Those are set per character, in Character, Settings and Bag and "
+                    "supplies."),
                     style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 70)))
 
         # 3. where to end
@@ -539,6 +547,7 @@ class PlanDialog(Dialog):
                  stop_after_kills=self.limit_kills.GetValue() if self.limit_kills_on.GetValue() else 0,
                  stop_when_item=item, stop_when_item_below=self.item_below.GetValue() if item else 0,
                  drop_keep_minutes=self.keep_drop.GetValue() if self.keep_drop_on.GetValue() else 0,
+                 level_keep_xp=self.keep_level.GetValue() if self.keep_level_on.GetValue() else 0,
                  end=end)
         return p
 

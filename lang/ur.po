@@ -1343,17 +1343,14 @@ msgstr "Draw Blood (khoon)"
 msgid "Drink below (%):"
 msgstr "Kitne (%) se neeche peeyein:"
 
-msgid "Drop time"
-msgstr "Drop ka waqt"
+msgid "Drop time and experience"
+msgstr "Drop time aur experience"
 
 msgid "Drop time left: {h} h {m} min"
 msgstr "Drop time baqi: {h} h {m} min"
 
 msgid "Drop time not read yet."
 msgstr "Drop time abhi nahi parha."
-
-msgid "Drop time to &save (minutes):"
-msgstr "Drop ka waqt &mahfooz karne ke liye (minute):"
 
 msgid "Drop time to save (minutes):"
 msgstr "Drop ka waqt mahfooz karne ke liye (minute):"
@@ -3477,6 +3474,14 @@ msgstr "Bohat zyada &maut ke baad rukein"
 msgid "Stop and send &voice"
 msgstr "rok kar &voice bhejein"
 
+msgid ""
+"Stop bef&ore the next level (never inside a dungeon: there it only says so)"
+msgstr ""
+"Agle level se &pehle rukein (dungeon ke andar kabhi nahin: wahan sirf batata hai)"
+
+msgid "Stop before the next &level (instead of the character's setting)"
+msgstr "Agle &level se pehle rukein (kirdaar ki setting ki jagah)"
+
 msgid "Stop every day"
 msgstr "Har roz rok"
 
@@ -3501,8 +3506,11 @@ msgstr "Jab &Vitality itni reh jaye to rukein (0: khatam hone tak):"
 msgid "Stop when HP stays &low"
 msgstr "Jab HP &kam reh jaye to rukein"
 
-msgid "Stop when the day's &drop time runs out"
-msgstr "Rok dein jab din ka &drop waqt khatam ho jaye"
+msgid "Stop when the day's drop &time runs out"
+msgstr "Rok dein jab din ka drop &waqt khatam ho jaye"
+
+msgid "Stop when the next level needs less than (experience):"
+msgstr "Rukein jab agle level ko is se kam experience chahiye ho:"
 
 msgid "Stop when the potions run &out (unless a restock rule brings more)"
 msgstr ""
@@ -5376,6 +5384,11 @@ msgid "keep_drop takes the minutes of drop time to save, 0 to 1440: {what}"
 msgstr ""
 "keep_drop ko mahfooz karne wale drop ke waqt ke minute chahiyein, 0 se 1440: {what}"
 
+msgid ""
+"keep_level takes the experience the next level must still need, 0 to {most}: {what}"
+msgstr ""
+"keep_level ko woh experience chahiye jo agle level ke liye baqi rehna chahiye, 0 se {most} tak: {what}"
+
 msgid "kept in the bag, as their rules say: {list}"
 msgstr "baste mein rakhe, jaisa un ke rules kehte hain: {list}"
 
@@ -6324,6 +6337,9 @@ msgstr "ruk gaya"
 msgid "stopped after {n} deaths, as you set"
 msgstr "{n} maut ke baad ruk gaye, jaisa aap ne rakha"
 
+msgid "stopped before the next level"
+msgstr "agle level se pehle ruk gaye"
+
 msgid "stopped by you"
 msgstr "aap ne rok diya"
 
@@ -6779,8 +6795,29 @@ msgid ""
 msgstr ""
 "agle level ko pehle hi {xp} experience chahiye (maqsad {goal}) - kam karne ko kuch nahi"
 
+msgid ""
+"the next level needs only {n} experience - going somewhere safe and stopping"
+msgstr ""
+"agle level ko sirf {n} experience chahiye - kisi mahfooz jagah ja kar ruk rahe hain"
+
+msgid "the next level needs only {n} experience - not going into {cave}"
+msgstr "agle level ko sirf {n} experience chahiye - {cave} mein nahin ja rahe"
+
+msgid "the next level needs only {n} experience - not starting to farm"
+msgstr ""
+"agle level ko sirf {n} experience chahiye - farming shuru nahin kar rahe"
+
+msgid ""
+"the next level needs only {n} experience - the dungeon goes on, leaving would lose the visit"
+msgstr ""
+"agle level ko sirf {n} experience chahiye - dungeon jaari hai, bahar nikalne se visit zaya ho jati"
+
 msgid "the next level needs {n} experience"
 msgstr "agle level ko {n} experience chahiye"
+
+msgid "the next level needs {n} experience; farming stops under {goal}"
+msgstr ""
+"agle level ko {n} experience chahiye; {goal} se kam par farming ruk jayegi"
 
 msgid "the officer offers no hunting bounty"
 msgstr "afsar hunting bounty nahi de raha"
@@ -7094,9 +7131,12 @@ msgid "went to {name} as they asked"
 msgstr "un ke kehne par {name} ke paas chala gaya"
 
 msgid ""
-"when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
+"when the day's drop time is used up; before the next level, if you asked for it; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
 msgstr ""
-"jab din ka drop time khatam ho jaye; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
+"jab din ka drop time khatam ho jaye; agle level se pehle, agar aap ne kaha ho; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
+
+msgid "when the next level needs less than {n} experience"
+msgstr "jab agle level ko {n} se kam experience chahiye ho"
 
 msgid "when {item} is below {n}"
 msgstr "jab {item} {n} se kam ho"
@@ -7885,6 +7925,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Clea&n the bag (game menu, Clean the bag now)"
 #~ msgstr "Basta saa&f karein (game menu, Clean the bag now)"
 
+#~ msgid "Drop time"
+#~ msgstr "Drop ka waqt"
+
+#~ msgid "Drop time to &save (minutes):"
+#~ msgstr "Drop ka waqt &mahfooz karne ke liye (minute):"
+
 #~ msgid "E&xport plan"
 #~ msgstr "Mansooba e&xport karein"
 
@@ -7926,6 +7972,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "St&ore items (game menu, Store items now)"
 #~ msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
 
+#~ msgid "Stop when the day's &drop time runs out"
+#~ msgstr "Rok dein jab din ka &drop waqt khatam ho jaye"
+
 #~ msgid "The delay must be a finite number of seconds, zero or greater."
 #~ msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
 
@@ -7939,3 +7988,8 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
+
+#~ msgid ""
+#~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
+#~ msgstr ""
+#~ "jab din ka drop time khatam ho jaye; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
