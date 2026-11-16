@@ -334,6 +334,9 @@ def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over
         rows = equipment(bot)
         if rows and all(isinstance(r.get("equipped"), int) and r["equipped"] >= 0 for r in rows):
             g.warned.clear()
+        else:
+            # the warnings stay, so check() would ask again in CHECK_EVERY seconds: wait instead
+            g.failed_at = clock_for(bot).time()
         return FAILED
     if any(re.search(TOO_HIGH, t, re.I) for t in texts) or not any(re.search(ASK, t, re.I) for t in texts):
         bot.close_dialogs()
@@ -399,7 +402,8 @@ def _verify(bot: Bot, name: str, count: int, broken_before: set[int]) -> tuple[b
         valid = (jsonio.is_array(rows) and bool(rows)
                  and all(jsonio.is_object(r) and isinstance(r.get("equipped"), int) for r in rows))
         still = [r.get("name") or "?" for r in rows if r["equipped"] < 0] if valid else []
-        fixed: set[int | None] = {r.get("uid") for r in rows if r["equipped"] > 0} if valid else set()
+        # not broken (broken() counts below 0 as broken): the server's equipped value may be 0
+        fixed: set[int | None] = {r.get("uid") for r in rows if r["equipped"] >= 0} if valid else set()
         if valid and fixed and not still and ((left is not None and left < count and covers(limit_of(name), level(bot)))
                                              or bool(broken_before) and broken_before <= fixed):
             return True, left, []

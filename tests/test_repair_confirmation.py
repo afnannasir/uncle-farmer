@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 
 from conftest import Clock, as_bot
-from test_toolbox_tiers import GameBot
+from test_toolbox_tiers import GameBot, dlg
 from unclefarmer.engine import repair
 
 
@@ -96,3 +96,41 @@ def test_consuming_an_underlevel_toolbox_does_not_prove_worn_gear_repaired() -> 
     b.last_me = {"sheet": {"level": 95}}  # Large Toolbox only covers level80
     assert repair.repair(as_bot(b)) is False
     assert b.gear.warned and b.gear.repaired_at == 0
+
+
+class NoneToDoBot(ConfirmationBot):
+    """The game answers "No repairable equipment" to the toolbox."""
+
+    def wait_dialog(self, t: float) -> dict[str, Any] | None:
+        return dlg("No repairable equipment", "OK")
+
+
+def test_nothing_to_repair_with_unreadable_gear_waits_before_asking_again() -> None:
+    b = NoneToDoBot(consumed=False, repaired=False)
+    original = b.link.json
+
+    def answer(line: str) -> Any:
+        return {"error": "busy"} if line == "mem equipment" else original(line)
+
+    b.link.json = answer
+    assert repair.repair(as_bot(b)) is False
+    assert b.gear.warned and b.gear.failed_at > 0      # check() leaves it for 600 s, not 2 s
+
+
+def test_nothing_to_repair_with_sound_gear_clears_the_warnings() -> None:
+    b = NoneToDoBot(consumed=False, repaired=False)
+    assert repair.repair(as_bot(b)) is False
+    assert b.gear.warned == {} and b.gear.repaired_at == 0
+
+
+def test_an_equipped_value_of_zero_counts_as_mended() -> None:
+    b = ConfirmationBot(consumed=False, repaired=False)
+    b.link.equipment[0]["equipped"] = -1
+    b.gear.warned = {1: "broken"}
+
+    def choose(pat: str) -> dict[str, Any] | None:
+        b.chosen.append(pat)
+        b.link.equipment[0]["equipped"] = 0
+        return {"text": "Confirm"}
+    b.choose = choose
+    assert repair.repair(as_bot(b)) is True
