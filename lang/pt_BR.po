@@ -241,7 +241,7 @@ msgstr ""
 "&Coletar os monstros derrotados usando Extrair Sangue, Esfolar ou Cortar Carne"
 
 msgid "&Heal skill below HP (%):"
-msgstr "Habilidade de cura abaixo de HP (%):"
+msgstr "&Habilidade de cura abaixo de HP (%):"
 
 msgid "&Hearthstone item:"
 msgstr "Item da &pedra de retorno:"
@@ -468,7 +468,7 @@ msgid "&Settings"
 msgstr "&Configurações"
 
 msgid "&Shields and big heals below HP (%):"
-msgstr "Escudos e curas fortes abaixo de HP (%):"
+msgstr "E&scudos e curas fortes abaixo de HP (%):"
 
 msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
@@ -1020,7 +1020,7 @@ msgstr "Som de aviso"
 msgid ""
 "Choose &skills from what the game says about them (off: press the attack keys in turn)"
 msgstr ""
-"Escolher habilidades conforme a descrição do jogo (desativado: pressionar as teclas de ataque em sequência)"
+"Escolher habilidades conforme a descrição do jogo (desativado: pressionar as teclas de ataque em &sequência)"
 
 msgid "Choose Before farming or After farming."
 msgstr "Escolha Antes da coleta ou Depois da coleta."
@@ -1242,7 +1242,7 @@ msgid "Couldn't."
 msgstr "Não foi possível."
 
 msgid "Cra&ftsman:"
-msgstr "Artesão:"
+msgstr "&Artesão:"
 
 msgid "Craftsman and spending"
 msgstr "Artesão e gastos"
@@ -1295,7 +1295,7 @@ msgid "Deaths before stopping:"
 msgstr "Mortes antes de parar:"
 
 msgid "Delay after success (&seconds):"
-msgstr "Atraso após sucesso (segundos):"
+msgstr "Atraso após &sucesso (segundos):"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "Excluir o agendamento de {what} ({who})?"
@@ -1569,13 +1569,13 @@ msgid "Fewer than:"
 msgstr "Menos de:"
 
 msgid "Fight &back when attacked while travelling"
-msgstr "Revidar quando for atacado durante a viagem"
+msgstr "&Revidar quando for atacado durante a viagem"
 
 msgid "Fight as &fusion beast:"
 msgstr "Lutar como &besta de fusão:"
 
 msgid "Fight monsters another player is &already killing"
-msgstr "Lutar contra monstros que outro jogador já está atacando"
+msgstr "Lutar contra monstros que outro jogador já está &atacando"
 
 msgid "Fighting"
 msgstr "Lutando"
@@ -1738,7 +1738,7 @@ msgid "Global"
 msgstr "Global"
 
 msgid "Go &on"
-msgstr "Continuar"
+msgstr "C&ontinuar"
 
 msgid "Go anyway"
 msgstr "Ir mesmo assim"
@@ -1813,7 +1813,7 @@ msgid "Heal it when its HP is below (%):"
 msgstr "Curar quando o HP estiver abaixo de (%):"
 
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
-msgstr "Curar o mascote com minha habilidade de cura (Sacerdote, Feiticeira)"
+msgstr "Curar o mascote com minha habilidade de cura (&Sacerdote, Feiticeira)"
 
 msgid ""
 "Heal the player I follow and our &teammates with my healing skill (Priest, Sorceress)"
@@ -1823,7 +1823,7 @@ msgstr ""
 msgid ""
 "Heal with the class's o&wn heal skill (Sorceress, Priest); red potions only under half HP"
 msgstr ""
-"Curar com a habilidade de cura da classe (Feiticeira, Sacerdote); poções vermelhas somente abaixo de metade do HP"
+"&Curar com a habilidade de cura da classe (Feiticeira, Sacerdote); poções vermelhas somente abaixo de metade do HP"
 
 msgid "Healed others"
 msgstr "Curou outras pessoas"
@@ -1864,7 +1864,7 @@ msgid "History of {what} for {who}"
 msgstr "Histórico de {what} de {who}"
 
 msgid "Ho&w the game works"
-msgstr "Como o jogo funciona"
+msgstr "&Como o jogo funciona"
 
 msgid "Home, with the hearthstone"
 msgstr "Em casa, usando a pedra de retorno"
@@ -2344,10 +2344,10 @@ msgid "Move to Sounds List"
 msgstr "Mover para Sons"
 
 msgid "Move to kee&p"
-msgstr "Mover para manter"
+msgstr "Mover &para manter"
 
 msgid "Move to se&ll"
-msgstr "Mover para vender"
+msgstr "&Mover para vender"
 
 msgid "Move to st&orehouse"
 msgstr "Mover para o depós&ito"
@@ -2356,13 +2356,13 @@ msgid "Move to sto&rehouse"
 msgstr "Mover para o depós&ito"
 
 msgid "Move to thro&w away"
-msgstr "Mover para descartar"
+msgstr "&Mover para descartar"
 
 msgid "Move to throw a&way"
-msgstr "Mover para descartar"
+msgstr "&Mover para descartar"
 
 msgid "Mute e&very game"
-msgstr "Silenciar todos os jogos"
+msgstr "&Silenciar todos os jogos"
 
 msgid "My own gang's (gangs pay less)"
 msgstr "Da minha própria guilda (guildas pagam menos)"
@@ -2380,7 +2380,7 @@ msgid "Never"
 msgstr "Nunca"
 
 msgid "Never spend arnebia belo&w:"
-msgstr "Nunca gastar arnebia abaixo de:"
+msgstr "&Nunca gastar arnebia abaixo de:"
 
 msgid "New &script"
 msgstr "Novo &script"
@@ -2635,17 +2635,17 @@ msgstr "Abrir outra &janela do jogo"
 msgid ""
 "Open fire up to this many tiles &early, beyond the {reach} tiles set above, while a monster comes at you (0: wait until it is within {reach}):"
 msgstr ""
-"Começar a atacar com esta antecedência em blocos, além dos {reach} definidos acima, enquanto o monstro se aproxima (0: aguardar até que esteja a {reach}):"
+"Começar a atacar com &esta antecedência em blocos, além dos {reach} definidos acima, enquanto o monstro se aproxima (0: aguardar até que esteja a {reach}):"
 
 msgid ""
 "Open fire up to this many tiles &early, beyond the {reach} tiles the bot fights from ({skill} reaches {range}), while a monster comes at you (0: wait until it is within {reach}):"
 msgstr ""
-"Começar a atacar com esta antecedência em blocos, além do alcance de {reach} do bot ({skill} alcança {range}), enquanto o monstro se aproxima (0: aguardar até que esteja a {reach}):"
+"Começar a atacar com &esta antecedência em blocos, além do alcance de {reach} do bot ({skill} alcança {range}), enquanto o monstro se aproxima (0: aguardar até que esteja a {reach}):"
 
 msgid ""
 "Open fire up to this many tiles &early, beyond your class's attack range, while a monster comes at you (0: wait until it is in range):"
 msgstr ""
-"Começar a atacar com esta antecedência em blocos, além do alcance de ataque da classe, enquanto o monstro se aproxima (0: aguardar até que esteja ao alcance):"
+"Começar a atacar com &esta antecedência em blocos, além do alcance de ataque da classe, enquanto o monstro se aproxima (0: aguardar até que esteja ao alcance):"
 
 msgid "Open its &menu when I get there"
 msgstr "Abrir o &menu ao chegar"
@@ -2685,7 +2685,7 @@ msgid "Our blue potions"
 msgstr "Nossas poções azuis"
 
 msgid "Our gang's &highland number (the one under Occupied Highlands):"
-msgstr "Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
+msgstr "&Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
 
 msgid "Our own gang"
 msgstr "Nossa própria guilda"
@@ -2735,7 +2735,7 @@ msgstr "Rotas de patrulha: {loops}"
 msgid ""
 "Pause the card while a&way from the monsters: town trips, the walk back after a death, the end of farming (each pause costs a minute of the card; never in a dungeon)"
 msgstr ""
-"Pausar o cartão quando estiver longe dos monstros: viagens à cidade, retorno após morrer e fim da coleta (cada pausa custa um minuto do cartão; nunca em masmorras)"
+"&Pausar o cartão quando estiver longe dos monstros: viagens à cidade, retorno após morrer e fim da coleta (cada pausa custa um minuto do cartão; nunca em masmorras)"
 
 msgid "Paused"
 msgstr "Pausado"
@@ -2848,10 +2848,10 @@ msgid "Preparing the update to {v}"
 msgstr "Preparando a atualização para {v}"
 
 msgid "Press a skill again and &again until the game casts it"
-msgstr "Pressione a habilidade repetidamente até o jogo conjurá-la"
+msgstr "Pressione &a habilidade repetidamente até o jogo conjurá-la"
 
 msgid "Press s&kills through the game, not the keyboard"
-msgstr "Pressionar habilidades pelo jogo, não pelo teclado"
+msgstr "&Pressionar habilidades pelo jogo, não pelo teclado"
 
 msgid "Press the new key for {action}:"
 msgstr "Pressione a nova tecla para {action}:"
@@ -2938,7 +2938,7 @@ msgid "Ready"
 msgstr "Pronto"
 
 msgid "Recent sound &requests (latest 200):"
-msgstr "Solicitações recentes de som (últimas 200):"
+msgstr "Solicitações &recentes de som (últimas 200):"
 
 msgid "Record &voice"
 msgstr "Gravar &voz"
@@ -3501,7 +3501,7 @@ msgstr "Parar e enviar &áudio"
 msgid ""
 "Stop bef&ore the next level (never inside a dungeon: there it only says so)"
 msgstr ""
-"Parar antes do próximo nível (nunca dentro de uma masmorra; lá apenas informa)"
+"Parar antes d&o próximo nível (nunca dentro de uma masmorra; lá apenas informa)"
 
 msgid "Stop before the next &level (instead of the character's setting)"
 msgstr "Parar antes do próximo &nível (em vez da configuração do personagem)"
@@ -3513,7 +3513,7 @@ msgid "Stop every running bot first, then update."
 msgstr "Primeiro, pare todos os bots em execução e depois atualize."
 
 msgid "Stop if broken gear ca&n't be repaired"
-msgstr "Parar se o equipamento quebrado não puder ser reparado"
+msgstr "Parar se o equipamento quebrado &não puder ser reparado"
 
 msgid "Stop the bot first."
 msgstr "Pare o bot primeiro."
@@ -4276,16 +4276,16 @@ msgid "Use &boost runes when I have enough (+5%)"
 msgstr "Usar runas de &impulso quando tiver o suficiente (+5%)"
 
 msgid "Use &cable cars and teleport circles"
-msgstr "Usar teleféricos e círculos de teletransporte"
+msgstr "Usar teleféricos e &círculos de teletransporte"
 
 msgid "Use &teleport stones and the hearthstone from the bag"
-msgstr "Usar pedras de teletransporte e a pedra de retorno da bolsa"
+msgstr "Usar pedras de &teletransporte e a pedra de retorno da bolsa"
 
 msgid "Use Gem &Protection Runes (a failure breaks no gem)"
 msgstr "Usar runas de &proteção de gemas (uma falha não quebra nenhuma gema)"
 
 msgid "Use area &skills on this many monsters close together:"
-msgstr "Usar habilidades de área em tantos monstros próximos:"
+msgstr "U&sar habilidades de área em tantos monstros próximos:"
 
 msgid "Use item"
 msgstr "Usar item"
@@ -4300,7 +4300,7 @@ msgid "Use the &default ({time})"
 msgstr "Usar o &padrão ({time})"
 
 msgid "Use the class's teleport &skill (Mage, Elf)"
-msgstr "Usar a habilidade de teletransporte da classe (Mago, Elfo)"
+msgstr "U&sar a habilidade de teletransporte da classe (Mago, Elfo)"
 
 msgid "Use the day's free &rebirths on one pet"
 msgstr "Usar as &reencarnações gratuitas do dia em um mascote"
@@ -4423,7 +4423,7 @@ msgid "When an &item runs low"
 msgstr "Quando um &item estiver acabando"
 
 msgid "When crystals run &out, make this many more:"
-msgstr "Quando os cristais acabarem, criar esta quantidade:"
+msgstr "Quando &os cristais acabarem, criar esta quantidade:"
 
 msgid "When farming stops by itself (never after you press Stop)"
 msgstr "Quando a coleta parar sozinha (nunca depois de você pressionar Parar)"
@@ -4484,7 +4484,7 @@ msgstr ""
 
 msgid "With a heal skill, red &potions only below HP (%):"
 msgstr ""
-"Com uma habilidade de cura, usar poções vermelhas somente abaixo de (% de PV):"
+"Com uma habilidade de cura, usar &poções vermelhas somente abaixo de (% de PV):"
 
 msgid "With more than one spot:"
 msgstr "Com mais de um local:"
