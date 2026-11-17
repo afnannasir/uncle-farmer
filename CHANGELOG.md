@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**XP loser: die at the nearest village**
+
+- Tools, XP loser has a new choice, **Where to die**: at the nearest guard (as before), or at the
+  nearest village. The game brings a dead character back at the last town it walked into, so the
+  bot walks into the village first; its gate guards stand a few steps from there, so each death is
+  much quicker: on Tuneful
+  Wetland a death took 11 seconds at Aria Village against 29 at Tulip City, whose guards stand far
+  out past its streets. The villages come from the game's own map table (16 of them, from mettle
+  village to Orchid woods Village). A village with no guard to fight is left for the next nearest;
+  and if the game brings the character back somewhere else, the bot says so and dies at the
+  nearest guard instead.
+
 **Automatic login picks the character's server**
 
 - A scheduled script's `login` now selects the saved character's server (S1 or S2) before signing
