@@ -101,6 +101,28 @@
   earnings left it out. Selling shards, selling fish, ore and herbs, and selling to a shop now
   wait for the money (three seconds at most).
 
+**Settings and learned data survive a busy disk and two writers at once**
+
+- A settings file another program held open for a moment (an antivirus, a backup) was taken
+  for a broken one: it went to settings.json.corrupt and the defaults were saved in its place.
+  A file that can't be read is now left alone, read again after a short wait, and nothing is
+  saved over it until it can be read. The same goes for the character profiles.
+- The sound silencer, the scheduler and the main window each saved the whole settings file, so
+  one could put back a value another had just saved (the daily stop time, the sound list). A
+  save now writes only what its holder changed, onto the file as it is then.
+- A run saving what it learned (the hearthstone's square, gathering places) no longer puts back
+  the character settings as they were when it started: changes made while it ran stay.
+- A run whose results couldn't be saved (a full disk) left the window saying it was already
+  running until the app was restarted. The run now always ends; the results are still shown in
+  the log, and the failure is said.
+- A scheduled run whose save failed was taken for done and never started. It now starts at the
+  next look, once.
+- The results window could fail with "dictionary changed size during iteration" while a run
+  was adding to them.
+- The game's options file (mw.exe.vmoptions), the learned dungeon entrances, item weights and
+  landings, the daily chores' list, shard prices and survey records are written whole or not at
+  all, and two saves at once no longer lose one of them.
+
 **Safer updates**
 
 - Uncle Farmer no longer seems to freeze after a download: the update is prepared in the

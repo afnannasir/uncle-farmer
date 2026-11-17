@@ -206,8 +206,8 @@ class Record:
         self.mid = mid
         self.path = os.path.join(out_dir(), "%d.json" % mid)
         if os.path.exists(self.path):
-            with open(self.path, encoding="utf-8") as f:
-                self.data = json.load(f)
+            with json.lock_for(self.path):
+                self.data = json.read(self.path, encoding="utf-8")     # waits out a save; never {} for an unreadable file
             self.merge_walkers()
         else:
             self.data = {"map": mid, "name": atlas.name(mid), "npcs": {}, "swept": False, "started": time.strftime("%Y-%m-%d %H:%M")}
@@ -279,11 +279,12 @@ class Record:
             m["cells"].append(cell)
 
     def save(self) -> None:
-        self.data["updated"] = time.strftime("%Y-%m-%d %H:%M")
-        tmp = self.path + ".tmp"
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=1)
-        os.replace(tmp, self.path)
+        """Atomically (jsonio.save: a temporary file of its own, flushed, then renamed), under the
+        file's lock: two saves at once shared one ".tmp" name, and one replace then failed or
+        wrote the other's half-written file."""
+        with json.lock_for(self.path):
+            self.data["updated"] = time.strftime("%Y-%m-%d %H:%M")
+            json.save(self.path, self.data, indent=1)
 
 
 def is_npc(e: Entity) -> bool:

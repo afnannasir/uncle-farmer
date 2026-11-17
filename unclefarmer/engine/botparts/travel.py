@@ -656,9 +656,12 @@ class TravelMixin(Parts):
                                names=", ".join(sorted(circles))))
                 raise Stopped(_("none of the entrances marked on {map} is the {name} circle",
                                 map=atlas.label(mid), name=entry["name"]))
-            dungeons.learn(entry, npc["name"], npc["x"], npc["y"])
-            self.log(_("found it: {npc} at {x},{y} - remembered", npc=npc["name"], x=int(npc["x"]),
-                       y=int(npc["y"])))
+            if dungeons.learn(entry, npc["name"], npc["x"], npc["y"]):
+                self.log(_("found it: {npc} at {x},{y} - remembered", npc=npc["name"], x=int(npc["x"]),
+                           y=int(npc["y"])))
+            else:
+                self.log(_("found it: {npc} at {x},{y} - but couldn't save it for next time", npc=npc["name"],
+                           x=int(npc["x"]), y=int(npc["y"])))
             at = (int(round(npc["x"])), int(round(npc["y"])))
             if self.approach(npc["name"], at) is None:
                 raise Stopped(_("couldn't get to {npc}", npc=npc["name"]))

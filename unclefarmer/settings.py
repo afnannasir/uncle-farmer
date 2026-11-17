@@ -5,12 +5,13 @@ from __future__ import annotations
 import copy
 import os
 import shutil
-from collections.abc import Callable, Collection
+import threading
+from collections.abc import Callable, Collection, Mapping
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from . import filelock, jsonio as json, paths
+from . import applog, filelock, jsonio as json, paths
 from .i18n import _
 
 APP_DEFAULTS: dict[str, Any] = {
@@ -384,17 +385,48 @@ TARGET_MODES = ["all", "own side", "enemies", "NPCs"]
 
 
 _unreadable: set[str] = set()          # files that exist but could not be read: never overwrite them blindly
+# Every read and write of settings.json and of the profiles: the window, a run's thread, the sound
+# silencer and the scheduler all save them, and a save is a read of the file as it is now, the
+# changes, and the write, all under this one lock.
+_lock = threading.RLock()
+
+# _load()'s answer about the file: read, not there, broken (kept aside, defaults), or there but
+# unreadable right now (defaults that must never be saved over it)
+OK, MISSING, CORRUPT, UNREADABLE = "ok", "missing", "corrupt", "unreadable"
+_UNREADABLE_SAVE = "can't read %s, so nothing was saved over it - close whatever holds it and try again"
+
+
+class Saved(dict[str, Any]):
+    """Settings or a profile as read from the file. It remembers what was read (base), so a save
+    writes only the values its holder changed onto what the file holds by then: a run's profile
+    taken at its start, or the window's settings, can no longer put back a value somebody else
+    saved meanwhile (the player's edit while the bot ran, the sound list saved by the silencer)."""
+
+    def __init__(self, data: Mapping[str, Any]) -> None:
+        super().__init__(data)
+        self.base: dict[str, Any] = copy.deepcopy(dict(data))
+
+
+def set_not_saved(p: dict[str, Any], key: str, value: Any) -> None:
+    """Set a value that a later save of p leaves alone: a run's own override (an old agent's keys
+    off for this run), or a value already saved another way (update_app)."""
+    p[key] = value
+    if isinstance(p, Saved):
+        p.base[key] = copy.deepcopy(value)
+
+
+def _changes(data: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]] | None:
+    """(values the holder set, keys it removed) since it read data; None for a plain dict, which
+    is a whole new set of values (an import, the first start's choices)."""
+    base = data.base if isinstance(data, Saved) else None
+    if base is None:
+        return None
+    changed = {k: copy.deepcopy(v) for k, v in data.items() if k not in base or base[k] != v}
+    return changed, [k for k in base if k not in data]
 
 
 def _aside_name(path: str) -> str:
-    """<name>.corrupt, or .corrupt.2, .corrupt.3 ... when that is taken: a second broken file never
-    overwrites the copy of the first."""
-    name = path + ".corrupt"
-    n = 1
-    while os.path.exists(name):
-        n += 1
-        name = "%s.corrupt.%d" % (path, n)
-    return name
+    return json.aside_name(path)
 
 
 def _keep_aside(path: str) -> bool:
@@ -414,59 +446,110 @@ def _copy_aside(path: str) -> None:
         pass
 
 
-def _read(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> dict[str, Any]:
-    if os.path.exists(path):
-        try:
-            # utf-8-sig: a file saved by Notepad starts with a byte order mark, which the JSON
-            # reader takes for broken JSON - the player's settings went to .corrupt and defaults
-            with open(path, encoding="utf-8-sig") as f:
-                raw = json.load(f)
-            if not json.is_object(raw):
-                raise ValueError("not a JSON object")
-            # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
-            merged = {**copy.deepcopy(defaults), **raw}
-            try:
-                data = model.model_validate(merged).model_dump()
-            except ValidationError as e:
-                # One value of the wrong type cost the player the whole profile (live 2026-10-22: two
-                # pet settings typed as numbers held "auto", so every profile fell back to the
-                # defaults). Only those values go back to their defaults; a copy keeps the originals.
-                _copy_aside(path)
-                for err in e.errors():
-                    if err["loc"]:
-                        key = str(err["loc"][0])          # a top-level field name
-                        merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
-                data = model.model_validate(merged).model_dump()
-            _unreadable.discard(path)
-            return data
-        except ValueError:
-            # Unreadable: the defaults are used, and the next save would overwrite the player's
-            # file with them. Keep the broken one aside so nothing is lost for good.
-            _keep_aside(path)
-        except OSError:
-            # There but unreadable right now (another program holding it): defaults for this
-            # reading, and _write will not save over it until it can be moved aside.
-            if not _keep_aside(path):
-                _unreadable.add(path)
-    return copy.deepcopy(defaults)
+def _load(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> tuple[dict[str, Any], str]:
+    """(the file's values, OK) - or the defaults and why (MISSING, CORRUPT, UNREADABLE).
 
-
-def _write(path: str, data: dict[str, Any]) -> None:
-    if path in _unreadable:
-        if not _keep_aside(path):
-            raise OSError("can't read or move aside %s - close whatever holds it and try again" % path)
+    Only broken JSON is kept aside as <name>.corrupt. A file that is there but can't be read (a
+    Windows sharing violation that outlasts jsonio's short wait, no permission) is left exactly as
+    it is: it once went to .corrupt as if broken, and the defaults were saved in its place."""
+    try:
+        # utf-8-sig: a file saved by Notepad starts with a byte order mark, which the JSON
+        # reader takes for broken JSON - the player's settings went to .corrupt and defaults
+        raw = json.read(path)
+        if not json.is_object(raw):
+            raise ValueError("not a JSON object")
+    except FileNotFoundError:
         _unreadable.discard(path)
-    json.save(path, data, indent=2)
+        return copy.deepcopy(defaults), MISSING
+    except ValueError:
+        # Broken: the defaults are used, and the next save writes over the player's file. Keep
+        # the broken one aside so nothing is lost for good (a copy, if it can't be moved).
+        if not _keep_aside(path):
+            _copy_aside(path)
+        _unreadable.discard(path)
+        return copy.deepcopy(defaults), CORRUPT
+    except OSError as e:
+        # There but unreadable right now: defaults for this reading only, and no save goes over
+        # the file until it has been read again (_write).
+        _unreadable.add(path)
+        applog.write("couldn't read %s, so it is left as it is: %s" % (path, e), "WARNING")
+        return copy.deepcopy(defaults), UNREADABLE
+    # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
+    merged = {**copy.deepcopy(defaults), **raw}
+    try:
+        data = model.model_validate(merged).model_dump()
+    except ValidationError as e:
+        # One value of the wrong type cost the player the whole profile (live 2026-10-22: two
+        # pet settings typed as numbers held "auto", so every profile fell back to the
+        # defaults). Only those values go back to their defaults; a copy keeps the originals.
+        _copy_aside(path)
+        for err in e.errors():
+            if err["loc"]:
+                key = str(err["loc"][0])          # a top-level field name
+                merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
+        data = model.model_validate(merged).model_dump()
+    _unreadable.discard(path)
+    return data, OK
+
+
+def _write(path: str, data: Mapping[str, Any], current: Callable[[], tuple[dict[str, Any], str]],
+           extra: Mapping[str, Any] | None = None) -> None:
+    """Save data to path. current() reads what the file holds now (as _load does).
+
+    A Saved puts only what its holder changed onto that; a plain dict is written whole. Either way
+    nothing is written while the file is there but unreadable: the holder may only have the
+    defaults, and the player's real values would be lost under them. When the file is gone or
+    broken by now, the holder's whole values are the best there is and are written whole."""
+    with _lock:
+        now, how = current()
+        if how == UNREADABLE:
+            raise OSError(_UNREADABLE_SAVE % path)
+        changes = _changes(data)
+        out: dict[str, Any]
+        if changes is None or how != OK:
+            out = copy.deepcopy(dict(data))
+        else:
+            changed, removed = changes
+            out = {k: v for k, v in now.items() if k not in removed}
+            out.update(changed)
+        out.update(extra or {})
+        json.save(path, out, indent=2)
+        if isinstance(data, Saved):
+            data.base = copy.deepcopy(dict(data))      # saved: from now on its changes are counted from here
+
+
+def _app_defaults() -> dict[str, Any]:
+    # An existing installation predates the first-launch prompt: keep its preferences.
+    return {**APP_DEFAULTS, "language_prompted": os.path.exists(paths.SETTINGS)}
+
+
+def _load_app() -> tuple[dict[str, Any], str]:
+    return _load(paths.SETTINGS, _app_defaults(), AppSettings)
 
 
 def load_app() -> dict[str, Any]:
-    # An existing installation predates the first-launch prompt: keep its preferences.
-    defaults = {**APP_DEFAULTS, "language_prompted": os.path.exists(paths.SETTINGS)}
-    return _read(paths.SETTINGS, defaults, AppSettings)
+    with _lock:
+        return Saved(_load_app()[0])
 
 
 def save_app(data: dict[str, Any]) -> None:
-    _write(paths.SETTINGS, data)
+    """Save the app settings: a dict from load_app() saves only the values changed since it was read
+    (or last saved), onto what the file holds now - see Saved."""
+    _write(paths.SETTINGS, data, _load_app)
+
+
+def update_app(changes: Mapping[str, Any]) -> dict[str, Any]:
+    """Set these settings and only these, on settings.json as it is now, under the settings lock -
+    for a writer that holds no settings of its own (the sound silencer on its thread, a dialog that
+    changes one list). Returns the settings as saved. OSError when the file can't be read or
+    written; nothing is changed then."""
+    with _lock:
+        now, how = _load_app()
+        if how == UNREADABLE:
+            raise OSError(_UNREADABLE_SAVE % paths.SETTINGS)
+        now.update(copy.deepcopy(dict(changes)))
+        json.save(paths.SETTINGS, now, indent=2)
+        return Saved(now)
 
 
 _PROFILE_ID_SEPARATOR = "\x1f"
@@ -636,22 +719,30 @@ def profiles() -> list[str]:
     return sorted(found, key=lambda value: profile_display(value).casefold())
 
 
-def load_profile(character: str) -> dict[str, Any]:
-    """The character's profile; a new one from the defaults if there is none yet."""
+def _load_profile(character: str) -> tuple[dict[str, Any], str]:
+    """The character's profile as its file holds it now, upgraded, and how it read (see _load)."""
     path = profile_path(character)
     # On first use of an identified character, retain its old name-only choices.  The first save
     # writes a separate file, so the two same-name characters become independent without deleting
     # or changing the legacy file.
     name, server, entity_id = _profile_parts(character)
+    source = path
     if entity_id and not os.path.exists(path):
-        if server:
-            identified = profile_path(character_profile(name, entity_id))
-            if os.path.exists(identified):
-                return _upgrade(_read(identified, PROFILE_DEFAULTS, Profile))
+        identified = profile_path(character_profile(name, entity_id)) if server else None
         legacy = profile_path(name)
-        if os.path.exists(legacy):
-            return _upgrade(_read(legacy, PROFILE_DEFAULTS, Profile))
-    return _upgrade(_read(path, PROFILE_DEFAULTS, Profile))
+        if identified and os.path.exists(identified):
+            source = identified
+        elif os.path.exists(legacy):
+            source = legacy
+    data, how = _load(source, PROFILE_DEFAULTS, Profile)
+    return _upgrade(data), how
+
+
+def load_profile(character: str) -> dict[str, Any]:
+    """The character's profile; a new one from the defaults if there is none yet. Saving it writes
+    only what was changed in it since (see Saved)."""
+    with _lock:
+        return Saved(_load_profile(character)[0])
 
 
 def _upgrade_xp_card(p: dict[str, Any]) -> None:
@@ -785,10 +876,11 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
 
 
 def save_profile(character: str, data: dict[str, Any]) -> None:
-    saved = copy.deepcopy(data)
-    if _profile_parts(character)[2]:
-        saved[_PROFILE_ID_KEY] = character
-    _write(profile_path(character), saved)
+    """Save a profile. One from load_profile() writes only the values changed in it since it was
+    read (or last saved), onto the file as it is now: a run that remembers its hearthstone square
+    keeps the player's edits made while it ran (see Saved)."""
+    extra = {_PROFILE_ID_KEY: character} if _profile_parts(character)[2] else None
+    _write(profile_path(character), data, lambda: _load_profile(character), extra)
 
 
 def has_profile(character: str) -> bool:
@@ -870,7 +962,7 @@ def import_profile(character: str, imported: dict[str, Any]) -> None:
     final write uses save_profile's normal atomic, locked-file-aware path.
     """
     current = load_profile(character)
-    profile = copy.deepcopy(imported)
+    profile = copy.deepcopy(dict(imported))     # a plain dict: an import replaces, it isn't merged
     for key in CHARACTER_SPECIFIC_PROFILE_KEYS:
         if key in current:
             profile[key] = current[key]

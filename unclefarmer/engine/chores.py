@@ -56,14 +56,13 @@ Menus as the game shows them (logged sessions and the survey, 2026-10-11):
 from __future__ import annotations
 
 import copy
-import json
 import os
 import re
 import time
 from collections.abc import Collection, Iterable
 from typing import Any
 
-from .. import atlas, daily, knowledge, paths, settings
+from .. import atlas, daily, jsonio, knowledge, paths, settings
 from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
@@ -176,7 +175,16 @@ def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
     """{chore: {"at", "note"}} of what is done this game day. A character with its own key and no
     list of its own yet starts from a safe older list, so chores done earlier today aren't done
     twice without accidentally importing another server's work."""
-    day = day or daily.game_day()
+    try:
+        return _done_today(name, day or daily.game_day())
+    except OSError:
+        return {}
+
+
+def _done_today(name: str | None, day: str) -> dict[str, Any]:
+    """done_today(), but a list that is there and can't be read raises OSError instead of reading
+    as nothing done: put() saves what it gets back, and that wrote every earlier mark away. A
+    broken list (not JSON) still reads as nothing done."""
     path = _ledger(name)
     if not os.path.exists(path) and settings.is_character_profile(name or ""):
         display_name = settings.profile_name(name)
@@ -188,13 +196,15 @@ def done_today(name: str | None, day: str | None = None) -> dict[str, Any]:
             path = old_path if os.path.exists(old_path) else _ledger(display_name)
         else:
             path = _ledger(display_name)
-    try:
-        with open(path, encoding="utf-8") as f:
-            data: dict[str, Any] = json.load(f)
-    except (OSError, ValueError):
+    with jsonio.lock_for(path):
+        try:
+            data: object = jsonio.read(path, {}, encoding="utf-8")
+        except ValueError:
+            return {}
+    if not jsonio.is_object(data):
         return {}
-    done: dict[str, Any] = data.get("done") or {}
-    return dict(done) if data.get("day") == day else {}
+    done: object = data.get("done") or {}
+    return dict(done) if jsonio.is_object(done) and data.get("day") == day else {}
 
 
 def mark(name: str | None, chore: str, note: str, day: str | None = None) -> None:
@@ -204,14 +214,15 @@ def mark(name: str | None, chore: str, note: str, day: str | None = None) -> Non
 def put(name: str | None, key: str, value: object, day: str | None = None) -> None:
     """One entry of this game day's list (a chore, or "_shares": the half hours shared in)."""
     day = day or daily.game_day()
-    done = done_today(name, day)
-    done[key] = value
     path = _ledger(name)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump({"day": day, "done": done}, f, indent=1)
-    os.replace(tmp, path)
+    # The whole read-change-save holds the list's lock, and the save is atomic with a temporary
+    # file of its own: two marks at once used to share one ".tmp" name and both read the old list,
+    # so one mark was lost (or the second os.replace failed). OSError when the list couldn't be
+    # read or saved: then nothing was marked.
+    with jsonio.lock_for(path):
+        done = _done_today(name, day)
+        done[key] = value
+        jsonio.save(path, {"day": day, "done": done}, indent=1)
 
 
 def due(name: str | None, cfg: dict[str, Any]) -> list[str]:
