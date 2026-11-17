@@ -5635,6 +5635,9 @@ msgstr ""
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr ""
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
@@ -6467,6 +6470,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr ""
 
+msgid "the game said: {lines}"
+msgstr ""
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -6981,6 +6987,9 @@ msgid "{cave} is done for today - a character goes into one cave a day"
 msgstr ""
 
 msgid "{cave} needs level {n}"
+msgstr ""
+
+msgid "{cave}: couldn't get in after {n} tries"
 msgstr ""
 
 msgid "{cave}: still inside after the timer - leaving"

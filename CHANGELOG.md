@@ -1,5 +1,17 @@
 # What's new
 
+## Unreleased
+
+**Experience dungeons: a missed entry is tried again**
+
+- Getting into an experience dungeon had one go. If the entrance's menu came late, had no
+  "Enter the dungeon" row, or the game took more than ten seconds to move the character in, the
+  day's visit was written down as used and not tried again until the next game day. When the
+  move in came late, the bot even walked out of the dungeon again for the end of the run. The bot
+  now has three goes at the entrance, sees a late move in before trying again, and writes the day
+  down only when it got in or the game said "already entered an experience dungeon today". After
+  three failed goes it says so, and the next run tries again.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**
