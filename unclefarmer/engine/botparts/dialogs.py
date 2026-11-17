@@ -43,6 +43,9 @@ class DialogsMixin(Parts):
         d = self.dialog()
         if not d.get("open"):
             return False
+        from .. import repair
+        if repair.owns_question(as_bot(self), d):
+            return False  # look_after will resume the pending repair, not press Escape
         top: dict[str, Any] = d.get("top") or {}
         rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
         texts = [t for row in rows for e in row if e for t in self.entry_texts(e)[:1]]

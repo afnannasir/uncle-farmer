@@ -2830,6 +2830,9 @@ msgstr ""
 msgid "Potions"
 msgstr "Potions"
 
+msgid "Preparing the update to {v}"
+msgstr "{v} ka update tayyar ho raha hai"
+
 msgid "Press a skill again and &again until the game casts it"
 msgstr "Skill ko dobara dabayein aur &dobara, jab tak game usay cast na kare"
 
@@ -3911,6 +3914,11 @@ msgid "The update didn't download: {why}"
 msgstr "Update download nahi hua: {why}"
 
 msgid ""
+"The update is being prepared: Uncle Farmer closes by itself in a moment."
+msgstr ""
+"Update tayyar ho raha hai: Uncle Farmer thori der mein khud band ho jaye ga."
+
+msgid ""
 "The update reinstalls Uncle Farmer's agent, which the open games have loaded, so every Mist World window must close first.\n"
 "\n"
 "Press OK to close them ({n} open) and update. Start Mist World again after the update."
@@ -4641,6 +4649,9 @@ msgid ""
 msgstr ""
 "{secs} s pehle hamla hua - fusion beast {quiet} s bina hamle ke guzarne tak intezar karta hai"
 
+msgid "attacking guards with the {key} key"
+msgstr "guards par {key} key se hamla"
+
 msgid "attacks {how}"
 msgstr "hamla {how}"
 
@@ -4893,6 +4904,10 @@ msgstr "{shard} shamil nahi kar sake"
 
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr "{skill} cast nahi ho saki ({why}) - 5 minute baad dobara koshish"
+
+msgid "couldn't confirm the repair with a {tool} - not marked repaired"
+msgstr ""
+"{tool} se marammat ki tasdeeq nahi ho saki - marammat shuda nahi maana gaya"
 
 msgid "couldn't finish at the game's end: {err}"
 msgstr "game ke end par mukammal nahi kar sake: {err}"
@@ -6672,6 +6687,11 @@ msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""
 "yahan follow attack humein monster tak nahi le jata - khud un tak chal rahe hain"
+
+msgid ""
+"the fusion beast waits {secs} s: the game refuses one this soon after a death"
+msgstr ""
+"fusion beast {secs} s intezar karta hai: game maut ke itni jaldi baad koi fusion beast nahi deta"
 
 msgid "the game can't be read: {why}"
 msgstr "game nahi parhi ja sakti: {why}"

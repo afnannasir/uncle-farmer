@@ -219,8 +219,13 @@ class UpdatesMixin(FrameParts):
 
     def _apply_downloaded_update(self, rel: updater.Release, folder: str,
                                  claim: AbstractContextManager[None] | None) -> None:
+        if self.preparing_update:
+            # one preparation at a time: the one under way keeps its state; this call's claim goes
+            if claim is not None:
+                claim.__exit__(None, None, None)
+            return
         handed_on = False
-        handle: updater.ApplyProcess | None = None
+        preparing = False
         try:
             if self.destroyed:
                 return
@@ -234,7 +239,64 @@ class UpdatesMixin(FrameParts):
                 agentfix.close_then(games, lambda left: self._games_closed_for_apply(rel, folder, claim, left))
                 handed_on = True
                 return
+            # start_apply checks the release and the rescue copy (a SHA-256 of every file) and waits up
+            # to READY_SECONDS for the copier: a worker does it, so the window never freezes meanwhile.
+            # Not a daemon: a window that goes away all the same (Windows ending the session) still
+            # lets it finish and cancel its copier, which nothing may then run.
+            self.updating = self.preparing_update = True
+            self.say(_("Preparing the update to {v}", v=rel["version"]))
+            threading.Thread(target=self._prepare_apply, kwargs={"rel": rel, "folder": folder, "claim": claim},
+                             daemon=False).start()
+            preparing = handed_on = True
+        except Exception as e:
+            updater.log("the update couldn't start: %s\n%s" % (e, traceback.format_exc()), "ERROR")
+            self.preparing_update = False
+            if not self.destroyed:
+                error(self, _("The update couldn't start: {why}", why=e))
+        finally:
+            if not preparing:
+                self.pending_update = None
+                self.updating = False
+            if claim is not None and not handed_on:
+                claim.__exit__(None, None, None)
+
+    def _prepare_apply(self, rel: updater.Release, folder: str, claim: AbstractContextManager[None] | None) -> None:
+        """On a worker thread: start the paused copier (updater.start_apply), then hand the outcome
+        to the window's thread. Nothing here touches wx but wx.CallAfter."""
+        handle: updater.ApplyProcess | None = None
+        err: Exception | None = None
+        try:
             handle = updater.start_apply(folder, rel["version"])
+        except Exception as e:
+            err = e
+            updater.log("the update couldn't start: %s\n%s" % (e, traceback.format_exc()), "ERROR")
+        try:
+            if not self.destroyed:
+                wx.CallAfter(self._apply_prepared, rel, handle, err, claim)
+                return
+        except Exception:
+            # the window or the app went away meanwhile (wx raises RuntimeError for a dead window,
+            # an AssertionError when no wx.App is left): either way nobody will take the result
+            pass
+        # nobody is left to close the window and authorize the copier: it must never run
+        if handle is not None:
+            handle.cancel()
+        if claim is not None:
+            claim.__exit__(None, None, None)
+        updater.log("the update was prepared after the window closed: not applied", "WARNING")
+
+    def _apply_prepared(self, rel: updater.Release, handle: updater.ApplyProcess | None, err: Exception | None,
+                        claim: AbstractContextManager[None] | None) -> None:
+        """Back on the window's thread once start_apply has ended: close for the copier, or say why not."""
+        self.preparing_update = False
+        try:
+            if handle is None:
+                if not self.destroyed:
+                    error(self, _("The update couldn't start: {why}", why=err))
+                return
+            if self.destroyed:
+                handle.cancel()
+                return
             self.pending_update = handle
             self.close_reason = "the update to %s is ready: the paused copier awaits shutdown" % rel["version"]
             self.Close()
@@ -254,7 +316,7 @@ class UpdatesMixin(FrameParts):
         finally:
             self.pending_update = None
             self.updating = False
-            if claim is not None and not handed_on:
+            if claim is not None:
                 claim.__exit__(None, None, None)
 
     def _games_closed_for_apply(self, rel: updater.Release, folder: str,

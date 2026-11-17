@@ -53,6 +53,54 @@
   fights that one at once. It used to hand the choice back, and when the first monster was the
   shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
   again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
+
+**The fusion beast after a death**
+
+- Right after a death the game refuses a fusion beast without a word, and a refused press made
+  the next try wait for the game's gap between two fusion changes: the XP loser stood still about
+  ten seconds after each respawn before its beast came, then rode up to the guard just to get off
+  again. The beast now waits until six and a half seconds after the death and goes on at the
+  first press, so the character rides off a few seconds after it is back.
+
+**Sales counted in the run that earned them**
+
+- The arnebia a sale brings in is counted in the results again. The game takes the shards out
+  of the bag first and pays a moment later: when the money came in after the sale was over, the
+  results put it under the next job (for example "Updating shard prices"), and the farming run's
+  earnings left it out. Selling shards, selling fish, ore and herbs, and selling to a shop now
+  wait for the money (three seconds at most).
+
+**Safer updates**
+
+- Uncle Farmer no longer seems to freeze after a download: the update is prepared in the
+  background ("Preparing the update to ..."), and the window closes by itself once it is ready.
+  Closing it meanwhile waits for that, and pressing Update again starts nothing twice.
+- A connection cut in the middle of GitHub's answer is now an ordinary "update check failed"
+  instead of silently ending the update check.
+- A read-only file in the Uncle Farmer folder (for example data/game_texts.json) stopped every
+  update half-way, after a minute of retries. The update now names the file at once, changes
+  nothing, and works again once the file is writable. Read-only leftovers of such a failed try no
+  longer block later updates.
+- Leftovers of an earlier update are cleaned up reliably: a stale "update in use" note of this
+  copy, or of a long-gone program that Windows gave the same process number, no longer keeps
+  the update folder for hours.
+- An Uncle Farmer folder whose name has brackets in it ("Uncle Farmer [2]") is no longer taken
+  for an incomplete copy.
+- An update archive far larger than any release, or one the disk has no room for, is refused
+  before it is unpacked; a checksum GitHub gives in an unexpected shape stops the update instead
+  of being skipped.
+
+**XP loser attacks the guard with your basic attack**
+
+- The XP loser pressed whatever skill was on your first attack key, once. For a Hunter that is
+  often Escape, which jumped away from the guard. Other first-key skills started no fight at all,
+  and the guard was left as "didn't strike back".
+- It now uses your class's basic attack: Bash, Valiant Strike, Blade Strike, Arcane Shot, Magic
+  Sphere, Fireball, Retribution or Shadow Arrow. If that skill is on no key, it is put on an empty
+  one first. If it is on the other skill page, the page is turned. It is pressed again every second
+  until you fall, so a press the game drops (just after getting off the beast) no longer ends the try.
+- The log says which key it attacks with.
+
 **The walk to death wormhole finds its circle**
 
 - The walking assistant reached hidden water cave but never found the death wormhole's circle:

@@ -117,12 +117,20 @@ _lock = threading.Lock()    # the staging folder, inside this process: a claim o
 _claims: int = 0            # nested claims of this process (busy.json is written for the first)
 APPLY_SECONDS = 180.0       # one budget for preparation, retries and installing the whole release
 SPACE_MARGIN = 16 * 1024 * 1024
+# What an update archive may unpack to (_check_archive_size): far above any release (about 85
+# files, 100 MB), far below what would fill a disk
+UNPACK_MOST_FILES = 20_000
+UNPACK_MOST_FILE = 1024 ** 3            # one entry
+UNPACK_MOST_BYTES = 4 * 1024 ** 3       # all of them
 # The runtime's flat Nuitka layout. build_exe uses the same list to verify its output.
 REQUIRED = (EXE, BOOTSTRAP, "python3*.dll", "wxmsw*_core_*.dll", "wxbase*.dll", "agent/unclefarmer-agent.jar",
             "nvdaControllerClient64.dll", "unclefarmer/native/_routing-*.dll", "data/knowledge.json",
             "data/atlas.json", "data/skills.json", "lang/unclefarmer.pot", "lang/ur/LC_MESSAGES/unclefarmer.mo",
             "docs/USER_GUIDE.md", "README.html", "LICENSE", "numpy", "orjson", "pydantic_core", "wx")
 RUNTIME_DIRS = ("numpy", "orjson", "pydantic_core", "wx")
+# A stable release is exactly three numbers (release.py publishes only these); a dev build adds
+# "-dev.<build>", which version_tuple reads as the fourth number, so a fourth number is never a release's.
+STABLE_VERSION = re.compile(r"\d+\.\d+\.\d+")
 VERSION = re.compile(r"\d+\.\d+\.\d+(?:-dev\.\d+)?")
 
 
@@ -176,6 +184,11 @@ def channel(value: object) -> str:
 def is_dev(version: str) -> bool:
     """A development build's version (0.9.0-dev.57), as no stable release ever has."""
     return bool(DEV_VERSION.match(version or ""))
+
+
+def is_stable(version: str) -> bool:
+    """A stable release's version (1.2.3): the only shape release.py publishes and master offers."""
+    return STABLE_VERSION.fullmatch(version or "") is not None
 
 
 def log(text: str, level: str = "INFO") -> None:
@@ -244,18 +257,34 @@ def _ask(url: str, timeout: float) -> Any:
     except urllib.error.HTTPError as e:
         if e.code == 404:
             return None
-        raise UpdateError("GitHub answered %s" % e.code)
-    except (urllib.error.URLError, OSError, ValueError) as e:
-        raise UpdateError(str(getattr(e, "reason", e)))
+        raise UpdateError("GitHub answered %s" % e.code) from e
+    # HTTPException: a connection cut mid-answer (IncompleteRead while the JSON is read)
+    except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as e:
+        raise UpdateError(str(getattr(e, "reason", e)) or type(e).__name__) from e
+
+
+DIGEST = re.compile(r"sha256:([0-9a-fA-F]{64})")
+
+
+def _digest(asset: dict[str, Any]) -> str:
+    """The asset's SHA-256 from GitHub's "digest" ("sha256:<64 hex>"), lowercase; "" when GitHub
+    gives none (older assets). A digest that is there but not that shape is an UpdateError: a
+    checksum on offer is never skipped because it can't be read."""
+    digest = asset.get("digest")
+    if digest is None or digest == "":
+        return ""
+    found = DIGEST.fullmatch(digest) if isinstance(digest, str) else None
+    if found is None:
+        raise UpdateError("GitHub gave an unreadable checksum for %s" % asset.get("name"))
+    return found.group(1).lower()
 
 
 def _release(rel: dict[str, Any], version: str, asset: dict[str, Any]) -> Release:
-    digest = asset.get("digest") or ""
     return {"version": version, "tag": rel.get("tag_name"),
             "notes": (rel.get("body") or "").strip(), "asset": asset["name"], "size": asset.get("size", 0),
             # with a token the API's own asset link (a private repository has no public one)
             "url": asset["url"] if _token() else asset["browser_download_url"],
-            "sha256": digest[7:].lower() if digest.startswith("sha256:") else ""}
+            "sha256": _digest(asset)}
 
 
 def _obj(value: object) -> dict[str, Any] | None:
@@ -276,7 +305,7 @@ def _stable(answer: object) -> Release | None:
         return None
     tag = str(rel.get("tag_name") or "")
     version = tag[1:] if tag[:1] in ("v", "V") else ""
-    if VERSION.fullmatch(version) is None or is_dev(version):
+    if not is_stable(version):
         return None
     asset = next((a for a in _assets(rel) if a.get("name") == "UncleFarmer-%s.zip" % version
                   and a.get("state") == "uploaded"), None)
@@ -422,10 +451,33 @@ def _alive(pid: int) -> bool:
         kernel.CloseHandle(h)
 
 
+def _stamp() -> int | None:
+    """This process's creation time (update_recovery.current_stamp, as the journal's owner_stamp),
+    which tells it from a later process Windows gives the same PID; None when it can't be read."""
+    try:
+        return recovery.current_stamp()
+    except (OSError, AttributeError, ValueError):
+        return None
+
+
+def _holder_alive(pid: int, stamp: object) -> bool:
+    """busy.json's writer still runs: that process, not a later one that was given its PID. A
+    record from before stamps (or with an unreadable one) has only the PID to go by, as it always
+    had, so a live older-format holder is never taken for a leftover."""
+    if type(stamp) is not int or stamp <= 0:
+        return _alive(pid)
+    if pid <= 0:
+        return False
+    try:
+        return recovery.owner_alive(pid, stamp)
+    except (recovery.RecoveryError, OSError, AttributeError):
+        return _alive(pid)          # can't be inspected (another user's process): as _alive says
+
+
 def busy(staging: str | None = None) -> dict[str, Any] | None:
     """Who uses the staging folder: busy.json's {"pid", "what", "since"} while that process still
-    runs; None when nobody does (no file, a broken one, a process that is gone, or older than
-    STALE_SECONDS)."""
+    runs; None when nobody does (no file, a broken one, a process that is gone, a later process
+    with the same PID, or older than STALE_SECONDS)."""
     path = os.path.join(staging or UPDATE, BUSY)
     try:
         with open(path, encoding="utf-8") as f:
@@ -433,16 +485,24 @@ def busy(staging: str | None = None) -> dict[str, Any] | None:
         pid, since = int(data["pid"]), float(data["since"])
     except (OSError, ValueError, KeyError, TypeError):
         return None
-    if time.time() - since > STALE_SECONDS or not _alive(pid):
+    if time.time() - since > STALE_SECONDS or not _holder_alive(pid, data.get("stamp")):
         return None
     return {"pid": pid, "what": str(data.get("what") or "update"), "since": since}
+
+
+def _busy_record(what: str, **more: Any) -> dict[str, Any]:
+    record: dict[str, Any] = {"pid": os.getpid(), "what": what, "since": time.time(), **more}
+    stamp = _stamp()
+    if stamp is not None:
+        record["stamp"] = stamp
+    return record
 
 
 def _mark_busy(staging: str, what: str) -> None:
     _staging(staging, os.path.dirname(staging))
     _safe_entry(os.path.join(staging, BUSY), staging)
     os.makedirs(staging, exist_ok=True)
-    _save_shared(os.path.join(staging, BUSY), {"pid": os.getpid(), "what": what, "since": time.time()})
+    _save_shared(os.path.join(staging, BUSY), _busy_record(what))
 
 
 def _save_shared(path: str, data: dict[str, Any], seconds: float = 5.0) -> None:
@@ -567,6 +627,26 @@ def _purge(staging: str, app: str, keep: tuple[str, ...]) -> list[str]:
     return left
 
 
+def _recovery_blocks_cleanup(app: str) -> tuple[str, str] | None:
+    """Why the staging folder must stay, as (log line, level), or None. An unfinished or unreadable
+    recovery journal keeps it, and so does another process holding the recovery lock right now:
+    the journal is read under update_recovery.locked, which every writer holds, so a journal
+    another process is replacing this moment is never read half-way."""
+    if not os.path.isdir(os.path.join(app, recovery.HERE)):
+        return None          # no journal was ever written here: nothing to lock or read
+    try:
+        with recovery.locked(app):
+            try:
+                transaction = recovery.load(app)
+            except recovery.RecoveryError as error:
+                return "staging cleanup refused: %s" % error, "ERROR"
+    except (recovery.RecoveryError, OSError) as error:
+        return "staging cleanup deferred: %s" % error, "WARNING"
+    if transaction and transaction["state"] not in recovery.TERMINAL:
+        return "staging cleanup deferred: persistent update recovery is pending", "WARNING"
+    return None
+
+
 def clean(wait: float = 0.0) -> bool:
     """Empty the staging folder (update/) and remove it: old downloads, a half download, the
     unpacked copy, the old update.log (moved to logs/ first). Never while a running process holds
@@ -575,13 +655,9 @@ def clean(wait: float = 0.0) -> bool:
     ever emptied. True when it is empty (but for a result still to be read); what couldn't go is
     in logs/update.log."""
     staging, app = UPDATE, paths.APP
-    try:
-        transaction = recovery.load(app)
-        if transaction and transaction["state"] not in recovery.TERMINAL:
-            log("staging cleanup deferred: persistent update recovery is pending", "WARNING")
-            return False
-    except recovery.RecoveryError as error:
-        log("staging cleanup refused: %s" % error, "ERROR")
+    blocked = _recovery_blocks_cleanup(app)
+    if blocked is not None:
+        log(*blocked)
         return False
     if not os.path.exists(staging):
         return True
@@ -599,6 +675,11 @@ def clean(wait: float = 0.0) -> bool:
             log("staging cleanup refused: the folder changed while waiting", "WARNING")
             return False
         holder = busy(staging)
+        if holder and holder["pid"] == os.getpid() and not _claims:
+            # this process's own record while it holds no claim (claimed() keeps the count): left
+            # by a release that couldn't remove it, so nothing uses the folder; the purge takes it
+            log("staging cleanup: a leftover busy record of this process is ignored")
+            holder = None
         if holder or _claims:
             who = holder or {"what": "update", "pid": os.getpid()}
             log("staging cleanup put off: the %s of process %d still uses it" % (who["what"], who["pid"]))
@@ -646,9 +727,10 @@ def _ensure_recovery_runtime_locked(app: str, source: str) -> None:
             abandoned = os.path.join(root, name)
             recovery.safe(abandoned, app)
             recovery.fingerprint(abandoned)
-            shutil.rmtree(abandoned)
+            recovery.remove_private_tree(abandoned, app)
     # bootstrap.exe runs the rescue copy's UncleFarmer.exe; the copy needs no bootstrap of its own
     files = _verify_release(source, bootstrap=False)
+    _refuse_read_only(source)
     needed = sum(size for name, size in files.items() if name.split(os.sep)[0].casefold() not in NEVER) + SPACE_MARGIN
     if shutil.disk_usage(root).free < needed:
         raise UpdateError("not enough free space for the independent recovery runtime")
@@ -683,7 +765,7 @@ def _retire_runtime(app: str, root: str, runtime: str, manifest: str) -> None:
     recovery.rename(runtime, retired)   # a killed removal leaves only a private "preparing" leftover
     if os.path.exists(manifest):
         os.remove(manifest)
-    shutil.rmtree(retired)
+    recovery.remove_private_tree(retired, app)
     log("the recovery runtime from the older two-exe layout was renewed")
 
 
@@ -775,6 +857,24 @@ def _fetch(rel: Release, path: str, progress: Callable[[int, int], object] | Non
     return done
 
 
+def _check_archive_size(entries: list[zipfile.ZipInfo], folder: str) -> None:
+    """Refuse, before one byte is written, an archive that unpacks to more than any release could
+    be (a "zip bomb" would fill the disk), and one the disk has no room for. The sizes are the
+    archive's own; zipfile never writes more than an entry says (and checks its CRC), and unpack
+    compares each written file with it. A release is about 85 files and 100 MB unpacked, so the
+    limits leave it a hundred times the room."""
+    if len(entries) > UNPACK_MOST_FILES:
+        raise UpdateError("the update archive holds too many entries (%d)" % len(entries))
+    big = next((e for e in entries if e.file_size > UNPACK_MOST_FILE), None)
+    if big is not None:
+        raise UpdateError("the update archive holds a file that is too large: %s" % big.filename)
+    total = sum(e.file_size for e in entries)
+    if total > UNPACK_MOST_BYTES:
+        raise UpdateError("the update archive unpacks to too much (%d MB)" % (total // 2 ** 20))
+    if shutil.disk_usage(folder).free < total + SPACE_MARGIN:
+        raise UpdateError("not enough free space to unpack the update (%d MB needed)" % ((total + SPACE_MARGIN) // 2 ** 20))
+
+
 def unpack(zip_path: str) -> str:
     """Unpack the release into update/new and return the folder holding the new exe."""
     _staging()
@@ -792,6 +892,7 @@ def unpack(zip_path: str) -> str:
         try:
             try:
                 with zipfile.ZipFile(zip_path) as z:
+                    _check_archive_size(z.infolist(), UPDATE)
                     seen: set[str] = set()
                     for entry in z.infolist():
                         name = entry.filename
@@ -867,6 +968,7 @@ def start_apply(new_folder: str, version: str) -> ApplyProcess:
     _staging()
     _safe_entry(new_folder, NEW)
     _verify_release(new_folder, version)
+    _refuse_read_only(paths.APP, _managed_entries(paths.APP, new_folder))   # said while the window can say it
     token = secrets.token_hex(16)
     # The running installation is known to boot. A staged copier may fail its
     # handshake, so it must not become the first/only rescue runtime here.
@@ -1017,11 +1119,42 @@ def _verify_release(src: str, version: str | None = None, deadline: float | None
     return files
 
 
+def _managed_entries(app: str, src: str) -> list[str]:
+    """The installed entries an update from src backs up and replaces (all but NEVER)."""
+    managed = _old_managed(app) | {n.casefold() for n in os.listdir(src)}
+    return [name for name in os.listdir(app) if name.casefold() in managed - NEVER]
+
+
+def _refuse_read_only(folder: str, names: list[str] | None = None) -> None:
+    """UpdateError naming the read-only files an update would copy from folder: those entries
+    (names), or everything but NEVER (the rescue copy takes all of it), with data/ and agent/ and
+    their preserved data/game_texts.json and agent/run. Every copy is flushed to disk
+    (update_recovery.flush) and Windows flushes only a file it may write, so such a file would stop
+    the update half-way through. It stops here instead, before anything is copied, and the
+    player's file keeps its attribute: nothing changes it for them."""
+    found: list[str] = []
+    for name in sorted(os.listdir(folder) if names is None else names):
+        if name.casefold() in NEVER:
+            continue
+        top = os.path.join(folder, name)
+        files = [top] if not os.path.isdir(top) else [
+            os.path.join(parent, f) for parent, _dirs, here in os.walk(top) for f in here]
+        found += [os.path.relpath(f, folder) for f in files if not os.stat(f).st_mode & stat.S_IWRITE]
+    if found:
+        raise UpdateError("read-only file%s in the Uncle Farmer folder: %s. An update must be able to write "
+                          "every file it keeps; make %s writable (Properties, untick Read-only) and update "
+                          "again" % ("s" if len(found) > 1 else "", ", ".join(found[:3]) + (" ..." if len(found) > 3 else ""),
+                                     "them" if len(found) > 1 else "it"))
+
+
 def missing_runtime(folder: str) -> list[str]:
     """One shared file/type/size contract for the release builder and updater."""
     missing: list[str] = []
+    # the folder is a literal path ("Uncle Farmer [old]" is a valid folder name); only the
+    # required patterns themselves hold wildcards
+    root = glob.escape(folder)
     for pattern in REQUIRED:
-        matches = glob.glob(os.path.join(folder, *pattern.split("/")))
+        matches = glob.glob(os.path.join(root, *pattern.split("/")))
         if not matches or not all(os.path.isdir(p) if pattern in RUNTIME_DIRS else
                                   os.path.isfile(p) and os.path.getsize(p) > 0 for p in matches):
             missing.append(pattern)
@@ -1073,11 +1206,13 @@ def _keep_learned_data(app: str, target: str, report: Callable[[str], None], dea
     if not os.path.isdir(old):
         return
     shipped = _shipped_files(app)
+    keep = KEEP_IN["data"]
     for relative in _inventory(old, deadline):
         # Unshipped files were retained by the old data merge. Keep that behavior;
         # remove only obsolete data that an actual previous release inventory identifies.
         key = "data/" + relative.replace(os.sep, "/").casefold()
-        if key not in shipped:
+        # KEEP_IN entries are copied once, by _prepare_tree (a second copy over a read-only one fails)
+        if key not in shipped and relative.split(os.sep)[0].casefold() not in keep:
             _copy_entry(os.path.join(old, relative), os.path.join(target, relative), report, deadline)
 
 
@@ -1219,14 +1354,14 @@ def _apply_locked(app: str, src: str, log: Callable[[str], None], *, deadline: f
     if not os.path.isdir(app) or not os.path.isfile(os.path.join(app, EXE)) or _link(app) or _same(app, src):
         raise UpdateError("invalid destination application directory")
     files = _verify_release(src, deadline=deadline)
+    managed = _managed_entries(app, src)
+    _refuse_read_only(app, managed)
     needed = sum(files.values()) + SPACE_MARGIN
     backup_sizes: list[int] = []
-    managed = _old_managed(app) | {n.casefold() for n in os.listdir(src)}
-    for name in os.listdir(app):
-        if name.casefold() in managed - NEVER:
-            path = os.path.join(app, name)
-            _safe_entry(path, app)
-            backup_sizes.append(sum(_inventory(path, deadline).values()) if os.path.isdir(path) else os.path.getsize(path))
+    for name in managed:
+        path = os.path.join(app, name)
+        _safe_entry(path, app)
+        backup_sizes.append(sum(_inventory(path, deadline).values()) if os.path.isdir(path) else os.path.getsize(path))
     needed += sum(backup_sizes) + max(backup_sizes, default=0)  # verified backups and one recovery copy
     for folder, names in KEEP_IN.items():
         if folder == "data" and os.path.isdir(os.path.join(app, folder)):
@@ -1452,7 +1587,7 @@ def run_apply(argv: list[str]) -> int:
                 raise UpdateError("invalid update authorization token")
             _staging(update, app)
             _safe_entry(os.path.join(update, BUSY), update)
-            signal: dict[str, Any] = {"pid": os.getpid(), "what": "update copier", "since": time.time(), "token": token}
+            signal = _busy_record("update copier", token=token)
             if by_bootstrap:
                 signal["launcher"] = os.getppid()     # the process the app started and watches
             # one write: the app is polling this file, and each replace races its reads
