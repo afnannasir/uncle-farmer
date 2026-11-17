@@ -1445,8 +1445,14 @@ def save_shard_prices(prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
     isn't a positive whole number is never written over a good one. Returns [(shard, old, new)] of
     the prices that changed."""
     path = os.path.join(paths.DATA, SHARDS_FILE)
-    with open(path, encoding="utf-8") as f:
-        text = f.read()
+    # The whole read-change-save holds the file's lock: two markets read at once each wrote their
+    # prices over the other's.
+    with json.lock_for(path):
+        return _save_shard_prices(path, prices)
+
+
+def _save_shard_prices(path: str, prices: Mapping[str, int]) -> list[tuple[str, int, int]]:
+    text = json.read_text(path)
     data: object = json.loads(text)
     shards: object = data.get("shards") if json.is_object(data) else None
     if not json.is_object(data) or not json.is_object(shards):

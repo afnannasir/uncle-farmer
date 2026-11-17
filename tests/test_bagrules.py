@@ -117,7 +117,8 @@ def test_learn_weight_rejects_bad_measurements(monkeypatch: pytest.MonkeyPatch, 
 
 def test_learn_weight_survives_an_unwritable_path(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(bagrules, "WEIGHTS", "Z:\\nope\\w.json")
-    assert bagrules.learn_weight("Wolf Pelt", 500, 480, 4) == 5.0   # still returns the weight
+    # no error out of it, and no weight claimed as learned when it couldn't be kept
+    assert bagrules.learn_weight("Wolf Pelt", 500, 480, 4) is None
 
 
 # ---------------------------------------------------------------- about

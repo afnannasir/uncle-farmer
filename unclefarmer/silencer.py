@@ -72,9 +72,9 @@ def _apply(link: JsonLink, text: str) -> None:
 def save(rows: object, link: JsonLink) -> None:
     normalized = validate(rows)
     with _save_lock:
-        app = settings.load_app()
-        app[KEY] = normalized
-        settings.save_app(app)
+        # only the sound list, onto settings.json as it is now: a whole copy read here and saved
+        # after put back what the window or the scheduler had saved meanwhile (daily_stop_at)
+        settings.update_app({KEY: normalized})
         try:
             _apply(link, mute_text(normalized))
         except (AgentError, OSError, ValueError) as error:

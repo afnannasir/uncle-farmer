@@ -19,7 +19,7 @@ from typing import Any, TypedDict
 import os
 import re
 
-from .. import jsonio as json, knowledge, paths
+from .. import applog, jsonio as json, knowledge, paths
 
 # Never suggested for anything but "keep": supplies, travel items, money, anything on a hotkey.
 SUPPLY = re.compile(r"potion|teleportation stone|hearthstone|memory butterfly|resurrection crystal|"
@@ -71,29 +71,62 @@ def can_sell(name: str) -> bool:
     return shard_price(name) is not None or buyer(name) is not None or knowledge.buyer_role(name) is not None
 
 
+_last_weights: dict[str, float] = {}     # the last good reading, for a moment the file can't be read
+
+
+def _read_weights() -> dict[str, float]:
+    """The weights file as it is ({} when there is none yet); OSError when it can't be read and
+    ValueError when it is broken, never {} for those (learn_weight saves what it gets back)."""
+    raw: object = json.read(WEIGHTS, {}, encoding="utf-8")
+    if not json.is_object(raw):
+        raise ValueError("%s isn't a JSON object" % WEIGHTS)
+    return raw
+
+
 def weights() -> dict[str, float]:
-    """{item (lower case): its weight}, as learned from the load (learn_weight)."""
-    try:
-        with open(WEIGHTS, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
+    """{item (lower case): its weight}, as learned from the load (learn_weight). Read under the
+    file's lock; a moment the file can't be read gives the last good reading."""
+    global _last_weights
+    with json.lock_for(WEIGHTS):
+        try:
+            got = _read_weights()
+        except ValueError:
+            return {}
+        except OSError as e:
+            applog.write("couldn't read %s, using the last reading: %s" % (WEIGHTS, e), "WARNING")
+            return dict(_last_weights)
+        _last_weights = dict(got)
+        return got
 
 
 def learn_weight(name: str, load_before: float | None, load_after: float | None, n: int) -> float | None:
     """The load fell by (before - after) when n of the item left the bag: remember its weight. A load
     that didn't move says nothing (the reading may be old, or rounded): an earlier weight is kept,
-    where it used to be overwritten with 0."""
+    where it used to be overwritten with 0.
+
+    The whole read-change-save holds the file's lock: two items learned at once each read the same
+    file and the second save dropped the first weight, though both said they had learned it. The
+    weight is returned only once it is saved; None when it couldn't be (said in the log)."""
+    global _last_weights
     if n <= 0 or load_before is None or load_after is None or load_before <= load_after:
         return None
     w = round((load_before - load_after) / float(n), 3)
-    data = weights()
-    data[name.lower()] = w
-    try:
-        with open(WEIGHTS, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=1, sort_keys=True)
-    except OSError:
-        pass
+    with json.lock_for(WEIGHTS):
+        try:
+            data = _read_weights()
+        except ValueError:
+            json.copy_aside(WEIGHTS)       # broken: kept as .corrupt, then started again
+            data = {}
+        except OSError as e:
+            applog.write("couldn't read %s, so the weight of %s wasn't kept: %s" % (WEIGHTS, name, e), "WARNING")
+            return None
+        data[name.lower()] = w
+        try:
+            json.save(WEIGHTS, data, indent=1, sort_keys=True)
+        except OSError as e:
+            applog.write("couldn't save %s: %s" % (WEIGHTS, e), "WARNING")
+            return None
+        _last_weights = dict(data)
     return w
 
 
