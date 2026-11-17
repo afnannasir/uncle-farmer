@@ -1,6 +1,6 @@
 # What's new
 
-## Unreleased
+## 1.2.0
 
 **XP loser: die at the nearest village**
 
@@ -99,6 +99,7 @@
   the right one instead of trying each stone room in turn.
 - When none of the marked entrances is the dungeon's circle, the log now names the other
   circles seen on the way, so a circle with an unexpected name is easy to report.
+
 **Every class's talents, as the game lists them**
 
 - The Warrior's defensive talents were missing (Defensive Stance, Sturdy Sentry, Defensive
@@ -113,6 +114,7 @@
   "Anger (Aggressive)" rank that was missing.
   These are the talents a gang develops at its Head of inner hall (gang Affairs Management, Gang
   Skill Management), three per gang at most.
+
 **Fourteen more dungeon entrances placed**
 
 - The entrances of fourteen dungeons are in the dungeon list now, read in the game: the walking
@@ -124,6 +126,7 @@
 - The others: Dryad Jungle, zagrama canyon, Machine Fortress, Silver Peak, bottomless pit
   (Valley of Luxuriant forests), fully mountain, Machining plant (far off regions), graceful
   mountain (water curtained cave), Baru Grottoe and Elemental Maze (thousand miles of rivers).
+
 **Stop before the next level**
 
 - For characters you keep at their level: Character, Settings, Fighting has a new group, **Drop
@@ -140,6 +143,7 @@
 - **Stop when the day's drop time runs out** and **Drop time to save** moved from Bag and
   supplies, Full bag, to the same new group in Character, Settings, Fighting, beside the other
   reasons to stop. Your settings stay as they were.
+
 **From a secret room, the nearest shop is the one outside the door**
 
 - A run that started inside a secret room chose its Shard Broker, storehouse or other shop as if
@@ -147,6 +151,7 @@
   data can't say. A room entered from Tulip City sent the bot by cable car to central plains'
   Shard Broker, right past Tulip City's. It now leaves the room first, then picks the nearest one
   from where it comes out, as it already did from a gang base.
+
 **A start again on the farm goes straight back to farming**
 
 - Character settings, Triggers, Before farming has a new tick, **Skip this list when the run
