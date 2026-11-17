@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+**The fusion beast after a death**
+
+- Right after a death the game refuses a fusion beast without a word, and a refused press made
+  the next try wait for the game's gap between two fusion changes: the XP loser stood still about
+  ten seconds after each respawn before its beast came, then rode up to the guard just to get off
+  again. The beast now waits until six and a half seconds after the death and goes on at the
+  first press, so the character rides off a few seconds after it is back.
+
+**Sales counted in the run that earned them**
+
+- The arnebia a sale brings in is counted in the results again. The game takes the shards out
+  of the bag first and pays a moment later: when the money came in after the sale was over, the
+  results put it under the next job (for example "Updating shard prices"), and the farming run's
+  earnings left it out. Selling shards, selling fish, ore and herbs, and selling to a shop now
+  wait for the money (three seconds at most).
+
 **Safer updates**
 
 - Uncle Farmer no longer seems to freeze after a download: the update is prepared in the
