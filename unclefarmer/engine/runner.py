@@ -39,7 +39,7 @@ AGENT_SHEET = 43    # from here `ask sheet` reads the character sheet without th
 AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the game's own key method, no keyboard
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
-AGENT_LOGIN = 67    # from here automatic login includes the companion game connection
+AGENT_LOGIN = 69    # from here automatic login also selects the profile's saved server
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -225,12 +225,12 @@ class Run(threading.Thread):
                             "the new one"))
         character = self.profile or ""
         email = settings.load_profile(character).get("login_email")
-        entity_id = settings.profile_id(character)
-        if not isinstance(email, str) or not email or not entity_id:
-            raise Stopped(_("the plan's character has no saved account. Log in to it once first."))
+        entity_id, server = settings.profile_id(character), settings.profile_server(character)
+        if not isinstance(email, str) or not email or not entity_id or not server:
+            raise Stopped(_("the plan's character has no saved account or server. Log in to it once first."))
         if link.send("arm") != "armed":
             raise Stopped(_("the game refused the login request"))
-        reply = link.json("autologin %s %s" % (email, entity_id))
+        reply = link.json("autologin %s %s %s" % (email, entity_id, server))
         if not reply.get("ok"):
             raise Stopped(str(reply.get("error") or _("automatic login could not start")))
         self.log(_("starting automatic login"), speak=True)

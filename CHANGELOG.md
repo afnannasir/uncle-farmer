@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**Automatic login picks the character's server**
+
+- A scheduled script's `login` now selects the saved character's server (S1 or S2) before signing
+  in with the saved account, so a character on the other server is found. `login "Name - S2"`
+  works as `login "Name - S1"` does. The game has to be started again to load the new agent (69).
+
 **The fusion beast after a death**
 
 - Right after a death the game refuses a fusion beast without a word, and a refused press made
