@@ -817,7 +817,12 @@ class FightingMixin(Parts):
         if math.hypot(mob["x"] - at[0], mob["y"] - at[1]) >= self.UNSELECTED_MOVED:
             n = 0
         n += 1
-        wait = min(self.UNSELECTED_MAX, self.UNSELECTED_SKIP * 3 ** (n - 1))
+        # Saturate before multiplying: an unbounded power overflows before min can cap it.
+        wait = min(self.UNSELECTED_MAX, self.UNSELECTED_SKIP)
+        for _step in range(n - 1):
+            if wait >= self.UNSELECTED_MAX:
+                break
+            wait = min(self.UNSELECTED_MAX, wait * 3)
         rows[mob["id"]] = (n, (mob["x"], mob["y"]), now + wait)
         self.skip[mob["id"]] = now + wait
         if len(rows) > 500:

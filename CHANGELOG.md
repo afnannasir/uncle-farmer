@@ -24,6 +24,37 @@
   landings, the daily chores' list, shard prices and survey records are written whole or not at
   all, and two saves at once no longer lose one of them.
 
+**Safer updates**
+
+- Uncle Farmer no longer seems to freeze after a download: the update is prepared in the
+  background ("Preparing the update to ..."), and the window closes by itself once it is ready.
+  Closing it meanwhile waits for that, and pressing Update again starts nothing twice.
+- A connection cut in the middle of GitHub's answer is now an ordinary "update check failed"
+  instead of silently ending the update check.
+- A read-only file in the Uncle Farmer folder (for example data/game_texts.json) stopped every
+  update half-way, after a minute of retries. The update now names the file at once, changes
+  nothing, and works again once the file is writable. Read-only leftovers of such a failed try no
+  longer block later updates.
+- Leftovers of an earlier update are cleaned up reliably: a stale "update in use" note of this
+  copy, or of a long-gone program that Windows gave the same process number, no longer keeps
+  the update folder for hours.
+- An Uncle Farmer folder whose name has brackets in it ("Uncle Farmer [2]") is no longer taken
+  for an incomplete copy.
+- An update archive far larger than any release, or one the disk has no room for, is refused
+  before it is unpacked; a checksum GitHub gives in an unexpected shape stops the update instead
+  of being skipped.
+
+**XP loser attacks the guard with your basic attack**
+
+- The XP loser pressed whatever skill was on your first attack key, once. For a Hunter that is
+  often Escape, which jumped away from the guard. Other first-key skills started no fight at all,
+  and the guard was left as "didn't strike back".
+- It now uses your class's basic attack: Bash, Valiant Strike, Blade Strike, Arcane Shot, Magic
+  Sphere, Fireball, Retribution or Shadow Arrow. If that skill is on no key, it is put on an empty
+  one first. If it is on the other skill page, the page is turned. It is pressed again every second
+  until you fall, so a press the game drops (just after getting off the beast) no longer ends the try.
+- The log says which key it attacks with.
+
 **The walk to death wormhole finds its circle**
 
 - The walking assistant reached hidden water cave but never found the death wormhole's circle:

@@ -2749,6 +2749,9 @@ msgstr ""
 msgid "Potions"
 msgstr ""
 
+msgid "Preparing the update to {v}"
+msgstr ""
+
 msgid "Press a skill again and &again until the game casts it"
 msgstr ""
 
@@ -3775,6 +3778,10 @@ msgid "The update didn't download: {why}"
 msgstr ""
 
 msgid ""
+"The update is being prepared: Uncle Farmer closes by itself in a moment."
+msgstr ""
+
+msgid ""
 "The update reinstalls Uncle Farmer's agent, which the open games have loaded, so every Mist World window must close first.\n"
 "\n"
 "Press OK to close them ({n} open) and update. Start Mist World again after the update."
@@ -4445,6 +4452,9 @@ msgid ""
 "attacked {secs} s ago - the fusion beast waits until {quiet} s without an attack"
 msgstr ""
 
+msgid "attacking guards with the {key} key"
+msgstr ""
+
 msgid "attacks {how}"
 msgstr ""
 
@@ -4677,6 +4687,9 @@ msgid "couldn't add the {shard}"
 msgstr ""
 
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
+msgstr ""
+
+msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
 
 msgid "couldn't finish at the game's end: {err}"

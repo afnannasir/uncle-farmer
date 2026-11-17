@@ -21,6 +21,7 @@ from unclefarmer.clock import Waitable
 
 ME = 1234
 REAL_SAFE_ZONES = xploss.atlas.safe_zones   # the game's own map table, for the one test that reads it
+REAL_ATTACK_KEY = xploss.attack_key         # the fixture puts the basic attack on j; these tests read keys
 CITY = 1041
 
 
@@ -108,6 +109,9 @@ class Game:
         self.hit_from: list[tuple[float, float]] = []   # where we stood at each attack press
         self.walk_resets_pk = False             # a walk meets a monster in the way: set_modes() runs
         self.pk_at_hit: list[int] = []
+        self.hit_key = "j"                      # the key whose press hits (the basic attack's)
+        self.hit_range = 2.0                    # ... from this far
+        self.skillbook: Any = None
 
     # time passing: angry guards strike
     def sleep(self, s: float) -> None:
@@ -168,17 +172,30 @@ class Game:
             if not self.pk_locked:
                 self.pk = (self.pk + 1) % 6
             return
-        if k != self.p["attack_keys"][0] or self.target is None or self.riding:
+        if k != self.hit_key or self.target is None or self.riding:
             return
         self.hit_from.append((self.x, self.y))
         self.pk_at_hit.append(self.pk)
         if xploss.atlas.in_safe_zone(self.mid, self.x, self.y):
             return                         # "Safe zone disabled skills"
         e = next((e for e in self.entities if e["id"] == self.target), None)
-        if e is None or math.hypot(e["x"] - self.x, e["y"] - self.y) > 2.0:
+        if e is None or math.hypot(e["x"] - self.x, e["y"] - self.y) > self.hit_range:
             return
         if self.pk == 5 and not e["type"] & 2 and e["id"] not in self.sullen:
             self.angry.add(e["id"])
+
+    def spell_slot(self, skill: str) -> tuple[Any, dict[str, Any]] | None:
+        """As TravelMixin.spell_slot: the key entry a skill is on, put on an empty key (0) if none."""
+        sb = self.skillbook
+        for page in sorted(sb.slots):
+            for x in sb.slots[page]:
+                if x["name"] == skill:
+                    return sb, x
+        if not sb.can_put:
+            return None
+        x = {"name": skill, "role": "base_attack", "key": "0", "slot": 10}
+        sb.slots.setdefault(0, []).append(x)
+        return sb, x
 
     def handle_death(self) -> None:
         self.deaths += 1
@@ -203,6 +220,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         b.riding = False
     monkeypatch.setattr(xploss.beasts, "off", off)
     monkeypatch.setattr(xploss.atlas, "safe_zones", returning([]))   # no towns unless a test sets one
+    monkeypatch.setattr(xploss, "attack_key", returning(("j", None, None)))   # the basic attack on j
 
 
 def lose(g: Game, **cfg: Any) -> str:
@@ -233,7 +251,10 @@ def test_only_all_mode_lets_the_hit_land() -> None:
     lose(g, until_needed=1500)
     pk_presses = g.pressed.count("b")
     assert pk_presses == 4 + 2                         # 1 -> 5 for the guard, then 5 -> 1 back
-    assert g.pressed.count("j") == 1                   # one hit was enough
+    assert g.pk_at_hit and set(g.pk_at_hit) == {xploss.ALL_MODE}
+    # the guard strikes from the first hit; the basic attack goes on every second until we fall
+    # (1000 HP at 400 a second: 2.5 s)
+    assert g.pressed.count("j") == 3 and g.deaths == 1
 
 
 def test_lose_this_much() -> None:
@@ -290,7 +311,10 @@ def test_a_guard_that_wont_fight_is_left_for_another() -> None:
     g.entities = [guard(-40, x=103), guard(-41, x=130)]
     g.sullen = {-40}
     assert lose(g, until_needed=1500) == "done"
-    assert g.pressed.count("j") == xploss.HITS + 1
+    # the sullen one: HITS walks up to it, each pressing the basic attack for HIT_WAIT seconds
+    tries = xploss.HITS * (1 + int(xploss.HIT_WAIT / xploss.PRESS_EVERY))
+    assert tries - xploss.HITS <= g.pressed.count("j") - 3 <= tries
+    assert g.deaths == 1
     assert "the guard didn't strike back - trying another" in g.text()
 
 
@@ -364,7 +388,7 @@ def test_gets_off_the_beast_before_the_hit() -> None:
     g = Game()
     g.riding = True                        # the travel to the guard left us on the horse
     assert lose(g, until_needed=1500) == "done"
-    assert g.deaths == 1 and g.pressed.count("j") == 1
+    assert g.deaths == 1 and g.hit_from and not g.riding
 
 
 def test_a_wall_in_the_way_walks_right_up_to_the_guard() -> None:
@@ -532,3 +556,67 @@ def test_the_goal() -> None:
     assert xploss.goal({"mode": "until", "until_needed": 900}, 300) == 900
     assert xploss.goal({"mode": "lose", "lose": 900}, 300) == 1200
     assert xploss.goal({"mode": "lose", "lose": -5}, 300) == 300
+
+
+class Book:
+    """The few SkillBook parts attack_key and strike read: the skills on keys by page."""
+
+    def __init__(self, cls: str | None, slots: dict[int, list[dict[str, Any]]], can_put: bool = True) -> None:
+        self.ok, self.cls, self.slots, self.can_put = bool(slots), cls, slots, can_put
+        self.up = 0
+        self.flips: list[int] = []
+
+    def page(self) -> int:
+        return self.up
+
+    def flip_to(self, want: int) -> bool:
+        self.flips.append(want)
+        self.up = want
+        return True
+
+
+def skill(name: str, role: str, key: str, slot: int, rng: float | None = None) -> dict[str, Any]:
+    return {"name": name, "role": role, "key": key, "slot": slot, "range": rng}
+
+
+def test_a_hunter_hits_with_its_basic_attack_not_the_escape_jump(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(xploss, "attack_key", REAL_ATTACK_KEY)
+    g = Game()
+    g.p["attack_keys"] = ["j", "h"]
+    g.skillbook = Book("Hunter", {0: [skill("Escape", "mobility", "j", 1),
+                                      skill("Arcane Shot", "base_attack", "h", 2, 20.0)]})
+    g.hit_key, g.hit_range = "h", 20.0
+    g.entities = [guard(x=140.0)]
+    assert lose(g, until_needed=1500) == "done"
+    assert g.deaths == 1 and "j" not in g.pressed and g.pressed.count("h") >= 2
+    assert "attacking guards with the h key" in g.text()
+
+
+def test_the_basic_attack_on_the_second_page_turns_the_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(xploss, "attack_key", REAL_ATTACK_KEY)
+    g = Game()
+    g.skillbook = Book("Mage", {0: [skill("Ice Orb", "single_target", "j", 1)],
+                                1: [skill("Magic Sphere", "base_attack", "k", 14, 20.0)]})
+    g.hit_key, g.hit_range = "k", 20.0
+    assert lose(g, until_needed=1500) == "done"
+    assert g.skillbook.flips == [1] and g.deaths == 1 and "j" not in g.pressed
+
+
+def test_which_key_hits_the_guard() -> None:
+    g = Game()
+    # the basic attack on no key: put on an empty one
+    g.skillbook = Book("Warrior", {0: [skill("Leap Slash", "engage", "j", 1)]})
+    assert REAL_ATTACK_KEY(as_bot(g)) == ("0", 0, None)
+    # it can't be put on a key: the first skill that attacks a target, never a jump or a buff
+    g.skillbook = Book("Hunter", {0: [skill("Escape", "mobility", "j", 1), skill("Rage", "self_buff", "y", 2),
+                                      skill("Aimed Shot", "single_target", "u", 3, 18.0)]}, can_put=False)
+    assert REAL_ATTACK_KEY(as_bot(g)) == ("u", 0, 18.0)
+    # a class the skills don't tell: the same
+    g.skillbook.cls = None
+    assert REAL_ATTACK_KEY(as_bot(g)) == ("u", 0, 18.0)
+    # no skills read at all: the profile's first attack key
+    g.skillbook = Book("Hunter", {})
+    assert REAL_ATTACK_KEY(as_bot(g)) == ("j", None, None)
+    g.p["attack_keys"] = []
+    with pytest.raises(Stopped, match="no attack key"):
+        REAL_ATTACK_KEY(as_bot(g))

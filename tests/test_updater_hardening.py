@@ -279,6 +279,12 @@ def test_paused_copier_never_activates_on_close_veto(app: Path, monkeypatch: pyt
         events.append("close")
         frame.destroyed = close_allowed
         return close_allowed
+    from test_built_copy import Started
+    def call_after(callback: Callable[..., Any], *args: Any) -> None:
+        callback(*args)
+    # start_apply runs on a worker that hands back through wx.CallAfter: both run at once here
+    monkeypatch.setattr(updates.threading, "Thread", Started)
+    monkeypatch.setattr(updates.wx, "CallAfter", call_after)
     monkeypatch.setattr(frame, "Close", close, raising=False)
     handle = types.SimpleNamespace(cancel=lambda: events.append("cancel"))
     monkeypatch.setattr(updates.agentfix, "running_pids", returning([]))

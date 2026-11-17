@@ -34,6 +34,7 @@ rather not can turn it off (profile repair_with "off").
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
 import re
 
 from .. import jsonio
@@ -57,6 +58,15 @@ AFTER_REPAIR = 120.0      # no second repair this soon after one, unless somethi
 LATE_WARNING = 10.0       # an "about to break" this soon after a repair was sent before it landed
 CHECK_EVERY = 2.0         # seconds between looks at the wear warnings
 BROKEN_EVERY = 30.0       # seconds between looks for broken items when nothing warned
+QUESTION_GRACE = 30.0    # retain ownership of a late answer without blocking combat
+
+
+@dataclass(frozen=True)
+class _PendingToolbox:
+    name: str
+    key: str | None
+    count: int
+    until: float
 
 
 class Gear:
@@ -75,6 +85,21 @@ class Gear:
         self.said_no_tool = False
         self.said_old_agent = False
         self.said_wait = False
+        self.pending: _PendingToolbox | None = None
+
+
+def owns_question(bot: Bot, dialog: dict[str, Any]) -> bool:
+    """A late answer to our toolbox request must not be dismissed as a stray popup."""
+    g: Gear | None = getattr(bot, "gear", None)
+    if g is None or g.pending is None:
+        return False
+    if clock_for(bot).time() >= g.pending.until:
+        g.pending = None
+        return False
+    top: dict[str, Any] = dialog.get("top") or {}
+    rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
+    texts = [t for row in rows for e in row if e for t in bot.entry_texts(e)]
+    return any(re.search(ASK + "|" + NONE_TO_DO + "|" + TOO_HIGH, t, re.I) for t in texts)
 
 
 def equipment(bot: Bot) -> list[dict[str, Any]]:
@@ -185,6 +210,8 @@ def check(bot: Bot) -> bool:
         return False
     g = bot.gear
     now = clock_for(bot).time()
+    if g.pending is not None and now >= g.pending.until:
+        g.pending = None
     if now - g.checked_at < CHECK_EVERY:
         return False
     g.checked_at = now
@@ -203,11 +230,11 @@ def check(bot: Bot) -> bool:
     if g.warned or now - g.broken_checked_at >= BROKEN_EVERY:
         g.broken_checked_at = now
         gone = broken(bot)
-    if not g.warned and not gone:
+    if not g.warned and not gone and g.pending is None:
         return False
-    if now - g.failed_at < 600:
+    if now - g.failed_at < 600 and g.pending is None:
         return False
-    if now - g.repaired_at < AFTER_REPAIR and not gone:
+    if now - g.repaired_at < AFTER_REPAIR and not gone and g.pending is None:
         return False
     bot.repairing = True
     try:
@@ -221,8 +248,12 @@ def repair(bot: Bot, gone: list[str] | None = None) -> bool:
     toolbox that can't mend this gear - the game turns it down, its level limit is under the
     character's level, or gear is still broken after it - hands over to the next, stronger one."""
     g = bot.gear
-    learn_level(bot)
+    if g.pending is None:
+        learn_level(bot)  # a sheet opened now would close a pending toolbox question
     tools = toolboxes(bot)
+    if g.pending is not None:
+        pending = g.pending
+        tools = [(pending.name, pending.key, pending.count)] + [t for t in tools if t[0] != pending.name]
     if not tools:
         g.failed_at = clock_for(bot).time()
         if not g.said_no_tool:
@@ -256,36 +287,56 @@ def _stronger(a: str, b: str) -> bool:
     return tb is not None and (ta is None or ta > tb)
 
 
-def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over: bool) -> str:
-    """One toolbox: DONE (all repaired), WEAK (it can't mend this gear and a stronger one is at
-    hand: try that) or FAILED (anything else: nothing more now)."""
+def _question(bot: Bot, name: str, key: str | None, count: int) -> dict[str, Any] | None:
+    """Resume a late owned question, or send one toolbox request and wait briefly."""
     g = bot.gear
-    if not key and bot.in_fight:
+    if g.pending is not None:
+        d = bot.dialog()
+        if not owns_question(bot, d):
+            return None
+    elif not key and bot.in_fight:
         if not g.said_wait:
             g.said_wait = True
             bot.log(_("the gear needs repairing: the {tool} is only in the bag, so after this fight "
                       "(put it on a hotkey to repair at once)", tool=name))
+        return None
+    else:
+        if bot.dialog().get("open"):
+            return None             # some menu of ours is open: later
+        where = _("key {key}", key=key) if key else _("the bag")
+        bot.log(_("repairing all the gear with a {tool} from {where} ({n} left)", tool=name, where=where, n=count))
+        g.pending = _PendingToolbox(name, key, count, clock_for(bot).time() + QUESTION_GRACE)
+        if key:
+            bot.key(key)
+        elif not bot.use_item(name):
+            g.pending = None
+            g.failed_at = clock_for(bot).time()
+            return None
+        d = bot.wait_dialog(3.0)
+        if d is None or not d.get("top"):
+            g.failed_at = clock_for(bot).time()
+            bot.log(_("the {tool} didn't open its question - not repaired", tool=name), speak=True)
+            return None
+    return d
+
+
+def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over: bool) -> str:
+    """One toolbox: DONE, WEAK (hand over to a stronger one), or FAILED."""
+    g = bot.gear
+    d = _question(bot, name, key, count)
+    if d is None:
         return FAILED
-    if bot.dialog().get("open"):
-        return FAILED             # some menu of ours is open (a shop, the respawn menu): later
-    where = _("key {key}", key=key) if key else _("the bag")
-    bot.log(_("repairing all the gear with a {tool} from {where} ({n} left)", tool=name, where=where, n=count))
-    if key:
-        bot.key(key)
-    elif not bot.use_item(name):
-        g.failed_at = clock_for(bot).time()
-        return FAILED
-    d = bot.wait_dialog(3.0)
-    if d is None or not d.get("top"):
-        g.failed_at = clock_for(bot).time()
-        bot.log(_("the {tool} didn't open its question - not repaired", tool=name), speak=True)
-        return FAILED
+    g.pending = None
     texts = [t for row in d["top"]["rows"] for e in row if e for t in bot.entry_texts(e)]
     bot.note_dialog(d, "repair with %s" % name)
     if any(re.search(NONE_TO_DO, t, re.I) for t in texts):
         bot.close_dialogs()
-        g.warned.clear()
-        g.repaired_at = clock_for(bot).time()
+        rows = equipment(bot)
+        if rows and all(isinstance(r.get("equipped"), int) and r["equipped"] >= 0 for r in rows):
+            g.warned.clear()
+        else:
+            # the warnings stay, so check() would ask again in CHECK_EVERY seconds: wait instead
+            g.failed_at = clock_for(bot).time()
         return FAILED
     if any(re.search(TOO_HIGH, t, re.I) for t in texts) or not any(re.search(ASK, t, re.I) for t in texts):
         bot.close_dialogs()
@@ -306,19 +357,17 @@ def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over
                   tool=name, limit=limit, level=lv))
         return WEAK
     from .bot import CONFIRM
+    broken_before = {r["uid"] for r in equipment(bot)
+                     if r.get("uid") is not None and (r.get("equipped") or 0) < 0}
     if bot.choose(CONFIRM) is None:
         g.failed_at = clock_for(bot).time()
         return FAILED
     bot.sleep(1.0)
     bot.close_dialogs()
-    g.warned.clear()
-    g.repaired_at = clock_for(bot).time()
-    g.said_wait = False
-    left = _count(bot, name)
+    verified, left, still = _verify(bot, name, count, broken_before)
     if left is not None and left >= count:
         bot.log(_("the {tool} is still in the bag after the repair ({n}) - the game may not have used it",
                   tool=name, n=left))
-    still = broken(bot)
     if still:
         line = _("still broken after the repair: {items}", items=", ".join(still))
         if can_hand_over:
@@ -327,15 +376,49 @@ def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over
         g.failed_at = clock_for(bot).time()
         bot.log(line, speak=True)
         return FAILED
+    if not verified:
+        g.failed_at = clock_for(bot).time()
+        bot.log(_("couldn't confirm the repair with a {tool} - not marked repaired", tool=name), speak=True)
+        return FAILED
+    g.warned.clear()
+    g.repaired_at = clock_for(bot).time()
+    g.failed_at = 0.0
+    g.said_wait = False
     bot.log(_("all the gear repaired with a {tool}", tool=name))
     return DONE
 
 
+def _verify(bot: Bot, name: str, count: int, broken_before: set[int]) -> tuple[bool, int | None, list[str]]:
+    """Wait for server effects, never treating an empty/unreadable gear list as repaired.
+
+    The agent has no durability reading for merely worn gear: consumption by a
+    fitting toolbox plus a valid non-broken snapshot is the available evidence.
+    """
+    left: int | None = None
+    still: list[str] = []
+    for attempt in range(20):
+        left = _count(bot, name)
+        rows = bot.a.json("mem equipment")
+        valid = (jsonio.is_array(rows) and bool(rows)
+                 and all(jsonio.is_object(r) and isinstance(r.get("equipped"), int) for r in rows))
+        still = [r.get("name") or "?" for r in rows if r["equipped"] < 0] if valid else []
+        # not broken (broken() counts below 0 as broken): the server's equipped value may be 0
+        fixed: set[int | None] = {r.get("uid") for r in rows if r["equipped"] >= 0} if valid else set()
+        if valid and fixed and not still and ((left is not None and left < count and covers(limit_of(name), level(bot)))
+                                             or bool(broken_before) and broken_before <= fixed):
+            return True, left, []
+        if attempt < 19:
+            bot.sleep(0.15)
+    return False, left, still
+
+
 def _count(bot: Bot, name: str) -> int | None:
-    """How many of that toolbox the bag holds now (None when the bag can't be read)."""
+    """Toolboxes remaining, or None for an unreadable bag (never evidence of consumption)."""
     try:
-        rows = bot.bag_rows()
-    except Exception as e:      # only a note after the repair: never a reason to fail it
+        rows = bot.a.json("mem bag")
+        if not jsonio.is_array(rows):
+            return None
+    except Exception as e:
         carry_on(e, "counting the toolboxes")
         return None
     want = name.strip().lower()
