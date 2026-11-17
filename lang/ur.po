@@ -6677,6 +6677,11 @@ msgid ""
 msgstr ""
 "yahan follow attack humein monster tak nahi le jata - khud un tak chal rahe hain"
 
+msgid ""
+"the fusion beast waits {secs} s: the game refuses one this soon after a death"
+msgstr ""
+"fusion beast {secs} s intezar karta hai: game maut ke itni jaldi baad koi fusion beast nahi deta"
+
 msgid "the game can't be read: {why}"
 msgstr "game nahi parhi ja sakti: {why}"
 

@@ -307,6 +307,7 @@ class HealthMixin(Parts):
         the character dead where it fell. With stop_on_deaths off (or max_deaths 0) it never
         stops for deaths: it respawns and goes back every time."""
         self.deaths += 1
+        self.last_death = self.clock.time()
         self.let_go()
         where = atlas.label(self.map_id())
         # the XP loser dies on purpose: its own lines say how it goes, a death each time is no news

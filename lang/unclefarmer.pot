@@ -6373,6 +6373,10 @@ msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""
 
+msgid ""
+"the fusion beast waits {secs} s: the game refuses one this soon after a death"
+msgstr ""
+
 msgid "the game can't be read: {why}"
 msgstr ""
 

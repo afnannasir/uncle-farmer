@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**The fusion beast after a death**
+
+- Right after a death the game refuses a fusion beast without a word, and a refused press made
+  the next try wait for the game's gap between two fusion changes: the XP loser stood still about
+  ten seconds after each respawn before its beast came, then rode up to the guard just to get off
+  again. The beast now waits until six and a half seconds after the death and goes on at the
+  first press, so the character rides off a few seconds after it is back.
+
 **Safer updates**
 
 - Uncle Farmer no longer seems to freeze after a download: the update is prepared in the
