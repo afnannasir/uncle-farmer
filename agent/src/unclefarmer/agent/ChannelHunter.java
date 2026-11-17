@@ -43,6 +43,8 @@ final class ChannelHunter implements Runnable {
             Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
     /** Static fields a Channel has been reached from; the game reuses them for each new connection. */
     private final Set<Field> roots = new LinkedHashSet<Field>();
+    /** Shuts down what the game leaves running of each closed connection. */
+    private final DeadLinks links = new DeadLinks();
     private Field currentRoot;
     private Class<?> channelClass;
     private int nodes;
@@ -90,15 +92,35 @@ final class ChannelHunter implements Runnable {
      */
     private boolean pruneAndCheckLive() {
         boolean live = false;
+        long now = System.currentTimeMillis();
+        links.closeOldVoice(tapped, currentVoice());
         for (Iterator<Object> it = tapped.iterator(); it.hasNext(); ) {
             Object channel = it.next();
             if (!isActive(channel)) {
                 it.remove();
+                links.closed(channel, now);
             } else if (channel.getClass().getName().indexOf("Datagram") < 0) {
                 live = true;
             }
         }
+        links.reap(tapped, now);
         return live;
+    }
+
+    /**
+     * The voice socket the game sends through now: game.x.a(). Null when it can't be read (another
+     * game version), and then no voice socket is ever closed.
+     */
+    private Object currentVoice() {
+        try {
+            Class<?> voice = Class.forName("game.x", false, channelClass.getClassLoader());
+            Method a = voice.getMethod("a");
+            if (!Modifier.isStatic(a.getModifiers()) || !channelClass.isAssignableFrom(a.getReturnType())) return null;
+            Object channel = a.invoke(null);
+            return channel != null && DeadLinks.datagram(channel) ? channel : null;
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     private void quickScan() {
@@ -158,6 +180,7 @@ final class ChannelHunter implements Runnable {
         if (channelClass.isInstance(o)) {
             if (!tapped.contains(o) && isActive(o) && attach(o)) {
                 tapped.add(o);
+                links.tapped(o);
                 if (currentRoot != null) roots.add(currentRoot);
             }
             return;

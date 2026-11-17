@@ -72,6 +72,22 @@ def languages() -> list[tuple[str, str]]:
     return found
 
 
+def match_locale(code: str) -> tuple[str, str] | None:
+    """Offer only installed catalogs: exact locale first, then its base language."""
+    normalized = code.split(".", 1)[0].split("@", 1)[0].replace("-", "_").casefold()
+    supported = {key.replace("-", "_").casefold(): (key, name) for key, name in languages()}
+    return supported.get(normalized) or supported.get(normalized.split("_", 1)[0])
+
+
+def system_locale() -> str:
+    """Read the OS language through wx, independently of our active UI locale."""
+    import wx
+    try:
+        return wx.Locale.GetLanguageCanonicalName(wx.Locale.GetSystemLanguage())
+    except (OSError, ValueError, RuntimeError):
+        return ""
+
+
 def _current_translations() -> "wx.Translations | None":
     """wx's current translations. The stubs say Get() always returns one; before the first Set()
     it returns None."""

@@ -1,4 +1,4 @@
-"""Scheduled runs in the main window: the timer that starts what is due, and Run, Schedules.
+"""Scheduled plans, scripts, tools and trigger sequences: one shared timer and run lifecycle.
 
 A scheduled plan or script is started by start(), the Start button's own path, in the game its
 character is logged in to; schedule.Scheduler decides when, and keeps it from running twice.
@@ -12,7 +12,7 @@ import wx
 
 from ... import applog, schedule, settings, stats
 from ...errors import carry_on
-from ...engine import plan as plans
+from ...engine import plan as plans, triggers
 from ...engine.runner import Run
 from ...i18n import _
 from ..schedules import SchedulesDialog
@@ -49,7 +49,9 @@ class SchedulingMixin(FrameParts):
             self.say(line)
 
     def scheduled_items(self) -> list[tuple[str, str]]:
-        return [("plan", n) for n in plans.names()] + [("script", n) for n in plans.script_names()]
+        return ([("plan", n) for n in plans.names()] + [("script", n) for n in plans.script_names()]
+                + [("tool", job) for job, _label in triggers.TOOLS]
+                + [("trigger", stage) for stage in triggers.STAGES])
 
     def start_scheduled(self, s: schedule.Schedule, due: dt.datetime) -> tuple[str, str]:
         """Start one due occurrence: (schedule.STARTED | WAIT | FAILED, what happened)."""
@@ -57,14 +59,24 @@ class SchedulingMixin(FrameParts):
         if item not in self.scheduled_items():
             return schedule.FAILED, _("the {kind} {name} doesn't exist any more",
                                       kind=_("plan") if item[0] == "plan" else _("script"), name=item[1])
-        who = s["character"].strip().lower()
-        pid = next((g[0] for g in self.games if settings.profile_name(g[1]).strip().lower() == who), None)
+        who = s["character"].strip().casefold()
+        candidates = [profile for profile, _email in settings.automatic_login_profiles()
+                      if who in (profile.casefold(), settings.profile_display(profile).casefold(),
+                                 settings.profile_name(profile).casefold())]
+        target = candidates[0] if len(candidates) == 1 else None
+        if target:
+            pid, waiting = self.automatic_login_window(target)
+            if pid is None:
+                return schedule.WAIT, waiting
+        else:                                    # older schedules stored a plain character name
+            pid = next((g[0] for g in self.games if settings.profile_name(g[1]).casefold() == who), None)
         if pid is None:
-            return schedule.WAIT, _("{who} isn't logged in to a game that Uncle Farmer sees", who=s["character"])
+            return schedule.WAIT, _("{who} isn't logged in to one available game", who=s["character"])
         busy = self.runs.get(pid)
         if busy is not None:
             return schedule.WAIT, _("{who}'s game is busy with {what}", who=s["character"], what=busy.title)
-        answer = self.start(pid, item, remote=True) or ""
+        answer = self.start(pid, item, remote=True, profile=target,
+                            schedule_mark=(s["id"], schedule.stamp(due))) or ""
         run = self.runs.get(pid)
         if run is None or run.title != item[1]:
             return schedule.FAILED, answer or _("it didn't start")
@@ -76,7 +88,7 @@ class SchedulingMixin(FrameParts):
         mark: tuple[str, str] | None = getattr(run, "schedule", None)
         if mark is None:
             return
-        if reason.startswith(_("unexpected error: {err}", err="").rstrip()):
+        if getattr(run, "failed", False) or reason.startswith(_("unexpected error: {err}", err="").rstrip()):
             outcome = schedule.FAILED
         elif run.ended_by_itself:
             outcome = "finished"
@@ -95,6 +107,7 @@ class SchedulingMixin(FrameParts):
             self.say(_("Couldn't save the schedules: {err}", err=e))
 
     def open_schedules(self) -> None:
-        names = sorted({settings.profile_name(g[1]) for g in self.games if g[1]} | set(stats.characters()), key=str.lower)
+        names = sorted({profile for profile, _email in settings.automatic_login_profiles()} |
+                       {g[1] for g in self.games if g[1]} | set(stats.characters()), key=settings.profile_display)
         with SchedulesDialog(self, self.scheduler, self.scheduled_items(), self.item_label, names, self.now) as d:
             d.ShowModal()

@@ -64,7 +64,6 @@ class SortLists:
         sizer.Add(row, 1, wx.EXPAND)
         self.details = labeled(parent, sizer, _("Details:"),
                                lambda w: wx.TextCtrl(w, style=wx.TE_READONLY | wx.TE_MULTILINE, size=wx.Size(-1, 48)))
-        self.buttons = buttons(parent, sizer, *[(b, self.mover(a)) for a, _l, b in columns])
         self.fill()
 
     def bind_list(self, lb: wx.ListBox, action: str) -> None:
@@ -113,8 +112,6 @@ class SortLists:
         self.current = action
         name = self.selected(action)
         self.details.ChangeValue(self.describe(name) if name else "")
-        for (a, _l, _b), b in zip(self.columns, self.buttons):
-            b.Enable(bool(name) and a != action)
         if self.on_select:
             self.on_select()
 
@@ -359,11 +356,6 @@ class BagManagerDialog(Dialog):
         acts = [a for a, _l in FULL_LABELS]
         self.when_full = f.choice(_("&When the bag is full:"), [_(l) for _a, l in FULL_LABELS],
                                   pick(acts, p.get("when_bag_full", "stop")))
-        f = group(panel, box, _("Drop time"))
-        self.drop_stop = f.check(_("Stop when the day's &drop time runs out"), p.get("stop_on_drop_time", True))
-        self.drop_keep = f.number(_("Drop time to &save (minutes):"), p.get("drop_keep_minutes", 0), 0, 1440)
-        self.drop_stop.Bind(wx.EVT_CHECKBOX, lambda e: self.drop_keep.Enable(self.drop_stop.GetValue()))
-        self.drop_keep.Enable(self.drop_stop.GetValue())
 
     # ------------------------------------------------------------ save
     def on_ok(self, _evt: wx.Event) -> None:
@@ -376,7 +368,5 @@ class BagManagerDialog(Dialog):
         p["restock"] = [r for r in self.supplies if r.get("on", True) or r.get("source") != "tell"]
         p["bag_full_at"] = self.full_at.GetValue()
         p["when_bag_full"] = FULL_LABELS[max(0, self.when_full.GetSelection())][0]
-        p["stop_on_drop_time"] = self.drop_stop.GetValue()
-        p["drop_keep_minutes"] = self.drop_keep.GetValue()
         if save_file(self, settings.save_profile, self.character, p):
             self.EndModal(wx.ID_OK)

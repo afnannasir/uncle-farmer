@@ -238,7 +238,8 @@ def test_a_dev_build_knows_its_build_number(copy: Path) -> None:
     updater.write_build(str(copy), BASE + "-dev.57", "dev", "0" * 40)
     assert updater.installed_version() == BASE + "-dev.57"
     with open(copy / updater.BUILD_FILE, encoding="utf-8") as f:
-        assert json.load(f) == {"version": BASE + "-dev.57", "channel": "dev", "commit": "0" * 40}
+        assert json.load(f) == {"version": BASE + "-dev.57", "channel": "dev", "commit": "0" * 40,
+                                "files": [updater.BUILD_FILE]}
 
 
 def test_a_stable_build_says_its_version(copy: Path) -> None:

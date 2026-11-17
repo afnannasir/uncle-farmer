@@ -154,7 +154,25 @@ def test_same_id_on_two_servers_never_shares_a_last_run() -> None:
     assert settings.last_run_of(app, on_s2) is None
 
 
-def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_connected_character_remembers_its_saved_account_in_its_profile(tmp_path: Path,
+                                                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    first = settings.character_profile("First", 1, "S1")
+    second = settings.character_profile("Second", 2, "S1")
+    assert settings.remember_character_account(first, "account@example.com")
+    assert not settings.remember_character_account(first, "account@example.com")
+    assert settings.remember_character_account(second, "account@example.com")
+    assert settings.automatic_login_profiles() == [(first, "account@example.com"), (second, "account@example.com")]
+
+
+def test_automatic_login_requires_a_confirmed_character_identity() -> None:
+    with pytest.raises(ValueError, match="no game id"):
+        settings.remember_character_account("Hero", "account@example.com")
+
+
+def test_a_locked_settings_file_is_left_alone_and_never_saved_over(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # An I/O error is not broken JSON: the player's good file once went to .corrupt and the
+    # defaults were saved in its place. Now it stays where it is, and no save goes over it.
     monkeypatch.setattr(settings, "_unreadable", set[str]())
     p = tmp_path / "settings.json"
     p.write_text('{"language": "ru"}', encoding="utf-8")
@@ -165,11 +183,18 @@ def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Pa
             raise PermissionError("in use")
         return real_open(file, *a, **k)
 
+    def current() -> tuple[dict[str, Any], str]:
+        return settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)
+
     monkeypatch.setattr("builtins.open", deny)
-    assert settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)["language"] == "en"
-    assert os.path.exists(str(p) + ".corrupt")
-    settings._write(str(p), {"language": "ru"})
-    assert json.loads(p.read_text(encoding="utf-8"))["language"] == "ru"
+    assert current() == ({**settings.APP_DEFAULTS}, settings.UNREADABLE)
+    assert not os.path.exists(str(p) + ".corrupt")
+    with pytest.raises(OSError, match="close whatever holds it"):
+        settings._write(str(p), {"language": "en"}, current)
+    monkeypatch.setattr("builtins.open", real_open)
+    assert p.read_text(encoding="utf-8") == '{"language": "ru"}'
+    settings._write(str(p), {"language": "de"}, current)      # readable again: the save goes on
+    assert json.loads(p.read_text(encoding="utf-8"))["language"] == "de"
 
 
 def test_a_file_that_cannot_be_moved_aside_is_never_overwritten(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -188,10 +213,11 @@ def test_a_file_that_cannot_be_moved_aside_is_never_overwritten(tmp_path: Path, 
 
     monkeypatch.setattr("builtins.open", deny)
     monkeypatch.setattr(settings.os, "replace", locked)
-    assert settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)["language"] == "en"
+    assert settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)[0]["language"] == "en"
     assert str(p) in settings._unreadable
     with pytest.raises(OSError, match="close whatever holds it"):
-        settings._write(str(p), {"language": "en"})
+        settings._write(str(p), {"language": "en"},
+                        lambda: settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings))
     assert p.read_text(encoding="utf-8") == '{"language": "ru"}'
 
 
@@ -210,7 +236,8 @@ def test_character_settings_export_round_trips_choices_but_not_game_facts(tmp_pa
                                                                           monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "PROFILES", str(tmp_path / "profiles"))
     original = dict(settings.PROFILE_DEFAULTS, attack_gap=0.7, bag_rules={"red potion": {"action": "keep", "keep": 4}},
-                    scan={"class": "Hunter", "pets": ["Source pet"]}, hearth_home="Source town", future_key=7)
+                    scan={"class": "Hunter", "pets": ["Source pet"]}, hearth_home="Source town",
+                    login_email="source@example.com", future_key=7)
     settings.save_profile("Source", original)
     export = tmp_path / "source.unclefarmer-profile.json"
     settings.export_profile("Source", str(export))
@@ -219,7 +246,7 @@ def test_character_settings_export_round_trips_choices_but_not_game_facts(tmp_pa
     assert imported["attack_gap"] == 0.7
     assert imported["bag_rules"] == {"red potion": {"action": "keep", "keep": 4}}
     assert imported["future_key"] == 7
-    assert "scan" not in imported and "hearth_home" not in imported
+    assert "scan" not in imported and "hearth_home" not in imported and "login_email" not in imported
 
 
 def test_character_settings_import_keeps_destination_game_facts(tmp_path: Path,

@@ -109,6 +109,45 @@ final class Ask {
         return "asked";
     }
 
+    /** The experience card's pause/resume (the sheet entry "N% EXP bonus; press to pause" or
+     *  "Paused; press to resume"): OUT op=37 `25 16`, one byte 22, for both - it toggles (the
+     *  recorder's captures, 2026-11-11). The "are you sure" box before a pause sends nothing. */
+    static final int EXP_TOGGLE = 22;
+    /** A toggle goes only on a sheet this fresh: the card's state is what decides pause or resume. */
+    static final long EXP_SHEET_MS = 15_000L;
+    private static volatile long lastToggle;
+
+    static byte[] expTogglePacket() {
+        return new byte[] {(byte) OP_INFO, (byte) EXP_TOGGLE};
+    }
+
+    /** `xpbonus pause|resume`: "sent", or why not ("refused: ..."). The packet toggles, so it only
+     *  goes when our last sheet is fresh, came after any toggle before it, and shows the card in
+     *  the other state. */
+    static String xpBonus(String want) {
+        long now = System.currentTimeMillis();
+        boolean ours = Sheet.seen != 0 && Sheet.id == ownId() && Sheet.id != 0;
+        String why = xpBonusRefusal(want, ours, now, Sheet.seen, lastToggle, Sheet.expBonus, Sheet.expPaused);
+        if (why != null) return why;
+        String failed = send(expTogglePacket(), "xpbonus " + want);
+        if (failed != null) return failed;
+        lastToggle = now;
+        return "sent";
+    }
+
+    /** Why `xpbonus <want>` must not send now, or null. Pure, for the tests. */
+    static String xpBonusRefusal(String want, boolean ours, long now, long seen, long toggled, int bonus, boolean paused) {
+        boolean pause = want.equals("pause");
+        if (!pause && !want.equals("resume")) return "error: xpbonus pause|resume";
+        if (!ours) return "refused: our character sheet hasn't been read";
+        if (now - seen > EXP_SHEET_MS) return "refused: the character sheet is too old - read it again";
+        if (toggled != 0 && seen <= toggled) return "refused: read the character sheet again after the last change";
+        if (bonus <= 0) return "refused: no experience card is running";
+        if (pause && paused) return "refused: the card is already paused";
+        if (!pause && !paused) return "refused: the card is already running";
+        return null;
+    }
+
     /** 37, 13, the int 1, then the character's id: what the sheet key sends (the recorder's
      *  captures, 2026-10-23: every one of 303 own sheets came after 25 0d 00000001 <own id>). */
     static byte[] sheetPacket(int id) {

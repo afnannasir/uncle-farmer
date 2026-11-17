@@ -20,9 +20,10 @@ import ctypes
 import ctypes.wintypes as wt
 import os
 import shutil
+import tempfile
 from collections.abc import Callable
 
-from . import paths
+from . import jsonio, paths
 from .clock import CLOCK, Clock
 
 VMOPTIONS = "mw.exe.vmoptions"
@@ -32,7 +33,7 @@ MARKER = "unclefarmer-agent.jar"
 LEGACY = ("mwfarmer-agent.jar",)
 # The agent version this copy ships (StateServer.VERSION in agent/src; a test keeps them equal).
 # A running game whose agent answers an older one loaded it before this copy was installed.
-AGENT_VERSION = 58
+AGENT_VERSION = 69
 CLOSE_WAIT = 20.0       # seconds a game gets to close through its own close button before it is ended
 
 
@@ -219,14 +220,37 @@ def find_installed(remembered: str | None = "") -> str | None:
     return None
 
 
+def _write_vmoptions(path: str, text: str) -> None:
+    """The game's options file replaced atomically (jsonio.save_text): written in full to a temporary
+    file beside it and flushed to the disk first, so a full disk or a crash leaves the old file
+    whole - opening it with "w" emptied it before the new lines were safely written, and a game
+    whose options file is cut short doesn't start. Line ends as given (newline="")."""
+    jsonio.save_text(path, text, newline="")
+
+
+def _copy_backup(path: str, backup: str) -> None:
+    """The player's own options file, copied once as the backup - whole or not at all: a copy cut
+    short by a full disk would stand as the backup for good (it is only made when there is none)."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(backup) or ".", prefix=os.path.basename(backup) + ".", suffix=".tmp")
+    os.close(fd)
+    try:
+        shutil.copyfile(path, tmp)
+        os.replace(tmp, backup)
+    finally:
+        if os.path.exists(tmp):
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+
+
 def install(folder: str) -> None:
     path, lines, nl = _read_lines(folder)
     backup = path + ".bak-unclefarmer"
     if os.path.exists(path) and not os.path.exists(backup):
-        shutil.copyfile(path, backup)
+        _copy_backup(path, backup)
     lines = [l for l in lines if not _ours(l)] + [agent_line()]
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        f.write(nl.join(lines) + nl)
+    _write_vmoptions(path, nl.join(lines) + nl)
     os.makedirs(paths.AGENT_RUN, exist_ok=True)
 
 
@@ -234,5 +258,4 @@ def uninstall(folder: str) -> None:
     path, lines, nl = _read_lines(folder)
     if not os.path.exists(path):
         return
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        f.write(nl.join(l for l in lines if not _ours(l)) + nl)
+    _write_vmoptions(path, nl.join(l for l in lines if not _ours(l)) + nl)

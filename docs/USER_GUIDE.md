@@ -54,6 +54,7 @@ Follow these steps to get started:
 
 1. Extract the downloaded folder wherever you like, such as your Documents folder. Keep all the files and folders together.
 2. Run `UncleFarmer.exe`. The first time you start it, Uncle Farmer offers to open Settings.
+   (`bootstrap.exe` beside it installs updates and starts Uncle Farmer again afterwards; you don't need to start it yourself.)
 3. Open the **Game** tab in Settings. Select your Mist World folder (the one containing `mw.exe`), or start the game first and press **Find the running game**.
 4. Press **Install**.
 5. Restart Mist World.
@@ -108,7 +109,13 @@ This is where you control your farming runs. It shows:
 - Nearby players and their distance from you, measured in steps.
 - Your bag contents, drop time, and kill count for the current run.
 
-Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has Walk to, Scan now, Character settings, Bag and supplies, Chat, Private messages, Results, mute and unmute, and the jobs that run right away: **Sell the collection now**, **Sell shards now**, **Clean the bag now**, **Store items now**, and **Update shard prices**. An entry that can't be used right now, such as a job while that game's bot is running, is greyed out.
+Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
+
+- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
+- **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
+
+Use the arrow keys to open a submenu, **Enter** to choose an action, and **Escape** to close it. The existing shortcuts, including **F5**, **F6**, **Ctrl+P** and **Ctrl+B**, also work without opening the menu. An entry that can't be used right now, such as a tool while that game's bot is running, is greyed out. Chat and private messages remain under **Messages** in the menu bar; mute and unmute remain under **Game**.
 
 ### Plans tab
 
@@ -126,15 +133,14 @@ The menu bar has these menus:
 
 - **File:** Settings, the log and results folders, and Exit.
 - **View:** The three tabs.
-- **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 - **Game:** Mute and unmute this game or every game, and Open another game window.
 - **Messages:** Private messages, Chat, and Let everyone get replies again.
-- **Character:** Settings, Bag and supplies, Scan now, Another character, and the **Import or export character settings** submenu.
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, and Dungeons.
 - **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
 - **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
 
 Entries that can't be used right now are greyed out. For example, Start is greyed out while the selected game's bot is running, and Duplicate needs a plan, not a script, to be selected.
+
+**Tools**, **Character** and **Run** are in the selected game's context menu instead of the menu bar. References to these menu names elsewhere in this guide mean those submenus.
 
 ### Help and keyboard shortcuts
 
@@ -227,12 +233,13 @@ You can set conditions that tell Uncle Farmer when to end a farming run. These i
 Some conditions are handled automatically through your character settings. These include:
 
 - The game's drop time running out.
+- The next level coming close, if you ask for it.
 - Your bag becoming full.
 - Reaching the last death you allow.
 - Your gear breaking.
 - Using up your last potion.
 
-You can configure these character-related conditions in the character settings.
+You can configure these character-related conditions in the character settings. A plan can also save its own amount of drop time, or stop before the next level, instead of the character's setting.
 
 ### Where to end
 
@@ -318,7 +325,7 @@ The other tabs under **Advanced** contain more detailed options, including:
 - When the character rests.
 - When defensive skills, shields, and the healing skill are used.
 - Which potions and Rice Rolls the pet uses.
-- How the character travels, including walking, cable cars, airships, travel items, and VIP travel.
+- How the character travels, including walking, cable cars, airships, teleport skills, travel items, and VIP travel.
 - Which keys are used for dialogs, discarding items, and the Action menu.
 
 ### How the bot chooses a route
@@ -328,6 +335,17 @@ When travelling, Uncle Farmer combines walking with cable cars and airships when
 For example, a journey from Giant Rock City to Tulip City might go underground to reach a cable car, then continue on foot after arriving.
 
 The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, and the character must have enough arnebia in the bag to pay the fare. VIP travel is free.
+
+**Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
+
+When it teleports, the bot:
+
+1. Walks out of the town first if it is standing in one. No skill works in a town's safe zone.
+2. Deals with anything attacking it. Any hit breaks the 10-second channel.
+3. Gets off the fusion beast.
+4. Presses the skill's key and chooses the place from the game's list. If the skill is on no key, the bot puts it on an empty skill key, as it does for heals and buffs.
+
+The first time, the bot learns which places this character's skill lists (the list grows with the skill's level) and remembers them. If something hits it during the channel, it fights back and tries again. After three broken tries it goes another way.
 
 If those conditions are not met, the bot plans the route on foot instead.
 
@@ -344,6 +362,31 @@ When a boss comes within that distance, the bot moves to the spot furthest away 
 You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
+
+### Treasure chests
+
+Now and then a treasure chest appears on a farming map, and the game announces it to everyone: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
+
+When a chest comes into sight while farming, Uncle Farmer walks to it and opens it the way you would: it selects the chest, presses Enter and chooses **Open the chest**. It says "opened a chest" with the number opened so far, and the results count the chests opened.
+
+It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+
+You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
+
+### Drop time and the next level
+
+Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:
+
+- **Stop when the day's drop time runs out** (on by default), with **Drop time to save (minutes)**: the run ends while that much of the day's public area drop time is still left. With 0 it uses all of it.
+- **Stop before the next level** (off by default), with **Stop when the next level needs less than (experience)** (100,000 by default): for characters you keep at their level. The character sheet says how much experience the next level still needs, and Uncle Farmer reads it after every kill. Once it is under your number, it says "the next level needs only 85000 experience - going somewhere safe and stopping", leaves the monsters and ends the run. At the top level there is nothing to read, and it never stops for this.
+
+It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back.
+
+A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
+
+Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
+
+A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
 
 ### Settings for each character
 
@@ -387,7 +430,7 @@ Choose which potions and food Uncle Farmer should refill, and where it should ge
 
 ### Full bag
 
-Choose what Uncle Farmer should do when the bag becomes full. This page also includes the option to stop when the day's drop time runs out.
+Choose what Uncle Farmer should do when the bag becomes full. The option to stop when the day's drop time runs out is under **Character → Settings → Fighting**, with the other reasons to stop (see "Drop time and the next level").
 
 A full bag means the bag has reached its carrying limit. By default, the bot keeps farming until the load reaches that limit. It can also treat the bag as full if the load stops increasing just below the limit while monsters continue to die.
 
@@ -418,13 +461,44 @@ The storage list is read when the job starts. This means changes you make to the
 
 Open **Character, Settings, Triggers** to configure jobs that run before or after farming.
 
-There are two lists, and both contain the same five jobs:
+There are independent **Before farming** and **After farming** lists. Enabled actions run from
+top to bottom, one at a time. Use **Move up** and **Move down** to change that order. Existing
+profiles keep their enabled jobs and original order until you edit them.
+
+Above the Before farming list, **Skip this list when the run starts on its first farming map**
+(off by default) is for a Stop and a start again where the character was farming: when the run
+starts on the map its plan farms first (the first spot of the plan, or the first `farm` line of a
+script), the Before farming list is left out and farming starts at once, instead of a trip to
+town and back. The log says "already on Margit Rainforest (5281), where this run farms first -
+the Before farming list is skipped". A run that starts anywhere else, or one that first goes into
+a dungeon, runs the list as usual. The After farming list isn't affected.
+
+Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
+or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
+delay begins only after that action completes successfully and applies before the next enabled
+action. Zero means no wait; the final action has no trailing delay. Stop cancels the wait.
+
+DETERMINISTIC is set **separately on each action**. If that action fails, the remaining sequence
+is skipped. A checked Before action that fails also prevents farming from starting. An unchecked
+action's ordinary failure is logged and execution continues without its delay. A lost/frozen
+game or pressing Stop ends the sequence regardless of this setting. Actions use the existing
+tools' completion/error contracts: zero items processed or no refill trip needed is not an error.
+Scripts run synchronously in the existing script interpreter; a missing or broken script is a
+failed action, and its stop conditions do not leak into the surrounding workflow.
+
+For example, put Clean the bag before Daily chores and set Clean the bag's delay to `600`.
+If cleaning completes at 04:50, chores can start at 05:00. This is ten minutes after completion,
+not a promise of a fixed reset time if the preceding work takes longer. Farming's daily-stop
+deadline does not cut short an After sequence; normal Stop, pause and connection checks remain.
+
+The familiar default jobs include:
 
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
 - **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
 - **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
+- **Restock supplies:** Runs **Restock now** from the game's menu in the Games list. It fills every supply that is switched on in **Character, Bag and supplies** up to its "fill up to" amount, from the storehouse first and then a shop, even when it is not yet down to its refill point.
 
 
 ## Fighting and staying alive
@@ -685,6 +759,29 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 
 ## Tools
+
+### Sound Silencer
+
+Select a game and choose **Tools, Sound Silencer** from its context menu. The dialog directly shows
+the numeric Sound ID input, Add button, Sounds and Muted Sounds lists, and Save button.
+It uses the existing audio hook; no duplicate hook or live-listening subscription is installed.
+The game can remain open while the dialog is open.
+
+Add one available numeric ID at a time
+(1–99999), then use right-click or Shift+F10 to **Move to Mute List**, **Move to Sounds List**,
+**Rename**, or **Remove**. Named entries appear as `Background Music (1234)`; unnamed entries show
+only their numeric ID. Optional names may be cleared; IDs and mute flags are preserved.
+Duplicate IDs are rejected. All edits remain a draft until **Save**. Closing discards changes
+since the last Save. Save stores both lists and names in settings.json and then applies the
+saved mute rules, then closes after successful application, like the other tools. If saving or
+application fails, the dialog stays open with its error and editable draft. If the game disconnects,
+the choices are still saved and the dialog clearly
+reports that live muting could not be confirmed. Disk-save failure leaves live audio unchanged.
+
+Saved rules are app-wide and restore automatically when the app starts or a new game connects.
+Scripts may change live muting afterward. Corrupt configuration is logged and does not silently
+clear live mute rules. Existing audio lines use supported MUTE controls and subsequent signed-PCM
+writes become silence; already-buffered audio without hardware MUTE may finish first.
 
 Uncle Farmer includes several tools for tasks outside regular farming. You can run them manually from the **Tools** menu or use them in scripts.
 
@@ -1057,16 +1154,18 @@ To get started, open **Tools → Dungeons** or press **Ctrl+Shift+G**.
 
 ### Which caves can you visit?
 
-There are currently two caves available:
+There are four caves available:
 
 - **Spider Cave:** For characters at level 40 or higher. Its entrance is at Water Curtained Cave.
 - **Scorpion Cave:** For characters at level 60 or higher. Its entrance is at Thousand Miles of Rivers.
+- **Bottomless Pit:** For characters at level 80 or higher. Its entrance is at Valley of Luxuriant Forests. This cave hasn't been tested in the game yet: if something goes wrong there, please report it.
+- **White Bone Cave:** For characters at level 90 or higher. Its entrance is at Ancient Sealed Land, which the bot reaches by the cable car.
 
 You can enter only one dungeon per character each game day. That means visiting Spider Cave uses up your daily dungeon visit, so you cannot enter Scorpion Cave afterward on the same day.
 
 Once inside, you have 15 minutes to defeat as many monsters as possible.
 
-Caves for levels 80, 90, and 100 are planned for a future update.
+If the bot or the game was restarted while your character was inside a cave, start the dungeon run again from where you are. Uncle Farmer sees that it is already inside and keeps hunting until the game moves your character out, without leaving to check supplies.
 
 ### Choose your cave
 
@@ -1290,6 +1389,16 @@ Windows may prevent you from moving or deleting these files while the program is
 Want Uncle Farmer to start farming without having to press **Start** yourself? You can use schedules to run a plan or script automatically at a time you choose.
 
 Open **Run → Schedules** or press **Ctrl+Shift+H**.
+
+The Scheduler has three tabs: **Plans and scripts**, **Tools**, and **Triggers**. Tools schedules
+run executable tools independently, using that character's saved tool configuration. Triggers
+schedules run the character's current Before or After sequence, preserving its order, delays
+and each action's DETERMINISTIC setting. An empty enabled sequence is reported as an error.
+Tools and trigger sequences can run independently of farming's daily-stop window and do not
+recursively run Before/After automation. They do not replace the character's last selected
+farming plan. Tools that only open configuration windows, such as Sound Silencer, are not
+scheduled executable jobs. All tabs share the existing once/daily/weekday timing, history,
+busy-game protection and missed-occurrence rules below.
 
 ### Setting up a schedule
 
@@ -1631,6 +1740,44 @@ You can also open its list with **Alt+Down Arrow** and select someone from:
 - Players currently visible in the game.
 
 A player's name works if they are visible or if you've messaged them during the current session. A game ID works for any player.
+
+### Replying to a message
+
+Right-click a message in either chat tab, or select it and press **Shift+F10**, then choose
+**Reply**. The message field gets the sender's `@username` prefix automatically. A reply preview
+shows the original sender and message. Type your response and press **Send** or **Enter**.
+
+The reply stays addressed to the original channel or private conversation even if new messages
+arrive or you select another conversation. Selecting Reply repeatedly does not duplicate the
+prefix. **Cancel reply** or **Escape** cancels reply mode and keeps the body of your draft. If
+sending fails, the draft and reply target remain available for retry. Messages without a sender,
+such as notices, cannot be replied to.
+
+### Chat filters
+
+Right-click a message and choose **Add to filter list** to hide messages with exactly that text.
+The rule is saved immediately. Matching uses the message body, without its sender, channel or
+displayed timestamp, and applies across all games' Chat windows.
+
+Open **Chat filters** from either chat tab to manage rules:
+
+- **Filter list** shows hidden messages still in the current game's chat buffers and the rules
+  responsible for hiding each one. **Restore selected message** disables all rules matching it;
+  other messages hidden by those rules also return when you save.
+- **Filter settings** lets you add, edit, delete, enable and disable rules. Changes in this
+  window apply only when you press **Save**; cancelling leaves the saved rules unchanged.
+- **Exact message** matches the complete body. **Contains text** matches a word, phrase or
+  sentence anywhere in it. **Wildcard** matches a complete pattern: `*` matches any number of
+  characters and `?` matches one character. For example, `*hello*` matches any body containing
+  `hello`. Patterns are not regular expressions.
+- **Match case** controls whether uppercase and lowercase differ. **Test filter** in the editor
+  checks a sample message without changing chat or saving the rule.
+
+Filtering changes only what the Chat message lists show. Delivery, voice messages, speech,
+notification tones and automatic private-message handling continue normally. No messages are
+deleted by a filter. Rules, including their text or patterns, are saved in application settings
+and survive restarts; the chat history itself remains in memory. Old messages that have already
+left the existing bounded chat buffers cannot be restored.
 
 ### Voice messages
 
@@ -1992,3 +2139,27 @@ It uses Roman Urdu, meaning Urdu written with Latin letters rather than the Urdu
 
 Uncle Farmer also keeps wx in English left-to-right mode, so its interface does not switch to a right-to-left layout.
 
+
+### Reacting to sounds in scripts
+
+`sound_watch <ids>` changes the game's global watch filter. `sound_mute <ids>` changes its mute
+filter. Both persist until changed or the game exits. `sound_wait <ids> timeout=30` waits for a
+new matching request and keeps Stop/Pause responsive. It uses a temporary connection subscription,
+so it does not replace other sound listeners. A timeout sets `sound_received`
+to false. Missing positions set `sound_positioned` to false.
+
+```text
+sound_wait 1000-1010 timeout=30
+if sound_received
+    say Sound {sound_id} requested
+    if sound_positioned
+        say Position {sound_x}, {sound_y}
+    end
+end
+```
+
+Use IDs observed in your game; the IDs above are an example. `sound_muted` describes muting at
+request time. These commands observe requests, not proof that audio reached the speakers.
+For sounds already playing, supported MUTE controls are changed immediately. The PCM hook also
+silences subsequent signed-PCM writes without changing the game's sample buffer. Audio already
+buffered in a device without a MUTE control may finish before silence begins.

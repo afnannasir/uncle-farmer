@@ -54,6 +54,7 @@ _CJK = re.compile("[㐀-鿿]")
 # What the client writes after an item's name in a list it builds itself (the storehouse's "deposit
 # item": "78 Memory Butterfly (restricted) "), as the english folder shows them.
 MARKS = ("(restricted)", "(locked)", "(bound)")
+_COUNT = re.compile(r"^(\d+) (\S.*)$", re.S)        # "16 <name>": a count the client put before a name
 
 
 def _shown(key: str, eng: dict[str, str]) -> str:
@@ -134,6 +135,8 @@ class Table:
         # templates whose original starts with a space (" belongs to {s}")
         self.suffixes: list[tuple[re.Pattern[str], str]] = []
         english_keyed: dict[str, bool] = {}
+        # (minus how much of the template is its own words, the order read, the template)
+        fixed: list[tuple[int, int, tuple[re.Pattern[str], str]]] = []
         for key, value in here.items():
             if not value or value == key:
                 continue
@@ -148,7 +151,10 @@ class Table:
                 if rx is None:
                     continue
                 entry = (rx, _english_template(key, eng.get(key)))
-                (self.suffixes if key.startswith(" ") else self.templates).append(entry)
+                if key.startswith(" "):
+                    self.suffixes.append(entry)
+                else:
+                    fixed.append((-len(literal), len(fixed), entry))
                 continue
             # one translation for several originals: an English key (what the server sends) wins
             held = self.exact.get(value)
@@ -163,6 +169,12 @@ class Table:
                 # and equipment came back as " Platinum wedding ring". The one spaced like its
                 # translation is the one the game showed.
                 self.exact[value] = original
+        # The template with the most words of its own first: _work takes the first that fits, and
+        # in the order read a short one hid the right one. Turkish has "Seviye $1" ("Level $1")
+        # before "Seviye $1 Akuamarin Parçası", so a bag's "Seviye 1 Akuamarin Parçası" came back
+        # "Level 1 Akuamarin Parçası" and no levelled shard was sold or stored (a player's report,
+        # 2026-11-12: "I was only able to sell the crystal piece of equipment").
+        self.templates = [entry for _words, _i, entry in sorted(fixed, key=lambda row: row[:2])]
         # (the mark in this language, in English), each without its edge spaces
         self.marks: list[tuple[str, str]] = [
             ((here.get(key) or key).strip(), shown.strip())
@@ -229,6 +241,21 @@ class Table:
                 return self.word(head.rstrip()) + " " + eng
         return None
 
+    def _counted(self, s: str) -> str | None:
+        """A name with a count before it ("16 Seviye 1 Üzüm Taşı Parçası"), turned back as the
+        count and the name apart; None when s isn't one, or its name is one the table doesn't
+        know. The storehouse's "deposit item" list is written so by the client, and only some
+        packs have a line of their own for a counted name (Spanish: "$1 Fragmento de aguamarina
+        de nivel $2"). Turkish has none: live 2026-11-13 the list's "16 Seviye 1 Üzüm Taşı
+        Parçası (sınırlı) " stayed Turkish, and depositing the shard said "the menu has no entry
+        like ...". Only when no template of the pack fits the whole text: tried first, it took
+        "3 часов 7 минут 12 секунд" apart at the 3 and broke 239 phrases that came back right."""
+        m = _COUNT.match(s)
+        if m is None:
+            return None
+        name = self.word(m.group(2))
+        return None if name == m.group(2) else m.group(1) + " " + name
+
     def _work(self, s: str) -> str:
         marked = self._marked(s)
         if marked is not None:
@@ -237,6 +264,9 @@ class Table:
             m = rx.match(s)
             if m:
                 return self._fill(eng, m)
+        counted = self._counted(s)
+        if counted is not None:
+            return counted
         # a name joined from parts: the longest known first part, then the rest
         cuts = [i for i in range(len(s) - 1, 0, -1) if s[i] == " "]
         for i in cuts:

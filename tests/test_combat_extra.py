@@ -173,13 +173,13 @@ def test_follow_key_none_when_the_base_attack_is_on_the_other_page() -> None:
     assert s.follow_key() is None
 
 
-def test_follow_key_overwrites_with_pyroblast_when_channel_available() -> None:
+def test_follow_key_keeps_channels_in_the_reserved_picker() -> None:
     base = skill("Fireball", role="base_attack", key="j")
     pyro = skill("Pyroblast", role="single_target", key="m")
     s = pinned(sb(slots={0: [base, pyro]}), page=0)
     assert s.follow_key() == "j"
     s.available_to_channel_without_penalty = True
-    assert s.follow_key() == "m"
+    assert s.follow_key() == "j"
 
 
 def test_follow_key_falls_back_to_base_attack_when_pyroblast_on_other_page() -> None:
@@ -717,6 +717,14 @@ def test_the_fallback_presses_an_allowed_attack_never_a_never_one() -> None:
     assert s.fallback(1000.0) == ("u", "Cleave")
     s = pinned(sb(slots={0: [banned]}), page=0)
     assert s.fallback(1000.0) is None                  # only a Never one: nothing at all
+
+
+def test_the_fallback_never_presses_a_skill_out_of_its_range() -> None:
+    # the monster stepped past the skill's reach: the game refuses every cast there, so pressing
+    # is the whole fight's no-damage wait for nothing. In range, the same skill is the fallback.
+    s = pinned(sb(slots={0: [skill("Arcane Shot", role="base_attack", range=20.0)]}), page=0)
+    assert s.fallback(1000.0, lambda _x: False) is None
+    assert s.fallback(1000.0, lambda _x: True) == ("j", "Arcane Shot")
 
 
 def test_press_pick_none_when_no_fallback_exists() -> None:

@@ -69,6 +69,41 @@ def zones(mid: int | str, kinds: tuple[str, ...] = ("monster", "elite", "boss"))
     return [z for z in maps().get(int(mid), {}).get("spawn", {}).get("zones", []) if z["kind"] in kinds]
 
 
+_safe: dict[int, list[list[Any]]] | None = None
+
+
+def safe_zone_rows(mid: int | str) -> list[list[Any]]:
+    """A map's safe zones as [x1, y1, x2, y2, kind, label] rows (kind: town, exit_front, exit or
+    other), from data/safe_zones.json - every z=-3 row of the game's map table,
+    built offline. Without that file: the atlas's town zones only."""
+    global _safe
+    if _safe is None:
+        try:
+            with open(os.path.join(paths.DATA, "safe_zones.json"), encoding="utf-8") as f:
+                raw: dict[str, list[list[Any]]] = json.load(f)
+            _safe = {int(k): v for k, v in raw.items()}
+        except (OSError, ValueError):
+            _safe = {k: [[*r[1:5], "town", r[0]] for r in v.get("towns", []) if len(r) >= 5]
+                     for k, v in maps().items()}
+    return _safe.get(int(mid), [])
+
+
+def safe_zones(mid: int | str) -> list[tuple[int, int, int, int]]:
+    """A map's safe zones as (x1, y1, x2, y2) tile rectangles, ends included. The client marks
+    every cell of a z=-3 map row safe (game.i: area value -3.0 -> L.i = 1, never cleared): towns
+    and villages, the zones in front of exits, ride maps. Standing there an attack key only says
+    "Safe zone disabled skills"; a creature standing in one can't be fought either (the city's
+    street guards, 2026-11-13)."""
+    return [(int(r[0]), int(r[1]), int(r[2]), int(r[3])) for r in safe_zone_rows(mid) if len(r) >= 4]
+
+
+def in_safe_zone(mid: int | str, x: float, y: float) -> bool:
+    """True when the tile at (x, y) is in one of the map's safe zones. Positions round to the
+    nearest tile, as the game's own cell lookups do ((raw + 500) / 1000)."""
+    cx, cy = int(x + 0.5), int(y + 0.5)
+    return any(x1 <= cx <= x2 and y1 <= cy <= y2 for x1, y1, x2, y2 in safe_zones(mid))
+
+
 _kinds: dict[int, str] | None = None
 
 def kind_words(k: str | None) -> str:

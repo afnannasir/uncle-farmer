@@ -838,6 +838,20 @@ def test_go_dungeon_gives_up_when_no_spot_is_the_circle(monkeypatch: pytest.Monk
     assert "none of the entrances marked on map5 is the Cave circle" in str(e.value)
 
 
+def test_go_dungeon_names_the_other_circles_it_saw(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b._map = 5
+    monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
+    monkeypatch.setattr(atlas, "model", stand_in(atlas.model, lambda mid: FakeModel()))
+    b.entities = [{"id": -1, "name": "Odd teleportation Circle", "x": 31.0, "y": 31.0},
+                  {"id": -2, "name": "Duck", "x": 30.0, "y": 30.0}]
+    b.walk_to = lambda cell, map_change=False, near=None: "arrived"
+    b.travel = lambda dst, cell=None: None
+    with pytest.raises(Stopped):
+        b.go_dungeon({"name": "Cave", "map": 5, "spots": [[31, 31]]})
+    assert any("circles seen on map5: Odd teleportation Circle" in line for line in b.lines)
+
+
 def test_go_dungeon_stops_if_it_leaves_the_map_while_looking(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
     monkeypatch.setattr(beasts, "owned", stand_in(beasts.owned, lambda b: []))
@@ -1180,3 +1194,62 @@ def test_go_home_ignores_a_reload_on_the_same_square(clock: Clock) -> None:
     b.settled = 1                               # settled back on the starting map, same square
     assert b.go_home(tries=1) is False
     assert any("didn't take me home" in line for line in b.lines)
+
+
+# ---------------------------------------------------------------- exits: loops and learned landings
+LOOP_DOOR: dict[str, Any] = {"do": "exit", "map": 5042, "exit": 0, "stand": [158, 80], "rect": [158, 76, 159, 85],
+                             "dest": 5041}       # Pull Cave's way out: no landing in the data
+
+
+def test_an_exit_crossed_twice_in_one_trip_is_left_out_as_a_loop() -> None:
+    b = Bot()
+    crossed: list[dict[str, Any]] = []
+    b.cross_exit = lambda leg: crossed.append(leg)
+    avoid: set[Any] = set()
+    b._take_leg(dict(LOOP_DOOR), avoid, {("exit", 5042, 0): 1})
+    assert crossed == [] and ("exit", 5042, 0) in avoid
+    assert any("in a loop" in line for line in b.lines)
+
+
+def test_crossing_an_exit_with_no_landing_in_the_data_learns_where_it_lands() -> None:
+    b = Bot()
+    b._map = 5042
+
+    def cross(leg: dict[str, Any]) -> None:
+        b._map, b._me = 5041, {"x": 397.0, "y": 90.0, "hp": 100}
+
+    b.cross_exit = cross
+    failed: dict[Any, int] = {}
+    b._take_leg(dict(LOOP_DOOR), set(), failed)
+    assert ("exit", 5042, 0) in failed
+    assert travel_mod.landing(5041, 3) == (397, 90)
+    assert any("learned where the exit" in line and "please report it" in line
+               and '{"marker":3,"sources":[5042],"point":[397,90]' in line for line in b.lines)
+    b._map = 5042
+    b.lines.clear()
+    b._take_leg(dict(LOOP_DOOR), set(), {})           # the same landing again: nothing new to say
+    assert not any("learned" in line for line in b.lines)
+
+
+def test_an_exit_that_did_not_take_us_across_may_be_tried_again() -> None:
+    b = Bot()
+    b._map = 5042
+    b.cross_exit = lambda leg: None                      # still on 5042
+    failed: dict[Any, int] = {}
+    avoid: set[Any] = set()
+    b._take_leg(dict(LOOP_DOOR), avoid, failed)
+    assert failed == {} and avoid == set()
+
+
+def test_landing_far_from_where_the_atlas_says_is_said_with_the_line_to_report() -> None:
+    b = Bot()
+    b._map = 1732
+
+    def cross(leg: dict[str, Any]) -> None:
+        b._map, b._me = 1731, {"x": 120.0, "y": 300.0, "hp": 100}
+
+    b.cross_exit = cross
+    door = {"do": "exit", "map": 1732, "exit": 0, "stand": [2, 3], "rect": [2, 2, 3, 5], "dest": 1731}
+    b._take_leg(door, set(), {})
+    assert any("not at 83,300 as the atlas says" in line and '"point":[120,300]' in line for line in b.lines)
+    assert not any("learned" in line for line in b.lines)

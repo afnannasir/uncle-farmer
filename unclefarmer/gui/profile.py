@@ -12,11 +12,12 @@ from typing import Any, TypedDict
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, potions, triggers
+from ..engine import combat, potions, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
                      labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
+from .triggers import SequenceEditor
 
 STYLES = ("auto", "follow", "stationary")
 PK_MODE_LABELS = (N_("Pacifist mode"), N_("Pacifist mode with counterattack"), N_("Moral Mode"),
@@ -235,6 +236,8 @@ class ProfileDialog(Dialog):
     # ------------------------------------------------------------ pages
     def overview_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Overview"))
+        labeled(panel, box, _("Saved account email:"),
+                lambda w: wx.TextCtrl(w, value=self.p.get("login_email", ""), style=wx.TE_READONLY))
         self.known = labeled(panel, box, _("What the bot knows about this character:"),
                              lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 200)), 1)
         buttons(panel, box, (_("S&can now"), self.on_scan))
@@ -278,6 +281,26 @@ class ProfileDialog(Dialog):
         self.panic_after = f.number(_("For (seconds):"), int(p["panic_after"]), 1, 120)
         self.panic.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), self.panic_after.Enable(self.panic.GetValue())))
         self.panic_after.Enable(self.panic.GetValue())
+        f = group(panel, box, _("Corpses"))
+        self.corpse_skill, self.corpse_vitality = f.optional(
+            _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
+            p.get("corpse_skill", False),
+            _("Stop when &Vitality is down to (0: until it runs out):"), p.get("corpse_keep_vitality", 0), 0, 100)
+        f = group(panel, box, _("Experience cards"))
+        self.xp_card = f.choice(_("E&xperience card to keep running while farming:"), [""])
+        self.xp_card_values: list[str] = [""]
+        self.xp_card_pause = f.check(_("Pause the card while a&way from the monsters: town trips, the walk back after a "
+                                       "death, the end of farming (each pause costs a minute of the card; never in a "
+                                       "dungeon)"), p.get("xp_card_pause", False))
+        f = group(panel, box, _("Drop time and experience"))
+        self.drop_stop, self.drop_keep = f.optional(
+            _("Stop when the day's drop &time runs out"), p.get("stop_on_drop_time", True),
+            _("Drop time to save (minutes):"), p.get("drop_keep_minutes", 0), 0, 1440)
+        self.level_stop, self.level_keep = f.optional(
+            _("Stop bef&ore the next level (never inside a dungeon: there it only says so)"),
+            p.get("stop_before_level", False),
+            _("Stop when the next level needs less than (experience):"),
+            max(1, int(p.get("level_keep_xp", 100000) or 100000)), 1, settings.LEVEL_KEEP_MOST)
         f = group(panel, box, _("Gear"))
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
@@ -318,36 +341,36 @@ class ProfileDialog(Dialog):
         self.pet_care = pet_care(panel, box, p)
 
     def triggers_page(self, nb: wx.Notebook) -> None:
-        """Tools jobs the bot runs by itself (engine/triggers.py): one tick per job and stage, the
-        two stages independent - a job ticked in both runs once before and once after farming."""
-        p = self.p
+        """Independent, ordered preparation and completion sequences."""
         panel, box = page(nb, _("Triggers"))
-        self.triggers: dict[str, wx.CheckBox] = {}
-        labels = {
-            "before": {"sell_shards": _("&Sell shards (game menu, Sell shards now)"),
-                       "clean_bag": _("&Clean the bag (game menu, Clean the bag now)"),
-                       "update_shard_prices": _("&Update shard prices (game menu, Update shard prices)"),
-                       "gather": _("&Gathering (as set in Tools, Gathering)"),
-                       "store_items": _("S&tore items (game menu, Store items now)")},
-            "after": {"sell_shards": _("Se&ll shards (game menu, Sell shards now)"),
-                      "clean_bag": _("Clea&n the bag (game menu, Clean the bag now)"),
-                      "update_shard_prices": _("Up&date shard prices (game menu, Update shard prices)"),
-                      "gather": _("Gat&hering (as set in Tools, Gathering)"),
-                      "store_items": _("St&ore items (game menu, Store items now)")},
-        }
-        titles = {"before": _("Before farming (when a plan or a script that farms starts)"),
-                  "after": _("After farming (when farming finishes by itself, never after Stop)")}
+        notebook = tabs(panel)
+        box.Add(notebook, 1, wx.EXPAND)
+        self.trigger_editors: dict[str, SequenceEditor] = {}
         for stage in triggers.STAGES:
-            f = group(panel, box, titles[stage])
-            for job, _what in triggers.JOBS:
-                key = triggers.setting(job, stage)
-                self.triggers[key] = f.check(labels[stage][job], p.get(key, False) is True)
-        f = group(panel, box, _("How they run"))
-        f.readonly(_("About:"), _(
-            "Ticked jobs run one after the other in this order, each exactly as from the Tools menu. A job "
-            "ticked in both lists runs once before and once after farming. A job that can't finish is said "
-            "and the next one still runs; Stop ends them. Store items uses the bag manager's storage list "
-            "as it is at that moment."), lines=4)
+            child, body = page(notebook, _("Before farming") if stage == "before" else _("After farming"))
+            try:
+                cfg = triggers.sequence(self.p, stage)
+            except ValueError as e:
+                # a saved list that can't be read (a hand-edited profile): shown from the old
+                # ticks instead, so the window still opens; OK saves a good list over it
+                legacy = {k: v for k, v in self.p.items() if k != "trigger_sequences"}
+                cfg = triggers.sequence(legacy, stage)
+                wx.CallAfter(error, self, _("The saved {stage} list couldn't be read ({err}). It is shown from the "
+                                            "old trigger ticks; OK saves this list in its place.",
+                                            stage=_("Before farming") if stage == "before" else _("After farming"),
+                                            err=e))
+            if stage == "before":
+                self.skip_before = wx.CheckBox(child, label=_(
+                    "Skip this list when the run starts on its first farming &map (a Stop, then a start "
+                    "again where it was farming)"))
+                self.skip_before.SetValue(bool(self.p.get("skip_before_on_farm", False)))
+                body.Add(self.skip_before, 0, wx.BOTTOM, 6)
+            editor = SequenceEditor(child, cfg)
+            self.trigger_editors[stage] = editor
+            body.Add(editor, 1, wx.EXPAND)
+        note = wx.StaticText(panel, label=_("Actions run from top to bottom. A failed DETERMINISTIC Before action also prevents farming. After runs automatically only when farming ends by itself."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.TOP, 8)
 
     # ------------------------------------------------------------ from the scan
     def potion_shower(self, kind: str) -> Handler:
@@ -388,6 +411,19 @@ class ProfileDialog(Dialog):
                 self.pets.append({"name": name, "use": False})
         self.show_pets()
         self.fill_potions()
+        self.fill_xp_cards()
+
+    def fill_xp_cards(self) -> None:
+        """The experience cards the last scan saw in the bag, weakest first, and None. A card that
+        isn't in the bag is no choice: a chosen one that ran out goes back to None."""
+        s: dict[str, Any] = self.p.get("scan") or {}
+        found = xpcard.cards_in(s.get("bag", []))
+        self.xp_card_values = [""] + [name for _power, name, _count in found]
+        self.xp_card.Set([_("None")] + [_("{card} ({n} in the bag)", card=name, n=count)
+                                        for _power, name, count in found])
+        want = (self.p.get("xp_card_name") or "").strip().lower()
+        pick = next((i for i, v in enumerate(self.xp_card_values) if v and v.lower() == want), 0)
+        self.xp_card.SetSelection(pick)
 
     def fill_potions(self) -> None:
         """Potion choices from the last scan: what is on the hotkeys and in the bag."""
@@ -524,6 +560,14 @@ class ProfileDialog(Dialog):
         p["stop_on_panic"] = self.panic.GetValue()
         p["panic_below"] = self.panic_below.GetValue()
         p["panic_after"] = float(self.panic_after.GetValue())
+        p["corpse_skill"] = self.corpse_skill.GetValue()
+        p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
+        p["xp_card_name"] = self.xp_card_values[max(0, self.xp_card.GetSelection())]
+        p["xp_card_pause"] = self.xp_card_pause.GetValue()
+        p["stop_on_drop_time"] = self.drop_stop.GetValue()
+        p["drop_keep_minutes"] = self.drop_keep.GetValue()
+        p["stop_before_level"] = self.level_stop.GetValue()
+        p["level_keep_xp"] = self.level_keep.GetValue()
         p["repair_with"] = "toolbox" if self.repair.GetValue() else "off"
         p["stop_when_gear_broken"] = self.gear_stop.GetValue()
         for kind, ui in self.potion_ui.items():
@@ -534,8 +578,8 @@ class ProfileDialog(Dialog):
         p["stop_when_out_of_potions"] = self.potions_out.GetValue()
         p["speed_beast"] = self.speed_values[max(0, self.speed_beast.GetSelection())]
         p["end_with_hearthstone"] = self.end_hearth.GetValue()
-        for key, box in self.triggers.items():
-            p[key] = box.GetValue()
+        p["trigger_sequences"] = {stage: editor.value() for stage, editor in self.trigger_editors.items()}
+        p["skip_before_on_farm"] = self.skip_before.GetValue()
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()
@@ -727,6 +771,7 @@ class AdvancedDialog(Dialog):
         keep = p.get("boss_distance", 40)
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
@@ -755,6 +800,8 @@ class AdvancedDialog(Dialog):
         self.vip = f.check(_("I'm a &VIP (cable cars and airships are free)"), p.get("vip", False))
         self.travel_items = f.check(_("Use &teleport stones and the hearthstone from the bag"),
                                     p.get("use_travel_items", False))
+        self.teleport_skills = f.check(_("Use the class's teleport &skill (Mage, Elf)"),
+                                       p.get("use_teleport_skills", True))
         f = group(panel, box, _("Ending a run"))
         self.end_safe = f.check(_("End on a map &without monsters"), p.get("end_safe", True))
 
@@ -825,6 +872,7 @@ class AdvancedDialog(Dialog):
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["open_chests"] = self.open_chests.GetValue()
         p["smart_skills"] = self.smart.GetValue()
         others = "never" if self.skill_others.GetSelection() == 1 else "auto"
         p["skill_use_others"] = others
@@ -841,6 +889,7 @@ class AdvancedDialog(Dialog):
         p["use_airships"] = self.use_airships.GetValue()
         p["vip"] = self.vip.GetValue()
         p["use_travel_items"] = self.travel_items.GetValue()
+        p["use_teleport_skills"] = self.teleport_skills.GetValue()
         p["end_safe"] = self.end_safe.GetValue()
         p["points_every"] = points_every
         p["mp_check_every"] = self.mp_every.GetValue()

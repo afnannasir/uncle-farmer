@@ -230,6 +230,51 @@ final class World {
         }
     }
 
+    /** True when the caster has a cast in IN op=41 at or after `since` (ms): a held corpse cast
+     *  stops once ours comes back (Act.cast). */
+    static boolean castSince(int caster, long since) {
+        return castSince(caster, since, null);
+    }
+
+    /** The same for one skill only, by the name its casts are reported under ("Draw Blood"; a
+     *  ranked name "Level 2 Draw Blood" counts too). A null skill takes any cast of the caster's. */
+    static boolean castSince(int caster, long since, String skill) {
+        String who = ",\"caster\":" + caster + ",";
+        String name = skill == null ? null : Protocol.jsonEscape(skill);
+        synchronized (CASTS) {
+            java.util.Iterator<String> it = CASTS.descendingIterator();
+            while (it.hasNext()) {
+                String row = it.next();
+                int bar = row.indexOf('|');
+                long t;
+                try {
+                    t = Long.parseLong(row.substring(0, bar));
+                } catch (RuntimeException e) {
+                    continue;
+                }
+                if (t < since) return false;      // newest first: the rest are older still
+                if (row.indexOf(who, bar) < 0) continue;
+                if (skill == null) return true;
+                String said = skillOf(row, bar);
+                if (said != null && (said.equals(name) || (said.startsWith("Level ") && said.endsWith(" " + name)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The skill name in a kept cast row (as written by {@link #cast}, still json-escaped), or null. */
+    private static String skillOf(String row, int from) {
+        String key = ",\"skill\":\"";
+        int start = row.indexOf(key, from);
+        if (start < 0) return null;
+        start += key.length();
+        int end = start;
+        while (end < row.length() && row.charAt(end) != '"') end += row.charAt(end) == '\\' ? 2 : 1;
+        return end <= row.length() ? row.substring(start, Math.min(end, row.length())) : null;
+    }
+
     private static void cast(int caster, int seq, String skill, String hits, String targets) {
         long now = System.currentTimeMillis();
         String row = now + "|{\"t\":" + now + ",\"caster\":" + caster + ",\"seq\":" + seq

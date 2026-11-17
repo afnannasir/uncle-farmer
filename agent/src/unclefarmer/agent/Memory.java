@@ -343,7 +343,11 @@ final class Memory {
                     .append(",\"contribution\":").append(Sheet.contribution)
                     .append(",\"xp_needed\":").append(Sheet.xpNeeded)
                     .append(",\"merit\":").append(Sheet.merit)
-                    .append(",\"age\":").append((System.currentTimeMillis() - Sheet.seen) / 1000)
+                    .append(",\"exp_bonus\":").append(Sheet.expBonus)
+                    .append(",\"exp_paused\":").append(Sheet.expPaused)
+                    .append(",\"exp_seconds\":").append(Sheet.expSeconds);
+            if (Sheet.morality != Long.MIN_VALUE) sb.append(",\"morality\":").append(Sheet.morality);
+            sb.append(",\"age\":").append((System.currentTimeMillis() - Sheet.seen) / 1000)
                     .append("}}");
         }
         // HP and MP as the game answered the own-HP key (R), without opening any window.
@@ -403,6 +407,72 @@ final class Memory {
     }
 
     private static volatile Method sight;
+
+    /** game.i.a(int, boolean, boolean), the profession keys (22-24): a skill id above 20 is a corpse
+     *  harvesting skill (Draw Blood 21...), cast at a target; 20 and below are gathering skills. */
+    static final int CORPSE_SKILL_MIN = 21;
+    /** How far a corpse skill reaches, in tiles (game.i.a: dx^2 + dy^2 > 400 is ATK_FAILED). */
+    static final double CORPSE_REACH = 20.0;
+    /** How close a corpse must be for the server to take the skill, cast standing: every harvest
+     *  measured live (2026-11-12) landed 1.1-4.5 tiles away; further casts went unanswered. */
+    static final double HARVEST_REACH = 4.5;
+
+    /** Why the game's profession key would refuse this corpse skill at this target, or null when it
+     *  would cast it: the skill is a corpse skill we have learned (world.ai), the target a creature
+     *  in sight at exactly 0 HP (a fresh corpse: -1 and -2 are the game's other dead states; -1 is
+     *  one someone has harvested) within HARVEST_REACH tiles that the target keys could take (the
+     *  same sight check as `select`). The key itself takes 20 tiles, but walks to the corpse. */
+    static String corpseRefusal(Object world, int skill, int target) throws Unavailable {
+        if (skill < CORPSE_SKILL_MIN) return "skill " + skill + " isn't a corpse skill";
+        if (!learned(world, skill)) return "skill " + skill + " isn't one of our profession skills";
+        if (target == intField(world, W_SELF_ID)) return "that is us";
+        Object e = entityMap(world).get(Integer.valueOf(target));
+        if (e == null) return target + " isn't in sight";
+        if (!has(e, E_HP) || !has(e, E_SIDE)) return target + " isn't a creature";
+        double tiles = Math.hypot(intField(e, E_X) - intField(world, W_SELF_X),
+                intField(e, E_Y) - intField(world, W_SELF_Y)) / 1000.0;
+        String no = corpseCheck(intField(e, E_HP), tiles);
+        if (no != null) return target + " " + no;
+        no = unselectable(world, e);
+        return no == null ? null : target + " " + no;
+    }
+
+    /** The corpse rules alone, for a target's HP and distance in tiles. */
+    static String corpseCheck(int hp, double tiles) {
+        if (hp > 0) return "is alive";
+        if (hp != 0) return "is no fresh corpse (harvested or dried)";
+        if (tiles > CORPSE_REACH) return "is out of reach";
+        if (tiles > HARVEST_REACH) return "is too far to harvest from here";
+        return null;
+    }
+
+    /** True when the skill id is in our profession skill list (game.aq rows, id in field a). */
+    private static boolean learned(Object world, int skill) throws Unavailable {
+        Object list = get(world, W_PROFESSION, ArrayList.class);
+        if (list == null) throw new Unavailable("nolist: " + W_PROFESSION);
+        for (Object row : copy((ArrayList<?>) list)) {
+            if (row != null && intField(row, PROFESSION_ROW[0][1]) == skill) return true;
+        }
+        return false;
+    }
+
+    /** The name of one of our profession skills (game.aq field b), as its casts are reported, or null. */
+    static String professionName(Object world, int skill) throws Unavailable {
+        Object list = get(world, W_PROFESSION, ArrayList.class);
+        if (list == null) throw new Unavailable("nolist: " + W_PROFESSION);
+        for (Object row : copy((ArrayList<?>) list)) {
+            if (row != null && intField(row, PROFESSION_ROW[0][1]) == skill) {
+                Object name = get(row, PROFESSION_ROW[1][1], Object.class);
+                return name == null ? null : name.toString();
+            }
+        }
+        return null;
+    }
+
+    /** The game's PK mode (world.Q), which the attack and profession keys send with a cast. */
+    static int pkMode(Object world) throws Unavailable {
+        return intField(world, W_PK_MODE);
+    }
 
     /** Why the target keys would not take this entity, or null when they would (game.i.o). */
     private static String unselectable(Object world, Object e) throws Unavailable {

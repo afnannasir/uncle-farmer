@@ -11,10 +11,10 @@ import random
 from collections.abc import Callable, Sequence
 from typing import Any
 
-from ... import atlas
+from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, keyslots, pets
+from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
 from .base import (MOVE_SHOT_REACH, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -33,6 +33,8 @@ class FarmingMixin(Parts):
     farmed: bool
     bag_start: dict[str, int] | None
     said_drop: bool
+    said_level: bool
+    said_level_inside: bool
     in_instance: bool = False     # farm(instance=True) sets these for its own run
     pack_min: int = 3
 
@@ -153,8 +155,13 @@ class FarmingMixin(Parts):
                     continue          # we went to town: the loop travels back first
                 if keyslots.refill(as_bot(self)):
                     continue
+                xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
+                if chests.open_nearby(as_bot(self), snap):
+                    continue
+                if corpses.harvest(as_bot(self), snap):
+                    continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
                 if mobs:
                     mob = self.next_target(snap, mobs)
@@ -244,9 +251,11 @@ class FarmingMixin(Parts):
     def instance_reads(self) -> None:
         """What bag_check reads between fights, without what it may do about it: inside a dungeon
         a full bag or the day's drop time can't send us out - the visit would be lost."""
-        self.refresh_sheet()
+        sheet = self.refresh_sheet()
         if self.tally:
             self.tally.update(self)
+        if sheet:
+            self.level_check(sheet, inside=True)
 
     def share_trip(self, map_id: int) -> bool:
         """Leave the farm for a short secret room visit when one is due (chores.trip_due: just
@@ -296,6 +305,61 @@ class FarmingMixin(Parts):
                    m=max(0, int(left // 60))), speak=True)
         self.finish()
         raise Stopped(_("drop time used up"))
+
+    def level_goal(self) -> int | None:
+        """The experience the next level must still need for farming to go on: this run's
+        (keep_level from a plan or script, 0 = no such stop for this run), else the character's
+        "Stop before the next level"; None when there is no such stop."""
+        plan_keep = getattr(self, "level_keep", None)
+        if plan_keep is not None:
+            return int(plan_keep) or None
+        if not self.p.get("stop_before_level", False):
+            return None
+        return int(self.p.get("level_keep_xp", 0) or 0) or None
+
+    def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
+        """End the run before the next level: the sheet's "upgrading requires N experience"
+        (xp_needed, read after every kill from agent 43) is under the goal. For players who keep a
+        character at its level (the XP loser in the After farming list can then put experience
+        back). Inside a dungeon it only says so, once: leaving would lose the visit. Nothing at
+        the top level (the sheet has no such line: -1)."""
+        goal = self.level_goal()
+        need = sheet.get("xp_needed")
+        if not goal or not isinstance(need, (int, float)) or need < 0:
+            return
+        need = int(need)
+        if need >= goal:
+            if not getattr(self, "said_level", False):
+                self.said_level = True
+                self.log(_("the next level needs {n} experience; farming stops under {goal}", n=need, goal=goal))
+            return
+        if inside:
+            if not getattr(self, "said_level_inside", False):
+                self.said_level_inside = True
+                self.log(_("the next level needs only {n} experience - the dungeon goes on, leaving would "
+                           "lose the visit", n=need), speak=True)
+            return
+        self.log(_("the next level needs only {n} experience - going somewhere safe and stopping", n=need),
+                 speak=True)
+        self.finish()
+        raise Stopped(_("stopped before the next level"))
+
+    def level_before_start(self) -> None:
+        """Before a farming run sets out (before the Before farming list): with the next level
+        already closer than the goal, say so and don't start - otherwise the whole way to the farm
+        is made for the first sheet there to send it back. Stays where it is: nothing ran, so no
+        end place, no After farming list, no closing the game."""
+        goal = self.level_goal()
+        if not goal:
+            return
+        sheet = self.refresh_sheet(force=True) or {}
+        need = sheet.get("xp_needed")
+        if not isinstance(need, (int, float)) or not 0 <= need < goal:
+            return
+        self.log(_("the next level needs only {n} experience - not starting to farm", n=int(need)), speak=True)
+        stop = Stopped(_("stopped before the next level"))
+        stop.stay = True
+        raise stop
 
     def leave_monsters(self) -> None:
         """End a run somewhere no monster spawns: if this map has monster zones, travel to the
@@ -354,6 +418,11 @@ class FarmingMixin(Parts):
                                  speak=True)
                         return self._finish_safe()
                     mid, cell = self.start_place[0], (self.start_place[1], self.start_place[2])
+                    if self.map_id() != mid and travel.is_instance(mid):
+                        # a run started inside a dungeon that has moved us out: no way back in
+                        self.log(_("the run started inside {map}, which can't be walked back into - ending "
+                                   "on the nearest map without monsters", map=atlas.label(mid)))
+                        return self._finish_safe()
                     if self.spawns_at(mid, cell):
                         # (a city in a field, such as central plains: a start outside its walls is
                         # monster ground, and the nearest map without monsters may be underground)
@@ -401,7 +470,13 @@ class FarmingMixin(Parts):
     def restock_now(self, start: bool = False) -> bool:
         """Top up the profile's restock rules if they need it (storehouse first, then shops)."""
         rules: list[dict[str, Any]] = self.p.get("restock") or []
-        if not rules or getattr(self, "restocking", False):
+        if getattr(self, "restocking", False):
+            if start:
+                self.log(_("Restock now: a restock is already running."), speak=True)
+            return False
+        if not rules:
+            if start:
+                self.log(_("Restock now: no supply rules are configured in Character, Bag and supplies."), speak=True)
             return False
         from .. import town
         self.restocking = True            # its own walks to town must not restock again on the way

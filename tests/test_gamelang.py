@@ -196,3 +196,61 @@ def test_a_pack_that_leaves_the_marks_as_they_are_still_has_them_split_off(tmp_p
     t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
     assert t.word("78 Mariposa de memoria(限制)") == "78 Memory Butterfly (restricted)"
 
+
+def test_the_template_with_the_most_words_of_its_own_wins(tmp_path: Path) -> None:
+    # Turkish, 2026-11-12: basic.txt's "Level {d}" is read before the shards' own lines, and its
+    # "Seviye $1" took "Seviye 1 Akuamarin Parçası" whole - the bag's shard came back "Level 1
+    # Akuamarin Parçası", so no bag rule knew it and the Shard Market "didn't list" it. A player
+    # could sell only the Equipment Enhance Crystal Shard, the one shard with no level in its name.
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "basic.txt"), [("Level {d}", "Seviye $1")])
+    write(str(lang / "xx" / "more" / "item.txt"), [
+        ("Level {d} Aquamarine Shard", "Seviye $1 Akuamarin Parçası"),
+        ("Level {d} Ruby Shard", "Seviye $1 Yakut Parçası"),
+        ("Equipment Enhance Crystal Shard", "Ekipman Geliştirme Kristal Parçası"),
+    ])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Seviye 1 Akuamarin Parçası") == "Level 1 Aquamarine Shard"
+    assert t.word("Seviye 3 Yakut Parçası") == "Level 3 Ruby Shard"
+    assert t.word("Ekipman Geliştirme Kristal Parçası") == "Equipment Enhance Crystal Shard"
+    assert t.word("Seviye 12") == "Level 12"                  # the short one still does its own job
+
+
+def test_templates_with_as_many_words_keep_the_order_they_were_read_in(tmp_path: Path) -> None:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("确定", "Yes")])
+    write(str(lang / "xx" / "more" / "a.txt"), [("First {d} one", "Abc $1 xyz"), ("Other {d} one", "Abc $1 xyz")])
+    t = gamelang.Table(str(lang / "xx"), str(lang / "english"))
+    assert t.word("Abc 4 xyz") == "First 4 one"
+
+
+def counted_game(tmp_path: Path) -> gamelang.Table:
+    lang = tmp_path / "language"
+    write(str(lang / "english" / "basic.txt"), [("(限制)", " (restricted) ")])
+    write(str(lang / "xx" / "basic.txt"), [("(限制)", " (sınırlı) "), ("Level {d}", "Seviye $1"),
+                                           ("{d} hours {d} minutes", "$1 saat $2 dakika"), ("hours", "saat")])
+    write(str(lang / "xx" / "more" / "item.txt"), [
+        ("Level {d} Grape Stone Shard", "Seviye $1 Üzüm Taşı Parçası"),
+        ("Equipment Enhance Crystal Shard", "Ekipman Geliştirme Kristal Parçası"),
+    ])
+    return gamelang.Table(str(lang / "xx"), str(lang / "english"))
+
+
+def test_a_count_before_a_name_comes_back_count_and_name(tmp_path: Path) -> None:
+    # The storehouse's "deposit item" list in Turkish, live 2026-11-13. The pack has no line for a
+    # counted shard, so "16 Seviye 1 Üzüm Taşı Parçası (sınırlı) " came back with its name still
+    # Turkish and depositing it said 'the menu has no entry like "...Level\ 1\ Grape\ Stone\ Shard..."'.
+    t = counted_game(tmp_path)
+    assert t.word("16 Seviye 1 Üzüm Taşı Parçası (sınırlı) ") == "16 Level 1 Grape Stone Shard (restricted)"
+    assert t.word("16 Seviye 1 Üzüm Taşı Parçası") == "16 Level 1 Grape Stone Shard"
+    assert t.word("1445 Ekipman Geliştirme Kristal Parçası") == "1445 Equipment Enhance Crystal Shard"
+    assert t.word("16 Bilinmeyen şey") == "16 Bilinmeyen şey"            # a name it doesn't know: as it was
+
+
+def test_a_line_of_the_pack_for_the_whole_text_wins_over_the_count(tmp_path: Path) -> None:
+    # "3 saat 7 dakika" is the pack's own "{d} hours {d} minutes", not 3 of something called
+    # "saat 7 dakika": with the count tried first, 239 phrases of the real packs came back broken.
+    t = counted_game(tmp_path)
+    assert t.word("3 saat 7 dakika") == "3 hours 7 minutes"
+

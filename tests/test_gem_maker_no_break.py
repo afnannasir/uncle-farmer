@@ -189,6 +189,98 @@ def rounds(monkeypatch: pytest.MonkeyPatch) -> list[int]:
 ONE_KIND = {"colour": "Topaz", "level": 4, "count": 1, "amount": 1, "supply": "none", "where": "gang"}
 
 
+@pytest.mark.parametrize("mode", ["bag"])
+@pytest.mark.parametrize("partial_batch", [False, True])
+def test_lower_level_is_finished_before_the_next_level_is_attempted(
+        craftsman: Any, monkeypatch: pytest.MonkeyPatch, mode: str, partial_batch: bool) -> None:
+    b, c = craftsman({"Level 1 Topaz": 81, crafting.RUNE: 100}, itertools.cycle([False, True]))
+    attempted: list[int] = []
+    combine = c.combine
+
+    def checked(n: int, boost_box: bool, protect: bool, auto: bool = False) -> None:
+        attempted.append(c.level)
+        for lower in range(1, c.level):
+            assert count(b, c.gem(lower)) < 3, "advanced while lower-level gems could still be upgraded"
+            assert count(b, c.gem(lower) + " Shard") < 4, "advanced before recycling lower-level shards"
+        combine(min(n, 1) if partial_batch else n, boost_box, protect, auto)
+
+    monkeypatch.setattr(c, "combine", checked)
+    # Protected failures leave the gems in the bag; a partial batch also leaves work queued.
+    cfg = dict(ONE_KIND, level=3, count=3, mode=mode, up_to=3, protect=not partial_batch, boost=False)
+    crafting.gem_maker(as_bot(b), cfg)
+    assert 2 in attempted
+    assert attempted == sorted(attempted)
+
+
+@pytest.mark.parametrize("mode", ["bag", "target"])
+@pytest.mark.parametrize("leftover", [0, 1, 2])
+def test_three_hundred_gems_are_finished_level_by_level(craftsman: Any, monkeypatch: pytest.MonkeyPatch,
+                                                       mode: str, leftover: int) -> None:
+    b, c = craftsman({"Level 1 Topaz": 300 + leftover}, itertools.repeat(True))
+    attempted: list[int] = []
+    combine = c.combine
+
+    def checked(n: int, boost_box: bool, protect: bool, auto: bool = False) -> None:
+        for lower in range(1, c.level):
+            assert count(b, c.gem(lower)) < 3
+        attempted.append(c.level)
+        combine(n, boost_box, protect, auto)
+
+    monkeypatch.setattr(c, "combine", checked)
+    crafting.gem_maker(as_bot(b), dict(ONE_KIND, mode=mode, level=6, up_to=6, amount="most"))
+    assert attempted == [1, 2, 3, 4, 5]
+    assert count(b, "Level 1 Topaz") == leftover
+    assert count(b, "Level 2 Topaz") == 1
+    assert count(b, "Level 4 Topaz") == 2
+    assert count(b, "Level 6 Topaz") == 1
+
+
+def test_a_target_spends_only_the_tries_it_needs(craftsman: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Target mode (make N gems) keeps its per-level cap: every try costs a fee and a rune. Draining
+    every lower level first (review of #129) took 74 tries for one Level 4 gem instead of 26 and
+    left 6 Level 3 gems nobody asked for."""
+    b, c = craftsman({"Level 1 Topaz": 81, crafting.RUNE: 1000}, itertools.cycle([False, True]))
+    tries: list[int] = []
+    combine = c.combine
+
+    def counted(n: int, boost_box: bool, protect: bool, auto: bool = False) -> None:
+        tries.append(n)
+        combine(n, boost_box, protect, auto)
+
+    monkeypatch.setattr(c, "combine", counted)
+    crafting.gem_maker(as_bot(b), dict(ONE_KIND, mode="target", level=4, up_to=4, amount=1, protect=True))
+    assert count(b, "Level 4 Topaz") == 1
+    assert sum(tries) == 26
+    assert count(b, "Level 1 Topaz") == 54
+    assert count(b, "Level 2 Topaz") == count(b, "Level 3 Topaz") == 0
+
+
+def test_sequential_bag_processing_preserves_gems_kept_at_each_level(craftsman: Any,
+                                                                   monkeypatch: pytest.MonkeyPatch) -> None:
+    b, c = craftsman({"Level 1 Topaz": 29, "Level 2 Topaz": 2, crafting.RUNE: 100}, itertools.cycle([False, True]))
+    combine = c.combine
+
+    def checked(n: int, boost_box: bool, protect: bool, auto: bool = False) -> None:
+        for lower in range(1, c.level):
+            assert 2 <= count(b, c.gem(lower)) < 5
+        combine(n, boost_box, protect, auto)
+
+    monkeypatch.setattr(c, "combine", checked)
+    crafting.make_most(as_bot(b), {"up_to": 3, "keep": 2, "protect": True, "boost": False})
+    assert count(b, "Level 1 Topaz") == count(b, "Level 2 Topaz") == 2
+    assert count(b, "Level 3 Topaz") == 3
+
+
+@pytest.mark.parametrize("mode", ["bag", "target"])
+def test_resource_block_at_lower_level_does_not_spend_higher_level_gems(craftsman: Any, mode: str) -> None:
+    b, _c = craftsman({"Level 1 Topaz": 6, "Level 2 Topaz": 9}, itertools.repeat(True))
+    crafting.gem_maker(as_bot(b), dict(ONE_KIND, mode=mode, level=3, up_to=3, protect=True))
+    assert count(b, "Level 1 Topaz") == 6
+    assert count(b, "Level 2 Topaz") == 9
+    assert count(b, "Level 3 Topaz") == 0
+    assert any("no Gem Protection Rune left" in line for line in b.lines)
+
+
 # ---------------------------------------------------------------- every combine works, no shard back
 @pytest.mark.parametrize("protect", [False, True])
 def test_one_kind_reaches_its_gem_when_every_combine_works(craftsman: Any, monkeypatch: pytest.MonkeyPatch,

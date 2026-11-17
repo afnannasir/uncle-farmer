@@ -34,6 +34,9 @@ Row kinds, by terrain id:
                9999999 is the gang-base "leave" exit (back to wherever
                you came from).
 
+Every z=-3 row, whatever its id, is a SAFE ZONE: the client takes no
+attack key on those cells (atlas.safe_zones, data/safe_zones.json).
+
 The trailing float is elevation on ground rows and a direction mask
 (1/2/4/8 and sums) on door, fall and climb rows: 1 = west, 2 = north,
 4 = east, 8 = south. On an unpaired door (301-332) the mask is the
@@ -460,6 +463,9 @@ class MapModel(object):
     gate: npt.NDArray[np.int32]
     clear: npt.NDArray[np.int8]
     portal: npt.NDArray[np.bool_]
+    barrier: npt.NDArray[np.bool_]     # stage barriers over open ground (_paint, barriers_open)
+    _under: npt.NDArray[np.int32]
+    jumps: list[dict[str, Any]]        # in-map teleport pads (_jumps)
     town: npt.NDArray[np.bool_]
     _two_way: list[frozenset[int]]
     _walk_list: bytes
@@ -495,11 +501,16 @@ class MapModel(object):
 
         self.markers = []
         self.transitions = []
+        self.barrier = np.zeros((H, W), dtype=bool)        # see _paint: stage barriers
+        self._under = np.zeros((H, W), dtype=np.int32)     # the tile a barrier was painted over
         for r in rows:
             self._paint(r, lab_ix, floor_z)
 
         tt = self.t
         self.solid = ((tt >= 200) & (tt <= 226)) | (tt == 299)
+        under = self._under
+        self.barrier &= (under > 0) & ~(((under >= 200) & (under <= 226)) | (under == 299))
+        del self._under
         # A gang base's "inner door" (tile 209/210, every base at x 36-45, y 60) is painted with a
         # wall tile, but it is the inner hall's way out: players walk south through it to the outer
         # hall and the base's south exit (a recorded hand run, 2026-11-07, x 41 from y 43 to 117).
@@ -546,7 +557,109 @@ class MapModel(object):
             ya, yb = max(1, e["y1"]), min(self.h, e["y2"])
             if xa <= xb and ya <= yb:
                 self.portal[ya:yb + 1, xa:xb + 1] = True
+        self._jumps()
         self._cache_flat()
+
+    def _jumps(self) -> None:
+        """In-map teleport pads: a marker at z=-1 moves whoever steps on it to the marker of the
+        same number elsewhere on this map (z=-2; the game labels some of them 图内传送点, "in-map
+        teleport point"). fully mountain's mountain gate is one: the door strip at x 202-203 sends
+        the player to the cave mouth at 219,230-231 once its stage is cleared (recorded crossings
+        go from x 203 to x 219 in a single step). Ghost hotel's
+        stairs, ice maze's slides and the ancient mausoleum's corridors work the same way.
+        A pad moves the character the moment it is stepped on, like an exit, so routes treat its
+        cells as portal cells: never crossed, only walked onto as the chosen goal. A number with
+        more than one landing (thousand miles of rivers) is left out: we can't tell which one the
+        game picks, so no route counts on it."""
+        self.jumps = []
+        for mk in self.markers:
+            if mk["z"] != -1.0:
+                continue
+            lands = {(d["x1"], d["y1"], d["x2"], d["y2"]) for d in self.markers
+                     if d["type"] == mk["type"] and d["z"] != -1.0}
+            if len(lands) != 1:
+                continue
+            x1, y1, x2, y2 = next(iter(lands))
+            cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+            to = self._nearest_in_rect(x1, y1, x2, y2, cx, cy) or self.nearest_walkable(cx, cy, 4)
+            px, py = (mk["x1"] + mk["x2"]) // 2, (mk["y1"] + mk["y2"]) // 2
+            pad = self._nearest_in_rect(mk["x1"], mk["y1"], mk["x2"], mk["y2"], px, py)
+            if to is None or pad is None:
+                continue
+            self.jumps.append(dict(number=mk["type"], x1=mk["x1"], y1=mk["y1"], x2=mk["x2"], y2=mk["y2"],
+                                   pad=pad, to=to))
+            xa, xb = max(1, mk["x1"]), min(self.w, mk["x2"])
+            ya, yb = max(1, mk["y1"]), min(self.h, mk["y2"])
+            self.portal[ya:yb + 1, xa:xb + 1] |= self.walk[ya:yb + 1, xa:xb + 1]
+
+    def jump_at(self, c: Point) -> dict[str, Any] | None:
+        """The teleport pad (see _jumps) covering cell c, or None."""
+        return next((j for j in self.jumps
+                     if j["x1"] <= c[0] <= j["x2"] and j["y1"] <= c[1] <= j["y2"]), None)
+
+    def jump_leg(self, a: Cell, b: Cell) -> Cell | None:
+        """The pad cell to walk to first when b can only be reached through teleport pads, or None
+        when no chain of pads leads there. A shortest-walk search over a handful of nodes (the
+        start, each pad's landing, the goal); each leg is an ordinary route, so walls and gates
+        count as always."""
+        if not self.jumps:
+            return None
+        best: dict[Cell, float] = {a: 0.0}
+        first: dict[Cell, Cell | None] = {a: None}
+        heap: list[tuple[float, Cell]] = [(0.0, a)]
+        done: set[Cell] = set()
+        while heap:
+            cost, u = heapq.heappop(heap)
+            if u in done:
+                continue
+            done.add(u)
+            if u != a:
+                p = self.route(u, b)
+                if p is not None:
+                    return first[u]
+            for j in self.jumps:
+                if j["to"] == u or j["to"] in done:
+                    continue
+                p = self.pad_route(u, j)
+                if p is None:
+                    continue
+                nc = cost + len(p)
+                if nc < best.get(j["to"], math.inf):
+                    best[j["to"]] = nc
+                    first[j["to"]] = first[u] or p[-1]
+                    heapq.heappush(heap, (nc, j["to"]))
+        return None
+
+    PAD_TRIES = 8
+
+    def pad_route(self, a: Cell, j: dict[str, Any]) -> list[Cell] | None:
+        """A route from a onto the nearest cell of pad j it reaches. A pad's cells can't be crossed
+        (the first one stepped on moves us), so aiming at a far cell of a deep pad - ghost hotel's
+        stairs are two rows, with the landing of the stairs below right beside them - finds no way.
+        The pad's cells nearest a are tried first, PAD_TRIES at most."""
+        cells = [(x, y) for x in range(max(1, j["x1"]), min(self.w, j["x2"]) + 1)
+                 for y in range(max(1, j["y1"]), min(self.h, j["y2"]) + 1) if self.walk[y, x]]
+        cells.sort(key=lambda c: (abs(c[0] - a[0]) + abs(c[1] - a[1]), c))
+        for c in cells[:self.PAD_TRIES]:
+            p = self.route(a, c)
+            if p is not None:
+                return p
+        return None
+
+    def barriers_open(self) -> "MapModel | None":
+        """A copy of the map with its stage barriers open (see _paint), or None when it has none.
+        A barrier stands until its stage is cleared, so routes keep to the walls the map draws and
+        only a walk with no other way (a leader already through, a goal past the barrier) plans
+        through one; a barrier still shut then stops the walk like any wall, and the stuck walk
+        fights what is near."""
+        if not self.barrier.any():
+            return None
+        mm = copy.copy(self)
+        mm.walk = self.walk | self.barrier
+        mm._route_cache = {}
+        mm._route_loose = {}
+        mm._walk_list = mm.walk.ravel().tobytes()
+        return mm
 
     def _paint(self, r: Row, lab_ix: dict[str, int], floor_z: npt.NDArray[np.float64]) -> None:
         """One row of the map table: a marker, a map transition, or an area painted onto the grid
@@ -576,12 +689,24 @@ class MapModel(object):
         if xa > xb or ya > yb:
             return
         sl = (slice(ya, yb + 1), slice(xa, xb + 1))
+        # A row at z=-2 is a marker whatever its id: the game numbers markers on past 100, so
+        # some carry a wall tile's id. Demon's Prison's "九门" (gate 9, edge tile 200, over the
+        # door at x 332) and the Nether/Demon/Wraith Cave "关卡屏障" (stage barrier) columns are
+        # such markers: shut until a stage is cleared, open after. They stay walls here, and
+        # barrier records the ones painted over open ground for barriers_open.
+        stage = blocks(t) and z == -2.0
         if blocks(t) and self.layer_aware:
             fz = floor_z[sl]
             keep = np.isnan(fz) | (fz == z)
+            if stage:
+                self._under[sl] = np.where(keep & ~self.barrier[sl], self.t[sl], self._under[sl])
+            self.barrier[sl] = np.where(keep, stage, self.barrier[sl])
             self.t[sl] = np.where(keep, t, self.t[sl])
             self.lab[sl] = np.where(keep, li, self.lab[sl])
             return
+        if stage:
+            self._under[sl] = np.where(self.barrier[sl], self._under[sl], self.t[sl])
+        self.barrier[sl] = stage
         self.t[sl] = t
         self.lab[sl] = li
         if not blocks(t):

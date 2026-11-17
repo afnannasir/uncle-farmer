@@ -16,6 +16,7 @@ import pytest
 from unclefarmer import catalog, i18n, paths
 from pathlib import Path
 from collections.abc import Iterator
+from typing import Any
 
 
 @pytest.fixture(autouse=True)
@@ -91,6 +92,115 @@ def test_languages_lists_english_plus_the_catalogs(tmp_path: Path, monkeypatch: 
 def test_languages_without_a_folder_is_just_english(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "LANG", str(tmp_path / "nope"))
     assert i18n.languages() == [("en", "English")]
+
+
+@pytest.mark.parametrize("detected,expected", [
+    ("en-US", "en"), ("en_GB", "en"), ("pt-BR", "pt_BR"), ("PT_br.UTF-8", "pt_BR"),
+    ("pt-PT", "pt"), ("ur_PK", "ur"), ("fr-FR", None), ("", None), ("C", None),
+])
+def test_locale_matching_prefers_exact_then_supported_base(
+        monkeypatch: pytest.MonkeyPatch, detected: str, expected: str | None) -> None:
+    monkeypatch.setattr(i18n, "languages", lambda: [
+        ("en", "English"), ("pt", "Portuguese"), ("pt_BR", "Portuguese (Brazil)"), ("ur", "Urdu (Roman)")])
+    match = i18n.match_locale(detected)
+    assert (match[0] if match else None) == expected
+
+
+def test_locale_matching_does_not_offer_an_arbitrary_region(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(i18n, "languages", lambda: [("en", "English"), ("pt_BR", "Portuguese (Brazil)")])
+    assert i18n.match_locale("pt_PT") is None
+
+
+def test_system_locale_uses_the_operating_system_language(monkeypatch: pytest.MonkeyPatch) -> None:
+    import wx
+    def canonical_name(language: int) -> str:
+        return "ur_PK" if language == 123 else ""
+    monkeypatch.setattr(wx.Locale, "GetSystemLanguage", lambda: 123)
+    monkeypatch.setattr(wx.Locale, "GetLanguageCanonicalName", canonical_name)
+    assert i18n.system_locale() == "ur_PK"
+
+
+def test_system_locale_failure_is_not_a_language_offer(monkeypatch: pytest.MonkeyPatch) -> None:
+    import wx
+    def fail() -> int:
+        raise RuntimeError("locale unavailable")
+    monkeypatch.setattr(wx.Locale, "GetSystemLanguage", fail)
+    assert i18n.system_locale() == ""
+
+
+@pytest.mark.parametrize("accept", [False, True])
+def test_first_launch_language_choice_is_saved_and_never_asked_again(
+        monkeypatch: pytest.MonkeyPatch, accept: bool) -> None:
+    import wx
+    from unclefarmer import __main__ as start, settings
+    monkeypatch.setattr(i18n, "system_locale", lambda: "ur_PK")
+    monkeypatch.setattr(i18n, "languages", lambda: [("en", "English"), ("ur", "Urdu (Roman)")])
+    prompts: list[str] = []
+    attached: list[str] = []
+    def attach(code: str) -> bool:
+        attached.append(code)
+        return True
+    monkeypatch.setattr(i18n, "attach_wx", attach)
+
+    class Prompt:
+        def __init__(self, parent: Any, message: str, caption: str, style: int) -> None:
+            prompts.append(message)
+            assert "Urdu (Roman)" in caption
+            assert style & wx.NO_DEFAULT
+
+        def SetYesNoLabels(self, yes: str, no: str) -> None:
+            assert "switch language" in yes and "keep current language" in no
+
+        def ShowModal(self) -> int:
+            return wx.ID_YES if accept else wx.ID_NO
+
+        def Destroy(self) -> None:
+            pass
+
+    monkeypatch.setattr(wx, "MessageDialog", Prompt)
+    config = settings.load_app()
+    assert config["language_prompted"] is False
+    start._first_launch_language(config)
+    saved = settings.load_app()
+    expected = "ur" if accept else "en"
+    assert saved["language"] == expected
+    assert saved["language_prompted"] is True
+    assert attached == (["ur"] if accept else [])
+    assert i18n._("Ready") == ("Tayyar" if accept else "Ready")
+    start._first_launch_language(saved)
+    assert len(prompts) == 1
+
+
+@pytest.mark.parametrize("detected,current", [("fr_FR", "en"), ("en_US", "en"), ("ur_PK", "ur"), ("ur_PK", "de")])
+def test_no_prompt_for_unsupported_same_or_explicit_language(
+        monkeypatch: pytest.MonkeyPatch, detected: str, current: str) -> None:
+    import wx
+    from unclefarmer import __main__ as start, settings
+    monkeypatch.setattr(i18n, "system_locale", lambda: detected)
+    monkeypatch.setattr(i18n, "languages", lambda: [("en", "English"), ("ur", "Urdu (Roman)")])
+    def unexpected(*args: Any, **kwargs: Any) -> None:
+        pytest.fail("must not prompt")
+    monkeypatch.setattr(wx, "MessageDialog", unexpected)
+    config = settings.load_app()
+    config["language"] = current
+    start._first_launch_language(config)
+    assert settings.load_app()["language"] == current
+    assert settings.load_app()["language_prompted"] is True
+
+
+@pytest.mark.parametrize("existing", [{"language": "en"}, {"language": "ur"}, {"speak": False}])
+def test_legacy_settings_are_never_treated_as_a_first_launch(existing: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer import __main__ as start, jsonio, settings
+    jsonio.save(paths.SETTINGS, existing)
+    def unexpected() -> str:
+        pytest.fail("existing installations must not run locale detection")
+    monkeypatch.setattr(i18n, "system_locale", unexpected)
+    config = settings.load_app()
+    assert config["language_prompted"] is True
+    start._first_launch_language(config)
+    assert config["language"] == existing.get("language", "en")
+    with open(paths.SETTINGS, encoding="utf-8") as f:
+        assert jsonio.load(f) == existing
 
 
 def test_roman_urdu_catalog_is_roman_and_keeps_placeholders() -> None:

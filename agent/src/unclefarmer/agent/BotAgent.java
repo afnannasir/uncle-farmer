@@ -26,6 +26,7 @@ public final class BotAgent {
             Health.install();
             SpeechSwitch.install(inst);
             VoicePlayer.install(inst);
+            SoundControl.install(inst);
             PrivateChat.init(inst);
         } catch (Throwable ignored) { }
         try {

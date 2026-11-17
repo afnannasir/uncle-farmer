@@ -68,7 +68,7 @@ def make_zip(v: str, path: str | None = None) -> str:
             if top in updater.NEVER or (rel != "." and top == "agent" and "run" in rel.split(os.sep)):
                 sys.exit("the built folder holds %s - a player's own files never go into a release" % rel)
             for f in files:
-                if rel == "." and f.lower() in updater.NEVER:
+                if rel == "." and f.lower() in updater.NEVER and f.lower() != updater.BOOTSTRAP:
                     sys.exit("the built folder holds %s - a player's own files never go into a release" % f)
                 if f == "game_texts.json":
                     sys.exit("the built folder holds game_texts.json, which is made from each player's game")
@@ -138,8 +138,9 @@ def _checked_version(a: Options) -> str:
     if a.no_check and not a.local:
         sys.exit("--no-check is only for --local builds: a published release must pass its checks")
     v = a.version.lstrip("vV")
-    if not re.fullmatch(r"\d+(\.\d+){1,3}", v):
-        sys.exit("a version looks like 0.2.0")
+    if not updater.is_stable(v):
+        # exactly three numbers: the updater offers no other shape (a fourth is a dev build's number)
+        sys.exit("a version looks like 0.2.0 (three numbers)")
     from unclefarmer import __version__
     if not updater.is_newer(v, __version__) and v != __version__:
         sys.exit("%s is not newer than %s" % (v, __version__))

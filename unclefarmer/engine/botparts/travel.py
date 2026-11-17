@@ -11,7 +11,7 @@ from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
-from .. import beasts, combos
+from .. import beasts, combat, combos, keyslots, teleskill, xpcard
 from .base import (CONFIRM, STOPPING, Stopped, note_failure)
 from .parts import as_bot, Parts
 
@@ -54,6 +54,7 @@ def note_way_out(b: object, inside: int, to_map: int, cell: tuple[float, float])
 class TravelMixin(Parts):
     traveling: bool
     RIDE_TRIES = 2        # a transport NPC that fails this often in one trip is left out of it
+    SPELL_TRIES = 3       # a teleport skill broken off (a hit, no menu) this often in one trip is left out
     # Longest wait on a ride map (atlas.is_ride) for the game to move us on: flights took about
     # 25 s and cable cars 37 s in the logs; well past that the ride has gone wrong.
     RIDE_WAIT = 180.0
@@ -133,12 +134,16 @@ class TravelMixin(Parts):
                 self.save_profile(self.p)
 
     def travel(self, dst: int | str, cell: tuple[float, float] | None = None) -> None:
-        """Go to map dst (and cell) from wherever we are: on foot, by cable car, airship, a menu NPC
-        or a travel item from the bag (teleport stones, the hearthstone). The route is planned again
+        """Go to map dst (and cell) from wherever we are: on foot, by cable car, airship, a menu NPC,
+        a teleport skill (Mage, Elf) or a travel item from the bag (teleport stones, the hearthstone). The route is planned again
         after every leg, so a wrong guess only costs a re-plan; whatever fails is left out after."""
         dst = int(dst)
         if dst == POISON_MAP and self.map_id() != POISON_MAP:
             self._warn_poison_stay()               # before anything moves (see POISON_MAP)
+        if dst != self.map_id() and (getattr(self, "on_farm_run", False) or getattr(self, "farmed", False)):
+            # a farming run leaving the monsters (town, back after a death, home): no experience
+            # to make on the way, so a running experience card is paused (xp_card_pause)
+            xpcard.away(as_bot(self), _("going to {map}", map=atlas.label(dst)))
         avoid: set[Any] = set(travel.kept_off(self.p))      # the rides the profile switches off
         was = getattr(self, "traveling", False)   # a chores run or a survey keeps it on round this
         self.traveling = True
@@ -263,7 +268,8 @@ class TravelMixin(Parts):
                            vip=rides_free(self), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
-                           items=self.p.get("use_travel_items", False), arnebia=purse)
+                           items=self.p.get("use_travel_items", False), arnebia=purse,
+                           spells=teleskill.options(as_bot(self)))
         if legs is None:
             if travel.gang_exit(mid) is not None:
                 raise Stopped(_("{a}: the gang base's way out is in its outer hall, walled off from here - "
@@ -275,13 +281,7 @@ class TravelMixin(Parts):
     def _take_leg(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
         """The route's first leg. What failed is left out of the next plan. True: the trip is done."""
         if leg["do"] == "exit":
-            self.cross_exit(leg)
-            if leg.get("dest") is None and self.map_id() == leg["map"]:
-                failed["gang_exit"] = failed.get("gang_exit", 0) + 1
-                if failed["gang_exit"] >= 2:
-                    avoid.add("gang_exit")
-                    self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
-                             speak=True)
+            self._take_exit(leg, avoid, failed)
         elif leg["do"] == "npc":
             free = rides_free(self)
             if not self.ride(leg):
@@ -301,6 +301,8 @@ class TravelMixin(Parts):
         elif leg["do"] == "item":
             if not self.teleport(leg):
                 avoid.add(leg["item"])
+        elif leg["do"] == "skill":
+            self._take_spell(leg, avoid, failed)
         elif leg["do"] == "leave":
             if not self.leave_instance():
                 avoid.add("leave")
@@ -308,6 +310,40 @@ class TravelMixin(Parts):
             # "map": something moved us off this map on the last stretch - plan again from there
             return self.walk_to(tuple(leg["cell"])) != "map"
         return False
+
+    def _take_exit(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> None:
+        """Cross a map exit. An exit this trip already crossed is a loop: left out of the next
+        plan. Where an exit the map data names no landing for put us is learned (travel.learn_landing)."""
+        door: tuple[str, int, int] = ("exit", int(leg["map"]), int(leg["exit"]))
+        if leg.get("dest") is not None and door in failed:
+            # this trip already went out through this exit and came back round to it: a loop
+            # (a landing the map data doesn't name, guessed wrong) - plan without it
+            avoid.add(door)
+            self.log(_("{map}: the exit to {dest} brought me round in a loop - planning without it",
+                       map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"])))
+            return
+        self.cross_exit(leg)
+        if leg.get("dest") is not None and self.map_id() == leg["dest"]:
+            failed[door] = 1          # crossed (a try that didn't cross is no loop)
+            at = self.me()
+            cell = (at.get("x", 0), at.get("y", 0))
+            row = travel.arrival_row(leg["map"], leg["exit"], cell)
+            off = travel.wrong_landing(leg["map"], leg["exit"], leg["dest"], cell)
+            if off is not None:
+                self.log(_("{map}: the exit to {dest} put me at {x},{y}, not at {ax},{ay} as the atlas says "
+                           "- please report it: {row}", map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"]),
+                           x=int(cell[0]), y=int(cell[1]), ax=int(off[0][0]), ay=int(off[0][1]), row=off[1]))
+            elif travel.learn_landing(leg["map"], leg["exit"], leg["dest"], cell):
+                self.log(_("learned where the exit from {map} lands on {dest}: {x},{y} - the atlas doesn't "
+                           "have it yet, please report it: {row}",
+                           map=atlas.label(leg["map"]), dest=atlas.label(leg["dest"]),
+                           x=int(cell[0]), y=int(cell[1]), row=row))
+        if leg.get("dest") is None and self.map_id() == leg["map"]:
+            failed["gang_exit"] = failed.get("gang_exit", 0) + 1
+            if failed["gang_exit"] >= 2:
+                avoid.add("gang_exit")
+                self.log(_("{map}: walking out through its exit didn't take me out", map=atlas.label(leg["map"])),
+                         speak=True)
 
     def wait_ride(self, here: int) -> int:
         """Ride it out: on a map the game carries us off by itself (atlas.is_ride), wait for the
@@ -370,6 +406,98 @@ class TravelMixin(Parts):
                 self.log(_("{item} didn't take me anywhere", item=leg["item"]), speak=True)
             return ok
         finally:
+            if self.map_id() == mid:
+                self.close_dialogs()
+
+    def _take_spell(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> None:
+        """A teleport skill leg; what can't work is left out of the next plan: a place the skill
+        doesn't have at once, the whole skill after SPELL_TRIES broken channels."""
+        got = self.cast_teleport(leg)
+        if got is False:
+            avoid.add((leg["skill"], leg["place"]))
+        elif got is None:
+            key = ("skill", leg["skill"])
+            failed[key] = failed.get(key, 0) + 1
+            if failed[key] >= self.SPELL_TRIES:
+                avoid.add(leg["skill"])
+                self.log(_("leaving {skill} out of this trip and planning again", skill=leg["skill"]))
+
+    def spell_slot(self, skill: str) -> tuple[combat.SkillBook, dict[str, Any]] | None:
+        """The skill book and the key entry a skill is on, putting it on an empty skill key first
+        if it is on none (keyslots.put_skill). None: it can't be cast from a key."""
+        sb = self.skillbook or combat.SkillBook(as_bot(self))
+        self.skillbook = sb
+        for _try in range(2):
+            for page in sorted(sb.slots):
+                for x in sb.slots[page]:
+                    if x["name"] == skill:
+                        return sb, x
+            if not keyslots.put_skill(as_bot(self), skill):
+                return None
+            sb = self.skillbook or combat.SkillBook(as_bot(self))
+        return None
+
+    def cast_teleport(self, leg: dict[str, Any]) -> bool | None:
+        """A teleport skill leg (travel "skill"): out of the safe zone, nothing attacking, off the
+        beast, press the skill's key, choose the place in its menu, and wait for the new map.
+        True: arrived. False: this place or skill can't be used (no key, no MP, not in the menu) -
+        left out of the trip. None: broken off (a hit during the channel, no menu): another try
+        after the fight. A teleport is done only when the map changes: nothing says a channel broke."""
+        skill, place, mid = leg["skill"], leg["place"], self.map_id()
+        slot = self.spell_slot(skill)
+        if slot is None:
+            return False
+        sb, x = slot
+        me = self.me()
+        if atlas.in_safe_zone(mid, me["x"], me["y"]):
+            spot = travel.cast_spot(mid, (me["x"], me["y"]))
+            if spot is None:
+                self.log(_("no way out of the safe zone on {map} to cast {skill}", map=atlas.label(mid), skill=skill))
+                return False
+            self.log(_("walking out of the safe zone to cast {skill}", skill=skill))
+            self.walk_to((float(spot[1][0]), float(spot[1][1])))
+            me = self.me()
+            if self.map_id() != mid:
+                return None           # the walk took us elsewhere: plan again from there
+            if atlas.in_safe_zone(mid, me["x"], me["y"]):
+                return None
+        mp = self.mp_now(me, self.clock.time())
+        if mp is not None and mp[0] < teleskill.MANA * mp[1]:
+            self.log(_("not enough MP for {skill} ({mp} of {top}) - going another way",
+                       skill=skill, mp=int(mp[0]), top=int(mp[1])))
+            return False
+        if self.attackers():
+            self.fight_back()         # a hit would only break the channel
+            if self.attackers():
+                return None
+        beasts.off(as_bot(self))      # a Swift beast's skills are off
+        if sb.page() != (x["slot"] - 1) // 10 and not sb.flip_to((x["slot"] - 1) // 10):
+            return False
+        self.log(_("casting {skill} to {place}", skill=skill, place=place))
+        try:
+            self.key(x.get("still") or x["key"])
+            d = self.wait_dialog(4.0)
+            if d is None or not d.get("top"):
+                self.log(_("{skill} opened no menu (cooling down, or not enough MP?)", skill=skill))
+                return None
+            seen = teleskill.menu_places(d.get("top"))
+            teleskill.learn(as_bot(self), skill, seen)
+            if not any(travel.matches(leg["choose"][0], t) for t in seen):
+                self.log(_("{skill} doesn't list {place} for this character", skill=skill, place=place))
+                return False
+            if self.choose(leg["choose"][0]) is None:
+                return False
+            if self.wait_map_change(mid, teleskill.CAST + teleskill.LOAD):
+                me = self.me()
+                self.log(_("arrived on {map} at {x},{y}", map=atlas.label(self.map_id()),
+                           x=int(me.get("x", 0)), y=int(me.get("y", 0))))
+                return True
+            self.log(_("{skill} was broken off before it ended (something hit us) - fighting first",
+                       skill=skill))
+            self.fight_back()
+            return None
+        finally:
+            sb.flip_to(0)
             if self.map_id() == mid:
                 self.close_dialogs()
 
@@ -498,9 +626,10 @@ class TravelMixin(Parts):
             self.travel(mid)
             m = atlas.model(mid)
 
+            circles: set[str] = set()   # other circles passed, named if none of them is this one
+
             def seen(_me: Any = None) -> dict[str, Any] | None:
-                return next((e for e in self.snap()["entities"]
-                             if e.get("id", 0) < 0 and dungeons.is_entrance(entry, e.get("name"))), None)
+                return self._entrance_in_sight(entry, circles)
 
             npc = seen()
             todo = [tuple(s[:2]) for s in entry.get("spots", [])]
@@ -522,11 +651,17 @@ class TravelMixin(Parts):
                                     name=entry["name"]))
                 npc = seen()
             if npc is None:
+                if circles:
+                    self.log(_("circles seen on {map}: {names}", map=atlas.label(mid),
+                               names=", ".join(sorted(circles))))
                 raise Stopped(_("none of the entrances marked on {map} is the {name} circle",
                                 map=atlas.label(mid), name=entry["name"]))
-            dungeons.learn(entry, npc["name"], npc["x"], npc["y"])
-            self.log(_("found it: {npc} at {x},{y} - remembered", npc=npc["name"], x=int(npc["x"]),
-                       y=int(npc["y"])))
+            if dungeons.learn(entry, npc["name"], npc["x"], npc["y"]):
+                self.log(_("found it: {npc} at {x},{y} - remembered", npc=npc["name"], x=int(npc["x"]),
+                           y=int(npc["y"])))
+            else:
+                self.log(_("found it: {npc} at {x},{y} - but couldn't save it for next time", npc=npc["name"],
+                           x=int(npc["x"]), y=int(npc["y"])))
             at = (int(round(npc["x"])), int(round(npc["y"])))
             if self.approach(npc["name"], at) is None:
                 raise Stopped(_("couldn't get to {npc}", npc=npc["name"]))
@@ -535,6 +670,19 @@ class TravelMixin(Parts):
                 raise Stopped(_("couldn't talk to {npc}", npc=npc["name"]))
         finally:
             self.walk_only = was
+
+    def _entrance_in_sight(self, entry: dict[str, Any], circles: set[str]) -> dict[str, Any] | None:
+        """The dungeon's circle if the game shows it; every other circle in sight goes into circles."""
+        found = None
+        for e in self.snap()["entities"]:
+            name = e.get("name") or ""
+            if e.get("id", 0) >= 0:
+                continue
+            if dungeons.is_entrance(entry, name):
+                found = found or e
+            elif "circle" in name.lower():
+                circles.add(name)
+        return found
 
     def ride(self, leg: dict[str, Any]) -> bool:
         """Talk to a transport NPC, choose the destination, confirm, and wait to be moved."""

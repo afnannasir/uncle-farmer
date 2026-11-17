@@ -629,6 +629,13 @@ def test_check_reports_bad_scripts() -> None:
     assert msg and "unknown command" in msg and "line 1" in msg
 
 
+def test_login_is_a_first_line_directive() -> None:
+    assert S.login_target('login "Hero - S1"\nfarm minutes=1') == "Hero - S1"
+    assert S.login_target('login "Hero - S2"\nfarm minutes=1') == "Hero - S2"
+    assert S.check('farm minutes=1\nlogin "Hero - S1"') == "line 2: login must be the first command in a script"
+    assert S.check('sub again\nlogin Hero\nend') == "line 2: login must be the first command in a script"
+
+
 def test_check_reports_the_offending_line() -> None:
     msg = S.check("wait 1\nwait two")
     assert msg and "line 2" in msg
@@ -938,3 +945,18 @@ def test_parse_keep_drop_takes_minutes_only() -> None:
     for bad in ("keep_drop", "keep_drop an hour", "keep_drop 5000"):
         with pytest.raises(S.ScriptError):
             S.parse(bad)
+
+
+def test_parse_keep_level_takes_experience_only() -> None:
+    assert S.parse("keep_level 100000")[0][0].opts["xp"] == 100000
+    assert S.parse("keep_level 1,500,000")[0][0].opts["xp"] == 1500000
+    assert S.parse("keep_level 0")[0][0].opts["xp"] == 0           # no such stop this run
+    for bad in ("keep_level", "keep_level lots", "keep_level -5", "keep_level 3000000000"):
+        with pytest.raises(S.ScriptError):
+            S.parse(bad)
+
+
+def test_keep_level_sets_this_runs_goal() -> None:
+    b = FakeBot()
+    S.Runner(as_bot(b), "keep_level 250000").run()
+    assert vars(b)["level_keep"] == 250000

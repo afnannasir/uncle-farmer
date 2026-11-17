@@ -22,6 +22,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      day: bank, bounty, pet_rebirth, donation, construction, secret_room
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
+    lose_xp [check]                  die to guards until the next level needs the experience set
+                                     in Tools, XP loser (check: only read the numbers and look)
     dungeon [check] [<cave>]         the cave named (Spider cave, Scorpion Cave), else the one chosen in
                                      Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
     sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
@@ -41,6 +43,7 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     sell <item> [count]              sell to the NPC that buys it (all, if no count)
     withdraw <count> <item>          take out of the storehouse
     deposit <item> [count]           put into the storehouse (all, if no count)
+    login [character]                select this saved character before the script runs
     walk <x> <y>                     walk to a cell on the current map
     farm [map=<map>] [minutes=N] [kills=N] [patrol=random|full|quick] [area=x1,y1,x2,y2]
          [only=<names>] [skip=<names>] [elites=fight|avoid] [until=<condition>]
@@ -49,6 +52,11 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     key <key> [milliseconds]         press a key: a-z 0-9 . , ; / space enter esc tab f1-f12 up down left right
     hold <key> <seconds>             hold a key down
     wait <seconds>
+    sound_watch <ids>                set the game's WATCH filter: IDs/ranges, all, or off
+    sound_mute <ids>                 set the game's MUTE filter (persists until changed)
+    sound_wait <ids> [timeout=N]     wait for a new matching sound request; seconds, default 30
+                                     sets sound_received, sound_id, sound_x, sound_y, sound_muted
+                                     temporary listening ends after the wait; WATCH stays unchanged
     say <text>                       write to the log; {expression} is filled in: say HP is {hp_pct}%
     set <name> = <expression>
     heal                             press your HP key now
@@ -81,7 +89,9 @@ import shlex
 import time
 from typing import Any
 
-from .. import atlas, dungeons, jsonio, knowledge, stats
+from .. import atlas, dungeons, jsonio, knowledge, sounds, stats
+from ..settings import LEVEL_KEEP_MOST
+from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
 from . import chores, crafting, dungeon, follow, survey, town, triggers
@@ -98,12 +108,14 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("end_at", "keep_drop", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
-            "stop_when", "stop", "break", "call", "elif", "else", "end") + BLOCKS
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+            "stop_when", "stop", "break", "call", "elif", "else", "end",
+            "sound_watch", "sound_mute", "sound_wait") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
-             "levels_gained", "shards_gained")
+             "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
+             "sound_muted", "sound_positioned")
 
 
 class ScriptError(Exception):
@@ -368,8 +380,14 @@ def _parse_command(stack: list[Node], word: str, rest: str, n: int):
 def _check_script(main: list[Node], subs: dict[str, list[Node]], on_stop: list[Node]):
     """What can only be checked once the whole script is read: calls, recursion, breaks."""
     _check_calls(main, subs)
+    for node in main[1:]:
+        if node.kind == "login":
+            raise ScriptError(node.line, _("login must be the first command in a script"))
     for body in list(subs.values()) + [on_stop]:
         _check_calls(body, subs)
+        for node in body:
+            if node.kind == "login":
+                raise ScriptError(node.line, _("login must be the first command in a script"))
     _check_recursion(subs)
     _check_breaks(main, False)
     for body in list(subs.values()) + [on_stop]:
@@ -521,6 +539,16 @@ def _prep_keep_drop(node: Node, rest: str, n: int):
     if not word.isdigit() or int(word) > 1440:
         raise ScriptError(n, _("keep_drop takes the minutes of drop time to save, 0 to 1440: {what}", what=rest))
     node.opts["minutes"] = int(word)
+
+
+def _prep_keep_level(node: Node, rest: str, n: int):
+    """keep_level <experience>: this run stops once the next level needs less experience than
+    that (the character's "Stop before the next level" otherwise). 0: no such stop this run."""
+    word = rest.strip().replace(",", "")
+    if not word.isdigit() or int(word) > LEVEL_KEEP_MOST:
+        raise ScriptError(n, _("keep_level takes the experience the next level must still need, 0 to {most}: {what}",
+                               most=LEVEL_KEEP_MOST, what=rest))
+    node.opts["xp"] = int(word)
 
 
 def _map_of(where: str, n: int):
@@ -753,15 +781,40 @@ def _prep_say(node: Node, rest: str, n: int):
                           for i, m in enumerate(re.split(r"\{([^}]*)\}", rest))]
 
 
+def _prep_login(node: Node, rest: str, n: int):
+    words = _split(rest, n)
+    if len(words) > 1:
+        raise ScriptError(n, _("write it as: login  or  login <character>"))
+    node.opts["character"] = words[0] if words else None
+
+
+def _prep_sound(node: Node, rest: str, n: int):
+    timeout = 30.0
+    parts = rest.rsplit(" timeout=", 1) if node.kind == "sound_wait" else [rest]
+    if len(parts) == 2:
+        timeout = _number(parts[1], n, "timeout")
+        if timeout < 0:
+            raise ScriptError(n, _("Sound wait timeout cannot be negative."))
+    try:
+        ids = sounds.IdSet.parse(parts[0])
+    except ValueError as error:
+        raise ScriptError(n, str(error)) from error
+    if node.kind == "sound_wait" and ids.is_empty():
+        raise ScriptError(n, _("sound_wait needs at least one sound ID, or all."))
+    node.opts.update(ids=ids.text, timeout=timeout)
+
+
 PREPARE = {
+    "login": _prep_login,
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
-    "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "travel": _prep_travel, "go": _prep_go,
+    "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
-    "gather": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
+    "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
+    "sound_watch": _prep_sound, "sound_mute": _prep_sound, "sound_wait": _prep_sound,
 }     # call, sub and stop take nothing to check
 
 
@@ -770,7 +823,8 @@ class Runner:
     def __init__(self, bot: Bot, text: str):
         self.bot = bot
         self.main, self.subs, self.on_stop = parse(text)
-        self.vars: dict[str, Any] = {}       # the script's own `set` values
+        self.vars: dict[str, Any] = dict(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
+                                         sound_muted=False, sound_positioned=False)
         self.call_depth = 0
         self.watched: set[Node] = set()
 
@@ -935,6 +989,59 @@ class Runner:
     def _do_stop(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _End(node.args)
 
+    def _do_sound_watch(self, node: Node, b: Bot, o: dict[str, Any]):
+        try:
+            sounds.watch(b.a, o["ids"])
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+
+    def _do_sound_mute(self, node: Node, b: Bot, o: dict[str, Any]):
+        try:
+            sounds.mute(b.a, o["ids"])
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+
+    def _do_sound_wait(self, node: Node, b: Bot, o: dict[str, Any]):
+        self.vars.update(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
+                         sound_muted=False, sound_positioned=False)
+        ids = sounds.IdSet.parse(o["ids"])
+        listening = False
+        try:
+            # Establish the cursor before subscribing: historical requests never trigger a wait.
+            cursor = sounds.events(b.a, 0)["now"]
+            status = sounds.listen(b.a, ids.text)
+            listening = True
+            if not status["hooked"]:
+                raise Stopped(_("Sound observer is unavailable: {reason}", reason=status["reason"]))
+            deadline = clock_for(b).time() + o["timeout"]
+            while True:
+                b.check()
+                batch = sounds.events(b.a, cursor)
+                cursor = batch["now"]
+                if batch["lost"]:
+                    raise Stopped(_("Sound events were lost because the observer buffer filled. Start the wait again."))
+                for event in batch["events"]:
+                    if ids.has(event["id"]):
+                        self.vars.update(sound_received=True, sound_id=event["id"],
+                                         sound_x=event["x"] if event["x"] is not None else 0.0,
+                                         sound_y=event["y"] if event["y"] is not None else 0.0,
+                                         sound_muted=event["muted"],
+                                         sound_positioned=event["x"] is not None and event["y"] is not None)
+                        return
+                remaining = deadline - clock_for(b).time()
+                if remaining <= 0:
+                    return
+                b.sleep(min(0.1, remaining))
+        except AgentError as error:
+            raise Stopped(str(error)) from error
+        finally:
+            if listening:
+                try:
+                    sounds.listen(b.a, "off")
+                except (AgentError, OSError):
+                    # Closing a failed link also releases its subscription on the agent.
+                    b.log(_("Could not release sound listening; it is released when the connection closes."))
+
     def _do_travel(self, node: Node, b: Bot, o: dict[str, Any]):
         b.travel(o["map"], o.get("cell"))
 
@@ -982,6 +1089,9 @@ class Runner:
     def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
         triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
 
+    def _do_lose_xp(self, node: Node, b: Bot, o: dict[str, Any]):
+        triggers.run_job(b, "lose_xp", o.get("check", False))
+
     def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
         dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
 
@@ -1012,8 +1122,7 @@ class Runner:
         triggers.run_job(b, "store_items")
 
     def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
-        if not town.restock(b, b.p.get("restock") or [], start=True):
-            b.log(_("nothing to restock"))
+        triggers.run_job(b, "restock")
 
     def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])
@@ -1063,6 +1172,9 @@ class Runner:
 
     def _do_keep_drop(self, node: Node, b: Bot, o: dict[str, Any]):
         b.drop_keep = o["minutes"]        # this run's, ahead of the character's (drop_time_check)
+
+    def _do_keep_level(self, node: Node, b: Bot, o: dict[str, Any]):
+        b.level_keep = o["xp"]            # this run's, ahead of the character's (level_check)
 
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
@@ -1122,3 +1234,9 @@ def check(text: str) -> str | None:
         return None
     except ScriptError as e:
         return str(e)
+
+
+def login_target(text: str) -> str | None:
+    """The optional character named by a script's first `login` line."""
+    main, _subs, _on_stop = parse(text)
+    return main[0].opts["character"] if main and main[0].kind == "login" else None

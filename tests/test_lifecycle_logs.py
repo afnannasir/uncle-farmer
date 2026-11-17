@@ -327,6 +327,55 @@ def test_keeping_the_bots_running_cancels_the_close(answers: list[str]) -> None:
 
 
 @pytest.mark.usefixtures("answers")
+def test_pending_update_cannot_close_while_a_bot_still_runs(monkeypatch: pytest.MonkeyPatch) -> None:
+    w = Closing({7: Bot(7, hangs=True)})
+    monkeypatch.setattr(w, "pending_update", object(), raising=False)
+    event = Event()
+    w.on_close(event)
+    assert event.vetoed and not w.gone and not w.destroyed
+    assert "update cancelled: shutdown is not safe" in text("teardown.log")
+
+
+@pytest.mark.usefixtures("answers")
+def test_no_close_while_the_update_copier_is_being_started(monkeypatch: pytest.MonkeyPatch) -> None:
+    said: list[str] = []
+    w = Closing({7: Bot(7)})
+    monkeypatch.setattr(w, "preparing_update", True, raising=False)
+    monkeypatch.setattr(w, "say", said.append, raising=False)
+    event = Event()
+    w.on_close(event)
+    assert event.vetoed and not w.gone and not w.destroyed and not w.runs[7].stopped
+    assert said and "being prepared" in said[0]
+    assert "END shutdown: cancelled: an update is being prepared" in lines("teardown.log")[-1]
+
+
+@pytest.mark.usefixtures("answers")
+def test_windows_ending_the_session_still_closes_while_preparing(monkeypatch: pytest.MonkeyPatch) -> None:
+    w = Closing()
+    monkeypatch.setattr(w, "preparing_update", True, raising=False)
+    w.on_close(Event(can_veto=False))       # the preparing worker then cancels its own copier
+    assert w.gone and w.destroyed
+
+
+@pytest.mark.usefixtures("answers")
+def test_failed_window_destruction_does_not_authorize_an_update(monkeypatch: pytest.MonkeyPatch) -> None:
+    w = Closing()
+    monkeypatch.setattr(w, "Destroy", lambda: False)
+    w.on_close(Event())
+    assert not w.destroyed
+
+
+@pytest.mark.usefixtures("answers")
+def test_dead_paused_copier_vetoes_shutdown(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    w = Closing()
+    monkeypatch.setattr(w, "pending_update", SimpleNamespace(process=SimpleNamespace(poll=lambda: 1)), raising=False)
+    event = Event()
+    w.on_close(event)
+    assert event.vetoed and not w.gone and not w.destroyed
+
+
+@pytest.mark.usefixtures("answers")
 def test_the_close_says_why_when_it_isn_t_the_player() -> None:
     w = Closing()
     w.close_reason = "the update to 9.9 is ready: the updater takes over"

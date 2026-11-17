@@ -239,21 +239,8 @@ jobs:
       - name: Install the locked dependencies (Nuitka included)
         run: uv sync --locked
 
-      # Nuitka's own cache: the MSVC object cache (clcache), its UPX-compressed DLLs and its
-      # downloads. Without it every build compiles all ~650 C files from nothing (15 of the build's
-      # 18 minutes); with it only the modules a commit changed are compiled again. Entries are
-      # looked up by the content of what is compiled, so a stale one is a miss, never a wrong
-      # object. One cache per branch (master never takes dev's) and per uv.lock (new libraries or
-      # a new Nuitka start a fresh one, which keeps it from growing for ever); it is saved only
-      # when the whole build passed.
-      - name: Restore Nuitka's compile cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/AppData/Local/Nuitka/Nuitka/Cache
-          key: nuitka-${{ runner.os }}-py3.14-${{ github.ref_name }}-${{ hashFiles('uv.lock') }}-${{ github.sha }}
-          restore-keys: |
-            nuitka-${{ runner.os }}-py3.14-${{ github.ref_name }}-${{ hashFiles('uv.lock') }}-
-
+      # No Nuitka compile cache: builds are rare, so each one compiles from nothing (~18 minutes)
+      # rather than keeping a per-branch cache in the repository's Actions storage.
       - name: Set up a JDK for the agent
         uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
         with:

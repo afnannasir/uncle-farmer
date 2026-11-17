@@ -67,6 +67,7 @@ class Bot(BagMixin):
         self.bag_start = None
         self.finish_calls = 0
         self._dropped: list[dict[str, Any]] = []
+        self._levelled: list[dict[str, Any]] = []      # sheets level_check was given
         self._sheet_calls: list[bool] = []
         self._sheet_queue: list[dict[str, Any] | None] = []
         self._sheet_fixed: dict[str, Any] | None = None
@@ -115,6 +116,9 @@ class Bot(BagMixin):
 
     def drop_time_check(self, sheet: dict[str, Any]) -> None:
         self._dropped.append(sheet)
+
+    def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
+        self._levelled.append(sheet)
 
     def finish(self) -> None:
         self.finish_calls += 1
@@ -365,6 +369,13 @@ def test_bag_check_ignores_a_sheet_with_no_load_limit() -> None:
     assert b.bag_check() is False
 
 
+def test_bag_check_gives_every_sheet_to_the_drop_time_and_the_level_checks() -> None:
+    b = Bot()
+    b._sheet_fixed = {"load": 50, "maxload": 100, "xp_needed": 250000}
+    b.bag_check()
+    assert b._dropped == [b._sheet_fixed] and b._levelled == [b._sheet_fixed]
+
+
 def test_bag_check_leaves_a_bag_below_the_mark_alone() -> None:
     b = Bot()
     b._sheet_fixed = {"load": 50, "maxload": 100}
@@ -416,6 +427,62 @@ def test_bag_check_trips_to_town_and_reports_success(monkeypatch: pytest.MonkeyP
     assert b.bag_check() is True
     assert b.finish_calls == 0
     assert any("going to sell and store" in line for line in b.lines)
+
+
+def test_bag_cleanup_waits_for_delayed_load_update(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_queue = [{"load": 100, "maxload": 100}, {"load": 100, "maxload": 100},
+                      {"load": 40, "maxload": 100}]
+    b.throw_by_rules = lambda: True
+
+    def no_trip(b: Any) -> int:
+        pytest.fail("left the farming map before the cleanup load update arrived")
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, no_trip))
+    assert b.bag_check() is False
+    assert b.load_share == 40
+
+
+def test_bag_cleanup_still_unloads_when_kept_items_fill_the_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_fixed = {"load": 100, "maxload": 100}
+    b.throw_by_rules = lambda: True
+    trips: list[int] = []
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: trips.append(1) or 1))
+    assert b.bag_check() is True
+    assert trips == [1]
+    assert sum(b.sleeps) == 3.0
+
+
+def test_bag_cleanup_keeps_the_last_good_reading_over_a_broken_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    b._sheet_queue = [{"load": 100, "maxload": 100}, {"load": 50, "maxload": 0}, None,
+                      {"load": -1, "maxload": 100}, {"load": 30, "maxload": 100}]
+    b.throw_by_rules = lambda: True
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: 1))
+    assert b.bag_check() is False          # no division by a zero maxload on the way
+    assert b.load_share == 30
+
+
+def test_bag_cleanup_waits_at_most_the_settle_time_for_slow_readings(clock: Clock,
+                                                                     monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Bot()
+    b.p.update(when_bag_full="trip", bag_full_at=100)
+    reads: list[int] = []
+
+    def by_key(force: bool = False) -> dict[str, Any]:
+        reads.append(1)
+        clock.advance(3)                   # the sheet key: open, wait for it, close
+        return {"load": 100, "maxload": 100}
+    b.refresh_sheet = by_key
+    b.throw_by_rules = lambda: True
+    trips: list[int] = []
+    monkeypatch.setattr(town, "unload", stand_in(town.unload, lambda b: trips.append(1) or 1))
+    assert b.bag_check() is True
+    assert trips == [1]
+    assert len(reads) == 3                 # the check, one re-read after the throw, the one after the trip
 
 
 def test_bag_check_stops_when_the_trip_frees_nothing(monkeypatch: pytest.MonkeyPatch) -> None:

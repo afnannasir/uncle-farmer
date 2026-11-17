@@ -47,6 +47,10 @@ WALK_REFUSED_FOR = 15   # the walking assistant asks again sooner: riding is all
 REFUSED_MAX = 600  # each refusal in a row doubles the wait, up to this (WALK_REFUSED_MAX walking)
 WALK_REFUSED_MAX = 60
 QUIET = 6.0        # seconds with no attack on us or our pet before a beast is put on
+AFTER_DEATH = 6.5  # seconds after a death before a beast is put on: the server still counts us in
+                   # combat and refuses it without a word, and the press after that waits out GAP
+                   # (live 2026-11-16, XP loser: pressed 4 s after the death and refused, the beast
+                   # came 10 s after the respawn; pressed 6 s after it, on at once)
 RIDE_CHECK = 4.0   # seconds between "still on the Swift beast?" checks while walking
 MIN_POWER = 15     # fusion power under which only "costs no fusion power" beasts are used
 POWER_EVERY = 20.0 # while riding, read fusion power with the T key this often (it costs nothing)
@@ -228,6 +232,13 @@ def _say_why_no_mount(b: Bot, rows: list[dict[str, Any]], pick: str) -> None:
     clock = clock_for(b)
     swift = [r for r in rows if r["kind"] == "swift" and (pick == "auto" or r["name"] == pick)]
     if not swift:
+        strange = [r["name"] for r in rows if r["kind"] == "unknown" and (pick == "auto" or r["name"] == pick)]
+        if strange:
+            # a beast newer than data/beasts.json: the bot can't tell a Swift one from the rest
+            _on_foot(b, "unknown", _("on foot: {beasts} isn't in the bot's list of fusion beasts yet, so it "
+                                     "can't tell whether it is a Swift one - please report its description",
+                                     beasts=", ".join(strange)))
+            return
         _on_foot(b, "none", _("on foot: no Swift fusion beast to ride") if pick == "auto"
                  else _("on foot: {beast} isn't among our fusion beasts", beast=pick))
         return
@@ -250,6 +261,7 @@ def _put_on(b: Bot, rows: list[dict[str, Any]], want: dict[str, Any], active: di
         if purpose == FIGHT and active and active["kind"] == "swift" and _press(b, rows, active):
             b.log(_("got off {beast} for the fight", beast=active["name"]))
         return
+    _after_death(b)
     if _press(b, rows, want, until_attacked=True):
         _taken(b, want)
         b.log(_("riding {beast}", beast=want["name"]) if purpose == TRAVEL
@@ -258,6 +270,20 @@ def _put_on(b: Bot, rows: list[dict[str, Any]], want: dict[str, Any], active: di
         _too_soon(b)              # an attack came while pressing: not a refusal, just not now
     else:
         _refused(b, want)         # level, combat the agent didn't see...: try again later
+
+
+def _after_death(b: Bot) -> None:
+    """Just after a death the server refuses a fusion beast, and a refused press costs the wait
+    before the next one (GAP): wait until AFTER_DEATH seconds have passed since the death instead,
+    said once a run."""
+    left = getattr(b, "last_death", 0.0) + AFTER_DEATH - clock_for(b).time()
+    if not 0 < left <= AFTER_DEATH:
+        return
+    if not getattr(b, "said_after_death", False):
+        b.said_after_death = True
+        b.log(_("the fusion beast waits {secs} s: the game refuses one this soon after a death",
+                secs=round(left, 1)))
+    b.sleep(left)
 
 
 def _on_foot_for_a_fight(b: Bot) -> bool:

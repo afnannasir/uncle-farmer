@@ -793,7 +793,7 @@ class _BagJob:
 
 def _bag_round(b: Bot, job: _BagJob, blocked: list[str]) -> None:
     """One round of make_most: every shard of the chosen colours into gems of its level, then each
-    colour up, level by level."""
+    colour up, level by level. Leave higher levels waiting while this level can still be worked."""
     shards = {name: 10 ** 9 for name in town.counts(b) if town.gem_of(name) and job.wants(colour_of(name))}
     if shards:
         town.make_gems(b, shards, opener=lambda: open_craftsman(b, "gem_craftsman", job.where))
@@ -804,6 +804,11 @@ def _bag_round(b: Bot, job: _BagJob, blocked: list[str]) -> None:
                 raise_gems(b, col, lv, k, job.boost, job.protect, job.where, blocked=blocked)
             if b.stop_event.is_set():
                 raise Stopped(_("stopped"))
+            # A batch (or a protected failure) can leave gems waiting at this level.
+            # Re-enter through the outer round so shards and live inventory are checked again.
+            if (gem_levels(b, col).get(lv, 0) - job.keep >= 3
+                    or shard_levels(b, col).get(lv, 0) >= town.SHARDS_PER_GEM):
+                break
 
 
 def _idle_round(b: Bot, left: str, idle: int) -> bool:
@@ -945,7 +950,8 @@ def _gem_check(b: Bot, job: _GemJob) -> None:
 
 def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
     """One round of making: the colour's shards up to the target level into gems, then gems up a
-    level at a time, only as many tries as the target still needs (all of them for "most").
+    level at a time, only as many tries as the target still needs (all of them for "most"): every
+    try costs a fee (and a rune when protected), so lower levels are never used up for their own sake.
     Returns how much was made or tried; blocked gets what stood in the way for good (raise_gems)."""
     colour, level = job.colour, job.level
     did = 0

@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from ...stats import Tally
     from ..bot import Bot
     from ..combat import SkillBook
+    from ..corpses import Harvest
+    from ..xpcard import Cards
     from ..kills import KillTracker
 
 
@@ -78,12 +80,16 @@ class Parts:
     failure_notes: set[tuple[str, str]]   # (where, error kind) of ignored failures already logged
     follow_buffs: bool          # following, and the leader's `buff` message turned buffs on
     gather_casts: int           # gathering casts seen this run
+    corpses: Harvest            # corpse harvesting this run (engine/corpses.py)
+    xpcard: Cards               # experience cards this run (engine/xpcard.py)
+    harvests: int               # corpses harvested this run
     last_beast_change: float    # when the bot last changed or got off its beast
     last_ride_check: float
     phrases: dict[int, str]     # the game's quick phrases by slot (engine/runner.py)
     said_low_power: bool
     said_no_mount: bool         # "attacked - staying on foot" said, until nothing attacks us
     said_no_vitality: bool
+    dying_on_purpose: bool      # the XP loser's run (engine/xploss.py): deaths are not news
     share_tried: int            # the half hour of the last secret room share try (engine/chores.py)
     trip_checked: float
     traveling: bool
@@ -96,6 +102,7 @@ class Parts:
     crossing_poison: bool       # a travel leg into or across Polson Wetland without the talent (travel.py)
     warned_poison: bool         # the Polson Wetland warning was said this run
     said_beast_waits: bool      # "the fusion beast waits until no attack for QUIET seconds" said
+    said_after_death: bool      # "the fusion beast waits N s ... after a death" said
     pet_hp_log: list[tuple[float, float]]  # (time, HP) of the pet out, the last few seconds
     pet_hp_id: int | None       # the pet those readings are of
     pet_threat_until: float     # the pet counts as under attack until then (its HP fell fast)
@@ -155,6 +162,7 @@ class Parts:
     pack_min: int
     start_place: Where | None
     drop_keep: int | None
+    level_keep: int | None
     agent_state: bool
     agent_keys: bool
     agent_ask: bool
@@ -188,6 +196,7 @@ class Parts:
     last_hp: float | None
     last_combat: float
     last_attacked: float
+    last_death: float
     hp_seen: float | None
     _speech: str
     _speech_at: float
@@ -237,6 +246,7 @@ class Parts:
         def ask_vitals(self, what: str) -> bool | None: ...
         def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]: ...
         def rest_up(self, me: dict[str, Any]) -> bool: ...
+        def mp_now(self, me: dict[str, Any], now: float) -> tuple[float, float] | None: ...
         # walking.py
         def walk_to(self, cell: tuple[float, float], map_change: bool = False,
                     near: Callable[[dict[str, Any]], bool] | None = None) -> str: ...
@@ -284,6 +294,9 @@ class Parts:
         def bag_check(self) -> bool: ...
         # farming.py
         def drop_time_check(self, sheet: dict[str, Any]) -> None: ...
+        def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None: ...
+        def level_goal(self) -> int | None: ...
+        def level_before_start(self) -> None: ...
         def set_modes(self) -> None: ...
         def restock_now(self, start: bool = False) -> bool: ...
         def restock_on_the_way(self) -> None: ...

@@ -18,7 +18,7 @@ from typing import Any
 from .. import trust
 from ..clock import CLOCK, Clock, StopFlag
 from ..link import GameLink
-from . import repair
+from . import chests, repair
 from .kills import KillTracker
 from .botparts.base import (CONFIRM, DIRECTIONS, NPC_HP, Respawned, Stopped, potion_kind, skill_things,
                             snap_map)
@@ -82,6 +82,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.beasts_refused = {}      # fusion beast id -> don't try again before (time)
         self.last_combat = 0.0        # end of the last fight (the server keeps us "in combat" a while)
         self.last_attacked = 0.0      # a monster's cast last struck us or our pet, or our HP fell
+        self.last_death = 0.0         # when we last died (no fusion beast goes on just after: beasts)
         self.hp_seen = None           # our HP at the last look_after, to notice it falling
         self.pets_refused = {}        # pet id -> don't try to summon before (time)
         self.following: str | None = None   # the player a follow run stays with
@@ -103,9 +104,11 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.doing_request = False
         self.trusted = trust.Trusted()    # names or ids whose team invites are accepted
         self.gear = repair.Gear()         # wear warnings and repairs
+        self.chests = chests.Chests()     # the chests opened, and those left alone a while
         self.resting = False              # standing still to get HP back: a heal skill tops up to rest_until
         self.start_place = None           # (map, x, y) where the run started
         self.drop_keep = None             # minutes of drop time this run saves (keep_drop), else the profile's
+        self.level_keep = None            # experience before the next level this run stops at (keep_level), else the profile's
         self.daily_stop_at = 0.0          # epoch seconds: the run ends then, whatever it is doing
         self.daily_reset = ""             # the game's day reset, "HH:MM" on this computer's clock
         self.daily_done = False

@@ -18,9 +18,11 @@ line; contribution goes up instead.
 from __future__ import annotations
 
 import contextlib
+import copy
 import math
 import os
 import re
+import threading
 import time
 from collections.abc import Collection, Generator, Iterable, Mapping
 from typing import TYPE_CHECKING, Any, TypeGuard
@@ -47,7 +49,8 @@ TOOL = "tool"
 TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
                          "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
                          "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
-                         "update_shard_prices": N_("Updating shard prices"), "store_items": N_("Storing items")}
+                         "update_shard_prices": N_("Updating shard prices"), "store_items": N_("Storing items"),
+                         "restock": N_("Restocking supplies")}
 # The jobs that turn a farming run's loot into arnebia: what they bring counts in its earnings.
 SELLING = ("sell_shards", "clean_bag")
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")
@@ -162,6 +165,9 @@ class CombatStats:
     """
 
     def __init__(self, clock: Clock = CLOCK) -> None:
+        # observe() and note_kill() run on the run's thread while the window reads result(): the
+        # lock keeps result() from walking the dicts as a cast is folded in
+        self.lock = threading.RLock()
         self.given = _Side()
         self.received = _Side()
         self.skills: dict[str, dict[str, int]] = {}
@@ -174,6 +180,11 @@ class CombatStats:
     def observe(self, casts: Iterable[dict[str, Any]] | None, me_id: int,
                 names: Mapping[int, str] | None = None, pets: Collection[int] = ()) -> None:
         """Fold in casts read for the first time. pets: our pets' ids, for the heals they get."""
+        with self.lock:
+            self._observe(casts, me_id, names, pets)
+
+    def _observe(self, casts: Iterable[dict[str, Any]] | None, me_id: int,
+                 names: Mapping[int, str] | None, pets: Collection[int]) -> None:
         if not self.on:
             return
         names = names or {}
@@ -229,18 +240,21 @@ class CombatStats:
                 row["crits"] += 1
 
     def note_kill(self, name: str | None) -> None:
-        if not self.on:
-            return
-        self.last_kill = {"name": name or None,
-                          "at": time.strftime("%H:%M:%S", time.localtime(self.clock.time()))}
+        with self.lock:
+            if not self.on:
+                return
+            self.last_kill = {"name": name or None,
+                              "at": time.strftime("%H:%M:%S", time.localtime(self.clock.time()))}
 
     def result(self) -> dict[str, Any] | None:
-        if not self.live:
-            return None
-        return {"given": self.given.result(), "received": self.received.result(),
-                "skills": {k: dict(v) for k, v in self.skills.items()},
-                "heals": {k: dict(v) for k, v in self.heals.items()},
-                "last_kill": self.last_kill}
+        """A copy, all the way down: nothing in it changes as the fight goes on."""
+        with self.lock:
+            if not self.live:
+                return None
+            return copy.deepcopy({"given": self.given.result(), "received": self.received.result(),
+                                  "skills": {k: dict(v) for k, v in self.skills.items()},
+                                  "heals": {k: dict(v) for k, v in self.heals.items()},
+                                  "last_kill": self.last_kill})
 
 
 
@@ -344,6 +358,7 @@ class _Part:
         self.gains = {"contribution": 0, "merit": 0}
         self.xp = self.levels = 0
         self.kills = self.deaths = 0
+        self.chests = 0                       # treasure chests opened while farming
 
     def add_changes(self, was: Mapping[str, int], now: Mapping[str, int]) -> None:
         """One bag reading's change since the last: into the net changes, and the arnebia also
@@ -361,11 +376,15 @@ class _Part:
 
     def busy(self) -> bool:
         return bool(any(self.changes.values()) or any(any(v.values()) for v in self.moved.values())
-                    or any(self.gains.values()) or self.xp or self.kills or self.deaths)
+                    or any(self.gains.values()) or self.xp or self.kills or self.deaths or self.chests)
 
 
 class Tally:
-    """One run. update() is called by the bot between fights; result() can be read any time.
+    """One run. update() is called by the bot between fights; result() can be read any time, from
+    any thread: every change to the tally holds self.lock, and result()/results() build their
+    records under it as copies of their own (the results window once walked part.changes while the
+    run added to it: "dictionary changed size during iteration"). Readings from the game happen
+    outside the lock, so a reader never waits on the game.
 
     A run's gains go to what it is doing: farming, or a job that isn't farming (TOOLS) - the Gem
     Maker turning shards into gems is no loot, and the chores' walk is no farming time. While the
@@ -380,6 +399,7 @@ class Tally:
 
     def __init__(self, character: str, title: str, clock: Clock = CLOCK, tool: str | None = None) -> None:
         """tool: the TOOLS key of a run that is that job on its own (Tools menu), not farming."""
+        self.lock = threading.RLock()
         self.character, self.title = character, title
         self.clock = clock
         self.started = self.clock.time()
@@ -441,29 +461,41 @@ class Tally:
         except Exception as e:          # a reading is a convenience; never stop a run for it
             note_failure(bot, "the run's statistics", e)
             return
-        part = self._part()
         bag: dict[str, int] = {}
         for r in rows:
             n = (r.get("name") or "").strip()
             if n:
                 bag[n] = bag.get(n, 0) + int(r.get("count") or 0)
-        if bag:
-            if self.bag0 is None:
-                self.bag0 = dict(bag)
-            elif part is not None:
-                part.add_changes(self.bag, bag)
-            self.bag = bag
-        self.note_sheet(me.get("sheet"))
         kills, deaths = int(bot.kills or 0), int(getattr(bot, "deaths", 0) or 0)
-        if part is not None:
-            if self.doing == FARMING:
-                part.kills += max(0, kills - self.counters[0])
-            part.deaths += max(0, deaths - self.counters[1])
-        self.counters = (kills, deaths)
-        if mid and mid not in self.maps and self.doing == FARMING:
-            self.maps.append(mid)
+        with self.lock:
+            part = self._part()
+            if bag:
+                if self.bag0 is None:
+                    self.bag0 = dict(bag)
+                elif part is not None:
+                    part.add_changes(self.bag, bag)
+                self.bag = bag
+            self.note_sheet(me.get("sheet"))
+            if part is not None:
+                if self.doing == FARMING:
+                    part.kills += max(0, kills - self.counters[0])
+                part.deaths += max(0, deaths - self.counters[1])
+            self.counters = (kills, deaths)
+            if mid and mid not in self.maps and self.doing == FARMING:
+                self.maps.append(mid)
+
+    def note_chest(self) -> None:
+        """The bot opened a treasure chest (its loot comes in with the bag's next reading)."""
+        with self.lock:
+            part = self._part()
+            if part is not None and self.doing == FARMING:
+                part.chests += 1
 
     def note_sheet(self, sheet: dict[str, Any] | None) -> None:
+        with self.lock:
+            self._note_sheet(sheet)
+
+    def _note_sheet(self, sheet: dict[str, Any] | None) -> None:
         left = drop_left(sheet)
         if left is not None:
             self.drop_left = left
@@ -492,18 +524,21 @@ class Tally:
     def moved(self, how: str, item: str, n: int) -> None:
         """The bot moved n of item itself: how is one of MOVES (thrown, sold, stored, bought,
         withdrawn)."""
-        part = self._part() or self.parts[self.main]
-        if n > 0 and how in part.moved:
-            part.moved[how][item] = part.moved[how].get(item, 0) + int(n)
+        with self.lock:
+            part = self._part() or self.parts[self.main]
+            if n > 0 and how in part.moved:
+                part.moved[how][item] = part.moved[how].get(item, 0) + int(n)
 
     def deadline(self, at: float) -> None:
         """The run ends at clock time `at` at the latest: its time limit, the clock time its plan
         stops at, or the daily stop. The earliest one is what Time remaining counts down to."""
-        if at > 0 and at not in self.deadlines:
-            self.deadlines.append(at)
+        with self.lock:
+            if at > 0 and at not in self.deadlines:
+                self.deadlines.append(at)
 
     def ends_at(self) -> float | None:
-        return min(self.deadlines) if self.deadlines else None
+        with self.lock:
+            return min(self.deadlines) if self.deadlines else None
 
     # ------------------------------------------------------------ what the run is doing
     def switch(self, bot: Parts | None, doing: str | None) -> None:
@@ -512,17 +547,19 @@ class Tally:
         if doing == self.doing:
             return
         if bot is not None:
-            self.update(bot, force=True)
-        now = self.clock.time()
-        if self.doing is None:
-            self.paused_s += now - self.since
-        else:
-            self.parts[self.doing].seconds += now - self.since
-        self.since = now
-        self.doing = doing
-        if doing is not None:
-            self.parts.setdefault(doing, _Part())
-        self.combat.on = doing == FARMING
+            self.update(bot, force=True)        # outside the lock: it reads the game
+        with self.lock:
+            now = self.clock.time()
+            if self.doing is None:
+                self.paused_s += now - self.since
+            else:
+                self.parts[self.doing].seconds += now - self.since
+            self.since = now
+            self.doing = doing
+            if doing is not None:
+                self.parts.setdefault(doing, _Part())
+            with self.combat.lock:
+                self.combat.on = doing == FARMING
 
     def pause(self, bot: Parts | None) -> None:
         if self.doing is not None:
@@ -550,17 +587,19 @@ class Tally:
     # ------------------------------------------------------------ results
     def result(self) -> Record:
         """The run's own record (farming, or the job it was), a plain dict: what gets saved,
-        added up and shown."""
-        return self._record(self.main)
+        added up and shown. A copy of its own, taken under the lock."""
+        with self.lock:
+            return copy.deepcopy(self._record(self.main))
 
     def results(self) -> list[Record]:
         """Every record of the run: its own, then one for each other job it did on the way
-        (chores before farming, the Gem Maker inside a script)."""
-        out = [self.result()]
-        for key, part in self.parts.items():
-            if key != self.main and part.busy():
-                out.append(self._record(key))
-        return out
+        (chores before farming, the Gem Maker inside a script). Copies, all from one moment."""
+        with self.lock:
+            out = [self._record(self.main)]
+            for key, part in self.parts.items():
+                if key != self.main and part.busy():
+                    out.append(self._record(key))
+            return copy.deepcopy(out)
 
     def _record(self, key: str) -> Record:
         part = self.parts.get(key) or _Part()
@@ -588,7 +627,7 @@ class Tally:
             "kind": FARMING if farming else TOOL,
             "start": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.started)),
             "minutes": round(seconds / 60.0, 1),
-            "kills": part.kills, "deaths": part.deaths,
+            "kills": part.kills, "deaths": part.deaths, "chests": part.chests,
             "arnebia": sum(d for n, d in changes.items() if n.lower() == ARNEBIA),
             "shards": {n: d for n, d in changes.items() if is_shard(n)},
             "items": {n: d for n, d in changes.items() if n.lower() != ARNEBIA and not is_shard(n)},
@@ -624,13 +663,17 @@ class Tally:
     def finish(self, bot: Parts | None = None) -> None:
         if bot is not None:
             self.update(bot, force=True)
-        self.ended = self.clock.time()
+        with self.lock:
+            self.ended = self.clock.time()
 
     def save(self) -> None:
-        if self.saved:
-            return                       # once only: a second save would count the run's usage twice
-        self.saved = True
-        records = self.results()
+        """The run's records appended to results/<character>.jsonl, once. Only a save that went
+        through counts as that once: a failed one (a full disk) cuts the file back to where it was,
+        so no half record is left, raises, and can be tried again."""
+        with self.lock:
+            if self.saved:
+                return                   # once only: a second save would count the run's usage twice
+            records = self.results()
         lines: list[str] = []
         for r in records:
             empty = not (r["kills"] or r["deaths"] or r["arnebia"] or r["picked"] or r["used"]
@@ -639,9 +682,29 @@ class Tally:
                 continue                 # nothing happened (a script that only ran the chores); don't clutter
             lines.append(json.dumps(r, ensure_ascii=False) + "\n")
         if lines:
-            os.makedirs(RESULTS, exist_ok=True)
-            with open(os.path.join(RESULTS, paths.safe_name(self.character) + ".jsonl"), "a", encoding="utf-8") as f:
-                f.writelines(lines)
+            path = os.path.join(RESULTS, paths.safe_name(self.character) + ".jsonl")
+            with json.lock_for(path):
+                os.makedirs(RESULTS, exist_ok=True)
+                _append_whole(path, "".join(lines))
+        with self.lock:
+            self.saved = True
+
+
+def _append_whole(path: str, text: str) -> None:
+    """Append text to path whole or not at all: on a failed write the file is cut back to its old
+    length (best effort), so a full disk leaves no half line behind for the next save to follow."""
+    with open(path, "a", encoding="utf-8") as f:
+        start = f.tell()
+        try:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        except BaseException:
+            try:
+                f.truncate(start)
+            except (OSError, ValueError):
+                pass
+            raise
 
 
 def doing(bot: Parts, name: str) -> contextlib.AbstractContextManager[None]:
@@ -846,13 +909,13 @@ def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
 def add_up(results: Iterable[Record]) -> Record:
     """One result from many (a day, a week) of one kind."""
     results = [upgrade(dict(r)) for r in results]
-    total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0,
+    total: Record = {"runs": len(results), "minutes": 0.0, "paused_minutes": 0.0, "kills": 0, "deaths": 0, "chests": 0,
              "arnebia": 0, "arnebia_in": 0, "arnebia_out": 0, "sales": 0,
              "shards": {}, "shard_value": 0, "contribution": 0, "merit": 0, "experience": 0,
              "levels": 0, "items": {}, "picked": {}, "used": {}, "moved": {}, "spent": {}, "level": -1, "xp_needed": -1,
              "combat": None, "kind": results[0]["kind"] if results else FARMING}
     for r in results:
-        for k in ("minutes", "paused_minutes", "kills", "deaths", "arnebia", "arnebia_in", "arnebia_out", "sales",
+        for k in ("minutes", "paused_minutes", "kills", "deaths", "chests", "arnebia", "arnebia_in", "arnebia_out", "sales",
                   "shard_value", "contribution", "merit", "experience", "levels"):
             v = r.get(k, 0)
             total[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
@@ -916,6 +979,8 @@ def _time_lines(r: Record) -> list[str]:
     the time paused."""
     out = [_("Time used: {used}, {kills} kills, {deaths} deaths", used=_clock(r.get("minutes", 0) or 0),
              kills=r.get("kills", 0), deaths=r.get("deaths", 0))]
+    if r.get("chests"):
+        out.append(_("Chests opened: {n}", n=r["chests"]))
     if "runs" in r:
         out.append(_("Runs: {n}", n=r["runs"]))
     elif "remaining_minutes" in r:
@@ -1277,6 +1342,8 @@ def short(r: Record, drop: int | None = None) -> str:
     if drop is not None:
         bits.append(_("drop time left {time}", time=spoken_time(drop)))
     bits.append(_("{n} kills", n=r.get("kills", 0)))
+    if r.get("chests"):
+        bits.append(_("1 chest opened") if r["chests"] == 1 else _("{n} chests opened", n=r["chests"]))
     if r.get("contribution"):
         bits.append(_("{n} contribution", n=_n(r["contribution"])))
     if r.get("experience"):

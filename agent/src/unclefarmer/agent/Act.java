@@ -9,7 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Things the bot used to do with keys, done the way the game's own code does them:
- * `use <uid>`, `discarddirectall <uid>...`, `select <id>` and `slot <n> [sustain] [lock]`.
+ * `use <uid>`, `discarddirectall <uid>...`, `select <id>`, `slot <n> [sustain] [lock]` and
+ * `cast <skill> <target>`.
  *
  * use: the use key on a bag row (game.i.w) and a hotkey (game.i.g) both end in game.N.b(0, uid, 0),
  * which writes OUT op=18: 0 (the bag panel), the item's uid and 0 as ints (javap 2026-10-04). The
@@ -39,6 +40,31 @@ import java.util.concurrent.TimeUnit;
  * cancels the cast task and clears the "attacking" bit of our own character). A press with no
  * release leaves the game sure the key is still held: after the next kill every walk fails. So each
  * slot press is let go HOLD_MS later, as the bot's own key taps are (javap 2026-10-25).
+ *
+ * cast: a profession key (Z, X, C: W_SKILL1-3) goes the same way as slot 22-24, and for a corpse
+ * skill (Draw Blood, Skinning, Cut Flesh: ids above 20) the press task ends in world.a(int target,
+ * short skill, int pkMode, boolean stand), which faces the target and sends the cast request
+ * (OUT op=15) - the method the attack keys' casts end in too (javap 2026-11-11). Here that method is
+ * called after the key's own checks (Memory.corpseRefusal): no key has to hold the skill, and no
+ * target has to be selected.
+ *
+ * But it is called the way a held key calls it (live night 2026-11-12; javap game.i.a(ISIZ) 135-143
+ * and the key task at ~1808): the method sets the "attacking" bit of our character (ak.L |= 4), which
+ * only the key's release clears (world.a(0L) -> game.i.G). One call and no release left that bit up,
+ * and every walk failed until the next fight's key came back up: 607 stucks and 12 hearthstones in
+ * one night. And a held key calls it again every 60 ms (game.b at a fixed rate), each call a fresh
+ * OUT op=15 with no throttle, so a cast the server isn't ready for yet (the pause after a kill) is
+ * simply sent again; our one call right after a kill was mostly never answered (9 of about 97). So
+ * the cast is held: sent every CAST_EVERY_MS until our own cast of that skill comes back (IN op=41),
+ * the corpse is no longer one the key would take, or CAST_HOLD_MS is up - then let go, always. An
+ * attack key press ends a held cast (the press brings its own release).
+ *
+ * It is cast STANDING (as Alt+key does: the key passes "stand" = the sustain flag, game.i.a(int,
+ * boolean, boolean) ~1808) and only at a corpse in harvesting range, Memory.HARVEST_REACH tiles. The
+ * server takes a corpse skill only from close by: measured live 2026-11-12, every harvest landed
+ * 1.1-4.5 tiles from the corpse, and casts from further off were never answered (agent 61: 1 in about
+ * 13). A plain key press would walk up to a far corpse (stand=false: a path and a walk as well as the
+ * request), but walking to corpses costs farming time, so far ones are simply left.
  */
 final class Act {
 
@@ -132,6 +158,7 @@ final class Act {
         if (down == null) return "error: the game's attack-key method wasn't found";
         final Method up = releaseMethod(world.getClass());
         if (up == null) return "error: the game's attack-key release wasn't found";
+        endCast(false);       // a held corpse cast gives way to the fight: this press's release ends it
         down.invoke(world, slot, sustain, lock, 0L);
         synchronized (Act.class) {
             if (release != null) release.cancel(false);
@@ -147,6 +174,139 @@ final class Act {
             }, holdMs, TimeUnit.MILLISECONDS);
         }
         return "pressed " + slot;
+    }
+
+    private static volatile Method castM;
+    /** The profession key's task (game.b) runs at a fixed rate of 60 ms while the key is held. */
+    static final long CAST_EVERY_MS = 60L;
+    /** The longest a corpse cast is held: past the pause after a kill, short of a fight's worth. */
+    static final long CAST_HOLD_MS = 1500L;
+    /** Cast from where we are, as Alt+key does: never walk to a corpse (farming time). */
+    static final boolean CAST_STANDING = true;
+    private static ScheduledFuture<?> casting;
+    private static Runnable castLetGo;
+
+    /** Why a held cast should stop now, or null to send it again. */
+    interface StillOn {
+        String why() throws Exception;
+    }
+
+    /** `cast <skill> <target>`: one of our corpse skills at a fresh corpse, as its profession key
+     *  would cast it, held and let go (see the class note). "cast <skill> <target>", "refused: <why>"
+     *  (nothing sent), or an error. */
+    static String cast(final int skill, final int target) {
+        try {
+            final Object world = Memory.world();
+            Method m = castMethod(world.getClass());
+            if (m == null) return "error: the game's cast method wasn't found";
+            Method up = releaseMethod(world.getClass());
+            if (up == null) return "error: the game's attack-key release wasn't found";
+            endCast(true);
+            int pk;
+            final String name;
+            synchronized (world) {
+                String no = Memory.corpseRefusal(world, skill, target);
+                if (no != null) return "refused: " + no;
+                pk = Memory.pkMode(world);
+                name = Memory.professionName(world, skill);
+            }
+            final int me = Memory.selfId();
+            final long since = System.currentTimeMillis();
+            hold(world, m, up, target, (short) skill, pk, CAST_STANDING, CAST_EVERY_MS, CAST_HOLD_MS, new StillOn() {
+                @Override
+                public String why() throws Exception {
+                    // Only this skill's report ends it: the last shots of the fight that made the
+                    // corpse come back after the kill too, and stopped every hold at its first send.
+                    if (World.castSince(me, since, name)) return "cast";
+                    synchronized (world) {
+                        return Memory.corpseRefusal(world, skill, target);
+                    }
+                }
+            });
+            return "cast " + skill + " " + target;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Throwable t) {
+            Log.error("cast " + skill + " " + target, t);
+            return "error: " + Protocol.jsonEscape(String.valueOf(t));
+        }
+    }
+
+    /** The held cast: `down` now and every `every` ms, until `on` gives a reason or `holdMs` is up,
+     *  then `up` (the key's release) once. The first send happens before this returns. */
+    static void hold(final Object world, final Method down, final Method up, final int target, final short skill,
+                     final int pk, final boolean standing, long every, long holdMs, final StillOn on) throws Exception {
+        synchronized (world) {
+            down.invoke(world, target, skill, pk, standing);
+        }
+        final long end = System.currentTimeMillis() + holdMs;
+        final Runnable letGo = new Runnable() {
+            private boolean done;
+            @Override
+            public synchronized void run() {
+                if (done) return;
+                done = true;
+                try {
+                    up.invoke(world, 0L);
+                } catch (Throwable t) {
+                    Log.error("cast release", t);
+                }
+            }
+        };
+        synchronized (Act.class) {
+            castLetGo = letGo;
+            casting = RELEASES.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (System.currentTimeMillis() < end && on.why() == null) {
+                            synchronized (world) {
+                                down.invoke(world, target, skill, pk, standing);
+                            }
+                            return;
+                        }
+                    } catch (Throwable t) {
+                        Log.error("cast hold", t);
+                    }
+                    endCast(true);
+                }
+            }, every, every, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /** Stop a held cast, if one is going; release: let the key go as well (not when an attack key
+     *  press takes over, which brings its own release). */
+    static void endCast(boolean release) {
+        Runnable letGo;
+        synchronized (Act.class) {
+            if (casting == null) return;
+            casting.cancel(false);
+            casting = null;
+            letGo = castLetGo;
+            castLetGo = null;
+        }
+        if (release && letGo != null) letGo.run();
+    }
+
+    /** world.a(int, short, int, boolean), the one method of that shape (the cast task, game.b, calls
+     *  it): found by its parameters, not its name. */
+    static Method castMethod(Class<?> world) {
+        Method m = castM;
+        if (m != null && m.getDeclaringClass() == world) return m;
+        Method found = null;
+        for (Method c : world.getDeclaredMethods()) {
+            Class<?>[] p = c.getParameterTypes();
+            if (c.getReturnType() == void.class && p.length == 4 && p[0] == int.class
+                    && p[1] == short.class && p[2] == int.class && p[3] == boolean.class) {
+                if (found != null) return null;       // two of that shape: not sure which, so neither
+                found = c;
+            }
+        }
+        if (found != null) {
+            found.setAccessible(true);
+            castM = found;
+        }
+        return found;
     }
 
     /** world.a(long), the one method of that shape (game.Win calls it once no attack key is down). */

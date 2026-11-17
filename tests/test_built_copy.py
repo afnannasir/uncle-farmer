@@ -146,6 +146,7 @@ class Window:
         self.destroyed = False
         self.downloads: list[updater.Release] = []
         self.status: list[str] = []
+        self.said: list[str] = []
 
     def __getattr__(self, name: str) -> Any:
         from unclefarmer.gui import main
@@ -157,6 +158,9 @@ class Window:
 
     def SetStatusText(self, text: str) -> None:
         self.status.append(text)
+
+    def say(self, text: str, run: object = None) -> None:
+        self.said.append(text)
 
 
 class Started:
@@ -224,6 +228,28 @@ def test_a_build_installs_the_update(window: dict[str, list[str]]) -> None:
     w.install_update(REL)
     assert w.downloads == [REL]
     assert window["info"] == []
+
+
+def test_failed_copier_start_keeps_original_window_open(window: dict[str, list[str]],
+                                                      monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+    w = Window()
+    closed: list[bool] = []
+    def close() -> bool:
+        closed.append(True)
+        w.destroyed = True
+        return True
+    def fail(*args: Any) -> Any:
+        raise OSError("copier did not start")
+    def call_after(callback: Callable[..., Any], *args: Any) -> None:
+        callback(*args)
+    from unclefarmer.gui.mainparts import updates
+    monkeypatch.setattr(updates.wx, "CallAfter", call_after)      # the worker's hand-back, run at once
+    monkeypatch.setattr(w, "Close", close, raising=False)
+    monkeypatch.setattr(updater, "start_apply", fail)
+    w._update_done(SimpleNamespace(Destroy=lambda: None), REL, "stage", None)
+    assert not closed and not w.destroyed and not w.updating
+    assert window["error"] and "copier did not start" in window["error"][0]
 
 
 @pytest.mark.usefixtures("source")

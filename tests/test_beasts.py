@@ -389,6 +389,31 @@ def test_on_foot_without_a_swift_beast_or_by_setting(monkeypatch: pytest.MonkeyP
     assert b.a.rows[0]["active"] is False
 
 
+def test_golden_pegasus_is_a_swift_beast_it_rides(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The game's texts on the bot's data were older than the Pegasus beasts: as an unknown kind
+    it was never ridden and never offered in the travel beast list."""
+    about = beasts.known()["Golden Pegasus"]
+    assert (about["kind"], about["speed"], about["level"], about["free"]) == ("swift", 3.2, 100, False)
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([{"id": 7, "name": "Golden Pegasus", "active": False, "usable_at": 0, "expires_at": 0}])
+    b._me = {"points": {"fusion": 100, "age_ms": 1}}
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert b.a.rows[0]["active"] is True
+    assert any("riding Golden Pegasus" in line for line in b.lines)
+
+
+def test_on_foot_names_a_beast_it_doesnt_know(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    b = Bot([{"id": 1, "name": "Brand New Beast", "active": False, "usable_at": 0, "expires_at": 0}])
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    said = [line for line in b.lines if line.startswith("on foot")]
+    assert len(said) == 1 and "Brand New Beast" in said[0] and "please report" in said[0]
+    assert b.a.rows[0]["active"] is False
+
+
 def test_on_foot_when_the_panel_cant_be_read(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = Clock()
     monkeypatch.setattr(CLOCK, "time", clock)

@@ -5,16 +5,19 @@ from __future__ import annotations
 import copy
 import os
 import shutil
-from collections.abc import Callable, Collection
+import threading
+from collections.abc import Callable, Collection, Mapping
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from . import filelock, jsonio as json, paths
+from . import applog, filelock, jsonio as json, paths
 from .i18n import _
 
 APP_DEFAULTS: dict[str, Any] = {
+    "chat_filters": [],        # visibility only: chat messages themselves are never saved
     "language": "en",
+    "language_prompted": False,
     "game_folder": "",
     "speak": True,            # announce important events through NVDA when it is running
     "last_run": "",           # what was selected to run last time
@@ -41,10 +44,13 @@ APP_DEFAULTS: dict[str, Any] = {
 # character can make the bot act on facts that are not true there.
 PROFILE_EXPORT_FORMAT = "unclefarmer-character-settings"
 PROFILE_EXPORT_VERSION = 1
-CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home"))
+CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home", "login_email"))
 
 # One per character. Everything the bot needs to know about how YOU play.
+LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next level" and keep_level take
+
 PROFILE_DEFAULTS: dict[str, Any] = {
+    "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
     # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
     # the one pointing at the monster it chose, then checks the game selected that monster.
@@ -74,6 +80,9 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "stop_on_drop_time": True,  # end the run when the day's drop time is down to drop_keep_minutes
     "drop_keep_minutes": 0,   # drop time to leave unused (minutes)
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
+    "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
+    "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
+    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -93,11 +102,15 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "update_shard_prices_before_farming": False,   # the game menu's Update shard prices, before a farming run starts
     "gather_before_farming": False,       # Tools, Gathering (as set there), before a farming run starts
     "store_items_before_farming": False,  # the game menu's Store items now, before a farming run starts
+    "restock_before_farming": False,      # the game menu's Restock now, before a farming run starts
     "sell_shards_after_farming": False,   # the game menu's Sell shards now, by itself after a farming run that finished
     "clean_bag_after_farming": False,     # the game menu's Clean the bag now, by itself after a farming run that finished
     "update_shard_prices_after_farming": False,    # the game menu's Update shard prices, after a farming run that finished
     "gather_after_farming": False,        # Tools, Gathering (as set there), after a farming run that finished
     "store_items_after_farming": False,   # the game menu's Store items now, after a farming run that finished
+    "restock_after_farming": False,       # the game menu's Restock now, after a farming run that finished
+    "lose_xp_before_farming": False,      # Tools, XP loser (as set there), before a farming run starts
+    "lose_xp_after_farming": False,       # Tools, XP loser (as set there), after a farming run that finished
     "hearthstone_item": "Hearthstone",   # used from the bag; see bag keys below
     "hearthstone_key": "",    # or a hotkey instead of the bag (empty = use the bag)
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
@@ -114,6 +127,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for
     "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
@@ -123,6 +137,10 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "nearest_monster": True,  # always fight the nearest monster (off: melee picks a calm one beside a pack)
     "fight_locked": False,    # fight monsters another player (or their pet) is already killing, while a hit can still land in time (off: leave the close calls too)
     "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
+    "corpse_skill": False,    # farming: the learned Draw Blood, Skinning or Cut Flesh on our kills (engine/corpses.py)
+    "corpse_keep_vitality": 0,  # ... until Vitality is down to this (0: until it runs out)
+    "xp_card_name": "",       # farming: keep this experience card running, that kind only ("": none) (engine/xpcard.py)
+    "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
     "pk_key": "b",            # cycles the PK mode
@@ -173,6 +191,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "use_airships": True,     # airships too (they may cost Arnebia)
     "vip": False,             # VIPs ride cable cars and airships free (the menu's free entry)
     "use_travel_items": False, # teleport stones / hearthstone from the bag: only when the player allows (off: never)
+    "use_teleport_skills": True,  # a Mage's / Elf's teleport skill (mana only, no item): when it saves walking
     "hearth_home": "",        # the square the hearthstone takes this character to (learned)
     "action_menu_key": "lctrl+enter",   # the game's Action menu (W_LOCAL_OPTION): has "leave" in instances
     # Restock: [{"item": "Large Red Potion", "min": 20, "stock": 200, "storage_first": true, "buy": true}]
@@ -180,6 +199,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     # below its min (and then everything short is topped up). Storehouse first (free), then the shop.
     "restock": [],
     "restock_check_every": 30,   # seconds between bag checks while farming
+    "login_email": "",          # the saved Mist World account this character was last seen on
 }
 
 # The shape of each file, checked by Pydantic when it is read (see _read below). A value of the
@@ -194,7 +214,10 @@ class AppSettings(BaseModel):
     """settings.json."""
     model_config = ConfigDict(extra="allow")
 
+    chat_filters: list[dict[str, Any]] = APP_DEFAULTS["chat_filters"]
+
     language: str = APP_DEFAULTS["language"]
+    language_prompted: bool = APP_DEFAULTS["language_prompted"]
     game_folder: str = APP_DEFAULTS["game_folder"]
     speak: bool = APP_DEFAULTS["speak"]
     last_run: str = APP_DEFAULTS["last_run"]
@@ -218,6 +241,8 @@ class AppSettings(BaseModel):
 class Profile(BaseModel):
     """profiles/<character>.json."""
     model_config = ConfigDict(extra="allow")
+
+    trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
 
     move_keys: dict[str, str] = PROFILE_DEFAULTS["move_keys"]
     target_keys: dict[str, str] = PROFILE_DEFAULTS["target_keys"]
@@ -246,6 +271,9 @@ class Profile(BaseModel):
     stop_on_drop_time: bool = PROFILE_DEFAULTS["stop_on_drop_time"]
     drop_keep_minutes: int = PROFILE_DEFAULTS["drop_keep_minutes"]
     drop_tail_seconds: int = PROFILE_DEFAULTS["drop_tail_seconds"]
+    stop_before_level: bool = PROFILE_DEFAULTS["stop_before_level"]
+    level_keep_xp: int = PROFILE_DEFAULTS["level_keep_xp"]
+    skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]
@@ -262,11 +290,15 @@ class Profile(BaseModel):
     update_shard_prices_before_farming: bool = PROFILE_DEFAULTS["update_shard_prices_before_farming"]
     gather_before_farming: bool = PROFILE_DEFAULTS["gather_before_farming"]
     store_items_before_farming: bool = PROFILE_DEFAULTS["store_items_before_farming"]
+    restock_before_farming: bool = PROFILE_DEFAULTS["restock_before_farming"]
     sell_shards_after_farming: bool = PROFILE_DEFAULTS["sell_shards_after_farming"]
     clean_bag_after_farming: bool = PROFILE_DEFAULTS["clean_bag_after_farming"]
     update_shard_prices_after_farming: bool = PROFILE_DEFAULTS["update_shard_prices_after_farming"]
     gather_after_farming: bool = PROFILE_DEFAULTS["gather_after_farming"]
     store_items_after_farming: bool = PROFILE_DEFAULTS["store_items_after_farming"]
+    restock_after_farming: bool = PROFILE_DEFAULTS["restock_after_farming"]
+    lose_xp_before_farming: bool = PROFILE_DEFAULTS["lose_xp_before_farming"]
+    lose_xp_after_farming: bool = PROFILE_DEFAULTS["lose_xp_after_farming"]
     hearthstone_item: str = PROFILE_DEFAULTS["hearthstone_item"]
     hearthstone_key: str = PROFILE_DEFAULTS["hearthstone_key"]
     bag_up: str = PROFILE_DEFAULTS["bag_up"]
@@ -294,6 +326,11 @@ class Profile(BaseModel):
     nearest_monster: bool = PROFILE_DEFAULTS["nearest_monster"]
     fight_locked: bool = PROFILE_DEFAULTS["fight_locked"]
     shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
+    corpse_skill: bool = PROFILE_DEFAULTS["corpse_skill"]
+    corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
+    xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
+    xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
+    open_chests: bool = PROFILE_DEFAULTS["open_chests"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
@@ -332,10 +369,12 @@ class Profile(BaseModel):
     use_airships: bool = PROFILE_DEFAULTS["use_airships"]
     vip: bool = PROFILE_DEFAULTS["vip"]
     use_travel_items: bool = PROFILE_DEFAULTS["use_travel_items"]
+    use_teleport_skills: bool = PROFILE_DEFAULTS["use_teleport_skills"]
     hearth_home: str = PROFILE_DEFAULTS["hearth_home"]
     action_menu_key: str = PROFILE_DEFAULTS["action_menu_key"]
     restock: list[Any] = PROFILE_DEFAULTS["restock"]
     restock_check_every: int = PROFILE_DEFAULTS["restock_check_every"]
+    login_email: str = PROFILE_DEFAULTS["login_email"]
 
 
 # The game's own order (game.i.l(int) and k(int), read 2026-10-01). The bot reads the current value
@@ -346,17 +385,48 @@ TARGET_MODES = ["all", "own side", "enemies", "NPCs"]
 
 
 _unreadable: set[str] = set()          # files that exist but could not be read: never overwrite them blindly
+# Every read and write of settings.json and of the profiles: the window, a run's thread, the sound
+# silencer and the scheduler all save them, and a save is a read of the file as it is now, the
+# changes, and the write, all under this one lock.
+_lock = threading.RLock()
+
+# _load()'s answer about the file: read, not there, broken (kept aside, defaults), or there but
+# unreadable right now (defaults that must never be saved over it)
+OK, MISSING, CORRUPT, UNREADABLE = "ok", "missing", "corrupt", "unreadable"
+_UNREADABLE_SAVE = "can't read %s, so nothing was saved over it - close whatever holds it and try again"
+
+
+class Saved(dict[str, Any]):
+    """Settings or a profile as read from the file. It remembers what was read (base), so a save
+    writes only the values its holder changed onto what the file holds by then: a run's profile
+    taken at its start, or the window's settings, can no longer put back a value somebody else
+    saved meanwhile (the player's edit while the bot ran, the sound list saved by the silencer)."""
+
+    def __init__(self, data: Mapping[str, Any]) -> None:
+        super().__init__(data)
+        self.base: dict[str, Any] = copy.deepcopy(dict(data))
+
+
+def set_not_saved(p: dict[str, Any], key: str, value: Any) -> None:
+    """Set a value that a later save of p leaves alone: a run's own override (an old agent's keys
+    off for this run), or a value already saved another way (update_app)."""
+    p[key] = value
+    if isinstance(p, Saved):
+        p.base[key] = copy.deepcopy(value)
+
+
+def _changes(data: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]] | None:
+    """(values the holder set, keys it removed) since it read data; None for a plain dict, which
+    is a whole new set of values (an import, the first start's choices)."""
+    base = data.base if isinstance(data, Saved) else None
+    if base is None:
+        return None
+    changed = {k: copy.deepcopy(v) for k, v in data.items() if k not in base or base[k] != v}
+    return changed, [k for k in base if k not in data]
 
 
 def _aside_name(path: str) -> str:
-    """<name>.corrupt, or .corrupt.2, .corrupt.3 ... when that is taken: a second broken file never
-    overwrites the copy of the first."""
-    name = path + ".corrupt"
-    n = 1
-    while os.path.exists(name):
-        n += 1
-        name = "%s.corrupt.%d" % (path, n)
-    return name
+    return json.aside_name(path)
 
 
 def _keep_aside(path: str) -> bool:
@@ -376,57 +446,110 @@ def _copy_aside(path: str) -> None:
         pass
 
 
-def _read(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> dict[str, Any]:
-    if os.path.exists(path):
-        try:
-            # utf-8-sig: a file saved by Notepad starts with a byte order mark, which the JSON
-            # reader takes for broken JSON - the player's settings went to .corrupt and defaults
-            with open(path, encoding="utf-8-sig") as f:
-                raw = json.load(f)
-            if not json.is_object(raw):
-                raise ValueError("not a JSON object")
-            # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
-            merged = {**copy.deepcopy(defaults), **raw}
-            try:
-                data = model.model_validate(merged).model_dump()
-            except ValidationError as e:
-                # One value of the wrong type cost the player the whole profile (live 2026-10-22: two
-                # pet settings typed as numbers held "auto", so every profile fell back to the
-                # defaults). Only those values go back to their defaults; a copy keeps the originals.
-                _copy_aside(path)
-                for err in e.errors():
-                    if err["loc"]:
-                        key = str(err["loc"][0])          # a top-level field name
-                        merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
-                data = model.model_validate(merged).model_dump()
-            _unreadable.discard(path)
-            return data
-        except ValueError:
-            # Unreadable: the defaults are used, and the next save would overwrite the player's
-            # file with them. Keep the broken one aside so nothing is lost for good.
-            _keep_aside(path)
-        except OSError:
-            # There but unreadable right now (another program holding it): defaults for this
-            # reading, and _write will not save over it until it can be moved aside.
-            if not _keep_aside(path):
-                _unreadable.add(path)
-    return copy.deepcopy(defaults)
+def _load(path: str, defaults: dict[str, Any], model: type[BaseModel]) -> tuple[dict[str, Any], str]:
+    """(the file's values, OK) - or the defaults and why (MISSING, CORRUPT, UNREADABLE).
 
-
-def _write(path: str, data: dict[str, Any]) -> None:
-    if path in _unreadable:
-        if not _keep_aside(path):
-            raise OSError("can't read or move aside %s - close whatever holds it and try again" % path)
+    Only broken JSON is kept aside as <name>.corrupt. A file that is there but can't be read (a
+    Windows sharing violation that outlasts jsonio's short wait, no permission) is left exactly as
+    it is: it once went to .corrupt as if broken, and the defaults were saved in its place."""
+    try:
+        # utf-8-sig: a file saved by Notepad starts with a byte order mark, which the JSON
+        # reader takes for broken JSON - the player's settings went to .corrupt and defaults
+        raw = json.read(path)
+        if not json.is_object(raw):
+            raise ValueError("not a JSON object")
+    except FileNotFoundError:
         _unreadable.discard(path)
-    json.save(path, data, indent=2)
+        return copy.deepcopy(defaults), MISSING
+    except ValueError:
+        # Broken: the defaults are used, and the next save writes over the player's file. Keep
+        # the broken one aside so nothing is lost for good (a copy, if it can't be moved).
+        if not _keep_aside(path):
+            _copy_aside(path)
+        _unreadable.discard(path)
+        return copy.deepcopy(defaults), CORRUPT
+    except OSError as e:
+        # There but unreadable right now: defaults for this reading only, and no save goes over
+        # the file until it has been read again (_write).
+        _unreadable.add(path)
+        applog.write("couldn't read %s, so it is left as it is: %s" % (path, e), "WARNING")
+        return copy.deepcopy(defaults), UNREADABLE
+    # Pydantic checks the shape; the defaults fill whatever the file doesn't carry.
+    merged = {**copy.deepcopy(defaults), **raw}
+    try:
+        data = model.model_validate(merged).model_dump()
+    except ValidationError as e:
+        # One value of the wrong type cost the player the whole profile (live 2026-10-22: two
+        # pet settings typed as numbers held "auto", so every profile fell back to the
+        # defaults). Only those values go back to their defaults; a copy keeps the originals.
+        _copy_aside(path)
+        for err in e.errors():
+            if err["loc"]:
+                key = str(err["loc"][0])          # a top-level field name
+                merged[key] = copy.deepcopy(defaults[key]) if key in defaults else None
+        data = model.model_validate(merged).model_dump()
+    _unreadable.discard(path)
+    return data, OK
+
+
+def _write(path: str, data: Mapping[str, Any], current: Callable[[], tuple[dict[str, Any], str]],
+           extra: Mapping[str, Any] | None = None) -> None:
+    """Save data to path. current() reads what the file holds now (as _load does).
+
+    A Saved puts only what its holder changed onto that; a plain dict is written whole. Either way
+    nothing is written while the file is there but unreadable: the holder may only have the
+    defaults, and the player's real values would be lost under them. When the file is gone or
+    broken by now, the holder's whole values are the best there is and are written whole."""
+    with _lock:
+        now, how = current()
+        if how == UNREADABLE:
+            raise OSError(_UNREADABLE_SAVE % path)
+        changes = _changes(data)
+        out: dict[str, Any]
+        if changes is None or how != OK:
+            out = copy.deepcopy(dict(data))
+        else:
+            changed, removed = changes
+            out = {k: v for k, v in now.items() if k not in removed}
+            out.update(changed)
+        out.update(extra or {})
+        json.save(path, out, indent=2)
+        if isinstance(data, Saved):
+            data.base = copy.deepcopy(dict(data))      # saved: from now on its changes are counted from here
+
+
+def _app_defaults() -> dict[str, Any]:
+    # An existing installation predates the first-launch prompt: keep its preferences.
+    return {**APP_DEFAULTS, "language_prompted": os.path.exists(paths.SETTINGS)}
+
+
+def _load_app() -> tuple[dict[str, Any], str]:
+    return _load(paths.SETTINGS, _app_defaults(), AppSettings)
 
 
 def load_app() -> dict[str, Any]:
-    return _read(paths.SETTINGS, APP_DEFAULTS, AppSettings)
+    with _lock:
+        return Saved(_load_app()[0])
 
 
 def save_app(data: dict[str, Any]) -> None:
-    _write(paths.SETTINGS, data)
+    """Save the app settings: a dict from load_app() saves only the values changed since it was read
+    (or last saved), onto what the file holds now - see Saved."""
+    _write(paths.SETTINGS, data, _load_app)
+
+
+def update_app(changes: Mapping[str, Any]) -> dict[str, Any]:
+    """Set these settings and only these, on settings.json as it is now, under the settings lock -
+    for a writer that holds no settings of its own (the sound silencer on its thread, a dialog that
+    changes one list). Returns the settings as saved. OSError when the file can't be read or
+    written; nothing is changed then."""
+    with _lock:
+        now, how = _load_app()
+        if how == UNREADABLE:
+            raise OSError(_UNREADABLE_SAVE % paths.SETTINGS)
+        now.update(copy.deepcopy(dict(changes)))
+        json.save(paths.SETTINGS, now, indent=2)
+        return Saved(now)
 
 
 _PROFILE_ID_SEPARATOR = "\x1f"
@@ -542,6 +665,29 @@ def last_run_of(app: dict[str, Any], character: str | None) -> str | None:
     return None if other_character else runs.get(name)
 
 
+def remember_character_account(character: str, email: str) -> bool:
+    """Record the saved account a live character belongs to, returning whether it changed."""
+    key = stable_key(character)
+    if not is_character_profile(key):
+        raise ValueError("the character has no game id")
+    profile = load_profile(key)
+    changed = profile.get("login_email") != email
+    if changed:
+        profile["login_email"] = email
+        save_profile(key, profile)
+    return changed
+
+
+def automatic_login_profiles() -> list[tuple[str, str]]:
+    """Identified profiles with a saved account learned from a live connected character."""
+    choices: list[tuple[str, str]] = []
+    for character in profiles():
+        email = load_profile(character).get("login_email")
+        if is_character_profile(character) and isinstance(email, str) and email:
+            choices.append((character, email))
+    return sorted(choices, key=lambda choice: profile_display(choice[0]).casefold())
+
+
 def profile_path(character: str) -> str:
     name, server, entity_id = _profile_parts(character)
     stem = paths.safe_name(name)
@@ -573,22 +719,36 @@ def profiles() -> list[str]:
     return sorted(found, key=lambda value: profile_display(value).casefold())
 
 
-def load_profile(character: str) -> dict[str, Any]:
-    """The character's profile; a new one from the defaults if there is none yet."""
+def _load_profile(character: str) -> tuple[dict[str, Any], str]:
+    """The character's profile as its file holds it now, upgraded, and how it read (see _load)."""
     path = profile_path(character)
     # On first use of an identified character, retain its old name-only choices.  The first save
     # writes a separate file, so the two same-name characters become independent without deleting
     # or changing the legacy file.
     name, server, entity_id = _profile_parts(character)
+    source = path
     if entity_id and not os.path.exists(path):
-        if server:
-            identified = profile_path(character_profile(name, entity_id))
-            if os.path.exists(identified):
-                return _upgrade(_read(identified, PROFILE_DEFAULTS, Profile))
+        identified = profile_path(character_profile(name, entity_id)) if server else None
         legacy = profile_path(name)
-        if os.path.exists(legacy):
-            return _upgrade(_read(legacy, PROFILE_DEFAULTS, Profile))
-    return _upgrade(_read(path, PROFILE_DEFAULTS, Profile))
+        if identified and os.path.exists(identified):
+            source = identified
+        elif os.path.exists(legacy):
+            source = legacy
+    data, how = _load(source, PROFILE_DEFAULTS, Profile)
+    return _upgrade(data), how
+
+
+def load_profile(character: str) -> dict[str, Any]:
+    """The character's profile; a new one from the defaults if there is none yet. Saving it writes
+    only what was changed in it since (see Saved)."""
+    with _lock:
+        return Saved(_load_profile(character)[0])
+
+
+def _upgrade_xp_card(p: dict[str, Any]) -> None:
+    """2026-11-12: the on/off "xp_card" (it used the strongest card in the bag) became the card the
+    player chooses (xp_card_name). The old tick named no card, so it carries no choice over."""
+    p.pop("xp_card", None)
 
 
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
@@ -711,14 +871,16 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_once("bag_really_full", "bag_full_at", (90, None), 100),
     _upgrade_dropped,
     _upgrade_class_reach,
+    _upgrade_xp_card,
 ]
 
 
 def save_profile(character: str, data: dict[str, Any]) -> None:
-    saved = copy.deepcopy(data)
-    if _profile_parts(character)[2]:
-        saved[_PROFILE_ID_KEY] = character
-    _write(profile_path(character), saved)
+    """Save a profile. One from load_profile() writes only the values changed in it since it was
+    read (or last saved), onto the file as it is now: a run that remembers its hearthstone square
+    keeps the player's edits made while it ran (see Saved)."""
+    extra = {_PROFILE_ID_KEY: character} if _profile_parts(character)[2] else None
+    _write(profile_path(character), data, lambda: _load_profile(character), extra)
 
 
 def has_profile(character: str) -> bool:
@@ -800,7 +962,7 @@ def import_profile(character: str, imported: dict[str, Any]) -> None:
     final write uses save_profile's normal atomic, locked-file-aware path.
     """
     current = load_profile(character)
-    profile = copy.deepcopy(imported)
+    profile = copy.deepcopy(dict(imported))     # a plain dict: an import replaces, it isn't merged
     for key in CHARACTER_SPECIFIC_PROFILE_KEYS:
         if key in current:
             profile[key] = current[key]

@@ -1,4 +1,4 @@
-"""Scheduled runs: a plan or script started for a character at a set time - once, every day, or
+"""Scheduled runs: a plan, script, tool or trigger sequence for a character - once, every day, or
 on chosen days of the week.
 
 Kept in schedules.json beside settings.json: the player's own, never in a release (the updater
@@ -25,6 +25,7 @@ The rules:
 
 from __future__ import annotations
 
+import copy
 import datetime as dt
 import os
 import secrets
@@ -197,10 +198,15 @@ def clean(raw: object) -> Schedule | None:
 
 def load(path: str = SCHEDULES) -> list[Schedule]:
     try:
-        with open(path, encoding="utf-8-sig") as f:
-            raw: object = json.load(f)
+        return read(path)
     except (OSError, ValueError):
         return []
+
+
+def read(path: str = SCHEDULES) -> list[Schedule]:
+    """The schedules in the file ([] when there is none yet). OSError when it is there but can't be
+    read, ValueError when it is broken: the Scheduler must not save over those as if empty."""
+    raw: object = json.read(path, {})
     rows: list[Any] = raw.get("schedules", []) if json.is_object(raw) else []
     out = [s for s in (clean(r) for r in rows) if s is not None]
     return out
@@ -235,13 +241,62 @@ class Scheduler:
 
     def __init__(self, path: str = SCHEDULES) -> None:
         self.path = path
-        self.items = load(path)
         self.lock = threading.RLock()
         self.waiting: dict[str, str] = {}        # schedule id -> why its due occurrence is waiting (said once)
+        self.dirty = False      # what happened is only in memory: the last save after a start failed
+        self.unread: OSError | None = None      # the file was there but couldn't be read at the start
+        try:
+            self.items = read(path)
+        except ValueError:
+            json.copy_aside(path)                # broken: kept as .corrupt; the next save starts it again
+            self.items = []
+        except OSError as e:
+            self.items = []
+            self.unread = e
 
     def save(self) -> None:
+        """Every schedule into the file. While the file couldn't be read at the start it is read
+        again first and what was added since goes onto it; OSError (and nothing written) while
+        it still can't be: an empty list saved there would lose every schedule the player made."""
         with self.lock:
+            if self.unread is not None:
+                self._reread()                   # OSError again: nothing is written
             save(self.items, self.path)
+            self.dirty = False
+
+    def _reread(self) -> None:
+        """The file that couldn't be read at the start, read now: its schedules, then any made
+        since. OSError while it still can't be read."""
+        try:
+            on_file = read(self.path)
+        except ValueError:
+            json.copy_aside(self.path)
+            on_file = []
+        ours = {s["id"] for s in on_file}
+        self.items = on_file + [s for s in self.items if s["id"] not in ours]
+        self.unread = None
+
+    def _save_or_undo(self, s: Schedule, before: Schedule, waiting: dict[str, str]) -> None:
+        """Save; when that fails, put s and the waiting notes back as they were and raise. An
+        occurrence stamped handled in memory but not on disk was taken for done at the next tick,
+        so a failed save meant the scheduled run never started and no history said so."""
+        try:
+            self.save()
+        except BaseException:
+            s.clear()
+            s.update(before)
+            self.waiting.clear()
+            self.waiting.update(waiting)
+            raise
+
+    def _save_after_start(self) -> None:
+        """Save what a start did. It has happened, so memory keeps it whatever the file says: a
+        failed save leaves it dirty for the next tick to write first, and is raised."""
+        try:
+            self.save()
+        except BaseException:
+            self.dirty = True
+            raise
 
     def get(self, sid: str) -> Schedule | None:
         return next((s for s in self.items if s["id"] == sid), None)
@@ -317,16 +372,27 @@ class Scheduler:
         start, a miss, a skip, an error, and once for each occurrence that has to wait."""
         said: list[tuple[Schedule, str]] = []
         with self.lock:
+            if self.unread is not None:
+                try:
+                    self._reread()      # the schedules on file count once it can be read
+                except OSError:
+                    pass                # nothing can start meanwhile: a start's save would fail (and say so)
+            if self.dirty:
+                self.save()       # what the last tick couldn't write goes first; nothing starts until it can
             for s in list(self.items):
                 if s.get("enabled"):
                     said += self._tick_one(s, now, start)
         return said
 
     def _tick_one(self, s: Schedule, now: dt.datetime, start: Starter) -> list[tuple[Schedule, str]]:
+        """One schedule's due occurrences. Each change is saved before anything acts on it, and a
+        failed save undoes the change (_save_or_undo), so the next tick tries that occurrence
+        again: it is never taken for done without being written down, and never started twice."""
+        before, waiting = copy.deepcopy(s), dict(self.waiting)
         handled = unstamp(s.get("handled"))
         if handled is None:                       # a hand-written entry: count from now
             s["handled"] = stamp(now)
-            self.save()
+            self._save_or_undo(s, before, waiting)
             return []
         due_all = list(occurrences(s, handled, now))
         if not due_all:
@@ -349,20 +415,21 @@ class Scheduler:
                               outcome=_(OUTCOMES[outcome]), why=detail)))
             if s.get("repeat") == ONCE:
                 s["enabled"] = False
-            self.save()
+            self._save_or_undo(s, before, waiting)
             if older[-1] == due:
                 return told
-        # mark it handled before starting, so nothing can start it twice
-        before = s["handled"]
+            before, waiting = copy.deepcopy(s), dict(self.waiting)
+        # mark it handled before starting, so nothing can start it twice: never started unless saved
+        was = s["handled"]
         s["handled"] = stamp(due)
-        self.save()
+        self._save_or_undo(s, before, waiting)
         try:
             outcome, detail = start(s, due)
         except Exception as e:     # a start that blew up is that occurrence's error, not the app's end
             outcome, detail = FAILED, repr(e)
         if outcome == WAIT:
-            s["handled"] = before
-            self.save()
+            s["handled"] = was
+            self._save_after_start()
             if self.waiting.get(s["id"]) != detail:
                 self.waiting[s["id"]] = detail
                 told.append((s, _("{what} for {who} is waiting: {why}", what=item_of(s)[1], who=s["character"],
@@ -372,7 +439,7 @@ class Scheduler:
         self.note(s, due, STARTED if outcome == STARTED else FAILED, detail, now)
         if s.get("repeat") == ONCE:
             s["enabled"] = False
-        self.save()
+        self._save_after_start()
         if outcome == STARTED:
             told.append((s, _("Scheduled: starting {what} for {who}", what=item_of(s)[1], who=s["character"])))
         else:

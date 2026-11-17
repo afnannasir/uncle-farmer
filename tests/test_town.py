@@ -587,7 +587,7 @@ def test_open_section_walks_in(monkeypatch: pytest.MonkeyPatch) -> None:
     chosen: list[str] = []
     b.dialog = lambda: {"open": 1, "top": menu(opt("item storage"))}
     b.choose = lambda pattern: chosen.append(pattern) or {"text": "entry"}
-    b.wait_dialog = lambda seconds=3.0, want_open=True: {"open": 1}
+    b.wait_menu_change = lambda before, seconds=0.4, depth=1: {"open": 1, "top": menu(opt("1; 50 Potion"))}
     assert town.open_section(as_bot(b), "item storage") is True
     assert chosen == ["item storage"]
 
@@ -596,6 +596,17 @@ def test_open_section_without_a_dialog() -> None:
     b = TownBot()
     b.dialog = lambda: {"open": 0, "top": None}
     assert town.open_section(as_bot(b), "x") is False
+
+
+@pytest.mark.parametrize("returned_depth", [0, 1])
+def test_open_section_rejects_closed_or_underlying_menus(returned_depth: int) -> None:
+    b = TownBot()
+    b.dialog = lambda: {"open": 2, "top": menu(opt("item storage"))}
+    b.choose = lambda pattern: {"text": "entry"}
+    # The result exposes fewer menus than the section we selected.
+    b.wait_menu_change = lambda before, seconds=0.4, depth=2: {
+        "open": returned_depth, "top": menu(opt("other"))}
+    assert town.open_section(as_bot(b), "item storage") is False
 
 
 def test_open_section_when_the_entry_is_absent() -> None:
@@ -840,10 +851,11 @@ def test_restock_storage_then_buy_for_the_rest(monkeypatch: pytest.MonkeyPatch) 
     b = TownBot(bag=[{"name": "Potion", "count": 0}])
     rules = [{"item": "Potion", "min": 5, "stock": 10, "source": "both", "on": True}]
     calls: list[tuple[str, str, int]] = []
-    monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: calls.append(("withdraw", item, n)) or 4))
+    stored = iter([4, 0])
+    monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: calls.append(("withdraw", item, n)) or next(stored, 0)))
     monkeypatch.setattr(town, "buy", stand_in(town.buy, lambda b, item, n: calls.append(("buy", item, n)) or 6))
     assert town.restock(as_bot(b), rules) is True
-    assert calls == [("withdraw", "Potion", 10), ("buy", "Potion", 6)]
+    assert calls == [("withdraw", "Potion", 10), ("withdraw", "Potion", 6), ("buy", "Potion", 6)]
 
 
 def test_restock_storage_only_never_buys(monkeypatch: pytest.MonkeyPatch) -> None:

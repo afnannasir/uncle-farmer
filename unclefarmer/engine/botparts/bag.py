@@ -15,6 +15,7 @@ from .base import (CONFIRM, Stopped, agent_strike)
 from .parts import as_bot, Parts
 
 DIRECT_DISCARD_AGENT = 57
+BAG_SETTLE = 3.0      # seconds the load may take to drop on the sheet after an on-map throw
 
 
 class BagMixin(Parts):
@@ -257,6 +258,7 @@ class BagMixin(Parts):
         if not sheet:
             return False
         self.drop_time_check(sheet)
+        self.level_check(sheet)
         if not sheet.get("maxload") or sheet["maxload"] <= 0 or sheet.get("load", -1) < 0:
             return False
         full = self.p.get("bag_full_at", 100)
@@ -265,10 +267,21 @@ class BagMixin(Parts):
         if share < full and not self.bag_stalled(sheet, full):
             return False
         if self.throw_by_rules():
-            sheet = self.refresh_sheet(force=True) or sheet
-            if sheet.get("maxload") and 100.0 * sheet.get("load", 0) / sheet["maxload"] < full:
-                return False
-            share = 100.0 * sheet["load"] / sheet["maxload"]
+            # Item removal can arrive before the sheet's new load. Give it time to settle
+            # before deciding that the remaining items require a town trip: up to 12 readings
+            # within BAG_SETTLE seconds (a reading by the sheet key alone takes up to 3 s).
+            end = self.clock.time() + BAG_SETTLE
+            for _attempt in range(12):
+                fresh = self.refresh_sheet(force=True)
+                if fresh and fresh.get("maxload", 0) > 0 and fresh.get("load", -1) >= 0:
+                    sheet = fresh
+                share = 100.0 * sheet["load"] / sheet["maxload"]
+                self.load_share = share
+                if share < full:
+                    return False
+                if self.clock.time() >= end:
+                    break
+                self.sleep(0.25)
         what = self.p.get("when_bag_full", "stop")
         if what == "nothing":
             if not self.said_bag_full:
