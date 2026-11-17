@@ -38,6 +38,9 @@ class ReadingMixin(Parts):
     # Agent errors that only mean the game is in the middle of something (a map loading, a list
     # changing under the reader): worth a few seconds' patience before the run is given up.
     TRANSIENT = ("busy:", "noplayer:", "noworld: entity map")
+    CONNECTION_GONE = ("noplayer:", "noworld:")
+    RECONNECT_GRACE = 30.0
+    RECONNECT_RETRY = 10.0
 
     PHASES = ("search", "approach", "select", "fight", "rest", "town")
 
@@ -267,11 +270,21 @@ class ReadingMixin(Parts):
 
     def _read(self, line: str, good: Callable[[dict[str, Any]], object]) -> dict[str, Any]:
         began = self.clock.time()
+        next_reconnect = began + self.RECONNECT_GRACE
         while True:
             r = self._game.json(line)
             if good(r):
                 return r
             why = (r.get("error") if jsonio.is_object(r) else None) or "?"
+            if why.startswith(self.CONNECTION_GONE) and self.clock.time() > next_reconnect:
+                # The agent refuses while the game's connection is still up (the server only took
+                # the character away for a while), so a refused try is tried again a little later.
+                reconnect = getattr(self, "reconnect", None)
+                next_reconnect = self.clock.time() + self.RECONNECT_RETRY
+                if reconnect is not None and reconnect():
+                    began = self.clock.time()
+                    next_reconnect = began + self.RECONNECT_GRACE
+                    continue
             if not why.startswith(self.TRANSIENT) or self.clock.time() > began + self._patience(why):
                 raise Stopped(_("the game can't be read: {why}", why=why), final=True)
             self.sleep(0.25)

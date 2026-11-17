@@ -79,6 +79,31 @@ final class AutomaticLogin {
                 + Protocol.jsonEscape(status) + "\"}";
     }
 
+    /** Dismisses a connection-error screen, then invokes the selected account's native Login path. */
+    static String reconnect(final String idText) {
+        final int id;
+        try { id = Integer.parseInt(idText); } catch (RuntimeException ignored) { return "{\"ok\":false,\"error\":\"invalid character id\"}"; }
+        final String connected = connectedAccount();
+        final String email = connected == null ? selectedAccount() : connected;
+        if (id <= 0 || email == null) return "{\"ok\":false,\"error\":\"no saved account selected\"}";
+        synchronized (LOCK) {
+            if (running) return "{\"ok\":false,\"error\":\"automatic login is already running\"}";
+            // A character the server took away for a while (op 33, back with op 32) leaves the
+            // connection up: a second login on top of it would press Enter in the world and open
+            // another connection beside the live one. Only a dropped connection is reconnected.
+            if (connectionAlive()) return "{\"ok\":false,\"error\":\"the game is still connected\"}";
+            running = true; status = "dismissing connection error";
+            new Thread(new Runnable() { @Override public void run() { try {
+                Keys.tap("enter", 60L); Thread.sleep(300L); status = "logging in";
+                String problem = startSavedAccount(email);
+                status = problem == null && waitForCharacter(id, System.currentTimeMillis() + WORLD_TIMEOUT_MILLIS)
+                        ? "ready" : (problem == null ? "timed out loading character" : problem);
+            } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); status = "cancelled"; }
+              finally { running = false; } } }, "Uncle Farmer reconnect").start();
+        }
+        return "{\"ok\":true,\"id\":" + id + "}";
+    }
+
     private static void waitForPicker(final int id) {
         Thread worker = new Thread(new Runnable() {
             @Override public void run() {
@@ -217,6 +242,17 @@ final class AutomaticLogin {
         Object connection = companion.getConstructor().newInstance();
         companion.getMethod("a", companion).invoke(null, connection);
         companion.getMethod("a").invoke(null);
+    }
+
+    /** True while the game's current connection (game.N's channel) is open. */
+    static boolean connectionAlive() {
+        try {
+            Object client = Class.forName("game.N").getMethod("a").invoke(null);
+            Object channel = field(client, "c");
+            return channel != null && DeadLinks.active(channel);
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     private static String connectedAccount() {
