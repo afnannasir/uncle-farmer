@@ -7,15 +7,14 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import math
-import re
 from collections.abc import Sequence
 from typing import Any
 
 from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
-from .. import beasts, bosses, combat, pets, teamheal
-from .base import (MOVE_SHOT_REACH, NPC_HP, STOPPING, Respawned, Stopped, agent_strike, note_failure,
+from .. import beasts, combat, pets, picking, teamheal
+from .base import (MOVE_SHOT_REACH, STOPPING, Respawned, Stopped, agent_strike, note_failure,
                    skill_things, snap_map)
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -89,7 +88,6 @@ class FightingMixin(Parts):
     FOLLOW_TRIES = 3      # stalls in a row, never reaching the monster, before we walk up ourselves
     DOOMED_SKIP = 10.0    # longest a monster someone else is about to kill is left alone
     LEFT_OUT_EVERY = 60.0   # seconds between two "none to fight" lines (explain_left_out)
-    NO_WAY_KEPT = 5       # places of monsters with no way to walk to that a search record keeps
     FIRST_HIT = 0.5       # seconds from being in reach to our first hit landing (press, cast, the game's answer)
     UNSELECTED_SKIP = 10.0  # seconds a monster the target keys wouldn't select is left alone...
     UNSELECTED_MAX = 300.0  # ... three times longer each time again, up to this
@@ -570,94 +568,40 @@ class FightingMixin(Parts):
 
     def targets(self, snap: dict[str, Any], area: Sequence[float] | None = None, only: str | None = None, skip: str | None = None, avoid_rects: Sequence[tuple[float, float, float, float]] = (), limit: float | None = None) -> list[dict[str, Any]]:
         """The monsters to fight, nearest first by walking distance - those attacking us before all
-        others. limit: leave out any further than that many steps (not those attacking us)."""
+        others. limit: leave out any further than that many steps (not those attacking us). The
+        choice itself is picking.choose; this gathers what the bot holds against the monsters in
+        sight and keeps what the choice found (why monsters were left, the walks)."""
         now = self.clock.time()
         me: dict[str, Any] = snap["self"]
         hitting = self.attackers()
-        out: list[dict[str, Any]] = []
-        steps: dict[int, float] = {}
-        tagged = self.kill_tracker.tagged
         rng = self.reach()
-        near_tag = rng + 10
         self.watch_hp(snap)
-        # bosses are never targets, nor is anything close to one: fighting there pulls the boss in
-        keep = self.p.get("boss_distance", 40)
-        boss_list = bosses.in_sight(snap) if keep else []
-        entities: list[dict[str, Any]] = snap["entities"]
-        size = atlas.maps().get(snap_map(snap), {})
-        left: dict[str, int] = {}      # why monsters in sight were left out -> how many
-        no_way: list[list[float]] = []   # where the first few with no way to walk to stood
-        for e in entities:
-            if e["kind"] != "monster" or "hp" not in e or e["hp"] <= 0:
-                continue
-            if not e.get("name") or e["maxhp"] <= 1 or not self._placed(e, size):
-                continue        # drops and corpses; or seen with no position we can walk to or aim at
-            self.mob_names[e["id"]] = e["name"]
-            if e["maxhp"] >= NPC_HP or e["name"].strip().lower() in skill_things():
-                continue        # a town NPC; our own (or another player's) trap or totem
-            why = self._left_out(snap, e, hitting, area, only, skip, avoid_rects, boss_list, keep, now)
-            if why is None:
-                hitting_us = e["id"] in hitting
-                steps[e["id"]] = self.walk_dist(snap, e, None if hitting_us else limit)
-                if steps[e["id"]] == math.inf and not hitting_us:
-                    # no walkable way to it, or further than the chase: never picked, whatever the patrol mode
-                    why = "far" if limit is not None and self.walk_dist(snap, e) < math.inf else "no way"
-                elif not hitting_us and self.doomed(e, me, steps[e["id"]], rng):
-                    why = "doomed"  # it will be dead before we get there
-            if why is not None:
-                left[why] = left.get(why, 0) + 1
-                if why == "no way" and len(no_way) < self.NO_WAY_KEPT:
-                    no_way.append([round(e["x"], 1), round(e["y"], 1)])
-                continue
-            out.append(e)
-        self.left_out = left           # for the farm loop's "nothing to fight" line (explain_left_out)
-        self.no_way_at = no_way        # for the search walk's field record (sight_note)
-        self.walk_steps = steps        # for note_pick: the walk the farm loop's choice would take
-        # Those attacking us first; then those we have already hurt, close by: our hits make them
-        # partly ours, and finishing them gets the kill instead of leaving it to the next player.
-        out.sort(key=lambda e: (e["id"] not in hitting,
-                                not (tagged(e["id"]) and math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= near_tag),
-                                steps[e["id"]], math.hypot(e["x"] - me["x"], e["y"] - me["y"])))
+        monsters = [e for e in snap["entities"] if e.get("kind") == "monster" and isinstance(e.get("id"), int)]
+        unselectable: dict[int, Any] = getattr(self, "unselectable", {})
+        held = [e for e in monsters if e["id"] in unselectable]
+        notes = picking.Notes(
+            now=now, hitting=frozenset(hitting), tagged=frozenset(self.kill_tracker.hit),
+            skip=self.skip, kinds=self.skip_names, walk_failed=getattr(self, "walk_failed", {}),
+            # (untrackable drops the note of one that has moved off the spot it was refused on)
+            refused_again=frozenset(e["id"] for e in held if e["id"] in hitting and self._refused_again(e, now)),
+            untrackable=frozenset(e["id"] for e in held if self.untrackable(e, now)),
+            reach=rng)
+        rules = picking.Rules(area=area, only=only, skip=skip, avoid_rects=avoid_rects, limit=limit,
+                              boss_keep=self.p.get("boss_distance", 40))
+        got = picking.choose(snap, rules, notes,
+                             walk=lambda e, lim: self.walk_dist(snap, e, lim),
+                             doomed=lambda e, steps: self.doomed(e, me, steps, rng),
+                             not_monsters=skill_things())
+        for mid, kind in got.forgiven:
+            self.skip.pop(mid, None)
+            self.skip_names.pop(kind, None)
+        self.mob_names.update(got.names)
+        self.left_out = got.left           # for the farm loop's "nothing to fight" line (explain_left_out)
+        self.no_way_at = got.no_way        # for the search walk's field record (sight_note)
+        self.walk_steps = got.steps        # for note_pick: the walk the farm loop's choice would take
         if len(self.mob_names) > 2000:
-            self.mob_names = {e["id"]: e["name"] for e in out}
-        return out
-
-    def _left_out(self, snap: dict[str, Any], e: dict[str, Any], hitting: set[int], area: Sequence[float] | None,
-                  only: str | None, skip: str | None, avoid_rects: Sequence[tuple[float, float, float, float]],
-                  boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
-        """Why targets() leaves this monster out before any walking distance is worked out (a key
-        of LEFT_OUT), or None when it may be a target."""
-        if e["id"] in hitting and self._refused_again(e, now):
-            # Striking us from a spot where the target keys have refused it twice (Machining
-            # Plant's Hay Cutter blades): trying again at once fails at once, and the walk's fight
-            # back would spin on it many times a second. It is tried again when its growing wait
-            # runs out. A single refusal still gets its one quick retry (below).
-            return "skip"
-        if e["id"] in hitting and getattr(self, "walk_failed", {}).get(e["id"], 0) <= now:
-            # It is hitting us or our pet: what the bot held against it (or its kind) before is
-            # stale. A monster that keeps striking us could be ignored for up to two minutes while
-            # it did (a "took no damage" skip, or an unselectable note from where it stood): the
-            # one thing a fight must never do is stand there and take it. A current unselectable
-            # note is the exception (above), so a monster the game won't take is still given up
-            # with its growing wait; the player's own filters (only/skip names, areas) apply below. A walk to it
-            # that got stuck keeps its skip: one shooting at us from where we can't walk would
-            # be picked again at once (attackers come first), stuck again at once, and the farm
-            # loop would spin on it instead of fighting anything else.
-            self.skip.pop(e["id"], None)
-            self.skip_names.pop((snap_map(snap), e["name"].strip().lower()), None)
-        elif self.untrackable(e, now) or self.skip.get(e["id"], 0) > now:
-            return "skip"
-        elif self.skip_names.get((snap_map(snap), e["name"].strip().lower()), 0) > now:
-            return "kind"       # its kind took no damage and never attacked: a critter, not a monster
-        if (only and not re.search(only, e["name"], re.I)) or (skip and re.search(skip, e["name"], re.I)):
-            return "names"
-        if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, keep)):
-            return "boss"
-        if area and e["id"] not in hitting and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
-            return "area"
-        if any(r[0] <= e["x"] <= r[2] and r[1] <= e["y"] <= r[3] for r in avoid_rects):
-            return "avoid"
-        return None
+            self.mob_names = {e["id"]: e["name"] for e in got.targets}
+        return got.targets
 
     def explain_left_out(self, map_id: int | None = None) -> None:
         """The farm loop found nothing to fight: when monsters were in sight, say how many were left
@@ -690,18 +634,6 @@ class FightingMixin(Parts):
         if where:
             note["no_way"] = [list(xy) for xy in where]
         return note
-
-    @staticmethod
-    def _placed(e: dict[str, Any], size: dict[str, Any]) -> bool:
-        """The monster has a real position: numbers, finite, on the map (when its size is known).
-        A reading mid-spawn or mid-despawn can carry none, and walking or aiming at it fails."""
-        x, y = e.get("x"), e.get("y")
-        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)) or isinstance(x, bool):
-            return False
-        if not (math.isfinite(x) and math.isfinite(y)):
-            return False
-        w, h = size.get("w"), size.get("h")
-        return not (isinstance(w, int) and isinstance(h, int)) or (0 <= x <= w + 1 and 0 <= y <= h + 1)
 
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         """The monster to take on next: the nearest one (targets() sorts them nearest first,
@@ -792,7 +724,7 @@ class FightingMixin(Parts):
         """Leave this monster alone for a while and say why: the one way a fight holds anything
         against a monster's id. why is a key of NO_KILL; seconds is LEFT_FOR's for it unless
         given. Until when (the clock's time). targets() leaves it out till then ("skip") - unless
-        it attacks us, dies or we change maps (_left_out, _forget_the_dead, forget_the_map)."""
+        it attacks us, dies or we change maps (picking.left_out, _forget_the_dead, forget_the_map)."""
         until = self.clock.time() + (LEFT_FOR[why] if seconds is None else seconds)
         self.skip[mid] = until
         self.ended(why)
@@ -1007,7 +939,7 @@ class FightingMixin(Parts):
         return m
 
     def _walk_failed(self, mid: int) -> None:
-        """The walk up to it got stuck: left alone 120 s, even while it attacks us (_left_out)."""
+        """The walk up to it got stuck: left alone 120 s, even while it attacks us (picking.left_out)."""
         until = self.leave(mid, "stuck")
         rows: dict[int, float] = self.__dict__.setdefault("walk_failed", {})
         rows[mid] = until

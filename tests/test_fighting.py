@@ -24,6 +24,7 @@ import pytest
 
 from unclefarmer.clock import CLOCK, StopFlag, Waitable
 from unclefarmer import paths, settings
+from unclefarmer.engine import picking
 from unclefarmer.engine.botparts import fighting
 from unclefarmer.engine.botparts.base import NPC_HP, Respawned, Stopped
 from unclefarmer.engine.botparts.fighting import FightingMixin
@@ -1225,7 +1226,7 @@ def test_only_the_first_few_places_with_no_way_are_kept(clock: Clock) -> None:
     b.walk_dist = lambda snap, e, limit=None: math.inf
     assert b.targets(b.snap()) == []
     note = b.sight_note()
-    assert note["left"] == {"no way": 8} and len(note["no_way"]) == b.NO_WAY_KEPT
+    assert note["left"] == {"no way": 8} and len(note["no_way"]) == picking.NO_WAY_KEPT
 
 
 def test_burst_true_when_the_game_confirms(clock: Clock) -> None:
