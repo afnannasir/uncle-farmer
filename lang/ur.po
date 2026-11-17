@@ -6875,9 +6875,10 @@ msgstr "pet"
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr "pet ki amiability {n} hai lekin baste mein {item} nahi"
 
-msgid "the plan's character has no saved account. Log in to it once first."
+msgid ""
+"the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
-"Plan ke kirdar ka koi mahfooz account nahi. Pehle ek martaba is mein login karein."
+"Plan ke kirdar ka koi mahfooz account ya server nahi. Pehle ek martaba is mein login karein."
 
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
@@ -8042,6 +8043,10 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
+
+#~ msgid "the plan's character has no saved account. Log in to it once first."
+#~ msgstr ""
+#~ "Plan ke kirdar ka koi mahfooz account nahi. Pehle ek martaba is mein login karein."
 
 #~ msgid ""
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."

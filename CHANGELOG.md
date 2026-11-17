@@ -25,7 +25,7 @@
   biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
   landed on it" and the results came out short. In one night of a character with such skills, 117
   kills were missed this way. The game reports these deaths in a message of their own, which the
-  agent now reads (agent 69). Close the game and start it again to load the new agent.
+  agent now reads (agent 70). Close the game and start it again to load the new agent.
 
 **The log says why a monster was left**
 
@@ -53,6 +53,12 @@
   fights that one at once. It used to hand the choice back, and when the first monster was the
   shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
   again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
+
+**Automatic login picks the character's server**
+
+- A scheduled script's `login` now selects the saved character's server (S1 or S2) before signing
+  in with the saved account, so a character on the other server is found. `login "Name - S2"`
+  works as `login "Name - S1"` does. The game has to be started again to load the new agent (69).
 
 **The fusion beast after a death**
 

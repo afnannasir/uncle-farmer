@@ -412,6 +412,8 @@ public final class AgentTests {
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
         check(StateServer.handle("autologin account@example.com bad", armed, mine, guarded).contains("invalid character id"),
                 "automatic login validates the character id");
+        check(StateServer.handle("autologin account@example.com 123 S3", armed, mine, guarded).contains("invalid saved server"),
+                "automatic login validates the saved server");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "error: the attack page can't be read",
                 "slot without a game says so instead of throwing");
         eq(StateServer.handle("slot 11", armed, mine, guarded), "error: slot 1-10", "a key number, not a page-2 slot");
