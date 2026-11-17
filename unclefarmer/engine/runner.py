@@ -40,7 +40,7 @@ AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the gam
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
 AGENT_LOGIN = 69    # from here automatic login also selects the profile's saved server
-AGENT_RECONNECT = 69 # the current agent also exposes the native connection-error recovery command
+AGENT_RECONNECT = 70 # from here `reconnect <id>` logs a dropped game back in with its saved account
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""

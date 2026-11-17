@@ -456,6 +456,39 @@ def test_read_gives_up_on_a_missing_character_in_the_end(clock: Clock) -> None:
     assert 1060.0 < clock.now < 1062.0
 
 
+def test_read_reconnects_a_dropped_game_and_keeps_reading(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    tries: list[float] = []
+
+    def reconnect() -> bool:
+        tries.append(clock.now)
+        b.link.answers["mem self"] = {"id": 4242}    # the character's world is back
+        return True
+
+    b.reconnect = reconnect
+    b.link.answers["mem self"] = {"error": "noplayer: id 4242 not in the entity map"}
+    assert b._read("mem self", lambda s: "error" not in s) == {"id": 4242}
+    assert len(tries) == 1 and 1030.0 < tries[0] < 1031.0
+
+
+def test_read_tries_a_refused_reconnect_again_then_gives_up(clock: Clock) -> None:
+    # the agent refuses while the game is still connected (the server only took the character away)
+    b = Read()
+    ticking(b, clock)
+    tries: list[float] = []
+
+    def refused() -> bool:
+        tries.append(clock.now)
+        return False
+
+    b.reconnect = refused
+    b.link.answers["mem self"] = {"error": "noplayer: id 4242 not in the entity map"}
+    with pytest.raises(Stopped):
+        b._read("mem self", lambda s: "error" not in s)
+    assert len(tries) == 3 and 1030.0 < tries[0] < 1031.0       # about every 10 s until the 60 s wait ends
+
+
 def test_read_gives_up_soon_when_nobody_is_logged_in(clock: Clock) -> None:
     b = Read()
     ticking(b, clock)
