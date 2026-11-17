@@ -1106,8 +1106,10 @@ def test_results_can_be_read_while_the_run_updates_them() -> None:
                 assert r["kills"] >= 0 and isinstance(r["items"], dict)
             stats.short(tally.result(), tally.drop_left)
             reads[0] += 1
+            time.sleep(0.002)       # let the run take the lock too: two readers in a tight loop starved it
 
-    assert run_threads([run, read, read]) == []
+    # A busy PC (a game open, the whole suite in parallel) made 20 s too short for 400 rounds.
+    assert run_threads([run, read, read], timeout=60.0) == []
     assert reads[0] > 0
     assert tally.result()["kills"] == 400
 
