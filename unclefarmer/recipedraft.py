@@ -10,7 +10,7 @@ spoken lines with times in them (IN op=60), the door sounds (IN op=44) and the e
 walked (thinned to its turns), the talks and choices, and where we left from. A person reads the
 draft and finishes the recipe; nothing here guesses a menu.
 
-    uv run python -m unclefarmer.recipedraft <packets.log[.gz]> [--from HH:MM[:SS]] [--to HH:MM[:SS]]
+    uv run python -m unclefarmer.recipedraft <packet log (.log or .log.gz)> [--from HH:MM[:SS]] [--to HH:MM[:SS]]
         [--json out.json]
 
 The packet log's first lines hold the login: they are never read into the draft.
