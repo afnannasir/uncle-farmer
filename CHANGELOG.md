@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**Skills outside the global cooldown are used in every fight**
+
+- Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
+  (Priest, 20% less damage) and Summon Spirit (Witcher, 30% less damage) are "not affected by
+  global CD": pressing one costs no attack. Before, the bot kept the first two for a big monster or
+  a pack and the last two for emergencies, so they were never used in any recorded night.
+- Now Cold Winter and Scorch go up in every fight whenever they are ready, and Concentrated Will
+  and Summon Spirit whenever a monster is hitting you and you have lost some HP (under 90%). They
+  are pressed in the wait after each attack, so the attacks keep their pace. A skill set to Never
+  or to emergencies only in Character settings is left as you set it.
+- If you have learned Cold Winter or Scorch but put it on no key, the log now says so. The bot can
+  only press skills that are on a key.
+
 **Channelled skills wait for a gap between the monsters' swings**
 
 - Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the

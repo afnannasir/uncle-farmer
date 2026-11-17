@@ -66,6 +66,7 @@ SLOT_GAP = 0.08          # the same through agent 45's `slot`: a key's 30 ms hol
 BURST_MAX = 1.2          # ... for at most this long (out of range, no target: the cast never comes)
 LONG_BUFF = 60.0         # a buff lasting this long (or longer) is kept up all the time
 BUFF_RETRY = 20.0        # a buff press the game didn't cast (no rage, no combos yet) waits this long
+FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
 REFUSED_WAIT = 3.0       # a skill the game wouldn't cast for a whole burst is left this long...
@@ -740,8 +741,10 @@ class SkillBook:
 
     def _time_cast(self, name: str, t: float, info: Skill) -> None:
         """The global cooldown measured from the gaps between our casts, and the press confirmed."""
-        if name == elf_combos.IGNITION:
-            return  # Ignition cannot confirm or delay another attack's global cooldown.
+        if name == elf_combos.IGNITION or info.get("no_gcd"):
+            # Ignition, Cold Winter, Summon Spirit...: outside the global cooldown, so their
+            # report can neither confirm another attack's press nor time the cooldown.
+            return
         prev = self.last_gcd_cast
         if not info.get("no_gcd"):
             # a skill outside the global cooldown (Ignition) neither starts nor measures it
@@ -869,8 +872,9 @@ class SkillBook:
         return None
 
     def tell_missing(self, learned: set[str]) -> None:
-        """Name, once, the class's own heal, dispel and long buffs we have learned but put on no key:
-        the bot can only press what is on a key (either page, any key the player chose)."""
+        """Name, once, the class's own heal, dispel, long buffs and free buffs (Cold Winter) we have
+        learned but put on no key: the bot can only press what is on a key (either page, any key the
+        player chose)."""
         on = {x["name"] for row in self.slots.values() for x in row}
         info = {x["name"]: x for x in knowledge().get(self.cls or "", [])}
         want: list[str] = []
@@ -878,7 +882,8 @@ class SkillBook:
             if self.use_of(name) == "never":
                 continue          # the player doesn't want it used: not missing
             x: dict[str, Any] = info.get(name) or {}
-            if self.quick_heal(x) or self.big_heal(x) or self.shield(x) or self.self_dispel(x) or self.long_buff(x):
+            if (self.quick_heal(x) or self.big_heal(x) or self.shield(x) or self.self_dispel(x) or self.long_buff(x)
+                    or self.free_buff(x)):
                 want.append(name)
         if want:
             self.b.log(_("learned but on no skill key, so never used: {skills} - put them on a key "
@@ -967,6 +972,43 @@ class SkillBook:
             return self.press_support(x, now)
         return None
 
+    @classmethod
+    def free_buff(cls, x: Skill) -> bool:
+        """A short buff for our own attacks outside the global cooldown (Cold Winter +20% attack
+        speed, Scorch +50% critical hit): a press costs no attack, so it goes in every fight."""
+        return bool(x.get("no_gcd")) and x.get("role") == "self_buff" and cls.fight_buff(x)
+
+    @classmethod
+    def free_guard(cls, x: Skill) -> bool:
+        """Less damage taken for a while, outside the global cooldown and without stopping us
+        (Concentrated Will -20%, Summon Spirit -30%, 15 s each)."""
+        return (bool(x.get("no_gcd")) and x.get("role") == "defensive" and cls.shield(x) == "free"
+                and cls.duration(x) is not None)
+
+    def free_press(self, me: dict[str, Any], now: float) -> Press | None:
+        """In a fight, while the global cooldown runs: a free buff whenever it is ready, a free
+        guard whenever a monster is striking us and we have lost HP. None of these takes an
+        attack's place (game text: "not affected by global CD"), and each costs 1% mana, so
+        before 2026-11-17 they waited for a big target, a pack or an emergency and were never
+        cast in any recorded night. Skills set to Never or emergency-only stay out (support_skills)."""
+        if not self.b.p.get("use_buffs", True):
+            return None
+        hurt = hp_pct(me) < FREE_GUARD_BELOW
+        for x in self.support_skills():
+            name = x["name"]
+            if not (self.free_buff(x) or (self.free_guard(x) and hurt)):
+                continue
+            if (not self.ready(x, now) or now - self.buff_tried.get(name, 0) < BUFF_RETRY
+                    or not self.affordable(x, now)):
+                continue
+            if now - self.used.get(name, 0) < (self.duration(x) or 0):
+                continue          # still on us
+            if self.free_guard(x) and not self.b.attackers():
+                continue
+            self.buff_tried[name] = now
+            return self.press_support(x, now)
+        return None
+
     def support(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | str | None:
         """What to press for ourselves before attacking: heal, dispel, then buffs. (key, name),
         "wait" while the global cooldown runs, or None."""
@@ -1035,7 +1077,8 @@ class SkillBook:
             if self.combos:
                 for channel in elf_combos.CHANNEL_SKILLS:
                     self.combos.primed.pop(channel, None)
-        if choice["name"] != elf_combos.IGNITION:
+        if choice["name"] != elf_combos.IGNITION and not choice.get("no_gcd"):
+            # (a press outside the global cooldown leaves the attack's press timing alone)
             self.last_press = now
             self.press_confirmed = False
         if self.confirm:
@@ -1082,8 +1125,9 @@ class SkillBook:
         self.read_casts(me["id"])
         if self.gcd_wait(now):
             # A panic button outside the global cooldown (Concentrated Will, Summon Spirit) still
-            # goes now: emergency() lets only those through while the cooldown runs.
-            return self.emergency(me, now) or "wait"
+            # goes now: emergency() lets only those through while the cooldown runs. So do the
+            # free presses (free_press): the wait after every cast is their moment.
+            return self.emergency(me, now) or self.free_press(me, now) or "wait"
         # 0. ourselves first: a heal while HP is down, a dispel when a debuff is on us, buffs
         tgt_big = (target.get("maxhp") or target.get("hp") or 0) >= LONG_FIGHT_HP * max(1, me["maxhp"])
         near_target = sum(1 for e in snap["entities"] if is_foe(e)
