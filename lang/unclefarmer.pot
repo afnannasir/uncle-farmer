@@ -6382,6 +6382,10 @@ msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""
 
+msgid ""
+"the fusion beast waits {secs} s: the game refuses one this soon after a death"
+msgstr ""
+
 msgid "the game can't be read: {why}"
 msgstr ""
 
@@ -6549,7 +6553,8 @@ msgstr ""
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr ""
 
-msgid "the plan's character has no saved account. Log in to it once first."
+msgid ""
+"the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 
 msgid "the ride from {map} never arrived"

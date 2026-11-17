@@ -480,7 +480,8 @@ def sell(b: Bot, item: str, n: int | None=None):
     role = knowledge.buyer_role(item)
     if not buyers and role is None:
         raise Stopped(_("I don't know who buys {item}", item=item))
-    have = counts(b).get(item.lower(), 0)
+    before = counts(b)
+    have = before.get(item.lower(), 0)
     if have <= 0:
         return 0
     n = have if n is None else min(n, have)
@@ -497,7 +498,10 @@ def sell(b: Bot, item: str, n: int | None=None):
         pick(b, item_pattern(item), n)
     finally:
         b.close_dialogs()
-    sold = have - counts(b).get(item.lower(), 0)
+    after = counts(b)
+    sold = have - after.get(item.lower(), 0)
+    if sold > 0:
+        InventoryTransaction(before).paid(b, after)     # the money comes in after the items go
     b.log(_("sold {n} {item}", n=sold, item=item))
     stats.moved(b, "sold", item, sold)
     return sold
@@ -581,6 +585,8 @@ def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) ->
         b.close_dialogs()
         after = transaction.settle(b) if transaction.expected else transaction.before
         moved = transaction.removed(after)
+        if moved:
+            after = transaction.paid(b, after)      # the money comes in after the items go
         got = after.get("arnebia", 0) - before
         for item, n in moved:
             b.log(_("sold {n} {item}", n=n, item=item))
@@ -1003,7 +1009,10 @@ def _note_shard_sales(b: Bot, transaction: InventoryTransaction, todo: list[tupl
     if not transaction.expected:
         for name, n in todo:
             transaction.expect(name, -n)
-    moved = transaction.removed(transaction.settle(b))
+    after = transaction.settle(b)
+    moved = transaction.removed(after)
+    if moved:
+        transaction.paid(b, after)      # the money comes in after the shards go: count it here
     for name, gone in moved:
         b.log(_("sold {n} {item} at the Shard Market", n=gone, item=name))
         stats.moved(b, "sold", name, gone)
