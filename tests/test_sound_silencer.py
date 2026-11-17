@@ -93,9 +93,9 @@ def test_a_list_with_nothing_muted_needs_no_hook(app_file: Path):
 
 
 def test_disk_failure_does_not_apply_mute(app_file: Path, monkeypatch: pytest.MonkeyPatch):
-    def fail(_data: dict[str, Any]) -> None:
+    def fail(_path: str, _obj: object, **_kw: object) -> None:
         raise OSError("disk full")
-    monkeypatch.setattr(settings, "save_app", fail)
+    monkeypatch.setattr(settings.json, "save", fail)
     link = Link()
     with pytest.raises(OSError, match="disk full"):
         silencer.save([row()], link)

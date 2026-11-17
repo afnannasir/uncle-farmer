@@ -102,6 +102,7 @@ class Parts:
     crossing_poison: bool       # a travel leg into or across Polson Wetland without the talent (travel.py)
     warned_poison: bool         # the Polson Wetland warning was said this run
     said_beast_waits: bool      # "the fusion beast waits until no attack for QUIET seconds" said
+    said_after_death: bool      # "the fusion beast waits N s ... after a death" said
     pet_hp_log: list[tuple[float, float]]  # (time, HP) of the pet out, the last few seconds
     pet_hp_id: int | None       # the pet those readings are of
     pet_threat_until: float     # the pet counts as under attack until then (its HP fell fast)
@@ -195,6 +196,7 @@ class Parts:
     last_hp: float | None
     last_combat: float
     last_attacked: float
+    last_death: float
     hp_seen: float | None
     _speech: str
     _speech_at: float

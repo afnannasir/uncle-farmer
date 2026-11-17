@@ -4710,6 +4710,9 @@ msgstr ""
 msgid "couldn't finish the results: {err}"
 msgstr ""
 
+msgid "couldn't finish the run ({where}): {err}"
+msgstr ""
+
 msgid "couldn't get back to {place}: {why}"
 msgstr ""
 
@@ -4784,6 +4787,9 @@ msgid "couldn't respawn - please do it by hand"
 msgstr ""
 
 msgid "couldn't restock {item}: {why}"
+msgstr ""
+
+msgid "couldn't save the results: {err}"
 msgstr ""
 
 msgid "couldn't save the shard prices: {err}"
@@ -4998,6 +5004,9 @@ msgid ""
 msgstr ""
 
 msgid "following {name}"
+msgstr ""
+
+msgid "found it: {npc} at {x},{y} - but couldn't save it for next time"
 msgstr ""
 
 msgid "found it: {npc} at {x},{y} - remembered"
@@ -6396,6 +6405,10 @@ msgid ""
 msgstr ""
 
 msgid ""
+"the fusion beast waits {secs} s: the game refuses one this soon after a death"
+msgstr ""
+
+msgid ""
 "the game brought us back on {map} at {x},{y}, not at {village} - dying at the nearest guard instead"
 msgstr ""
 
@@ -6566,7 +6579,8 @@ msgstr ""
 msgid "the pet's amiability is {n} but there's no {item} in the bag"
 msgstr ""
 
-msgid "the plan's character has no saved account. Log in to it once first."
+msgid ""
+"the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 
 msgid "the ride from {map} never arrived"

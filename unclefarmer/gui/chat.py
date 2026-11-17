@@ -246,10 +246,10 @@ class ChatFrame(wx.Frame):
             self.host.say(_("Message added to the filter list."))
 
     def save_filters(self, rules: list[chat_filters.Filter]) -> bool:
-        updated = dict(self.s, chat_filters=chat_filters.dump(rules))
-        if not save_file(self, settings.save_app, updated):
+        updated = {"chat_filters": chat_filters.dump(rules)}
+        if not save_file(self, settings.update_app, updated):    # only the filters, on the file as it is now
             return False
-        self.s["chat_filters"] = updated["chat_filters"]
+        settings.set_not_saved(self.s, "chat_filters", updated["chat_filters"])   # already saved
         for frame in self.host.chat_windows.values():
             frame.filters = list(rules)
             frame.show_channel()

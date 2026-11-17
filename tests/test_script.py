@@ -631,6 +631,7 @@ def test_check_reports_bad_scripts() -> None:
 
 def test_login_is_a_first_line_directive() -> None:
     assert S.login_target('login "Hero - S1"\nfarm minutes=1') == "Hero - S1"
+    assert S.login_target('login "Hero - S2"\nfarm minutes=1') == "Hero - S2"
     assert S.check('farm minutes=1\nlogin "Hero - S1"') == "line 2: login must be the first command in a script"
     assert S.check('sub again\nlogin Hero\nend') == "line 2: login must be the first command in a script"
 

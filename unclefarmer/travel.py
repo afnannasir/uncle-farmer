@@ -51,7 +51,7 @@ from typing import Any, Literal, TypeAlias, cast, overload
 import numpy as np
 
 
-from . import atlas, jsonio as json, lru, paths
+from . import applog, atlas, jsonio as json, lru, paths
 from .atlaslib import Cell, MapModel, Point
 
 Leg = dict[str, Any]                 # one leg of a plan, shaped as the module notes say
@@ -315,20 +315,29 @@ def landings() -> dict[tuple[int, int], Point]:
     """{(destination map, marker): the cell an exit with that marker put us on}, as learned."""
     global _landings
     where = _landings_path()
-    if _landings is None or _landings[0] != where:
-        found: dict[tuple[int, int], Point] = {}
-        try:
-            with open(where, encoding="utf-8") as f:
-                raw: object = json.load(f)
-        except (OSError, ValueError):
-            raw = {}
-        for k, v in (raw.items() if json.is_object(raw) else ()):
-            parts = str(k).split("|")
-            if (len(parts) == 2 and all(p.lstrip("-").isdigit() for p in parts) and json.is_array(v)
-                    and len(v) == 2 and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in v)):
-                found[(int(parts[0]), int(parts[1]))] = (int(v[0]), int(v[1]))
-        _landings = (where, found)
-    return _landings[1]
+    with json.lock_for(where):
+        if _landings is None or _landings[0] != where:
+            try:
+                found = _read_landings(where)
+            except (OSError, ValueError):
+                found = {}
+            _landings = (where, found)
+        return _landings[1]
+
+
+def _read_landings(where: str) -> dict[tuple[int, int], Point]:
+    """The learned landings file as it is ({} when there is none yet). OSError when it can't be
+    read, ValueError when it is broken: learn_landing() must not save over those as if empty."""
+    raw: object = json.read(where, {}, encoding="utf-8")
+    if not json.is_object(raw):
+        raise ValueError("%s isn't a JSON object" % where)
+    found: dict[tuple[int, int], Point] = {}
+    for k, v in raw.items():
+        parts = str(k).split("|")
+        if (len(parts) == 2 and all(p.lstrip("-").isdigit() for p in parts) and json.is_array(v)
+                and len(v) == 2 and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in v)):
+            found[(int(parts[0]), int(parts[1]))] = (int(v[0]), int(v[1]))
+    return found
 
 
 def landing(dest: int, marker: object) -> Point | None:
@@ -361,14 +370,31 @@ def learn_landing(mid: int, exit_i: int, landed_map: int, cell: Sequence[float])
     if key is None or key[0] != int(landed_map):
         return False
     at: Point = (int(round(cell[0])), int(round(cell[1])))
-    known = landings()
-    if known.get(key) == at:
-        return False
-    known[key] = at
-    try:
-        json.save(_landings_path(), {"%d|%d" % k: list(v) for k, v in sorted(known.items())})
-    except OSError:
-        pass                      # learned for this session all the same
+    where = _landings_path()
+    with json.lock_for(where):
+        known = landings()
+        if known.get(key) == at:
+            return False
+        known[key] = at           # learned for this session, whatever the file says next
+        # the file as it is now, not the copy read at the session's start: another game of ours
+        # may have learned a landing since, and saving the old copy wrote it away
+        try:
+            on_file = _read_landings(where)
+        except ValueError:
+            json.copy_aside(where)            # broken: kept as .corrupt, then started again
+            on_file = {}
+        except OSError as e:
+            on_file = None
+            applog.write("couldn't read %s, so the new landing is kept for this session only: %s" % (where, e),
+                         "WARNING")
+        if on_file is not None:
+            on_file.update(known)
+            known.update(on_file)
+            try:
+                json.save(where, {"%d|%d" % k: list(v) for k, v in sorted(on_file.items())})
+            except OSError as e:
+                applog.write("couldn't save %s, so the new landing is kept for this session only: %s" % (where, e),
+                             "WARNING")
     _static = None
     _plan_cache.clear()
     return True

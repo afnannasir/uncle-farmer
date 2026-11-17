@@ -14,6 +14,50 @@
   and if the game brings the character back somewhere else, the bot says so and dies at the
   nearest guard instead.
 
+**Automatic login picks the character's server**
+
+- A scheduled script's `login` now selects the saved character's server (S1 or S2) before signing
+  in with the saved account, so a character on the other server is found. `login "Name - S2"`
+  works as `login "Name - S1"` does. The game has to be started again to load the new agent (69).
+
+**The fusion beast after a death**
+
+- Right after a death the game refuses a fusion beast without a word, and a refused press made
+  the next try wait for the game's gap between two fusion changes: the XP loser stood still about
+  ten seconds after each respawn before its beast came, then rode up to the guard just to get off
+  again. The beast now waits until six and a half seconds after the death and goes on at the
+  first press, so the character rides off a few seconds after it is back.
+
+**Sales counted in the run that earned them**
+
+- The arnebia a sale brings in is counted in the results again. The game takes the shards out
+  of the bag first and pays a moment later: when the money came in after the sale was over, the
+  results put it under the next job (for example "Updating shard prices"), and the farming run's
+  earnings left it out. Selling shards, selling fish, ore and herbs, and selling to a shop now
+  wait for the money (three seconds at most).
+
+**Settings and learned data survive a busy disk and two writers at once**
+
+- A settings file another program held open for a moment (an antivirus, a backup) was taken
+  for a broken one: it went to settings.json.corrupt and the defaults were saved in its place.
+  A file that can't be read is now left alone, read again after a short wait, and nothing is
+  saved over it until it can be read. The same goes for the character profiles.
+- The sound silencer, the scheduler and the main window each saved the whole settings file, so
+  one could put back a value another had just saved (the daily stop time, the sound list). A
+  save now writes only what its holder changed, onto the file as it is then.
+- A run saving what it learned (the hearthstone's square, gathering places) no longer puts back
+  the character settings as they were when it started: changes made while it ran stay.
+- A run whose results couldn't be saved (a full disk) left the window saying it was already
+  running until the app was restarted. The run now always ends; the results are still shown in
+  the log, and the failure is said.
+- A scheduled run whose save failed was taken for done and never started. It now starts at the
+  next look, once.
+- The results window could fail with "dictionary changed size during iteration" while a run
+  was adding to them.
+- The game's options file (mw.exe.vmoptions), the learned dungeon entrances, item weights and
+  landings, the daily chores' list, shard prices and survey records are written whole or not at
+  all, and two saves at once no longer lose one of them.
+
 **Safer updates**
 
 - Uncle Farmer no longer seems to freeze after a download: the update is prepared in the

@@ -65,7 +65,7 @@ def test_a_byte_order_mark_is_not_part_of_the_first_command() -> None:
 def test_settings_saved_with_a_byte_order_mark_are_kept(tmp_path: Path) -> None:
     p = tmp_path / "settings.json"
     p.write_text('{"language": "ur"}', encoding="utf-8-sig")
-    data = settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)
+    data = settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)[0]
     assert data["language"] == "ur"
     assert not os.path.exists(str(p) + ".corrupt")
 
@@ -74,7 +74,7 @@ def test_a_second_broken_file_keeps_the_first_ones_copy(tmp_path: Path) -> None:
     p = tmp_path / "x.json"
     for i in range(3):
         p.write_text("{broken %d" % i, encoding="utf-8")
-        settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)
+        settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)
     kept = sorted(f.name for f in tmp_path.iterdir() if ".corrupt" in f.name)
     assert kept == ["x.json.corrupt", "x.json.corrupt.2", "x.json.corrupt.3"]
     assert (tmp_path / "x.json.corrupt").read_text() == "{broken 0"
