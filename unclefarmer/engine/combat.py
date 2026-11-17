@@ -66,6 +66,7 @@ SLOT_GAP = 0.08          # the same through agent 45's `slot`: a key's 30 ms hol
 BURST_MAX = 1.2          # ... for at most this long (out of range, no target: the cast never comes)
 LONG_BUFF = 60.0         # a buff lasting this long (or longer) is kept up all the time
 BUFF_RETRY = 20.0        # a buff press the game didn't cast (no rage, no combos yet) waits this long
+SPEED_WALK_MIN = 25      # a walk on foot this many steps long or more starts with a speed skill (Wind Step)
 FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
@@ -243,6 +244,12 @@ class _PickView:
         d = self.book.duration(s)
         t = self.book.landed.get((s["name"], self.target.get("id")))
         return d is not None and t is not None and self.now - t < d - 1.5
+
+
+def speed_share(x: Skill) -> int:
+    """The movement speed a skill adds, in percent ("Increase 50% movement speed"), else 0."""
+    m = re.search(r"(\d+)% movement speed", x.get("text", ""), re.I)
+    return int(m.group(1)) if m else 0
 
 
 class SkillBook:
@@ -1008,6 +1015,30 @@ class SkillBook:
             self.buff_tried[name] = now
             return self.press_support(x, now)
         return None
+
+    @staticmethod
+    def speed_skill(x: Skill) -> bool:
+        """More movement speed for a while (Wind Step, Swallow Dance, Haste, Shadow Steps), not a
+        jump (Escape)."""
+        t = x.get("text", "").lower()
+        return x.get("role") == "mobility" and "movement speed" in t and "jump" not in t
+
+    def speed_now(self, now: float) -> Press | None:
+        """(key, name) of a ready speed skill for a long walk on foot, else None. Never pressed by
+        any of our characters in any recording (2026-11-15): the picker never offers mobility
+        skills. The fastest one that is up; skills set to Never or emergency-only stay out. Waits
+        for no global cooldown: if one still runs, the walk just starts without it."""
+        if not self.ok or self.gcd_wait(now):
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.speed_skill(x) and self.allowed(x)]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)
+                 and now - self.buff_tried.get(x["name"], 0) >= BUFF_RETRY / 2]
+        if not cands:
+            return None
+        x = max(cands, key=lambda x: (speed_share(x), self.duration(x) or 0))
+        self.buff_tried[x["name"]] = now
+        return self.press_support(x, now)
 
     def support(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | str | None:
         """What to press for ourselves before attacking: heal, dispel, then buffs. (key, name),

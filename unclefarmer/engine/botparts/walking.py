@@ -13,7 +13,7 @@ from typing import Any
 
 from ... import atlas
 from ...i18n import _
-from .. import beasts
+from .. import beasts, combat
 from ...nearby import OWNER
 from .base import (DIRECTIONS, NPC_HP, STOPPING, Respawned, Stopped, note_failure, snap_map)
 from .parts import as_bot, Parts
@@ -275,6 +275,8 @@ class WalkingMixin(Parts):
                     self.stuck_in_a_row = 0
                     return "map"
                 continue
+            if attempt == 0 and not replanned:
+                self._speed_up(here, hops)
             stuck = self._walk_hops_go(hops, diagonal, mid if map_change else None, near)
             if stuck in ("map", "near"):
                 self.stuck_in_a_row = 0
@@ -303,6 +305,33 @@ class WalkingMixin(Parts):
                 return "stuck"
             attempt += 1
         return "stuck"
+
+    @staticmethod
+    def hops_length(here: tuple[int, int], hops: list[tuple[int, int]]) -> int:
+        """Steps along the planned hops (diagonal steps count one, as the game walks them)."""
+        steps, at = 0, here
+        for hop in hops:
+            steps += max(abs(hop[0] - at[0]), abs(hop[1] - at[1]))
+            at = hop
+        return steps
+
+    def _speed_up(self, here: tuple[int, int], hops: list[tuple[int, int]]) -> None:
+        """A long walk on foot starts with a speed skill when one is up (Phase 1b item 4). Not on a
+        beast (a Swift beast casts nothing and is faster anyway), not while a fight holds us."""
+        sb = getattr(self, "skillbook", None)
+        if sb is None or not sb.ok or self.in_fight or self.walk_only:
+            return
+        if self.hops_length(here, hops) < combat.SPEED_WALK_MIN:
+            return
+        now = self.clock.time()
+        if not any(sb.speed_skill(x) and sb.ready(x, now) for row in sb.slots.values() for x in row):
+            return                # nothing ready: no need to ask the game about beasts
+        if any(r.get("active") for r in beasts.owned(as_bot(self))):
+            return
+        press = sb.speed_now(now)
+        if press and not self.dialog().get("open"):
+            self.log(_("{skill} for a long walk", skill=press[1]))
+            self.key(press[0])
 
     def _left_map(self, mid: int) -> bool:
         """Moved on to another map (an exit crossed, a teleport, the game's own move): this map's
