@@ -286,9 +286,14 @@ class ProfileDialog(Dialog):
             _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
             p.get("corpse_skill", False),
             _("Stop when &Vitality is down to (0: until it runs out):"), p.get("corpse_keep_vitality", 0), 0, 100)
-        f = group(panel, box, _("Experience cards"))
-        self.xp_card = f.choice(_("E&xperience card to keep running while farming:"), [""])
-        self.xp_card_values: list[str] = [""]
+        f = group(panel, box, _("Experience cards to keep running while farming (the strongest ticked one in the bag "
+                                "first)"))
+        ticked, _pause = xpcard.wanted(p)
+        last_scan: dict[str, Any] = p.get("scan") or {}
+        scanned_bag: list[dict[str, Any]] = last_scan.get("bag", [])
+        scanned = [c[0] for c in xpcard.cards_in(scanned_bag)]
+        kinds = sorted({*xpcard.KINDS, *ticked, *(round(k, 2) for k in scanned)})
+        self.xp_cards = [(k, f.check(xpcard.name_of(k), k in ticked)) for k in kinds]
         self.xp_card_pause = f.check(_("Pause the card while a&way from the monsters: town trips, the walk back after a "
                                        "death, the end of farming (each pause costs a minute of the card; never in a "
                                        "dungeon)"), p.get("xp_card_pause", False))
@@ -414,16 +419,14 @@ class ProfileDialog(Dialog):
         self.fill_xp_cards()
 
     def fill_xp_cards(self) -> None:
-        """The experience cards the last scan saw in the bag, weakest first, and None. A card that
-        isn't in the bag is no choice: a chosen one that ran out goes back to None."""
+        """One tick per kind of experience card, weakest first, each with what the last scan saw of
+        it in the bag. A ticked kind that ran out stays ticked: the next one looted is used."""
         s: dict[str, Any] = self.p.get("scan") or {}
-        found = xpcard.cards_in(s.get("bag", []))
-        self.xp_card_values = [""] + [name for _power, name, _count in found]
-        self.xp_card.Set([_("None")] + [_("{card} ({n} in the bag)", card=name, n=count)
-                                        for _power, name, count in found])
-        want = (self.p.get("xp_card_name") or "").strip().lower()
-        pick = next((i for i, v in enumerate(self.xp_card_values) if v and v.lower() == want), 0)
-        self.xp_card.SetSelection(pick)
+        have = {round(power, 2): count for power, _name, count in xpcard.cards_in(s.get("bag", []))}
+        for kind, box in self.xp_cards:
+            n = have.get(kind, 0)
+            box.SetLabel(_("{card} ({n} in the bag)", card=xpcard.name_of(kind), n=n) if n
+                         else _("{card} (none in the bag)", card=xpcard.name_of(kind)))
 
     def fill_potions(self) -> None:
         """Potion choices from the last scan: what is on the hotkeys and in the bag."""
@@ -562,7 +565,7 @@ class ProfileDialog(Dialog):
         p["panic_after"] = float(self.panic_after.GetValue())
         p["corpse_skill"] = self.corpse_skill.GetValue()
         p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
-        p["xp_card_name"] = self.xp_card_values[max(0, self.xp_card.GetSelection())]
+        p["xp_cards"] = [kind for kind, box in self.xp_cards if box.GetValue()]
         p["xp_card_pause"] = self.xp_card_pause.GetValue()
         p["stop_on_drop_time"] = self.drop_stop.GetValue()
         p["drop_keep_minutes"] = self.drop_keep.GetValue()

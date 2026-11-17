@@ -1,5 +1,16 @@
 # What's new
 
+## Unreleased
+
+**Several kinds of experience cards**
+
+- Character, Settings, Fighting: the experience card list became one tick per card (1.3x, 1.5x,
+  1.75x, 2x, 2.5x and 3x), each with how many the last scan saw in the bag. When no card is
+  running on the farm, the bot uses the strongest ticked card it has, so a character can finish
+  its 2x and then burn the small cards looted from chests on the way. A ticked card that runs out
+  stays ticked, and the next one looted is used. Cards that aren't ticked are never used. The
+  card chosen before is the one ticked.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

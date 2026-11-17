@@ -99,9 +99,9 @@ levels above it.
   resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon, and a server
   restart wipes the bonus even while it is paused.
 
-*For the bot:* with an experience card chosen, it keeps a card of that kind running on the farm
-(never a stronger one from the bag), and with the pause tick it pauses the card while a farming
-run is away from the monsters.
+*For the bot:* with experience cards ticked, it keeps one running on the farm, the strongest ticked
+card in the bag first (never one that isn't ticked), and with the pause tick it pauses the card
+while a farming run is away from the monsters.
 
 
 ## Combat rules

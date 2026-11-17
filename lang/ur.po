@@ -1376,9 +1376,6 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 msgid "E&xit"
 msgstr "Bahar &niklein"
 
-msgid "E&xperience card to keep running while farming:"
-msgstr "Farming ke dauran chalne wala e&xperience card:"
-
 msgid "E&xport"
 msgstr "E&xport karein"
 
@@ -1521,8 +1518,10 @@ msgstr "Bilkul wohi paighaam"
 msgid "Experience"
 msgstr "Tajurba"
 
-msgid "Experience cards"
-msgstr "Experience cards"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
+msgstr ""
+"Farming ke dauran chalne wale experience cards (bag mein sab se taqatwar tick wala pehle)"
 
 msgid "Expert"
 msgstr "Expert"
@@ -5839,6 +5838,10 @@ msgstr "koi nahi"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+"tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
+
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "yeh kaam karne wali {n} jagahon mein se koi bhi {map} se nahi pohanch sakti"
@@ -7319,6 +7322,9 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
 
+msgid "{card} (none in the bag)"
+msgstr "{card} (bag mein koi nahi)"
+
 msgid "{card} ({n} in the bag)"
 msgstr "{card} (bag mein {n})"
 
@@ -8016,8 +8022,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Drop time to &save (minutes):"
 #~ msgstr "Drop ka waqt &mahfooz karne ke liye (minute):"
 
+#~ msgid "E&xperience card to keep running while farming:"
+#~ msgstr "Farming ke dauran chalne wala e&xperience card:"
+
 #~ msgid "E&xport plan"
 #~ msgstr "Mansooba e&xport karein"
+
+#~ msgid "Experience cards"
+#~ msgstr "Experience cards"
 
 #~ msgid ""
 #~ "Fills enabled supplies to their configured targets, even above their automatic refill thresholds."

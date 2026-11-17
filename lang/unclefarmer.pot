@@ -1351,9 +1351,6 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
-msgid "E&xperience card to keep running while farming:"
-msgstr ""
-
 msgid "E&xport"
 msgstr ""
 
@@ -1492,7 +1489,8 @@ msgstr ""
 msgid "Experience"
 msgstr ""
 
-msgid "Experience cards"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
 msgstr ""
 
 msgid "Expert"
@@ -5576,6 +5574,9 @@ msgstr ""
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr ""
 
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 
@@ -6969,6 +6970,9 @@ msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 
 msgid "{buffer} ({n} new)"
+msgstr ""
+
+msgid "{card} (none in the bag)"
 msgstr ""
 
 msgid "{card} ({n} in the bag)"

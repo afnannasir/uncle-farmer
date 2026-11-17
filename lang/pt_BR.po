@@ -1384,9 +1384,6 @@ msgstr "Masmorras cujas entradas não aparecem nos arquivos do jogo: {names}"
 msgid "E&xit"
 msgstr "&Sair"
 
-msgid "E&xperience card to keep running while farming:"
-msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
-
 msgid "E&xport"
 msgstr "E&xportar"
 
@@ -1529,8 +1526,10 @@ msgstr "Mensagem exata"
 msgid "Experience"
 msgstr "Experiência"
 
-msgid "Experience cards"
-msgstr "Cartões de experiência"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
+msgstr ""
+"Cartões de experiência a manter ativos durante a coleta (o mais forte marcado que estiver na bolsa primeiro)"
 
 msgid "Expert"
 msgstr "Especialista"
@@ -4690,6 +4689,9 @@ msgstr "entrada automática concluída"
 msgid "automatic login stopped"
 msgstr "entrada automática interrompida"
 
+msgid "automatic reconnection finished"
+msgstr ""
+
 msgid "avoiding elites"
 msgstr "evitando monstros de elite"
 
@@ -5847,6 +5849,10 @@ msgstr "nenhum"
 
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "nenhuma das entradas marcadas em {map} é o círculo {name}"
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+"nenhum dos cartões de experiência marcados na bolsa - a coleta continua sem cartão"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
@@ -7329,6 +7335,9 @@ msgstr "{boss} (chefe) está a {n} passos — mantendo distância de {keep} pass
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} novos)"
 
+msgid "{card} (none in the bag)"
+msgstr "{card} (nenhum na bolsa)"
+
 msgid "{card} ({n} in the bag)"
 msgstr "{card} ({n} na bolsa)"
 
@@ -7985,3 +7994,9 @@ msgstr "{why} — sem usar mais {skill} nesta execução ({n} concluídos)"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid "E&xperience card to keep running while farming:"
+#~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
+
+#~ msgid "Experience cards"
+#~ msgstr "Cartões de experiência"
