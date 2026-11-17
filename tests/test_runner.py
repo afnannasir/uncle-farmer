@@ -288,7 +288,20 @@ def test_saved_login_waits_for_a_confirmed_world(monkeypatch: pytest.MonkeyPatch
     run._login_saved_character(as_kind(R.AgentLink, link), R.AGENT_LOGIN)
 
     assert link.sent == ["arm"]
-    assert link.asked == ["autologin hero@example.com 7", "autologinstatus", "autologinstatus"]
+    assert link.asked == ["autologin hero@example.com 7 S1", "autologinstatus", "autologinstatus"]
+
+
+def test_saved_login_passes_the_s2_profile_server(monkeypatch: pytest.MonkeyPatch) -> None:
+    profile = settings.character_profile("Hero", 8, "S2")
+    run = R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
+    run.profile, run.stop_event = profile, NeverStops()  # type: ignore[assignment]
+    monkeypatch.setattr(settings, "load_profile", saved_login_profile)
+    link = LoginLink([{"ok": True, "running": False, "status": "ready"}])
+    link.reply["arm"] = "armed"
+
+    run._login_saved_character(as_kind(R.AgentLink, link), R.AGENT_LOGIN)
+
+    assert link.asked == ["autologin hero@example.com 8 S2", "autologinstatus"]
 
 
 def test_saved_login_refuses_to_start_without_a_confirmed_world(monkeypatch: pytest.MonkeyPatch) -> None:
