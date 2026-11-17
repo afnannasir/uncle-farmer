@@ -4688,6 +4688,9 @@ msgstr ""
 msgid "couldn't finish the results: {err}"
 msgstr ""
 
+msgid "couldn't finish the run ({where}): {err}"
+msgstr ""
+
 msgid "couldn't get back to {place}: {why}"
 msgstr ""
 
@@ -4762,6 +4765,9 @@ msgid "couldn't respawn - please do it by hand"
 msgstr ""
 
 msgid "couldn't restock {item}: {why}"
+msgstr ""
+
+msgid "couldn't save the results: {err}"
 msgstr ""
 
 msgid "couldn't save the shard prices: {err}"
@@ -4970,6 +4976,9 @@ msgid ""
 msgstr ""
 
 msgid "following {name}"
+msgstr ""
+
+msgid "found it: {npc} at {x},{y} - but couldn't save it for next time"
 msgstr ""
 
 msgid "found it: {npc} at {x},{y} - remembered"

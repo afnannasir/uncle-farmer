@@ -11,7 +11,7 @@ import os
 import re
 import threading
 
-from . import jsonio as json, paths
+from . import applog, jsonio as json, paths
 
 LEARNED = os.path.join(paths.PROFILES, "_learned_entrances.json")
 _d: dict[str, Any] | None = None
@@ -27,12 +27,34 @@ def _key(e: dict[str, Any]) -> str:
     return "%s|%d" % (_norm(e["name"]), e["map"])
 
 
+_last_learned: dict[str, dict[str, Any]] = {}   # the last good reading, for a moment the file can't be read
+
+
+def _read_learned() -> dict[str, dict[str, Any]]:
+    """The learned file as it is: {} when there is none yet. OSError when it is there but can't be
+    read, ValueError when it is broken - never an empty answer for those, since learn() saves what
+    it gets back and would write every earlier entrance out of the file."""
+    raw: object = json.read(LEARNED, {}, encoding="utf-8")
+    if not json.is_object(raw):
+        raise ValueError("%s isn't a JSON object" % LEARNED)
+    return raw
+
+
 def _learned() -> dict[str, dict[str, Any]]:
-    try:
-        with open(LEARNED, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
+    """What the bot learned, for planning. Read under the file's lock, so never half a save. A
+    file that can't be read just now gives the last good reading (an empty plan once lost every
+    learned entrance until the next look); a broken one gives nothing (learn() keeps a copy)."""
+    global _last_learned
+    with json.lock_for(LEARNED):
+        try:
+            got = _read_learned()
+        except ValueError:
+            return {}
+        except OSError as e:
+            applog.write("couldn't read %s, using the last reading: %s" % (LEARNED, e), "WARNING")
+            return dict(_last_learned)
+        _last_learned = dict(got)
+        return got
 
 
 def data() -> dict[str, Any]:
@@ -86,13 +108,25 @@ def is_entrance(e: dict[str, Any] | None, name: str | None) -> bool:
     return bool(n) and (n == _norm(e.get("npc")) or n.startswith(_norm(e["name"])))
 
 
-def learn(e: dict[str, Any], npc_name: str, x: float, y: float) -> None:
-    """Remember which marked spot turned out to be this dungeon's circle."""
-    with _lock:
-        got = _learned()
+def learn(e: dict[str, Any], npc_name: str, x: float, y: float) -> bool:
+    """Remember which marked spot turned out to be this dungeon's circle. The file is read, changed
+    and saved under its lock, and saved atomically (a failed save keeps every earlier entrance).
+    True when it was saved; False when the file couldn't be read or written (said in the log)."""
+    global _last_learned
+    with json.lock_for(LEARNED):
+        try:
+            got = _read_learned()
+        except ValueError:
+            json.copy_aside(LEARNED)       # broken: kept as .corrupt, then started again
+            got = {}
+        except OSError as err:
+            applog.write("couldn't read %s, so %s wasn't remembered: %s" % (LEARNED, e.get("name"), err), "WARNING")
+            return False
         got[_key(e)] = {"npc": npc_name, "at": [int(round(x)), int(round(y))]}
         try:
-            with open(LEARNED, "w", encoding="utf-8") as f:
-                json.dump(got, f, ensure_ascii=False, indent=1)
-        except OSError:
-            pass
+            json.save(LEARNED, got, indent=1)
+        except OSError as err:
+            applog.write("couldn't save %s: %s" % (LEARNED, err), "WARNING")
+            return False
+        _last_learned = dict(got)
+        return True

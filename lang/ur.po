@@ -4903,6 +4903,9 @@ msgstr "mehfooz tareeqe se mukammal nahi kar sake: {err}"
 msgid "couldn't finish the results: {err}"
 msgstr "nataij mukammal nahi kar sake: {err}"
 
+msgid "couldn't finish the run ({where}): {err}"
+msgstr "run mukammal tareeqe se khatam nahi kar sake ({where}): {err}"
+
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} par wapas nahi ja sake: {why}"
 
@@ -4982,6 +4985,9 @@ msgstr "respawn nahi ho saka - baraye meharbani khud karein"
 
 msgid "couldn't restock {item}: {why}"
 msgstr "{item} restock nahin ho saka: {why}"
+
+msgid "couldn't save the results: {err}"
+msgstr "nataij save nahi kar sake: {err}"
 
 msgid "couldn't save the shard prices: {err}"
 msgstr "shards ki qeematein mahfooz nahi ho sakin: {err}"
@@ -5199,6 +5205,10 @@ msgstr ""
 
 msgid "following {name}"
 msgstr "{name} ke saath chal raha hoon"
+
+msgid "found it: {npc} at {x},{y} - but couldn't save it for next time"
+msgstr ""
+"mil gaya: {npc} {x},{y} par - lekin agli baar ke liye save nahi kar sake"
 
 msgid "found it: {npc} at {x},{y} - remembered"
 msgstr "mil gaya: {npc} {x},{y} par - yaad rakh liya"

@@ -170,7 +170,9 @@ def test_automatic_login_requires_a_confirmed_character_identity() -> None:
         settings.remember_character_account("Hero", "account@example.com")
 
 
-def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_locked_settings_file_is_left_alone_and_never_saved_over(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # An I/O error is not broken JSON: the player's good file once went to .corrupt and the
+    # defaults were saved in its place. Now it stays where it is, and no save goes over it.
     monkeypatch.setattr(settings, "_unreadable", set[str]())
     p = tmp_path / "settings.json"
     p.write_text('{"language": "ru"}', encoding="utf-8")
@@ -181,11 +183,18 @@ def test_a_locked_settings_file_is_moved_aside_and_the_save_goes_on(tmp_path: Pa
             raise PermissionError("in use")
         return real_open(file, *a, **k)
 
+    def current() -> tuple[dict[str, Any], str]:
+        return settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)
+
     monkeypatch.setattr("builtins.open", deny)
-    assert settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)["language"] == "en"
-    assert os.path.exists(str(p) + ".corrupt")
-    settings._write(str(p), {"language": "ru"})
-    assert json.loads(p.read_text(encoding="utf-8"))["language"] == "ru"
+    assert current() == ({**settings.APP_DEFAULTS}, settings.UNREADABLE)
+    assert not os.path.exists(str(p) + ".corrupt")
+    with pytest.raises(OSError, match="close whatever holds it"):
+        settings._write(str(p), {"language": "en"}, current)
+    monkeypatch.setattr("builtins.open", real_open)
+    assert p.read_text(encoding="utf-8") == '{"language": "ru"}'
+    settings._write(str(p), {"language": "de"}, current)      # readable again: the save goes on
+    assert json.loads(p.read_text(encoding="utf-8"))["language"] == "de"
 
 
 def test_a_file_that_cannot_be_moved_aside_is_never_overwritten(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -204,10 +213,11 @@ def test_a_file_that_cannot_be_moved_aside_is_never_overwritten(tmp_path: Path, 
 
     monkeypatch.setattr("builtins.open", deny)
     monkeypatch.setattr(settings.os, "replace", locked)
-    assert settings._read(str(p), settings.APP_DEFAULTS, settings.AppSettings)["language"] == "en"
+    assert settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings)[0]["language"] == "en"
     assert str(p) in settings._unreadable
     with pytest.raises(OSError, match="close whatever holds it"):
-        settings._write(str(p), {"language": "en"})
+        settings._write(str(p), {"language": "en"},
+                        lambda: settings._load(str(p), settings.APP_DEFAULTS, settings.AppSettings))
     assert p.read_text(encoding="utf-8") == '{"language": "ru"}'
 
 
