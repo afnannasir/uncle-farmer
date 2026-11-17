@@ -40,6 +40,7 @@ AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the gam
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
 AGENT_LOGIN = 69    # from here automatic login also selects the profile's saved server
+AGENT_RECONNECT = 69 # the current agent also exposes the native connection-error recovery command
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -312,8 +313,32 @@ class Run(threading.Thread):
         bot.locate = getattr(self, "locate", None)   # where another of our characters is (follow, come)
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
         bot.tell = getattr(self, "tell", None)       # answers the player who asked for this run
+        bot.reconnect = lambda: self._reconnect_saved_character(bot, agent)
         self.bot = bot
         return bot
+
+    def _reconnect_saved_character(self, bot: Bot, agent: int) -> bool:
+        link = self.link
+        entity_id = settings.profile_id(self.profile or "")
+        if link is None or not entity_id or agent < AGENT_RECONNECT:
+            return False
+        try:
+            if link.send("arm") != "armed" or not link.json("reconnect %s" % entity_id).get("ok"):
+                return False
+            while not self.stop_event.wait(0.25):
+                state = link.json("autologinstatus")
+                if state.get("running"):
+                    continue
+                if state.get("status") != "ready":
+                    return False
+                link.send("keysup")
+                bot.held.clear()
+                bot.guarding = self._arm(link, agent, bot.p, settings.load_app()) == "on"
+                self.log(_("automatic reconnection finished"), speak=True)
+                return True
+        except (AgentError, OSError, Stopped):
+            return False
+        return False
 
     def _set_up(self, bot: Bot, snap: dict[str, Any], profile: dict[str, Any], found: dict[str, Any], agent: int,
                 app: dict[str, Any]) -> None:

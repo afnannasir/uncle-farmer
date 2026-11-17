@@ -271,6 +271,7 @@ final class StateServer implements Runnable {
                     parts.length > 3 ? parts[3] : "");
         }
         if (verb.equals("autologinstatus")) return AutomaticLogin.status();
+        if (verb.equals("reconnect")) return armed[0] ? AutomaticLogin.reconnect(parts.length > 1 ? parts[1] : "") : "refused: send 'arm' first";
 
         if (verb.equals("keys")) return Keys.status();
         if (verb.equals("pms")) {

@@ -79,6 +79,26 @@ final class AutomaticLogin {
                 + Protocol.jsonEscape(status) + "\"}";
     }
 
+    /** Dismisses a connection-error screen, then invokes the selected account's native Login path. */
+    static String reconnect(final String idText) {
+        final int id;
+        try { id = Integer.parseInt(idText); } catch (RuntimeException ignored) { return "{\"ok\":false,\"error\":\"invalid character id\"}"; }
+        final String email = connectedAccount() == null ? selectedAccount() : connectedAccount();
+        if (id <= 0 || email == null) return "{\"ok\":false,\"error\":\"no saved account selected\"}";
+        synchronized (LOCK) {
+            if (running) return "{\"ok\":false,\"error\":\"automatic login is already running\"}";
+            running = true; status = "dismissing connection error";
+            new Thread(new Runnable() { @Override public void run() { try {
+                Keys.tap("enter", 60L); Thread.sleep(300L); status = "logging in";
+                String problem = startSavedAccount(email);
+                status = problem == null && waitForCharacter(id, System.currentTimeMillis() + WORLD_TIMEOUT_MILLIS)
+                        ? "ready" : (problem == null ? "timed out loading character" : problem);
+            } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); status = "cancelled"; }
+              finally { running = false; } } }, "Uncle Farmer reconnect").start();
+        }
+        return "{\"ok\":true,\"id\":" + id + "}";
+    }
+
     private static void waitForPicker(final int id) {
         Thread worker = new Thread(new Runnable() {
             @Override public void run() {
