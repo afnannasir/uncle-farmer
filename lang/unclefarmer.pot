@@ -6603,6 +6603,9 @@ msgstr ""
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr ""
+
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""

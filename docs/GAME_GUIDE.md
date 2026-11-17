@@ -134,7 +134,7 @@ run is away from the monsters.
   enemies near you (Priest), the target's agony (Witcher).
 - **Combat skills** are learned from Masters by level (Level 15 skills from Master Taufan, Level
   25 from Master Drunk, class skills from the senior mentors) and from skill crystals. Ten attack
-  keys, two pages (Caps Lock).
+  keys, two pages (Caps Lock, or the key the game's options give it; the bot uses that key).
 - **Talents** are passive. General talents protect against terrain (Anti-Corrosion, Turtle Breath,
   Poison Immunity); class talents boost the class. A talent must be learned, then **activated**
   with talent points (cultivated at a Master or the gang's Guru Elder for arnebia, and gang
