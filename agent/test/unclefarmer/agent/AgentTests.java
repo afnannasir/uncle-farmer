@@ -41,6 +41,7 @@ public final class AgentTests {
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
         aTickToZeroIsADeath();
+        theDungeonReportIsReadAsTheGameReadsIt();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
         aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
@@ -879,6 +880,42 @@ public final class AgentTests {
         World.inbound(new byte[] {42, -1, -1, -4, 87});                      // cut off
         got = World.casts(before);
         check(!got.contains("[-936,") && !got.contains("[-937,"), "the id-and-short message is no HP report: " + got);
+    }
+
+    private static void theDungeonReportIsReadAsTheGameReadsIt() {
+        // Laid out as a recorded five-player Demon Cave report (2026-11-17), two players here.
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(256);
+        b.put((byte) 66).put((byte) 7).putShort((short) 0x0402)
+         .putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 58);
+        reportRow(b, 2001, 3 * 2 + 1, 79, 34, 12286925, 0, 188265);
+        reportRow(b, 2002, 7 * 2 + 2, 79, 24, 7965187, 2207812, 843962);
+        b.putInt(0).put("Demon  Cave,Demon  Cave floor 13,First,Second".getBytes(java.nio.charset.Charset.forName("GBK")));
+        byte[] m = java.util.Arrays.copyOf(b.array(), b.position());
+        Report.forget();
+        check(Report.since(0L).equals("{}"), "no report yet: " + Report.since(0L));
+        long before = System.currentTimeMillis() - 1;
+        World.inbound(m);
+        String got = Report.since(before);
+        check(got.contains("\"total_kills\":58") && got.contains("\"place\":\"Demon  Cave\"")
+              && got.contains("\"part\":\"Demon  Cave floor 13\""), "the head and the place: " + got);
+        check(got.contains("{\"id\":2001,\"class\":3,\"female\":false,\"level\":79,\"kills\":34,\"damage\":12286925"),
+              "the first row: " + got);
+        check(got.contains("\"highest_area_hit\":188265,\"highest_heal\":0,\"highest_area_heal\":0,\"name\":\"First\"}"),
+              "the first row's highest hits and its name: " + got);
+        check(got.contains("\"id\":2002,\"class\":7,\"female\":true") && got.contains("\"healing\":2207812")
+              && got.contains("\"name\":\"Second\""), "the second row: " + got);
+        check(Report.since(System.currentTimeMillis() + 1000).equals("{}"), "nothing newer than asked");
+        World.inbound(java.util.Arrays.copyOf(m, 40));                  // cut off inside a row
+        check(Report.since(before).equals(got), "a cut-off report changes nothing");
+        Report.forget();
+    }
+
+    private static void reportRow(java.nio.ByteBuffer b, int id, int cs, int level, int kills, int damage,
+                                  int healing, int areaHit) {
+        b.putInt(id).putShort((short) cs).put((byte) level).putShort((short) 0).putShort((short) 0)
+         .putShort((short) 0).putShort((short) kills).putInt(damage).putInt(healing)
+         .putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 0)
+         .putInt(areaHit / 2).putInt(areaHit).putInt(0).putInt(0);
     }
 
     private static byte[] op42(int id, int hp, int change, int sound, int extra) {

@@ -31,12 +31,15 @@ class Agent:
     def __init__(self, pet_out: bool) -> None:
         self.pet_out = pet_out
         self.pets: list[dict[str, Any]] | None = None      # a test's own pet list
+        self.reports: list[dict[str, Any]] = []             # `report` answers, the last one kept
 
     def json(self, line: str) -> Any:           # an agent answer: any JSON, as the real link
         if line == "mem pets":
             if self.pets is not None:
                 return [dict(r) for r in self.pets]
             return [{"id": 77, "name": "Wild Eagle>><< Sparky", "usable_at": -1}] if self.pet_out else []
+        if line == "report" and self.reports:
+            return self.reports.pop(0) if len(self.reports) > 1 else self.reports[0]
         return {"error": "unknown"}
 
 
@@ -273,6 +276,26 @@ def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop: Non
     assert dungeon.done_today("Hero") == ["Scorpion Cave"]
     assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}})) == []
     assert g.walked == ["Scorpion Cave"]                      # not again today
+
+
+def test_the_visit_line_carries_the_games_own_report(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g._enter()
+    old = {"at": 5, "total_kills": 9, "players": [{"id": 1, "kills": 9, "damage": 10}]}
+    new = {"at": 9, "total_kills": 58, "players": [{"id": 2, "kills": 24, "damage": 7965187},
+                                                   {"id": 1, "kills": 34, "damage": 12286925, "healing": 0}]}
+    g.me = lambda: {"level": 80, "id": 1}  # type: ignore[method-assign]
+    g.a.reports = [old, new]
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
+    assert notes and notes[0].endswith("the game's report: 34 of 58 kills, 12,286,925 damage"), notes
+
+
+def test_an_old_report_or_none_leaves_the_line_alone(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g._enter()
+    g.a.reports = [{"at": 5, "total_kills": 9, "players": [{"id": 1, "kills": 9}]}]    # the same one before and after
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
+    assert notes and "report" not in notes[0]
 
 
 def test_still_inside_after_the_timer_it_leaves_itself(shop: None) -> None:

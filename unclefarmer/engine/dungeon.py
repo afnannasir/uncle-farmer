@@ -54,10 +54,11 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any
+from typing import Any, cast
 
 from .. import atlas, dungeons, jsonio, knowledge
 from ..clock import clock_for
+from ..link import AgentError
 from ..i18n import N_, _
 from . import beasts, chores, combat, keyslots, pets, town, xpcard
 from .bot import Bot, Stopped
@@ -388,6 +389,7 @@ def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     """Inside a cave: the fight until the game moves us out, then a line about it."""
     mid = CAVES[cave]["map"]
     began, kills = b.clock.time(), b.kills
+    seen = report_at(b)
 
     def out() -> bool:
         return b.map_id() != mid or b.clock.time() - began >= (MINUTES + OVERTIME) * 60
@@ -408,7 +410,48 @@ def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     made = b.kills - kills
     minutes = max(1.0, (b.clock.time() - began) / 60.0)
     line = _("{cave}: {n} kills in {m} minutes", cave=cave, n=made, m=int(round(minutes)))
+    told = game_report(b, seen)
+    if told:
+        line += "; " + told
     b.log(line, speak=True)
+    return line
+
+
+def report_at(b: Bot) -> int | None:
+    """When the game's newest end-of-dungeon report arrived (agent 72 `report`), or None: one
+    newer than this after a visit is that visit's."""
+    try:
+        r: Any = b.a.json("report")
+    except AgentError:         # the link broke: the visit goes on without it
+        return None
+    if not isinstance(r, dict):
+        return None
+    at: Any = cast(dict[str, Any], r).get("at")
+    return at if isinstance(at, int) else None
+
+
+def game_report(b: Bot, seen: int | None) -> str | None:
+    """What the game's own end report (IN op=66) says about this visit: our kills, damage and
+    healing, and the kills of everyone in it. None when no new report came (an older agent, or
+    the game sent none). The bot's own count misses kills it can't see; the game's doesn't."""
+    try:
+        got: Any = b.a.json("report")
+    except AgentError:
+        return None
+    if not isinstance(got, dict):
+        return None
+    r = cast(dict[str, Any], got)
+    players: list[dict[str, Any]] = r.get("players") or []
+    if not players or r.get("at") == seen:
+        return None
+    me_id = b.me().get("id")
+    mine: dict[str, Any] = next((p for p in players if p.get("id") == me_id), dict[str, Any]())
+    if not mine:
+        return _("the game's report: {total} kills", total=r.get("total_kills", 0))
+    line = _("the game's report: {n} of {total} kills, {dmg} damage", n=mine.get("kills", 0),
+             total=r.get("total_kills", 0), dmg=f"{int(mine.get('damage') or 0):,}")
+    if mine.get("healing"):
+        line += _(", {heal} healing", heal=f"{int(mine['healing']):,}")
     return line
 
 

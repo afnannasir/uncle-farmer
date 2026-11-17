@@ -114,6 +114,8 @@ final class World {
                 Team.inbound(m);
             } else if (op == 17) {
                 Profession.inbound(m);
+            } else if (op == 66) {
+                Report.inbound(m);
             }
         } catch (Throwable t) {
             Log.error("world in", t);
