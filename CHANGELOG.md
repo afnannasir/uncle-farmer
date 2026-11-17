@@ -1,5 +1,28 @@
 # What's new
 
+## Unreleased
+
+**Airships and cable cars that need a level**
+
+- Below an airship's level, its administrator opens no menu: the game only says "Go to Violet
+  City; requires Level 76 or above". The bot waited for a menu, said "didn't answer", tried once
+  more and only then went another way, about 20 seconds lost on every trip (a character under
+  level 76 heading for Margit Rainforest from Tulip City, every time). The bot now knows the level
+  of every airship out of a capital and doesn't plan one below it: Giant Rock City to Sunset City
+  26 and to White Sand City 36, Tulip City to Moon City 56 and to Violet City 76, Holy Blood City
+  to Gouging Knife City 66 and to Dark Night City 86 (the flights back need none); the cable car
+  from Giant Rock City's underground to Tulip City's needs 45, to Holy Blood City's 60. A ride that
+  turns the character away for its level anyway is left out at once, said ("the Airship
+  Administrator on Tuneful Wetland takes only level 76 and above"), and not tried again for the
+  rest of the run.
+- Dark Night City and Gouging Knife City now fly back to Holy Blood City: their administrators
+  were missing, and from Dark Night City the bot walked out through skeleton basin, four times
+  longer. Holy Blood City's own two airships now land where they really do, not in the middle of
+  the map.
+- Every fare is known now: each airship takes 1000 arnebia, and the cable cars to and from the
+  Lifting Platforms are free. A character with less than 1000 arnebia in the bag no longer plans
+  an airship it can't pay for.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

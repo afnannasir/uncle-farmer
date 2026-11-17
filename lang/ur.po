@@ -7003,6 +7003,10 @@ msgstr ""
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} andar jaane ka koi rasta nahi deta ({about})"
 
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
+msgstr ""
+"{map} par {npc} sirf level {n} aur us se upar walon ko le jata hai - doosre raaste se ja rahe hain"
+
 msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr "{npc} ne nahi kaha - logs\\dialogs.log dekhein"
 

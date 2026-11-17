@@ -80,7 +80,7 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
     best: tuple[float, Npc] | None = None
     rows = b.bag_rows()
     purse = travel.arnebia_in(rows)
-    rides, off = travel.ride_rules(b.p)
+    rides, off = travel.ride_rules(b.p, int(me.get("level") or 0))
     spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
 
     def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
