@@ -71,6 +71,18 @@ MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the mark
 REFUSED_WAIT = 3.0       # a skill the game wouldn't cast for a whole burst is left this long...
 REFUSED_WAIT_RAGE = 8.0  # ... or this long when it spends rage or combos (they take several hits to build)
 LONG_FIGHT_HP = 3.0      # a target with this many times our max HP is a long fight
+# Channels and monsters' swings (Phase 1b, measured 2026-11-15/17 on two Mage nights): a hit on us
+# always breaks a channel, silently, and a monster swings at us on a fixed clock (median 2.02 s
+# between one monster's hits). So a channel is started only when no monster that swung at us lately
+# swings again before it ends. Replayed over 4,623 Ice Arrows: that keeps off 48% of the 1,597 that
+# broke, and of the arrows it holds back 52% would have broken (the rule "no channel within T s of
+# a hit" held back as many good ones as broken). For the Mage the arrow only stands in for Magic
+# Sphere, the same 4,000 attack with no channel, so a held-back arrow costs only an Ice Spike.
+SWING_GAP = 2.02         # a monster's swing gap until we have seen two of its swings at us
+SWING_GAP_MIN = 0.5      # no monster swings faster than this (a misread pair of reports)
+SWING_SEEN = 4.0         # a monster that last swung at us this long ago is no longer counted
+SWING_KEPT = 6           # swings kept per monster (enough for a median gap)
+CHANNEL_START = 0.15     # a press now starts the channel about this much later (the press's trip)
 MELEE = {"Warrior", "Orc", "Assassin"}
 # How far inside its base attack's range a class fights: at the very edge a monster stepping back
 # makes the cast "out of range". It was 2 tiles (a Hunter shot from 18 of its 20) and the player
@@ -275,6 +287,7 @@ class SkillBook:
         self.pending_target: dict[str, int | None] = {}    # skill name -> the target id it was pressed at
         self.landed: dict[tuple[str, int | None], float] = {}     # (skill name, target id) -> when our cast landed there
         self.downed: dict[int, float] = {}       # monster id -> when a cast of ours left it at 0 HP
+        self.swings: dict[int, list[float]] = {}  # monster id -> when it last swung at us (channel_safe)
         self.target_id = None
         self.combos = None
         self.gaps: list[float] = []           # seconds between our consecutive casts -> the global cooldown
@@ -329,6 +342,18 @@ class SkillBook:
         self._saving_pyroblast_for_next = value
         if self.combos is not None:
             self.combos.saving_pyroblast_for_next = value
+
+    def _swing_breaks(self, s: Skill, now: float) -> bool:
+        """A channel a monster's next swing would break before it ends (channel_safe). The Elf's
+        combo channels keep their own rules (Blazing Combo makes them instant), and an unpenalized
+        one has no channel to break."""
+        if not s.get("cast") or s.get("role") in NEVER:
+            return False
+        if s["name"] in elf_combos.CHANNEL_SKILLS and self.cls == "Elf":
+            return False
+        if elf_combos.unpenalized(s, self.available_to_channel_without_penalty):
+            return False
+        return not self.channel_safe(s, now)
 
     def _channeling_restricted(self, s: Skill) -> bool:
         if self.cls == "Elf" and s["name"] in elf_combos.CHANNEL_SKILLS:
@@ -602,12 +627,55 @@ class SkillBook:
                 self._fold_cast(c, me_id)
             else:
                 self._note_downed(c.get("targets") or [], c["t"] / 1000.0)
+                self._note_swing(c, me_id)
         # A monster our pet, another player or a damage over time killed is just as dead: the
         # fight must not press at it again until its next full look (up to 2 s, a wasted cast).
         deaths: list[list[Any]] = r.get("deaths") or []
         for row in deaths:
             if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and isinstance(row[1], (int, float)):
                 self._note_downed([[row[0], 0]], row[1] / 1000.0)
+
+    def _note_swing(self, c: dict[str, Any], me_id: int | None) -> None:
+        """A monster's cast that names us among whom it hit (a dodge too: it is still a swing) is
+        one of its swings, for channel_safe."""
+        caster = c.get("caster")
+        if me_id is None or not isinstance(caster, int) or caster >= 0:
+            return
+        rows: list[list[Any]] = list(c.get("hits") or []) or list(c.get("targets") or [])
+        if not any(row and row[0] == me_id for row in rows):
+            return
+        swings: dict[int, list[float]] = self.__dict__.setdefault("swings", {})
+        seen = swings.setdefault(caster, [])
+        t = c["t"] / 1000.0
+        if seen and t <= seen[-1]:
+            return
+        seen.append(t)
+        del seen[:-SWING_KEPT]
+        if len(swings) > 50:
+            newest = sorted(swings.items(), key=lambda kv: kv[1][-1])[-20:]
+            self.swings = dict(newest)
+
+    def channel_safe(self, s: Skill, now: float) -> bool:
+        """A channel pressed now ends before any monster that swung at us lately swings again
+        (each monster's gap: the median of its own, else SWING_GAP). A monster gone down since its
+        last swing doesn't count. A skill with no channel is always safe."""
+        d = float(s.get("cast") or 0)
+        if d <= 0:
+            return True
+        swings: dict[int, list[float]] = self.__dict__.get("swings") or {}
+        downed: dict[int, float] = self.__dict__.get("downed") or {}
+        start = now + CHANNEL_START
+        for mid, seen in swings.items():
+            if not seen or now - seen[-1] > SWING_SEEN or downed.get(mid, -1.0) >= seen[-1]:
+                continue
+            gaps = sorted(b - a for a, b in zip(seen, seen[1:]) if b - a < 6)
+            gap = max(SWING_GAP_MIN, gaps[len(gaps) // 2] if gaps else SWING_GAP)
+            nxt = seen[-1] + gap
+            if nxt <= start:
+                nxt += math.ceil((start - nxt) / gap + 1e-9) * gap
+            if nxt - start < d:
+                return False
+        return True
 
     def _note_downed(self, struck: list[list[Any]], t: float) -> None:
         """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it)."""
@@ -629,6 +697,7 @@ class SkillBook:
         """We are on another map: target ids mean other monsters here. What was noted against
         them goes - who is down, presses on their way to one, where our casts landed."""
         self.downed.clear()
+        self.__dict__.get("swings", {}).clear()
         for name in [n for n, t in self.pending_target.items() if t is not None]:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
@@ -1084,7 +1153,7 @@ class SkillBook:
                     and getattr(self, "on_the_move", False)
                 ):
                     continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
-                if self._channeling_restricted(s):
+                if self._channeling_restricted(s) or self._swing_breaks(s, now):
                     continue
                 seen.add(s["name"])
                 if s["name"] != elf_combos.IGNITION and s.get("use") == "ready" and s.get("role") not in NEVER_READY:
@@ -1196,6 +1265,7 @@ class SkillBook:
                  and s["name"] != elf_combos.IGNITION
                  and in_range(s)
                  and not self._channeling_restricted(s)
+                 and not self._swing_breaks(s, now)
                  and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
         if not cands:
             return None
