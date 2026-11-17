@@ -94,7 +94,7 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
-from . import chores, crafting, dungeon, follow, survey, town, triggers
+from . import activities, chores, dungeon, follow, survey, town
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -1071,34 +1071,12 @@ class Runner:
     def _do_survey(self, node: Node, b: Bot, o: dict[str, Any]):
         survey.survey(b, o["scope"])
 
-    def _do_gem_maker(self, node: Node, b: Bot, o: dict[str, Any]):
-        k = node.kind
-        cfg: dict[str, Any] = b.p.get("gem_maker" if k == "gem_maker" else "enhancer") or {}
-        if not cfg:
-            raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Maker") if k == "gem_maker"
-                            else _("Equipment Enhancer")))
-        with stats.doing(b, k):          # its shards, gems and fees are no farming loot
-            (crafting.gem_maker if k == "gem_maker" else crafting.enhance)(b, cfg, o.get("check", False))
+    # The Tools menu's jobs (engine/activities.py): the same code triggers and schedules run
+    def _do_activity(self, node: Node, b: Bot, o: dict[str, Any]):
+        activities.run(b, node.kind, o.get("check", False), o)
 
-    _do_enhance = _do_gem_maker
-
-    def _do_chores(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "chores"):
-            chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
-
-    def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
-
-    def _do_lose_xp(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "lose_xp", o.get("check", False))
-
-    def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
-        dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
-
-    def _do_sell_collection(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "sell_collection"):
-            if not town.sell_collection(b, o["kinds"]):
-                b.log(_("nothing of the collection was sold"))
+    _do_gem_maker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
+    _do_dungeon = _do_sell_collection = _do_activity
 
     def _do_visit(self, node: Node, b: Bot, o: dict[str, Any]):
         w = o["what"]
@@ -1108,21 +1086,7 @@ class Runner:
         else:
             town.visit(b, None, name=w)
 
-    # The Tools menu's jobs: the same code the Character settings' triggers run (engine/triggers.py)
-    def _do_sell_shards(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "sell_shards")
-
-    def _do_clean_bag(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "clean_bag")
-
-    def _do_update_shard_prices(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "update_shard_prices")
-
-    def _do_store_items(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "store_items")
-
-    def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "restock")
+    _do_sell_shards = _do_clean_bag = _do_update_shard_prices = _do_store_items = _do_restock = _do_activity
 
     def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])

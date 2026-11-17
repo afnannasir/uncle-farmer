@@ -26,34 +26,24 @@ from collections.abc import Callable
 import math
 from typing import TYPE_CHECKING, Any
 
-from .. import jsonio, stats
+from .. import jsonio
 from ..errors import carry_on
-from ..i18n import N_, _
+from ..i18n import _
 from ..link import AgentError
-from . import gathering, town, xploss
+from . import activities
 from .botparts.base import GameBroken, Stopped
 
 if TYPE_CHECKING:
     from .bot import Bot
 
 STAGES = ("before", "after")
-# (job = its script command and results part, what the log calls it), in the order they run
-JOBS: tuple[tuple[str, str], ...] = (
-    ("sell_shards", N_("selling shards")),
-    ("clean_bag", N_("cleaning the bag")),
-    ("update_shard_prices", N_("updating shard prices")),
-    ("gather", N_("gathering")),
-    ("store_items", N_("storing items")),
-    ("restock", N_("restocking supplies")),
-    ("lose_xp", N_("losing experience")),
-)
-# the town function each job is (looked up when it runs); gathering is gathering.run with its settings
-TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
-             "update_shard_prices": "update_shard_prices", "store_items": "store_items", "restock": "restock_now"}
-FARMING_COMMANDS = ("farm", "dungeon")
-TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems")),
-                ("enhance", N_("enhancing equipment")), ("dungeon", N_("running a dungeon")),
-                ("sell_collection", N_("selling the collection")))
+# (job = its script command and results part, what the log calls it), in the order they run: the
+# jobs a trigger runs straight, then those it runs through their script command (engine/activities.py)
+JOBS: tuple[tuple[str, str], ...] = tuple((a.key, a.label) for a in activities.ACTIVITIES if a.direct)
+# the town function each town job is (looked up when it runs)
+TOWN_JOBS = {a.key: a.town for a in activities.ACTIVITIES if a.town}
+FARMING_COMMANDS = ("farm",) + tuple(a.key for a in activities.ACTIVITIES if a.farms)
+TOOLS = tuple((a.key, a.label) for a in activities.ACTIVITIES)
 
 
 MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)
@@ -179,13 +169,7 @@ def run_action(b: Bot, action: str) -> None:
 def run_job(b: Bot, job: str, check_only: bool = False) -> object:
     """One job, the same whoever asks for it: the Tools menu (its script command), a trigger, or a
     player's script. Inside the job's own results part."""
-    with stats.doing(b, job):
-        if job == "gather":
-            return gathering.run(b, gathering.config(b.p), check_only)
-        if job == "lose_xp":
-            return xploss.run(b, xploss.config(b.p), check_only)
-        fn: Callable[[Bot], object] = getattr(town, TOWN_JOBS[job])
-        return fn(b)
+    return activities.run(b, job, check_only)
 
 
 def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:

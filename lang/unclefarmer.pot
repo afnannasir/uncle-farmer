@@ -603,6 +603,9 @@ msgstr ""
 msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ""
 
+msgid ", {heal} healing"
+msgstr ""
+
 msgid ", {n} threads"
 msgstr ""
 
@@ -2538,6 +2541,10 @@ msgid "Once"
 msgstr ""
 
 msgid "Only areas whose monsters are at most this many levels &above you:"
+msgstr ""
+
+msgid ""
+"Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 
 msgid "Only when HP is low"
@@ -6471,6 +6478,12 @@ msgstr ""
 msgid "the game's own speech is off while the bot runs"
 msgstr ""
 
+msgid "the game's report: {n} of {total} kills, {dmg} damage"
+msgstr ""
+
+msgid "the game's report: {total} kills"
+msgstr ""
+
 msgid "the gang has no {npc}"
 msgstr ""
 
@@ -7479,6 +7492,9 @@ msgid ""
 msgstr ""
 
 msgid "{skill} doesn't list {place} for this character"
+msgstr ""
+
+msgid "{skill} for a long walk"
 msgstr ""
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"

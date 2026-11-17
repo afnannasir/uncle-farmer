@@ -2,6 +2,38 @@
 
 ## Unreleased
 
+**Maps for your level in the plan editor**
+
+- The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
+  monsters are from 9 levels below you to 5 above: the game's own rule for full experience and full
+  loot. Ordinary fields come first, then dungeons and the rest, each with the highest monsters first.
+  The game has to be running with your character logged in, so the bot knows your level.
+
+**Speed skills on long walks**
+
+- Wind Step and Swallow Dance (Warrior), Haste (Orc) and Shadow Steps (Assassin) were never used:
+  the bot only ever pressed skills that fight. Now a walk on foot of 25 steps or more starts with
+  the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
+  anyway), not in a fight, and never a skill you set to Never.
+
+**The game's own report after a dungeon**
+
+- When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
+  The bot now reads it (agent 72) and adds it to its line about the visit, for example "Scorpion
+  Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
+  count is the true one: it includes kills the bot can't see.
+
+**For contributors: a dungeon recipe from one recorded run**
+
+- `uv run python -m unclefarmer.recipedraft <packets log> --from 12:40 --to 13:10` turns the
+  recorder's log of one hand run into a draft recipe: each map in order, where you came in and
+  left, the way walked, every NPC talked to with the menu entries chosen (in the game's own words),
+  timers and the end report. `--json` writes it to a file. New dungeons are to be built from such a
+  draft, never from a guessed menu.
+- Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
+  `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
+  job is one entry there.
+
 **Skills outside the global cooldown are used in every fight**
 
 - Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
