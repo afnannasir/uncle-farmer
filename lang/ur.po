@@ -4673,6 +4673,9 @@ msgstr "khudkar login mukammal hua"
 msgid "automatic login stopped"
 msgstr "khudkar login ruk gaya"
 
+msgid "automatic reconnection finished"
+msgstr "khudkar dobara rabt mukammal ho gaya"
+
 msgid "avoiding elites"
 msgstr "elites se bachte hue"
 

@@ -4476,6 +4476,9 @@ msgstr ""
 msgid "automatic login stopped"
 msgstr ""
 
+msgid "automatic reconnection finished"
+msgstr ""
+
 msgid "avoiding elites"
 msgstr ""
 
