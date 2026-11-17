@@ -182,6 +182,26 @@ def farming_maps() -> list[tuple[int, str, str]]:
     return out
 
 
+# The game's own rule: monsters from 9 levels below you to 5 above give full experience and full loot.
+LEVEL_BELOW = 9
+LEVEL_ABOVE = 5
+
+
+def fitting_levels(mid: int | str, level: int) -> list[int]:
+    """The map's monster levels that give a character of this level full experience and loot."""
+    levels: list[int] = maps()[int(mid)]["spawn"].get("levels") or []
+    return [v for v in levels if level - LEVEL_BELOW <= v <= level + LEVEL_ABOVE]
+
+
+def maps_for_level(level: int) -> list[tuple[int, str, str]]:
+    """Farming maps with monsters that give full experience and loot at this level: ordinary fields
+    first, then the others, each group with the highest fitting monsters first (more experience)."""
+    out = [t for t in farming_maps() if fitting_levels(t[0], level)]
+    out.sort(key=lambda t: (kind(t[0]) not in (None, "field"), -max(fitting_levels(t[0], level)),
+                            t[1].lower()))
+    return out
+
+
 def all_maps() -> list[tuple[int, str]]:
     return sorted(((mid, label(mid)) for mid in maps()), key=lambda t: t[1].lower())
 
