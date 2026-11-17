@@ -543,6 +543,9 @@ msgstr "&Kya karna hai:"
 msgid "&When the bag is full:"
 msgstr "&Jab basta bhar jaye:"
 
+msgid "&Where to die:"
+msgstr "&Kahan marna hai:"
+
 msgid "&Write an email"
 msgstr "&Email likhein"
 
@@ -3697,9 +3700,9 @@ msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "jaise hi itna {what} kam hota hai, bot ise pee leta hai."
 
 msgid ""
-"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
-"Bot ek guard dhoondta hai (nazar mein, jahan pehle dekha gaya, ya qareebi shehar mein), PK mode all mode par karta hai, guard ko ek baar maarta hai aur character ko marne deta hai: na potion, na heal, na jawabi larai. Woh shehar mein dobara zinda hota hai aur tab tak dobara jata hai jab tak agle level ko kam az kam itni experience na chahiye. Pehle pet wapas rakha jata hai, aur aakhir mein PK mode wapas lagaya jata hai. Har maut ki tarah gear ghista hai; black-name character (Morality -1000 ya kam) marne par pehna hua gear kho sakta hai, is liye XP loser us ke liye nahi chalega."
+"Bot ek guard dhoondta hai (nazar mein, jahan pehle dekha gaya, ya qareebi shehar mein), PK mode all mode par karta hai, guard ko ek baar maarta hai aur character ko marne deta hai: na potion, na heal, na jawabi larai. Woh shehar mein dobara zinda hota hai aur tab tak dobara jata hai jab tak agle level ko kam az kam itni experience na chahiye. Qareebi gaon wale choice mein woh pehle qareebi gaon ke andar jata hai (game mare hue character ko us aakhri shehar mein wapas lata hai jis mein woh dakhil hua tha), phir us ke darwazon par marta hai, is liye har maut jaldi hoti hai (Tuneful Wetland par Aria Village mein 11 seconds, Tulip City mein 29); agar game use kahin aur wapas laye to woh is ke bajaye qareebi guard ke paas marta hai. Pehle pet wapas rakha jata hai, aur aakhir mein PK mode wapas lagaya jata hai. Har maut ki tarah gear ghista hai; black-name character (Morality -1000 ya kam) marne par pehna hua gear kho sakta hai, is liye XP loser us ke liye nahi chalega."
 
 msgid "The bot isn't running."
 msgstr "Bot nahi chal raha."
@@ -4626,6 +4629,12 @@ msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} par {x},{y} par pohanch gaye - yahan se aage ka rasta bana rahe hain"
 
+msgid "at the nearest guard"
+msgstr "qareebi guard ke paas"
+
+msgid "at the nearest village (you respawn next to its guards)"
+msgstr "qareebi gaon mein (aap us ke guards ke paas dobara zinda hote hain)"
+
 msgid "at {time}"
 msgstr "{time} par"
 
@@ -5046,6 +5055,9 @@ msgstr "attack ka woh page nahi khol sake jis par {skill} hai"
 msgid "couldn't type into the game: {why}"
 msgstr "game mein type nahi kar sake: {why}"
 
+msgid "couldn't walk into {village} - trying another village"
+msgstr "{village} ke andar nahi ja saka - doosra gaon try kar raha hai"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "experience card {what} nahi ho saka: {why} - ek minute baad dobara koshish"
@@ -5114,6 +5126,10 @@ msgstr "drop: aaj kitna drop time baqi hai."
 
 msgid "dungeon - you leave by its chest, not on foot"
 msgstr "dungeon - yahan se aap is ke chest ke zariye nikalte hain, paidal nahi"
+
+msgid "dying at {village}: the game brings us back right next to its guards"
+msgstr ""
+"{village} par mar rahe hain: game hamein us ke guards ke bilkul paas wapas lata hai"
 
 msgid "dying costs no more experience on this level - stopped"
 msgstr "is level par marne se ab experience kam nahi hoti - ruk gaye"
@@ -5682,6 +5698,10 @@ msgstr ""
 msgid "no guard here - going to the nearest town, {map}"
 msgstr "yahan koi guard nahi - qareebi shehar ja rahe hain, {map}"
 
+msgid "no guard to fight at {village} - trying another village"
+msgstr ""
+"{village} par larne ke liye koi guard nahi - doosra gaon try kar rahe hain"
+
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
 
@@ -5758,6 +5778,11 @@ msgstr "aisa koi kaam nahi: {names} (yeh hain: {all})"
 
 msgid "no such dungeon: {name} (there are: {all})"
 msgstr "aisa koi dungeon nahi: {name} (yeh hain: {all})"
+
+msgid ""
+"no village with a guard to fight nearby - dying at the nearest guard instead"
+msgstr ""
+"aas paas koi gaon nahi jahan larne ke liye guard ho - is ke bajaye qareebi guard ke paas mar rahe hain"
 
 msgid "no way from {a} to {b} - go there yourself and start again"
 msgstr ""
@@ -6677,6 +6702,11 @@ msgid ""
 msgstr ""
 "yahan follow attack humein monster tak nahi le jata - khud un tak chal rahe hain"
 
+msgid ""
+"the game brought us back on {map} at {x},{y}, not at {village} - dying at the nearest guard instead"
+msgstr ""
+"game hamein {map} par {x},{y} par wapas laya, {village} par nahi - is ke bajaye qareebi guard ke paas mar rahe hain"
+
 msgid "the game can't be read: {why}"
 msgstr "game nahi parhi ja sakti: {why}"
 
@@ -6930,6 +6960,9 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
 
+msgid "the village at {x},{y} on {map}"
+msgstr "{map} par {x},{y} wala gaon"
+
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""
 "{cell} par aage ka raasta abhi band hai - us ka stage abhi saaf nahi hua"
@@ -7130,6 +7163,11 @@ msgstr "{name} ka voice message - Chat (Ctrl+T) mein sunein"
 
 msgid "walk to the enemy"
 msgstr "dushman tak chalo"
+
+msgid ""
+"walking into {village} first: the game brings us back at the last town we walked into"
+msgstr ""
+"pehle {village} ke andar ja raha hai: game humein us aakhri shehar mein wapas lata hai jis mein hum dakhil hue the"
 
 msgid "walking on to {cell}"
 msgstr "{cell} ki taraf aage chal rahe hain"
@@ -7875,6 +7913,9 @@ msgstr "{tool} - {name}"
 msgid "{tool} check"
 msgstr "{tool} check"
 
+msgid "{village} on {map}"
+msgstr "{map} par {village}"
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} ke liye {what} intezar mein hai: {why}"
 
@@ -7999,6 +8040,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Stop when the day's &drop time runs out"
 #~ msgstr "Rok dein jab din ka &drop waqt khatam ho jaye"
+
+#~ msgid ""
+#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+#~ msgstr ""
+#~ "Bot ek guard dhoondta hai (nazar mein, jahan pehle dekha gaya, ya qareebi shehar mein), PK mode all mode par karta hai, guard ko ek baar maarta hai aur character ko marne deta hai: na potion, na heal, na jawabi larai. Woh shehar mein dobara zinda hota hai aur tab tak dobara jata hai jab tak agle level ko kam az kam itni experience na chahiye. Pehle pet wapas rakha jata hai, aur aakhir mein PK mode wapas lagaya jata hai. Har maut ki tarah gear ghista hai; black-name character (Morality -1000 ya kam) marne par pehna hua gear kho sakta hai, is liye XP loser us ke liye nahi chalega."
 
 #~ msgid "The delay must be a finite number of seconds, zero or greater."
 #~ msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
