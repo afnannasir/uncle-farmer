@@ -12,6 +12,12 @@
   first. When the game says "overweight" it asks for fewer; when not even one fits it sells, if
   that is ticked, and carries on, and otherwise stops and says why.
 
+**Fusion beasts: not for a few steps**
+
+- On a trip, a beast is put on only when at least 30 steps of walking are left on the map. It used
+  to go on at every start and right after every map change, even a few steps from the next door or
+  the destination. One that is already on stays on.
+
 **The end of a run: towns and the gang base**
 
 - A run that ends in a city or village stays there. It used to leave for the nearest map with no

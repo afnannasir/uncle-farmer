@@ -114,6 +114,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.daily_reset = ""             # the game's day reset, "HH:MM" on this computer's clock
         self.daily_done = False
         self.end_place = ("start",)       # where any end of the run goes: script end_at / the plan
+        self.walk_left = None             # steps still to walk on this map, on a trip (None: not known)
+        self.walk_target = None           # (map, cell) of the walk under way, for walk_left
         self.walk_only = False            # the walking assistant (go): Swift beast all the way, no fights
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target

@@ -198,6 +198,8 @@ class Parts:
     _potions_warned_out: set[str]
     farm_filter: FarmFilter | None
     walk_only: bool
+    walk_left: float | None     # steps still to walk on this map, on a trip (beasts.RIDE_MIN)
+    walk_target: tuple[int, tuple[int, int]] | None
     skillbook: "SkillBook | None"
     mob_names: dict[int, str]
     counted: dict[int, float]
