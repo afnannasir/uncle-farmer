@@ -220,7 +220,50 @@ def test_an_unconfirmed_send_removes_nothing(typed: list[str]) -> None:
     assert g.deleted == [] and "didn't confirm" in logged[-1]
 
 
+ELDER = [["Action menu; lag 80"], ["Disorder gang", "send system message", "send broadcast", "send an announcement"]]
+
+
+def auto_game(monkeypatch: pytest.MonkeyPatch, percent: float, action: list[list[str]] | None = None) -> tuple[Game, list[str]]:
+    g = Game(action)
+    logged: list[str] = []
+    g.log = lambda line, speak=False: logged.append(line)  # type: ignore[attr-defined]
+    g.levels = {"Level 5 Supply Camp Construction": "Level 5 supply camp construction; Completed %.1f%%" % percent}
+    monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
+    monkeypatch.setattr(chores, "gang_camps", stand_in(chores.gang_camps, lambda b, allowed=(): list(g.levels)))
+    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen: None))
+    return g, logged
+
+
+def test_a_schedule_publishes_once_until_something_changes(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    g, logged = auto_game(monkeypatch, 62.0, ELDER)              # an elder: no disband in the menu
+    text = hr.TITLE + ": Level 5 Supply Camp 62.0%"
+    g.chat = [{"name": "Hero", "text": text}]
+    hr.scan_and_publish(as_bot(g), "system")
+    hr.scan_and_publish(as_bot(g), "system")
+    assert typed == [text] and "nothing changed" in logged[-1]
+    # the same line sent another way is news of its own
+    hr.scan_and_publish(as_bot(g), "broadcast")
+    assert typed == [text, text]
+    g.levels = {name: "Completed 70.0%" for name in g.levels}
+    g.chat = [{"name": "Hero", "text": hr.TITLE + ": Level 5 Supply Camp 70.0%"}]
+    hr.scan_and_publish(as_bot(g), "system")
+    assert typed[-1].endswith("70.0%") and "send broadcast" in g.chosen
+
+
+def test_a_schedule_stays_quiet_when_everything_is_finished(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    g, logged = auto_game(monkeypatch, 100.0)
+    hr.scan_and_publish(as_bot(g), "broadcast")
+    assert typed == [] and "nothing published" in logged[-1] and g.chosen == []
+
+
+def test_a_schedule_without_the_rights_does_not_even_scan(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    g, _logged = auto_game(monkeypatch, 50.0, [["Action menu"], ["Disorder gang", "quit"]])
+    monkeypatch.setattr(hr, "scan", stand_in(hr.scan, lambda b: pytest.fail("no scan")))
+    with pytest.raises(chores.Stopped, match="elder"):
+        hr.scan_and_publish(as_bot(g), "system")
+
+
 def test_the_script_command_takes_a_publication_kind() -> None:
-    assert len(script.parse("construction_scan\nconstruction_scan publish=broadcast\n")[0]) == 2
+    assert len(script.parse("construction_scan\nconstruction_scan publish=broadcast\nconstruction_scan auto=system\n")[0]) == 3
     with pytest.raises(script.ScriptError):
         script.parse("construction_scan publish=everywhere\n")

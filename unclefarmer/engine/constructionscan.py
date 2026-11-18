@@ -14,6 +14,9 @@ broadcast" (the same with a sound) and "send an announcement", next to "transfer
 The notices key (W_NOTICE) -> "gang announcement" lists the announcements: a title row, then a row
 "<author> issued at <date>" with "delete" beside it, then "Are you sure ...?" -> Confirm. An elder
 is offered "delete" on everyone's, so a new report replaces only this character's own old ones.
+
+A schedule (or `construction_scan auto=<kind>`) scans and publishes at once. It stays quiet when
+everything is at 100% and when the line is the one this character last sent that way.
 """
 
 from __future__ import annotations
@@ -118,7 +121,9 @@ def scan(b: Bot) -> dict[str, Any]:
             chores.leave_highland(b)
     if not rows:
         raise Stopped(_("no construction of the gang was found to read"), final=True)
-    report: dict[str, Any] = {"at": time.strftime("%Y-%m-%d %H:%M"), "by": _name(b), "rows": rows}
+    before = load() or {}
+    report: dict[str, Any] = {"at": time.strftime("%Y-%m-%d %H:%M"), "by": _name(b), "rows": rows,
+                              "sent": before.get("sent") or {}}
     jsonio.save(_path(), report, indent=1)
     unfinished = sum(1 for _what, percent in rows if percent is not None and percent < 100)
     b.log(_("construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner "
@@ -183,18 +188,53 @@ def _drop_old_reports(b: Bot) -> int:
     return gone
 
 
-def publish(b: Bot, kind: str) -> None:
-    """Send the kept report as an announcement, a broadcast or a system message."""
-    report = load()
-    if report is None:
-        raise Stopped(_("no construction report yet: scan first"), final=True)
-    text = message(report)
+def _open_action_menu(b: Bot, kind: str) -> None:
+    """The Action menu, open, with this way of publishing in it; else Stopped. Other characters'
+    menus differ (only the gang's leader has "disband"): the entry is found by its own name."""
     b.close_dialogs()
     b.key(b.p.get("action_menu_key", "lctrl+enter"))
     d = b.wait_dialog(3.0)
     if d is None or b.find_entry(d.get("top"), ENTRIES[kind]) is None:
         b.close_dialogs()
         raise Stopped(_("this character can't publish that: it takes a gang elder's rights"), final=True)
+
+
+def _sent_key(b: Bot, kind: str) -> str:
+    return "%s|%s" % (_name(b), kind)
+
+
+def _note_sent(b: Bot, report: dict[str, Any], kind: str, text: str | None) -> None:
+    sent: dict[str, str] = report.setdefault("sent", {})
+    if text is None:
+        sent.pop(_sent_key(b, kind), None)
+    else:
+        sent[_sent_key(b, kind)] = text
+    jsonio.save(_path(), report, indent=1)
+
+
+def scan_and_publish(b: Bot, kind: str) -> None:
+    """A schedule's run: scan, then publish, unless there is nothing new to tell the gang."""
+    _open_action_menu(b, kind)          # no tour of the highlands for a character who can't send it
+    b.close_dialogs()
+    report = scan(b)
+    text = message(report)
+    sent: dict[str, str] = report.get("sent") or {}
+    if text == ALL_FINE:
+        _note_sent(b, report, kind, None)
+        b.log(_("construction scanner: everything is at 100%, nothing published"), speak=True)
+    elif sent.get(_sent_key(b, kind)) == text:
+        b.log(_("construction scanner: nothing changed since the last report, nothing published"), speak=True)
+    else:
+        publish(b, kind)
+
+
+def publish(b: Bot, kind: str) -> None:
+    """Send the kept report as an announcement, a broadcast or a system message."""
+    report = load()
+    if report is None:
+        raise Stopped(_("no construction report yet: scan first"), final=True)
+    text = message(report)
+    _open_action_menu(b, kind)
     said_from = chores.said_mark(b)
     chat_from = _chat_mark(b)
     b.choose(ENTRIES[kind])
@@ -206,6 +246,7 @@ def publish(b: Bot, kind: str) -> None:
         b.log(_("the construction report was typed, but the game didn't confirm it - check before sending it again"),
               speak=True)
         return
+    _note_sent(b, report, kind, text)
     gone = _drop_old_reports(b) if kind == "announcement" else 0
     b.log(_("construction report published; {n} older reports of yours removed", n=gone) if gone
           else _("construction report published"), speak=True)

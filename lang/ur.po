@@ -5236,6 +5236,14 @@ msgid "construction report published; {n} older reports of yours removed"
 msgstr ""
 "construction report publish ho gayi; aap ki {n} purani reports hata di gayin"
 
+msgid "construction scanner: everything is at 100%, nothing published"
+msgstr "construction scanner: sab 100% par hai, kuch publish nahi hua"
+
+msgid ""
+"construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+"construction scanner: pichli report ke baad kuch nahi badla, kuch publish nahi hua"
+
 msgid ""
 "construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
 msgstr ""
@@ -6767,6 +6775,15 @@ msgstr "Dungeon chalaana"
 msgid "running on_stop"
 msgstr "on_stop chal raha hai"
 
+msgid "scanning the constructions, then a broadcast"
+msgstr "constructions scan, phir broadcast"
+
+msgid "scanning the constructions, then a gang announcement"
+msgstr "constructions scan, phir gang announcement"
+
+msgid "scanning the constructions, then a system message"
+msgstr "constructions scan, phir system message"
+
 msgid "script"
 msgstr "script"
 
@@ -7908,9 +7925,9 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "aise likhein: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 msgstr ""
-"aise likho: construction_scan  ya  construction_scan publish=broadcast (announcement, broadcast ya system)"
+"aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
@@ -8931,6 +8948,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
 #~ msgstr ""
 #~ "jab din ka drop time khatam ho jaye; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
+
+#~ msgid ""
+#~ "write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "aise likho: construction_scan  ya  construction_scan publish=broadcast (announcement, broadcast ya system)"
 
 #~ msgid ""
 #~ "write it as: highland_report  or  highland_report publish=broadcast (announcement, broadcast or system)"

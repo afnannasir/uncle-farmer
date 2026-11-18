@@ -5252,6 +5252,14 @@ msgstr "relatório publicado"
 msgid "construction report published; {n} older reports of yours removed"
 msgstr "relatório publicado; {n} relatórios antigos seus removidos"
 
+msgid "construction scanner: everything is at 100%, nothing published"
+msgstr "scanner de construções: tudo em 100%, nada publicado"
+
+msgid ""
+"construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+"scanner de construções: nada mudou desde o último relatório, nada publicado"
+
 msgid ""
 "construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
 msgstr ""
@@ -6776,6 +6784,15 @@ msgstr "executando uma masmorra"
 msgid "running on_stop"
 msgstr "executando on_stop"
 
+msgid "scanning the constructions, then a broadcast"
+msgstr "escanear as construções e enviar um broadcast"
+
+msgid "scanning the constructions, then a gang announcement"
+msgstr "escanear as construções e publicar um anúncio da gangue"
+
+msgid "scanning the constructions, then a system message"
+msgstr "escanear as construções e enviar uma mensagem de sistema"
+
 msgid "script"
 msgstr "script"
 
@@ -7917,9 +7934,9 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escreva assim: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 msgstr ""
-"escreva assim: construction_scan  ou  construction_scan publish=broadcast (announcement, broadcast ou system)"
+"escreva assim: construction_scan, construction_scan publish=broadcast ou construction_scan auto=broadcast (announcement, broadcast ou system)"
 
 msgid "write it as: hold key seconds"
 msgstr "escreva assim: hold tecla segundos"
@@ -8823,6 +8840,11 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr ""
 #~ "digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"
+
+#~ msgid ""
+#~ "write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "escreva assim: construction_scan  ou  construction_scan publish=broadcast (announcement, broadcast ou system)"
 
 #~ msgid ""
 #~ "write it as: highland_report  or  highland_report publish=broadcast (announcement, broadcast or system)"

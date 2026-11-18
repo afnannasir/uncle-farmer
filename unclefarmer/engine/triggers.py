@@ -53,7 +53,10 @@ TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
 FARMING_COMMANDS = ("farm", "dungeon")
 TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems")),
                 ("enhance", N_("enhancing equipment")), ("dungeon", N_("running a dungeon")),
-                ("sell_collection", N_("selling the collection")))
+                ("sell_collection", N_("selling the collection")),
+                ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),
+                ("construction_scan auto=broadcast", N_("scanning the constructions, then a broadcast")),
+                ("construction_scan auto=system", N_("scanning the constructions, then a system message")))
 
 
 MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)

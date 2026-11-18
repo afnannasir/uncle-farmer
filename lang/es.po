@@ -5251,6 +5251,13 @@ msgstr ""
 msgid "construction report published; {n} older reports of yours removed"
 msgstr ""
 
+msgid "construction scanner: everything is at 100%, nothing published"
+msgstr ""
+
+msgid ""
+"construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+
 msgid ""
 "construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
 msgstr ""
@@ -6774,6 +6781,15 @@ msgstr "ejecutando una mazmorra"
 msgid "running on_stop"
 msgstr "ejecutando on_stop"
 
+msgid "scanning the constructions, then a broadcast"
+msgstr ""
+
+msgid "scanning the constructions, then a gang announcement"
+msgstr ""
+
+msgid "scanning the constructions, then a system message"
+msgstr ""
+
 msgid "script"
 msgstr "script"
 
@@ -7912,7 +7928,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escríbelo así: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 msgstr ""
 
 msgid "write it as: hold key seconds"

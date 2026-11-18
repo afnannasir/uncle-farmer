@@ -20,6 +20,7 @@
 - Tools, Construction scanner: reads how far the Magic Cannon, Supply Camp and highland defences
   are, repairing nothing. Copy the report, or as a gang elder publish it as an announcement, a
   broadcast or a system message. A new announcement replaces only your own older reports.
+  Run, Schedules, Tools can scan and publish by itself, when there is something new to say.
 - Leaving a gang base, the bot walks out first instead of teleporting away, and a teleport skill
   that is on no key is dropped at once, with one message instead of one for each place.
 - A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.

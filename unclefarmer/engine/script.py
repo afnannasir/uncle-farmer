@@ -22,7 +22,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      day: bank, pet_rebirth, contribution_chests, donation, construction, feed, secret_room
     bounties [check]                 ask the officers ticked in Tools, Hunting bounties for what they pay
     construction_scan [publish=<kind>]  read how far the gang's constructions are; or send the last report
-                                     (announcement, broadcast or system: it takes a gang elder)
+                                     (announcement, broadcast or system: it takes a gang elder);
+                                     auto=<kind> scans and publishes if there is something new
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
     lose_xp [check]                  die to guards until the next level needs the experience set
@@ -658,11 +659,11 @@ def _prep_construction_scan(node: Node, rest: str, n: int):
     kinds = tuple(constructionscan.ENTRIES)
     if not words:
         return
-    kind = words[0][8:].lower() if words[0].lower().startswith("publish=") else ""
-    if len(words) > 1 or kind not in kinds:
-        raise ScriptError(n, _("write it as: construction_scan  or  construction_scan publish=broadcast "
-                               "(announcement, broadcast or system)"))
-    node.opts["publish"] = kind
+    how, _sep, kind = words[0].lower().partition("=")
+    if len(words) > 1 or how not in ("publish", "auto") or kind not in kinds:
+        raise ScriptError(n, _("write it as: construction_scan, construction_scan publish=broadcast or "
+                               "construction_scan auto=broadcast (announcement, broadcast or system)"))
+    node.opts[how] = kind
 
 
 def _prep_sell_collection(node: Node, rest: str, n: int):
@@ -1153,7 +1154,9 @@ class Runner:
 
     def _do_construction_scan(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "construction_scan"):
-            if o.get("publish"):
+            if o.get("auto"):
+                constructionscan.scan_and_publish(b, o["auto"])
+            elif o.get("publish"):
                 constructionscan.publish(b, o["publish"])
             else:
                 constructionscan.scan(b)
