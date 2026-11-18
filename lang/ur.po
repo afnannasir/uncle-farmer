@@ -4969,6 +4969,10 @@ msgstr "us guard ko maar nahi sake - doosra aazma rahe hain"
 msgid "couldn't get away - fighting on"
 msgstr "bhaag nahi sake - ladai jari"
 
+msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
+msgstr ""
+"gang ke inner hall mein wapas nahi ja sake ({why}) - yahin ruk rahe hain"
+
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} par wapas nahi ja sake: {why}"
 
@@ -5357,6 +5361,9 @@ msgstr "equipment toot gaya, toolbox nahi"
 
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Level {lv} {kind} Enhance Crystals ko {n} tak le ja rahe hain"
+
+msgid "going back into the gang's inner hall through the Gang Entrance"
+msgstr "Gang Entrance ke zariye gang ke inner hall mein wapas ja rahe hain"
 
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
@@ -6599,6 +6606,9 @@ msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
 "Gang Entrance mein gang ke andarune hall ka rasta nahi - kya yeh kirdaar kisi gang mein hai?"
+
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
+msgstr "Gang Entrance {now} le gaya, {was} nahi - yahin ruk rahe hain"
 
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "Gang Entrance par {gang} naam ki koi gang nahi"

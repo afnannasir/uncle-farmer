@@ -4750,6 +4750,9 @@ msgstr ""
 msgid "couldn't get away - fighting on"
 msgstr ""
 
+msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
+msgstr ""
+
 msgid "couldn't get back to {place}: {why}"
 msgstr ""
 
@@ -5120,6 +5123,9 @@ msgid "gear broken, no toolbox"
 msgstr ""
 
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
+msgstr ""
+
+msgid "going back into the gang's inner hall through the Gang Entrance"
 msgstr ""
 
 msgid "going back to where farming started"
@@ -6299,6 +6305,9 @@ msgstr ""
 
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
+msgstr ""
+
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
 msgstr ""
 
 msgid "the Gang Entrance lists no gang called {gang}"

@@ -359,6 +359,45 @@ def inner_hall(b: Bot) -> None:
         raise Stopped(_("couldn't get into the gang's inner hall"))
 
 
+def _in_the_hall(mid: int, cell: tuple[int, int]) -> bool:
+    """cell is in a gang base's inner hall: it and the Head of the hall can walk to each other (the
+    outer hall can be walked to from the hall, but not back)."""
+    if not crafting.gang_map(mid):
+        return False
+    head = (int(HEAD[1][0]), int(HEAD[1][1]))
+    try:
+        return crafting.walks_between(mid, head, cell) and crafting.walks_between(mid, cell, head)
+    except (OSError, ValueError, KeyError, IndexError):
+        return False                  # no map data: an ordinary trip
+
+
+def back_to_inner_hall(b: Bot, mid: int, cell: tuple[int, int], name: str | None) -> bool:
+    """A run that started in the gang's inner hall and ended outside it: nothing walks back in (a
+    one-way door), the way is the Gang Entrance, which only leads into the character's own gang's
+    hall. True when this was that case, however it went (what went wrong is said, and the character
+    stays where it is); False for any other place, which the ordinary trip handles. name: the base's
+    name when the run started, so that another gang's hall is not taken for it."""
+    if not _in_the_hall(mid, cell) or (b.map_id() == mid and crafting.reachable_cell(b, cell)):
+        return False
+    b.log(_("going back into the gang's inner hall through the Gang Entrance"))
+    try:
+        inner_hall(b)
+    except Stopped as e:
+        if b.stop_event.is_set():
+            raise
+        b.close_dialogs()
+        b.log(_("couldn't get back into the gang's inner hall ({why}) - staying here", why=e), speak=True)
+        return True
+    place: dict[str, Any] = b.snap().get("map") or {}
+    now = str(place.get("name") or "")
+    if b.map_id() != mid or (name and now and now != name):
+        b.log(_("the Gang Entrance led to {now}, not {was} - staying here", now=now or atlas.label(b.map_id()),
+                was=name or atlas.label(mid)), speak=True)
+        return True
+    b.travel(mid, cell)
+    return True
+
+
 # ---------------------------------------------------------------------------------------- the chores
 def bank(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """Deposit income, then each Value Product card's daily income, at the nearest bank."""

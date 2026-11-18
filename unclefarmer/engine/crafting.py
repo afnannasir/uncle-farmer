@@ -85,9 +85,12 @@ REFUSALS = 3             # batch sizes tried (each half the last) when the game 
 
 
 # ---------------------------------------------------------------------------------------- getting there
-def in_gang(b: Bot) -> bool:
-    mid = b.map_id()
+def gang_map(mid: int) -> bool:
     return atlas.kind(mid) == "gang" or "gang" in atlas.label(mid).lower()
+
+
+def in_gang(b: Bot) -> bool:
+    return gang_map(b.map_id())
 
 
 def _same_gang(b: Bot, gang: str | None) -> bool:
@@ -125,23 +128,27 @@ def reachable_cell(b: Bot, cell: tuple[int, int]) -> bool:
     Entrance), so this follows the one-way gates, not just which part of the map cell is in."""
     me = b.me()
     try:
-        m = atlas.model(b.map_id())
-        here = (int(me["x"]), int(me["y"]))
-        if m.comp_of(*here) != m.comp_of(*cell):
-            return False
-        if not hasattr(m, "gated_route"):
-            return True                   # a map with no gates to follow (no data for them)
-        start = here if m.ok(*here) else m.nearest_walkable(here[0], here[1], 4)
-        goal = (int(cell[0]), int(cell[1]))
-        goal = goal if m.ok(*goal) else m.nearest_walkable(goal[0], goal[1], 4)
-        if start is None or goal is None:
-            return True                   # no walkable cell to judge by: let the walk find out
-        return m.gated_route((start[0], start[1]), (goal[0], goal[1])) is not None
+        return walks_between(b.map_id(), (int(me["x"]), int(me["y"])), cell)
     except STOPPING:
         raise
     except Exception as e:
         note_failure(b, "reading the map", e)
         return True                       # no map data: let the walk find out
+
+
+def walks_between(mid: int, here: tuple[int, int], cell: tuple[int, int]) -> bool:
+    """On map mid, a walk from here reaches cell, one-way gates followed."""
+    m = atlas.model(mid)
+    if m.comp_of(*here) != m.comp_of(*cell):
+        return False
+    if not hasattr(m, "gated_route"):
+        return True                   # a map with no gates to follow (no data for them)
+    start = here if m.ok(*here) else m.nearest_walkable(here[0], here[1], 4)
+    goal = (int(cell[0]), int(cell[1]))
+    goal = goal if m.ok(*goal) else m.nearest_walkable(goal[0], goal[1], 4)
+    if start is None or goal is None:
+        return True                   # no walkable cell to judge by: let the walk find out
+    return m.gated_route((start[0], start[1]), (goal[0], goal[1])) is not None
 
 
 def _pick_gang(b: Bot, gang: str) -> bool:

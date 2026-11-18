@@ -168,6 +168,7 @@ class Parts:
     in_instance: bool
     pack_min: int
     start_place: Where | None
+    start_name: str | None      # the map's own name there (a gang base's is the gang's)
     drop_keep: int | None
     level_keep: int | None
     agent_state: bool

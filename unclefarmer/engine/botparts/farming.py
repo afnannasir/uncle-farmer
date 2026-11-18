@@ -515,7 +515,9 @@ class FarmingMixin(Parts):
                     spot = how[2]
                     mid, cell = how[1], ((spot[0], spot[1]) if spot else None)
                 here = self.me()
-                if self.map_id() != mid or not cell or math.hypot(here["x"] - cell[0], here["y"] - cell[1]) > 3:
+                if kind == "start" and cell and self._back_in_the_hall(mid, (int(cell[0]), int(cell[1]))):
+                    pass
+                elif self.map_id() != mid or not cell or math.hypot(here["x"] - cell[0], here["y"] - cell[1]) > 3:
                     self.log(_("going back to {map}{at}", map=atlas.label(mid),
                                at=(" (%d,%d)" % cell) if cell else ""), speak=True)
                     self.travel(mid, cell)
@@ -529,6 +531,10 @@ class FarmingMixin(Parts):
             self.log(_("couldn't get there - going to the nearest map without monsters"), speak=True)
             self.leave_monsters()
         self._finish_off()
+
+    def _back_in_the_hall(self, mid: int, cell: tuple[int, int]) -> bool:
+        from .. import chores         # (chores needs the Bot this mixin is part of)
+        return chores.back_to_inner_hall(as_bot(self), mid, cell, getattr(self, "start_name", None))
 
     def _finish_off(self) -> None:
         beasts.off(as_bot(self))

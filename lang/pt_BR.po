@@ -4987,6 +4987,9 @@ msgstr "não foi possível acertar esse guarda — tentando outro"
 msgid "couldn't get away - fighting on"
 msgstr "não deu para fugir — continuando a luta"
 
+msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
+msgstr "não foi possível voltar ao salão interno da gang ({why}) — ficando aqui"
+
 msgid "couldn't get back to {place}: {why}"
 msgstr "não foi possível voltar a {place}: {why}"
 
@@ -5373,6 +5376,9 @@ msgstr "equipamento quebrado, sem caixa de ferramentas"
 
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "obtendo até {n} cristais de aprimoramento de {kind} nível {lv}"
+
+msgid "going back into the gang's inner hall through the Gang Entrance"
+msgstr "voltando ao salão interno da gang pela Gang Entrance"
 
 msgid "going back to where farming started"
 msgstr "voltando ao ponto inicial da coleta"
@@ -6612,6 +6618,9 @@ msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
 "a Entrada da Guilda não oferece acesso ao salão interno de uma guilda — este personagem pertence a uma guilda?"
+
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
+msgstr "a Gang Entrance levou a {now}, não a {was} — ficando aqui"
 
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "a Entrada da Guilda não lista nenhuma guilda chamada {gang}"

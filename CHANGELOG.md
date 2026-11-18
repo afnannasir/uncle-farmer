@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**Back into the gang's inner hall**
+
+- A run started in the gang's inner hall and ended outside it pushed against the hall's one-way
+  door. It now goes round by the Gang Entrance, back to where it started. If the Entrance doesn't
+  let it in, it says so and stays where it is.
+
 **Gem Maker: safer batches**
 
 - Nothing is spent until the craftsman's page names the gem being made. On a slow answer the bot

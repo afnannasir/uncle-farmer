@@ -107,6 +107,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.chests = chests.Chests()     # the chests opened, and those left alone a while
         self.resting = False              # standing still to get HP back: a heal skill tops up to rest_until
         self.start_place = None           # (map, x, y) where the run started
+        self.start_name = None            # the name the game gives that map
         self.drop_keep = None             # minutes of drop time this run saves (keep_drop), else the profile's
         self.level_keep = None            # experience before the next level this run stops at (keep_level), else the profile's
         self.daily_stop_at = 0.0          # epoch seconds: the run ends then, whatever it is doing
