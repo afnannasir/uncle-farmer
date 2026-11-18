@@ -1,0 +1,126 @@
+# Uncle Farmer translation catalog. Edit the msgstr lines; keep the {placeholders}.
+msgid ""
+msgstr ""
+"Project-Id-Version: Uncle Farmer\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: es\n"
+"Language-Team: Spanish\n"
+"X-Language-Name: Español\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgid "&Abort"
+msgstr "&Anular"
+
+msgid "&Add"
+msgstr "&Agregar"
+
+msgid "&Apply"
+msgstr "A&plicar"
+
+msgid "&Browse..."
+msgstr "&Examinar..."
+
+msgid "&Cancel"
+msgstr "&Cancelar"
+
+msgid "&Close"
+msgstr "&Cerrar"
+
+msgid "&Continue"
+msgstr "C&ontinuar"
+
+msgid "&Delete"
+msgstr "&Eliminar"
+
+msgid "&Help"
+msgstr "Ay&uda"
+
+msgid "&Ignore"
+msgstr "&Ignorar"
+
+msgid "&No"
+msgstr "&No"
+
+msgid "&OK"
+msgstr "&Aceptar"
+
+msgid "&Open"
+msgstr "&Abrir"
+
+msgid "&Remove"
+msgstr "&Quitar"
+
+msgid "&Retry"
+msgstr "&Reintentar"
+
+msgid "&Save"
+msgstr "&Guardar"
+
+msgid "&Yes"
+msgstr "&Sí"
+
+msgid "Abort"
+msgstr "Anular"
+
+msgid "Add"
+msgstr "Agregar"
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "Browse..."
+msgstr "Examinar..."
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Continue"
+msgstr "Continuar"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Help"
+msgstr "Ayuda"
+
+msgid "Ignore"
+msgstr "Ignorar"
+
+msgid "Information"
+msgstr "Información"
+
+msgid "No"
+msgstr "No"
+
+msgid "OK"
+msgstr "Aceptar"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Question"
+msgstr "Pregunta"
+
+msgid "Remove"
+msgstr "Quitar"
+
+msgid "Retry"
+msgstr "Reintentar"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Warning"
+msgstr "Advertencia"
+
+msgid "Yes"
+msgstr "Sí"

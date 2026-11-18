@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**Spanish and Turkish**
+
+- Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
+  string of this version. Game names follow the game's own Spanish and Turkish packs, every
+  Alt+letter shortcut is the same letter as in English, and the standard buttons (OK, Cancel, Yes,
+  No...) are translated as well. The Turkish one was largely rewritten: terms are now consistent
+  (Kalp taşı, depo, Parça pazarı, Dökümcü, betik, farm) and trusted-player commands stay in English
+  so they still work.
+
 **No trip to the farm with the drop time used up**
 
 - A farming run whose day's drop time is already down to what you save (Drop time to save, or

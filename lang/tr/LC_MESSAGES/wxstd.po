@@ -1,0 +1,126 @@
+# Uncle Farmer translation catalog. Edit the msgstr lines; keep the {placeholders}.
+msgid ""
+msgstr ""
+"Project-Id-Version: Uncle Farmer\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: tr\n"
+"Language-Team: Turkish\n"
+"X-Language-Name: Türkçe\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgid "&Abort"
+msgstr "&Durdur"
+
+msgid "&Add"
+msgstr "&Ekle"
+
+msgid "&Apply"
+msgstr "&Uygula"
+
+msgid "&Browse..."
+msgstr "&Gözat..."
+
+msgid "&Cancel"
+msgstr "İ&ptal"
+
+msgid "&Close"
+msgstr "&Kapat"
+
+msgid "&Continue"
+msgstr "De&vam"
+
+msgid "&Delete"
+msgstr "&Sil"
+
+msgid "&Help"
+msgstr "&Yardım"
+
+msgid "&Ignore"
+msgstr "Yo&k say"
+
+msgid "&No"
+msgstr "&Hayır"
+
+msgid "&OK"
+msgstr "&Tamam"
+
+msgid "&Open"
+msgstr "&Aç"
+
+msgid "&Remove"
+msgstr "&Kaldır"
+
+msgid "&Retry"
+msgstr "&Yeniden dene"
+
+msgid "&Save"
+msgstr "Kay&det"
+
+msgid "&Yes"
+msgstr "&Evet"
+
+msgid "Abort"
+msgstr "Durdur"
+
+msgid "Add"
+msgstr "Ekle"
+
+msgid "Apply"
+msgstr "Uygula"
+
+msgid "Browse..."
+msgstr "Gözat..."
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Close"
+msgstr "Kapat"
+
+msgid "Continue"
+msgstr "Devam"
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Error"
+msgstr "Hata"
+
+msgid "Help"
+msgstr "Yardım"
+
+msgid "Ignore"
+msgstr "Yok say"
+
+msgid "Information"
+msgstr "Bilgi"
+
+msgid "No"
+msgstr "Hayır"
+
+msgid "OK"
+msgstr "Tamam"
+
+msgid "Open"
+msgstr "Aç"
+
+msgid "Question"
+msgstr "Soru"
+
+msgid "Remove"
+msgstr "Kaldır"
+
+msgid "Retry"
+msgstr "Yeniden dene"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid "Warning"
+msgstr "Uyarı"
+
+msgid "Yes"
+msgstr "Evet"
