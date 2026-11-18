@@ -185,7 +185,8 @@ def user_dirs(_user_base: str, monkeypatch: pytest.MonkeyPatch) -> None:
     Individual test files can still redirect a folder further (a test's monkeypatch runs after
     this one)."""
     app = os.path.join(_user_base, str(next(_app_dirs)))
-    for name, sub in (("LOGS", "logs"), ("PLANS", "plans"), ("SCRIPTS", "scripts"), ("PROFILES", "profiles")):
+    for name, sub in (("LOGS", "logs"), ("PLANS", "plans"), ("SCRIPTS", "scripts"), ("PROFILES", "profiles"),
+                      ("MARKET", "market")):
         monkeypatch.setattr(paths, name, os.path.join(app, sub))
         os.makedirs(os.path.join(app, sub))
     monkeypatch.setattr(paths, "SETTINGS", os.path.join(app, "settings.json"))

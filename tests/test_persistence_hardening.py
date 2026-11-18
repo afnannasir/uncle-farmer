@@ -644,6 +644,7 @@ def test_a_failed_settings_write_reports_it_and_changes_nothing(clean_unreadable
 
     def fsync(_fd: int) -> None:
         raise disk_full()
+    real_fsync = jsonio.os.fsync
     monkeypatch.setattr(jsonio.os, "fsync", fsync)
     with pytest.raises(OSError):
         settings.update_app({"daily_stop_at": "07:00"})
@@ -652,7 +653,9 @@ def test_a_failed_settings_write_reports_it_and_changes_nothing(clean_unreadable
     with pytest.raises(OSError):
         settings.save_app(window)
     assert Path(paths.SETTINGS).read_bytes() == before
-    monkeypatch.undo()
+    # the disk back - only fsync: monkeypatch.undo() would also undo the test's own folders and
+    # write the real settings.json beside the app
+    monkeypatch.setattr(jsonio.os, "fsync", real_fsync)
     settings.save_app(window)                     # the change still counts as unsaved, and goes on now
     assert settings.load_app()["daily_stop_at"] == "07:00"
 
