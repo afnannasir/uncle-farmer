@@ -374,6 +374,27 @@ class ShardsFile(Strict):
     markets: dict[str, tuple[float, float]]
 
 
+class MarketRow(Strict):
+    cat: Literal[-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 100, 101, 102]
+    name: str = Field(min_length=1)
+    quality: str = ""
+    lots: int = Field(ge=1)
+    qty: int = Field(ge=1)
+    cheapest: int = Field(ge=1)
+    usual: int = Field(ge=1)
+    opening: int = Field(default=0, ge=0)
+    sellers: int | None = Field(default=None, ge=1)
+    before: int | None = Field(default=None, ge=1)
+
+
+class MarketListFile(Strict):
+    made: str
+    lots: int = Field(ge=1)
+    sellers_counted: bool
+    note: str = ""
+    rows: list[MarketRow] = Field(min_length=1)
+
+
 class GatheringPlace(Strict):
     skill: Literal["Fishing", "Mining", "Collect Herbs"]
     map: int
@@ -490,6 +511,7 @@ MODELS: dict[str, type[BaseModel]] = {
     "map_kinds.json": MapKindsFile,
     "safe_zones.json": SafeZonesFile,
     "shards.json": ShardsFile,
+    "market_list.json": MarketListFile,
     "short_loops.json": ShortLoopsFile,
     "skills.json": SkillsFile,
     "transports.json": TransportsFile,

@@ -34,6 +34,7 @@ PLANS = os.path.join(APP, "plans")
 SCRIPTS = os.path.join(APP, "scripts")
 SETTINGS = os.path.join(APP, "settings.json")
 LOGS = os.path.join(APP, "logs")
+MARKET = os.path.join(APP, "market")       # the market list, seller cache, searches (Tools, Market)
 
 for _d in (PROFILES, PLANS, SCRIPTS, LOGS):
     os.makedirs(_d, exist_ok=True)
