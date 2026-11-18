@@ -46,13 +46,20 @@ class XpLoserDialog(Dialog):
         start = int(c["until_needed"] if c["mode"] == "until" else c["lose"]) or (now or 0)
         self.amount = f.number(_("&Experience:"), start, 0, 2_000_000_000)
         self.max_deaths = f.number(_("Stop after at most this many &deaths:"), int(c["max_deaths"]), 1, 999)
+        self.where = f.choice(_("&Where to die:"), [_(w) for w in xploss.WHERE_NAMES],
+                              xploss.WHERE.index(c["where"]) if c.get("where") in xploss.WHERE else 0)
         f.readonly(_("How it works:"), _(
             "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches "
             "the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no "
             "heals, no fighting back. It respawns in the city and goes again until the next level needs at "
-            "least that much experience. The pet is put away first, and the PK mode is put back at the end. "
+            "least that much experience. At the nearest village, it walks into the nearest village first (the "
+            "game brings a dead character back at the last town it walked into), then dies at its gates, "
+            "so each death is quicker (on "
+            "Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it "
+            "back somewhere else, it dies at the nearest guard instead. "
+            "The pet is put away first, and the PK mode is put back at the end. "
             "Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can "
-            "lose worn gear when it dies, so the XP loser won't run for one."), lines=7)
+            "lose worn gear when it dies, so the XP loser won't run for one."), lines=10)
         root.Add(f.grid, 1, wx.EXPAND | wx.ALL, 12)
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
@@ -72,7 +79,8 @@ class XpLoserDialog(Dialog):
                           _("XP loser"), wx.OK | wx.ICON_INFORMATION, self)
             self.amount.SetFocus()
             return
-        self.cfg.update(mode=mode, max_deaths=self.max_deaths.GetValue())
+        self.cfg.update(mode=mode, max_deaths=self.max_deaths.GetValue(),
+                        where=xploss.WHERE[max(0, self.where.GetSelection())])
         self.cfg["until_needed" if mode == "until" else "lose"] = amount
         self.p["xp_loser"] = self.cfg
         if save_file(self, settings.save_profile, self.character, self.p):

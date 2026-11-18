@@ -306,15 +306,62 @@ def test_still_inside_after_the_timer_it_leaves_itself(shop: None) -> None:
     assert g.left == 1 and g.mid == 1531
 
 
-def test_not_let_in_is_written_down_and_no_other_cave_is_tried(shop: None) -> None:
+def test_turned_away_is_written_down_and_no_other_cave_is_tried(shop: None) -> None:
     # the game lets a character into one cave a day: turned away from one, it has had its cave
     g = Game(lets_in=False, bag={"pet large blue potion": 30, "pet rice roll": 5,
                                  "large blue potion": 80, "large red potion": 40})
+    g.a = SaidAgent(["You have already entered an experience dungeon today"])
     notes = dungeon.run(as_bot(g), dungeon.config({}))
-    assert g.walked == ["Bottomless pit"]                     # the best a level 80 has
+    assert g.walked == ["Bottomless pit"]                     # the best a level 80 has, once
     assert g.farmed == []
     assert len(notes) == 1 and "didn't let us in" in notes[0]
     assert chores.done_today("Hero")["_dungeon Bottomless pit"]["note"] == "not let in"
+
+
+def test_an_entry_that_just_didnt_work_is_tried_three_times_and_not_written_down(shop: None) -> None:
+    g = Game(lets_in=False, bag={"pet large blue potion": 30, "pet rice roll": 5,
+                                 "large blue potion": 80, "large red potion": 40})
+    g.character = "Unlucky"
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == dungeon.TRIES   # one walk, a knock a try
+    assert g.farmed == []
+    assert len(notes) == 1 and "couldn't get in after 3 tries" in notes[0]
+    assert dungeon.done_today("Unlucky") == []                # the next run goes again
+    g.lets_in = True
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
+    assert g.farmed and dungeon.done_today("Unlucky") == ["Spider cave"]
+
+
+class LateMenuGame(Game):
+    """The entrance's menu isn't there in time at the first knock."""
+
+    def choose(self, pattern: str) -> dict[str, Any] | None:
+        return super().choose(pattern) if self.did.count("talk") > 1 else None
+
+
+def test_a_menu_that_comes_late_is_tried_again(shop: None) -> None:
+    g = LateMenuGame()
+    assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.IN
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == 2 and g.mid == 1503
+    assert any("trying again (2 of 3)" in line for line in g.lines)
+
+
+class SlowGame(Game):
+    """The game moves us in only after the LANDING wait is over."""
+
+    def wait_map_change(self, mid: int, seconds: float) -> bool:
+        return False
+
+    def sleep(self, seconds: float) -> None:
+        super().sleep(seconds)
+        if self.walked:
+            self.mid = dungeon.CAVES[self.cave]["map"]
+
+
+def test_a_move_in_that_comes_late_is_seen_and_not_tried_again(shop: None) -> None:
+    g = SlowGame()
+    assert dungeon.enter(as_bot(g), "Scorpion Cave") == dungeon.IN
+    assert g.walked == ["Scorpion Cave"] and g.mid == 1539
 
 
 def test_one_cave_a_day_whichever_it_was(shop: None) -> None:
@@ -329,8 +376,9 @@ def test_one_cave_a_day_whichever_it_was(shop: None) -> None:
 
 def test_a_menu_without_enter_is_said(shop: None) -> None:
     g = Game(menu=False)
-    assert dungeon.enter(as_bot(g), "Spider cave") is False
+    assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.MISSED
     assert any("Enter the dungeon" in line for line in g.lines)
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == dungeon.TRIES
 
 
 def test_a_cave_above_the_characters_level_is_said_and_not_tried(shop: None) -> None:
@@ -508,15 +556,17 @@ class SaidAgent(Agent):
 def test_turned_away_for_the_day_says_why(shop: None) -> None:
     g = Game(lets_in=False)
     g.a = SaidAgent(["You have already entered an experience dungeon today"])
-    assert dungeon.enter(as_bot(g), "Spider cave") is False
+    assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.USED
     assert any("already been in an experience dungeon today" in line for line in g.lines)
+    assert g.walked == ["Spider cave"]                        # no second go: the day is used
 
 
 def test_not_let_in_for_another_reason_says_nothing_of_the_day(shop: None) -> None:
     g = Game(lets_in=False)
     g.a = SaidAgent(["Your level is too low"])
-    assert dungeon.enter(as_bot(g), "Spider cave") is False
+    assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.MISSED
     assert not [line for line in g.lines if "already been" in line]
+    assert "the game said: Your level is too low" in g.lines  # what it said, for the log
 
 
 def test_a_run_started_inside_a_cave_hunts_on_without_leaving_or_shopping(shop: None) -> None:

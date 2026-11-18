@@ -334,7 +334,7 @@ When travelling, Uncle Farmer combines walking with cable cars and airships when
 
 For example, a journey from Giant Rock City to Tulip City might go underground to reach a cable car, then continue on foot after arriving.
 
-The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, and the character must have enough arnebia in the bag to pay the fare. VIP travel is free.
+The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, the character must have enough arnebia in the bag to pay the fare (VIP travel is free), and its level must be high enough for the ride: each airship out of a capital needs one (from 26 for Giant Rock City to Sunset City up to 86 for Holy Blood City to Dark Night City), and so do the cable cars from Giant Rock City to Tulip City (45) and to Holy Blood City (60). The rides back need none. When another ride turns the character away for its level, the bot says so and goes another way for the rest of the run.
 
 **Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
 
@@ -453,7 +453,10 @@ The log reports:
 - Which listed items were not found in the bag.
 - Which items the storehouse could not accept.
 
-If the storehouse is full, anything that does not fit stays in your bag.
+If the storehouse is full, anything that does not fit stays in your bag. A full storehouse still takes
+more of an item it already holds; an item it holds none of is turned away (the game says "item
+storage is full"). The bot says which items stay in the bag, and doesn't take them back to the
+storehouse for the rest of the run, unless something is taken out of it, which can make room.
 
 The storage list is read when the job starts. This means changes you make to the list before starting the job are applied.
 
@@ -466,12 +469,14 @@ top to bottom, one at a time. Use **Move up** and **Move down** to change that o
 profiles keep their enabled jobs and original order until you edit them.
 
 Above the Before farming list, **Skip this list when the run starts on its first farming map**
-(off by default) is for a Stop and a start again where the character was farming: when the run
+(on by default) is for a Stop and a start again where the character was farming: when the run
 starts on the map its plan farms first (the first spot of the plan, or the first `farm` line of a
 script), the Before farming list is left out and farming starts at once, instead of a trip to
 town and back. The log says "already on Margit Rainforest (5281), where this run farms first -
 the Before farming list is skipped". A run that starts anywhere else, or one that first goes into
-a dungeon, runs the list as usual. The After farming list isn't affected.
+a dungeon, runs the list as usual. The After farming list isn't affected. Supplies and the bag
+are still looked after: while farming, the bot goes to town by itself when a supply is down to
+its minimum or the bag is full. Untick it if you want the list to run on every start.
 
 Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
 or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
@@ -496,6 +501,9 @@ The familiar default jobs include:
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
 - **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
+  In these lists it is skipped while the prices were read less than 8 hours ago (on this PC, by
+  any character): the log says how long ago, and the list goes on without a walk to the Shard
+  Broker.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
 - **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
 - **Restock supplies:** Runs **Restock now** from the game's menu in the Games list. It fills every supply that is switched on in **Character, Bag and supplies** up to its "fill up to" amount, from the storehouse first and then a shop, even when it is not yet down to its refill point.
@@ -1081,6 +1089,8 @@ You can also update shard prices by running this script command:
 `update_shard_prices`
 
 It performs the same update process: travels to the nearest Shard Broker, reads the current prices, and saves the prices it can verify.
+
+The Tools menu and the script command always read the prices. Only the Before farming and After farming lists skip them while they are less than 8 hours old.
 
 ### When Uncle Farmer is updated
 

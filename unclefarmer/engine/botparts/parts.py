@@ -70,6 +70,7 @@ class Parts:
     last_seen: Callable[[str], Sighting | None] | None  # where a player was last seen, and how long ago
     tell: Callable[[str], None] | None             # answers the player who asked for this run
     kind: str
+    reconnect: Callable[[], bool] | None
 
     # ---------------------------------------------------------------- state the engine modules keep
     # on the bot for a run (pets, team heals, repairs, follow, gathering...): set where they are used,

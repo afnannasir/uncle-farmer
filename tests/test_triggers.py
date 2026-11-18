@@ -78,6 +78,9 @@ def triggered(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profile: dict[str
 def ticks(before: list[str] = [], after: list[str] = []) -> dict[str, bool]:     # noqa: B006 (read only)
     p = {triggers.setting(j, "before"): j in before for j in ORDER}
     p.update({triggers.setting(j, "after"): j in after for j in ORDER})
+    # the stand-in plans farm where they stand: without this the (ticked by default) skip would
+    # leave out every Before farming list here
+    p["skip_before_on_farm"] = False
     return p
 
 

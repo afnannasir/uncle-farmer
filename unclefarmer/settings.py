@@ -82,7 +82,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
     "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
-    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
+    "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -139,7 +139,8 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
     "corpse_skill": False,    # farming: the learned Draw Blood, Skinning or Cut Flesh on our kills (engine/corpses.py)
     "corpse_keep_vitality": 0,  # ... until Vitality is down to this (0: until it runs out)
-    "xp_card_name": "",       # farming: keep this experience card running, that kind only ("": none) (engine/xpcard.py)
+    "xp_cards": None,         # farming: keep a card of these strengths running, the strongest first ([]: none;
+                              # None: not carried over from xp_card_name yet) (engine/xpcard.py)
     "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
@@ -328,7 +329,7 @@ class Profile(BaseModel):
     shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
     corpse_skill: bool = PROFILE_DEFAULTS["corpse_skill"]
     corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
-    xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
+    xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
@@ -751,6 +752,17 @@ def _upgrade_xp_card(p: dict[str, Any]) -> None:
     p.pop("xp_card", None)
 
 
+def _upgrade_xp_cards(p: dict[str, Any]) -> None:
+    """2026-11-17: one chosen card (xp_card_name) became ticks for several kinds (xp_cards). The
+    chosen kind is the one ticked. A profile that never saved its ticks keeps its old name in the
+    file, so this runs again on each read until it does, and gives the same ticks each time."""
+    name = p.pop("xp_card_name", "")
+    if p.get("xp_cards") is None:
+        from .engine.xpcard import strength
+        s = strength(name) if isinstance(name, str) else None
+        p["xp_cards"] = [s] if s else []
+
+
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
     """A profile saved by an older version, brought up to date: each step below once, in order."""
     for step in UPGRADES:
@@ -872,6 +884,11 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_dropped,
     _upgrade_class_reach,
     _upgrade_xp_card,
+    _upgrade_xp_cards,
+    # Before 2026-11-18 a run that started on its farming map still made the Before farming list's
+    # trip to town and back unless the player ticked the skip; it is ticked now, once, for everyone:
+    # a supply or a bag that needs a town is seen to by the farm loop itself anyway.
+    _upgrade_once("skip_before_ticked", "skip_before_on_farm", (False, None), True),
 ]
 
 

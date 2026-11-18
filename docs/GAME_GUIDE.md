@@ -39,7 +39,15 @@ who wants to automate more of the game.
 
 West of the continent is Loki Union (capital Tulip City), east is Garth Empire (capital Holy Blood
 City), each with higher-level areas and two more cities. Cable cars and airships link the
-capitals and cities.
+capitals and cities. Each airship out of a capital needs a level: Giant Rock City to Sunset City
+26 and to White Sand City 36, Tulip City to Moon City 56 and to Violet City 76, Holy Blood City to
+Gouging Knife City 66 and to Dark Night City 86; each costs 1000 arnebia. The flights back need
+no level (Dark Night City's administrator stands at its south gate). Under the cities, the cable
+car from Giant Rock City to Tulip City needs level 45 and the one to Holy Blood City 60 (2000
+arnebia, free for VIPs, none back); there is no cable car between Tulip City and Holy Blood City,
+and the rides to and from the Lifting Platforms are free. Below the level the administrator opens no menu and only
+says so ("Go to Violet City; requires Level 76 or above, Go to Violet City when you're
+stronger.").
 
 **Teleport skills** (recorded by hand 2026-11-13). A Mage's *Teleportation* (skill id 1061) takes
 the caster to a city square; an Elf's *Elven Teleportation* goes to The Land of Reiki. Both are a
@@ -96,12 +104,13 @@ levels above it.
 - **Experience cards** ("1.3x experience acceleration card", and 1.5x, 1.75x, 2x, 2.5x and 3x):
   using one from the bag gives more experience for 30 minutes. The character sheet shows it as
   "30% EXP bonus; press to pause" with the time left. Pressing that entry pauses it ("Paused; press to resume") and pressing it again
-  resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon, and a server
-  restart wipes the bonus even while it is paused.
+  resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon (a paused
+  card runs again by itself on going into one), and a server restart wipes the bonus even while it
+  is paused.
 
-*For the bot:* with an experience card chosen, it keeps a card of that kind running on the farm
-(never a stronger one from the bag), and with the pause tick it pauses the card while a farming
-run is away from the monsters.
+*For the bot:* with experience cards ticked, it keeps one running on the farm, the strongest ticked
+card in the bag first (never one that isn't ticked), and with the pause tick it pauses the card
+while a farming run is away from the monsters.
 
 
 ## Combat rules
@@ -134,7 +143,7 @@ run is away from the monsters.
   enemies near you (Priest), the target's agony (Witcher).
 - **Combat skills** are learned from Masters by level (Level 15 skills from Master Taufan, Level
   25 from Master Drunk, class skills from the senior mentors) and from skill crystals. Ten attack
-  keys, two pages (Caps Lock).
+  keys, two pages (Caps Lock, or the key the game's options give it; the bot uses that key).
 - **Talents** are passive. General talents protect against terrain (Anti-Corrosion, Turtle Breath,
   Poison Immunity); class talents boost the class. A talent must be learned, then **activated**
   with talent points (cultivated at a Master or the gang's Guru Elder for arnebia, and gang

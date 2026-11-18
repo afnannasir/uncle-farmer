@@ -111,6 +111,101 @@
   shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
   again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
 
+**Several kinds of experience cards**
+
+- Character, Settings, Fighting: the experience card list became one tick per card (1.3x, 1.5x,
+  1.75x, 2x, 2.5x and 3x), each with how many the last scan saw in the bag. When no card is
+  running on the farm, the bot uses the strongest ticked card it has, so a character can finish
+  its 2x and then burn the small cards looted from chests on the way. A ticked card that runs out
+  stays ticked, and the next one looted is used. Cards that aren't ticked are never used. The
+  card chosen before is the one ticked.
+
+**The skill page turns with the game's own key**
+
+- The bot always turned the skill page with Caps Lock, the game's default. A player who gives
+  that job to another key in the game's options (Space, for example) had every Caps Lock thrown
+  away by the game: the page never turned, and the skills on the other page were pressed on
+  empty keys. An Elf with two skills on her second page cast only those two for a whole night
+  (88 casts an hour, a kill every 80 seconds). The bot now reads the page key from the game's
+  key settings like the skill keys, and says which key it uses when it isn't Caps Lock. Caps
+  Lock stays the key when the game names no other.
+
+**Experience dungeons: a missed entry is tried again**
+
+- Getting into an experience dungeon had one go. If the entrance's menu came late, had no
+  "Enter the dungeon" row, or the game took more than ten seconds to move the character in, the
+  day's visit was written down as used and not tried again until the next game day. When the
+  move in came late, the bot even walked out of the dungeon again for the end of the run. The bot
+  now has three goes at the entrance, sees a late move in before trying again, and writes the day
+  down only when it got in or the game said "already entered an experience dungeon today". After
+  three failed goes it says so, and the next run tries again.
+
+**Airships and cable cars that need a level**
+
+- Below an airship's level, its administrator opens no menu: the game only says "Go to Violet
+  City; requires Level 76 or above". The bot waited for a menu, said "didn't answer", tried once
+  more and only then went another way, about 20 seconds lost on every trip (a character under
+  level 76 heading for Margit Rainforest from Tulip City, every time). The bot now knows the level
+  of every airship out of a capital and doesn't plan one below it: Giant Rock City to Sunset City
+  26 and to White Sand City 36, Tulip City to Moon City 56 and to Violet City 76, Holy Blood City
+  to Gouging Knife City 66 and to Dark Night City 86 (the flights back need none); the cable car
+  from Giant Rock City's underground to Tulip City's needs 45, to Holy Blood City's 60. A ride that
+  turns the character away for its level anyway is left out at once, said ("the Airship
+  Administrator on Tuneful Wetland takes only level 76 and above"), and not tried again for the
+  rest of the run.
+- Dark Night City and Gouging Knife City now fly back to Holy Blood City: their administrators
+  were missing, and from Dark Night City the bot walked out through skeleton basin, four times
+  longer. Holy Blood City's own two airships now land where they really do, not in the middle of
+  the map.
+- Every fare is known now: each airship takes 1000 arnebia, and the cable cars to and from the
+  Lifting Platforms are free. A character with less than 1000 arnebia in the bag no longer plans
+  an airship it can't pay for.
+
+**A shop that doesn't answer no longer ends the run**
+
+- When a potion ran low while farming, the bot went to town to restock, and one shop or
+  storehouse that didn't answer ended the whole run. It happened on the way between maps and
+  after a bag trip too, and on a bag trip a Shard Broker that didn't answer did the same. Now the
+  bot says what it couldn't do, skips that errand and goes back to farming, as "Restock now"
+  already did; the item is tried again later.
+- A storehouse that doesn't answer leaves the item to the shop instead of skipping the shop too.
+- A shop that doesn't answer is passed over for the next nearest one, and isn't remembered as a
+  shop that doesn't sell the item. When none answers, the bot says so instead of "no shop near
+  enough lists it".
+
+**No trip to town and back when a run starts on its farming map**
+
+- **Skip this list when the run starts on its first farming map** (Character settings, Triggers,
+  Before farming) is now ticked by default, and ticked once for every profile saved before. A run
+  started where it farms goes straight to farming; the farm loop still goes to town by itself
+  when a supply runs low or the bag is full. Untick it to run the list on every start.
+- **Update shard prices** in a Before or After farming list no longer walks to the Shard Broker
+  when the prices were read less than 8 hours ago, by any character on the PC: it was the job
+  that sent a run started on its farming map to town and back for prices read minutes before.
+  The Tools menu and the `update_shard_prices` script command still read them every time.
+
+**A full storehouse**
+
+- A full storehouse still takes more of an item it already holds, but turns away an item it holds
+  none of: the game says "item storage is full". The bot now hears it, says which items stay in
+  the bag because the storehouse is full (not that it "may be full"), and stops walking them back
+  to the storehouse on every bag trip of the run. Taking something out of the storehouse makes
+  room, so the bot tries them again after that.
+
+## 1.2.0
+
+**XP loser: die at the nearest village**
+
+- Tools, XP loser has a new choice, **Where to die**: at the nearest guard (as before), or at the
+  nearest village. The game brings a dead character back at the last town it walked into, so the
+  bot walks into the village first; its gate guards stand a few steps from there, so each death is
+  much quicker: on Tuneful
+  Wetland a death took 11 seconds at Aria Village against 29 at Tulip City, whose guards stand far
+  out past its streets. The villages come from the game's own map table (16 of them, from mettle
+  village to Orchid woods Village). A village with no guard to fight is left for the next nearest;
+  and if the game brings the character back somewhere else, the bot says so and dies at the
+  nearest guard instead.
+
 **Automatic login picks the character's server**
 
 - A scheduled script's `login` now selects the saved character's server (S1 or S2) before signing
@@ -196,6 +291,7 @@
   the right one instead of trying each stone room in turn.
 - When none of the marked entrances is the dungeon's circle, the log now names the other
   circles seen on the way, so a circle with an unexpected name is easy to report.
+
 **Every class's talents, as the game lists them**
 
 - The Warrior's defensive talents were missing (Defensive Stance, Sturdy Sentry, Defensive
@@ -210,6 +306,7 @@
   "Anger (Aggressive)" rank that was missing.
   These are the talents a gang develops at its Head of inner hall (gang Affairs Management, Gang
   Skill Management), three per gang at most.
+
 **Fourteen more dungeon entrances placed**
 
 - The entrances of fourteen dungeons are in the dungeon list now, read in the game: the walking
@@ -221,6 +318,7 @@
 - The others: Dryad Jungle, zagrama canyon, Machine Fortress, Silver Peak, bottomless pit
   (Valley of Luxuriant forests), fully mountain, Machining plant (far off regions), graceful
   mountain (water curtained cave), Baru Grottoe and Elemental Maze (thousand miles of rivers).
+
 **Stop before the next level**
 
 - For characters you keep at their level: Character, Settings, Fighting has a new group, **Drop
@@ -237,6 +335,7 @@
 - **Stop when the day's drop time runs out** and **Drop time to save** moved from Bag and
   supplies, Full bag, to the same new group in Character, Settings, Fighting, beside the other
   reasons to stop. Your settings stay as they were.
+
 **From a secret room, the nearest shop is the one outside the door**
 
 - A run that started inside a secret room chose its Shard Broker, storehouse or other shop as if
@@ -244,6 +343,7 @@
   data can't say. A room entered from Tulip City sent the bot by cable car to central plains'
   Shard Broker, right past Tulip City's. It now leaves the room first, then picks the nearest one
   from where it comes out, as it already did from a gang base.
+
 **A start again on the farm goes straight back to farming**
 
 - Character settings, Triggers, Before farming has a new tick, **Skip this list when the run

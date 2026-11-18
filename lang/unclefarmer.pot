@@ -537,6 +537,9 @@ msgstr ""
 msgid "&When the bag is full:"
 msgstr ""
 
+msgid "&Where to die:"
+msgstr ""
+
 msgid "&Write an email"
 msgstr ""
 
@@ -1351,9 +1354,6 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
-msgid "E&xperience card to keep running while farming:"
-msgstr ""
-
 msgid "E&xport"
 msgstr ""
 
@@ -1492,7 +1492,8 @@ msgstr ""
 msgid "Experience"
 msgstr ""
 
-msgid "Experience cards"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
 msgstr ""
 
 msgid "Expert"
@@ -3586,7 +3587,7 @@ msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr ""
 
 msgid ""
-"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
 
 msgid "The bot isn't running."
@@ -4437,6 +4438,12 @@ msgstr ""
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 
+msgid "at the nearest guard"
+msgstr ""
+
+msgid "at the nearest village (you respawn next to its guards)"
+msgstr ""
+
 msgid "at {time}"
 msgstr ""
 
@@ -4472,6 +4479,9 @@ msgid "automatic login finished"
 msgstr ""
 
 msgid "automatic login stopped"
+msgstr ""
+
+msgid "automatic reconnection finished"
 msgstr ""
 
 msgid "avoiding elites"
@@ -4820,6 +4830,9 @@ msgstr ""
 msgid "couldn't switch the target key to NPCs"
 msgstr ""
 
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr ""
+
 msgid "couldn't talk to the {npc}"
 msgstr ""
 
@@ -4836,6 +4849,9 @@ msgid "couldn't turn to the attack page {skill} is on"
 msgstr ""
 
 msgid "couldn't type into the game: {why}"
+msgstr ""
+
+msgid "couldn't walk into {village} - trying another village"
 msgstr ""
 
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
@@ -4900,6 +4916,9 @@ msgid "drop: how much drop time I have left today."
 msgstr ""
 
 msgid "dungeon - you leave by its chest, not on foot"
+msgstr ""
+
+msgid "dying at {village}: the game brings us back right next to its guards"
 msgstr ""
 
 msgid "dying costs no more experience on this level - stopped"
@@ -5458,6 +5477,9 @@ msgstr ""
 msgid "no guard here - going to the nearest town, {map}"
 msgstr ""
 
+msgid "no guard to fight at {village} - trying another village"
+msgstr ""
+
 msgid "no known entrance for the dungeon {name}"
 msgstr ""
 
@@ -5529,6 +5551,10 @@ msgstr ""
 msgid "no such dungeon: {name} (there are: {all})"
 msgstr ""
 
+msgid ""
+"no village with a guard to fight nearby - dying at the nearest guard instead"
+msgstr ""
+
 msgid "no way from {a} to {b} - go there yourself and start again"
 msgstr ""
 
@@ -5566,6 +5592,12 @@ msgid "none"
 msgstr ""
 
 msgid "none of the entrances marked on {map} is the {name} circle"
+msgstr ""
+
+msgid "none of the shops that sell {item} answered"
+msgstr ""
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 
 msgid "none of the {n} places that could do it can be reached from {map}"
@@ -5627,6 +5659,9 @@ msgstr ""
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr ""
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
@@ -5647,6 +5682,9 @@ msgid "not sold: {list}"
 msgstr ""
 
 msgid "not stored (the storehouse may be full): {list}"
+msgstr ""
+
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 
 msgid "nothing"
@@ -6403,6 +6441,10 @@ msgid ""
 "the fusion beast waits {secs} s: the game refuses one this soon after a death"
 msgstr ""
 
+msgid ""
+"the game brought us back on {map} at {x},{y}, not at {village} - dying at the nearest guard instead"
+msgstr ""
+
 msgid "the game can't be read: {why}"
 msgstr ""
 
@@ -6453,6 +6495,9 @@ msgid ""
 msgstr ""
 
 msgid "the game refused the login request"
+msgstr ""
+
+msgid "the game said: {lines}"
 msgstr ""
 
 msgid ""
@@ -6598,6 +6643,13 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr ""
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 
@@ -6611,6 +6663,13 @@ msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr ""
 
 msgid "the storehouse has {n} {item}"
+msgstr ""
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr ""
+
+msgid "the storehouse is full: {item} has no place in it"
 msgstr ""
 
 msgid "the storehouse menu has no deposit"
@@ -6642,6 +6701,9 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr ""
 
+msgid "the village at {x},{y} on {map}"
+msgstr ""
+
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""
 
@@ -6659,6 +6721,9 @@ msgid ""
 msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
+msgstr ""
+
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
 msgstr ""
 
 msgid "the {npc} said no - see logs\\dialogs.log"
@@ -6833,6 +6898,10 @@ msgstr ""
 msgid "walk to the enemy"
 msgstr ""
 
+msgid ""
+"walking into {village} first: the game brings us back at the last town we walked into"
+msgstr ""
+
 msgid "walking on to {cell}"
 msgstr ""
 
@@ -6958,6 +7027,9 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr ""
 
+msgid "{card} (none in the bag)"
+msgstr ""
+
 msgid "{card} ({n} in the bag)"
 msgstr ""
 
@@ -6968,6 +7040,9 @@ msgid "{cave} is done for today - a character goes into one cave a day"
 msgstr ""
 
 msgid "{cave} needs level {n}"
+msgstr ""
+
+msgid "{cave}: couldn't get in after {n} tries"
 msgstr ""
 
 msgid "{cave}: still inside after the timer - leaving"
@@ -7312,6 +7387,9 @@ msgstr ""
 msgid "{npc} didn't answer"
 msgstr ""
 
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
+msgstr ""
+
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr ""
 
@@ -7556,6 +7634,9 @@ msgid "{tool} - {name}"
 msgstr ""
 
 msgid "{tool} check"
+msgstr ""
+
+msgid "{village} on {map}"
 msgstr ""
 
 msgid "{what} for {who} is waiting: {why}"

@@ -90,6 +90,9 @@ PET_WAIT = 180.0          # seconds to wait at the door for the run's pet to be 
                           # to 30, and then we go in without it)
 DOOR_LOOKS = 5            # looks at ourselves at the door, DOOR_LOOK apart: each puts up one buff
 DOOR_LOOK = 0.6           # or drinks one potion, so none of it costs a cast inside
+TRIES = 3                 # goes at the entrance before giving up (none is written down for the day)
+RETRY_WAIT = 2.0          # seconds between two goes: a late move in shows meanwhile
+IN, USED, MISSED = "in", "used", "missed"     # what enter() got
 SETTLE = 5.0              # seconds to let the game finish moving us out before going on
 SUPPLIES = ("pet_mp", "pet_food", "mp", "hp")
 SUPPLY_NAMES = {"pet_mp": N_("Pet blue potions"), "pet_food": N_("Pet Rice Rolls"),
@@ -345,41 +348,66 @@ def landed(b: Bot, mid: int) -> bool:
     return False
 
 
-def enter(b: Bot, cave: str, cfg: dict[str, Any] | None = None) -> bool:
-    """Walk to the cave's entrance, get ready there (make_ready), talk, choose "Enter the dungeon"
-    and wait to land inside. True when inside; False when the game didn't let us in (the day's
-    entry used, a level too low)."""
+def enter(b: Bot, cave: str, cfg: dict[str, Any] | None = None) -> str:
+    """Walk to the cave's entrance, get ready there (make_ready), then talk, choose "Enter the
+    dungeon" and wait to land inside, up to TRIES times: a menu that came late, a row not found or
+    a slow move in is tried again, and a move in that came after LANDING is seen before the next
+    try. IN when inside; USED when the game said the day's entry is used; MISSED when TRIES tries
+    got nowhere (the day may still be free)."""
     entry = entrance(cave)
     if entry is None:
         raise Stopped(_("I don't know where {cave} is entered", cave=cave))
     b.go_dungeon(entry)
     make_ready(b, cave, cfg if cfg is not None else config(b.p))
     entry = entrance(cave) or entry       # a circle found on the way is remembered with its place
-    if not knock(b, entry):
-        raise Stopped(_("couldn't talk to {npc}", npc=entry.get("npc") or cave))
-    b.wait_dialog(3.0)
-    mid = b.map_id()
-    since = chores.said_mark(b)
-    if b.choose(ENTER) is None:
-        b.close_dialogs()
-        b.log(_("{npc} offered no \"Enter the dungeon\"", npc=entry.get("npc") or cave), speak=True)
-        return False
-    landed(b, mid)
-    if b.map_id() != CAVES[cave]["map"]:
-        b.close_dialogs()
-        if turned_away(b, since):
-            b.log(_("the game says this character has already been in an experience dungeon today"),
-                  speak=True)
-        return False
-    return True
+    inside = CAVES[cave]["map"]
+    said: list[str] = []
+    for n in range(TRIES):
+        if b.map_id() == inside:
+            return IN                  # the last try's move in came late
+        if n:
+            b.log(_("not in {cave} yet - trying again ({n} of {all})", cave=cave, n=n + 1, all=TRIES))
+        if not knock(b, entry):
+            b.log(_("couldn't talk to {npc}", npc=entry.get("npc") or cave))
+            b.sleep(RETRY_WAIT)
+            continue
+        b.wait_dialog(3.0)
+        mid = b.map_id()
+        since = chores.said_mark(b)
+        if b.choose(ENTER) is None:
+            b.close_dialogs()
+            b.log(_("{npc} offered no \"Enter the dungeon\"", npc=entry.get("npc") or cave), speak=True)
+        else:
+            landed(b, mid)
+            if b.map_id() == inside:
+                return IN
+            b.close_dialogs()
+            if turned_away(b, since):
+                b.log(_("the game says this character has already been in an experience dungeon today"),
+                      speak=True)
+                return USED
+            said = chores.said_since(b, since) or said
+        b.sleep(RETRY_WAIT)
+    if b.map_id() == inside:
+        return IN
+    if said:
+        b.log(_("the game said: {lines}", lines=" / ".join(said[-3:])))
+    return MISSED
 
 
 def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
-    """One cave: in, the fight until the game moves us out, then a line about it."""
+    """One cave: in, the fight until the game moves us out, then a line about it. Only an entry the
+    game said is used (or our own way in) is written down for the day: one that just didn't work
+    is tried again at the next run."""
     name = chores.who(b)
-    if not enter(b, cave, cfg):
+    got = enter(b, cave, cfg)
+    if got == USED:
         chores.mark(name, done_key(cave), "not let in")
         return _("{cave}: the game didn't let us in (once a day)", cave=cave)
+    if got == MISSED:
+        line = _("{cave}: couldn't get in after {n} tries", cave=cave, n=TRIES)
+        b.log(line, speak=True)
+        return line
     chores.mark(name, done_key(cave), "entered")
     b.log(_("in {cave}: {n} minutes to kill all we can", cave=cave, n=MINUTES), speak=True)
     return hunt(b, cfg, cave)

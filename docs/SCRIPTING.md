@@ -819,7 +819,7 @@ This runs only the bank and donation chores.
 
 ### Losing experience
 
-The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set).
+The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set). Where it dies, at the nearest guard or at the nearest village, is that window's choice too.
 
     lose_xp          die to guards until the goal is met
     lose_xp check    only read the experience and look for guards; nothing changes
