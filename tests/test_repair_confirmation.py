@@ -60,7 +60,7 @@ def test_delayed_consumption_is_verified_before_success() -> None:
 
 
 @pytest.mark.parametrize("snapshot", [[], {}, [{"uid": 1, "name": "Helm"}]])
-def test_missing_equipment_data_cannot_confirm_repair(snapshot: Any) -> None:
+def test_a_used_toolbox_is_a_repair_even_when_the_gear_cant_be_read(snapshot: Any) -> None:
     b = ConfirmationBot(consumed=True, repaired=True)
     original = b.link.json
 
@@ -68,8 +68,8 @@ def test_missing_equipment_data_cannot_confirm_repair(snapshot: Any) -> None:
         return snapshot if line == "mem equipment" else original(line)
 
     b.link.json = answer
-    assert repair.repair(as_bot(b)) is False
-    assert b.gear.warned and b.gear.repaired_at == 0
+    assert repair.repair(as_bot(b)) is True
+    assert b.gear.warned == {} and b.gear.repaired_at > 0
 
 
 def test_broken_to_repaired_state_is_proof_even_if_count_snapshot_lags() -> None:
@@ -88,14 +88,25 @@ def test_unreadable_bag_is_not_treated_as_a_consumed_toolbox() -> None:
 
     b.link.json = answer
     assert repair.repair(as_bot(b)) is False
-    assert b.gear.warned and b.gear.repaired_at == 0
+    assert b.gear.repaired_at == 0 and b.gear.failed_at > 0
+    # unknown whether the game used it: the warnings go, so it isn't asked again every 600 s
+    assert b.gear.warned == {}
 
 
-def test_consuming_an_underlevel_toolbox_does_not_prove_worn_gear_repaired() -> None:
+def test_a_toolbox_the_game_used_up_is_a_repair_whatever_its_level_limit() -> None:
+    # The limit is the equipment's level: a level-95 character's level-80 gear is mended by a
+    # Large Toolbox. Before, this kept the warnings and spent a toolbox every 600 s all night.
     b = ConfirmationBot(consumed=True, repaired=False)
-    b.last_me = {"sheet": {"level": 95}}  # Large Toolbox only covers level80
+    b.last_me = {"sheet": {"level": 95}}
+    assert repair.repair(as_bot(b)) is True
+    assert b.gear.warned == {} and b.gear.repaired_at > 0
+
+
+def test_a_toolbox_the_game_did_not_use_keeps_the_warnings() -> None:
+    b = ConfirmationBot(consumed=False, repaired=False)
     assert repair.repair(as_bot(b)) is False
-    assert b.gear.warned and b.gear.repaired_at == 0
+    assert b.gear.warned == {1: "low"} and b.gear.failed_at > 0
+    assert any("still in the bag" in line for line in b.lines)
 
 
 class NoneToDoBot(ConfirmationBot):
@@ -134,3 +145,23 @@ def test_an_equipped_value_of_zero_counts_as_mended() -> None:
         return {"text": "Confirm"}
     b.choose = choose
     assert repair.repair(as_bot(b)) is True
+
+
+class NightBot(GameBot):
+    def __init__(self, *args: Any, **kw: Any) -> None:
+        super().__init__(*args, **kw)
+        self.clock = Clock()
+
+
+def test_one_wear_warning_spends_one_toolbox_all_night() -> None:
+    """A level-69 Mage with level-60 gear and Small Toolboxes on key 7: v1.2.0 spent 29 of them in
+    one night, one every 600 s after a single "about to break" (each repair "couldn't be
+    confirmed", so the warning was never cleared)."""
+    b = NightBot(69, {"Small Toolbox": 32}, gear_level=60, hotkeys={"Small Toolbox": "7"})
+    b.link.equipment[0]["equipped"] = 1                 # worn, not broken
+    b.link.wear = [{"t": int((b.clock.time() + 5) * 1000), "uid": 1, "broken": False}]
+    for _ in range(6 * 3600 // 2):                      # six hours of looks, every CHECK_EVERY
+        b.clock.advance(repair.CHECK_EVERY)
+        repair.check(as_bot(b))
+    assert b.uses == ["Small Toolbox"] and b.counts["Small Toolbox"] == 31
+    assert "all the gear repaired with a Small Toolbox" in b.lines

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+**Toolboxes: one per warning again (a 1.2.0 bug)**
+
+- Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when
+  the toolbox's level limit covered the character's level. But the limit is the gear's level, not
+  the character's: a level-69 Mage wearing level-60 gear is repaired by a Small Toolbox. So every
+  such repair was "couldn't confirm the repair", the warning stayed, and the bot used another
+  toolbox every 10 minutes all night (29 Small Toolboxes in one night, where 1.1.0 used one or
+  two). A toolbox the game uses up now counts as a repair again. When the bag can't be read to
+  tell, the warning is dropped too: the game warns again if the gear is still worn.
+
 **Several kinds of experience cards**
 
 - Character, Settings, Fighting: the experience card list became one tick per card (1.3x, 1.5x,
