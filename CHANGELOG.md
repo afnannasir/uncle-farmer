@@ -1,5 +1,19 @@
 # What's new
 
+## Unreleased
+
+**A shop that doesn't answer no longer ends the run**
+
+- When a potion ran low while farming, the bot went to town to restock, and one shop or
+  storehouse that didn't answer ended the whole run. It happened on the way between maps and
+  after a bag trip too, and on a bag trip a Shard Broker that didn't answer did the same. Now the
+  bot says what it couldn't do, skips that errand and goes back to farming, as "Restock now"
+  already did; the item is tried again later.
+- A storehouse that doesn't answer leaves the item to the shop instead of skipping the shop too.
+- A shop that doesn't answer is passed over for the next nearest one, and isn't remembered as a
+  shop that doesn't sell the item. When none answers, the bot says so instead of "no shop near
+  enough lists it".
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

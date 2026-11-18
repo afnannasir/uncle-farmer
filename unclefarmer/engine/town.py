@@ -417,12 +417,21 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
         if n <= 0:
             return 0
     tried: list[Npc] = []
+    silent: list[Npc] = []
     for _try in range(BUY_TRIES):
         target = nearest(b, None, [s for s in shops if s not in tried])
         if target is None:
             break
         tried.append(target)
-        visit(b, None, candidates=[target])
+        try:
+            visit(b, None, candidates=[target])
+        except Stopped as e:
+            if b.stop_event.is_set() or e.final:
+                raise
+            # a shop that doesn't answer is not a shop that doesn't sell it: not noted, next one
+            b.log(_("{npc} didn't answer ({why}) - trying the next nearest shop", npc=target[1], why=e))
+            silent.append(target)
+            continue
         try:
             if stock is not None:
                 n = _affordable_quantity(b, item, _restock_quantity(b, item, stock), counts(b))
@@ -452,6 +461,9 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
         b.log(_("bought {n} {item}", n=got, item=item))
         stats.moved(b, "bought", item, got)
         return got
+    if tried and silent == tried:
+        # not "no shop lists it": none of them got to say (the restock says so and goes on)
+        raise Stopped(_("none of the shops that sell {item} answered", item=item))
     b.log(_("no shop near enough lists {item} - see logs\\dialogs.log", item=item), speak=True)
     return 0
 
@@ -745,11 +757,14 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     b.restock_town = where
     try:
         for r, have, want in todo:
+            # a shop or storehouse that doesn't answer skips the item, never the run: the farm
+            # loop's own restock (start=False) used to end the whole run on one silent NPC
             if start:
                 got = _try_trip(b, _("couldn't restock {item}: {why}"), r["item"],
                                 lambda r=r, want=want: _fill(b, r, want - counts(b).get(r["item"].strip().lower(), 0), stock=want)) or 0
             else:
-                got = _fill(b, r, want - have)
+                got = _try_trip(b, _("couldn't restock {item}: {why}"), r["item"],
+                                lambda r=r, have=have, want=want: _fill(b, r, want - have)) or 0
             item = r["item"].strip().lower()
             if got <= 0 and counts(b).get(item, 0) <= int(r.get("min") or 0):
                 b.__dict__.setdefault("restock_failed", {})[item] = (clock_for(b).time(),
@@ -799,7 +814,11 @@ def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) 
         # Normal and restricted items can occupy separate storage rows. One
         # withdrawal takes only one row; reopen the list before resorting to a shop.
         while missing > 0:
-            taken = withdraw(b, item, missing, **options)
+            # a storehouse that doesn't answer leaves the item to the shop
+            taken = _try_trip(b, _("couldn't take {item} out of the storehouse: {why}"), item,
+                              lambda missing=missing: withdraw(b, item, missing, **options))
+            if taken is None:
+                break
             got += taken
             remaining = (max(0, stock - counts(b).get(item.lower(), 0)) if stock is not None
                          else max(0, missing - taken))
@@ -1151,7 +1170,9 @@ def unload(b: Bot) -> int:
     # 1. shards in one visit to the market
     to_market = [(k, n) for k, a, n in todo if a == "sell" and k.lower() in shard_names]
     for name, n in to_market:
-        if _weighed(b, name, lambda name=name: _sell_one_shard(b, name, n)):
+        # a Shard Broker that doesn't answer skips the shard, not the run
+        if _try_trip(b, _("couldn't sell {item}: {why}"), name,
+                     lambda name=name, n=n: _weighed(b, name, lambda: _sell_one_shard(b, name, n))):
             done += 1
     # 2. other sales to NPC buyers; what nobody buys falls back to the storehouse
     store = [(k, n) for k, a, n in todo if a == "store"]
