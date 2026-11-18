@@ -5062,6 +5062,9 @@ msgstr "não foi possível guardar {item}: {why}"
 msgid "couldn't switch the target key to NPCs"
 msgstr "não foi possível mudar a tecla de alvo para NPCs"
 
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr "não foi possível retirar {item} do armazém: {why}"
+
 msgid "couldn't talk to the {npc}"
 msgstr "não foi possível falar com {npc}"
 
@@ -5853,6 +5856,9 @@ msgstr "nenhuma das entradas marcadas em {map} é o círculo {name}"
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "nenhum dos cartões de experiência marcados na bolsa - a coleta continua sem cartão"
+
+msgid "none of the shops that sell {item} answered"
+msgstr "nenhuma das lojas que vendem {item} respondeu"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
@@ -7719,6 +7725,9 @@ msgstr "{now} de {top} ({pct}%)"
 
 msgid "{npc} didn't answer"
 msgstr "{npc} não respondeu"
+
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
+msgstr "{npc} não respondeu ({why}) — tentando a próxima loja mais próxima"
 
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr "{npc} não vende {item} — tentando a próxima loja mais próxima"

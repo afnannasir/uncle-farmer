@@ -5045,6 +5045,9 @@ msgstr "{item} store nahi kar sake: {why}"
 msgid "couldn't switch the target key to NPCs"
 msgstr "target key ko NPCs par switch nahi kar sake"
 
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr "storehouse se {item} nahi nikal sake: {why}"
+
 msgid "couldn't talk to the {npc}"
 msgstr "{npc} se baat nahi kar sake"
 
@@ -5841,6 +5844,9 @@ msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
+
+msgid "none of the shops that sell {item} answered"
+msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
@@ -7707,6 +7713,9 @@ msgstr "{top} mein se {now} ({pct}%)"
 
 msgid "{npc} didn't answer"
 msgstr "{npc} ne jawab nahi diya"
+
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
+msgstr "{npc} ne jawab nahi diya ({why}) - agli qareebi dukaan aazma rahe hain"
 
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr "{npc} {item} nahi bechta - agli qareebi dukaan aazma rahe hain"
