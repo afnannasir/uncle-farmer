@@ -5264,8 +5264,8 @@ msgstr "poora loop"
 msgid "further to walk than the chase range"
 msgstr "chase range se zyada door paidal"
 
-msgid "fusion power {n} - on foot until it has come back"
-msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
+msgid "fusion power {n} - on foot until it is back to {back}"
+msgstr "fusion power {n} - {back} tak wapas aane tak paidal"
 
 msgid "game"
 msgstr "game"
@@ -8128,6 +8128,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Up&date shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
+
+#~ msgid "fusion power {n} - on foot until it has come back"
+#~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"

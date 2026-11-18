@@ -5031,7 +5031,7 @@ msgstr ""
 msgid "further to walk than the chase range"
 msgstr ""
 
-msgid "fusion power {n} - on foot until it has come back"
+msgid "fusion power {n} - on foot until it is back to {back}"
 msgstr ""
 
 msgid "game"
