@@ -586,6 +586,8 @@ class HealthMixin(Parts):
         return me
 
     def _hp_potion(self, hp: float, top: float, share: float, now: float, healer: Any) -> None:
+        if getattr(self, "dying_on_purpose", False):
+            return                 # the XP loser: a potion only keeps the guard busy longer
         hp_key, hp_name = self.potion("hp")
         if not (hp_key or hp_name):
             return
@@ -604,6 +606,8 @@ class HealthMixin(Parts):
         (the game's own numbers), so it can keep drinking every cooldown until MP is up again
         instead of once per reading. A new reading replaces the guess."""
         self.mp_share = None
+        if getattr(self, "dying_on_purpose", False):
+            return
         reading = self.mp_now(me, now) if self.p.get("mp_use", True) else None
         if not reading:
             return

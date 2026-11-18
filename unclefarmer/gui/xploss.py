@@ -48,6 +48,10 @@ class XpLoserDialog(Dialog):
         self.max_deaths = f.number(_("Stop after at most this many &deaths:"), int(c["max_deaths"]), 1, 999)
         self.where = f.choice(_("&Where to die:"), [_(w) for w in xploss.WHERE_NAMES],
                               xploss.WHERE.index(c["where"]) if c.get("where") in xploss.WHERE else 0)
+        self.stop_small = f.check(_("&Stop when a death costs too little"), c["stop_small"])
+        self.min_loss = f.number(_("Too little &means under this much experience:"), int(c["min_loss"]), 1, 2_000_000_000)
+        self.min_loss.Enable(self.stop_small.GetValue())
+        self.stop_small.Bind(wx.EVT_CHECKBOX, lambda e: self.min_loss.Enable(self.stop_small.GetValue()))
         f.readonly(_("How it works:"), _(
             "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches "
             "the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no "
@@ -57,6 +61,9 @@ class XpLoserDialog(Dialog):
             "so each death is quicker (on "
             "Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it "
             "back somewhere else, it dies at the nearest guard instead. "
+            "Each death takes a share of the experience earned in the level, so each costs a little less "
+            "than the last: after three deaths the bot says how many more it will take, and it stops if "
+            "the level can't reach your number. "
             "The pet is put away first, and the PK mode is put back at the end. "
             "Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can "
             "lose worn gear when it dies, so the XP loser won't run for one."), lines=10)
@@ -80,6 +87,7 @@ class XpLoserDialog(Dialog):
             self.amount.SetFocus()
             return
         self.cfg.update(mode=mode, max_deaths=self.max_deaths.GetValue(),
+                        stop_small=self.stop_small.GetValue(), min_loss=self.min_loss.GetValue(),
                         where=xploss.WHERE[max(0, self.where.GetSelection())])
         self.cfg["until_needed" if mode == "until" else "lose"] = amount
         self.p["xp_loser"] = self.cfg

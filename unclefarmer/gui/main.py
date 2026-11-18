@@ -641,7 +641,9 @@ Tools, XP loser (Ctrl+Shift+X): for a character that shouldn't level up. Say how
 the next level should need at least (or how much to lose); the bot finds a guard - in sight, where
 one was seen before, or in the nearest town - switches the PK mode to all mode, hits the guard once
 and lets it kill the character (no potions, heals or fighting back), respawns in the city and goes
-again until the character sheet says so, or after the most deaths you allow. The pet is put away
+again until the character sheet says so, or after the most deaths you allow. Each death costs a
+little less than the last: after three it says how many more it will take, and it stops when a
+death costs too little or the level can't reach your number. The pet is put away
 first and the PK mode put back at the end. Not for a black-name character: it can lose worn gear
 when it dies. The Triggers tab can run it before or after farming.
 

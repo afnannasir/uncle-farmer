@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+**XP loser: it knows how far it can go**
+
+- Each death takes 1.81% of the experience earned inside the level (measured over 630 deaths), so
+  each one costs less than the last and the next level's need can't pass the level's whole need.
+  After three deaths the bot works this out from the run itself and says how many more deaths and
+  minutes it will take, and warns when the limit on deaths will come first.
+- A goal the level can't reach now ends the run at once, instead of after an hour and a half of
+  deaths worth almost nothing. The level's number is remembered for a week, so the next run of that
+  character doesn't die at all to find out.
+- A new choice, **Stop when a death costs too little** (off by default, so a goal the level can
+  reach is always reached; ticked, the run ends under 500 experience a death, or the number you set).
+- **At the nearest village** is now the default place to die for characters that never chose one:
+  about 11 seconds a death against 29 at a city.
+- No potion is drunk during the run any more (the setting that should have stopped them meant
+  "automatic"), running out of potions no longer stops it, and a guard that could not be hit is no
+  longer reported as one that didn't strike back.
+
 **Spanish and Turkish**
 
 - Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
