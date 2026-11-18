@@ -373,6 +373,15 @@ It finishes any fight first, leaves a chest that is within the boss distance of 
 
 You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
 
+### Demonized elites
+
+Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
+stronger than the monsters around them; one the same level as your character can still kill it,
+depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
+**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
+monsters left alone. One that attacks you is still fought, since standing there would be worse.
+
 ### Drop time and the next level
 
 Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:

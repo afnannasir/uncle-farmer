@@ -2055,6 +2055,9 @@ msgstr ""
 msgid "Leave as it is"
 msgstr ""
 
+msgid "Leave demon&ized elites alone (they still get fought when they attack)"
+msgstr ""
+
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
@@ -4866,6 +4869,9 @@ msgid "dead, but the respawn menu never opened - please respawn by hand"
 msgstr ""
 
 msgid "defence break"
+msgstr ""
+
+msgid "demonized elites, left alone as the character settings say"
 msgstr ""
 
 msgid "died and came back outside {map}"

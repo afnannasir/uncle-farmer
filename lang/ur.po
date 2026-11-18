@@ -2105,6 +2105,9 @@ msgstr "Yahan se jaata hai: {maps}"
 msgid "Leave as it is"
 msgstr "Jaisa hai waisa hi chhorein"
 
+msgid "Leave demon&ized elites alone (they still get fought when they attack)"
+msgstr "Demon&ized elites ko chhor dein (hamla karein to phir bhi larenge)"
+
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
@@ -5091,6 +5094,9 @@ msgstr ""
 
 msgid "defence break"
 msgstr "defence break"
+
+msgid "demonized elites, left alone as the character settings say"
+msgstr "demonized elites, character settings ke mutabiq chhor diye"
 
 msgid "died and came back outside {map}"
 msgstr "mar kar {map} se bahar wapas aaya"

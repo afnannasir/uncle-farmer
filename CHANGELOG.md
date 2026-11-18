@@ -16,6 +16,13 @@
   change every two and a half minutes, each one waiting on the game. Once power has run low it
   now waits on foot until it is back to 50, then rides about 13 minutes before the next rest.
   Beasts that cost no fusion power still ride meanwhile.
+**Leave demonized elites alone**
+
+- A new choice in Character settings, Advanced, Fighting: **Leave demonized elites alone**, off by
+  default. The game's "demonized" elites (demonized Boar, black bear, Water Elf...) are much
+  stronger than the monsters around them, and one the same level as the character can kill it,
+  depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
+  fought. The demonized field bosses are kept away from as bosses, as before.
 
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 
