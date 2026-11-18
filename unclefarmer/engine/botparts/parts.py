@@ -88,6 +88,7 @@ class Parts:
     last_ride_check: float
     phrases: dict[int, str]     # the game's quick phrases by slot (engine/runner.py)
     said_low_power: bool
+    power_resting: bool         # fusion power ran low: on foot until beasts.REFILL_POWER
     said_no_mount: bool         # "attacked - staying on foot" said, until nothing attacks us
     said_no_vitality: bool
     dying_on_purpose: bool      # the XP loser's run (engine/xploss.py): deaths are not news

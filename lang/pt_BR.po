@@ -5280,8 +5280,8 @@ msgstr "ciclo completo"
 msgid "further to walk than the chase range"
 msgstr "distância maior que o alcance de perseguição"
 
-msgid "fusion power {n} - on foot until it has come back"
-msgstr "energia de fusão {n} — ficará a pé até ela se recuperar"
+msgid "fusion power {n} - on foot until it is back to {back}"
+msgstr "poder de fusão {n} — a pé até voltar a {back}"
 
 msgid "game"
 msgstr "jogo"
@@ -8045,3 +8045,6 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Experience cards"
 #~ msgstr "Cartões de experiência"
+
+#~ msgid "fusion power {n} - on foot until it has come back"
+#~ msgstr "energia de fusão {n} — ficará a pé até ela se recuperar"

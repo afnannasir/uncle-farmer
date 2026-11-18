@@ -8,6 +8,14 @@
   the plan's `keep_drop`) no longer travels all the way to the farm for the first sheet there to
   stop it: it says "the drop time is nearly used up (... min left) - not starting to farm" and
   stays where it is, as "Stop before the next level" already did.
+**Fusion power comes back to 50 before the beast goes on again**
+
+- Measured in the game: a fusion beast that is on costs 3 fusion power a minute, moving or not
+  (Swift and Fierce alike), and power comes back at 6 a minute once it is off. The bot got off
+  under 15 and back on as soon as power was over 15 again, so it was off within two minutes: a
+  change every two and a half minutes, each one waiting on the game. Once power has run low it
+  now waits on foot until it is back to 50, then rides about 13 minutes before the next rest.
+  Beasts that cost no fusion power still ride meanwhile.
 
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 
