@@ -96,8 +96,9 @@ levels above it.
 - **Experience cards** ("1.3x experience acceleration card", and 1.5x, 1.75x, 2x, 2.5x and 3x):
   using one from the bag gives more experience for 30 minutes. The character sheet shows it as
   "30% EXP bonus; press to pause" with the time left. Pressing that entry pauses it ("Paused; press to resume") and pressing it again
-  resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon, and a server
-  restart wipes the bonus even while it is paused.
+  resumes it. A pause costs one minute of the card, pausing is not allowed in a dungeon (a paused
+  card runs again by itself on going into one), and a server restart wipes the bonus even while it
+  is paused.
 
 *For the bot:* with experience cards ticked, it keeps one running on the farm, the strongest ticked
 card in the bag first (never one that isn't ticked), and with the pause tick it pauses the card

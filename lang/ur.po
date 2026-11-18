@@ -5909,6 +5909,9 @@ msgstr "baste mein nahi: {list}"
 msgid "not in the price list, left out: {list}"
 msgstr "qeemat ki fehrist mein nahi, chhor diye: {list}"
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr "abhi {cave} mein nahi - dobara koshish ({n} / {all})"
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
@@ -6785,6 +6788,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 
+msgid "the game said: {lines}"
+msgstr "game ne kaha: {lines}"
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -7339,6 +7345,9 @@ msgstr "{cave} aaj ke liye ho gaya - kirdaar din mein ek hi ghaar mein jata hai"
 
 msgid "{cave} needs level {n}"
 msgstr "{cave} ke liye level {n} chahiye"
+
+msgid "{cave}: couldn't get in after {n} tries"
+msgstr "{cave}: {n} koshishon ke baad bhi andar nahi ja sake"
 
 msgid "{cave}: still inside after the timer - leaving"
 msgstr "{cave}: timer ke baad bhi andar - nikal raha hai"

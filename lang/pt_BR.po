@@ -4690,7 +4690,7 @@ msgid "automatic login stopped"
 msgstr "entrada automática interrompida"
 
 msgid "automatic reconnection finished"
-msgstr ""
+msgstr "reconexão automática concluída"
 
 msgid "avoiding elites"
 msgstr "evitando monstros de elite"
@@ -5920,6 +5920,9 @@ msgstr "não está na bolsa: {list}"
 msgid "not in the price list, left out: {list}"
 msgstr "fora da lista de preços, ignorado: {list}"
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr "ainda não em {cave} - tentando de novo ({n} de {all})"
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
@@ -6800,6 +6803,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "o jogo recusou a solicitação de entrada"
 
+msgid "the game said: {lines}"
+msgstr "o jogo disse: {lines}"
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -7353,6 +7359,9 @@ msgstr ""
 
 msgid "{cave} needs level {n}"
 msgstr "{cave} exige nível {n}"
+
+msgid "{cave}: couldn't get in after {n} tries"
+msgstr "{cave}: não foi possível entrar após {n} tentativas"
 
 msgid "{cave}: still inside after the timer - leaving"
 msgstr "{cave}: ainda está dentro após o tempo acabar — saindo"
