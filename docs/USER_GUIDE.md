@@ -2170,6 +2170,15 @@ If you'd like to translate Uncle Farmer into another language, you can start wit
 
 Your translation should then appear in Uncle Farmer's **Settings → Language** list.
 
+### Spanish and Turkish translations
+
+Uncle Farmer includes Spanish (`lang\es.po`) and Turkish (`lang\tr.po`) translations. Game names
+(the hearthstone, the storehouse, the Shard Broker, the Forger, the Gem Craftsman and so on) follow
+the game's own Spanish and Turkish language packs, so they match what the game shows. Each Alt+letter
+shortcut is the same letter as in English; when the translated word has no such letter, it is shown
+in brackets at the end, for example `(&S)`. Trusted-player commands and script words stay in English,
+because the bot only understands them that way.
+
 ### Urdu translation
 
 Uncle Farmer includes an Urdu translation in `lang\ur.po`.
