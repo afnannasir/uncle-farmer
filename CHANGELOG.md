@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**Gang construction reaches every place, and all your highlands**
+
+- You choose where the day's builds go: highlands, Magic Cannon, Supply Camp, East and West posts.
+- Highland defences under 100% come first, then what the gang is building, then the posts, and
+  last the highland defences at 100%, which the game also repairs and rewards.
+- No more highland number to type: the bot goes through all your gang's highlands and comes back
+  through the Teleportation circle from anywhere on the map.
+- The day you join a gang, and a breed beast already fed today, no longer count as failures.
+- Daily chores, City tab: exchange contribution (the kind earned at the top level, not gang
+  contribution) for Contribution Chests at Guard Captain Suke, 5,000 each, up to the game's two a
+  day. It is off until you tick it.
+- Gathering: a minimum saturation for gangs' areas. An area under it is skipped.
+- A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.
+
 **Market searcher and buyer (Tools, Ctrl+Shift+K)**
 
 - A new window for the player market (the Ansible Space-time Marketplace). It lists what is for

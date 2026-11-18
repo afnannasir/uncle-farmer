@@ -20,23 +20,38 @@ Menus as the game shows them (logged sessions and the survey, 2026-10-11):
   gang construction                     building costs nothing: it PAYS ("construction general, When
                                         build, each time can get 3000gang contributions; 3000gang
                                         points; 6000 Arnebia" - a soldier's rank gets 1000/1000/0).
-                                        The player chooses where: the inner hall's West / East
-                                        encampment reinforced construction (6,11 / 75,11, "build"), or
-                                        the gang's highland, whose number differs from gang to gang and
-                                        so is typed in the settings (Highland Entrance 41,2: "Occupied
-                                        Highlands" -> "the own Gang's Highland 38"; "Gang Highlands"
-                                        lists every gang's). There the Crystal Turret and the Wall
-                                        barricade say "Each time of repair can get ..." with "repair";
-                                        the Teleportation circle's "Return to Main mansion" goes back to
-                                        the inner hall. Builds and repairs share one limit, TWO a day
-                                        wherever they are made: the third answers "you've already built
-                                        twice today". A refusal is said (IN op=60); the reward comes as
+                                        Places: "Level 5 Magic Cannon Construction" and "Level 5 Supply
+                                        Camp Construction" (both at 43,15 while the gang builds them; each
+                                        one under way closes one post: "There are corresponding
+                                        construction mission, and the construction of the West encampment
+                                        reinforced construction is closed", with no menu; with none under
+                                        way both posts are open), the inner hall's West / East encampment reinforced
+                                        construction (6,11 / 75,11, "build"), and the gang's highlands
+                                        (Highland Entrance 41,2: "Occupied Highlands" -> "the own Gang's
+                                        Highland 38", one line each; "Gang Highlands" lists every
+                                        gang's). All are map 3701: arrival near 30,5, the Crystal Turret
+                                        just south of 30,26, the Wall barricade at 31,55; each says "the
+                                        completeness is 97.5%", "Each time of repair can get ..." and
+                                        "repair" (it is taken at 100% too), and takes one repair a day in
+                                        whichever highland. The Teleportation circle's "Return to
+                                        Main mansion" goes back to the inner hall. Builds and repairs
+                                        share one limit, TWO a day wherever they are made: the third
+                                        answers "you've already built twice today". On the day a
+                                        character joins a gang it can neither donate nor build. A
+                                        refusal is said (IN op=60); the reward comes as
                                         another message the agent doesn't keep. A day without building
                                         lowers the player's gang construction level.
   breed beast (Animal Shed, 29,50)      "Breeding King beetle; 85.0% complete; press to feed" ("each
                                         feed can get 500 gang contributions, 500 gang points and 2000
                                         arnebia. Are you sure you want to feed?"): free, apart from
                                         the two builds.
+  contribution chests (Guard Captain Suke, who patrols near 302,129 on Tuneful Wetland 1081)
+                                        "Exchange Contribution Chest" -> a question that "requires 5000
+                                        contributions" -> Confirm; two a day, then "Exceeded times"; "Not
+                                        enough gang contributions" when short. Each exchange starts from him.
+                                        The price is the contribution earned at the top level (the
+                                        character sheet's "Contribution"), not the "Gang Contributions"
+                                        that buy things in the gang.
   secret room (Instructor Hargard, Cody or Kay)   "Secret room training" -> "Enter the secret room to
                                         practice" -> "Today's secret room training time is 3 hours, and
                                         you can enter 8 more times" and "Level 70 ocean shard secret
@@ -59,7 +74,8 @@ import copy
 import os
 import re
 import time
-from collections.abc import Collection, Iterable
+from collections.abc import Callable, Collection, Iterable
+from dataclasses import dataclass, field
 from typing import Any
 
 from .. import atlas, daily, jsonio, knowledge, paths, settings
@@ -67,15 +83,19 @@ from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
 
-CHORES = ("bank", "bounty", "pet_rebirth", "donation", "construction", "feed", "secret_room")
+CHORES = ("bank", "bounty", "pet_rebirth", "contribution_chests", "donation", "construction", "feed", "secret_room")
 DEFAULTS: dict[str, Any] = {
     "bank": True, "bounty": True,
     "pet_rebirth": False, "pet": "", "rebirths": 2,
     "donation": "off",                # off, 10000, 20000 or diamonds
     "construction": 0,                # builds a day, over every place to build (the game allows 2)
     "feed": False,                    # feed the gang's breed beast at the Animal Shed
-    "build_at": "posts",              # posts: the inner hall's East and West; highland: the gang's
-    "highland": 0,                    # ... highland, by its number under Occupied Highlands
+    "contribution_chests": False,     # exchange contribution for chests (5000 each; not gang contribution)
+    "chest_count": 2,                 # ... this many a day (the game allows 2)
+    "build_highlands": True,          # where builds may go: the gang's highlands,
+    "build_cannon": True,             # ... the Magic Cannon under construction,
+    "build_supply": True,             # ... the Supply Camp under construction,
+    "build_posts": True,              # ... the East and West posts
     "secret_room": False, "room": "", "assistant": 1,
     "share_with": "", "share_anyone": True,
     "practice_minutes": 0,            # stay this long to practise (0: in, share, out)
@@ -88,15 +108,43 @@ DONATIONS = {"10000": (r"donate 10000 Arnebia", 10000), "20000": (r"donate 20000
 BOUNTY_OFFICERS = ("Chancellor Bren", "General Paul", "Colonel Demar")
 HEAD = ("Head of inner hall", (40, 40))          # the same cells in every gang base
 SHED = ("Animal Shed", (29, 50))
+CHEST_OFFICER = "Guard Captain Suke"
+CHEST_MAP, CHEST_SPOT = 1081, (302, 129)
+CHEST_ITEM = "contribution chest"
+CHESTS_A_DAY = 2
+CHEST_COST = 5000
+CHEST_WAIT = 3.0              # seconds an exchanged chest gets to reach the bag
+EXCHANGE = r"^\s*Exchange Contribution Chest"
+CHEST_PRICE = re.compile(r"requires 5000 contributions", re.I)   # nothing is confirmed without it
+CHESTS_OVER = re.compile(r"exceeded times", re.I)
+CHEST_POOR = re.compile(r"not enough gang contributions|insufficient contributions", re.I)
 FEED = r"press to feed|want to feed"
+FED_TODAY = re.compile(r"you have fed today", re.I)
 DAILY_BUILDS = 2              # builds and repairs together, wherever they are made
 TWICE = re.compile(r"built twice today", re.I)
+ALREADY = re.compile(r"repaired the .+ today|participated in this construction today", re.I)
+POSTS_CLOSED = re.compile(r"construction of the .+ is closed", re.I)
+NEW_MEMBER = re.compile(r"cannot (?:build|donate) on the (?:first )?day", re.I)
+COMPLETE = re.compile(r"(?:the completeness is|(?:^|[;|]\s*)Completed)\s+([\d.]+)\s*%", re.I)
+ANSWER_WAIT = 0.5             # seconds a spoken answer gets to arrive after a menu without the entry
+# _build_at's answers
+BUILT, MADE_TODAY, TWICE_MADE, JOINED, CLOSED, NOTHING = "built", "made today", "twice", "joined", "closed", ""
 POSTS = (("West encampment reinforced construction", (6, 11)),
          ("East encampment reinforced construction", (75, 11)))
+BUILD_PLACES = ("build_highlands", "build_cannon", "build_supply", "build_posts")
+CAMPS = (("build_cannon", re.compile(r"^Level\s+\d+\s+Magic Cannon Construction$", re.I)),
+         ("build_supply", re.compile(r"^Level\s+\d+\s+Supply Camp Construction$", re.I)))
 BUILD = r"^\s*(build|repair)\s*$"          # the entry that builds (a site) or repairs (a highland defence)
 REWARD = re.compile(r"each time (?:of repair )?can get[^;]*;[^;]*;\s*(\d+)\s*Arnebia", re.I)
 HIGHLAND_GATE = ("Highland Entrance", (41, 2))
 HIGHLAND_HOME = ("Teleportation circle", r"Return to Main mansion")
+HIGHLAND_HOME_STAND = (29, 4)
+# Every highland is the same map. Where a player stands to repair: the Wall barricade (31,55) answers
+# from its south side only (hand runs stood at 31,57-59); from the north the game won't select it.
+HIGHLAND_SITES = (("Crystal Turret", (30, 26)), ("Wall barricade", (31, 58)))
+OWN_HIGHLAND = r"own Gang.s Highland\s+(\d+)"
+NEXT_PAGE = r"^\s*next\s*page"
+MOST_PAGES = 20
 # A walk round a gang base (gathering looks for its area entrances this way): the game shows what is
 # within about 30 tiles, so a half (80 x 60) takes four stops; the inner hall is the north half.
 INNER_SWEEP = ((20, 15), (60, 15), (60, 45), (20, 45))
@@ -116,6 +164,7 @@ def label(chore: str) -> str:
     return {"bank": _("bank income"), "bounty": _("hunting bounty"), "pet_rebirth": _("pet rebirth"),
             "donation": _("gang donation"), "construction": _("gang construction"),
             "feed": _("Animal Shed feeding"),
+            "contribution_chests": _("Contribution Chests"),
             "secret_room": _("secret room")}[chore]
 
 
@@ -129,8 +178,7 @@ def wanted(cfg: dict[str, Any], chore: str) -> bool:
     if chore == "donation":
         return cfg.get("donation", "off") in DONATIONS
     if chore == "construction":
-        return int(cfg.get("construction") or 0) > 0 and (cfg.get("build_at") != "highland"
-                                                          or int(cfg.get("highland") or 0) > 0)
+        return int(cfg.get("construction") or 0) > 0 and any(cfg.get(k, True) for k in BUILD_PLACES)
     if chore == "pet_rebirth":
         return bool(cfg.get("pet_rebirth")) and bool((cfg.get("pet") or "").strip())
     return bool(cfg.get(chore))
@@ -493,6 +541,16 @@ def pet_rebirth(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, boo
              after=after), True
 
 
+def _new_member(lines: Iterable[str]) -> bool:
+    """The game's answer on the day a character joins a gang: no donating, no building."""
+    return any(NEW_MEMBER.search(s) for s in lines)
+
+
+def _shown_or_said(b: Bot, since: int) -> list[str]:
+    """What the open menu shows and what the game said after since: an answer can come either way."""
+    return [town.menu_text(b), *said_since(b, since)]
+
+
 def donation(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """The once-a-day gang donation the player chose, never below the arnebia reserve."""
     kind = cfg.get("donation", "off")
@@ -501,10 +559,14 @@ def donation(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
         return _("not enough arnebia above your reserve for a {n} arnebia donation", n=cost), False
     inner_hall(b)
     _talk(b, *HEAD)
+    t0 = said_mark(b)
     if b.choose(r"^\s*Donation") is None:
         return _("the Head of the inner hall offers no donation"), False
     b.wait_dialog(3.0)
     if not _has(b, pattern):
+        b.sleep(ANSWER_WAIT)
+        if _new_member(_shown_or_said(b, t0)):
+            return _("you joined the gang today: the game allows no donation until tomorrow"), True
         return _("no donation offered now - already donated today?"), True
     what = re.sub(r"(?i)^\s*are you sure you want to\s*|\?\s*$", "", _texts(b, pattern)[0])
     if check_only:
@@ -515,6 +577,8 @@ def donation(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     confirm(b)
     b.sleep(1.0)
     heard = said_since(b, t0)
+    if _new_member(heard):
+        return _("you joined the gang today: the game allows no donation until tomorrow"), True
     if any(re.search(r"already donated", s, re.I) for s in heard):
         return _("already donated today"), True
     if cost and _arnebia(b) >= before:
@@ -523,20 +587,7 @@ def donation(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     return _("done: {what}", what=what), True
 
 
-def sites_in_view(b: Bot) -> list[tuple[str, float, float]]:
-    """[(name, x, y)] of what the game shows round us in a highland: every NPC but the way home and
-    the way out - the Crystal Turret and the Wall barricade that take repairs, and whatever else
-    there is to build."""
-    out: list[tuple[str, float, float]] = []
-    entities: list[dict[str, Any]] = b.snap().get("entities", [])
-    for e in entities:
-        name = " ".join((e.get("name") or "").split())
-        if e.get("kind") in ("npc", "other") and name and name not in (HIGHLAND_HOME[0], HIGHLAND_GATE[0]):
-            out.append((name, float(e["x"]), float(e["y"])))
-    return out
-
-
-REFUSED = re.compile(r"not enough|can'?t|cannot|already|no more|limit|today|insufficient", re.I)
+REFUSED = re.compile(r"not enough|can'?t|cannot|already|no more|limit|today|insufficient|closed", re.I)
 PAID_WAIT = 3.0               # the reward's arnebia comes about a second after the choice
 
 
@@ -556,30 +607,65 @@ def _paid(b: Bot, before: int) -> bool:
         b.sleep(0.25)
 
 
-# Where a player stands to talk to a place: the Wall barricade (31,55) answers from its south side
-# only (hand runs stood at 31,57-59); from the north, where the turret is, the game won't select it.
-STANDS = {"Wall barricade": (31, 58)}
+Place = tuple[str, tuple[float, float] | None, tuple[float, float] | None]     # (name, where, stand)
 
 
-def _build_at(b: Bot, name: str, cell: tuple[float, float] | None, check_only: bool) -> tuple[int, bool]:
-    """One build (or repair) at one place: each takes one a day ("You've repaired the crystal
-    turret today"). (1 when the game took it, else 0; whether it said the day's two builds are
-    made). Building costs nothing - it pays."""
-    stand = STANDS.get(name)
+@dataclass
+class _Builds:
+    """How a day's construction is going, over every place it goes to."""
+    want: int
+    built: int = 0
+    used: int = 0                 # builds the game says were already made here today
+    can: str = ""                 # check only: the first place that would take a build
+    over: str = ""                # TWICE_MADE or JOINED: the game will take no more today
+    places: list[str] = field(default_factory=list[str])
+    took: set[str] = field(default_factory=set[str])    # one build a day each, in any highland
+
+    @property
+    def finished(self) -> bool:
+        return bool(self.over or self.can) or self.built + self.used >= self.want
+
+
+def _build_answer(lines: Iterable[str]) -> str:
+    """What the game's words mean for building: TWICE_MADE, JOINED, MADE_TODAY, CLOSED, or "" (none)."""
+    said = list(lines)
+    for rx, answer in ((TWICE, TWICE_MADE), (NEW_MEMBER, JOINED), (ALREADY, MADE_TODAY), (POSTS_CLOSED, CLOSED)):
+        if any(rx.search(s) for s in said):
+            return answer
+    return ""
+
+
+def _is_complete(text: str) -> bool:
+    """The menu says this place stands at 100%: nothing to build or repair on it."""
+    m = COMPLETE.search(text)
+    return m is not None and float(m.group(1)) >= 100
+
+
+def _build_at(b: Bot, place: Place, check_only: bool, even_complete: bool = False) -> str:
+    """One build (or repair) at one place. BUILT (check only: it would be), MADE_TODAY, TWICE_MADE,
+    JOINED, CLOSED, or NOTHING. Building costs nothing - it pays."""
+    name, cell, stand = place
     if stand is not None:
         b.walk_to(stand)
-    if not b.talk(name, cell, stand):
-        return 0, False
-    b.wait_dialog(3.0)
-    if not _has(b, BUILD):
+    t0 = said_mark(b)
+    if b.talk(name, cell, stand):
+        b.wait_dialog(3.0)
+    answer = _build_answer(_shown_or_said(b, t0))
+    if not answer and not _has(b, BUILD):
+        b.sleep(ANSWER_WAIT)                # a refusal can come just after the menu
+        answer = _build_answer(_shown_or_said(b, t0))
+    if not answer and not even_complete and _is_complete(town.menu_text(b)):
+        b.log(_("the {post} is at 100%: leaving it for now", post=name))
         b.close_dialogs()
-        return 0, False                    # nothing to build or repair here (now)
+        return NOTHING
+    if answer or not _has(b, BUILD):
+        b.close_dialogs()
+        return answer or NOTHING
     pays = reward(b)
     if check_only:
         b.close_dialogs()
-        return 1, False
+        return BUILT
     before = _arnebia(b)
-    t0 = said_mark(b)
     b.choose(BUILD)
     confirm(b)
     if pays:
@@ -588,122 +674,192 @@ def _build_at(b: Bot, name: str, cell: tuple[float, float] | None, check_only: b
         b.sleep(1.5)                       # time for a refusal to be said
         got = True
     b.close_dialogs()
-    refused = [s for s in said_since(b, t0) if REFUSED.search(s)]
-    if any(TWICE.search(s) for s in refused):
-        return 0, True
-    if refused:
+    heard = said_since(b, t0)
+    answer = _build_answer(heard)
+    rewarded = bool(pays and got)
+    if answer in (TWICE_MADE, JOINED) or (answer and not rewarded):
+        return answer
+    refused = [s for s in heard if REFUSED.search(s)]
+    if refused and not rewarded:
         b.log(_("the {post}: {what}", post=name, what="; ".join(refused)))
-        return 0, False
+        return NOTHING
     if not got:
-        return 0, False                    # paid nothing: the game took nothing here today
+        return NOTHING                     # no reward: the game took nothing here today
     b.log(_("built at the {post}", post=name))
-    return 1, False
+    return BUILT
+
+
+def _try_places(b: Bot, t: _Builds, places: Iterable[Place], check_only: bool, even_complete: bool = False) -> None:
+    for place in places:
+        name = place[0]
+        if t.finished:
+            return
+        if name in t.took:
+            continue
+        if name not in t.places:
+            t.places.append(name)
+        got = _build_at(b, place, check_only, even_complete)
+        if got == BUILT and check_only:
+            t.can = name
+        elif got == BUILT:
+            t.built += 1
+            t.took.add(name)
+        elif got == MADE_TODAY:
+            t.used += 1
+            t.took.add(name)
+        elif got not in (NOTHING, CLOSED):  # a closed post: the other one may be open
+            t.over = got
 
 
 def highland_entry(number: int) -> str:
-    """The Occupied Highlands entry of the gang's highland: "the own Gang's Highland 38"."""
+    """The Occupied Highlands entry of one of the gang's highlands: "the own Gang's Highland 38"."""
     return r"\bHighland\s+%d(?!\d)" % number
 
 
-def _to_highland(b: Bot, number: int) -> None:
-    """From the inner hall into the gang's highland: the Highland Entrance's "Occupied Highlands"
-    lists it with its number, which differs from gang to gang (the player types it)."""
+def _next_highland(b: Bot, seen: Collection[int]) -> int | None:
+    """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
+    Occupied Highlands. Its number, or None when there is no other."""
     inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
     if b.choose(r"^\s*Occupied Highlands") is None:
         b.close_dialogs()
         raise Stopped(_("the Highland Entrance offers no Occupied Highlands"))
-    b.wait_dialog(3.0)
-    listed = _texts(b, r"Highland\s+\d+")
-    if b.choose(highland_entry(number)) is None:
-        b.close_dialogs()
-        raise Stopped(_("Occupied Highlands has no highland {n} (it lists: {list}) - check the number in "
-                        "Tools, Daily chores", n=number, list=", ".join(listed) or "-"))
-    confirm(b)
-    if not b.wait_map_change(mid, 15):
-        b.close_dialogs()
-        raise Stopped(_("couldn't get into highland {n}", n=number))
+    for _page in range(MOST_PAGES):
+        b.wait_dialog(3.0)
+        numbers = [int(n) for t in _texts(b, OWN_HIGHLAND) for n in re.findall(OWN_HIGHLAND, t, re.I)]
+        number = next((n for n in numbers if n not in seen), None)
+        if number is not None:
+            b.choose(highland_entry(number))
+            confirm(b)
+            if not b.wait_map_change(mid, 15):
+                b.close_dialogs()
+                raise Stopped(_("couldn't get into highland {n}", n=number))
+            b.log(_("in highland {n}", n=number))
+            return number
+        if not _has(b, NEXT_PAGE):
+            break
+        b.choose(NEXT_PAGE)
+    b.close_dialogs()
+    return None
 
 
 def _from_highland(b: Bot) -> None:
     """Back to the inner hall by the highland's Teleportation circle ("Return to Main mansion")."""
     mid = b.map_id()
     b.close_dialogs()
-    if b.talk(HIGHLAND_HOME[0]) and b.choose(HIGHLAND_HOME[1]) is not None:
+    b.walk_to(HIGHLAND_HOME_STAND)
+    if b.talk(HIGHLAND_HOME[0], None, HIGHLAND_HOME_STAND) and b.choose(HIGHLAND_HOME[1]) is not None:
         confirm(b)
         b.wait_map_change(mid, 15)
     b.close_dialogs()
+    if b.map_id() == mid:
+        raise Stopped(_("couldn't get back from the highland"))
 
 
-def _whole_map(b: Bot) -> list[tuple[int, int]]:
-    """Stops a walk round this whole map (a highland) takes, 40 tiles apart."""
-    try:
-        m = atlas.model(b.map_id())
-        return [(x, y) for x in range(20, m.W, 40) for y in range(20, m.h, 40) if m.ok(x, y)]
-    except Exception:              # no map data for it: what is in view from here
-        return []
+def _build_camps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> None:
+    """The Magic Cannon and the Supply Camp the gang is building now, those the player allows. The
+    hall's NPCs are all in view from inside it."""
+    inner_hall(b)
+    entities: list[dict[str, Any]] = b.snap().get("entities", [])
+    names = sorted({" ".join(str(e.get("name") or "").split()) for e in entities if e.get("kind") == "npc"})
+    places: list[Place] = [(name, None, None) for key, rx in CAMPS if cfg.get(key, True)
+                           for name in names if rx.match(name)]
+    _try_places(b, t, places, check_only)
 
 
-def _highland_places(b: Bot) -> list[tuple[str, tuple[float, float] | None]]:
-    """The highland's places to build or repair: what is in view, else what a walk round finds."""
-    found: dict[str, tuple[float, float] | None] = {}
-    for cell in [None, *_whole_map(b)]:
-        if cell is not None:
-            if found:
-                break
-            b.walk_to(cell)
-        for name, x, y in sites_in_view(b):
-            found.setdefault(name, (x, y))
-    return list(found.items())
+def _build_posts(b: Bot, t: _Builds, check_only: bool) -> None:
+    inner_hall(b)
+    _try_places(b, t, [(name, cell, None) for name, cell in POSTS], check_only)
+
+
+def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False) -> None:
+    """The gang's highlands, one after the other, until the day's builds are made. What stands at
+    100% is left alone unless even_complete. Each kind of defence takes one repair a day, in
+    whichever highland ("You've repaired the crystal turret today")."""
+    seen: set[int] = set()
+    while not t.finished and any(name not in t.took for name, _stand in HIGHLAND_SITES):
+        number = _next_highland(b, seen)
+        if number is None:
+            return
+        seen.add(number)
+        try:
+            _try_places(b, t, [(name, None, stand) for name, stand in HIGHLAND_SITES], check_only, even_complete)
+        finally:
+            _from_highland(b)
+
+
+def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> list[Callable[[], None]]:
+    """In order: highland defences under 100%, what the gang is building, the posts, and last the
+    highland defences at 100%, which the game repairs and pays for too."""
+    highlands = bool(cfg.get("build_highlands", True))
+    steps: list[Callable[[], None]] = []
+    if highlands:
+        steps.append(lambda: _build_highlands(b, t, check_only))
+    if cfg.get("build_cannon", True) or cfg.get("build_supply", True):
+        steps.append(lambda: _build_camps(b, t, cfg, check_only))
+    if cfg.get("build_posts", True):
+        steps.append(lambda: _build_posts(b, t, check_only))
+    if highlands:
+        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True))
+    return steps
+
+
+def _construction_note(t: _Builds, trouble: list[str], check_only: bool) -> tuple[str, bool]:
+    places = ", ".join(t.places)
+    if check_only:
+        if t.can:
+            return _("can build at the {post}", post=t.can), False
+        return "; ".join(trouble) or _("nowhere to build now (places: {places})", places=places or "-"), False
+    if t.over == JOINED:
+        return _("you joined the gang today: the game allows no building until tomorrow"), True
+    if t.over == TWICE_MADE:
+        return _("built {n} times; the game's two builds a day are made", n=t.built), True
+    if t.built + t.used >= t.want:
+        if t.used:
+            return _("built {n} times; {made} already made today", n=t.built, made=t.used), True
+        return _("built {n} times", n=t.built), True
+    if trouble:
+        return _("built {n} times; {why}", n=t.built, why="; ".join(trouble)), False
+    if not t.places:
+        return _("found no place to build"), False
+    return _("built {n} times; no place took more today (places: {places})", n=t.built, places=places), True
 
 
 def construction(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
-    """The day's builds (the game allows two, builds and repairs together) where the player chose:
-    the inner hall's East and West encampment reinforced constructions, or the gang's highland
-    (its number typed in the settings). Each pays gang contribution, gang points and arnebia."""
-    want = max(0, min(int(cfg.get("construction") or 0), DAILY_BUILDS))
-    in_highland = cfg.get("build_at") == "highland"
-    if in_highland:
-        number = int(cfg.get("highland") or 0)
-        if number <= 0:
-            return _("type your gang's highland number in Tools, Daily chores"), False
-        _to_highland(b, number)
-    else:
-        inner_hall(b)
-    built = 0
-    places: list[str] = []
-    try:
-        targets: list[tuple[str, tuple[float, float] | None]] = _highland_places(b) if in_highland else list(POSTS)
-        for name, cell in targets:
-            places.append(name)
-            n, day_done = _build_at(b, name, cell, check_only)
-            if check_only and n:
-                return _("can build at the {post}", post=name), False
-            built += n
-            if day_done:
-                return _("built {n} times; the game's two builds a day are made", n=built), True
-            if built >= want:
-                return _("built {n} times", n=built), True
-    finally:
-        if in_highland:
-            _from_highland(b)
-    if not places:
-        return _("found no place to build"), False
-    if check_only:
-        return _("nowhere to build now (places: {places})", places=", ".join(places)), False
-    return _("built {n} times; no place took more today (places: {places})", n=built,
-             places=", ".join(places)), True
+    """The day's builds (the game allows two, builds and repairs together) at the places the player
+    ticked, in the order of _build_steps. Each pays gang contribution, gang points and arnebia."""
+    t = _Builds(max(0, min(int(cfg.get("construction") or 0), DAILY_BUILDS)))
+    trouble: list[str] = []
+    for step in _build_steps(b, t, cfg, check_only):
+        if t.finished:
+            break
+        try:
+            step()
+        except Stopped as e:
+            if b.stop_event.is_set() or getattr(e, "final", False):
+                raise
+            if str(e) not in trouble:
+                trouble.append(str(e))
+    return _construction_note(t, trouble, check_only)
 
 
 def feed(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     """Feed the gang's breed beast at the inner hall's Animal Shed once (it pays: 500 gang
     contribution, 500 gang points, 2000 arnebia)."""
     inner_hall(b)
-    _talk(b, *SHED)
+    t0 = said_mark(b)
+    talked = b.talk(*SHED)
+    if talked:
+        b.wait_dialog(3.0)
     what = next(iter(_texts(b, r"press to feed")), "")
     beast = re.sub(r"(?i);?\s*press to feed\s*$", "", what).strip()
     if not _has(b, FEED):
+        b.sleep(ANSWER_WAIT)
+        if any(FED_TODAY.search(s) for s in _shown_or_said(b, t0)):
+            return _("already fed today"), True
+        if not talked:
+            raise Stopped(_("couldn't talk to {npc}", npc=SHED[0]))
         return _("the Animal Shed has nothing to feed now"), False
     if check_only:
         return _("would feed: {beast}", beast=beast or "?"), False
@@ -718,6 +874,91 @@ def feed(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     if not paid:
         return _("fed {beast}, but no arnebia came in", beast=beast or "?"), True
     return _("fed {beast}", beast=beast or "?"), True
+
+
+def _chests_held(b: Bot) -> int:
+    return sum(int(r.get("count") or 0) for r in b.bag_rows()
+               if str(r.get("name") or "").strip().lower().startswith(CHEST_ITEM))
+
+
+def _chest_refusal(b: Bot, since: int) -> str:
+    lines = _shown_or_said(b, since)
+    if any(CHESTS_OVER.search(s) for s in lines):
+        return "over"
+    return "poor" if any(CHEST_POOR.search(s) for s in lines) else ""
+
+
+def _exchange_chest(b: Bot, check_only: bool) -> str:
+    """One exchange, from the officer on: got, would, over, poor, or what went wrong (silent, no
+    offer, no price, not given). He patrols, so a talk that misses him is tried again."""
+    t0 = said_mark(b)
+    talked = any(b.talk(CHEST_OFFICER) for _try in range(3))
+    if talked:
+        b.wait_dialog(3.0)
+    if not _has(b, EXCHANGE):
+        b.sleep(ANSWER_WAIT)
+        return _chest_refusal(b, t0) or ("no offer" if talked else "silent")
+    if check_only:
+        return "would"
+    before = _chests_held(b)
+    b.choose(EXCHANGE)
+    b.wait_dialog(3.0)
+    b.sleep(ANSWER_WAIT)
+    refusal = _chest_refusal(b, t0)
+    if refusal:
+        return refusal
+    if not any(CHEST_PRICE.search(s) for s in _shown_or_said(b, t0)):
+        return "no price"
+    confirm(b)
+    end = b.clock.time() + CHEST_WAIT
+    while b.clock.time() < end:
+        if _chests_held(b) > before:
+            return "got"
+        refusal = _chest_refusal(b, t0)
+        if refusal:
+            return refusal
+        b.sleep(0.25)
+    return "got" if _chests_held(b) > before else "not given"
+
+
+def _contribution(b: Bot) -> int | None:
+    """The character sheet's Contribution, which pays for the chests; None when it can't be read."""
+    sheet: dict[str, Any] = b.refresh_sheet(force=True) or {}
+    have = sheet.get("contribution")
+    return have if isinstance(have, int) else None
+
+
+def contribution_chests(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
+    """The day's Contribution Chests from Guard Captain Suke, 5000 contribution each. A chest
+    counts only once it is in the bag."""
+    want = max(1, min(int(cfg.get("chest_count") or CHESTS_A_DAY), CHESTS_A_DAY))
+    have = _contribution(b)
+    if have is not None and have < CHEST_COST:
+        return _("not enough contribution for a Contribution Chest: {have} of {cost}", have=have, cost=CHEST_COST), False
+    can_pay = want if have is None else min(want, have // CHEST_COST)
+    b.travel(CHEST_MAP, CHEST_SPOT)
+    got = 0
+    for _i in range(can_pay):
+        try:
+            what = _exchange_chest(b, check_only)
+        finally:
+            b.close_dialogs()
+        if what == "would":
+            return _("can exchange contribution for a Contribution Chest"), False
+        if what == "over":
+            return _("got {n} Contribution Chests; the game allows no more today", n=got), True
+        if what == "poor":
+            return _("got {n} Contribution Chests; not enough contribution for another", n=got), False
+        if what != "got":
+            why = {"silent": _("{npc} didn't answer", npc=CHEST_OFFICER),
+                   "no offer": _("{npc} offers no exchange", npc=CHEST_OFFICER),
+                   "no price": _("the game didn't show the 5000 contribution price, so nothing was confirmed"),
+                   }.get(what, _("no chest came into the bag"))
+            return _("got {n} Contribution Chests; {why}", n=got, why=why), False
+        got += 1
+    if got < want:
+        return _("got {n} Contribution Chests; not enough contribution for another", n=got), False
+    return _("got {n} Contribution Chests", n=got), True
 
 
 # ---------------------------------------------------------------------------------------- the secret room
@@ -962,4 +1203,4 @@ def secret_room(b: Bot, cfg: dict[str, Any], check_only: bool):
 
 
 DO = {"bank": bank, "bounty": bounty, "pet_rebirth": pet_rebirth, "donation": donation,
-      "construction": construction, "feed": feed, "secret_room": secret_room}
+      "construction": construction, "feed": feed, "contribution_chests": contribution_chests, "secret_room": secret_room}

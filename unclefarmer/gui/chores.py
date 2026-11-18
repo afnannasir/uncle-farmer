@@ -17,7 +17,6 @@ from .common import Dialog, with_code, Form, group, page, save_file, tabs
 from .crafting import CHECK, START
 
 DONATIONS = ("off", "10000", "20000", "diamonds")
-BUILD_AT = ("posts", "highland")
 
 
 def donation_names():
@@ -53,6 +52,11 @@ class ChoresDialog(Dialog):
             pets.append(c["pet"])
         self.pet = f.add(_("&Pet:"), lambda w: wx.ComboBox(w, value=c["pet"], choices=pets))
         self.rebirths = f.number(_("Free rebirths a day (the game gives 2):"), c["rebirths"], 1, 2)
+        f = group(panel, box, _("Contribution Chests"))
+        self.chests = f.check(_("E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"),
+                              c["contribution_chests"])
+        self.chest_count = f.number(_("Contribution Chests a day (the game allows 2):"),
+                                    max(1, min(int(c["chest_count"] or 2), 2)), 1, 2)
 
         panel, box = page(nb, _("Gang"))
         f = group(panel, box, _("Inner hall"))
@@ -60,10 +64,11 @@ class ChoresDialog(Dialog):
                                  DONATIONS.index(c["donation"]) if c["donation"] in DONATIONS else 0)
         self.construction = f.number(_("&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"),
                                      min(int(c["construction"] or 0), 2), 0, 2)
-        self.build_at = f.choice(_("&Build at:"), [_("the inner hall's East and West posts"), _("our gang's highland")],
-                                 BUILD_AT.index(c["build_at"]) if c["build_at"] in BUILD_AT else 0)
-        self.highland = f.number(_("Our gang's &highland number (the one under Occupied Highlands):"),
-                                 int(c["highland"] or 0), 0, 9999)
+        self.build_highlands = f.check(_("Repair our gang's &highlands (first what is under 100%, what is at 100% last)"),
+                                       c["build_highlands"])
+        self.build_cannon = f.check(_("Build the Magic Ca&nnon under construction"), c["build_cannon"])
+        self.build_supply = f.check(_("Build the S&upply Camp under construction"), c["build_supply"])
+        self.build_posts = f.check(_("Build at the East and West &posts"), c["build_posts"])
         self.feed = f.check(_("&Feed the gang's breed beast at the Animal Shed"), c["feed"])
         self.keep_arnebia = f.number(_("Never spend arnebia belo&w:"), self.p.get("gem_keep_arnebia", 20000),
                                      0, 1000000000)
@@ -119,24 +124,20 @@ class ChoresDialog(Dialog):
                           wx.OK | wx.ICON_INFORMATION, self)
             self.pet.SetFocus()
             return
-        if BUILD_AT[self.build_at.GetSelection()] == "highland" and not self.highland.GetValue():
-            wx.MessageBox(_("Type your gang's highland number: the Highland Entrance lists it under Occupied "
-                            "Highlands (\"the own Gang's Highland 38\": 38)."), _("Gang construction"),
-                          wx.OK | wx.ICON_INFORMATION, self)
-            self.highland.SetFocus()
-            return
         self.cfg.update(bank=self.bank.GetValue(), bounty=self.bounty.GetValue(),
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
                         construction=self.construction.GetValue(),
-                        build_at=BUILD_AT[self.build_at.GetSelection()], highland=self.highland.GetValue(),
-                        feed=self.feed.GetValue(),
+                        build_highlands=self.build_highlands.GetValue(), build_cannon=self.build_cannon.GetValue(),
+                        build_supply=self.build_supply.GetValue(), build_posts=self.build_posts.GetValue(),
+                        feed=self.feed.GetValue(), contribution_chests=self.chests.GetValue(),
+                        chest_count=self.chest_count.GetValue(),
                         secret_room=self.room_on.GetValue(), room=self.room.GetValue().strip(),
                         assistant=self.assistant.GetSelection() + 1, practice_minutes=self.minutes.GetValue(),
                         share_with=self.share_with.GetValue().strip(), share_anyone=self.share_anyone.GetValue(),
                         share_trips=self.trips.GetValue(), trip_lead=self.lead.GetValue(),
                         before_farming=self.before.GetValue())
-        for old in ("room_minutes", "share", "build_highland"):       # settings of earlier versions
+        for old in ("room_minutes", "share", "build_highland", "highland", "build_at"):       # settings of earlier versions
             self.cfg.pop(old, None)
         self.p["chores"] = self.cfg
         self.p["gem_keep_arnebia"] = self.keep_arnebia.GetValue()

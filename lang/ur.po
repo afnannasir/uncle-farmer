@@ -74,9 +74,6 @@ msgstr "&Bot"
 msgid "&Browse"
 msgstr "&Dekhein"
 
-msgid "&Build at:"
-msgstr "&Build kahan:"
-
 msgid "&Call them by their name"
 msgstr "Unhein unke &naam se pukarein"
 
@@ -974,6 +971,15 @@ msgstr "Buffs band."
 msgid "Buffs on."
 msgstr "Buffs chalu."
 
+msgid "Build at the East and West &posts"
+msgstr "East aur West &posts par build karo"
+
+msgid "Build the Magic Ca&nnon under construction"
+msgstr "Zer-e-tameer Magic Ca&nnon build karo"
+
+msgid "Build the S&upply Camp under construction"
+msgstr "Zer-e-tameer S&upply Camp build karo"
+
 msgid "Busy - send stop first."
 msgstr "Masroof hai - pehle stop bhejein."
 
@@ -1228,6 +1234,12 @@ msgstr "Matn shaamil hai"
 msgid "Contribution"
 msgstr "Hissa"
 
+msgid "Contribution Chests"
+msgstr "Contribution Chests"
+
+msgid "Contribution Chests a day (the game allows 2):"
+msgstr "Roz ke Contribution Chests (game 2 deta hai):"
+
 msgid "Cop&y all"
 msgstr "Sab cop&y karein"
 
@@ -1447,6 +1459,11 @@ msgstr "Dungeons"
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
+
+msgid ""
+"E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
+msgstr ""
+"Contribution ke badle Contribution Chests &xchange karo (har ek 5,000, Guard Captain Suke ke paas)"
 
 msgid "E&xit"
 msgstr "Bahar &niklein"
@@ -1721,9 +1738,6 @@ msgstr "Games ki awaaz chalu ho gayi."
 
 msgid "Gang"
 msgstr "Gang"
-
-msgid "Gang construction"
-msgstr "Gang construction"
 
 msgid "Gang mode"
 msgstr "Gang mode"
@@ -2708,11 +2722,6 @@ msgid "Nowhere, use what's in the bag"
 msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
 
 msgid ""
-"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
-msgstr ""
-"Occupied Highlands mein highland {n} nahi (ismein hai: {list}) - Tools, Daily chores mein number check karo"
-
-msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 "Purane runs ne sirf baste ke arnebia ka khalis farq rakha: un ki kamai usi se gini gayi"
@@ -2805,10 +2814,6 @@ msgstr "Doosri cheezein mili:"
 
 msgid "Our blue potions"
 msgstr "Hamare neele potions"
-
-msgid "Our gang's &highland number (the one under Occupied Highlands):"
-msgstr ""
-"Hamari gang ki &highland ka number (jo Occupied Highlands ke neeche hai):"
 
 msgid "Our own gang"
 msgstr "Hamara apna gang"
@@ -3111,6 +3116,11 @@ msgid "Repair &gear with toolboxes from the bag"
 msgstr "Basta ke toolboxes se &gear repair karein"
 
 msgid ""
+"Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
+msgstr ""
+"Hamari gang ki &highlands repair karo (pehle 100% se kam, 100% wali aakhir mein)"
+
+msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
 "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
@@ -3227,6 +3237,9 @@ msgstr "&Jama karein:"
 
 msgid "STOPPED: {why}"
 msgstr "RUK GAYA: {why}"
+
+msgid "Saturation"
+msgstr "Saturation"
 
 msgid "Saturday"
 msgstr "Hafta"
@@ -3483,6 +3496,9 @@ msgstr "Istemal hui skills: {casts} casts, kul {dmg} damage"
 
 msgid "Skinning"
 msgstr "Skinning (khaal)"
+
+msgid "Skip an area whose &saturation is under this percent:"
+msgstr "Jis area ki &saturation is percent se kam ho usay chhor do:"
 
 msgid ""
 "Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
@@ -4322,11 +4338,6 @@ msgstr "Bechne wale ki ek ya zyada IDs likhein."
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
 
-msgid ""
-"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-msgstr ""
-"Apni gang ki highland ka number likho: Highland Entrance isay Occupied Highlands ke neeche dikhata hai (\"the own Gang's Highland 38\": 38)."
-
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
 
@@ -4797,6 +4808,9 @@ msgstr "aaj donation ho chuki hai"
 msgid "already done today"
 msgstr "aaj pehle hi ho chuka"
 
+msgid "already fed today"
+msgstr "aaj pehle hi feed kar chuke"
+
 msgid "already inside {cave}"
 msgstr "pehle se {cave} ke andar"
 
@@ -4987,6 +5001,12 @@ msgstr "{n} baar tameer ki; aaj kisi jagah ne aur nahi li (jagahein: {places})"
 msgid "built {n} times; the game's two builds a day are made"
 msgstr "{n} baar build kiya; game ki roz ki do builds ho gayi hain"
 
+msgid "built {n} times; {made} already made today"
+msgstr "{n} baar build kiya; {made} aaj pehle hi ho chuke"
+
+msgid "built {n} times; {why}"
+msgstr "{n} baar build kiya; {why}"
+
 msgid "buying the ticked lots..."
 msgstr "tick kiye hue lots khareed raha hai..."
 
@@ -5000,6 +5020,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} par build ho sakta hai"
+
+msgid "can exchange contribution for a Contribution Chest"
+msgstr "contribution ke badle Contribution Chest mil sakta hai"
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5190,6 +5213,9 @@ msgstr "run mukammal tareeqe se khatam nahi kar sake ({where}): {err}"
 
 msgid "couldn't get away - fighting on"
 msgstr "bhaag nahi sake - ladai jari"
+
+msgid "couldn't get back from the highland"
+msgstr "highland se wapas nahi aa sake"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} par wapas nahi ja sake: {why}"
@@ -5644,6 +5670,18 @@ msgstr "{way} dhakel kar nikal gaye"
 msgid "got out: walked to {cell}"
 msgstr "nikal gaye: {cell} tak chal kar"
 
+msgid "got {n} Contribution Chests"
+msgstr "{n} Contribution Chests mile"
+
+msgid "got {n} Contribution Chests; not enough contribution for another"
+msgstr "{n} Contribution Chests mile; agle ke liye contribution kam hai"
+
+msgid "got {n} Contribution Chests; the game allows no more today"
+msgstr "{n} Contribution Chests mile; game aaj mazeed nahi deta"
+
+msgid "got {n} Contribution Chests; {why}"
+msgstr "{n} Contribution Chests mile; {why}"
+
 msgid "handwears"
 msgstr "dastane"
 
@@ -5704,6 +5742,9 @@ msgstr "hunting bounty"
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "elite ya boss zone mein, jis se hum door rehte hain"
+
+msgid "in highland {n}"
+msgstr "highland {n} mein"
 
 msgid "in the city"
 msgstr "shehar mein"
@@ -6020,6 +6061,9 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 "abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)abhi koi ghaar level {n} ko andar nahi jaane deta (sab se neeche wale ko level {low} chahiye)"
 
+msgid "no chest came into the bag"
+msgstr "bag mein koi chest nahi aaya"
+
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
 "karne ko koi roz ka kaam nahi: Tools, Roz ke kaam mein kuch chalu karein"
@@ -6242,6 +6286,9 @@ msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
 msgstr ""
 "{item} khareedne ke liye arnebia kaafi nahi: {price} fi adad, baste mein {money}"
 
+msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
+msgstr "Contribution Chest ke liye contribution kam hai: {cost} mein se {have}"
+
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
 "{item} ke liye protection runes kaafi nahi - jaisa kaha tha, rok rahe hain"
@@ -6451,9 +6498,6 @@ msgstr "deegar"
 
 msgid "other equipments"
 msgstr "doosra saaman"
-
-msgid "our gang's highland"
-msgstr "hamari gang ki highland"
 
 msgid "our hits land on {name} - fighting that one"
 msgstr "hamare hits {name} par lag rahe hain - usi se lad rahe hain"
@@ -7189,6 +7233,11 @@ msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 "game ne {skill} ko key {key} par nahi rakha - keys waise hi chhod rahe hain"
 
+msgid ""
+"the game didn't show the 5000 contribution price, so nothing was confirmed"
+msgstr ""
+"game ne 5000 contribution ki qeemat nahi dikhayi, is liye kuch confirm nahi kiya"
+
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "game ne gang ke ilaqe mein {skill} shuru nahi ki"
 
@@ -7265,6 +7314,9 @@ msgstr "gang ka ilaqa {fee} arnebia ka hai, aap ki had {max} se zyada"
 msgid "the gang's area didn't let us in: {why}"
 msgstr "gang ke ilaqe ne andar nahi aane diya: {why}"
 
+msgid "the gang's area is under your {least}% saturation ({about})"
+msgstr "gang ka area aap ki {least}% saturation se kam hai ({about})"
+
 msgid "the gang's area: {about}"
 msgstr "gang ka ilaqa: {about}"
 
@@ -7286,9 +7338,6 @@ msgstr "hearthstone mujhe ghar nahi le gaya"
 
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr "hearthstone mujhe {square} par le jata hai - yaad rakh liya"
-
-msgid "the inner hall's East and West posts"
-msgstr "inner hall ki East aur West posts"
 
 msgid "the instructor offers no secret room now"
 msgstr "instructor abhi secret room nahi de raha"
@@ -7508,6 +7557,9 @@ msgstr "{npc} ne nahi kaha - logs\\dialogs.log dekhein"
 msgid "the {npc}'s next menu didn't open"
 msgstr "{npc} ka agla menu nahi khula"
 
+msgid "the {post} is at 100%: leaving it for now"
+msgstr "{post} 100% par hai: abhi chhor rahe hain"
+
 msgid "the {post}: {what}"
 msgstr "{post}: {what}"
 
@@ -7609,9 +7661,6 @@ msgstr "{npc} ko ek dafa aur try kar raha hoon"
 
 msgid "trying the {tool} instead"
 msgstr "us ke bajaye {tool} aazma rahe hain"
-
-msgid "type your gang's highland number in Tools, Daily chores"
-msgstr "Tools, Daily chores mein apni gang ki highland ka number likho"
 
 msgid "unavailable"
 msgstr "dastiyab nahi"
@@ -7810,6 +7859,12 @@ msgstr "kal"
 
 msgid "you"
 msgstr "aap"
+
+msgid "you joined the gang today: the game allows no building until tomorrow"
+msgstr "aap aaj gang mein aaye: game kal tak build nahi karne deta"
+
+msgid "you joined the gang today: the game allows no donation until tomorrow"
+msgstr "aap aaj gang mein aaye: game kal tak donation nahi karne deta"
 
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' aisi key nahi hai jo bot daba sakta ho."
@@ -8231,6 +8286,9 @@ msgstr "{npc} nazar nahi aa raha - dhoond rahe hain"
 msgid "{npc} offered no \"Enter the dungeon\""
 msgstr "{npc} ne \"Enter the dungeon\" nahi diya"
 
+msgid "{npc} offers no exchange"
+msgstr "{npc} exchange nahi deta"
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} har ek"
 
@@ -8528,6 +8586,12 @@ msgstr "{why} - is run mein mazeed {skill} nahi ({n} hue)"
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
+#~ msgid "&Build at:"
+#~ msgstr "&Build kahan:"
+
+#~ msgid "&Build first at (then anywhere else that can still take a build):"
+#~ msgstr "&Build pehle kahan (phir jahan bhi build ho sake):"
+
 #~ msgid "&Clean the bag (game menu, Clean the bag now)"
 #~ msgstr "&Basta saaf karein (game menu, Clean the bag now)"
 
@@ -8567,6 +8631,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Drop time to &save (minutes):"
 #~ msgstr "Drop ka waqt &mahfooz karne ke liye (minute):"
 
+#~ msgid ""
+#~ "E&xchange gang contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
+#~ msgstr ""
+#~ "Gang contribution ke badle Contribution Chests &xchange karo (har ek 5,000, Guard Captain Suke ke paas)"
+
 #~ msgid "E&xperience card to keep running while farming:"
 #~ msgstr "Farming ke dauran chalne wala e&xperience card:"
 
@@ -8580,6 +8649,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "Fills enabled supplies to their configured targets, even above their automatic refill thresholds."
 #~ msgstr ""
 #~ "Chalu supplies ko un ki muqarrar miktar tak bharta hai, chahe un ki khudkar refill ki had abhi na aayi ho."
+
+#~ msgid "Gang construction"
+#~ msgstr "Gang construction"
 
 #~ msgid "Gat&hering (as set in Tools, Gathering)"
 #~ msgstr "Jama ka&rna (jaisa Tools, Gathering mein set hai)"
@@ -8595,6 +8667,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Lose experience (as set in Tools, XP lose&r)"
 #~ msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
+
+#~ msgid ""
+#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+#~ msgstr ""
+#~ "Occupied Highlands mein highland {n} nahi (ismein hai: {list}) - Tools, Daily chores mein number check karo"
+
+#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
+#~ msgstr ""
+#~ "Hamari gang ki &highland ka number (jo Occupied Highlands ke neeche hai):"
 
 #~ msgid "Plan or script"
 #~ msgstr "Mansooba ya script"
@@ -8633,18 +8714,44 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "Tick kiye gaye kaam isi tarteeb se ek ke baad ek chalte hain, har ek bilkul game ke Tools submenu ki tarah. Dono lists mein tick kiya gaya kaam farming se pehle ek baar aur baad mein ek baar chalta hai. Jo kaam poora na ho sake woh bataya jata hai aur agla phir bhi chalta hai; Stop sab rok deta hai. Store items bag manager ki storage list ko usi waqt jaisi hai waise istemal karta hai."
 
+#~ msgid ""
+#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+#~ msgstr ""
+#~ "Apni gang ki highland ka number likho: Highland Entrance isay Occupied Highlands ke neeche dikhata hai (\"the own Gang's Highland 38\": 38)."
+
 #~ msgid "Up&date shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
+
+#~ msgid "can exchange gang contribution for a Contribution Chest"
+#~ msgstr "gang contribution ke badle Contribution Chest mil sakta hai"
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
 
+#~ msgid "got {n} Contribution Chests; not enough gang contribution for another"
+#~ msgstr "{n} Contribution Chests mile; agle ke liye gang contribution kam hai"
+
+#~ msgid "our gang's highland"
+#~ msgstr "hamari gang ki highland"
+
+#~ msgid "our gang's highlands"
+#~ msgstr "hamari gang ki highlands"
+
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
+
+#~ msgid "the inner hall's East and West posts"
+#~ msgstr "inner hall ki East aur West posts"
 
 #~ msgid "the plan's character has no saved account. Log in to it once first."
 #~ msgstr ""
 #~ "Plan ke kirdar ka koi mahfooz account nahi. Pehle ek martaba is mein login karein."
+
+#~ msgid "the {post} is complete: nothing to do there"
+#~ msgstr "{post} mukammal hai: wahan kuch nahi karna"
+
+#~ msgid "type your gang's highland number in Tools, Daily chores"
+#~ msgstr "Tools, Daily chores mein apni gang ki highland ka number likho"
 
 #~ msgid ""
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."

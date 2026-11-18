@@ -898,6 +898,10 @@ The pet name found during the character scan should work, although the Pet Train
 
 Uncle Farmer never spends diamonds on pet rebirths.
 
+**Contribution Chests**
+
+The bot goes to Guard Captain Suke on Tuneful Wetland and exchanges contribution for Contribution Chests. This is the contribution earned at the top level, not the gang contribution used in the gang. Each chest costs 5,000, and the game allows two a day. This is off until you tick it on the **City** tab. A chest counts only once it is in the bag.
+
 **Gang**
 
 Gang chores include the daily donation and daily construction.
@@ -914,12 +918,15 @@ The game allows two construction jobs per day. Building and repairing share this
 
 Construction does not cost anything. Each completed job gives gang contribution and gang points. It can also give arnebia depending on your rank. A general receives 3,000, 3,000, or 6,000 arnebia, depending on the construction.
 
-You can choose where the construction takes place:
+Tick the places the bot may use. It goes through them in this order and stops once the day's builds are made:
 
-- **Inner Hall:** The East and West encampment reinforced constructions are available here. They are a short walk from the Gang Entrance.
-- **Gang Highland:** The bot repairs the Crystal Turret and Wall barricade, then returns through the Teleportation circle.
+1. **Gang highlands, under 100%:** It goes through every highland listed under **Occupied Highlands**, so there is no number to type, and repairs a Crystal Turret or Wall barricade that is damaged. It returns through the Teleportation circle. Each of the two takes one repair a day, in whichever highland.
+2. **Magic Cannon:** if your gang is building one.
+3. **Supply Camp:** if your gang is building one.
+4. **East and West posts:** Each Magic Cannon or Supply Camp under construction closes one of them. With none under way, both are open.
+5. **Gang highlands, at 100%:** The game accepts and rewards these repairs too, so they use whatever builds are left.
 
-Each gang has a different highland. Enter its number in the settings. You can find the number at the Highland Entrance under **Occupied Highlands**. For example, if your gang's highland is listed as **the own Gang's Highland 38**, enter `38`.
+On the day a character joins a gang, the game allows neither donating nor building, so the bot leaves both for the next day.
 
 **Animal Shed**
 
@@ -995,6 +1002,8 @@ To change the order or take a gang off the list, select it and open its menu (**
 Uncle Farmer visits each gang in the order listed. For another gang, it first finds the gang through the Gang Entrance's **All gangs** list. It then enters the base and talks to the entrance to check the gathering area for your skill.
 
 Before entering, the bot checks the area's level, saturation, and entry fee. It enters only if the fee is within your configured limit and paying it would not use your arnebia reserve.
+
+You can also set a minimum saturation on the **Gangs** tab. An area under it is skipped, and the bot can look at it again on a later run that day.
 
 Each gang's gathering area can be visited once per game day.
 

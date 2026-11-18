@@ -74,9 +74,6 @@ msgstr "&Bot"
 msgid "&Browse"
 msgstr "Gözat (&B)"
 
-msgid "&Build at:"
-msgstr "İnşa yeri (&B):"
-
 msgid "&Call them by their name"
 msgstr "Onlara adlarıyla hitap et (&C)"
 
@@ -972,6 +969,15 @@ msgstr "Buff'lar kapalı."
 msgid "Buffs on."
 msgstr "Buff'lar açık."
 
+msgid "Build at the East and West &posts"
+msgstr ""
+
+msgid "Build the Magic Ca&nnon under construction"
+msgstr ""
+
+msgid "Build the S&upply Camp under construction"
+msgstr ""
+
 msgid "Busy - send stop first."
 msgstr "Meşgulüm - önce stop gönder."
 
@@ -1226,6 +1232,12 @@ msgstr "Metni içerir"
 msgid "Contribution"
 msgstr "Katkı"
 
+msgid "Contribution Chests"
+msgstr ""
+
+msgid "Contribution Chests a day (the game allows 2):"
+msgstr ""
+
 msgid "Cop&y all"
 msgstr "Tümünü kop&yala"
 
@@ -1445,6 +1457,10 @@ msgstr "Zindanlar"
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr "Girişini oyunun dosyalarının göstermediği zindanlar: {names}"
+
+msgid ""
+"E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
+msgstr ""
 
 msgid "E&xit"
 msgstr "Çıkış (&X)"
@@ -1718,9 +1734,6 @@ msgstr "Oyunların sesi açıldı."
 
 msgid "Gang"
 msgstr "Çete"
-
-msgid "Gang construction"
-msgstr "Çete inşaatı"
 
 msgid "Gang mode"
 msgstr "Çete modu"
@@ -2699,11 +2712,6 @@ msgid "Nowhere, use what's in the bag"
 msgstr "Hiçbir yerden, çantadakini kullan"
 
 msgid ""
-"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
-msgstr ""
-"İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
-
-msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 "Eski çalışmalar yalnızca çantadaki net arnebia değişimini sakladı: kazançları ondan hesaplanır"
@@ -2796,9 +2804,6 @@ msgstr "Alınan diğer eşyalar:"
 
 msgid "Our blue potions"
 msgstr "Mavi iksirlerimiz"
-
-msgid "Our gang's &highland number (the one under Occupied Highlands):"
-msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
 
 msgid "Our own gang"
 msgstr "Kendi çetemiz"
@@ -3101,6 +3106,10 @@ msgid "Repair &gear with toolboxes from the bag"
 msgstr "Ekipmanı çantadaki alet kutularıyla onar (&G)"
 
 msgid ""
+"Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
+msgstr ""
+
+msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
 "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
@@ -3217,6 +3226,9 @@ msgstr "Depola (&T):"
 
 msgid "STOPPED: {why}"
 msgstr "DURDURULDU: {why}"
+
+msgid "Saturation"
+msgstr ""
 
 msgid "Saturday"
 msgstr "Cumartesi"
@@ -3471,6 +3483,9 @@ msgstr "Kullanılan beceriler: {casts} kullanım, toplam {dmg} hasar"
 
 msgid "Skinning"
 msgstr "Deri yüzme"
+
+msgid "Skip an area whose &saturation is under this percent:"
+msgstr ""
 
 msgid ""
 "Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
@@ -4297,11 +4312,6 @@ msgstr ""
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Ustaları kullanılacak çetenin adını yaz."
 
-msgid ""
-"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-msgstr ""
-"Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
-
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
 
@@ -4770,6 +4780,9 @@ msgstr "bugün zaten bağış yapıldı"
 msgid "already done today"
 msgstr "bugün zaten yapıldı"
 
+msgid "already fed today"
+msgstr "bugün zaten beslendi"
+
 msgid "already inside {cave}"
 msgstr "zaten {cave} içinde"
 
@@ -4962,6 +4975,12 @@ msgstr "{n} kez inşa edildi; bugün başka yer kabul etmedi (yerler: {places})"
 msgid "built {n} times; the game's two builds a day are made"
 msgstr "{n} kez inşa edildi; oyunun günlük iki inşaatı yapıldı"
 
+msgid "built {n} times; {made} already made today"
+msgstr "{n} kez inşa edildi; {made} tanesi bugün zaten yapılmış"
+
+msgid "built {n} times; {why}"
+msgstr "{n} kez inşa edildi; {why}"
+
 msgid "buying the ticked lots..."
 msgstr ""
 
@@ -4975,6 +4994,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} noktasında inşa edilebilir"
+
+msgid "can exchange contribution for a Contribution Chest"
+msgstr ""
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5162,6 +5184,9 @@ msgstr "çalışma bitirilemedi ({where}): {err}"
 
 msgid "couldn't get away - fighting on"
 msgstr "kaçılamadı - dövüşe devam"
+
+msgid "couldn't get back from the highland"
+msgstr "highland'den geri dönülemedi"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} yerine geri dönülemedi: {why}"
@@ -5609,6 +5634,18 @@ msgstr "{way} yönüne itilerek çıkıldı"
 msgid "got out: walked to {cell}"
 msgstr "çıkıldı: {cell} hücresine yürüdüm"
 
+msgid "got {n} Contribution Chests"
+msgstr ""
+
+msgid "got {n} Contribution Chests; not enough contribution for another"
+msgstr ""
+
+msgid "got {n} Contribution Chests; the game allows no more today"
+msgstr ""
+
+msgid "got {n} Contribution Chests; {why}"
+msgstr ""
+
 msgid "handwears"
 msgstr ""
 
@@ -5670,6 +5707,9 @@ msgstr "av ödülü"
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
+
+msgid "in highland {n}"
+msgstr "highland {n} içinde"
 
 msgid "in the city"
 msgstr "şehirde"
@@ -5981,6 +6021,9 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 "henüz hiçbir mağara {n}. seviyeyi kabul etmiyor (en düşüğü {low}. seviye istiyor)"
 
+msgid "no chest came into the bag"
+msgstr ""
+
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr "yapılacak günlük iş yok: Araçlar, Günlük işler'den bazılarını aç"
 
@@ -6189,6 +6232,9 @@ msgstr "bir {item} için yeterli arnebia yok: tanesi {price}, çantada {money}"
 msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
 msgstr "{item} almak için yeterli arnebia yok: tanesi {price}, çantada {money}"
 
+msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
+msgstr ""
+
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr "{item} için yeterli koruma rünü yok - istendiği gibi duruluyor"
 
@@ -6395,9 +6441,6 @@ msgstr "diğer"
 
 msgid "other equipments"
 msgstr ""
-
-msgid "our gang's highland"
-msgstr "çetemizin yaylası"
 
 msgid "our hits land on {name} - fighting that one"
 msgstr "vuruşlarımız {name} hedefine isabet ediyor - onunla dövüşülüyor"
@@ -7127,6 +7170,10 @@ msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 "oyun {skill} becerisini {key} tuşuna koymadı - tuşlar olduğu gibi bırakılıyor"
 
+msgid ""
+"the game didn't show the 5000 contribution price, so nothing was confirmed"
+msgstr ""
+
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "oyun çetenin alanında {skill} başlatmadı"
 
@@ -7202,6 +7249,9 @@ msgstr "çetenin alanı {fee} arnebia tutuyor, {max} sınırından fazla"
 msgid "the gang's area didn't let us in: {why}"
 msgstr "çetenin alanı içeri almadı: {why}"
 
+msgid "the gang's area is under your {least}% saturation ({about})"
+msgstr ""
+
 msgid "the gang's area: {about}"
 msgstr "çetenin alanı: {about}"
 
@@ -7223,9 +7273,6 @@ msgstr "Kalp taşı beni eve götürmedi"
 
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr "Kalp taşı beni {square} yerine götürüyor - hatırlandı"
-
-msgid "the inner hall's East and West posts"
-msgstr "iç salonun Doğu ve Batı noktaları"
 
 msgid "the instructor offers no secret room now"
 msgstr "eğitmen şu anda gizli oda sunmuyor"
@@ -7442,6 +7489,9 @@ msgstr "{npc} hayır dedi - bkz. logs\\dialogs.log"
 msgid "the {npc}'s next menu didn't open"
 msgstr "{npc} için sonraki menü açılmadı"
 
+msgid "the {post} is at 100%: leaving it for now"
+msgstr ""
+
 msgid "the {post}: {what}"
 msgstr "{post}: {what}"
 
@@ -7542,9 +7592,6 @@ msgstr "{npc} bir kez daha deneniyor"
 
 msgid "trying the {tool} instead"
 msgstr "onun yerine {tool} deneniyor"
-
-msgid "type your gang's highland number in Tools, Daily chores"
-msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
 
 msgid "unavailable"
 msgstr "kullanılamıyor"
@@ -7743,6 +7790,12 @@ msgstr "dün"
 
 msgid "you"
 msgstr "sen"
+
+msgid "you joined the gang today: the game allows no building until tomorrow"
+msgstr "çeteye bugün katıldın: oyun yarına kadar inşaata izin vermiyor"
+
+msgid "you joined the gang today: the game allows no donation until tomorrow"
+msgstr "çeteye bugün katıldın: oyun yarına kadar bağışa izin vermiyor"
 
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' botun basabileceği bir tuş değil."
@@ -8160,6 +8213,9 @@ msgstr "{npc} ortalıkta yok - onu arıyorum"
 msgid "{npc} offered no \"Enter the dungeon\""
 msgstr "{npc} \"Zindana gir\" seçeneği sunmadı"
 
+msgid "{npc} offers no exchange"
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, tanesi {price} {cur}"
 
@@ -8452,3 +8508,37 @@ msgstr "{why} - bu çalışmada artık {skill} yok ({n} yapıldı)"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
+
+#~ msgid "&Build at:"
+#~ msgstr "İnşa yeri (&B):"
+
+#~ msgid "&Build first at (then anywhere else that can still take a build):"
+#~ msgstr "Önce şurada &inşa et (sonra hâlâ mümkün olan her yerde):"
+
+#~ msgid "Gang construction"
+#~ msgstr "Çete inşaatı"
+
+#~ msgid ""
+#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+#~ msgstr ""
+#~ "İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
+
+#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
+#~ msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
+
+#~ msgid ""
+#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+#~ msgstr ""
+#~ "Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
+
+#~ msgid "our gang's highland"
+#~ msgstr "çetemizin yaylası"
+
+#~ msgid "our gang's highlands"
+#~ msgstr "çetemizin highland'leri"
+
+#~ msgid "the inner hall's East and West posts"
+#~ msgstr "iç salonun Doğu ve Batı noktaları"
+
+#~ msgid "type your gang's highland number in Tools, Daily chores"
+#~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"

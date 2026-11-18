@@ -70,6 +70,7 @@ DEFAULTS: dict[str, Any] = {
     "gang": True,             # gangs' production areas first, each once a game day
     "gangs": [""],            # ... these, in order: "" our own gang, else a gang's name
     "gang_fee_max": 20000,    # ... for an entry fee of at most this
+    "gang_min_saturation": 0,  # ... and a saturation of at least this percent
     "outside": True,          # outside places (after the gang's area, or without one)
     "place": "",              # "": the best for the character; else a place's name
     "places": [],             # the player's own: {"name", "skill", "map", "x", "y"}
@@ -503,6 +504,11 @@ def gang_area(b: Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,
         b.note_dialog(b.dialog(), "gang area entrance")
         b.close_dialogs()
         return False, _("the {npc} offers no way in ({about})", npc=name, about=about), True
+    least = float(cfg.get("gang_min_saturation", 0))
+    if area and float(area.group(2)) < least:
+        b.close_dialogs()
+        return False, _("the gang's area is under your {least}% saturation ({about})",
+                        least=f"{least:g}", about=about), False
     if check_only:
         b.close_dialogs()
         return False, _("the gang's area: {about}", about=about), False

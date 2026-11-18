@@ -365,6 +365,9 @@ def _press(b: Bot, rows: list[dict[str, Any]], beast: dict[str, Any], until_atta
     as soon as something attacks us (putting a beast on), so the fight is never kept waiting."""
     index = next(i for i, r in enumerate(rows) if r["id"] == beast["id"])
     was = beast["active"]
+    clear = getattr(b, "clear_popups", None)      # a window left open (the character sheet...) takes
+    if clear is not None:                         # the panel's keys, and every press would be lost
+        clear(force=True)
     for _try in range(TRIES):
         wait = getattr(b, "last_beast_change", 0) + GAP - clock_for(b).time()
         while wait > 0:                # counted down by what was slept: never longer than the gap

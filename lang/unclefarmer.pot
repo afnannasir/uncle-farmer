@@ -74,9 +74,6 @@ msgstr ""
 msgid "&Browse"
 msgstr ""
 
-msgid "&Build at:"
-msgstr ""
-
 msgid "&Call them by their name"
 msgstr ""
 
@@ -956,6 +953,15 @@ msgstr ""
 msgid "Buffs on."
 msgstr ""
 
+msgid "Build at the East and West &posts"
+msgstr ""
+
+msgid "Build the Magic Ca&nnon under construction"
+msgstr ""
+
+msgid "Build the S&upply Camp under construction"
+msgstr ""
+
 msgid "Busy - send stop first."
 msgstr ""
 
@@ -1207,6 +1213,12 @@ msgstr ""
 msgid "Contribution"
 msgstr ""
 
+msgid "Contribution Chests"
+msgstr ""
+
+msgid "Contribution Chests a day (the game allows 2):"
+msgstr ""
+
 msgid "Cop&y all"
 msgstr ""
 
@@ -1421,6 +1433,10 @@ msgid "Dungeons"
 msgstr ""
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
+msgstr ""
+
+msgid ""
+"E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
 msgstr ""
 
 msgid "E&xit"
@@ -1689,9 +1705,6 @@ msgid "Games unmuted."
 msgstr ""
 
 msgid "Gang"
-msgstr ""
-
-msgid "Gang construction"
 msgstr ""
 
 msgid "Gang mode"
@@ -2639,10 +2652,6 @@ msgid "Nowhere, use what's in the bag"
 msgstr ""
 
 msgid ""
-"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
-msgstr ""
-
-msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
 msgstr ""
 
@@ -2728,9 +2737,6 @@ msgid "Other items picked up:"
 msgstr ""
 
 msgid "Our blue potions"
-msgstr ""
-
-msgid "Our gang's &highland number (the one under Occupied Highlands):"
 msgstr ""
 
 msgid "Our own gang"
@@ -3024,6 +3030,10 @@ msgid "Repair &gear with toolboxes from the bag"
 msgstr ""
 
 msgid ""
+"Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
+msgstr ""
+
+msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
 "This replaces combat, key, potion, bag, pet, travel and restock choices. It keeps {character}'s own scan and learned hearthstone location. Nothing changes until you choose Yes."
@@ -3132,6 +3142,9 @@ msgid "S&tore:"
 msgstr ""
 
 msgid "STOPPED: {why}"
+msgstr ""
+
+msgid "Saturation"
 msgstr ""
 
 msgid "Saturday"
@@ -3377,6 +3390,9 @@ msgid "Skills used: {casts} casts, {dmg} damage in all"
 msgstr ""
 
 msgid "Skinning"
+msgstr ""
+
+msgid "Skip an area whose &saturation is under this percent:"
 msgstr ""
 
 msgid ""
@@ -4162,10 +4178,6 @@ msgstr ""
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr ""
 
-msgid ""
-"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-msgstr ""
-
 msgid "Uncle Farmer"
 msgstr ""
 
@@ -4599,6 +4611,9 @@ msgstr ""
 msgid "already done today"
 msgstr ""
 
+msgid "already fed today"
+msgstr ""
+
 msgid "already inside {cave}"
 msgstr ""
 
@@ -4785,6 +4800,12 @@ msgstr ""
 msgid "built {n} times; the game's two builds a day are made"
 msgstr ""
 
+msgid "built {n} times; {made} already made today"
+msgstr ""
+
+msgid "built {n} times; {why}"
+msgstr ""
+
 msgid "buying the ticked lots..."
 msgstr ""
 
@@ -4796,6 +4817,9 @@ msgid ""
 msgstr ""
 
 msgid "can build at the {post}"
+msgstr ""
+
+msgid "can exchange contribution for a Contribution Chest"
 msgstr ""
 
 msgid ""
@@ -4968,6 +4992,9 @@ msgid "couldn't finish the run ({where}): {err}"
 msgstr ""
 
 msgid "couldn't get away - fighting on"
+msgstr ""
+
+msgid "couldn't get back from the highland"
 msgstr ""
 
 msgid "couldn't get back to {place}: {why}"
@@ -5405,6 +5432,18 @@ msgstr ""
 msgid "got out: walked to {cell}"
 msgstr ""
 
+msgid "got {n} Contribution Chests"
+msgstr ""
+
+msgid "got {n} Contribution Chests; not enough contribution for another"
+msgstr ""
+
+msgid "got {n} Contribution Chests; the game allows no more today"
+msgstr ""
+
+msgid "got {n} Contribution Chests; {why}"
+msgstr ""
+
 msgid "handwears"
 msgstr ""
 
@@ -5462,6 +5501,9 @@ msgid "hunting bounty"
 msgstr ""
 
 msgid "in an elite or boss zone we keep out of"
+msgstr ""
+
+msgid "in highland {n}"
 msgstr ""
 
 msgid "in the city"
@@ -5765,6 +5807,9 @@ msgstr ""
 msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 
+msgid "no chest came into the bag"
+msgstr ""
+
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
 
@@ -5961,6 +6006,9 @@ msgid "not enough arnebia for one {item}: {price} each, {money} in the bag"
 msgstr ""
 
 msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
+msgstr ""
+
+msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
 msgstr ""
 
 msgid "not enough protection runes for {item} - stopping, as asked"
@@ -6163,9 +6211,6 @@ msgid "other"
 msgstr ""
 
 msgid "other equipments"
-msgstr ""
-
-msgid "our gang's highland"
 msgstr ""
 
 msgid "our hits land on {name} - fighting that one"
@@ -6865,6 +6910,10 @@ msgstr ""
 msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 
+msgid ""
+"the game didn't show the 5000 contribution price, so nothing was confirmed"
+msgstr ""
+
 msgid "the game didn't start {skill} in the gang's area"
 msgstr ""
 
@@ -6936,6 +6985,9 @@ msgstr ""
 msgid "the gang's area didn't let us in: {why}"
 msgstr ""
 
+msgid "the gang's area is under your {least}% saturation ({about})"
+msgstr ""
+
 msgid "the gang's area: {about}"
 msgstr ""
 
@@ -6954,9 +7006,6 @@ msgid "the hearthstone didn't take me home"
 msgstr ""
 
 msgid "the hearthstone takes me to {square} - remembered"
-msgstr ""
-
-msgid "the inner hall's East and West posts"
 msgstr ""
 
 msgid "the instructor offers no secret room now"
@@ -7159,6 +7208,9 @@ msgstr ""
 msgid "the {npc}'s next menu didn't open"
 msgstr ""
 
+msgid "the {post} is at 100%: leaving it for now"
+msgstr ""
+
 msgid "the {post}: {what}"
 msgstr ""
 
@@ -7253,9 +7305,6 @@ msgid "trying the {npc} once more"
 msgstr ""
 
 msgid "trying the {tool} instead"
-msgstr ""
-
-msgid "type your gang's highland number in Tools, Daily chores"
 msgstr ""
 
 msgid "unavailable"
@@ -7446,6 +7495,12 @@ msgid "yesterday"
 msgstr ""
 
 msgid "you"
+msgstr ""
+
+msgid "you joined the gang today: the game allows no building until tomorrow"
+msgstr ""
+
+msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr ""
 
 msgid "{action}: '{value}' isn't a key the bot can press."
@@ -7850,6 +7905,9 @@ msgid "{npc} isn't in sight - looking for it"
 msgstr ""
 
 msgid "{npc} offered no \"Enter the dungeon\""
+msgstr ""
+
+msgid "{npc} offers no exchange"
 msgstr ""
 
 msgid "{npc}, {price} {cur} each"

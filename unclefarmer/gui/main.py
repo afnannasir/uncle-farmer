@@ -628,7 +628,7 @@ your own gang's craftsmen (cheaper), another gang's by its name, or the nearest 
 reads the real prices and chances, says what it would do, and spends nothing.
 Tools, Daily chores (Ctrl+Shift+D): once a game day (from 00:00 GMT) the bank's incomes, hunting
 bounties, the free rebirths of the pet you choose, the gang donation, and construction builds at
-every place the gang has to build (the inner and outer halls, the highland). Sharing arnebia in a
+every place the gang has to build (what it is building now, the inner hall's posts, its highlands). Sharing arnebia in a
 secret room: once in each half hour, 5 a day; the bot goes in just before a half hour, shares, shares
 again as it starts, and leaves, and while farming it leaves for that and comes back by itself. Tick
 "at the start of the first farming run" and a farming run does the chores first.
