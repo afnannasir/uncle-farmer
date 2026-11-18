@@ -18,7 +18,7 @@ from unclefarmer.engine.botparts.walking import WalkingMixin
 @pytest.mark.parametrize("left, rides", [(6.0, False), (29.0, False), (30.0, True), (float("inf"), True), (None, True)])
 def test_a_beast_goes_on_only_for_a_long_enough_walk(clock: Any, left: float | None, rides: bool) -> None:
     g = swift(clock)
-    g.walk_left = left
+    as_bot(g).walk_left = left
     beasts.ensure(as_bot(g), beasts.TRAVEL)
     assert riding(g) is rides
 
@@ -28,7 +28,7 @@ def test_a_beast_already_on_stays_on_for_the_last_steps(clock: Any) -> None:
     beasts.ensure(as_bot(g), beasts.TRAVEL)
     assert riding(g)
     pressed = len(g.presses)
-    g.walk_left = 3.0
+    as_bot(g).walk_left = 3.0
     beasts.ensure(as_bot(g), beasts.TRAVEL)
     assert riding(g) and len(g.presses) == pressed
 
