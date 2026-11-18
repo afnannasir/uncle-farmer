@@ -482,7 +482,15 @@ class FarmingMixin(Parts):
           hearthstone  home with the hearthstone (if that fails, the nearest map without monsters)
           safe         the nearest map without monsters (the hearthstone first, if the profile says)
           here         stay
-        If the way there fails, the nearest map without monsters."""
+        If the way there fails, the nearest map without monsters. After gathering (and nothing
+        killed since), the way is walked without fights, as the walking assistant goes."""
+        from .. import gathering      # here: gathering imports the Bot, which this is part of
+        if gathering.going_home(as_bot(self)):
+            with gathering.homeward(as_bot(self)):
+                return self._finish_at()
+        return self._finish_at()
+
+    def _finish_at(self) -> None:
         how: EndPlace = self.end_place or ("start",)
         kind = how[0]
         try:

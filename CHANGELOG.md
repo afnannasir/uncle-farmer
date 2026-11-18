@@ -40,6 +40,19 @@
 - A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
   there) is now logged, once for each reason in a run.
 
+**Gathering outside: the pet helps, and the way home has no fights**
+
+- While fishing, mining or collecting herbs at an outside place, the bot now keeps your pet out and
+  looked after, as it does while farming (the pets ticked in Character settings): it helps kill
+  what comes, and a monster that goes for the pet is fought too. Summoning the pet or giving it a
+  potion stops the gathering for a moment, as your own potions do; it starts again by itself. In a
+  gang's area nothing changes: the half hour there is left to the game.
+- Once gathering is over, the way home - to the buyer to sell, then to where the run ends - is
+  walked as the walking assistant goes: no stopping to fight, not even what attacks you, riding
+  your Swift beast past it, with potions still keeping you up. The trips while gathering (to the
+  place, and to sell and come back when the bag fills) still fight as before. A script that farms
+  after gathering ends as a farming run does.
+
 **Spanish and Turkish**
 
 - Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
