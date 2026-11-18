@@ -4377,6 +4377,11 @@ msgstr "Caminhar até"
 msgid "Walk to {where}"
 msgstr "Caminhar até {where}"
 
+msgid ""
+"Walk up to corpses further off, up to 20 steps awa&y (off: only the ones within 4.5 steps of where the fight ended)"
+msgstr ""
+"Ir até os cadáveres mais longe, até 20 passos (desligado: só os que estão a até 4,5 passos de onde a luta terminou) (&Y)"
+
 msgid "Walk up to the enemy"
 msgstr "Aproximar-se do inimigo"
 
@@ -5310,6 +5315,9 @@ msgstr "cheio"
 msgid "full loop"
 msgstr "ciclo completo"
 
+msgid "further off than we walk for a corpse"
+msgstr "mais longe do que andamos por um cadáver"
+
 msgid "further to walk than the chase range"
 msgstr "distância maior que o alcance de perseguição"
 
@@ -5408,6 +5416,9 @@ msgstr "saiu pressionando {way}"
 
 msgid "got out: walked to {cell}"
 msgstr "saiu: caminhou até {cell}"
+
+msgid "harvested by someone else, or dried, before we got there"
+msgstr "coletado por outra pessoa, ou secou, antes de chegarmos"
 
 msgid "heal"
 msgstr "curar"
@@ -5557,6 +5568,9 @@ msgid ""
 msgstr ""
 "ignorou {n} avisos de equipamento anteriores a esta execução (já resolvidos); equipamentos quebrados ainda serão reparados"
 
+msgid "left the corpse of {name}: {why}"
+msgstr "cadáver de {name} deixado: {why}"
+
 msgid "left the team"
 msgstr "saiu da equipe"
 
@@ -5694,6 +5708,9 @@ msgstr "mute: o jogo para de falar (somente no meu jogo)."
 
 msgid "muted request"
 msgstr "solicitação silenciada"
+
+msgid "near a boss"
+msgstr "perto de um chefe"
 
 msgid "never again"
 msgstr "nunca mais"
@@ -5971,6 +5988,9 @@ msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
 "ainda desconhecido (o bot lê essa informação na ficha do personagem ao iniciar)"
+
+msgid "not reached on foot"
+msgstr "não alcançado a pé"
 
 msgid "not read, old price kept: {list}"
 msgstr "não foi possível ler; preços antigos mantidos: {list}"
@@ -7183,6 +7203,10 @@ msgstr ""
 
 msgid "too close to a boss"
 msgstr "perto demais de um chefe"
+
+msgid "too far to harvest from where we stand, and walking to corpses is off"
+msgstr ""
+"longe demais para coletar de onde estamos, e ir até os cadáveres está desligado"
 
 msgid "took {n} {item} out of the storehouse"
 msgstr "retirou {n} {item} do depósito"

@@ -4333,6 +4333,11 @@ msgstr "Yürüyerek git"
 msgid "Walk to {where}"
 msgstr "{where} yerine yürü"
 
+msgid ""
+"Walk up to corpses further off, up to 20 steps awa&y (off: only the ones within 4.5 steps of where the fight ended)"
+msgstr ""
+"Daha uzaktaki cesetlere 20 adıma kadar yürü (kapalı: yalnızca dövüşün bittiği yere 4,5 adımdan yakın olanlar) (&Y)"
+
 msgid "Walk up to the enemy"
 msgstr "Düşmana kadar yürü"
 
@@ -5262,6 +5267,9 @@ msgstr "dolu"
 msgid "full loop"
 msgstr "tam döngü"
 
+msgid "further off than we walk for a corpse"
+msgstr "bir ceset için yürüdüğümüzden daha uzakta"
+
 msgid "further to walk than the chase range"
 msgstr "yürüme mesafesi kovalama menzilinden uzun"
 
@@ -5360,6 +5368,9 @@ msgstr "{way} yönüne itilerek çıkıldı"
 
 msgid "got out: walked to {cell}"
 msgstr "çıkıldı: {cell} hücresine yürüdüm"
+
+msgid "harvested by someone else, or dried, before we got there"
+msgstr "biz varmadan başkası topladı ya da kurudu"
 
 msgid "heal"
 msgstr "iyileştirme"
@@ -5509,6 +5520,9 @@ msgid ""
 msgstr ""
 "bu çalışmadan önceki {n} ekipman uyarısı atlandı (o zaman ilgilenilmişti); bozuk ekipman yine de onarılır"
 
+msgid "left the corpse of {name}: {why}"
+msgstr "{name} cesedi bırakıldı: {why}"
+
 msgid "left the team"
 msgstr "takımdan ayrıldı"
 
@@ -5646,6 +5660,9 @@ msgstr "mute: Oyun konuşmayı keser (yalnızca benim oyunum)."
 
 msgid "muted request"
 msgstr "susturulan istek"
+
+msgid "near a boss"
+msgstr "bir boss yakınında"
 
 msgid "never again"
 msgstr "bir daha asla"
@@ -5909,6 +5926,9 @@ msgstr "henüz {cave} içinde değil - yeniden deneniyor ({n}/{all})"
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "henüz bilinmiyor (bot başlarken karakter sayfasından okur)"
+
+msgid "not reached on foot"
+msgstr "yürüyerek ulaşılamadı"
 
 msgid "not read, old price kept: {list}"
 msgstr "okunmadı, eski fiyat tutuldu: {list}"
@@ -7108,6 +7128,9 @@ msgstr ""
 
 msgid "too close to a boss"
 msgstr "bir patrona çok yakın"
+
+msgid "too far to harvest from where we stand, and walking to corpses is off"
+msgstr "durduğumuz yerden toplamak için çok uzak ve cesetlere yürümek kapalı"
 
 msgid "took {n} {item} out of the storehouse"
 msgstr "depodan {n} {item} alındı"

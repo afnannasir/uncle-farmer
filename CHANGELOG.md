@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**Draw Blood, Skinning and Cut Flesh: walking up to the corpse**
+
+- Corpse harvesting only took corpses within 4.5 steps of where the fight ended, since the game
+  takes the skill only from close by. A character that fights from afar kills about 18 steps off,
+  so almost every corpse was left (one night: 12 harvests in about 1,150 kills), and even
+  close-range characters often ended a few steps too far. Nothing in the log said why.
+- Now the bot walks up to the corpse first, as the game's own key does: up to 20 steps away, never
+  to one near a boss, and still only between fights. A fight on the way comes first. The new
+  choice in Character settings, Fighting, Corpses, **Walk up to corpses further off**, is on by
+  default; turn it off to harvest only the corpses within reach, as before.
+- A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
+  there) is now logged, once for each reason in a run.
+
 **Spanish and Turkish**
 
 - Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
