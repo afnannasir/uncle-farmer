@@ -1,5 +1,15 @@
 # What's new
 
+## Unreleased
+
+**A full storehouse**
+
+- A full storehouse still takes more of an item it already holds, but turns away an item it holds
+  none of: the game says "item storage is full". The bot now hears it, says which items stay in
+  the bag because the storehouse is full (not that it "may be full"), and stops walking them back
+  to the storehouse on every bag trip of the run. Taking something out of the storehouse makes
+  room, so the bot tries them again after that.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

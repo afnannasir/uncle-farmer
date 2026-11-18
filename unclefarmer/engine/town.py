@@ -301,18 +301,52 @@ def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None):
     got = max(0, after.get(item.lower(), 0) - before)
     if stock is not None and got > 0:
         getattr(b, "storehouse_lacks", set[str]()).discard(item.lower())
+    if got > 0:
+        refused(b).clear()          # something came out: there may be room again
     b.log(_("took {n} {item} out of the storehouse", n=got, item=item))
     stats.moved(b, "withdrawn", item, got)
     return got
 
 
+# What the game says when the storehouse has no free place for an item it doesn't hold yet (seen
+# 2026-11-18, the menu closing after it as after every deposit). An item it already holds a stack
+# of still goes in: only that item is refused, not the rest of the trip.
+STOREHOUSE_FULL = re.compile(r"\b(item|equipment) storage is full", re.I)
+FULL_HEARD = 1.5      # seconds the game is given to say so after a deposit that took nothing
+
+
+def refused(b: Bot) -> set[str]:
+    """The items (lower case) the storehouse turned away as full this run: not taken there again
+    until something comes out of it (withdraw)."""
+    got: set[str] = b.__dict__.setdefault("storehouse_refused", set())
+    return got
+
+
+def _heard_full(b: Bot, since: int) -> bool:
+    from .chores import said_since
+    clock = clock_for(b)
+    end = clock.time() + FULL_HEARD
+    while True:
+        if any(STOREHOUSE_FULL.search(line) for line in said_since(b, since)):
+            return True
+        if clock.time() >= end:
+            return False
+        b.sleep(0.25)
+
+
 def deposit(b: Bot, item: str, n: int | None=None):
-    """Put n (default: all) of item into the storehouse."""
+    """Put n (default: all) of item into the storehouse. One the storehouse turned away as full
+    this run isn't taken there again (refused)."""
     have = counts(b).get(item.lower(), 0)
     if have <= 0:
         return 0
+    if item.strip().lower() in refused(b):
+        b.log(_("not taking {item} to the storehouse: it is full and holds none yet", item=item))
+        return 0
     n = have if n is None else min(n, have)
     visit(b, "storehouse")
+    from .chores import said_mark
+    since = said_mark(b)
     try:
         if not open_section(b, r"^\s*deposit item"):
             b.log(_("the storehouse menu has no deposit"), speak=True)
@@ -322,6 +356,9 @@ def deposit(b: Bot, item: str, n: int | None=None):
     finally:
         b.close_dialogs()
     put = have - counts(b).get(item.lower(), 0)
+    if put <= 0 and _heard_full(b, since):
+        refused(b).add(item.strip().lower())
+        b.log(_("the storehouse is full: {item} has no place in it", item=item))
     if put > 0:
         b.__dict__.setdefault("storehouse_lacks", set()).discard(item.strip().lower())   # it has some now
     b.log(_("put {n} {item} into the storehouse", n=put, item=item))
@@ -1161,6 +1198,10 @@ def unload(b: Bot) -> int:
         if _try_trip(b, _("couldn't store {item}: {why}"), name,
                      lambda name=name, n=n: _weighed(b, name, lambda: deposit(b, name, n))):
             done += 1
+    full = [name for name, _n in store if name.lower() in refused(b)]
+    if full:
+        b.log(_("the storehouse is full - these stay in the bag until there is room in it: {list}",
+                list=", ".join(full)), speak=True)
     # 4. throwing away, last, only what the player said
     for name, a, n in todo:
         if a == "throw":
@@ -1364,6 +1405,11 @@ def store_items(b: Bot) -> int:
                 failed.append(_("{item} ({n} of {want}: the storehouse took no more)", item=name, n=put, want=n))
         else:
             failed.append(name)
+    full = [name for name in failed if name.lower() in refused(b)]
+    failed = [name for name in failed if name not in full]
+    if full:
+        b.log(_("the storehouse is full - these stay in the bag until there is room in it: {list}",
+                list=", ".join(full)), speak=True)
     if failed:
         b.log(_("not stored (the storehouse may be full): {list}", list=", ".join(failed)), speak=True)
     if stored:

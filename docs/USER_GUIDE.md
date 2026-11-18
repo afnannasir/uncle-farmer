@@ -453,7 +453,10 @@ The log reports:
 - Which listed items were not found in the bag.
 - Which items the storehouse could not accept.
 
-If the storehouse is full, anything that does not fit stays in your bag.
+If the storehouse is full, anything that does not fit stays in your bag. A full storehouse still takes
+more of an item it already holds; an item it holds none of is turned away (the game says "item
+storage is full"). The bot says which items stay in the bag, and doesn't take them back to the
+storehouse for the rest of the run, unless something is taken out of it, which can make room.
 
 The storage list is read when the job starts. This means changes you make to the list before starting the job are applied.
 
