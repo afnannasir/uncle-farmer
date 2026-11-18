@@ -64,6 +64,17 @@
   shop that doesn't sell the item. When none answers, the bot says so instead of "no shop near
   enough lists it".
 
+**No trip to town and back when a run starts on its farming map**
+
+- **Skip this list when the run starts on its first farming map** (Character settings, Triggers,
+  Before farming) is now ticked by default, and ticked once for every profile saved before. A run
+  started where it farms goes straight to farming; the farm loop still goes to town by itself
+  when a supply runs low or the bag is full. Untick it to run the list on every start.
+- **Update shard prices** in a Before or After farming list no longer walks to the Shard Broker
+  when the prices were read less than 8 hours ago, by any character on the PC: it was the job
+  that sent a run started on its farming map to town and back for prices read minutes before.
+  The Tools menu and the `update_shard_prices` script command still read them every time.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

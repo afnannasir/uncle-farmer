@@ -466,12 +466,14 @@ top to bottom, one at a time. Use **Move up** and **Move down** to change that o
 profiles keep their enabled jobs and original order until you edit them.
 
 Above the Before farming list, **Skip this list when the run starts on its first farming map**
-(off by default) is for a Stop and a start again where the character was farming: when the run
+(on by default) is for a Stop and a start again where the character was farming: when the run
 starts on the map its plan farms first (the first spot of the plan, or the first `farm` line of a
 script), the Before farming list is left out and farming starts at once, instead of a trip to
 town and back. The log says "already on Margit Rainforest (5281), where this run farms first -
 the Before farming list is skipped". A run that starts anywhere else, or one that first goes into
-a dungeon, runs the list as usual. The After farming list isn't affected.
+a dungeon, runs the list as usual. The After farming list isn't affected. Supplies and the bag
+are still looked after: while farming, the bot goes to town by itself when a supply is down to
+its minimum or the bag is full. Untick it if you want the list to run on every start.
 
 Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
 or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
@@ -496,6 +498,9 @@ The familiar default jobs include:
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
 - **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
+  In these lists it is skipped while the prices were read less than 8 hours ago (on this PC, by
+  any character): the log says how long ago, and the list goes on without a walk to the Shard
+  Broker.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
 - **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
 - **Restock supplies:** Runs **Restock now** from the game's menu in the Games list. It fills every supply that is switched on in **Character, Bag and supplies** up to its "fill up to" amount, from the storehouse first and then a shop, even when it is not yet down to its refill point.
@@ -1081,6 +1086,8 @@ You can also update shard prices by running this script command:
 `update_shard_prices`
 
 It performs the same update process: travels to the nearest Shard Broker, reads the current prices, and saves the prices it can verify.
+
+The Tools menu and the script command always read the prices. Only the Before farming and After farming lists skip them while they are less than 8 hours old.
 
 ### When Uncle Farmer is updated
 

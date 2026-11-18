@@ -6950,6 +6950,11 @@ msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "skill page {key} se badalta hai (game ki apni key)"
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+"shard prices {hours} pehle parhi gayi thin - {most} ghante se pehle in ke liye dobara Shard Broker ke paas nahi ja rahe"
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 "storage list khaali hai - Character, Bag and supplies mein storehouse mein rakhne wali cheezein chunein"

@@ -368,7 +368,7 @@ class ProfileDialog(Dialog):
                 self.skip_before = wx.CheckBox(child, label=_(
                     "Skip this list when the run starts on its first farming &map (a Stop, then a start "
                     "again where it was farming)"))
-                self.skip_before.SetValue(bool(self.p.get("skip_before_on_farm", False)))
+                self.skip_before.SetValue(bool(self.p.get("skip_before_on_farm", True)))
                 body.Add(self.skip_before, 0, wx.BOTTOM, 6)
             editor = SequenceEditor(child, cfg)
             self.trigger_editors[stage] = editor

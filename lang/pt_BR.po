@@ -6966,6 +6966,11 @@ msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+"os preços dos shards foram lidos há {hours} - sem voltar ao Shard Broker por eles antes de {most} horas"
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 "a lista de armazenamento está vazia — escolha itens para guardar no depósito em Personagem, Bolsa e suprimentos"

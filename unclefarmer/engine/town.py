@@ -1500,6 +1500,37 @@ def _save_shard_prices(path: str, prices: Mapping[str, int]) -> list[tuple[str, 
     return changed
 
 
+# When the Shard Market's prices were last read, for every character on this PC (the prices in
+# data/shards.json are shared too): {"at": <clock time>}. The Before and After farming lists don't
+# go back to the Shard Broker while the prices are fresher than SHARD_PRICES_FRESH; the Tools menu
+# and a script's update_shard_prices always do.
+SHARD_PRICES_READ = "_shard_prices_read.json"   # in the profiles folder
+SHARD_PRICES_FRESH = 8 * 3600.0                 # seconds
+
+
+def shard_prices_age(b: Bot) -> float | None:
+    """Seconds since the shard prices were last read from a Shard Market, None if never (or the
+    note can't be read, or it is from the future: a clock set back)."""
+    try:
+        with open(os.path.join(paths.PROFILES, SHARD_PRICES_READ), encoding="utf-8") as f:
+            got = json.load(f)
+    except (OSError, ValueError):
+        return None
+    at = got.get("at") if json.is_object(got) else None
+    if isinstance(at, bool) or not isinstance(at, (int, float)):
+        return None
+    age = clock_for(b).time() - at
+    return age if age >= 0 else None
+
+
+def _note_shard_prices_read(b: Bot) -> None:
+    try:
+        with open(os.path.join(paths.PROFILES, SHARD_PRICES_READ), "w", encoding="utf-8") as f:
+            json.dump({"at": clock_for(b).time()}, f)
+    except OSError:
+        pass
+
+
 def update_shard_prices(b: Bot) -> int:
     """The game menu's Update shard prices: read the nearest Shard Market's list and keep its prices in
     data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
@@ -1533,6 +1564,7 @@ def update_shard_prices(b: Bot) -> int:
     except (OSError, ValueError) as e:
         b.log(_("couldn't save the shard prices: {err}", err=e), speak=True)
         return 0
+    _note_shard_prices_read(b)
     if changed:
         stats.forget_prices()           # the results cost old records at the new prices from now on
     for name, old, new in changed:

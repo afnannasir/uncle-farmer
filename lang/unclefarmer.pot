@@ -6619,6 +6619,10 @@ msgid "the skill page turns with {key} (the game's key for it)"
 msgstr ""
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 
