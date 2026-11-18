@@ -76,6 +76,8 @@ class Farm(FarmingMixin):
         self.stop_event = threading.Event()
         self.start_place = None
         self.end_place = ("start",)
+        self.home_after_gathering: int | None = None
+        self.walk_only = False
         self.targets_result: list[dict[str, Any]] = []
         self.targets_calls: list[tuple[dict[str, Any], Sequence[float] | None, str | None, str | None, Sequence[tuple[float, float, float, float]], float | None]] = []
         self.rest_up_result = False
@@ -704,6 +706,31 @@ def test_finish_starting_where_monsters_spawn_goes_safe(monkeypatch: pytest.Monk
     b.finish()
     assert any("started where monsters spawn" in line for line in b.lines)
     assert b.leave_calls == [True] and b.travels == []
+
+
+def test_finish_after_gathering_walks_home_without_fights(monkeypatch: pytest.MonkeyPatch) -> None:
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    monkeypatch.setattr(Farm, "spawns", False)
+    seen: list[bool] = []
+    for gathered, killed_since in ((True, False), (True, True), (False, False)):
+        b = Farm()
+        b.walk_only = False
+        b.start_place = (5, 10, 20)
+        b.sn = {"self": {"id": 1, "x": 0, "y": 0}}
+        if gathered:
+            b.home_after_gathering = b.kills
+        if killed_since:
+            b.kills += 1                  # farmed after gathering: an ordinary end, fights and all
+        real_travel = b.travel
+
+        def travel(dst: int | str, cell: tuple[float, float] | None = None, b: Farm = b) -> None:
+            seen.append(b.walk_only)
+            real_travel(dst, cell)
+        b.travel = travel
+        b.finish()
+        assert b.walk_only is False       # back as it was afterwards
+    assert seen == [True, False, False]
 
 
 def test_finish_start_walks_back_when_far(monkeypatch: pytest.MonkeyPatch) -> None:

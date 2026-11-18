@@ -1,12 +1,15 @@
 """Corpse harvesting (engine/corpses.py) against a pretend game and agent shaped like agent 62's
-`cast <skill> <target>`: it casts a learned corpse skill only at a fresh corpse (0 HP) within 20
-tiles, the cast comes back as our own cast report, each harvest costs Vitality, and the game says
-"lack of vitality" when there is none left. No key is ever pressed and nothing is selected."""
+`cast <skill> <target>`: it casts a learned corpse skill standing, only at a fresh corpse (0 HP)
+within 4.5 tiles, the cast comes back as our own cast report, each harvest costs Vitality, and the
+game says "lack of vitality" when there is none left. No key is ever pressed and nothing is
+selected. Corpses further off are walked up to (the Bot's walk_to), unless the profile says not."""
 
 from __future__ import annotations
 
 import math
 import threading
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from typing import Any
 
 from unclefarmer.engine import corpses
@@ -80,6 +83,12 @@ class Game:
         self.sent: list[str] = []
         self.hostile: set[int] = set()
         self.pet_hostile: set[int] = set()
+        self.x, self.y = 100.0, 100.0                  # where we stand
+        self.walks: list[tuple[float, float]] = []    # cells walked to
+        self.walls: dict[int, float] = {}             # corpse id -> steps round a wall (walk_dist)
+        self.on_walk: Callable[[], None] | None = None   # what happens while we walk
+        self.walk_reaches = True                      # False: the walk stops short (stuck)
+        self.phases: list[str] = []
 
     def ms(self) -> int:
         return int(self.clock.now * 1000)
@@ -100,9 +109,9 @@ class Game:
             return "refused: %d isn't in sight" % target
         if e["hp"] != 0:
             return "refused: %d is no fresh corpse (harvested or dried)" % target
-        if math.hypot(e["x"] - 100, e["y"] - 100) > 20:
+        if math.hypot(e["x"] - self.x, e["y"] - self.y) > 20:
             return "refused: %d is out of reach" % target
-        if math.hypot(e["x"] - 100, e["y"] - 100) > 4.5:
+        if math.hypot(e["x"] - self.x, e["y"] - self.y) > 4.5:
             return "refused: %d is too far to harvest from here" % target
         if not self.answers:
             return "cast %d %d" % (skill, target)
@@ -118,7 +127,7 @@ class Game:
 
     # ---- the Bot surface
     def snap(self) -> dict[str, Any]:
-        return {"self": {"id": ME, "x": 100.0, "y": 100.0, "hp": 100, "maxhp": 100},
+        return {"self": {"id": ME, "x": self.x, "y": self.y, "hp": 100, "maxhp": 100},
                 "entities": [dict(e) for e in self.entities]}
 
     def sleep(self, s: float) -> None:
@@ -139,6 +148,27 @@ class Game:
 
     def refresh_sheet(self, force: bool = False) -> dict[str, Any] | None:
         return {} if self.vitality is None else {"vitality": self.vitality}
+
+    def walk_dist(self, snap: dict[str, Any], e: dict[str, Any], limit: float | None = None) -> float:
+        steps = self.walls.get(e["id"], math.hypot(e["x"] - self.x, e["y"] - self.y))
+        return math.inf if limit is not None and steps > limit else steps
+
+    def walk_to(self, cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None = None) -> str:
+        self.walks.append(cell)
+        if self.on_walk is not None:
+            self.on_walk()
+        if not self.walk_reaches:
+            return "stuck"
+        self.x, self.y = cell[0] - 1.0, cell[1]      # beside it: near() stops the walk here
+        assert near is not None and near(self.snap()["self"])
+        self.clock.now += 3.0
+        return "near"
+
+    @contextmanager
+    def timed(self, phase: str) -> Generator[None, None, None]:
+        self.phases.append(phase)
+        yield
 
     def text(self) -> str:
         return "\n".join(line for line, _speak in self.lines)
@@ -346,10 +376,91 @@ def test_attacked_while_waiting_leaves_the_corpse() -> None:
     assert corpses.state(as_bot(g)).misses == 0       # not counted as a cast the game ignored
 
 
-def test_a_corpse_out_of_harvesting_range_is_left_where_it_lies() -> None:
-    """Live 2026-11-12: every harvest landed 1.1-4.5 tiles from the corpse; nothing is walked to."""
+def test_with_walking_off_a_corpse_out_of_harvesting_range_is_left_where_it_lies() -> None:
+    """Live 2026-11-12: every harvest landed 1.1-4.5 tiles from the corpse."""
     g = Game()
+    g.p["corpse_walk"] = False
     g.kill(-7, x=100 + corpses.REACH + 0.5)
-    assert harvest(g) is False and g.sent == []
+    assert harvest(g) is False and g.sent == [] and g.walks == []
+    assert harvest(g) is False                        # said once for that corpse
+    said = [line for line, _speak in g.lines if "left the corpse of" in line]
+    assert said == ["left the corpse of Wolf: too far to harvest from where we stand, "
+                    "and walking to corpses is off"]
     g.kill(-8, x=100 + corpses.REACH - 0.2)
     assert harvest(g) is True and g.casts_sent() == ["cast 21 -8"]
+
+
+def test_a_corpse_further_off_is_walked_up_to_then_harvested() -> None:
+    """A ranged character kills ~18 tiles away: by default the bot walks up as the game's key does."""
+    g = Game()
+    g.kill(-7, x=118.0, name="Fox")
+    assert harvest(g) is True
+    assert g.walks == [(118.0, 100.0)] and g.phases == ["approach"]
+    assert g.casts_sent() == ["cast 21 -7"]           # cast from beside it, standing
+    st = corpses.state(as_bot(g))
+    assert st.walked == 1 and st.harvested == 1 and "Draw Blood: Fox" in g.text()
+    assert harvest(g) is False                        # once per corpse
+
+
+def test_a_corpse_in_reach_comes_before_a_walk() -> None:
+    g = Game()
+    g.kill(-1, x=110)
+    g.kill(-2, x=103)
+    harvest(g)
+    assert g.walks == [] and g.casts_sent() == ["cast 21 -2"]
+    harvest(g)
+    assert g.walks == [(110, 100.0)] and g.casts_sent() == ["cast 21 -2", "cast 21 -1"]
+
+
+def test_the_fewest_steps_first_round_walls() -> None:
+    g = Game()
+    g.kill(-1, x=108)
+    g.walls[-1] = 25                                  # nearer, but round a wall
+    g.kill(-2, x=112)
+    harvest(g)
+    assert g.casts_sent() == ["cast 21 -2"]
+
+
+def test_corpses_too_far_to_walk_to_are_left_and_said_once() -> None:
+    g = Game()
+    g.kill(-1, x=100 + corpses.WALK_REACH + 1)
+    g.kill(-2, x=110)
+    g.walls[-2] = corpses.WALK_STEPS + 5              # round a long wall
+    g.kill(-3, x=100 + corpses.WALK_REACH + 3)
+    assert harvest(g) is False and g.walks == [] and g.sent == []
+    assert harvest(g) is False
+    said = [line for line, _speak in g.lines if "left the corpse of" in line]
+    assert said == ["left the corpse of Wolf: further off than we walk for a corpse"]
+    assert corpses.state(as_bot(g)).left == {"further off than we walk for a corpse": 3}
+
+
+def test_never_walks_to_a_corpse_near_a_boss() -> None:
+    g = Game()
+    g.kill(-7, x=112)
+    g.entities.append({"id": -50, "name": "Dark Priest", "x": 120, "y": 100, "hp": 9000, "maxhp": 9000,
+                       "kind": "monster"})
+    assert harvest(g) is False and g.walks == []
+    assert "left the corpse of Wolf: near a boss" in g.text()
+    g.p["boss_distance"] = 0                          # the player keeps no distance from bosses
+    assert harvest(g) is True and g.walks == [(112, 100.0)]
+
+
+def test_a_corpse_harvested_while_we_walk_is_left() -> None:
+    g = Game()
+    g.kill(-7, x=112)
+
+    def someone_else() -> None:
+        g.entities[0]["hp"] = -1
+    g.on_walk = someone_else
+    assert harvest(g) is True and g.walks and g.sent == []
+    assert "left the corpse of Wolf: harvested by someone else, or dried, before we got there" in g.text()
+    assert corpses.state(as_bot(g)).misses == 0       # not a cast the game ignored
+
+
+def test_a_walk_that_never_gets_there_casts_nothing() -> None:
+    g = Game()
+    g.walk_reaches = False
+    g.kill(-7, x=112)
+    assert harvest(g) is True and g.sent == []
+    assert "left the corpse of Wolf: not reached on foot" in g.text()
+    assert harvest(g) is False                        # not tried again

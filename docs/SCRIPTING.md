@@ -884,6 +884,44 @@ This puts items from your bag into the storehouse according to your bag manager'
 
 This is the same as **Store items now** in the game's menu.
 
+### The player market
+
+These run the same work as **Tools, Market searcher and buyer**. The bot walks to the nearest
+marketplace when its menu isn't open.
+
+    market scan
+    market scan sellers
+
+Reads every category, all pages, and makes the market list (what is for sale, by category).
+`sellers` also looks up each lot's seller: slow the first time, quick afterwards, because every
+seller seen is remembered.
+
+    market search item="Lesser Blood"
+    market search item="Lesser Blood | Worthless Blood" cheapest max=10
+    market search item="Bow" category=weapons pages=5
+
+Finds lots whose name holds any of the names. `cheapest` reads in price order and stops at the
+first page whose lots all cost more than `max` a unit. `category=` is one of weapons, helmets,
+hangings, shawls, armors, belts, shoes, pant legs, handwears, rings, other equipments, materials,
+collections, usable items. Without it the category comes from the market list (all goods when
+the item isn't on it). `pages=` reads at most that many pages.
+
+    market seller 1234
+    market seller 1234,5678 category=materials
+
+Finds every lot those sellers have on sale. A player can have at most 10 lots at once, so the
+search stops as soon as all 10 of each seller are found.
+
+    market buy item="Lesser Blood" count=20 max=10
+    market buy item="Lesser Blood" count=20 max=10 cap=150 check
+
+Buys 20 Lesser Blood from the cheapest lots at 10 gold coins a unit or less. `cap=` stops before
+more than that many gold coins are spent in all. `check` finds the lots and says what it would
+buy, without buying. A lot still in its first hour on display is never bought.
+
+`market search` and `market buy` with nothing after them run the window's own search and the
+lots ticked there.
+
 ### Entering a dungeon
 
 The `dungeon` command runs the cave configured under **Tools → Dungeons**.

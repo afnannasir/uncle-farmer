@@ -233,6 +233,20 @@ final class Menus {
         return e;
     }
 
+    /** The game's details key (G, game.i.i()) asks the server about the selected entry only when
+     * its flags carry 0x40 and not 0x2000 (that one sends another request): a market lot (73, 74). */
+    static final int DETAILS_FLAG = 0x40;
+    static final int OTHER_REQUEST_FLAG = 0x2000;
+
+    /** `detail`: the entry at row, col of the menu read with sig, when it has details to ask for. */
+    static Entry detailed(Menu m, int row, int col, int sig) throws Refused {
+        Entry e = chosen(m, row, col, sig);
+        if ((e.flags & DETAILS_FLAG) == 0 || (e.flags & OTHER_REQUEST_FLAG) != 0) {
+            throw new Refused("that entry has no details (flags " + e.flags + ")");
+        }
+        return e;
+    }
+
     private static final java.util.regex.Pattern UNIT_PRICE =
             java.util.regex.Pattern.compile("(?i)unit price\\s+(\\d{1,9})\\s+arnebia");
 

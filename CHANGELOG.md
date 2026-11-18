@@ -4,7 +4,7 @@
 
 **Gem Breaker**
 
-- A new tool, **Tools, Gem Breaker** (Ctrl+Shift+K), and the script command `gem_breaker`: breaks the
+- A new tool, **Tools, Gem Breaker** (Ctrl+Shift+B), and the script command `gem_breaker`: breaks the
   gem colours you tick into shards, up to the level you allow (2 at first), down to shards or to a
   level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
   broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
@@ -63,6 +63,190 @@
 - No potion is drunk during the run any more (the setting that should have stopped them meant
   "automatic"), running out of potions no longer stops it, and a guard that could not be hit is no
   longer reported as one that didn't strike back.
+
+**Spanish and Turkish**
+
+- Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
+  string of this version. Game names follow the game's own Spanish and Turkish packs, every
+  Alt+letter shortcut is the same letter as in English, and the standard buttons (OK, Cancel, Yes,
+  No...) are translated as well. The Turkish one was largely rewritten: terms are now consistent
+  (Kalp taşı, depo, Parça pazarı, Dökümcü, betik, farm) and trusted-player commands stay in English
+  so they still work.
+
+**No trip to the farm with the drop time used up**
+
+- A farming run whose day's drop time is already down to what you save (Drop time to save, or
+  the plan's `keep_drop`) no longer travels all the way to the farm for the first sheet there to
+  stop it: it says "the drop time is nearly used up (... min left) - not starting to farm" and
+  stays where it is, as "Stop before the next level" already did.
+**Fusion power comes back to 50 before the beast goes on again**
+
+- Measured in the game: a fusion beast that is on costs 3 fusion power a minute, moving or not
+  (Swift and Fierce alike), and power comes back at 6 a minute once it is off. The bot got off
+  under 15 and back on as soon as power was over 15 again, so it was off within two minutes: a
+  change every two and a half minutes, each one waiting on the game. Once power has run low it
+  now waits on foot until it is back to 50, then rides about 13 minutes before the next rest.
+  Beasts that cost no fusion power still ride meanwhile.
+**Leave demonized elites alone**
+
+- A new choice in Character settings, Advanced, Fighting: **Leave demonized elites alone**, off by
+  default. The game's "demonized" elites (demonized Boar, black bear, Water Elf...) are much
+  stronger than the monsters around them, and one the same level as the character can kill it,
+  depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
+  fought. The demonized field bosses are kept away from as bosses, as before.
+**Flee a lost fight**
+
+- Character settings, Low HP: **Stop when HP stays low** became **When HP stays low**, with a third
+  choice: **Go to town with the hearthstone, heal and come back (while farming)**. On the farming
+  map, when HP stays under the mark, the bot drops the fight, uses the hearthstone, heals up in
+  town (to 90%, three minutes at most), looks at the restock rules and goes back. A hit stops the
+  hearthstone's cast: one that doesn't take the character home leaves it fighting on. Without a
+  hearthstone it says so once and fights on. The third flee within 30 minutes ends the run in town.
+  **Fight on** stays the default; a profile that had the stop ticked keeps it.
+- The low HP mark is now 30% for 3 seconds by default (it was 25% for 10 seconds, nearly dead
+  already for a flee). Profiles that were saved keep their numbers.
+
+**Toolboxes: one per warning again (a 1.2.0 bug)**
+
+- Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when
+  the toolbox's level limit covered the character's level. But the limit is the gear's level, not
+  the character's: a level-69 Mage wearing level-60 gear is repaired by a Small Toolbox. So every
+  such repair was "couldn't confirm the repair", the warning stayed, and the bot used another
+  toolbox every 10 minutes all night (29 Small Toolboxes in one night, where 1.1.0 used one or
+  two). A toolbox the game uses up now counts as a repair again. When the bag can't be read to
+  tell, the warning is dropped too: the game warns again if the gear is still worn.
+
+**Several kinds of experience cards**
+
+- Character, Settings, Fighting: the experience card list became one tick per card (1.3x, 1.5x,
+  1.75x, 2x, 2.5x and 3x), each with how many the last scan saw in the bag. When no card is
+  running on the farm, the bot uses the strongest ticked card it has, so a character can finish
+  its 2x and then burn the small cards looted from chests on the way. A ticked card that runs out
+  stays ticked, and the next one looted is used. Cards that aren't ticked are never used. The
+  card chosen before is the one ticked.
+
+**The skill page turns with the game's own key**
+
+- The bot always turned the skill page with Caps Lock, the game's default. A player who gives
+  that job to another key in the game's options (Space, for example) had every Caps Lock thrown
+  away by the game: the page never turned, and the skills on the other page were pressed on
+  empty keys. An Elf with two skills on her second page cast only those two for a whole night
+  (88 casts an hour, a kill every 80 seconds). The bot now reads the page key from the game's
+  key settings like the skill keys, and says which key it uses when it isn't Caps Lock. Caps
+  Lock stays the key when the game names no other.
+
+**Experience dungeons: a missed entry is tried again**
+
+- Getting into an experience dungeon had one go. If the entrance's menu came late, had no
+  "Enter the dungeon" row, or the game took more than ten seconds to move the character in, the
+  day's visit was written down as used and not tried again until the next game day. When the
+  move in came late, the bot even walked out of the dungeon again for the end of the run. The bot
+  now has three goes at the entrance, sees a late move in before trying again, and writes the day
+  down only when it got in or the game said "already entered an experience dungeon today". After
+  three failed goes it says so, and the next run tries again.
+
+**Airships and cable cars that need a level**
+
+- Below an airship's level, its administrator opens no menu: the game only says "Go to Violet
+  City; requires Level 76 or above". The bot waited for a menu, said "didn't answer", tried once
+  more and only then went another way, about 20 seconds lost on every trip (a character under
+  level 76 heading for Margit Rainforest from Tulip City, every time). The bot now knows the level
+  of every airship out of a capital and doesn't plan one below it: Giant Rock City to Sunset City
+  26 and to White Sand City 36, Tulip City to Moon City 56 and to Violet City 76, Holy Blood City
+  to Gouging Knife City 66 and to Dark Night City 86 (the flights back need none); the cable car
+  from Giant Rock City's underground to Tulip City's needs 45, to Holy Blood City's 60. A ride that
+  turns the character away for its level anyway is left out at once, said ("the Airship
+  Administrator on Tuneful Wetland takes only level 76 and above"), and not tried again for the
+  rest of the run.
+- Dark Night City and Gouging Knife City now fly back to Holy Blood City: their administrators
+  were missing, and from Dark Night City the bot walked out through skeleton basin, four times
+  longer. Holy Blood City's own two airships now land where they really do, not in the middle of
+  the map.
+- Every fare is known now: each airship takes 1000 arnebia, and the cable cars to and from the
+  Lifting Platforms are free. A character with less than 1000 arnebia in the bag no longer plans
+  an airship it can't pay for.
+
+**A shop that doesn't answer no longer ends the run**
+
+- When a potion ran low while farming, the bot went to town to restock, and one shop or
+  storehouse that didn't answer ended the whole run. It happened on the way between maps and
+  after a bag trip too, and on a bag trip a Shard Broker that didn't answer did the same. Now the
+  bot says what it couldn't do, skips that errand and goes back to farming, as "Restock now"
+  already did; the item is tried again later.
+- A storehouse that doesn't answer leaves the item to the shop instead of skipping the shop too.
+- A shop that doesn't answer is passed over for the next nearest one, and isn't remembered as a
+  shop that doesn't sell the item. When none answers, the bot says so instead of "no shop near
+  enough lists it".
+
+**No trip to town and back when a run starts on its farming map**
+
+- **Skip this list when the run starts on its first farming map** (Character settings, Triggers,
+  Before farming) is now ticked by default, and ticked once for every profile saved before. A run
+  started where it farms goes straight to farming; the farm loop still goes to town by itself
+  when a supply runs low or the bag is full. Untick it to run the list on every start.
+- **Update shard prices** in a Before or After farming list no longer walks to the Shard Broker
+  when the prices were read less than 8 hours ago, by any character on the PC: it was the job
+  that sent a run started on its farming map to town and back for prices read minutes before.
+  The Tools menu and the `update_shard_prices` script command still read them every time.
+
+**A full storehouse**
+
+- A full storehouse still takes more of an item it already holds, but turns away an item it holds
+  none of: the game says "item storage is full". The bot now hears it, says which items stay in
+  the bag because the storehouse is full (not that it "may be full"), and stops walking them back
+  to the storehouse on every bag trip of the run. Taking something out of the storehouse makes
+  room, so the bot tries them again after that.
+
+**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+
+- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
+  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
+  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
+  nearest marketplace and reads every category (about a minute or two). Until then it shows a
+  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
+  them.
+- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
+  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
+  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
+  category. Finds show up while the bot reads. Searched items and sellers are remembered.
+- Two tabs, Search and Results, and the Search tab shows only the boxes the chosen kind uses.
+  Results grow in place while the bot reads (the row you are on stays put), and the total is
+  spoken at the end. The character stays at the marketplace after each search, so the next one
+  starts at once.
+- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
+  gold coins in all. Each lot is found again by its listing number, even after it moved to another
+  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
+  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
+  gone, only N left, over your most, over the limit, or not bought with the game's own words.
+- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
+- Agent 71: `detail` presses the details key (G) on a market lot the game's own way, so the seller
+  comes back without a key press.
+
+**Draw Blood, Skinning and Cut Flesh: walking up to the corpse**
+
+- Corpse harvesting only took corpses within 4.5 steps of where the fight ended, since the game
+  takes the skill only from close by. A character that fights from afar kills about 18 steps off,
+  so almost every corpse was left (one night: 12 harvests in about 1,150 kills), and even
+  close-range characters often ended a few steps too far. Nothing in the log said why.
+- Now the bot walks up to the corpse first, as the game's own key does: up to 20 steps away, never
+  to one near a boss, and still only between fights. A fight on the way comes first. The new
+  choice in Character settings, Fighting, Corpses, **Walk up to corpses further off**, is on by
+  default; turn it off to harvest only the corpses within reach, as before.
+- A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
+  there) is now logged, once for each reason in a run.
+
+**Gathering outside: the pet helps, and the way home has no fights**
+
+- While fishing, mining or collecting herbs at an outside place, the bot now keeps your pet out and
+  looked after, as it does while farming (the pets ticked in Character settings): it helps kill
+  what comes, and a monster that goes for the pet is fought too. Summoning the pet or giving it a
+  potion stops the gathering for a moment, as your own potions do; it starts again by itself. In a
+  gang's area nothing changes: the half hour there is left to the game.
+- Once gathering is over, the way home - to the buyer to sell, then to where the run ends - is
+  walked as the walking assistant goes: no stopping to fight, not even what attacks you, riding
+  your Swift beast past it, with potions still keeping you up. The trips while gathering (to the
+  place, and to sell and come back when the bag fills) still fight as before. A script that farms
+  after gathering ends as a farming run does.
 
 **Spanish and Turkish**
 

@@ -81,6 +81,7 @@ class Parts:
     failure_notes: set[tuple[str, str]]   # (where, error kind) of ignored failures already logged
     follow_buffs: bool          # following, and the leader's `buff` message turned buffs on
     gather_casts: int           # gathering casts seen this run
+    home_after_gathering: int | None   # kills when gathering ended: the way home after it has no fights
     corpses: Harvest            # corpse harvesting this run (engine/corpses.py)
     xpcard: Cards               # experience cards this run (engine/xpcard.py)
     harvests: int               # corpses harvested this run

@@ -54,6 +54,7 @@ public final class AgentTests {
         aChangedOrUnexpectedMenuIsRefused();
         theMenuReplyIsTheContracts(contract);
         aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom();
+        detailsAreAskedOnlyForAMarketLotInTheMenuItWasReadFrom();
         voiceFramesAndNames();
         voiceMessagesArriveWithTheirName();
         aChatSendersIdNeverJoinsTheirName();
@@ -584,6 +585,31 @@ public final class AgentTests {
         } catch (Menus.Refused r) {
             return "refused: " + r.getMessage();
         }
+    }
+
+    private static String detailAt(Menus.Menu m, int row, int col, int sig) {
+        try {
+            Menus.Entry e = Menus.detailed(m, row, col, sig);
+            return "detailed " + e.cmd[1];
+        } catch (Menus.Refused r) {
+            return "refused: " + r.getMessage();
+        }
+    }
+
+    private static void detailsAreAskedOnlyForAMarketLotInTheMenuItWasReadFrom() {
+        Menus.Menu m = new Menus.Menu();
+        m.rows.add(row(new Menus.Entry(8, "Materials; Press to select category", new String[] {"Materials"}, new int[] {1})));
+        m.rows.add(row(new Menus.Entry(73, "4 Insulating glue;Unit price 15000 gold coins", new String[0], new int[] {3, 261429, 0})));
+        m.rows.add(row(new Menus.Entry(74, "Mutant Slayer;common ;Price: 2000 gold coins", new String[0], new int[] {3, 260864})));
+        m.rows.add(row(new Menus.Entry(12 | 0x40 | 0x2000, "another request", new String[0], new int[] {5})));
+        int sig = Menus.signature(m);
+        eq(detailAt(m, 1, 0, sig), "detailed 261429", "an item lot (flags 73)");
+        eq(detailAt(m, 2, 0, sig), "detailed 260864", "an equipment lot (flags 74)");
+        eq(detailAt(m, 0, 0, sig), "refused: that entry has no details (flags 8)", "the category entry has none");
+        eq(detailAt(m, 3, 0, sig), "refused: that entry has no details (flags " + (12 | 0x40 | 0x2000) + ")",
+                "0x2000 sends another request, never the details one");
+        eq(detailAt(m, 1, 0, sig + 1), "refused: the menu changed since it was read", "another page: nothing asked");
+        eq(detailAt(m, 4, 0, sig), "refused: no entry at row 4 col 0", "past the last row");
     }
 
     private static void aMenuEntryIsChosenOnlyInTheMenuItWasReadFrom() {

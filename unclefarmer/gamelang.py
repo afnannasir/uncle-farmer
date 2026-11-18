@@ -130,6 +130,8 @@ class Table:
     def __init__(self, lang_dir: str, english_dir: str) -> None:
         here, eng = _folder(lang_dir), _folder(english_dir)
         self.exact: dict[str, str] = {}
+        # English -> this language, for showing a name the way the player's game shows it
+        self.local: dict[str, str] = {}
         # (regex of the translated value, English template)
         self.templates: list[tuple[re.Pattern[str], str]] = []
         # templates whose original starts with a space (" belongs to {s}")
@@ -157,6 +159,7 @@ class Table:
                     fixed.append((-len(literal), len(fixed), entry))
                 continue
             # one translation for several originals: an English key (what the server sends) wins
+            self.local.setdefault(original, value)
             held = self.exact.get(value)
             if held is None or (not _CJK.search(key) and not english_keyed.get(value)):
                 self.exact[value] = original
@@ -344,6 +347,15 @@ def english(data: Any, t: Table | None = None) -> Any:
                 out["name"] = data["name"]
         return out
     return data
+
+
+def shown(name: str, t: Table | None = None) -> str:
+    """An English name as the player's language pack shows it (the name itself in English, or when
+    the pack has no word for it)."""
+    t = t if t is not None else table()
+    if t is None:
+        return name
+    return t.local.get(name, name)
 
 
 def warm() -> None:

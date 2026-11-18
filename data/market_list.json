@@ -1,0 +1,732 @@
+{
+ "made": "2026-11-18",
+ "lots": 162,
+ "sellers_counted": false,
+ "note": "a starting list from the pages read in two recorded visits (all goods page 1, materials, weapons page 1); press Refresh for the whole market",
+ "rows": [
+  {
+   "cat": 0,
+   "name": "Bow of chaser",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 150,
+   "usual": 150,
+   "quality": "common"
+  },
+  {
+   "cat": 0,
+   "name": "Bow of chaser",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 30000,
+   "usual": 30000,
+   "quality": "perfect"
+  },
+  {
+   "cat": 0,
+   "name": "Frost Sorrow",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 4000,
+   "usual": 4000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Ice Sighing",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 5000,
+   "usual": 5000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "machete of Berserker",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 500,
+   "usual": 2750,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Mutant Slayer",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 2000,
+   "usual": 2000,
+   "quality": "common"
+  },
+  {
+   "cat": 0,
+   "name": "Mutant Slayer",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 12000,
+   "usual": 12000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Savage invader",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 20000,
+   "usual": 20000,
+   "quality": "perfect"
+  },
+  {
+   "cat": 0,
+   "name": "Savage invader",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 10000,
+   "usual": 11000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Scepter of Bones",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 14500,
+   "usual": 14500,
+   "quality": "perfect"
+  },
+  {
+   "cat": 0,
+   "name": "Scepter of Bones",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 50,
+   "usual": 50,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Scepter of Mercy",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 2000,
+   "usual": 2000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Solemn Oath",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 1111,
+   "usual": 1111,
+   "quality": "common"
+  },
+  {
+   "cat": 0,
+   "name": "Staff of Nature",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 100000,
+   "usual": 100000,
+   "quality": "rare"
+  },
+  {
+   "cat": 0,
+   "name": "Sword of Fighter",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 5000,
+   "usual": 5000,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 0,
+   "name": "Thousands Blast",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 500,
+   "usual": 500,
+   "quality": "sophisticated"
+  },
+  {
+   "cat": 100,
+   "name": "Alpaca's Pelt",
+   "lots": 2,
+   "qty": 101,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Bactrian camel's metatarsal",
+   "lots": 9,
+   "qty": 420,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Bomb Researcher's Detonator",
+   "lots": 1,
+   "qty": 3,
+   "cheapest": 2500,
+   "usual": 2500
+  },
+  {
+   "cat": 100,
+   "name": "Crested Penguin's Wings",
+   "lots": 2,
+   "qty": 10,
+   "cheapest": 5,
+   "usual": 7
+  },
+  {
+   "cat": 100,
+   "name": "Equipment Enhance Boost Rune",
+   "lots": 2,
+   "qty": 51,
+   "cheapest": 1000000,
+   "usual": 1000000
+  },
+  {
+   "cat": 100,
+   "name": "Excellent Blood",
+   "lots": 8,
+   "qty": 90,
+   "cheapest": 25000,
+   "usual": 29000
+  },
+  {
+   "cat": 100,
+   "name": "Excellent Pelt",
+   "lots": 3,
+   "qty": 11,
+   "cheapest": 27000,
+   "usual": 28500,
+   "opening": 1
+  },
+  {
+   "cat": 100,
+   "name": "Flame Researcher's Nozzle",
+   "lots": 2,
+   "qty": 7,
+   "cheapest": 2500,
+   "usual": 2916
+  },
+  {
+   "cat": 100,
+   "name": "Gang Kill Order Token",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 25000,
+   "usual": 25000
+  },
+  {
+   "cat": 100,
+   "name": "Gel essence",
+   "lots": 2,
+   "qty": 11,
+   "cheapest": 9000,
+   "usual": 9250,
+   "opening": 2
+  },
+  {
+   "cat": 100,
+   "name": "Glazed Diamond",
+   "lots": 1,
+   "qty": 6,
+   "cheapest": 13000,
+   "usual": 13000
+  },
+  {
+   "cat": 100,
+   "name": "Gnome's pocket",
+   "lots": 1,
+   "qty": 21,
+   "cheapest": 50,
+   "usual": 50
+  },
+  {
+   "cat": 100,
+   "name": "Goblin's Bamboo Bow",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 20,
+   "usual": 20
+  },
+  {
+   "cat": 100,
+   "name": "Golden Eagle's Wings",
+   "lots": 5,
+   "qty": 320,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Green cotton yarn",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 2000,
+   "usual": 2500
+  },
+  {
+   "cat": 100,
+   "name": "Handmaiden's bracelet",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 500,
+   "usual": 500
+  },
+  {
+   "cat": 100,
+   "name": "Higher blood",
+   "lots": 6,
+   "qty": 300,
+   "cheapest": 2500,
+   "usual": 4000
+  },
+  {
+   "cat": 100,
+   "name": "Higher Pelt",
+   "lots": 2,
+   "qty": 54,
+   "cheapest": 2444,
+   "usual": 3222
+  },
+  {
+   "cat": 100,
+   "name": "Insulating glue",
+   "lots": 3,
+   "qty": 14,
+   "cheapest": 15000,
+   "usual": 15000
+  },
+  {
+   "cat": 100,
+   "name": "Ironclad crystal",
+   "lots": 2,
+   "qty": 5,
+   "cheapest": 850,
+   "usual": 925
+  },
+  {
+   "cat": 100,
+   "name": "Lesser Blood",
+   "lots": 5,
+   "qty": 194,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Lesser Demon Core",
+   "lots": 3,
+   "qty": 32,
+   "cheapest": 5370,
+   "usual": 5500
+  },
+  {
+   "cat": 100,
+   "name": "Lesser Jerky",
+   "lots": 1,
+   "qty": 131,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Lightning Spirit's yin-yang Charm",
+   "lots": 1,
+   "qty": 83,
+   "cheapest": 300,
+   "usual": 300
+  },
+  {
+   "cat": 100,
+   "name": "Little Devil's Wings",
+   "lots": 1,
+   "qty": 20,
+   "cheapest": 300000,
+   "usual": 300000
+  },
+  {
+   "cat": 100,
+   "name": "Lovebird Stone",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 2600000,
+   "usual": 2800000
+  },
+  {
+   "cat": 100,
+   "name": "medium Blood",
+   "lots": 2,
+   "qty": 43,
+   "cheapest": 10,
+   "usual": 25
+  },
+  {
+   "cat": 100,
+   "name": "Medium Jerky",
+   "lots": 1,
+   "qty": 9,
+   "cheapest": 750,
+   "usual": 750
+  },
+  {
+   "cat": 100,
+   "name": "Nether Fire",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 3000,
+   "usual": 3000
+  },
+  {
+   "cat": 100,
+   "name": "Powerful magnet",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 20000,
+   "usual": 20000,
+   "opening": 1
+  },
+  {
+   "cat": 100,
+   "name": "Premium Pelt",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 60000,
+   "usual": 60000
+  },
+  {
+   "cat": 100,
+   "name": "Resurrection Crystal",
+   "lots": 7,
+   "qty": 403,
+   "cheapest": 10000,
+   "usual": 11000,
+   "opening": 1
+  },
+  {
+   "cat": 100,
+   "name": "Robot Bird's Wings",
+   "lots": 1,
+   "qty": 17,
+   "cheapest": 25,
+   "usual": 25
+  },
+  {
+   "cat": 100,
+   "name": "Robot Cat's Ears",
+   "lots": 1,
+   "qty": 19,
+   "cheapest": 25,
+   "usual": 25
+  },
+  {
+   "cat": 100,
+   "name": "Robot Dinosaur's Tooth",
+   "lots": 2,
+   "qty": 126,
+   "cheapest": 25,
+   "usual": 30
+  },
+  {
+   "cat": 100,
+   "name": "Robot Dog's Tail",
+   "lots": 1,
+   "qty": 19,
+   "cheapest": 25,
+   "usual": 25
+  },
+  {
+   "cat": 100,
+   "name": "Robot Fly's Antenna",
+   "lots": 2,
+   "qty": 491,
+   "cheapest": 25,
+   "usual": 30
+  },
+  {
+   "cat": 100,
+   "name": "Robot Guard's Arm",
+   "lots": 2,
+   "qty": 4,
+   "cheapest": 100,
+   "usual": 450050
+  },
+  {
+   "cat": 100,
+   "name": "Robot Guard's Breastplate",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 100,
+   "usual": 100
+  },
+  {
+   "cat": 100,
+   "name": "Snow Leopard's Tail",
+   "lots": 2,
+   "qty": 37,
+   "cheapest": 5,
+   "usual": 7
+  },
+  {
+   "cat": 100,
+   "name": "Succubus's Tongue",
+   "lots": 1,
+   "qty": 11,
+   "cheapest": 3500,
+   "usual": 3500
+  },
+  {
+   "cat": 100,
+   "name": "Suspicious Plating",
+   "lots": 4,
+   "qty": 22,
+   "cheapest": 1000,
+   "usual": 4000
+  },
+  {
+   "cat": 100,
+   "name": "Thunder Lord's Broken palm",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 100000,
+   "usual": 100000,
+   "opening": 1
+  },
+  {
+   "cat": 100,
+   "name": "Turquoise Metal",
+   "lots": 1,
+   "qty": 3,
+   "cheapest": 20000,
+   "usual": 20000
+  },
+  {
+   "cat": 100,
+   "name": "Two-Faced Demon's Man Face",
+   "lots": 1,
+   "qty": 7,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Two-Faced Demon's Woman Face",
+   "lots": 1,
+   "qty": 39,
+   "cheapest": 5000,
+   "usual": 5000
+  },
+  {
+   "cat": 100,
+   "name": "Vulture's Claw",
+   "lots": 6,
+   "qty": 305,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "Weapon Enhance Boost Rune",
+   "lots": 2,
+   "qty": 2,
+   "cheapest": 150000,
+   "usual": 575000
+  },
+  {
+   "cat": 100,
+   "name": "Werewolf Soul Orb",
+   "lots": 1,
+   "qty": 5,
+   "cheapest": 5000,
+   "usual": 5000
+  },
+  {
+   "cat": 100,
+   "name": "West Sealing Tower Teleportation stone",
+   "lots": 3,
+   "qty": 3,
+   "cheapest": 4000,
+   "usual": 5000
+  },
+  {
+   "cat": 100,
+   "name": "White Bear's Gall",
+   "lots": 1,
+   "qty": 15,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": 100,
+   "name": "White Bone Piece",
+   "lots": 2,
+   "qty": 3,
+   "cheapest": 5000,
+   "usual": 7000
+  },
+  {
+   "cat": 100,
+   "name": "Wind Chaser Soul Fragment",
+   "lots": 2,
+   "qty": 6,
+   "cheapest": 520000,
+   "usual": 520000
+  },
+  {
+   "cat": 100,
+   "name": "Worthless Blood",
+   "lots": 2,
+   "qty": 22,
+   "cheapest": 5,
+   "usual": 200865
+  },
+  {
+   "cat": 100,
+   "name": "Worthless Pelt",
+   "lots": 1,
+   "qty": 183,
+   "cheapest": 5,
+   "usual": 5
+  },
+  {
+   "cat": -1,
+   "name": "Advanced Soul Turmoil",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 300000,
+   "usual": 300000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Black Earth God Chest",
+   "lots": 1,
+   "qty": 15,
+   "cheapest": 100,
+   "usual": 100,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Black Shipwreck Chest",
+   "lots": 2,
+   "qty": 9,
+   "cheapest": 100,
+   "usual": 125,
+   "opening": 2
+  },
+  {
+   "cat": -1,
+   "name": "blue Shipwreck Chest",
+   "lots": 1,
+   "qty": 3,
+   "cheapest": 5900,
+   "usual": 5900,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Giant rock City Teleportation stone",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 5000,
+   "usual": 5000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Green Earth God Chest",
+   "lots": 1,
+   "qty": 14,
+   "cheapest": 200,
+   "usual": 200,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Green Shipwreck Chest",
+   "lots": 3,
+   "qty": 50,
+   "cheapest": 250,
+   "usual": 350,
+   "opening": 3
+  },
+  {
+   "cat": -1,
+   "name": "Ice ore",
+   "lots": 1,
+   "qty": 28,
+   "cheapest": 100,
+   "usual": 100,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Level 1 Burst Shot Crystal",
+   "lots": 1,
+   "qty": 1,
+   "cheapest": 50000,
+   "usual": 50000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Loki Union Teleportation stone",
+   "lots": 1,
+   "qty": 3,
+   "cheapest": 5000,
+   "usual": 5000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Medium Soul Turmoil",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 5000,
+   "usual": 5000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Red Crystal ore",
+   "lots": 1,
+   "qty": 66,
+   "cheapest": 100,
+   "usual": 100,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Red Earth God Chest",
+   "lots": 1,
+   "qty": 7,
+   "cheapest": 2000,
+   "usual": 2000,
+   "opening": 1
+  },
+  {
+   "cat": -1,
+   "name": "Red Shipwreck Chest",
+   "lots": 2,
+   "qty": 4,
+   "cheapest": 1900,
+   "usual": 3450,
+   "opening": 2
+  },
+  {
+   "cat": -1,
+   "name": "Spirit Teleportation stone",
+   "lots": 1,
+   "qty": 2,
+   "cheapest": 5000,
+   "usual": 5000,
+   "opening": 1
+  }
+ ]
+}

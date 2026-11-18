@@ -83,6 +83,9 @@ msgstr ""
 msgid "&Cancel the shutdown"
 msgstr ""
 
+msgid "&Category:"
+msgstr ""
+
 msgid "&Cave:"
 msgstr ""
 
@@ -271,6 +274,9 @@ msgstr ""
 msgid "&Install"
 msgstr ""
 
+msgid "&Items for sale (Enter searches):"
+msgstr ""
+
 msgid "&Keep at least this many of each gem and level:"
 msgstr ""
 
@@ -317,10 +323,16 @@ msgstr ""
 msgid "&Map:"
 msgstr ""
 
+msgid "&Market searcher and buyer"
+msgstr ""
+
 msgid "&Messages"
 msgstr ""
 
 msgid "&Messages:"
+msgstr ""
+
+msgid "&Most a unit (0 = any):"
 msgstr ""
 
 msgid "&Movement:"
@@ -368,6 +380,9 @@ msgstr ""
 msgid "&PK mode:"
 msgstr ""
 
+msgid "&Pages at most (0 = all):"
+msgstr ""
+
 msgid "&Pause"
 msgstr ""
 
@@ -410,6 +425,9 @@ msgstr ""
 msgid "&Read new messages:"
 msgstr ""
 
+msgid "&Refresh the market list"
+msgstr ""
+
 msgid "&Remove"
 msgstr ""
 
@@ -434,6 +452,9 @@ msgstr ""
 msgid "&Results"
 msgstr ""
 
+msgid "&Results (Space ticks a lot to buy):"
+msgstr ""
+
 msgid "&Results:"
 msgstr ""
 
@@ -456,6 +477,9 @@ msgid "&Schedules:"
 msgstr ""
 
 msgid "&Script commands"
+msgstr ""
+
+msgid "&Search"
 msgstr ""
 
 msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
@@ -588,6 +612,9 @@ msgstr ""
 msgid "'{word}' outside an if block"
 msgstr ""
 
+msgid "(+{n} opening soon)"
+msgstr ""
+
 msgid "(Taken from {twin}, the same size.)"
 msgstr ""
 
@@ -598,6 +625,18 @@ msgid "(and {n} more with no price then)"
 msgstr ""
 
 msgid "(no notes)"
+msgstr ""
+
+msgid "(sellers not counted)"
+msgstr ""
+
+msgid "(was {n})"
+msgstr ""
+
+msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
+msgstr ""
+
+msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
 
 msgid ", +20% with {shard}"
@@ -793,6 +832,9 @@ msgstr ""
 msgid "All files (*.*)|*.*"
 msgstr ""
 
+msgid "All items ({n})"
+msgstr ""
+
 msgid "All mode"
 msgstr ""
 
@@ -803,6 +845,9 @@ msgid "Already following you."
 msgstr ""
 
 msgid "Already running."
+msgstr ""
+
+msgid "Also count se&llers (slow the first time)"
 msgstr ""
 
 msgid "Also: {names}"
@@ -935,6 +980,12 @@ msgstr ""
 msgid "Breaks {n} {item}."
 msgstr ""
 
+msgid "Browse a category"
+msgstr ""
+
+msgid "Bu&y the ticked lots"
+msgstr ""
+
 msgid "Buffs off."
 msgstr ""
 
@@ -942,6 +993,15 @@ msgid "Buffs on."
 msgstr ""
 
 msgid "Busy - send stop first."
+msgstr ""
+
+msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
+msgstr ""
+
+msgid "By item"
+msgstr ""
+
+msgid "By seller ID"
 msgstr ""
 
 msgid "C&hannel:"
@@ -960,6 +1020,9 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Cancel &reply"
+msgstr ""
+
+msgid "Category"
 msgstr ""
 
 msgid "Caves"
@@ -1017,7 +1080,16 @@ msgstr ""
 msgid "Chat settings"
 msgstr ""
 
+msgid "Cheapest"
+msgstr ""
+
+msgid "Cheapest first"
+msgstr ""
+
 msgid "Check for &updates"
+msgstr ""
+
+msgid "Check o&nly"
 msgstr ""
 
 msgid "Check the bag for restocking every (seconds):"
@@ -1034,6 +1106,9 @@ msgid ""
 msgstr ""
 
 msgid "Choose Before farming or After farming."
+msgstr ""
+
+msgid "Choose a category to browse."
 msgstr ""
 
 msgid "Choose a character."
@@ -1897,6 +1972,9 @@ msgstr ""
 msgid "Hook unavailable: {reason}"
 msgstr ""
 
+msgid "How &many of the selected lot:"
+msgstr ""
+
 msgid "How it works:"
 msgstr ""
 
@@ -1990,6 +2068,9 @@ msgstr ""
 msgid "Important events only"
 msgstr ""
 
+msgid "In all"
+msgstr ""
+
 msgid "In the bag: {n} {gem}."
 msgstr ""
 
@@ -2029,6 +2110,9 @@ msgid "Invalid sound reply from the game agent."
 msgstr ""
 
 msgid "It also stops by itself:"
+msgstr ""
+
+msgid "Item"
 msgstr ""
 
 msgid "Item name, exactly as the game writes it:"
@@ -2152,11 +2236,17 @@ msgstr ""
 msgid "Limits"
 msgstr ""
 
+msgid "Listed"
+msgstr ""
+
 msgid ""
 "Listen for game sound requests, select an ID, then add it to Saved Sounds. This tab does not change muting. Save changes on the Saved Sounds tab."
 msgstr ""
 
 msgid "Listen for sounds"
+msgstr ""
+
+msgid "Listing"
 msgstr ""
 
 msgid "Location:"
@@ -2188,6 +2278,9 @@ msgid "Looking for a new version"
 msgstr ""
 
 msgid "Looking for your application."
+msgstr ""
+
+msgid "Lots"
 msgstr ""
 
 msgid "Low HP"
@@ -2245,6 +2338,27 @@ msgid "Make {n} more {gem}."
 msgstr ""
 
 msgid "Map"
+msgstr ""
+
+msgid "Market buying"
+msgstr ""
+
+msgid "Market check"
+msgstr ""
+
+msgid "Market list"
+msgstr ""
+
+msgid "Market list:"
+msgstr ""
+
+msgid "Market search"
+msgstr ""
+
+msgid "Market searcher and buyer"
+msgstr ""
+
+msgid "Market searcher and buyer - {name}"
 msgstr ""
 
 msgid "Master"
@@ -2370,6 +2484,9 @@ msgid "Move to throw a&way"
 msgstr ""
 
 msgid "Mute e&very game"
+msgstr ""
+
+msgid "My list ({n})"
 msgstr ""
 
 msgid "My own gang's (gangs pay less)"
@@ -2664,6 +2781,9 @@ msgstr ""
 msgid "Or after this many casts that do &no damage:"
 msgstr ""
 
+msgid "Or type a &name (several: a | b):"
+msgstr ""
+
 msgid "Or type its &name:"
 msgstr ""
 
@@ -2720,6 +2840,9 @@ msgid "Pacifist mode"
 msgstr ""
 
 msgid "Pacifist mode with counterattack"
+msgstr ""
+
+msgid "Page"
 msgstr ""
 
 msgid "Patrol loops: {loops}"
@@ -2781,6 +2904,9 @@ msgid "Pets"
 msgstr ""
 
 msgid "Pick a voice message in Messages first."
+msgstr ""
+
+msgid "Pick an item in the list or type a name."
 msgstr ""
 
 msgid "Pick someone in People, or type a name or id in New chat first."
@@ -2876,6 +3002,9 @@ msgstr ""
 msgid "Put the pet &away when the run ends"
 msgstr ""
 
+msgid "Quantity"
+msgstr ""
+
 msgid ""
 "Questions, ideas, or want to donate? Write to the developer at {email}. Bugs are best reported on GitHub, so everyone can see the fix: {issues}"
 msgstr ""
@@ -2942,6 +3071,9 @@ msgid "Reinstall the agent"
 msgstr ""
 
 msgid "Release &channel:"
+msgstr ""
+
+msgid "Remem&ber this item"
 msgstr ""
 
 msgid "Remove"
@@ -3080,6 +3212,9 @@ msgstr ""
 msgid "Save and check for updates &now"
 msgstr ""
 
+msgid "Save as CS&V"
+msgstr ""
+
 msgid "Save as scri&pt"
 msgstr ""
 
@@ -3087,6 +3222,9 @@ msgid "Save as script"
 msgstr ""
 
 msgid "Save changes to the script?"
+msgstr ""
+
+msgid "Save the results"
 msgstr ""
 
 msgid "Saved account email:"
@@ -3146,6 +3284,12 @@ msgstr ""
 msgid "Se&ttings"
 msgstr ""
 
+msgid "Search"
+msgstr ""
+
+msgid "Search &for:"
+msgstr ""
+
 msgid "Secret room"
 msgstr ""
 
@@ -3168,6 +3312,15 @@ msgid "Sell shards now: started by hand"
 msgstr ""
 
 msgid "Sell the &collection now"
+msgstr ""
+
+msgid "Seller &IDs (several: 1234, 5678):"
+msgstr ""
+
+msgid "Seller ID"
+msgstr ""
+
+msgid "Sellers"
 msgstr ""
 
 msgid "Selling"
@@ -3392,13 +3545,22 @@ msgstr ""
 msgid "Speech and language"
 msgstr ""
 
+msgid "Spending &limit (0 = none):"
+msgstr ""
+
 msgid "Spider cave"
+msgstr ""
+
+msgid "St&op"
 msgstr ""
 
 msgid "St&ore:"
 msgstr ""
 
 msgid "Sta&rt"
+msgstr ""
+
+msgid "Sta&tus:"
 msgstr ""
 
 msgid "Stand still"
@@ -3664,10 +3826,16 @@ msgid ""
 "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. Each death takes a share of the experience earned in the level, so each costs a little less than the last: after three deaths the bot says how many more it will take, and it stops if the level can't reach your number. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
 
+msgid "The bot is busy on this game. Stop it first (Stop), then try again."
+msgstr ""
+
 msgid "The bot isn't running."
 msgstr ""
 
 msgid "The bot reads the real one from the Forger every try."
+msgstr ""
+
+msgid "The bot stops buying before it would spend more than {cap}."
 msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
@@ -3958,6 +4126,9 @@ msgstr ""
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
 
+msgid "Tick the lots to buy in Results first (Space)."
+msgstr ""
+
 msgid "Tick the monsters to fight:"
 msgstr ""
 
@@ -4016,6 +4187,9 @@ msgstr ""
 msgid "Tools"
 msgstr ""
 
+msgid "Total"
+msgstr ""
+
 msgid "Total arnebia spent on items used: {n}"
 msgstr ""
 
@@ -4058,6 +4232,9 @@ msgstr ""
 
 msgid ""
 "Type how much experience: the most the next level should need, or how much to lose."
+msgstr ""
+
+msgid "Type one or more seller IDs."
 msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
@@ -4123,6 +4300,9 @@ msgstr ""
 
 msgid ""
 "Uncle Farmer's agent needs to be reinstalled: {why}. Stop every running bot, then use File, Settings, Install."
+msgstr ""
+
+msgid "Unit price"
 msgstr ""
 
 msgid "Unmute every &game"
@@ -4214,6 +4394,9 @@ msgid ""
 "Uses the hearthstone; if it can't, ends on the nearest map without monsters."
 msgstr ""
 
+msgid "Usual"
+msgstr ""
+
 msgid "Vitality is down to {n}"
 msgstr ""
 
@@ -4254,6 +4437,10 @@ msgid "Walk to"
 msgstr ""
 
 msgid "Walk to {where}"
+msgstr ""
+
+msgid ""
+"Walk up to corpses further off, up to 20 steps awa&y (off: only the ones within 4.5 steps of where the fight ended)"
 msgstr ""
 
 msgid "Walk up to the enemy"
@@ -4484,7 +4671,13 @@ msgstr ""
 msgid "alive again on {map}"
 msgstr ""
 
+msgid "all goods"
+msgstr ""
+
 msgid "all the gear repaired with a {tool}"
+msgstr ""
+
+msgid "all {n} lots of each seller found"
 msgstr ""
 
 msgid "already donated today"
@@ -4506,6 +4699,9 @@ msgid ""
 "already on {map}, where this run farms first - the Before farming list is skipped"
 msgstr ""
 
+msgid "anything"
+msgstr ""
+
 msgid "area attack"
 msgstr ""
 
@@ -4516,6 +4712,9 @@ msgid "area level {n}"
 msgstr ""
 
 msgid "arena"
+msgstr ""
+
+msgid "armors"
 msgstr ""
 
 msgid "arnebia shared {n} of {all} times"
@@ -4534,6 +4733,9 @@ msgid "arrived on {map} at {x},{y}"
 msgstr ""
 
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
+msgstr ""
+
+msgid "at most {n} gold coins"
 msgstr ""
 
 msgid "at the nearest guard"
@@ -4624,10 +4826,19 @@ msgstr ""
 msgid "before farming"
 msgstr ""
 
+msgid "belts"
+msgstr ""
+
 msgid "blocks are nested too deeply (over {max})"
 msgstr ""
 
 msgid "blue"
+msgstr ""
+
+msgid "bought {n} for {cost} gold coins"
+msgstr ""
+
+msgid "bought {n} of {all} lots for {spent} gold coins"
 msgstr ""
 
 msgid "bought {n} {item}"
@@ -4651,6 +4862,9 @@ msgstr ""
 msgid "broke {n} {item} into {k} {product}"
 msgstr ""
 
+msgid "browsing {cat}"
+msgstr ""
+
 msgid "buff"
 msgstr ""
 
@@ -4668,6 +4882,12 @@ msgid "built {n} times; no place took more today (places: {places})"
 msgstr ""
 
 msgid "built {n} times; the game's two builds a day are made"
+msgstr ""
+
+msgid "buying the ticked lots..."
+msgstr ""
+
+msgid "buying {n} lots"
 msgstr ""
 
 msgid ""
@@ -4748,8 +4968,20 @@ msgstr ""
 msgid "charge in"
 msgstr ""
 
+msgid "cheapest {what}"
+msgstr ""
+
 msgid ""
 "check: the next level needs {xp} experience, goal {goal}; {n} guards in sight here, {k} remembered spots; PK mode {pk}{locked}"
+msgstr ""
+
+msgid "checked {n} lots"
+msgstr ""
+
+msgid "checking the ticked lots..."
+msgstr ""
+
+msgid "checking {n} lots"
 msgstr ""
 
 msgid "choose what? write: choose Tulip City"
@@ -4780,6 +5012,9 @@ msgid "collected the hunting bounty"
 msgstr ""
 
 msgid "collected {n} Value Product incomes"
+msgstr ""
+
+msgid "collections"
 msgstr ""
 
 msgid "combos that start on a critical hit wait for the new agent: {list}"
@@ -4856,6 +5091,9 @@ msgid "couldn't get into the secret room"
 msgstr ""
 
 msgid "couldn't get there - going to the nearest map without monsters"
+msgstr ""
+
+msgid "couldn't get to page {page} of {cat}"
 msgstr ""
 
 msgid "couldn't get to panel {n} with the arrow keys"
@@ -5120,6 +5358,9 @@ msgstr ""
 msgid "fighting {name}"
 msgstr ""
 
+msgid "finding sellers needs agent {n}: restart the game so it loads"
+msgstr ""
+
 msgid "finished"
 msgstr ""
 
@@ -5165,6 +5406,9 @@ msgid "full"
 msgstr ""
 
 msgid "full loop"
+msgstr ""
+
+msgid "further off than we walk for a corpse"
 msgstr ""
 
 msgid "further to walk than the chase range"
@@ -5257,6 +5501,9 @@ msgstr ""
 msgid "going to {x}, {y}, where {name} said they are"
 msgstr ""
 
+msgid "gone (sold or taken back)"
+msgstr ""
+
 msgid "got off {beast}"
 msgstr ""
 
@@ -5267,6 +5514,15 @@ msgid "got out by pushing {way}"
 msgstr ""
 
 msgid "got out: walked to {cell}"
+msgstr ""
+
+msgid "handwears"
+msgstr ""
+
+msgid "hangings"
+msgstr ""
+
+msgid "harvested by someone else, or dried, before we got there"
 msgstr ""
 
 msgid "heal"
@@ -5282,6 +5538,9 @@ msgid "heals with {skill} below {pct}% HP; red potions only below {low}%"
 msgstr ""
 
 msgid "heals {name} with {skill} below {pct}% of their HP"
+msgstr ""
+
+msgid "helmets"
 msgstr ""
 
 msgid ""
@@ -5302,6 +5561,9 @@ msgid ""
 msgstr ""
 
 msgid "home: {map}"
+msgstr ""
+
+msgid "how many? write count=<n>"
 msgstr ""
 
 msgid "hunting bounties can be collected here"
@@ -5336,6 +5598,9 @@ msgid ""
 msgstr ""
 
 msgid "its items aren't the verified ones (the game may have changed it)"
+msgstr ""
+
+msgid "its price isn't the one read ({now} now)"
 msgstr ""
 
 msgid "joined {who}'s team ({team}): {who} is trusted"
@@ -5404,6 +5669,9 @@ msgstr ""
 
 msgid ""
 "left out {n} gear warnings from before this run (they were dealt with then); broken gear is still repaired"
+msgstr ""
+
+msgid "left the corpse of {name}: {why}"
 msgstr ""
 
 msgid "left the team"
@@ -5487,6 +5755,9 @@ msgstr ""
 msgid "lost the game's bag cursor"
 msgstr ""
 
+msgid "lots of seller {ids}"
+msgstr ""
+
 msgid "low on {item}: {have} left"
 msgstr ""
 
@@ -5506,6 +5777,31 @@ msgid "making gems"
 msgstr ""
 
 msgid "making gems: {list}"
+msgstr ""
+
+msgid ""
+"market list made: {items} items in {lots} lots, {pages} pages, {min:.1f} minutes"
+msgstr ""
+
+msgid "market seller needs seller IDs: market seller 1234,5678"
+msgstr ""
+
+msgid "market what? scan, search, seller or buy"
+msgstr ""
+
+msgid "market: nothing to buy at that price"
+msgstr ""
+
+msgid "market: {lot}: {words}"
+msgstr ""
+
+msgid "market: {summary}"
+msgstr ""
+
+msgid "market: {what}: {summary}"
+msgstr ""
+
+msgid "materials"
 msgstr ""
 
 msgid "message from {name}: {words}"
@@ -5542,6 +5838,9 @@ msgid "mute: the game stops talking (only my game)."
 msgstr ""
 
 msgid "muted request"
+msgstr ""
+
+msgid "near a boss"
 msgstr ""
 
 msgid "never again"
@@ -5615,6 +5914,9 @@ msgstr ""
 msgid "no map without monsters near {map}"
 msgstr ""
 
+msgid "no market list yet - press Refresh the market list"
+msgstr ""
+
 msgid "no menu entry like \"{want}\""
 msgstr ""
 
@@ -5651,6 +5953,9 @@ msgid "no room with a free place for this level"
 msgstr ""
 
 msgid "no runs yet"
+msgstr ""
+
+msgid "no search yet"
 msgstr ""
 
 msgid "no secret room for this level has a free place"
@@ -5696,6 +6001,9 @@ msgstr ""
 msgid "no way to walk there"
 msgstr ""
 
+msgid "no yes/no question came up"
+msgstr ""
+
 msgid "no {card} in the bag - farming on without an experience card"
 msgstr ""
 
@@ -5736,6 +6044,15 @@ msgid "normal"
 msgstr ""
 
 msgid "not allowed in an expression: {expr}"
+msgstr ""
+
+msgid "not bought: the game said \"{words}\""
+msgstr ""
+
+msgid "not bought: the game's quantity box didn't take the number"
+msgstr ""
+
+msgid "not bought: {why}"
 msgstr ""
 
 msgid ""
@@ -5798,6 +6115,9 @@ msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
 
+msgid "not reached on foot"
+msgstr ""
+
 msgid "not read, old price kept: {list}"
 msgstr ""
 
@@ -5843,6 +6163,9 @@ msgstr ""
 
 msgid ""
 "nothing in the bag is on the throw-away list (or only what its rules keep)"
+msgstr ""
+
+msgid "nothing is ticked to buy"
 msgstr ""
 
 msgid "nothing left to make {gem} from"
@@ -5938,6 +6261,9 @@ msgstr ""
 msgid "only {names}"
 msgstr ""
 
+msgid "only {n} left (you asked for {want})"
+msgstr ""
+
 msgid "only {n} {kind} potions left"
 msgstr ""
 
@@ -5950,10 +6276,16 @@ msgstr ""
 msgid "opening a game for {name}"
 msgstr ""
 
+msgid "opens in {min} min"
+msgstr ""
+
 msgid "ore"
 msgstr ""
 
 msgid "other"
+msgstr ""
+
+msgid "other equipments"
 msgstr ""
 
 msgid "our gang's highland"
@@ -5984,6 +6316,9 @@ msgid "outside: {place} (area level {level})"
 msgstr ""
 
 msgid "page {page} key {key} ({skill})"
+msgstr ""
+
+msgid "pant legs"
 msgstr ""
 
 msgid "patrol is random, full, quick or short"
@@ -6059,6 +6394,15 @@ msgstr ""
 msgid "rank unknown"
 msgstr ""
 
+msgid "read {made}: {items} items in {lots} lots"
+msgstr ""
+
+msgid "reading the whole market..."
+msgstr ""
+
+msgid "reading {cat}"
+msgstr ""
+
 msgid "reading {npc}'s menus"
 msgstr ""
 
@@ -6069,6 +6413,9 @@ msgid "recursion is not allowed: {name} ends up calling itself"
 msgstr ""
 
 msgid "red"
+msgstr ""
+
+msgid "remembered: {names}"
 msgstr ""
 
 msgid "removes debuffs"
@@ -6108,6 +6455,9 @@ msgstr ""
 msgid "riding {beast}"
 msgstr ""
 
+msgid "rings"
+msgstr ""
+
 msgid "road"
 msgstr ""
 
@@ -6141,6 +6491,9 @@ msgstr ""
 msgid "searching"
 msgstr ""
 
+msgid "searching: {what}"
+msgstr ""
+
 msgid "secret room"
 msgstr ""
 
@@ -6157,6 +6510,9 @@ msgid "secret room: {who}"
 msgstr ""
 
 msgid "selecting"
+msgstr ""
+
+msgid "sellers"
 msgstr ""
 
 msgid "selling shards"
@@ -6189,7 +6545,13 @@ msgstr ""
 msgid "shared arnebia {n} of {all} times today"
 msgstr ""
 
+msgid "shawls"
+msgstr ""
+
 msgid "shield"
+msgstr ""
+
+msgid "shoes"
 msgstr ""
 
 msgid "shooting monsters in reach on the way to the next one"
@@ -6264,6 +6626,12 @@ msgstr ""
 msgid "still broken after the repair: {items}"
 msgstr ""
 
+msgid "still on display - it can't be bought in its first hour"
+msgstr ""
+
+msgid "still on display for {min} minutes"
+msgstr ""
+
 msgid "still on {map} after {n} seconds - the ride didn't move us on"
 msgstr ""
 
@@ -6283,6 +6651,9 @@ msgstr ""
 msgid "stopped after {n} deaths, as you set"
 msgstr ""
 
+msgid "stopped after {n} pages"
+msgstr ""
+
 msgid "stopped before the next level"
 msgstr ""
 
@@ -6290,6 +6661,12 @@ msgid "stopped by you"
 msgstr ""
 
 msgid "stopped with {n} Vitality left, as you set"
+msgstr ""
+
+msgid "stopped: {n} found so far"
+msgstr ""
+
+msgid "stopped: {spent} gold coins spent"
 msgstr ""
 
 msgid "stopped: {why}"
@@ -6615,6 +6992,9 @@ msgid ""
 "the fusion beast waits {secs} s: the game refuses one this soon after a death"
 msgstr ""
 
+msgid "the game asked another price ({words})"
+msgstr ""
+
 msgid ""
 "the game brought us back on {map} at {x},{y}, not at {village} - dying at the nearest guard instead"
 msgstr ""
@@ -6669,6 +7049,9 @@ msgid ""
 msgstr ""
 
 msgid "the game refused the login request"
+msgstr ""
+
+msgid "the game said nothing - look in the bag"
 msgstr ""
 
 msgid "the game said: {lines}"
@@ -6748,6 +7131,32 @@ msgid "the last trip for {item} got none, and nothing has changed since"
 msgstr ""
 
 msgid "the limit of {most} deaths will stop the run before that"
+msgstr ""
+
+msgid ""
+"the list Uncle Farmer came with (from {made}) - press Refresh for today's"
+msgstr ""
+
+msgid ""
+"the market can't be used with this agent: restart the game so agent {n} loads"
+msgstr ""
+
+msgid "the market didn't take the page number"
+msgstr ""
+
+msgid "the market has no category {cat}"
+msgstr ""
+
+msgid "the market's category choice isn't on the page"
+msgstr ""
+
+msgid "the market's details weren't asked for: {why}"
+msgstr ""
+
+msgid "the market's order switch isn't on the page"
+msgstr ""
+
+msgid "the marketplace didn't open its menu"
 msgstr ""
 
 msgid "the menu has no entry like \"{want}\""
@@ -6878,6 +7287,9 @@ msgstr ""
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""
 
+msgid "the whole market"
+msgstr ""
+
 msgid "the {item} on key {key} are used up"
 msgstr ""
 
@@ -6990,6 +7402,9 @@ msgstr ""
 msgid "too close to a boss"
 msgstr ""
 
+msgid "too far to harvest from where we stand, and walking to corpses is off"
+msgstr ""
+
 msgid "took {n} {item} out of the storehouse"
 msgstr ""
 
@@ -7053,6 +7468,9 @@ msgstr ""
 msgid "updating shard prices"
 msgstr ""
 
+msgid "usable items"
+msgstr ""
+
 msgid ""
 "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
 msgstr ""
@@ -7100,6 +7518,9 @@ msgstr ""
 msgid "weakens the enemy"
 msgstr ""
 
+msgid "weapons"
+msgstr ""
+
 msgid "wedding map"
 msgstr ""
 
@@ -7129,6 +7550,9 @@ msgstr ""
 msgid "which key?"
 msgstr ""
 
+msgid "which seller? type a seller ID"
+msgstr ""
+
 msgid "with {n} minutes of drop time saved"
 msgstr ""
 
@@ -7136,6 +7560,9 @@ msgid "with {skill}"
 msgstr ""
 
 msgid "would break {n} {item}"
+msgstr ""
+
+msgid "would buy {n} for {cost} gold coins"
 msgstr ""
 
 msgid ""
@@ -7161,6 +7588,10 @@ msgid "write it as: hold key seconds"
 msgstr ""
 
 msgid "write it as: login  or  login <character>"
+msgstr ""
+
+msgid ""
+"write it as: market scan [sellers] | market search [item=\"<name>\"] [cheapest] [max=<price>] [category=<name>] [pages=<n>] | market seller <id>[,<id>] | market buy [check] [item=\"<name>\" count=<n> max=<price> [cap=<gold>]]"
 msgstr ""
 
 msgid ""
@@ -7264,6 +7695,10 @@ msgstr ""
 msgid "{col}: shards {shards}; gems {gems}"
 msgstr ""
 
+msgid ""
+"{cost} gold coins would go over the spending limit ({cap}, {spent} spent)"
+msgstr ""
+
 msgid "{dmg} damage ({share} of all)"
 msgstr ""
 
@@ -7298,6 +7733,9 @@ msgid "{gem}: {tries} tries, {made} {nxt} made, {lost} failed"
 msgstr ""
 
 msgid "{h} h {m} min"
+msgstr ""
+
+msgid "{id} sells {n} lots"
 msgstr ""
 
 msgid ""
@@ -7639,6 +8077,9 @@ msgstr ""
 msgid "{n} levels up"
 msgstr ""
 
+msgid "{n} lots found"
+msgstr ""
+
 msgid "{n} made or received"
 msgstr ""
 
@@ -7655,6 +8096,12 @@ msgid "{n} more"
 msgstr ""
 
 msgid "{n} more {gem} would take about {k} more {shard}"
+msgstr ""
+
+msgid "{n} of them are still on display and will be skipped."
+msgstr ""
+
+msgid "{n} sellers looked up"
 msgstr ""
 
 msgid "{n} shards at level {lv}"
@@ -7710,6 +8157,12 @@ msgid "{pet}: no free rebirth left today"
 msgstr ""
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
+msgstr ""
+
+msgid "{price} a unit is over the most you set ({most})"
+msgstr ""
+
+msgid "{query}: {pages} pages, {lots} lots read"
 msgstr ""
 
 msgid "{room}: shared arnebia {n} of {all} times today"
