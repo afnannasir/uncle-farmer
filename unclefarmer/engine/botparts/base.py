@@ -86,9 +86,14 @@ class Respawned(Exception):
     """We died and came back (map respawn or the city): whatever we were doing starts over."""
 
 
+class LosingFight(Exception):
+    """Farming, HP stayed under panic_below for panic_after seconds with flee_on_panic: the fight
+    is dropped and the farm loop flees to town with the hearthstone (FarmingMixin._flee)."""
+
+
 # A best-effort action may ignore a failure, but never one of these: the run has to stop (Stopped),
 # start over (Respawned), or report the lost agent (AgentError) - not carry on as if nothing happened.
-STOPPING = (Stopped, Respawned, AgentError)
+STOPPING = (Stopped, Respawned, LosingFight, AgentError)
 
 
 AGENT_PATIENCE = 3    # wrong answers in a row before an agent command is given up for the run

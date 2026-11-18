@@ -23,6 +23,17 @@
   stronger than the monsters around them, and one the same level as the character can kill it,
   depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
   fought. The demonized field bosses are kept away from as bosses, as before.
+**Flee a lost fight**
+
+- Character settings, Low HP: **Stop when HP stays low** became **When HP stays low**, with a third
+  choice: **Go to town with the hearthstone, heal and come back (while farming)**. On the farming
+  map, when HP stays under the mark, the bot drops the fight, uses the hearthstone, heals up in
+  town (to 90%, three minutes at most), looks at the restock rules and goes back. A hit stops the
+  hearthstone's cast: one that doesn't take the character home leaves it fighting on. Without a
+  hearthstone it says so once and fights on. The third flee within 30 minutes ends the run in town.
+  **Fight on** stays the default; a profile that had the stop ticked keeps it.
+- The low HP mark is now 30% for 3 seconds by default (it was 25% for 10 seconds, nearly dead
+  already for a flee). Profiles that were saved keep their numbers.
 
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 

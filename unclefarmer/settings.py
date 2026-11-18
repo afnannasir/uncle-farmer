@@ -116,13 +116,14 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
     "use_key": "rctrl",       # uses the item under the cursor
     "category_key": "lctrl+alt+down",   # next category in a panel (the bag needs category 0)
-    "panic_below": 25,        # percent: with stop_on_panic, stop if HP stays under this...
+    "panic_below": 30,        # percent: with stop_on_panic or flee_on_panic, act if HP stays under this...
     "stop_on_panic": False,   # stop the run when HP stays under panic_below (off: keep fighting; deaths are handled)
+    "flee_on_panic": False,   # farming: hearthstone to town, heal, come back when HP stays under panic_below
     "respawn": "city",        # after dying: back to the city; "map" exists but isn't offered
     "use_resurrection_crystal": False,  # respawn with Resurrection Crystals (bag items: only if allowed)
     "stop_on_deaths": True,   # stop the run after dying max_deaths times (off: farm on, however often)
     "max_deaths": 3,          # stop the run after dying this many times (0 also means never)
-    "panic_after": 10.0,      # ...for this many seconds
+    "panic_after": 3.0,       # ...for this many seconds
     "stop_when_out_of_potions": True,  # the last red (or blue) potion is gone: end the run (restocked ones excepted)
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
@@ -311,6 +312,7 @@ class Profile(BaseModel):
     category_key: str = PROFILE_DEFAULTS["category_key"]
     panic_below: int = PROFILE_DEFAULTS["panic_below"]
     stop_on_panic: bool = PROFILE_DEFAULTS["stop_on_panic"]
+    flee_on_panic: bool = PROFILE_DEFAULTS["flee_on_panic"]
     respawn: str = PROFILE_DEFAULTS["respawn"]
     use_resurrection_crystal: bool = PROFILE_DEFAULTS["use_resurrection_crystal"]
     stop_on_deaths: bool = PROFILE_DEFAULTS["stop_on_deaths"]

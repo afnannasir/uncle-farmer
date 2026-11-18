@@ -12,7 +12,7 @@ from typing import Any, Literal
 from ... import atlas, gamekeys, jsonio
 from ...i18n import _
 from .. import combat, potions, repair
-from .base import (CONFIRM, RESPAWN, RESPAWN_MENU, Respawned, Stopped, potion_kind)
+from .base import (CONFIRM, RESPAWN, RESPAWN_MENU, LosingFight, Respawned, Stopped, potion_kind)
 from ...link import GameLink
 from .parts import as_bot, Parts
 
@@ -513,6 +513,24 @@ class HealthMixin(Parts):
             self.log(_("HP and MP are read with the key again: {why}", why=reply))
         return False
 
+    def may_flee(self) -> bool:
+        """Would HP staying low now flee to town (flee_on_panic)? Only while farming on the farm's
+        own map (farming_on): not in a dungeon, on a trip, in town or on the XP loser's walk; with a
+        hearthstone (on a key or in the bag - without one, said once, the fight goes on); and not
+        within FLEE_RETRY of a hearthstone that didn't take us home."""
+        if not self.p.get("flee_on_panic", False) or self.in_instance or getattr(self, "traveling", False):
+            return False
+        farm = getattr(self, "farming_on", None)
+        if farm is None or self.clock.time() < getattr(self, "flee_wait_until", 0.0):
+            return False
+        if not self.has_hearthstone():
+            if not getattr(self, "said_no_hearth", False):
+                self.said_no_hearth = True
+                self.log(_("no hearthstone on a key or in the bag - a fight that goes badly is fought on"),
+                         speak=True)
+            return False
+        return self.map_id() == farm
+
     def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]:
         """Heal, refresh the sheet, check stop rules. Runs inside every loop."""
         self.check()
@@ -546,9 +564,13 @@ class HealthMixin(Parts):
         if not self.requests.empty():
             self.run_requests()
 
-        if share < p["panic_below"] and p.get("stop_on_panic", False):
+        flee = self.may_flee()
+        if share < p["panic_below"] and (p.get("stop_on_panic", False) or flee):
             self.low_since = self.low_since or now
             if now - self.low_since > p["panic_after"]:
+                self.low_since = None
+                if flee:
+                    raise LosingFight()
                 raise Stopped(_("HP stayed under {pct}% for {secs} seconds - stopping so you can take over",
                                 pct=p["panic_below"], secs=int(p["panic_after"])), final=True)
         else:
