@@ -627,6 +627,9 @@ msgstr "({n} lots parhe nahi ja sake: logs\\dialogs.log dekhein)"
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr "({pages} safhe, {min:.1f} minute)"
 
+msgid "+{n} arnebia"
+msgstr "+{n} arnebia"
+
 msgid ", +20% with {shard}"
 msgstr ", {shard} ke sath +20%"
 
@@ -1122,6 +1125,9 @@ msgstr "Tool ya mahfooz script chunein."
 msgid "Choose an action to run."
 msgstr "Chalaane ke liye kaam chunein."
 
+msgid "Choose at least one officer."
+msgstr "Kam az kam ek officer chuno."
+
 msgid "Choose in a dialog"
 msgstr "Dialog mein chunein"
 
@@ -1182,9 +1188,6 @@ msgstr ""
 
 msgid "Closing the game."
 msgstr "Game band kar raha hoon."
-
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Shehar ke afsar se &hunting bounty lein"
 
 msgid "Collect Herbs"
 msgstr "Collect Herbs (jari booti)"
@@ -1973,6 +1976,12 @@ msgstr "Kaise kaam karta hai:"
 msgid "How the game works"
 msgstr "Game kaise kaam karti hai"
 
+msgid "Hunting bount&ies"
+msgstr "Hunting bount&ies"
+
+msgid "Hunting bounties"
+msgstr "Hunting bounties"
+
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
@@ -2720,6 +2729,11 @@ msgstr "Kahan se laayein koi jagah nahi: jo basta ijazat de wohi banata hai."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
+
+msgid ""
+"Officers to visit (each pays for his own bosses, after your killing blow)"
+msgstr ""
+"Kin officers ke paas jana hai (har ek apne boss ka, aap ke aakhri waar ke baad)"
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -5123,6 +5137,9 @@ msgstr "tick kiye hue lots check kar raha hai..."
 msgid "checking {n} lots"
 msgstr "{n} lots check kar raha hai"
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr "pehle officers chuno: Tools, Hunting bounties"
+
 msgid "choose what? write: choose Tulip City"
 msgstr "kya choose karna hai? likhein: choose Tulip City"
 
@@ -5146,9 +5163,6 @@ msgstr "band map - paidal andar ya bahar jaane ka koi raasta nahi"
 
 msgid "collected the deposit income"
 msgstr "deposit ki aamdani le li"
-
-msgid "collected the hunting bounty"
-msgstr "hunting bounty le li"
 
 msgid "collected {n} Value Product incomes"
 msgstr "{n} Value Product ki aamdani le li"
@@ -5734,11 +5748,8 @@ msgstr "ghar: {map}"
 msgid "how many? write count=<n>"
 msgstr "kitne? count=<n> likhein"
 
-msgid "hunting bounties can be collected here"
-msgstr "yahan hunting bounty li ja sakti hai"
-
-msgid "hunting bounty"
-msgstr "hunting bounty"
+msgid "hunting bounties: {list}"
+msgstr "hunting bounties: {list}"
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "elite ya boss zone mein, jis se hum door rehte hain"
@@ -7418,9 +7429,6 @@ msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "agle level ko {n} experience chahiye; {goal} se kam par farming ruk jayegi"
 
-msgid "the officer offers no hunting bounty"
-msgstr "afsar hunting bounty nahi de raha"
-
 msgid "the open menu is {what}"
 msgstr "khula menu {what} hai"
 
@@ -8271,6 +8279,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{top} mein se {now} ({pct}%)"
 
+msgid "{npc} can pay hunting bounties"
+msgstr "{npc} hunting bounties de sakta hai"
+
 msgid "{npc} didn't answer"
 msgstr "{npc} ne jawab nahi diya"
 
@@ -8289,11 +8300,17 @@ msgstr "{npc} ne \"Enter the dungeon\" nahi diya"
 msgid "{npc} offers no exchange"
 msgstr "{npc} exchange nahi deta"
 
+msgid "{npc} offers no hunting bounty"
+msgstr "{npc} hunting bounty nahi deta"
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} har ek"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr "{npc}: \"{entry}\" ka jawab \"{said}\" mila - ab is ke menus nahi parhenge"
+
+msgid "{npc}: {what}"
+msgstr "{npc}: {what}"
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "{n} Value Product ki aamdani li ja sakti hai"
@@ -8625,6 +8642,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Clea&n the bag (game menu, Clean the bag now)"
 #~ msgstr "Basta saa&f karein (game menu, Clean the bag now)"
 
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Shehar ke afsar se &hunting bounty lein"
+
 #~ msgid "Drop time"
 #~ msgstr "Drop ka waqt"
 
@@ -8725,11 +8745,20 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "can exchange gang contribution for a Contribution Chest"
 #~ msgstr "gang contribution ke badle Contribution Chest mil sakta hai"
 
+#~ msgid "collected the hunting bounty"
+#~ msgstr "hunting bounty le li"
+
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
 
 #~ msgid "got {n} Contribution Chests; not enough gang contribution for another"
 #~ msgstr "{n} Contribution Chests mile; agle ke liye gang contribution kam hai"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "yahan hunting bounty li ja sakti hai"
+
+#~ msgid "hunting bounty"
+#~ msgstr "hunting bounty"
 
 #~ msgid "our gang's highland"
 #~ msgstr "hamari gang ki highland"
@@ -8742,6 +8771,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "inner hall ki East aur West posts"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "afsar hunting bounty nahi de raha"
 
 #~ msgid "the plan's character has no saved account. Log in to it once first."
 #~ msgstr ""

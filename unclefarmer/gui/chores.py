@@ -43,7 +43,6 @@ class ChoresDialog(Dialog):
         panel, box = page(nb, _("City"))
         f = group(panel, box, _("Every day"))
         self.bank = f.check(_("Collect the &bank's deposit income and Value Product incomes"), c["bank"])
-        self.bounty = f.check(_("Collect &hunting bounties from a city officer"), c["bounty"])
         f = group(panel, box, _("Pet rebirth (free ones only, never for diamonds)"))
         self.rebirth = f.check(_("Use the day's free &rebirths on one pet"), c["pet_rebirth"])
         scan: dict[str, Any] = self.p.get("scan") or {}
@@ -124,7 +123,7 @@ class ChoresDialog(Dialog):
                           wx.OK | wx.ICON_INFORMATION, self)
             self.pet.SetFocus()
             return
-        self.cfg.update(bank=self.bank.GetValue(), bounty=self.bounty.GetValue(),
+        self.cfg.update(bank=self.bank.GetValue(),
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
                         construction=self.construction.GetValue(),
@@ -137,9 +136,49 @@ class ChoresDialog(Dialog):
                         share_with=self.share_with.GetValue().strip(), share_anyone=self.share_anyone.GetValue(),
                         share_trips=self.trips.GetValue(), trip_lead=self.lead.GetValue(),
                         before_farming=self.before.GetValue())
-        for old in ("room_minutes", "share", "build_highland", "highland", "build_at"):       # settings of earlier versions
+        for old in ("room_minutes", "share", "build_highland", "highland", "build_at", "bounty"):       # settings of earlier versions
             self.cfg.pop(old, None)
         self.p["chores"] = self.cfg
         self.p["gem_keep_arnebia"] = self.keep_arnebia.GetValue()
+        if save_file(self, settings.save_profile, self.character, self.p):
+            self.EndModal(code)
+
+
+class BountiesDialog(Dialog):
+    """Tools, Hunting bounties: which officers to ask. Each pays for bosses of his own, and only
+    after the character landed the killing blow, so this runs when the player asks."""
+
+    LABELS = {"Guard Captain Suke": "&Guard Captain Suke", "Chancellor Bren": "Chancellor &Bren",
+              "General Paul": "General &Paul", "Colonel Demar": "Colonel &Demar"}
+
+    def __init__(self, parent: wx.Window, character: str) -> None:
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Hunting bounties"),
+                                         name=settings.profile_display(character)))
+        self.character = character
+        self.p = settings.load_profile(character)
+        self.cfg = chores.config(self.p)
+        root = wx.BoxSizer(wx.VERTICAL)
+        inner = wx.BoxSizer(wx.VERTICAL)
+        f = group(self, inner, _("Officers to visit (each pays for his own bosses, after your killing blow)"))
+        chosen: list[str] = list(self.cfg["bounty_officers"])
+        self.officers = {n: f.check(self.LABELS[n], n in chosen) for n in chores.BOUNTY_OFFICERS}
+        root.Add(inner, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 12)
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
+        for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
+            btn = wx.Button(self, label=label)
+            btn.Bind(wx.EVT_BUTTON, with_code(self.done, code))
+            buttons.Add(btn, 0, wx.RIGHT, 8)
+        buttons.Add(wx.Button(self, wx.ID_CANCEL, _("Cancel")), 0)
+        root.Add(buttons, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
+        self.SetSizerAndFit(root)
+
+    def done(self, code: int) -> None:
+        chosen = [n for n, box in self.officers.items() if box.GetValue()]
+        if not chosen and code != wx.ID_OK:
+            wx.MessageBox(_("Choose at least one officer."), _("Hunting bounties"), wx.OK | wx.ICON_INFORMATION, self)
+            return
+        self.cfg["bounty_officers"] = chosen
+        self.cfg.pop("bounty", None)
+        self.p["chores"] = self.cfg
         if save_file(self, settings.save_profile, self.character, self.p):
             self.EndModal(code)

@@ -235,13 +235,14 @@ class EditingMixin(FrameParts):
             self.scanned.pop(name, None)
             with wx.BusyCursor():
                 self.auto_scan(name)          # a fresh look at the bag and gear first
-        from ..chores import ChoresDialog
+        from ..chores import BountiesDialog, ChoresDialog
         from ..dungeon import DungeonDialog
         from ..gathering import GatheringDialog
         from ..xploss import XpLoserDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
+                           "bounties": (BountiesDialog, "bounties", _("Hunting bounties")),
                            "gather": (GatheringDialog, "gather", _("Gathering")),
                            "dungeon": (DungeonDialog, "dungeon", _("Dungeons")),
                            "xploss": (XpLoserDialog, "lose_xp", _("XP loser"))}[which]

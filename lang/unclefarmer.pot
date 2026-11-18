@@ -621,6 +621,9 @@ msgstr ""
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
 
+msgid "+{n} arnebia"
+msgstr ""
+
 msgid ", +20% with {shard}"
 msgstr ""
 
@@ -1102,6 +1105,9 @@ msgstr ""
 msgid "Choose an action to run."
 msgstr ""
 
+msgid "Choose at least one officer."
+msgstr ""
+
 msgid "Choose in a dialog"
 msgstr ""
 
@@ -1160,9 +1166,6 @@ msgid "Closing every Mist World window to reinstall the agent"
 msgstr ""
 
 msgid "Closing the game."
-msgstr ""
-
-msgid "Collect &hunting bounties from a city officer"
 msgstr ""
 
 msgid "Collect Herbs"
@@ -1934,6 +1937,12 @@ msgstr ""
 msgid "How the game works"
 msgstr ""
 
+msgid "Hunting bount&ies"
+msgstr ""
+
+msgid "Hunting bounties"
+msgstr ""
+
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
@@ -2649,6 +2658,10 @@ msgid "Nowhere to get them from: it makes what the bag allows."
 msgstr ""
 
 msgid "Nowhere, use what's in the bag"
+msgstr ""
+
+msgid ""
+"Officers to visit (each pays for his own bosses, after your killing blow)"
 msgstr ""
 
 msgid ""
@@ -4909,6 +4922,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr ""
+
 msgid "choose what? write: choose Tulip City"
 msgstr ""
 
@@ -4931,9 +4947,6 @@ msgid "closed map - no way in or out on foot"
 msgstr ""
 
 msgid "collected the deposit income"
-msgstr ""
-
-msgid "collected the hunting bounty"
 msgstr ""
 
 msgid "collected {n} Value Product incomes"
@@ -5494,10 +5507,7 @@ msgstr ""
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr ""
-
-msgid "hunting bounty"
+msgid "hunting bounties: {list}"
 msgstr ""
 
 msgid "in an elite or boss zone we keep out of"
@@ -7079,9 +7089,6 @@ msgstr ""
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 
-msgid "the officer offers no hunting bounty"
-msgstr ""
-
 msgid "the open menu is {what}"
 msgstr ""
 
@@ -7892,6 +7899,9 @@ msgstr ""
 msgid "{now} of {top} ({pct}%)"
 msgstr ""
 
+msgid "{npc} can pay hunting bounties"
+msgstr ""
+
 msgid "{npc} didn't answer"
 msgstr ""
 
@@ -7910,10 +7920,16 @@ msgstr ""
 msgid "{npc} offers no exchange"
 msgstr ""
 
+msgid "{npc} offers no hunting bounty"
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr ""
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
+msgstr ""
+
+msgid "{npc}: {what}"
 msgstr ""
 
 msgid "{n} Value Product incomes can be collected"

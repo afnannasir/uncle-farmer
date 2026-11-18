@@ -630,6 +630,9 @@ msgstr ""
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
 
+msgid "+{n} arnebia"
+msgstr ""
+
 msgid ", +20% with {shard}"
 msgstr ", +20 % con {shard}"
 
@@ -1127,6 +1130,9 @@ msgstr "Elige una herramienta o un script guardado."
 msgid "Choose an action to run."
 msgstr "Elige una acción para ejecutar."
 
+msgid "Choose at least one officer."
+msgstr ""
+
 msgid "Choose in a dialog"
 msgstr "Elegir en un cuadro de diálogo"
 
@@ -1186,9 +1192,6 @@ msgstr "Cerrando todas las ventanas de Mist World para reinstalar el agente"
 
 msgid "Closing the game."
 msgstr "Cerrando el juego."
-
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Recoger recompensas de caza de un oficial de la ciudad (&h)"
 
 msgid "Collect Herbs"
 msgstr "Recolectar hierbas"
@@ -1981,6 +1984,12 @@ msgstr "Cómo funciona:"
 msgid "How the game works"
 msgstr "Cómo funciona el juego"
 
+msgid "Hunting bount&ies"
+msgstr ""
+
+msgid "Hunting bounties"
+msgstr ""
+
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
@@ -2729,6 +2738,10 @@ msgstr "No hay dónde conseguirlos: fabrica lo que permite la bolsa."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "En ninguna parte, usar lo que hay en la bolsa"
+
+msgid ""
+"Officers to visit (each pays for his own bosses, after your killing blow)"
+msgstr ""
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -5144,6 +5157,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr ""
+
 msgid "choose what? write: choose Tulip City"
 msgstr "¿elegir qué? escribe: choose Tulip City"
 
@@ -5167,9 +5183,6 @@ msgstr "mapa cerrado: no hay entrada ni salida a pie"
 
 msgid "collected the deposit income"
 msgstr "cobrados los ingresos del depósito"
-
-msgid "collected the hunting bounty"
-msgstr "recogida la recompensa de caza"
 
 msgid "collected {n} Value Product incomes"
 msgstr "cobrados {n} ingresos de Productos de valor"
@@ -5752,11 +5765,8 @@ msgstr "casa: {map}"
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr "aquí se pueden recoger recompensas de caza"
-
-msgid "hunting bounty"
-msgstr "recompensa de caza"
+msgid "hunting bounties: {list}"
+msgstr ""
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "en una zona de élite o jefe de la que nos mantenemos alejados"
@@ -7428,9 +7438,6 @@ msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "el siguiente nivel necesita {n} de experiencia; el farmeo se detiene por debajo de {goal}"
 
-msgid "the officer offers no hunting bounty"
-msgstr "el oficial no ofrece ninguna recompensa de caza"
-
 msgid "the open menu is {what}"
 msgstr "el menú abierto es {what}"
 
@@ -8279,6 +8286,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} de {top} ({pct} %)"
 
+msgid "{npc} can pay hunting bounties"
+msgstr ""
+
 msgid "{npc} didn't answer"
 msgstr "{npc} no respondió"
 
@@ -8297,12 +8307,18 @@ msgstr "{npc} no ofreció \"Enter the dungeon\""
 msgid "{npc} offers no exchange"
 msgstr ""
 
+msgid "{npc} offers no hunting bounty"
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} cada uno"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr ""
 "{npc}: \"{entry}\" recibió la respuesta \"{said}\": no se leen más de sus menús"
+
+msgid "{npc}: {what}"
+msgstr ""
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "se pueden cobrar {n} ingresos de Productos de valor"
@@ -8601,6 +8617,9 @@ msgstr "{w} por {h} casillas, {n} salidas."
 #~ msgid "&Build first at (then anywhere else that can still take a build):"
 #~ msgstr "&Construir primero en (después donde aún se pueda):"
 
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Recoger recompensas de caza de un oficial de la ciudad (&h)"
+
 #~ msgid "E&xperience card to keep running while farming:"
 #~ msgstr "Tarjeta de e&xperiencia que se mantiene activa mientras se farmea:"
 
@@ -8627,8 +8646,17 @@ msgstr "{w} por {h} casillas, {n} salidas."
 #~ msgstr ""
 #~ "Escribe el número de las tierras altas de tu pandilla: la Entrada de las Tierras Altas lo lista en Tierras altas ocupadas (\"the own Gang's Highland 38\": 38)."
 
+#~ msgid "collected the hunting bounty"
+#~ msgstr "recogida la recompensa de caza"
+
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "poder de fusión {n}: a pie hasta que vuelva"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "aquí se pueden recoger recompensas de caza"
+
+#~ msgid "hunting bounty"
+#~ msgstr "recompensa de caza"
 
 #~ msgid "our gang's highland"
 #~ msgstr "las tierras altas de nuestra pandilla"
@@ -8638,6 +8666,9 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "los puestos este y oeste del pasillo interior"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "el oficial no ofrece ninguna recompensa de caza"
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr ""

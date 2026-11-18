@@ -614,6 +614,63 @@ def test_a_beast_already_fed_today_is_done(world: type[Game]) -> None:
     assert out == [("feed", "already fed today")] and "feed" in chores.done_today("Hero")
 
 
+def bounty_game(world: type[Game], monkeypatch: pytest.MonkeyPatch, pages: Pages) -> Game:
+    """Officers reached by name; one with no page can't be reached."""
+    spots: dict[str, dict[str, Any]] = {n: {"map": 1081, "name": n, "x": 10 * i, "y": 10}
+                                        for i, n in enumerate(chores.BOUNTY_OFFICERS)}
+
+    def nearest(b: Any, role: str | None, candidates: Any = None, back_to: Any = None) -> Any:
+        return candidates[0]
+
+    def visit(b: Any, role: str | None, name: str | None = None, candidates: Any = None, back_to: Any = None) -> str:
+        npc = candidates[0][1]
+        b.talked.append(npc)
+        if npc not in b.pages:
+            raise chores.Stopped("couldn't talk to %s" % npc)
+        b.page = npc
+        return npc
+    monkeypatch.setattr(chores.knowledge, "describe_npc", stand_in(chores.knowledge.describe_npc, lambda name: spots.get(name or "")))
+    monkeypatch.setattr(town, "nearest", stand_in(town.nearest, nearest))
+    monkeypatch.setattr(town, "visit", stand_in(town.visit, visit))
+    return world(pages, {})
+
+
+SUKE, BREN = chores.BOUNTY_OFFICERS[:2]
+
+
+def paying(g: Game) -> None:
+    g.arnebia += 500
+    g.say("Bounty received")
+
+
+def test_bounties_go_only_to_the_ticked_officers_and_are_no_daily_chore(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
+    g = bounty_game(world, monkeypatch, {SUKE: [("Reset Talents", None), ("Collect hunting bountie", paying)],
+                                         BREN: [("Collect Hunting Bounty", paying)]})
+    notes = chores.collect_bounties(as_bot(g), cfg(bounty_officers=[SUKE, BREN]))
+    assert g.talked == [SUKE, BREN] and g.arnebia == 101000
+    assert notes[0] == "Guard Captain Suke: +500 arnebia; Bounty received"
+    assert "bounty" not in chores.CHORES and chores.done_today("Hero") == {}
+    assert len(chores.collect_bounties(as_bot(g), cfg(bounty_officers=[SUKE]))) == 1     # again whenever asked
+
+
+def test_an_officer_out_of_reach_does_not_end_the_round(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
+    g = bounty_game(world, monkeypatch, {BREN: [("Collect Hunting Bounty", paying)]})
+    notes = chores.collect_bounties(as_bot(g), cfg(bounty_officers=[SUKE, BREN]))
+    assert notes[0] == "couldn't talk to Guard Captain Suke" and notes[1].startswith("Chancellor Bren: +500")
+
+
+def test_check_only_collects_no_bounty(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
+    g = bounty_game(world, monkeypatch, {SUKE: [("Collect hunting bountie", paying)]})
+    assert chores.collect_bounties(as_bot(g), cfg(bounty_officers=[SUKE]), True) == ["Guard Captain Suke can pay hunting bounties"]
+    assert g.arnebia == 100000 and g.chosen == []
+
+
+def test_no_officer_ticked_says_where_to_tick_them(world: type[Game], monkeypatch: pytest.MonkeyPatch) -> None:
+    g = bounty_game(world, monkeypatch, {})
+    with pytest.raises(chores.Stopped, match="Tools, Hunting bounties"):
+        chores.collect_bounties(as_bot(g), cfg())
+
+
 class ChestGame(Game):
     """Guard Captain Suke's exchange: each confirmed one puts a chest in the bag."""
     chests = 0
@@ -940,7 +997,7 @@ def test_label_and_config_fill_every_chore() -> None:
     assert chores.label("secret_room") == "secret room"
     cfg = chores.config({"chores": {"bank": False, "donation": "diamonds"}})
     assert cfg["bank"] is False and cfg["donation"] == "diamonds"
-    assert cfg["bounty"] is True and cfg["construction"] == 0
+    assert cfg["bounty_officers"] == [] and cfg["construction"] == 0
 
 
 def test_chores_config_does_not_share_mutable_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1012,6 +1069,6 @@ def test_same_id_on_two_servers_never_shares_a_done_list(tmp_path: Path, monkeyp
 def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(chores.paths, "LOGS", str(tmp_path))
     monkeypatch.setattr(chores.daily, "game_day", lambda: "2026-10-30")
-    cfg = dict(chores.DEFAULTS, bank=True, bounty=True, donation="off")
+    cfg = dict(chores.DEFAULTS, bank=True, feed=True, donation="off")
     chores.mark("Hero", "bank", "done")
-    assert chores.due("Hero", cfg) == ["bounty"]
+    assert chores.due("Hero", cfg) == ["feed"]

@@ -7,7 +7,10 @@ reads the menu and says what it would do, pressing nothing that collects, spends
 
 Menus as the game shows them (logged sessions and the survey, 2026-10-11):
   bank (any city's Bank receptionist)   "get deposit income"; "Value Product" -> "get income" per card
-  hunting bounty (Chancellor Bren, General Paul, Colonel Demar)   "Collect Hunting Bounty"
+  hunting bounties (Guard Captain Suke, Chancellor Bren, General Paul, Colonel Demar): "Collect hunting
+                                        bountie". No daily chore: each officer pays for bosses of his
+                                        own, and only after the player landed the killing blow, so it
+                                        is done on request (Tools, Hunting bounties; `bounties`)
   pet rebirth (any city's Pet Trainer)  "Get Rebirth" -> "Please choose a pet" ("Wild Eagle>><< max":
                                         the kind, then the name the player gave it; the pet panel and
                                         so the character scan shorten the kind: "Eagle max") -> "You
@@ -83,9 +86,10 @@ from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
 
-CHORES = ("bank", "bounty", "pet_rebirth", "contribution_chests", "donation", "construction", "feed", "secret_room")
+CHORES = ("bank", "pet_rebirth", "contribution_chests", "donation", "construction", "feed", "secret_room")
 DEFAULTS: dict[str, Any] = {
-    "bank": True, "bounty": True,
+    "bank": True,
+    "bounty_officers": [],            # Tools, Hunting bounties: the officers to visit (not a daily chore)
     "pet_rebirth": False, "pet": "", "rebirths": 2,
     "donation": "off",                # off, 10000, 20000 or diamonds
     "construction": 0,                # builds a day, over every place to build (the game allows 2)
@@ -105,7 +109,9 @@ DEFAULTS: dict[str, Any] = {
 }
 DONATIONS = {"10000": (r"donate 10000 Arnebia", 10000), "20000": (r"donate 20000 Arnebia", 20000),
              "diamonds": (r"donate 20 diamonds", 0)}
-BOUNTY_OFFICERS = ("Chancellor Bren", "General Paul", "Colonel Demar")
+BOUNTY_OFFICERS = ("Guard Captain Suke", "Chancellor Bren", "General Paul", "Colonel Demar")
+BOUNTY = r"(?i)Collect hunting bount(?:y|ie)"
+BOUNTY_ROW = r"(?i)^\s*(collect|claim|receive|get)\b(?!\s+hunting)"     # a list of bounties, if the game shows one
 HEAD = ("Head of inner hall", (40, 40))          # the same cells in every gang base
 SHED = ("Animal Shed", (29, 50))
 CHEST_OFFICER = "Guard Captain Suke"
@@ -161,7 +167,7 @@ FREE_REBIRTH = r"free Pet Rebirth times today"
 
 
 def label(chore: str) -> str:
-    return {"bank": _("bank income"), "bounty": _("hunting bounty"), "pet_rebirth": _("pet rebirth"),
+    return {"bank": _("bank income"), "pet_rebirth": _("pet rebirth"),
             "donation": _("gang donation"), "construction": _("gang construction"),
             "feed": _("Animal Shed feeding"),
             "contribution_chests": _("Contribution Chests"),
@@ -450,25 +456,58 @@ def bank(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
     return ("; ".join(got) or _("nothing to collect today")), not check_only
 
 
-def bounty(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
-    """Hunting bounties from the nearest city officer who pays them."""
-    officers = [knowledge.describe_npc(n) for n in BOUNTY_OFFICERS]
-    cands = [(o["map"], o["name"], o["x"], o["y"]) for o in officers if o]
-    town.visit(b, "bounty officer", candidates=cands)
+def _one_bounty(b: Bot, npc: str, check_only: bool) -> str:
+    """At an officer whose menu is open: ask for what he pays. What came of it, in the game's words."""
     b.wait_dialog(3.0)
-    if not _has(b, r"Collect Hunting Bounty"):
-        return _("the officer offers no hunting bounty"), False
+    if not _has(b, BOUNTY):
+        return _("{npc} offers no hunting bounty", npc=npc)
     if check_only:
-        return _("hunting bounties can be collected here"), False
-    b.choose(r"Collect Hunting Bounty")
+        return _("{npc} can pay hunting bounties", npc=npc)
+    before = _arnebia(b)
+    t0 = said_mark(b)
+    b.choose(BOUNTY)
     confirm(b)
-    for _i in range(10):                  # a list of bounties to take, if the game shows one
+    for _i in range(10):
         d = b.wait_dialog(1.0)
-        if d is None or not d.get("top") or b.find_entry(d["top"], r"^\s*(collect|claim|receive|get)\b") is None:
+        if d is None or not d.get("top") or b.find_entry(d["top"], BOUNTY_ROW) is None:
             break
-        b.choose(r"^\s*(collect|claim|receive|get)\b")
+        b.choose(BOUNTY_ROW)
         confirm(b)
-    return _("collected the hunting bounty"), True
+    b.sleep(1.0)
+    got = _arnebia(b) - before
+    parts = [_("+{n} arnebia", n=got)] if got > 0 else []
+    parts += said_since(b, t0)
+    return _("{npc}: {what}", npc=npc, what="; ".join(parts) or _("no answer from the game"))
+
+
+def collect_bounties(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
+    """Tools, Hunting bounties: the officers the player ticked, nearest first. Each pays for bosses
+    of his own, so one that can't be reached doesn't end the round. What each said."""
+    wanted_names = [n for n in BOUNTY_OFFICERS if n in (cfg.get("bounty_officers") or [])]
+    if not wanted_names:
+        raise Stopped(_("choose the officers first: Tools, Hunting bounties"), final=True)
+    officers = [knowledge.describe_npc(n) for n in wanted_names]
+    left: list[town.Npc] = [(o["map"], o["name"], o["x"], o["y"]) for o in officers if o]
+    notes: list[str] = []
+    while left:
+        target = town.nearest(b, "bounty officer", left)
+        if target is None:
+            notes.append(_("none of the {n} places that could do it can be reached from {map}",
+                           n=len(left), map=atlas.label(b.map_id())))
+            break
+        left.remove(target)
+        try:
+            npc = town.visit(b, "bounty officer", candidates=[target])
+            notes.append(_one_bounty(b, npc, check_only))
+        except Stopped as e:
+            if b.stop_event.is_set() or getattr(e, "final", False):
+                raise
+            notes.append(str(e))
+        finally:
+            b.close_dialogs()
+        b.log(notes[-1])
+    b.log(_("hunting bounties: {list}", list="; ".join(notes)), speak=True)
+    return notes
 
 
 def _assets(b: Bot) -> int | None:
@@ -1202,5 +1241,5 @@ def secret_room(b: Bot, cfg: dict[str, Any], check_only: bool):
         made >= SHARES_A_DAY
 
 
-DO = {"bank": bank, "bounty": bounty, "pet_rebirth": pet_rebirth, "donation": donation,
+DO = {"bank": bank, "pet_rebirth": pet_rebirth, "donation": donation,
       "construction": construction, "feed": feed, "contribution_chests": contribution_chests, "secret_room": secret_room}

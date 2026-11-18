@@ -629,6 +629,9 @@ msgstr ""
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
 
+msgid "+{n} arnebia"
+msgstr "+{n} arnebia"
+
 msgid ", +20% with {shard}"
 msgstr ", +20% com {shard}"
 
@@ -1127,6 +1130,9 @@ msgstr "Escolha uma ferramenta ou um script salvo."
 msgid "Choose an action to run."
 msgstr "Escolha uma ação para executar."
 
+msgid "Choose at least one officer."
+msgstr "Escolha pelo menos um oficial."
+
 msgid "Choose in a dialog"
 msgstr "Escolher em uma janela"
 
@@ -1187,9 +1193,6 @@ msgstr "Fechando todas as janelas do Mist World para reinstalar o agente"
 
 msgid "Closing the game."
 msgstr "Fechando o jogo."
-
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Coletar &recompensas de caça com um oficial da cidade"
 
 msgid "Collect Herbs"
 msgstr "Coletar ervas"
@@ -1981,6 +1984,12 @@ msgstr "Como funciona:"
 msgid "How the game works"
 msgstr "Como o jogo funciona"
 
+msgid "Hunting bount&ies"
+msgstr "Recompensas de caça (&i)"
+
+msgid "Hunting bounties"
+msgstr "Recompensas de caça"
+
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
@@ -2729,6 +2738,11 @@ msgstr "Não há de onde obtê-los: serão criados os que a mochila permitir."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "Em nenhum lugar; usar o que estiver na mochila"
+
+msgid ""
+"Officers to visit (each pays for his own bosses, after your killing blow)"
+msgstr ""
+"Oficiais a visitar (cada um paga pelos próprios chefes, após o seu golpe final)"
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -5141,6 +5155,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr "escolha os oficiais primeiro: Tools, Hunting bounties"
+
 msgid "choose what? write: choose Tulip City"
 msgstr "o que escolher? digite: choose Tulip City"
 
@@ -5164,9 +5181,6 @@ msgstr "mapa fechado — não há entrada ou saída a pé"
 
 msgid "collected the deposit income"
 msgstr "coletou os rendimentos do depósito"
-
-msgid "collected the hunting bounty"
-msgstr "coletou a recompensa de caça"
 
 msgid "collected {n} Value Product incomes"
 msgstr "coletou {n} rendimentos de produtos de valor"
@@ -5749,11 +5763,8 @@ msgstr "casa: {map}"
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr "as recompensas de caça podem ser coletadas aqui"
-
-msgid "hunting bounty"
-msgstr "recompensa de caça"
+msgid "hunting bounties: {list}"
+msgstr "recompensas de caça: {list}"
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "evitamos áreas de monstros de elite ou chefes"
@@ -7427,9 +7438,6 @@ msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "faltam {n} de experiência para o próximo nível; a coleta para abaixo de {goal}"
 
-msgid "the officer offers no hunting bounty"
-msgstr "o oficial não oferece recompensa de caça"
-
 msgid "the open menu is {what}"
 msgstr "o menu aberto é {what}"
 
@@ -8277,6 +8285,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} de {top} ({pct}%)"
 
+msgid "{npc} can pay hunting bounties"
+msgstr "{npc} pode pagar recompensas de caça"
+
 msgid "{npc} didn't answer"
 msgstr "{npc} não respondeu"
 
@@ -8295,12 +8306,18 @@ msgstr "{npc} não ofereceu a opção \"Entrar na masmorra\""
 msgid "{npc} offers no exchange"
 msgstr "{npc} não oferece a troca"
 
+msgid "{npc} offers no hunting bounty"
+msgstr "{npc} não oferece recompensa de caça"
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} cada"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr ""
 "{npc}: \"{entry}\" recebeu a resposta \"{said}\" — não lendo mais menus dele"
+
+msgid "{npc}: {what}"
+msgstr "{npc}: {what}"
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "{n} rendimentos de Produtos de Valor podem ser coletados"
@@ -8598,6 +8615,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "&Build first at (then anywhere else that can still take a build):"
 #~ msgstr "&Construir primeiro em (depois onde ainda for possível):"
 
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Coletar &recompensas de caça com um oficial da cidade"
+
 #~ msgid ""
 #~ "E&xchange gang contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
 #~ msgstr ""
@@ -8631,9 +8651,18 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "can exchange gang contribution for a Contribution Chest"
 #~ msgstr "pode trocar contribuição da gangue por um Contribution Chest"
 
+#~ msgid "collected the hunting bounty"
+#~ msgstr "coletou a recompensa de caça"
+
 #~ msgid "got {n} Contribution Chests; not enough gang contribution for another"
 #~ msgstr ""
 #~ "recebeu {n} Contribution Chests; contribuição da gangue insuficiente para outro"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "as recompensas de caça podem ser coletadas aqui"
+
+#~ msgid "hunting bounty"
+#~ msgstr "recompensa de caça"
 
 #~ msgid "our gang's highland"
 #~ msgstr "Terras Altas da nossa guilda"
@@ -8643,6 +8672,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "postos Leste e Oeste do salão interno"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "o oficial não oferece recompensa de caça"
 
 #~ msgid "the {post} is complete: nothing to do there"
 #~ msgstr "{post} está completo: nada a fazer ali"

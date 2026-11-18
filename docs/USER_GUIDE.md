@@ -874,6 +874,12 @@ The tool also makes Enhance Crystals from crystal shards. It can get those shard
 
 Before enhancement begins, it prepares an initial stock of Enhance Crystals. It also prepares a fixed number of additional crystals whenever the current stock runs out.
 
+### Hunting bounties
+
+Open **Tools, Hunting bounties** after your character has landed the killing blow on a boss. Each officer pays for bosses of his own, so tick the officers you want: Guard Captain Suke, Chancellor Bren, General Paul, or Colonel Demar. The bot visits them from nearest to farthest and tells you what each one answered. **Check only** walks there and reads the menus without collecting.
+
+This is not a daily chore, so you can run it whenever you have something to collect. In a script, use `bounties` or `bounties check`.
+
 ### Daily chores
 
 Open **Tools, Daily chores** or press **Ctrl+Shift+D**.
@@ -885,10 +891,6 @@ Uncle Farmer keeps a record of completed chores. This prevents it from repeating
 **Bank**
 
 Deposits your bank income and the daily income from every Value Product card.
-
-**Hunting bounties**
-
-Collects hunting bounties from the nearest city officer who pays them.
 
 **Pet rebirth**
 

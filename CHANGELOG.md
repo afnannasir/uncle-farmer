@@ -14,6 +14,9 @@
   contribution) for Contribution Chests at Guard Captain Suke, 5,000 each, up to the game's two a
   day. It is off until you tick it.
 - Gathering: a minimum saturation for gangs' areas. An area under it is skipped.
+- Hunting bounties are no longer a daily chore: each officer pays for bosses of his own, after your
+  killing blow. Tools, Hunting bounties (script: `bounties`) asks the officers you tick, Guard
+  Captain Suke included.
 - A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.
 
 **Market searcher and buyer (Tools, Ctrl+Shift+K)**

@@ -627,6 +627,9 @@ msgstr ""
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
 
+msgid "+{n} arnebia"
+msgstr ""
+
 msgid ", +20% with {shard}"
 msgstr ", {shard} ile +%20"
 
@@ -1120,6 +1123,9 @@ msgstr "Bir araç ya da kayıtlı bir betik seç."
 msgid "Choose an action to run."
 msgstr "Çalıştırılacak bir eylem seç."
 
+msgid "Choose at least one officer."
+msgstr ""
+
 msgid "Choose in a dialog"
 msgstr "Bir iletişim kutusunda seç"
 
@@ -1180,9 +1186,6 @@ msgstr "Ajanı yeniden yüklemek için tüm Mist World pencereleri kapatılıyor
 
 msgid "Closing the game."
 msgstr "Oyunu kapatıyorum."
-
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
 
 msgid "Collect Herbs"
 msgstr "Bitki Topla"
@@ -1968,6 +1971,12 @@ msgstr "Nasıl çalışır:"
 msgid "How the game works"
 msgstr "Oyun nasıl işler"
 
+msgid "Hunting bount&ies"
+msgstr ""
+
+msgid "Hunting bounties"
+msgstr ""
+
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
@@ -2710,6 +2719,10 @@ msgstr "Alınacak bir yer yok: çantanın yettiği kadar yapar."
 
 msgid "Nowhere, use what's in the bag"
 msgstr "Hiçbir yerden, çantadakini kullan"
+
+msgid ""
+"Officers to visit (each pays for his own bosses, after your killing blow)"
+msgstr ""
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -5096,6 +5109,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr ""
+
 msgid "choose what? write: choose Tulip City"
 msgstr "neyi seçeyim? şöyle yaz: choose Tulip City"
 
@@ -5119,9 +5135,6 @@ msgstr "kapalı harita - yürüyerek giriş çıkış yok"
 
 msgid "collected the deposit income"
 msgstr "mevduat geliri toplandı"
-
-msgid "collected the hunting bounty"
-msgstr "av ödülü toplandı"
 
 msgid "collected {n} Value Product incomes"
 msgstr "{n} Değer Ürünü geliri toplandı"
@@ -5699,11 +5712,8 @@ msgstr "ev: {map}"
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr "av ödülleri burada toplanabilir"
-
-msgid "hunting bounty"
-msgstr "av ödülü"
+msgid "hunting bounties: {list}"
+msgstr ""
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
@@ -7351,9 +7361,6 @@ msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "sonraki seviye için {n} deneyim gerekiyor; {goal} altına inince farm durur"
 
-msgid "the officer offers no hunting bounty"
-msgstr "görevli av ödülü sunmuyor"
-
 msgid "the open menu is {what}"
 msgstr "açık menü: {what}"
 
@@ -8198,6 +8205,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now}/{top} (%{pct})"
 
+msgid "{npc} can pay hunting bounties"
+msgstr ""
+
 msgid "{npc} didn't answer"
 msgstr "{npc} yanıt vermedi"
 
@@ -8216,12 +8226,18 @@ msgstr "{npc} \"Zindana gir\" seçeneği sunmadı"
 msgid "{npc} offers no exchange"
 msgstr ""
 
+msgid "{npc} offers no hunting bounty"
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, tanesi {price} {cur}"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr ""
 "{npc}: \"{entry}\" seçeneğine \"{said}\" cevabı geldi - menüleri artık okunmuyor"
+
+msgid "{npc}: {what}"
+msgstr ""
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "{n} Değer Ürünü geliri toplanabilir"
@@ -8515,6 +8531,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgid "&Build first at (then anywhere else that can still take a build):"
 #~ msgstr "Önce şurada &inşa et (sonra hâlâ mümkün olan her yerde):"
 
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
+
 #~ msgid "Gang construction"
 #~ msgstr "Çete inşaatı"
 
@@ -8531,6 +8550,15 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgstr ""
 #~ "Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
 
+#~ msgid "collected the hunting bounty"
+#~ msgstr "av ödülü toplandı"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "av ödülleri burada toplanabilir"
+
+#~ msgid "hunting bounty"
+#~ msgstr "av ödülü"
+
 #~ msgid "our gang's highland"
 #~ msgstr "çetemizin yaylası"
 
@@ -8539,6 +8567,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "iç salonun Doğu ve Batı noktaları"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "görevli av ödülü sunmuyor"
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
