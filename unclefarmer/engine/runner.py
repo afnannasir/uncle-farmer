@@ -448,7 +448,10 @@ class Run(threading.Thread):
         for node in main:
             if getattr(node, "kind", "") == "keep_level":
                 bot.level_keep = node.opts["xp"]
+            if getattr(node, "kind", "") == "keep_drop":
+                bot.drop_keep = node.opts["minutes"]
         bot.level_before_start()
+        bot.drop_before_start()          # nor with the day's drop time already used up
 
     @staticmethod
     def _on_the_farm(bot: Bot, script: Runner) -> bool:

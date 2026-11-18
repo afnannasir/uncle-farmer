@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+**No trip to the farm with the drop time used up**
+
+- A farming run whose day's drop time is already down to what you save (Drop time to save, or
+  the plan's `keep_drop`) no longer travels all the way to the farm for the first sheet there to
+  stop it: it says "the drop time is nearly used up (... min left) - not starting to farm" and
+  stays where it is, as "Stop before the next level" already did.
+**Fusion power comes back to 50 before the beast goes on again**
+
+- Measured in the game: a fusion beast that is on costs 3 fusion power a minute, moving or not
+  (Swift and Fierce alike), and power comes back at 6 a minute once it is off. The bot got off
+  under 15 and back on as soon as power was over 15 again, so it was off within two minutes: a
+  change every two and a half minutes, each one waiting on the game. Once power has run low it
+  now waits on foot until it is back to 50, then rides about 13 minutes before the next rest.
+  Beasts that cost no fusion power still ride meanwhile.
+**Leave demonized elites alone**
+
+- A new choice in Character settings, Advanced, Fighting: **Leave demonized elites alone**, off by
+  default. The game's "demonized" elites (demonized Boar, black bear, Water Elf...) are much
+  stronger than the monsters around them, and one the same level as the character can kill it,
+  depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
+  fought. The demonized field bosses are kept away from as bosses, as before.
+**Flee a lost fight**
+
+- Character settings, Low HP: **Stop when HP stays low** became **When HP stays low**, with a third
+  choice: **Go to town with the hearthstone, heal and come back (while farming)**. On the farming
+  map, when HP stays under the mark, the bot drops the fight, uses the hearthstone, heals up in
+  town (to 90%, three minutes at most), looks at the restock rules and goes back. A hit stops the
+  hearthstone's cast: one that doesn't take the character home leaves it fighting on. Without a
+  hearthstone it says so once and fights on. The third flee within 30 minutes ends the run in town.
+  **Fight on** stays the default; a profile that had the stop ticked keeps it.
+- The low HP mark is now 30% for 3 seconds by default (it was 25% for 10 seconds, nearly dead
+  already for a flee). Profiles that were saved keep their numbers.
+
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 
 - Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when

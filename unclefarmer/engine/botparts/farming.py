@@ -15,7 +15,7 @@ from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
-from .base import (MOVE_SHOT_REACH, Respawned, Stopped)
+from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
 
@@ -128,9 +128,11 @@ class FarmingMixin(Parts):
         last_supply_check = self.clock.time()
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
+        self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
+            self.farming_on = None
             self.on_farm_run = False
             self.in_instance, self.pack_min = was
             self.farm_filter = None
@@ -187,9 +189,9 @@ class FarmingMixin(Parts):
                 with self.timed("search"):
                     result = self.walk_to(cell, near=sighted)
                 self.note_search(map_id, me, cell, started, result)
-            except Respawned:
+            except (Respawned, LosingFight) as setback:
                 loop_i = None
-                if self._respawned(map_id):
+                if self._set_back(map_id, setback):
                     break
 
     def _restock_check(self, map_id: int, last: float) -> float:
@@ -230,6 +232,59 @@ class FarmingMixin(Parts):
             return False
         with self.timed("town"):
             return self.bag_check() or self.share_trip(map_id)
+
+    FLEE_WINDOW = 30 * 60   # seconds: this many flees within it and the map is too hard (FLEE_MOST)
+    FLEE_MOST = 3
+    FLEE_RETRY = 60.0       # a hearthstone that didn't take us home isn't tried again sooner
+    FLEE_HEALED = 90        # percent of HP to wait for in town...
+    FLEE_HEAL_MOST = 180.0  # ...for at most this many seconds
+
+    def _flee(self, map_id: int) -> None:
+        """HP stayed low while farming (LosingFight): drop the fight, hearthstone to town, heal up
+        there (FLEE_HEALED, potions as usual), look at the restock rules, and go back. A hearthstone
+        that is interrupted every time (a hit stops its cast) leaves us fighting on. The FLEE_MOST-th
+        flee within FLEE_WINDOW ends the run in town: the map is too hard for the character."""
+        now = self.clock.time()
+        self.flees = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW] + [now]
+        self.log(_("HP stayed under {pct}% - leaving the fight: hearthstone to town", pct=self.p["panic_below"]),
+                 speak=True)
+        self.fleeing = True
+        try:
+            with self.timed("town"):
+                if not self.go_home():
+                    self.flee_wait_until = self.clock.time() + self.FLEE_RETRY
+                    self.log(_("couldn't get away - fighting on"), speak=True)
+                    return
+                self._heal_in_town()
+                if len(self.flees) >= self.FLEE_MOST:
+                    self.log(_("fled {n} times in {m} minutes - this map is too hard for now; stopping here",
+                               n=len(self.flees), m=self.FLEE_WINDOW // 60), speak=True)
+                    stop = Stopped(_("fled too many lost fights"))
+                    stop.stay = True
+                    raise stop
+                self.restock_now()
+                self.log(_("back to {map} after fleeing a lost fight", map=atlas.label(map_id)))
+                self.travel(map_id)
+        except Respawned:
+            return                # died after all: the farm loop's next round goes back
+        finally:
+            self.fleeing = False
+        self.set_modes()
+
+    def _heal_in_town(self) -> None:
+        end = self.clock.time() + self.FLEE_HEAL_MOST
+        while self.clock.time() < end:
+            me = self.look_after()
+            if 100.0 * me.get("hp", 0) / (me.get("maxhp") or 1) >= self.FLEE_HEALED:
+                return
+            self.sleep(1.0)
+
+    def _set_back(self, map_id: int, setback: Exception) -> bool:
+        """A death (Respawned) or a lost fight (LosingFight) broke into the farm loop. True: stop."""
+        if isinstance(setback, LosingFight):
+            self._flee(map_id)
+            return False
+        return self._respawned(map_id)
 
     def _respawned(self, map_id: int) -> bool:
         """After a death: back to the map. In a dungeon there is no going back once outside (True:
@@ -285,19 +340,14 @@ class FarmingMixin(Parts):
         after we leave the monsters (about 4 minutes, measured by the player), so we stop that much
         earlier. Off with stop_on_drop_time - unless the plan or script says how much to keep
         (keep_drop): then this run keeps that much, whatever the character's setting."""
-        plan_keep = getattr(self, "drop_keep", None)
-        if plan_keep is None and not self.p.get("stop_on_drop_time", True):
+        got = self.drop_to_farm(sheet)
+        if got is None:
             return
-        left = sheet.get("drop_seconds", -1)
-        if left is None or left < 0:
-            return
-        left -= sheet.get("age", 0)
-        keep = 60 * (plan_keep if plan_keep is not None else self.p.get("drop_keep_minutes", 0))
-        tail = self.p.get("drop_tail_seconds", 300)
-        if left - tail > keep:
+        left, spare = got
+        if spare > 0:
             if not getattr(self, "said_drop", False):
                 self.said_drop = True
-                mins = int((left - tail - keep) / 60)
+                mins = int(spare / 60)
                 self.log(_("drop time: {h} h {m} min left; farming stops in about {n} minutes",
                            h=int(left // 3600), m=int(left % 3600 // 60), n=mins))
             return
@@ -305,6 +355,36 @@ class FarmingMixin(Parts):
                    m=max(0, int(left // 60))), speak=True)
         self.finish()
         raise Stopped(_("drop time used up"))
+
+    def drop_to_farm(self, sheet: dict[str, Any]) -> tuple[float, float] | None:
+        """(drop time left, seconds of it still to farm) from the sheet: what is left past the
+        time kept (this run's keep_drop, else the character's drop_keep_minutes) and the few
+        minutes it keeps running after we leave (drop_tail_seconds). None when there is no such
+        stop, or the sheet doesn't say."""
+        plan_keep = getattr(self, "drop_keep", None)
+        if plan_keep is None and not self.p.get("stop_on_drop_time", True):
+            return None
+        left = sheet.get("drop_seconds", -1)
+        if not isinstance(left, (int, float)) or left < 0:
+            return None
+        left -= sheet.get("age", 0)
+        keep = 60 * (plan_keep if plan_keep is not None else self.p.get("drop_keep_minutes", 0))
+        return left, left - self.p.get("drop_tail_seconds", 300) - keep
+
+    def drop_before_start(self) -> None:
+        """Before a farming run sets out (with level_before_start): the drop time is already down
+        to what is kept, so the whole way to the farm would be made for the first sheet there to
+        send the run back. Say so and stay where we are, as for the level."""
+        if getattr(self, "drop_keep", None) is None and not self.p.get("stop_on_drop_time", True):
+            return                       # no such stop: no sheet to read
+        got = self.drop_to_farm(self.refresh_sheet(force=True) or {})
+        if got is None or got[1] > 0:
+            return
+        self.log(_("the drop time is nearly used up ({m} min left) - not starting to farm",
+                   m=max(0, int(got[0] // 60))), speak=True)
+        stop = Stopped(_("drop time used up"))
+        stop.stay = True
+        raise stop
 
     def level_goal(self) -> int | None:
         """The experience the next level must still need for farming to go on: this run's

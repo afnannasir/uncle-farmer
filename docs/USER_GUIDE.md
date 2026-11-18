@@ -373,6 +373,15 @@ It finishes any fight first, leaves a chest that is within the boss distance of 
 
 You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
 
+### Demonized elites
+
+Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
+stronger than the monsters around them; one the same level as your character can still kill it,
+depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
+**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
+monsters left alone. One that attacks you is still fought, since standing there would be worse.
+
 ### Drop time and the next level
 
 Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:
@@ -380,13 +389,33 @@ Under **Character → Settings → Fighting**, the group **Drop time and experie
 - **Stop when the day's drop time runs out** (on by default), with **Drop time to save (minutes)**: the run ends while that much of the day's public area drop time is still left. With 0 it uses all of it.
 - **Stop before the next level** (off by default), with **Stop when the next level needs less than (experience)** (100,000 by default): for characters you keep at their level. The character sheet says how much experience the next level still needs, and Uncle Farmer reads it after every kill. Once it is under your number, it says "the next level needs only 85000 experience - going somewhere safe and stopping", leaves the monsters and ends the run. At the top level there is nothing to read, and it never stops for this.
 
-It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back.
+It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back. The drop time is checked the same
+way: when what is left is already down to what you save, it says "the drop time is nearly used up
+(... min left) - not starting to farm" and stays where it is.
 
 A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
 
 Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
 
 A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
+
+### When HP stays low
+
+On the **Low HP** tab of the character settings, **When HP stays low** says what to do when HP stays
+under **Low HP (%)** (30 by default) for **For (seconds)** (3 by default), whatever the potions and heal
+skills did:
+
+- **Fight on** (the default): the bot keeps fighting. If the character dies, it comes back as the
+  Death settings say.
+- **Stop so I can take over**: the run stops on the spot, for you to play.
+- **Go to town with the hearthstone, heal and come back (while farming)**: on the farming map, the
+  bot drops the fight and uses the hearthstone. In town it waits until HP is back to 90% (three
+  minutes at most, drinking potions as usual), looks at the restock rules, and goes back to farm.
+  A hit stops the hearthstone's cast, so a hearthstone that doesn't take the character home after
+  three tries leaves it fighting on, and it isn't tried again for a minute. With no hearthstone on
+  a key or in the bag, the bot says so once and fights on: add the Hearthstone to the restock rules.
+  The third flee within 30 minutes ends the run in town: the map is too hard for the character for
+  now. This never happens in a dungeon (its visit can't be left), on a trip or in town.
 
 ### Settings for each character
 
