@@ -50,7 +50,8 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "messages_reset": has_messengers, "character_settings": available, "character_bag": available,
         "character_scan": available and not running, "character_other": True,
         "character_export": True, "character_import": True,
-        "tools_gem": available and not running, "tools_enhance": available and not running,
+        "tools_gem": available and not running, "tools_breaker": available and not running,
+        "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
         "tools_silencer": available,
@@ -259,6 +260,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             return result
 
         tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
+                           command(_("Gem Brea&ker"), lambda e: self.open_tool("break"), "Ctrl+Shift+K"),
                            command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
                            command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
@@ -271,7 +273,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Restock &now"), lambda e: self.restock_now()),
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer())],
-                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
+                          ("tools_gem", "tools_breaker", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
                            "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer"),
                           context=True)
@@ -524,6 +526,7 @@ Main window
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
   Ctrl+G              Gem Maker
+  Ctrl+Shift+K        Gem Breaker: gems and Enhance Crystals into shards
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
@@ -598,6 +601,9 @@ Supplies: tick the potions and food to refill, and from where. Full bag: what ha
 is full, and stopping when the day's drop time runs out.
 
 TOOLS
+Tools, Gem Breaker (Ctrl+Shift+K): break the gem colours you tick, up to the level you allow, into
+shards, and if you want the Weapon or Equipment Enhance Crystals too (they cost arnebia). It can't be
+undone: the window shows what would go, and asks before it starts.
 Tools, Gem Maker (Ctrl+G): make a gem (choose which, its level and how many, or as many as you
 can; it gets more Level 1 shards from the storehouse or the Shard Market when you let it), or make
 the most of your bag (every shard into gems, then every colour up as far as it goes). Tools, Equipment Enhancer (Ctrl+Shift+E): your

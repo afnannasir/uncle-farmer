@@ -14,6 +14,7 @@ from typing import Any
 import wx
 
 from .. import settings
+from ..engine import gembreak
 from ..engine.crafting import CRYSTAL_LEVELS, MAX_ENHANCE, enhanceable, gear_name, shortfall
 from ..engine.town import shard_catalog
 from ..i18n import _
@@ -324,6 +325,109 @@ class GemMakerDialog(ToolDialog):
         for old in ("kind", "each", "raise_after", "shards", "raise"):
             c.pop(old, None)
         return True
+
+
+class GemBreakerDialog(ToolDialog):
+    """What to break into shards (engine/gembreak.py). It can't be undone: nothing is ticked at first,
+    the plan shows what would go, and Start asks once more."""
+
+    KEY = "gem_breaker"
+
+    def __init__(self, parent: wx.Window, character: str) -> None:
+        super().__init__(parent, character, _("Gem Breaker"))
+        c = self.cfg = {**gembreak.DEFAULTS, **self.cfg}
+        nb = tabs(self)
+
+        panel, box = page(nb, _("What to break"))
+        chosen: list[str] = c["colours"]
+        self.colours = sorted({col for n in self.bag if (col := colour_of(n))} | set(chosen), key=str.lower)
+        self.colour_list = labeled(panel, box, _("&Gems to break:"),
+                                   lambda w: wx.CheckListBox(w, size=wx.Size(-1, 130)), 1)
+        self.colour_list.Set([self.colour_label(col) for col in self.colours])
+        for i, col in enumerate(self.colours):
+            self.colour_list.Check(i, col in chosen)
+        f = Form(panel)
+        self.top = f.number(_("&Highest gem level to break:"), c["top"], 1, 30)
+        self.stop = f.choice(_("Break &down to:"), [_("Shards"), _("Gems of a level")],
+                             pick(gembreak.STOPS, c["stop"]))
+        self.stop_level = f.number(_("Gem &level to stop at:"), c["stop_level"], 1, 29)
+        self.keep = f.number(_("&Keep at least this many of each kind and level:"), c["keep"], 0, 100000)
+        box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 8)
+        f = group(panel, box, _("Enhance Crystals (breaking them costs arnebia)"))
+        self.weapon = f.check(_("Break &Weapon Enhance Crystals"), c["weapon"])
+        self.equipment = f.check(_("Break &Equipment Enhance Crystals"), c["equipment"])
+        self.crystal_top = f.number(_("Highest &crystal level to break:"), c["crystal_top"], 1, 8)
+
+        panel, box = page(nb, _("Craftsman and selling"))
+        f = group(panel, box, _("Craftsman and spending"))
+        self.common(f)
+        f = group(panel, box, _("Afterwards"))
+        self.sell = f.check(_("&Sell these gems' Level 1 shards at the Shard Market"), c["sell"])
+        self.plan = labeled(panel, box, _("Plan, from the last scan of your bag:"),
+                            lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 140)), 1)
+
+        def changed(_evt: wx.Event) -> None:
+            self.sync()
+        self.stop.Bind(wx.EVT_CHOICE, changed)
+        for spin in (self.top, self.stop_level, self.keep, self.crystal_top):
+            spin.Bind(wx.EVT_SPINCTRL, changed)
+        for tick in (self.weapon, self.equipment):
+            tick.Bind(wx.EVT_CHECKBOX, changed)
+        self.colour_list.Bind(wx.EVT_CHECKLISTBOX, changed)
+        self.root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
+        self.finish_layout()
+        self.sync()
+
+    def colour_label(self, colour: str) -> str:
+        got = sorted((int(m.group(1)), n) for name, n in self.bag.items()
+                     if (m := GEM.match(name)) and m.group(2).lower() == colour.lower())
+        if not got:
+            return colour
+        return _("{colour}: {what}", colour=colour,
+                 what=", ".join(_("{n} at level {lv}", n=n, lv=lv) for lv, n in got))
+
+    def settings_now(self) -> dict[str, Any]:
+        return {"colours": [col for i, col in enumerate(self.colours) if self.colour_list.IsChecked(i)],
+                "top": self.top.GetValue(), "stop": gembreak.STOPS[self.stop.GetSelection()],
+                "stop_level": self.stop_level.GetValue(), "keep": self.keep.GetValue(),
+                "weapon": self.weapon.GetValue(), "equipment": self.equipment.GetValue(),
+                "crystal_top": self.crystal_top.GetValue(), "sell": self.sell.GetValue()}
+
+    def plan_lines(self) -> list[str]:
+        gone, made = gembreak.outcome(self.bag, self.settings_now())
+        if not gone:
+            return [_("Nothing would be broken: tick what to break.")]
+        prices = {k.lower(): (v or {}).get("price") or 0 for k, v in shard_catalog()[0].items()}
+        lines = [_("Breaks {n} {item}.", n=n, item=gembreak.pretty(name)) for name, n in gone.items()]
+        lines += [_("Leaves {n} {item}.", n=n, item=gembreak.pretty(name)) for name, n in made.items()]
+        worth = sum(n * prices.get(name, 0) for name, n in made.items())
+        if worth:
+            lines.append(_("The shards are worth about {total} arnebia at the last seen prices.", total=worth))
+        if any((item := gembreak.parse(name)) and item.crystal for name in gone):
+            lines.append(_("Crystals: what they give and cost is read from the craftsman's page."))
+        return lines
+
+    def sync(self) -> None:
+        _enable(self.stop_level, gembreak.STOPS[self.stop.GetSelection()] == "level")
+        _enable(self.crystal_top, self.weapon.GetValue() or self.equipment.GetValue())
+        self.plan.ChangeValue("\n".join(self.plan_lines()))
+
+    def collect(self) -> bool:
+        now = self.settings_now()
+        if not (now["colours"] or now["weapon"] or now["equipment"]):
+            wx.MessageBox(_("Tick at least one gem, or a kind of crystal."), _("Gem Breaker"),
+                          wx.OK | wx.ICON_INFORMATION, self)
+            self.colour_list.SetFocus()
+            return False
+        self.cfg.update(now)
+        return True
+
+    def done(self, code: int) -> None:
+        if code == START and wx.MessageBox(
+                _("Breaking can't be undone.") + "\n" + "\n".join(self.plan_lines()) + "\n" + _("Break them now?"),
+                _("Gem Breaker"), wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING, self) != wx.YES:
+            return
+        super().done(code)
 
 
 class EnhancerDialog(ToolDialog):

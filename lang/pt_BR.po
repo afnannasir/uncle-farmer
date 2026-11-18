@@ -214,6 +214,9 @@ msgstr "&Criador de gemas"
 msgid "&Gem:"
 msgstr "&Gema:"
 
+msgid "&Gems to break:"
+msgstr "&Gemas a quebrar:"
+
 msgid "&Get it:"
 msgstr "&Obter:"
 
@@ -249,6 +252,9 @@ msgstr "Item da &pedra de retorno:"
 msgid "&Help"
 msgstr "A&juda"
 
+msgid "&Highest gem level to break:"
+msgstr "Nível mais alto de gema a quebrar (&H):"
+
 msgid "&History"
 msgstr "&Histórico"
 
@@ -266,6 +272,9 @@ msgstr "&Inserir comando"
 
 msgid "&Install"
 msgstr "&Instalar"
+
+msgid "&Keep at least this many of each kind and level:"
+msgstr "Manter pelo menos esta quantidade de cada tipo e nível (&K):"
 
 msgid "&Keep at least this many of each level:"
 msgstr "&Manter pelo menos esta quantidade de cada nível:"
@@ -453,6 +462,9 @@ msgstr "&Agendamentos:"
 
 msgid "&Script commands"
 msgstr "&Comandos de script"
+
+msgid "&Sell these gems' Level 1 shards at the Shard Market"
+msgstr "Vender os fragmentos de nível 1 destas gemas no Shard Market (&S)"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr ""
@@ -784,6 +796,9 @@ msgstr "Após um &limite de tempo"
 msgid "After farming"
 msgstr "Depois da coleta"
 
+msgid "Afterwards"
+msgstr "Depois"
+
 msgid "Agent"
 msgstr "Agente"
 
@@ -924,6 +939,24 @@ msgstr "Abismo sem fundo"
 
 msgid "Bought:"
 msgstr "Comprado:"
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr "Quebrar &Equipment Enhance Crystals"
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr "Quebrar &Weapon Enhance Crystals"
+
+msgid "Break &down to:"
+msgstr "Quebrar até (&D):"
+
+msgid "Break them now?"
+msgstr "Quebrar agora?"
+
+msgid "Breaking can't be undone."
+msgstr "Quebrar não pode ser desfeito."
+
+msgid "Breaks {n} {item}."
+msgstr "Quebra {n} {item}."
 
 msgid "Buffs off."
 msgstr "Bônus desativados."
@@ -1247,6 +1280,9 @@ msgstr "Não foi possível."
 msgid "Cra&ftsman:"
 msgstr "&Artesão:"
 
+msgid "Craftsman and selling"
+msgstr "Artesão e venda"
+
 msgid "Craftsman and spending"
 msgstr "Artesão e gastos"
 
@@ -1266,6 +1302,9 @@ msgstr ""
 
 msgid "Crystals"
 msgstr "Cristais"
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
+msgstr "Cristais: o que dão e custam é lido na página do artesão."
 
 msgid "Cut Flesh"
 msgstr "Cortar Carne"
@@ -1452,6 +1491,9 @@ msgstr "Aprimorar &até (+):"
 
 msgid "Enhance Crystals"
 msgstr "Cristais de aprimoramento"
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
+msgstr "Enhance Crystals (quebrá-los custa arnebia)"
 
 msgid "Enter a name for the plan."
 msgstr "Informe um nome para o plano."
@@ -1709,6 +1751,15 @@ msgstr "Equipamento de nível {lo} ou superior: cristais de nível {lv}"
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr "Equipamento dos níveis {lo} a {hi}: cristais de nível {lv}"
 
+msgid "Gem &level to stop at:"
+msgstr "Nível de gema onde parar (&L):"
+
+msgid "Gem Brea&ker"
+msgstr "Gem Brea&ker"
+
+msgid "Gem Breaker"
+msgstr "Gem Breaker"
+
 msgid "Gem Maker"
 msgstr "Criador de gemas"
 
@@ -1717,6 +1768,9 @@ msgstr "Criador de Gemas, Aprimorador de Equipamentos e tarefas"
 
 msgid "Gems"
 msgstr "Gemas"
+
+msgid "Gems of a level"
+msgstr "Gemas de um nível"
 
 msgid "Get crystal shards &from:"
 msgstr "Obter fragmentos de cristal &de:"
@@ -1867,6 +1921,9 @@ msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
 msgstr ""
 "As mensagens ocultas permanecem nos buffers de conversa atuais. Somente as regras de filtro são salvas."
+
+msgid "Highest &crystal level to break:"
+msgstr "Nível mais alto de &cristal a quebrar:"
 
 msgid "Highest l&evel to make:"
 msgstr "Maior &nível a criar:"
@@ -2133,6 +2190,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Sair da área de coleta com esta antecedência em &minutos da meia hora (incluindo o trajeto):"
+
+msgid "Leaves {n} {item}."
+msgstr "Deixa {n} {item}."
 
 msgid "Let everyone get replies &again"
 msgstr "Permitir que todos recebam respostas &novamente"
@@ -2583,6 +2643,9 @@ msgstr "Nada hoje ainda."
 
 msgid "Nothing was recorded: check the microphone the game uses."
 msgstr "Nada foi gravado: verifique o microfone usado pelo jogo."
+
+msgid "Nothing would be broken: tick what to break."
+msgstr "Nada seria quebrado: marque o que quebrar."
 
 msgid "Nothing yet."
 msgstr "Nada ainda."
@@ -3912,6 +3975,10 @@ msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 "O personagem usado para entrar no script não é um personagem salvo conhecido: {name}"
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr ""
+"Os fragmentos valem cerca de {total} arnebia pelos últimos preços vistos."
+
 msgid "The sound list must be a list of sound entries."
 msgstr "A lista de sons deve conter entradas de som."
 
@@ -4059,6 +4126,9 @@ msgstr "Quinta-feira"
 
 msgid "Tick at least one day."
 msgstr "Marque pelo menos um dia."
+
+msgid "Tick at least one gem, or a kind of crystal."
+msgstr "Marque pelo menos uma gema ou um tipo de cristal."
 
 msgid "Tick the monsters to fight:"
 msgstr "Marque os monstros que devem ser atacados:"
@@ -4431,6 +4501,9 @@ msgstr "O que falta"
 msgid "What the bot knows about this character:"
 msgstr "O que o bot sabe sobre este personagem:"
 
+msgid "What to break"
+msgstr "O que quebrar"
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4779,6 +4852,15 @@ msgstr "{n} {shard} comprado(s): não há espaço na bolsa"
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
 msgstr "{n} {shard} comprado(s): a Arnebia restante não permite comprar mais"
+
+msgid "breaking gems"
+msgstr "quebrando gemas"
+
+msgid "broke {n} gems and crystals"
+msgstr "{n} gemas e cristais quebrados"
+
+msgid "broke {n} {item} into {k} {product}"
+msgstr "{n} {item} quebrados em {k} {product}"
 
 msgid "buff"
 msgstr "buff"
@@ -5965,6 +6047,9 @@ msgid ""
 msgstr ""
 "fragmentos ou Arnebia insuficientes para um cristal de aprimoramento de {kind} nível {lv} ({need} fragmentos, taxa {fee})"
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr "arnebia livre insuficiente para quebrar {item} (taxa de {fee} cada)"
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr "Arnebia restante insuficiente para comprar {shard}"
 
@@ -6024,6 +6109,9 @@ msgstr "nada"
 msgid "nothing came of that - asking for {n} {gem} tries instead"
 msgstr "nada resultou disso — pedindo {n} tentativas de {gem} em vez disso"
 
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr "nada resultou disso — pedindo para quebrar {n} {item} em vez disso"
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6053,6 +6141,9 @@ msgstr ""
 
 msgid "nothing of the collection was sold"
 msgstr "nenhum item coletado foi vendido"
+
+msgid "nothing to break with these settings"
+msgstr "nada para quebrar com estas configurações"
 
 msgid "nothing to collect today"
 msgstr "nada para coletar hoje"
@@ -6602,6 +6693,9 @@ msgstr "não é possível multiplicar texto"
 msgid "that didn't work: {err}"
 msgstr "isso não funcionou: {err}"
 
+msgid "that would leave {n} {item}"
+msgstr "isso deixaria {n} {item}"
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr "o Abrigo de Animais não tem nada para alimentar agora"
 
@@ -6625,17 +6719,26 @@ msgstr "a Gang Entrance levou a {now}, não a {was} — ficando aqui"
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "a Entrada da Guilda não lista nenhuma guilda chamada {gang}"
 
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
+msgstr "o Gem Breaker parou: {n} tipos seguidos não puderam ser quebrados"
+
 msgid "the Gem Craftsman didn't ask how many"
 msgstr "o Artesão de Gemas não perguntou a quantidade"
 
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr "o Artesão de Gemas não perguntou quantas gemas {gem} criar"
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr "o Gem Craftsman não perguntou quantos {item} quebrar"
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr "o Artesão de Gemas não listou {gem}"
 
 msgid "the Gem Craftsman didn't list {item}"
 msgstr "o Artesão de Gemas não listou {item}"
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
+msgstr "o Gem Craftsman está aberto; nada foi quebrado (só verificação)"
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "o Artesão de Gemas está aberto; nada foi criado (somente verificação)"
@@ -6650,6 +6753,9 @@ msgstr "o Artesão de Gemas não oferece uma forma de criar {gem}"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "o menu do Artesão de Gemas não tem síntese de gemas"
+
+msgid "the Gem Craftsman's menu has no way to break gems"
+msgstr "o menu do Gem Craftsman não tem como quebrar gemas"
 
 msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
 msgstr "a página de {gem} do Gem Craftsman não apareceu — nada foi pago"
@@ -6770,6 +6876,9 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "a bolsa está {pct}% cheia de itens que você mantém — indo para um local seguro e parando"
+
+msgid "the bag showed no change after breaking {item}"
+msgstr "a mochila não mudou depois de quebrar {item}"
 
 msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
@@ -7386,6 +7495,9 @@ msgstr "com {n} minutos de tempo de coleta preservados"
 msgid "with {skill}"
 msgstr "com {skill}"
 
+msgid "would break {n} {item}"
+msgstr "quebraria {n} {item}"
+
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
 msgstr ""
@@ -7938,6 +8050,9 @@ msgstr "{n} vezes, de {first} a {last}: {why}"
 
 msgid "{n} used up"
 msgstr "{n} usados"
+
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
+msgstr "{n} {item}: cada um dá {k} {product} por {fee} arnebia"
 
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr "{n} {shard} na bolsa; um cristal de nível {lv} exige {per}"

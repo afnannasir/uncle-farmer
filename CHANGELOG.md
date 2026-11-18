@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Gem Breaker**
+
+- A new tool, **Tools, Gem Breaker** (Ctrl+Shift+K), and the script command `gem_breaker`: breaks the
+  gem colours you tick into shards, up to the level you allow (2 at first), down to shards or to a
+  level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
+  broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
+  It can sell the Level 1 shards afterwards. The window shows what would go, and Start asks first.
+
 **Back into the gang's inner hall**
 
 - A run started in the gang's inner hall and ended outside it pushed against the hall's one-way

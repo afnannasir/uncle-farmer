@@ -214,6 +214,9 @@ msgstr "&Gem Maker"
 msgid "&Gem:"
 msgstr "&Gem:"
 
+msgid "&Gems to break:"
+msgstr "Torne wale &gems:"
+
 msgid "&Get it:"
 msgstr "&Kahan se lein:"
 
@@ -249,6 +252,9 @@ msgstr "&Hearthstone cheez:"
 msgid "&Help"
 msgstr "&Madad"
 
+msgid "&Highest gem level to break:"
+msgstr "Torne ka sab se ooncha gem level (&H):"
+
 msgid "&History"
 msgstr "&Tareekhcha"
 
@@ -266,6 +272,9 @@ msgstr "&Command shamil karein"
 
 msgid "&Install"
 msgstr "&Install"
+
+msgid "&Keep at least this many of each kind and level:"
+msgstr "Har qism aur level ke kam az kam itne rakhein (&K):"
 
 msgid "&Keep at least this many of each level:"
 msgstr "&Har level ke kam az kam itne rakhein:"
@@ -453,6 +462,9 @@ msgstr "&Schedules:"
 
 msgid "&Script commands"
 msgstr "&Script ke commands"
+
+msgid "&Sell these gems' Level 1 shards at the Shard Market"
+msgstr "In gems ke Level 1 shards Shard Market mein bechein (&S)"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Jama kiya hua Aquaculture, Ore ya Herb Buyer ko &bechein"
@@ -780,6 +792,9 @@ msgstr "&Waqt ki hadd ke baad"
 msgid "After farming"
 msgstr "Farming ke baad"
 
+msgid "Afterwards"
+msgstr "Us ke baad"
+
 msgid "Agent"
 msgstr "Agent"
 
@@ -919,6 +934,24 @@ msgstr "Bottomless pit"
 
 msgid "Bought:"
 msgstr "Kharide gaye:"
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr "&Equipment Enhance Crystals toren"
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr "&Weapon Enhance Crystals toren"
+
+msgid "Break &down to:"
+msgstr "Kahan tak torna hai (&D):"
+
+msgid "Break them now?"
+msgstr "Abhi toren?"
+
+msgid "Breaking can't be undone."
+msgstr "Torna wapas nahi ho sakta."
+
+msgid "Breaks {n} {item}."
+msgstr "{n} {item} tootenge."
 
 msgid "Buffs off."
 msgstr "Buffs band."
@@ -1241,6 +1274,9 @@ msgstr "Nahi kar saka."
 msgid "Cra&ftsman:"
 msgstr "&Craftsman:"
 
+msgid "Craftsman and selling"
+msgstr "Craftsman aur bechna"
+
 msgid "Craftsman and spending"
 msgstr "Craftsman aur kharch"
 
@@ -1260,6 +1296,10 @@ msgstr ""
 
 msgid "Crystals"
 msgstr "Crystals"
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
+msgstr ""
+"Crystals: ye kya dete hain aur kitne ke hain, craftsman ke page se parha jata hai."
 
 msgid "Cut Flesh"
 msgstr "Cut Flesh (gosht)"
@@ -1444,6 +1484,9 @@ msgstr "&Yahan tak enhance karein (+):"
 
 msgid "Enhance Crystals"
 msgstr "Enhance Crystals"
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
+msgstr "Enhance Crystals (inhen torne mein arnebia lagta hai)"
 
 msgid "Enter a name for the plan."
 msgstr "Mansoobe ka naam likhein."
@@ -1701,6 +1744,15 @@ msgstr "Level {lo} aur us se upar ka gear: Level {lv} crystals"
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr "Level {lo} se {hi} tak ka gear: Level {lv} crystals"
 
+msgid "Gem &level to stop at:"
+msgstr "Rukne ka gem &level:"
+
+msgid "Gem Brea&ker"
+msgstr "Gem Brea&ker"
+
+msgid "Gem Breaker"
+msgstr "Gem Breaker"
+
 msgid "Gem Maker"
 msgstr "Gem Maker"
 
@@ -1709,6 +1761,9 @@ msgstr "Gem Maker, Equipment Enhancer aur roz ke kaam"
 
 msgid "Gems"
 msgstr "Gems"
+
+msgid "Gems of a level"
+msgstr "Ek level ke gems"
 
 msgid "Get crystal shards &from:"
 msgstr "Crystal shards &kahan se:"
@@ -1859,6 +1914,9 @@ msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
 msgstr ""
 "Chhupe paighaam mojooda chat mein rehte hain. Sirf filter ke qawaneen mahfooz hote hain."
+
+msgid "Highest &crystal level to break:"
+msgstr "Torne ka sab se ooncha &crystal level:"
 
 msgid "Highest l&evel to make:"
 msgstr "Banane ka sab se &ooncha level:"
@@ -2125,6 +2183,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Aadhe ghante se itne &minute pehle farm chhodein (wahan tak ka rasta shamil):"
+
+msgid "Leaves {n} {item}."
+msgstr "{n} {item} bachenge."
 
 msgid "Let everyone get replies &again"
 msgstr "Sab ko dobara jawab dene &dein"
@@ -2574,6 +2635,9 @@ msgstr "Aaj abhi kuch nahi."
 
 msgid "Nothing was recorded: check the microphone the game uses."
 msgstr "kuch record nahi hua: game ka microphone check karein."
+
+msgid "Nothing would be broken: tick what to break."
+msgstr "Kuch nahi tootega: jo torna hai us par tick karein."
 
 msgid "Nothing yet."
 msgstr "Abhi kuch nahi."
@@ -3894,6 +3958,9 @@ msgstr "Script mahfooz ho gayi, lekin purani file hataayi nahi ja saki: {err}"
 msgid "The script's login character is not a known saved character: {name}"
 msgstr "Script ka login kirdar maloom mahfooz kirdar nahi: {name}"
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr "Aakhri dekhi qeemat par shards taqreeban {total} arnebia ke hain."
+
 msgid "The sound list must be a list of sound entries."
 msgstr "Sound list sound entries ki list honi chahiye."
 
@@ -4040,6 +4107,9 @@ msgstr "Jumeraat"
 
 msgid "Tick at least one day."
 msgstr "Kam az kam aik din par nishan lagayein."
+
+msgid "Tick at least one gem, or a kind of crystal."
+msgstr "Kam az kam ek gem ya crystal ki ek qism par tick karein."
 
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
@@ -4413,6 +4483,9 @@ msgstr "Jo kam hai"
 msgid "What the bot knows about this character:"
 msgstr "Bot is kirdaar ke baare mein kya jaanta hai:"
 
+msgid "What to break"
+msgstr "Kya torna hai"
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4762,6 +4835,15 @@ msgstr "{n} {shard} kharide: baste mein mazeed ki jagah nahi"
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
 msgstr "{n} {shard} kharide: spare arnebia mazeed ke liye kaafi nahi"
+
+msgid "breaking gems"
+msgstr "gems torna"
+
+msgid "broke {n} gems and crystals"
+msgstr "{n} gems aur crystals toote"
+
+msgid "broke {n} {item} into {k} {product}"
+msgstr "{n} {item} tor kar {k} {product} banaye"
 
 msgid "buff"
 msgstr "buff"
@@ -5955,6 +6037,9 @@ msgid ""
 msgstr ""
 "Level {lv} {kind} Enhance Crystal ke liye kaafi shards ya spare arnebia nahi ({need} shards, fee {fee})"
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr "{item} torne ke liye kaafi faltu arnebia nahi (fee {fee} har ek)"
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr "{shard} kharidne ke liye kaafi spare arnebia nahi"
 
@@ -6014,6 +6099,9 @@ msgstr "kuch nahi"
 msgid "nothing came of that - asking for {n} {gem} tries instead"
 msgstr "us se kuch nahi bana - ab {gem} ki {n} koshishen maang rahe hain"
 
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr "us se kuch nahi hua - ab {n} {item} torne ko keh rahe hain"
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6042,6 +6130,9 @@ msgstr "{gem} banane ke liye kuch baqi nahi, aur mazeed {shard} lana band hai"
 
 msgid "nothing of the collection was sold"
 msgstr "collection mein se kuch nahi bika"
+
+msgid "nothing to break with these settings"
+msgstr "in settings ke saath torne ko kuch nahi"
 
 msgid "nothing to collect today"
 msgstr "aaj lene ko kuch nahi"
@@ -6589,6 +6680,9 @@ msgstr "text ko multiply nahi kar sakte"
 msgid "that didn't work: {err}"
 msgstr "yeh kaam nahi kiya: {err}"
 
+msgid "that would leave {n} {item}"
+msgstr "is se {n} {item} bachenge"
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr "Animal Shed par abhi khilane ko kuch nahi"
 
@@ -6613,17 +6707,26 @@ msgstr "Gang Entrance {now} le gaya, {was} nahi - yahin ruk rahe hain"
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "Gang Entrance par {gang} naam ki koi gang nahi"
 
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
+msgstr "Gem Breaker ruk gaya: lagataar {n} qismen toot nahi sakin"
+
 msgid "the Gem Craftsman didn't ask how many"
 msgstr "Gem Craftsman ne kitne poocha hi nahi"
 
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr "Gem Craftsman ne nahi poocha ke kitne {gem} banane hain"
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr "Gem Craftsman ne nahi poocha ke kitne {item} torne hain"
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr "Gem Craftsman ne {gem} list nahi kiya"
 
 msgid "the Gem Craftsman didn't list {item}"
 msgstr "Gem Craftsman ne {item} list nahi kiya"
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
+msgstr "Gem Craftsman khula hai; kuch nahi toota (sirf check)"
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "Gem Craftsman khula hai; kuch nahi banaya (sirf check)"
@@ -6638,6 +6741,9 @@ msgstr "Gem Craftsman ne {gem} banane ka koi tareeqa nahi diya"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "Gem Craftsman ke menu mein gem synthesis nahi hai"
+
+msgid "the Gem Craftsman's menu has no way to break gems"
+msgstr "Gem Craftsman ke menu mein gems torne ka option nahi hai"
 
 msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
 msgstr "Gem Craftsman ka {gem} wala page nahi khula - kuch ada nahi kiya gaya"
@@ -6757,6 +6863,9 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "basta {pct}% bhara hai un cheezon se jo aap rakhte hain - kisi mehfooz jagah ja kar ruk rahe hain"
+
+msgid "the bag showed no change after breaking {item}"
+msgstr "{item} torne ke baad basta nahi badla"
 
 msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
@@ -7373,6 +7482,9 @@ msgstr "{n} minute drop ka waqt mahfooz rakh kar"
 msgid "with {skill}"
 msgstr "{skill} ke saath"
 
+msgid "would break {n} {item}"
+msgstr "{n} {item} tootenge"
+
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
 msgstr ""
@@ -7926,6 +8038,9 @@ msgstr "{n} baar, {first} se {last} tak: {why}"
 
 msgid "{n} used up"
 msgstr "{n} istemal hue"
+
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
+msgstr "{n} {item}: har ek {fee} arnebia mein {k} {product} deta hai"
 
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr "baste mein {n} {shard}; ek Level {lv} crystal mein {per} lagta hai"

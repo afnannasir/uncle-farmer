@@ -786,6 +786,8 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
 
     gem_maker          run the Gem Maker as set up in Tools
     gem_maker check    only look: walk there, read the menus and prices, change nothing
+    gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
+    gem_breaker check  only look: say what would be broken, break nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 
@@ -1183,6 +1185,7 @@ Use this section when you need a quick reminder of a command or its syntax.
 ### Tools and daily activities
 
     gem_maker [check]
+    gem_breaker [check]
     enhance [check]
     chores [check] [only=...]
     gather [check]

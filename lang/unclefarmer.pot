@@ -213,6 +213,9 @@ msgstr ""
 msgid "&Gem:"
 msgstr ""
 
+msgid "&Gems to break:"
+msgstr ""
+
 msgid "&Get it:"
 msgstr ""
 
@@ -247,6 +250,9 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
+msgid "&Highest gem level to break:"
+msgstr ""
+
 msgid "&History"
 msgstr ""
 
@@ -263,6 +269,9 @@ msgid "&Insert command"
 msgstr ""
 
 msgid "&Install"
+msgstr ""
+
+msgid "&Keep at least this many of each kind and level:"
 msgstr ""
 
 msgid "&Keep at least this many of each level:"
@@ -447,6 +456,9 @@ msgid "&Schedules:"
 msgstr ""
 
 msgid "&Script commands"
+msgstr ""
+
+msgid "&Sell these gems' Level 1 shards at the Shard Market"
 msgstr ""
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
@@ -769,6 +781,9 @@ msgstr ""
 msgid "After farming"
 msgstr ""
 
+msgid "Afterwards"
+msgstr ""
+
 msgid "Agent"
 msgstr ""
 
@@ -900,6 +915,24 @@ msgid "Bottomless pit"
 msgstr ""
 
 msgid "Bought:"
+msgstr ""
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr ""
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr ""
+
+msgid "Break &down to:"
+msgstr ""
+
+msgid "Break them now?"
+msgstr ""
+
+msgid "Breaking can't be undone."
+msgstr ""
+
+msgid "Breaks {n} {item}."
 msgstr ""
 
 msgid "Buffs off."
@@ -1220,6 +1253,9 @@ msgstr ""
 msgid "Cra&ftsman:"
 msgstr ""
 
+msgid "Craftsman and selling"
+msgstr ""
+
 msgid "Craftsman and spending"
 msgstr ""
 
@@ -1234,6 +1270,9 @@ msgid ""
 msgstr ""
 
 msgid "Crystals"
+msgstr ""
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 
 msgid "Cut Flesh"
@@ -1418,6 +1457,9 @@ msgid "Enhance &up to (+):"
 msgstr ""
 
 msgid "Enhance Crystals"
+msgstr ""
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
 msgid "Enter a name for the plan."
@@ -1668,6 +1710,15 @@ msgstr ""
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr ""
 
+msgid "Gem &level to stop at:"
+msgstr ""
+
+msgid "Gem Brea&ker"
+msgstr ""
+
+msgid "Gem Breaker"
+msgstr ""
+
 msgid "Gem Maker"
 msgstr ""
 
@@ -1675,6 +1726,9 @@ msgid "Gem Maker, Equipment Enhancer and chores"
 msgstr ""
 
 msgid "Gems"
+msgstr ""
+
+msgid "Gems of a level"
 msgstr ""
 
 msgid "Get crystal shards &from:"
@@ -1820,6 +1874,9 @@ msgstr ""
 
 msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
+msgstr ""
+
+msgid "Highest &crystal level to break:"
 msgstr ""
 
 msgid "Highest l&evel to make:"
@@ -2072,6 +2129,9 @@ msgstr ""
 
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
+msgstr ""
+
+msgid "Leaves {n} {item}."
 msgstr ""
 
 msgid "Let everyone get replies &again"
@@ -2504,6 +2564,9 @@ msgid "Nothing today yet."
 msgstr ""
 
 msgid "Nothing was recorded: check the microphone the game uses."
+msgstr ""
+
+msgid "Nothing would be broken: tick what to break."
 msgstr ""
 
 msgid "Nothing yet."
@@ -3758,6 +3821,9 @@ msgstr ""
 msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr ""
+
 msgid "The sound list must be a list of sound entries."
 msgstr ""
 
@@ -3884,6 +3950,9 @@ msgid "Thursday"
 msgstr ""
 
 msgid "Tick at least one day."
+msgstr ""
+
+msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
 
 msgid "Tick the monsters to fight:"
@@ -4226,6 +4295,9 @@ msgstr ""
 msgid "What the bot knows about this character:"
 msgstr ""
 
+msgid "What to break"
+msgstr ""
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4562,6 +4634,15 @@ msgid "bought {n} {shard}: the bag has no room for more"
 msgstr ""
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
+msgstr ""
+
+msgid "breaking gems"
+msgstr ""
+
+msgid "broke {n} gems and crystals"
+msgstr ""
+
+msgid "broke {n} {item} into {k} {product}"
 msgstr ""
 
 msgid "buff"
@@ -5677,6 +5758,9 @@ msgid ""
 "not enough shards or spare arnebia for a Level {lv} {kind} Enhance Crystal ({need} shards, fee {fee})"
 msgstr ""
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr ""
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr ""
 
@@ -5735,6 +5819,9 @@ msgstr ""
 msgid "nothing came of that - asking for {n} {gem} tries instead"
 msgstr ""
 
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -5759,6 +5846,9 @@ msgid "nothing left to make {gem} from, and getting more {shard} is off"
 msgstr ""
 
 msgid "nothing of the collection was sold"
+msgstr ""
+
+msgid "nothing to break with these settings"
 msgstr ""
 
 msgid "nothing to collect today"
@@ -6291,6 +6381,9 @@ msgstr ""
 msgid "that didn't work: {err}"
 msgstr ""
 
+msgid "that would leave {n} {item}"
+msgstr ""
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr ""
 
@@ -6313,16 +6406,25 @@ msgstr ""
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr ""
 
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
+msgstr ""
+
 msgid "the Gem Craftsman didn't ask how many"
 msgstr ""
 
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr ""
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr ""
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman didn't list {item}"
+msgstr ""
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
 msgstr ""
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
@@ -6336,6 +6438,9 @@ msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
+msgstr ""
+
+msgid "the Gem Craftsman's menu has no way to break gems"
 msgstr ""
 
 msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
@@ -6445,6 +6550,9 @@ msgstr ""
 
 msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
+msgstr ""
+
+msgid "the bag showed no change after breaking {item}"
 msgstr ""
 
 msgid ""
@@ -7015,6 +7123,9 @@ msgstr ""
 msgid "with {skill}"
 msgstr ""
 
+msgid "would break {n} {item}"
+msgstr ""
+
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
 msgstr ""
@@ -7550,6 +7661,9 @@ msgid "{n} times, {first} to {last}: {why}"
 msgstr ""
 
 msgid "{n} used up"
+msgstr ""
+
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
 msgstr ""
 
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"

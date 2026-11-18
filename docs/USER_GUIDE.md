@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -867,6 +867,19 @@ From level 2, the shards a failed combine leaves are kept for the +20% on the ne
 Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
 
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.
+
+### Gem Breaker
+
+Open **Tools, Gem Breaker** or press **Ctrl+Shift+K**. It uses the Gem Craftsman's **break into shards**. Breaking can't be undone, so nothing is ticked at first, the window shows what would go, and **Start** asks once more.
+
+A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 Level 1 shards. So a Level 2 gem ends up as 9 shards and a Level 3 gem as 27. That is less than it took to make them.
+
+- **Gems to break**: the colours that may be broken.
+- **Highest gem level to break**: gems above it are left alone. It starts at 2, so the gems you put in your equipment are safe until you raise it. Gems at or below it are broken all the way down.
+- **Break down to**: shards, or gems of a level you choose.
+- **Keep at least**: how many of each kind and level stay.
+- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes and their own highest level, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
+- **Sell these gems' Level 1 shards**: off at first. Sells them at the Shard Market afterwards.
 
 ### Equipment Enhancer
 
