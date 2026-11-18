@@ -11,6 +11,16 @@
   stays ticked, and the next one looted is used. Cards that aren't ticked are never used. The
   card chosen before is the one ticked.
 
+**The skill page turns with the game's own key**
+
+- The bot always turned the skill page with Caps Lock, the game's default. A player who gives
+  that job to another key in the game's options (Space, for example) had every Caps Lock thrown
+  away by the game: the page never turned, and the skills on the other page were pressed on
+  empty keys. An Elf with two skills on her second page cast only those two for a whole night
+  (88 casts an hour, a kill every 80 seconds). The bot now reads the page key from the game's
+  key settings like the skill keys, and says which key it uses when it isn't Caps Lock. Caps
+  Lock stays the key when the game names no other.
+
 ## 1.2.0
 
 **XP loser: die at the nearest village**

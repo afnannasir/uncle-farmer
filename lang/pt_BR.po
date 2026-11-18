@@ -6950,6 +6950,9 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 "não foi possível ler a lista de preços dos fragmentos (data\\shards.json)"
 
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
+
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
