@@ -158,3 +158,33 @@ def test_off_the_farm_the_stop_choice_still_stops(clock: Clock) -> None:
     h.low_since = clock.now - 5
     with pytest.raises(Stopped):
         h.look_after()
+
+
+def test_no_second_flee_while_the_hearthstone_is_being_used(clock: Clock) -> None:
+    """go_home fights back when a hit stops the cast, and that fight's look_after must not flee
+    again: nothing would catch the second LosingFight."""
+    b = Fleer([40, 95])
+    during: list[bool] = []
+
+    def go_home(tries: int = 3) -> bool:
+        during.append(b.may_flee())                   # still on the farm map, HP low
+        b.map = 1081
+        return True
+    b.go_home = go_home                               # type: ignore[method-assign]
+    b._flee(5281)                                    # pyright: ignore[reportPrivateUsage]
+    assert during == [False]
+    assert b.may_flee() is True                       # and allowed again afterwards
+
+
+@pytest.mark.usefixtures("no_repair")
+def test_with_hp_fine_the_hearthstone_is_not_looked_for(clock: Clock) -> None:
+    from test_health import H, low_red
+    h = low_red(H(dict(FLEE)), hp=1000)               # full HP
+    asked: list[int] = []
+
+    def may_flee() -> bool:
+        asked.append(1)
+        return True
+    h.may_flee = may_flee                             # type: ignore[method-assign]
+    h.look_after()
+    assert asked == []                                # it can read the bag: only once HP is low

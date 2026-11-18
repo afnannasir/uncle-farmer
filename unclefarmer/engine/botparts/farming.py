@@ -248,6 +248,7 @@ class FarmingMixin(Parts):
         self.flees = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW] + [now]
         self.log(_("HP stayed under {pct}% - leaving the fight: hearthstone to town", pct=self.p["panic_below"]),
                  speak=True)
+        self.fleeing = True
         try:
             with self.timed("town"):
                 if not self.go_home():
@@ -266,6 +267,8 @@ class FarmingMixin(Parts):
                 self.travel(map_id)
         except Respawned:
             return                # died after all: the farm loop's next round goes back
+        finally:
+            self.fleeing = False
         self.set_modes()
 
     def _heal_in_town(self) -> None:

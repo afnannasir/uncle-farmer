@@ -156,6 +156,7 @@ class Parts:
     flees: list[float]          # when lost fights were fled (FarmingMixin._flee)
     flee_wait_until: float      # a hearthstone that failed: not tried again before
     said_no_hearth: bool
+    fleeing: bool               # _flee is under way: no second flee from inside it (may_flee)
     away_reason: str | None     # why we left the farm's map ourselves (the bag trip), for the way back
     started: float
     resumed_at: float

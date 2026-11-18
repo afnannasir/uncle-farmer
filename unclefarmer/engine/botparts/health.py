@@ -520,6 +520,8 @@ class HealthMixin(Parts):
         within FLEE_RETRY of a hearthstone that didn't take us home."""
         if not self.p.get("flee_on_panic", False) or self.in_instance or getattr(self, "traveling", False):
             return False
+        if getattr(self, "fleeing", False):
+            return False        # already on the way out: go_home's fighting back mustn't flee again
         farm = getattr(self, "farming_on", None)
         if farm is None or self.clock.time() < getattr(self, "flee_wait_until", 0.0):
             return False
@@ -564,7 +566,8 @@ class HealthMixin(Parts):
         if not self.requests.empty():
             self.run_requests()
 
-        flee = self.may_flee()
+        # only with HP low: may_flee() looks for a hearthstone, which can read the bag
+        flee = share < p["panic_below"] and self.may_flee()
         if share < p["panic_below"] and (p.get("stop_on_panic", False) or flee):
             self.low_since = self.low_since or now
             if now - self.low_since > p["panic_after"]:
