@@ -236,23 +236,59 @@ def test_a_check_breaks_nothing_and_reads_what_a_crystal_costs(game: Any) -> Non
     assert "each gives 20 Weapon Enhance Crystal Shard for 357 arnebia" in text
 
 
-def test_it_can_sell_the_shards_it_leaves(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
-    sold: list[list[str]] = []
+def test_it_sells_by_the_bag_rules_when_done(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    sold: list[int] = []
 
-    def sell(bot: Any, names: Any, at_most: Any = None) -> int:
-        sold.append(list(names))
+    def sell(bot: Any) -> int:
+        sold.append(1)
         return 1
-    monkeypatch.setattr(town, "sell_shards", sell)
+    monkeypatch.setattr(town, "sell_shards_now", sell)
     b, _c = game({"Level 1 Ruby": 1})
     gembreak.run(as_bot(b), job(sell=True))
-    assert sold == [["Level 1 Ruby Shard"]]
+    assert sold == [1]
 
 
-def test_shards_are_not_sold_unless_asked(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(town, "sell_shards", returning(None))
+def test_nothing_is_sold_unless_asked(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    sold: list[int] = []
+
+    def sell(bot: Any) -> int:
+        sold.append(1)
+        return 1
+    monkeypatch.setattr(town, "sell_shards_now", sell)
     b, _c = game({"Level 1 Ruby": 1})
     gembreak.run(as_bot(b), job())
-    assert count(b, "Level 1 Ruby Shard") == 3
+    assert sold == [] and count(b, "Level 1 Ruby Shard") == 3
+
+
+def test_too_heavy_sells_and_goes_on(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    b, c = game({"Level 1 Ruby": 1})
+    c.heavy_above = 0
+    sold: list[int] = []
+
+    def sell(bot: Any) -> int:
+        sold.append(1)
+        c.heavy_above = None
+        return 1
+    monkeypatch.setattr(town, "sell_shards_now", sell)
+    gembreak.run(as_bot(b), job(sell=True))
+    assert count(b, "Level 1 Ruby") == 0 and len(sold) == 2    # for room, then at the end
+
+
+def test_too_heavy_with_nothing_to_sell_stops_and_says_why(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    b, c = game({"Level 1 Ruby": 1})
+    c.heavy_above = 0
+    monkeypatch.setattr(town, "sell_shards_now", returning(0))
+    gembreak.run(as_bot(b), job(sell=True))
+    assert count(b, "Level 1 Ruby") == 1
+    assert any("too heavy to break any more" in line for line in b.lines)
+    assert not any("nothing to break" in line for line in b.lines)
+
+
+def test_gems_and_crystals_keep_their_own_numbers(game: Any) -> None:
+    b, c = game({"Level 2 Equipment Enhance Crystal": 5, "Level 1 Ruby": 3})
+    gembreak.run(as_bot(b), job(equipment=True, keep=1, crystal_keep=3))
+    assert ("Level 2 Equipment Enhance Crystal", 2) in c.asked and ("Level 1 Ruby", 2) in c.asked
+    assert count(b, "Level 2 Equipment Enhance Crystal") == 3 and count(b, "Level 1 Ruby") == 1
 
 
 def test_the_plan_counts_the_whole_way_down() -> None:

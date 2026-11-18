@@ -271,7 +271,7 @@ msgstr ""
 msgid "&Install"
 msgstr ""
 
-msgid "&Keep at least this many of each kind and level:"
+msgid "&Keep at least this many of each gem and level:"
 msgstr ""
 
 msgid "&Keep at least this many of each level:"
@@ -458,7 +458,7 @@ msgstr ""
 msgid "&Script commands"
 msgstr ""
 
-msgid "&Sell these gems' Level 1 shards at the Shard Market"
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
 msgstr ""
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
@@ -2053,6 +2053,9 @@ msgid "Join the &Telegram group"
 msgstr ""
 
 msgid "Keep &old files:"
+msgstr ""
+
+msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
 msgid "Keep away from bosses"

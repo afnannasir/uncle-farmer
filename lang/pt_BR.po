@@ -273,8 +273,8 @@ msgstr "&Inserir comando"
 msgid "&Install"
 msgstr "&Instalar"
 
-msgid "&Keep at least this many of each kind and level:"
-msgstr "Manter pelo menos esta quantidade de cada tipo e nível (&K):"
+msgid "&Keep at least this many of each gem and level:"
+msgstr "Manter pelo menos esta quantidade de cada gema e nível (&K):"
 
 msgid "&Keep at least this many of each level:"
 msgstr "&Manter pelo menos esta quantidade de cada nível:"
@@ -463,8 +463,9 @@ msgstr "&Agendamentos:"
 msgid "&Script commands"
 msgstr "&Comandos de script"
 
-msgid "&Sell these gems' Level 1 shards at the Shard Market"
-msgstr "Vender os fragmentos de nível 1 destas gemas no Shard Market (&S)"
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
+msgstr ""
+"Vender fragmentos pelas regras do gerenciador da mochila (&S) (no fim, ou se estiver pesado)"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr ""
@@ -2113,6 +2114,9 @@ msgstr "Entrar no grupo do &Telegram"
 
 msgid "Keep &old files:"
 msgstr "Manter arquivos &antigos:"
+
+msgid "Keep at least this many of each crystal and le&vel:"
+msgstr "Manter pelo menos esta quantidade de cada cristal e ní&vel:"
 
 msgid "Keep away from bosses"
 msgstr "Manter distância dos chefes"
@@ -8257,6 +8261,12 @@ msgstr "{why} — sem usar mais {skill} nesta execução ({n} concluídos)"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid "&Keep at least this many of each kind and level:"
+#~ msgstr "Manter pelo menos esta quantidade de cada tipo e nível (&K):"
+
+#~ msgid "&Sell these gems' Level 1 shards at the Shard Market"
+#~ msgstr "Vender os fragmentos de nível 1 destas gemas no Shard Market (&S)"
 
 #~ msgid "E&xperience card to keep running while farming:"
 #~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"

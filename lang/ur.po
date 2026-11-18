@@ -273,8 +273,8 @@ msgstr "&Command shamil karein"
 msgid "&Install"
 msgstr "&Install"
 
-msgid "&Keep at least this many of each kind and level:"
-msgstr "Har qism aur level ke kam az kam itne rakhein (&K):"
+msgid "&Keep at least this many of each gem and level:"
+msgstr "Har gem aur level ke kam az kam itne rakhein (&K):"
 
 msgid "&Keep at least this many of each level:"
 msgstr "&Har level ke kam az kam itne rakhein:"
@@ -463,8 +463,9 @@ msgstr "&Schedules:"
 msgid "&Script commands"
 msgstr "&Script ke commands"
 
-msgid "&Sell these gems' Level 1 shards at the Shard Market"
-msgstr "In gems ke Level 1 shards Shard Market mein bechein (&S)"
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
+msgstr ""
+"Bag manager ke rules se shards bechein (&S) (aakhir mein, ya basta bhari ho to)"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Jama kiya hua Aquaculture, Ore ya Herb Buyer ko &bechein"
@@ -2106,6 +2107,9 @@ msgstr "&Telegram group join karein"
 
 msgid "Keep &old files:"
 msgstr "Purani files &rakhein:"
+
+msgid "Keep at least this many of each crystal and le&vel:"
+msgstr "Har crystal aur level ke kam az kam itne rakhein (&V):"
 
 msgid "Keep away from bosses"
 msgstr "Bosses se door rahein"
@@ -8255,6 +8259,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Import plan"
 #~ msgstr "Mansooba &import karein"
 
+#~ msgid "&Keep at least this many of each kind and level:"
+#~ msgstr "Har qism aur level ke kam az kam itne rakhein (&K):"
+
 #~ msgid "&Plan or script:"
 #~ msgstr "&Mansooba ya script:"
 
@@ -8263,6 +8270,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "&Sell shards (game menu, Sell shards now)"
 #~ msgstr "&Shards bechein (game menu, Sell shards now)"
+
+#~ msgid "&Sell these gems' Level 1 shards at the Shard Market"
+#~ msgstr "In gems ke Level 1 shards Shard Market mein bechein (&S)"
 
 #~ msgid "&Update shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein &update karein (game menu, Update shard prices)"

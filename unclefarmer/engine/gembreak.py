@@ -35,11 +35,12 @@ DEFAULTS: dict[str, Any] = {
     "top": 2,                     # the highest gem level that may be broken
     "stop": "shards",
     "stop_level": 1,
-    "keep": 0,                    # of each kind and level, this many stay
+    "keep": 0,                    # of each gem colour and level, this many stay
     "weapon": False,              # Weapon Enhance Crystals may be broken
     "equipment": False,           # Equipment Enhance Crystals may be broken
     "crystal_top": 2,             # the highest crystal level that may be broken
-    "sell": False,                # sell the colours' Level 1 shards afterwards
+    "crystal_keep": 0,            # of each crystal and level, this many stay
+    "sell": False,                # sell by the bag manager's rules: when done, and when too heavy
 }
 CRYSTALS = {"weapon enhance crystal": "weapon", "equipment enhance crystal": "equipment"}
 PAGE_WAIT = 3.0                   # seconds an item's page is given to come up
@@ -92,11 +93,13 @@ def allowed(item: Item, cfg: Mapping[str, Any]) -> bool:
 
 def todo(have: Mapping[str, int], cfg: Mapping[str, Any]) -> list[tuple[Item, int]]:
     """What may be broken now and how many of each, the highest level first."""
-    keep = max(0, int(cfg.get("keep", 0)))
     out: list[tuple[Item, int]] = []
     for name, n in have.items():
         item = parse(name)
-        if item is not None and n > keep and allowed(item, cfg):
+        if item is None:
+            continue
+        keep = max(0, int(cfg.get("crystal_keep" if item.crystal else "keep", 0)))
+        if n > keep and allowed(item, cfg):
             out.append((item, n - keep))
     return sorted(out, key=lambda row: (-row[0].level, row[0].name))
 
@@ -242,22 +245,15 @@ def _check(b: Bot, cfg: Mapping[str, Any], where: str) -> None:
     b.close_dialogs()
 
 
-def _sell(b: Bot, cfg: Mapping[str, Any]) -> None:
-    have = town.counts(b)
-    wanted = ["Level 1 %s Shard" % str(c) for c in cfg.get("colours", [])]
-    names = [n for n in wanted if have.get(n.lower(), 0) > 0]
-    if names:
-        town.sell_shards(b, names)
+def _sell(b: Bot) -> int:
+    """Sell what the bag manager's rules say to sell, as Tools, Sell shards now does: gem and crystal
+    shards alike, and nothing the player keeps or stores. How many kinds went."""
+    return int(town.sell_shards_now(b) or 0)
 
 
-def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
-    """The Gem Breaker. cfg: config()."""
-    if not (cfg.get("colours") or cfg.get("weapon") or cfg.get("equipment")):
-        raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Breaker")))
-    where = crafting.place(dict(cfg))
-    if check_only:
-        _check(b, cfg, where)
-        return
+def _work(b: Bot, cfg: Mapping[str, Any], where: str) -> tuple[int, bool]:
+    """Break all there is to break: (how many went, the bag was left too heavy to go on). With
+    selling on, a bag too heavy is sold from and the work goes on, as long as something sells."""
     left_out: set[str] = set()
     broken = fails = 0
     for _step in range(MOST_STEPS):
@@ -270,8 +266,11 @@ def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
         try:
             gone = _break(b, where, item, n)
         except TooHeavy:
+            if cfg.get("sell") and _sell(b):
+                continue
+            b.close_dialogs()
             b.log(_("the bag is too heavy to break any more: make room and start again"), speak=True)
-            break
+            return broken, True
         broken += gone
         fails = 0 if gone else fails + 1
         if not gone:
@@ -279,7 +278,21 @@ def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
     b.close_dialogs()
     if fails >= FAILS:
         b.log(_("the Gem Breaker stopped: {n} kinds in a row couldn't be broken", n=fails), speak=True)
-    b.log(_("broke {n} gems and crystals", n=broken) if broken else _("nothing to break with these settings"),
-          speak=True)
-    if cfg.get("sell"):
-        _sell(b, cfg)
+    return broken, False
+
+
+def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
+    """The Gem Breaker. cfg: config()."""
+    if not (cfg.get("colours") or cfg.get("weapon") or cfg.get("equipment")):
+        raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Breaker")))
+    where = crafting.place(dict(cfg))
+    if check_only:
+        _check(b, cfg, where)
+        return
+    broken, heavy = _work(b, cfg, where)
+    if broken:
+        b.log(_("broke {n} gems and crystals", n=broken), speak=True)
+    elif not heavy:
+        b.log(_("nothing to break with these settings"), speak=True)
+    if cfg.get("sell") and not heavy:
+        _sell(b)

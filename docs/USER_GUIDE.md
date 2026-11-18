@@ -877,11 +877,11 @@ A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 
 - **Gems to break**: the colours that may be broken.
 - **Highest gem level to break**: gems above it are left alone. It starts at 2, so the gems you put in your equipment are safe until you raise it. Gems at or below it are broken all the way down.
 - **Break down to**: shards, or gems of a level you choose.
-- **Keep at least**: how many of each kind and level stay.
-- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes and their own highest level, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
-- **Sell these gems' Level 1 shards**: off at first. Sells them at the Shard Market afterwards.
+- **Keep at least**: how many gems of each colour and level stay.
+- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes, their own highest level and their own number to keep, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
+- **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
 
-What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer, and stops with a message when not even one fits.
+What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
 
 ### Equipment Enhancer
 

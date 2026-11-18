@@ -8,8 +8,9 @@
   gem colours you tick into shards, up to the level you allow (2 at first), down to shards or to a
   level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
   broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
-  It can sell the Level 1 shards afterwards. The window shows what would go, and Start asks first.
-  When the game says "overweight" it asks for fewer, and stops when not even one fits.
+  It can sell shards by the bag manager's rules. The window shows what would go, and Start asks
+  first. When the game says "overweight" it asks for fewer; when not even one fits it sells, if
+  that is ticked, and carries on, and otherwise stops and says why.
 
 **The end of a run: towns and the gang base**
 

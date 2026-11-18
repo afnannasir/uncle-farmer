@@ -351,25 +351,27 @@ class GemBreakerDialog(ToolDialog):
         self.stop = f.choice(_("Break &down to:"), [_("Shards"), _("Gems of a level")],
                              pick(gembreak.STOPS, c["stop"]))
         self.stop_level = f.number(_("Gem &level to stop at:"), c["stop_level"], 1, 29)
-        self.keep = f.number(_("&Keep at least this many of each kind and level:"), c["keep"], 0, 100000)
+        self.keep = f.number(_("&Keep at least this many of each gem and level:"), c["keep"], 0, 100000)
         box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 8)
         f = group(panel, box, _("Enhance Crystals (breaking them costs arnebia)"))
         self.weapon = f.check(_("Break &Weapon Enhance Crystals"), c["weapon"])
         self.equipment = f.check(_("Break &Equipment Enhance Crystals"), c["equipment"])
         self.crystal_top = f.number(_("Highest &crystal level to break:"), c["crystal_top"], 1, 8)
+        self.crystal_keep = f.number(_("Keep at least this many of each crystal and le&vel:"), c["crystal_keep"],
+                                     0, 100000)
 
         panel, box = page(nb, _("Craftsman and selling"))
         f = group(panel, box, _("Craftsman and spending"))
         self.common(f)
         f = group(panel, box, _("Afterwards"))
-        self.sell = f.check(_("&Sell these gems' Level 1 shards at the Shard Market"), c["sell"])
+        self.sell = f.check(_("&Sell shards by the bag manager's rules (when done, or when too heavy)"), c["sell"])
         self.plan = labeled(panel, box, _("Plan, from the last scan of your bag:"),
                             lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 140)), 1)
 
         def changed(_evt: wx.Event) -> None:
             self.sync()
         self.stop.Bind(wx.EVT_CHOICE, changed)
-        for spin in (self.top, self.stop_level, self.keep, self.crystal_top):
+        for spin in (self.top, self.stop_level, self.keep, self.crystal_top, self.crystal_keep):
             spin.Bind(wx.EVT_SPINCTRL, changed)
         for tick in (self.weapon, self.equipment):
             tick.Bind(wx.EVT_CHECKBOX, changed)
@@ -391,7 +393,8 @@ class GemBreakerDialog(ToolDialog):
                 "top": self.top.GetValue(), "stop": gembreak.STOPS[self.stop.GetSelection()],
                 "stop_level": self.stop_level.GetValue(), "keep": self.keep.GetValue(),
                 "weapon": self.weapon.GetValue(), "equipment": self.equipment.GetValue(),
-                "crystal_top": self.crystal_top.GetValue(), "sell": self.sell.GetValue()}
+                "crystal_top": self.crystal_top.GetValue(), "crystal_keep": self.crystal_keep.GetValue(),
+                "sell": self.sell.GetValue()}
 
     def plan_lines(self) -> list[str]:
         gone, made = gembreak.outcome(self.bag, self.settings_now())
@@ -409,7 +412,9 @@ class GemBreakerDialog(ToolDialog):
 
     def sync(self) -> None:
         _enable(self.stop_level, gembreak.STOPS[self.stop.GetSelection()] == "level")
-        _enable(self.crystal_top, self.weapon.GetValue() or self.equipment.GetValue())
+        crystals = self.weapon.GetValue() or self.equipment.GetValue()
+        _enable(self.crystal_top, crystals)
+        _enable(self.crystal_keep, crystals)
         self.plan.ChangeValue("\n".join(self.plan_lines()))
 
     def collect(self) -> bool:
