@@ -455,7 +455,7 @@ class Run(threading.Thread):
         """With "Skip this list when the run starts on its first farming map" ticked: the run
         starts on the map it farms first (a Stop and a start again where it was farming), so the
         Before farming list - often a trip to town and back - is left out. True (and said) then."""
-        if not bot.p.get("skip_before_on_farm", False):
+        if not bot.p.get("skip_before_on_farm", True):
             return False
         first = triggers.first_farm_map(script.main, script.subs)
         here = bot.map_id()

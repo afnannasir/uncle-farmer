@@ -6604,6 +6604,10 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 

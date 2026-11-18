@@ -82,7 +82,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
     "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
-    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
+    "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -872,6 +872,10 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_dropped,
     _upgrade_class_reach,
     _upgrade_xp_card,
+    # Before 2026-11-18 a run that started on its farming map still made the Before farming list's
+    # trip to town and back unless the player ticked the skip; it is ticked now, once, for everyone:
+    # a supply or a bag that needs a town is seen to by the farm loop itself anyway.
+    _upgrade_once("skip_before_ticked", "skip_before_on_farm", (False, None), True),
 ]
 
 

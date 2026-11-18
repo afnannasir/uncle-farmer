@@ -6932,6 +6932,11 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr "shards ki qeemat ki fehrist (data\\shards.json) parhi nahi ja sakti"
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+"shard prices {hours} pehle parhi gayi thin - {most} ghante se pehle in ke liye dobara Shard Broker ke paas nahi ja rahe"
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 "storage list khaali hai - Character, Bag and supplies mein storehouse mein rakhne wali cheezein chunein"

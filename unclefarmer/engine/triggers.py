@@ -232,8 +232,12 @@ def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -
     return None
 
 
-def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None) -> None:
-    """One step: a step that farms first asks farming_window (the day's farming window), then it runs."""
+def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None,
+             log: Callable[..., None] = lambda *_a: None) -> None:
+    """One step: a step that farms first asks farming_window (the day's farming window), then it
+    runs - unless it would read shard prices that are still fresh (_prices_fresh)."""
+    if _prices_fresh(b, action, log):
+        return
     if farming_window is not None and step_farms(b, action):
         farming_window()
     run_action(b, action)
@@ -249,6 +253,25 @@ def wait(b: Bot, seconds: float) -> None:
         b.sleep(seconds)
     finally:
         b.daily_stop_at = deadline
+
+
+def _prices_fresh(b: Bot, job: str, log: Callable[..., None]) -> bool:
+    """Updating shard prices in a Before or After farming list is a walk to the Shard Broker every
+    time: a run started on its farming map went to town and back for prices read minutes before.
+    Prices read less than town.SHARD_PRICES_FRESH ago are kept (True, and said)."""
+    if job != "update_shard_prices":
+        return False
+    age = town.shard_prices_age(b)
+    if age is None or age >= town.SHARD_PRICES_FRESH:
+        return False
+    log(_("the shard prices were read {hours} ago - not going to the Shard Broker for them again "
+          "before {most} hours", hours=_hours(age), most=int(town.SHARD_PRICES_FRESH // 3600)))
+    return True
+
+
+def _hours(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    return "%d h %02d min" % (minutes // 60, minutes % 60) if minutes >= 60 else "%d min" % minutes
 
 
 def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[], bool],
@@ -271,7 +294,7 @@ def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[]
             break
         log(_("{stage}, automatically: {job}", stage=head, job=what(job)))
         try:
-            run_step(b, job, farming_window)
+            run_step(b, job, farming_window, log)
             done.append((job, True))
         except GameBroken:
             done.append((job, False))
