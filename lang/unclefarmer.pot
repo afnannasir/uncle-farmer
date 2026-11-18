@@ -4490,6 +4490,9 @@ msgstr ""
 msgid "already done today"
 msgstr ""
 
+msgid "already in a town - staying here"
+msgstr ""
+
 msgid "already inside {cave}"
 msgstr ""
 
@@ -4831,7 +4834,7 @@ msgstr ""
 msgid "couldn't get away - fighting on"
 msgstr ""
 
-msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
+msgid "couldn't get back into the gang's base ({why}) - staying here"
 msgstr ""
 
 msgid "couldn't get back to {place}: {why}"
@@ -5206,7 +5209,7 @@ msgstr ""
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr ""
 
-msgid "going back into the gang's inner hall through the Gang Entrance"
+msgid "going back into the gang's base through the Gang Entrance"
 msgstr ""
 
 msgid "going back to where farming started"
@@ -6396,6 +6399,9 @@ msgstr ""
 msgid "the Forger has no enhance equipment"
 msgstr ""
 
+msgid "the Gang Entrance didn't let us in"
+msgstr ""
+
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
@@ -6539,6 +6545,9 @@ msgid "the bag is still full and nothing could be sold or stored - stopping"
 msgstr ""
 
 msgid "the bag is too full for more {shard}"
+msgstr ""
+
+msgid "the bag is too heavy to break any more: make room and start again"
 msgstr ""
 
 msgid "the bag is {pct}% full (load {load} of {max})"

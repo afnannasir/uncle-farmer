@@ -881,6 +881,8 @@ A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 
 - **Enhance Crystals**: Weapon and Equipment crystals have their own boxes and their own highest level, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
 - **Sell these gems' Level 1 shards**: off at first. Sells them at the Shard Market afterwards.
 
+What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer, and stops with a message when not even one fits.
+
 ### Equipment Enhancer
 
 Open **Tools, Equipment Enhancer** or press **Ctrl+Shift+E**.

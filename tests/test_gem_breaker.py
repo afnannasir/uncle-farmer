@@ -9,7 +9,7 @@ import pytest
 
 from conftest import as_bot, returning, stand_in
 from test_crafting import Bot, add, entry
-from unclefarmer.engine import crafting, gembreak, script, town
+from unclefarmer.engine import chores, crafting, gembreak, script, town
 from unclefarmer.engine.bot import Stopped
 
 FEE = 357
@@ -24,8 +24,10 @@ class Craftsman:
         self.b = b
         self.item = ""
         self.asked: list[tuple[str, int]] = []
+        self.said: list[str] = []
         self.refuse_above = 10 ** 9
         self.wrong_page = False
+        self.heavy_above: int | None = None
         b.on_choose = self.choose
 
     def show(self, rows: list[str]) -> None:
@@ -64,6 +66,9 @@ class Craftsman:
     def quantity(self, n: int) -> bool:
         self.asked.append((self.item, n))
         self.b.close_dialogs()
+        if self.heavy_above is not None and n > self.heavy_above:
+            self.said.append("overweight")
+            return True
         if n > self.refuse_above:
             return True
         k, product, fee = self.gives(self.item)
@@ -87,6 +92,14 @@ def game(monkeypatch: pytest.MonkeyPatch) -> Any:
         def pick(bot: Bot, pattern: str, quantity: int | None = None) -> bool:
             return bot.choose(pattern) is not None and quantity is not None and c.quantity(quantity)
         monkeypatch.setattr(town, "pick", pick)
+
+        def said_mark(bot: Any) -> int:
+            return len(c.said)
+
+        def said_since(bot: Any, since: int) -> list[str]:
+            return c.said[since:]
+        monkeypatch.setattr(chores, "said_mark", said_mark)
+        monkeypatch.setattr(chores, "said_since", said_since)
         return b, c
     return make
 
@@ -188,6 +201,22 @@ def test_a_refused_amount_is_halved(game: Any) -> None:
     gembreak.run(as_bot(b), job())
     assert [n for _i, n in c.asked[:3]] == [8, 4, 2]
     assert count(b, "Level 1 Ruby") == 0                   # the rest in the next steps
+
+
+def test_overweight_asks_for_less_down_to_one_then_stops_everything(game: Any) -> None:
+    b, c = game({"Level 2 Equipment Enhance Crystal": 16, "Level 1 Ruby": 1})
+    c.heavy_above = 0
+    gembreak.run(as_bot(b), job(equipment=True))
+    assert [n for _i, n in c.asked] == [16, 8, 4, 2, 1]        # and the Ruby isn't tried
+    assert any("too heavy to break any more" in line for line in b.lines)
+
+
+def test_overweight_at_some_amount_still_breaks_what_fits(game: Any) -> None:
+    b, c = game({"Level 2 Equipment Enhance Crystal": 8})
+    c.heavy_above = 4
+    gembreak.run(as_bot(b), job(colours=[], equipment=True))
+    assert count(b, "Level 2 Equipment Enhance Crystal") == 0
+    assert c.asked[:2] == [("Level 2 Equipment Enhance Crystal", 8), ("Level 2 Equipment Enhance Crystal", 4)]
 
 
 def test_it_gives_up_on_what_the_game_wont_break(game: Any) -> None:

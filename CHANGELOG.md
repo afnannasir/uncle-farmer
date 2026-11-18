@@ -9,12 +9,16 @@
   level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
   broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
   It can sell the Level 1 shards afterwards. The window shows what would go, and Start asks first.
+  When the game says "overweight" it asks for fewer, and stops when not even one fits.
 
-**Back into the gang's inner hall**
+**The end of a run: towns and the gang base**
 
-- A run started in the gang's inner hall and ended outside it pushed against the hall's one-way
-  door. It now goes round by the Gang Entrance, back to where it started. If the Entrance doesn't
-  let it in, it says so and stays where it is.
+- A run that ends in a city or village stays there. It used to leave for the nearest map with no
+  monster zone, because the game's table lists such zones for a city's own streets: from Tulip City
+  that meant going down to its underground. A run started in a town also goes back to it.
+- A run started in the gang base goes back by the Gang Entrance, to either hall, instead of giving
+  up or pushing against the inner hall's one-way door. If the Entrance doesn't let it in, it says so
+  and stays where it is.
 
 **Gem Maker: shards go to the +20%**
 

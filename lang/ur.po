@@ -4687,6 +4687,9 @@ msgstr "aaj donation ho chuki hai"
 msgid "already done today"
 msgstr "aaj pehle hi ho chuka"
 
+msgid "already in a town - staying here"
+msgstr "pehle hi shehar mein hain - yahin ruk rahe hain"
+
 msgid "already inside {cave}"
 msgstr "pehle se {cave} ke andar"
 
@@ -5051,9 +5054,8 @@ msgstr "us guard ko maar nahi sake - doosra aazma rahe hain"
 msgid "couldn't get away - fighting on"
 msgstr "bhaag nahi sake - ladai jari"
 
-msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
-msgstr ""
-"gang ke inner hall mein wapas nahi ja sake ({why}) - yahin ruk rahe hain"
+msgid "couldn't get back into the gang's base ({why}) - staying here"
+msgstr "gang base mein wapas nahi ja sake ({why}) - yahin ruk rahe hain"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} par wapas nahi ja sake: {why}"
@@ -5444,8 +5446,8 @@ msgstr "equipment toot gaya, toolbox nahi"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Level {lv} {kind} Enhance Crystals ko {n} tak le ja rahe hain"
 
-msgid "going back into the gang's inner hall through the Gang Entrance"
-msgstr "Gang Entrance ke zariye gang ke inner hall mein wapas ja rahe hain"
+msgid "going back into the gang's base through the Gang Entrance"
+msgstr "Gang Entrance ke zariye gang base mein wapas ja rahe hain"
 
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
@@ -6696,6 +6698,9 @@ msgstr ""
 msgid "the Forger has no enhance equipment"
 msgstr "Forger ke paas enhance equipment nahi hai"
 
+msgid "the Gang Entrance didn't let us in"
+msgstr "Gang Entrance ne andar nahi jane diya"
+
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
@@ -6850,6 +6855,10 @@ msgstr ""
 
 msgid "the bag is too full for more {shard}"
 msgstr "basta mazeed {shard} ke liye bohat bhara hai"
+
+msgid "the bag is too heavy to break any more: make room and start again"
+msgstr ""
+"basta itna bhari hai ke aur nahi toot sakta: jagah bana kar dobara shuru karein"
 
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "basta {pct}% bhara hai (load {load} / {max})"
@@ -8353,8 +8362,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Up&date shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein up&date karein (game menu, Update shard prices)"
 
+#~ msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
+#~ msgstr ""
+#~ "gang ke inner hall mein wapas nahi ja sake ({why}) - yahin ruk rahe hain"
+
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
+
+#~ msgid "going back into the gang's inner hall through the Gang Entrance"
+#~ msgstr "Gang Entrance ke zariye gang ke inner hall mein wapas ja rahe hain"
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"

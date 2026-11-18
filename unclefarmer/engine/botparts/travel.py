@@ -126,6 +126,8 @@ class TravelMixin(Parts):
         is the exception: the atlas marks a whole city as a spawn zone for the ducks and hens that
         wander its streets, and a run started in the town goes back there."""
         x, y = cell
+        if atlas.in_town(mid, x, y):
+            return False
         for c in knowledge.cities():
             r = c.get("town_rect")
             if c.get("map") == mid and r and r[0] <= x <= r[2] and r[1] <= y <= r[3]:

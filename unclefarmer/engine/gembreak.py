@@ -26,7 +26,7 @@ from typing import Any
 
 from ..clock import clock_for
 from ..i18n import _
-from . import crafting, town
+from . import chores, crafting, town
 from .bot import Bot, Stopped
 
 STOPS = ("shards", "level")       # how far down: to the shards, or to gems of `stop_level`
@@ -47,6 +47,11 @@ SIZES = 3                         # amounts tried (each half the last) when the 
 FAILS = 3                         # kinds in a row that couldn't be broken: something is wrong here
 MOST_STEPS = 500                  # a safety net: every step that counts empties a kind
 GIVES = 3                         # what one gem gives of the level below
+OVERWEIGHT = re.compile(r"\boverweight\b", re.I)   # the game's answer when what comes out won't fit
+
+
+class TooHeavy(Exception):
+    """Not even one more fits: what a break leaves weighs more than the bag can take."""
 
 
 @dataclass(frozen=True)
@@ -175,9 +180,11 @@ def _landed(b: Bot, product: str, want: int) -> None:
 
 
 def _break(b: Bot, where: str, item: Item, n: int) -> int:
-    """Break up to n of one item, asking for half when the bag shows nothing came of it. How many went."""
+    """Break up to n of one item, asking for half when the bag shows nothing came of it. How many
+    went. TooHeavy: the game said "overweight" even for one."""
     name = _names(b).get(item.name) or pretty(item.name)
-    for _size in range(SIZES):
+    sizes = 0
+    while True:
         page = _open_page(b, where, name)
         if page is None:
             return 0
@@ -190,6 +197,7 @@ def _break(b: Bot, where: str, item: Item, n: int) -> int:
         have = town.counts(b)
         was, product = have.get(item.name, 0), page.product.lower()
         had = have.get(product, 0)
+        since = chores.said_mark(b)
         if not town.pick(b, r"enter the number of " + re.escape(name) + r" to break", n):
             b.log(_("the Gem Craftsman didn't ask how many {item} to break", item=name))
             return 0
@@ -200,8 +208,12 @@ def _break(b: Bot, where: str, item: Item, n: int) -> int:
             b.log(_("broke {n} {item} into {k} {product}", n=gone, item=name, k=gone * page.gives,
                     product=page.product))
             return gone
+        heavy = any(OVERWEIGHT.search(line) for line in chores.said_since(b, since))
         n //= 2
-        if n < 1:
+        sizes += 1
+        if n < 1 and heavy:
+            raise TooHeavy
+        if n < 1 or (sizes >= SIZES and not heavy):
             break
         b.log(_("nothing came of that - asking to break {n} {item} instead", n=n, item=name))
     b.log(_("the bag showed no change after breaking {item}", item=name), speak=True)
@@ -255,7 +267,11 @@ def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
         if not rows or fails >= FAILS:
             break
         item, n = rows[0]
-        gone = _break(b, where, item, n)
+        try:
+            gone = _break(b, where, item, n)
+        except TooHeavy:
+            b.log(_("the bag is too heavy to break any more: make room and start again"), speak=True)
+            break
         broken += gone
         fails = 0 if gone else fails + 1
         if not gone:

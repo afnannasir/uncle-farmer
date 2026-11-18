@@ -1,5 +1,5 @@
-"""The end of a run that started in the gang's inner hall: a one-way door keeps the way in shut, so
-the way back is the Gang Entrance, which only opens the character's own gang's hall."""
+"""The end of a run that started in a gang base it can't walk back to: the way in is the Gang
+Entrance, which only leads to the character's own gang (a one-way door shuts the inner hall)."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ def outside(monkeypatch: pytest.MonkeyPatch) -> list[int]:
 
 
 def back(g: Game) -> bool:
-    return chores.back_to_inner_hall(as_bot(g), BASE, START, "Our Gang encampment")
+    return chores.back_to_gang_base(as_bot(g), BASE, START, "Our Gang encampment")
 
 
 def test_it_goes_round_by_the_entrance_and_walks_to_the_start(outside: list[int]) -> None:
@@ -96,8 +96,24 @@ def test_a_start_we_can_still_walk_to_is_an_ordinary_trip(monkeypatch: pytest.Mo
     assert outside == []
 
 
-def test_any_other_place_is_an_ordinary_trip(monkeypatch: pytest.MonkeyPatch, outside: list[int]) -> None:
+def test_the_outer_hall_is_entered_by_its_own_way(monkeypatch: pytest.MonkeyPatch, outside: list[int]) -> None:
     monkeypatch.setattr(chores, "_in_the_hall", returning(False))
+    monkeypatch.setattr(crafting, "enter_gang", returning(True))
+    g = Game()
+    assert back(g) is True
+    assert outside == [] and g.trips == [(BASE, START)]
+
+
+def test_an_entrance_that_wont_open_leaves_it_there(monkeypatch: pytest.MonkeyPatch, outside: list[int]) -> None:
+    monkeypatch.setattr(chores, "_in_the_hall", returning(False))
+    monkeypatch.setattr(crafting, "enter_gang", returning(False))
+    g = Game()
+    assert back(g) is True
+    assert g.trips == [] and any("staying here" in line for line in g.lines)
+
+
+def test_any_other_place_is_an_ordinary_trip(monkeypatch: pytest.MonkeyPatch, outside: list[int]) -> None:
+    monkeypatch.setattr(crafting, "gang_map", returning(False))
     assert back(Game()) is False
     assert outside == []
 

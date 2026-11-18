@@ -371,22 +371,25 @@ def _in_the_hall(mid: int, cell: tuple[int, int]) -> bool:
         return False                  # no map data: an ordinary trip
 
 
-def back_to_inner_hall(b: Bot, mid: int, cell: tuple[int, int], name: str | None) -> bool:
-    """A run that started in the gang's inner hall and ended outside it: nothing walks back in (a
-    one-way door), the way is the Gang Entrance, which only leads into the character's own gang's
-    hall. True when this was that case, however it went (what went wrong is said, and the character
-    stays where it is); False for any other place, which the ordinary trip handles. name: the base's
-    name when the run started, so that another gang's hall is not taken for it."""
-    if not _in_the_hall(mid, cell) or (b.map_id() == mid and crafting.reachable_cell(b, cell)):
+def back_to_gang_base(b: Bot, mid: int, cell: tuple[int, int], name: str | None) -> bool:
+    """A run that started in a gang base and can't walk back to that spot (it left the base, or the
+    hall's one-way door is in the way): the way in is the Gang Entrance, which leads to the
+    character's own gang. True when this was that case, however it went (what went wrong is said,
+    and the character stays where it is); False for any other place, which the ordinary trip
+    handles. name: the base's name when the run started, so another gang's is not taken for it."""
+    if not crafting.gang_map(mid) or (b.map_id() == mid and crafting.reachable_cell(b, cell)):
         return False
-    b.log(_("going back into the gang's inner hall through the Gang Entrance"))
+    b.log(_("going back into the gang's base through the Gang Entrance"))
     try:
-        inner_hall(b)
+        if _in_the_hall(mid, cell):
+            inner_hall(b)
+        elif not crafting.enter_gang(b):
+            raise Stopped(_("the Gang Entrance didn't let us in"))
     except Stopped as e:
         if b.stop_event.is_set():
             raise
         b.close_dialogs()
-        b.log(_("couldn't get back into the gang's inner hall ({why}) - staying here", why=e), speak=True)
+        b.log(_("couldn't get back into the gang's base ({why}) - staying here", why=e), speak=True)
         return True
     place: dict[str, Any] = b.snap().get("map") or {}
     now = str(place.get("name") or "")
