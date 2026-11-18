@@ -6680,6 +6680,9 @@ msgstr ""
 msgid "the {npc} offers no way in ({about})"
 msgstr ""
 
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
+msgstr ""
+
 msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr ""
 

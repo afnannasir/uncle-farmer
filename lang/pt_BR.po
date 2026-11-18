@@ -7030,6 +7030,10 @@ msgstr ""
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} não oferece uma forma de entrar ({about})"
 
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
+msgstr ""
+"o {npc} em {map} só leva personagens de nível {n} ou mais - indo por outro caminho"
+
 msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr "{npc} recusou — consulte logs\\dialogs.log"
 

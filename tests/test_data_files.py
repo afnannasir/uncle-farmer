@@ -465,6 +465,7 @@ class Transport(Strict):
     dest: int
     lands: TransportLands
     choose_vip: list[str] | None = None
+    level: int | None = None        # the character level the ride needs, where known
 
 
 class TransportsFile(Strict):

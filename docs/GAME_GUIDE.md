@@ -39,7 +39,15 @@ who wants to automate more of the game.
 
 West of the continent is Loki Union (capital Tulip City), east is Garth Empire (capital Holy Blood
 City), each with higher-level areas and two more cities. Cable cars and airships link the
-capitals and cities.
+capitals and cities. Each airship out of a capital needs a level: Giant Rock City to Sunset City
+26 and to White Sand City 36, Tulip City to Moon City 56 and to Violet City 76, Holy Blood City to
+Gouging Knife City 66 and to Dark Night City 86; each costs 1000 arnebia. The flights back need
+no level (Dark Night City's administrator stands at its south gate). Under the cities, the cable
+car from Giant Rock City to Tulip City needs level 45 and the one to Holy Blood City 60 (2000
+arnebia, free for VIPs, none back); there is no cable car between Tulip City and Holy Blood City,
+and the rides to and from the Lifting Platforms are free. Below the level the administrator opens no menu and only
+says so ("Go to Violet City; requires Level 76 or above, Go to Violet City when you're
+stronger.").
 
 **Teleport skills** (recorded by hand 2026-11-13). A Mage's *Teleportation* (skill id 1061) takes
 the caster to a city square; an Elf's *Elven Teleportation* goes to The Land of Reiki. Both are a
