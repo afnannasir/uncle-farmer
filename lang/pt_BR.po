@@ -6739,6 +6739,10 @@ msgstr "os rendimentos do depósito podem ser coletados"
 msgid "the donation didn't go through: {why}"
 msgstr "a doação não foi concluída: {why}"
 
+msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
+msgstr ""
+"o tempo de coleta está quase acabando ({m} min restantes) — não vou começar a farmar"
+
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""

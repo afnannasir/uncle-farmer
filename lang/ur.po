@@ -6726,6 +6726,10 @@ msgstr "deposit ki aamdani li ja sakti hai"
 msgid "the donation didn't go through: {why}"
 msgstr "donation nahi hui: {why}"
 
+msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
+msgstr ""
+"drop time taqreeban khatam hai ({m} min baqi) - farming shuru nahi kar rahe"
+
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""

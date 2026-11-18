@@ -292,6 +292,9 @@ def test_the_plans_keep_level_counts_before_the_first_check() -> None:
 
         def level_before_start(self) -> None:
             self.checked_with = self.level_keep
+
+        def drop_before_start(self) -> None:
+            pass
     b = Seen()
     main, _subs, _stop = script_mod.parse("end_at start\nkeep_level 250000\nfarm minutes=5\n")
     R.Run._level_first(as_bot(b), main)

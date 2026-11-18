@@ -6416,6 +6416,9 @@ msgstr ""
 msgid "the donation didn't go through: {why}"
 msgstr ""
 
+msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
+msgstr ""
+
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
 msgstr ""
