@@ -16,7 +16,7 @@ import wx
 from .. import __version__, applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
-from .common import Handler, ask, buttons, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
+from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -25,6 +25,7 @@ from .mainparts.runs import RunsMixin
 from .mainparts.scheduling import SchedulingMixin
 from .mainparts.talk import TalkMixin
 from .mainparts.updates import UpdatesMixin
+from .market import MarketFrame
 from .silencer import SilencerDialog
 from .. import updater
 from ..soundrestore import SoundRestore
@@ -53,7 +54,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "tools_gem": available and not running, "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
-        "tools_silencer": available,
+        "tools_silencer": available, "tools_market": available,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
                                                      "tools_store", "tools_restock", "tools_prices")},
         "plans_new": True, "plans_new_script": True,
@@ -77,6 +78,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.chats = {}          # pid -> chat.Feed, that game's chat (memory only, never saved)
         self.chat_windows = {}   # pid -> its open Chat window
         self.silencer_windows: dict[int, SilencerDialog] = {}
+        self.market_windows: dict[int, MarketFrame] = {}
         self.sound_restorer = SoundRestore()
         self.pending_update: updater.ApplyProcess | None = None
         self.games = []          # [(pid, character, map name)]
@@ -264,6 +266,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
                            command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
                            command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
+                           command(_("&Market searcher and buyer"), lambda e: self.open_market(), "Ctrl+Shift+K"),
                            command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
                            command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
                            command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
@@ -272,7 +275,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer())],
                           ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
-                           "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
+                           "tools_market", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
@@ -438,6 +441,20 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                 window.finish()
                 window.Destroy()
 
+    def open_market(self) -> None:
+        """Tools, Market searcher and buyer: one window per game, left open beside it."""
+        pid = self.selected_pid()
+        if pid is None:
+            error(self, _("No game found. Start Mist World first."))
+            return
+        window = self.market_windows.get(pid)
+        if window is None:
+            name = self.character(pid)
+            window = MarketFrame(self, pid, settings.profile_display(name) if name else None)
+            self.market_windows[pid] = window
+        window.Show()
+        window.Raise()
+
     def go_tab(self, i: int) -> None:
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
@@ -485,7 +502,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             restorer = getattr(self, "sound_restorer", None)
             if restorer is not None:
                 restorer.close()
-            for window in list(getattr(self, "silencer_windows", {}).values()):
+            windows: list[wx.Window] = [*getattr(self, "silencer_windows", {}).values(),
+                                        *getattr(self, "market_windows", {}).values()]
+            for window in windows:
                 window.Close()
         with down.step("release the hotkeys", must=False):
             for hotkey in self.hotkeys:
@@ -529,6 +548,7 @@ Main window
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
   Ctrl+Shift+G        Dungeons: the experience caves, one a day
   Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
+  Ctrl+Shift+K        Market searcher and buyer: find, compare and buy what players sell
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -644,6 +664,10 @@ and lets it kill the character (no potions, heals or fighting back), respawns in
 again until the character sheet says so, or after the most deaths you allow. The pet is put away
 first and the PK mode put back at the end. Not for a black-name character: it can lose worn gear
 when it dies. The Triggers tab can run it before or after farming.
+Tools, Market searcher and buyer (Ctrl+Shift+K): what players sell at the marketplace, by
+category, with lots, cheapest and usual prices. Refresh the market list reads it all (a minute or
+two). Search by item, cheapest first, by seller ID or browse; tick lots in Results and Buy (one
+question names the gold coins in all; lots in their first hour are never bought).
 
 UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and

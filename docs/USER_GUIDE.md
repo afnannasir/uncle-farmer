@@ -1060,6 +1060,53 @@ sell_collection fish
 The first command starts gathering. The second checks what the bot would do. The last two sell your collection, with the final command specifying fish.
 
 
+
+### Market searcher and buyer
+
+**Tools, Market searcher and buyer** (Ctrl+Shift+K) opens a window for the player market, the
+Ansible Space-time Marketplace. It stays open beside the game.
+
+**The market list.** The top of the window lists what is for sale. Choose a category (My list,
+All items, or one of the game's 14 categories), then go through the items: each shows how many
+lots there are (and how many open soon), how many in all, the cheapest and the usual price, and
+how many sellers. Names are shown the way your game's language pack shows them.
+
+The first time, the list is the one Uncle Farmer came with. Press **Refresh the market list**:
+the bot walks to the nearest marketplace and reads every category, which takes about a minute or
+two. Tick **Also count sellers** to fill the Sellers column too. That looks at every lot's
+details, so the first time it takes about ten minutes; every seller seen is remembered, so later
+refreshes only look up new lots. Each game server (S1, S2) has its own list.
+
+**Searching.** Press Enter on an item to find all its lots, or choose a **Search kind**:
+
+- **By item:** every lot of the item picked or of the names typed in **Custom name** (several:
+  `Lesser Blood | Worthless Blood`). Use Custom name for anything listed after your last refresh.
+- **Cheapest first:** the same, in the game's price order. With **Most a unit** set, it stops
+  at the first page whose lots all cost more.
+- **By seller ID:** every lot those sellers have on sale (several IDs: `1234, 5678`). The bot
+  looks at each lot's details to see who sells it, and stops as soon as all 10 lots of each
+  seller are found (a player can have at most 10 on sale). Seller IDs you search for are
+  remembered in the list.
+- **Browse a category:** every lot of the category chosen at the top.
+
+**Pages at most** limits how far a search reads (0 = all). What is found shows up in **Results**
+while the bot reads; **Stop** ends a search early and keeps what was found. Every item you search
+for goes into **My list**; **Remember this item** adds one without searching.
+
+**Buying.** In Results, tick each lot you want with Space, and set **How many of the selected
+lot** (equipment is always one). Press **Buy the ticked lots**: one question names the lots, the
+items and the gold coins in all, and nothing is bought before you say Yes. Each lot is found again
+by its listing number, even after it moved to another page, and costs what you saw: a lot's price
+can't change. Lots still in their first hour on display are never bought. **Spending limit**
+stops the buying before more would be spent. **Check only** does everything except buying and
+says what it would buy.
+
+Each lot ends as one of: bought, gone (sold or taken back), only N left, still on display, over
+your most a unit, over the spending limit, or not bought with the game's own words (for example
+not enough gold coins). **Save as CSV** writes the results to a file.
+
+The same work runs from a script: see "The player market" in docs/SCRIPTING.md.
+
 ## Shard prices
 
 Uncle Farmer keeps track of shard prices so it can estimate how much your collected shards are worth.

@@ -93,8 +93,8 @@ from .. import atlas, dungeons, jsonio, knowledge, sounds, stats
 from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
-from ..i18n import _
-from . import activities, chores, dungeon, follow, survey, town
+from ..i18n import N_, _
+from . import activities, chores, dungeon, follow, market, survey, town
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -108,7 +108,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
@@ -658,6 +658,51 @@ def _prep_sell_collection(node: Node, rest: str, n: int):
     node.opts["kinds"] = kinds if w == "all" else (w,)
 
 
+MARKET_HOW = N_("write it as: market scan [sellers] | market search [item=\"<name>\"] [cheapest] [max=<price>] "
+                  "[category=<name>] [pages=<n>] | market seller <id>[,<id>] | "
+                  "market buy [check] [item=\"<name>\" count=<n> max=<price> [cap=<gold>]]")
+
+
+def _prep_market(node: Node, rest: str, n: int):
+    """market scan [sellers] / search [...] / seller <ids> / buy [...]: the Market searcher and
+    buyer (engine/market.py). With no words after search or buy, the window's own files."""
+    try:
+        words = shlex.split(rest)
+    except ValueError as error:
+        raise ScriptError(n, _(MARKET_HOW)) from error
+    if not words or words[0].lower() not in ("scan", "search", "seller", "buy"):
+        raise ScriptError(n, _(MARKET_HOW))
+    what = words[0].lower()
+    o: dict[str, Any] = {"what": what}
+    cats = {market.category_name(c).lower(): c for c, _n in market.CATEGORIES}
+    cats.update({name.lower(): c for c, name in market.CATEGORIES})
+    for w in words[1:]:
+        key, _eq, value = w.partition("=")
+        key = key.lower()
+        if what == "seller" and not _eq:
+            ids = market.ids_of(w)
+            if not ids:
+                raise ScriptError(n, _("market seller needs seller IDs: market seller 1234,5678"))
+            o.setdefault("sellers", []).extend(ids)
+        elif not _eq and key in ("sellers", "check", "cheapest"):
+            o[key] = True
+            if key == "cheapest":
+                o["kind"] = "cheapest"
+        elif key == "item":
+            o["names"] = market.names_of(value)
+        elif key in ("max", "count", "pages", "cap") and value.isdigit():
+            o["max_price" if key == "max" else key] = int(value)
+        elif key == "category" and value.lower() in cats:
+            o["cat"] = cats[value.lower()]
+        else:
+            raise ScriptError(n, _(MARKET_HOW))
+    if what == "seller" and not o.get("sellers"):
+        raise ScriptError(n, _("market seller needs seller IDs: market seller 1234,5678"))
+    if what == "buy" and o.get("names") and not o.get("count"):
+        raise ScriptError(n, _("how many? write count=<n>"))
+    node.opts.update(o)
+
+
 def _prep_visit(node: Node, rest: str, n: int):
     if not rest.strip():
         raise ScriptError(n, _("visit what? write: visit storehouse  or  visit Grocer John"))
@@ -811,6 +856,7 @@ PREPARE = {
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
+    "market": _prep_market,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
     "farm": _prep_farm, "say": _prep_say,
@@ -1077,6 +1123,10 @@ class Runner:
 
     _do_gem_maker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
     _do_dungeon = _do_sell_collection = _do_activity
+
+    def _do_market(self, node: Node, b: Bot, o: dict[str, Any]):
+        with stats.doing(b, "market"):
+            market.run(b, o["what"], o)
 
     def _do_visit(self, node: Node, b: Bot, o: dict[str, Any]):
         w = o["what"]

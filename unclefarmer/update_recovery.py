@@ -25,7 +25,7 @@ JOURNAL = "transaction.json"
 PAYLOAD = "UncleFarmer.exe"     # the application, which updates replace
 BOOTSTRAP = "bootstrap.exe"     # native/bootstrap.c: runs updates and recovery, never replaced by one
 PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
-             "survey", "update", "settings.json", "schedules.json"}
+             "survey", "market", "update", "settings.json", "schedules.json"}
 # Journals written while the native front door was UncleFarmer.exe (and the app UncleFarmerApp.exe)
 # protected that name instead. Such a journal is still read, so its backups are never orphaned.
 LEGACY_PROTECTED = PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}

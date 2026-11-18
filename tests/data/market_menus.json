@@ -1,0 +1,1698 @@
+{
+ "recorded": "2026-11-18, two hand visits to the marketplace (agent dialog reading form: words in options)",
+ "menus": {
+  "home": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 1,
+   "rows": [
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "buy goods"
+      ],
+      "cmd": [
+       2,
+       -1,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "sell goods"
+      ],
+      "cmd": [
+       4
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "the goods I'm selling now"
+      ],
+      "cmd": [
+       8
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "trading description"
+      ],
+      "cmd": [
+       10
+      ]
+     }
+    ]
+   ]
+  },
+  "all goods page 1": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 2,
+   "rows": [
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "All goods; Press to select category"
+      ],
+      "cmd": [
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 0,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in chronological order; Selected"
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in price order"
+      ],
+      "cmd": [
+       2,
+       -1,
+       1,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 46 Green Shipwreck Chest;Unit price 350 gold coins;58 minutes and 19 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261463,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Gel essence;Unit price 9500 gold coins;58 minutes and 16 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261462,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 3 Green Shipwreck Chest;Unit price 350 gold coins;58 minutes and 4 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261461,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Medium Soul Turmoil;Unit price 5000 gold coins;57 minutes and 33 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261460,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Black Shipwreck Chest;Unit price 150 gold coins;57 minutes and 23 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261459,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Advanced Soul Turmoil;Unit price 300000 gold coins;56 minutes and 26 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261458,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 3 Loki Union Teleportation stone;Unit price 5000 gold coins;55 minutes and 3 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261457,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Red Shipwreck Chest;Unit price 5000 gold coins;54 minutes and 53 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261456,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 1 Giant rock City Teleportation stone;Unit price 5000 gold coins;54 minutes and 43 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261455,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Spirit Teleportation stone;Unit price 5000 gold coins;54 minutes and 37 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261454,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 3 blue Shipwreck Chest;Unit price 5900 gold coins;54 minutes and 21 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261453,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 7 Black Shipwreck Chest;Unit price 100 gold coins;54 minutes and 17 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261452,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 1 Green Shipwreck Chest;Unit price 250 gold coins;54 minutes and 14 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261451,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 2 Red Shipwreck Chest;Unit price 1900 gold coins;53 minutes and 59 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261450,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 1 Level 1 Burst Shot Crystal;Unit price 50000 gold coins;44 minutes and 5 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261449,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 14 Green Earth God Chest;Unit price 200 gold coins;40 minutes and 51 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261448,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 15 Black Earth God Chest;Unit price 100 gold coins;40 minutes and 47 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261447,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 7 Red Earth God Chest;Unit price 2000 gold coins;40 minutes and 35 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261446,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 66 Red Crystal ore;Unit price 100 gold coins;40 minutes and 21 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261445,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "New; 28 Ice ore;Unit price 100 gold coins;40 minutes and 12 seconds remaining in the display time"
+      ],
+      "cmd": [
+       3,
+       261444,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Next page: 2"
+      ],
+      "cmd": [
+       2,
+       -1,
+       0,
+       2
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Last page: 74"
+      ],
+      "cmd": [
+       2,
+       -1,
+       0,
+       74
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 13,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Jump to..."
+      ],
+      "cmd": [
+       2,
+       -1,
+       0,
+       0
+      ],
+      "f": "Please enter the number of pages"
+     }
+    ]
+   ]
+  },
+  "categories": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 3,
+   "rows": [
+    [
+     {
+      "flags": 0,
+      "raw": null,
+      "text": null,
+      "options": [
+       "please choose"
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "all goods"
+      ],
+      "cmd": [
+       2,
+       -1,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "weapons"
+      ],
+      "cmd": [
+       2,
+       0,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "helmets"
+      ],
+      "cmd": [
+       2,
+       1,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "hangings"
+      ],
+      "cmd": [
+       2,
+       2,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "shawls"
+      ],
+      "cmd": [
+       2,
+       3,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "armors"
+      ],
+      "cmd": [
+       2,
+       4,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "belts"
+      ],
+      "cmd": [
+       2,
+       5,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "shoes"
+      ],
+      "cmd": [
+       2,
+       6,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "pant legs"
+      ],
+      "cmd": [
+       2,
+       7,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "handwears"
+      ],
+      "cmd": [
+       2,
+       8,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "rings"
+      ],
+      "cmd": [
+       2,
+       9,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "other equipments"
+      ],
+      "cmd": [
+       2,
+       12,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "materials"
+      ],
+      "cmd": [
+       2,
+       100,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "collections"
+      ],
+      "cmd": [
+       2,
+       102,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "usable items"
+      ],
+      "cmd": [
+       2,
+       101,
+       0,
+       1
+      ]
+     }
+    ]
+   ]
+  },
+  "materials page 25": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 4,
+   "rows": [
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Materials; Press to select category"
+      ],
+      "cmd": [
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 0,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in chronological order; Selected"
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in price order"
+      ],
+      "cmd": [
+       2,
+       100,
+       1,
+       25
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "14 Higher blood;Unit price 6000 gold coins;Sale time Nov 04, 07:46, 2026"
+      ],
+      "cmd": [
+       3,
+       255332,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "10 Suspicious Plating;Unit price 10000 gold coins;Sale time Nov 04, 05:17, 2026"
+      ],
+      "cmd": [
+       3,
+       255295,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "2 White Bone Piece;Unit price 9000 gold coins;Sale time Nov 04, 04:45, 2026"
+      ],
+      "cmd": [
+       3,
+       255292,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "21 Resurrection Crystal;Unit price 10000 gold coins;Sale time Nov 04, 04:15, 2026"
+      ],
+      "cmd": [
+       3,
+       255256,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 West Sealing Tower Teleportation stone;Unit price 4000 gold coins;Sale time Nov 04, 00:27, 2026"
+      ],
+      "cmd": [
+       3,
+       255201,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "8 Resurrection Crystal;Unit price 10000 gold coins;Sale time Nov 03, 18:59, 2026"
+      ],
+      "cmd": [
+       3,
+       255101,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "7 Excellent Blood;Unit price 30000 gold coins;Sale time Nov 03, 16:52, 2026"
+      ],
+      "cmd": [
+       3,
+       255068,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Gang Kill Order Token;Unit price 25000 gold coins;Sale time Nov 03, 16:48, 2026"
+      ],
+      "cmd": [
+       3,
+       255064,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Lovebird Stone;Unit price 2600000 gold coins;Sale time Nov 03, 14:39, 2026"
+      ],
+      "cmd": [
+       3,
+       255031,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Weapon Enhance Boost Rune;Unit price 150000 gold coins;Sale time Nov 03, 14:07, 2026"
+      ],
+      "cmd": [
+       3,
+       255021,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "11 medium Blood;Unit price 40 gold coins;Sale time Nov 03, 10:00, 2026"
+      ],
+      "cmd": [
+       3,
+       254984,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "143 Lesser Blood;Unit price 10 gold coins;Sale time Nov 03, 09:16, 2026"
+      ],
+      "cmd": [
+       3,
+       254974,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "page 1"
+      ],
+      "cmd": [
+       2,
+       100,
+       0,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Previous page: 24"
+      ],
+      "cmd": [
+       2,
+       100,
+       0,
+       24
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 13,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Jump to..."
+      ],
+      "cmd": [
+       2,
+       100,
+       0,
+       0
+      ],
+      "f": "Please enter the number of pages"
+     }
+    ]
+   ]
+  },
+  "materials price order page 25": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 5,
+   "rows": [
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Materials; Press to select category"
+      ],
+      "cmd": [
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in chronological order"
+      ],
+      "cmd": [
+       2,
+       100,
+       0,
+       25
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 0,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in price order; Selected"
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "224 Resurrection Crystal;Unit price 300000 gold coins;Sale time Nov 09, 10:42, 2026"
+      ],
+      "cmd": [
+       3,
+       257493,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Worthless Blood;Unit price 401726 gold coins;Sale time Nov 11, 18:08, 2026"
+      ],
+      "cmd": [
+       3,
+       258541,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "33 Lesser Blood;Unit price 500000 gold coins;Sale time Nov 16, 10:09, 2026"
+      ],
+      "cmd": [
+       3,
+       260510,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Wind Chaser Soul Fragment;Unit price 520000 gold coins;Sale time Nov 15, 16:55, 2026"
+      ],
+      "cmd": [
+       3,
+       260174,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "5 Wind Chaser Soul Fragment;Unit price 520000 gold coins;Sale time Nov 11, 18:26, 2026"
+      ],
+      "cmd": [
+       3,
+       258565,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Robot Guard's Arm;Unit price 900000 gold coins;Sale time Nov 13, 19:49, 2026"
+      ],
+      "cmd": [
+       3,
+       259373,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "24 Equipment Enhance Boost Rune;Unit price 1000000 gold coins;Sale time Nov 09, 10:49, 2026"
+      ],
+      "cmd": [
+       3,
+       257501,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Weapon Enhance Boost Rune;Unit price 1000000 gold coins;Sale time Nov 09, 10:41, 2026"
+      ],
+      "cmd": [
+       3,
+       257487,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "85 Resurrection Crystal;Unit price 1000000 gold coins;Sale time Nov 17, 23:12, 2026"
+      ],
+      "cmd": [
+       3,
+       261308,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "27 Equipment Enhance Boost Rune;Unit price 1000000 gold coins;Sale time Nov 17, 23:12, 2026"
+      ],
+      "cmd": [
+       3,
+       261309,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Lovebird Stone;Unit price 2600000 gold coins;Sale time Nov 03, 14:39, 2026"
+      ],
+      "cmd": [
+       3,
+       255031,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 73,
+      "raw": null,
+      "text": null,
+      "options": [
+       "1 Lovebird Stone;Unit price 3000000 gold coins;Sale time Nov 13, 23:08, 2026"
+      ],
+      "cmd": [
+       3,
+       259431,
+       0
+      ],
+      "f": "Please enter the purchase quantity"
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "page 1"
+      ],
+      "cmd": [
+       2,
+       100,
+       1,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Previous page: 24"
+      ],
+      "cmd": [
+       2,
+       100,
+       1,
+       24
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 13,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Jump to..."
+      ],
+      "cmd": [
+       2,
+       100,
+       1,
+       0
+      ],
+      "f": "Please enter the number of pages"
+     }
+    ]
+   ]
+  },
+  "weapons page 1": {
+   "kind": 0,
+   "row": 0,
+   "col": 0,
+   "sig": 6,
+   "rows": [
+    [
+     {
+      "flags": 8,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Weapons; Press to select category"
+      ],
+      "cmd": [
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 0,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in chronological order; Selected"
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "in price order"
+      ],
+      "cmd": [
+       2,
+       0,
+       1,
+       1
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Scepter of Mercy;sophisticated ;Price: 2000 gold coins;Sale time Nov 17, 22:32, 2026"
+      ],
+      "cmd": [
+       3,
+       261290
+      ],
+      "f": "Purchase requires 2000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Savage invader;perfect ;Price: 20000 gold coins;Sale time Nov 17, 16:55, 2026"
+      ],
+      "cmd": [
+       3,
+       261184
+      ],
+      "f": "Purchase requires 20000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Mutant Slayer;common ;Price: 2000 gold coins;Sale time Nov 17, 05:33, 2026"
+      ],
+      "cmd": [
+       3,
+       260864
+      ],
+      "f": "Purchase requires 2000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Savage invader;sophisticated ;Price: 12000 gold coins;Sale time Nov 17, 05:00, 2026"
+      ],
+      "cmd": [
+       3,
+       260857
+      ],
+      "f": "Purchase requires 12000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Mutant Slayer;sophisticated ;Price: 12000 gold coins;Sale time Nov 17, 04:58, 2026"
+      ],
+      "cmd": [
+       3,
+       260855
+      ],
+      "f": "Purchase requires 12000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Solemn Oath;common ;Price: 1111 gold coins;Sale time Nov 17, 04:47, 2026"
+      ],
+      "cmd": [
+       3,
+       260851
+      ],
+      "f": "Purchase requires 1111 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "machete of Berserker;sophisticated ;Price: 500 gold coins;Sale time Nov 17, 02:35, 2026"
+      ],
+      "cmd": [
+       3,
+       260809
+      ],
+      "f": "Purchase requires 500 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Scepter of Bones;sophisticated ;Price: 50 gold coins;Sale time Nov 16, 15:05, 2026"
+      ],
+      "cmd": [
+       3,
+       260606
+      ],
+      "f": "Purchase requires 50 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Bow of chaser;perfect ;Price: 30000 gold coins;Sale time Nov 15, 21:42, 2026"
+      ],
+      "cmd": [
+       3,
+       260291
+      ],
+      "f": "Purchase requires 30000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Savage invader;sophisticated ;Price: 10000 gold coins;Sale time Nov 14, 17:36, 2026"
+      ],
+      "cmd": [
+       3,
+       259731
+      ],
+      "f": "Purchase requires 10000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Staff of Nature;rare ;Price: 100000 gold coins;Sale time Nov 13, 06:05, 2026"
+      ],
+      "cmd": [
+       3,
+       259169
+      ],
+      "f": "Purchase requires 100000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Scepter of Bones;perfect ;Price: 14500 gold coins;Sale time Nov 12, 23:51, 2026"
+      ],
+      "cmd": [
+       3,
+       259083
+      ],
+      "f": "Purchase requires 14500 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Frost Sorrow;sophisticated ;Price: 4000 gold coins;Sale time Nov 12, 13:15, 2026"
+      ],
+      "cmd": [
+       3,
+       258892
+      ],
+      "f": "Purchase requires 4000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Frost Sorrow;sophisticated ;Price: 4000 gold coins;Sale time Nov 11, 18:17, 2026"
+      ],
+      "cmd": [
+       3,
+       258564
+      ],
+      "f": "Purchase requires 4000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Ice Sighing;sophisticated ;Price: 5000 gold coins;Sale time Nov 11, 17:17, 2026"
+      ],
+      "cmd": [
+       3,
+       258517
+      ],
+      "f": "Purchase requires 5000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Thousands Blast;sophisticated ;Price: 500 gold coins;Sale time Nov 10, 12:26, 2026"
+      ],
+      "cmd": [
+       3,
+       257975
+      ],
+      "f": "Purchase requires 500 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Savage invader;perfect ;Price: 20000 gold coins;Sale time Nov 09, 16:02, 2026"
+      ],
+      "cmd": [
+       3,
+       257632
+      ],
+      "f": "Purchase requires 20000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Sword of Fighter;sophisticated ;Price: 5000 gold coins;Sale time Nov 09, 14:25, 2026"
+      ],
+      "cmd": [
+       3,
+       257599
+      ],
+      "f": "Purchase requires 5000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "machete of Berserker;sophisticated ;Price: 5000 gold coins;Sale time Nov 09, 14:01, 2026"
+      ],
+      "cmd": [
+       3,
+       257586
+      ],
+      "f": "Purchase requires 5000 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 74,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Bow of chaser;common ;Price: 150 gold coins;Sale time Nov 06, 12:40, 2026"
+      ],
+      "cmd": [
+       3,
+       256322
+      ],
+      "f": "Purchase requires 150 gold coins, are you sure you want to buy?"
+     }
+    ],
+    [
+     {
+      "flags": 12,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Next page: 2"
+      ],
+      "cmd": [
+       2,
+       0,
+       0,
+       2
+      ]
+     }
+    ],
+    [
+     {
+      "flags": 13,
+      "raw": null,
+      "text": null,
+      "options": [
+       "Jump to..."
+      ],
+      "cmd": [
+       2,
+       0,
+       0,
+       0
+      ],
+      "f": "Please enter the number of pages"
+     }
+    ]
+   ]
+  }
+ }
+}

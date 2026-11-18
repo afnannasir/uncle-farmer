@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+
+- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
+  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
+  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
+  nearest marketplace and reads every category (about a minute or two). Until then it shows a
+  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
+  them.
+- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
+  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
+  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
+  category. Finds show up while the bot reads. Searched items and sellers are remembered.
+- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
+  gold coins in all. Each lot is found again by its listing number, even after it moved to another
+  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
+  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
+  gone, only N left, over your most, over the limit, or not bought with the game's own words.
+- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
+- Agent 73: `detail` presses the details key (G) on a market lot the game's own way, so the seller
+  comes back without a key press.
+
 **Maps for your level in the plan editor**
 
 - The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
