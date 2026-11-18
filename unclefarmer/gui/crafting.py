@@ -100,7 +100,7 @@ class ToolDialog(Dialog):
 
 
 SUPPLY = ("none", "both", "storage", "buy")
-AMOUNT = ("count", "most")
+AMOUNT = ("count", "most", "total")
 MODES = ("gem", "bag")
 
 
@@ -121,7 +121,7 @@ class GemMakerDialog(ToolDialog):
         c = self.cfg
         # profiles saved before the three questions: take what they had ("kind" made one shard's gems)
         colour: str = c.get("colour") or colour_of(c.get("kind")) or ""
-        amount = "most" if c.get("amount") in ("most", "fill") else "count"
+        amount = "most" if c.get("amount") in ("most", "fill") else "total" if c.get("amount") == "total" else "count"
         mode = "bag" if c.get("mode") == "bag" else "gem"
         nb = tabs(self)
 
@@ -139,7 +139,8 @@ class GemMakerDialog(ToolDialog):
         self.colour = f.choice(_("&Gem:"), [self.colour_label(col) for col in self.gem_colours],
                                self.gem_colours.index(colour) if colour in self.gem_colours else 0)
         self.level = f.number(_("&Level:"), c.get("level", 2), 1, 30)
-        self.amount = f.choice(_("&How many:"), [_("This many"), _("As many as I can")], AMOUNT.index(amount))
+        self.amount = f.choice(_("&How many:"), [_("This many more"), _("As many as I can"), _("Until the bag holds this many")],
+                               AMOUNT.index(amount))
         self.count = f.number(_("&Number of gems:"), c.get("count", 10), 1, 100000)
         self.supply = f.choice(_("Get more Level 1 shards &from:"), [_("Nowhere, use what's in the bag"),
                                                                     _("The storehouse first, then the Shard Market"),
@@ -197,7 +198,7 @@ class GemMakerDialog(ToolDialog):
         for ctrl in (self.colour_list, self.up_to, self.keep):
             _enable(ctrl, not gem_mode)
         market = gem_mode and self.supply.GetSelection() not in (0, 2)
-        _enable(self.count, gem_mode and self.amount.GetSelection() == 0)
+        _enable(self.count, gem_mode and AMOUNT[self.amount.GetSelection()] != "most")
         _enable(self.price_on, market)
         _enable(self.max_price, market and self.price_on.GetValue())
 
@@ -281,8 +282,10 @@ class GemMakerDialog(ToolDialog):
         lines = [_("In the bag: {n} {gem}.", n=gems.get(level, 0), gem=gem)]
         source = {"none": "", "both": _("the storehouse, then the Shard Market"), "storage": _("the storehouse"),
                   "buy": _("the Shard Market")}[supply]
-        if self.amount.GetSelection() == 0:
+        if AMOUNT[self.amount.GetSelection()] != "most":
             n = self.count.GetValue()
+            if AMOUNT[self.amount.GetSelection()] == "total":
+                n = max(0, n - gems.get(level, 0))
             _short, need = shortfall(gems, shards, level, n, self.protect.GetValue())
             lines.append(_("Make {n} more {gem}.", n=n, gem=gem))
             if not need:

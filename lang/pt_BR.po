@@ -4015,8 +4015,8 @@ msgid ""
 msgstr ""
 "Esta é uma versão de desenvolvimento do branch dev: contém as alterações mais recentes, ainda não é estável e pode apresentar falhas."
 
-msgid "This many"
-msgstr "Esta quantidade"
+msgid "This many more"
+msgstr "Mais esta quantidade"
 
 msgid ""
 "This map can't be an end place. Choose one on the open world, or another end."
@@ -4256,6 +4256,9 @@ msgstr "Ativar o som de todos os &jogos"
 
 msgid "Unpacking"
 msgstr "Descompactando"
+
+msgid "Until the bag holds this many"
+msgstr "Até a mochila ter esta quantidade"
 
 msgid "Update"
 msgstr "Atualizar"
@@ -5106,6 +5109,10 @@ msgstr "não foi possível falar com {npc}"
 
 msgid "couldn't throw away: {list}"
 msgstr "não foi possível descartar: {list}"
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
+msgstr ""
+"não foi possível marcar a caixa de {shard}: estas tentativas ficam sem os +20%"
 
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr ""
@@ -6008,6 +6015,9 @@ msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenh
 msgid "nothing"
 msgstr "nada"
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr "nada resultou disso — pedindo {n} tentativas de {gem} em vez disso"
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6631,6 +6641,9 @@ msgstr "o Artesão de Gemas não oferece uma forma de criar {gem}"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "o menu do Artesão de Gemas não tem síntese de gemas"
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
+msgstr "a página de {gem} do Gem Craftsman não apareceu — nada foi pago"
 
 msgid "the Gem Maker can't go on: {why}"
 msgstr "o Criador de Gemas não pode continuar: {why}"
@@ -7981,6 +7994,9 @@ msgstr "{shard} custa {price} no mercado, acima do seu limite de {limit}"
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} Arnebia"
 
+msgid "{shard}: {was} before, {now} after"
+msgstr "{shard}: {was} antes, {now} depois"
+
 msgid "{skill} at {where}"
 msgstr "{skill} em {where}"
 
@@ -8121,3 +8137,6 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 #~ msgstr ""
 #~ "O bot localiza um guarda (à vista, em um local onde já foi visto ou na cidade mais próxima), muda o modo PK para todos, atinge o guarda uma vez e deixa que ele mate o personagem: sem poções, curas ou revide. O personagem renasce na cidade e repete o processo até que a experiência necessária para o próximo nível alcance o valor definido. Na vila mais próxima, o bot primeiro entra nela (o jogo revive o personagem morto na última cidade visitada) e depois morre junto aos portões, reduzindo o tempo de cada morte (no Pântano Melódico, 11 segundos na Vila Aria contra 29 na Cidade Tulipa). Se o jogo o reviver em outro local, ele morrerá para o guarda mais próximo. O mascote é guardado antes e o modo PK é restaurado ao final. As mortes desgastam o equipamento; personagens de nome preto (moralidade -1000 ou menos) podem perder equipamento vestido. Por isso, o bot não executa o Perdedor de EXP com esses personagens."
+
+#~ msgid "This many"
+#~ msgstr "Esta quantidade"

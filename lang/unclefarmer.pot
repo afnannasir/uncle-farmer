@@ -3847,7 +3847,7 @@ msgid ""
 "This is a development build from the dev branch: the newest changes, not yet a stable release, and it can break."
 msgstr ""
 
-msgid "This many"
+msgid "This many more"
 msgstr ""
 
 msgid ""
@@ -4057,6 +4057,9 @@ msgid "Unmute every &game"
 msgstr ""
 
 msgid "Unpacking"
+msgstr ""
+
+msgid "Until the bag holds this many"
 msgstr ""
 
 msgid "Update"
@@ -4866,6 +4869,9 @@ msgid "couldn't talk to {npc}"
 msgstr ""
 
 msgid "couldn't throw away: {list}"
+msgstr ""
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
 msgstr ""
 
 msgid "couldn't tick the protection rune - not forging without it"
@@ -5720,6 +5726,9 @@ msgstr ""
 msgid "nothing"
 msgstr ""
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6318,6 +6327,9 @@ msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
+msgstr ""
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
 msgstr ""
 
 msgid "the Gem Maker can't go on: {why}"
@@ -7590,6 +7602,9 @@ msgid "{shard} costs {price} at the market, more than your limit of {limit}"
 msgstr ""
 
 msgid "{shard}: {old} -> {new} arnebia"
+msgstr ""
+
+msgid "{shard}: {was} before, {now} after"
 msgstr ""
 
 msgid "{skill} at {where}"

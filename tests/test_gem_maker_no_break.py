@@ -8,8 +8,9 @@ round again and again when the game carried nothing out.
 
 The pretend Gem Craftsman below works its menus as the game does (the gem list, the single and
 batch synthesis pages, the boost and rune boxes, OK, the quantity box) and its rules: 3 gems make
-one a level up when the try works; a failure shatters them into one shard of their level, or, with
-a Gem Protection Rune, keeps them and takes the rune; a ticked boost box takes one shard."""
+one a level up when the try works; a failure shatters one of them into a shard of its level (the
+game's own instructions) or, with a Gem Protection Rune, keeps them and takes the rune; a ticked
+boost box takes one shard."""
 
 from __future__ import annotations
 
@@ -143,7 +144,7 @@ class Craftsman:
                 add(b, gem, -3)
                 add(b, nxt, 1)
             elif not protect:
-                add(b, gem, -3)
+                add(b, gem, -1)
                 add(b, shard, 1)                    # the shattered gem's shard: the only shard there is
 
 

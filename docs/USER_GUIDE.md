@@ -838,7 +838,7 @@ The Gem Maker has two jobs.
 
 **Make a gem**
 
-Choose the gem, the level you want, and the quantity to make. You can also choose to make as many as possible.
+Choose the gem, the level you want, and the quantity: this many more, as many as possible, or until the bag holds this many (the gems you already have count, so starting again after an interruption doesn't make too many).
 
 The tool uses the gems and shards already in your bag. If it needs more Level 1 shards, it fetches them from your storehouse or buys them from the Shard Broker.
 
@@ -861,6 +861,8 @@ It tells you why it stopped. Possible reasons include:
 - There is nothing left to make.
 - No more shards are available from the storehouse or Shard Broker.
 - The Gem Craftsman fails to make anything for three rounds in a row, even though there are still combinations available.
+
+Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
 
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.
 

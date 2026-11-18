@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**Gem Maker: safer batches**
+
+- Nothing is spent until the craftsman's page names the gem being made. On a slow answer the bot
+  could read the page before, with no fee on it, and go past the arnebia you keep.
+- A batch the game makes nothing of is asked for again at half the size, instead of the same
+  number until the job gave up.
+- If the box for the +20% shard can't be ticked, the bot says so, and each level's result now says
+  how many of its shards there were before and after.
+- For the gem you asked for, no more tries than gems are missing, so a lucky run doesn't cost more
+  than the job needed.
+- **How many** has a new choice, **Until the bag holds this many**.
+
 **XP loser: it knows how far it can go**
 
 - Each death takes 1.81% of the experience earned inside the level (measured over 630 deaths), so

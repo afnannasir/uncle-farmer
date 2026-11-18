@@ -3996,8 +3996,8 @@ msgid ""
 msgstr ""
 "Yeh dev branch ki development build hai: sab se nayi tabdeeliyan, abhi stable release nahi, aur yeh kharab ho sakti hai."
 
-msgid "This many"
-msgstr "Itne"
+msgid "This many more"
+msgstr "Itne aur"
 
 msgid ""
 "This map can't be an end place. Choose one on the open world, or another end."
@@ -4237,6 +4237,9 @@ msgstr "Har &game ki awaaz chalu karein"
 
 msgid "Unpacking"
 msgstr "Unpack ho raha hai"
+
+msgid "Until the bag holds this many"
+msgstr "Jab tak basta mein itne na ho jayen"
 
 msgid "Update"
 msgstr "Update"
@@ -5090,6 +5093,10 @@ msgstr "{npc} se baat nahi kar sake"
 
 msgid "couldn't throw away: {list}"
 msgstr "phenk nahi sake: {list}"
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
+msgstr ""
+"{shard} ka box tick nahi ho saka: ye koshishen us ke +20% ke baghair hongi"
 
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr "protection rune tick nahi kar sake - iske baghair nahi bana rahe"
@@ -5997,6 +6004,9 @@ msgstr ""
 msgid "nothing"
 msgstr "kuch nahi"
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr "us se kuch nahi bana - ab {gem} ki {n} koshishen maang rahe hain"
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6618,6 +6628,9 @@ msgstr "Gem Craftsman ne {gem} banane ka koi tareeqa nahi diya"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "Gem Craftsman ke menu mein gem synthesis nahi hai"
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
+msgstr "Gem Craftsman ka {gem} wala page nahi khula - kuch ada nahi kiya gaya"
 
 msgid "the Gem Maker can't go on: {why}"
 msgstr "Gem Maker aage nahi chal sakta: {why}"
@@ -7970,6 +7983,9 @@ msgstr ""
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} arnebia"
 
+msgid "{shard}: {was} before, {now} after"
+msgstr "{shard}: pehle {was}, baad mein {now}"
+
 msgid "{skill} at {where}"
 msgstr "{skill}, {where} par"
 
@@ -8200,6 +8216,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "The delay must be a finite number of seconds, zero or greater."
 #~ msgstr "Waqfa seconds mein aik mehdood adad hona chahiye, zero ya us se zyada."
+
+#~ msgid "This many"
+#~ msgstr "Itne"
 
 #~ msgid ""
 #~ "Ticked jobs run one after the other in this order, each exactly as from the game's Tools submenu. A job ticked in both lists runs once before and once after farming. A job that can't finish is said and the next one still runs; Stop ends them. Store items uses the bag manager's storage list as it is at that moment."
