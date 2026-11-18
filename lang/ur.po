@@ -5841,12 +5841,12 @@ msgstr "koi nahi"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 
+msgid "none of the shops that sell {item} answered"
+msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
-
-msgid "none of the shops that sell {item} answered"
-msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
@@ -6950,13 +6950,13 @@ msgstr "script bohat lambi hai ({max} characters se zyada)"
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr "shards ki qeemat ki fehrist (data\\shards.json) parhi nahi ja sakti"
 
-msgid "the skill page turns with {key} (the game's key for it)"
-msgstr "skill page {key} se badalta hai (game ki apni key)"
-
 msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
 msgstr ""
 "shard prices {hours} pehle parhi gayi thin - {most} ghante se pehle in ke liye dobara Shard Broker ke paas nahi ja rahe"
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr "skill page {key} se badalta hai (game ki apni key)"
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"

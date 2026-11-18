@@ -5577,9 +5577,10 @@ msgstr ""
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr ""
 
-msgid "none of the ticked experience cards in the bag - farming on without one"
-
 msgid "none of the shops that sell {item} answered"
+msgstr ""
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 
 msgid "none of the {n} places that could do it can be reached from {map}"
@@ -6618,11 +6619,11 @@ msgstr ""
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
-msgid "the skill page turns with {key} (the game's key for it)"
-msgstr ""
-
 msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid "the skill page turns with {key} (the game's key for it)"
 msgstr ""
 
 msgid ""

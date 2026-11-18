@@ -5853,12 +5853,12 @@ msgstr "nenhum"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "nenhuma das entradas marcadas em {map} é o círculo {name}"
 
+msgid "none of the shops that sell {item} answered"
+msgstr "nenhuma das lojas que vendem {item} respondeu"
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "nenhum dos cartões de experiência marcados na bolsa - a coleta continua sem cartão"
-
-msgid "none of the shops that sell {item} answered"
-msgstr "nenhuma das lojas que vendem {item} respondeu"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
@@ -6965,13 +6965,13 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 "não foi possível ler a lista de preços dos fragmentos (data\\shards.json)"
 
-msgid "the skill page turns with {key} (the game's key for it)"
-msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
-
 msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
 msgstr ""
 "os preços dos shards foram lidos há {hours} - sem voltar ao Shard Broker por eles antes de {most} horas"
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
