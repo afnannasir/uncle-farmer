@@ -141,6 +141,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
     "corpse_skill": False,    # farming: the learned Draw Blood, Skinning or Cut Flesh on our kills (engine/corpses.py)
     "corpse_keep_vitality": 0,  # ... until Vitality is down to this (0: until it runs out)
+    "corpse_walk": True,      # ... walking up to corpses further off than the skill reaches from where we stand
     "xp_cards": None,         # farming: keep a card of these strengths running, the strongest first ([]: none;
                               # None: not carried over from xp_card_name yet) (engine/xpcard.py)
     "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
@@ -332,6 +333,7 @@ class Profile(BaseModel):
     shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
     corpse_skill: bool = PROFILE_DEFAULTS["corpse_skill"]
     corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
+    corpse_walk: bool = PROFILE_DEFAULTS["corpse_walk"]
     xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]

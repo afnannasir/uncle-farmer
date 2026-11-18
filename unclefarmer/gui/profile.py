@@ -294,6 +294,11 @@ class ProfileDialog(Dialog):
             _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
             p.get("corpse_skill", False),
             _("Stop when &Vitality is down to (0: until it runs out):"), p.get("corpse_keep_vitality", 0), 0, 100)
+        self.corpse_walk = f.check(_("Walk up to corpses further off, up to 20 steps awa&y (off: only the ones "
+                                     "within 4.5 steps of where the fight ended)"), p.get("corpse_walk", True))
+        self.corpse_skill.Bind(wx.EVT_CHECKBOX,
+                               lambda e: (e.Skip(), self.corpse_walk.Enable(self.corpse_skill.GetValue())))
+        self.corpse_walk.Enable(self.corpse_skill.GetValue())
         f = group(panel, box, _("Experience cards to keep running while farming (the strongest ticked one in the bag "
                                 "first)"))
         ticked, _pause = xpcard.wanted(p)
@@ -574,6 +579,7 @@ class ProfileDialog(Dialog):
         p["panic_after"] = float(self.panic_after.GetValue())
         p["corpse_skill"] = self.corpse_skill.GetValue()
         p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
+        p["corpse_walk"] = self.corpse_walk.GetValue()
         p["xp_cards"] = [kind for kind, box in self.xp_cards if box.GetValue()]
         p["xp_card_pause"] = self.xp_card_pause.GetValue()
         p["stop_on_drop_time"] = self.drop_stop.GetValue()

@@ -4175,6 +4175,10 @@ msgstr ""
 msgid "Walk to {where}"
 msgstr ""
 
+msgid ""
+"Walk up to corpses further off, up to 20 steps awa&y (off: only the ones within 4.5 steps of where the fight ended)"
+msgstr ""
+
 msgid "Walk up to the enemy"
 msgstr ""
 
@@ -5059,6 +5063,9 @@ msgstr ""
 msgid "full loop"
 msgstr ""
 
+msgid "further off than we walk for a corpse"
+msgstr ""
+
 msgid "further to walk than the chase range"
 msgstr ""
 
@@ -5156,6 +5163,9 @@ msgid "got out by pushing {way}"
 msgstr ""
 
 msgid "got out: walked to {cell}"
+msgstr ""
+
+msgid "harvested by someone else, or dried, before we got there"
 msgstr ""
 
 msgid "heal"
@@ -5295,6 +5305,9 @@ msgid ""
 "left out {n} gear warnings from before this run (they were dealt with then); broken gear is still repaired"
 msgstr ""
 
+msgid "left the corpse of {name}: {why}"
+msgstr ""
+
 msgid "left the team"
 msgstr ""
 
@@ -5431,6 +5444,9 @@ msgid "mute: the game stops talking (only my game)."
 msgstr ""
 
 msgid "muted request"
+msgstr ""
+
+msgid "near a boss"
 msgstr ""
 
 msgid "never again"
@@ -5682,6 +5698,9 @@ msgstr ""
 
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
+msgstr ""
+
+msgid "not reached on foot"
 msgstr ""
 
 msgid "not read, old price kept: {list}"
@@ -6820,6 +6839,9 @@ msgid ""
 msgstr ""
 
 msgid "too close to a boss"
+msgstr ""
+
+msgid "too far to harvest from where we stand, and walking to corpses is off"
 msgstr ""
 
 msgid "took {n} {item} out of the storehouse"

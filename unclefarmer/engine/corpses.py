@@ -17,14 +17,21 @@ boolean) and game.i.a(int, short, int, boolean) read with javap 2026-11-11):
     never let go, made every walk fail until the next fight (night 2026-11-12: 607 stucks).
   - The server takes the skill only from close by: measured live 2026-11-12, every harvest
     (ours and another player's) landed 1.1-4.5 tiles from the corpse, and casts from further off
-    were never answered. The key would walk up to a far corpse; the bot never does (farming
-    time): it casts standing, at corpses within REACH of where the fight left us (agent 62 checks
-    the same range). A corpse someone else harvested shows -1 HP at once and is left too.
+    were never answered. The key walks up to a far corpse (up to 20 tiles) before it casts; the
+    agent always casts standing, at corpses within REACH (agent 62 checks the same range), so the
+    bot does the walking itself. A corpse someone else harvested shows -1 HP at once and is left.
+  - Standing only was too little (logs of 2026-11-15 to 11-18): a character that fights from afar
+    kills about 18 tiles off, and only 1-5% of its corpses lay within REACH (a mage: 12 harvests
+    in some 1,150 kills, with Vitality left over); even a melee character ended its fights about
+    5 tiles from where the next one began. So by default the bot walks up to a corpse as the key
+    does (corpse_walk), within WALK_REACH and WALK_STEPS; the player can turn that off.
   - The harvest comes back as our own cast of the skill (IN op=41); the game says "lack of
     vitality" when the day's Vitality is used up.
 
 So, between fights and with nothing attacking us or our pet: the nearest fresh corpse of a
-monster we killed in the last minute, within harvesting range, gets the skill, once per corpse. It stops for the run when
+monster we killed in the last minute gets the skill, once per corpse - one within harvesting range
+from where we stand, else (corpse_walk) one we walk up to, not near a boss. Corpses left because
+they are too far are logged once per run, so a run that harvests little says why. It stops for the run when
 Vitality is down to the player's mark (corpse_keep_vitality; 0: until it runs out) or the game says
 it ran out. Casts the game never answers are said once and tried again after a rest: it never
 turns itself off for that.
@@ -38,13 +45,17 @@ from typing import TYPE_CHECKING, Any
 
 from .. import jsonio as json
 from ..i18n import N_, _
+from . import bosses
 
 if TYPE_CHECKING:
     from .bot import Bot
 
 SKILLS = (N_("Draw Blood"), N_("Skinning"), N_("Cut Flesh"))
 AGENT = 62                # the agent that takes only corpses in harvesting range, and only its skill's report
-REACH = 4.5               # tiles to a corpse the server takes the skill from (live: 1.1-4.5); never walked to
+REACH = 4.5               # tiles to a corpse the server takes the skill from (live: 1.1-4.5), cast standing
+WALK_REACH = 20.0         # tiles (straight) to a corpse we walk up to: as far as the game's own key goes
+WALK_STEPS = 30           # walking steps (round walls) we go out of our way for a corpse
+CLOSE = 1.5               # tiles from the corpse a walk up to it ends at (our own harvests landed at 1.1)
 FRESH = 60.0              # seconds after our kill that its corpse is still taken
 WAIT = 3.0                # seconds a cast has to bring its report
 LOOK = 0.25               # seconds between looks while waiting
@@ -64,6 +75,9 @@ class Harvest:
     harvested: int = 0
     told: bool = False            # the run's first line (skill, Vitality) was said
     refusals: dict[str, int] = field(default_factory=lambda: {})   # why the agent sent nothing -> times
+    walked: int = 0               # corpses we walked up to
+    far: dict[int, float] = field(default_factory=lambda: {})    # corpse id -> its kill, left as too far
+    left: dict[str, int] = field(default_factory=lambda: {})     # why a corpse of ours was left -> times
 
 
 def state(b: Bot) -> Harvest:
@@ -83,14 +97,30 @@ def skill_of(skills: dict[str, Any]) -> tuple[str, int] | None:
     return None
 
 
+def walks(b: Bot) -> bool:
+    """We walk up to corpses out of harvesting range (profile corpse_walk, on by default)."""
+    return bool(b.p.get("corpse_walk", True))
+
+
 def corpse(b: Bot, snap: dict[str, Any], st: Harvest, now: float) -> dict[str, Any] | None:
-    """The nearest fresh corpse (0 HP) of a monster we killed in the last FRESH seconds, within
-    REACH and not tried since that kill."""
+    """The fresh corpse (0 HP) of a monster we killed in the last FRESH seconds, not tried since
+    that kill: the nearest within REACH, cast at from where we stand; else, when we walk to
+    corpses, the one fewest steps away within WALK_REACH and WALK_STEPS, not near a boss. Corpses
+    of ours left as too far are noted (once each, see _left)."""
     me: dict[str, Any] = snap.get("self") or {}
     if "x" not in me:
         return None
+    fresh = sorted(_fresh(b, snap, st, now), key=lambda de: de[0])
+    if fresh and fresh[0][0] <= REACH:
+        return fresh[0][1]
+    return _to_walk_to(b, snap, st, now, fresh)
+
+
+def _fresh(b: Bot, snap: dict[str, Any], st: Harvest, now: float) -> list[tuple[float, dict[str, Any]]]:
+    """(tiles from us, corpse) for each fresh corpse of our kills not tried since that kill."""
+    me: dict[str, Any] = snap["self"]
     counted: dict[int, float] = getattr(b, "counted", {}) or {}
-    best: tuple[float, dict[str, Any]] | None = None
+    out: list[tuple[float, dict[str, Any]]] = []
     rows: list[dict[str, Any]] = snap.get("entities", [])
     for e in rows:
         if e.get("id") is None:
@@ -101,10 +131,40 @@ def corpse(b: Bot, snap: dict[str, Any], st: Harvest, now: float) -> dict[str, A
             continue
         if st.done.get(mid, -math.inf) >= killed:
             continue              # tried since this kill (an id the game reuses dies again later)
-        d = math.hypot(e["x"] - me["x"], e["y"] - me["y"])
-        if d <= REACH and (best is None or d < best[0]):
-            best = (d, e)
-    return best[1] if best else None
+        out.append((math.hypot(e["x"] - me["x"], e["y"] - me["y"]), e))
+    return out
+
+
+def _to_walk_to(b: Bot, snap: dict[str, Any], st: Harvest, now: float,
+                further: list[tuple[float, dict[str, Any]]]) -> dict[str, Any] | None:
+    """Of the corpses out of harvesting range (nearest first), the one we walk up to: fewest steps
+    within WALK_REACH and WALK_STEPS, not near a boss; None when walking to corpses is off. The
+    others are noted, once each (_left)."""
+    walk = walks(b)
+    counted: dict[int, float] = getattr(b, "counted", {}) or {}
+    keep = b.p.get("boss_distance", 40)
+    boss_list = bosses.in_sight(snap) if walk and keep else []
+    near: tuple[float, dict[str, Any]] | None = None
+    for d, e in further:
+        if not walk:
+            why = _("too far to harvest from where we stand, and walking to corpses is off")
+        elif d > WALK_REACH:
+            why = _("further off than we walk for a corpse")
+        elif boss_list and bosses.too_close(e, boss_list, keep):
+            why = _("near a boss")
+        else:
+            steps = b.walk_dist(snap, e, WALK_STEPS)
+            if steps <= WALK_STEPS:
+                if near is None or steps < near[0]:
+                    near = (steps, e)
+                continue
+            why = _("further off than we walk for a corpse")
+        mid = int(e["id"])
+        killed = counted.get(mid, now)
+        if st.far.get(mid, -math.inf) < killed:
+            st.far[mid] = killed
+            _left(b, st, why, e)
+    return near[1] if near else None
 
 
 def _ready(b: Bot, st: Harvest, now: float) -> bool:
@@ -164,12 +224,18 @@ def harvest(b: Bot, snap: dict[str, Any]) -> bool:
     got = corpse(b, snap, st, now)
     if got is None or not _ready(b, st, now):
         return False
-    from . import gathering       # (see _ready)
-    skill = st.skill or ""
     st.done[got["id"]] = now
     if len(st.done) > 500:
         st.done = {k: t for k, t in st.done.items() if now - t < FRESH}
-    since = int(now * 1000)       # the agent's casts and said lines are stamped in ms
+    if len(st.far) > 500:
+        st.far = {k: t for k, t in st.far.items() if now - t < FRESH}
+    me: dict[str, Any] = snap.get("self") or {}
+    if math.hypot(got["x"] - me["x"], got["y"] - me["y"]) > REACH:
+        walked = _walk_up(b, st, got)
+        if walked is None:
+            return True           # gone, or not reached: the next one
+        got, me = walked
+    since = int(b.clock.time() * 1000)   # the agent's casts and said lines are stamped in ms (after any walk)
     reply = b.a.send("cast %d %d" % (st.skill_id, got["id"]))
     if reply.startswith("refused:"):
         if "profession skills" in reply:
@@ -178,30 +244,69 @@ def harvest(b: Bot, snap: dict[str, Any]) -> bool:
         return True               # out of reach or sight, or harvested already: the next one
     if not reply.startswith("cast "):
         return _agent_failed(b, st, reply)
-    me: dict[str, Any] = snap.get("self") or {}
-    me_id: int | None = me.get("id")
+    _await(b, st, got, since, me.get("id"))
+    return True
+
+
+def _await(b: Bot, st: Harvest, got: dict[str, Any], since: int, me_id: int | None) -> None:
+    """After a cast: our report of it (a harvest), the game's "lack of vitality" (over for the run),
+    an attack (the fight first), or nothing within WAIT (a miss; MISSES in a row rest)."""
+    from . import gathering       # (see _ready)
+    skill = st.skill or ""
     end = b.clock.time() + WAIT
     while b.clock.time() < end:
         b.sleep(LOOK)
         for line in gathering.said(b, since):
             if gathering.VITALITY.search(line):
                 _over(b, st, _("Vitality is used up for today"))
-                return True
+                return
         if gathering.own_casts(b, skill, since, me_id):
             st.harvested += 1
             st.misses = 0
             b.harvests = getattr(b, "harvests", 0) + 1
             b.log(_("{skill}: {name}", skill=_(skill), name=got.get("name") or _("a monster")))
-            return True
+            return
         if b.attackers():
-            return True           # something came at us: the fight first, this corpse is left
+            return                # something came at us: the fight first, this corpse is left
     st.misses += 1
     if st.misses >= MISSES:
         st.misses = 0
         st.rest_until = b.clock.time() + REST
         b.log(_("{skill} went out at {n} corpses in a row and the game never answered - trying again in 5 minutes",
                 skill=_(skill), n=MISSES), speak=True)
-    return True
+
+
+def _walk_up(b: Bot, st: Harvest, got: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """Walk to within CLOSE of the corpse, as the game's key does before it casts. (the corpse,
+    us) as they are once there; None when it is gone (harvested by someone else, dried) or the
+    walk didn't get us within harvesting range. A fight on the way (fight back) comes first and
+    the walk goes on after it."""
+    cx, cy = float(got["x"]), float(got["y"])
+
+    def close(me: dict[str, Any]) -> bool:
+        return math.hypot(me["x"] - cx, me["y"] - cy) <= CLOSE
+
+    with b.timed("approach"):
+        b.walk_to((cx, cy), near=close)
+    snap = b.snap()
+    me: dict[str, Any] = snap.get("self") or {}
+    now_e = next((e for e in snap.get("entities", []) if e.get("id") == got["id"]), None)
+    if now_e is None or now_e.get("hp") != 0:
+        _left(b, st, _("harvested by someone else, or dried, before we got there"), got)
+        return None
+    if "x" not in me or math.hypot(now_e["x"] - me["x"], now_e["y"] - me["y"]) > REACH:
+        _left(b, st, _("not reached on foot"), got)
+        return None
+    st.walked += 1
+    return now_e, me
+
+
+def _left(b: Bot, st: Harvest, why: str, got: dict[str, Any]) -> None:
+    """A corpse of ours we didn't cast at (too far, gone before we got there): each kind of reason
+    is logged the first time in a run (not spoken)."""
+    st.left[why] = st.left.get(why, 0) + 1
+    if st.left[why] == 1:
+        b.log(_("left the corpse of {name}: {why}", name=got.get("name") or _("a monster"), why=why))
 
 
 def _refused(b: Bot, st: Harvest, reply: str, got: dict[str, Any]) -> None:
