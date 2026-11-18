@@ -5666,6 +5666,9 @@ msgstr ""
 msgid "not stored (the storehouse may be full): {list}"
 msgstr ""
 
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+
 msgid "nothing"
 msgstr ""
 
@@ -6636,6 +6639,13 @@ msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr ""
 
 msgid "the storehouse has {n} {item}"
+msgstr ""
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr ""
+
+msgid "the storehouse is full: {item} has no place in it"
 msgstr ""
 
 msgid "the storehouse menu has no deposit"

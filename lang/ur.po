@@ -5940,6 +5940,10 @@ msgstr "nahi bika: {list}"
 msgid "not stored (the storehouse may be full): {list}"
 msgstr "storehouse mein nahi rakhe gaye (shayad bhar gaya hai): {list}"
 
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+"{item} storehouse nahi le ja rahe: woh bhara hua hai aur us mein abhi koi {item} nahi"
+
 msgid "nothing"
 msgstr "kuch nahi"
 
@@ -6970,6 +6974,13 @@ msgstr "storehouse mein {item} nahi aur khareedne ke liye arnebia bhi nahi"
 
 msgid "the storehouse has {n} {item}"
 msgstr "storehouse mein {n} {item} hain"
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr "storehouse bhara hua hai - jagah banne tak yeh bag mein rahenge: {list}"
+
+msgid "the storehouse is full: {item} has no place in it"
+msgstr "storehouse bhara hua hai: {item} ke liye us mein jagah nahi"
 
 msgid "the storehouse menu has no deposit"
 msgstr "storehouse menu mein deposit nahi hai"
