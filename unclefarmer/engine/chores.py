@@ -755,7 +755,7 @@ def highland_entry(number: int) -> str:
     return r"\bHighland\s+%d(?!\d)" % number
 
 
-def _next_highland(b: Bot, seen: Collection[int]) -> int | None:
+def next_highland(b: Bot, seen: Collection[int]) -> int | None:
     """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
     Occupied Highlands. Its number, or None when there is no other."""
     inner_hall(b)
@@ -783,7 +783,7 @@ def _next_highland(b: Bot, seen: Collection[int]) -> int | None:
     return None
 
 
-def _from_highland(b: Bot) -> None:
+def leave_highland(b: Bot) -> None:
     """Back to the inner hall by the highland's Teleportation circle ("Return to Main mansion")."""
     mid = b.map_id()
     b.close_dialogs()
@@ -796,15 +796,19 @@ def _from_highland(b: Bot) -> None:
         raise Stopped(_("couldn't get back from the highland"))
 
 
-def _build_camps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> None:
-    """The Magic Cannon and the Supply Camp the gang is building now, those the player allows. The
-    hall's NPCs are all in view from inside it."""
-    inner_hall(b)
+def gang_camps(b: Bot, allowed: Collection[str] = BUILD_PLACES) -> list[str]:
+    """The Magic Cannon and Supply Camp under construction, as named in the inner hall, where all
+    the hall's NPCs are in view. allowed: which of the two settings (CAMPS) count."""
     entities: list[dict[str, Any]] = b.snap().get("entities", [])
     names = sorted({" ".join(str(e.get("name") or "").split()) for e in entities if e.get("kind") == "npc"})
-    places: list[Place] = [(name, None, None) for key, rx in CAMPS if cfg.get(key, True)
-                           for name in names if rx.match(name)]
-    _try_places(b, t, places, check_only)
+    return [name for key, rx in CAMPS if key in allowed for name in names if rx.match(name)]
+
+
+def _build_camps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> None:
+    """The Magic Cannon and the Supply Camp the gang is building now, those the player allows."""
+    inner_hall(b)
+    allowed = [key for key, _rx in CAMPS if cfg.get(key, True)]
+    _try_places(b, t, [(name, None, None) for name in gang_camps(b, allowed)], check_only)
 
 
 def _build_posts(b: Bot, t: _Builds, check_only: bool) -> None:
@@ -818,14 +822,14 @@ def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool =
     whichever highland ("You've repaired the crystal turret today")."""
     seen: set[int] = set()
     while not t.finished and any(name not in t.took for name, _stand in HIGHLAND_SITES):
-        number = _next_highland(b, seen)
+        number = next_highland(b, seen)
         if number is None:
             return
         seen.add(number)
         try:
             _try_places(b, t, [(name, None, stand) for name, stand in HIGHLAND_SITES], check_only, even_complete)
         finally:
-            _from_highland(b)
+            leave_highland(b)
 
 
 def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> list[Callable[[], None]]:

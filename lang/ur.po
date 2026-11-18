@@ -408,6 +408,9 @@ msgstr "&Zaati paigham"
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "&Protection runes (fail hone par level bacha rehta hai):"
 
+msgid "&Publish"
+msgstr "&Publish"
+
 msgid "&Quick guide"
 msgstr "&Mukhtasar guide"
 
@@ -434,6 +437,9 @@ msgstr "&Jawab, har line mein ek:"
 
 msgid "&Reply"
 msgstr "&Jawab dein"
+
+msgid "&Report:"
+msgstr "&Report:"
 
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Agli ladai se pehle HP se neeche &aram (%):"
@@ -465,6 +471,9 @@ msgstr "&Mahfooz"
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
 "Din ke drop ke waqt mein se kuch &mahfooz rakhein (kirdaar ki setting ki jagah)"
+
+msgid "&Scan the constructions"
+msgstr "Constructions &scan karo"
 
 msgid "&Schedules:"
 msgstr "&Schedules:"
@@ -962,6 +971,9 @@ msgstr "Bottomless pit"
 msgid "Bought:"
 msgstr "Kharide gaye:"
 
+msgid "Broadcast (with a sound)"
+msgstr "Broadcast (awaz ke saath)"
+
 msgid "Browse a category"
 msgstr "Ek qism dekhein"
 
@@ -1224,6 +1236,12 @@ msgstr "Jura hua"
 
 msgid "Connecting..."
 msgstr "Jura ja raha hai..."
+
+msgid "Construction &scanner"
+msgstr "Construction &scanner"
+
+msgid "Construction scanner"
+msgstr "Construction scanner"
 
 msgid "Contact the &developer"
 msgstr "&Developer se raabta"
@@ -1741,6 +1759,9 @@ msgstr "Games ki awaaz chalu ho gayi."
 
 msgid "Gang"
 msgstr "Gang"
+
+msgid "Gang announcement"
+msgstr "Gang announcement"
 
 msgid "Gang mode"
 msgstr "Gang mode"
@@ -2637,6 +2658,11 @@ msgstr "Koi qeemat mahfooz nahi, gina nahi gaya: {list}"
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "GitHub par Uncle Farmer ka koi release abhi nahi dikh raha."
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+"Abhi koi report nahi. Constructions scan karo: bot har ek par jata hai aur kuch repair nahi karta."
+
 msgid "No results yet."
 msgstr "Abhi koi nateeja nahi."
 
@@ -3026,6 +3052,9 @@ msgstr "Aap ko zaati paigham"
 msgid "Program version: {v}"
 msgstr "Program ka version: {v}"
 
+msgid "Publish &as:"
+msgstr "Publish &kis tarah:"
+
 msgid "Put into the storehouse:"
 msgstr "Storehouse mein daale gaye:"
 
@@ -3073,6 +3102,9 @@ msgstr "Naye paigham padh kar sunayein"
 
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Ladaai mein rage, marks ya combos har (second) par padhein:"
+
+msgid "Read {at} by {who}"
+msgstr "{at} ko {who} ne parhi"
 
 msgid "Reading available sound IDs..."
 msgstr "Dastiyab sound IDs parhe ja rahe hain..."
@@ -3391,6 +3423,15 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Kisi command ka kaam sunne ke liye help aur command ka naam bhejein, misaal: help follow"
+
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
+msgstr ""
+"Yeh poori gang ko is tarah bhejein: {where}?\n"
+"\n"
+"{report}"
 
 msgid "Set the attack &range myself"
 msgstr "Attack &range khud set karein"
@@ -3784,6 +3825,9 @@ msgstr "Itwaar"
 msgid "Supplies"
 msgstr "Supplies"
 
+msgid "System message"
+msgstr "System message"
+
 msgid "Take their commands while the game &window is in front"
 msgstr "Game ki &window saamne ho tab bhi unke commands lein"
 
@@ -3923,6 +3967,9 @@ msgstr "Bot {cap} se zyada kharch hone se pehle khareedna rok deta hai."
 
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
+
+msgid "The clipboard couldn't be opened."
+msgstr "Clipboard khul nahi saka."
 
 msgid "The collection"
 msgstr "Collection"
@@ -5182,6 +5229,18 @@ msgid ""
 msgstr ""
 "come: main aap tak chalta hoon. Behtareen: E dabayein, Shift+C se copy karein aur come aur jo copy kiya wo bhejein. come aur map ka naam bhi chal jaata hai."
 
+msgid "construction report published"
+msgstr "construction report publish ho gayi"
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr ""
+"construction report publish ho gayi; aap ki {n} purani reports hata di gayin"
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
+"construction scanner: {n} jagahen parhi gayin, {open} 100% se kam; report ke liye Tools, Construction scanner kholo"
+
 msgid "cooldown {n} s"
 msgstr "cooldown {n} s"
 
@@ -6074,6 +6133,12 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr "bag mein koi chest nahi aaya"
+
+msgid "no construction of the gang was found to read"
+msgstr "gang ki koi construction parhne ko nahi mili"
+
+msgid "no construction report yet: scan first"
+msgstr "abhi koi construction report nahi: pehle scan karo"
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
@@ -7187,6 +7252,11 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+"construction report type hui, lekin game ne confirm nahi kiya - dobara bhejne se pehle check karo"
+
 msgid "the day's chores first"
 msgstr "pehle din ke kaam"
 
@@ -7251,6 +7321,9 @@ msgstr ""
 
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "game ne gang ke ilaqe mein {skill} shuru nahi ki"
+
+msgid "the game didn't take the construction report"
+msgstr "game ne construction report nahi li"
 
 msgid "the game didn't take the number"
 msgstr "game ne number nahi liya"
@@ -7599,6 +7672,9 @@ msgstr "team ki koi application muntazir nahi"
 msgid "there's no {item} in the bag"
 msgstr "baste mein {item} nahi hai"
 
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr "yeh character publish nahi kar sakta: gang elder ke rights chahiye"
+
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
 msgstr ""
@@ -7830,6 +7906,11 @@ msgstr "yeh karenge: {what}"
 
 msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "aise likhein: chores [check] [only=bank,donation]"
+
+msgid ""
+"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+msgstr ""
+"aise likho: construction_scan  ya  construction_scan publish=broadcast (announcement, broadcast ya system)"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
@@ -8579,6 +8660,9 @@ msgstr "{what}, kam az kam:"
 msgid "{what}:"
 msgstr "{what}:"
 
+msgid "{what}: couldn't be read"
+msgstr "{what}: parha nahi ja saka"
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr ""
@@ -8587,6 +8671,9 @@ msgstr ""
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr ""
 "{what}: {item} - {pct}% se neeche peete hain, zyada se zyada har {secs} second"
+
+msgid "{what}: {percent}%"
+msgstr "{what}: {percent}%"
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} nakam raha: {err} (jari hai)"
@@ -8623,6 +8710,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "&Restock supplies (game menu, Restock now)"
 #~ msgstr "&Supplies dobara bharein (game menu, Restock now)"
+
+#~ msgid "&Scan the highlands"
+#~ msgstr "Highlands &scan karo"
 
 #~ msgid "&Sell shards (game menu, Sell shards now)"
 #~ msgstr "&Shards bechein (game menu, Sell shards now)"
@@ -8676,6 +8766,18 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Gat&hering (as set in Tools, Gathering)"
 #~ msgstr "Jama ka&rna (jaisa Tools, Gathering mein set hai)"
 
+#~ msgid "High&land report"
+#~ msgstr "High&land report"
+
+#~ msgid "Highland report"
+#~ msgstr "Highland report"
+
+#~ msgid "Highland {n}, {kind}: couldn't be read"
+#~ msgstr "Highland {n}, {kind}: parha nahi ja saka"
+
+#~ msgid "Highland {n}, {kind}: {percent}%"
+#~ msgstr "Highland {n}, {kind}: {percent}%"
+
 #~ msgid "How they run"
 #~ msgstr "Yeh kaise chalte hain"
 
@@ -8687,6 +8789,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Lose experience (as set in Tools, XP lose&r)"
 #~ msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
+
+#~ msgid ""
+#~ "No report yet. Scan the highlands: the bot visits each one and repairs nothing."
+#~ msgstr ""
+#~ "Abhi koi report nahi. Highlands scan karo: bot har ek mein jata hai aur kuch repair nahi karta."
 
 #~ msgid ""
 #~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
@@ -8711,6 +8818,15 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Se&ll shards (game menu, Sell shards now)"
 #~ msgstr "Shards bec&hein (game menu, Sell shards now)"
+
+#~ msgid ""
+#~ "Send this to the whole gang as: {where}?\n"
+#~ "\n"
+#~ "{text}"
+#~ msgstr ""
+#~ "Yeh poori gang ko is tarah bhejein: {where}?\n"
+#~ "\n"
+#~ "{text}"
 
 #~ msgid "St&ore items (game menu, Store items now)"
 #~ msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
@@ -8754,11 +8870,26 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "got {n} Contribution Chests; not enough gang contribution for another"
 #~ msgstr "{n} Contribution Chests mile; agle ke liye gang contribution kam hai"
 
+#~ msgid "highland report published"
+#~ msgstr "highland report publish ho gayi"
+
+#~ msgid "highland report published; {n} older reports of yours removed"
+#~ msgstr ""
+#~ "highland report publish ho gayi; aap ki {n} purani reports hata di gayin"
+
+#~ msgid ""
+#~ "highland report: {n} highlands read, {damaged} defences damaged; open Tools, Highland report to read it"
+#~ msgstr ""
+#~ "highland report: {n} highlands parhi gayin, {damaged} defences kharab; parhne ke liye Tools, Highland report kholo"
+
 #~ msgid "hunting bounties can be collected here"
 #~ msgstr "yahan hunting bounty li ja sakti hai"
 
 #~ msgid "hunting bounty"
 #~ msgstr "hunting bounty"
+
+#~ msgid "no highland report yet: scan the highlands first"
+#~ msgstr "abhi koi highland report nahi: pehle highlands scan karo"
 
 #~ msgid "our gang's highland"
 #~ msgstr "hamari gang ki highland"
@@ -8768,6 +8899,17 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the PK mode is still all mode - please set it back by hand"
 #~ msgstr "PK mode abhi bhi all mode hai - meharbani kar ke khud wapas lagayein"
+
+#~ msgid "the game didn't take the highland report"
+#~ msgstr "game ne highland report nahi li"
+
+#~ msgid "the gang has no highland under Occupied Highlands"
+#~ msgstr "Occupied Highlands mein gang ki koi highland nahi"
+
+#~ msgid ""
+#~ "the highland report was typed, but the game didn't confirm it - check before sending it again"
+#~ msgstr ""
+#~ "highland report type hui, lekin game ne confirm nahi kiya - dobara bhejne se pehle check karo"
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "inner hall ki East aur West posts"
@@ -8789,3 +8931,8 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
 #~ msgstr ""
 #~ "jab din ka drop time khatam ho jaye; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
+
+#~ msgid ""
+#~ "write it as: highland_report  or  highland_report publish=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "aise likho: highland_report  ya  highland_report publish=broadcast (announcement, broadcast ya system)"

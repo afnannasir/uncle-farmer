@@ -408,6 +408,9 @@ msgstr "&Mensagens privadas"
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "Runas de &proteção (em caso de falha, o nível é mantido):"
 
+msgid "&Publish"
+msgstr "&Publicar"
+
 msgid "&Quick guide"
 msgstr "&Guia rápido"
 
@@ -434,6 +437,9 @@ msgstr "&Respostas, uma por linha:"
 
 msgid "&Reply"
 msgstr "&Responder"
+
+msgid "&Report:"
+msgstr "&Relatório:"
 
 msgid "&Rest before the next fight below HP (%):"
 msgstr "&Descansar antes do próximo combate abaixo de HP (%):"
@@ -465,6 +471,9 @@ msgstr "&Salvar"
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
 "&Reservar parte do tempo de coleta diário (em vez da configuração do personagem)"
+
+msgid "&Scan the constructions"
+msgstr "E&scanear as construções"
 
 msgid "&Schedules:"
 msgstr "&Agendamentos:"
@@ -967,6 +976,9 @@ msgstr "Abismo sem fundo"
 msgid "Bought:"
 msgstr "Comprado:"
 
+msgid "Broadcast (with a sound)"
+msgstr "Broadcast (com som)"
+
 msgid "Browse a category"
 msgstr ""
 
@@ -1229,6 +1241,12 @@ msgstr "Conectado"
 
 msgid "Connecting..."
 msgstr "Conectando..."
+
+msgid "Construction &scanner"
+msgstr "&Scanner de construções"
+
+msgid "Construction scanner"
+msgstr "Scanner de construções"
 
 msgid "Contact the &developer"
 msgstr "Entrar em contato com o &desenvolvedor"
@@ -1748,6 +1766,9 @@ msgstr "Som dos jogos ativado."
 
 msgid "Gang"
 msgstr "Guilda"
+
+msgid "Gang announcement"
+msgstr "Anúncio da gangue"
 
 msgid "Gang mode"
 msgstr "Modo de guilda"
@@ -2645,6 +2666,11 @@ msgstr "Preço não salvo, não contabilizado: {list}"
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "Ainda não há uma versão do Uncle Farmer no GitHub."
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+"Ainda não há relatório. Escaneie as construções: o bot visita cada uma e não repara nada."
+
 msgid "No results yet."
 msgstr "Ainda não há resultados."
 
@@ -3037,6 +3063,9 @@ msgstr "Mensagens privadas para você"
 msgid "Program version: {v}"
 msgstr "Versão do programa: {v}"
 
+msgid "Publish &as:"
+msgstr "Publicar &como:"
+
 msgid "Put into the storehouse:"
 msgstr "Colocado no depósito:"
 
@@ -3084,6 +3113,9 @@ msgstr "Ler novas mensagens"
 
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Ler fúria, marcas ou combos durante o combate a cada (segundos):"
+
+msgid "Read {at} by {who}"
+msgstr "Lido em {at} por {who}"
 
 msgid "Reading available sound IDs..."
 msgstr "Lendo IDs de som disponíveis..."
@@ -3403,6 +3435,15 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Envie help e o nome de um comando para saber o que ele faz, por exemplo: help follow"
+
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
+msgstr ""
+"Enviar isto para toda a gangue como: {where}?\n"
+"\n"
+"{report}"
 
 msgid "Set the attack &range myself"
 msgstr "Definir manualmente o &alcance de ataque"
@@ -3797,6 +3838,9 @@ msgstr "Domingo"
 msgid "Supplies"
 msgstr "Suprimentos"
 
+msgid "System message"
+msgstr "Mensagem de sistema"
+
 msgid "Take their commands while the game &window is in front"
 msgstr ""
 "Aceitar comandos deles quando a &janela do jogo estiver em primeiro plano"
@@ -3936,6 +3980,9 @@ msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
+
+msgid "The clipboard couldn't be opened."
+msgstr "Não foi possível abrir a área de transferência."
 
 msgid "The collection"
 msgstr "A coleta"
@@ -5199,6 +5246,17 @@ msgid ""
 msgstr ""
 "come: vou até você. O melhor é pressionar E, copiar com Shift+C e enviar come junto com o texto copiado. come seguido do nome de um mapa também funciona."
 
+msgid "construction report published"
+msgstr "relatório publicado"
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr "relatório publicado; {n} relatórios antigos seus removidos"
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
+"scanner: {n} locais lidos, {open} abaixo de 100%; abra Tools, Construction scanner para ler o relatório"
+
 msgid "cooldown {n} s"
 msgstr "recarga de {n} s"
 
@@ -6087,6 +6145,12 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr "nenhum baú entrou na mochila"
+
+msgid "no construction of the gang was found to read"
+msgstr "nenhuma construção da gangue foi encontrada"
+
+msgid "no construction report yet: scan first"
+msgstr "ainda não há relatório de construções: escaneie primeiro"
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
@@ -7197,6 +7261,11 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+"o relatório foi digitado, mas o jogo não confirmou - verifique antes de enviar de novo"
+
 msgid "the day's chores first"
 msgstr "primeiro, as tarefas diárias"
 
@@ -7261,6 +7330,9 @@ msgstr ""
 
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "o jogo não iniciou {skill} na área da guilda"
+
+msgid "the game didn't take the construction report"
+msgstr "o jogo não aceitou o relatório de construções"
 
 msgid "the game didn't take the number"
 msgstr "o jogo não aceitou o número"
@@ -7609,6 +7681,10 @@ msgstr "não há pedidos para entrar na equipe aguardando"
 msgid "there's no {item} in the bag"
 msgstr "não há {item} na bolsa"
 
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr ""
+"este personagem não pode publicar isso: exige direitos de ancião da gangue"
+
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
 msgstr ""
@@ -7839,6 +7915,11 @@ msgstr "{what}"
 
 msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escreva assim: chores [check] [only=bank,donation]"
+
+msgid ""
+"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+msgstr ""
+"escreva assim: construction_scan  ou  construction_scan publish=broadcast (announcement, broadcast ou system)"
 
 msgid "write it as: hold key seconds"
 msgstr "escreva assim: hold tecla segundos"
@@ -8585,6 +8666,9 @@ msgstr "{what}, pelo menos:"
 msgid "{what}:"
 msgstr "{what}:"
 
+msgid "{what}: couldn't be read"
+msgstr "{what}: não foi possível ler"
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr ""
@@ -8593,6 +8677,9 @@ msgstr ""
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr ""
 "{what}: {item} — usando abaixo de {pct}%, no máximo a cada {secs} segundos"
+
+msgid "{what}: {percent}%"
+msgstr "{what}: {percent}%"
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} falhou: {err} (continuando)"
@@ -8615,6 +8702,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "&Build first at (then anywhere else that can still take a build):"
 #~ msgstr "&Construir primeiro em (depois onde ainda for possível):"
 
+#~ msgid "&Scan the highlands"
+#~ msgstr "E&scanear as highlands"
+
 #~ msgid "Collect &hunting bounties from a city officer"
 #~ msgstr "Coletar &recompensas de caça com um oficial da cidade"
 
@@ -8632,6 +8722,23 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "Gang construction"
 #~ msgstr "Construção da guilda"
 
+#~ msgid "High&land report"
+#~ msgstr "Relatório das high&lands"
+
+#~ msgid "Highland report"
+#~ msgstr "Relatório das highlands"
+
+#~ msgid "Highland {n}, {kind}: couldn't be read"
+#~ msgstr "Highland {n}, {kind}: não foi possível ler"
+
+#~ msgid "Highland {n}, {kind}: {percent}%"
+#~ msgstr "Highland {n}, {kind}: {percent}%"
+
+#~ msgid ""
+#~ "No report yet. Scan the highlands: the bot visits each one and repairs nothing."
+#~ msgstr ""
+#~ "Ainda não há relatório. Escaneie as highlands: o bot visita cada uma e não repara nada."
+
 #~ msgid ""
 #~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
 #~ msgstr ""
@@ -8639,6 +8746,15 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
 #~ msgstr "&Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
+
+#~ msgid ""
+#~ "Send this to the whole gang as: {where}?\n"
+#~ "\n"
+#~ "{text}"
+#~ msgstr ""
+#~ "Enviar isto para toda a gangue como: {where}?\n"
+#~ "\n"
+#~ "{text}"
 
 #~ msgid "Stop when HP stays &low"
 #~ msgstr "Parar se o HP permanecer &baixo"
@@ -8658,17 +8774,42 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgstr ""
 #~ "recebeu {n} Contribution Chests; contribuição da gangue insuficiente para outro"
 
+#~ msgid "highland report published"
+#~ msgstr "relatório publicado"
+
+#~ msgid "highland report published; {n} older reports of yours removed"
+#~ msgstr "relatório publicado; {n} relatórios antigos seus removidos"
+
+#~ msgid ""
+#~ "highland report: {n} highlands read, {damaged} defences damaged; open Tools, Highland report to read it"
+#~ msgstr ""
+#~ "relatório: {n} highlands lidas, {damaged} defesas danificadas; abra Tools, Highland report para ler"
+
 #~ msgid "hunting bounties can be collected here"
 #~ msgstr "as recompensas de caça podem ser coletadas aqui"
 
 #~ msgid "hunting bounty"
 #~ msgstr "recompensa de caça"
 
+#~ msgid "no highland report yet: scan the highlands first"
+#~ msgstr "ainda não há relatório: escaneie as highlands primeiro"
+
 #~ msgid "our gang's highland"
 #~ msgstr "Terras Altas da nossa guilda"
 
 #~ msgid "our gang's highlands"
 #~ msgstr "as highlands da nossa gangue"
+
+#~ msgid "the game didn't take the highland report"
+#~ msgstr "o jogo não aceitou o relatório das highlands"
+
+#~ msgid "the gang has no highland under Occupied Highlands"
+#~ msgstr "a gangue não tem highland em Occupied Highlands"
+
+#~ msgid ""
+#~ "the highland report was typed, but the game didn't confirm it - check before sending it again"
+#~ msgstr ""
+#~ "o relatório foi digitado, mas o jogo não confirmou - verifique antes de enviar de novo"
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "postos Leste e Oeste do salão interno"
@@ -8682,3 +8823,8 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr ""
 #~ "digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"
+
+#~ msgid ""
+#~ "write it as: highland_report  or  highland_report publish=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "escreva assim: highland_report  ou  highland_report publish=broadcast (announcement, broadcast ou system)"

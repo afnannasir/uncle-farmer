@@ -55,6 +55,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
         "tools_silencer": available, "tools_market": available, "tools_bounties": available and not running,
+        "tools_construction": True,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
                                                      "tools_store", "tools_restock", "tools_prices")},
         "plans_new": True, "plans_new_script": True,
@@ -268,6 +269,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
                            command(_("&Market searcher and buyer"), lambda e: self.open_market(), "Ctrl+Shift+K"),
                            command(_("Hunting bount&ies"), lambda e: self.open_tool("bounties")),
+                           command(_("Construction &scanner"), lambda e: self.open_construction_scan()),
                            command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
                            command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
                            command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
@@ -276,7 +278,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer())],
                           ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
-                           "tools_market", "tools_bounties", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
+                           "tools_market", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
@@ -635,6 +637,9 @@ again as it starts, and leaves, and while farming it leaves for that and comes b
 "at the start of the first farming run" and a farming run does the chores first.
 Tools, Hunting bounties: after your character landed the killing blow on a boss, ask the officers
 you tick for what they pay. Each officer pays for bosses of his own.
+Tools, Construction scanner: read how far your gang's Magic Cannon, Supply Camp and highland defences
+are, without repairing anything; a gang elder can publish it as an announcement, a broadcast or a
+system message.
 Tools, Gathering (Ctrl+Shift+F): fishing, mining or collecting herbs, whichever skill the character
 has. First gangs' Lakes, Mining Areas or Herbal Gardens: your own gang's and other gangs' by name,
 in the order you list them (each once a game day, half an hour inside), then outside: at a place of your own (stand where you gather by hand and press "Add where I stand")

@@ -1226,6 +1226,7 @@ Use this section when you need a quick reminder of a command or its syntax.
     enhance [check]
     chores [check] [only=...]
     bounties [check]
+    construction_scan [publish=announcement|broadcast|system]
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]

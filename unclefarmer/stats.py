@@ -51,7 +51,7 @@ TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "enhance": N_("Equipment 
                          "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
                          "update_shard_prices": N_("Updating shard prices"), "store_items": N_("Storing items"),
                          "restock": N_("Restocking supplies"), "market": N_("Market searcher and buyer"),
-                         "bounties": N_("Hunting bounties")}
+                         "bounties": N_("Hunting bounties"), "construction_scan": N_("Construction scanner")}
 # The jobs that turn a farming run's loot into arnebia: what they bring counts in its earnings.
 SELLING = ("sell_shards", "clean_bag")
 MOVES = ("thrown", "sold", "stored", "bought", "withdrawn")

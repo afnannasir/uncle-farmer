@@ -880,6 +880,14 @@ Open **Tools, Hunting bounties** after your character has landed the killing blo
 
 This is not a daily chore, so you can run it whenever you have something to collect. In a script, use `bounties` or `bounties check`.
 
+### Construction scanner
+
+**Tools, Construction scanner** shows how far your gang's constructions are: the Magic Cannon and Supply Camp being built, and the Crystal Turret and Wall barricade of every highland. **Scan the constructions** visits each one without repairing or building anything. Open the window again afterwards to read the result, the least complete first.
+
+**Copy** puts the short report on the clipboard. A gang elder can also **Publish** it as a gang announcement, a broadcast (which plays a sound) or a system message. The bot always asks first. A new announcement replaces only the older reports published by the same character, never another elder's.
+
+In a script, use `construction_scan`, or `construction_scan publish=announcement`, `publish=broadcast` or `publish=system`.
+
 ### Daily chores
 
 Open **Tools, Daily chores** or press **Ctrl+Shift+D**.

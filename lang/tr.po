@@ -409,6 +409,9 @@ msgstr "Özel mesajlar (&P)"
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "Koruma rünleri (başarısızlıkta seviye korunur) (&P):"
 
+msgid "&Publish"
+msgstr ""
+
 msgid "&Quick guide"
 msgstr "Hızlı kılavuz (&Q)"
 
@@ -435,6 +438,9 @@ msgstr "Cevapla&r, her satıra bir tane:"
 
 msgid "&Reply"
 msgstr "Yanıtla (&R)"
+
+msgid "&Report:"
+msgstr ""
 
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Bi&r sonraki dövüşten önce dinlen, HP şunun altındayken (%):"
@@ -465,6 +471,9 @@ msgstr "Kaydet (&S)"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr "Günün ganimet &süresinin bir kısmını sakla (karakterin ayarı yerine)"
+
+msgid "&Scan the constructions"
+msgstr ""
 
 msgid "&Schedules:"
 msgstr "Programlar: (&S)"
@@ -960,6 +969,9 @@ msgstr "Dipsiz kuyu"
 msgid "Bought:"
 msgstr "Satın alınanlar:"
 
+msgid "Broadcast (with a sound)"
+msgstr ""
+
 msgid "Browse a category"
 msgstr ""
 
@@ -1222,6 +1234,12 @@ msgstr "Bağlandı"
 
 msgid "Connecting..."
 msgstr "Bağlanıyor..."
+
+msgid "Construction &scanner"
+msgstr ""
+
+msgid "Construction scanner"
+msgstr ""
 
 msgid "Contact the &developer"
 msgstr "Geliştiriciyle iletişime geç (&D)"
@@ -1737,6 +1755,9 @@ msgstr "Oyunların sesi açıldı."
 
 msgid "Gang"
 msgstr "Çete"
+
+msgid "Gang announcement"
+msgstr ""
 
 msgid "Gang mode"
 msgstr "Çete modu"
@@ -2627,6 +2648,10 @@ msgstr "Kayıtlı fiyatı yok, sayılmadı: {list}"
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "GitHub'da henüz Uncle Farmer sürümü görünmüyor."
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+
 msgid "No results yet."
 msgstr "Henüz sonuç yok."
 
@@ -3016,6 +3041,9 @@ msgstr "Sana gelen özel mesajlar"
 msgid "Program version: {v}"
 msgstr "Program sürümü: {v}"
 
+msgid "Publish &as:"
+msgstr ""
+
 msgid "Put into the storehouse:"
 msgstr "Depoya konanlar:"
 
@@ -3063,6 +3091,9 @@ msgstr "Yeni mesajları oku"
 
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Dövüşlerde öfke, işaret ya da kombo şu aralıkla okunsun (saniye):"
+
+msgid "Read {at} by {who}"
+msgstr ""
 
 msgid "Reading available sound IDs..."
 msgstr "Kullanılabilir ses kimlikleri okunuyor..."
@@ -3379,6 +3410,12 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Bir komutun ne yaptığını öğrenmek için help ve komutun adını gönder, örneğin: help follow"
+
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
+msgstr ""
 
 msgid "Set the attack &range myself"
 msgstr "Saldı&rı menzilini kendim ayarlayayım"
@@ -3766,6 +3803,9 @@ msgstr "Pazar"
 msgid "Supplies"
 msgstr "Sarf malzemeleri"
 
+msgid "System message"
+msgstr ""
+
 msgid "Take their commands while the game &window is in front"
 msgstr "Oyun penceresi öndeyken de komutlarını al (&W)"
 
@@ -3903,6 +3943,9 @@ msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
+
+msgid "The clipboard couldn't be opened."
+msgstr ""
 
 msgid "The collection"
 msgstr "Koleksiyon"
@@ -5153,6 +5196,16 @@ msgid ""
 msgstr ""
 "come: Yanına yürürüm. En iyisi: E'ye bas, Shift+C ile kopyala ve come ile kopyaladığını gönder. come ve bir harita adı da olur."
 
+msgid "construction report published"
+msgstr ""
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr ""
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
+
 msgid "cooldown {n} s"
 msgstr "bekleme süresi {n} sn"
 
@@ -6032,6 +6085,12 @@ msgstr ""
 "henüz hiçbir mağara {n}. seviyeyi kabul etmiyor (en düşüğü {low}. seviye istiyor)"
 
 msgid "no chest came into the bag"
+msgstr ""
+
+msgid "no construction of the gang was found to read"
+msgstr ""
+
+msgid "no construction report yet: scan first"
 msgstr ""
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
@@ -7125,6 +7184,10 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+
 msgid "the day's chores first"
 msgstr "önce günün işleri"
 
@@ -7186,6 +7249,9 @@ msgstr ""
 
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "oyun çetenin alanında {skill} başlatmadı"
+
+msgid "the game didn't take the construction report"
+msgstr ""
 
 msgid "the game didn't take the number"
 msgstr "oyun sayıyı kabul etmedi"
@@ -7530,6 +7596,9 @@ msgstr "bekleyen takım başvurusu yok"
 msgid "there's no {item} in the bag"
 msgstr "çantada {item} yok"
 
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr ""
+
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
 msgstr ""
@@ -7761,6 +7830,10 @@ msgstr "yapılacak: {what}"
 
 msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "şöyle yaz: chores [check] [only=bank,donation]"
+
+msgid ""
+"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
+msgstr ""
 
 msgid "write it as: hold key seconds"
 msgstr "şöyle yaz: hold tuş saniye"
@@ -8503,12 +8576,18 @@ msgstr "{what}, en az:"
 msgid "{what}:"
 msgstr "{what}:"
 
+msgid "{what}: couldn't be read"
+msgstr ""
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr "{what}: çantada yok ve Araçlar, Zindanlar'da seçili değil - bakılmadı"
 
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr "{what}: {item} - %{pct} altında, en fazla {secs} saniyede bir içiliyor"
+
+msgid "{what}: {percent}%"
+msgstr ""
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} başarısız: {err} (devam ediliyor)"

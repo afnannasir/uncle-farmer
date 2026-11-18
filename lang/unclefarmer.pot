@@ -404,6 +404,9 @@ msgstr ""
 msgid "&Protection runes (a failure keeps the level):"
 msgstr ""
 
+msgid "&Publish"
+msgstr ""
+
 msgid "&Quick guide"
 msgstr ""
 
@@ -429,6 +432,9 @@ msgid "&Replies, one per line:"
 msgstr ""
 
 msgid "&Reply"
+msgstr ""
+
+msgid "&Report:"
 msgstr ""
 
 msgid "&Rest before the next fight below HP (%):"
@@ -459,6 +465,9 @@ msgid "&Save"
 msgstr ""
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
+msgstr ""
+
+msgid "&Scan the constructions"
 msgstr ""
 
 msgid "&Schedules:"
@@ -944,6 +953,9 @@ msgstr ""
 msgid "Bought:"
 msgstr ""
 
+msgid "Broadcast (with a sound)"
+msgstr ""
+
 msgid "Browse a category"
 msgstr ""
 
@@ -1202,6 +1214,12 @@ msgid "Connected"
 msgstr ""
 
 msgid "Connecting..."
+msgstr ""
+
+msgid "Construction &scanner"
+msgstr ""
+
+msgid "Construction scanner"
 msgstr ""
 
 msgid "Contact the &developer"
@@ -1708,6 +1726,9 @@ msgid "Games unmuted."
 msgstr ""
 
 msgid "Gang"
+msgstr ""
+
+msgid "Gang announcement"
 msgstr ""
 
 msgid "Gang mode"
@@ -2570,6 +2591,10 @@ msgstr ""
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr ""
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+
 msgid "No results yet."
 msgstr ""
 
@@ -2943,6 +2968,9 @@ msgstr ""
 msgid "Program version: {v}"
 msgstr ""
 
+msgid "Publish &as:"
+msgstr ""
+
 msgid "Put into the storehouse:"
 msgstr ""
 
@@ -2987,6 +3015,9 @@ msgid "Read new messages"
 msgstr ""
 
 msgid "Read rage, marks or combos in fights every (seconds):"
+msgstr ""
+
+msgid "Read {at} by {who}"
 msgstr ""
 
 msgid "Reading available sound IDs..."
@@ -3294,6 +3325,12 @@ msgstr ""
 
 msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
+msgstr ""
+
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
 msgstr ""
 
 msgid "Set the attack &range myself"
@@ -3669,6 +3706,9 @@ msgstr ""
 msgid "Supplies"
 msgstr ""
 
+msgid "System message"
+msgstr ""
+
 msgid "Take their commands while the game &window is in front"
 msgstr ""
 
@@ -3799,6 +3839,9 @@ msgid "The bot stops buying before it would spend more than {cap}."
 msgstr ""
 
 msgid "The cave (a character goes into one cave a game day)"
+msgstr ""
+
+msgid "The clipboard couldn't be opened."
 msgstr ""
 
 msgid "The collection"
@@ -4965,6 +5008,16 @@ msgid ""
 "come: I walk to you. Best: press E, copy it with Shift+C and send come and what you copied. come and a map's name works too."
 msgstr ""
 
+msgid "construction report published"
+msgstr ""
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr ""
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
+
 msgid "cooldown {n} s"
 msgstr ""
 
@@ -5818,6 +5871,12 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 
 msgid "no chest came into the bag"
+msgstr ""
+
+msgid "no construction of the gang was found to read"
+msgstr ""
+
+msgid "no construction report yet: scan first"
 msgstr ""
 
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
@@ -6870,6 +6929,10 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr ""
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+
 msgid "the day's chores first"
 msgstr ""
 
@@ -6925,6 +6988,9 @@ msgid ""
 msgstr ""
 
 msgid "the game didn't start {skill} in the gang's area"
+msgstr ""
+
+msgid "the game didn't take the construction report"
 msgstr ""
 
 msgid "the game didn't take the number"
@@ -7247,6 +7313,9 @@ msgstr ""
 msgid "there's no {item} in the bag"
 msgstr ""
 
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr ""
+
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
 msgstr ""
@@ -7467,6 +7536,10 @@ msgid "would {what}"
 msgstr ""
 
 msgid "write it as: chores [check] [only=bank,donation]"
+msgstr ""
+
+msgid ""
+"write it as: construction_scan  or  construction_scan publish=broadcast (announcement, broadcast or system)"
 msgstr ""
 
 msgid "write it as: hold key seconds"
@@ -8188,11 +8261,17 @@ msgstr ""
 msgid "{what}:"
 msgstr ""
 
+msgid "{what}: couldn't be read"
+msgstr ""
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr ""
 
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
+msgstr ""
+
+msgid "{what}: {percent}%"
 msgstr ""
 
 msgid "{where} failed: {err} (carrying on)"

@@ -258,6 +258,17 @@ class EditingMixin(FrameParts):
         elif code == START:
             self.run_errand(cmd + "\n", title)
 
+    def open_construction_scan(self) -> None:
+        """Tools, Construction scanner: read the last report, or scan or publish on the selected game."""
+        from ..chores import PUBLISH_REPORT, SCAN_CONSTRUCTIONS, ConstructionScanDialog
+        with ConstructionScanDialog(self) as d:
+            code = d.ShowModal()
+            kind = d.kind
+        if code == SCAN_CONSTRUCTIONS:
+            self.run_errand("construction_scan\n", _("Construction scanner"))
+        elif code == PUBLISH_REPORT:
+            self.run_errand("construction_scan publish=%s\n" % kind, _("Construction scanner"))
+
     def edit_bag(self) -> None:
         name = active_profile(self)
         if not name:
