@@ -3,12 +3,13 @@ Entrance, which only leads to the character's own gang (a one-way door shuts the
 
 from __future__ import annotations
 
+import re
 import threading
 from typing import Any
 
 import pytest
 
-from conftest import as_bot, returning
+from conftest import Clock, as_bot, returning
 from unclefarmer.engine import chores, crafting
 from unclefarmer.engine.bot import Stopped
 
@@ -122,3 +123,71 @@ def test_the_real_map_knows_the_hall_from_the_outer_hall() -> None:
     assert chores._in_the_hall(BASE, START)  # pyright: ignore[reportPrivateUsage]
     assert not chores._in_the_hall(BASE, (59, 93))  # pyright: ignore[reportPrivateUsage]
     assert not chores._in_the_hall(1081, START)  # pyright: ignore[reportPrivateUsage]
+
+
+class Door(Game):
+    """In the outer hall, next to the Inner hall Guard."""
+
+    def __init__(self, opens: bool = True, offers: bool = True) -> None:
+        super().__init__()
+        self.opens, self.offers = opens, offers
+        self.inside = False
+        self.talked: list[str] = []
+        self.chosen: list[str] = []
+        self.visited: list[Any] = []
+        self.clock = Clock()
+
+    def talk(self, name: str, cell: Any = None) -> bool:
+        self.talked.append(name)
+        return True
+
+    def wait_dialog(self, seconds: float = 3.0) -> dict[str, Any]:
+        return {"open": 1}
+
+    def choose(self, pattern: str) -> dict[str, Any] | None:
+        self.chosen.append(pattern)
+        if not self.offers:
+            return None
+        self.inside = self.opens
+        return {"text": "Enter Inner hall"}
+
+    def sleep(self, seconds: float) -> None:
+        self.clock.sleep(seconds)
+
+
+@pytest.fixture
+def door(monkeypatch: pytest.MonkeyPatch) -> list[Any]:
+    """The hall can be walked to once the guard let us in; the Gang Entrance is noted when used."""
+    entrance: list[Any] = []
+
+    def reachable(b: Any, cell: tuple[int, int]) -> bool:
+        return cell == chores.HALL_GUARD[1] or b.inside
+
+    def visit(b: Any, role: Any, candidates: Any = None) -> None:
+        entrance.append(role)
+        raise Stopped("no such entrance here")
+    monkeypatch.setattr(crafting, "in_gang", returning(True))
+    monkeypatch.setattr(crafting, "reachable_cell", reachable)
+    monkeypatch.setattr(chores.town, "visit", visit)
+    return entrance
+
+
+def test_the_guard_lets_us_in_from_the_outer_hall(door: list[Any]) -> None:
+    g = Door()
+    chores.inner_hall(as_bot(g))
+    assert g.inside and g.talked == ["Inner hall Guard"] and door == []
+    assert re.search(g.chosen[0], "Enter Inner hall", re.I)
+
+
+@pytest.mark.parametrize("opens, offers", [(False, True), (True, False)])
+def test_a_guard_that_doesnt_let_us_in_leaves_the_gang_entrance(door: list[Any], opens: bool, offers: bool) -> None:
+    g = Door(opens, offers)
+    with pytest.raises(Stopped):
+        chores.inner_hall(as_bot(g))
+    assert door == ["gang_entrance"]
+
+
+def test_the_real_map_reaches_the_guard_from_the_outer_hall_only() -> None:
+    assert crafting.walks_between(BASE, (59, 93), chores.HALL_GUARD[1])
+    assert crafting.walks_between(BASE, START, chores.HALL_GUARD[1])       # out through the one-way door
+    assert not crafting.walks_between(BASE, chores.HALL_GUARD[1], START)

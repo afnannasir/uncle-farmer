@@ -5466,14 +5466,14 @@ msgstr "equipamento quebrado, sem caixa de ferramentas"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "obtendo até {n} cristais de aprimoramento de {kind} nível {lv}"
 
-msgid "going back into the gang's base through the Gang Entrance"
-msgstr "voltando à base da gang pela Gang Entrance"
-
 msgid "going back to where farming started"
 msgstr "voltando ao ponto inicial da coleta"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr "voltando ao ponto inicial da coleta, conforme pedido de {name}"
+
+msgid "going back to where the run started in the gang's base"
+msgstr "voltando ao ponto da base da gang onde a execução começou"
 
 msgid "going back to {map}"
 msgstr "voltando a {map}"
@@ -8287,6 +8287,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "couldn't get back into the gang's inner hall ({why}) - staying here"
 #~ msgstr "não foi possível voltar ao salão interno da gang ({why}) — ficando aqui"
+
+#~ msgid "going back into the gang's base through the Gang Entrance"
+#~ msgstr "voltando à base da gang pela Gang Entrance"
 
 #~ msgid "going back into the gang's inner hall through the Gang Entrance"
 #~ msgstr "voltando ao salão interno da gang pela Gang Entrance"

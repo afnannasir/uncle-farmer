@@ -5468,14 +5468,14 @@ msgstr "equipo roto, sin caja de herramientas"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "consiguiendo cristales de mejora de {kind} de nivel {lv} hasta {n}"
 
-msgid "going back into the gang's base through the Gang Entrance"
-msgstr ""
-
 msgid "going back to where farming started"
 msgstr "volviendo al lugar donde empezó el farmeo"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr "volviendo al lugar donde empezó el farmeo, como pidió {name}"
+
+msgid "going back to where the run started in the gang's base"
+msgstr ""
 
 msgid "going back to {map}"
 msgstr "volviendo a {map}"

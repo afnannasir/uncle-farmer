@@ -5450,15 +5450,15 @@ msgstr "equipment toot gaya, toolbox nahi"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Level {lv} {kind} Enhance Crystals ko {n} tak le ja rahe hain"
 
-msgid "going back into the gang's base through the Gang Entrance"
-msgstr "Gang Entrance ke zariye gang base mein wapas ja rahe hain"
-
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr ""
 "{name} ke kehne par wahan wapas ja raha hoon jahan farming shuru hui thi"
+
+msgid "going back to where the run started in the gang's base"
+msgstr "gang base mein jahan run shuru hua tha wahan wapas ja rahe hain"
 
 msgid "going back to {map}"
 msgstr "{map} par wapas ja rahe hain"
@@ -8378,6 +8378,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"
+
+#~ msgid "going back into the gang's base through the Gang Entrance"
+#~ msgstr "Gang Entrance ke zariye gang base mein wapas ja rahe hain"
 
 #~ msgid "going back into the gang's inner hall through the Gang Entrance"
 #~ msgstr "Gang Entrance ke zariye gang ke inner hall mein wapas ja rahe hain"

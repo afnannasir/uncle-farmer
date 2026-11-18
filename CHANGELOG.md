@@ -17,9 +17,10 @@
 - A run that ends in a city or village stays there. It used to leave for the nearest map with no
   monster zone, because the game's table lists such zones for a city's own streets: from Tulip City
   that meant going down to its underground. A run started in a town also goes back to it.
-- A run started in the gang base goes back by the Gang Entrance, to either hall, instead of giving
-  up or pushing against the inner hall's one-way door. If the Entrance doesn't let it in, it says so
-  and stays where it is.
+- A run started in the gang base goes back there, instead of giving up or pushing against the inner
+  hall's one-way door: from the outer hall through the Inner hall Guard, from outside by the Gang
+  Entrance. If it isn't let in, it says so and stays where it is. Daily chores in the inner hall
+  use the guard too.
 
 **Gem Maker: shards go to the +20%**
 

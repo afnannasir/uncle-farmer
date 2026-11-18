@@ -5414,14 +5414,14 @@ msgstr "ekipman bozuk, alet kutusu yok"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Seviye {lv} {kind} Geliştirme Kristalleri {n} tane olana kadar alınıyor"
 
-msgid "going back into the gang's base through the Gang Entrance"
-msgstr ""
-
 msgid "going back to where farming started"
 msgstr "farmın başladığı yere dönülüyor"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr "{name} istediği için farmın başladığı yere dönülüyor"
+
+msgid "going back to where the run started in the gang's base"
+msgstr ""
 
 msgid "going back to {map}"
 msgstr "{map} haritasına dönülüyor"
