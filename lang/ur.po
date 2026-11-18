@@ -4359,6 +4359,11 @@ msgstr "Yahan tak chalna"
 msgid "Walk to {where}"
 msgstr "{where} tak chalna"
 
+msgid ""
+"Walk up to corpses further off, up to 20 steps awa&y (off: only the ones within 4.5 steps of where the fight ended)"
+msgstr ""
+"Door ki laashon tak chal kar jayein, 20 qadam tak (band: sirf woh jo larai khatam hone ki jagah se 4.5 qadam ke andar hon) (&Y)"
+
 msgid "Walk up to the enemy"
 msgstr "Dushman tak chalein"
 
@@ -5294,6 +5299,9 @@ msgstr "bhara"
 msgid "full loop"
 msgstr "poora loop"
 
+msgid "further off than we walk for a corpse"
+msgstr "laash ke liye jitna chalte hain us se zyada door"
+
 msgid "further to walk than the chase range"
 msgstr "chase range se zyada door paidal"
 
@@ -5393,6 +5401,9 @@ msgstr "{way} dhakel kar nikal gaye"
 
 msgid "got out: walked to {cell}"
 msgstr "nikal gaye: {cell} tak chal kar"
+
+msgid "harvested by someone else, or dried, before we got there"
+msgstr "hamare pohanchne se pehle kisi aur ne nikal li, ya sookh gayi"
 
 msgid "heal"
 msgstr "shifa"
@@ -5542,6 +5553,9 @@ msgid ""
 msgstr ""
 "is run se pehle ki {n} gear warnings chhor di gayin (un ka kaam tab ho chuka tha); toota hua gear phir bhi repair hota hai"
 
+msgid "left the corpse of {name}: {why}"
+msgstr "{name} ki laash chhor di: {why}"
+
 msgid "left the team"
 msgstr "team chhod di"
 
@@ -5679,6 +5693,9 @@ msgstr "mute: game bolna band kar deta hai (sirf mera game)."
 
 msgid "muted request"
 msgstr "khamosh darkhwast"
+
+msgid "near a boss"
+msgstr "boss ke qareeb"
 
 msgid "never again"
 msgstr "dobara kabhi nahi"
@@ -5959,6 +5976,9 @@ msgstr "abhi {cave} mein nahi - dobara koshish ({n} / {all})"
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
+
+msgid "not reached on foot"
+msgstr "paidal nahi pohanch sake"
 
 msgid "not read, old price kept: {list}"
 msgstr "parhe nahi gaye, purani qeemat rakhi: {list}"
@@ -7169,6 +7189,9 @@ msgstr ""
 
 msgid "too close to a boss"
 msgstr "boss ke bohat qareeb"
+
+msgid "too far to harvest from where we stand, and walking to corpses is off"
+msgstr "jahan khare hain wahan se bohat door, aur laashon tak chalna band hai"
 
 msgid "took {n} {item} out of the storehouse"
 msgstr "storehouse se {n} {item} nikale"
