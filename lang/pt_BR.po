@@ -1384,9 +1384,6 @@ msgstr "Masmorras cujas entradas não aparecem nos arquivos do jogo: {names}"
 msgid "E&xit"
 msgstr "&Sair"
 
-msgid "E&xperience card to keep running while farming:"
-msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
-
 msgid "E&xport"
 msgstr "E&xportar"
 
@@ -1529,8 +1526,10 @@ msgstr "Mensagem exata"
 msgid "Experience"
 msgstr "Experiência"
 
-msgid "Experience cards"
-msgstr "Cartões de experiência"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
+msgstr ""
+"Cartões de experiência a manter ativos durante a coleta (o mais forte marcado que estiver na bolsa primeiro)"
 
 msgid "Expert"
 msgstr "Especialista"
@@ -4690,6 +4689,9 @@ msgstr "entrada automática concluída"
 msgid "automatic login stopped"
 msgstr "entrada automática interrompida"
 
+msgid "automatic reconnection finished"
+msgstr "reconexão automática concluída"
+
 msgid "avoiding elites"
 msgstr "evitando monstros de elite"
 
@@ -5059,6 +5061,9 @@ msgstr "não foi possível guardar {item}: {why}"
 
 msgid "couldn't switch the target key to NPCs"
 msgstr "não foi possível mudar a tecla de alvo para NPCs"
+
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr "não foi possível retirar {item} do armazém: {why}"
 
 msgid "couldn't talk to the {npc}"
 msgstr "não foi possível falar com {npc}"
@@ -5848,6 +5853,13 @@ msgstr "nenhum"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "nenhuma das entradas marcadas em {map} é o círculo {name}"
 
+msgid "none of the shops that sell {item} answered"
+msgstr "nenhuma das lojas que vendem {item} respondeu"
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+"nenhum dos cartões de experiência marcados na bolsa - a coleta continua sem cartão"
+
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "nenhum dos {n} locais capazes de fazer isso pode ser alcançado a partir de {map}"
@@ -5914,6 +5926,9 @@ msgstr "não está na bolsa: {list}"
 msgid "not in the price list, left out: {list}"
 msgstr "fora da lista de preços, ignorado: {list}"
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr "ainda não em {cave} - tentando de novo ({n} de {all})"
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
@@ -5936,6 +5951,9 @@ msgstr "não vendido: {list}"
 
 msgid "not stored (the storehouse may be full): {list}"
 msgstr "não guardado (o depósito pode estar cheio): {list}"
+
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenhum"
 
 msgid "nothing"
 msgstr "nada"
@@ -6794,6 +6812,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "o jogo recusou a solicitação de entrada"
 
+msgid "the game said: {lines}"
+msgstr "o jogo disse: {lines}"
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -6945,6 +6966,14 @@ msgstr ""
 "não foi possível ler a lista de preços dos fragmentos (data\\shards.json)"
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+"os preços dos shards foram lidos há {hours} - sem voltar ao Shard Broker por eles antes de {most} horas"
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 "a lista de armazenamento está vazia — escolha itens para guardar no depósito em Personagem, Bolsa e suprimentos"
@@ -6960,6 +6989,14 @@ msgstr "não há {item} no depósito nem Arnebia para comprá-lo"
 
 msgid "the storehouse has {n} {item}"
 msgstr "o depósito tem {n} {item}"
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr ""
+"o armazém está cheio - estes ficam na bolsa até haver lugar nele: {list}"
+
+msgid "the storehouse is full: {item} has no place in it"
+msgstr "o armazém está cheio: não há lugar para {item}"
 
 msgid "the storehouse menu has no deposit"
 msgstr "o menu do depósito não tem opção de depósito"
@@ -7014,6 +7051,10 @@ msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} não oferece uma forma de entrar ({about})"
+
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
+msgstr ""
+"o {npc} em {map} só leva personagens de nível {n} ou mais - indo por outro caminho"
 
 msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr "{npc} recusou — consulte logs\\dialogs.log"
@@ -7329,6 +7370,9 @@ msgstr "{boss} (chefe) está a {n} passos — mantendo distância de {keep} pass
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} novos)"
 
+msgid "{card} (none in the bag)"
+msgstr "{card} (nenhum na bolsa)"
+
 msgid "{card} ({n} in the bag)"
 msgstr "{card} ({n} na bolsa)"
 
@@ -7341,6 +7385,9 @@ msgstr ""
 
 msgid "{cave} needs level {n}"
 msgstr "{cave} exige nível {n}"
+
+msgid "{cave}: couldn't get in after {n} tries"
+msgstr "{cave}: não foi possível entrar após {n} tentativas"
 
 msgid "{cave}: still inside after the timer - leaving"
 msgstr "{cave}: ainda está dentro após o tempo acabar — saindo"
@@ -7695,6 +7742,9 @@ msgstr "{now} de {top} ({pct}%)"
 msgid "{npc} didn't answer"
 msgstr "{npc} não respondeu"
 
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
+msgstr "{npc} não respondeu ({why}) — tentando a próxima loja mais próxima"
+
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr "{npc} não vende {item} — tentando a próxima loja mais próxima"
 
@@ -7985,3 +8035,9 @@ msgstr "{why} — sem usar mais {skill} nesta execução ({n} concluídos)"
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid "E&xperience card to keep running while farming:"
+#~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
+
+#~ msgid "Experience cards"
+#~ msgstr "Cartões de experiência"

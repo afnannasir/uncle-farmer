@@ -1351,9 +1351,6 @@ msgstr ""
 msgid "E&xit"
 msgstr ""
 
-msgid "E&xperience card to keep running while farming:"
-msgstr ""
-
 msgid "E&xport"
 msgstr ""
 
@@ -1492,7 +1489,8 @@ msgstr ""
 msgid "Experience"
 msgstr ""
 
-msgid "Experience cards"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
 msgstr ""
 
 msgid "Expert"
@@ -4825,6 +4823,9 @@ msgstr ""
 msgid "couldn't switch the target key to NPCs"
 msgstr ""
 
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr ""
+
 msgid "couldn't talk to the {npc}"
 msgstr ""
 
@@ -5576,6 +5577,12 @@ msgstr ""
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr ""
 
+msgid "none of the shops that sell {item} answered"
+msgstr ""
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 
@@ -5635,6 +5642,9 @@ msgstr ""
 msgid "not in the price list, left out: {list}"
 msgstr ""
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr ""
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
@@ -5655,6 +5665,9 @@ msgid "not sold: {list}"
 msgstr ""
 
 msgid "not stored (the storehouse may be full): {list}"
+msgstr ""
+
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 
 msgid "nothing"
@@ -6467,6 +6480,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr ""
 
+msgid "the game said: {lines}"
+msgstr ""
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -6604,6 +6620,13 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr ""
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 
@@ -6617,6 +6640,13 @@ msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr ""
 
 msgid "the storehouse has {n} {item}"
+msgstr ""
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr ""
+
+msgid "the storehouse is full: {item} has no place in it"
 msgstr ""
 
 msgid "the storehouse menu has no deposit"
@@ -6668,6 +6698,9 @@ msgid ""
 msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
+msgstr ""
+
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
 msgstr ""
 
 msgid "the {npc} said no - see logs\\dialogs.log"
@@ -6971,6 +7004,9 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr ""
 
+msgid "{card} (none in the bag)"
+msgstr ""
+
 msgid "{card} ({n} in the bag)"
 msgstr ""
 
@@ -6981,6 +7017,9 @@ msgid "{cave} is done for today - a character goes into one cave a day"
 msgstr ""
 
 msgid "{cave} needs level {n}"
+msgstr ""
+
+msgid "{cave}: couldn't get in after {n} tries"
 msgstr ""
 
 msgid "{cave}: still inside after the timer - leaving"
@@ -7323,6 +7362,9 @@ msgid "{now} of {top} ({pct}%)"
 msgstr ""
 
 msgid "{npc} didn't answer"
+msgstr ""
+
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
 msgstr ""
 
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"

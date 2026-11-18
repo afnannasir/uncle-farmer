@@ -1376,9 +1376,6 @@ msgstr "Jin dungeons ka daakhla game ki files mein nahi dikhta: {names}"
 msgid "E&xit"
 msgstr "Bahar &niklein"
 
-msgid "E&xperience card to keep running while farming:"
-msgstr "Farming ke dauran chalne wala e&xperience card:"
-
 msgid "E&xport"
 msgstr "E&xport karein"
 
@@ -1521,8 +1518,10 @@ msgstr "Bilkul wohi paighaam"
 msgid "Experience"
 msgstr "Tajurba"
 
-msgid "Experience cards"
-msgstr "Experience cards"
+msgid ""
+"Experience cards to keep running while farming (the strongest ticked one in the bag first)"
+msgstr ""
+"Farming ke dauran chalne wale experience cards (bag mein sab se taqatwar tick wala pehle)"
 
 msgid "Expert"
 msgstr "Expert"
@@ -5046,6 +5045,9 @@ msgstr "{item} store nahi kar sake: {why}"
 msgid "couldn't switch the target key to NPCs"
 msgstr "target key ko NPCs par switch nahi kar sake"
 
+msgid "couldn't take {item} out of the storehouse: {why}"
+msgstr "storehouse se {item} nahi nikal sake: {why}"
+
 msgid "couldn't talk to the {npc}"
 msgstr "{npc} se baat nahi kar sake"
 
@@ -5839,6 +5841,13 @@ msgstr "koi nahi"
 msgid "none of the entrances marked on {map} is the {name} circle"
 msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 
+msgid "none of the shops that sell {item} answered"
+msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
+
+msgid "none of the ticked experience cards in the bag - farming on without one"
+msgstr ""
+"tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
+
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "yeh kaam karne wali {n} jagahon mein se koi bhi {map} se nahi pohanch sakti"
@@ -5906,6 +5915,9 @@ msgstr "baste mein nahi: {list}"
 msgid "not in the price list, left out: {list}"
 msgstr "qeemat ki fehrist mein nahi, chhor diye: {list}"
 
+msgid "not in {cave} yet - trying again ({n} of {all})"
+msgstr "abhi {cave} mein nahi - dobara koshish ({n} / {all})"
+
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
@@ -5927,6 +5939,10 @@ msgstr "nahi bika: {list}"
 
 msgid "not stored (the storehouse may be full): {list}"
 msgstr "storehouse mein nahi rakhe gaye (shayad bhar gaya hai): {list}"
+
+msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+"{item} storehouse nahi le ja rahe: woh bhara hua hai aur us mein abhi koi {item} nahi"
 
 msgid "nothing"
 msgstr "kuch nahi"
@@ -6782,6 +6798,9 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 
+msgid "the game said: {lines}"
+msgstr "game ne kaha: {lines}"
+
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
@@ -6932,6 +6951,14 @@ msgid "the shard price list (data\\shards.json) can't be read"
 msgstr "shards ki qeemat ki fehrist (data\\shards.json) parhi nahi ja sakti"
 
 msgid ""
+"the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+"shard prices {hours} pehle parhi gayi thin - {most} ghante se pehle in ke liye dobara Shard Broker ke paas nahi ja rahe"
+
+msgid "the skill page turns with {key} (the game's key for it)"
+msgstr "skill page {key} se badalta hai (game ki apni key)"
+
+msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
 msgstr ""
 "storage list khaali hai - Character, Bag and supplies mein storehouse mein rakhne wali cheezein chunein"
@@ -6947,6 +6974,13 @@ msgstr "storehouse mein {item} nahi aur khareedne ke liye arnebia bhi nahi"
 
 msgid "the storehouse has {n} {item}"
 msgstr "storehouse mein {n} {item} hain"
+
+msgid ""
+"the storehouse is full - these stay in the bag until there is room in it: {list}"
+msgstr "storehouse bhara hua hai - jagah banne tak yeh bag mein rahenge: {list}"
+
+msgid "the storehouse is full: {item} has no place in it"
+msgstr "storehouse bhara hua hai: {item} ke liye us mein jagah nahi"
 
 msgid "the storehouse menu has no deposit"
 msgstr "storehouse menu mein deposit nahi hai"
@@ -7002,6 +7036,10 @@ msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} andar jaane ka koi rasta nahi deta ({about})"
+
+msgid "the {npc} on {map} takes only level {n} and above - going another way"
+msgstr ""
+"{map} par {npc} sirf level {n} aur us se upar walon ko le jata hai - doosre raaste se ja rahe hain"
 
 msgid "the {npc} said no - see logs\\dialogs.log"
 msgstr "{npc} ne nahi kaha - logs\\dialogs.log dekhein"
@@ -7319,6 +7357,9 @@ msgstr ""
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
 
+msgid "{card} (none in the bag)"
+msgstr "{card} (bag mein koi nahi)"
+
 msgid "{card} ({n} in the bag)"
 msgstr "{card} (bag mein {n})"
 
@@ -7330,6 +7371,9 @@ msgstr "{cave} aaj ke liye ho gaya - kirdaar din mein ek hi ghaar mein jata hai"
 
 msgid "{cave} needs level {n}"
 msgstr "{cave} ke liye level {n} chahiye"
+
+msgid "{cave}: couldn't get in after {n} tries"
+msgstr "{cave}: {n} koshishon ke baad bhi andar nahi ja sake"
 
 msgid "{cave}: still inside after the timer - leaving"
 msgstr "{cave}: timer ke baad bhi andar - nikal raha hai"
@@ -7686,6 +7730,9 @@ msgstr "{top} mein se {now} ({pct}%)"
 msgid "{npc} didn't answer"
 msgstr "{npc} ne jawab nahi diya"
 
+msgid "{npc} didn't answer ({why}) - trying the next nearest shop"
+msgstr "{npc} ne jawab nahi diya ({why}) - agli qareebi dukaan aazma rahe hain"
+
 msgid "{npc} doesn't sell {item} - trying the next nearest shop"
 msgstr "{npc} {item} nahi bechta - agli qareebi dukaan aazma rahe hain"
 
@@ -8016,8 +8063,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Drop time to &save (minutes):"
 #~ msgstr "Drop ka waqt &mahfooz karne ke liye (minute):"
 
+#~ msgid "E&xperience card to keep running while farming:"
+#~ msgstr "Farming ke dauran chalne wala e&xperience card:"
+
 #~ msgid "E&xport plan"
 #~ msgstr "Mansooba e&xport karein"
+
+#~ msgid "Experience cards"
+#~ msgstr "Experience cards"
 
 #~ msgid ""
 #~ "Fills enabled supplies to their configured targets, even above their automatic refill thresholds."

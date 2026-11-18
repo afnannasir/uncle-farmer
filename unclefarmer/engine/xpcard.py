@@ -13,11 +13,12 @@ What the game does (hand recordings 2026-11-11):
     is invalid in a dungeon.
 
 So, with the Character settings' ticks:
-  - xp_card_name: on the farm, a card is kept running: a paused one is resumed, and when none runs
-    a card of the kind the player chose is used - that kind only, never a stronger or weaker one
-    (the strong ones are kept for when the player wants them). None of it in the bag: farming goes
-    on without a card. Empty: no card is ever used (a paused one is still resumed with the pause
-    tick).
+  - xp_cards: on the farm, a card is kept running: a paused one is resumed, and when none runs
+    a card of a kind the player ticked is used, the strongest of them in the bag first - ticked
+    kinds only, never another (the strong ones are kept for when the player wants them), so a
+    player can finish a 2x and then burn the small cards looted on the way. None of them in the
+    bag: farming goes on without a card. None ticked: no card is ever used (a paused one is still
+    resumed with the pause tick).
   - xp_card_pause: a running card is paused whenever a farming run travels to another map (to
     town for potions or repairs, back after a death, home at the end) and when the run ends; it
     runs again once farming starts on the farm (with either tick on). Never in a dungeon, and not
@@ -44,6 +45,7 @@ FRESH = 10                # seconds old a sheet may be for a pause or resume (th
 MIN_LEFT = 90             # seconds: a card this close to its end is not paused (a pause costs 60)
 WAIT = 3.0                # seconds the sheet has to show a change
 REST = 60.0               # seconds before trying again after something failed
+KINDS = (1.3, 1.5, 1.75, 2.0, 2.5, 3.0)   # the cards the game has, the ticks the Character settings offer
 
 
 @dataclass
@@ -66,10 +68,17 @@ def state(b: Bot) -> Cards:
     return st
 
 
-def wanted(p: dict[str, Any]) -> tuple[str, bool]:
-    """(the card to keep running, "" for none; pause it while away) from the Character settings."""
-    name = p.get("xp_card_name") or ""
-    return (name.strip() if isinstance(name, str) else ""), bool(p.get("xp_card_pause", False))
+def wanted(p: dict[str, Any]) -> tuple[list[float], bool]:
+    """(the strengths ticked to keep running, strongest first, [] for none; pause it while away)
+    from the Character settings."""
+    raw: Any = p.get("xp_cards") or []
+    kinds = sorted({round(float(k), 2) for k in raw if isinstance(k, (int, float)) and k > 0}, reverse=True)
+    return kinds, bool(p.get("xp_card_pause", False))
+
+
+def name_of(kind: float) -> str:
+    """"2x experience acceleration card" for 2.0: the card's name as the game writes it."""
+    return "%gx experience acceleration card" % kind
 
 
 def strength(name: str) -> float | None:
@@ -141,8 +150,8 @@ def in_dungeon(b: Bot) -> bool:
 
 
 def on_farm(b: Bot, now: float | None = None) -> None:
-    """Between fights on the farm: a paused card runs again, and with a card chosen (xp_card_name)
-    a new one of that kind is used when none runs. Looks every LOOK_EVERY seconds at most."""
+    """Between fights on the farm: a paused card runs again, and with kinds ticked (xp_cards) a new
+    card of the strongest of them in the bag is used when none runs. Looks every LOOK_EVERY seconds at most."""
     keep, pause = wanted(b.p)
     if not (keep or pause):
         return
@@ -219,18 +228,20 @@ def _toggle(b: Bot, st: Cards, want: str, why: str) -> bool:
     return True
 
 
-def _use(b: Bot, st: Cards, chosen: str) -> bool:
-    """A card of the chosen kind from the bag, then the sheet read until it runs. True when it does.
-    Only that kind: a stronger card in the bag is never used in its place."""
-    want = chosen.strip().lower()
-    found = [c for c in cards_in(b.bag_rows()) if c[1].lower() == want]
+def _use(b: Bot, st: Cards, kinds: list[float]) -> bool:
+    """A card of the strongest ticked kind in the bag, then the sheet read until it runs. True when
+    it does. Ticked kinds only: a stronger card in the bag is never used in their place."""
+    found = [c for c in cards_in(b.bag_rows()) if round(c[0], 2) in kinds]
     if not found:
-        _once(b, st, "none", _("no {card} in the bag - farming on without an experience card", card=chosen),
-              speak=True)
-        st.rest_until = b.clock.time() + 10 * REST        # a card bought or traded in comes into use later
+        if len(kinds) == 1:
+            line = _("no {card} in the bag - farming on without an experience card", card=name_of(kinds[0]))
+        else:
+            line = _("none of the ticked experience cards in the bag - farming on without one")
+        _once(b, st, "none", line, speak=True)
+        st.rest_until = b.clock.time() + 10 * REST        # a card looted, bought or traded in comes into use later
         return False
     st.said.discard("none")
-    _power, name, count = found[0]
+    _power, name, count = found[-1]                       # cards_in lists them weakest first
     if not _sheet(b, fresh=True):
         return False
     if not b.use_item(name):
