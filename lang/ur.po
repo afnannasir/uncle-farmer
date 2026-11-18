@@ -610,7 +610,7 @@ msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ", Shard Market mein takreeban {v} arnebia ke barabar"
 
 msgid ", {heal} healing"
-msgstr ""
+msgstr ", {heal} healing"
 
 msgid ", {n} threads"
 msgstr ", {n} threads"
@@ -2616,6 +2616,7 @@ msgstr ""
 msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
+"Sirf meri &level ke maps (monsters 9 level neeche se 5 oopar tak: poora experience aur loot)"
 
 msgid "Only when HP is low"
 msgstr "Sirf jab HP kam ho"
@@ -6793,10 +6794,10 @@ msgid "the game's own speech is off while the bot runs"
 msgstr "bot chalne ke doran game ki apni speech band rehti hai"
 
 msgid "the game's report: {n} of {total} kills, {dmg} damage"
-msgstr ""
+msgstr "game ki report: {total} mein se {n} kills, {dmg} damage"
 
 msgid "the game's report: {total} kills"
-msgstr ""
+msgstr "game ki report: {total} kills"
 
 msgid "the gang has no {npc}"
 msgstr "gang mein koi {npc} nahi"
@@ -7861,7 +7862,7 @@ msgid "{skill} doesn't list {place} for this character"
 msgstr "{skill} is character ke liye {place} nahi dikhati"
 
 msgid "{skill} for a long walk"
-msgstr ""
+msgstr "lambe safar ke liye {skill}"
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr "{skill} kisi skill key par nahi (khali keys par skills lagana band hai)"
