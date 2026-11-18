@@ -111,6 +111,30 @@ def test_gems_go_all_the_way_to_shards_from_the_allowed_level(game: Any) -> None
     assert count(b, "Level 3 Ruby") == 1                   # above the limit: left alone
 
 
+def test_what_a_break_leaves_is_waited_for(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    b, c = game({"Level 2 Ruby": 2, "Level 1 Ruby": 2})
+    real = c.quantity
+    owed: list[tuple[str, int]] = []
+
+    def late(n: int) -> bool:
+        before = count(b, c.gives(c.item)[1])
+        real(n)
+        product = c.gives(c.item)[1]
+        owed.append((product, count(b, product) - before))
+        add(b, product, -owed[-1][1])
+        return True
+
+    def arrive(seconds: float) -> None:
+        while owed:
+            name, k = owed.pop()
+            add(b, name, k)
+    monkeypatch.setattr(c, "quantity", late)
+    monkeypatch.setattr(b, "sleep", arrive)
+    gembreak.run(as_bot(b), job())
+    assert c.asked == [("Level 2 Ruby", 2), ("Level 1 Ruby", 8)]
+    assert count(b, "Level 1 Ruby Shard") == 24
+
+
 def test_only_the_ticked_colours_are_touched(game: Any) -> None:
     b, c = game({"Level 1 Ruby": 1, "Level 1 Topaz": 5})
     gembreak.run(as_bot(b), job())

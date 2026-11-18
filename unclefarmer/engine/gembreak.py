@@ -164,6 +164,16 @@ def _left(b: Bot, name: str, was: int) -> int:
         b.sleep(0.25)
 
 
+def _landed(b: Bot, product: str, want: int) -> None:
+    """Give the bag its moment to show what a break left: the item goes first and the product comes
+    a little later (seen live: the next step counted 2 gems where the craftsman listed 8, and the
+    results missed the last shards)."""
+    clock = clock_for(b)
+    end = clock.time() + crafting.SETTLE
+    while town.counts(b).get(product, 0) < want and clock.time() < end:
+        b.sleep(0.25)
+
+
 def _break(b: Bot, where: str, item: Item, n: int) -> int:
     """Break up to n of one item, asking for half when the bag shows nothing came of it. How many went."""
     name = _names(b).get(item.name) or pretty(item.name)
@@ -177,13 +187,16 @@ def _break(b: Bot, where: str, item: Item, n: int) -> int:
                 b.log(_("not enough spare arnebia to break {item} (fee {fee} each)", item=name, fee=page.fee),
                       speak=True)
                 return 0
-        was = town.counts(b).get(item.name, 0)
+        have = town.counts(b)
+        was, product = have.get(item.name, 0), page.product.lower()
+        had = have.get(product, 0)
         if not town.pick(b, r"enter the number of " + re.escape(name) + r" to break", n):
             b.log(_("the Gem Craftsman didn't ask how many {item} to break", item=name))
             return 0
         gone = was - _left(b, item.name, was)
         b.close_dialogs()
         if gone > 0:
+            _landed(b, product, had + gone * page.gives)
             b.log(_("broke {n} {item} into {k} {product}", n=gone, item=name, k=gone * page.gives,
                     product=page.product))
             return gone
