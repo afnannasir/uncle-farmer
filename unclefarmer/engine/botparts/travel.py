@@ -265,8 +265,15 @@ class TravelMixin(Parts):
         return done
 
     def _plan_legs(self, mid: int, dst: int, goal_cell: tuple[float, float] | None, avoid: set[Any]) -> list[dict[str, Any]]:
-        """The way from here, as the profile wants it planned; a Stopped when there is none."""
+        """The way from here, as the profile wants it planned; a Stopped when there is none. Out of
+        a gang base on foot first: its exit has no destination in the map data (the game puts us
+        back where we came in), so a plan from inside could only teleport away, however near the
+        goal is. The next leg is planned from outside."""
         me = self.me()
+        if dst != mid and travel.gang_exit(mid) is not None:
+            out, _cost = travel.way_out(mid, (me["x"], me["y"]), avoid)
+            if out:
+                return out
         rows = self.bag_rows()
         bag = rows if self.p.get("use_travel_items", False) else []
         purse = travel.arnebia_in(rows)       # no ride planned that we can't pay for
@@ -429,7 +436,11 @@ class TravelMixin(Parts):
 
     def _take_spell(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> None:
         """A teleport skill leg; what can't work is left out of the next plan: a place the skill
-        doesn't have at once, the whole skill after SPELL_TRIES broken channels."""
+        doesn't have at once, the whole skill when it is on no key (no place would do better) or
+        after SPELL_TRIES broken channels."""
+        if self.spell_slot(leg["skill"]) is None:
+            avoid.add(leg["skill"])
+            return
         got = self.cast_teleport(leg)
         if got is False:
             avoid.add((leg["skill"], leg["place"]))

@@ -261,6 +261,37 @@ def test_broken_tries_leave_the_skill_out_of_the_trip() -> None:
     assert ("Teleportation", "holy blood square") in avoid
 
 
+def test_a_skill_on_no_key_is_left_out_whole_at_the_first_try(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(keyslots, "put_skill", lambda bot, name: False)  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    b = Caster()
+    b.skillbook = Book("Fireball")
+    avoid: set[Any] = set()
+    b._take_spell(dict(LEG), avoid, {})
+    assert avoid == {"Teleportation"}
+
+
+def test_out_of_a_gang_base_on_foot_before_any_teleport(monkeypatch: pytest.MonkeyPatch) -> None:
+    leg = {"do": "exit", "map": 4001, "exit": 0, "dest": None}
+    planned: list[Any] = []
+
+    def plan(*a: object, **kw: object) -> list[dict[str, Any]]:
+        planned.append(a)
+        return [{"do": "map"}]
+    monkeypatch.setattr(travel, "gang_exit", lambda mid: (0, {}))  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    monkeypatch.setattr(travel, "way_out", lambda mid, cell, avoid=(): ([leg], 1.0))  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    monkeypatch.setattr(travel, "plan", plan)
+    b = Caster()
+    assert b._plan_legs(4001, 1081, None, set()) == [leg] and not planned
+    assert b._plan_legs(4001, 4001, (40.0, 40.0), set()) == [{"do": "map"}]    # a walk inside the base
+
+
+def test_a_gang_exit_that_can_t_be_used_leaves_the_normal_plan(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(travel, "gang_exit", lambda mid: (0, {}))  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    monkeypatch.setattr(travel, "way_out", lambda mid, cell, avoid=(): (None, None))  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    monkeypatch.setattr(travel, "plan", lambda *a, **kw: [{"do": "map"}])  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+    assert Caster()._plan_legs(4001, 1081, None, {"gang_exit"}) == [{"do": "map"}]
+
+
 def test_travel_plans_with_the_characters_teleports(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Caster()
     b.a = Skills(["Teleportation"])                 # pyright: ignore[reportAttributeAccessIssue]

@@ -17,6 +17,8 @@
 - Hunting bounties are no longer a daily chore: each officer pays for bosses of his own, after your
   killing blow. Tools, Hunting bounties (script: `bounties`) asks the officers you tick, Guard
   Captain Suke included.
+- Leaving a gang base, the bot walks out first instead of teleporting away, and a teleport skill
+  that is on no key is dropped at once, with one message instead of one for each place.
 - A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.
 
 **Market searcher and buyer (Tools, Ctrl+Shift+K)**
