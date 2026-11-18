@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+**No trip to the farm with the drop time used up**
+
+- A farming run whose day's drop time is already down to what you save (Drop time to save, or
+  the plan's `keep_drop`) no longer travels all the way to the farm for the first sheet there to
+  stop it: it says "the drop time is nearly used up (... min left) - not starting to farm" and
+  stays where it is, as "Stop before the next level" already did.
+
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 
 - Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when

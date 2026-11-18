@@ -96,6 +96,9 @@ class FakeBot:
     def defend(self) -> None:
         self.defend_calls += 1
 
+    def drop_before_start(self) -> None:
+        pass
+
     def level_before_start(self) -> None:
         pass                            # "Stop before the next level" is off for these runs
 

@@ -285,19 +285,14 @@ class FarmingMixin(Parts):
         after we leave the monsters (about 4 minutes, measured by the player), so we stop that much
         earlier. Off with stop_on_drop_time - unless the plan or script says how much to keep
         (keep_drop): then this run keeps that much, whatever the character's setting."""
-        plan_keep = getattr(self, "drop_keep", None)
-        if plan_keep is None and not self.p.get("stop_on_drop_time", True):
+        got = self.drop_to_farm(sheet)
+        if got is None:
             return
-        left = sheet.get("drop_seconds", -1)
-        if left is None or left < 0:
-            return
-        left -= sheet.get("age", 0)
-        keep = 60 * (plan_keep if plan_keep is not None else self.p.get("drop_keep_minutes", 0))
-        tail = self.p.get("drop_tail_seconds", 300)
-        if left - tail > keep:
+        left, spare = got
+        if spare > 0:
             if not getattr(self, "said_drop", False):
                 self.said_drop = True
-                mins = int((left - tail - keep) / 60)
+                mins = int(spare / 60)
                 self.log(_("drop time: {h} h {m} min left; farming stops in about {n} minutes",
                            h=int(left // 3600), m=int(left % 3600 // 60), n=mins))
             return
@@ -305,6 +300,36 @@ class FarmingMixin(Parts):
                    m=max(0, int(left // 60))), speak=True)
         self.finish()
         raise Stopped(_("drop time used up"))
+
+    def drop_to_farm(self, sheet: dict[str, Any]) -> tuple[float, float] | None:
+        """(drop time left, seconds of it still to farm) from the sheet: what is left past the
+        time kept (this run's keep_drop, else the character's drop_keep_minutes) and the few
+        minutes it keeps running after we leave (drop_tail_seconds). None when there is no such
+        stop, or the sheet doesn't say."""
+        plan_keep = getattr(self, "drop_keep", None)
+        if plan_keep is None and not self.p.get("stop_on_drop_time", True):
+            return None
+        left = sheet.get("drop_seconds", -1)
+        if not isinstance(left, (int, float)) or left < 0:
+            return None
+        left -= sheet.get("age", 0)
+        keep = 60 * (plan_keep if plan_keep is not None else self.p.get("drop_keep_minutes", 0))
+        return left, left - self.p.get("drop_tail_seconds", 300) - keep
+
+    def drop_before_start(self) -> None:
+        """Before a farming run sets out (with level_before_start): the drop time is already down
+        to what is kept, so the whole way to the farm would be made for the first sheet there to
+        send the run back. Say so and stay where we are, as for the level."""
+        if getattr(self, "drop_keep", None) is None and not self.p.get("stop_on_drop_time", True):
+            return                       # no such stop: no sheet to read
+        got = self.drop_to_farm(self.refresh_sheet(force=True) or {})
+        if got is None or got[1] > 0:
+            return
+        self.log(_("the drop time is nearly used up ({m} min left) - not starting to farm",
+                   m=max(0, int(got[0] // 60))), speak=True)
+        stop = Stopped(_("drop time used up"))
+        stop.stay = True
+        raise stop
 
     def level_goal(self) -> int | None:
         """The experience the next level must still need for farming to go on: this run's
