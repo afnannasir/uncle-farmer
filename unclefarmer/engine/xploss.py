@@ -106,7 +106,7 @@ _seen_lock = threading.Lock()
 # monster in the way of a walk and after an NPC talk (a ride); for this run that is all mode, or the
 # walk to the guard switched it back to a peaceful mode and the hit made no guard strike.
 DYING: dict[str, Any] = {"respawn": "city", "use_resurrection_crystal": False, "stop_on_deaths": False,
-                         "stop_on_panic": False, "hp_below": 0, "smart_skills": False, "fight_back": False,
+                         "stop_on_panic": False, "flee_on_panic": False, "hp_below": 0, "smart_skills": False, "fight_back": False,
                          "pk_mode": ALL_MODE}
 
 

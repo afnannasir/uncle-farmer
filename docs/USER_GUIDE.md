@@ -388,6 +388,24 @@ Inside a dungeon, leaving would lose the visit, so it never stops there: it only
 
 A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
 
+### When HP stays low
+
+On the **Low HP** tab of the character settings, **When HP stays low** says what to do when HP stays
+under **Low HP (%)** (30 by default) for **For (seconds)** (3 by default), whatever the potions and heal
+skills did:
+
+- **Fight on** (the default): the bot keeps fighting. If the character dies, it comes back as the
+  Death settings say.
+- **Stop so I can take over**: the run stops on the spot, for you to play.
+- **Go to town with the hearthstone, heal and come back (while farming)**: on the farming map, the
+  bot drops the fight and uses the hearthstone. In town it waits until HP is back to 90% (three
+  minutes at most, drinking potions as usual), looks at the restock rules, and goes back to farm.
+  A hit stops the hearthstone's cast, so a hearthstone that doesn't take the character home after
+  three tries leaves it fighting on, and it isn't tried again for a minute. With no hearthstone on
+  a key or in the bag, the bot says so once and fights on: add the Hearthstone to the restock rules.
+  The third flee within 30 minutes ends the run in town: the map is too hard for the character for
+  now. This never happens in a dungeon (its visit can't be left), on a trip or in town.
+
 ### Settings for each character
 
 Every character has its own settings.

@@ -1538,6 +1538,9 @@ msgstr ""
 msgid "Fight monsters another player is &already killing"
 msgstr ""
 
+msgid "Fight on"
+msgstr ""
+
 msgid "Fighting"
 msgstr ""
 
@@ -1713,6 +1716,9 @@ msgstr ""
 msgid "Go to a &cell on the map"
 msgstr ""
 
+msgid "Go to town with the hearthstone, heal and come back (while farming)"
+msgstr ""
+
 msgid "Goes round the spots in turn."
 msgstr ""
 
@@ -1744,6 +1750,9 @@ msgid "HP and MP are read with the key again: {why}"
 msgstr ""
 
 msgid "HP isn't coming back while resting ({pct}%) - fighting on"
+msgstr ""
+
+msgid "HP stayed under {pct}% - leaving the fight: hearthstone to town"
 msgstr ""
 
 msgid ""
@@ -3390,6 +3399,9 @@ msgstr ""
 msgid "Stop if broken gear ca&n't be repaired"
 msgstr ""
 
+msgid "Stop so I can take over"
+msgstr ""
+
 msgid "Stop the bot first."
 msgstr ""
 
@@ -3400,9 +3412,6 @@ msgid "Stop the plan"
 msgstr ""
 
 msgid "Stop when &Vitality is down to (0: until it runs out):"
-msgstr ""
-
-msgid "Stop when HP stays &low"
 msgstr ""
 
 msgid "Stop when the day's drop &time runs out"
@@ -4212,6 +4221,9 @@ msgstr ""
 msgid "When"
 msgstr ""
 
+msgid "When HP stays &low:"
+msgstr ""
+
 msgid "When an &item runs low"
 msgstr ""
 
@@ -4486,6 +4498,9 @@ msgstr ""
 msgid "back to {map}"
 msgstr ""
 
+msgid "back to {map} after fleeing a lost fight"
+msgstr ""
+
 msgid "back to {map} after {why}"
 msgstr ""
 
@@ -4712,6 +4727,9 @@ msgid "couldn't finish the results: {err}"
 msgstr ""
 
 msgid "couldn't finish the run ({where}): {err}"
+msgstr ""
+
+msgid "couldn't get away - fighting on"
 msgstr ""
 
 msgid "couldn't get back to {place}: {why}"
@@ -5001,6 +5019,13 @@ msgid "fish"
 msgstr ""
 
 msgid "fishing lake"
+msgstr ""
+
+msgid "fled too many lost fights"
+msgstr ""
+
+msgid ""
+"fled {n} times in {m} minutes - this map is too hard for now; stopping here"
 msgstr ""
 
 msgid ""
@@ -5461,6 +5486,10 @@ msgid "no guard here - going to the nearest town, {map}"
 msgstr ""
 
 msgid "no guard to fight at {village} - trying another village"
+msgstr ""
+
+msgid ""
+"no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 
 msgid "no known entrance for the dungeon {name}"

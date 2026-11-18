@@ -276,11 +276,19 @@ class ProfileDialog(Dialog):
             _("Stop after too many &deaths"), p.get("stop_on_deaths", True) and p["max_deaths"] > 0,
             _("Deaths before stopping:"), max(1, p["max_deaths"]), 1, 999)
         f = group(panel, box, _("Low HP"))
-        self.panic, self.panic_below = f.optional(_("Stop when HP stays &low"), p["stop_on_panic"],
-                                                  _("Low HP (%):"), p["panic_below"], 1, 99)
+        now = 2 if p.get("flee_on_panic", False) else 1 if p["stop_on_panic"] else 0
+        self.panic = f.choice(_("When HP stays &low:"), [
+            _("Fight on"), _("Stop so I can take over"),
+            _("Go to town with the hearthstone, heal and come back (while farming)")], now)
+        self.panic_below = f.number(_("Low HP (%):"), p["panic_below"], 1, 99)
         self.panic_after = f.number(_("For (seconds):"), int(p["panic_after"]), 1, 120)
-        self.panic.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), self.panic_after.Enable(self.panic.GetValue())))
-        self.panic_after.Enable(self.panic.GetValue())
+
+        def panic_on(_e: object = None) -> None:
+            on = self.panic.GetSelection() > 0
+            self.panic_below.Enable(on)
+            self.panic_after.Enable(on)
+        self.panic.Bind(wx.EVT_CHOICE, lambda e: (e.Skip(), panic_on()))
+        panic_on()
         f = group(panel, box, _("Corpses"))
         self.corpse_skill, self.corpse_vitality = f.optional(
             _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
@@ -560,7 +568,8 @@ class ProfileDialog(Dialog):
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()
         p["max_deaths"] = self.max_deaths.GetValue()
-        p["stop_on_panic"] = self.panic.GetValue()
+        p["stop_on_panic"] = self.panic.GetSelection() == 1
+        p["flee_on_panic"] = self.panic.GetSelection() == 2
         p["panic_below"] = self.panic_below.GetValue()
         p["panic_after"] = float(self.panic_after.GetValue())
         p["corpse_skill"] = self.corpse_skill.GetValue()

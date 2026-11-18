@@ -1569,6 +1569,9 @@ msgid "Fight monsters another player is &already killing"
 msgstr ""
 "Aise monsters se ladein jinhein koi doosra khilari &pehle se maar raha hai"
 
+msgid "Fight on"
+msgstr "Larte rahein"
+
 msgid "Fighting"
 msgstr "Ladai"
 
@@ -1746,6 +1749,10 @@ msgstr "Un se ek baar guzrein, phir khatam karein"
 msgid "Go to a &cell on the map"
 msgstr "Map par &cell par jayein"
 
+msgid "Go to town with the hearthstone, heal and come back (while farming)"
+msgstr ""
+"Hearthstone se shehar jayein, HP bharein aur wapas aayein (farming ke dauran)"
+
 msgid "Goes round the spots in turn."
 msgstr "Jagahein baari baari ghoomta hai."
 
@@ -1778,6 +1785,9 @@ msgstr "HP aur MP ab phir key se padhe ja rahe hain: {why}"
 
 msgid "HP isn't coming back while resting ({pct}%) - fighting on"
 msgstr "aaram karte hue HP wapas nahi aa rahi ({pct}%) - ladai jari"
+
+msgid "HP stayed under {pct}% - leaving the fight: hearthstone to town"
+msgstr "HP {pct}% se neeche rahi - ladai chhor rahe hain: hearthstone se shehar"
 
 msgid ""
 "HP stayed under {pct}% for {secs} seconds - stopping so you can take over"
@@ -3501,6 +3511,9 @@ msgstr "Pehle har chalte bot ko rokein, phir update karein."
 msgid "Stop if broken gear ca&n't be repaired"
 msgstr "Agar toota gear repair na &ho sake to rukein"
 
+msgid "Stop so I can take over"
+msgstr "Ruk jayein taake main sambhal loon"
+
 msgid "Stop the bot first."
 msgstr "Pehle bot ko rokein."
 
@@ -3512,9 +3525,6 @@ msgstr "Mansooba rok dein"
 
 msgid "Stop when &Vitality is down to (0: until it runs out):"
 msgstr "Jab &Vitality itni reh jaye to rukein (0: khatam hone tak):"
-
-msgid "Stop when HP stays &low"
-msgstr "Jab HP &kam reh jaye to rukein"
 
 msgid "Stop when the day's drop &time runs out"
 msgstr "Rok dein jab din ka drop &waqt khatam ho jaye"
@@ -4399,6 +4409,9 @@ msgstr ""
 msgid "When"
 msgstr "Kab"
 
+msgid "When HP stays &low:"
+msgstr "Jab HP &kam rahe:"
+
 msgid "When an &item runs low"
 msgstr "Jab koi &cheez kam ho jaye"
 
@@ -4684,6 +4697,9 @@ msgstr "farm par wapas"
 msgid "back to {map}"
 msgstr "{map} par wapas"
 
+msgid "back to {map} after fleeing a lost fight"
+msgstr "haari hui ladai se bhaag kar {map} par wapas"
+
 msgid "back to {map} after {why}"
 msgstr "{why} ke baad {map} par wapas"
 
@@ -4931,6 +4947,9 @@ msgstr "nataij mukammal nahi kar sake: {err}"
 
 msgid "couldn't finish the run ({where}): {err}"
 msgstr "run mukammal tareeqe se khatam nahi kar sake ({where}): {err}"
+
+msgid "couldn't get away - fighting on"
+msgstr "bhaag nahi sake - ladai jari"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} par wapas nahi ja sake: {why}"
@@ -5233,6 +5252,14 @@ msgstr "machhli"
 
 msgid "fishing lake"
 msgstr "machli pakadne ki jheel"
+
+msgid "fled too many lost fights"
+msgstr "bahut si haari hui ladaiyon se bhaage"
+
+msgid ""
+"fled {n} times in {m} minutes - this map is too hard for now; stopping here"
+msgstr ""
+"{m} minute mein {n} baar bhaage - yeh map abhi bahut mushkil hai; yahin ruk rahe hain"
 
 msgid ""
 "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
@@ -5716,6 +5743,11 @@ msgstr "yahan koi guard nahi - qareebi shehar ja rahe hain, {map}"
 msgid "no guard to fight at {village} - trying another village"
 msgstr ""
 "{village} par larne ke liye koi guard nahi - doosra gaon try kar rahe hain"
+
+msgid ""
+"no hearthstone on a key or in the bag - a fight that goes badly is fought on"
+msgstr ""
+"na key par na bag mein hearthstone hai - buri jati ladai bhi jari rahegi"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
@@ -8109,6 +8141,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "St&ore items (game menu, Store items now)"
 #~ msgstr "Cheezein st&orehouse mein rakhein (game menu, Store items now)"
+
+#~ msgid "Stop when HP stays &low"
+#~ msgstr "Jab HP &kam reh jaye to rukein"
 
 #~ msgid "Stop when the day's &drop time runs out"
 #~ msgstr "Rok dein jab din ka &drop waqt khatam ho jaye"

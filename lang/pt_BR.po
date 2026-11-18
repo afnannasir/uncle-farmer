@@ -1576,6 +1576,9 @@ msgstr "Lutar como &besta de fusão:"
 msgid "Fight monsters another player is &already killing"
 msgstr "Lutar contra monstros que outro jogador já está &atacando"
 
+msgid "Fight on"
+msgstr "Continuar lutando"
+
 msgid "Fighting"
 msgstr "Lutando"
 
@@ -1754,6 +1757,9 @@ msgstr "Passar por todos uma vez e encerrar"
 msgid "Go to a &cell on the map"
 msgstr "Ir para uma &célula do mapa"
 
+msgid "Go to town with the hearthstone, heal and come back (while farming)"
+msgstr "Ir à cidade com a hearthstone, curar e voltar (durante a coleta)"
+
 msgid "Goes round the spots in turn."
 msgstr "Percorre os locais em sequência."
 
@@ -1787,6 +1793,9 @@ msgstr "HP e MP serão lidos novamente com a tecla: {why}"
 msgid "HP isn't coming back while resting ({pct}%) - fighting on"
 msgstr ""
 "O HP não está se recuperando durante o descanso ({pct}%) - continuando a luta"
+
+msgid "HP stayed under {pct}% - leaving the fight: hearthstone to town"
+msgstr "o HP ficou abaixo de {pct}% — saindo da luta: hearthstone para a cidade"
 
 msgid ""
 "HP stayed under {pct}% for {secs} seconds - stopping so you can take over"
@@ -3514,6 +3523,9 @@ msgstr "Primeiro, pare todos os bots em execução e depois atualize."
 msgid "Stop if broken gear ca&n't be repaired"
 msgstr "Parar se o equipamento quebrado &não puder ser reparado"
 
+msgid "Stop so I can take over"
+msgstr "Parar para eu assumir"
+
 msgid "Stop the bot first."
 msgstr "Pare o bot primeiro."
 
@@ -3525,9 +3537,6 @@ msgstr "Parar o plano"
 
 msgid "Stop when &Vitality is down to (0: until it runs out):"
 msgstr "Parar quando a &vitalidade chegar a (0: até acabar):"
-
-msgid "Stop when HP stays &low"
-msgstr "Parar se o HP permanecer &baixo"
 
 msgid "Stop when the day's drop &time runs out"
 msgstr "Parar quando acabar o &tempo de coleta do dia"
@@ -4418,6 +4427,9 @@ msgstr ""
 msgid "When"
 msgstr "Quando"
 
+msgid "When HP stays &low:"
+msgstr "Quando o HP continuar &baixo:"
+
 msgid "When an &item runs low"
 msgstr "Quando um &item estiver acabando"
 
@@ -4701,6 +4713,9 @@ msgstr "de volta à área de coleta"
 msgid "back to {map}"
 msgstr "de volta a {map}"
 
+msgid "back to {map} after fleeing a lost fight"
+msgstr "de volta a {map} depois de fugir de uma luta perdida"
+
 msgid "back to {map} after {why}"
 msgstr "de volta a {map} após {why}"
 
@@ -4950,6 +4965,9 @@ msgstr "não foi possível concluir os resultados: {err}"
 
 msgid "couldn't finish the run ({where}): {err}"
 msgstr "não foi possível concluir a execução ({where}): {err}"
+
+msgid "couldn't get away - fighting on"
+msgstr "não deu para fugir — continuando a luta"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "não foi possível voltar a {place}: {why}"
@@ -5249,6 +5267,14 @@ msgstr "peixe"
 
 msgid "fishing lake"
 msgstr "lago de pesca"
+
+msgid "fled too many lost fights"
+msgstr "fugiu de lutas perdidas demais"
+
+msgid ""
+"fled {n} times in {m} minutes - this map is too hard for now; stopping here"
+msgstr ""
+"fugiu {n} vezes em {m} minutos — este mapa está difícil demais por enquanto; parando aqui"
 
 msgid ""
 "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
@@ -5730,6 +5756,11 @@ msgstr "nenhum guarda aqui — indo para a cidade mais próxima, {map}"
 
 msgid "no guard to fight at {village} - trying another village"
 msgstr "nenhum guarda para enfrentar em {village} — tentando outra vila"
+
+msgid ""
+"no hearthstone on a key or in the bag - a fight that goes badly is fought on"
+msgstr ""
+"nenhuma hearthstone em uma tecla ou na bolsa — uma luta que vai mal continua"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "nenhuma entrada conhecida para a masmorra {name}"
@@ -8041,3 +8072,6 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Experience cards"
 #~ msgstr "Cartões de experiência"
+
+#~ msgid "Stop when HP stays &low"
+#~ msgstr "Parar se o HP permanecer &baixo"
