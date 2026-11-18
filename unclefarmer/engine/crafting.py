@@ -25,8 +25,10 @@ gang", "Enter the inner hall of the gang", "Allied gangs", "all gangs".
 Nothing here spends below the arnebia reserve (profile gem_keep_arnebia), and "check only" walks
 there, reads the menus and reports what it would do without pressing anything that costs.
 
-A combine that works gives NO shard back; only a broken gem leaves one (the next round's boost
-shard, or 4 of them a new gem). So nothing here may count on a shard coming back: a lucky streak
+A combine that works gives NO shard back; only a broken gem leaves one. From level 2 that shard is
+kept for the +20% (worth more there than a quarter of a gem: seen live 2026-11-18, a batch also uses
+the shards its own failures leave); shards become gems at level 1, at the level asked for, and once
+nothing else can be done with them. So nothing here may count on a shard coming back: a lucky streak
 leaves none, and the boost box ("add 1 ... Shard") must not stay ticked once the last boost shard
 is gone - the game then makes nothing. Every try and every round is judged by what the bag shows
 afterwards (_colour_state): a try the game didn't carry out is no "failed" try, and a round that
@@ -381,8 +383,9 @@ def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bo
         if each <= 0:
             _no_arnebia(b, gem, fee, blocked)
             break
-        # a boost shard only exists after a gem broke: never ask for one the bag doesn't hold
-        want_boost = boost and level >= 2 and town.counts(b).get(shard.lower(), 0) > 0
+        # a single synthesis is refused with a boost shard the bag doesn't hold; a batch uses
+        # whatever is there, the shards its own failures leave included
+        want_boost = boost and level >= 2 and (not protect or town.counts(b).get(shard.lower(), 0) > 0)
         was = state()
         if protect:
             if not _synthesize_one(b, want_boost, shard, section, where, blocked):
@@ -402,7 +405,7 @@ def raise_gems(b: Bot, colour: str, level: int, k: int, boost: bool, protect: bo
             break
         done += 1 if protect else each
     b.close_dialogs()
-    return _tally(b, gem, nxt, shard if boost and level >= 2 else None, before, done)
+    return _tally(b, gem, nxt, shard if boost and level >= 2 else None, before, done, protect)
 
 
 def _no_arnebia(b: Bot, gem: str, fee: int, blocked: list[str] | None) -> None:
@@ -412,9 +415,11 @@ def _no_arnebia(b: Bot, gem: str, fee: int, blocked: list[str] | None) -> None:
         blocked.append(why)
 
 
-def _tally(b: Bot, gem: str, nxt: str, shard: str | None, before: Mapping[str, int], done: int) -> tuple[int, int]:
+def _tally(b: Bot, gem: str, nxt: str, shard: str | None, before: Mapping[str, int], done: int,
+           protect: bool) -> tuple[int, int]:
     """What `done` tries came to, from the bag before and now: (made, lost), said. shard: the boost
-    shard, whose count before and after shows how many of them the tries took."""
+    shard, whose count before and after, with the one each unprotected failure leaves, shows how
+    many of them the tries took."""
     after = town.counts(b)
     made = after.get(nxt.lower(), 0) - before.get(nxt.lower(), 0)
     lost = max(0, done - made)
@@ -422,8 +427,9 @@ def _tally(b: Bot, gem: str, nxt: str, shard: str | None, before: Mapping[str, i
         b.log(_("{gem}: {tries} tries, {made} {nxt} made, {lost} failed", gem=gem, tries=done, made=made,
                 nxt=nxt, lost=lost))
         if shard:
-            b.log(_("{shard}: {was} before, {now} after", shard=shard, was=before.get(shard.lower(), 0),
-                    now=after.get(shard.lower(), 0)))
+            was, now = before.get(shard.lower(), 0), after.get(shard.lower(), 0)
+            b.log(_("{shard}: {was} before, {now} after, {used} used", shard=shard, was=was, now=now,
+                    used=max(0, was - now + (0 if protect else lost))))
     return made, lost
 
 
@@ -467,6 +473,7 @@ def _batch_or_less(b: Bot, job: _Batch, each: int, state: Callable[[], S]) -> in
         if each < 1:
             return 0
         b.log(_("nothing came of that - asking for {n} {gem} tries instead", n=each, gem=job.gem))
+        job.boost = job.boost and town.counts(b).get(job.shard.lower(), 0) > 0   # the box may be why
         b.close_dialogs()
         open_craftsman(b, "gem_craftsman", job.where)
         if b.choose(job.section) is None or not b.wait_dialog(3.0) or _gem_page(b, job.gem, job.row) is None:
@@ -863,12 +870,28 @@ class _BagJob:
         return ""
 
 
+def _for_boost(level: int, top: int, boost: bool) -> bool:
+    """A shard of this level is kept for the +20%, with `top` the highest level being made."""
+    return boost and 2 <= level < top
+
+
+def _shard_level(name: str) -> int:
+    m = town.GEM_SHARD.match(name)
+    return int(m.group(1)) if m else 0
+
+
 def _bag_round(b: Bot, job: _BagJob, blocked: list[str]) -> None:
-    """One round of make_most: every shard of the chosen colours into gems of its level, then each
-    colour up, level by level. Leave higher levels waiting while this level can still be worked."""
-    shards = {name: 10 ** 9 for name in town.counts(b) if town.gem_of(name) and job.wants(colour_of(name))}
+    """One round of make_most: the shards of the chosen colours into gems of their level (those kept
+    for the +20% only once the round finds nothing else to do), then each colour up, level by level.
+    Leave higher levels waiting while this level can still be worked."""
+    before = _bag_gems(b)
+    every = {name: 10 ** 9 for name in town.counts(b) if town.gem_of(name) and job.wants(colour_of(name))}
+
+    def opener() -> str:
+        return open_craftsman(b, "gem_craftsman", job.where)
+    shards = {n: k for n, k in every.items() if not _for_boost(_shard_level(n), job.up_to, job.boost)}
     if shards:
-        town.make_gems(b, shards, opener=lambda: open_craftsman(b, "gem_craftsman", job.where))
+        town.make_gems(b, shards, opener=opener)
     for col in job.colours_now(b):
         for lv in range(1, job.up_to):
             k = max(0, gem_levels(b, col).get(lv, 0) - job.keep) // 3
@@ -879,8 +902,13 @@ def _bag_round(b: Bot, job: _BagJob, blocked: list[str]) -> None:
             # A batch (or a protected failure) can leave gems waiting at this level.
             # Re-enter through the outer round so shards and live inventory are checked again.
             if (gem_levels(b, col).get(lv, 0) - job.keep >= 3
-                    or shard_levels(b, col).get(lv, 0) >= town.SHARDS_PER_GEM):
+                    or (shard_levels(b, col).get(lv, 0) >= town.SHARDS_PER_GEM
+                        and not _for_boost(lv, job.up_to, job.boost))):
                 break
+    have = town.counts(b)
+    kept = {n: k for n, k in every.items() if n not in shards and have.get(n, 0) >= town.SHARDS_PER_GEM}
+    if kept and _bag_gems(b) == before:      # nothing to boost now: they are worth a gem after all
+        town.make_gems(b, kept, opener=opener)
 
 
 def _idle_round(b: Bot, left: str, idle: int) -> bool:
@@ -1030,7 +1058,8 @@ def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
     colour, level = job.colour, job.level
     did = 0
     shards = shard_levels(b, colour)
-    wanted = {"Level %d %s Shard" % (lv, colour): 10 ** 9 for lv in range(1, level + 1) if shards.get(lv, 0) >= 4}
+    wanted = {"Level %d %s Shard" % (lv, colour): 10 ** 9 for lv in range(1, level + 1)
+              if shards.get(lv, 0) >= 4 and not _for_boost(lv, level, job.boost)}
     if wanted:
         did += town.make_gems(b, wanted, opener=job.opener)
     for lv in range(1, level):
@@ -1048,6 +1077,12 @@ def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
             did += made + lost
         if b.stop_event.is_set():
             raise Stopped(_("stopped"))
+    if not did:                       # nothing to boost now: the kept shards are worth a gem after all
+        shards = shard_levels(b, colour)
+        kept = {"Level %d %s Shard" % (lv, colour): 10 ** 9 for lv in range(2, level)
+                if shards.get(lv, 0) >= 4 and _for_boost(lv, level, job.boost)}
+        if kept:
+            did += town.make_gems(b, kept, opener=job.opener)
     return did
 
 

@@ -8,6 +8,13 @@
   door. It now goes round by the Gang Entrance, back to where it started. If the Entrance doesn't
   let it in, it says so and stays where it is.
 
+**Gem Maker: shards go to the +20%**
+
+- From level 2, shards are now kept for the +20% instead of being made into gems four at a time,
+  and the box is ticked even when the bag has none yet: a batch also uses the shards its own
+  failures leave (seen in the game). They still become gems at the level asked for, and when
+  nothing else can be done with them. Each level's result says how many it used.
+
 **Gem Maker: safer batches**
 
 - Nothing is spent until the craftsman's page names the gem being made. On a slow answer the bot

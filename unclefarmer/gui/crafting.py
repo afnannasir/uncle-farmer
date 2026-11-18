@@ -229,7 +229,8 @@ class GemMakerDialog(ToolDialog):
         for _round in range(6):
             moved = False
             for lv in sorted(shards):
-                if lv <= up_to and shards[lv] >= 4:
+                kept = boost and 2 <= lv < up_to and gems.get(lv, 0) - keep >= 3     # for the +20%
+                if lv <= up_to and shards[lv] >= 4 and not kept:
                     gems[lv] = gems.get(lv, 0) + shards[lv] // 4
                     shards[lv] %= 4
                     moved = True
@@ -237,10 +238,10 @@ class GemMakerDialog(ToolDialog):
                 tries = int(max(0, gems.get(lv, 0) - keep) // 3)
                 if not tries:
                     continue
-                boosted = boost and lv >= 2 and shards.get(lv, 0) > 0
-                if boosted:
-                    shards[lv] -= min(tries, shards[lv])          # a boost shard goes in each try
-                chance = 0.7 if boosted else 0.5
+                helped = min(tries, shards.get(lv, 0)) if boost and lv >= 2 else 0     # a shard goes in each try
+                if helped:
+                    shards[lv] -= helped
+                chance = 0.5 + 0.2 * helped / tries
                 made, failed = tries * chance, tries * (1 - chance)
                 # success: 3 gems become 1 a level up; failure: one of the 3 shatters into a shard
                 # (a protection rune saves it)

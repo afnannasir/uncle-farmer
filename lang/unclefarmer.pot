@@ -7613,7 +7613,7 @@ msgstr ""
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr ""
 
-msgid "{shard}: {was} before, {now} after"
+msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
 msgid "{skill} at {where}"

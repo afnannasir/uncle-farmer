@@ -8003,8 +8003,8 @@ msgstr "{shard} custa {price} no mercado, acima do seu limite de {limit}"
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} Arnebia"
 
-msgid "{shard}: {was} before, {now} after"
-msgstr "{shard}: {was} antes, {now} depois"
+msgid "{shard}: {was} before, {now} after, {used} used"
+msgstr "{shard}: {was} antes, {now} depois, {used} usados"
 
 msgid "{skill} at {where}"
 msgstr "{skill} em {where}"
@@ -8149,3 +8149,6 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "This many"
 #~ msgstr "Esta quantidade"
+
+#~ msgid "{shard}: {was} before, {now} after"
+#~ msgstr "{shard}: {was} antes, {now} depois"

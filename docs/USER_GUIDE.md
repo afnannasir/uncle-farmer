@@ -862,6 +862,8 @@ It tells you why it stopped. Possible reasons include:
 - No more shards are available from the storehouse or Shard Broker.
 - The Gem Craftsman fails to make anything for three rounds in a row, even though there are still combinations available.
 
+From level 2, the shards a failed combine leaves are kept for the +20% on the next combines, including those of the same batch. They become gems only at the level you asked for, or when nothing else can be done with them.
+
 Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
 
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.

@@ -7993,8 +7993,8 @@ msgstr ""
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} arnebia"
 
-msgid "{shard}: {was} before, {now} after"
-msgstr "{shard}: pehle {was}, baad mein {now}"
+msgid "{shard}: {was} before, {now} after, {used} used"
+msgstr "{shard}: pehle {was}, baad mein {now}, {used} istemal hue"
 
 msgid "{skill} at {where}"
 msgstr "{skill}, {where} par"
@@ -8252,3 +8252,6 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."
 #~ msgstr ""
 #~ "jab din ka drop time khatam ho jaye; jab basta un cheezon se bhar jaye jo aap rakhte hain; aap ki ijazat wali aakhri maut ke baad; jab toota hua equipment theek na ho sake. Yeh har kirdaar ke liye alag, Kirdaar, Tarteeb aur Basta aur saman mein set hote hain."
+
+#~ msgid "{shard}: {was} before, {now} after"
+#~ msgstr "{shard}: pehle {was}, baad mein {now}"
