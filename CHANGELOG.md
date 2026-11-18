@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Leave demonized elites alone**
+
+- A new choice in Character settings, Advanced, Fighting: **Leave demonized elites alone**, off by
+  default. The game's "demonized" elites (demonized Boar, black bear, Water Elf...) are much
+  stronger than the monsters around them, and one the same level as the character can kill it,
+  depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
+  fought. The demonized field bosses are kept away from as bosses, as before.
+
 **Toolboxes: one per warning again (a 1.2.0 bug)**
 
 - Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when

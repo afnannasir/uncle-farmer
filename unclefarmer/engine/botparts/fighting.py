@@ -26,6 +26,7 @@ LEFT_OUT = {
     "kind": N_("of a kind that can't be attacked here"),
     "names": N_("left out by the only-fight / never-fight names"),
     "boss": N_("too close to a boss"),
+    "elite": N_("demonized elites, left alone as the character settings say"),
     "area": N_("outside the farming area"),
     "avoid": N_("in an elite or boss zone we keep out of"),
     "far": N_("further to walk than the chase range"),
@@ -607,6 +608,8 @@ class FightingMixin(Parts):
             return "names"
         if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, keep)):
             return "boss"
+        if e["id"] not in hitting and self.p.get("skip_demonized_elites") and bosses.is_demonized_elite(e):
+            return "elite"      # one that attacks us is still fought: standing there is worse
         if area and e["id"] not in hitting and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
             return "area"
         if any(r[0] <= e["x"] <= r[2] and r[1] <= e["y"] <= r[3] for r in avoid_rects):

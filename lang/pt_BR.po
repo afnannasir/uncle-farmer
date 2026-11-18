@@ -2114,6 +2114,9 @@ msgstr "Leva a: {maps}"
 msgid "Leave as it is"
 msgstr "Manter como está"
 
+msgid "Leave demon&ized elites alone (they still get fought when they attack)"
+msgstr "Deixar os elites demon&izados em paz (ainda luta se eles atacarem)"
+
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
@@ -5108,6 +5111,10 @@ msgstr "morreu, mas o menu de renascimento não abriu — renasça manualmente"
 
 msgid "defence break"
 msgstr "quebra de defesa"
+
+msgid "demonized elites, left alone as the character settings say"
+msgstr ""
+"elites demonizados, deixados em paz como dizem as configurações do personagem"
 
 msgid "died and came back outside {map}"
 msgstr "morreu e voltou para fora de {map}"

@@ -75,6 +75,15 @@ def is_boss(e: dict[str, Any]) -> bool:
     return e.get("kind") == "monster" and " ".join((e.get("name") or "").split()).lower() in names()
 
 
+def is_demonized_elite(e: dict[str, Any]) -> bool:
+    """A "demonized" monster that isn't one of the field bosses: the game's demonized elites
+    (demonized Boar, black bear, Water Elf...), much stronger than the monsters around them. Some
+    players leave them alone (skip_demonized_elites): one the same level as the character can kill
+    it, depending on its gear."""
+    name = " ".join((e.get("name") or "").split()).lower()
+    return e.get("kind") == "monster" and name.startswith("demonized ") and name not in names()
+
+
 def in_sight(snap: dict[str, Any]) -> list[dict[str, Any]]:
     """The living bosses in sight."""
     return [e for e in snap.get("entities", ()) if e.get("hp", 0) > 0 and is_boss(e)]
