@@ -36,7 +36,7 @@ LEVEL_REFUSAL = re.compile(r"requires level (\d+) or above", re.I)
 
 def ways_out(b: object) -> WaysOut:
     """{map we can't plan out of: (the map its way out leads to, the cell)}, learned this run."""
-    got: object = getattr(b, "ways_out", None)
+    got: object = getattr(b, "ways_out", {})
     return cast(WaysOut, got) if isinstance(got, dict) else {}
 
 
@@ -52,7 +52,7 @@ def rides_free(b: object) -> bool:
 def rides_too_high(b: object) -> dict[int, int]:
     """{transport id: the level the game said it needs}, for the rides that turned us away this
     run because of the character's level: left out of every plan for the rest of the run."""
-    got: object = getattr(b, "rides_too_high", None)
+    got: object = b.__dict__.get("rides_too_high")    # kept on the bot: what is noted must stay
     if not isinstance(got, dict):
         got = {}
         b.__dict__["rides_too_high"] = got
