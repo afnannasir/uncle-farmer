@@ -378,6 +378,11 @@ def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over
         return FAILED
     if not verified:
         g.failed_at = clock_for(bot).time()
+        if left is None:
+            # Whether the game used the toolbox is unknown. Kept, these warnings would bring a
+            # toolbox out every 600 s for good; the game warns again if the gear is still worn,
+            # and broken gear is looked for anyway.
+            g.warned.clear()
         bot.log(_("couldn't confirm the repair with a {tool} - not marked repaired", tool=name), speak=True)
         return FAILED
     g.warned.clear()
@@ -389,10 +394,14 @@ def _use_toolbox(bot: Bot, name: str, key: str | None, count: int, can_hand_over
 
 
 def _verify(bot: Bot, name: str, count: int, broken_before: set[int]) -> tuple[bool, int | None, list[str]]:
-    """Wait for server effects, never treating an empty/unreadable gear list as repaired.
+    """Wait for the server's answer to a confirmed repair: (repaired, toolboxes left, still broken).
 
-    The agent has no durability reading for merely worn gear: consumption by a
-    fitting toolbox plus a valid non-broken snapshot is the available evidence.
+    The agent has no durability reading for merely worn gear, so the evidence is the game using
+    the toolbox up (with nothing still broken), or every item broken before now mended. A used
+    toolbox counts whatever its level limit: the limit is the equipment's level, not the
+    character's, and the game mends what it can (a level-69 character's level-60 gear is mended
+    by a Small Toolbox). Requiring the limit to cover the character's level kept the warnings
+    after every such repair, and check() spent another toolbox every 600 s all night.
     """
     left: int | None = None
     still: list[str] = []
@@ -404,8 +413,8 @@ def _verify(bot: Bot, name: str, count: int, broken_before: set[int]) -> tuple[b
         still = [r.get("name") or "?" for r in rows if r["equipped"] < 0] if valid else []
         # not broken (broken() counts below 0 as broken): the server's equipped value may be 0
         fixed: set[int | None] = {r.get("uid") for r in rows if r["equipped"] >= 0} if valid else set()
-        if valid and fixed and not still and ((left is not None and left < count and covers(limit_of(name), level(bot)))
-                                             or bool(broken_before) and broken_before <= fixed):
+        used = left is not None and left < count
+        if not still and (used or (valid and bool(broken_before) and broken_before <= fixed)):
             return True, left, []
         if attempt < 19:
             bot.sleep(0.15)

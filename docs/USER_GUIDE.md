@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -373,6 +373,15 @@ It finishes any fight first, leaves a chest that is within the boss distance of 
 
 You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
 
+### Demonized elites
+
+Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
+stronger than the monsters around them; one the same level as your character can still kill it,
+depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
+**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
+monsters left alone. One that attacks you is still fought, since standing there would be worse.
+
 ### Drop time and the next level
 
 Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:
@@ -380,13 +389,33 @@ Under **Character → Settings → Fighting**, the group **Drop time and experie
 - **Stop when the day's drop time runs out** (on by default), with **Drop time to save (minutes)**: the run ends while that much of the day's public area drop time is still left. With 0 it uses all of it.
 - **Stop before the next level** (off by default), with **Stop when the next level needs less than (experience)** (100,000 by default): for characters you keep at their level. The character sheet says how much experience the next level still needs, and Uncle Farmer reads it after every kill. Once it is under your number, it says "the next level needs only 85000 experience - going somewhere safe and stopping", leaves the monsters and ends the run. At the top level there is nothing to read, and it never stops for this.
 
-It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back.
+It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back. The drop time is checked the same
+way: when what is left is already down to what you save, it says "the drop time is nearly used up
+(... min left) - not starting to farm" and stays where it is.
 
 A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
 
 Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
 
 A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
+
+### When HP stays low
+
+On the **Low HP** tab of the character settings, **When HP stays low** says what to do when HP stays
+under **Low HP (%)** (30 by default) for **For (seconds)** (3 by default), whatever the potions and heal
+skills did:
+
+- **Fight on** (the default): the bot keeps fighting. If the character dies, it comes back as the
+  Death settings say.
+- **Stop so I can take over**: the run stops on the spot, for you to play.
+- **Go to town with the hearthstone, heal and come back (while farming)**: on the farming map, the
+  bot drops the fight and uses the hearthstone. In town it waits until HP is back to 90% (three
+  minutes at most, drinking potions as usual), looks at the restock rules, and goes back to farm.
+  A hit stops the hearthstone's cast, so a hearthstone that doesn't take the character home after
+  three tries leaves it fighting on, and it isn't tried again for a minute. With no hearthstone on
+  a key or in the bag, the bot says so once and fights on: add the Hearthstone to the restock rules.
+  The third flee within 30 minutes ends the run in town: the map is too hard for the character for
+  now. This never happens in a dungeon (its visit can't be left), on a trip or in town.
 
 ### Settings for each character
 
@@ -809,7 +838,7 @@ The Gem Maker has two jobs.
 
 **Make a gem**
 
-Choose the gem, the level you want, and the quantity to make. You can also choose to make as many as possible.
+Choose the gem, the level you want, and the quantity: this many more, as many as possible, or until the bag holds this many (the gems you already have count, so starting again after an interruption doesn't make too many).
 
 The tool uses the gems and shards already in your bag. If it needs more Level 1 shards, it fetches them from your storehouse or buys them from the Shard Broker.
 
@@ -833,7 +862,26 @@ It tells you why it stopped. Possible reasons include:
 - No more shards are available from the storehouse or Shard Broker.
 - The Gem Craftsman fails to make anything for three rounds in a row, even though there are still combinations available.
 
+From level 2, the shards a failed combine leaves are kept for the +20% on the next combines, including those of the same batch. They become gems only at the level you asked for, or when nothing else can be done with them.
+
+Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
+
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.
+
+### Gem Breaker
+
+Open **Tools, Gem Breaker** or press **Ctrl+Shift+B**. It uses the Gem Craftsman's **break into shards**. Breaking can't be undone, so nothing is ticked at first, the window shows what would go, and **Start** asks once more.
+
+A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 Level 1 shards. So a Level 2 gem ends up as 9 shards and a Level 3 gem as 27. That is less than it took to make them.
+
+- **Gems to break**: the colours that may be broken.
+- **Highest gem level to break**: gems above it are left alone. It starts at 2, so the gems you put in your equipment are safe until you raise it. Gems at or below it are broken all the way down.
+- **Break down to**: shards, or gems of a level you choose.
+- **Keep at least**: how many gems of each colour and level stay.
+- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes, their own highest level and their own number to keep, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
+- **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
+
+What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
 
 ### Equipment Enhancer
 
@@ -1064,9 +1112,11 @@ The first command starts gathering. The second checks what the bot would do. The
 ### Market searcher and buyer
 
 **Tools, Market searcher and buyer** (Ctrl+Shift+K) opens a window for the player market, the
-Ansible Space-time Marketplace. It stays open beside the game.
+Ansible Space-time Marketplace. It stays open beside the game and has two tabs (Ctrl+Tab
+switches): **Search** and **Results**. After each search or refresh the character stays at the
+marketplace, so the next search starts at once.
 
-**The market list.** The top of the window lists what is for sale. Choose a category (My list,
+**The market list.** The Search tab lists what is for sale. Choose a category (My list,
 All items, or one of the game's 14 categories), then go through the items: each shows how many
 lots there are (and how many open soon), how many in all, the cheapest and the usual price, and
 how many sellers. Names are shown the way your game's language pack shows them.
@@ -1077,10 +1127,12 @@ two. Tick **Also count sellers** to fill the Sellers column too. That looks at e
 details, so the first time it takes about ten minutes; every seller seen is remembered, so later
 refreshes only look up new lots. Each game server (S1, S2) has its own list.
 
-**Searching.** Press Enter on an item to find all its lots, or choose a **Search kind**:
+**Searching.** Press Enter on an item to find all its lots, or choose what to **Search for**.
+Only the boxes that kind uses are shown:
 
-- **By item:** every lot of the item picked or of the names typed in **Custom name** (several:
-  `Lesser Blood | Worthless Blood`). Use Custom name for anything listed after your last refresh.
+- **By item:** every lot of the item picked, or of the names typed in **Or type a name**
+  (several: `Lesser Blood | Worthless Blood`; Enter searches). Type a name for anything listed
+  after your last refresh.
 - **Cheapest first:** the same, in the game's price order. With **Most a unit** set, it stops
   at the first page whose lots all cost more.
 - **By seller ID:** every lot those sellers have on sale (several IDs: `1234, 5678`). The bot
@@ -1089,8 +1141,10 @@ refreshes only look up new lots. Each game server (S1, S2) has its own list.
   remembered in the list.
 - **Browse a category:** every lot of the category chosen at the top.
 
-**Pages at most** limits how far a search reads (0 = all). What is found shows up in **Results**
-while the bot reads; **Stop** ends a search early and keeps what was found. Every item you search
+**Pages at most** (Cheapest first and Browse) limits how far a search reads (0 = all). A search
+moves you to the **Results** tab. Lots show up there while the bot reads, each put in at its place
+by price, so the rows you are on never move away; **Status** says how far it has read, and the
+total is spoken when the search ends. **Stop** ends a search early and keeps what was found. Every item you search
 for goes into **My list**; **Remember this item** adds one without searching.
 
 **Buying.** In Results, tick each lot you want with Space, and set **How many of the selected
@@ -2198,6 +2252,15 @@ If you'd like to translate Uncle Farmer into another language, you can start wit
    `uv run python -m unclefarmer --strings`
 
 Your translation should then appear in Uncle Farmer's **Settings → Language** list.
+
+### Spanish and Turkish translations
+
+Uncle Farmer includes Spanish (`lang\es.po`) and Turkish (`lang\tr.po`) translations. Game names
+(the hearthstone, the storehouse, the Shard Broker, the Forger, the Gem Craftsman and so on) follow
+the game's own Spanish and Turkish language packs, so they match what the game shows. Each Alt+letter
+shortcut is the same letter as in English; when the translated word has no such letter, it is shown
+in brackets at the end, for example `(&S)`. Trusted-player commands and script words stay in English,
+because the bot only understands them that way.
 
 ### Urdu translation
 

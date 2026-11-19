@@ -17,6 +17,7 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      artificer, shard_market, fish_buyer, herb_buyer, ore_buyer...
     restock                          top up the profile's restock list now (storehouse, then shops)
     gem_maker [check]                run the Gem Maker as set in Tools, Gem Maker (check: only look)
+    gem_breaker [check]              run the Gem Breaker as set in Tools, Gem Breaker (check: only look)
     enhance [check]                  run the Equipment Enhancer as set in Tools (check: only look)
     chores [check] [only=a,b]        the day's chores as set in Tools, Daily chores, each once a game
                                      day: bank, bounty, pet_rebirth, donation, construction, secret_room
@@ -108,7 +109,7 @@ def _at(rest: str, n: int):
 
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "enhance", "chores", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
@@ -854,7 +855,7 @@ PREPARE = {
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
-    "gem_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
+    "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "market": _prep_market,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
@@ -1121,7 +1122,7 @@ class Runner:
     def _do_activity(self, node: Node, b: Bot, o: dict[str, Any]):
         activities.run(b, node.kind, o.get("check", False), o)
 
-    _do_gem_maker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
+    _do_gem_maker = _do_gem_breaker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
     _do_dungeon = _do_sell_collection = _do_activity
 
     def _do_market(self, node: Node, b: Bot, o: dict[str, Any]):

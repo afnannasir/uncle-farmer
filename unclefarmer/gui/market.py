@@ -1,27 +1,30 @@
 """Tools, Market searcher and buyer (engine/market.py does the work).
 
-The window stays open beside the game. It shows the market list (what is for sale, by category),
-starts a search or a refresh as a job on the game, shows the finds while that job reads (it writes
-market/status.json after every page; a timer here reads it), and buys the lots ticked in the
-results, each found again by its listing id. Nothing is bought without Buy and a Yes to its total.
+The window stays open beside the game, in two tabs. Search: what to look for (only the boxes the
+chosen kind uses are shown), the market list by category, and its Refresh. Results: the finds as the
+job reads them (it writes market/status-<pid>.json after every page; a timer here reads it), with
+new finds put in at their place so the list never jumps under the screen reader, then buying the
+ticked lots, each found again by its listing id. Nothing is bought without Buy and a Yes to its total.
+The bot stays at the marketplace after each job, so the next search starts at once.
 """
 
 from __future__ import annotations
 
+import bisect
 import csv
 import os
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any
 
 import wx
 
-from .. import gamelang, jsonio as json
+from .. import gamelang, jsonio as json, speech
 from ..engine import market
 from ..engine.market import ALL, CATEGORIES, ListRow, Lot, Order, Search
 from ..i18n import _
 from ..link import AgentLink, server_name
-from .common import ask, error, first_selected, info, labeled, modal, save_file, select_row
+from .common import W, ask, error, first_selected, info, labeled, modal, page, save_file, select_row, tabs
 
 if TYPE_CHECKING:
     from .mainparts.base import FrameParts
@@ -30,10 +33,23 @@ KINDS = ("item", "cheapest", "seller", "browse")
 MY_LIST, ALL_ITEMS = -2, -3             # the category list's first two entries
 SAVED_MOST = 100
 POLL_MS = 700
+STAY = "end_at here\n"              # market jobs end at the marketplace: no walk back between searches
 
 
 def kind_names() -> list[str]:
     return [_("By item"), _("Cheapest first"), _("By seller ID"), _("Browse a category")]
+
+
+# which boxes each search kind uses (the others are hidden, so Tab only meets what matters)
+USES = {"item": {"items", "custom", "price"},
+        "cheapest": {"items", "custom", "price", "pages"},
+        "seller": {"seller"},
+        "browse": {"price", "pages"}}
+
+
+def result_key(lot: Lot, by_seller: bool) -> tuple[int, ...]:
+    """Results order: cheapest unit price first (by seller, then price, for a seller search)."""
+    return (lot.seller or 0, lot.price, lot.id) if by_seller else (lot.price, lot.id)
 
 
 def money(n: int) -> str:
@@ -101,89 +117,39 @@ class MarketFrame(wx.Frame):
 
     def __init__(self, host: FrameParts, pid: int, character: str | None) -> None:
         super().__init__(host, title=_("Market searcher and buyer - {name}", name=character or _("game")),
-                         size=wx.Size(900, 760))
+                         size=wx.Size(820, 640))
         self.host, self.pid = host, pid
         self.server = self._server()
         self.rows: list[ListRow] = []
         self.head: dict[str, Any] = {}
         self.shown_rows: list[ListRow] = []
         self.lots: list[Lot] = []
+        self.by_seller = False                   # the results' order (result_key)
         self.qty: dict[int, int] = {}            # listing id -> how many to buy
         self.ticked: set[int] = set()
         self.saved = load_saved()
         self.status_seen = 0.0
         self.job = ""                            # the job this window started and waits on
+        self.told = 0.0                          # the start of the last job whose end was said
 
-        panel = wx.Panel(self)
-        box = wx.BoxSizer(wx.VERTICAL)
-        self.category = labeled(panel, box, _("&Category:"), lambda w: wx.Choice(w))
-        self.items = labeled(panel, box, _("&Items for sale (Enter searches):"),
-                             lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL), 2)
-        for i, (title, width) in enumerate([(_("Item"), 260), (_("Lots"), 120), (_("In all"), 80),
-                                            (_("Cheapest"), 130), (_("Usual"), 90), (_("Sellers"), 70)]):
-            self.items.InsertColumn(i, title, width=width)
-        self.list_age = labeled(panel, box, _("Market list:"),
-                                lambda w: wx.TextCtrl(w, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_NO_VSCROLL,
-                                                      size=wx.Size(-1, 40)))
-        row = wx.BoxSizer(wx.HORIZONTAL)
-        self.refresh = wx.Button(panel, label=_("&Refresh the market list"))
-        self.count_sellers = wx.CheckBox(panel, label=_("Also count se&llers (slow the first time)"))
-        row.Add(self.refresh, 0, wx.RIGHT, 12)
-        row.Add(self.count_sellers, 0, wx.ALIGN_CENTER_VERTICAL)
-        box.Add(row, 0, wx.TOP | wx.BOTTOM, 6)
-
-        self.kind = wx.RadioBox(panel, label=_("Search &kind"), choices=kind_names(), majorDimension=4)
-        box.Add(self.kind, 0, wx.EXPAND | wx.TOP, 4)
-        self.custom = labeled(panel, box, _("C&ustom name (several: a | b):"), lambda w: wx.TextCtrl(w))
-        self.seller_ids = labeled(panel, box, _("Seller &IDs (several: 1234, 5678):"),
-                                  lambda w: wx.ComboBox(w, style=wx.CB_DROPDOWN))
-        row = wx.BoxSizer(wx.HORIZONTAL)
-        self.max_price = labeled(panel, row, _("&Most a unit (0 = any):"),
-                                 lambda w: wx.SpinCtrl(w, min=0, max=2000000000, initial=0))
-        self.pages = labeled(panel, row, _("&Pages at most (0 = all):"),
-                             lambda w: wx.SpinCtrl(w, min=0, max=500, initial=0))
-        box.Add(row, 0, wx.TOP, 4)
-        row = wx.BoxSizer(wx.HORIZONTAL)
-        self.search_btn = wx.Button(panel, label=_("&Search"))
-        self.stop_btn = wx.Button(panel, label=_("S&top"))
-        self.remember_btn = wx.Button(panel, label=_("Remem&ber this item"))
-        for b in (self.search_btn, self.stop_btn, self.remember_btn):
-            row.Add(b, 0, wx.RIGHT, 8)
-        box.Add(row, 0, wx.TOP | wx.BOTTOM, 6)
-        self.progress = labeled(panel, box, _("Pro&gress:"),
-                                lambda w: wx.TextCtrl(w, style=wx.TE_READONLY | wx.TE_MULTILINE, size=wx.Size(-1, 70)))
-        self.results = labeled(panel, box, _("&Results (Space ticks a lot to buy):"),
-                               lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL), 3)
-        self.results.EnableCheckBoxes(True)
-        for i, (title, width) in enumerate([(_("Item"), 230), (_("Quantity"), 70), (_("Unit price"), 90),
-                                            (_("Total"), 100), (_("Seller ID"), 80), (_("Category"), 110),
-                                            (_("Page"), 50), (_("Listed"), 150)]):
-            self.results.InsertColumn(i, title, width=width)
-        row = wx.BoxSizer(wx.HORIZONTAL)
-        self.buy_qty = labeled(panel, row, _("How &many of the selected lot:"),
-                               lambda w: wx.SpinCtrl(w, min=1, max=1000000, initial=1))
-        self.cap = labeled(panel, row, _("Spending &limit (0 = none):"),
-                           lambda w: wx.SpinCtrl(w, min=0, max=2000000000, initial=0))
-        box.Add(row, 0, wx.TOP, 4)
-        row = wx.BoxSizer(wx.HORIZONTAL)
-        self.buy_btn = wx.Button(panel, label=_("Bu&y the ticked lots"))
-        self.check_btn = wx.Button(panel, label=_("Check o&nly"))
-        self.csv_btn = wx.Button(panel, label=_("Save as CS&V"))
-        close = wx.Button(panel, label=_("Close"))
-        for b in (self.buy_btn, self.check_btn, self.csv_btn, close):
-            row.Add(b, 0, wx.RIGHT, 8)
-        box.Add(row, 0, wx.TOP, 6)
+        root = wx.Panel(self)
         outer = wx.BoxSizer(wx.VERTICAL)
-        outer.Add(box, 1, wx.EXPAND | wx.ALL, 10)
-        panel.SetSizer(outer)
+        self.nb = tabs(root)
+        self._search_tab()
+        self._results_tab()
+        outer.Add(self.nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 8)
+        close = wx.Button(root, wx.ID_CLOSE, _("Close"))
+        outer.Add(close, 0, wx.ALIGN_RIGHT | wx.ALL, 8)
+        root.SetSizer(outer)
 
+        self.kind.Bind(wx.EVT_CHOICE, lambda e: self.sync_kind())
         self.category.Bind(wx.EVT_CHOICE, lambda e: self.show_items())
         self.items.Bind(wx.EVT_LIST_ITEM_ACTIVATED, lambda e: self.search_item())
+        self.custom.Bind(wx.EVT_TEXT_ENTER, lambda e: self.start_search())
         self.refresh.Bind(wx.EVT_BUTTON, lambda e: self.start_scan())
-        self.kind.Bind(wx.EVT_RADIOBOX, lambda e: self.sync_kind())
         self.search_btn.Bind(wx.EVT_BUTTON, lambda e: self.start_search())
-        self.stop_btn.Bind(wx.EVT_BUTTON, lambda e: self.host.stop(self.pid))
         self.remember_btn.Bind(wx.EVT_BUTTON, lambda e: self.remember())
+        self.stop_btn.Bind(wx.EVT_BUTTON, lambda e: self.host.stop(self.pid))
         self.results.Bind(wx.EVT_LIST_ITEM_CHECKED, self.on_check)
         self.results.Bind(wx.EVT_LIST_ITEM_UNCHECKED, self.on_check)
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: self.show_qty())
@@ -201,11 +167,91 @@ class MarketFrame(wx.Frame):
         self.fill_sellers()
         self.sync_kind()
         self.timer.Start(POLL_MS)
-        if self.head.get("shipped") or not self.rows:
-            self.progress.SetValue(_("This is the list Uncle Farmer came with. Press Refresh the market list for "
-                                     "today's: the bot walks to the nearest marketplace and reads every category "
-                                     "(about a minute or two)."))
-        self.category.SetFocus()
+        self.kind.SetFocus()
+
+    # ------------------------------------------------------------ the two tabs
+    def _part(self, panel: wx.Window, box: wx.BoxSizer, label: str, make: Callable[[wx.Window], W],
+              proportion: int = 0) -> tuple[wx.BoxSizer, W]:
+        """A label and its control in a sizer of their own, so both hide together."""
+        sub = wx.BoxSizer(wx.VERTICAL)
+        ctrl = labeled(panel, sub, label, make, proportion)
+        box.Add(sub, proportion, wx.EXPAND)
+        return sub, ctrl
+
+    def _search_tab(self) -> None:
+        panel, box = page(self.nb, _("Search"))
+        self.search_panel, self.search_box = panel, box
+        self.kind = labeled(panel, box, _("Search &for:"), lambda w: wx.Choice(w, choices=kind_names()))
+        self.kind.SetSelection(0)
+        self.category = labeled(panel, box, _("&Category:"), lambda w: wx.Choice(w))
+        self.items_part, self.items = self._part(
+            panel, box, _("&Items for sale (Enter searches):"),
+            lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 220)), 1)
+        for i, (title, width) in enumerate([(_("Item"), 260), (_("Lots"), 110), (_("In all"), 80),
+                                            (_("Cheapest"), 120), (_("Usual"), 90), (_("Sellers"), 70)]):
+            self.items.InsertColumn(i, title, width=width)
+        self.custom_part, self.custom = self._part(panel, box, _("Or type a &name (several: a | b):"),
+                                                   lambda w: wx.TextCtrl(w, style=wx.TE_PROCESS_ENTER))
+        self.seller_part, self.seller_ids = self._part(panel, box, _("Seller &IDs (several: 1234, 5678):"),
+                                                       lambda w: wx.ComboBox(w, style=wx.CB_DROPDOWN))
+        self.price_part, self.max_price = self._part(panel, box, _("&Most a unit (0 = any):"),
+                                                     lambda w: wx.SpinCtrl(w, min=0, max=2000000000, initial=0))
+        self.pages_part, self.pages = self._part(panel, box, _("&Pages at most (0 = all):"),
+                                                 lambda w: wx.SpinCtrl(w, min=0, max=500, initial=0))
+        row = wx.BoxSizer(wx.HORIZONTAL)
+        self.search_btn = wx.Button(panel, label=_("&Search"))
+        self.remember_btn = wx.Button(panel, label=_("Remem&ber this item"))
+        row.Add(self.search_btn, 0, wx.RIGHT, 8)
+        row.Add(self.remember_btn, 0)
+        box.Add(row, 0, wx.TOP, 10)
+        self.list_age = labeled(panel, box, _("Market list:"), lambda w: wx.TextCtrl(w, style=wx.TE_READONLY))
+        row = wx.BoxSizer(wx.HORIZONTAL)
+        self.refresh = wx.Button(panel, label=_("&Refresh the market list"))
+        self.count_sellers = wx.CheckBox(panel, label=_("Also count se&llers (slow the first time)"))
+        row.Add(self.refresh, 0, wx.RIGHT, 12)
+        row.Add(self.count_sellers, 0, wx.ALIGN_CENTER_VERTICAL)
+        box.Add(row, 0, wx.TOP, 6)
+
+    def _results_tab(self) -> None:
+        panel, box = page(self.nb, _("Results"))
+        self.progress = labeled(panel, box, _("Sta&tus:"), lambda w: wx.TextCtrl(w, style=wx.TE_READONLY))
+        self.progress.SetValue(_("no search yet"))
+        self.results = labeled(panel, box, _("&Results (Space ticks a lot to buy):"),
+                               lambda w: wx.ListCtrl(w, style=wx.LC_REPORT | wx.LC_SINGLE_SEL, size=wx.Size(-1, 260)), 1)
+        self.results.EnableCheckBoxes(True)
+        for i, (title, width) in enumerate([(_("Item"), 230), (_("Quantity"), 70), (_("Unit price"), 90),
+                                            (_("Total"), 100), (_("Seller ID"), 80), (_("Category"), 110),
+                                            (_("Page"), 50), (_("Listed"), 150)]):
+            self.results.InsertColumn(i, title, width=width)
+        row = wx.BoxSizer(wx.HORIZONTAL)
+        self.buy_qty = labeled(panel, row, _("How &many of the selected lot:"),
+                               lambda w: wx.SpinCtrl(w, min=1, max=1000000, initial=1))
+        row.AddSpacer(16)
+        self.cap = labeled(panel, row, _("Spending &limit (0 = none):"),
+                           lambda w: wx.SpinCtrl(w, min=0, max=2000000000, initial=0))
+        box.Add(row, 0, wx.TOP, 4)
+        row = wx.BoxSizer(wx.HORIZONTAL)
+        self.buy_btn = wx.Button(panel, label=_("Bu&y the ticked lots"))
+        self.check_btn = wx.Button(panel, label=_("Check o&nly"))
+        self.stop_btn = wx.Button(panel, label=_("St&op"))
+        self.csv_btn = wx.Button(panel, label=_("Save as CS&V"))
+        for b in (self.buy_btn, self.check_btn, self.stop_btn, self.csv_btn):
+            row.Add(b, 0, wx.RIGHT, 8)
+        box.Add(row, 0, wx.TOP, 10)
+
+    def kind_now(self) -> str:
+        return KINDS[max(0, self.kind.GetSelection())]
+
+    def sync_kind(self) -> None:
+        """Show only the boxes the chosen search kind uses."""
+        uses = USES[self.kind_now()]
+        for name, part in (("items", self.items_part), ("custom", self.custom_part), ("seller", self.seller_part),
+                           ("price", self.price_part), ("pages", self.pages_part)):
+            self.search_box.Show(part, name in uses, recursive=True)
+        self.remember_btn.Show("custom" in uses)
+        self.search_box.Layout()
+        self.search_panel.Layout()
+        self.search_panel.FitInside()
 
     # ------------------------------------------------------------ the market list
     def _server(self) -> str:
@@ -231,9 +277,10 @@ class MarketFrame(wx.Frame):
         counts = {c: sum(1 for r in self.rows if r.cat == c) for c, _n in CATEGORIES}
         names = [_("My list ({n})", n=len(self.saved["items"])), _("All items ({n})", n=len(self.rows))]
         names += ["%s (%d)" % (_(n), counts[c]) for c, n in CATEGORIES]
-        at = max(0, self.category.GetSelection())
+        at = self.category.GetSelection()
         self.category.Set(names)
-        self.category.SetSelection(min(at, len(names) - 1))
+        # the first time: My list when there is one, else All items
+        self.category.SetSelection(min(at, len(names) - 1) if at >= 0 else (0 if self.saved["items"] else 1))
         self.show_items()
 
     def selected_category(self) -> int:
@@ -277,43 +324,43 @@ class MarketFrame(wx.Frame):
             return True
         return False
 
-    def run(self, line: str, title: str) -> None:
+    def run(self, line: str, title: str) -> bool:
         if self.busy():
-            return
+            return False
         self.job = line.split()[1] if len(line.split()) > 1 else line
         self.status_seen = time.time()
-        self.host.run_errand(line + "\n", title)
+        self.host.run_errand(STAY + line + "\n", title)
+        return True
 
     def start_scan(self) -> None:
         sellers = self.count_sellers.GetValue()
-        self.run("market scan" + (" sellers" if sellers else ""), _("Market list"))
-
-    def sync_kind(self) -> None:
-        kind = KINDS[self.kind.GetSelection()]
-        self.seller_ids.Enable(kind == "seller")
-        self.custom.Enable(kind in ("item", "cheapest"))
+        if self.run("market scan" + (" sellers" if sellers else ""), _("Market list")):
+            self.list_age.SetValue(_("reading the whole market..."))
 
     def search_item(self) -> None:
-        """Enter on an item: search for it (By item unless another kind is chosen)."""
+        """Enter on an item: search for it (By item unless Cheapest first is chosen)."""
         r = self.selected_row()
         if r is None:
             return
-        if KINDS[self.kind.GetSelection()] not in ("item", "cheapest"):
+        if self.kind_now() not in ("item", "cheapest"):
             self.kind.SetSelection(0)
             self.sync_kind()
-        self.custom.SetValue(r.name)
+        self.custom.SetValue("")
         self.start_search(r)
 
     def start_search(self, picked: ListRow | None = None) -> None:
-        kind = KINDS[self.kind.GetSelection()]
+        kind = self.kind_now()
         cat = self.selected_category()
-        s = Search(kind=kind, max_price=self.max_price.GetValue(), pages=self.pages.GetValue())
+        uses = USES[kind]
+        s = Search(kind=kind, max_price=self.max_price.GetValue() if "price" in uses else 0,
+                   pages=self.pages.GetValue() if "pages" in uses else 0)
         if kind in ("item", "cheapest"):
-            s.names = market.names_of(self.custom.GetValue())
+            s.names = [] if picked is not None else market.names_of(self.custom.GetValue())
             if not s.names and (r := picked or self.selected_row()) is not None:
                 s.names = [r.name]
+                picked = r
             if not s.names:
-                error(self, _("Pick an item in the list or type a name in Custom name."))
+                error(self, _("Pick an item in the list or type a name."))
                 return
             s.cat = picked.cat if picked is not None and picked.cat != ALL else (cat if cat >= ALL else None)
             remember_items(self.saved, s.names, s.max_price)
@@ -330,11 +377,17 @@ class MarketFrame(wx.Frame):
                 error(self, _("Choose a category to browse."))
                 return
             s.cat = cat
+        if self.busy():
+            return
         market.write_file(market.SAVED_FILE, self.saved)
         market.write_file(market.job_file(market.REQUEST_FILE, self.pid), s.to_json())
         self.lots, self.ticked, self.qty = [], set(), {}
+        self.by_seller = kind == "seller"
         self.results.DeleteAllItems()
         self.run("market search", _("Market search"))
+        self.progress.SetValue(_("searching: {what}", what=s.describe()))
+        self.nb.SetSelection(1)
+        self.results.SetFocus()
 
     def remember(self) -> None:
         names = market.names_of(self.custom.GetValue())
@@ -346,7 +399,7 @@ class MarketFrame(wx.Frame):
         remember_items(self.saved, names, self.max_price.GetValue())
         market.write_file(market.SAVED_FILE, self.saved)
         self.load_list()
-        self.progress.SetValue(_("remembered: {names}", names=", ".join(names)))
+        speech.speak(_("remembered: {names}", names=", ".join(names)))
 
     def fill_sellers(self) -> None:
         text = self.seller_ids.GetValue()
@@ -376,19 +429,46 @@ class MarketFrame(wx.Frame):
         if 0 <= i < len(self.lots):
             self.qty[self.lots[i].id] = self.buy_qty.GetValue()
 
+    def _set_cells(self, i: int, x: Lot) -> None:
+        for c, text in enumerate(lot_cells(x)):
+            self.results.SetItem(i, c, text)
+
     def show_results(self, lots: list[Lot]) -> None:
+        """The whole list again (a new search, or lots gone from it)."""
         at = first_selected(self.results)
-        self.lots = lots
+        self.lots = sorted(lots, key=lambda x: result_key(x, self.by_seller))
         self.results.DeleteAllItems()
-        for x in lots:
-            cells = lot_cells(x)
-            i = self.results.InsertItem(self.results.GetItemCount(), cells[0])
-            for c, text in enumerate(cells[1:], 1):
-                self.results.SetItem(i, c, text)
+        for x in self.lots:
+            i = self.results.InsertItem(self.results.GetItemCount(), "")
+            self._set_cells(i, x)
             if x.id in self.ticked:
                 self.results.CheckItem(i, True)
-        if 0 <= at < len(lots):
+        if 0 <= at < len(self.lots):
             select_row(self.results, at)
+
+    def merge_results(self, found: list[Lot]) -> None:
+        """New finds go in at their place and changed ones are rewritten; the rows already there stay
+        put, so the list never empties under the screen reader while the search goes on."""
+        now = {x.id: x for x in found}
+        if any(x.id not in now for x in self.lots):
+            self.show_results(found)
+            return
+        for i, x in enumerate(self.lots):
+            if now[x.id] != x:
+                if result_key(now[x.id], self.by_seller) != result_key(x, self.by_seller):
+                    self.show_results(found)      # its place changed (a seller found later)
+                    return
+                self.lots[i] = now[x.id]
+                self._set_cells(i, now[x.id])
+        keys = [result_key(x, self.by_seller) for x in self.lots]
+        known = {x.id for x in self.lots}
+        for x in sorted((x for x in found if x.id not in known), key=lambda x: result_key(x, self.by_seller)):
+            key = result_key(x, self.by_seller)
+            i = bisect.bisect_right(keys, key)
+            keys.insert(i, key)
+            self.lots.insert(i, x)
+            self.results.InsertItem(i, "")
+            self._set_cells(i, x)
 
     def orders(self) -> list[Order]:
         cap_each = self.max_price.GetValue()
@@ -413,7 +493,8 @@ class MarketFrame(wx.Frame):
             if not ask(self, text, _("Market searcher and buyer")):
                 return
         market.write_file(market.job_file(market.BUY_FILE, self.pid), {"orders": [o.to_json() for o in orders], "cap": cap})
-        self.run("market buy" + (" check" if check else ""), _("Market check") if check else _("Market buying"))
+        if self.run("market buy" + (" check" if check else ""), _("Market check") if check else _("Market buying")):
+            self.progress.SetValue(_("checking the ticked lots...") if check else _("buying the ticked lots..."))
 
     def save_csv(self) -> None:
         if not self.lots:
@@ -445,35 +526,55 @@ class MarketFrame(wx.Frame):
             return
         if changed <= self.status_seen:
             return
-        self.status_seen = changed
-        data = market.read_file(name)
-        if not data or data.get("started", 0) < time.time() - 24 * 3600:
+        try:
+            data = market.read_file(name)
+        except (OSError, ValueError):
+            data = {}
+        if not data:
+            # caught while the job replaced it (Windows refuses the read then): read it again on the
+            # next tick. Never marked seen, or a last page missed this way would leave the results stuck.
             return
+        self.status_seen = changed
+        if data.get("started", 0) < time.time() - 24 * 3600:
+            return
+        self.show_status(data)
+
+    def show_status(self, data: dict[str, Any]) -> None:
         said: list[object] = data.get("lines") or []
-        lines = [str(x) for x in said]
-        head = _("{query}: {pages} pages, {lots} lots read, {looked} sellers looked up",
-                 query=data.get("query", ""), pages=data.get("pages", 0), lots=data.get("lots_read", 0),
-                 looked=data.get("looked_up", 0))
-        summary = str(data.get("summary") or "")
-        self.progress.SetValue("\n".join([summary or head] + lines[-4:][::-1]))
+        state = str(data.get("state") or "")
         job = str(data.get("job") or "")
+        summary = str(data.get("summary") or "")
+        if not summary:
+            summary = _("{query}: {pages} pages, {lots} lots read", query=data.get("query", ""),
+                        pages=data.get("pages", 0), lots=data.get("lots_read", 0))
+            if data.get("looked_up"):
+                summary += ", " + _("{n} sellers looked up", n=data.get("looked_up", 0))
+            if said:
+                summary += " - " + str(said[-1])
+        if job == "scan":
+            self.list_age.SetValue(summary)
+        else:
+            self.progress.SetValue(summary)
         if job == "search":
             raw: list[Any] = data.get("lots") or []
-            found: list[Lot] = []
-            for r in raw:
-                lot = Lot.from_json(r) if json.is_object(r) else None
-                if lot is not None:
-                    found.append(lot)
+            found = [lot for lot in (Lot.from_json(r) if json.is_object(r) else None for r in raw) if lot is not None]
             search: object = data.get("search")
-            s = Search.from_json(search if json.is_object(search) else {})
-            if s.kind == "seller":
-                found.sort(key=lambda x: (x.seller or 0, x.price, x.id))
-            else:
-                found.sort(key=lambda x: (x.price, x.id))
-            if [x.id for x in found] != [x.id for x in self.lots] or data.get("state") != "reading":
+            by_seller = Search.from_json(search if json.is_object(search) else {}).kind == "seller"
+            if by_seller != self.by_seller or not self.lots:
+                self.by_seller = by_seller
                 self.show_results(found)
-        if data.get("state") in ("done", "stopped") and job == "scan":
-            self.load_list()
+            else:
+                self.merge_results(found)
+        if state in ("done", "stopped"):
+            if job == "scan":
+                self.load_list()
+            started = float(data.get("started") or 0)
+            if self.job and started > self.told:
+                self.told = started
+                self.job = ""
+                speech.speak(summary)        # the end of a job started from this window, said once
+                if job == "search" and self.lots and first_selected(self.results) < 0:
+                    select_row(self.results, 0)
 
     def on_key(self, evt: wx.KeyEvent) -> None:
         if evt.GetKeyCode() == wx.WXK_ESCAPE:

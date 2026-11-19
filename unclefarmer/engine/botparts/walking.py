@@ -244,6 +244,7 @@ class WalkingMixin(Parts):
         mid = self.map_id()
         m = atlas.model(mid)
         cell = self._walk_goal(m, mid, cell, map_change)
+        self.walk_target = (mid, cell)
         attempt = 0
         attacks = 0           # hits that broke this walk off (see ATTACK_LIMIT)
         # Both direction keys at once, across open ground on the slant (walk_diag) - unless the
@@ -340,9 +341,19 @@ class WalkingMixin(Parts):
         if self.map_id() != mid:
             return True
         if getattr(self, "traveling", False) and not self.in_fight:
+            self._note_walk_left()
             beasts.ensure(as_bot(self), beasts.TRAVEL)
             return self.map_id() != mid
         return False
+
+    def _note_walk_left(self) -> None:
+        """On a trip or for the walking assistant: how far the walk under way still goes, which
+        decides whether a beast is worth putting on (beasts.RIDE_MIN)."""
+        target = getattr(self, "walk_target", None)
+        if target is None or not (getattr(self, "traveling", False) or self.walk_only):
+            return
+        mid, cell = target
+        self.walk_left = self.walk_dist({"self": self.me(), "map": {"id": mid}}, {"x": cell[0], "y": cell[1]})
 
     def _walk_interrupted(self, why: str, cell: tuple[int, int], attacks: int) -> int:
         """A walk broken off before it got anywhere: attacked (fight, and one more attack on this
@@ -487,6 +498,7 @@ class WalkingMixin(Parts):
         off; "moved": the player moved us while paused), or False (all walked). leave: the map
         id when the walk is meant to leave it."""
         for hop in hops:
+            self._note_walk_left()
             if self.walk_only:
                 beasts.keep_riding(as_bot(self))   # thrown off or refused earlier: back on between hops
             elif getattr(self, "traveling", False) and not self.in_fight:

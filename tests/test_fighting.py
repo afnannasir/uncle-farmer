@@ -26,7 +26,7 @@ from unclefarmer.clock import CLOCK, StopFlag, Waitable
 from unclefarmer import paths, settings
 from unclefarmer.engine import picking
 from unclefarmer.engine.botparts import fighting
-from unclefarmer.engine.botparts.base import NPC_HP, Respawned, Stopped
+from unclefarmer.engine.botparts.base import NPC_HP, LosingFight, Respawned, Stopped
 from unclefarmer.engine.botparts.fighting import FightingMixin
 from unclefarmer.engine.botparts.keys import KeysMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
@@ -1165,7 +1165,8 @@ def test_a_stop_in_the_fight_is_its_reason(monkeypatch: pytest.MonkeyPatch, cloc
     quiet_beasts(monkeypatch)
     b = target_bot([monster(-1, x=105.0)], attack_range=10.0)
     mob = b.snap()["entities"][0]
-    for raised, why in ((Stopped("stopped by you"), "stopped"), (Respawned(), "died"), (KeyError("x"), "error")):
+    for raised, why in ((Stopped("stopped by you"), "stopped"), (Respawned(), "died"), (LosingFight(), "fled"),
+                        (KeyError("x"), "error")):
         picked(b, mob)
 
         def fake_fight(mob: dict[str, Any], raised: Exception = raised) -> None:

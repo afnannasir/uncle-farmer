@@ -276,16 +276,29 @@ class ProfileDialog(Dialog):
             _("Stop after too many &deaths"), p.get("stop_on_deaths", True) and p["max_deaths"] > 0,
             _("Deaths before stopping:"), max(1, p["max_deaths"]), 1, 999)
         f = group(panel, box, _("Low HP"))
-        self.panic, self.panic_below = f.optional(_("Stop when HP stays &low"), p["stop_on_panic"],
-                                                  _("Low HP (%):"), p["panic_below"], 1, 99)
+        now = 2 if p.get("flee_on_panic", False) else 1 if p["stop_on_panic"] else 0
+        self.panic = f.choice(_("When HP stays &low:"), [
+            _("Fight on"), _("Stop so I can take over"),
+            _("Go to town with the hearthstone, heal and come back (while farming)")], now)
+        self.panic_below = f.number(_("Low HP (%):"), p["panic_below"], 1, 99)
         self.panic_after = f.number(_("For (seconds):"), int(p["panic_after"]), 1, 120)
-        self.panic.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), self.panic_after.Enable(self.panic.GetValue())))
-        self.panic_after.Enable(self.panic.GetValue())
+
+        def panic_on(_e: object = None) -> None:
+            on = self.panic.GetSelection() > 0
+            self.panic_below.Enable(on)
+            self.panic_after.Enable(on)
+        self.panic.Bind(wx.EVT_CHOICE, lambda e: (e.Skip(), panic_on()))
+        panic_on()
         f = group(panel, box, _("Corpses"))
         self.corpse_skill, self.corpse_vitality = f.optional(
             _("&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"),
             p.get("corpse_skill", False),
             _("Stop when &Vitality is down to (0: until it runs out):"), p.get("corpse_keep_vitality", 0), 0, 100)
+        self.corpse_walk = f.check(_("Walk up to corpses further off, up to 20 steps awa&y (off: only the ones "
+                                     "within 4.5 steps of where the fight ended)"), p.get("corpse_walk", True))
+        self.corpse_skill.Bind(wx.EVT_CHECKBOX,
+                               lambda e: (e.Skip(), self.corpse_walk.Enable(self.corpse_skill.GetValue())))
+        self.corpse_walk.Enable(self.corpse_skill.GetValue())
         f = group(panel, box, _("Experience cards to keep running while farming (the strongest ticked one in the bag "
                                 "first)"))
         ticked, _pause = xpcard.wanted(p)
@@ -560,11 +573,13 @@ class ProfileDialog(Dialog):
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()
         p["max_deaths"] = self.max_deaths.GetValue()
-        p["stop_on_panic"] = self.panic.GetValue()
+        p["stop_on_panic"] = self.panic.GetSelection() == 1
+        p["flee_on_panic"] = self.panic.GetSelection() == 2
         p["panic_below"] = self.panic_below.GetValue()
         p["panic_after"] = float(self.panic_after.GetValue())
         p["corpse_skill"] = self.corpse_skill.GetValue()
         p["corpse_keep_vitality"] = self.corpse_vitality.GetValue()
+        p["corpse_walk"] = self.corpse_walk.GetValue()
         p["xp_cards"] = [kind for kind, box in self.xp_cards if box.GetValue()]
         p["xp_card_pause"] = self.xp_card_pause.GetValue()
         p["stop_on_drop_time"] = self.drop_stop.GetValue()
@@ -775,6 +790,8 @@ class AdvancedDialog(Dialog):
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
+        self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
+                                   p.get("skip_demonized_elites", False))
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
@@ -876,6 +893,7 @@ class AdvancedDialog(Dialog):
         p["chase_range"] = self.chase.GetValue()
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
         p["open_chests"] = self.open_chests.GetValue()
+        p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["smart_skills"] = self.smart.GetValue()
         others = "never" if self.skill_others.GetSelection() == 1 else "auto"
         p["skill_use_others"] = others

@@ -202,7 +202,7 @@ def test_ensure_low_power_stays_on_foot(monkeypatch: pytest.MonkeyPatch) -> None
     beasts.ensure(as_bot(b), beasts.TRAVEL)
     assert b.keys == []
     assert b.said_low_power is True
-    assert any("on foot until it has come back" in line for line in b.lines)
+    assert any("on foot until it is back to 50" in line for line in b.lines)
 
 
 def test_ensure_low_power_still_rides_a_free_beast(monkeypatch: pytest.MonkeyPatch) -> None:

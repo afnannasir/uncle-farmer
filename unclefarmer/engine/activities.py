@@ -67,6 +67,11 @@ def _crafting(key: str, setting: str, tool: str) -> Run:
     return run
 
 
+def _gem_breaker(b: Bot, check: bool, _o: Mapping[str, Any]) -> object:
+    from . import gembreak          # (it says "set it up first" itself)
+    return gembreak.run(b, gembreak.config(b.p), check)
+
+
 def _dungeon(b: Bot, check: bool, o: Mapping[str, Any]) -> object:
     from . import dungeon
     return dungeon.run(b, dungeon.config(b.p), check, o.get("cave"))
@@ -91,6 +96,7 @@ ACTIVITIES: tuple[Activity, ...] = (
     Activity("lose_xp", N_("losing experience"), _lose_xp, direct=True, checks=True),
     Activity("chores", N_("daily chores"), _chores, checks=True),
     Activity("gem_maker", N_("making gems"), _crafting("gem_maker", "gem_maker", N_("Gem Maker")), checks=True),
+    Activity("gem_breaker", N_("breaking gems"), _gem_breaker, checks=True),
     Activity("enhance", N_("enhancing equipment"), _crafting("enhance", "enhancer", N_("Equipment Enhancer")),
              checks=True),
     # a dungeon farms: its loot is farming loot, so it has no results part of its own

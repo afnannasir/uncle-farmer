@@ -110,8 +110,8 @@ def test_a_village_without_guards_falls_back_to_the_nearest_guard(one_village: l
     assert g.deaths == 1
 
 
-def test_the_nearest_guard_is_still_the_default() -> None:
-    assert xploss.DEFAULTS["where"] == "guard"
+def test_the_village_is_the_default_and_the_guard_still_a_choice() -> None:
+    assert xploss.DEFAULTS["where"] == "village"
     g = Game()
     assert lose(g, until_needed=1500) == "done"
     assert "dying at" not in g.text()
@@ -141,10 +141,11 @@ def test_village_names_and_distances() -> None:
 
 def test_the_window_choice_is_saved_in_the_settings() -> None:
     assert xploss.config({"xp_loser": {"where": "village"}})["where"] == "village"
-    assert xploss.config({})["where"] == "guard"
+    assert xploss.config({})["where"] == "village"
+    assert xploss.config({"xp_loser": {"where": "guard"}})["where"] == "guard"   # a saved choice stays
     assert len(xploss.WHERE) == len(xploss.WHERE_NAMES)
     g = Game()
-    assert lose(g, until_needed=1500, where="somewhere") == "done"   # an unknown choice: the default
+    assert lose(g, until_needed=1500, where="somewhere") == "done"   # an unknown choice: the guard
     assert "dying at" not in g.text()
 
 

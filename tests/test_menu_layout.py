@@ -86,7 +86,7 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     bar = frame.GetMenuBar()
     assert [bar.GetMenuLabelText(index) for index in range(bar.GetMenuCount())] == [
         "File", "View", "Game", "Messages", "Help"]
-    assert frame.action_menus["tools"].GetMenuItemCount() == 14
+    assert frame.action_menus["tools"].GetMenuItemCount() == 15
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
     assert "Sound controls" not in tool_labels
@@ -153,6 +153,7 @@ def test_shortcuts_remain_registered_without_opening_popup(frame: Any) -> None:
     assert frame.GetAcceleratorTable().IsOk()
     expected = {"run_start": "F5", "run_stop": "Shift+F5", "run_pause": "F6",
                 "character_settings": "Ctrl+P", "character_bag": "Ctrl+B", "tools_gem": "Ctrl+G",
+                "tools_breaker": "Ctrl+Shift+B",
                 "tools_enhance": "Ctrl+Shift+E", "tools_chores": "Ctrl+Shift+D",
                 "tools_gather": "Ctrl+Shift+F", "tools_dungeon": "Ctrl+Shift+G"}
     for key, shortcut in expected.items():
@@ -174,7 +175,7 @@ def test_popup_reopens_without_duplicating_or_destroying_its_submenus(
         frame.game_context_menu(event)
     assert shown == [frame.context_menu] * 3
     assert frame.context_menu.GetMenuItemCount() == 3
-    assert frame.action_menus["tools"].GetMenuItemCount() == 14
+    assert frame.action_menus["tools"].GetMenuItemCount() == 15
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
     assert "Sound controls" not in tool_labels

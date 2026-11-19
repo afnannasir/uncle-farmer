@@ -3,6 +3,8 @@ remembered, and what a purchase comes to before the player says yes."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 pytest.importorskip("wx")
@@ -43,24 +45,89 @@ def test_searched_sellers_are_remembered_with_their_note() -> None:
     assert saved["sellers"] == [{"id": 5, "note": "cheap bloods"}, {"id": 9, "note": ""}]
 
 
-def test_the_window_opens_with_the_shipped_list_and_closes() -> None:
+def _host():  # type: ignore[no-untyped-def]
     import wx
-    app = wx.GetApp() or wx.App(False)
     host = wx.Frame(None)
     host.runs = {}                           # type: ignore[attr-defined]
     host.market_windows = {}                 # type: ignore[attr-defined]
-    started: list[str] = []
-    host.run_errand = lambda text, title: started.append(text)   # type: ignore[attr-defined]
+    host.started = []                        # type: ignore[attr-defined]
+    host.run_errand = lambda text, title: host.started.append(text)   # type: ignore[attr-defined]
     host.stop = lambda pid=None: None        # type: ignore[attr-defined]
+    return host
+
+
+def test_the_window_shows_only_the_boxes_a_search_kind_uses_and_stays_at_the_market() -> None:
+    import wx
+    app = wx.GetApp() or wx.App(False)
+    host = _host()
     try:
         w = window.MarketFrame(host, 0, "someone")              # type: ignore[arg-type]
         assert w.category.GetCount() == 2 + len(window.CATEGORIES)
+        assert w.nb.GetPageCount() == 2
+        assert w.custom.IsShown() and w.items.IsShown() and not w.seller_ids.IsShown() and not w.pages.IsShown()
         w.kind.SetSelection(2)
         w.sync_kind()
-        assert w.seller_ids.IsEnabled() and not w.custom.IsEnabled()
+        assert w.seller_ids.IsShown() and not w.custom.IsShown() and not w.items.IsShown()
+        assert not w.max_price.IsShown()
         w.seller_ids.SetValue("1234")
         w.start_search()
-        assert started == ["market search\n"]
+        # the bot stays at the marketplace afterwards, ready for the next search
+        assert host.started == ["end_at here\nmarket search\n"]   # type: ignore[attr-defined]
+        assert w.nb.GetSelection() == 1
+        w.Destroy()
+    finally:
+        host.Destroy()
+        del app
+
+
+def test_new_finds_go_in_at_their_place_without_emptying_the_list() -> None:
+    import wx
+    app = wx.GetApp() or wx.App(False)
+    host = _host()
+    try:
+        w = window.MarketFrame(host, 0, "someone")              # type: ignore[arg-type]
+        w.show_results([Lot(1, 100, "X", 5, 30), Lot(2, 100, "X", 5, 10)])
+        assert [x.id for x in w.lots] == [2, 1]
+        w.results.CheckItem(1, True)                            # lot 1 ticked
+        assert w.ticked == {1}
+        deleted: list[int] = []
+        w.results.Bind(wx.EVT_LIST_DELETE_ALL_ITEMS, lambda e: deleted.append(1))
+        w.merge_results([Lot(1, 100, "X", 5, 30), Lot(2, 100, "X", 4, 10), Lot(3, 100, "X", 1, 20)])
+        assert not deleted
+        assert [x.id for x in w.lots] == [2, 3, 1]
+        assert w.results.GetItemText(0, 1) == "4"               # the quantity that changed is rewritten
+        assert w.results.IsItemChecked(2) and not w.results.IsItemChecked(1)
+        assert [o.lot.id for o in w.orders()] == [1]
+        w.Destroy()
+    finally:
+        host.Destroy()
+        del app
+
+
+def test_a_status_caught_while_being_written_is_read_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import os
+    import time
+
+    import wx
+
+    from unclefarmer.engine import market
+    app = wx.GetApp() or wx.App(False)
+    host = _host()
+    monkeypatch.setattr(market, "folder", lambda: str(tmp_path))
+    try:
+        w = window.MarketFrame(host, 0, "someone")              # type: ignore[arg-type]
+        w.job, w.status_seen = "search", time.time() - 5
+        path = tmp_path / market.job_file(market.STATUS_FILE, 0)
+        path.write_text("{", encoding="utf-8")                  # half written
+        w.poll()
+        assert w.lots == []
+        market.write_file(market.job_file(market.STATUS_FILE, 0), {
+            "job": "search", "state": "done", "started": time.time(), "summary": "1 lot found",
+            "lots": [Lot(9, 100, "X", 2, 50).to_json()], "search": {"kind": "item"}})
+        os.utime(path, None)
+        w.poll()
+        assert [x.id for x in w.lots] == [9] and w.progress.GetValue() == "1 lot found"
+        assert w.job == ""                                      # said once
         w.Destroy()
     finally:
         host.Destroy()

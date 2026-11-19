@@ -361,7 +361,7 @@ final class Dialogs {
 
     /** world.a(Win): public, boolean, the window its only parameter - the one method of that shape
      * (Enter's). Found by its shape, so a renamed build can't make it another. */
-    /** `detail <row> <col> <sig>` (agent 73): the details key (G) on that entry of the menu read
+    /** `detail <row> <col> <sig>` (agent 71): the details key (G) on that entry of the menu read
      * with sig, through the game's own method for it (game.i.i(): OUT op=35 with the entry's
      * command; the server answers with spoken text, IN op=60, which `said` gives). A market lot's
      * answer ends "Seller ID: <id>". Refuses, touching nothing, when the menu changed or the entry

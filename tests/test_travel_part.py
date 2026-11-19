@@ -168,6 +168,9 @@ class Bot(TravelMixin):
     def approach(self, name: str, at: tuple[float, float] | None=None, stand: tuple[float, float] | None=None) -> dict[str, Any] | None:
         return self.approach_value
 
+    def walk_dist(self, snap: dict[str, Any], e: dict[str, Any], limit: float | None = None) -> float:
+        return float("inf")           # (the riding rule: always a long walk here)
+
     def talk(self, name: str, at: tuple[float, float] | None=None, stand: tuple[float, float] | None=None) -> bool:
         return self.talk_value
 

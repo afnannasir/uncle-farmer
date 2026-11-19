@@ -12,7 +12,7 @@ not guessed:
   game asks yes or no). Any page opens with one choice.
 - A lot's price belongs to its listing id: a seller who wants another price takes the lot back and
   lists it again under a new id. So a lot found again by its id costs what it cost when read.
-- The details key (agent 73 `detail`: the game's own method for G) answers with spoken text,
+- The details key (agent 71 `detail`: the game's own method for G) answers with spoken text,
   "...; Seller ID: <id>", which `said` gives. A seller never changes, so it is kept by listing id.
 - A player has at most 10 lots on sale at once (game rule): a seller search is over for an id
   once 10 of its lots are found.
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from .bot import Bot
 
 ROLE = "market"                 # knowledge.json's service role of the marketplace in every city
-DETAIL_AGENT = 73               # `detail <row> <col> <sig>`
+DETAIL_AGENT = 71               # `detail <row> <col> <sig>`
 ALL = -1                        # the "all goods" category
 CHRONO, PRICE = 0, 1            # the two orders: newest first, cheapest unit price first
 # The category list in the game's order, with the ids the menu sends (recorded 2026-11-18)
@@ -482,7 +482,12 @@ class Status:
         self.last_write = now
         self.data["updated"] = now
         self.data["lots"] = [x.to_json() for x in self.found.values()]
-        write_file(self.file, self.data)
+        try:
+            write_file(self.file, self.data)
+        except OSError:
+            if force:          # the end: the window must get it
+                raise
+            self.last_write = 0.0      # the window held it a moment: the next page writes it again
 
     def end(self, state: str, summary: str) -> None:
         self.data["state"] = state

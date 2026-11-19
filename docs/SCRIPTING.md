@@ -786,6 +786,8 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
 
     gem_maker          run the Gem Maker as set up in Tools
     gem_maker check    only look: walk there, read the menus and prices, change nothing
+    gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
+    gem_breaker check  only look: say what would be broken, break nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 
@@ -819,7 +821,7 @@ This runs only the bank and donation chores.
 
 ### Losing experience
 
-The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set). Where it dies, at the nearest guard or at the nearest village, is that window's choice too.
+The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set). Where it dies, at the nearest village or at the nearest guard, is that window's choice too. It also stops when the level can't reach the goal and, if you ticked it there, when a death costs too little.
 
     lose_xp          die to guards until the goal is met
     lose_xp check    only read the experience and look for guards; nothing changes
@@ -1221,6 +1223,7 @@ Use this section when you need a quick reminder of a command or its syntax.
 ### Tools and daily activities
 
     gem_maker [check]
+    gem_breaker [check]
     enhance [check]
     chores [check] [only=...]
     gather [check]

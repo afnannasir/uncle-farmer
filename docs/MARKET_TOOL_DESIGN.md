@@ -4,7 +4,7 @@ A Tools-menu tool that reads the player market (the Ansible Space-time Marketpla
 what the player asks for, keeps the results, and buys the lots the player picks.
 
 Status: built 2026-11-18 (branch feature/market-tool): engine/market.py, gui/market.py (Tools,
-Ctrl+Shift+K), the `market` script command, agent 73 `detail`. Tested against a pretend market and
+Ctrl+Shift+K), the `market` script command, agent 71 `detail`. Tested against a pretend market and
 the recorded menus; not yet run live. Two hand visits were recorded on 2026-11-18 (section 1b).
 
 Things settled while building: the agent's reading of an NPC menu puts an entry's words in

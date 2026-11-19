@@ -306,7 +306,7 @@ class Link:
 
 class Shopper:
     """Just the bot parts the market uses."""
-    agent_version = 73
+    agent_version = 71
 
     def __init__(self, m: PretendMarket) -> None:
         self.m = m
@@ -483,7 +483,7 @@ def test_a_seller_with_fewer_lots_is_only_known_after_reading_everything() -> No
 
 def test_a_seller_search_needs_the_detail_agent() -> None:
     b = shopper({100: lots_of("Lesser Blood", 3, 9000)})
-    b.agent_version = 72
+    b.agent_version = 70
     with pytest.raises(Stopped):
         market.search(b, Search(kind="seller", sellers=[5], cat=100))  # type: ignore[arg-type]
 
@@ -603,3 +603,18 @@ def test_a_wrong_market_line_is_refused_when_the_script_is_read(line: str) -> No
     from unclefarmer.engine import script
     with pytest.raises(script.ScriptError):
         script.parse(line + "\n")
+
+
+def test_a_status_write_refused_for_a_moment_does_not_end_the_search(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    def refuse(name: str, data: object) -> None:
+        calls.append(name)
+        raise PermissionError("held by the window")
+
+    monkeypatch.setattr(market, "write_file", refuse)
+    st = market.Status("search", "x")
+    st.write()                                   # skipped, tried again on the next page
+    assert calls and st.last_write == 0.0
+    with pytest.raises(OSError):
+        st.end("done", "1 lot found")            # the last one must arrive

@@ -14,7 +14,7 @@ from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
 from .. import beasts, combat, pets, picking, teamheal
-from .base import (MOVE_SHOT_REACH, STOPPING, Respawned, Stopped, agent_strike, note_failure,
+from .base import (MOVE_SHOT_REACH, STOPPING, LosingFight, Respawned, Stopped, agent_strike, note_failure,
                    skill_things, snap_map)
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -26,6 +26,7 @@ LEFT_OUT = {
     "kind": N_("of a kind that can't be attacked here"),
     "names": N_("left out by the only-fight / never-fight names"),
     "boss": N_("too close to a boss"),
+    "elite": N_("demonized elites, left alone as the character settings say"),
     "area": N_("outside the farming area"),
     "avoid": N_("in an elite or boss zone we keep out of"),
     "far": N_("further to walk than the chase range"),
@@ -62,6 +63,7 @@ NO_KILL = {
     "refused": "the game refused every cast at it from where we stood",
     "timeout": "the fight took too long",
     "died": "we died",
+    "fled": "HP stayed low, so the fight was dropped to flee to town (flee_on_panic)",
     "stopped": "the run was stopped",
     "error": "the fight ended in an error",
 }
@@ -587,7 +589,8 @@ class FightingMixin(Parts):
             untrackable=frozenset(e["id"] for e in held if self.untrackable(e, now)),
             reach=rng)
         rules = picking.Rules(area=area, only=only, skip=skip, avoid_rects=avoid_rects, limit=limit,
-                              boss_keep=self.p.get("boss_distance", 40))
+                              boss_keep=self.p.get("boss_distance", 40),
+                              skip_elites=bool(self.p.get("skip_demonized_elites")))
         got = picking.choose(snap, rules, notes,
                              walk=lambda e, lim: self.walk_dist(snap, e, lim),
                              doomed=lambda e, steps: self.doomed(e, me, steps, rng),
@@ -697,6 +700,9 @@ class FightingMixin(Parts):
             self._fight(mob)
         except Respawned:
             self.ended("died")
+            raise
+        except LosingFight:
+            self.ended("fled")
             raise
         except Stopped:
             self.ended("stopped")

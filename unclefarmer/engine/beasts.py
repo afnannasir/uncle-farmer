@@ -53,6 +53,11 @@ AFTER_DEATH = 6.5  # seconds after a death before a beast is put on: the server 
                    # came 10 s after the respawn; pressed 6 s after it, on at once)
 RIDE_CHECK = 4.0   # seconds between "still on the Swift beast?" checks while walking
 MIN_POWER = 15     # fusion power under which only "costs no fusion power" beasts are used
+REFILL_POWER = 50  # ... and up to which it comes back before one is put on again. Measured
+                   # 2026-11-18: a beast on costs 3 a minute, moving or not; off, it comes back at
+                   # 6 a minute. Put back on at MIN_POWER, it was off again within two minutes: a
+                   # change every 2.5 minutes. From 50 it rides about 13 minutes, rests about 7.
+RIDE_MIN = 30      # steps: a walk shorter than this is not worth putting a beast on for (b.walk_left)
 POWER_EVERY = 20.0 # while riding, read fusion power with the T key this often (it costs nothing)
 _known: dict[str, dict[str, Any]] | None = None
 
@@ -168,7 +173,7 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         return
     refused = b.beasts_refused
     pw = power(b.me())
-    low_power = pw is not None and pw < MIN_POWER
+    low_power = _resting(b, pw)
     pick = b.p.get("speed_beast" if purpose == TRAVEL else "fight_beast", "auto" if purpose == TRAVEL else "none")
     if pick == "none" and purpose == TRAVEL and getattr(b, "walk_only", False):
         pick = "auto"     # the walking assistant always rides: that is what it is for
@@ -183,9 +188,9 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         # ends, and it recovers while not transformed. Let it recover instead of riding.
         if not getattr(b, "said_low_power", False):
             b.said_low_power = True
-            b.log(_("fusion power {n} - on foot until it has come back", n=int(pw or 0)))
+            b.log(_("fusion power {n} - on foot until it is back to {back}", n=int(pw or 0), back=REFILL_POWER))
         want = None
-    elif pw is not None and pw >= MIN_POWER:
+    elif not low_power:
         b.said_low_power = False
     active = next((r for r in rows if r["active"]), None)
     if want is None:
@@ -198,7 +203,26 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         return
     if active and active["id"] == want["id"]:
         return
+    if purpose == TRAVEL and _short_walk(b):
+        return            # whatever is on stays on: no change for a few steps
     _put_on(b, rows, want, active, purpose)
+
+
+def _short_walk(b: Bot) -> bool:
+    """The walk ahead on this map is known, and too short to be worth a beast: putting one on just
+    after a door or for the last few steps costs fusion power and saves nothing."""
+    left = getattr(b, "walk_left", None)
+    return left is not None and left < RIDE_MIN
+
+
+def _resting(b: Bot, pw: int | None) -> bool:
+    """Is fusion power coming back? From under MIN_POWER until REFILL_POWER, not just over
+    MIN_POWER again (b.power_resting). Without a reading, as it was."""
+    if pw is not None and pw < MIN_POWER:
+        b.power_resting = True
+    elif pw is not None and pw >= REFILL_POWER:
+        b.power_resting = False
+    return pw is not None and getattr(b, "power_resting", False)
 
 
 def _travel_waits(b: Bot, rows: list[dict[str, Any]]) -> bool:
@@ -305,7 +329,7 @@ def keep_riding(b: Bot, read_power: bool = True) -> None:
     ago, or a fight just before the walk kept it off (AFTER_FIGHT: a dungeon that puts us out
     seconds after the last kill), checked every few seconds so it costs almost nothing. The walking
     assistant (read_power) reads fusion power with the T key every POWER_EVERY, so once it runs
-    out, ensure() waits on foot until it has come back over MIN_POWER instead of asking the game
+    out, ensure() waits on foot until it has come back to REFILL_POWER instead of asking the game
     every few seconds; other travel leaves the T key alone (what it does differs by class)."""
     now = clock_for(b).time()
     if now - getattr(b, "last_ride_check", 0) < RIDE_CHECK:

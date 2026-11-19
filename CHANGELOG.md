@@ -2,135 +2,119 @@
 
 ## Unreleased
 
-**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+**Gem Breaker**
 
-- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
-  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
-  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
-  nearest marketplace and reads every category (about a minute or two). Until then it shows a
-  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
-  them.
-- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
-  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
-  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
-  category. Finds show up while the bot reads. Searched items and sellers are remembered.
-- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
-  gold coins in all. Each lot is found again by its listing number, even after it moved to another
-  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
-  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
-  gone, only N left, over your most, over the limit, or not bought with the game's own words.
-- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
-- Agent 73: `detail` presses the details key (G) on a market lot the game's own way, so the seller
-  comes back without a key press.
+- A new tool, **Tools, Gem Breaker** (Ctrl+Shift+B), and the script command `gem_breaker`: breaks the
+  gem colours you tick into shards, up to the level you allow (2 at first), down to shards or to a
+  level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
+  broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
+  It can sell shards by the bag manager's rules. The window shows what would go, and Start asks
+  first. When the game says "overweight" it asks for fewer; when not even one fits it sells, if
+  that is ticked, and carries on, and otherwise stops and says why.
 
-**Maps for your level in the plan editor**
+**Fusion beasts: not for a few steps**
 
-- The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
-  monsters are from 9 levels below you to 5 above: the game's own rule for full experience and full
-  loot. Ordinary fields come first, then dungeons and the rest, each with the highest monsters first.
-  The game has to be running with your character logged in, so the bot knows your level.
+- On a trip, a beast is put on only when at least 30 steps of walking are left on the map. It used
+  to go on at every start and right after every map change, even a few steps from the next door or
+  the destination. One that is already on stays on.
 
-**Speed skills on long walks**
+**The end of a run: towns and the gang base**
 
-- Wind Step and Swallow Dance (Warrior), Haste (Orc) and Shadow Steps (Assassin) were never used:
-  the bot only ever pressed skills that fight. Now a walk on foot of 25 steps or more starts with
-  the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
-  anyway), not in a fight, and never a skill you set to Never.
+- A run that ends in a city or village stays there. It used to leave for the nearest map with no
+  monster zone, because the game's table lists such zones for a city's own streets: from Tulip City
+  that meant going down to its underground. A run started in a town also goes back to it.
+- A run started in the gang base goes back there, instead of giving up or pushing against the inner
+  hall's one-way door: from the outer hall through the Inner hall Guard, from outside by the Gang
+  Entrance. If it isn't let in, it says so and stays where it is. Daily chores in the inner hall
+  use the guard too.
 
-**The game's own report after a dungeon**
+**Gem Maker: shards go to the +20%**
 
-- When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
-  The bot now reads it (agent 72) and adds it to its line about the visit, for example "Scorpion
-  Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
-  count is the true one: it includes kills the bot can't see.
+- From level 2, shards are now kept for the +20% instead of being made into gems four at a time,
+  and the box is ticked even when the bag has none yet: a batch also uses the shards its own
+  failures leave (seen in the game). They still become gems at the level asked for, and when
+  nothing else can be done with them. Each level's result says how many it used.
 
-**For contributors: a dungeon recipe from one recorded run**
+**Gem Maker: safer batches**
 
-- `uv run python -m unclefarmer.recipedraft <packets log> --from 12:40 --to 13:10` turns the
-  recorder's log of one hand run into a draft recipe: each map in order, where you came in and
-  left, the way walked, every NPC talked to with the menu entries chosen (in the game's own words),
-  timers and the end report. `--json` writes it to a file. New dungeons are to be built from such a
-  draft, never from a guessed menu.
-- Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
-  `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
-  job is one entry there.
+- Nothing is spent until the craftsman's page names the gem being made. On a slow answer the bot
+  could read the page before, with no fee on it, and go past the arnebia you keep.
+- A batch the game makes nothing of is asked for again at half the size, instead of the same
+  number until the job gave up.
+- If the box for the +20% shard can't be ticked, the bot says so, and each level's result now says
+  how many of its shards there were before and after.
+- For the gem you asked for, no more tries than gems are missing, so a lucky run doesn't cost more
+  than the job needed.
+- **How many** has a new choice, **Until the bag holds this many**.
 
-**Skills outside the global cooldown are used in every fight**
+**XP loser: it knows how far it can go**
 
-- Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
-  (Priest, 20% less damage) and Summon Spirit (Witcher, 30% less damage) are "not affected by
-  global CD": pressing one costs no attack. Before, the bot kept the first two for a big monster or
-  a pack and the last two for emergencies, so they were never used in any recorded night.
-- Now Cold Winter and Scorch go up in every fight whenever they are ready, and Concentrated Will
-  and Summon Spirit whenever a monster is hitting you and you have lost some HP (under 90%). They
-  are pressed in the wait after each attack, so the attacks keep their pace. A skill set to Never
-  or to emergencies only in Character settings is left as you set it.
-- If you have learned Cold Winter or Scorch but put it on no key, the log now says so. The bot can
-  only press skills that are on a key.
+- Each death takes 1.81% of the experience earned inside the level (measured over 630 deaths), so
+  each one costs less than the last and the next level's need can't pass the level's whole need.
+  After three deaths the bot works this out from the run itself and says how many more deaths and
+  minutes it will take, and warns when the limit on deaths will come first.
+- A goal the level can't reach now ends the run at once, instead of after an hour and a half of
+  deaths worth almost nothing. The level's number is remembered for a week, so the next run of that
+  character doesn't die at all to find out.
+- A new choice, **Stop when a death costs too little** (off by default, so a goal the level can
+  reach is always reached; ticked, the run ends under 500 experience a death, or the number you set).
+- **At the nearest village** is now the default place to die for characters that never chose one:
+  about 11 seconds a death against 29 at a city.
+- No potion is drunk during the run any more (the setting that should have stopped them meant
+  "automatic"), running out of potions no longer stops it, and a guard that could not be hit is no
+  longer reported as one that didn't strike back.
 
-**Channelled skills wait for a gap between the monsters' swings**
+**Spanish and Turkish**
 
-- Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the
-  channel's time is lost. In two Mage nights, 30 to 37% of all Ice Arrows broke this way. Monsters
-  swing on a fixed clock (about every 2 seconds), so the bot now remembers when each monster last
-  swung at you and starts a channel only when it will end before the next swing. Otherwise it uses
-  a skill with no channel: for the Mage that is Magic Sphere, which does the same damage at once.
-- Tried on the recorded nights first: the rule would have held back about half of the arrows that
-  broke, and half of the arrows it held back would have broken. The older idea of "no channel for a
-  while after a hit" held back as many good channels as broken ones.
-- The Elf's Pyroblast and Blazing Storm keep their own timing (Blazing Combo makes them instant).
+- Uncle Farmer now comes in Spanish and Turkish too (File, Settings, Language). Both cover every
+  string of this version. Game names follow the game's own Spanish and Turkish packs, every
+  Alt+letter shortcut is the same letter as in English, and the standard buttons (OK, Cancel, Yes,
+  No...) are translated as well. The Turkish one was largely rewritten: terms are now consistent
+  (Kalp taşı, depo, Parça pazarı, Dökümcü, betik, farm) and trusted-player commands stay in English
+  so they still work.
 
-**The experience caves: ready at the door, fighting from the first second**
+**No trip to the farm with the drop time used up**
 
-- Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
-  in thirteen visits, 1 to 15 November). The bot now gets ready at the cave's door, before it
-  chooses "Enter the dungeon", where no timer runs:
-  - it gets off the travel beast (or onto the fusion beast the character fights in);
-  - it calls the pet, which comes in with you. A pet that can come out within three minutes is
-    waited for at the door; one that needs longer is called inside as soon as it can;
-  - it reads the skills, puts the long buffs up and tops up HP and MP;
-  - it puts potions back on empty keys and lets a paused experience card run again. A new
-    experience card is still started inside, so that none is spent when the game turns you away.
-- Why it stood so long: the pet was called first, and the game ignores a "get off the beast"
-  pressed right after a pet has come out. The bot then waited for its next try, 8.5 seconds every
-  time. The beast is now seen to before the pet, in the caves and at the start of every farm.
-- After landing inside, the bot no longer waits a second for the map to settle, and the target
-  key is set in a few hundredths of a second a press instead of a third of a second.
+- A farming run whose day's drop time is already down to what you save (Drop time to save, or
+  the plan's `keep_drop`) no longer travels all the way to the farm for the first sheet there to
+  stop it: it says "the drop time is nearly used up (... min left) - not starting to farm" and
+  stays where it is, as "Stop before the next level" already did.
+**Fusion power comes back to 50 before the beast goes on again**
 
-**Kills by damage over time are counted**
+- Measured in the game: a fusion beast that is on costs 3 fusion power a minute, moving or not
+  (Swift and Fierce alike), and power comes back at 6 a minute once it is off. The bot got off
+  under 15 and back on as soon as power was over 15 again, so it was off within two minutes: a
+  change every two and a half minutes, each one waiting on the game. Once power has run low it
+  now waits on foot until it is back to 50, then rides about 13 minutes before the next rest.
+  Beasts that cost no fusion power still ride meanwhile.
+**Leave demonized elites alone**
 
-- A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps
-  biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
-  landed on it" and the results came out short. In one night of a character with such skills, 117
-  kills were missed this way. The game reports these deaths in a message of their own, which the
-  agent now reads (agent 71). Close the game and start it again to load the new agent.
+- A new choice in Character settings, Advanced, Fighting: **Leave demonized elites alone**, off by
+  default. The game's "demonized" elites (demonized Boar, black bear, Water Elf...) are much
+  stronger than the monsters around them, and one the same level as the character can kill it,
+  depending on its gear. Ticked, the bot never picks one as a target; one that attacks still gets
+  fought. The demonized field bosses are kept away from as bosses, as before.
+**Flee a lost fight**
 
-**The log says why a monster was left**
+- Character settings, Low HP: **Stop when HP stays low** became **When HP stays low**, with a third
+  choice: **Go to town with the hearthstone, heal and come back (while farming)**. On the farming
+  map, when HP stays under the mark, the bot drops the fight, uses the hearthstone, heals up in
+  town (to 90%, three minutes at most), looks at the restock rules and goes back. A hit stops the
+  hearthstone's cast: one that doesn't take the character home leaves it fighting on. Without a
+  hearthstone it says so once and fights on. The third flee within 30 minutes ends the run in town.
+  **Fight on** stays the default; a profile that had the stop ticked keeps it.
+- The low HP mark is now 30% for 3 seconds by default (it was 25% for 10 seconds, nearly dead
+  already for a flee). Profiles that were saved keep their numbers.
 
-- Every fight the bot picks and ends without a kill now records why, in the farming record
-  (`logs/field-<day>.jsonl`): stuck on the way, taken by someone else, another monster came into
-  reach, no clear shot, moved out of range, took no damage, and so on. Until now about a third of
-  the picks ended with no kill and nothing in the record to say why.
-- A search walk that starts with monsters in sight records how many there were, how many were left
-  out for each reason, and where the ones with no way to walk to were standing.
-- The "monsters in sight, none to fight" line names the map.
-- The night report (`nightwatch.py report`) adds these up: no-kill fights by reason with the time
-  each cost, monsters left out by reason, and the "no way to walk there" ones by map.
-- Nothing changes in how the bot fights. The times a monster is left alone are the same as before;
-  they are set in one place now instead of twelve.
-- Fixed in passing: a fight the bot had to stop for on its way to the picked monster (fighting
-  back) made the picked fight count as "never reached" in the night report, even when it was.
-- "no way to walk there" now reads "no way to walk there, or only a very long way round". Two
-  recorded nights (turkey cave and Margit Rainforest) were replayed: every monster the bot had
-  called unreachable could be walked to, by a way round of 150 to 400 steps. The bot is right to
-  leave those; the map data has no hole there.
+**Toolboxes: one per warning again (a 1.2.0 bug)**
 
-**No more picking the same monster over and over**
-
-- When the bot stops on its way to a monster because another one has come into reach, it now
-  fights that one at once. It used to hand the choice back, and when the first monster was the
-  shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
-  again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
+- Since 1.2.0 the bot checks that a repair really happened. It only believed a used toolbox when
+  the toolbox's level limit covered the character's level. But the limit is the gear's level, not
+  the character's: a level-69 Mage wearing level-60 gear is repaired by a Small Toolbox. So every
+  such repair was "couldn't confirm the repair", the warning stayed, and the bot used another
+  toolbox every 10 minutes all night (29 Small Toolboxes in one night, where 1.1.0 used one or
+  two). A toolbox the game uses up now counts as a repair again. When the bag can't be read to
+  tell, the warning is dropped too: the game warns again if the gear is still worn.
 
 **Several kinds of experience cards**
 
@@ -212,6 +196,173 @@
   the bag because the storehouse is full (not that it "may be full"), and stops walking them back
   to the storehouse on every bag trip of the run. Taking something out of the storehouse makes
   room, so the bot tries them again after that.
+
+**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+
+- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
+  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
+  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
+  nearest marketplace and reads every category (about a minute or two). Until then it shows a
+  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
+  them.
+- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
+  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
+  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
+  category. Finds show up while the bot reads. Searched items and sellers are remembered.
+- Two tabs, Search and Results, and the Search tab shows only the boxes the chosen kind uses.
+  Results grow in place while the bot reads (the row you are on stays put), and the total is
+  spoken at the end. The character stays at the marketplace after each search, so the next one
+  starts at once.
+- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
+  gold coins in all. Each lot is found again by its listing number, even after it moved to another
+  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
+  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
+  gone, only N left, over your most, over the limit, or not bought with the game's own words.
+- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
+- Agent 71: `detail` presses the details key (G) on a market lot the game's own way, so the seller
+  comes back without a key press.
+
+**Draw Blood, Skinning and Cut Flesh: walking up to the corpse**
+
+- Corpse harvesting only took corpses within 4.5 steps of where the fight ended, since the game
+  takes the skill only from close by. A character that fights from afar kills about 18 steps off,
+  so almost every corpse was left (one night: 12 harvests in about 1,150 kills), and even
+  close-range characters often ended a few steps too far. Nothing in the log said why.
+- Now the bot walks up to the corpse first, as the game's own key does: up to 20 steps away, never
+  to one near a boss, and still only between fights. A fight on the way comes first. The new
+  choice in Character settings, Fighting, Corpses, **Walk up to corpses further off**, is on by
+  default; turn it off to harvest only the corpses within reach, as before.
+- A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
+  there) is now logged, once for each reason in a run.
+
+**Gathering outside: the pet helps, and the way home has no fights**
+
+- While fishing, mining or collecting herbs at an outside place, the bot now keeps your pet out and
+  looked after, as it does while farming (the pets ticked in Character settings): it helps kill
+  what comes, and a monster that goes for the pet is fought too. Summoning the pet or giving it a
+  potion stops the gathering for a moment, as your own potions do; it starts again by itself. In a
+  gang's area nothing changes: the half hour there is left to the game.
+- Once gathering is over, the way home - to the buyer to sell, then to where the run ends - is
+  walked as the walking assistant goes: no stopping to fight, not even what attacks you, riding
+  your Swift beast past it, with potions still keeping you up. The trips while gathering (to the
+  place, and to sell and come back when the bag fills) still fight as before. A script that farms
+  after gathering ends as a farming run does.
+
+**No more "_learned_" names in the list of characters**
+
+- What the bot learns as it goes (dungeon entrances, item weights, teleport places, airship
+  landings, where guards stand, how much experience a level holds) is kept in files next to the
+  character profiles, and each of them showed up as a character in the profile list. They are left
+  out now.
+
+**Maps for your level in the plan editor**
+
+- The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
+  monsters are from 9 levels below you to 5 above: the game's own rule for full experience and full
+  loot. Ordinary fields come first, then dungeons and the rest, each with the highest monsters first.
+  The game has to be running with your character logged in, so the bot knows your level.
+
+**Speed skills on long walks**
+
+- Wind Step and Swallow Dance (Warrior), Haste (Orc) and Shadow Steps (Assassin) were never used:
+  the bot only ever pressed skills that fight. Now a walk on foot of 25 steps or more starts with
+  the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
+  anyway), not in a fight, and never a skill you set to Never.
+
+**The game's own report after a dungeon**
+
+- When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
+  The bot now reads it (agent 73) and adds it to its line about the visit, for example "Scorpion
+  Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
+  count is the true one: it includes kills the bot can't see.
+
+**For contributors: a dungeon recipe from one recorded run**
+
+- `uv run python -m unclefarmer.recipedraft <packets log> --from 12:40 --to 13:10` turns the
+  recorder's log of one hand run into a draft recipe: each map in order, where you came in and
+  left, the way walked, every NPC talked to with the menu entries chosen (in the game's own words),
+  timers and the end report. `--json` writes it to a file. New dungeons are to be built from such a
+  draft, never from a guessed menu.
+- Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
+  `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
+  job is one entry there.
+
+**Skills outside the global cooldown are used in every fight**
+
+- Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
+  (Priest, 20% less damage) and Summon Spirit (Witcher, 30% less damage) are "not affected by
+  global CD": pressing one costs no attack. Before, the bot kept the first two for a big monster or
+  a pack and the last two for emergencies, so they were never used in any recorded night.
+- Now Cold Winter and Scorch go up in every fight whenever they are ready, and Concentrated Will
+  and Summon Spirit whenever a monster is hitting you and you have lost some HP (under 90%). They
+  are pressed in the wait after each attack, so the attacks keep their pace. A skill set to Never
+  or to emergencies only in Character settings is left as you set it.
+- If you have learned Cold Winter or Scorch but put it on no key, the log now says so. The bot can
+  only press skills that are on a key.
+
+**Channelled skills wait for a gap between the monsters' swings**
+
+- Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the
+  channel's time is lost. In two Mage nights, 30 to 37% of all Ice Arrows broke this way. Monsters
+  swing on a fixed clock (about every 2 seconds), so the bot now remembers when each monster last
+  swung at you and starts a channel only when it will end before the next swing. Otherwise it uses
+  a skill with no channel: for the Mage that is Magic Sphere, which does the same damage at once.
+- Tried on the recorded nights first: the rule would have held back about half of the arrows that
+  broke, and half of the arrows it held back would have broken. The older idea of "no channel for a
+  while after a hit" held back as many good channels as broken ones.
+- The Elf's Pyroblast and Blazing Storm keep their own timing (Blazing Combo makes them instant).
+
+**The experience caves: ready at the door, fighting from the first second**
+
+- Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
+  in thirteen visits, 1 to 15 November). The bot now gets ready at the cave's door, before it
+  chooses "Enter the dungeon", where no timer runs:
+  - it gets off the travel beast (or onto the fusion beast the character fights in);
+  - it calls the pet, which comes in with you. A pet that can come out within three minutes is
+    waited for at the door; one that needs longer is called inside as soon as it can;
+  - it reads the skills, puts the long buffs up and tops up HP and MP;
+  - it puts potions back on empty keys and lets a paused experience card run again. A new
+    experience card is still started inside, so that none is spent when the game turns you away.
+- Why it stood so long: the pet was called first, and the game ignores a "get off the beast"
+  pressed right after a pet has come out. The bot then waited for its next try, 8.5 seconds every
+  time. The beast is now seen to before the pet, in the caves and at the start of every farm.
+- After landing inside, the bot no longer waits a second for the map to settle, and the target
+  key is set in a few hundredths of a second a press instead of a third of a second.
+
+**Kills by damage over time are counted**
+
+- A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps
+  biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
+  landed on it" and the results came out short. In one night of a character with such skills, 117
+  kills were missed this way. The game reports these deaths in a message of their own, which the
+  agent now reads (agent 72). Close the game and start it again to load the new agent.
+
+**The log says why a monster was left**
+
+- Every fight the bot picks and ends without a kill now records why, in the farming record
+  (`logs/field-<day>.jsonl`): stuck on the way, taken by someone else, another monster came into
+  reach, no clear shot, moved out of range, took no damage, and so on. Until now about a third of
+  the picks ended with no kill and nothing in the record to say why.
+- A search walk that starts with monsters in sight records how many there were, how many were left
+  out for each reason, and where the ones with no way to walk to were standing.
+- The "monsters in sight, none to fight" line names the map.
+- The night report (`nightwatch.py report`) adds these up: no-kill fights by reason with the time
+  each cost, monsters left out by reason, and the "no way to walk there" ones by map.
+- Nothing changes in how the bot fights. The times a monster is left alone are the same as before;
+  they are set in one place now instead of twelve.
+- Fixed in passing: a fight the bot had to stop for on its way to the picked monster (fighting
+  back) made the picked fight count as "never reached" in the night report, even when it was.
+- "no way to walk there" now reads "no way to walk there, or only a very long way round". Two
+  recorded nights (turkey cave and Margit Rainforest) were replayed: every monster the bot had
+  called unreachable could be walked to, by a way round of 150 to 400 steps. The bot is right to
+  leave those; the map data has no hole there.
+
+**No more picking the same monster over and over**
+
+- When the bot stops on its way to a monster because another one has come into reach, it now
+  fights that one at once. It used to hand the choice back, and when the first monster was the
+  shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
+  again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
 
 ## 1.2.0
 
