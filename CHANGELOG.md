@@ -1,6 +1,6 @@
 # What's new
 
-## Unreleased
+## 1.2.1
 
 **Updates from 1.2.0 work again**
 
