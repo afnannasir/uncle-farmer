@@ -58,6 +58,9 @@ class GatheringDialog(Dialog):
                                  lambda w: wx.ListBox(w, size=wx.Size(-1, 110)), 1)
         buttons(f.parent, f.box, (_("Add our &own gang"), self.on_add_own),
                 (opens(_("Add a gang by &name")), self.on_add_gang))
+        f = group(panel, box, _("Saturation"))
+        self.saturation = f.number(_("Skip an area whose &saturation is under this percent:"),
+                                   int(c["gang_min_saturation"]), 0, 100)
         f = group(panel, box, _("Paying to go in"))
         self.fee = f.number(_("Pay at most this &entry fee (arnebia):"), c["gang_fee_max"], 0, 1000000000)
         self.keep_arnebia = f.number(_("Never spend arnebia belo&w:"), self.p.get("gem_keep_arnebia", 20000),
@@ -270,6 +273,7 @@ class GatheringDialog(Dialog):
             self.gang_list.SetFocus()
             return
         self.cfg.update(gang=self.gang.GetValue(), gangs=self.gangs, gang_fee_max=self.fee.GetValue(),
+                        gang_min_saturation=self.saturation.GetValue(),
                         outside=self.outside.GetValue(),
                         known_places=self.known.GetValue(), above=self.above.GetValue(),
                         place=self.choices[i] if 0 < i < len(self.choices) else "", places=self.own,

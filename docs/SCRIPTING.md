@@ -806,11 +806,11 @@ Each configured chore is performed once per game day.
 You can use `only=` to choose which chores to run. The available names are:
 
 - `bank`
-- `bounty`
 - `pet_rebirth`
 - `donation`
 - `construction`
 - `feed`
+- `contribution_chests`
 - `secret_room`
 
 For example:
@@ -838,6 +838,8 @@ The `gather` command handles fishing, mining, or herb collecting according to yo
 Gathering works in the gang's area once per game day, then outside that area. The character fights back when needed and sells the collection afterward.
 
 The `gather check` option only looks at the skill, the gang area's entrance, and the place the bot would use.
+
+To ask the officers ticked in **Tools, Hunting bounties** for what they pay, use `bounties`, or `bounties check` to only read their menus.
 
 If you want to sell the gathered items separately, use:
 
@@ -1226,6 +1228,8 @@ Use this section when you need a quick reminder of a command or its syntax.
     gem_breaker [check]
     enhance [check]
     chores [check] [only=...]
+    bounties [check]
+    construction_scan [publish=<kind>|auto=<kind>]    kind: announcement, broadcast or system
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]

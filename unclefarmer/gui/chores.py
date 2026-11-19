@@ -11,13 +11,14 @@ from typing import Any
 import wx
 
 from .. import settings
-from ..engine import chores
+from ..engine import chores, constructionscan
 from ..i18n import _
-from .common import Dialog, with_code, Form, group, page, save_file, tabs
+from .common import Dialog, copy_text, with_code, Form, group, page, save_file, tabs
 from .crafting import CHECK, START
 
 DONATIONS = ("off", "10000", "20000", "diamonds")
-BUILD_AT = ("posts", "highland")
+SCAN_CONSTRUCTIONS, PUBLISH_REPORT = wx.ID_HIGHEST + 111, wx.ID_HIGHEST + 112
+PUBLISH_KINDS = ("announcement", "broadcast", "system")
 
 
 def donation_names():
@@ -44,7 +45,6 @@ class ChoresDialog(Dialog):
         panel, box = page(nb, _("City"))
         f = group(panel, box, _("Every day"))
         self.bank = f.check(_("Collect the &bank's deposit income and Value Product incomes"), c["bank"])
-        self.bounty = f.check(_("Collect &hunting bounties from a city officer"), c["bounty"])
         f = group(panel, box, _("Pet rebirth (free ones only, never for diamonds)"))
         self.rebirth = f.check(_("Use the day's free &rebirths on one pet"), c["pet_rebirth"])
         scan: dict[str, Any] = self.p.get("scan") or {}
@@ -53,6 +53,11 @@ class ChoresDialog(Dialog):
             pets.append(c["pet"])
         self.pet = f.add(_("&Pet:"), lambda w: wx.ComboBox(w, value=c["pet"], choices=pets))
         self.rebirths = f.number(_("Free rebirths a day (the game gives 2):"), c["rebirths"], 1, 2)
+        f = group(panel, box, _("Contribution Chests"))
+        self.chests = f.check(_("E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"),
+                              c["contribution_chests"])
+        self.chest_count = f.number(_("Contribution Chests a day (the game allows 2):"),
+                                    max(1, min(int(c["chest_count"] or 2), 2)), 1, 2)
 
         panel, box = page(nb, _("Gang"))
         f = group(panel, box, _("Inner hall"))
@@ -60,10 +65,11 @@ class ChoresDialog(Dialog):
                                  DONATIONS.index(c["donation"]) if c["donation"] in DONATIONS else 0)
         self.construction = f.number(_("&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"),
                                      min(int(c["construction"] or 0), 2), 0, 2)
-        self.build_at = f.choice(_("&Build at:"), [_("the inner hall's East and West posts"), _("our gang's highland")],
-                                 BUILD_AT.index(c["build_at"]) if c["build_at"] in BUILD_AT else 0)
-        self.highland = f.number(_("Our gang's &highland number (the one under Occupied Highlands):"),
-                                 int(c["highland"] or 0), 0, 9999)
+        self.build_highlands = f.check(_("Repair our gang's &highlands (first what is under 100%, what is at 100% last)"),
+                                       c["build_highlands"])
+        self.build_cannon = f.check(_("Build the Magic Ca&nnon under construction"), c["build_cannon"])
+        self.build_supply = f.check(_("Build the S&upply Camp under construction"), c["build_supply"])
+        self.build_posts = f.check(_("Build at the East and West &posts"), c["build_posts"])
         self.feed = f.check(_("&Feed the gang's breed beast at the Animal Shed"), c["feed"])
         self.keep_arnebia = f.number(_("Never spend arnebia belo&w:"), self.p.get("gem_keep_arnebia", 20000),
                                      0, 1000000000)
@@ -119,26 +125,111 @@ class ChoresDialog(Dialog):
                           wx.OK | wx.ICON_INFORMATION, self)
             self.pet.SetFocus()
             return
-        if BUILD_AT[self.build_at.GetSelection()] == "highland" and not self.highland.GetValue():
-            wx.MessageBox(_("Type your gang's highland number: the Highland Entrance lists it under Occupied "
-                            "Highlands (\"the own Gang's Highland 38\": 38)."), _("Gang construction"),
-                          wx.OK | wx.ICON_INFORMATION, self)
-            self.highland.SetFocus()
-            return
-        self.cfg.update(bank=self.bank.GetValue(), bounty=self.bounty.GetValue(),
+        self.cfg.update(bank=self.bank.GetValue(),
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
                         construction=self.construction.GetValue(),
-                        build_at=BUILD_AT[self.build_at.GetSelection()], highland=self.highland.GetValue(),
-                        feed=self.feed.GetValue(),
+                        build_highlands=self.build_highlands.GetValue(), build_cannon=self.build_cannon.GetValue(),
+                        build_supply=self.build_supply.GetValue(), build_posts=self.build_posts.GetValue(),
+                        feed=self.feed.GetValue(), contribution_chests=self.chests.GetValue(),
+                        chest_count=self.chest_count.GetValue(),
                         secret_room=self.room_on.GetValue(), room=self.room.GetValue().strip(),
                         assistant=self.assistant.GetSelection() + 1, practice_minutes=self.minutes.GetValue(),
                         share_with=self.share_with.GetValue().strip(), share_anyone=self.share_anyone.GetValue(),
                         share_trips=self.trips.GetValue(), trip_lead=self.lead.GetValue(),
                         before_farming=self.before.GetValue())
-        for old in ("room_minutes", "share", "build_highland"):       # settings of earlier versions
+        for old in ("room_minutes", "share", "build_highland", "highland", "build_at", "bounty"):       # settings of earlier versions
             self.cfg.pop(old, None)
         self.p["chores"] = self.cfg
         self.p["gem_keep_arnebia"] = self.keep_arnebia.GetValue()
         if save_file(self, settings.save_profile, self.character, self.p):
             self.EndModal(code)
+
+
+class BountiesDialog(Dialog):
+    """Tools, Hunting bounties: which officers to ask. Each pays for bosses of his own, and only
+    after the character landed the killing blow, so this runs when the player asks."""
+
+    LABELS = {"Guard Captain Suke": "&Guard Captain Suke", "Chancellor Bren": "Chancellor &Bren",
+              "General Paul": "General &Paul", "Colonel Demar": "Colonel &Demar"}
+
+    def __init__(self, parent: wx.Window, character: str) -> None:
+        super().__init__(parent, title=_("{tool} - {name}", tool=_("Hunting bounties"),
+                                         name=settings.profile_display(character)))
+        self.character = character
+        self.p = settings.load_profile(character)
+        self.cfg = chores.config(self.p)
+        root = wx.BoxSizer(wx.VERTICAL)
+        inner = wx.BoxSizer(wx.VERTICAL)
+        f = group(self, inner, _("Officers to visit (each pays for his own bosses, after your killing blow)"))
+        chosen: list[str] = list(self.cfg["bounty_officers"])
+        self.officers = {n: f.check(self.LABELS[n], n in chosen) for n in chores.BOUNTY_OFFICERS}
+        root.Add(inner, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 12)
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
+        for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
+            btn = wx.Button(self, label=label)
+            btn.Bind(wx.EVT_BUTTON, with_code(self.done, code))
+            buttons.Add(btn, 0, wx.RIGHT, 8)
+        buttons.Add(wx.Button(self, wx.ID_CANCEL, _("Cancel")), 0)
+        root.Add(buttons, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
+        self.SetSizerAndFit(root)
+
+    def done(self, code: int) -> None:
+        chosen = [n for n, box in self.officers.items() if box.GetValue()]
+        if not chosen and code != wx.ID_OK:
+            wx.MessageBox(_("Choose at least one officer."), _("Hunting bounties"), wx.OK | wx.ICON_INFORMATION, self)
+            return
+        self.cfg["bounty_officers"] = chosen
+        self.cfg.pop("bounty", None)
+        self.p["chores"] = self.cfg
+        if save_file(self, settings.save_profile, self.character, self.p):
+            self.EndModal(code)
+
+
+class ConstructionScanDialog(Dialog):
+    """Tools, Construction scanner: the last reading of the gang's constructions, to read, copy or publish.
+    Publishing takes a gang elder's rights, and always asks first."""
+
+    def __init__(self, parent: wx.Window) -> None:
+        super().__init__(parent, title=_("Construction scanner"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+        self.report = constructionscan.load()
+        self.kind = PUBLISH_KINDS[0]
+        root = wx.BoxSizer(wx.VERTICAL)
+        if self.report is None:
+            shown = _("No report yet. Scan the constructions: the bot visits each one and repairs nothing.")
+        else:
+            shown = "\n".join((_("Read {at} by {who}", at=self.report.get("at", "?"), who=self.report.get("by", "?")),
+                               constructionscan.details(self.report)))
+        root.Add(wx.StaticText(self, label=_("&Report:")), 0, wx.LEFT | wx.RIGHT | wx.TOP, 12)
+        self.text = wx.TextCtrl(self, value=shown, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(520, 240))
+        root.Add(self.text, 1, wx.EXPAND | wx.ALL, 12)
+        form = Form(self)
+        self.where = form.choice(_("Publish &as:"), [_("Gang announcement"), _("Broadcast (with a sound)"),
+                                                     _("System message")], 0)
+        root.Add(form.grid, 0, wx.LEFT | wx.RIGHT, 12)
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
+        for label, handler in ((_("&Scan the constructions"), self.on_scan), (_("C&opy"), self.on_copy),
+                               (_("&Publish"), self.on_publish)):
+            btn = wx.Button(self, label=label)
+            btn.Bind(wx.EVT_BUTTON, handler)
+            btn.Enable(self.report is not None or handler == self.on_scan)
+            buttons.Add(btn, 0, wx.RIGHT, 8)
+        buttons.Add(wx.Button(self, wx.ID_CANCEL, _("Close")), 0)
+        root.Add(buttons, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
+        self.SetSizerAndFit(root)
+
+    def on_scan(self, _event: wx.CommandEvent) -> None:
+        self.EndModal(SCAN_CONSTRUCTIONS)
+
+    def on_copy(self, _event: wx.CommandEvent) -> None:
+        if self.report is not None and not copy_text(constructionscan.message(self.report)):
+            wx.MessageBox(_("The clipboard couldn't be opened."), _("Construction scanner"), wx.OK | wx.ICON_ERROR, self)
+
+    def on_publish(self, _event: wx.CommandEvent) -> None:
+        if self.report is None:
+            return
+        self.kind = PUBLISH_KINDS[self.where.GetSelection()]
+        ask = _("Send this to the whole gang as: {where}?\n\n{report}", where=self.where.GetStringSelection(),
+                report=constructionscan.message(self.report))
+        if wx.MessageBox(ask, _("Construction scanner"), wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION, self) == wx.YES:
+            self.EndModal(PUBLISH_REPORT)

@@ -893,6 +893,22 @@ The tool also makes Enhance Crystals from crystal shards. It can get those shard
 
 Before enhancement begins, it prepares an initial stock of Enhance Crystals. It also prepares a fixed number of additional crystals whenever the current stock runs out.
 
+### Hunting bounties
+
+Open **Tools, Hunting bounties** after your character has landed the killing blow on a boss. Each officer pays for bosses of his own, so tick the officers you want: Guard Captain Suke, Chancellor Bren, General Paul, or Colonel Demar. The bot visits them from nearest to farthest and tells you what each one answered. **Check only** walks there and reads the menus without collecting.
+
+This is not a daily chore, so you can run it whenever you have something to collect. In a script, use `bounties` or `bounties check`.
+
+### Construction scanner
+
+**Tools, Construction scanner** shows how far your gang's constructions are: the Magic Cannon and Supply Camp being built, and the Crystal Turret and Wall barricade of every highland. **Scan the constructions** visits each one without repairing or building anything. Open the window again afterwards to read the result, the least complete first.
+
+**Copy** puts the short report on the clipboard. A gang elder can also **Publish** it as a gang announcement, a broadcast (which plays a sound) or a system message. The bot always asks first. A new announcement replaces only the older reports published by the same character, never another elder's.
+
+To do this automatically, open **Run, Schedules**, go to the **Tools** tab and add one of the three "scanning the constructions" tasks for your elder. At the set time the bot scans and publishes without asking. It publishes nothing when everything is at 100%, or when the report is the same as the last one this character sent that way.
+
+In a script, use `construction_scan`, `construction_scan publish=broadcast` to send the last report, or `construction_scan auto=broadcast` to scan and send it if there is something new. The kinds are `announcement`, `broadcast` and `system`.
+
 ### Daily chores
 
 Open **Tools, Daily chores** or press **Ctrl+Shift+D**.
@@ -905,10 +921,6 @@ Uncle Farmer keeps a record of completed chores. This prevents it from repeating
 
 Deposits your bank income and the daily income from every Value Product card.
 
-**Hunting bounties**
-
-Collects hunting bounties from the nearest city officer who pays them.
-
 **Pet rebirth**
 
 Uses the free daily rebirths for the pet you choose.
@@ -916,6 +928,10 @@ Uses the free daily rebirths for the pet you choose.
 The pet name found during the character scan should work, although the Pet Trainer may use a slightly different name for the same pet. For example, the character scan may identify a pet as **Eagle**, while the Pet Trainer calls it **Wild Eagle**.
 
 Uncle Farmer never spends diamonds on pet rebirths.
+
+**Contribution Chests**
+
+The bot goes to Guard Captain Suke on Tuneful Wetland and exchanges contribution for Contribution Chests. This is the contribution earned at the top level, not the gang contribution used in the gang. Each chest costs 5,000, and the game allows two a day. This is off until you tick it on the **City** tab. A chest counts only once it is in the bag.
 
 **Gang**
 
@@ -933,12 +949,15 @@ The game allows two construction jobs per day. Building and repairing share this
 
 Construction does not cost anything. Each completed job gives gang contribution and gang points. It can also give arnebia depending on your rank. A general receives 3,000, 3,000, or 6,000 arnebia, depending on the construction.
 
-You can choose where the construction takes place:
+Tick the places the bot may use. It goes through them in this order and stops once the day's builds are made:
 
-- **Inner Hall:** The East and West encampment reinforced constructions are available here. They are a short walk from the Gang Entrance.
-- **Gang Highland:** The bot repairs the Crystal Turret and Wall barricade, then returns through the Teleportation circle.
+1. **Gang highlands, under 100%:** It goes through every highland listed under **Occupied Highlands**, so there is no number to type, and repairs a Crystal Turret or Wall barricade that is damaged. It returns through the Teleportation circle. Each of the two takes one repair a day, in whichever highland.
+2. **Magic Cannon:** if your gang is building one.
+3. **Supply Camp:** if your gang is building one.
+4. **East and West posts:** Each Magic Cannon or Supply Camp under construction closes one of them. With none under way, both are open.
+5. **Gang highlands, at 100%:** The game accepts and rewards these repairs too, so they use whatever builds are left.
 
-Each gang has a different highland. Enter its number in the settings. You can find the number at the Highland Entrance under **Occupied Highlands**. For example, if your gang's highland is listed as **the own Gang's Highland 38**, enter `38`.
+On the day a character joins a gang, the game allows neither donating nor building, so the bot leaves both for the next day.
 
 **Animal Shed**
 
@@ -1014,6 +1033,8 @@ To change the order or take a gang off the list, select it and open its menu (**
 Uncle Farmer visits each gang in the order listed. For another gang, it first finds the gang through the Gang Entrance's **All gangs** list. It then enters the base and talks to the entrance to check the gathering area for your skill.
 
 Before entering, the bot checks the area's level, saturation, and entry fee. It enters only if the fee is within your configured limit and paying it would not use your arnebia reserve.
+
+You can also set a minimum saturation on the **Gangs** tab. An area under it is skipped, and the bot can look at it again on a later run that day.
 
 Each gang's gathering area can be visited once per game day.
 
