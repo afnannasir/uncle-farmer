@@ -1,5 +1,20 @@
 # What's new
 
+## Unreleased
+
+**Airships for VIPs, and potions bought in the town you are in**
+
+- An airship's menu has one entry: free for a VIP, 1,000 arnebia for everyone else. The bot now
+  takes it either way, whatever the VIP box says. A VIP who had left the box unticked was told
+  "the menu has no entry like ..." twice, and walked the long way round. Cable cars, whose menus
+  have a free row for VIPs next to the paying one, still follow the box.
+- The bot knows what every town's pharmacist and grocer sells, read from their menus in the game:
+  the twelve potions, and the grocers' pills, hearthstones, pliers, toolboxes, repair scrolls and
+  Pet Rice Rolls. A menu misread once no longer marks a town shop as lacking a potion for good: a
+  character in Tulip City went to Violet City for potions Pharmacist Evan sells.
+- What no shop sells (food, teleport stones, Super potions) no longer starts a trip: the bot says
+  so once. Prices the game data didn't have, like the pliers', now come from those lists.
+
 ## 1.2.1
 
 **Updates from 1.2.0 work again**

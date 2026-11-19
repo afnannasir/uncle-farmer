@@ -64,9 +64,42 @@ def category(name: str | None) -> str:
     return "other"
 
 
+_lists: dict[str, dict[str, int]] | None = None
+
+
+def shop_lists() -> dict[str, dict[str, int]]:
+    """{role: {lower-cased item: unit price}}: what every town shop of that kind sells, read from
+    their menus in the game (data/shop_lists.json). A role missing here has no list."""
+    global _lists
+    with _lock:
+        if _lists is None:
+            raw: object = json.read(os.path.join(paths.DATA, "shop_lists.json"), {}, encoding="utf-8")
+            lists: object = raw.get("lists") if json.is_object(raw) else None
+            out: dict[str, dict[str, int]] = {}
+            if json.is_object(lists):
+                for role, goods in lists.items():
+                    if json.is_object(goods):
+                        out[role] = {str(k).strip().lower(): v for k, v in goods.items()
+                                     if isinstance(v, int) and not isinstance(v, bool)}
+            _lists = out
+        return _lists
+
+
+def listed_role(name: str | None) -> str | None:
+    """The kind of town shop whose list has this item, or None."""
+    want = (name or "").strip().lower()
+    return next((role for role, goods in shop_lists().items() if want in goods), None)
+
+
 def shop_role(name: str | None) -> str | None:
-    """Which kind of NPC sells this item (None if no shop is known to)."""
-    return SHOP_FOR_CATEGORY.get(category(name))
+    """Which kind of NPC sells this item (None if no shop is known to). A shop list decides for
+    its kind: an item it doesn't have isn't sold there, whatever its category (the grocers sell no
+    food or teleport stones, and no shop sells a Super Red Potion - live 2026-11-19)."""
+    listed = listed_role(name)
+    if listed:
+        return listed
+    role = SHOP_FOR_CATEGORY.get(category(name))
+    return None if role in shop_lists() else role
 
 
 def buyer_role(name: str | None) -> str | None:
@@ -108,6 +141,9 @@ def unit_price(name: str | None) -> int | None:
     sold = [t[4] for t in traders(name, "sell") if t[5] == "arnebia" and t[4] > 0]
     if sold:
         return min(sold)
+    role = listed_role(name)
+    if role:
+        return shop_lists()[role][(name or "").strip().lower()]
     price = (item(name) or {}).get("price")
     return price if isinstance(price, int) and not isinstance(price, bool) and price > 0 else None
 

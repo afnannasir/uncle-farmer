@@ -295,7 +295,8 @@ def test_missing_shop_reports_failure_and_releases_guard(
     monkeypatch.setattr(town, "shops_for", stand_in(town.shops_for, lambda item: []))
     town.restock_now(as_bot(b))
     assert requested == [] and not b.restocking
-    assert any("couldn't restock" in line for line in b.lines)
+    # no trip at all: no shop sells it (said once), and the storehouse alone wasn't enough
+    assert any("no shop sells" in line or "couldn't restock" in line for line in b.lines)
 
 
 def test_explicit_purchase_waits_for_the_bag_to_confirm(

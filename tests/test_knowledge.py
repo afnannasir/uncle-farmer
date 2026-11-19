@@ -47,7 +47,9 @@ def test_category_uses_the_table_then_the_name() -> None:
 
 def test_shop_and_buyer_roles() -> None:
     assert knowledge.shop_role("Small Red Potion") == "potions"
-    assert knowledge.shop_role("Steak") == "grocer"
+    assert knowledge.shop_role("Hearthstone") == "grocer"
+    assert knowledge.shop_role("Steak") is None              # food: the grocers' list has none (live)
+    assert knowledge.shop_role("Super Red Potion") is None   # made, never sold
     assert knowledge.shop_role("Iron ore") is None
     assert knowledge.buyer_role("Wanderer shard") == "shard_market"
     assert knowledge.buyer_role("level 3 Ruby") == "shard_market"

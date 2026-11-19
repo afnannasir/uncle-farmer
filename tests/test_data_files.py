@@ -374,6 +374,12 @@ class ShardsFile(Strict):
     markets: dict[str, tuple[float, float]]
 
 
+class ShopListsFile(Strict):
+    note: str
+    read: str
+    lists: dict[Literal["potions", "grocer"], dict[str, int]]
+
+
 class MarketRow(Strict):
     cat: Literal[-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 100, 101, 102]
     name: str = Field(min_length=1)
@@ -511,6 +517,7 @@ MODELS: dict[str, type[BaseModel]] = {
     "map_kinds.json": MapKindsFile,
     "safe_zones.json": SafeZonesFile,
     "shards.json": ShardsFile,
+    "shop_lists.json": ShopListsFile,
     "market_list.json": MarketListFile,
     "short_loops.json": ShortLoopsFile,
     "skills.json": SkillsFile,

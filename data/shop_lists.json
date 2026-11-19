@@ -1,0 +1,39 @@
+{
+ "note": "What every town shop of a kind sells, item -> unit price in arnebia, read from their menus in the game (2026-11-19: Tulip City's Pharmacist Evan and Grocer Lana, Violet City's Pharmacist Mona Lisa and Grocer Luca; the game data's Apothecary Phillips, Giant Rock City, lists the same potions at the same prices). Villages have no shops. The gang camps' sellers are not covered: their menus were never read.",
+ "read": "2026-11-19",
+ "lists": {
+  "potions": {
+   "Small Red Potion": 60,
+   "Small Blue Potion": 60,
+   "Medium Red Potion": 150,
+   "Medium Blue Potion": 150,
+   "Large Red Potion": 450,
+   "Large Blue Potion": 450,
+   "Pet Small Red Potion": 120,
+   "Pet Small Blue Potion": 120,
+   "Pet Medium Red Potion": 300,
+   "Pet Medium Blue Potion": 300,
+   "Pet Large Red Potion": 1000,
+   "Pet Large Blue Potion": 1000
+  },
+  "grocer": {
+   "Skill Proficiency Pill (small)": 2000,
+   "Skill Proficiency Pill (medium)": 10000,
+   "Skill Proficiency Pill (large)": 30000,
+   "Pet Experience Pill (small)": 50,
+   "Pet Experience Pill (medium)": 300,
+   "Pet Experience Pill (large)": 1000,
+   "Pet Experience Pill (potent)": 10000,
+   "Hearthstone": 10000,
+   "Small Plier": 1000,
+   "Large Plier": 2000,
+   "Alloy Plier": 4000,
+   "Small Toolbox": 20000,
+   "Large Toolbox": 40000,
+   "Alloy Toolbox": 80000,
+   "Repair Scroll": 50000,
+   "Advanced Repair Scroll": 100000,
+   "Pet Rice Roll": 1000
+  }
+ }
+}

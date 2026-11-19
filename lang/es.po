@@ -6375,6 +6375,9 @@ msgstr "ninguna tienda de {map} vende {item}: no voy a otra ciudad por eso"
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "ninguna tienda cercana lista {item}: consulta logs\\dialogs.log"
 
+msgid "no shop sells {item}"
+msgstr ""
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "no hay almacén en {map}: no se saca {item}"
 
@@ -7734,6 +7737,9 @@ msgstr "el almacén no tiene {item}"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "el almacén no tiene {item} y no hay arnebia para comprarlo"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr ""
+
 msgid "the storehouse has {n} {item}"
 msgstr "el almacén tiene {n} {item}"
 
@@ -8567,6 +8573,10 @@ msgid "{npc} offers no exchange"
 msgstr ""
 
 msgid "{npc} offers no hunting bounty"
+msgstr ""
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""
 
 msgid "{npc}, {price} {cur} each"
