@@ -95,6 +95,14 @@ SWING_KEPT = 6           # swings kept per monster (enough for a median gap)
 # wait for it.
 ROOM_ATTACKERS = 2       # monsters striking at us that make a freezing area skill worth its cooldown
 FREEZE_TIME = 5.0        # seconds a freeze holds when the skill's text gives none
+# Escape as a kite (Phase 1b item 6, the Hunter's part): a monster on top of a ranged character that
+# has struck lately, HP under KITE_BELOW, and Escape up: jump the 12 tiles away from it (a cast at a
+# monster turns us to face it, measured), so it spends the next seconds walking instead of hitting.
+# Only with agent 74's facing, when the 12 tiles behind are walkable and the target is still within
+# reach from the landing. Under 60% HP the old rule still jumps without those checks.
+KITE_BELOW = 90          # % HP under which a monster on top is worth a jump
+KITE_ON_TOP = 3.0        # tiles: a monster this close is on top of us
+AWAY: dict[int, tuple[int, int]] = {1: (1, 0), 4: (-1, 0), 2: (0, 1), 8: (0, -1)}   # facing -> a jump backward
 CHANNEL_START = 0.15     # a press now starts the channel about this much later (the press's trip)
 MELEE = {"Warrior", "Orc", "Assassin"}
 # How far inside its base attack's range a class fights: at the very edge a monster stepping back
@@ -1286,7 +1294,7 @@ class SkillBook:
             return mine
         # 1. in trouble: a shield support() didn't already use; 2. a ranged class with a monster on
         # top of it: jump away
-        choice = self._trouble_choice(v) or self._room_choice(v)
+        choice = self._trouble_choice(v) or self._room_choice(v) or self._kite_choice(v)
         # Fire Impact follow-ups and unlocked channels go before the player's ready attacks.
         if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
             elements = self.points(now) if self.cls == "Elf" else None
@@ -1346,6 +1354,32 @@ class SkillBook:
         if not choice and v.near_me and v.hp_share < 60 and self.cls in ("Hunter", "Mage", "Elf", "Priest", "Witcher"):
             choice = v.first("mobility", lambda s: "jump backward" in s.get("text", "").lower())
         return choice
+
+    def _kite_choice(self, v: _PickView) -> Skill | None:
+        """A jump backward away from a monster on top of us that has struck lately (KITE_BELOW):
+        it walks back to us while we keep shooting. None unless the jump is sure to go away from
+        it, along walkable ground, and land within reach of the target."""
+        if v.hp_share >= KITE_BELOW:
+            return None
+        jumps = [s for s in v.skills if self.jump_back_skill(s)]
+        step = AWAY.get(int(v.me.get("compass") or 0))
+        if not jumps or step is None or self.b.reach() < 8:
+            return None
+        att = set(self.swinging(v.now))
+        on_top = [e for e in v.foes if e["id"] in att
+                  and math.hypot(e["x"] - v.me["x"], e["y"] - v.me["y"]) <= KITE_ON_TOP]
+        if not on_top or any((e["x"] - v.me["x"]) * step[0] + (e["y"] - v.me["y"]) * step[1] > 0.5 for e in on_top):
+            return None           # one stands where the jump would go: it would land beside it
+        from .. import atlas
+        m = atlas.model(self.b.map_id())
+        cx, cy = int(v.me["x"] + 0.5), int(v.me["y"] + 0.5)
+        n = int(JUMP_BACK)
+        if not all(m.ok(cx + step[0] * k, cy + step[1] * k) for k in range(1, n + 1)):
+            return None
+        land = (v.me["x"] + step[0] * n, v.me["y"] + step[1] * n)
+        if math.hypot(v.target["x"] - land[0], v.target["y"] - land[1]) > self.b.reach():
+            return None
+        return jumps[0]
 
     def _room_choice(self, v: _PickView) -> Skill | None:
         """Two or more monsters striking at us and a channel to protect: the freezing area skill

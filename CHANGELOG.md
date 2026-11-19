@@ -295,6 +295,10 @@
   it to "Emergency only" to stop the jumps ahead, or to Never to stop both. The log says "Escape
   to jump ahead". Agent 74: the game's own facing is read, so the jump never goes the wrong way.
   Close the game and start it again to load the new agent.
+- Escape also kites now: when a monster on top of the Hunter has been hitting and HP is under
+  90% (it waited for 60% before), the Hunter jumps 12 tiles away from it and keeps shooting while
+  it walks back. Only when the game's facing shows the jump goes away from that monster, the
+  ground behind is clear, and the target is still in range from where it lands.
 
 **The game's own report after a dungeon**
 
