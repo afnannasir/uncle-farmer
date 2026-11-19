@@ -8663,6 +8663,9 @@ msgstr "{skill} puesta en la tecla de habilidad vacía {key} (página {page})"
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} se detuvo: la inicio de nuevo"
 
+msgid "{skill} to jump ahead"
+msgstr ""
+
 msgid "{skill} to reach {name}"
 msgstr ""
 

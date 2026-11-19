@@ -277,6 +277,17 @@
   jumps to it instead of walking: it lands beside the monster, stunned for 2.5 seconds. Not on a
   beast, and never if you set Leap Slash to Never. The log says "Leap Slash to reach ...".
 
+**Hunters jump ahead with Escape**
+
+- Escape jumps 12 tiles away from where you face, and players turn first so it carries them
+  forward. The bot never did. Now, on a long walk on foot outside a fight, a Hunter taps the key
+  for the other way, checks that the character really turned, and presses Escape: about a second
+  for 12 tiles instead of three. Only along a straight row with nothing in the way that follows
+  the planned walk, and never on a beast. Escape is still kept for emergencies the same way; set
+  it to "Emergency only" to stop the jumps ahead, or to Never to stop both. The log says "Escape
+  to jump ahead". Agent 74: the game's own facing is read, so the jump never goes the wrong way.
+  Close the game and start it again to load the new agent.
+
 **The game's own report after a dungeon**
 
 - When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.

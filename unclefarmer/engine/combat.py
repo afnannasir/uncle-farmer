@@ -69,6 +69,7 @@ BUFF_RETRY = 20.0        # a buff press the game didn't cast (no rage, no combos
 SPEED_WALK_MIN = 25      # a walk on foot this many steps long or more starts with a speed skill (Wind Step)
 LEAP_PAST_REACH = 1.0    # a leap to reach a monster (Leap Slash) only from this far past our own reach...
 LEAP_MARGIN = 0.5        # ... and this far inside the leap's range: positions are a moment old
+JUMP_BACK = 12.0         # tiles a jump backward (the Hunter's Escape) carries us, measured on 148 casts
 FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
@@ -1065,6 +1066,22 @@ class SkillBook:
                  if self.leap_skill(x) and self.allowed(x) and float(x.get("range") or 0) - LEAP_MARGIN >= dist]
         cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)]
         return max(cands, key=lambda x: float(x.get("range") or 0)) if cands else None
+
+    @staticmethod
+    def jump_back_skill(x: Skill) -> bool:
+        """A jump backward (the Hunter's Escape): away from where we face, so facing the other way
+        first turns it into 12 tiles forward."""
+        return x.get("role") == "mobility" and "jump backward" in x.get("text", "").lower()
+
+    def jump_back_for(self, now: float) -> Skill | None:
+        """A ready jump backward the player lets the bot use outside emergencies, else None. It is
+        free of the global cooldown, so none is waited for."""
+        if not self.ok:
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.jump_back_skill(x) and self.allowed(x)]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)]
+        return cands[0] if cands else None
 
     def press_leap(self, x: Skill, now: float) -> Press | None:
         """Get the leap's page up and record the press: (key, name), or None."""

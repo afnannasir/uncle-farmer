@@ -8663,6 +8663,9 @@ msgstr "{skill} khali skill key {key} par rakh diya (page {page})"
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} ruk gayi - dobara shuru kar rahe hain"
 
+msgid "{skill} to jump ahead"
+msgstr "aage chhalang ke liye {skill}"
+
 msgid "{skill} to reach {name}"
 msgstr "{name} tak pohanchne ke liye {skill}"
 

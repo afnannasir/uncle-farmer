@@ -1,3 +1,4 @@
+# pyright: reportPrivateUsage=false
 """Leaps to reach a monster (Phase 1b item 5): Leap Slash was only pressed with the Powerful Leap
 Attack talent, and then in reach; without it the Warrior never used it. Now a monster past melee
 reach but inside the leap's 10 yards is jumped to instead of walked to."""
@@ -7,8 +8,8 @@ from typing import Any
 
 import pytest
 from conftest import Bot as BookBot
-from conftest import Game, as_parts
-from test_fighting import Bot, Clock, monster, straight_walk
+from conftest import Clock, Game, as_kind, as_parts
+from test_fighting import Bot, monster, straight_walk
 
 from unclefarmer.engine import combat
 from unclefarmer.engine.botparts import fighting
@@ -63,11 +64,23 @@ class LeapBook:
 def leap_bot(x: float, monkeypatch: pytest.MonkeyPatch) -> Bot:
     b = Bot(entities=[monster(-1, x=x)])
     straight_walk(b)
-    b.skillbook = LeapBook()
+    b.skillbook = as_kind(combat.SkillBook, LeapBook())
     b.clear_shot = lambda me, mob, mid=None: True
     b.dialog = lambda: {}
-    monkeypatch.setattr(fighting.beasts, "owned", lambda bot: [])
+    monkeypatch.setattr(fighting.beasts, "owned", no_beasts)
     return b
+
+
+def no_beasts(bot: Any) -> list[dict[str, Any]]:
+    return []
+
+
+def never_doomed(*args: Any) -> bool:
+    return False
+
+
+def on_a_beast(bot: Any) -> list[dict[str, Any]]:
+    return [{"active": True}]
 
 
 def test_a_monster_a_few_steps_past_reach_is_leapt_to(monkeypatch: pytest.MonkeyPatch, clock: Clock) -> None:
@@ -88,7 +101,7 @@ def test_no_leap_in_reach_past_range_or_on_a_beast(monkeypatch: pytest.MonkeyPat
         b._leap_in(b.snap()["entities"][0], 5.0)
         assert b.keys_pressed == [], x
     b = leap_bot(108.0, monkeypatch)
-    monkeypatch.setattr(fighting.beasts, "owned", lambda bot: [{"active": True}])
+    monkeypatch.setattr(fighting.beasts, "owned", on_a_beast)
     b._leap_in(b.snap()["entities"][0], 5.0)
     assert b.keys_pressed == []
     b = leap_bot(108.0, monkeypatch)
@@ -100,9 +113,10 @@ def test_the_walk_up_stops_where_the_leap_reaches(monkeypatch: pytest.MonkeyPatc
     b = leap_bot(108.0, monkeypatch)
     b.shoots_moving = lambda: False
     b.downed = lambda mid, since: False
-    b.doomed = lambda m, me, steps=None, rng=None: False
+    monkeypatch.setattr(b, "doomed", never_doomed)
     b.watch_hp = lambda snap: None
     way = fighting._Approach(b, -1, 5.0, 5.0, 0.0)
     assert way.stop(b.me()) and way.leap
-    assert b._approach(b.snap()["entities"][0], fighting._Approach(b, -1, 5.0, 5.0, 0.0))["id"] == -1
+    got = b._approach(b.snap()["entities"][0], fighting._Approach(b, -1, 5.0, 5.0, 0.0))
+    assert got is not None and got["id"] == -1
     assert b.walked == []                              # no walk: the fight leaps from here

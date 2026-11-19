@@ -148,6 +148,9 @@ class Pick:
     def leap_for(self, dist: float, now: float) -> dict[str, Any] | None:
         return None               # no leap to reach (tests/test_leap_reach.py has those)
 
+    def jump_back_for(self, now: float) -> dict[str, Any] | None:
+        return None               # no jump ahead (tests/test_jump_ahead.py has those)
+
     def ready_in(self, now: float) -> float:
         return self._ready
 

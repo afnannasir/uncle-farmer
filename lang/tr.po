@@ -8579,6 +8579,9 @@ msgstr "{skill} boş beceri tuşu {key} üzerine kondu (sayfa {page})"
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} durduruldu - yeniden başlatılıyor"
 
+msgid "{skill} to jump ahead"
+msgstr ""
+
 msgid "{skill} to reach {name}"
 msgstr ""
 

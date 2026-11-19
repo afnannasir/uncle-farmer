@@ -334,6 +334,100 @@ class WalkingMixin(Parts):
             self.log(_("{skill} for a long walk", skill=press[1]))
             self.key(press[0])
 
+    # A jump toward (dx, dy) goes away from where we face: the key that turns us, and the facing
+    # (agent 74 "compass", game.ak.C) it must give before the jump is pressed.
+    JUMP_TURN: dict[tuple[int, int], tuple[str, int]] = {
+        (1, 0): ("left", 1), (-1, 0): ("right", 4), (0, 1): ("up", 2), (0, -1): ("down", 8)}
+    JUMP_GAIN = 10.0      # the landing must be this far along the planned way, ...
+    JUMP_OFF_WAY = 1.5    # ... and within this of it
+    JUMP_TAP_MS = 100     # how long the turning key is held (the player's taps: a median 0.10 s)
+
+    def _jump_ahead(self, hops: list[tuple[int, int]]) -> bool:
+        """On a long walk on foot, outside fights: face away from the way ahead and jump backward
+        (the Hunter's Escape: 12 tiles, free of the global cooldown, every 20 s) instead of walking
+        those tiles (Phase 1b item 6; measured on the player's own jumps: about 0.9 s for 12 tiles
+        against 2.9 s on foot). Only when the 12 tiles along x or y are all walkable and the
+        landing is on the planned way, at least JUMP_GAIN steps on; only when the agent shows the
+        turn took (an older agent can't: no jump). True when we jumped."""
+        sb = getattr(self, "skillbook", None)
+        if sb is None or not sb.ok or self.in_fight or self.walk_only or not hops:
+            return False
+        now = self.clock.time()
+        jump = sb.jump_back_for(now)
+        if jump is None:
+            return False
+        me = self.me()
+        if "compass" not in me:
+            return False          # an agent before 74: the turn can't be checked
+        here = (float(me["x"]), float(me["y"]))
+        way = self._jump_way(here, hops)
+        if way is None:
+            return False
+        step = way[0]
+        if any(r.get("active") for r in beasts.owned(as_bot(self))) or self.dialog().get("open"):
+            return False
+        turn, facing = self.JUMP_TURN[step]
+        self.key(self.move_key(turn), self.JUMP_TAP_MS)
+        self.sleep(0.2)           # (past me()'s 0.15 s reuse: a fresh reading)
+        if self.me().get("compass") != facing:
+            return False          # the turn didn't take (a cast turned us, a window held the key)
+        press = sb.press_support(jump, now)
+        if press is None:
+            return False
+        self.log(_("{skill} to jump ahead", skill=press[1]))
+        self.key(press[0])
+        start = here
+        end = self.clock.time() + 1.0
+        while self.clock.time() < end:
+            self.sleep(0.1)
+            at = self.me()
+            if math.hypot(float(at["x"]) - start[0], float(at["y"]) - start[1]) >= combat.JUMP_BACK / 2:
+                return True
+        return True               # pressed: whatever happened, the walk plans again from here
+
+    def _jump_way(self, here: tuple[float, float], hops: list[tuple[int, int]]
+                  ) -> tuple[tuple[int, int], tuple[float, float]] | None:
+        """The straight jump that follows the planned way: (step, landing), else None. The jump
+        runs along x or y only (the game sends one of the four straight facings)."""
+        if self.hops_length((int(here[0]), int(here[1])), hops) < combat.JUMP_BACK + 3:
+            return None
+        first = hops[0]
+        dx, dy = first[0] - here[0], first[1] - here[1]
+        if max(abs(dx), abs(dy)) < 1:
+            first = hops[1] if len(hops) > 1 else first
+            dx, dy = first[0] - here[0], first[1] - here[1]
+        step = (1 if dx > 0 else -1, 0) if abs(dx) >= abs(dy) else (0, 1 if dy > 0 else -1)
+        n = int(combat.JUMP_BACK)
+        landing = (here[0] + step[0] * n, here[1] + step[1] * n)
+        m = atlas.model(self.map_id())
+        cx, cy = int(here[0] + 0.5), int(here[1] + 0.5)
+        if not all(m.ok(cx + step[0] * k, cy + step[1] * k) for k in range(1, n + 1)):
+            return None           # a wall (or the map's edge) in the way: the jump would stop short
+        if self._along_way(here, hops, landing) is None:
+            return None
+        return step, landing
+
+    def _along_way(self, here: tuple[float, float], hops: list[tuple[int, int]],
+                   point: tuple[float, float]) -> float | None:
+        """How far along the planned way (from here through the hops) the point lies, when it is
+        within JUMP_OFF_WAY of it and at least JUMP_GAIN on; else None."""
+        walked, at = 0.0, here
+        best: float | None = None
+        for hop in hops:
+            seg = math.hypot(hop[0] - at[0], hop[1] - at[1])
+            k = 0.0
+            while k <= seg:
+                t = k / seg if seg else 0.0
+                x, y = at[0] + (hop[0] - at[0]) * t, at[1] + (hop[1] - at[1]) * t
+                if math.hypot(point[0] - x, point[1] - y) <= self.JUMP_OFF_WAY and walked + k >= self.JUMP_GAIN:
+                    best = walked + k if best is None else max(best, walked + k)
+                k += 0.5
+            walked += seg
+            at = (float(hop[0]), float(hop[1]))
+            if walked > combat.JUMP_BACK * 2:
+                break
+        return best
+
     def _left_map(self, mid: int) -> bool:
         """Moved on to another map (an exit crossed, a teleport, the game's own move): this map's
         walls say nothing about where we stand now, so the caller plans from there. On a trip the
@@ -456,7 +550,9 @@ class WalkingMixin(Parts):
         """What a walk round that went to a teleport pad (_walk_detour) comes to: "jumped" (the
         game moved us on: plan again from the landing), "stuck" (the pad is still shut, or this
         walk has taken JUMP_LIMIT pads), "short" (it ended before the pad). Any other round's
-        result comes back as it was."""
+        result comes back as it was; a jump ahead of our own (_jump_ahead) is "jumped" too."""
+        if stuck == "leapt":
+            return "jumped"
         jump_at = getattr(m, "jump_at", None)
         last = hops[-1] if hops else here      # no hops: we already stand on the pad
         if jump_at is None or last == cell or jump_at(last) is None:
@@ -495,10 +591,13 @@ class WalkingMixin(Parts):
     def _walk_hops_go(self, hops: list[tuple[int, int]], diagonal: bool, leave: int | None,
                       near: Callable[[dict[str, Any]], bool] | None) -> str | bool:
         """Walk the hops: "map" or "near" (done early), "stuck", "attacked" or "moved" (broken
-        off; "moved": the player moved us while paused), or False (all walked). leave: the map
-        id when the walk is meant to leave it."""
-        for hop in hops:
+        off; "moved": the player moved us while paused), "leapt" (a jump ahead: plan again from
+        where it landed), or False (all walked). leave: the map id when the walk is meant to
+        leave it."""
+        for i, hop in enumerate(hops):
             self._note_walk_left()
+            if self._jump_ahead(hops[i:]):
+                return "leapt"
             if self.walk_only:
                 beasts.keep_riding(as_bot(self))   # thrown off or refused earlier: back on between hops
             elif getattr(self, "traveling", False) and not self.in_fight:
