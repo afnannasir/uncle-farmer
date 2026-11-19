@@ -561,6 +561,9 @@ def update_app(changes: Mapping[str, Any]) -> dict[str, Any]:
 
 _PROFILE_ID_SEPARATOR = "\x1f"
 _PROFILE_ID_KEY = "_unclefarmer_character_identity"
+# What the bot learns lives next to the profiles (entrances, weights, teleports, landings, guards,
+# level tops): never a character, so never in the list of profiles.
+LEARNED_PREFIX = "_learned_"
 
 
 def character_profile(name: str, entity_id: object, server: str = "") -> str:
@@ -713,8 +716,8 @@ def profiles() -> list[str]:
     """
     found: list[str] = []
     for filename in os.listdir(paths.PROFILES):
-        if not filename.endswith(".json"):
-            continue
+        if not filename.endswith(".json") or filename.startswith(LEARNED_PREFIX):
+            continue                  # (the _learned_*.json files are what the bot learned, not characters)
         path = os.path.join(paths.PROFILES, filename)
         try:
             with open(path, encoding="utf-8") as f:
