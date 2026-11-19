@@ -752,10 +752,13 @@ class SkillBook:
         return True
 
     def _note_downed(self, struck: list[list[Any]], t: float) -> None:
-        """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it)."""
+        """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it). A dead one's
+        freeze goes with it: the game gives its id to the next monster."""
         downed: dict[int, float] = self.__dict__.setdefault("downed", {})    # (a test's book made without __init__)
+        frozen: dict[int, float] = self.__dict__.get("frozen") or {}
         for row in struck:
             if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and row[1] == 0:
+                frozen.pop(row[0], None)
                 downed[row[0]] = max(t, downed.get(row[0], t))
         if len(downed) > 200:
             self.downed = dict(sorted(downed.items(), key=lambda kv: kv[1])[-100:])
@@ -767,15 +770,19 @@ class SkillBook:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
 
+    # Notes by monster id (or target id) that a map change clears (tests/test_fight_memory.py).
+    MAP_NOTES = ("downed", "swings", "frozen", "landed")
+
     def forget_the_map(self) -> None:
         """We are on another map: target ids mean other monsters here. What was noted against
         them goes - who is down, presses on their way to one, where our casts landed."""
-        self.downed.clear()
-        self.__dict__.get("swings", {}).clear()
+        for note in self.MAP_NOTES:
+            held: dict[Any, Any] | None = self.__dict__.get(note)
+            if held:
+                held.clear()
         for name in [n for n, t in self.pending_target.items() if t is not None]:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
-        self.landed.clear()
 
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""

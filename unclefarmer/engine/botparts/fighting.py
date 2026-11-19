@@ -85,6 +85,16 @@ class FightingMixin(Parts):
 
     WALK_SPEED = 4.0      # tiles a second on foot, to tell how long a walk to a monster takes
     HP_WINDOW = 3.0       # seconds of a monster's HP readings that say how fast it is going down
+    # Every note the bot keeps by monster id (Parts), in one place (master plan, Phase 5): an id is a
+    # place in one map's list, so all of them go on a map change (forget_the_map); the ones that
+    # hold something against a monster go with its death too (_forget_the_dead), since the game
+    # gives the next monster that id. tests/test_fight_memory.py fails on an id-keyed note that is
+    # in neither list nor in KEPT_NOTES.
+    MAP_NOTES = ("skip", "mob_names", "counted", "walk_steps", "unselectable", "walk_failed", "hp_log",
+                 "_attackers", "pet_suspects")
+    DEATH_NOTES = ("skip", "unselectable", "walk_failed")
+    KEPT_NOTES = {"phrases": "quick-phrase slots", "pets_refused": "our pets' ids", "beasts_refused": "our beasts' ids",
+                  "beast_refusals": "our beasts' ids", "pet_described": "our pets' ids", "pet_mp_peak": "our pets' ids"}
     FOLLOW_LEASH = 12.0   # a melee character's follow attack chases a monster this far (straight line)
     FOLLOW_STALL = 2.0    # ... and is given up if it doesn't close in by a tile in this long
     FOLLOW_TRIES = 3      # stalls in a row, never reaching the monster, before we walk up ourselves
@@ -431,12 +441,11 @@ class FightingMixin(Parts):
         the bot walked past."""
         if not died:
             return
-        unselectable: dict[int, Any] = getattr(self, "unselectable", {})
-        walk_failed: dict[int, float] = getattr(self, "walk_failed", {})
-        for mid in died:
-            self.skip.pop(mid, None)
-            unselectable.pop(mid, None)
-            walk_failed.pop(mid, None)
+        for name in self.DEATH_NOTES:
+            held: dict[int, Any] | None = getattr(self, name, None)
+            if held:
+                for mid in died:
+                    held.pop(mid, None)
 
     def forget_the_map(self) -> None:
         """We are on another map (snap() saw it): everything held against a monster's id goes.
@@ -450,8 +459,7 @@ class FightingMixin(Parts):
         skip_names and killed_kinds stay: they are kept by map."""
         self.count_kills()
         held: dict[int, Any] | set[int] | None
-        for name in ("skip", "mob_names", "counted", "walk_steps", "unselectable", "walk_failed", "hp_log",
-                     "_attackers", "pet_suspects"):
+        for name in self.MAP_NOTES:
             held = getattr(self, name, None)
             if held:
                 held.clear()
