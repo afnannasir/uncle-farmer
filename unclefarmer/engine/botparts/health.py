@@ -318,7 +318,7 @@ class HealthMixin(Parts):
         order: list[str] = []
         if self.p.get("use_resurrection_crystal", False) and not last:
             order += ["crystal_spot", "crystal_map"]
-        if last or self.p.get("respawn", "map") != "map":
+        if last or self.p.get("respawn", "city") != "map":
             order += ["city", "map"]
         else:
             order += ["map", "city"]

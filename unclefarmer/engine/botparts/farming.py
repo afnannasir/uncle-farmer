@@ -410,7 +410,7 @@ class FarmingMixin(Parts):
             return int(plan_keep) or None
         if not self.p.get("stop_before_level", False):
             return None
-        return int(self.p.get("level_keep_xp", 0) or 0) or None
+        return int(self.p.get("level_keep_xp", 100000) or 0) or None
 
     def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
         """End the run before the next level: the sheet's "upgrading requires N experience"

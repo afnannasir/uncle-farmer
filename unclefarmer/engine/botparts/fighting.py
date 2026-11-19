@@ -1352,7 +1352,7 @@ class FightingMixin(Parts):
             if press:
                 self.key(press[0])
             else:
-                self.sleep(max(0.2, p.get("attack_gap", 0.2)))
+                self.sleep(max(0.2, p.get("attack_gap", 0.35)))
         f.i += 1
         if f.i % 3 == 0 and self.ui().get("target") != mid and not self.select_target(m):
             if f.dist >= self.SELECT_RANGE:
