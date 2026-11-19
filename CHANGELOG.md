@@ -317,6 +317,10 @@
 - Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
   `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
   job is one entry there.
+- `uv run python -m unclefarmer.picksim` plays whole simulated cave visits with every pick made by
+  the bot's own target choice and an order under test, and prints the kills of each. The bot's own
+  order (nearest walk first) came out best or within a few kills of the best in both caves, for a
+  caster and a melee character; going toward crowds of monsters did not help.
 
 **Skills outside the global cooldown are used in every fight**
 
