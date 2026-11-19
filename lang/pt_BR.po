@@ -65,6 +65,9 @@ msgstr "&Teclas de ataque quando não for possível ler as habilidades:"
 msgid "&Attack style:"
 msgstr "&Estilo de ataque:"
 
+msgid "&Autopilot: the whole day"
+msgstr "&Piloto automático: o dia inteiro"
+
 msgid "&Bag and supplies"
 msgstr "&Mochila e suprimentos"
 
@@ -180,6 +183,9 @@ msgstr "&Equipamento para aprimorar:"
 
 msgid "&Experience:"
 msgstr "&Experiência:"
+
+msgid "&Farm with the plan:"
+msgstr "&Farmar com o plano:"
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "&Alimentar a besta reprodutora da guilda no Galpão de Animais"
@@ -636,6 +642,9 @@ msgstr "(e mais {n} sem preço informado)"
 msgid "(no notes)"
 msgstr "(sem observações)"
 
+msgid "(no plan yet)"
+msgstr "(nenhum plano ainda)"
+
 msgid "(sellers not counted)"
 msgstr ""
 
@@ -686,6 +695,11 @@ msgstr "1 jogo, bot parado"
 
 msgid "1 level up"
 msgstr "subiu 1 nível"
+
+msgid ""
+"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+msgstr ""
+"1. a lista Antes de farmar, de cima para baixo; 2. o plano, até terminar ou até a parada diária antes da virada do dia do jogo; 3. a lista Depois de farmar, quando o plano terminou sozinho (não depois de Parar). São as mesmas listas de Configurações do personagem, Gatilhos."
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10.000 arnebia (1.500 de contribuição à guilda)"
@@ -937,6 +951,9 @@ msgstr ""
 
 msgid "Automatic, by class"
 msgstr "Automático, por classe"
+
+msgid "Autopilot"
+msgstr "Piloto automático"
 
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr ""
@@ -2385,6 +2402,9 @@ msgstr "Criar uma gema"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Criar uma gema: escolha o tipo, o nível e a quantidade"
 
+msgid "Make a plan first (the Plans tab): the day farms with one."
+msgstr "Crie um plano primeiro (aba Planos): o dia farma com ele."
+
 msgid "Make a plan first, in the Plans tab."
 msgstr "Crie primeiro um plano na guia Planos."
 
@@ -3692,6 +3712,9 @@ msgstr "&Armazenar:"
 msgid "Sta&rt"
 msgstr "In&iciar"
 
+msgid "Sta&rt the day"
+msgstr "&Iniciar o dia"
+
 msgid "Sta&tus:"
 msgstr ""
 
@@ -3992,6 +4015,9 @@ msgstr "O computador será desligado em {n} segundos. Cancelar o desligamento?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "O computador será desligado assim que os outros bots terminarem."
+
+msgid "The day:"
+msgstr "O dia:"
 
 msgid "The delay must be between 0 and {most} seconds."
 msgstr "O atraso deve estar entre 0 e {most} segundos."

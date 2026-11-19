@@ -65,6 +65,9 @@ msgstr "Teclas de &ataque cuando no se pueden leer las habilidades:"
 msgid "&Attack style:"
 msgstr "Estilo de &ataque:"
 
+msgid "&Autopilot: the whole day"
+msgstr ""
+
 msgid "&Bag and supplies"
 msgstr "&Bolsa y suministros"
 
@@ -180,6 +183,9 @@ msgstr "&Equipo a mejorar:"
 
 msgid "&Experience:"
 msgstr "&Experiencia:"
+
+msgid "&Farm with the plan:"
+msgstr ""
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr ""
@@ -636,6 +642,9 @@ msgstr "(y {n} más sin precio entonces)"
 msgid "(no notes)"
 msgstr "(sin notas)"
 
+msgid "(no plan yet)"
+msgstr ""
+
 msgid "(sellers not counted)"
 msgstr ""
 
@@ -686,6 +695,10 @@ msgstr "1 juego, bot detenido"
 
 msgid "1 level up"
 msgstr "1 subida de nivel"
+
+msgid ""
+"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+msgstr ""
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10 000 arnebia (1 500 de contribución de pandilla)"
@@ -936,6 +949,9 @@ msgstr ""
 
 msgid "Automatic, by class"
 msgstr "Automático, según la clase"
+
+msgid "Autopilot"
+msgstr ""
 
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr ""
@@ -2384,6 +2400,9 @@ msgstr "Fabricar una gema"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Fabricar una gema: elige cuál, su nivel y cuántas"
 
+msgid "Make a plan first (the Plans tab): the day farms with one."
+msgstr ""
+
 msgid "Make a plan first, in the Plans tab."
 msgstr "Crea primero un plan, en la pestaña Planes."
 
@@ -3692,6 +3711,9 @@ msgstr "Guardar (&o):"
 msgid "Sta&rt"
 msgstr "Inicia&r"
 
+msgid "Sta&rt the day"
+msgstr ""
+
 msgid "Sta&tus:"
 msgstr ""
 
@@ -3993,6 +4015,9 @@ msgstr "El equipo se apagará en {n} segundos. ¿Cancelar el apagado?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "El equipo se apagará cuando los demás bots hayan terminado."
+
+msgid "The day:"
+msgstr ""
 
 msgid "The delay must be between 0 and {most} seconds."
 msgstr "La espera debe estar entre 0 y {most} segundos."

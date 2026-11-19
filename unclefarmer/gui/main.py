@@ -45,7 +45,8 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
     return {
         "run_start": available and not running and has_items, "run_stop": running,
         "run_pause": running, "run_stop_all": any_running, "run_walk": available and not running,
-        "run_schedules": True, "run_results": True, "run_speak_results": True,
+        "run_schedules": True, "run_autopilot": available and not running and has_items,
+        "run_results": True, "run_speak_results": True,
         "game_mute": available, "game_unmute": available, "game_mute_all": True, "game_unmute_all": True,
         "game_open": True, "messages_private": True, "messages_chat": available,
         "messages_reset": has_messengers, "character_settings": available, "character_bag": available,
@@ -301,9 +302,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("Stop &every bot"), lambda e: self.stop_all(), "Ctrl+Shift+S"),
                          command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
                          command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
+                         command(_("&Autopilot: the whole day"), lambda e: self.open_autopilot(), "Ctrl+Shift+A"),
                          command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
                          command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
-                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules",
+                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules", "run_autopilot",
                          "run_results", "run_speak_results"), context=True)
         game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
                          command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
@@ -540,6 +542,7 @@ Main window
   Ctrl+Shift+S       Stop every bot
   Ctrl+W              Walk to a dungeon entrance or a map (Pause stops the walk)
   Ctrl+Shift+H        Schedules: plans and scripts started at set times
+  Ctrl+Shift+A        Autopilot: the Before farming list, a plan and the After farming list, started together
   Ctrl+R              Results
   Ctrl+Shift+R        Speak the results
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)

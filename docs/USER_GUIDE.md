@@ -273,6 +273,16 @@ You can change this time in **File → Settings → Farming day**.
 
 By default, the daily stopping time is set to 10 minutes before the drop-time reset. In Pakistan, that means **04:50**. This gives your character some time to leave the farming area before the reset.
 
+### Autopilot: the whole day in one window
+
+**Run → Autopilot: the whole day** (Ctrl+Shift+A) shows the logged-in character's day together:
+
+1. the **Before farming** list (for example the day's chores, a cave, restocking), top to bottom;
+2. the plan chosen under **Farm with the plan**, until it ends or the daily stopping time;
+3. the **After farming** list (for example selling shards, storing items, the Gem Maker), when the plan ended by itself.
+
+The two lists are the same ones as **Character settings → Triggers**: change them in either place. **Save** keeps the lists and the plan; **Start the day** saves them and starts the plan on that character's game. Nothing starts by itself: a schedule can still start a plan as before.
+
 ### After farming
 
 The **Farming day** tab also lets you choose what Uncle Farmer should do after farming stops automatically.

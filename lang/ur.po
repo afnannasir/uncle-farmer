@@ -65,6 +65,9 @@ msgstr "Jab skills parhi na ja sakein to &Hamla keys:"
 msgid "&Attack style:"
 msgstr "&Hamla ka tareeqa:"
 
+msgid "&Autopilot: the whole day"
+msgstr "&Autopilot: poora din"
+
 msgid "&Bag and supplies"
 msgstr "&Basta aur supplies"
 
@@ -180,6 +183,9 @@ msgstr "&Enhance karne ke liye equipment:"
 
 msgid "&Experience:"
 msgstr "&Experience:"
+
+msgid "&Farm with the plan:"
+msgstr "Is plan se &farming karein:"
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "Animal Shed par gang ke breed beast ko &khilao"
@@ -634,6 +640,9 @@ msgstr "(aur {n} jin ki tab koi qeemat nahi thi)"
 msgid "(no notes)"
 msgstr "(koi notes nahi)"
 
+msgid "(no plan yet)"
+msgstr "(abhi koi plan nahi)"
+
 msgid "(sellers not counted)"
 msgstr "(bechne wale gine nahi gaye)"
 
@@ -684,6 +693,11 @@ msgstr "1 game, bot ruka hua hai"
 
 msgid "1 level up"
 msgstr "1 level upar"
+
+msgid ""
+"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+msgstr ""
+"1. Farming se pehle wali list, upar se neeche; 2. plan, jab tak woh khatam na ho ya game ke din badalne se pehle roz ka stop na aa jaye; 3. Farming ke baad wali list, jab plan khud khatam hua ho (Stop ke baad nahi). Yeh wahi listein hain jo Character settings, Triggers mein hain."
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10,000 arnebia (1,500 gang contribution)"
@@ -932,6 +946,9 @@ msgstr ""
 
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
+
+msgid "Autopilot"
+msgstr "Autopilot"
 
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr ""
@@ -2378,6 +2395,9 @@ msgstr "Gem banayein"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Gem banayein: kaunsa, uska level aur kitne, chunein"
 
+msgid "Make a plan first (the Plans tab): the day farms with one."
+msgstr "Pehle ek plan banayein (Plans tab): din usi se farming karta hai."
+
 msgid "Make a plan first, in the Plans tab."
 msgstr "Pehle Plans tab mein plan banayein."
 
@@ -3680,6 +3700,9 @@ msgstr "Jama &karein:"
 msgid "Sta&rt"
 msgstr "Shu&ru"
 
+msgid "Sta&rt the day"
+msgstr "Din &shuru karein"
+
 msgid "Sta&tus:"
 msgstr "Hal&at:"
 
@@ -3981,6 +4004,9 @@ msgstr "Computer {n} second mein band hoga. Shutdown mansookh karein?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Baqi bots khatam hone par computer band ho jayega."
+
+msgid "The day:"
+msgstr "Din:"
 
 msgid "The delay must be between 0 and {most} seconds."
 msgstr "Delay 0 aur {most} seconds ke darmiyan honi chahiye."

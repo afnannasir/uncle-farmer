@@ -255,6 +255,13 @@
   character profiles, and each of them showed up as a character in the profile list. They are left
   out now.
 
+**Autopilot: the whole day in one window**
+
+- **Run, Autopilot: the whole day** (Ctrl+Shift+A) shows the character's Before farming list, the
+  plan to farm with, and the After farming list together, and **Start the day** runs them in that
+  order. The lists are the same ones as Character settings, Triggers. It starts only when you press
+  Start.
+
 **Maps for your level in the plan editor**
 
 - The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose

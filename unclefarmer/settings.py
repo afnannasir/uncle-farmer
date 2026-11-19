@@ -83,6 +83,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
     "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
+    "autopilot_plan": "",       # Run, Autopilot: the plan the day farms with ("plan:<name>"; "" = the last one run)
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -278,6 +279,7 @@ class Profile(BaseModel):
     stop_before_level: bool = PROFILE_DEFAULTS["stop_before_level"]
     level_keep_xp: int = PROFILE_DEFAULTS["level_keep_xp"]
     skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
+    autopilot_plan: str = PROFILE_DEFAULTS["autopilot_plan"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]

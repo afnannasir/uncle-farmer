@@ -65,6 +65,9 @@ msgstr ""
 msgid "&Attack style:"
 msgstr ""
 
+msgid "&Autopilot: the whole day"
+msgstr ""
+
 msgid "&Bag and supplies"
 msgstr ""
 
@@ -178,6 +181,9 @@ msgid "&Equipment to enhance:"
 msgstr ""
 
 msgid "&Experience:"
+msgstr ""
+
+msgid "&Farm with the plan:"
 msgstr ""
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
@@ -627,6 +633,9 @@ msgstr ""
 msgid "(no notes)"
 msgstr ""
 
+msgid "(no plan yet)"
+msgstr ""
+
 msgid "(sellers not counted)"
 msgstr ""
 
@@ -676,6 +685,10 @@ msgid "1 game, bot stopped"
 msgstr ""
 
 msgid "1 level up"
+msgstr ""
+
+msgid ""
+"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
 msgstr ""
 
 msgid "10,000 arnebia (1,500 gang contribution)"
@@ -914,6 +927,9 @@ msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 
 msgid "Automatic, by class"
+msgstr ""
+
+msgid "Autopilot"
 msgstr ""
 
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
@@ -2322,6 +2338,9 @@ msgstr ""
 msgid "Make a gem: choose which, its level and how many"
 msgstr ""
 
+msgid "Make a plan first (the Plans tab): the day farms with one."
+msgstr ""
+
 msgid "Make a plan first, in the Plans tab."
 msgstr ""
 
@@ -3567,6 +3586,9 @@ msgstr ""
 msgid "Sta&rt"
 msgstr ""
 
+msgid "Sta&rt the day"
+msgstr ""
+
 msgid "Sta&tus:"
 msgstr ""
 
@@ -3855,6 +3877,9 @@ msgid "The computer shuts down in {n} seconds. Cancel the shutdown?"
 msgstr ""
 
 msgid "The computer shuts down once the other bots have finished."
+msgstr ""
+
+msgid "The day:"
 msgstr ""
 
 msgid "The delay must be between 0 and {most} seconds."
