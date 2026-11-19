@@ -79,6 +79,15 @@ def test_same_name_characters_keep_independent_profiles_and_are_named_clearly(tm
     assert settings.profiles() == [first, second]
 
 
+def test_what_the_bot_learned_is_not_listed_as_a_profile(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    settings.save_profile("Hero", dict(settings.PROFILE_DEFAULTS))
+    for name in ("_learned_entrances.json", "_learned_level_tops.json"):
+        with open(tmp_path / name, "w", encoding="utf-8") as f:
+            json.dump({"Hero|40": {"top": 1000}}, f)
+    assert settings.profiles() == ["Hero"]
+
+
 def test_an_identified_character_starts_from_its_legacy_name_only_choices(tmp_path: Path,
                                                                             monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
