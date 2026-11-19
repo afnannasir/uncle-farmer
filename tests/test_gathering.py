@@ -399,6 +399,16 @@ def test_check_only_and_a_fee_above_the_limit_never_enter(inner_hall: None) -> N
     assert not entered and not over and g.mid == 4004
 
 
+def test_an_area_under_the_minimum_saturation_is_skipped_for_now(inner_hall: None) -> None:
+    g = Game(map_id=4004)
+    gang_pages(g)
+    entered, about, over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS, gang_min_saturation=100), "Fishing")
+    assert not entered and not over and g.mid == 4004
+    assert about.startswith("the gang's area is under your 100% saturation")
+    entered, _about, _over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS, gang_min_saturation=99.9), "Fishing")
+    assert entered
+
+
 def test_a_gang_without_that_area_is_done_for_the_day(inner_hall: None) -> None:
     g = Game(map_id=4004)
     g.x, g.y = 40, 40

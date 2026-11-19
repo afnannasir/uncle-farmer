@@ -324,6 +324,25 @@ def test_press_waits_out_the_gap(monkeypatch: pytest.MonkeyPatch) -> None:
     assert b.last_beast_change == clock.now
 
 
+def test_a_window_left_open_is_closed_before_the_beast_goes_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    monkeypatch.setattr(beasts, "known", stand_in(beasts.known, lambda: {}))
+
+    class WindowOpen(Bot):
+        def clear_popups(self, force: bool = False) -> bool:
+            assert force
+            self.a.accept = True                 # the keys reach the panel again
+            return True
+
+    b = WindowOpen([row(1, "Fast", "swift", speed=5.0)])
+    b.a.accept = False
+    b._me = {"points": {"fusion": 100, "age_ms": 1}}
+    beasts.ensure(as_bot(b), beasts.TRAVEL)
+    assert b.a.rows[0]["active"] is True and len(b.keys) == 1
+    assert not b.beasts_refused
+
+
 def test_press_retries_and_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     clock = Clock()
     monkeypatch.setattr(CLOCK, "time", clock)

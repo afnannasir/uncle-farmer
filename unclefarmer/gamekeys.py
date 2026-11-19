@@ -147,6 +147,11 @@ def page_turn_key() -> str:
     return _game().get("W_ATTACK_PAGETURN") or PAGE_TURN_DEFAULT
 
 
+def notice_key() -> str:
+    """The key that opens the notices (W_NOTICE): the gang's announcements are listed there."""
+    return _game().get("W_NOTICE") or "backspace"
+
+
 def slot_key_list() -> list[str]:
     """The 12 hotkeys (1 .. =) of the player's game, the default where one isn't bound. (Unbound
     used to come back as None: with no input.ini found, no potion was ever on a hotkey.)"""

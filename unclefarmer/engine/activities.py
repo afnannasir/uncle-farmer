@@ -32,6 +32,7 @@ class Activity:
     farms: bool = False     # it farms: held to the day's farming window, its loot is farming loot
     checks: bool = False    # it has a Check only (walks there, reads, changes nothing)
     town: str = ""          # the engine.town function a town job is
+    listed: bool = True     # offered as it is in the trigger and schedule lists
 
 
 def _town(fn: str) -> Run:
@@ -55,6 +56,20 @@ def _lose_xp(b: Bot, check: bool, _o: Mapping[str, Any]) -> object:
 def _chores(b: Bot, check: bool, o: Mapping[str, Any]) -> object:
     from . import chores
     return chores.run(b, chores.config(b.p), check, o.get("only") or None)
+
+
+def _bounties(b: Bot, check: bool, _o: Mapping[str, Any]) -> object:
+    from . import chores
+    return chores.collect_bounties(b, chores.config(b.p), check)
+
+
+def _construction_scan(b: Bot, _check: bool, o: Mapping[str, Any]) -> object:
+    from . import constructionscan
+    if o.get("auto"):
+        return constructionscan.scan_and_publish(b, o["auto"])
+    if o.get("publish"):
+        return constructionscan.publish(b, o["publish"])
+    return constructionscan.scan(b)
 
 
 def _crafting(key: str, setting: str, tool: str) -> Run:
@@ -102,6 +117,9 @@ ACTIVITIES: tuple[Activity, ...] = (
     # a dungeon farms: its loot is farming loot, so it has no results part of its own
     Activity("dungeon", N_("running a dungeon"), _dungeon, farms=True, checks=True),
     Activity("sell_collection", N_("selling the collection"), _sell_collection),
+    # on request only (Tools, Hunting bounties); the scanner is listed by how it publishes (triggers.TOOLS)
+    Activity("bounties", N_("asking for hunting bounties"), _bounties, checks=True, listed=False),
+    Activity("construction_scan", N_("scanning the constructions"), _construction_scan, listed=False),
 )
 BY_KEY: dict[str, Activity] = {a.key: a for a in ACTIVITIES}
 

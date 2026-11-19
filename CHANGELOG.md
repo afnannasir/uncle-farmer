@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+**Gang construction reaches every place, and all your highlands**
+
+- You choose where the day's builds go: highlands, Magic Cannon, Supply Camp, East and West posts.
+- Highland defences under 100% come first, then what the gang is building, then the posts, and
+  last the highland defences at 100%, which the game also repairs and rewards.
+- No more highland number to type: the bot goes through all your gang's highlands and comes back
+  through the Teleportation circle from anywhere on the map.
+- The day you join a gang, and a breed beast already fed today, no longer count as failures.
+- Daily chores, City tab: exchange contribution (the kind earned at the top level, not gang
+  contribution) for Contribution Chests at Guard Captain Suke, 5,000 each, up to the game's two a
+  day. It is off until you tick it.
+- Gathering: a minimum saturation for gangs' areas. An area under it is skipped.
+- Hunting bounties are no longer a daily chore: each officer pays for bosses of his own, after your
+  killing blow. Tools, Hunting bounties (script: `bounties`) asks the officers you tick, Guard
+  Captain Suke included.
+- Tools, Construction scanner: reads how far the Magic Cannon, Supply Camp and highland defences
+  are, repairing nothing. Copy the report, or as a gang elder publish it as an announcement, a
+  broadcast or a system message. A new announcement replaces only your own older reports.
+  Run, Schedules, Tools can scan and publish by itself, when there is something new to say.
+- Leaving a gang base, the bot walks out first instead of teleporting away, and a teleport skill
+  that is on no key is dropped at once, with one message instead of one for each place.
+- A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.
+
 **Gem Breaker**
 
 - A new tool, **Tools, Gem Breaker** (Ctrl+Shift+B), and the script command `gem_breaker`: breaks the

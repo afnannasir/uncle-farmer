@@ -77,9 +77,6 @@ msgstr "&Bot"
 msgid "&Browse"
 msgstr "&Procurar"
 
-msgid "&Build at:"
-msgstr "&Construir em:"
-
 msgid "&Call them by their name"
 msgstr "Cham&á-los pelo nome"
 
@@ -429,6 +426,9 @@ msgstr "&Mensagens privadas"
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "Runas de &proteção (em caso de falha, o nível é mantido):"
 
+msgid "&Publish"
+msgstr "&Publicar"
+
 msgid "&Quick guide"
 msgstr "&Guia rápido"
 
@@ -455,6 +455,9 @@ msgstr "&Respostas, uma por linha:"
 
 msgid "&Reply"
 msgstr "&Responder"
+
+msgid "&Report:"
+msgstr "&Relatório:"
 
 msgid "&Rest before the next fight below HP (%):"
 msgstr "&Descansar antes do próximo combate abaixo de HP (%):"
@@ -489,6 +492,9 @@ msgstr "&Salvar"
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
 "&Reservar parte do tempo de coleta diário (em vez da configuração do personagem)"
+
+msgid "&Scan the constructions"
+msgstr "E&scanear as construções"
 
 msgid "&Schedules:"
 msgstr "&Agendamentos:"
@@ -671,6 +677,9 @@ msgstr ""
 
 msgid "({pages} pages, {min:.1f} minutes)"
 msgstr ""
+
+msgid "+{n} arnebia"
+msgstr "+{n} arnebia"
 
 msgid ", +20% with {shard}"
 msgstr ", +20% com {shard}"
@@ -1039,6 +1048,9 @@ msgstr "Quebrar não pode ser desfeito."
 msgid "Breaks {n} {item}."
 msgstr "Quebra {n} {item}."
 
+msgid "Broadcast (with a sound)"
+msgstr "Broadcast (com som)"
+
 msgid "Browse a category"
 msgstr ""
 
@@ -1050,6 +1062,15 @@ msgstr "Bônus desativados."
 
 msgid "Buffs on."
 msgstr "Bônus ativados."
+
+msgid "Build at the East and West &posts"
+msgstr "Construir nos &posts East e West"
+
+msgid "Build the Magic Ca&nnon under construction"
+msgstr "Construir o Magic Ca&nnon em construção"
+
+msgid "Build the S&upply Camp under construction"
+msgstr "Construir o S&upply Camp em construção"
 
 msgid "Busy - send stop first."
 msgstr "Ocupado - envie o comando de parada primeiro."
@@ -1193,6 +1214,9 @@ msgstr "Escolha uma ferramenta ou um script salvo."
 msgid "Choose an action to run."
 msgstr "Escolha uma ação para executar."
 
+msgid "Choose at least one officer."
+msgstr "Escolha pelo menos um oficial."
+
 msgid "Choose in a dialog"
 msgstr "Escolher em uma janela"
 
@@ -1254,9 +1278,6 @@ msgstr "Fechando todas as janelas do Mist World para reinstalar o agente"
 msgid "Closing the game."
 msgstr "Fechando o jogo."
 
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Coletar &recompensas de caça com um oficial da cidade"
-
 msgid "Collect Herbs"
 msgstr "Coletar ervas"
 
@@ -1293,6 +1314,12 @@ msgstr "Conectado"
 msgid "Connecting..."
 msgstr "Conectando..."
 
+msgid "Construction &scanner"
+msgstr "&Scanner de construções"
+
+msgid "Construction scanner"
+msgstr "Scanner de construções"
+
 msgid "Contact the &developer"
 msgstr "Entrar em contato com o &desenvolvedor"
 
@@ -1304,6 +1331,12 @@ msgstr "Contém texto"
 
 msgid "Contribution"
 msgstr "Contribuição"
+
+msgid "Contribution Chests"
+msgstr "Contribution Chests"
+
+msgid "Contribution Chests a day (the game allows 2):"
+msgstr "Contribution Chests por dia (o jogo permite 2):"
 
 msgid "Cop&y all"
 msgstr "Cop&iar tudo"
@@ -1536,6 +1569,11 @@ msgstr "Masmorras"
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr "Masmorras cujas entradas não aparecem nos arquivos do jogo: {names}"
+
+msgid ""
+"E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
+msgstr ""
+"Trocar contribuição por Contribution Chests (5.000 cada, com Guard Captain Suke) (&x)"
 
 msgid "E&xit"
 msgstr "&Sair"
@@ -1816,8 +1854,8 @@ msgstr "Som dos jogos ativado."
 msgid "Gang"
 msgstr "Guilda"
 
-msgid "Gang construction"
-msgstr "Construção da guilda"
+msgid "Gang announcement"
+msgstr "Anúncio da gangue"
 
 msgid "Gang mode"
 msgstr "Modo de guilda"
@@ -2068,6 +2106,12 @@ msgstr "Como funciona:"
 
 msgid "How the game works"
 msgstr "Como o jogo funciona"
+
+msgid "Hunting bount&ies"
+msgstr "Recompensas de caça (&i)"
+
+msgid "Hunting bounties"
+msgstr "Recompensas de caça"
 
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
@@ -2735,6 +2779,11 @@ msgstr "Preço não salvo, não contabilizado: {list}"
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "Ainda não há uma versão do Uncle Farmer no GitHub."
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+"Ainda não há relatório. Escaneie as construções: o bot visita cada uma e não repara nada."
+
 msgid "No results yet."
 msgstr "Ainda não há resultados."
 
@@ -2833,9 +2882,9 @@ msgid "Nowhere, use what's in the bag"
 msgstr "Em nenhum lugar; usar o que estiver na mochila"
 
 msgid ""
-"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+"Officers to visit (each pays for his own bosses, after your killing blow)"
 msgstr ""
-"Terras Altas Ocupadas não contém a região {n} (lista: {list}) - confira o número em Ferramentas, Tarefas diárias"
+"Oficiais a visitar (cada um paga pelos próprios chefes, após o seu golpe final)"
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -2941,9 +2990,6 @@ msgstr "Outros itens coletados:"
 
 msgid "Our blue potions"
 msgstr "Nossas poções azuis"
-
-msgid "Our gang's &highland number (the one under Occupied Highlands):"
-msgstr "&Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
 
 msgid "Our own gang"
 msgstr "Nossa própria guilda"
@@ -3144,6 +3190,9 @@ msgstr "Mensagens privadas para você"
 msgid "Program version: {v}"
 msgstr "Versão do programa: {v}"
 
+msgid "Publish &as:"
+msgstr "Publicar &como:"
+
 msgid "Put into the storehouse:"
 msgstr "Colocado no depósito:"
 
@@ -3191,6 +3240,9 @@ msgstr "Ler novas mensagens"
 
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Ler fúria, marcas ou combos durante o combate a cada (segundos):"
+
+msgid "Read {at} by {who}"
+msgstr "Lido em {at} por {who}"
 
 msgid "Reading available sound IDs..."
 msgstr "Lendo IDs de som disponíveis..."
@@ -3246,6 +3298,11 @@ msgstr "Renomear som"
 
 msgid "Repair &gear with toolboxes from the bag"
 msgstr "Reparar &equipamentos com caixas de ferramentas da mochila"
+
+msgid ""
+"Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
+msgstr ""
+"Reparar as &highlands da gangue (primeiro abaixo de 100%, as de 100% por último)"
 
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
@@ -3365,6 +3422,9 @@ msgstr "&Armazenar:"
 
 msgid "STOPPED: {why}"
 msgstr "PARADO: {why}"
+
+msgid "Saturation"
+msgstr "Saturação"
 
 msgid "Saturday"
 msgstr "Sábado"
@@ -3503,6 +3563,15 @@ msgid ""
 msgstr ""
 "Envie help e o nome de um comando para saber o que ele faz, por exemplo: help follow"
 
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
+msgstr ""
+"Enviar isto para toda a gangue como: {where}?\n"
+"\n"
+"{report}"
+
 msgid "Set the attack &range myself"
 msgstr "Definir manualmente o &alcance de ataque"
 
@@ -3621,6 +3690,9 @@ msgstr "Habilidades usadas: {casts} conjurações, {dmg} de dano total"
 
 msgid "Skinning"
 msgstr "Esfolar"
+
+msgid "Skip an area whose &saturation is under this percent:"
+msgstr "Ignorar área com &saturação abaixo desta porcentagem:"
 
 msgid ""
 "Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
@@ -3896,6 +3968,9 @@ msgstr "Domingo"
 msgid "Supplies"
 msgstr "Suprimentos"
 
+msgid "System message"
+msgstr "Mensagem de sistema"
+
 msgid "Take their commands while the game &window is in front"
 msgstr ""
 "Aceitar comandos deles quando a &janela do jogo estiver em primeiro plano"
@@ -4044,6 +4119,9 @@ msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
 
 msgid "The character's plan"
 msgstr "O plano do personagem"
+
+msgid "The clipboard couldn't be opened."
+msgstr "Não foi possível abrir a área de transferência."
 
 msgid "The collection"
 msgstr "A coleta"
@@ -4496,11 +4574,6 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Digite o nome da guilda cujos artesãos serão usados."
-
-msgid ""
-"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-msgstr ""
-"Digite o número das Terras Altas da sua guilda: a Entrada das Terras Altas o lista em Terras Altas Ocupadas (\"Terras Altas da própria guilda 38\": 38)."
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -4982,6 +5055,9 @@ msgstr "já doou hoje"
 msgid "already done today"
 msgstr "já foi feito hoje"
 
+msgid "already fed today"
+msgstr "já alimentado hoje"
+
 msgid "already in a town - staying here"
 msgstr "já está numa cidade — ficando aqui"
 
@@ -5031,6 +5107,9 @@ msgstr "chegou a {map} em {x},{y}"
 
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr "chegou a {map} em {x},{y} — planejando o caminho a partir daqui"
+
+msgid "asking for hunting bounties"
+msgstr "pedir recompensas de caça"
 
 msgid "at most {n} gold coins"
 msgstr ""
@@ -5184,6 +5263,12 @@ msgstr "construído {n} vezes; nenhum local recebeu mais hoje (locais: {places})
 msgid "built {n} times; the game's two builds a day are made"
 msgstr "construído {n} vezes; foram feitas as duas construções diárias do jogo"
 
+msgid "built {n} times; {made} already made today"
+msgstr "construiu {n} vezes; {made} já feitas hoje"
+
+msgid "built {n} times; {why}"
+msgstr "construiu {n} vezes; {why}"
+
 msgid "buying the ticked lots..."
 msgstr ""
 
@@ -5197,6 +5282,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "pode construir em {post}"
+
+msgid "can exchange contribution for a Contribution Chest"
+msgstr "pode trocar contribuição por um Contribution Chest"
 
 msgid "can't choose the best map: the character's level isn't known yet"
 msgstr ""
@@ -5302,6 +5390,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr "escolha os oficiais primeiro: Tools, Hunting bounties"
+
 msgid "choose what? write: choose Tulip City"
 msgstr "o que escolher? digite: choose Tulip City"
 
@@ -5326,9 +5417,6 @@ msgstr "mapa fechado — não há entrada ou saída a pé"
 msgid "collected the deposit income"
 msgstr "coletou os rendimentos do depósito"
 
-msgid "collected the hunting bounty"
-msgstr "coletou a recompensa de caça"
-
 msgid "collected {n} Value Product incomes"
 msgstr "coletou {n} rendimentos de produtos de valor"
 
@@ -5345,6 +5433,25 @@ msgid ""
 "come: I walk to you. Best: press E, copy it with Shift+C and send come and what you copied. come and a map's name works too."
 msgstr ""
 "come: vou até você. O melhor é pressionar E, copiar com Shift+C e enviar come junto com o texto copiado. come seguido do nome de um mapa também funciona."
+
+msgid "construction report published"
+msgstr "relatório publicado"
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr "relatório publicado; {n} relatórios antigos seus removidos"
+
+msgid "construction scanner: everything is at 100%, nothing published"
+msgstr "scanner de construções: tudo em 100%, nada publicado"
+
+msgid ""
+"construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+"scanner de construções: nada mudou desde o último relatório, nada publicado"
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
+"scanner: {n} locais lidos, {open} abaixo de 100%; abra Tools, Construction scanner para ler o relatório"
 
 msgid "cooldown {n} s"
 msgstr "recarga de {n} s"
@@ -5395,6 +5502,9 @@ msgstr "não foi possível acertar esse guarda — tentando outro"
 
 msgid "couldn't get away - fighting on"
 msgstr "não deu para fugir — continuando a luta"
+
+msgid "couldn't get back from the highland"
+msgstr "não foi possível voltar da highland"
 
 msgid "couldn't get back into the gang's base ({why}) - staying here"
 msgstr "não foi possível voltar à base da gang ({why}) — ficando aqui"
@@ -5863,6 +5973,18 @@ msgstr "saiu pressionando {way}"
 msgid "got out: walked to {cell}"
 msgstr "saiu: caminhou até {cell}"
 
+msgid "got {n} Contribution Chests"
+msgstr "recebeu {n} Contribution Chests"
+
+msgid "got {n} Contribution Chests; not enough contribution for another"
+msgstr "recebeu {n} Contribution Chests; contribuição insuficiente para outro"
+
+msgid "got {n} Contribution Chests; the game allows no more today"
+msgstr "recebeu {n} Contribution Chests; o jogo não permite mais hoje"
+
+msgid "got {n} Contribution Chests; {why}"
+msgstr "recebeu {n} Contribution Chests; {why}"
+
 msgid "handwears"
 msgstr ""
 
@@ -5916,14 +6038,14 @@ msgstr "casa: {map}"
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr "as recompensas de caça podem ser coletadas aqui"
-
-msgid "hunting bounty"
-msgstr "recompensa de caça"
+msgid "hunting bounties: {list}"
+msgstr "recompensas de caça: {list}"
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "evitamos áreas de monstros de elite ou chefes"
+
+msgid "in highland {n}"
+msgstr "na highland {n}"
 
 msgid "in the city"
 msgstr "na cidade"
@@ -6244,6 +6366,15 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 "nenhuma caverna permite o nível {n} ainda (a mais fácil exige nível {low})"
 
+msgid "no chest came into the bag"
+msgstr "nenhum baú entrou na mochila"
+
+msgid "no construction of the gang was found to read"
+msgstr "nenhuma construção da gangue foi encontrada"
+
+msgid "no construction report yet: scan first"
+msgstr "ainda não há relatório de construções: escaneie primeiro"
+
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr ""
 "não há tarefas diárias para fazer: ative algumas em Ferramentas, Tarefas diárias"
@@ -6463,6 +6594,9 @@ msgstr ""
 msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
 msgstr ""
 "Arnebia insuficiente para comprar {item}: {price} cada, {money} na bolsa"
+
+msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
+msgstr "contribuição insuficiente para um Contribution Chest: {have} de {cost}"
 
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
@@ -6688,9 +6822,6 @@ msgstr "outro"
 msgid "other equipments"
 msgstr ""
 
-msgid "our gang's highland"
-msgstr "Terras Altas da nossa guilda"
-
 msgid "our hits land on {name} - fighting that one"
 msgstr "nossos ataques atingem {name} — lutando contra ele"
 
@@ -6882,6 +7013,18 @@ msgstr "executando uma masmorra"
 
 msgid "running on_stop"
 msgstr "executando on_stop"
+
+msgid "scanning the constructions"
+msgstr "escanear as construções"
+
+msgid "scanning the constructions, then a broadcast"
+msgstr "escanear as construções e enviar um broadcast"
+
+msgid "scanning the constructions, then a gang announcement"
+msgstr "escanear as construções e publicar um anúncio da gangue"
+
+msgid "scanning the constructions, then a system message"
+msgstr "escanear as construções e enviar uma mensagem de sistema"
 
 msgid "script"
 msgstr "script"
@@ -7402,6 +7545,11 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+"o relatório foi digitado, mas o jogo não confirmou - verifique antes de enviar de novo"
+
 msgid "the day of {name}"
 msgstr "o dia de {name}"
 
@@ -7462,8 +7610,16 @@ msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 "o jogo não atribuiu {skill} à tecla {key} — mantendo as teclas como estão"
 
+msgid ""
+"the game didn't show the 5000 contribution price, so nothing was confirmed"
+msgstr ""
+"o jogo não mostrou o preço de 5000 de contribuição, então nada foi confirmado"
+
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "o jogo não iniciou {skill} na área da guilda"
+
+msgid "the game didn't take the construction report"
+msgstr "o jogo não aceitou o relatório de construções"
 
 msgid "the game didn't take the number"
 msgstr "o jogo não aceitou o número"
@@ -7545,6 +7701,9 @@ msgstr "a área da guilda custa {fee} Arnebia, acima do seu limite de {max}"
 msgid "the gang's area didn't let us in: {why}"
 msgstr "não foi possível entrar na área da guilda: {why}"
 
+msgid "the gang's area is under your {least}% saturation ({about})"
+msgstr "a área da gangue está abaixo da sua saturação de {least}% ({about})"
+
 msgid "the gang's area: {about}"
 msgstr "área da guilda: {about}"
 
@@ -7566,9 +7725,6 @@ msgstr "a pedra de retorno não me levou para casa"
 
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr "a pedra de retorno me leva a {square} — local lembrado"
-
-msgid "the inner hall's East and West posts"
-msgstr "postos Leste e Oeste do salão interno"
 
 msgid "the instructor offers no secret room now"
 msgstr "o instrutor não oferece sala secreta agora"
@@ -7649,9 +7805,6 @@ msgstr "faltam {n} de experiência para o próximo nível"
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "faltam {n} de experiência para o próximo nível; a coleta para abaixo de {goal}"
-
-msgid "the officer offers no hunting bounty"
-msgstr "o oficial não oferece recompensa de caça"
 
 msgid "the open menu is {what}"
 msgstr "o menu aberto é {what}"
@@ -7790,6 +7943,9 @@ msgstr "{npc} recusou — consulte logs\\dialogs.log"
 msgid "the {npc}'s next menu didn't open"
 msgstr "o próximo menu de {npc} não abriu"
 
+msgid "the {post} is at 100%: leaving it for now"
+msgstr "{post} está em 100%: fica para depois"
+
 msgid "the {post}: {what}"
 msgstr "{post}: {what}"
 
@@ -7820,6 +7976,10 @@ msgstr "não há pedidos para entrar na equipe aguardando"
 
 msgid "there's no {item} in the bag"
 msgstr "não há {item} na bolsa"
+
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr ""
+"este personagem não pode publicar isso: exige direitos de ancião da gangue"
 
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
@@ -7906,10 +8066,6 @@ msgstr "tentando novamente com {npc}"
 
 msgid "trying the {tool} instead"
 msgstr "tentando usar {tool}"
-
-msgid "type your gang's highland number in Tools, Daily chores"
-msgstr ""
-"digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"
 
 msgid "unavailable"
 msgstr "indisponível"
@@ -8074,6 +8230,11 @@ msgstr "{what}"
 msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escreva assim: chores [check] [only=bank,donation]"
 
+msgid ""
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+msgstr ""
+"escreva assim: construction_scan, construction_scan publish=broadcast ou construction_scan auto=broadcast (announcement, broadcast ou system)"
+
 msgid "write it as: hold key seconds"
 msgstr "escreva assim: hold tecla segundos"
 
@@ -8121,6 +8282,13 @@ msgstr "ontem"
 
 msgid "you"
 msgstr "você"
+
+msgid "you joined the gang today: the game allows no building until tomorrow"
+msgstr ""
+"você entrou na gangue hoje: o jogo só permite construir a partir de amanhã"
+
+msgid "you joined the gang today: the game allows no donation until tomorrow"
+msgstr "você entrou na gangue hoje: o jogo só permite doar a partir de amanhã"
 
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' não é uma tecla que o bot possa pressionar."
@@ -8524,6 +8692,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} de {top} ({pct}%)"
 
+msgid "{npc} can pay hunting bounties"
+msgstr "{npc} pode pagar recompensas de caça"
+
 msgid "{npc} didn't answer"
 msgstr "{npc} não respondeu"
 
@@ -8539,12 +8710,21 @@ msgstr "{npc} não está à vista — procurando"
 msgid "{npc} offered no \"Enter the dungeon\""
 msgstr "{npc} não ofereceu a opção \"Entrar na masmorra\""
 
+msgid "{npc} offers no exchange"
+msgstr "{npc} não oferece a troca"
+
+msgid "{npc} offers no hunting bounty"
+msgstr "{npc} não oferece recompensa de caça"
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} cada"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr ""
 "{npc}: \"{entry}\" recebeu a resposta \"{said}\" — não lendo mais menus dele"
+
+msgid "{npc}: {what}"
+msgstr "{npc}: {what}"
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "{n} rendimentos de Produtos de Valor podem ser coletados"
@@ -8837,6 +9017,9 @@ msgstr "{what}, pelo menos:"
 msgid "{what}:"
 msgstr "{what}:"
 
+msgid "{what}: couldn't be read"
+msgstr "{what}: não foi possível ler"
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr ""
@@ -8845,6 +9028,9 @@ msgstr ""
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr ""
 "{what}: {item} — usando abaixo de {pct}%, no máximo a cada {secs} segundos"
+
+msgid "{what}: {percent}%"
+msgstr "{what}: {percent}%"
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} falhou: {err} (continuando)"
@@ -8861,13 +9047,11 @@ msgstr "{why} — sem usar mais {skill} nesta execução ({n} concluídos)"
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
 
-#~ msgid "&Farm with the plan:"
-#~ msgstr "&Farmar com o plano:"
+#~ msgid "&Build at:"
+#~ msgstr "&Construir em:"
 
-#~ msgid ""
-#~ "1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
-#~ msgstr ""
-#~ "1. a lista Antes de farmar, de cima para baixo; 2. o plano, até terminar ou até a parada diária antes da virada do dia do jogo; 3. a lista Depois de farmar, quando o plano terminou sozinho (não depois de Parar). São as mesmas listas de Configurações do personagem, Gatilhos."
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Coletar &recompensas de caça com um oficial da cidade"
 
 #~ msgid "E&xperience card to keep running while farming:"
 #~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
@@ -8875,8 +9059,16 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "Experience cards"
 #~ msgstr "Cartões de experiência"
 
-#~ msgid "Make a plan first (the Plans tab): the day farms with one."
-#~ msgstr "Crie um plano primeiro (aba Planos): o dia farma com ele."
+#~ msgid "Gang construction"
+#~ msgstr "Construção da guilda"
+
+#~ msgid ""
+#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+#~ msgstr ""
+#~ "Terras Altas Ocupadas não contém a região {n} (lista: {list}) - confira o número em Ferramentas, Tarefas diárias"
+
+#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
+#~ msgstr "&Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
 
 #~ msgid "Stop when HP stays &low"
 #~ msgstr "Parar se o HP permanecer &baixo"
@@ -8889,5 +9081,32 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "This many"
 #~ msgstr "Esta quantidade"
 
+#~ msgid ""
+#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+#~ msgstr ""
+#~ "Digite o número das Terras Altas da sua guilda: a Entrada das Terras Altas o lista em Terras Altas Ocupadas (\"Terras Altas da própria guilda 38\": 38)."
+
+#~ msgid "collected the hunting bounty"
+#~ msgstr "coletou a recompensa de caça"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "as recompensas de caça podem ser coletadas aqui"
+
+#~ msgid "hunting bounty"
+#~ msgstr "recompensa de caça"
+
 #~ msgid "no way to walk there"
 #~ msgstr "não há caminho a pé até lá"
+
+#~ msgid "our gang's highland"
+#~ msgstr "Terras Altas da nossa guilda"
+
+#~ msgid "the inner hall's East and West posts"
+#~ msgstr "postos Leste e Oeste do salão interno"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "o oficial não oferece recompensa de caça"
+
+#~ msgid "type your gang's highland number in Tools, Daily chores"
+#~ msgstr ""
+#~ "digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"

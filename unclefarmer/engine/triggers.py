@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any
 
 from .. import jsonio
 from ..errors import carry_on
-from ..i18n import _
+from ..i18n import N_, _
 from ..link import AgentError
 from . import activities, town
 from .botparts.base import GameBroken, Stopped
@@ -43,7 +43,10 @@ JOBS: tuple[tuple[str, str], ...] = tuple((a.key, a.label) for a in activities.A
 # the town function each town job is (looked up when it runs)
 TOWN_JOBS = {a.key: a.town for a in activities.ACTIVITIES if a.town}
 FARMING_COMMANDS = ("farm",) + tuple(a.key for a in activities.ACTIVITIES if a.farms)
-TOOLS = tuple((a.key, a.label) for a in activities.ACTIVITIES)
+TOOLS = tuple((a.key, a.label) for a in activities.ACTIVITIES if a.listed) + (
+    ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),
+    ("construction_scan auto=broadcast", N_("scanning the constructions, then a broadcast")),
+    ("construction_scan auto=system", N_("scanning the constructions, then a system message")))
 
 
 MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)

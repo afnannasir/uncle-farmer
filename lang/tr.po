@@ -77,9 +77,6 @@ msgstr "&Bot"
 msgid "&Browse"
 msgstr "Gözat (&B)"
 
-msgid "&Build at:"
-msgstr "İnşa yeri (&B):"
-
 msgid "&Call them by their name"
 msgstr "Onlara adlarıyla hitap et (&C)"
 
@@ -430,6 +427,9 @@ msgstr "Özel mesajlar (&P)"
 msgid "&Protection runes (a failure keeps the level):"
 msgstr "Koruma rünleri (başarısızlıkta seviye korunur) (&P):"
 
+msgid "&Publish"
+msgstr ""
+
 msgid "&Quick guide"
 msgstr "Hızlı kılavuz (&Q)"
 
@@ -456,6 +456,9 @@ msgstr "Cevapla&r, her satıra bir tane:"
 
 msgid "&Reply"
 msgstr "Yanıtla (&R)"
+
+msgid "&Report:"
+msgstr ""
 
 msgid "&Rest before the next fight below HP (%):"
 msgstr "Bi&r sonraki dövüşten önce dinlen, HP şunun altındayken (%):"
@@ -489,6 +492,9 @@ msgstr "Kaydet (&S)"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr "Günün ganimet &süresinin bir kısmını sakla (karakterin ayarı yerine)"
+
+msgid "&Scan the constructions"
+msgstr ""
 
 msgid "&Schedules:"
 msgstr "Programlar: (&S)"
@@ -667,6 +673,9 @@ msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
 msgstr ""
 
 msgid "({pages} pages, {min:.1f} minutes)"
+msgstr ""
+
+msgid "+{n} arnebia"
 msgstr ""
 
 msgid ", +20% with {shard}"
@@ -1030,6 +1039,9 @@ msgstr ""
 msgid "Breaks {n} {item}."
 msgstr ""
 
+msgid "Broadcast (with a sound)"
+msgstr ""
+
 msgid "Browse a category"
 msgstr ""
 
@@ -1041,6 +1053,15 @@ msgstr "Buff'lar kapalı."
 
 msgid "Buffs on."
 msgstr "Buff'lar açık."
+
+msgid "Build at the East and West &posts"
+msgstr ""
+
+msgid "Build the Magic Ca&nnon under construction"
+msgstr ""
+
+msgid "Build the S&upply Camp under construction"
+msgstr ""
 
 msgid "Busy - send stop first."
 msgstr "Meşgulüm - önce stop gönder."
@@ -1184,6 +1205,9 @@ msgstr "Bir araç ya da kayıtlı bir betik seç."
 msgid "Choose an action to run."
 msgstr "Çalıştırılacak bir eylem seç."
 
+msgid "Choose at least one officer."
+msgstr ""
+
 msgid "Choose in a dialog"
 msgstr "Bir iletişim kutusunda seç"
 
@@ -1245,9 +1269,6 @@ msgstr "Ajanı yeniden yüklemek için tüm Mist World pencereleri kapatılıyor
 msgid "Closing the game."
 msgstr "Oyunu kapatıyorum."
 
-msgid "Collect &hunting bounties from a city officer"
-msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
-
 msgid "Collect Herbs"
 msgstr "Bitki Topla"
 
@@ -1284,6 +1305,12 @@ msgstr "Bağlandı"
 msgid "Connecting..."
 msgstr "Bağlanıyor..."
 
+msgid "Construction &scanner"
+msgstr ""
+
+msgid "Construction scanner"
+msgstr ""
+
 msgid "Contact the &developer"
 msgstr "Geliştiriciyle iletişime geç (&D)"
 
@@ -1295,6 +1322,12 @@ msgstr "Metni içerir"
 
 msgid "Contribution"
 msgstr "Katkı"
+
+msgid "Contribution Chests"
+msgstr ""
+
+msgid "Contribution Chests a day (the game allows 2):"
+msgstr ""
 
 msgid "Cop&y all"
 msgstr "Tümünü kop&yala"
@@ -1524,6 +1557,10 @@ msgstr "Zindanlar"
 
 msgid "Dungeons whose entrance the game's files don't show: {names}"
 msgstr "Girişini oyunun dosyalarının göstermediği zindanlar: {names}"
+
+msgid ""
+"E&xchange contribution for Contribution Chests (5,000 each, at Guard Captain Suke)"
+msgstr ""
 
 msgid "E&xit"
 msgstr "Çıkış (&X)"
@@ -1804,8 +1841,8 @@ msgstr "Oyunların sesi açıldı."
 msgid "Gang"
 msgstr "Çete"
 
-msgid "Gang construction"
-msgstr "Çete inşaatı"
+msgid "Gang announcement"
+msgstr ""
 
 msgid "Gang mode"
 msgstr "Çete modu"
@@ -2054,6 +2091,12 @@ msgstr "Nasıl çalışır:"
 
 msgid "How the game works"
 msgstr "Oyun nasıl işler"
+
+msgid "Hunting bount&ies"
+msgstr ""
+
+msgid "Hunting bounties"
+msgstr ""
 
 msgid ""
 "I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
@@ -2715,6 +2758,10 @@ msgstr "Kayıtlı fiyatı yok, sayılmadı: {list}"
 msgid "No release of Uncle Farmer can be seen on GitHub yet."
 msgstr "GitHub'da henüz Uncle Farmer sürümü görünmüyor."
 
+msgid ""
+"No report yet. Scan the constructions: the bot visits each one and repairs nothing."
+msgstr ""
+
 msgid "No results yet."
 msgstr "Henüz sonuç yok."
 
@@ -2812,9 +2859,8 @@ msgid "Nowhere, use what's in the bag"
 msgstr "Hiçbir yerden, çantadakini kullan"
 
 msgid ""
-"Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+"Officers to visit (each pays for his own bosses, after your killing blow)"
 msgstr ""
-"İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
 
 msgid ""
 "Older runs kept only the bag's net arnebia change: their earnings are counted from that"
@@ -2919,9 +2965,6 @@ msgstr "Alınan diğer eşyalar:"
 
 msgid "Our blue potions"
 msgstr "Mavi iksirlerimiz"
-
-msgid "Our gang's &highland number (the one under Occupied Highlands):"
-msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
 
 msgid "Our own gang"
 msgstr "Kendi çetemiz"
@@ -3121,6 +3164,9 @@ msgstr "Sana gelen özel mesajlar"
 msgid "Program version: {v}"
 msgstr "Program sürümü: {v}"
 
+msgid "Publish &as:"
+msgstr ""
+
 msgid "Put into the storehouse:"
 msgstr "Depoya konanlar:"
 
@@ -3168,6 +3214,9 @@ msgstr "Yeni mesajları oku"
 
 msgid "Read rage, marks or combos in fights every (seconds):"
 msgstr "Dövüşlerde öfke, işaret ya da kombo şu aralıkla okunsun (saniye):"
+
+msgid "Read {at} by {who}"
+msgstr ""
 
 msgid "Reading available sound IDs..."
 msgstr "Kullanılabilir ses kimlikleri okunuyor..."
@@ -3222,6 +3271,10 @@ msgstr "Sesi yeniden adlandır"
 
 msgid "Repair &gear with toolboxes from the bag"
 msgstr "Ekipmanı çantadaki alet kutularıyla onar (&G)"
+
+msgid ""
+"Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
+msgstr ""
 
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
@@ -3340,6 +3393,9 @@ msgstr "Depola (&T):"
 
 msgid "STOPPED: {why}"
 msgstr "DURDURULDU: {why}"
+
+msgid "Saturation"
+msgstr ""
 
 msgid "Saturday"
 msgstr "Cumartesi"
@@ -3478,6 +3534,12 @@ msgid ""
 msgstr ""
 "Bir komutun ne yaptığını öğrenmek için help ve komutun adını gönder, örneğin: help follow"
 
+msgid ""
+"Send this to the whole gang as: {where}?\n"
+"\n"
+"{report}"
+msgstr ""
+
 msgid "Set the attack &range myself"
 msgstr "Saldı&rı menzilini kendim ayarlayayım"
 
@@ -3594,6 +3656,9 @@ msgstr "Kullanılan beceriler: {casts} kullanım, toplam {dmg} hasar"
 
 msgid "Skinning"
 msgstr "Deri yüzme"
+
+msgid "Skip an area whose &saturation is under this percent:"
+msgstr ""
 
 msgid ""
 "Skip this list when the run starts on its first farming &map (a Stop, then a start again where it was farming)"
@@ -3864,6 +3929,9 @@ msgstr "Pazar"
 msgid "Supplies"
 msgstr "Sarf malzemeleri"
 
+msgid "System message"
+msgstr ""
+
 msgid "Take their commands while the game &window is in front"
 msgstr "Oyun penceresi öndeyken de komutlarını al (&W)"
 
@@ -4008,6 +4076,9 @@ msgid "The cave (a character goes into one cave a game day)"
 msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 
 msgid "The character's plan"
+msgstr ""
+
+msgid "The clipboard couldn't be opened."
 msgstr ""
 
 msgid "The collection"
@@ -4446,11 +4517,6 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Ustaları kullanılacak çetenin adını yaz."
-
-msgid ""
-"Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-msgstr ""
-"Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -4932,6 +4998,9 @@ msgstr "bugün zaten bağış yapıldı"
 msgid "already done today"
 msgstr "bugün zaten yapıldı"
 
+msgid "already fed today"
+msgstr "bugün zaten beslendi"
+
 msgid "already in a town - staying here"
 msgstr ""
 
@@ -4982,6 +5051,9 @@ msgstr "{map} haritasına {x},{y} konumunda varıldı"
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} haritasına {x},{y} konumunda varıldı - yol buradan yeniden planlanıyor"
+
+msgid "asking for hunting bounties"
+msgstr ""
 
 msgid "at most {n} gold coins"
 msgstr ""
@@ -5136,6 +5208,12 @@ msgstr "{n} kez inşa edildi; bugün başka yer kabul etmedi (yerler: {places})"
 msgid "built {n} times; the game's two builds a day are made"
 msgstr "{n} kez inşa edildi; oyunun günlük iki inşaatı yapıldı"
 
+msgid "built {n} times; {made} already made today"
+msgstr "{n} kez inşa edildi; {made} tanesi bugün zaten yapılmış"
+
+msgid "built {n} times; {why}"
+msgstr "{n} kez inşa edildi; {why}"
+
 msgid "buying the ticked lots..."
 msgstr ""
 
@@ -5149,6 +5227,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} noktasında inşa edilebilir"
+
+msgid "can exchange contribution for a Contribution Chest"
+msgstr ""
 
 msgid "can't choose the best map: the character's level isn't known yet"
 msgstr ""
@@ -5251,6 +5332,9 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid "choose the officers first: Tools, Hunting bounties"
+msgstr ""
+
 msgid "choose what? write: choose Tulip City"
 msgstr "neyi seçeyim? şöyle yaz: choose Tulip City"
 
@@ -5275,9 +5359,6 @@ msgstr "kapalı harita - yürüyerek giriş çıkış yok"
 msgid "collected the deposit income"
 msgstr "mevduat geliri toplandı"
 
-msgid "collected the hunting bounty"
-msgstr "av ödülü toplandı"
-
 msgid "collected {n} Value Product incomes"
 msgstr "{n} Değer Ürünü geliri toplandı"
 
@@ -5294,6 +5375,23 @@ msgid ""
 "come: I walk to you. Best: press E, copy it with Shift+C and send come and what you copied. come and a map's name works too."
 msgstr ""
 "come: Yanına yürürüm. En iyisi: E'ye bas, Shift+C ile kopyala ve come ile kopyaladığını gönder. come ve bir harita adı da olur."
+
+msgid "construction report published"
+msgstr ""
+
+msgid "construction report published; {n} older reports of yours removed"
+msgstr ""
+
+msgid "construction scanner: everything is at 100%, nothing published"
+msgstr ""
+
+msgid ""
+"construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+
+msgid ""
+"construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
+msgstr ""
 
 msgid "cooldown {n} s"
 msgstr "bekleme süresi {n} sn"
@@ -5342,6 +5440,9 @@ msgstr ""
 
 msgid "couldn't get away - fighting on"
 msgstr "kaçılamadı - dövüşe devam"
+
+msgid "couldn't get back from the highland"
+msgstr "highland'den geri dönülemedi"
 
 msgid "couldn't get back into the gang's base ({why}) - staying here"
 msgstr ""
@@ -5805,6 +5906,18 @@ msgstr "{way} yönüne itilerek çıkıldı"
 msgid "got out: walked to {cell}"
 msgstr "çıkıldı: {cell} hücresine yürüdüm"
 
+msgid "got {n} Contribution Chests"
+msgstr ""
+
+msgid "got {n} Contribution Chests; not enough contribution for another"
+msgstr ""
+
+msgid "got {n} Contribution Chests; the game allows no more today"
+msgstr ""
+
+msgid "got {n} Contribution Chests; {why}"
+msgstr ""
+
 msgid "handwears"
 msgstr ""
 
@@ -5858,14 +5971,14 @@ msgstr "ev: {map}"
 msgid "how many? write count=<n>"
 msgstr ""
 
-msgid "hunting bounties can be collected here"
-msgstr "av ödülleri burada toplanabilir"
-
-msgid "hunting bounty"
-msgstr "av ödülü"
+msgid "hunting bounties: {list}"
+msgstr ""
 
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
+
+msgid "in highland {n}"
+msgstr "highland {n} içinde"
 
 msgid "in the city"
 msgstr "şehirde"
@@ -6183,6 +6296,15 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 "henüz hiçbir mağara {n}. seviyeyi kabul etmiyor (en düşüğü {low}. seviye istiyor)"
 
+msgid "no chest came into the bag"
+msgstr ""
+
+msgid "no construction of the gang was found to read"
+msgstr ""
+
+msgid "no construction report yet: scan first"
+msgstr ""
+
 msgid "no daily chores to do: turn some on in Tools, Daily chores"
 msgstr "yapılacak günlük iş yok: Araçlar, Günlük işler'den bazılarını aç"
 
@@ -6393,6 +6515,9 @@ msgstr "bir {item} için yeterli arnebia yok: tanesi {price}, çantada {money}"
 
 msgid "not enough arnebia to buy {item}: {price} each, {money} in the bag"
 msgstr "{item} almak için yeterli arnebia yok: tanesi {price}, çantada {money}"
+
+msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
+msgstr ""
 
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr "{item} için yeterli koruma rünü yok - istendiği gibi duruluyor"
@@ -6613,9 +6738,6 @@ msgstr "diğer"
 msgid "other equipments"
 msgstr ""
 
-msgid "our gang's highland"
-msgstr "çetemizin yaylası"
-
 msgid "our hits land on {name} - fighting that one"
 msgstr "vuruşlarımız {name} hedefine isabet ediyor - onunla dövüşülüyor"
 
@@ -6806,6 +6928,18 @@ msgstr "zindan yapılıyor"
 
 msgid "running on_stop"
 msgstr "on_stop çalıştırılıyor"
+
+msgid "scanning the constructions"
+msgstr ""
+
+msgid "scanning the constructions, then a broadcast"
+msgstr ""
+
+msgid "scanning the constructions, then a gang announcement"
+msgstr ""
+
+msgid "scanning the constructions, then a system message"
+msgstr ""
 
 msgid "script"
 msgstr "betik"
@@ -7322,6 +7456,10 @@ msgstr ""
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
 
+msgid ""
+"the construction report was typed, but the game didn't confirm it - check before sending it again"
+msgstr ""
+
 msgid "the day of {name}"
 msgstr ""
 
@@ -7380,8 +7518,15 @@ msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 "oyun {skill} becerisini {key} tuşuna koymadı - tuşlar olduğu gibi bırakılıyor"
 
+msgid ""
+"the game didn't show the 5000 contribution price, so nothing was confirmed"
+msgstr ""
+
 msgid "the game didn't start {skill} in the gang's area"
 msgstr "oyun çetenin alanında {skill} başlatmadı"
+
+msgid "the game didn't take the construction report"
+msgstr ""
 
 msgid "the game didn't take the number"
 msgstr "oyun sayıyı kabul etmedi"
@@ -7461,6 +7606,9 @@ msgstr "çetenin alanı {fee} arnebia tutuyor, {max} sınırından fazla"
 msgid "the gang's area didn't let us in: {why}"
 msgstr "çetenin alanı içeri almadı: {why}"
 
+msgid "the gang's area is under your {least}% saturation ({about})"
+msgstr ""
+
 msgid "the gang's area: {about}"
 msgstr "çetenin alanı: {about}"
 
@@ -7482,9 +7630,6 @@ msgstr "Kalp taşı beni eve götürmedi"
 
 msgid "the hearthstone takes me to {square} - remembered"
 msgstr "Kalp taşı beni {square} yerine götürüyor - hatırlandı"
-
-msgid "the inner hall's East and West posts"
-msgstr "iç salonun Doğu ve Batı noktaları"
 
 msgid "the instructor offers no secret room now"
 msgstr "eğitmen şu anda gizli oda sunmuyor"
@@ -7565,9 +7710,6 @@ msgstr "sonraki seviye için {n} deneyim gerekiyor"
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "sonraki seviye için {n} deneyim gerekiyor; {goal} altına inince farm durur"
-
-msgid "the officer offers no hunting bounty"
-msgstr "görevli av ödülü sunmuyor"
 
 msgid "the open menu is {what}"
 msgstr "açık menü: {what}"
@@ -7704,6 +7846,9 @@ msgstr "{npc} hayır dedi - bkz. logs\\dialogs.log"
 msgid "the {npc}'s next menu didn't open"
 msgstr "{npc} için sonraki menü açılmadı"
 
+msgid "the {post} is at 100%: leaving it for now"
+msgstr ""
+
 msgid "the {post}: {what}"
 msgstr "{post}: {what}"
 
@@ -7734,6 +7879,9 @@ msgstr "bekleyen takım başvurusu yok"
 
 msgid "there's no {item} in the bag"
 msgstr "çantada {item} yok"
+
+msgid "this character can't publish that: it takes a gang elder's rights"
+msgstr ""
 
 msgid ""
 "this character has no gathering skill: learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper"
@@ -7816,9 +7964,6 @@ msgstr "{npc} bir kez daha deneniyor"
 
 msgid "trying the {tool} instead"
 msgstr "onun yerine {tool} deneniyor"
-
-msgid "type your gang's highland number in Tools, Daily chores"
-msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
 
 msgid "unavailable"
 msgstr "kullanılamıyor"
@@ -7985,6 +8130,10 @@ msgstr "yapılacak: {what}"
 msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "şöyle yaz: chores [check] [only=bank,donation]"
 
+msgid ""
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+msgstr ""
+
 msgid "write it as: hold key seconds"
 msgstr "şöyle yaz: hold tuş saniye"
 
@@ -8030,6 +8179,12 @@ msgstr "dün"
 
 msgid "you"
 msgstr "sen"
+
+msgid "you joined the gang today: the game allows no building until tomorrow"
+msgstr "çeteye bugün katıldın: oyun yarına kadar inşaata izin vermiyor"
+
+msgid "you joined the gang today: the game allows no donation until tomorrow"
+msgstr "çeteye bugün katıldın: oyun yarına kadar bağışa izin vermiyor"
 
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' botun basabileceği bir tuş değil."
@@ -8432,6 +8587,9 @@ msgstr "{name}: {results}"
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now}/{top} (%{pct})"
 
+msgid "{npc} can pay hunting bounties"
+msgstr ""
+
 msgid "{npc} didn't answer"
 msgstr "{npc} yanıt vermedi"
 
@@ -8447,12 +8605,21 @@ msgstr "{npc} ortalıkta yok - onu arıyorum"
 msgid "{npc} offered no \"Enter the dungeon\""
 msgstr "{npc} \"Zindana gir\" seçeneği sunmadı"
 
+msgid "{npc} offers no exchange"
+msgstr ""
+
+msgid "{npc} offers no hunting bounty"
+msgstr ""
+
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, tanesi {price} {cur}"
 
 msgid "{npc}: \"{entry}\" got the answer \"{said}\" - reading no more of its menus"
 msgstr ""
 "{npc}: \"{entry}\" seçeneğine \"{said}\" cevabı geldi - menüleri artık okunmuyor"
+
+msgid "{npc}: {what}"
+msgstr ""
 
 msgid "{n} Value Product incomes can be collected"
 msgstr "{n} Değer Ürünü geliri toplanabilir"
@@ -8741,12 +8908,18 @@ msgstr "{what}, en az:"
 msgid "{what}:"
 msgstr "{what}:"
 
+msgid "{what}: couldn't be read"
+msgstr ""
+
 msgid ""
 "{what}: none in the bag and none chosen in Tools, Dungeons - not looked at"
 msgstr "{what}: çantada yok ve Araçlar, Zindanlar'da seçili değil - bakılmadı"
 
 msgid "{what}: {item} - drinking below {pct}%, every {secs} seconds at most"
 msgstr "{what}: {item} - %{pct} altında, en fazla {secs} saniyede bir içiliyor"
+
+msgid "{what}: {percent}%"
+msgstr ""
 
 msgid "{where} failed: {err} (carrying on)"
 msgstr "{where} başarısız: {err} (devam ediliyor)"
@@ -8763,6 +8936,23 @@ msgstr "{why} - bu çalışmada artık {skill} yok ({n} yapıldı)"
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
 
+#~ msgid "&Build at:"
+#~ msgstr "İnşa yeri (&B):"
+
+#~ msgid "Collect &hunting bounties from a city officer"
+#~ msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
+
+#~ msgid "Gang construction"
+#~ msgstr "Çete inşaatı"
+
+#~ msgid ""
+#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+#~ msgstr ""
+#~ "İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
+
+#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
+#~ msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
+
 #~ msgid ""
 #~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 #~ msgstr ""
@@ -8771,5 +8961,31 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgid "This many"
 #~ msgstr "Bu kadar"
 
+#~ msgid ""
+#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
+#~ msgstr ""
+#~ "Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
+
+#~ msgid "collected the hunting bounty"
+#~ msgstr "av ödülü toplandı"
+
+#~ msgid "hunting bounties can be collected here"
+#~ msgstr "av ödülleri burada toplanabilir"
+
+#~ msgid "hunting bounty"
+#~ msgstr "av ödülü"
+
 #~ msgid "no way to walk there"
 #~ msgstr "oraya yürüyerek gidilecek yol yok"
+
+#~ msgid "our gang's highland"
+#~ msgstr "çetemizin yaylası"
+
+#~ msgid "the inner hall's East and West posts"
+#~ msgstr "iç salonun Doğu ve Batı noktaları"
+
+#~ msgid "the officer offers no hunting bounty"
+#~ msgstr "görevli av ödülü sunmuyor"
+
+#~ msgid "type your gang's highland number in Tools, Daily chores"
+#~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
