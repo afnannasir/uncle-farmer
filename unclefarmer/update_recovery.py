@@ -26,9 +26,19 @@ PAYLOAD = "UncleFarmer.exe"     # the application, which updates replace
 BOOTSTRAP = "bootstrap.exe"     # native/bootstrap.c: runs updates and recovery, never replaced by one
 PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
              "survey", "market", "update", "settings.json", "schedules.json"}
+# A journal's "protected" list is a stamp, never a rule: what an update leaves alone is PROTECTED
+# above (_name refuses those entries) and updater.NEVER, in the code that runs. The stamp must stay
+# what 1.2.0 wrote, never follow PROTECTED. Each copy's rescue runtime (.recovery/runtime) is
+# published once and never updated, and a 1.2.0 one refuses any other stamp. The other way round,
+# a newer copier refused the journal a 1.2.0 app had just begun, and every update rolled back.
+JOURNAL_PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
+                     "survey", "update", "settings.json", "schedules.json"}
 # Journals written while the native front door was UncleFarmer.exe (and the app UncleFarmerApp.exe)
 # protected that name instead. Such a journal is still read, so its backups are never orphaned.
-LEGACY_PROTECTED = PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}
+LEGACY_PROTECTED = JOURNAL_PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}
+# Every stamp a build has written. Dev builds 1.2.0-dev.364 to .370 stamped PROTECTED itself, "market" included.
+ACCEPTED_PROTECTED = (JOURNAL_PROTECTED, LEGACY_PROTECTED, JOURNAL_PROTECTED | {"market"},
+                      LEGACY_PROTECTED | {"market"})
 KEEP = {"agent": "run", "data": "game_texts.json"}
 TERMINAL = {"COMMITTED", "ROLLED_BACK"}
 EARLY = {"DOWNLOADING", "EXTRACTING", "STAGING", "STAGED"}
@@ -187,7 +197,7 @@ def validate(data: object, app: str) -> dict[str, Any]:
         raise RecoveryError("empty application replacement plan")
     if not 0 < record["owner"] <= 0xFFFFFFFF or record["owner_stamp"] <= 0:
         raise RecoveryError("invalid transaction process identity")
-    if record.get("protected") not in (protected_names(), protected_names(LEGACY_PROTECTED)):
+    if record.get("protected") not in [protected_names(names) for names in ACCEPTED_PROTECTED]:
         raise RecoveryError("invalid journal preservation rules")
     expected = os.path.join(app, HERE, record["id"])
     if (not isinstance(record.get("backup"), str) or not isinstance(record.get("staging"), str)
@@ -243,7 +253,8 @@ def _validate_progress(record: dict[str, Any]) -> None:
         raise RecoveryError("recovery progress does not match the backups")
 
 
-def protected_names(names: set[str] = PROTECTED) -> list[str]:
+def protected_names(names: set[str] = JOURNAL_PROTECTED) -> list[str]:
+    """The journal stamp for a set of protected names (see JOURNAL_PROTECTED)."""
     return sorted(names | {folder + "/" + name for folder, name in KEEP.items()})
 
 
@@ -350,7 +361,8 @@ def begin(app: str, previous: str, target: str, phase: str = "STAGING") -> dict[
     work = os.path.join(app, HERE, transaction)
     record: dict[str, Any] = dict(format=1, id=transaction, app=app, previous=previous, target=target, state=phase,
                                   staging=os.path.join(work, "new"), backup=os.path.join(work, "old"),
-                                  entries=[], backed_up=[], replaced=[], waiting=[], protected=protected_names(),
+                                  entries=[], backed_up=[], replaced=[], waiting=[],
+                                  protected=protected_names(JOURNAL_PROTECTED),
                                   owner=os.getpid(), owner_stamp=current_stamp(), last="", rollback_required=True, committed=False)
     save(app, record, phase, "journal-created")
     return record

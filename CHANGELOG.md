@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**Updates from 1.2.0 work again**
+
+- Updating a 1.2.0 copy to a newer build stopped with "no valid recovery journal" and put 1.2.0
+  back every time. The newer updater now accepts the update record 1.2.0 starts, and writes one
+  that a 1.2.0 copy's rescue files can still read.
+
 **Gang construction reaches every place, and all your highlands**
 
 - You choose where the day's builds go: highlands, Magic Cannon, Supply Camp, East and West posts.

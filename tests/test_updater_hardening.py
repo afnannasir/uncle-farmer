@@ -921,6 +921,42 @@ def test_a_journal_from_the_front_door_layout_still_validates(app: Path) -> None
     assert loaded is not None and loaded["state"] == "ROLLED_BACK"
 
 
+# The exact stamp 1.2.0 writes and its rescue runtime accepts (update_recovery.py in tag v1.2.0).
+STAMP_1_2_0 = ["agent/run", ".recovery", "bootstrap.exe", "data/game_texts.json", "logs", "messages", "plans",
+               "profiles", "results", "schedules.json", "scripts", "settings.json", "survey", "update"]
+
+
+def test_journals_keep_the_stamp_a_1_2_0_rescue_runtime_accepts(app: Path) -> None:
+    """Rescue runtimes are never updated: a 1.2.0 one must still read what a newer copier writes,
+    whatever PROTECTED grows to."""
+    record = updater.recovery.begin(str(app), "1.2.0", "1.2.1")
+    assert record["protected"] == sorted(STAMP_1_2_0)
+    stored = updater.json.loads((app / updater.recovery.HERE / updater.recovery.JOURNAL).read_bytes())
+    assert stored["payload"]["protected"] == sorted(STAMP_1_2_0)
+    assert "market" in updater.recovery.PROTECTED     # still kept by updates, only not stamped
+
+
+@pytest.mark.parametrize("stamp", [
+    sorted(STAMP_1_2_0),                                   # a 1.2.0 app began the download
+    sorted([*STAMP_1_2_0, "market"]),                      # dev builds 1.2.0-dev.364 to .370
+])
+def test_a_newer_copier_continues_the_journal_an_older_app_began(app: Path, stamp: list[str]) -> None:
+    """Found by a dummy update from the real 1.2.0 to dev.370: the new copier refused the 1.2.0
+    app's DOWNLOADING journal ("invalid journal preservation rules"), so every update rolled back."""
+    record = updater.recovery.begin(str(app), "1.2.0", "1.2.1", "DOWNLOADING")
+    record["protected"] = stamp
+    updater.recovery.save(str(app), record, "DOWNLOADING", "older-app")
+    continued = updater.recovery.begin(str(app), "1.2.0", "1.2.1", "STAGING")
+    assert continued["id"] == record["id"] and continued["state"] == "STAGING"
+
+
+def test_an_unknown_journal_stamp_is_still_refused(app: Path) -> None:
+    record = updater.recovery.begin(str(app), "1.2.0", "1.2.1")
+    record["protected"] = sorted(set(STAMP_1_2_0) - {"profiles"})
+    with pytest.raises(updater.recovery.RecoveryError, match="preservation rules"):
+        updater.recovery.validate(record, str(app))
+
+
 def test_handshake_files_survive_a_reader_holding_them_open(app: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Found by the real-binary test: the app reads busy.json every 50 ms, and Windows refuses to
     replace a file while it is open, so the copier failed with Access is denied."""
