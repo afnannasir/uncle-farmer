@@ -8265,6 +8265,9 @@ msgstr ""
 msgid "{skill} stopped - starting it again"
 msgstr ""
 
+msgid "{skill} to reach {name}"
+msgstr ""
+
 msgid ""
 "{skill} was broken off before it ended (something hit us) - fighting first"
 msgstr ""

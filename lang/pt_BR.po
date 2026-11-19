@@ -8668,6 +8668,9 @@ msgstr "{skill} atribuído à tecla de habilidade vazia {key} (página {page})"
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} parou — iniciando novamente"
 
+msgid "{skill} to reach {name}"
+msgstr "{skill} para alcançar {name}"
+
 msgid ""
 "{skill} was broken off before it ended (something hit us) - fighting first"
 msgstr ""

@@ -145,6 +145,9 @@ class Pick:
     def skill(self, name: str) -> dict[str, Any] | None:
         return self.info.get(name)
 
+    def leap_for(self, dist: float, now: float) -> dict[str, Any] | None:
+        return None               # no leap to reach (tests/test_leap_reach.py has those)
+
     def ready_in(self, now: float) -> float:
         return self._ready
 

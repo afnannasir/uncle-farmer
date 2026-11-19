@@ -847,8 +847,54 @@ class FightingMixin(Parts):
         if not selected:
             self.note_unselectable(mob)
             return
+        mob = self._leap_in(mob, rng)
         with self.timed("fight"):
             self._hit_until_down(mob)
+
+    LEAP_WAIT = 1.5       # seconds a leap is given to land us beside the monster
+
+    def leap_ready(self, me: dict[str, Any], m: dict[str, Any], rng: float) -> bool:
+        """A leap (Leap Slash) is ready and reaches this monster from here: past our reach, inside
+        the leap's, with a clear line. Reads nothing from the game."""
+        sb = self.skillbook
+        if sb is None or not sb.ok or self.walk_only:
+            return False
+        d = math.hypot(m["x"] - me["x"], m["y"] - me["y"])
+        if d <= rng + combat.LEAP_PAST_REACH:
+            return False
+        return sb.leap_for(d, self.clock.time()) is not None and self.clear_shot(me, m)
+
+    def _leap_in(self, mob: dict[str, Any], rng: float) -> dict[str, Any]:
+        """The monster, selected, is past our reach but inside a ready leap's: jump to it instead of
+        walking (Phase 1b item 5; Leap Slash lands 1.0 tile from the target, measured on 251 casts).
+        Not on a fusion beast (a beast casts nothing of ours). The monster as it is after."""
+        me = self.me()
+        sb = self.skillbook
+        if sb is None or not self.leap_ready(me, mob, rng):
+            return mob
+        if any(r.get("active") for r in beasts.owned(as_bot(self))):
+            return mob
+        now = self.clock.time()
+        leap = sb.leap_for(math.hypot(mob["x"] - me["x"], mob["y"] - me["y"]), now)
+        press = sb.press_leap(leap, now) if leap is not None else None
+        if press is None or self.dialog().get("open"):
+            return mob
+        self.log(_("{skill} to reach {name}", skill=press[1], name=mob["name"]))
+        rec = getattr(self, "field_record", None)
+        if rec is not None:
+            rec["leap"] = press[1]
+        self.key(press[0])
+        end = now + self.LEAP_WAIT
+        while self.clock.time() < end:
+            snap = self.snap()
+            m = next((e for e in snap["entities"] if e["id"] == mob["id"]), None)
+            if m is None or m["hp"] <= 0:
+                return mob
+            me = snap["self"]
+            if math.hypot(m["x"] - me["x"], m["y"] - me["y"]) <= rng:
+                return m
+            self.sleep(0.1)
+        return mob
 
     def note_unselectable(self, mob: dict[str, Any]) -> None:
         """The game won't let us select this monster even from as close as we got: seen, but not
@@ -900,7 +946,7 @@ class FightingMixin(Parts):
         """Walk up to the monster unless it is in reach already. The monster as it is now, or None
         when the farm loop should pick again (taken, about to die, stuck, another one on the way)."""
         mid = mob["id"]
-        if way.reachable(self.me(), mob, way.engage):
+        if way.reachable(self.me(), mob, way.engage) or self.leap_ready(self.me(), mob, way.rng):
             return mob
         self.approaching = True       # shields may go up on the way in (support_between_fights)
         try:
@@ -929,6 +975,8 @@ class FightingMixin(Parts):
             self.leave(mid, "doomed", min(self.DOOMED_SKIP, self.dying_in(m) + 2.0))
             self.log(_("{name} is about to be killed by someone else - next one", name=mob["name"]))
             return None
+        if walked == "near" and way.leap and m["hp"] > 0:
+            return m              # stopped where a leap reaches it: _fight jumps the rest
         if walked == "near" and not way.reachable(self.me(), m, way.engage) and not way.opened_early:
             other = way.beside(snap, self.me())
             if other is not None:
@@ -1422,6 +1470,7 @@ class _Approach:
         self.closing: tuple[float, tuple[float, float], float] | None = None   # (when, where we were, how far) at the previous look
         self.opened_early = False      # we stopped short and started casting on the way in
         self.other: int | None = None  # another monster in reach that the walk stopped for (stop)
+        self.leap = False              # stopped where a ready leap reaches it (stop)
         self.doomed: list[dict[str, Any]] = []
 
     def left_map(self, snap: dict[str, Any]) -> bool:
@@ -1455,6 +1504,9 @@ class _Approach:
         b.watch_hp(snap)
         if b.doomed(m, me):
             self.doomed.append(m)
+            return True
+        if not moving and b.leap_ready(me, m, self.rng):
+            self.leap = True      # (a leap whose monster is about to die to someone else: no)
             return True
         if self.pull and self._closing_in(me, m):
             return True

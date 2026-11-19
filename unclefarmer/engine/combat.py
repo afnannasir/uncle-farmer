@@ -67,6 +67,8 @@ BURST_MAX = 1.2          # ... for at most this long (out of range, no target: t
 LONG_BUFF = 60.0         # a buff lasting this long (or longer) is kept up all the time
 BUFF_RETRY = 20.0        # a buff press the game didn't cast (no rage, no combos yet) waits this long
 SPEED_WALK_MIN = 25      # a walk on foot this many steps long or more starts with a speed skill (Wind Step)
+LEAP_PAST_REACH = 1.0    # a leap to reach a monster (Leap Slash) only from this far past our own reach...
+LEAP_MARGIN = 0.5        # ... and this far inside the leap's range: positions are a moment old
 FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
@@ -1044,6 +1046,32 @@ class SkillBook:
         x = max(cands, key=lambda x: (speed_share(x), self.duration(x) or 0))
         self.buff_tried[x["name"]] = now
         return self.press_support(x, now)
+
+    @staticmethod
+    def leap_skill(x: Skill) -> bool:
+        """A jump to the target with no channel (Leap Slash): the way to reach a monster a few
+        steps past melee reach. Not Leap Gouge (a 2.5 s channel: needs a recorded Assassin first)."""
+        return (x.get("role") == "engage" and not x.get("cast")
+                and "jump to the target" in x.get("text", "").lower())
+
+    def leap_for(self, dist: float, now: float) -> Skill | None:
+        """The ready leap that reaches a monster `dist` yards off (straight line), else None (Phase
+        1b item 5). The picker only ever used Leap Slash with the Powerful Leap Attack talent, and
+        then in reach; without it the skill was never pressed at all. Skills set to Never or
+        emergency-only stay out; no press while the global cooldown runs."""
+        if not self.ok or self.gcd_wait(now):
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.leap_skill(x) and self.allowed(x) and float(x.get("range") or 0) - LEAP_MARGIN >= dist]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)]
+        return max(cands, key=lambda x: float(x.get("range") or 0)) if cands else None
+
+    def press_leap(self, x: Skill, now: float) -> Press | None:
+        """Get the leap's page up and record the press: (key, name), or None."""
+        if self.page() != x["page"] and not self.flip_to(x["page"]):
+            return None
+        self.pressed(x, now)
+        return x["key"], x["name"]
 
     def support(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | str | None:
         """What to press for ourselves before attacking: heal, dispel, then buffs. (key, name),

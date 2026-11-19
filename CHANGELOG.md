@@ -269,6 +269,14 @@
   the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
   anyway), not in a fight, and never a skill you set to Never.
 
+**Leap Slash to reach a monster**
+
+- A Warrior only used Leap Slash with the Powerful Leap Attack talent, and then only on a monster
+  already in reach. Without the talent it was never pressed. Now, when a monster is more than a
+  step past melee reach but inside Leap Slash's 10 yards, with a clear line to it, the Warrior
+  jumps to it instead of walking: it lands beside the monster, stunned for 2.5 seconds. Not on a
+  beast, and never if you set Leap Slash to Never. The log says "Leap Slash to reach ...".
+
 **The game's own report after a dungeon**
 
 - When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
