@@ -91,7 +91,7 @@ anything; players unzip it over the folder once. After that, the next update
 removes the leftover `UncleFarmerApp.exe` (`updater.LEGACY_APP`), renews a rescue
 runtime whose `UncleFarmer.exe` is the old front door (only while no started
 replacement needs it), and still reads journals written under the old protected
-list (`update_recovery.LEGACY_PROTECTED`).
+list.
 
 `build_exe.py` compiles `bootstrap.exe` before starting the expensive Nuitka
 build, using the repository's existing GCC/MinGW or Zig C compiler discovery.
@@ -110,6 +110,23 @@ inventories, backed-up/replaced/waiting lists, protected names, process owner an
 Windows creation timestamp, last operation, rollback requirement and commit flag.
 Inventories include directory markers, so empty directories and entry type changes
 are distinguishable. A PID alone is insufficient after reboot or PID reuse.
+
+The protected names in a journal are a stamp, not a rule: what an update keeps
+is decided by the running code (`update_recovery.PROTECTED`, `updater.NEVER`).
+Two builds share every journal. The running app begins it, and the new release's
+copier continues it. A rescue runtime is published once and never updated, so it
+may be 1.2.0's code. For that reason:
+
+- every journal is written with `update_recovery.JOURNAL_STAMP`, exactly the list
+  1.2.0 writes and accepts. Never change it, and never derive it from `PROTECTED`.
+- any well-formed stamp is read, from an older or a newer build.
+
+Once a copier demanded its own list exactly, and it refused every 1.2.0 app's
+journal, so every update rolled back. `tests/test_update_compat.py` loads 1.2.0's
+`update_recovery.py` (kept in `tests/data/compat/`) and checks every journal the
+current code writes with it. In CI, `update_compat.py` lets the latest release,
+the newest dev pre-release and 1.1.0 really update to each new build, with their
+own code and binaries, before that build is published.
 
 States include DOWNLOADING, EXTRACTING, STAGING, STAGED, BACKING_UP, APPLYING,
 VERIFYING, COMMITTING, COMMITTED, ROLLING_BACK, ROLLED_BACK and RECOVERY_REQUIRED.

@@ -608,16 +608,25 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
     return g
 
 
-def ride_rules(p: Mapping[str, Any]) -> tuple[bool, set[int]]:
+def ride_rules(p: Mapping[str, Any], level: int = 0) -> tuple[bool, set[int]]:
     """(transport, avoid) for plan(), from the profile's two switches: "Use airships" decides the
     airships, "Use cable cars and teleport circles" every other ride. Every planner call that
     takes the profile's rides takes them from here, so one switch never turns off the other's
-    rides. (The walk-first plan under "Walk whenever the maps connect on foot" takes none.)"""
+    rides. (The walk-first plan under "Walk whenever the maps connect on foot" takes none.)
+    level: the character's, when known: a ride whose transports.json row needs a higher one is
+    left out too (below it the game opens no menu, it only says the level)."""
     airships = bool(p.get("use_airships", True))
     others = bool(p.get("use_transport", True))
     off = {t["id"] for t in transports()
-           if not (airships if t.get("kind") == "airship" else others)}
+           if not (airships if t.get("kind") == "airship" else others)
+           or (level > 0 and level < ride_level(t))}
     return airships or others, off
+
+
+def ride_level(t: Row) -> int:
+    """The level a ride needs (its row's "level"), 0 when none is known."""
+    n = t.get("level")
+    return n if isinstance(n, int) else 0
 
 
 def kept_off(p: Mapping[str, Any]) -> set[int]:

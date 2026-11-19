@@ -82,7 +82,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "drop_tail_seconds": 300,  # drop time keeps running this long after we reach safety
     "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
-    "skip_before_on_farm": False,  # a run that starts on its first farming map skips the Before farming list
+    "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -116,18 +116,20 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "bag_up": "up", "bag_down": "down", "bag_left": "left", "bag_right": "right",
     "use_key": "rctrl",       # uses the item under the cursor
     "category_key": "lctrl+alt+down",   # next category in a panel (the bag needs category 0)
-    "panic_below": 25,        # percent: with stop_on_panic, stop if HP stays under this...
+    "panic_below": 30,        # percent: with stop_on_panic or flee_on_panic, act if HP stays under this...
     "stop_on_panic": False,   # stop the run when HP stays under panic_below (off: keep fighting; deaths are handled)
+    "flee_on_panic": False,   # farming: hearthstone to town, heal, come back when HP stays under panic_below
     "respawn": "city",        # after dying: back to the city; "map" exists but isn't offered
     "use_resurrection_crystal": False,  # respawn with Resurrection Crystals (bag items: only if allowed)
     "stop_on_deaths": True,   # stop the run after dying max_deaths times (off: farm on, however often)
     "max_deaths": 3,          # stop the run after dying this many times (0 also means never)
-    "panic_after": 10.0,      # ...for this many seconds
+    "panic_after": 3.0,       # ...for this many seconds
     "stop_when_out_of_potions": True,  # the last red (or blue) potion is gone: end the run (restocked ones excepted)
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
+    "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for
     "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
@@ -139,7 +141,9 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "shoot_while_walking": False,  # farming: a character that fights from afar shoots what comes into reach on its walk to a monster (dungeons have their own setting)
     "corpse_skill": False,    # farming: the learned Draw Blood, Skinning or Cut Flesh on our kills (engine/corpses.py)
     "corpse_keep_vitality": 0,  # ... until Vitality is down to this (0: until it runs out)
-    "xp_card_name": "",       # farming: keep this experience card running, that kind only ("": none) (engine/xpcard.py)
+    "corpse_walk": True,      # ... walking up to corpses further off than the skill reaches from where we stand
+    "xp_cards": None,         # farming: keep a card of these strengths running, the strongest first ([]: none;
+                              # None: not carried over from xp_card_name yet) (engine/xpcard.py)
     "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
     "set_modes": True,        # before farming, set the game's modes below
@@ -309,6 +313,7 @@ class Profile(BaseModel):
     category_key: str = PROFILE_DEFAULTS["category_key"]
     panic_below: int = PROFILE_DEFAULTS["panic_below"]
     stop_on_panic: bool = PROFILE_DEFAULTS["stop_on_panic"]
+    flee_on_panic: bool = PROFILE_DEFAULTS["flee_on_panic"]
     respawn: str = PROFILE_DEFAULTS["respawn"]
     use_resurrection_crystal: bool = PROFILE_DEFAULTS["use_resurrection_crystal"]
     stop_on_deaths: bool = PROFILE_DEFAULTS["stop_on_deaths"]
@@ -328,9 +333,11 @@ class Profile(BaseModel):
     shoot_while_walking: bool = PROFILE_DEFAULTS["shoot_while_walking"]
     corpse_skill: bool = PROFILE_DEFAULTS["corpse_skill"]
     corpse_keep_vitality: float = PROFILE_DEFAULTS["corpse_keep_vitality"]
-    xp_card_name: str = PROFILE_DEFAULTS["xp_card_name"]
+    corpse_walk: bool = PROFILE_DEFAULTS["corpse_walk"]
+    xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]
+    skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     set_modes: bool = PROFILE_DEFAULTS["set_modes"]
     pk_key: str = PROFILE_DEFAULTS["pk_key"]
@@ -554,6 +561,9 @@ def update_app(changes: Mapping[str, Any]) -> dict[str, Any]:
 
 _PROFILE_ID_SEPARATOR = "\x1f"
 _PROFILE_ID_KEY = "_unclefarmer_character_identity"
+# What the bot learns lives next to the profiles (entrances, weights, teleports, landings, guards,
+# level tops): never a character, so never in the list of profiles.
+LEARNED_PREFIX = "_learned_"
 
 
 def character_profile(name: str, entity_id: object, server: str = "") -> str:
@@ -706,8 +716,8 @@ def profiles() -> list[str]:
     """
     found: list[str] = []
     for filename in os.listdir(paths.PROFILES):
-        if not filename.endswith(".json"):
-            continue
+        if not filename.endswith(".json") or filename.startswith(LEARNED_PREFIX):
+            continue                  # (the _learned_*.json files are what the bot learned, not characters)
         path = os.path.join(paths.PROFILES, filename)
         try:
             with open(path, encoding="utf-8") as f:
@@ -749,6 +759,17 @@ def _upgrade_xp_card(p: dict[str, Any]) -> None:
     """2026-11-12: the on/off "xp_card" (it used the strongest card in the bag) became the card the
     player chooses (xp_card_name). The old tick named no card, so it carries no choice over."""
     p.pop("xp_card", None)
+
+
+def _upgrade_xp_cards(p: dict[str, Any]) -> None:
+    """2026-11-17: one chosen card (xp_card_name) became ticks for several kinds (xp_cards). The
+    chosen kind is the one ticked. A profile that never saved its ticks keeps its old name in the
+    file, so this runs again on each read until it does, and gives the same ticks each time."""
+    name = p.pop("xp_card_name", "")
+    if p.get("xp_cards") is None:
+        from .engine.xpcard import strength
+        s = strength(name) if isinstance(name, str) else None
+        p["xp_cards"] = [s] if s else []
 
 
 def _upgrade(p: dict[str, Any]) -> dict[str, Any]:
@@ -872,6 +893,11 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     _upgrade_dropped,
     _upgrade_class_reach,
     _upgrade_xp_card,
+    _upgrade_xp_cards,
+    # Before 2026-11-18 a run that started on its farming map still made the Before farming list's
+    # trip to town and back unless the player ticked the skip; it is ticked now, once, for everyone:
+    # a supply or a bag that needs a town is seen to by the farm loop itself anyway.
+    _upgrade_once("skip_before_ticked", "skip_before_on_farm", (False, None), True),
 ]
 
 

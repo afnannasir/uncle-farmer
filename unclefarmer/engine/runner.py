@@ -40,6 +40,7 @@ AGENT_SLOTS = 46    # from here `slot <n>` presses an attack key through the gam
                     # (45 had it too, but never let the key go: the game then refused every walk)
 AGENT_SERVER = 58   # from here `server` identifies the live S1/S2 route without a game packet
 AGENT_LOGIN = 69    # from here automatic login also selects the profile's saved server
+AGENT_RECONNECT = 70 # from here `reconnect <id>` logs a dropped game back in with its saved account
 
 def _write_log(line: str) -> None:
     """Every run line to today's log; a broken log must never stop a run (applog says so once)."""
@@ -312,8 +313,32 @@ class Run(threading.Thread):
         bot.locate = getattr(self, "locate", None)   # where another of our characters is (follow, come)
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
         bot.tell = getattr(self, "tell", None)       # answers the player who asked for this run
+        bot.reconnect = lambda: self._reconnect_saved_character(bot, agent)
         self.bot = bot
         return bot
+
+    def _reconnect_saved_character(self, bot: Bot, agent: int) -> bool:
+        link = self.link
+        entity_id = settings.profile_id(self.profile or "")
+        if link is None or not entity_id or agent < AGENT_RECONNECT:
+            return False
+        try:
+            if link.send("arm") != "armed" or not link.json("reconnect %s" % entity_id).get("ok"):
+                return False
+            while not self.stop_event.wait(0.25):
+                state = link.json("autologinstatus")
+                if state.get("running"):
+                    continue
+                if state.get("status") != "ready":
+                    return False
+                link.send("keysup")
+                bot.held.clear()
+                bot.guarding = self._arm(link, agent, bot.p, settings.load_app()) == "on"
+                self.log(_("automatic reconnection finished"), speak=True)
+                return True
+        except (AgentError, OSError, Stopped):
+            return False
+        return False
 
     def _set_up(self, bot: Bot, snap: dict[str, Any], profile: dict[str, Any], found: dict[str, Any], agent: int,
                 app: dict[str, Any]) -> None:
@@ -332,6 +357,7 @@ class Run(threading.Thread):
         where: dict[str, Any] = snap.get("map", {})
         if where.get("id"):
             bot.start_place = (snap["map"]["id"], int(here.get("x", 0)), int(here.get("y", 0)))
+            bot.start_name = snap["map"].get("name")
         sheet: dict[str, Any] = here.get("sheet") or {}
         if profile.get("mp_use", True) and not sheet.get("maxmp"):
             # Max MP is only on the character sheet, and only farming reads it on its own:
@@ -423,14 +449,17 @@ class Run(threading.Thread):
         for node in main:
             if getattr(node, "kind", "") == "keep_level":
                 bot.level_keep = node.opts["xp"]
+            if getattr(node, "kind", "") == "keep_drop":
+                bot.drop_keep = node.opts["minutes"]
         bot.level_before_start()
+        bot.drop_before_start()          # nor with the day's drop time already used up
 
     @staticmethod
     def _on_the_farm(bot: Bot, script: Runner) -> bool:
         """With "Skip this list when the run starts on its first farming map" ticked: the run
         starts on the map it farms first (a Stop and a start again where it was farming), so the
         Before farming list - often a trip to town and back - is left out. True (and said) then."""
-        if not bot.p.get("skip_before_on_farm", False):
+        if not bot.p.get("skip_before_on_farm", True):
             return False
         first = triggers.first_farm_map(script.main, script.subs)
         here = bot.map_id()

@@ -12,6 +12,7 @@ import os
 from . import settings
 
 ATTACK_DEFAULTS = ["y", "u", "h", "j", "n", "m", "i", ",", ".", "/"]               # input.ini as shipped
+PAGE_TURN_DEFAULT = "capslock"                                                      # W_ATTACK_PAGETURN as shipped
 SLOT_DEFAULTS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="]
 _read_cache: dict[str, tuple[float, dict[str, str]]] = {}      # input.ini path -> (modified time, bindings): read again only when it changes
 
@@ -135,6 +136,20 @@ def _game() -> dict[str, str]:
 def attack_key_list() -> list[str]:
     """The 10 skill keys of the player's game, the game's own default where one isn't bound."""
     return [k or d for k, d in zip(attack_keys(_game()), ATTACK_DEFAULTS)]
+
+
+def page_turn_key() -> str:
+    """The key that turns the skill page (W_ATTACK_PAGETURN), Caps Lock where it isn't bound. The
+    game listens only to the keys bound in input.ini: for a player who moved the page to Space,
+    every Caps Lock was thrown away, so the page never turned and the skills on the other page
+    were pressed on empty keys (live 2026-11-16: an Elf cast only the two skills of her second
+    page for a whole night)."""
+    return _game().get("W_ATTACK_PAGETURN") or PAGE_TURN_DEFAULT
+
+
+def notice_key() -> str:
+    """The key that opens the notices (W_NOTICE): the gang's announcements are listed there."""
+    return _game().get("W_NOTICE") or "backspace"
 
 
 def slot_key_list() -> list[str]:

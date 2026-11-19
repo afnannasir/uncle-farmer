@@ -14,6 +14,7 @@ from typing import Any
 import wx
 
 from .. import settings
+from ..engine import gembreak
 from ..engine.crafting import CRYSTAL_LEVELS, MAX_ENHANCE, enhanceable, gear_name, shortfall
 from ..engine.town import shard_catalog
 from ..i18n import _
@@ -100,7 +101,7 @@ class ToolDialog(Dialog):
 
 
 SUPPLY = ("none", "both", "storage", "buy")
-AMOUNT = ("count", "most")
+AMOUNT = ("count", "most", "total")
 MODES = ("gem", "bag")
 
 
@@ -121,7 +122,7 @@ class GemMakerDialog(ToolDialog):
         c = self.cfg
         # profiles saved before the three questions: take what they had ("kind" made one shard's gems)
         colour: str = c.get("colour") or colour_of(c.get("kind")) or ""
-        amount = "most" if c.get("amount") in ("most", "fill") else "count"
+        amount = "most" if c.get("amount") in ("most", "fill") else "total" if c.get("amount") == "total" else "count"
         mode = "bag" if c.get("mode") == "bag" else "gem"
         nb = tabs(self)
 
@@ -139,7 +140,8 @@ class GemMakerDialog(ToolDialog):
         self.colour = f.choice(_("&Gem:"), [self.colour_label(col) for col in self.gem_colours],
                                self.gem_colours.index(colour) if colour in self.gem_colours else 0)
         self.level = f.number(_("&Level:"), c.get("level", 2), 1, 30)
-        self.amount = f.choice(_("&How many:"), [_("This many"), _("As many as I can")], AMOUNT.index(amount))
+        self.amount = f.choice(_("&How many:"), [_("This many more"), _("As many as I can"), _("Until the bag holds this many")],
+                               AMOUNT.index(amount))
         self.count = f.number(_("&Number of gems:"), c.get("count", 10), 1, 100000)
         self.supply = f.choice(_("Get more Level 1 shards &from:"), [_("Nowhere, use what's in the bag"),
                                                                     _("The storehouse first, then the Shard Market"),
@@ -197,7 +199,7 @@ class GemMakerDialog(ToolDialog):
         for ctrl in (self.colour_list, self.up_to, self.keep):
             _enable(ctrl, not gem_mode)
         market = gem_mode and self.supply.GetSelection() not in (0, 2)
-        _enable(self.count, gem_mode and self.amount.GetSelection() == 0)
+        _enable(self.count, gem_mode and AMOUNT[self.amount.GetSelection()] != "most")
         _enable(self.price_on, market)
         _enable(self.max_price, market and self.price_on.GetValue())
 
@@ -228,7 +230,8 @@ class GemMakerDialog(ToolDialog):
         for _round in range(6):
             moved = False
             for lv in sorted(shards):
-                if lv <= up_to and shards[lv] >= 4:
+                kept = boost and 2 <= lv < up_to and gems.get(lv, 0) - keep >= 3     # for the +20%
+                if lv <= up_to and shards[lv] >= 4 and not kept:
                     gems[lv] = gems.get(lv, 0) + shards[lv] // 4
                     shards[lv] %= 4
                     moved = True
@@ -236,10 +239,10 @@ class GemMakerDialog(ToolDialog):
                 tries = int(max(0, gems.get(lv, 0) - keep) // 3)
                 if not tries:
                     continue
-                boosted = boost and lv >= 2 and shards.get(lv, 0) > 0
-                if boosted:
-                    shards[lv] -= min(tries, shards[lv])          # a boost shard goes in each try
-                chance = 0.7 if boosted else 0.5
+                helped = min(tries, shards.get(lv, 0)) if boost and lv >= 2 else 0     # a shard goes in each try
+                if helped:
+                    shards[lv] -= helped
+                chance = 0.5 + 0.2 * helped / tries
                 made, failed = tries * chance, tries * (1 - chance)
                 # success: 3 gems become 1 a level up; failure: one of the 3 shatters into a shard
                 # (a protection rune saves it)
@@ -281,8 +284,10 @@ class GemMakerDialog(ToolDialog):
         lines = [_("In the bag: {n} {gem}.", n=gems.get(level, 0), gem=gem)]
         source = {"none": "", "both": _("the storehouse, then the Shard Market"), "storage": _("the storehouse"),
                   "buy": _("the Shard Market")}[supply]
-        if self.amount.GetSelection() == 0:
+        if AMOUNT[self.amount.GetSelection()] != "most":
             n = self.count.GetValue()
+            if AMOUNT[self.amount.GetSelection()] == "total":
+                n = max(0, n - gems.get(level, 0))
             _short, need = shortfall(gems, shards, level, n, self.protect.GetValue())
             lines.append(_("Make {n} more {gem}.", n=n, gem=gem))
             if not need:
@@ -320,6 +325,114 @@ class GemMakerDialog(ToolDialog):
         for old in ("kind", "each", "raise_after", "shards", "raise"):
             c.pop(old, None)
         return True
+
+
+class GemBreakerDialog(ToolDialog):
+    """What to break into shards (engine/gembreak.py). It can't be undone: nothing is ticked at first,
+    the plan shows what would go, and Start asks once more."""
+
+    KEY = "gem_breaker"
+
+    def __init__(self, parent: wx.Window, character: str) -> None:
+        super().__init__(parent, character, _("Gem Breaker"))
+        c = self.cfg = {**gembreak.DEFAULTS, **self.cfg}
+        nb = tabs(self)
+
+        panel, box = page(nb, _("What to break"))
+        chosen: list[str] = c["colours"]
+        self.colours = sorted({col for n in self.bag if (col := colour_of(n))} | set(chosen), key=str.lower)
+        self.colour_list = labeled(panel, box, _("&Gems to break:"),
+                                   lambda w: wx.CheckListBox(w, size=wx.Size(-1, 130)), 1)
+        self.colour_list.Set([self.colour_label(col) for col in self.colours])
+        for i, col in enumerate(self.colours):
+            self.colour_list.Check(i, col in chosen)
+        f = Form(panel)
+        self.top = f.number(_("&Highest gem level to break:"), c["top"], 1, 30)
+        self.stop = f.choice(_("Break &down to:"), [_("Shards"), _("Gems of a level")],
+                             pick(gembreak.STOPS, c["stop"]))
+        self.stop_level = f.number(_("Gem &level to stop at:"), c["stop_level"], 1, 29)
+        self.keep = f.number(_("&Keep at least this many of each gem and level:"), c["keep"], 0, 100000)
+        box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 8)
+        f = group(panel, box, _("Enhance Crystals (breaking them costs arnebia)"))
+        self.weapon = f.check(_("Break &Weapon Enhance Crystals"), c["weapon"])
+        self.equipment = f.check(_("Break &Equipment Enhance Crystals"), c["equipment"])
+        self.crystal_top = f.number(_("Highest &crystal level to break:"), c["crystal_top"], 1, 8)
+        self.crystal_keep = f.number(_("Keep at least this many of each crystal and le&vel:"), c["crystal_keep"],
+                                     0, 100000)
+
+        panel, box = page(nb, _("Craftsman and selling"))
+        f = group(panel, box, _("Craftsman and spending"))
+        self.common(f)
+        f = group(panel, box, _("Afterwards"))
+        self.sell = f.check(_("&Sell shards by the bag manager's rules (when done, or when too heavy)"), c["sell"])
+        self.plan = labeled(panel, box, _("Plan, from the last scan of your bag:"),
+                            lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 140)), 1)
+
+        def changed(_evt: wx.Event) -> None:
+            self.sync()
+        self.stop.Bind(wx.EVT_CHOICE, changed)
+        for spin in (self.top, self.stop_level, self.keep, self.crystal_top, self.crystal_keep):
+            spin.Bind(wx.EVT_SPINCTRL, changed)
+        for tick in (self.weapon, self.equipment):
+            tick.Bind(wx.EVT_CHECKBOX, changed)
+        self.colour_list.Bind(wx.EVT_CHECKLISTBOX, changed)
+        self.root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
+        self.finish_layout()
+        self.sync()
+
+    def colour_label(self, colour: str) -> str:
+        got = sorted((int(m.group(1)), n) for name, n in self.bag.items()
+                     if (m := GEM.match(name)) and m.group(2).lower() == colour.lower())
+        if not got:
+            return colour
+        return _("{colour}: {what}", colour=colour,
+                 what=", ".join(_("{n} at level {lv}", n=n, lv=lv) for lv, n in got))
+
+    def settings_now(self) -> dict[str, Any]:
+        return {"colours": [col for i, col in enumerate(self.colours) if self.colour_list.IsChecked(i)],
+                "top": self.top.GetValue(), "stop": gembreak.STOPS[self.stop.GetSelection()],
+                "stop_level": self.stop_level.GetValue(), "keep": self.keep.GetValue(),
+                "weapon": self.weapon.GetValue(), "equipment": self.equipment.GetValue(),
+                "crystal_top": self.crystal_top.GetValue(), "crystal_keep": self.crystal_keep.GetValue(),
+                "sell": self.sell.GetValue()}
+
+    def plan_lines(self) -> list[str]:
+        gone, made = gembreak.outcome(self.bag, self.settings_now())
+        if not gone:
+            return [_("Nothing would be broken: tick what to break.")]
+        prices = {k.lower(): (v or {}).get("price") or 0 for k, v in shard_catalog()[0].items()}
+        lines = [_("Breaks {n} {item}.", n=n, item=gembreak.pretty(name)) for name, n in gone.items()]
+        lines += [_("Leaves {n} {item}.", n=n, item=gembreak.pretty(name)) for name, n in made.items()]
+        worth = sum(n * prices.get(name, 0) for name, n in made.items())
+        if worth:
+            lines.append(_("The shards are worth about {total} arnebia at the last seen prices.", total=worth))
+        if any((item := gembreak.parse(name)) and item.crystal for name in gone):
+            lines.append(_("Crystals: what they give and cost is read from the craftsman's page."))
+        return lines
+
+    def sync(self) -> None:
+        _enable(self.stop_level, gembreak.STOPS[self.stop.GetSelection()] == "level")
+        crystals = self.weapon.GetValue() or self.equipment.GetValue()
+        _enable(self.crystal_top, crystals)
+        _enable(self.crystal_keep, crystals)
+        self.plan.ChangeValue("\n".join(self.plan_lines()))
+
+    def collect(self) -> bool:
+        now = self.settings_now()
+        if not (now["colours"] or now["weapon"] or now["equipment"]):
+            wx.MessageBox(_("Tick at least one gem, or a kind of crystal."), _("Gem Breaker"),
+                          wx.OK | wx.ICON_INFORMATION, self)
+            self.colour_list.SetFocus()
+            return False
+        self.cfg.update(now)
+        return True
+
+    def done(self, code: int) -> None:
+        if code == START and wx.MessageBox(
+                _("Breaking can't be undone.") + "\n" + "\n".join(self.plan_lines()) + "\n" + _("Break them now?"),
+                _("Gem Breaker"), wx.YES_NO | wx.NO_DEFAULT | wx.ICON_WARNING, self) != wx.YES:
+            return
+        super().done(code)
 
 
 class EnhancerDialog(ToolDialog):

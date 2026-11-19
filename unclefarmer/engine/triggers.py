@@ -52,8 +52,12 @@ TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
              "update_shard_prices": "update_shard_prices", "store_items": "store_items", "restock": "restock_now"}
 FARMING_COMMANDS = ("farm", "dungeon")
 TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems")),
+                ("gem_breaker", N_("breaking gems")),
                 ("enhance", N_("enhancing equipment")), ("dungeon", N_("running a dungeon")),
-                ("sell_collection", N_("selling the collection")))
+                ("sell_collection", N_("selling the collection")),
+                ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),
+                ("construction_scan auto=broadcast", N_("scanning the constructions, then a broadcast")),
+                ("construction_scan auto=system", N_("scanning the constructions, then a system message")))
 
 
 MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)
@@ -232,8 +236,12 @@ def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -
     return None
 
 
-def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None) -> None:
-    """One step: a step that farms first asks farming_window (the day's farming window), then it runs."""
+def run_step(b: Bot, action: str, farming_window: Callable[[], None] | None,
+             log: Callable[..., None] = lambda *_a: None) -> None:
+    """One step: a step that farms first asks farming_window (the day's farming window), then it
+    runs - unless it would read shard prices that are still fresh (_prices_fresh)."""
+    if _prices_fresh(b, action, log):
+        return
     if farming_window is not None and step_farms(b, action):
         farming_window()
     run_action(b, action)
@@ -249,6 +257,25 @@ def wait(b: Bot, seconds: float) -> None:
         b.sleep(seconds)
     finally:
         b.daily_stop_at = deadline
+
+
+def _prices_fresh(b: Bot, job: str, log: Callable[..., None]) -> bool:
+    """Updating shard prices in a Before or After farming list is a walk to the Shard Broker every
+    time: a run started on its farming map went to town and back for prices read minutes before.
+    Prices read less than town.SHARD_PRICES_FRESH ago are kept (True, and said)."""
+    if job != "update_shard_prices":
+        return False
+    age = town.shard_prices_age(b)
+    if age is None or age >= town.SHARD_PRICES_FRESH:
+        return False
+    log(_("the shard prices were read {hours} ago - not going to the Shard Broker for them again "
+          "before {most} hours", hours=_hours(age), most=int(town.SHARD_PRICES_FRESH // 3600)))
+    return True
+
+
+def _hours(seconds: float) -> str:
+    minutes = int(seconds // 60)
+    return "%d h %02d min" % (minutes // 60, minutes % 60) if minutes >= 60 else "%d min" % minutes
 
 
 def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[], bool],
@@ -271,7 +298,7 @@ def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[]
             break
         log(_("{stage}, automatically: {job}", stage=head, job=what(job)))
         try:
-            run_step(b, job, farming_window)
+            run_step(b, job, farming_window, log)
             done.append((job, True))
         except GameBroken:
             done.append((job, False))

@@ -16,7 +16,7 @@ import wx
 from .. import __version__, applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
-from .common import Handler, ask, buttons, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
+from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -25,6 +25,7 @@ from .mainparts.runs import RunsMixin
 from .mainparts.scheduling import SchedulingMixin
 from .mainparts.talk import TalkMixin
 from .mainparts.updates import UpdatesMixin
+from .market import MarketFrame
 from .silencer import SilencerDialog
 from .. import updater
 from ..soundrestore import SoundRestore
@@ -50,10 +51,12 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "messages_reset": has_messengers, "character_settings": available, "character_bag": available,
         "character_scan": available and not running, "character_other": True,
         "character_export": True, "character_import": True,
-        "tools_gem": available and not running, "tools_enhance": available and not running,
+        "tools_gem": available and not running, "tools_breaker": available and not running,
+        "tools_enhance": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
-        "tools_silencer": available,
+        "tools_silencer": available, "tools_market": available, "tools_bounties": available and not running,
+        "tools_construction": True,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
                                                      "tools_store", "tools_restock", "tools_prices")},
         "plans_new": True, "plans_new_script": True,
@@ -77,6 +80,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.chats = {}          # pid -> chat.Feed, that game's chat (memory only, never saved)
         self.chat_windows = {}   # pid -> its open Chat window
         self.silencer_windows: dict[int, SilencerDialog] = {}
+        self.market_windows: dict[int, MarketFrame] = {}
         self.sound_restorer = SoundRestore()
         self.pending_update: updater.ApplyProcess | None = None
         self.games = []          # [(pid, character, map name)]
@@ -259,11 +263,15 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             return result
 
         tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
+                           command(_("Gem Brea&ker"), lambda e: self.open_tool("break"), "Ctrl+Shift+B"),
                            command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
                            command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
                            command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
                            command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
+                           command(_("&Market searcher and buyer"), lambda e: self.open_market(), "Ctrl+Shift+K"),
+                           command(_("Hunting bount&ies"), lambda e: self.open_tool("bounties")),
+                           command(_("Construction &scanner"), lambda e: self.open_construction_scan()),
                            command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
                            command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
                            command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
@@ -271,8 +279,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Restock &now"), lambda e: self.restock_now()),
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer())],
-                          ("tools_gem", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
-                           "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
+                          ("tools_gem", "tools_breaker", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
+                           "tools_market", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
@@ -438,6 +446,20 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                 window.finish()
                 window.Destroy()
 
+    def open_market(self) -> None:
+        """Tools, Market searcher and buyer: one window per game, left open beside it."""
+        pid = self.selected_pid()
+        if pid is None:
+            error(self, _("No game found. Start Mist World first."))
+            return
+        window = self.market_windows.get(pid)
+        if window is None:
+            name = self.character(pid)
+            window = MarketFrame(self, pid, settings.profile_display(name) if name else None)
+            self.market_windows[pid] = window
+        window.Show()
+        window.Raise()
+
     def go_tab(self, i: int) -> None:
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
@@ -485,7 +507,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             restorer = getattr(self, "sound_restorer", None)
             if restorer is not None:
                 restorer.close()
-            for window in list(getattr(self, "silencer_windows", {}).values()):
+            windows: list[wx.Window] = [*getattr(self, "silencer_windows", {}).values(),
+                                        *getattr(self, "market_windows", {}).values()]
+            for window in windows:
                 window.Close()
         with down.step("release the hotkeys", must=False):
             for hotkey in self.hotkeys:
@@ -524,11 +548,13 @@ Main window
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
   Ctrl+G              Gem Maker
+  Ctrl+Shift+B        Gem Breaker: gems and Enhance Crystals into shards
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
   Ctrl+Shift+G        Dungeons: the experience caves, one a day
   Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
+  Ctrl+Shift+K        Market searcher and buyer: find, compare and buy what players sell
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -598,6 +624,9 @@ Supplies: tick the potions and food to refill, and from where. Full bag: what ha
 is full, and stopping when the day's drop time runs out.
 
 TOOLS
+Tools, Gem Breaker (Ctrl+Shift+B): break the gem colours you tick, up to the level you allow, into
+shards, and if you want the Weapon or Equipment Enhance Crystals too (they cost arnebia). It can't be
+undone: the window shows what would go, and asks before it starts.
 Tools, Gem Maker (Ctrl+G): make a gem (choose which, its level and how many, or as many as you
 can; it gets more Level 1 shards from the storehouse or the Shard Market when you let it), or make
 the most of your bag (every shard into gems, then every colour up as far as it goes). Tools, Equipment Enhancer (Ctrl+Shift+E): your
@@ -606,12 +635,17 @@ shards it takes from the storehouse or buys at the Shard Broker, keeps a stock o
 if you want, and makes more when they run out. Use
 your own gang's craftsmen (cheaper), another gang's by its name, or the nearest city's. Press Check only first: the bot walks there,
 reads the real prices and chances, says what it would do, and spends nothing.
-Tools, Daily chores (Ctrl+Shift+D): once a game day (from 00:00 GMT) the bank's incomes, hunting
-bounties, the free rebirths of the pet you choose, the gang donation, and construction builds at
-every place the gang has to build (the inner and outer halls, the highland). Sharing arnebia in a
+Tools, Daily chores (Ctrl+Shift+D): once a game day (from 00:00 GMT) the bank's incomes, the free
+rebirths of the pet you choose, the gang donation, and construction builds at
+every place the gang has to build (what it is building now, the inner hall's posts, its highlands). Sharing arnebia in a
 secret room: once in each half hour, 5 a day; the bot goes in just before a half hour, shares, shares
 again as it starts, and leaves, and while farming it leaves for that and comes back by itself. Tick
 "at the start of the first farming run" and a farming run does the chores first.
+Tools, Hunting bounties: after your character landed the killing blow on a boss, ask the officers
+you tick for what they pay. Each officer pays for bosses of his own.
+Tools, Construction scanner: read how far your gang's Magic Cannon, Supply Camp and highland defences
+are, without repairing anything; a gang elder can publish it as an announcement, a broadcast or a
+system message.
 Tools, Gathering (Ctrl+Shift+F): fishing, mining or collecting herbs, whichever skill the character
 has. First gangs' Lakes, Mining Areas or Herbal Gardens: your own gang's and other gangs' by name,
 in the order you list them (each once a game day, half an hour inside), then outside: at a place of your own (stand where you gather by hand and press "Add where I stand")
@@ -641,9 +675,15 @@ Tools, XP loser (Ctrl+Shift+X): for a character that shouldn't level up. Say how
 the next level should need at least (or how much to lose); the bot finds a guard - in sight, where
 one was seen before, or in the nearest town - switches the PK mode to all mode, hits the guard once
 and lets it kill the character (no potions, heals or fighting back), respawns in the city and goes
-again until the character sheet says so, or after the most deaths you allow. The pet is put away
+again until the character sheet says so, or after the most deaths you allow. Each death costs a
+little less than the last: after three it says how many more it will take, and it stops when a
+death costs too little or the level can't reach your number. The pet is put away
 first and the PK mode put back at the end. Not for a black-name character: it can lose worn gear
 when it dies. The Triggers tab can run it before or after farming.
+Tools, Market searcher and buyer (Ctrl+Shift+K): what players sell at the marketplace, by
+category, with lots, cheapest and usual prices. Refresh the market list reads it all (a minute or
+two). Search by item, cheapest first, by seller ID or browse; tick lots in Results and Buy (one
+question names the gold coins in all; lots in their first hour are never bought).
 
 UPDATES
 At start Uncle Farmer looks on GitHub for a new version; if there is one it says what's new and

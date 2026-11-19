@@ -224,7 +224,7 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def lose(g: Game, **cfg: Any) -> str:
-    return xploss.run(as_bot(g), {**xploss.DEFAULTS, **cfg})
+    return xploss.run(as_bot(g), {**xploss.DEFAULTS, "where": "guard", "stop_small": False, **cfg})
 
 
 def test_dies_to_the_guard_until_the_next_level_needs_the_goal() -> None:
@@ -241,9 +241,10 @@ def test_no_potions_heals_or_fighting_back_while_dying() -> None:
     g = Game()
     lose(g, until_needed=1500)
     during = g.p_during[g.pressed.index("j")]         # the settings at the moment of the hit
-    assert during["hp_below"] == 0 and during["smart_skills"] is False and during["fight_back"] is False
+    assert during["stop_when_out_of_potions"] is False
+    assert during["smart_skills"] is False and during["fight_back"] is False
     assert during["stop_on_deaths"] is False and during["stop_on_panic"] is False
-    assert g.p["hp_below"] == "auto" and g.p["smart_skills"] is True
+    assert "stop_when_out_of_potions" not in g.p and g.p["smart_skills"] is True
 
 
 def test_only_all_mode_lets_the_hit_land() -> None:

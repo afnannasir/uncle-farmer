@@ -110,7 +110,7 @@ REPLACE = ("_internal", "unclefarmer", "numpy", "orjson", "pydantic_core", "wx")
 KEEP_IN = {"agent": ("run",), "data": ("game_texts.json",)}
 # never copied, even if a release carried them: the player's own things, plus bootstrap.exe, which
 # an ordinary update never replaces in place (_install_bootstrap)
-NEVER = {"profiles", "plans", "scripts", "logs", "messages", "results", "survey", "update", "settings.json",
+NEVER = {"profiles", "plans", "scripts", "logs", "messages", "results", "survey", "market", "update", "settings.json",
          "schedules.json", ".recovery", BOOTSTRAP}
 
 _lock = threading.Lock()    # the staging folder, inside this process: a claim or a cleanup at a time

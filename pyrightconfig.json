@@ -12,6 +12,7 @@
     "nightwatch.py",
     "chestwatch.py",
     "profile_bot.py",
+    "update_compat.py",
     "agent"
   ],
   "exclude": [

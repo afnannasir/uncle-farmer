@@ -786,6 +786,8 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
 
     gem_maker          run the Gem Maker as set up in Tools
     gem_maker check    only look: walk there, read the menus and prices, change nothing
+    gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
+    gem_breaker check  only look: say what would be broken, break nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 
@@ -804,11 +806,11 @@ Each configured chore is performed once per game day.
 You can use `only=` to choose which chores to run. The available names are:
 
 - `bank`
-- `bounty`
 - `pet_rebirth`
 - `donation`
 - `construction`
 - `feed`
+- `contribution_chests`
 - `secret_room`
 
 For example:
@@ -819,7 +821,7 @@ This runs only the bank and donation chores.
 
 ### Losing experience
 
-The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set). Where it dies, at the nearest guard or at the nearest village, is that window's choice too.
+The `lose_xp` command dies to guards on purpose, as set under **Tools → XP loser**, until the next level needs at least the experience you set (or until it has lost as much as you set). Where it dies, at the nearest village or at the nearest guard, is that window's choice too. It also stops when the level can't reach the goal and, if you ticked it there, when a death costs too little.
 
     lose_xp          die to guards until the goal is met
     lose_xp check    only read the experience and look for guards; nothing changes
@@ -836,6 +838,8 @@ The `gather` command handles fishing, mining, or herb collecting according to yo
 Gathering works in the gang's area once per game day, then outside that area. The character fights back when needed and sells the collection afterward.
 
 The `gather check` option only looks at the skill, the gang area's entrance, and the place the bot would use.
+
+To ask the officers ticked in **Tools, Hunting bounties** for what they pay, use `bounties`, or `bounties check` to only read their menus.
 
 If you want to sell the gathered items separately, use:
 
@@ -881,6 +885,44 @@ This is the same as **Update shard prices** in the game's menu.
 This puts items from your bag into the storehouse according to your bag manager's Store list. It respects the items each rule says to keep and does not store anything else.
 
 This is the same as **Store items now** in the game's menu.
+
+### The player market
+
+These run the same work as **Tools, Market searcher and buyer**. The bot walks to the nearest
+marketplace when its menu isn't open.
+
+    market scan
+    market scan sellers
+
+Reads every category, all pages, and makes the market list (what is for sale, by category).
+`sellers` also looks up each lot's seller: slow the first time, quick afterwards, because every
+seller seen is remembered.
+
+    market search item="Lesser Blood"
+    market search item="Lesser Blood | Worthless Blood" cheapest max=10
+    market search item="Bow" category=weapons pages=5
+
+Finds lots whose name holds any of the names. `cheapest` reads in price order and stops at the
+first page whose lots all cost more than `max` a unit. `category=` is one of weapons, helmets,
+hangings, shawls, armors, belts, shoes, pant legs, handwears, rings, other equipments, materials,
+collections, usable items. Without it the category comes from the market list (all goods when
+the item isn't on it). `pages=` reads at most that many pages.
+
+    market seller 1234
+    market seller 1234,5678 category=materials
+
+Finds every lot those sellers have on sale. A player can have at most 10 lots at once, so the
+search stops as soon as all 10 of each seller are found.
+
+    market buy item="Lesser Blood" count=20 max=10
+    market buy item="Lesser Blood" count=20 max=10 cap=150 check
+
+Buys 20 Lesser Blood from the cheapest lots at 10 gold coins a unit or less. `cap=` stops before
+more than that many gold coins are spent in all. `check` finds the lots and says what it would
+buy, without buying. A lot still in its first hour on display is never bought.
+
+`market search` and `market buy` with nothing after them run the window's own search and the
+lots ticked there.
 
 ### Entering a dungeon
 
@@ -1183,8 +1225,11 @@ Use this section when you need a quick reminder of a command or its syntax.
 ### Tools and daily activities
 
     gem_maker [check]
+    gem_breaker [check]
     enhance [check]
     chores [check] [only=...]
+    bounties [check]
+    construction_scan [publish=<kind>|auto=<kind>]    kind: announcement, broadcast or system
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]

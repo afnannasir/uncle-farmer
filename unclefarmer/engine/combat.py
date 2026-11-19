@@ -264,7 +264,8 @@ class SkillBook:
         self.ok = False
         self.used: dict[str, float] = {}          # skill name -> last press time
         self.marked_at = 0.0    # last time we pressed a skill that can mark (Hunter)
-        self.can_flip = True    # Caps Lock reaches the game (agent v8 knows the key)
+        self.can_flip = True    # the page key reaches the game (agent v8 knows Caps Lock)
+        self.page_key = gamekeys.PAGE_TURN_DEFAULT   # the game's page key (load() reads input.ini)
         # Casts the game confirmed (agent v9 `casts`: IN op=41 "caster,seq,Level N Skill"). Live
         # 2026-10-04: one cast per ~1.2 s while the bot pressed every 0.35 s, so a press is not a
         # cast. With casts we time cooldowns from the real cast and wait out the global cooldown.
@@ -353,6 +354,7 @@ class SkillBook:
         self.cls = max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None)
         info: dict[str, Skill] = {s["name"]: s for s in know.get(self.cls or "", [])}
         keys = gamekeys.attack_key_list()
+        self.page_key = gamekeys.page_turn_key()
         self.slots = {}          # page -> [skill dict with "key"]
         attack_keys: dict[str, int] = sk["attack_keys"]
         for idx, sid in attack_keys.items():
@@ -391,6 +393,8 @@ class SkillBook:
             on = ", ".join("%s=%s" % (s["key"], s["name"]) for s in self.slots.get(0, []))
             self.b.log(_("{cls} skills on keys: {keys}", cls=self.cls or "?", keys=on))
             self.b.log(_("attacks {how}", how=_("walk to the enemy") if want_follow else _("stand still")))
+            if self.page_key != gamekeys.PAGE_TURN_DEFAULT and self.slots.get(1):
+                self.b.log(_("the skill page turns with {key} (the game's key for it)", key=self.page_key))
             if self.b.p.get("use_combos", True):
                 # combos only build on skills the player lets the bot press
                 on_keys = {x["name"] for row in self.slots.values() for x in row if x.get("use") != "never"}
@@ -447,7 +451,8 @@ class SkillBook:
         return self._page
 
     def flip_to(self, want: int) -> bool:
-        """Caps Lock (W_ATTACK_PAGETURN) until the game shows page want. False if it can't."""
+        """The page key (W_ATTACK_PAGETURN, Caps Lock as shipped) until the game shows page want.
+        False if it can't."""
         if not self.can_flip:
             return False
         for _i in range(2):
@@ -456,9 +461,9 @@ class SkillBook:
             self.b.wait_keys_free()
             self._page_at = 0           # the page is about to change: read it again
             self.b.note_page_turn()
-            r = self.b.a.send("key capslock 60")
+            r = self.b.a.send("key %s 60" % getattr(self, "page_key", gamekeys.PAGE_TURN_DEFAULT))
             if not r.startswith("tapped"):
-                self.can_flip = False   # an agent older than v8: no Caps Lock key
+                self.can_flip = False   # an agent older than v8 (no Caps Lock key), or a key it can't send
                 self.b.log(_("can't switch the skill page yet ({why}); using the page that is up", why=r))
                 return False
             self.b.sleep(0.15)

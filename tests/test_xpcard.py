@@ -1,4 +1,4 @@
-"""Experience cards (engine/xpcard.py) against a pretend game shaped like the hand recordings of
+﻿"""Experience cards (engine/xpcard.py) against a pretend game shaped like the hand recordings of
 2026-11-11: a card is a bag item whose use starts a 30-minute bonus, the character sheet (agent 60)
 shows it running or paused with its time left, and `xpbonus pause|resume` toggles it only when
 the sheet shows it the other way. A pause costs a minute and is invalid in a dungeon."""
@@ -53,7 +53,7 @@ class Game:
     def __init__(self, bonus: int = 0, paused: bool = False, seconds: int = 1800,
                  bag: list[dict[str, Any]] | None = None) -> None:
         self.clock = Clock()
-        self.p: dict[str, Any] = {"xp_card_name": "2x experience acceleration card", "xp_card_pause": True}
+        self.p: dict[str, Any] = {"xp_cards": [2.0], "xp_card_pause": True}
         self.a = Agent(self)
         self.agent_version = 60
         self.stop_event = threading.Event()
@@ -165,16 +165,40 @@ def test_with_no_card_running_the_chosen_kind_starts_never_the_strongest() -> No
     assert g.used == ["2x experience acceleration card"] * 2
 
 
-def test_the_chosen_card_is_matched_whatever_its_case() -> None:
-    g = Game(bag=fresh_bag())
-    g.p["xp_card_name"] = "3X Experience Acceleration Card "
+def test_the_ticked_card_is_matched_whatever_its_case() -> None:
+    g = Game(bag=[{"name": "3X Experience Acceleration Card", "count": 1}])
+    g.p["xp_cards"] = [3.0]
     xpcard.on_farm(as_bot(g))
-    assert g.used == ["3x experience acceleration card"]
+    assert g.used == ["3X Experience Acceleration Card"]
+
+
+def test_with_several_ticked_the_strongest_in_the_bag_goes_first_then_the_others() -> None:
+    """Finish the 2x, then burn the small cards looted on the way; the untouched 3x stays."""
+    g = Game(bag=fresh_bag() + [{"name": "1.3x experience acceleration card", "count": 1},
+                                {"name": "1.5x experience acceleration card", "count": 1}])
+    g.bag[1]["count"] = 1                     # one 2x left
+    g.p["xp_cards"] = [1.3, 2, 1.5]
+    for _ in range(4):
+        xpcard.on_farm(as_bot(g))
+        g.bonus = 0                           # each card's half hour is over
+        g.clock.now += 20 * xpcard.REST
+    assert g.used == ["2x experience acceleration card", "1.5x experience acceleration card",
+                      "1.3x experience acceleration card"]
+    assert g.said("none of the ticked experience cards in the bag") == [
+        ("none of the ticked experience cards in the bag - farming on without one", True)]
+    assert [r["count"] for r in g.bag if r["name"].startswith("3x")] == [1]
+
+
+def test_wanted_reads_the_ticks_strongest_first() -> None:
+    assert xpcard.wanted({"xp_cards": [1.3, 2, 2.0, 0, "x", 1.75], "xp_card_pause": True}) == ([2.0, 1.75, 1.3], True)
+    assert xpcard.wanted({"xp_cards": None}) == ([], False)
+    assert xpcard.name_of(2.0) == "2x experience acceleration card"
+    assert xpcard.name_of(1.75) == "1.75x experience acceleration card"
 
 
 def test_with_the_chosen_kind_gone_no_other_card_is_used() -> None:
     g = Game(bag=fresh_bag())
-    g.p["xp_card_name"] = "1.5x experience acceleration card"
+    g.p["xp_cards"] = [1.5]
     xpcard.on_farm(as_bot(g))
     assert g.used == []
     assert g.said("no 1.5x experience acceleration card in the bag") == [
@@ -183,7 +207,7 @@ def test_with_the_chosen_kind_gone_no_other_card_is_used() -> None:
 
 def test_only_pausing_never_starts_a_card_but_still_resumes_one() -> None:
     g = Game(bag=fresh_bag())
-    g.p["xp_card_name"] = ""
+    g.p["xp_cards"] = []
     xpcard.on_farm(as_bot(g))
     assert g.used == []
     g.bonus, g.paused = 30, True

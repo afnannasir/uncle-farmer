@@ -55,6 +55,7 @@
    "ride": 1055,
    "verified": "survey 2026-10-11 09:38",
    "cost": 2000,
+   "level": 45,
    "note": "",
    "team": false,
    "choose": [
@@ -100,6 +101,7 @@
    "ride": 1056,
    "verified": "survey 2026-10-11 09:38",
    "cost": 2000,
+   "level": 60,
    "note": "",
    "team": false,
    "choose": [
@@ -230,7 +232,7 @@
    ],
    "ride": 1123,
    "verified": "survey 2026-10-11 11:21",
-   "cost": "unknown",
+   "cost": 0,
    "note": "the atlas also has a walk-in exit 1122 -> 1123 at the shaft door",
    "team": false,
    "choose": [
@@ -362,7 +364,7 @@
    ],
    "ride": 1706,
    "verified": "survey 2026-10-11 11:41",
-   "cost": "unknown",
+   "cost": 0,
    "note": "",
    "team": false,
    "choose": [
@@ -402,7 +404,7 @@
    ],
    "ride": 1707,
    "verified": "survey 2026-10-11 11:26",
-   "cost": "unknown",
+   "cost": 0,
    "note": "",
    "team": false,
    "choose": [
@@ -442,8 +444,9 @@
    ],
    "ride": null,
    "verified": "player 2026-10-11",
-   "cost": "unknown",
-   "note": "Giant Rock City has two administrators: the west one (west, x 139) flies to Sunset City, the east one (x 262) to White Sand City (checked live 2026-10-11)",
+   "cost": 1000,
+   "level": 26,
+   "note": "Giant Rock City has two administrators: the west one (west, x 139) flies to Sunset City, the east one (x 262) to White Sand City (checked live 2026-10-11). Sunset City needs level 26 (a player).",
    "team": false,
    "choose": [
     "go to Sunset.*costs"
@@ -499,7 +502,8 @@
    ],
    "ride": null,
    "verified": "player 2026-10-11",
-   "cost": "unknown",
+   "cost": 1000,
+   "level": 36,
    "note": "Giant Rock City has two administrators: the east one (west, x 139) flies to Sunset City, the east one (x 262) to White Sand City (checked live 2026-10-11)",
    "team": false,
    "choose": [
@@ -617,7 +621,7 @@
    ],
    "ride": null,
    "verified": false,
-   "cost": "unknown",
+   "cost": 1000,
    "note": "position from our own packet logs",
    "team": false,
    "choose": [
@@ -675,6 +679,7 @@
    "ride": null,
    "verified": true,
    "cost": 1000,
+   "level": 56,
    "note": "Tulip City: the north administrator (y 102) flies to Moon City, the south one (y 219) to Violet City (checked live 2026-10-11)",
    "team": false,
    "choose": [
@@ -729,7 +734,8 @@
    "ride": null,
    "verified": "player 2026-10-11",
    "cost": 1000,
-   "note": "Tulip City: the north administrator (y 102) flies to Moon City, the south one (y 219) to Violet City (checked live 2026-10-11)",
+   "level": 76,
+   "note": "Tulip City: the north administrator (y 102) flies to Moon City, the south one (y 219) to Violet City (checked live 2026-10-11). Violet City needs level 76: below it the administrator opens no menu and says \"Go to Violet City; requires Level 76 or above\" (2026-11-14).",
    "team": false,
    "choose": [
     "go to violet.*costs"
@@ -877,7 +883,8 @@
    ],
    "ride": null,
    "verified": "player 2026-10-11",
-   "cost": "unknown",
+   "cost": 1000,
+   "level": 86,
    "note": "holy blood city: the north administrator (y 102) flies to dark night City, the south one (y 219) to Gouging Knife City (checked live 2026-10-11)",
    "team": false,
    "choose": [
@@ -909,19 +916,19 @@
    "lands": {
     "map": 1181,
     "cell": [
-     150,
-     150
+     226,
+     277
     ],
     "known": false,
     "ports": {
-     "0": 225,
-     "1": 248,
-     "2": 248,
-     "3": 225,
-     "4": 222,
-     "5": 240,
-     "6": 240,
-     "7": 222
+     "0": 21,
+     "1": 442,
+     "2": 442,
+     "3": 124,
+     "4": 21,
+     "5": 441,
+     "6": 442,
+     "7": 123
     }
    }
   },
@@ -935,7 +942,8 @@
    ],
    "ride": null,
    "verified": "player 2026-10-11",
-   "cost": "unknown",
+   "cost": 1000,
+   "level": 66,
    "note": "holy blood city: the north administrator (y 102) flies to dark night City, the south one (y 219) to Gouging Knife City (checked live 2026-10-11)",
    "team": false,
    "choose": [
@@ -967,15 +975,15 @@
    "lands": {
     "map": 1141,
     "cell": [
-     150,
-     150
+     83,
+     32
     ],
-    "known": false,
+    "known": true,
     "ports": {
-     "0": 221,
-     "1": 253,
-     "2": 212,
-     "3": 246
+     "0": 29,
+     "1": 293,
+     "2": 29,
+     "3": 292
     }
    }
   },
@@ -1340,6 +1348,118 @@
     "known": false,
     "ports": {
      "0": 0
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1181,
+   "npc": "Airship Administrator",
+   "at": [
+    220,
+    275
+   ],
+   "ride": null,
+   "verified": "player 2026-11-17",
+   "cost": 1000,
+   "note": "dark night City: the administrator at its south gate flies back to holy blood city, no level needed (checked live 2026-11-17); it lands by holy blood city's north docking point",
+   "team": false,
+   "choose": [
+    "go to holy blood.*costs"
+   ],
+   "choose_vip": [
+    "go to holy blood.*(vip|members) are free"
+   ],
+   "stand": [
+    220,
+    274
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 29,
+    "1": 435,
+    "2": 435,
+    "3": 127,
+    "4": 28,
+    "5": 432,
+    "6": 433,
+    "7": 126
+   },
+   "dest": 1121,
+   "lands": {
+    "map": 1121,
+    "cell": [
+     63,
+     100
+    ],
+    "known": true,
+    "ports": {
+     "0": 507,
+     "1": 374,
+     "2": 386,
+     "3": 63,
+     "4": 118,
+     "5": 475,
+     "6": 136,
+     "7": 63,
+     "8": 506,
+     "9": 373,
+     "10": 386,
+     "11": 475
+    }
+   }
+  },
+  {
+   "kind": "airship",
+   "map": 1141,
+   "npc": "Airship Administrator",
+   "at": [
+    78,
+    34
+   ],
+   "ride": null,
+   "verified": "player 2026-11-17",
+   "cost": 1000,
+   "note": "gouging knife city: its administrator flies back to holy blood city, no level needed (checked live 2026-11-17); it lands on holy blood city's south docking point",
+   "team": false,
+   "choose": [
+    "go to holy blood.*costs"
+   ],
+   "choose_vip": [
+    "go to holy blood.*(vip|members) are free"
+   ],
+   "stand": [
+    79,
+    34
+   ],
+   "comp": 1,
+   "ports": {
+    "0": 36,
+    "1": 296,
+    "2": 35,
+    "3": 294
+   },
+   "dest": 1121,
+   "lands": {
+    "map": 1121,
+    "cell": [
+     63,
+     221
+    ],
+    "known": true,
+    "ports": {
+     "0": 386,
+     "1": 495,
+     "2": 507,
+     "3": 176,
+     "4": 239,
+     "5": 354,
+     "6": 257,
+     "7": 176,
+     "8": 385,
+     "9": 494,
+     "10": 507,
+     "11": 354
     }
    }
   }

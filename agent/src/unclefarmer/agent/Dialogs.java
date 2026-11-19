@@ -361,6 +361,59 @@ final class Dialogs {
 
     /** world.a(Win): public, boolean, the window its only parameter - the one method of that shape
      * (Enter's). Found by its shape, so a renamed build can't make it another. */
+    /** `detail <row> <col> <sig>` (agent 71): the details key (G) on that entry of the menu read
+     * with sig, through the game's own method for it (game.i.i(): OUT op=35 with the entry's
+     * command; the server answers with spoken text, IN op=60, which `said` gives). A market lot's
+     * answer ends "Seller ID: <id>". Refuses, touching nothing, when the menu changed or the entry
+     * has no details. */
+    static String detail(int row, int col, int sig) {
+        try {
+            Object world = Memory.world();
+            loader = world.getClass().getClassLoader();
+            Method details = detailsMethod(world.getClass());
+            if (details == null) return "error: the game's details method wasn't found";
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Object y = open.get(open.size() - 1);
+                try {
+                    Menus.detailed(model(y, false), row, col, sig);
+                } catch (Menus.Refused r) {
+                    return "refused: " + r.getMessage();
+                }
+                setInt(y, D_ROW, row);
+                setInt(y, D_COL, col);
+                setInt(y, D_OPTION, 0);
+                details.invoke(world);
+                Log.info("ACTION details row " + row + " col " + col);
+                return "detailed " + row + " " + col;
+            }
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        } catch (Throwable t) {
+            Log.error("detail", t);
+            return "error: " + t;
+        }
+    }
+
+    private static volatile Method details;
+
+    /** game.i.i(): public, no arguments, nothing returned, named "i" (the method game.Win's
+     * details key calls on the world). */
+    static Method detailsMethod(Class<?> world) {
+        Method m = details;
+        if (m != null && m.getDeclaringClass() == world) return m;
+        try {
+            Method found = world.getDeclaredMethod("i");
+            if (found.getReturnType() != void.class || !Modifier.isPublic(found.getModifiers())) return null;
+            found.setAccessible(true);
+            details = found;
+            return found;
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
     static Method chooseMethod(Class<?> world, Class<?> win) {
         Method m = choose;
         if (m != null && m.getDeclaringClass() == world) return m;

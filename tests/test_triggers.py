@@ -78,6 +78,9 @@ def triggered(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, profile: dict[str
 def ticks(before: list[str] = [], after: list[str] = []) -> dict[str, bool]:     # noqa: B006 (read only)
     p = {triggers.setting(j, "before"): j in before for j in ORDER}
     p.update({triggers.setting(j, "after"): j in after for j in ORDER})
+    # the stand-in plans farm where they stand: without this the (ticked by default) skip would
+    # leave out every Before farming list here
+    p["skip_before_on_farm"] = False
     return p
 
 
@@ -289,6 +292,9 @@ def test_the_plans_keep_level_counts_before_the_first_check() -> None:
 
         def level_before_start(self) -> None:
             self.checked_with = self.level_keep
+
+        def drop_before_start(self) -> None:
+            pass
     b = Seen()
     main, _subs, _stop = script_mod.parse("end_at start\nkeep_level 250000\nfarm minutes=5\n")
     R.Run._level_first(as_bot(b), main)

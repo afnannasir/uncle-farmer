@@ -126,34 +126,36 @@ def test_every_tab_scrolls_and_windows_fit_the_screen(frame: Any) -> None:
             d.Destroy()
 
 
-def test_experience_card_choices_are_the_cards_in_the_bag(frame: Any) -> None:
-    """Only the cards the last scan saw in the bag can be chosen, weakest first, and None: the bot
-    uses the chosen kind only, never the strongest in the bag."""
+def test_experience_cards_are_one_tick_per_kind(frame: Any) -> None:
+    """One tick per kind, weakest first, each with what the last scan saw in the bag. A ticked kind
+    that ran out stays ticked."""
     from unclefarmer.gui.profile import ProfileDialog
     p = settings.load_profile("Hero")
     p["scan"] = {"bag": [{"name": "Red Potion", "count": 9},
                          {"name": "3x experience acceleration card", "count": 2},
                          {"name": "1.3x experience acceleration card", "count": 41}]}
-    p["xp_card_name"] = "3x experience acceleration card"
+    p["xp_cards"] = [3.0]
     settings.save_profile("Hero", p)
     d = ProfileDialog(frame, "Hero")
     try:
-        assert d.xp_card.GetStrings() == ["None", "1.3x experience acceleration card (41 in the bag)",
-                                        "3x experience acceleration card (2 in the bag)"]
-        assert d.xp_card.GetSelection() == 2
-        d.xp_card.SetSelection(1)
+        assert [k for k, _box in d.xp_cards] == [1.3, 1.5, 1.75, 2.0, 2.5, 3.0]
+        labels = {k: box.GetLabel() for k, box in d.xp_cards}
+        assert labels[1.3] == "1.3x experience acceleration card (41 in the bag)"
+        assert labels[2.0] == "2x experience acceleration card (none in the bag)"
+        assert [k for k, box in d.xp_cards if box.GetValue()] == [3.0]
+        dict(d.xp_cards)[1.3].SetValue(True)
         d.on_ok(wx.CommandEvent())
     finally:
         d.Destroy()
-    assert settings.load_profile("Hero")["xp_card_name"] == "1.3x experience acceleration card"
+    assert settings.load_profile("Hero")["xp_cards"] == [1.3, 3.0]
 
     p = settings.load_profile("Hero")
     p["scan"] = {"bag": [{"name": "3x experience acceleration card", "count": 1}]}   # the 1.3x ran out
     settings.save_profile("Hero", p)
     d = ProfileDialog(frame, "Hero")
     try:
-        assert d.xp_card.GetStrings() == ["None", "3x experience acceleration card (1 in the bag)"]
-        assert d.xp_card.GetSelection() == 0          # not in the bag: no choice of it
+        assert dict(d.xp_cards)[1.3].GetValue()       # still ticked: the next one looted is used
+        assert dict(d.xp_cards)[1.3].GetLabel() == "1.3x experience acceleration card (none in the bag)"
     finally:
         d.Destroy()
 
@@ -163,4 +165,15 @@ def test_the_old_experience_card_tick_names_no_card() -> None:
     p["xp_card"] = True                    # saved before 2026-11-12: "the strongest in the bag"
     settings.save_profile("Hero", p)
     got = settings.load_profile("Hero")
-    assert "xp_card" not in got and got["xp_card_name"] == ""
+    assert "xp_card" not in got and got["xp_cards"] == []
+
+
+def test_the_one_chosen_experience_card_becomes_its_tick() -> None:
+    import json
+    with open(settings.profile_path("Hero"), "w", encoding="utf-8") as f:   # saved before 2026-11-17: one kind only
+        json.dump({"xp_card_name": "2x experience acceleration card"}, f)
+    got = settings.load_profile("Hero")
+    assert "xp_card_name" not in got and got["xp_cards"] == [2.0]
+    got["xp_cards"] = []                                     # the player unticks it: it stays unticked
+    settings.save_profile("Hero", got)
+    assert settings.load_profile("Hero")["xp_cards"] == []

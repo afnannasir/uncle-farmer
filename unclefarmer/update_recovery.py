@@ -25,10 +25,19 @@ JOURNAL = "transaction.json"
 PAYLOAD = "UncleFarmer.exe"     # the application, which updates replace
 BOOTSTRAP = "bootstrap.exe"     # native/bootstrap.c: runs updates and recovery, never replaced by one
 PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
-             "survey", "update", "settings.json", "schedules.json"}
-# Journals written while the native front door was UncleFarmer.exe (and the app UncleFarmerApp.exe)
-# protected that name instead. Such a journal is still read, so its backups are never orphaned.
-LEGACY_PROTECTED = PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}
+             "survey", "market", "update", "settings.json", "schedules.json"}
+# A journal's "protected" list is a stamp, never a rule. What an update leaves alone is PROTECTED
+# above (_name refuses those entries) plus updater.NEVER, in the code that runs. Both directions
+# have to keep working across versions:
+# - Each copy's rescue runtime (.recovery/runtime) is published once and never updated, and a
+#   1.2.0 one accepts exactly this list. So every journal is written with JOURNAL_STAMP, as it
+#   is, forever: never derive it from PROTECTED or KEEP.
+# - The copier of a NEWER release continues the journal the running (older) app began. So any
+#   list of names is read: an older or a newer build may have written another. Once, a copier
+#   that wanted its own list exactly refused every 1.2.0 app's journal, and every update rolled back.
+JOURNAL_STAMP = ("agent/run", ".recovery", "bootstrap.exe", "data/game_texts.json", "logs", "messages",
+                 "plans", "profiles", "results", "schedules.json", "scripts", "settings.json", "survey",
+                 "update")
 KEEP = {"agent": "run", "data": "game_texts.json"}
 TERMINAL = {"COMMITTED", "ROLLED_BACK"}
 EARLY = {"DOWNLOADING", "EXTRACTING", "STAGING", "STAGED"}
@@ -187,7 +196,7 @@ def validate(data: object, app: str) -> dict[str, Any]:
         raise RecoveryError("empty application replacement plan")
     if not 0 < record["owner"] <= 0xFFFFFFFF or record["owner_stamp"] <= 0:
         raise RecoveryError("invalid transaction process identity")
-    if record.get("protected") not in (protected_names(), protected_names(LEGACY_PROTECTED)):
+    if not _stamp(record.get("protected")):
         raise RecoveryError("invalid journal preservation rules")
     expected = os.path.join(app, HERE, record["id"])
     if (not isinstance(record.get("backup"), str) or not isinstance(record.get("staging"), str)
@@ -243,8 +252,13 @@ def _validate_progress(record: dict[str, Any]) -> None:
         raise RecoveryError("recovery progress does not match the backups")
 
 
-def protected_names(names: set[str] = PROTECTED) -> list[str]:
-    return sorted(names | {folder + "/" + name for folder, name in KEEP.items()})
+def _stamp(value: object) -> bool:
+    """A journal's protected stamp as any build writes one: distinct names (see JOURNAL_STAMP)."""
+    if not isinstance(value, list) or not 0 < len(cast(list[object], value)) <= 256:
+        return False
+    names = cast(list[object], value)
+    return (all(isinstance(n, str) and 0 < len(n) <= 260 for n in names)
+            and len({cast(str, n).casefold() for n in names}) == len(names))
 
 
 def _verify_preserved_entry(entry: dict[str, Any]) -> None:
@@ -350,7 +364,8 @@ def begin(app: str, previous: str, target: str, phase: str = "STAGING") -> dict[
     work = os.path.join(app, HERE, transaction)
     record: dict[str, Any] = dict(format=1, id=transaction, app=app, previous=previous, target=target, state=phase,
                                   staging=os.path.join(work, "new"), backup=os.path.join(work, "old"),
-                                  entries=[], backed_up=[], replaced=[], waiting=[], protected=protected_names(),
+                                  entries=[], backed_up=[], replaced=[], waiting=[],
+                                  protected=sorted(JOURNAL_STAMP),
                                   owner=os.getpid(), owner_stamp=current_stamp(), last="", rollback_required=True, committed=False)
     save(app, record, phase, "journal-created")
     return record

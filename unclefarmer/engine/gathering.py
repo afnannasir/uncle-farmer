@@ -32,11 +32,13 @@ import copy
 import math
 import os
 import re
+from collections.abc import Generator
+from contextlib import contextmanager
 from typing import Any
 
 from .. import atlas, jsonio as json, paths
 from ..i18n import N_, _
-from . import beasts, chores, crafting, town
+from . import beasts, chores, crafting, pets, town
 from .bot import Bot, CONFIRM, Respawned, Stopped
 
 SKILLS: dict[str, dict[str, str]] = {
@@ -68,6 +70,7 @@ DEFAULTS: dict[str, Any] = {
     "gang": True,             # gangs' production areas first, each once a game day
     "gangs": [""],            # ... these, in order: "" our own gang, else a gang's name
     "gang_fee_max": 20000,    # ... for an entry fee of at most this
+    "gang_min_saturation": 0,  # ... and a saturation of at least this percent
     "outside": True,          # outside places (after the gang's area, or without one)
     "place": "",              # "": the best for the character; else a place's name
     "places": [],             # the player's own: {"name", "skill", "map", "x", "y"}
@@ -325,8 +328,10 @@ def gather_here(b: Bot, cfg: dict[str, Any], skill: str, place: dict[str, Any] |
     """Gather where we stand until something ends it. place: the outside place, None in a gang's
     area. A gang's area is left to the game for its half hour: started, and only watched for its
     end (no potions, no fights there: a key would stop the gathering). Outside, monsters come: the
-    bot looks after itself the whole time - potions, heals - fights whatever attacks it, walks
-    back onto the spot and starts again.
+    bot looks after itself the whole time - potions, heals - keeps the player's pet out and looked
+    after as farming does (it helps kill what comes), fights whatever attacks it or the pet, walks
+    back onto the spot and starts again. A pet summoned or given a potion stops the gathering for a
+    moment, as our own potions do: it is started again when the casts stop.
     Returns why it ended: "vitality", "kept" (outside, down to the player's Vitality mark), "full",
     "time", "left" (we are on another map: the gang's half hour is over, or we died), "refused"
     (the game never started it here) or "lost" (pushed off the place and couldn't walk back)."""
@@ -346,11 +351,14 @@ def gather_here(b: Bot, cfg: dict[str, Any], skill: str, place: dict[str, Any] |
         snap = b.snap()
         if place is not None or snap["self"].get("hp", 1) <= 0:
             b.look_after(snap["self"])    # outside: potions and heals as in any fight; a death anywhere
+        if place is not None:
+            pets.keep_out(b)              # outside: the pet out, as on a farm, to help with what comes
+            pets.look_after(b, snap)
         why = _stop_reason(b, cfg, place, said_from)
         said_from = _ms(b)
         if why:
             return why
-        if place is not None and b.attackers():
+        if place is not None and b.attackers():   # at us or at our pet
             b.fight_back()
             last_cast, tries = None, 0
             if not _back_to(b, place):
@@ -496,6 +504,11 @@ def gang_area(b: Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,
         b.note_dialog(b.dialog(), "gang area entrance")
         b.close_dialogs()
         return False, _("the {npc} offers no way in ({about})", npc=name, about=about), True
+    least = float(cfg.get("gang_min_saturation", 0))
+    if area and float(area.group(2)) < least:
+        b.close_dialogs()
+        return False, _("the gang's area is under your {least}% saturation ({about})",
+                        least=f"{least:g}", about=about), False
     if check_only:
         b.close_dialogs()
         return False, _("the gang's area: {about}", about=about), False
@@ -603,8 +616,13 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
             break
     if why not in ("vitality", "time", "full") and cfg.get("outside", True):
         why = _outside(b, cfg, skill, rank, level, end_at, notes)
+    # Gathering is over: the way home - to the buyer, then wherever the run ends (finish) - is
+    # walked like the walking assistant's: no stopping to fight, even what attacks us, riding the
+    # Swift beast past it; potions still keep us up. Fights before, while gathering, as ever.
+    b.home_after_gathering = b.kills
     if getattr(b, "gather_casts", 0) or _holding(b, skill):
-        _sell(b, cfg, skill)
+        with homeward(b):
+            _sell(b, cfg, skill)
     if why == "vitality":
         notes.append(_("Vitality is used up for today"))
     elif why == "kept":
@@ -613,6 +631,24 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
         notes.append(_("{n} minutes are up", n=minutes))
     b.log(_("gathering finished: {notes}", notes="; ".join(notes) or _("nothing done")), speak=True)
     return notes
+
+
+@contextmanager
+def homeward(b: Bot) -> Generator[None, None, None]:
+    """Inside: the walking assistant's rules (walk_only) - no fights, the Swift beast, potions."""
+    was = b.walk_only
+    b.walk_only = True
+    try:
+        yield
+    finally:
+        b.walk_only = was
+
+
+def going_home(b: Bot) -> bool:
+    """The run's last job was gathering (run() ended it) and nothing has been killed since - so a
+    script that gathers and then farms ends with fights on its way home, as any farming run does."""
+    mark = getattr(b, "home_after_gathering", None)
+    return mark is not None and mark == b.kills
 
 
 def _gang_round(b: Bot, cfg: dict[str, Any], skill: str, end_at: float | None, notes: list[str],

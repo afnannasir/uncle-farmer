@@ -225,7 +225,7 @@ class EditingMixin(FrameParts):
     def open_tool(self, which: str) -> None:
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
-        from ..crafting import CHECK, START, EnhancerDialog, GemMakerDialog
+        from ..crafting import CHECK, START, EnhancerDialog, GemBreakerDialog, GemMakerDialog
         name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
@@ -235,13 +235,15 @@ class EditingMixin(FrameParts):
             self.scanned.pop(name, None)
             with wx.BusyCursor():
                 self.auto_scan(name)          # a fresh look at the bag and gear first
-        from ..chores import ChoresDialog
+        from ..chores import BountiesDialog, ChoresDialog
         from ..dungeon import DungeonDialog
         from ..gathering import GatheringDialog
         from ..xploss import XpLoserDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
+                           "break": (GemBreakerDialog, "gem_breaker", _("Gem Breaker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
+                           "bounties": (BountiesDialog, "bounties", _("Hunting bounties")),
                            "gather": (GatheringDialog, "gather", _("Gathering")),
                            "dungeon": (DungeonDialog, "dungeon", _("Dungeons")),
                            "xploss": (XpLoserDialog, "lose_xp", _("XP loser"))}[which]
@@ -256,6 +258,17 @@ class EditingMixin(FrameParts):
             self.run_errand(dungeon.script(cfg or {}), title)     # its end place, then the caves
         elif code == START:
             self.run_errand(cmd + "\n", title)
+
+    def open_construction_scan(self) -> None:
+        """Tools, Construction scanner: read the last report, or scan or publish on the selected game."""
+        from ..chores import PUBLISH_REPORT, SCAN_CONSTRUCTIONS, ConstructionScanDialog
+        with ConstructionScanDialog(self) as d:
+            code = d.ShowModal()
+            kind = d.kind
+        if code == SCAN_CONSTRUCTIONS:
+            self.run_errand("construction_scan\n", _("Construction scanner"))
+        elif code == PUBLISH_REPORT:
+            self.run_errand("construction_scan publish=%s\n" % kind, _("Construction scanner"))
 
     def edit_bag(self) -> None:
         name = active_profile(self)

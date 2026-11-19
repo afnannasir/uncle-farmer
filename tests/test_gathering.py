@@ -102,6 +102,9 @@ class Game:
         self.drank = 0
         self.looked = 0
         self.bag_start = None
+        self.walk_only = False
+        self.kills = 0
+        self.travel_walk_only: list[bool] = []   # walk_only on each travel (no fights on the way)
 
     # time passing: the game casts while gathering is on
     def _tick(self, seconds: float) -> None:
@@ -164,6 +167,7 @@ class Game:
 
     def travel(self, mid: int, cell: tuple[float, float] | None=None) -> None:
         self.travelled.append((mid, cell))
+        self.travel_walk_only.append(self.walk_only)
         self.mid = mid
         if cell:
             self.x, self.y = float(cell[0]), float(cell[1])
@@ -395,6 +399,16 @@ def test_check_only_and_a_fee_above_the_limit_never_enter(inner_hall: None) -> N
     assert not entered and not over and g.mid == 4004
 
 
+def test_an_area_under_the_minimum_saturation_is_skipped_for_now(inner_hall: None) -> None:
+    g = Game(map_id=4004)
+    gang_pages(g)
+    entered, about, over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS, gang_min_saturation=100), "Fishing")
+    assert not entered and not over and g.mid == 4004
+    assert about.startswith("the gang's area is under your 100% saturation")
+    entered, _about, _over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS, gang_min_saturation=99.9), "Fishing")
+    assert entered
+
+
 def test_a_gang_without_that_area_is_done_for_the_day(inner_hall: None) -> None:
     g = Game(map_id=4004)
     g.x, g.y = 40, 40
@@ -544,6 +558,50 @@ def test_outside_a_full_bag_is_sold_and_it_comes_back(market: None, monkeypatch:
     gathering.run(as_bot(g), cfg)
     assert [t[0] for t in g.travelled].count(1561) == 2          # there, to sell, and back
     assert g.bag["Milkfish"] == 0 and g.bag["Arnebia"] == 50000 + 12 * 670
+
+
+def test_after_gathering_the_way_home_has_no_fights(market: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The bag-full trip to the buyer and back is part of gathering (fights as ever); the last
+    trip to the buyer, after gathering ended, goes as the walking assistant does."""
+    g = Game(map_id=1041, vitality=6)
+    buyer(g, [("Milkfish", 670)])
+    monkeypatch.setattr(gathering.beasts, "off", stand_in(gathering.beasts.off, lambda b: None))
+    visits: list[bool] = []
+    real_visit: Callable[..., str] = town.visit
+
+    def visit(b: Game, role: str | None, name: str | None = None, candidates: object = None) -> str:
+        visits.append(b.walk_only)
+        return real_visit(b, role, name, candidates)
+    monkeypatch.setattr(town, "visit", visit)
+    full = {"n": 0}
+
+    def sheet(force: bool=False):
+        full["n"] += 1
+        return {"level": 85, "load": 10000 if full["n"] == 8 else 100, "maxload": 10000}
+    monkeypatch.setattr(g, "refresh_sheet", sheet)
+    cfg = dict(gathering.DEFAULTS, gang=False, known_places=False, places=[own(name="north bank")])
+    gathering.run(as_bot(g), cfg)
+    # the mid-run sale fights; the last trip doesn't (a sale may visit the buyer more than once)
+    assert visits[0] is False and visits[-1] is True and visits == sorted(visits)
+    assert g.travel_walk_only == [False, False]       # to the spot and back to it: fights as ever
+    assert g.walk_only is False                       # only for that trip
+    assert gathering.going_home(as_bot(g))            # ... and the run's own end (finish)
+    g.kills += 1                                      # a script that farms after gathering
+    assert not gathering.going_home(as_bot(g))
+
+
+def test_the_pet_is_kept_out_while_gathering_outside(monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(vitality=6)
+    out: list[str] = []
+    monkeypatch.setattr(gathering.pets, "keep_out", stand_in(gathering.pets.keep_out, lambda b: out.append("out")))
+    monkeypatch.setattr(gathering.pets, "look_after",
+                        stand_in(gathering.pets.look_after, lambda b, snap: out.append("after")))
+    gathering.gather_here(as_bot(g), dict(gathering.DEFAULTS), "Fishing", None, None)
+    assert out == []                                  # a gang's area: left to the game alone
+    g = Game(vitality=6)
+    g.x, g.y = 186.0, 205.0
+    gathering.gather_here(as_bot(g), dict(gathering.DEFAULTS), "Fishing", dict(own(), label="north bank"), None)
+    assert out and set(out) == {"out", "after"}
 
 
 def test_a_place_the_way_to_fails_is_left_for_the_run(market: None, monkeypatch: pytest.MonkeyPatch) -> None:

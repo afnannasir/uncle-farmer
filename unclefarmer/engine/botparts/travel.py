@@ -7,6 +7,7 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import math
+import re
 from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
@@ -28,6 +29,10 @@ POISON_MAP = 5141
 POISON_TALENT = "Poison Immunity"
 POISON_MOUNT_WAIT = 30.0    # seconds to wait for a beast to go on before giving up the crossing
 
+# Below a ride's level the NPC opens no menu: it says "Go to Violet City; requires Level 76 or
+# above, Go to Violet City when you're stronger." (Tuneful Wetland's airship, 2026-11-14).
+LEVEL_REFUSAL = re.compile(r"requires level (\d+) or above", re.I)
+
 
 def ways_out(b: object) -> WaysOut:
     """{map we can't plan out of: (the map its way out leads to, the cell)}, learned this run."""
@@ -42,6 +47,16 @@ def rides_free(b: object) -> bool:
     p: object = getattr(b, "p", None)
     told = isinstance(p, dict) and bool(cast("dict[str, Any]", p).get("vip", False))
     return told and not getattr(b, "vip_refused", False)
+
+
+def rides_too_high(b: object) -> dict[int, int]:
+    """{transport id: the level the game said it needs}, for the rides that turned us away this
+    run because of the character's level: left out of every plan for the rest of the run."""
+    got: object = getattr(b, "rides_too_high", None)
+    if not isinstance(got, dict):
+        got = {}
+        b.__dict__["rides_too_high"] = got
+    return cast("dict[int, int]", got)
 
 
 def note_way_out(b: object, inside: int, to_map: int, cell: tuple[float, float]) -> None:
@@ -111,6 +126,8 @@ class TravelMixin(Parts):
         is the exception: the atlas marks a whole city as a spawn zone for the ducks and hens that
         wander its streets, and a run started in the town goes back there."""
         x, y = cell
+        if atlas.in_town(mid, x, y):
+            return False
         for c in knowledge.cities():
             r = c.get("town_rect")
             if c.get("map") == mid and r and r[0] <= x <= r[2] and r[1] <= y <= r[3]:
@@ -151,6 +168,7 @@ class TravelMixin(Parts):
             self._travel(dst, cell, avoid)
         finally:
             self.traveling = was
+            self.walk_left = self.walk_target = None
 
     def _travel(self, dst: int, cell: tuple[float, float] | list[float] | None, avoid: set[Any]) -> None:
         goal_cell = (cell[0], cell[1]) if cell is not None else None
@@ -170,10 +188,11 @@ class TravelMixin(Parts):
             self.restock_on_the_way()
             if self.map_id() != mid:
                 continue          # the restock walked us elsewhere: plan from there
-            beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
                 return
+            self.walk_left = self._leg_walk(mid, legs[0])
+            beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             steps = travel.describe(legs)
             if steps != said and len(legs) > 1:
                 self.log(_("route to {map}: {steps}", map=atlas.label(dst), steps=" / ".join(steps)))
@@ -189,6 +208,16 @@ class TravelMixin(Parts):
             finally:
                 self.crossing_poison = False
         raise Stopped(_("travel to {map} didn't arrive", map=atlas.label(dst)))
+
+    def _leg_walk(self, mid: int, leg: dict[str, Any]) -> float | None:
+        """Steps to walk on this map for a leg: to its exit, NPC or cell; 0 for a teleport from
+        where we stand; None when not known."""
+        if leg.get("do") in ("item", "skill"):
+            return 0.0
+        goal = leg.get("cell") if leg.get("do") == "walk" else leg.get("stand")
+        if not goal:
+            return None
+        return self.walk_dist({"self": self.me(), "map": {"id": mid}}, {"x": goal[0], "y": goal[1]})
 
     def poison_immune(self) -> bool:
         """The Poison Immunity talent is activated (`mem skills` talents). False when the agent
@@ -250,8 +279,15 @@ class TravelMixin(Parts):
         return done
 
     def _plan_legs(self, mid: int, dst: int, goal_cell: tuple[float, float] | None, avoid: set[Any]) -> list[dict[str, Any]]:
-        """The way from here, as the profile wants it planned; a Stopped when there is none."""
+        """The way from here, as the profile wants it planned; a Stopped when there is none. Out of
+        a gang base on foot first: its exit has no destination in the map data (the game puts us
+        back where we came in), so a plan from inside could only teleport away, however near the
+        goal is. The next leg is planned from outside."""
         me = self.me()
+        if dst != mid and travel.gang_exit(mid) is not None:
+            out, _cost = travel.way_out(mid, (me["x"], me["y"]), avoid)
+            if out:
+                return out
         rows = self.bag_rows()
         bag = rows if self.p.get("use_travel_items", False) else []
         purse = travel.arnebia_in(rows)       # no ride planned that we can't pay for
@@ -262,9 +298,9 @@ class TravelMixin(Parts):
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell, transport=False, avoid=avoid,
                                bag=[], items=False)
         if legs is None:
-            rides, off = travel.ride_rules(self.p)
+            rides, off = travel.ride_rules(self.p, int(me.get("level") or 0))
             legs = travel.plan(mid, (me["x"], me["y"]), dst, goal_cell,
-                           transport=rides, avoid=avoid | off,
+                           transport=rides, avoid=avoid | off | set(rides_too_high(self)),
                            vip=rides_free(self), bag=bag,
                            hearth_home=self.p.get("hearth_home") or None,
                            hearth_key=bool(self.p.get("hearthstone_key")),
@@ -288,6 +324,9 @@ class TravelMixin(Parts):
                 if free and not rides_free(self):
                     # the free entry was refused (_vip_refused): no fault of this NPC's, so it is
                     # neither counted against it nor left out - the next plan pays its fare
+                    return False
+                if leg["id"] in rides_too_high(self):
+                    avoid.add(leg["id"])     # our level: another try gets the same answer
                     return False
                 failed[leg["id"]] = failed.get(leg["id"], 0) + 1
                 if failed[leg["id"]] < self.RIDE_TRIES and self.map_id() == leg["map"]:
@@ -411,7 +450,11 @@ class TravelMixin(Parts):
 
     def _take_spell(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> None:
         """A teleport skill leg; what can't work is left out of the next plan: a place the skill
-        doesn't have at once, the whole skill after SPELL_TRIES broken channels."""
+        doesn't have at once, the whole skill when it is on no key (no place would do better) or
+        after SPELL_TRIES broken channels."""
+        if self.spell_slot(leg["skill"]) is None:
+            avoid.add(leg["skill"])
+            return
         got = self.cast_teleport(leg)
         if got is False:
             avoid.add((leg["skill"], leg["place"]))
@@ -695,8 +738,13 @@ class TravelMixin(Parts):
         was = self.target_mode_now()
         if not self.set_target_mode(self.NPC_MODE):
             self.log(_("couldn't switch the target key to NPCs"), speak=True)
+        from .. import chores          # chores uses the town errands, which use the whole Bot
+        since = chores.said_mark(as_bot(self))
         try:
-            return self._ride(leg, mid)
+            if self._ride(leg, mid):
+                return True
+            self._level_refusal(leg, chores.said_since(as_bot(self), since))
+            return False
         finally:
             if self.map_id() == mid:
                 self.close_dialogs()
@@ -757,6 +805,17 @@ class TravelMixin(Parts):
             self.log(_("the {npc} didn't take me anywhere", npc=leg["npc"]), speak=True)
         self.close_dialogs()
         return False
+
+    def _level_refusal(self, leg: dict[str, Any], said: list[str]) -> None:
+        """A ride that didn't work: when the game said it needs a higher level, it is left out for
+        the rest of the run (rides_too_high), and said once."""
+        m = next((m for line in said for m in [LEVEL_REFUSAL.search(line)] if m), None)
+        if m is None:
+            return
+        need = int(m.group(1))
+        rides_too_high(self)[leg["id"]] = need
+        self.log(_("the {npc} on {map} takes only level {n} and above - going another way",
+                   npc=leg["npc"], map=atlas.label(leg["map"]), n=need), speak=True)
 
     def _vip_refused(self, leg: dict[str, Any]) -> None:
         """The menu's free entry for VIPs was chosen and no ride came of it: the profile says VIP

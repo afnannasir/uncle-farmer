@@ -80,7 +80,7 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
     best: tuple[float, Npc] | None = None
     rows = b.bag_rows()
     purse = travel.arnebia_in(rows)
-    rides, off = travel.ride_rules(b.p)
+    rides, off = travel.ride_rules(b.p, int(me.get("level") or 0))
     spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
 
     def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
@@ -301,18 +301,52 @@ def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None):
     got = max(0, after.get(item.lower(), 0) - before)
     if stock is not None and got > 0:
         getattr(b, "storehouse_lacks", set[str]()).discard(item.lower())
+    if got > 0:
+        refused(b).clear()          # something came out: there may be room again
     b.log(_("took {n} {item} out of the storehouse", n=got, item=item))
     stats.moved(b, "withdrawn", item, got)
     return got
 
 
+# What the game says when the storehouse has no free place for an item it doesn't hold yet (seen
+# 2026-11-18, the menu closing after it as after every deposit). An item it already holds a stack
+# of still goes in: only that item is refused, not the rest of the trip.
+STOREHOUSE_FULL = re.compile(r"\b(item|equipment) storage is full", re.I)
+FULL_HEARD = 1.5      # seconds the game is given to say so after a deposit that took nothing
+
+
+def refused(b: Bot) -> set[str]:
+    """The items (lower case) the storehouse turned away as full this run: not taken there again
+    until something comes out of it (withdraw)."""
+    got: set[str] = b.__dict__.setdefault("storehouse_refused", set())
+    return got
+
+
+def _heard_full(b: Bot, since: int) -> bool:
+    from .chores import said_since
+    clock = clock_for(b)
+    end = clock.time() + FULL_HEARD
+    while True:
+        if any(STOREHOUSE_FULL.search(line) for line in said_since(b, since)):
+            return True
+        if clock.time() >= end:
+            return False
+        b.sleep(0.25)
+
+
 def deposit(b: Bot, item: str, n: int | None=None):
-    """Put n (default: all) of item into the storehouse."""
+    """Put n (default: all) of item into the storehouse. One the storehouse turned away as full
+    this run isn't taken there again (refused)."""
     have = counts(b).get(item.lower(), 0)
     if have <= 0:
         return 0
+    if item.strip().lower() in refused(b):
+        b.log(_("not taking {item} to the storehouse: it is full and holds none yet", item=item))
+        return 0
     n = have if n is None else min(n, have)
     visit(b, "storehouse")
+    from .chores import said_mark
+    since = said_mark(b)
     try:
         if not open_section(b, r"^\s*deposit item"):
             b.log(_("the storehouse menu has no deposit"), speak=True)
@@ -322,6 +356,9 @@ def deposit(b: Bot, item: str, n: int | None=None):
     finally:
         b.close_dialogs()
     put = have - counts(b).get(item.lower(), 0)
+    if put <= 0 and _heard_full(b, since):
+        refused(b).add(item.strip().lower())
+        b.log(_("the storehouse is full: {item} has no place in it", item=item))
     if put > 0:
         b.__dict__.setdefault("storehouse_lacks", set()).discard(item.strip().lower())   # it has some now
     b.log(_("put {n} {item} into the storehouse", n=put, item=item))
@@ -417,12 +454,21 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
         if n <= 0:
             return 0
     tried: list[Npc] = []
+    silent: list[Npc] = []
     for _try in range(BUY_TRIES):
         target = nearest(b, None, [s for s in shops if s not in tried])
         if target is None:
             break
         tried.append(target)
-        visit(b, None, candidates=[target])
+        try:
+            visit(b, None, candidates=[target])
+        except Stopped as e:
+            if b.stop_event.is_set() or e.final:
+                raise
+            # a shop that doesn't answer is not a shop that doesn't sell it: not noted, next one
+            b.log(_("{npc} didn't answer ({why}) - trying the next nearest shop", npc=target[1], why=e))
+            silent.append(target)
+            continue
         try:
             if stock is not None:
                 n = _affordable_quantity(b, item, _restock_quantity(b, item, stock), counts(b))
@@ -452,6 +498,9 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
         b.log(_("bought {n} {item}", n=got, item=item))
         stats.moved(b, "bought", item, got)
         return got
+    if tried and silent == tried:
+        # not "no shop lists it": none of them got to say (the restock says so and goes on)
+        raise Stopped(_("none of the shops that sell {item} answered", item=item))
     b.log(_("no shop near enough lists {item} - see logs\\dialogs.log", item=item), speak=True)
     return 0
 
@@ -745,11 +794,14 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
     b.restock_town = where
     try:
         for r, have, want in todo:
+            # a shop or storehouse that doesn't answer skips the item, never the run: the farm
+            # loop's own restock (start=False) used to end the whole run on one silent NPC
             if start:
                 got = _try_trip(b, _("couldn't restock {item}: {why}"), r["item"],
                                 lambda r=r, want=want: _fill(b, r, want - counts(b).get(r["item"].strip().lower(), 0), stock=want)) or 0
             else:
-                got = _fill(b, r, want - have)
+                got = _try_trip(b, _("couldn't restock {item}: {why}"), r["item"],
+                                lambda r=r, have=have, want=want: _fill(b, r, want - have)) or 0
             item = r["item"].strip().lower()
             if got <= 0 and counts(b).get(item, 0) <= int(r.get("min") or 0):
                 b.__dict__.setdefault("restock_failed", {})[item] = (clock_for(b).time(),
@@ -799,7 +851,11 @@ def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) 
         # Normal and restricted items can occupy separate storage rows. One
         # withdrawal takes only one row; reopen the list before resorting to a shop.
         while missing > 0:
-            taken = withdraw(b, item, missing, **options)
+            # a storehouse that doesn't answer leaves the item to the shop
+            taken = _try_trip(b, _("couldn't take {item} out of the storehouse: {why}"), item,
+                              lambda missing=missing: withdraw(b, item, missing, **options))
+            if taken is None:
+                break
             got += taken
             remaining = (max(0, stock - counts(b).get(item.lower(), 0)) if stock is not None
                          else max(0, missing - taken))
@@ -1056,6 +1112,19 @@ def _open_shard_synthesis(b: Bot, opener: Callable[[], object] | None = None) ->
     return False
 
 
+def _page_naming(b: Bot, pattern: str, seconds: float = 3.0) -> str | None:
+    """The open menu's text once it matches pattern, or None when it doesn't within `seconds`."""
+    clock = clock_for(b)
+    end = clock.time() + seconds
+    while True:
+        text = menu_text(b)
+        if re.search(pattern, text, re.I):
+            return text
+        if clock.time() >= end:
+            return None
+        b.sleep(0.15)
+
+
 def make_gems(b: Bot, wanted: dict[str, int], opener: Callable[[], object] | None = None) -> int:
     """Turn shards into gems at the Gem Craftsman ("shard synthesis"), for the Gem Maker
     (engine/crafting.py). wanted: {shard name: how many of it may be used}. Four shards make one gem
@@ -1090,7 +1159,11 @@ def make_gems(b: Bot, wanted: dict[str, int], opener: Callable[[], object] | Non
             if b.choose(r"^\s*synthesize\s+" + re.escape(gem) + r"\s*$") is None or not b.wait_dialog(3.0):
                 b.log(_("the Gem Craftsman offered no way to make {gem}", gem=gem))
                 continue
-        text = menu_text(b)
+        text = _page_naming(b, r"\bsynthesize\s+\d+\s+" + re.escape(gem) + r"\s+needs\b")
+        if text is None:              # still the page before: its numbers aren't this gem's
+            b.log(_("the Gem Craftsman's page for {gem} didn't come up - nothing was spent", gem=gem), speak=True)
+            b.close_dialogs()
+            continue
         need = re.search(r"needs\s+(\d+)", text, re.I)
         need = int(need.group(1)) if need else SHARDS_PER_GEM
         fee = re.search(r"fee\s+(\d+)\s+arnebia", text, re.I)
@@ -1151,7 +1224,9 @@ def unload(b: Bot) -> int:
     # 1. shards in one visit to the market
     to_market = [(k, n) for k, a, n in todo if a == "sell" and k.lower() in shard_names]
     for name, n in to_market:
-        if _weighed(b, name, lambda name=name: _sell_one_shard(b, name, n)):
+        # a Shard Broker that doesn't answer skips the shard, not the run
+        if _try_trip(b, _("couldn't sell {item}: {why}"), name,
+                     lambda name=name, n=n: _weighed(b, name, lambda: _sell_one_shard(b, name, n))):
             done += 1
     # 2. other sales to NPC buyers; what nobody buys falls back to the storehouse
     store = [(k, n) for k, a, n in todo if a == "store"]
@@ -1161,6 +1236,10 @@ def unload(b: Bot) -> int:
         if _try_trip(b, _("couldn't store {item}: {why}"), name,
                      lambda name=name, n=n: _weighed(b, name, lambda: deposit(b, name, n))):
             done += 1
+    full = [name for name, _n in store if name.lower() in refused(b)]
+    if full:
+        b.log(_("the storehouse is full - these stay in the bag until there is room in it: {list}",
+                list=", ".join(full)), speak=True)
     # 4. throwing away, last, only what the player said
     for name, a, n in todo:
         if a == "throw":
@@ -1364,6 +1443,11 @@ def store_items(b: Bot) -> int:
                 failed.append(_("{item} ({n} of {want}: the storehouse took no more)", item=name, n=put, want=n))
         else:
             failed.append(name)
+    full = [name for name in failed if name.lower() in refused(b)]
+    failed = [name for name in failed if name not in full]
+    if full:
+        b.log(_("the storehouse is full - these stay in the bag until there is room in it: {list}",
+                list=", ".join(full)), speak=True)
     if failed:
         b.log(_("not stored (the storehouse may be full): {list}", list=", ".join(failed)), speak=True)
     if stored:
@@ -1479,6 +1563,37 @@ def _save_shard_prices(path: str, prices: Mapping[str, int]) -> list[tuple[str, 
     return changed
 
 
+# When the Shard Market's prices were last read, for every character on this PC (the prices in
+# data/shards.json are shared too): {"at": <clock time>}. The Before and After farming lists don't
+# go back to the Shard Broker while the prices are fresher than SHARD_PRICES_FRESH; the Tools menu
+# and a script's update_shard_prices always do.
+SHARD_PRICES_READ = "_shard_prices_read.json"   # in the profiles folder
+SHARD_PRICES_FRESH = 8 * 3600.0                 # seconds
+
+
+def shard_prices_age(b: Bot) -> float | None:
+    """Seconds since the shard prices were last read from a Shard Market, None if never (or the
+    note can't be read, or it is from the future: a clock set back)."""
+    try:
+        with open(os.path.join(paths.PROFILES, SHARD_PRICES_READ), encoding="utf-8") as f:
+            got = json.load(f)
+    except (OSError, ValueError):
+        return None
+    at = got.get("at") if json.is_object(got) else None
+    if isinstance(at, bool) or not isinstance(at, (int, float)):
+        return None
+    age = clock_for(b).time() - at
+    return age if age >= 0 else None
+
+
+def _note_shard_prices_read(b: Bot) -> None:
+    try:
+        with open(os.path.join(paths.PROFILES, SHARD_PRICES_READ), "w", encoding="utf-8") as f:
+            json.dump({"at": clock_for(b).time()}, f)
+    except OSError:
+        pass
+
+
 def update_shard_prices(b: Bot) -> int:
     """The game menu's Update shard prices: read the nearest Shard Market's list and keep its prices in
     data/shards.json. Says what changed, what stayed, and every row or shard that couldn't be read
@@ -1512,6 +1627,7 @@ def update_shard_prices(b: Bot) -> int:
     except (OSError, ValueError) as e:
         b.log(_("couldn't save the shard prices: {err}", err=e), speak=True)
         return 0
+    _note_shard_prices_read(b)
     if changed:
         stats.forget_prices()           # the results cost old records at the new prices from now on
     for name, old, new in changed:

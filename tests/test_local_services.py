@@ -95,6 +95,9 @@ def test_a_dungeon_still_leaves_through_the_action_menu() -> None:
 
 class TravelBot(TravelMixin):
     """Just enough of the Bot for leave_instance / leave_here / _take_leg_noting on a gang base."""
+    def walk_dist(self, snap: dict[str, Any], e: dict[str, Any], limit: float | None = None) -> float:
+        return float("inf")           # (the riding rule: always a long walk here)
+
 
     def __init__(self, mid: int = GANG, at: tuple[float, float] = OUTER) -> None:
         self._map, self._me = mid, {"x": at[0], "y": at[1], "hp": 100}

@@ -20,7 +20,8 @@ from unclefarmer.gui.mainparts import runs as runs_gui
 
 
 def profile(*rows: dict[str, Any], stage: str = "before") -> dict[str, Any]:
-    return {"trigger_sequences": {stage: {"steps": list(rows)}}}
+    # the stand-in plans farm where they stand: the (ticked by default) skip would leave the list out
+    return {"trigger_sequences": {stage: {"steps": list(rows)}}, "skip_before_on_farm": False}
 
 
 @pytest.mark.parametrize("stage", triggers.STAGES)

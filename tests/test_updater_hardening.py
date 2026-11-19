@@ -915,7 +915,9 @@ def test_a_legacy_recovery_runtime_is_renewed(app: Path) -> None:
 
 def test_a_journal_from_the_front_door_layout_still_validates(app: Path) -> None:
     record = updater.recovery.begin(str(app), "0.4.0", "0.5.0")
-    record["protected"] = updater.recovery.protected_names(updater.recovery.LEGACY_PROTECTED)
+    record["protected"] = [".recovery", "agent/run", "data/game_texts.json", "logs", "messages", "plans", "profiles",
+                           "results", "schedules.json", "scripts", "settings.json", "survey", "unclefarmer.exe",
+                           "update"]
     updater.recovery.save(str(app), record, "ROLLED_BACK", "legacy")
     loaded = updater.recovery.load(str(app))
     assert loaded is not None and loaded["state"] == "ROLLED_BACK"

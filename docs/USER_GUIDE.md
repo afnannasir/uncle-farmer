@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -334,7 +334,7 @@ When travelling, Uncle Farmer combines walking with cable cars and airships when
 
 For example, a journey from Giant Rock City to Tulip City might go underground to reach a cable car, then continue on foot after arriving.
 
-The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, and the character must have enough arnebia in the bag to pay the fare. VIP travel is free.
+The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, the character must have enough arnebia in the bag to pay the fare (VIP travel is free), and its level must be high enough for the ride: each airship out of a capital needs one (from 26 for Giant Rock City to Sunset City up to 86 for Holy Blood City to Dark Night City), and so do the cable cars from Giant Rock City to Tulip City (45) and to Holy Blood City (60). The rides back need none. When another ride turns the character away for its level, the bot says so and goes another way for the rest of the run.
 
 **Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
 
@@ -373,6 +373,15 @@ It finishes any fight first, leaves a chest that is within the boss distance of 
 
 You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
 
+### Demonized elites
+
+Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
+stronger than the monsters around them; one the same level as your character can still kill it,
+depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
+**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
+monsters left alone. One that attacks you is still fought, since standing there would be worse.
+
 ### Drop time and the next level
 
 Under **Character → Settings → Fighting**, the group **Drop time and experience** holds two reasons to end a run, each with its own number:
@@ -380,13 +389,33 @@ Under **Character → Settings → Fighting**, the group **Drop time and experie
 - **Stop when the day's drop time runs out** (on by default), with **Drop time to save (minutes)**: the run ends while that much of the day's public area drop time is still left. With 0 it uses all of it.
 - **Stop before the next level** (off by default), with **Stop when the next level needs less than (experience)** (100,000 by default): for characters you keep at their level. The character sheet says how much experience the next level still needs, and Uncle Farmer reads it after every kill. Once it is under your number, it says "the next level needs only 85000 experience - going somewhere safe and stopping", leaves the monsters and ends the run. At the top level there is nothing to read, and it never stops for this.
 
-It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back.
+It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back. The drop time is checked the same
+way: when what is left is already down to what you save, it says "the drop time is nearly used up
+(... min left) - not starting to farm" and stays where it is.
 
 A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
 
 Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
 
 A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.
+
+### When HP stays low
+
+On the **Low HP** tab of the character settings, **When HP stays low** says what to do when HP stays
+under **Low HP (%)** (30 by default) for **For (seconds)** (3 by default), whatever the potions and heal
+skills did:
+
+- **Fight on** (the default): the bot keeps fighting. If the character dies, it comes back as the
+  Death settings say.
+- **Stop so I can take over**: the run stops on the spot, for you to play.
+- **Go to town with the hearthstone, heal and come back (while farming)**: on the farming map, the
+  bot drops the fight and uses the hearthstone. In town it waits until HP is back to 90% (three
+  minutes at most, drinking potions as usual), looks at the restock rules, and goes back to farm.
+  A hit stops the hearthstone's cast, so a hearthstone that doesn't take the character home after
+  three tries leaves it fighting on, and it isn't tried again for a minute. With no hearthstone on
+  a key or in the bag, the bot says so once and fights on: add the Hearthstone to the restock rules.
+  The third flee within 30 minutes ends the run in town: the map is too hard for the character for
+  now. This never happens in a dungeon (its visit can't be left), on a trip or in town.
 
 ### Settings for each character
 
@@ -453,7 +482,10 @@ The log reports:
 - Which listed items were not found in the bag.
 - Which items the storehouse could not accept.
 
-If the storehouse is full, anything that does not fit stays in your bag.
+If the storehouse is full, anything that does not fit stays in your bag. A full storehouse still takes
+more of an item it already holds; an item it holds none of is turned away (the game says "item
+storage is full"). The bot says which items stay in the bag, and doesn't take them back to the
+storehouse for the rest of the run, unless something is taken out of it, which can make room.
 
 The storage list is read when the job starts. This means changes you make to the list before starting the job are applied.
 
@@ -466,12 +498,14 @@ top to bottom, one at a time. Use **Move up** and **Move down** to change that o
 profiles keep their enabled jobs and original order until you edit them.
 
 Above the Before farming list, **Skip this list when the run starts on its first farming map**
-(off by default) is for a Stop and a start again where the character was farming: when the run
+(on by default) is for a Stop and a start again where the character was farming: when the run
 starts on the map its plan farms first (the first spot of the plan, or the first `farm` line of a
 script), the Before farming list is left out and farming starts at once, instead of a trip to
 town and back. The log says "already on Margit Rainforest (5281), where this run farms first -
 the Before farming list is skipped". A run that starts anywhere else, or one that first goes into
-a dungeon, runs the list as usual. The After farming list isn't affected.
+a dungeon, runs the list as usual. The After farming list isn't affected. Supplies and the bag
+are still looked after: while farming, the bot goes to town by itself when a supply is down to
+its minimum or the bag is full. Untick it if you want the list to run on every start.
 
 Add or edit an action to choose an executable tool or one of your saved `.mwf` scripts, enable
 or disable it, set its **Delay after success (seconds)**, and choose **DETERMINISTIC**. The
@@ -496,6 +530,9 @@ The familiar default jobs include:
 - **Sell shards:** Runs **Sell shards now** from the game's menu in the Games list. It sells the shards on your Sell list at the nearest Shard Market.
 - **Clean the bag:** Runs **Clean the bag now** from the game's menu in the Games list. It throws away only the items on your throw-away list, right where your character is standing.
 - **Update shard prices:** Runs **Update shard prices** from the game's menu in the Games list.
+  In these lists it is skipped while the prices were read less than 8 hours ago (on this PC, by
+  any character): the log says how long ago, and the list goes on without a walk to the Shard
+  Broker.
 - **Gathering:** Runs the gathering task configured under **Tools, Gathering**.
 - **Store items:** Runs **Store items now** from the game's menu in the Games list, following the storage list described above.
 - **Restock supplies:** Runs **Restock now** from the game's menu in the Games list. It fills every supply that is switched on in **Character, Bag and supplies** up to its "fill up to" amount, from the storehouse first and then a shop, even when it is not yet down to its refill point.
@@ -801,7 +838,7 @@ The Gem Maker has two jobs.
 
 **Make a gem**
 
-Choose the gem, the level you want, and the quantity to make. You can also choose to make as many as possible.
+Choose the gem, the level you want, and the quantity: this many more, as many as possible, or until the bag holds this many (the gems you already have count, so starting again after an interruption doesn't make too many).
 
 The tool uses the gems and shards already in your bag. If it needs more Level 1 shards, it fetches them from your storehouse or buys them from the Shard Broker.
 
@@ -825,7 +862,26 @@ It tells you why it stopped. Possible reasons include:
 - No more shards are available from the storehouse or Shard Broker.
 - The Gem Craftsman fails to make anything for three rounds in a row, even though there are still combinations available.
 
+From level 2, the shards a failed combine leaves are kept for the +20% on the next combines, including those of the same batch. They become gems only at the level you asked for, or when nothing else can be done with them.
+
+Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
+
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.
+
+### Gem Breaker
+
+Open **Tools, Gem Breaker** or press **Ctrl+Shift+B**. It uses the Gem Craftsman's **break into shards**. Breaking can't be undone, so nothing is ticked at first, the window shows what would go, and **Start** asks once more.
+
+A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 Level 1 shards. So a Level 2 gem ends up as 9 shards and a Level 3 gem as 27. That is less than it took to make them.
+
+- **Gems to break**: the colours that may be broken.
+- **Highest gem level to break**: gems above it are left alone. It starts at 2, so the gems you put in your equipment are safe until you raise it. Gems at or below it are broken all the way down.
+- **Break down to**: shards, or gems of a level you choose.
+- **Keep at least**: how many gems of each colour and level stay.
+- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes, their own highest level and their own number to keep, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
+- **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
+
+What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
 
 ### Equipment Enhancer
 
@@ -836,6 +892,22 @@ The Equipment Enhancer improves your equipment to the level you choose, up to a 
 The tool also makes Enhance Crystals from crystal shards. It can get those shards from your storehouse or buy them from the Shard Broker.
 
 Before enhancement begins, it prepares an initial stock of Enhance Crystals. It also prepares a fixed number of additional crystals whenever the current stock runs out.
+
+### Hunting bounties
+
+Open **Tools, Hunting bounties** after your character has landed the killing blow on a boss. Each officer pays for bosses of his own, so tick the officers you want: Guard Captain Suke, Chancellor Bren, General Paul, or Colonel Demar. The bot visits them from nearest to farthest and tells you what each one answered. **Check only** walks there and reads the menus without collecting.
+
+This is not a daily chore, so you can run it whenever you have something to collect. In a script, use `bounties` or `bounties check`.
+
+### Construction scanner
+
+**Tools, Construction scanner** shows how far your gang's constructions are: the Magic Cannon and Supply Camp being built, and the Crystal Turret and Wall barricade of every highland. **Scan the constructions** visits each one without repairing or building anything. Open the window again afterwards to read the result, the least complete first.
+
+**Copy** puts the short report on the clipboard. A gang elder can also **Publish** it as a gang announcement, a broadcast (which plays a sound) or a system message. The bot always asks first. A new announcement replaces only the older reports published by the same character, never another elder's.
+
+To do this automatically, open **Run, Schedules**, go to the **Tools** tab and add one of the three "scanning the constructions" tasks for your elder. At the set time the bot scans and publishes without asking. It publishes nothing when everything is at 100%, or when the report is the same as the last one this character sent that way.
+
+In a script, use `construction_scan`, `construction_scan publish=broadcast` to send the last report, or `construction_scan auto=broadcast` to scan and send it if there is something new. The kinds are `announcement`, `broadcast` and `system`.
 
 ### Daily chores
 
@@ -849,10 +921,6 @@ Uncle Farmer keeps a record of completed chores. This prevents it from repeating
 
 Deposits your bank income and the daily income from every Value Product card.
 
-**Hunting bounties**
-
-Collects hunting bounties from the nearest city officer who pays them.
-
 **Pet rebirth**
 
 Uses the free daily rebirths for the pet you choose.
@@ -860,6 +928,10 @@ Uses the free daily rebirths for the pet you choose.
 The pet name found during the character scan should work, although the Pet Trainer may use a slightly different name for the same pet. For example, the character scan may identify a pet as **Eagle**, while the Pet Trainer calls it **Wild Eagle**.
 
 Uncle Farmer never spends diamonds on pet rebirths.
+
+**Contribution Chests**
+
+The bot goes to Guard Captain Suke on Tuneful Wetland and exchanges contribution for Contribution Chests. This is the contribution earned at the top level, not the gang contribution used in the gang. Each chest costs 5,000, and the game allows two a day. This is off until you tick it on the **City** tab. A chest counts only once it is in the bag.
 
 **Gang**
 
@@ -877,12 +949,15 @@ The game allows two construction jobs per day. Building and repairing share this
 
 Construction does not cost anything. Each completed job gives gang contribution and gang points. It can also give arnebia depending on your rank. A general receives 3,000, 3,000, or 6,000 arnebia, depending on the construction.
 
-You can choose where the construction takes place:
+Tick the places the bot may use. It goes through them in this order and stops once the day's builds are made:
 
-- **Inner Hall:** The East and West encampment reinforced constructions are available here. They are a short walk from the Gang Entrance.
-- **Gang Highland:** The bot repairs the Crystal Turret and Wall barricade, then returns through the Teleportation circle.
+1. **Gang highlands, under 100%:** It goes through every highland listed under **Occupied Highlands**, so there is no number to type, and repairs a Crystal Turret or Wall barricade that is damaged. It returns through the Teleportation circle. Each of the two takes one repair a day, in whichever highland.
+2. **Magic Cannon:** if your gang is building one.
+3. **Supply Camp:** if your gang is building one.
+4. **East and West posts:** Each Magic Cannon or Supply Camp under construction closes one of them. With none under way, both are open.
+5. **Gang highlands, at 100%:** The game accepts and rewards these repairs too, so they use whatever builds are left.
 
-Each gang has a different highland. Enter its number in the settings. You can find the number at the Highland Entrance under **Occupied Highlands**. For example, if your gang's highland is listed as **the own Gang's Highland 38**, enter `38`.
+On the day a character joins a gang, the game allows neither donating nor building, so the bot leaves both for the next day.
 
 **Animal Shed**
 
@@ -958,6 +1033,8 @@ To change the order or take a gang off the list, select it and open its menu (**
 Uncle Farmer visits each gang in the order listed. For another gang, it first finds the gang through the Gang Entrance's **All gangs** list. It then enters the base and talks to the entrance to check the gathering area for your skill.
 
 Before entering, the bot checks the area's level, saturation, and entry fee. It enters only if the fee is within your configured limit and paying it would not use your arnebia reserve.
+
+You can also set a minimum saturation on the **Gangs** tab. An area under it is skipped, and the bot can look at it again on a later run that day.
 
 Each gang's gathering area can be visited once per game day.
 
@@ -1052,6 +1129,59 @@ sell_collection fish
 The first command starts gathering. The second checks what the bot would do. The last two sell your collection, with the final command specifying fish.
 
 
+
+### Market searcher and buyer
+
+**Tools, Market searcher and buyer** (Ctrl+Shift+K) opens a window for the player market, the
+Ansible Space-time Marketplace. It stays open beside the game and has two tabs (Ctrl+Tab
+switches): **Search** and **Results**. After each search or refresh the character stays at the
+marketplace, so the next search starts at once.
+
+**The market list.** The Search tab lists what is for sale. Choose a category (My list,
+All items, or one of the game's 14 categories), then go through the items: each shows how many
+lots there are (and how many open soon), how many in all, the cheapest and the usual price, and
+how many sellers. Names are shown the way your game's language pack shows them.
+
+The first time, the list is the one Uncle Farmer came with. Press **Refresh the market list**:
+the bot walks to the nearest marketplace and reads every category, which takes about a minute or
+two. Tick **Also count sellers** to fill the Sellers column too. That looks at every lot's
+details, so the first time it takes about ten minutes; every seller seen is remembered, so later
+refreshes only look up new lots. Each game server (S1, S2) has its own list.
+
+**Searching.** Press Enter on an item to find all its lots, or choose what to **Search for**.
+Only the boxes that kind uses are shown:
+
+- **By item:** every lot of the item picked, or of the names typed in **Or type a name**
+  (several: `Lesser Blood | Worthless Blood`; Enter searches). Type a name for anything listed
+  after your last refresh.
+- **Cheapest first:** the same, in the game's price order. With **Most a unit** set, it stops
+  at the first page whose lots all cost more.
+- **By seller ID:** every lot those sellers have on sale (several IDs: `1234, 5678`). The bot
+  looks at each lot's details to see who sells it, and stops as soon as all 10 lots of each
+  seller are found (a player can have at most 10 on sale). Seller IDs you search for are
+  remembered in the list.
+- **Browse a category:** every lot of the category chosen at the top.
+
+**Pages at most** (Cheapest first and Browse) limits how far a search reads (0 = all). A search
+moves you to the **Results** tab. Lots show up there while the bot reads, each put in at its place
+by price, so the rows you are on never move away; **Status** says how far it has read, and the
+total is spoken when the search ends. **Stop** ends a search early and keeps what was found. Every item you search
+for goes into **My list**; **Remember this item** adds one without searching.
+
+**Buying.** In Results, tick each lot you want with Space, and set **How many of the selected
+lot** (equipment is always one). Press **Buy the ticked lots**: one question names the lots, the
+items and the gold coins in all, and nothing is bought before you say Yes. Each lot is found again
+by its listing number, even after it moved to another page, and costs what you saw: a lot's price
+can't change. Lots still in their first hour on display are never bought. **Spending limit**
+stops the buying before more would be spent. **Check only** does everything except buying and
+says what it would buy.
+
+Each lot ends as one of: bought, gone (sold or taken back), only N left, still on display, over
+your most a unit, over the spending limit, or not bought with the game's own words (for example
+not enough gold coins). **Save as CSV** writes the results to a file.
+
+The same work runs from a script: see "The player market" in docs/SCRIPTING.md.
+
 ## Shard prices
 
 Uncle Farmer keeps track of shard prices so it can estimate how much your collected shards are worth.
@@ -1081,6 +1211,8 @@ You can also update shard prices by running this script command:
 `update_shard_prices`
 
 It performs the same update process: travels to the nearest Shard Broker, reads the current prices, and saves the prices it can verify.
+
+The Tools menu and the script command always read the prices. Only the Before farming and After farming lists skip them while they are less than 8 hours old.
 
 ### When Uncle Farmer is updated
 
@@ -2130,6 +2262,15 @@ If you'd like to translate Uncle Farmer into another language, you can start wit
    `uv run python -m unclefarmer --strings`
 
 Your translation should then appear in Uncle Farmer's **Settings → Language** list.
+
+### Spanish and Turkish translations
+
+Uncle Farmer includes Spanish (`lang\es.po`) and Turkish (`lang\tr.po`) translations. Game names
+(the hearthstone, the storehouse, the Shard Broker, the Forger, the Gem Craftsman and so on) follow
+the game's own Spanish and Turkish language packs, so they match what the game shows. Each Alt+letter
+shortcut is the same letter as in English; when the translated word has no such letter, it is shown
+in brackets at the end, for example `(&S)`. Trusted-player commands and script words stay in English,
+because the bot only understands them that way.
 
 ### Urdu translation
 

@@ -70,6 +70,7 @@ class Parts:
     last_seen: Callable[[str], Sighting | None] | None  # where a player was last seen, and how long ago
     tell: Callable[[str], None] | None             # answers the player who asked for this run
     kind: str
+    reconnect: Callable[[], bool] | None
 
     # ---------------------------------------------------------------- state the engine modules keep
     # on the bot for a run (pets, team heals, repairs, follow, gathering...): set where they are used,
@@ -80,6 +81,7 @@ class Parts:
     failure_notes: set[tuple[str, str]]   # (where, error kind) of ignored failures already logged
     follow_buffs: bool          # following, and the leader's `buff` message turned buffs on
     gather_casts: int           # gathering casts seen this run
+    home_after_gathering: int | None   # kills when gathering ended: the way home after it has no fights
     corpses: Harvest            # corpse harvesting this run (engine/corpses.py)
     xpcard: Cards               # experience cards this run (engine/xpcard.py)
     harvests: int               # corpses harvested this run
@@ -87,6 +89,7 @@ class Parts:
     last_ride_check: float
     phrases: dict[int, str]     # the game's quick phrases by slot (engine/runner.py)
     said_low_power: bool
+    power_resting: bool         # fusion power ran low: on foot until beasts.REFILL_POWER
     said_no_mount: bool         # "attacked - staying on foot" said, until nothing attacks us
     said_no_vitality: bool
     dying_on_purpose: bool      # the XP loser's run (engine/xploss.py): deaths are not news
@@ -150,6 +153,11 @@ class Parts:
     restocking: bool            # a restock is under way (its walks don't restock again)
     restock_looked: float       # when travel last looked at the restock rules
     on_farm_run: bool           # a farm run's travel: restock rules are looked at on the way
+    farming_on: int | None      # the farm loop's map: where a lost fight may flee from (may_flee)
+    flees: list[float]          # when lost fights were fled (FarmingMixin._flee)
+    flee_wait_until: float      # a hearthstone that failed: not tried again before
+    said_no_hearth: bool
+    fleeing: bool               # _flee is under way: no second flee from inside it (may_flee)
     away_reason: str | None     # why we left the farm's map ourselves (the bag trip), for the way back
     started: float
     resumed_at: float
@@ -161,6 +169,7 @@ class Parts:
     in_instance: bool
     pack_min: int
     start_place: Where | None
+    start_name: str | None      # the map's own name there (a gang base's is the gang's)
     drop_keep: int | None
     level_keep: int | None
     agent_state: bool
@@ -190,6 +199,8 @@ class Parts:
     _potions_warned_out: set[str]
     farm_filter: FarmFilter | None
     walk_only: bool
+    walk_left: float | None     # steps still to walk on this map, on a trip (beasts.RIDE_MIN)
+    walk_target: tuple[int, tuple[int, int]] | None
     skillbook: "SkillBook | None"
     mob_names: dict[int, str]
     counted: dict[int, float]
@@ -245,6 +256,7 @@ class Parts:
         def hotkey_of(self, name: str) -> str | None: ...
         def ask_vitals(self, what: str) -> bool | None: ...
         def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]: ...
+        def may_flee(self) -> bool: ...
         def rest_up(self, me: dict[str, Any]) -> bool: ...
         def mp_now(self, me: dict[str, Any], now: float) -> tuple[float, float] | None: ...
         # walking.py
@@ -297,6 +309,7 @@ class Parts:
         def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None: ...
         def level_goal(self) -> int | None: ...
         def level_before_start(self) -> None: ...
+        def drop_before_start(self) -> None: ...
         def set_modes(self) -> None: ...
         def restock_now(self, start: bool = False) -> bool: ...
         def restock_on_the_way(self) -> None: ...
