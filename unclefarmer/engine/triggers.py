@@ -52,6 +52,7 @@ TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
              "update_shard_prices": "update_shard_prices", "store_items": "store_items", "restock": "restock_now"}
 FARMING_COMMANDS = ("farm", "dungeon")
 TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems")),
+                ("gem_breaker", N_("breaking gems")),
                 ("enhance", N_("enhancing equipment")), ("dungeon", N_("running a dungeon")),
                 ("sell_collection", N_("selling the collection")),
                 ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),

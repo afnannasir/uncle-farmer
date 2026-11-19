@@ -1112,6 +1112,19 @@ def _open_shard_synthesis(b: Bot, opener: Callable[[], object] | None = None) ->
     return False
 
 
+def _page_naming(b: Bot, pattern: str, seconds: float = 3.0) -> str | None:
+    """The open menu's text once it matches pattern, or None when it doesn't within `seconds`."""
+    clock = clock_for(b)
+    end = clock.time() + seconds
+    while True:
+        text = menu_text(b)
+        if re.search(pattern, text, re.I):
+            return text
+        if clock.time() >= end:
+            return None
+        b.sleep(0.15)
+
+
 def make_gems(b: Bot, wanted: dict[str, int], opener: Callable[[], object] | None = None) -> int:
     """Turn shards into gems at the Gem Craftsman ("shard synthesis"), for the Gem Maker
     (engine/crafting.py). wanted: {shard name: how many of it may be used}. Four shards make one gem
@@ -1146,7 +1159,11 @@ def make_gems(b: Bot, wanted: dict[str, int], opener: Callable[[], object] | Non
             if b.choose(r"^\s*synthesize\s+" + re.escape(gem) + r"\s*$") is None or not b.wait_dialog(3.0):
                 b.log(_("the Gem Craftsman offered no way to make {gem}", gem=gem))
                 continue
-        text = menu_text(b)
+        text = _page_naming(b, r"\bsynthesize\s+\d+\s+" + re.escape(gem) + r"\s+needs\b")
+        if text is None:              # still the page before: its numbers aren't this gem's
+            b.log(_("the Gem Craftsman's page for {gem} didn't come up - nothing was spent", gem=gem), speak=True)
+            b.close_dialogs()
+            continue
         need = re.search(r"needs\s+(\d+)", text, re.I)
         need = int(need.group(1)) if need else SHARDS_PER_GEM
         fee = re.search(r"fee\s+(\d+)\s+arnebia", text, re.I)

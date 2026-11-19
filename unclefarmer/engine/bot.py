@@ -107,12 +107,15 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.chests = chests.Chests()     # the chests opened, and those left alone a while
         self.resting = False              # standing still to get HP back: a heal skill tops up to rest_until
         self.start_place = None           # (map, x, y) where the run started
+        self.start_name = None            # the name the game gives that map
         self.drop_keep = None             # minutes of drop time this run saves (keep_drop), else the profile's
         self.level_keep = None            # experience before the next level this run stops at (keep_level), else the profile's
         self.daily_stop_at = 0.0          # epoch seconds: the run ends then, whatever it is doing
         self.daily_reset = ""             # the game's day reset, "HH:MM" on this computer's clock
         self.daily_done = False
         self.end_place = ("start",)       # where any end of the run goes: script end_at / the plan
+        self.walk_left = None             # steps still to walk on this map, on a trip (None: not known)
+        self.walk_target = None           # (map, cell) of the walk under way, for walk_left
         self.walk_only = False            # the walking assistant (go): Swift beast all the way, no fights
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target

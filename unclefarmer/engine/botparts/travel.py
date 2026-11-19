@@ -126,6 +126,8 @@ class TravelMixin(Parts):
         is the exception: the atlas marks a whole city as a spawn zone for the ducks and hens that
         wander its streets, and a run started in the town goes back there."""
         x, y = cell
+        if atlas.in_town(mid, x, y):
+            return False
         for c in knowledge.cities():
             r = c.get("town_rect")
             if c.get("map") == mid and r and r[0] <= x <= r[2] and r[1] <= y <= r[3]:
@@ -166,6 +168,7 @@ class TravelMixin(Parts):
             self._travel(dst, cell, avoid)
         finally:
             self.traveling = was
+            self.walk_left = self.walk_target = None
 
     def _travel(self, dst: int, cell: tuple[float, float] | list[float] | None, avoid: set[Any]) -> None:
         goal_cell = (cell[0], cell[1]) if cell is not None else None
@@ -185,10 +188,11 @@ class TravelMixin(Parts):
             self.restock_on_the_way()
             if self.map_id() != mid:
                 continue          # the restock walked us elsewhere: plan from there
-            beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             legs = self._plan_legs(mid, dst, goal_cell, avoid)
             if not legs:
                 return
+            self.walk_left = self._leg_walk(mid, legs[0])
+            beasts.ensure(as_bot(self), beasts.TRAVEL)   # again each leg: mounting waits out combat
             steps = travel.describe(legs)
             if steps != said and len(legs) > 1:
                 self.log(_("route to {map}: {steps}", map=atlas.label(dst), steps=" / ".join(steps)))
@@ -204,6 +208,16 @@ class TravelMixin(Parts):
             finally:
                 self.crossing_poison = False
         raise Stopped(_("travel to {map} didn't arrive", map=atlas.label(dst)))
+
+    def _leg_walk(self, mid: int, leg: dict[str, Any]) -> float | None:
+        """Steps to walk on this map for a leg: to its exit, NPC or cell; 0 for a teleport from
+        where we stand; None when not known."""
+        if leg.get("do") in ("item", "skill"):
+            return 0.0
+        goal = leg.get("cell") if leg.get("do") == "walk" else leg.get("stand")
+        if not goal:
+            return None
+        return self.walk_dist({"self": self.me(), "map": {"id": mid}}, {"x": goal[0], "y": goal[1]})
 
     def poison_immune(self) -> bool:
         """The Poison Immunity talent is activated (`mem skills` talents). False when the agent

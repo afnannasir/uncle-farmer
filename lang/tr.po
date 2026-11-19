@@ -215,6 +215,9 @@ msgstr "Mücevher Yapıcı (&G)"
 msgid "&Gem:"
 msgstr "Mücevher: (&G)"
 
+msgid "&Gems to break:"
+msgstr ""
+
 msgid "&Get it:"
 msgstr "Nereden alınsın (&G):"
 
@@ -250,6 +253,9 @@ msgstr "Kalp taşı eşyası (&H):"
 msgid "&Help"
 msgstr "Yardım (&H)"
 
+msgid "&Highest gem level to break:"
+msgstr ""
+
 msgid "&History"
 msgstr "Geçmiş (&H)"
 
@@ -269,6 +275,9 @@ msgid "&Install"
 msgstr "Yükle (&I)"
 
 msgid "&Items for sale (Enter searches):"
+msgstr ""
+
+msgid "&Keep at least this many of each gem and level:"
 msgstr ""
 
 msgid "&Keep at least this many of each level:"
@@ -484,6 +493,9 @@ msgstr "Betik komutları (&S)"
 msgid "&Search"
 msgstr ""
 
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
+msgstr ""
+
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Toplananları &Su Ürünleri, Maden veya Bitki Alıcısına sat"
 
@@ -521,6 +533,9 @@ msgstr "Başlat (&S)"
 
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "Bot ne yapıyor olursa olsun, her gün belirli bir &saatte farmı bırak"
+
+msgid "&Stop when a death costs too little"
+msgstr ""
 
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Sarf malzemeleri (işaretli olanlar yeniden doldurulur):"
@@ -825,6 +840,9 @@ msgstr "Süre sınırından sonra (&T)"
 msgid "After farming"
 msgstr "Farmdan sonra"
 
+msgid "Afterwards"
+msgstr ""
+
 msgid "Agent"
 msgstr "Ajan"
 
@@ -968,6 +986,24 @@ msgstr "Dipsiz kuyu"
 
 msgid "Bought:"
 msgstr "Satın alınanlar:"
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr ""
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr ""
+
+msgid "Break &down to:"
+msgstr ""
+
+msgid "Break them now?"
+msgstr ""
+
+msgid "Breaking can't be undone."
+msgstr ""
+
+msgid "Breaks {n} {item}."
+msgstr ""
 
 msgid "Broadcast (with a sound)"
 msgstr ""
@@ -1344,6 +1380,9 @@ msgstr "Yapamadım."
 msgid "Cra&ftsman:"
 msgstr "Usta (&F):"
 
+msgid "Craftsman and selling"
+msgstr ""
+
 msgid "Craftsman and spending"
 msgstr "Usta ve harcama"
 
@@ -1363,6 +1402,9 @@ msgstr ""
 
 msgid "Crystals"
 msgstr "Kristaller"
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
+msgstr ""
 
 msgid "Cut Flesh"
 msgstr "Et Kesiciliği"
@@ -1551,6 +1593,9 @@ msgstr "Ş&una kadar geliştir (+):"
 
 msgid "Enhance Crystals"
 msgstr "Geliştirme Kristalleri"
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
+msgstr ""
 
 msgid "Enter a name for the plan."
 msgstr "Plan için bir ad girin."
@@ -1807,6 +1852,15 @@ msgstr "{lo}. seviye ve üstü ekipman: Seviye {lv} kristaller"
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr "{lo}-{hi}. seviye ekipman: Seviye {lv} kristaller"
 
+msgid "Gem &level to stop at:"
+msgstr ""
+
+msgid "Gem Brea&ker"
+msgstr ""
+
+msgid "Gem Breaker"
+msgstr ""
+
 msgid "Gem Maker"
 msgstr "Mücevher Yapıcı"
 
@@ -1815,6 +1869,9 @@ msgstr "Mücevher Yapıcı, Ekipman Geliştirici ve günlük işler"
 
 msgid "Gems"
 msgstr "Mücevherler"
+
+msgid "Gems of a level"
+msgstr ""
 
 msgid "Get crystal shards &from:"
 msgstr "Kristal parçalarını şuradan al (&F):"
@@ -1964,6 +2021,9 @@ msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
 msgstr ""
 "Gizlenen mesajlar şimdiki sohbet arabelleklerinde kalır. Yalnızca filtre kuralları kaydedilir."
+
+msgid "Highest &crystal level to break:"
+msgstr ""
 
 msgid "Highest l&evel to make:"
 msgstr "Yapılabil&ecek en yüksek seviye:"
@@ -2166,6 +2226,9 @@ msgstr "&Telegram grubuna katıl"
 msgid "Keep &old files:"
 msgstr "Eski d&osyaları sakla:"
 
+msgid "Keep at least this many of each crystal and le&vel:"
+msgstr ""
+
 msgid "Keep away from bosses"
 msgstr "Patronlardan uzak dur"
 
@@ -2241,6 +2304,9 @@ msgstr "Şeytanlaşmış el&itlere dokunma (saldırırlarsa yine dövüşülür)
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr "Yarı&m saatten şu kadar dakika önce farmı bırak (oraya yürüyüş dahil):"
+
+msgid "Leaves {n} {item}."
+msgstr ""
 
 msgid "Let everyone get replies &again"
 msgstr "Herkes yeniden yanıt &alabilsin"
@@ -2726,6 +2792,9 @@ msgstr "Bugün henüz bir şey yok."
 
 msgid "Nothing was recorded: check the microphone the game uses."
 msgstr "Hiçbir şey kaydedilmedi: Oyunun kullandığı mikrofonu kontrol edin."
+
+msgid "Nothing would be broken: tick what to break."
+msgstr ""
 
 msgid "Nothing yet."
 msgstr "Henüz hiçbir şey yok."
@@ -3925,9 +3994,8 @@ msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "Bot, bu kadar {what} eksildiği anda onu içer."
 
 msgid ""
-"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. Each death takes a share of the experience earned in the level, so each costs a little less than the last: after three deaths the bot says how many more it will take, and it stops if the level can't reach your number. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
-"Bot bir muhafız bulur (görüş alanında, daha önce görüldüğü yerde ya da en yakın şehirde), PK modunu tüm moda çevirir, muhafıza bir kez vurur ve karakteri öldürmesine izin verir: iksir yok, iyileştirme yok, karşılık yok. Şehirde yeniden doğar ve sonraki seviye için en az o kadar deneyim gerekene kadar tekrarlar. En yakın köy seçiliyse önce en yakın köye yürür (oyun ölen karakteri en son yürüyerek girdiği şehirde diriltir), sonra kapısında ölür; böylece her ölüm daha kısa sürer (Tuneful Sulak Alanı'nda Arya Köyü'nde 11 saniye, Lale Şehri'nde 29). Oyun onu başka bir yerde diriltirse en yakın muhafızda ölür. Önce evcil hayvan geri çağrılır, sonunda PK modu eski haline getirilir. Ölümler ekipmanı her ölüm gibi yıpratır; kara isimli bir karakter (Ahlak -1000 ya da altı) ölünce giydiği ekipmanı kaybedebilir, bu yüzden XP kaybettirici onun için çalışmaz."
 
 msgid "The bot is busy on this game. Stop it first (Stop), then try again."
 msgstr ""
@@ -4110,6 +4178,9 @@ msgstr "Betik kaydedildi ama eski dosya silinemedi: {err}"
 msgid "The script's login character is not a known saved character: {name}"
 msgstr "Betiğin login karakteri bilinen kayıtlı bir karakter değil: {name}"
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr ""
+
 msgid "The sound list must be a list of sound entries."
 msgstr "Ses listesi, ses girdilerinden oluşan bir liste olmalı."
 
@@ -4209,8 +4280,8 @@ msgid ""
 msgstr ""
 "Bu, dev dalından bir geliştirme sürümü: en yeni değişiklikler, henüz kararlı sürüm değil ve bozulabilir."
 
-msgid "This many"
-msgstr "Bu kadar"
+msgid "This many more"
+msgstr ""
 
 msgid ""
 "This map can't be an end place. Choose one on the open world, or another end."
@@ -4253,6 +4324,9 @@ msgstr "Perşembe"
 
 msgid "Tick at least one day."
 msgstr "En az bir gün işaretle."
+
+msgid "Tick at least one gem, or a kind of crystal."
+msgstr ""
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -4309,6 +4383,9 @@ msgstr "Diğ&er herkesten gelen ses:"
 
 msgid "Tone from &trusted players:"
 msgstr "Güvenilir oyunculardan gelen ses (&T):"
+
+msgid "Too little &means under this much experience:"
+msgstr ""
 
 msgid "Tools"
 msgstr "Araçlar"
@@ -4453,6 +4530,9 @@ msgstr "Tüm oyunların sesini aç (&G)"
 
 msgid "Unpacking"
 msgstr "Paket açılıyor"
+
+msgid "Until the bag holds this many"
+msgstr ""
 
 msgid "Update"
 msgstr "Güncelle"
@@ -4632,6 +4712,9 @@ msgstr "Eksik olanlar"
 msgid "What the bot knows about this character:"
 msgstr "Botun bu karakter hakkında bildikleri:"
 
+msgid "What to break"
+msgstr ""
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4777,6 +4860,9 @@ msgstr "görüş alanında bir sandık var, {n} adım uzakta: açmaya gidiliyor"
 msgid "a condition or value is missing"
 msgstr "bir koşul veya değer eksik"
 
+msgid "a death now costs less than {n} experience - stopped"
+msgstr ""
+
 msgid "a monster"
 msgstr "bir canavar"
 
@@ -4838,6 +4924,9 @@ msgstr "bugün zaten yapıldı"
 
 msgid "already fed today"
 msgstr "bugün zaten beslendi"
+
+msgid "already in a town - staying here"
+msgstr ""
 
 msgid "already inside {cave}"
 msgstr "zaten {cave} içinde"
@@ -5007,6 +5096,15 @@ msgstr "{n} {shard} satın alındı: çantada daha fazlasına yer yok"
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
 msgstr "{n} {shard} satın alındı: boştaki arnebia daha fazlasına yetmiyor"
+
+msgid "breaking gems"
+msgstr ""
+
+msgid "broke {n} gems and crystals"
+msgstr ""
+
+msgid "broke {n} {item} into {k} {product}"
+msgstr ""
 
 msgid "browsing {cat}"
 msgstr ""
@@ -5255,11 +5353,17 @@ msgstr "sonuçlar tamamlanamadı: {err}"
 msgid "couldn't finish the run ({where}): {err}"
 msgstr "çalışma bitirilemedi ({where}): {err}"
 
+msgid "couldn't get a hit in on that guard - trying another"
+msgstr ""
+
 msgid "couldn't get away - fighting on"
 msgstr "kaçılamadı - dövüşe devam"
 
 msgid "couldn't get back from the highland"
 msgstr "highland'den geri dönülemedi"
+
+msgid "couldn't get back into the gang's base ({why}) - staying here"
+msgstr ""
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "{place} yerine geri dönülemedi: {why}"
@@ -5385,6 +5489,9 @@ msgstr "{npc} ile konuşulamadı"
 
 msgid "couldn't throw away: {list}"
 msgstr "atılamadı: {list}"
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
+msgstr ""
 
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr "koruma rünü işaretlenemedi - onsuz geliştirilmiyor"
@@ -5655,6 +5762,9 @@ msgstr "farmın başladığı yere dönülüyor"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr "{name} istediği için farmın başladığı yere dönülüyor"
+
+msgid "going back to where the run started in the gang's base"
+msgstr ""
 
 msgid "going back to {map}"
 msgstr "{map} haritasına dönülüyor"
@@ -6319,6 +6429,9 @@ msgid ""
 msgstr ""
 "Seviye {lv} {kind} Geliştirme Kristali için yeterli parça ya da boşta arnebia yok ({need} parça, ücret {fee})"
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr ""
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr "{shard} almak için yeterli boşta arnebia yok"
 
@@ -6377,6 +6490,12 @@ msgstr "{item} depoya götürülmüyor: depo dolu ve içinde henüz bundan yok"
 msgid "nothing"
 msgstr "hiçbir şey"
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr ""
+
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6408,6 +6527,9 @@ msgstr "{gem} yapmak için bir şey kalmadı ve daha fazla {shard} almak kapalı
 
 msgid "nothing of the collection was sold"
 msgstr "koleksiyondan hiçbir şey satılmadı"
+
+msgid "nothing to break with these settings"
+msgstr ""
 
 msgid "nothing to collect today"
 msgstr "bugün toplanacak bir şey yok"
@@ -7013,6 +7135,9 @@ msgstr "metin çarpılamaz"
 msgid "that didn't work: {err}"
 msgstr "bu işe yaramadı: {err}"
 
+msgid "that would leave {n} {item}"
+msgstr ""
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr "Hayvan Kulübesi'nde şu an beslenecek bir şey yok"
 
@@ -7025,13 +7150,22 @@ msgstr "Dökümcü {item} için hangi kristalin gerektiğini söylemedi - atlan�
 msgid "the Forger has no enhance equipment"
 msgstr "Dökümcü'de ekipman geliştirme yok"
 
+msgid "the Gang Entrance didn't let us in"
+msgstr ""
+
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
 "Çete Girişi'nde bir çetenin iç salonuna giriş yok - bu karakter bir çetede mi?"
 
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
+msgstr ""
+
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "Çete Girişi'nde {gang} adlı çete listelenmiyor"
+
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
+msgstr ""
 
 msgid "the Gem Craftsman didn't ask how many"
 msgstr "Mücevher Ustası kaç tane olduğunu sormadı"
@@ -7039,11 +7173,17 @@ msgstr "Mücevher Ustası kaç tane olduğunu sormadı"
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr "Mücevher Ustası kaç tane {gem} yapacağını sormadı"
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr ""
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr "Mücevher Ustası {gem} listelemedi"
 
 msgid "the Gem Craftsman didn't list {item}"
 msgstr "Mücevher Ustası {item} listelemedi"
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
+msgstr ""
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "Mücevher Ustası açık; hiçbir şey yapılmadı (yalnızca kontrol)"
@@ -7058,6 +7198,12 @@ msgstr "Mücevher Ustası {gem} yapmak için bir seçenek sunmadı"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "Mücevher Ustasının menüsünde mücevher sentezi yok"
+
+msgid "the Gem Craftsman's menu has no way to break gems"
+msgstr ""
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
+msgstr ""
 
 msgid "the Gem Maker can't go on: {why}"
 msgstr "Mücevher Yapıcı devam edemiyor: {why}"
@@ -7160,6 +7306,9 @@ msgstr "çanta hâlâ dolu ve hiçbir şey satılamadı ya da depolanamadı - du
 msgid "the bag is too full for more {shard}"
 msgstr "çanta daha fazla {shard} için fazla dolu"
 
+msgid "the bag is too heavy to break any more: make room and start again"
+msgstr ""
+
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "çanta %{pct} dolu (yük {load}/{max})"
 
@@ -7172,6 +7321,9 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "çanta sakladığın şeylerle %{pct} dolu - güvenli bir yere gidip duruluyor"
+
+msgid "the bag showed no change after breaking {item}"
+msgstr ""
 
 msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
@@ -7384,6 +7536,9 @@ msgstr "son 7 gün"
 msgid "the last trip for {item} got none, and nothing has changed since"
 msgstr ""
 "{item} için son yolculuk hiç getirmedi ve o zamandan beri bir şey değişmedi"
+
+msgid "the limit of {most} deaths will stop the run before that"
+msgstr ""
 
 msgid ""
 "the list Uncle Farmer came with (from {made}) - press Refresh for today's"
@@ -7635,6 +7790,18 @@ msgid ""
 msgstr ""
 "bu oyunun ajanı ekipman bozulmadan önce uyaramıyor - yeni ajanın yüklenmesi için Mist World'ü yeniden başlat; o zamana kadar ekipman ancak bir şey bozulunca onarılır"
 
+msgid ""
+"this level holds about {top} experience: about {n} more deaths to reach {xp}"
+msgstr ""
+
+msgid ""
+"this level holds about {top} experience: about {n} more deaths, about {mins} min, to reach {xp}"
+msgstr ""
+
+msgid ""
+"this level holds only about {top} experience, so the goal of {goal} can't be reached - stopped"
+msgstr ""
+
 msgid "this number is too large: {expr}"
 msgstr "bu sayı çok büyük: {expr}"
 
@@ -7823,6 +7990,9 @@ msgstr "{n} dakika ganimet süresi saklanarak"
 
 msgid "with {skill}"
 msgstr "{skill} ile"
+
+msgid "would break {n} {item}"
+msgstr ""
 
 msgid "would buy {n} for {cost} gold coins"
 msgstr ""
@@ -8421,6 +8591,9 @@ msgstr "{n} kez, {first} ile {last} arası: {why}"
 msgid "{n} used up"
 msgstr "{n} tükendi"
 
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
+msgstr ""
+
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr "çantada {n} {shard}; bir Seviye {lv} kristal için {per} gerekir"
 
@@ -8490,6 +8663,9 @@ msgstr "{shard} pazarda {price}, {limit} sınırından fazla"
 
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} arnebia"
+
+msgid "{shard}: {was} before, {now} after, {used} used"
+msgstr ""
 
 msgid "{skill} at {where}"
 msgstr "{skill}, {where}"
@@ -8623,9 +8799,6 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgid "&Build at:"
 #~ msgstr "İnşa yeri (&B):"
 
-#~ msgid "&Build first at (then anywhere else that can still take a build):"
-#~ msgstr "Önce şurada &inşa et (sonra hâlâ mümkün olan her yerde):"
-
 #~ msgid "Collect &hunting bounties from a city officer"
 #~ msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
 
@@ -8639,6 +8812,14 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
 #~ msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
+
+#~ msgid ""
+#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+#~ msgstr ""
+#~ "Bot bir muhafız bulur (görüş alanında, daha önce görüldüğü yerde ya da en yakın şehirde), PK modunu tüm moda çevirir, muhafıza bir kez vurur ve karakteri öldürmesine izin verir: iksir yok, iyileştirme yok, karşılık yok. Şehirde yeniden doğar ve sonraki seviye için en az o kadar deneyim gerekene kadar tekrarlar. En yakın köy seçiliyse önce en yakın köye yürür (oyun ölen karakteri en son yürüyerek girdiği şehirde diriltir), sonra kapısında ölür; böylece her ölüm daha kısa sürer (Tuneful Sulak Alanı'nda Arya Köyü'nde 11 saniye, Lale Şehri'nde 29). Oyun onu başka bir yerde diriltirse en yakın muhafızda ölür. Önce evcil hayvan geri çağrılır, sonunda PK modu eski haline getirilir. Ölümler ekipmanı her ölüm gibi yıpratır; kara isimli bir karakter (Ahlak -1000 ya da altı) ölünce giydiği ekipmanı kaybedebilir, bu yüzden XP kaybettirici onun için çalışmaz."
+
+#~ msgid "This many"
+#~ msgstr "Bu kadar"
 
 #~ msgid ""
 #~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
@@ -8656,9 +8837,6 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "our gang's highland"
 #~ msgstr "çetemizin yaylası"
-
-#~ msgid "our gang's highlands"
-#~ msgstr "çetemizin highland'leri"
 
 #~ msgid "the inner hall's East and West posts"
 #~ msgstr "iç salonun Doğu ve Batı noktaları"

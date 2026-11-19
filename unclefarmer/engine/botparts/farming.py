@@ -444,9 +444,13 @@ class FarmingMixin(Parts):
     def leave_monsters(self) -> None:
         """End a run somewhere no monster spawns: if this map has monster zones, travel to the
         nearest map that has none (towns, transit maps). A "safe spot" inside a spawn map is not
-        safe - monsters spawn and walk there too."""
+        safe - monsters spawn and walk there too. Already in a city or village: that is the place
+        (the game's table lists "monster" zones for Tulip City's own streets)."""
         here = self.map_id()
         if not atlas.zones(here):
+            return
+        if self._in_town():
+            self.log(_("already in a town - staying here"))
             return
         dist = {}
         todo = [here]
@@ -506,6 +510,8 @@ class FarmingMixin(Parts):
                                  speak=True)
                         return self._finish_safe()
                     mid, cell = self.start_place[0], (self.start_place[1], self.start_place[2])
+                    if self._back_in_the_base(mid, (int(cell[0]), int(cell[1]))):
+                        return self._finish_off()
                     if self.map_id() != mid and travel.is_instance(mid):
                         # a run started inside a dungeon that has moved us out: no way back in
                         self.log(_("the run started inside {map}, which can't be walked back into - ending "
@@ -538,6 +544,14 @@ class FarmingMixin(Parts):
             self.leave_monsters()
         self._finish_off()
 
+    def _in_town(self) -> bool:
+        me = self.me()
+        return atlas.in_town(self.map_id(), float(me.get("x", 0)), float(me.get("y", 0)))
+
+    def _back_in_the_base(self, mid: int, cell: tuple[int, int]) -> bool:
+        from .. import chores         # (chores needs the Bot this mixin is part of)
+        return chores.back_to_gang_base(as_bot(self), mid, cell, getattr(self, "start_name", None))
+
     def _finish_off(self) -> None:
         beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
@@ -547,7 +561,9 @@ class FarmingMixin(Parts):
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there
         (the home city counts as safe); if it doesn't work, walk."""
         if self.p.get("end_safe", True) and atlas.zones(self.map_id()):
-            if self.p.get("end_with_hearthstone", True) and self.has_hearthstone():
+            if self._in_town():
+                self.leave_monsters()         # (says so, and stays)
+            elif self.p.get("end_with_hearthstone", True) and self.has_hearthstone():
                 self.log(_("going home with the hearthstone"))
                 if not self.go_home(tries=1):
                     self.leave_monsters()

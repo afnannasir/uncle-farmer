@@ -82,6 +82,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .. import atlas, daily, jsonio, knowledge, paths, settings
+from ..clock import clock_for
 from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
@@ -113,6 +114,9 @@ BOUNTY_OFFICERS = ("Guard Captain Suke", "Chancellor Bren", "General Paul", "Col
 BOUNTY = r"(?i)Collect hunting bount(?:y|ie)"
 BOUNTY_ROW = r"(?i)^\s*(collect|claim|receive|get)\b(?!\s+hunting)"     # a list of bounties, if the game shows one
 HEAD = ("Head of inner hall", (40, 40))          # the same cells in every gang base
+# at the inner door, on the outer hall's side: "Enter Inner hall", for the gang's own members
+HALL_GUARD = ("Inner hall Guard", (38, 62))
+HALL_WAIT = 5.0                                   # seconds the guard's door is given to take us in
 SHED = ("Animal Shed", (29, 50))
 CHEST_OFFICER = "Guard Captain Suke"
 CHEST_MAP, CHEST_SPOT = 1081, (302, 129)
@@ -397,10 +401,34 @@ def _talk(b: Bot, npc: str, cell: tuple[float, float] | None = None) -> None:
     b.wait_dialog(3.0)
 
 
+def _by_the_guard(b: Bot) -> bool:
+    """From the outer hall, through the Inner hall Guard. True once the hall can be walked in; False
+    (nothing lost) when we aren't there, or it isn't our gang's and the guard turns us away."""
+    if not (crafting.in_gang(b) and crafting.reachable_cell(b, HALL_GUARD[1])):
+        return False
+    b.close_dialogs()
+    if not b.talk(*HALL_GUARD):
+        return False
+    b.wait_dialog(3.0)
+    if b.choose(r"enter\s+inner\s+hall") is None:
+        b.close_dialogs()
+        return False
+    clock = clock_for(b)
+    end = clock.time() + HALL_WAIT
+    while not crafting.reachable_cell(b, HEAD[1]):
+        if clock.time() >= end:
+            b.close_dialogs()
+            return False
+        b.sleep(0.25)
+    return True
+
+
 def inner_hall(b: Bot) -> None:
-    """Into our gang base's inner hall (Head of inner hall, Guru Elder, the construction posts),
-    through the nearest Gang Entrance."""
+    """Into our gang base's inner hall (Head of inner hall, Guru Elder, the construction posts):
+    by the guard at its door from the outer hall, else through the nearest Gang Entrance."""
     if crafting.in_gang(b) and crafting.reachable_cell(b, HEAD[1]):
+        return
+    if _by_the_guard(b):
         return
     b.close_dialogs()
     town.visit(b, "gang_entrance")
@@ -411,6 +439,48 @@ def inner_hall(b: Bot) -> None:
     if not b.wait_map_change(mid, 15) or not crafting.in_gang(b):
         b.close_dialogs()
         raise Stopped(_("couldn't get into the gang's inner hall"))
+
+
+def _in_the_hall(mid: int, cell: tuple[int, int]) -> bool:
+    """cell is in a gang base's inner hall: it and the Head of the hall can walk to each other (the
+    outer hall can be walked to from the hall, but not back)."""
+    if not crafting.gang_map(mid):
+        return False
+    head = (int(HEAD[1][0]), int(HEAD[1][1]))
+    try:
+        return crafting.walks_between(mid, head, cell) and crafting.walks_between(mid, cell, head)
+    except (OSError, ValueError, KeyError, IndexError):
+        return False                  # no map data: an ordinary trip
+
+
+def back_to_gang_base(b: Bot, mid: int, cell: tuple[int, int], name: str | None) -> bool:
+    """A run that started in a gang base and can't walk back to that spot (it left the base, or the
+    hall's one-way door is in the way): the way in is the hall's guard or the Gang Entrance, which
+    lead to the character's own gang. True when this was that case, however it went (what went wrong is said,
+    and the character stays where it is); False for any other place, which the ordinary trip
+    handles. name: the base's name when the run started, so another gang's is not taken for it."""
+    if not crafting.gang_map(mid) or (b.map_id() == mid and crafting.reachable_cell(b, cell)):
+        return False
+    b.log(_("going back to where the run started in the gang's base"))
+    try:
+        if _in_the_hall(mid, cell):
+            inner_hall(b)
+        elif not crafting.enter_gang(b):
+            raise Stopped(_("the Gang Entrance didn't let us in"))
+    except Stopped as e:
+        if b.stop_event.is_set():
+            raise
+        b.close_dialogs()
+        b.log(_("couldn't get back into the gang's base ({why}) - staying here", why=e), speak=True)
+        return True
+    place: dict[str, Any] = b.snap().get("map") or {}
+    now = str(place.get("name") or "")
+    if b.map_id() != mid or (name and now and now != name):
+        b.log(_("the Gang Entrance led to {now}, not {was} - staying here", now=now or atlas.label(b.map_id()),
+                was=name or atlas.label(mid)), speak=True)
+        return True
+    b.travel(mid, cell)
+    return True
 
 
 # ---------------------------------------------------------------------------------------- the chores

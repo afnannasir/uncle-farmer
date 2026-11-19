@@ -169,6 +169,7 @@ class Parts:
     in_instance: bool
     pack_min: int
     start_place: Where | None
+    start_name: str | None      # the map's own name there (a gang base's is the gang's)
     drop_keep: int | None
     level_keep: int | None
     agent_state: bool
@@ -198,6 +199,8 @@ class Parts:
     _potions_warned_out: set[str]
     farm_filter: FarmFilter | None
     walk_only: bool
+    walk_left: float | None     # steps still to walk on this map, on a trip (beasts.RIDE_MIN)
+    walk_target: tuple[int, tuple[int, int]] | None
     skillbook: "SkillBook | None"
     mob_names: dict[int, str]
     counted: dict[int, float]

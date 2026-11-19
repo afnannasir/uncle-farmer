@@ -27,9 +27,17 @@ Retribution, Shadow Arrow), pressed again every second until dead - never the fi
 it is set, which can be a jump (a Hunter's Escape) or a skill that needs more than a target; drink
 nothing and fight nothing else; respawn in the city; read the sheet again. A guard that doesn't
 strike back is walked to and hit again, then left for another. It ends when
-the next level needs at least the goal, after max_deaths deaths, or when deaths stop costing
-experience (the level's start: the game takes no level away). The PK mode the game had is put back
+the next level needs at least the goal, after max_deaths deaths, when deaths stop costing
+experience (the level's start: the game takes no level away), when the goal is past what the level
+holds, or, if the player asked for it, when a death costs too little. The PK mode the game had is put back
 at the end, whatever ended it.
+
+What a death costs (630 deaths of one character, 2026-11-16): 1.81% of the experience earned inside
+the level, rounded down, so each costs a little less than the one before and the sheet's number
+climbs ever more slowly towards the level's whole need, which it never passes. Three deaths are
+enough to work out the share and that whole need (fit_rate, top_of): the run then says how long it
+will take, and doesn't go on for a goal the level can't reach. The share is measured on each run,
+not assumed; a run whose losses don't fit is simply not forecast.
 """
 
 from __future__ import annotations
@@ -61,7 +69,9 @@ DEFAULTS: dict[str, Any] = {
     "until_needed": 0,
     "lose": 0,
     "max_deaths": 30,         # never more deaths than this in one run
-    "where": "guard",         # WHERE
+    "where": "village",       # WHERE
+    "stop_small": False,      # stop once a death costs less than `min_loss`, even short of the goal
+    "min_loss": 500,
 }
 ALL_MODE = PK_MODES.index("all mode")
 GUARD = re.compile(r"\bguard\b", re.I)
@@ -79,6 +89,13 @@ NOT_AN_ATTACK = {"mobility", "engage", "teleport", "resurrect", "heal", "party_b
                  "dispel", "defensive", "taunt", "reactive"}
 SKIP = 120.0              # seconds a guard that wouldn't fight is left alone
 STALLS = 2                # deaths in a row that cost no experience: none left to lose on this level
+SMALLS = 2                # deaths in a row under min_loss: one could be a kill's experience on the way
+FIT_AFTER = 3             # losses needed to work out what a death takes
+FIT_FROM = 200            # ... each at least this big: smaller ones are mostly rounding
+RATE_LOW, RATE_HIGH = 0.005, 0.1   # a share of the level outside these isn't what a death does: no forecast
+MARGIN = 0.1              # a goal is out of reach only this far (of what is left) past the estimate
+LEVEL_TOPS = "_learned_level_tops.json"   # in the profiles folder: per character and level
+TOP_KEEP = 7 * 86400.0    # seconds a remembered level top is believed
 SEARCH = 240.0            # seconds spent walking around a map looking for a guard
 SEARCH_WALKS = 12         # ... and never more walks than this (a walk that ends at once can't spin)
 LOOK = 0.5
@@ -105,9 +122,10 @@ _seen_lock = threading.Lock()
 # pk_mode: the bot's set_modes() puts the PK mode back to the profile's before a fight with a
 # monster in the way of a walk and after an NPC talk (a ride); for this run that is all mode, or the
 # walk to the guard switched it back to a peaceful mode and the hit made no guard strike.
+# (The potions themselves are held back by dying_on_purpose: 0 in hp_below would mean "auto".)
 DYING: dict[str, Any] = {"respawn": "city", "use_resurrection_crystal": False, "stop_on_deaths": False,
-                         "stop_on_panic": False, "flee_on_panic": False, "hp_below": 0, "smart_skills": False, "fight_back": False,
-                         "pk_mode": ALL_MODE}
+                         "stop_on_panic": False, "flee_on_panic": False, "stop_when_out_of_potions": False,
+                         "smart_skills": False, "fight_back": False, "pk_mode": ALL_MODE}
 
 
 def config(p: dict[str, Any]) -> dict[str, Any]:
@@ -121,6 +139,49 @@ def goal(cfg: dict[str, Any], needed_now: int) -> int:
     if cfg.get("mode") == "lose":
         return needed_now + max(0, int(cfg.get("lose") or 0))
     return max(0, int(cfg.get("until_needed") or 0))
+
+
+# ---------------------------------------------------------------------------------------- what a death costs
+def fit_rate(losses: list[int]) -> float | None:
+    """The share of the level's earned experience a death takes, from the losses so far (each is
+    that share of what the one before left), or None while they are too few or don't fit."""
+    big = [n for n in losses if n >= FIT_FROM]
+    if len(big) < FIT_AFTER:
+        return None
+    rate = 1.0 - (big[-1] / big[0]) ** (1.0 / (len(big) - 1))
+    return rate if RATE_LOW <= rate <= RATE_HIGH else None
+
+
+def top_of(needed: int, loss: int, rate: float) -> int:
+    """What the sheet says at the very start of the level, from a death's loss at `needed`."""
+    return needed + round(loss / rate)
+
+
+def deaths_to(needed: int, goal: int, top: int, rate: float) -> int:
+    """Deaths that take the sheet from `needed` to `goal` (under `top`)."""
+    if needed >= goal:
+        return 0
+    return math.ceil(math.log((top - goal) / (top - needed)) / math.log(1.0 - rate))
+
+
+def _tops() -> dict[str, Any]:
+    try:
+        with open(os.path.join(paths.PROFILES, LEVEL_TOPS), encoding="utf-8") as f:
+            got = json.load(f)
+        return got if json.is_object(got) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_top(key: str, row: dict[str, Any]) -> None:
+    with _seen_lock:
+        tops = _tops()
+        tops[key] = row
+        try:
+            with open(os.path.join(paths.PROFILES, LEVEL_TOPS), "w", encoding="utf-8") as f:
+                json.dump(tops, f, ensure_ascii=False, indent=1)
+        except OSError:
+            pass
 
 
 # ---------------------------------------------------------------------------------------- guards
@@ -403,6 +464,111 @@ class _Run:
         self.village: Village | None = None              # the village we die at (where "village")
         self.entered = False                             # ... and we walked into it: we respawn there
         self.left_villages: set[tuple[int, int, int]] = set()   # (map, x1, y1) with no guard to fight
+        self.min_loss = int(cfg.get("min_loss") or 0) if cfg.get("stop_small") else 0
+        self.key: str | None = None                      # this character and level, for LEVEL_TOPS
+        self.start = 0                                   # the sheet's number before the first death
+        self.top: int | None = None                      # ... at the very start of this level
+        self.rate: float | None = None                   # the share of the level a death takes
+        self.losses: list[int] = []                      # what each death cost, while it cost anything
+        self.stamps: list[float] = []                    # when we came back from each death
+        self.stalls = self.smalls = 0                    # deaths in a row costing nothing / too little
+        self.told = self.timed = False                   # the forecast was said / said with its time
+
+    # -- what the deaths will bring
+    def know(self, start: int) -> None:
+        """What an earlier run learned of this character's level, if it still holds."""
+        b = self.b
+        self.start = start
+        name = b.me().get("name")
+        level = (b.refresh_sheet() or {}).get("level")
+        if not name or not level:
+            return
+        self.key = "%s|%s" % (name, level)
+        row: dict[str, Any] = _tops().get(self.key) or {}
+        top, rate = row.get("top"), row.get("rate")
+        fresh = b.clock.time() - float(row.get("at") or 0) < TOP_KEEP
+        if fresh and isinstance(top, int) and top >= start:
+            self.top = top
+            self.rate = float(rate) if isinstance(rate, (int, float)) else None
+
+    def save(self) -> None:
+        if self.key and self.top is not None:
+            _save_top(self.key, {"top": self.top, "rate": self.rate, "at": self.b.clock.time()})
+
+    def out_of_reach(self, needed: int, target: int) -> bool:
+        return self.top is not None and target >= needed + (self.top - needed) * (1.0 + MARGIN)
+
+    def opening(self, target: int) -> str | None:
+        """Before the first death, from what an earlier run learned: why not to start, if so."""
+        if self.top is None:
+            return None
+        if self.out_of_reach(self.start, target):
+            return "impossible"
+        if self.rate is not None:
+            if self.min_loss and (self.top - self.start) * self.rate < self.min_loss:
+                return "small"
+            self.forecast(self.start, target)
+        return None
+
+    def forecast(self, needed: int, target: int) -> None:
+        """Say how many deaths are left, and warn when the limit on deaths comes first."""
+        b, top, rate = self.b, self.top, self.rate
+        if top is None or rate is None:
+            return
+        reach = min(target, top - 1)
+        if self.min_loss:
+            reach = min(reach, top - int(self.min_loss / rate))
+        if reach <= needed:
+            return
+        n = deaths_to(needed, reach, top, rate)
+        pace = (self.stamps[-1] - self.stamps[0]) / (len(self.stamps) - 1) if len(self.stamps) > 1 else 0.0
+        if pace > 0:
+            b.log(_("this level holds about {top} experience: about {n} more deaths, about {mins} min, to reach {xp}",
+                    top=top, n=n, mins=max(1, round(n * pace / 60)), xp=reach), speak=not self.told)
+        else:
+            b.log(_("this level holds about {top} experience: about {n} more deaths to reach {xp}",
+                    top=top, n=n, xp=reach), speak=True)
+        most = int(self.cfg.get("max_deaths") or DEFAULTS["max_deaths"])
+        if n > most - self.deaths and not self.told:
+            b.log(_("the limit of {most} deaths will stop the run before that", most=most), speak=True)
+        self.told = True
+
+    def after_death(self, needed: int, now: int, target: int) -> str | None:
+        """Note what this death cost. Why to stop here, if so."""
+        loss = now - needed
+        self.stamps.append(self.b.clock.time())
+        self.stalls = 0 if loss > 0 else self.stalls + 1
+        if loss > 0:
+            self.losses.append(loss)
+        rate = fit_rate(self.losses)
+        if rate is not None:
+            self.rate = rate
+            self.top = max(now, top_of(self.start, self.losses[0], rate))
+        if now >= target:
+            return None
+        if self.stalls >= STALLS:
+            self.top = now
+            return "stalled"
+        if rate is not None and self.out_of_reach(now, target):
+            return "impossible"
+        if rate is not None and not self.timed:
+            self.timed = True
+            self.forecast(now, target)
+        self.smalls = self.smalls + 1 if 0 < loss < self.min_loss else 0
+        return "small" if self.smalls >= SMALLS else None
+
+    def ending(self, why: str, target: int) -> str:
+        """Why the run ended, in words."""
+        return {
+            "done": _("done: the next level needs at least {goal} experience", goal=target),
+            "deaths": _("stopped after {n} deaths, as you set", n=self.deaths),
+            "stalled": _("dying costs no more experience on this level - stopped"),
+            "small": _("a death now costs less than {n} experience - stopped", n=self.min_loss),
+            "impossible": _("this level holds only about {top} experience, so the goal of {goal} can't be "
+                            "reached - stopped", top=self.top or 0, goal=target),
+            "no guard": _("no guard found here, at the spots where guards were seen, or in the nearest town"),
+            "locked": _("the PK mode can't be changed where the guards are"),
+        }[why]
 
     # -- finding a guard
     def look(self, around: Village | None = None) -> dict[str, Any] | None:
@@ -677,7 +843,7 @@ class _Run:
 
     def run(self, target: int, start: int) -> str:
         b = self.b
-        needed, stalls = start, 0
+        needed = start
         while True:
             b.check()
             if needed >= target:
@@ -693,33 +859,33 @@ class _Run:
                     return "locked" if self.locked else "no guard"
                 if not self.all_mode():
                     continue              # walked onto a map where it is locked: look elsewhere
+                struck = False
                 for _hit in range(HITS):
                     key = self.strike(g)
                     if key is None:
                         break
+                    struck = True
                     while self.wait_for_death(key):
                         pass              # it is striking: keep hitting until we fall (Respawned)
                 self.skip[int(g["id"])] = b.clock.time() + SKIP
-                b.log(_("the guard didn't strike back - trying another"))
+                b.log(_("the guard didn't strike back - trying another") if struck
+                      else _("couldn't get a hit in on that guard - trying another"))
             except Respawned:
                 self.came_back()
                 now = xp_needed(b)
                 if now is None:
                     raise Stopped(_("can't read the experience from the character sheet any more"), final=True)
-                if now <= needed:
-                    stalls += 1
-                    if stalls >= STALLS:
-                        return "stalled"
-                else:
-                    stalls = 0
                 b.log(_("died {n} times: the next level needs {xp} experience now (goal {goal})",
                         n=self.deaths, xp=now, goal=target))
+                stop = self.after_death(needed, now, target)
+                if stop:
+                    return stop
                 needed = now
 
 
 def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
-    """Tools, XP loser. Returns why it ended: "done", "deaths", "stalled", "no guard", "locked",
-    or "checked"."""
+    """Tools, XP loser. Returns why it ended: "done", "deaths", "stalled", "small", "impossible",
+    "no guard", "locked", or "checked"."""
     start = xp_needed(b)
     if start is None:
         raise Stopped(_("can't read the experience from the character sheet - restart the game so the new agent loads"),
@@ -736,6 +902,8 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
               speak=True)
         return "done"
     m = modes(b)
+    r = _Run(b, cfg)
+    r.know(start)
     if check_only:
         snap = b.snap()
         found = guards(snap, mid=b.map_id())
@@ -745,14 +913,18 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
                 xp=start, goal=target, n=len(found), k=len(spots()),
                 pk=pk_name(m.get("pk")),
                 locked=_(" (locked here)") if m.get("pk_locked") else ""), speak=True)
+        r.forecast(start, target)
         return "checked"
+    why = r.opening(target)
+    if why:                               # nothing to die for: not a key pressed
+        b.log(_("XP loser: {end} ({n} deaths)", end=r.ending(why, target), n=0), speak=True)
+        return why
     # on a map that holds its own PK mode, the game keeps ours aside and "pk" is the map's: then
     # the one the bot farms with is the one to come back to
     was_pk = m.get("pk") if not m.get("pk_locked") else saved_pk(b.p)
     saved = b.p
     b.p = {**saved, **DYING}
     b.dying_on_purpose = True
-    r = _Run(b, cfg)
     b.log(_("XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}",
             xp=start, goal=target))
     why = "?"
@@ -762,15 +934,10 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
     finally:
         b.dying_on_purpose = False
         b.p = saved
+        r.save()
         if isinstance(was_pk, int) and was_pk != ALL_MODE:
             put_back_pk(b, was_pk)
-    end = {
-        "done": _("done: the next level needs at least {goal} experience", goal=target),
-        "deaths": _("stopped after {n} deaths, as you set", n=r.deaths),
-        "stalled": _("dying costs no more experience on this level - stopped"),
-        "no guard": _("no guard found here, at the spots where guards were seen, or in the nearest town"),
-        "locked": _("the PK mode can't be changed where the guards are"),
-    }[why]
+    end = r.ending(why, target)
     b.log(_("XP loser: {end} ({n} deaths)", end=end, n=r.deaths), speak=True)
     if why in ("no guard", "locked"):
         raise Stopped(end, final=True)

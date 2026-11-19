@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -838,7 +838,7 @@ The Gem Maker has two jobs.
 
 **Make a gem**
 
-Choose the gem, the level you want, and the quantity to make. You can also choose to make as many as possible.
+Choose the gem, the level you want, and the quantity: this many more, as many as possible, or until the bag holds this many (the gems you already have count, so starting again after an interruption doesn't make too many).
 
 The tool uses the gems and shards already in your bag. If it needs more Level 1 shards, it fetches them from your storehouse or buys them from the Shard Broker.
 
@@ -862,7 +862,26 @@ It tells you why it stopped. Possible reasons include:
 - No more shards are available from the storehouse or Shard Broker.
 - The Gem Craftsman fails to make anything for three rounds in a row, even though there are still combinations available.
 
+From level 2, the shards a failed combine leaves are kept for the +20% on the next combines, including those of the same batch. They become gems only at the level you asked for, or when nothing else can be done with them.
+
+Nothing is spent until the craftsman's page names the gem being made. If the game makes nothing of a batch, the Gem Maker asks for half as many before giving up on it.
+
 A round that produces nothing because the game responds too slowly or the menu fails to open is retried. It does not count as a failed crafting round.
+
+### Gem Breaker
+
+Open **Tools, Gem Breaker** or press **Ctrl+Shift+B**. It uses the Gem Craftsman's **break into shards**. Breaking can't be undone, so nothing is ticked at first, the window shows what would go, and **Start** asks once more.
+
+A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 Level 1 shards. So a Level 2 gem ends up as 9 shards and a Level 3 gem as 27. That is less than it took to make them.
+
+- **Gems to break**: the colours that may be broken.
+- **Highest gem level to break**: gems above it are left alone. It starts at 2, so the gems you put in your equipment are safe until you raise it. Gems at or below it are broken all the way down.
+- **Break down to**: shards, or gems of a level you choose.
+- **Keep at least**: how many gems of each colour and level stay.
+- **Enhance Crystals**: Weapon and Equipment crystals have their own boxes, their own highest level and their own number to keep, off at first. They turn straight into shards and cost arnebia, as their page says; the arnebia you keep is never spent.
+- **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
+
+What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
 
 ### Equipment Enhancer
 

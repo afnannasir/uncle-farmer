@@ -357,6 +357,7 @@ class Run(threading.Thread):
         where: dict[str, Any] = snap.get("map", {})
         if where.get("id"):
             bot.start_place = (snap["map"]["id"], int(here.get("x", 0)), int(here.get("y", 0)))
+            bot.start_name = snap["map"].get("name")
         sheet: dict[str, Any] = here.get("sheet") or {}
         if profile.get("mp_use", True) and not sheet.get("maxmp"):
             # Max MP is only on the character sheet, and only farming reads it on its own:

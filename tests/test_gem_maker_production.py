@@ -165,10 +165,11 @@ def test_a_late_bag_update_is_not_taken_for_the_end(game: Any) -> None:
     # ended the job with 200 gems still to combine: "made 0 of the 2 Level 4 Topaz asked for".
     b, _c, rounds = game({"Level 1 Topaz": 200}, itertools.cycle([True, False]), late_reads=12)
     crafting.gem_maker(as_bot(b), job())
-    assert said(b, "showed no change after combining Level 1 Topaz")
+    assert not said(b, "tries instead")                        # a late answer isn't asked for again
     assert len(rounds) > 1
     j = crafting._GemJob(as_bot(b), job(), "Topaz")
-    assert crafting._combinable(as_bot(b), j) == ""            # it went on until nothing was left to combine
+    # it went on until the job was done, or nothing was left to combine
+    assert count(b, "Level 4 Topaz") >= 2 or crafting._combinable(as_bot(b), j) == ""
     assert said(b, "done: made") or said(b, "nothing left to make Level 4 Topaz from")
 
 
@@ -184,12 +185,12 @@ def test_a_craftsman_menu_that_did_not_open_is_tried_again(game: Any) -> None:
 
 @pytest.mark.parametrize("seed", [0, 4, 5])
 def test_a_long_job_buying_shards_runs_to_its_end(game: Any, seed: int) -> None:
-    # Three Level 6 gems from nothing take tens of thousands of shards. Before: a bagful was 2000
-    # shards whatever the bag's room, and after 40 rounds the job ended at "made 1 of the 3" (or 2),
-    # with the 2000 shards just bought left unused. These seeds take 73, 146 and 216 rounds.
+    # Level 6 gems from nothing take tens of thousands of shards. Before: a bagful was 2000 shards
+    # whatever the bag's room, and after 40 rounds the job ended short of its number, with the 2000
+    # shards just bought left unused.
     b, _c, rounds = game({}, coin(seed), maxload=6000)
-    crafting.gem_maker(as_bot(b), job(level=6, count=3, amount=3, supply="buy"))
-    assert count(b, "Level 6 Topaz") >= 3 and said(b, "done: made")
+    crafting.gem_maker(as_bot(b), job(level=6, count=12, amount=12, supply="buy"))
+    assert count(b, "Level 6 Topaz") >= 12 and said(b, "done: made")
     assert len(rounds) > 40                                   # the old fixed limit, passed
     assert b.trades and all(n <= town.TRADE_MOST for n in b.trades)
     assert any(n == town.TRADE_MOST for n in b.trades)

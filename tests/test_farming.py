@@ -14,7 +14,7 @@ import itertools
 import threading
 
 import pytest
-from conftest import failing, stand_in, Clock
+from conftest import failing, returning, stand_in, Clock
 
 from unclefarmer.clock import CLOCK
 from unclefarmer import settings
@@ -641,6 +641,33 @@ def test_leave_monsters_says_when_there_is_none(monkeypatch: pytest.MonkeyPatch)
     b.leave_monsters()
     assert b.travels == []
     assert any("no map without monsters near Map 1 (1)" in line for line in b.spoken)
+
+
+def test_leave_monsters_stays_in_a_town(monkeypatch: pytest.MonkeyPatch) -> None:
+    labels(monkeypatch)
+    zone_stub(monkeypatch)
+    monkeypatch.setattr(farming.atlas, "in_town", returning(True))
+    b = Farm()
+    b.leave_monsters()
+    assert b.travels == [] and any("already in a town" in line for line in b.lines)
+
+
+def test_the_real_map_knows_a_city_from_the_field_around_it() -> None:
+    assert farming.atlas.in_town(1081, 374, 176)              # Tulip City, which lists "monster" zones
+    assert farming.atlas.in_town(1081, 46, 48)                # Aria Village
+    assert not farming.atlas.in_town(1081, 200, 200)
+
+
+def test_finish_in_a_town_uses_no_hearthstone(monkeypatch: pytest.MonkeyPatch) -> None:
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    zone_stub(monkeypatch)
+    monkeypatch.setattr(farming.atlas, "in_town", returning(True))
+    b = Farm()
+    b.start_place = None
+    b.hearthstone = True
+    b.finish()
+    assert b.go_home_calls == [] and b.travels == []
 
 
 # ==================================================================== finish

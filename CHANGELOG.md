@@ -25,56 +25,67 @@
   that is on no key is dropped at once, with one message instead of one for each place.
 - A window left open, such as the character sheet, no longer makes the game refuse the fusion beast.
 
-**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+**Gem Breaker**
 
-- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
-  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
-  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
-  nearest marketplace and reads every category (about a minute or two). Until then it shows a
-  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
-  them.
-- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
-  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
-  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
-  category. Finds show up while the bot reads. Searched items and sellers are remembered.
-- Two tabs, Search and Results, and the Search tab shows only the boxes the chosen kind uses.
-  Results grow in place while the bot reads (the row you are on stays put), and the total is
-  spoken at the end. The character stays at the marketplace after each search, so the next one
-  starts at once.
-- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
-  gold coins in all. Each lot is found again by its listing number, even after it moved to another
-  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
-  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
-  gone, only N left, over your most, over the limit, or not bought with the game's own words.
-- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
-- Agent 71: `detail` presses the details key (G) on a market lot the game's own way, so the seller
-  comes back without a key press.
+- A new tool, **Tools, Gem Breaker** (Ctrl+Shift+B), and the script command `gem_breaker`: breaks the
+  gem colours you tick into shards, up to the level you allow (2 at first), down to shards or to a
+  level you choose, keeping as many of each as you say. Weapon and Equipment Enhance Crystals can be
+  broken too, with their own boxes, and what they give and cost is read from the craftsman's page.
+  It can sell shards by the bag manager's rules. The window shows what would go, and Start asks
+  first. When the game says "overweight" it asks for fewer; when not even one fits it sells, if
+  that is ticked, and carries on, and otherwise stops and says why.
 
-**Draw Blood, Skinning and Cut Flesh: walking up to the corpse**
+**Fusion beasts: not for a few steps**
 
-- Corpse harvesting only took corpses within 4.5 steps of where the fight ended, since the game
-  takes the skill only from close by. A character that fights from afar kills about 18 steps off,
-  so almost every corpse was left (one night: 12 harvests in about 1,150 kills), and even
-  close-range characters often ended a few steps too far. Nothing in the log said why.
-- Now the bot walks up to the corpse first, as the game's own key does: up to 20 steps away, never
-  to one near a boss, and still only between fights. A fight on the way comes first. The new
-  choice in Character settings, Fighting, Corpses, **Walk up to corpses further off**, is on by
-  default; turn it off to harvest only the corpses within reach, as before.
-- A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
-  there) is now logged, once for each reason in a run.
+- On a trip, a beast is put on only when at least 30 steps of walking are left on the map. It used
+  to go on at every start and right after every map change, even a few steps from the next door or
+  the destination. One that is already on stays on.
 
-**Gathering outside: the pet helps, and the way home has no fights**
+**The end of a run: towns and the gang base**
 
-- While fishing, mining or collecting herbs at an outside place, the bot now keeps your pet out and
-  looked after, as it does while farming (the pets ticked in Character settings): it helps kill
-  what comes, and a monster that goes for the pet is fought too. Summoning the pet or giving it a
-  potion stops the gathering for a moment, as your own potions do; it starts again by itself. In a
-  gang's area nothing changes: the half hour there is left to the game.
-- Once gathering is over, the way home - to the buyer to sell, then to where the run ends - is
-  walked as the walking assistant goes: no stopping to fight, not even what attacks you, riding
-  your Swift beast past it, with potions still keeping you up. The trips while gathering (to the
-  place, and to sell and come back when the bag fills) still fight as before. A script that farms
-  after gathering ends as a farming run does.
+- A run that ends in a city or village stays there. It used to leave for the nearest map with no
+  monster zone, because the game's table lists such zones for a city's own streets: from Tulip City
+  that meant going down to its underground. A run started in a town also goes back to it.
+- A run started in the gang base goes back there, instead of giving up or pushing against the inner
+  hall's one-way door: from the outer hall through the Inner hall Guard, from outside by the Gang
+  Entrance. If it isn't let in, it says so and stays where it is. Daily chores in the inner hall
+  use the guard too.
+
+**Gem Maker: shards go to the +20%**
+
+- From level 2, shards are now kept for the +20% instead of being made into gems four at a time,
+  and the box is ticked even when the bag has none yet: a batch also uses the shards its own
+  failures leave (seen in the game). They still become gems at the level asked for, and when
+  nothing else can be done with them. Each level's result says how many it used.
+
+**Gem Maker: safer batches**
+
+- Nothing is spent until the craftsman's page names the gem being made. On a slow answer the bot
+  could read the page before, with no fee on it, and go past the arnebia you keep.
+- A batch the game makes nothing of is asked for again at half the size, instead of the same
+  number until the job gave up.
+- If the box for the +20% shard can't be ticked, the bot says so, and each level's result now says
+  how many of its shards there were before and after.
+- For the gem you asked for, no more tries than gems are missing, so a lucky run doesn't cost more
+  than the job needed.
+- **How many** has a new choice, **Until the bag holds this many**.
+
+**XP loser: it knows how far it can go**
+
+- Each death takes 1.81% of the experience earned inside the level (measured over 630 deaths), so
+  each one costs less than the last and the next level's need can't pass the level's whole need.
+  After three deaths the bot works this out from the run itself and says how many more deaths and
+  minutes it will take, and warns when the limit on deaths will come first.
+- A goal the level can't reach now ends the run at once, instead of after an hour and a half of
+  deaths worth almost nothing. The level's number is remembered for a week, so the next run of that
+  character doesn't die at all to find out.
+- A new choice, **Stop when a death costs too little** (off by default, so a goal the level can
+  reach is always reached; ticked, the run ends under 500 experience a death, or the number you set).
+- **At the nearest village** is now the default place to die for characters that never chose one:
+  about 11 seconds a death against 29 at a city.
+- No potion is drunk during the run any more (the setting that should have stopped them meant
+  "automatic"), running out of potions no longer stops it, and a guard that could not be hit is no
+  longer reported as one that didn't strike back.
 
 **Spanish and Turkish**
 
@@ -208,6 +219,64 @@
   the bag because the storehouse is full (not that it "may be full"), and stops walking them back
   to the storehouse on every bag trip of the run. Taking something out of the storehouse makes
   room, so the bot tries them again after that.
+
+**Market searcher and buyer (Tools, Ctrl+Shift+K)**
+
+- A new window for the player market (the Ansible Space-time Marketplace). It lists what is for
+  sale by category: each item with how many lots, how many in all, the cheapest and usual price,
+  and how many sellers. The first time, press "Refresh the market list": the bot walks to the
+  nearest marketplace and reads every category (about a minute or two). Until then it shows a
+  starting list that came with Uncle Farmer. Names show the way your game's language pack shows
+  them.
+- Search by item (one or several names, or a custom name), cheapest first (it stops as soon as
+  the prices pass your most a unit), by seller ID (it looks at each lot's details, remembers every
+  seller it has seen, and stops as soon as all 10 lots of a seller are found), or browse a
+  category. Finds show up while the bot reads. Searched items and sellers are remembered.
+- Two tabs, Search and Results, and the Search tab shows only the boxes the chosen kind uses.
+  Results grow in place while the bot reads (the row you are on stays put), and the total is
+  spoken at the end. The character stays at the marketplace after each search, so the next one
+  starts at once.
+- Tick the lots you want and how many of each, then Buy: one question names the lots, items and
+  gold coins in all. Each lot is found again by its listing number, even after it moved to another
+  page, and bought at the price you saw (a lot's price can't change). Lots still in their first
+  hour are never bought. A spending limit and "Check only" are there too. Each lot ends as bought,
+  gone, only N left, over your most, over the limit, or not bought with the game's own words.
+- Scripts: `market scan`, `market search`, `market seller`, `market buy` (docs/SCRIPTING.md).
+- Agent 71: `detail` presses the details key (G) on a market lot the game's own way, so the seller
+  comes back without a key press.
+
+**Draw Blood, Skinning and Cut Flesh: walking up to the corpse**
+
+- Corpse harvesting only took corpses within 4.5 steps of where the fight ended, since the game
+  takes the skill only from close by. A character that fights from afar kills about 18 steps off,
+  so almost every corpse was left (one night: 12 harvests in about 1,150 kills), and even
+  close-range characters often ended a few steps too far. Nothing in the log said why.
+- Now the bot walks up to the corpse first, as the game's own key does: up to 20 steps away, never
+  to one near a boss, and still only between fights. A fight on the way comes first. The new
+  choice in Character settings, Fighting, Corpses, **Walk up to corpses further off**, is on by
+  default; turn it off to harvest only the corpses within reach, as before.
+- A corpse of yours that is left (too far, near a boss, or harvested by someone else before you got
+  there) is now logged, once for each reason in a run.
+
+**Gathering outside: the pet helps, and the way home has no fights**
+
+- While fishing, mining or collecting herbs at an outside place, the bot now keeps your pet out and
+  looked after, as it does while farming (the pets ticked in Character settings): it helps kill
+  what comes, and a monster that goes for the pet is fought too. Summoning the pet or giving it a
+  potion stops the gathering for a moment, as your own potions do; it starts again by itself. In a
+  gang's area nothing changes: the half hour there is left to the game.
+- Once gathering is over, the way home - to the buyer to sell, then to where the run ends - is
+  walked as the walking assistant goes: no stopping to fight, not even what attacks you, riding
+  your Swift beast past it, with potions still keeping you up. The trips while gathering (to the
+  place, and to sell and come back when the bag fills) still fight as before. A script that farms
+  after gathering ends as a farming run does.
+
+**No more "_learned_" names in the list of characters**
+
+- What the bot learns as it goes (dungeon entrances, item weights, teleport places, airship
+  landings, where guards stand, how much experience a level holds) is kept in files next to the
+  character profiles, and each of them showed up as a character in the profile list. They are left
+  out now.
 
 ## 1.2.0
 
