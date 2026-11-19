@@ -277,6 +277,14 @@
   jumps to it instead of walking: it lands beside the monster, stunned for 2.5 seconds. Not on a
   beast, and never if you set Leap Slash to Never. The log says "Leap Slash to reach ...".
 
+**Mages freeze the crowd before channelling**
+
+- With two or more monsters hitting the Mage, and all of them within Frost Nova's 8 yards, the
+  Mage now casts Frost Nova first. It used it only 0 to 3 times a night. A frozen monster can't
+  strike, so the Ice Arrows that follow are no longer held back or broken by it: on two recorded
+  nights the arrows right after such moments broke about half the time. The freeze ends when its
+  5 seconds run out, when anything hurts the monster, or if it strikes anyway.
+
 **Hunters jump ahead with Escape**
 
 - Escape jumps 12 tiles away from where you face, and players turn first so it carries them
