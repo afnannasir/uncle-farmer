@@ -258,9 +258,15 @@
 **Autopilot: the whole day in one window**
 
 - **Run, Autopilot: the whole day** (Ctrl+Shift+A) shows the character's Before farming list, the
-  plan to farm with, and the After farming list together, and **Start the day** runs them in that
-  order. The lists are the same ones as Character settings, Triggers. It starts only when you press
-  Start.
+  farming and the After farming list together, and **Start the day** runs them in that order. The
+  lists are the same ones as Character settings, Triggers. Every way of running it is a choice:
+  - farm with the character's plan, or with the best map for its level when the day starts;
+  - run the lists around the farming, or as one script of the day that you can read, change and
+    schedule like any other (written once; **Write the script of the day now** writes it again);
+  - start only when you press Start, or every day at a time (kept as a schedule in Run, Schedules).
+- Scripts: `farm map=best` farms the best field map for the character's level when the line runs,
+  and `triggers off` tells a script that does its own Before and After steps not to get the
+  Triggers lists around it as well.
 
 **Maps for your level in the plan editor**
 

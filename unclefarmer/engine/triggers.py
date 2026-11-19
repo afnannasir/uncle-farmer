@@ -198,6 +198,8 @@ def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -
             kind = getattr(node, "kind", "")
             if kind == "farm":
                 mid = (getattr(node, "opts", {}) or {}).get("map")
+                if isinstance(mid, str):
+                    return True, None     # map=best: known only when the line runs
                 return True, int(mid) if mid else HERE
             if kind == "dungeon":
                 return True, None

@@ -397,6 +397,9 @@ class Run(threading.Thread):
             from . import dungeon
             text = dungeon.script(dungeon.config(bot.p))  # preserve the tool's saved ending place too
         script = Runner(bot, text)          # read first: a script that doesn't parse does nothing
+        if getattr(script, "own_lists", False):     # (a test's stand-in runner has none)
+            # `triggers off` (Run, Autopilot's script of the day): its steps are written into it
+            self.before_farming_done = self.after_farming_done = True
         if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
                 self._level_first(bot, script.main)

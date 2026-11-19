@@ -84,6 +84,11 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
     "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
     "autopilot_plan": "",       # Run, Autopilot: the plan the day farms with ("plan:<name>"; "" = the last one run)
+    "autopilot_farm": "plan",   # ... farm with that plan, or "best": the best map for the level when it starts
+    "autopilot_how": "lists",   # ... the Triggers lists around the farming, or "script": the script of the day
+    "autopilot_start": "manual",  # ... only when Start is pressed, or "daily" at autopilot_time (Run, Schedules)
+    "autopilot_time": "06:00",
+    "autopilot_schedule": "",   # ... the id of the daily schedule the window made ("" = none)
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -280,6 +285,11 @@ class Profile(BaseModel):
     level_keep_xp: int = PROFILE_DEFAULTS["level_keep_xp"]
     skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
     autopilot_plan: str = PROFILE_DEFAULTS["autopilot_plan"]
+    autopilot_farm: str = PROFILE_DEFAULTS["autopilot_farm"]
+    autopilot_how: str = PROFILE_DEFAULTS["autopilot_how"]
+    autopilot_start: str = PROFILE_DEFAULTS["autopilot_start"]
+    autopilot_time: str = PROFILE_DEFAULTS["autopilot_time"]
+    autopilot_schedule: str = PROFILE_DEFAULTS["autopilot_schedule"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]

@@ -185,7 +185,7 @@ msgstr "Geliştirilecek &ekipman:"
 msgid "&Experience:"
 msgstr "D&eneyim:"
 
-msgid "&Farm with the plan:"
+msgid "&Farm with:"
 msgstr ""
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
@@ -414,6 +414,9 @@ msgstr "Yakınımdaki canavarlardan seç (&P)"
 msgid "&Place:"
 msgstr "Yer: (&P)"
 
+msgid "&Plan:"
+msgstr ""
+
 msgid "&Plans"
 msgstr "&Planlar"
 
@@ -478,6 +481,9 @@ msgstr "Çalıştı&r"
 msgid "&Run selected"
 msgstr "Seçileni çalıştı&r"
 
+msgid "&Run the day as:"
+msgstr ""
+
 msgid "&Save"
 msgstr "Kaydet (&S)"
 
@@ -531,6 +537,9 @@ msgstr "Önemli olayları NVDA ile &seslendir"
 msgid "&Start"
 msgstr "Başlat (&S)"
 
+msgid "&Start:"
+msgstr ""
+
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "Bot ne yapıyor olursa olsun, her gün belirli bir &saatte farmı bırak"
 
@@ -551,6 +560,9 @@ msgstr "Sonra: (&T)"
 
 msgid "&Throw away:"
 msgstr "A&tılacaklar:"
+
+msgid "&Time (HH:MM, this computer's clock):"
+msgstr ""
 
 msgid "&Time (hours:minutes):"
 msgstr "Zaman (saa&t:dakika):"
@@ -593,6 +605,9 @@ msgstr "Nerede ölünsün (&W):"
 
 msgid "&Write an email"
 msgstr "Bir e-posta yaz (&W)"
+
+msgid "&Write the script of the day now"
+msgstr ""
 
 msgid "&Write to the files in the logs folder:"
 msgstr "Günlükler klasöründeki dosyalara yaz (&W):"
@@ -694,7 +709,7 @@ msgid "1 level up"
 msgstr "1 seviye atlama"
 
 msgid ""
-"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+"1. the Before farming list, top to bottom; 2. the farming, until the plan ends or the daily stop before the game's day reset; 3. the After farming list, when the farming ended by itself (not after Stop). These are the same lists as Character settings, Triggers. The script of the day is written from them once; after that it is yours to change, until you write it again."
 msgstr ""
 
 msgid "10,000 arnebia (1,500 gang contribution)"
@@ -1360,6 +1375,9 @@ msgstr "Oyun başlatılamadı: {err}"
 msgid "Couldn't work out a route: {err}"
 msgstr "Rota bulunamadı: {err}"
 
+msgid "Couldn't write it: {err}"
+msgstr ""
+
 msgid "Couldn't."
 msgstr "Yapamadım."
 
@@ -1625,6 +1643,9 @@ msgstr "Her (dakika):"
 
 msgid "Every day"
 msgstr "Her gün"
+
+msgid "Every day at the time below"
+msgstr ""
 
 msgid "Every end goes here - time up, drop time, a full bag, the last death"
 msgstr ""
@@ -2384,7 +2405,8 @@ msgstr "Bir mücevher yap"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Mücevher yap: hangisi, seviyesi ve kaç tane olduğunu seç"
 
-msgid "Make a plan first (the Plans tab): the day farms with one."
+msgid ""
+"Make a plan first (the Plans tab), or farm on the best map for the level."
 msgstr ""
 
 msgid "Make a plan first, in the Plans tab."
@@ -2820,6 +2842,9 @@ msgstr "{map}: {who}"
 msgid "Once"
 msgstr "Bir kez"
 
+msgid "One script of the day (to read, change or schedule)"
+msgstr ""
+
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
 "Yalnızca canavarları senden en fazla bu kadar seviye yüksek olan &alanlar:"
@@ -2830,6 +2855,9 @@ msgstr ""
 
 msgid "Only when HP is low"
 msgstr "Yalnızca HP düşük olduğunda"
+
+msgid "Only when I press Start"
+msgstr ""
 
 msgid "Only while the Chat window is open"
 msgstr "Yalnızca Sohbet penceresi açıkken"
@@ -3916,6 +3944,9 @@ msgstr "Yalnızca Parça pazarı"
 msgid "The Shard Market only"
 msgstr "Yalnızca Parça pazarı"
 
+msgid "The Triggers lists around the farming"
+msgstr ""
+
 msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "Ajan dosyası Uncle Farmer'ın agent klasöründe yok."
 
@@ -3941,6 +3972,9 @@ msgstr "Çantanın dolu sayılacağı yük yüzdesi:"
 
 msgid "The best for this character"
 msgstr "Bu karakter için en iyisi"
+
+msgid "The best map for the character's level"
+msgstr ""
 
 msgid "The best one on my hotkeys"
 msgstr "Kısayol tuşlarımdaki en iyisi"
@@ -3973,6 +4007,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 
+msgid "The character's plan"
+msgstr ""
+
 msgid "The collection"
 msgstr "Koleksiyon"
 
@@ -3981,6 +4018,10 @@ msgstr "Bilgisayar {n} saniye içinde kapanacak. Kapatma iptal edilsin mi?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Diğer botların işi bittiğinde bilgisayar kapanır."
+
+msgid ""
+"The day is written as the script \"{name}\". Open it from the Plans tab to read or change it; \"Write the script of the day now\" writes it again from this window."
+msgstr ""
 
 msgid "The day:"
 msgstr ""
@@ -4778,6 +4819,9 @@ msgstr "Alınan en kötü normal vuruş: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "{language} diline geçmek ister misin?"
 
+msgid "Write the time as HH:MM, for example 06:30."
+msgstr ""
+
 msgid "X:"
 msgstr "X:"
 
@@ -5105,6 +5149,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} noktasında inşa edilebilir"
+
+msgid "can't choose the best map: the character's level isn't known yet"
+msgstr ""
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5924,6 +5971,9 @@ msgid ""
 msgstr ""
 "bu çalışmadan önceki {n} ekipman uyarısı atlandı (o zaman ilgilenilmişti); bozuk ekipman yine de onarılır"
 
+msgid "left out: {step} farms, and the day's farming may be over by then"
+msgstr ""
+
 msgid "left the corpse of {name}: {why}"
 msgstr "{name} cesedi bırakıldı: {why}"
 
@@ -6148,6 +6198,9 @@ msgstr "{code} ({what}) için boş ifade yuvası yok"
 
 msgid "no empty skill key for {skills}, so the bot can't use them"
 msgstr "{skills} için boş beceri tuşu yok, bot bunları kullanamaz"
+
+msgid "no farming map fits level {level}"
+msgstr ""
 
 msgid "no free rebirth left today"
 msgstr "bugün ücretsiz yeniden doğuş kalmadı"
@@ -7250,6 +7303,9 @@ msgstr "çanta yolculuğu"
 msgid "the bag's gems are as high as they go"
 msgstr "çantadaki mücevherler gidebilecekleri en yüksek seviyede"
 
+msgid "the best map for level {level}: {map}"
+msgstr ""
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -7265,6 +7321,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
+
+msgid "the day of {name}"
+msgstr ""
 
 msgid "the day's chores first"
 msgstr "önce günün işleri"
@@ -7944,6 +8003,9 @@ msgstr ""
 msgid "write it as: set name = value"
 msgstr "şöyle yaz: set ad = değer"
 
+msgid "write it as: triggers off"
+msgstr ""
+
 msgid "write it as: walk x y"
 msgstr "şöyle yaz: walk x y"
 
@@ -7955,6 +8017,13 @@ msgstr "şöyle yaz: {cmd} 50 Large Red Potion"
 
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "şöyle yaz: {cmd} Milkfish 20"
+
+msgid "written by Run, Autopilot - the Triggers lists don't run around it"
+msgstr ""
+
+msgid ""
+"written by Run, Autopilot: the best map for the level, with the Triggers lists around it"
+msgstr ""
 
 msgid "yesterday"
 msgstr "dün"

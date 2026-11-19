@@ -205,6 +205,10 @@ Use `map=` to send your character to a particular map before farming.
 
 You can identify the map by its name or number, just like with the `travel` command.
 
+`map=best` picks the map when the line runs: the best field map for the character's level at that moment (monsters from 9 levels below to 5 above it, the highest first). The log says which map it chose, so a script that runs every day follows the character as it levels up.
+
+    farm map=best
+
 ### Setting a farming limit
 
 You can decide when a farming session should finish by setting a time limit or a kill target.
@@ -793,6 +797,14 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
 
 The `check` options let you inspect what the bot would do without actually running the tool's actions.
 
+### A script with its own Before and After steps
+
+A farming script normally gets the character's **Before farming** and **After farming** lists (Character settings → Triggers) run around it. A script that does those steps itself says so at the top, and the lists then don't run a second time:
+
+    triggers off
+
+**Run → Autopilot** writes the day this way when you choose "One script of the day": the Before steps first, then the farming, then the After steps inside an `on_stop` block (which runs when the farming ends by itself or at the daily stop, never after you press Stop).
+
 ### Running daily chores
 
 The `chores` command runs the daily chores configured under **Tools → Daily chores**.
@@ -1206,8 +1218,9 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Farming
 
-    farm [map=<map>] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
+    farm [map=<map>|map=best] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
          [only=<names>] [skip=<names>] [elites=<fight|avoid>] [until=<condition>]
+    triggers off                    this script does its own Before/After farming steps
 
 ### NPCs, shops and storage
 

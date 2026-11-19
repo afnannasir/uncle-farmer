@@ -278,10 +278,16 @@ By default, the daily stopping time is set to 10 minutes before the drop-time re
 **Run → Autopilot: the whole day** (Ctrl+Shift+A) shows the logged-in character's day together:
 
 1. the **Before farming** list (for example the day's chores, a cave, restocking), top to bottom;
-2. the plan chosen under **Farm with the plan**, until it ends or the daily stopping time;
-3. the **After farming** list (for example selling shards, storing items, the Gem Maker), when the plan ended by itself.
+2. the farming, until the plan ends or the daily stopping time;
+3. the **After farming** list (for example selling shards, storing items, the Gem Maker), when the farming ended by itself.
 
-The two lists are the same ones as **Character settings → Triggers**: change them in either place. **Save** keeps the lists and the plan; **Start the day** saves them and starts the plan on that character's game. Nothing starts by itself: a schedule can still start a plan as before.
+The two lists are the same ones as **Character settings → Triggers**: change them in either place. Three choices decide how the day goes:
+
+- **Farm with:** the character's plan (chosen under **Plan**), or the best map for the character's level. The best map is chosen when the day starts, from field maps whose monsters are 9 levels below to 5 above the character, so it follows the character as it levels up.
+- **Run the day as:** the Triggers lists around the farming, or one script of the day. The script is written from the lists and the farming the first time; after that it is yours to read, change or schedule from the Plans tab, and **Write the script of the day now** writes it again from the window. Steps that farm (a cave) are left out of its After part, since the day's farming may be over by then.
+- **Start:** only when you press **Start the day**, or every day at the time you write (HH:MM, this computer's clock). The daily start is an ordinary schedule in **Run → Schedules**; choosing "Only when I press Start" again takes it away.
+
+**Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
 ### After farming
 

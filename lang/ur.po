@@ -184,8 +184,8 @@ msgstr "&Enhance karne ke liye equipment:"
 msgid "&Experience:"
 msgstr "&Experience:"
 
-msgid "&Farm with the plan:"
-msgstr "Is plan se &farming karein:"
+msgid "&Farm with:"
+msgstr "Kis se &farming:"
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "Animal Shed par gang ke breed beast ko &khilao"
@@ -413,6 +413,9 @@ msgstr "&Mere qareeb ke monsters mein se chunein"
 msgid "&Place:"
 msgstr "&Jagah:"
 
+msgid "&Plan:"
+msgstr "&Plan:"
+
 msgid "&Plans"
 msgstr "&Mansoobe"
 
@@ -477,6 +480,9 @@ msgstr "&Chalayein"
 msgid "&Run selected"
 msgstr "Chuna hua &chalayein"
 
+msgid "&Run the day as:"
+msgstr "Din aise &chalayein:"
+
 msgid "&Save"
 msgstr "&Mahfooz"
 
@@ -532,6 +538,9 @@ msgstr "&NVDA se ahem waqiaat sunayein"
 msgid "&Start"
 msgstr "&Shuru"
 
+msgid "&Start:"
+msgstr "&Shuru:"
+
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "&Har roz muqarrar waqt par kheti rok do, chahe bot kuch bhi kar raha ho"
 
@@ -552,6 +561,9 @@ msgstr "&Phir:"
 
 msgid "&Throw away:"
 msgstr "&Phenkein:"
+
+msgid "&Time (HH:MM, this computer's clock):"
+msgstr "&Waqt (HH:MM, is computer ki ghari):"
 
 msgid "&Time (hours:minutes):"
 msgstr "&Waqt (ghante:minute):"
@@ -594,6 +606,9 @@ msgstr "&Kahan marna hai:"
 
 msgid "&Write an email"
 msgstr "&Email likhein"
+
+msgid "&Write the script of the day now"
+msgstr "Din ka script abhi &likhein"
 
 msgid "&Write to the files in the logs folder:"
 msgstr "logs folder ki files mein &likhein:"
@@ -695,9 +710,9 @@ msgid "1 level up"
 msgstr "1 level upar"
 
 msgid ""
-"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+"1. the Before farming list, top to bottom; 2. the farming, until the plan ends or the daily stop before the game's day reset; 3. the After farming list, when the farming ended by itself (not after Stop). These are the same lists as Character settings, Triggers. The script of the day is written from them once; after that it is yours to change, until you write it again."
 msgstr ""
-"1. Farming se pehle wali list, upar se neeche; 2. plan, jab tak woh khatam na ho ya game ke din badalne se pehle roz ka stop na aa jaye; 3. Farming ke baad wali list, jab plan khud khatam hua ho (Stop ke baad nahi). Yeh wahi listein hain jo Character settings, Triggers mein hain."
+"1. Farming se pehle wali list, upar se neeche; 2. farming, jab tak plan khatam na ho ya game ke din badalne se pehle roz ka stop na aa jaye; 3. Farming ke baad wali list, jab farming khud khatam hui ho (Stop ke baad nahi). Yeh wahi listein hain jo Character settings, Triggers mein hain. Din ka script in se ek baar likha jata hai; us ke baad woh aap ka hai, jab tak aap use dobara na likhwayein."
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10,000 arnebia (1,500 gang contribution)"
@@ -1364,6 +1379,9 @@ msgstr "Game shuru nahi kar saka: {err}"
 msgid "Couldn't work out a route: {err}"
 msgstr "Raasta nahi nikal saka: {err}"
 
+msgid "Couldn't write it: {err}"
+msgstr "Likha nahi ja saka: {err}"
+
 msgid "Couldn't."
 msgstr "Nahi kar saka."
 
@@ -1630,6 +1648,9 @@ msgstr "Har (minute):"
 
 msgid "Every day"
 msgstr "Har roz"
+
+msgid "Every day at the time below"
+msgstr "Har roz neeche diye gaye waqt par"
 
 msgid "Every end goes here - time up, drop time, a full bag, the last death"
 msgstr ""
@@ -2395,8 +2416,10 @@ msgstr "Gem banayein"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Gem banayein: kaunsa, uska level aur kitne, chunein"
 
-msgid "Make a plan first (the Plans tab): the day farms with one."
-msgstr "Pehle ek plan banayein (Plans tab): din usi se farming karta hai."
+msgid ""
+"Make a plan first (the Plans tab), or farm on the best map for the level."
+msgstr ""
+"Pehle ek plan banayein (Plans tab), ya level ke liye sab se achhe map par farming karein."
 
 msgid "Make a plan first, in the Plans tab."
 msgstr "Pehle Plans tab mein plan banayein."
@@ -2832,6 +2855,9 @@ msgstr "{map} par: {who}"
 msgid "Once"
 msgstr "Aik baar"
 
+msgid "One script of the day (to read, change or schedule)"
+msgstr "Din ka ek script (parhne, badalne ya schedule karne ke liye)"
+
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
 "Sirf woh ilaqe jin ke monsters aap se zyada se zyada itne level &upar hon:"
@@ -2843,6 +2869,9 @@ msgstr ""
 
 msgid "Only when HP is low"
 msgstr "Sirf jab HP kam ho"
+
+msgid "Only when I press Start"
+msgstr "Sirf jab main Start dabaun"
 
 msgid "Only while the Chat window is open"
 msgstr "Sirf jab Chat window khuli ho"
@@ -3936,6 +3965,9 @@ msgstr "Sirf Shard Broker"
 msgid "The Shard Market only"
 msgstr "Sirf Shard Market"
 
+msgid "The Triggers lists around the farming"
+msgstr "Farming ke aage peeche Triggers ki listein"
+
 msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "Uncle Farmer ke agent folder mein agent file nahi hai."
 
@@ -3962,6 +3994,9 @@ msgstr "Basta (% uske load par) bhara hai:"
 
 msgid "The best for this character"
 msgstr "Is character ke liye sab se behtar"
+
+msgid "The best map for the character's level"
+msgstr "Character ke level ke liye sab se achha map"
 
 msgid "The best one on my hotkeys"
 msgstr "Meri hotkeys par sab se behtar"
@@ -3996,6 +4031,9 @@ msgstr "Bot {cap} se zyada kharch hone se pehle khareedna rok deta hai."
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
 
+msgid "The character's plan"
+msgstr "Character ka plan"
+
 msgid "The collection"
 msgstr "Collection"
 
@@ -4004,6 +4042,11 @@ msgstr "Computer {n} second mein band hoga. Shutdown mansookh karein?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Baqi bots khatam hone par computer band ho jayega."
+
+msgid ""
+"The day is written as the script \"{name}\". Open it from the Plans tab to read or change it; \"Write the script of the day now\" writes it again from this window."
+msgstr ""
+"Din script \"{name}\" ke naam se likh diya gaya. Use parhne ya badalne ke liye Plans tab se kholein; \"Din ka script abhi likhein\" use is window se dobara likhta hai."
 
 msgid "The day:"
 msgstr "Din:"
@@ -4809,6 +4852,9 @@ msgstr "Sab se bura normal hit mila: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "Kya aap {language} istemal karna chahein ge?"
 
+msgid "Write the time as HH:MM, for example 06:30."
+msgstr "Waqt HH:MM ki tarah likhein, maslan 06:30."
+
 msgid "X:"
 msgstr "X:"
 
@@ -5135,6 +5181,10 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "{post} par build ho sakta hai"
+
+msgid "can't choose the best map: the character's level isn't known yet"
+msgstr ""
+"sab se achha map nahi chuna ja sakta: character ka level abhi maloom nahi"
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5966,6 +6016,10 @@ msgid ""
 msgstr ""
 "is run se pehle ki {n} gear warnings chhor di gayin (un ka kaam tab ho chuka tha); toota hua gear phir bhi repair hota hai"
 
+msgid "left out: {step} farms, and the day's farming may be over by then"
+msgstr ""
+"chhor diya: {step} farming karta hai, aur tab tak din ki farming khatam ho chuki ho sakti hai"
+
 msgid "left the corpse of {name}: {why}"
 msgstr "{name} ki laash chhor di: {why}"
 
@@ -6196,6 +6250,9 @@ msgstr "{code} ({what}) ke liye koi khaali phrase slot nahi"
 msgid "no empty skill key for {skills}, so the bot can't use them"
 msgstr ""
 "{skills} ke liye koi khali skill key nahi, is liye bot inhein istemal nahi kar sakta"
+
+msgid "no farming map fits level {level}"
+msgstr "level {level} ke liye koi farming map nahi"
 
 msgid "no free rebirth left today"
 msgstr "aaj koi muft rebirth baqi nahi"
@@ -7318,6 +7375,9 @@ msgstr "bag ka chakkar"
 msgid "the bag's gems are as high as they go"
 msgstr "baste ke gems apni aakhri had tak hain"
 
+msgid "the best map for level {level}: {map}"
+msgstr "level {level} ke liye sab se achha map: {map}"
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -7333,6 +7393,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
+
+msgid "the day of {name}"
+msgstr "{name} ka din"
 
 msgid "the day's chores first"
 msgstr "pehle din ke kaam"
@@ -8022,6 +8085,9 @@ msgstr ""
 msgid "write it as: set name = value"
 msgstr "aise likhein: set name = value"
 
+msgid "write it as: triggers off"
+msgstr "aise likhein: triggers off"
+
 msgid "write it as: walk x y"
 msgstr "aise likhein: walk x y"
 
@@ -8033,6 +8099,15 @@ msgstr "aise likhein: {cmd} 50 Large Red Potion"
 
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "aise likhein: {cmd} Milkfish 20"
+
+msgid "written by Run, Autopilot - the Triggers lists don't run around it"
+msgstr ""
+"Run, Autopilot ne likha - Triggers ki listein is ke aage peeche nahi chaltin"
+
+msgid ""
+"written by Run, Autopilot: the best map for the level, with the Triggers lists around it"
+msgstr ""
+"Run, Autopilot ne likha: level ke liye sab se achha map, aage peeche Triggers ki liston ke saath"
 
 msgid "yesterday"
 msgstr "kal"
@@ -8785,6 +8860,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Clean the bag (game menu, Clean the bag now)"
 #~ msgstr "&Basta saaf karein (game menu, Clean the bag now)"
 
+#~ msgid "&Farm with the plan:"
+#~ msgstr "Is plan se &farming karein:"
+
 #~ msgid "&Gathering (as set in Tools, Gathering)"
 #~ msgstr "&Jama karna (jaisa Tools, Gathering mein set hai)"
 
@@ -8802,6 +8880,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "&Update shard prices (game menu, Update shard prices)"
 #~ msgstr "Shards ki qeematein &update karein (game menu, Update shard prices)"
+
+#~ msgid ""
+#~ "1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+#~ msgstr ""
+#~ "1. Farming se pehle wali list, upar se neeche; 2. plan, jab tak woh khatam na ho ya game ke din badalne se pehle roz ka stop na aa jaye; 3. Farming ke baad wali list, jab plan khud khatam hua ho (Stop ke baad nahi). Yeh wahi listein hain jo Character settings, Triggers mein hain."
 
 #~ msgid "After farming (when farming finishes by itself, never after Stop)"
 #~ msgstr "Farming ke baad (jab farming khud khatam ho, Stop ke baad kabhi nahi)"
@@ -8852,6 +8935,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Lose experience (as set in Tools, XP lose&r)"
 #~ msgstr "Experience kam karein (jaisa Tools, XP lose&r mein hai)"
+
+#~ msgid "Make a plan first (the Plans tab): the day farms with one."
+#~ msgstr "Pehle ek plan banayein (Plans tab): din usi se farming karta hai."
 
 #~ msgid "Pick an item in the list or type a name in Custom name."
 #~ msgstr "Fehrist mein se cheez chunein ya Apna naam mein naam likhein."

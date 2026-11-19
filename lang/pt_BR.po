@@ -184,8 +184,8 @@ msgstr "&Equipamento para aprimorar:"
 msgid "&Experience:"
 msgstr "&Experiência:"
 
-msgid "&Farm with the plan:"
-msgstr "&Farmar com o plano:"
+msgid "&Farm with:"
+msgstr "&Farmar com:"
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "&Alimentar a besta reprodutora da guilda no Galpão de Animais"
@@ -413,6 +413,9 @@ msgstr "&Escolher entre os monstros próximos"
 msgid "&Place:"
 msgstr "&Local:"
 
+msgid "&Plan:"
+msgstr "&Plano:"
+
 msgid "&Plans"
 msgstr "&Planos"
 
@@ -477,6 +480,9 @@ msgstr "E&xecutar"
 msgid "&Run selected"
 msgstr "&Executar seleção"
 
+msgid "&Run the day as:"
+msgstr "&Rodar o dia como:"
+
 msgid "&Save"
 msgstr "&Salvar"
 
@@ -533,6 +539,9 @@ msgstr "&Anunciar eventos importantes com o NVDA"
 msgid "&Start"
 msgstr "&Iniciar"
 
+msgid "&Start:"
+msgstr "&Início:"
+
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr ""
 "&Parar a coleta todos os dias em um horário definido, independentemente do que o bot esteja fazendo"
@@ -554,6 +563,9 @@ msgstr "&Depois:"
 
 msgid "&Throw away:"
 msgstr "&Descartar:"
+
+msgid "&Time (HH:MM, this computer's clock):"
+msgstr "&Hora (HH:MM, relógio deste computador):"
 
 msgid "&Time (hours:minutes):"
 msgstr "&Horário (horas:minutos):"
@@ -596,6 +608,9 @@ msgstr "&Onde morrer:"
 
 msgid "&Write an email"
 msgstr "&Escrever um e-mail"
+
+msgid "&Write the script of the day now"
+msgstr "&Escrever o script do dia agora"
 
 msgid "&Write to the files in the logs folder:"
 msgstr "&Registrar nos arquivos da pasta de registros:"
@@ -697,9 +712,9 @@ msgid "1 level up"
 msgstr "subiu 1 nível"
 
 msgid ""
-"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+"1. the Before farming list, top to bottom; 2. the farming, until the plan ends or the daily stop before the game's day reset; 3. the After farming list, when the farming ended by itself (not after Stop). These are the same lists as Character settings, Triggers. The script of the day is written from them once; after that it is yours to change, until you write it again."
 msgstr ""
-"1. a lista Antes de farmar, de cima para baixo; 2. o plano, até terminar ou até a parada diária antes da virada do dia do jogo; 3. a lista Depois de farmar, quando o plano terminou sozinho (não depois de Parar). São as mesmas listas de Configurações do personagem, Gatilhos."
+"1. a lista Antes de farmar, de cima para baixo; 2. o farm, até o plano terminar ou até a parada diária antes da virada do dia do jogo; 3. a lista Depois de farmar, quando o farm terminou sozinho (não depois de Parar). São as mesmas listas de Configurações do personagem, Gatilhos. O script do dia é escrito a partir delas uma vez; depois disso ele é seu para mudar, até você escrevê-lo de novo."
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10.000 arnebia (1.500 de contribuição à guilda)"
@@ -1370,6 +1385,9 @@ msgstr "Não foi possível iniciar o jogo: {err}"
 msgid "Couldn't work out a route: {err}"
 msgstr "Não foi possível encontrar uma rota: {err}"
 
+msgid "Couldn't write it: {err}"
+msgstr "Não foi possível escrever: {err}"
+
 msgid "Couldn't."
 msgstr "Não foi possível."
 
@@ -1637,6 +1655,9 @@ msgstr "A cada (minutos):"
 
 msgid "Every day"
 msgstr "Todos os dias"
+
+msgid "Every day at the time below"
+msgstr "Todo dia no horário abaixo"
 
 msgid "Every end goes here - time up, drop time, a full bag, the last death"
 msgstr ""
@@ -2402,8 +2423,10 @@ msgstr "Criar uma gema"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Criar uma gema: escolha o tipo, o nível e a quantidade"
 
-msgid "Make a plan first (the Plans tab): the day farms with one."
-msgstr "Crie um plano primeiro (aba Planos): o dia farma com ele."
+msgid ""
+"Make a plan first (the Plans tab), or farm on the best map for the level."
+msgstr ""
+"Crie um plano primeiro (aba Planos) ou farme no melhor mapa para o nível."
 
 msgid "Make a plan first, in the Plans tab."
 msgstr "Crie primeiro um plano na guia Planos."
@@ -2840,6 +2863,9 @@ msgstr "Em {map}: {who}"
 msgid "Once"
 msgstr "Uma vez"
 
+msgid "One script of the day (to read, change or schedule)"
+msgstr "Um script do dia (para ler, mudar ou agendar)"
+
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
 "Somente áreas cujos monstros estejam até esta quantidade de níveis &acima de você:"
@@ -2851,6 +2877,9 @@ msgstr ""
 
 msgid "Only when HP is low"
 msgstr "Somente quando o HP estiver baixo"
+
+msgid "Only when I press Start"
+msgstr "Só quando eu apertar Iniciar"
 
 msgid "Only while the Chat window is open"
 msgstr "Somente enquanto a janela de bate-papo estiver aberta"
@@ -3948,6 +3977,9 @@ msgstr "Somente o Corretor de Fragmentos"
 msgid "The Shard Market only"
 msgstr "Somente o Mercado de Fragmentos"
 
+msgid "The Triggers lists around the farming"
+msgstr "As listas de Gatilhos em volta do farm"
+
 msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "O arquivo do agente está faltando na pasta de agentes do Uncle Farmer."
 
@@ -3974,6 +4006,9 @@ msgstr "A mochila está cheia com (% da capacidade):"
 
 msgid "The best for this character"
 msgstr "O melhor para este personagem"
+
+msgid "The best map for the character's level"
+msgstr "O melhor mapa para o nível do personagem"
 
 msgid "The best one on my hotkeys"
 msgstr "O melhor disponível nos meus atalhos"
@@ -4007,6 +4042,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
 
+msgid "The character's plan"
+msgstr "O plano do personagem"
+
 msgid "The collection"
 msgstr "A coleta"
 
@@ -4015,6 +4053,11 @@ msgstr "O computador será desligado em {n} segundos. Cancelar o desligamento?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "O computador será desligado assim que os outros bots terminarem."
+
+msgid ""
+"The day is written as the script \"{name}\". Open it from the Plans tab to read or change it; \"Write the script of the day now\" writes it again from this window."
+msgstr ""
+"O dia foi escrito como o script \"{name}\". Abra-o pela aba Planos para ler ou mudar; \"Escrever o script do dia agora\" o escreve de novo a partir desta janela."
 
 msgid "The day:"
 msgstr "O dia:"
@@ -4826,6 +4869,9 @@ msgstr "Maior dano normal recebido: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "Deseja mudar para {language}?"
 
+msgid "Write the time as HH:MM, for example 06:30."
+msgstr "Escreva a hora como HH:MM, por exemplo 06:30."
+
 msgid "X:"
 msgstr "X:"
 
@@ -5151,6 +5197,10 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "pode construir em {post}"
+
+msgid "can't choose the best map: the character's level isn't known yet"
+msgstr ""
+"não dá para escolher o melhor mapa: o nível do personagem ainda não é conhecido"
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5979,6 +6029,9 @@ msgid ""
 msgstr ""
 "ignorou {n} avisos de equipamento anteriores a esta execução (já resolvidos); equipamentos quebrados ainda serão reparados"
 
+msgid "left out: {step} farms, and the day's farming may be over by then"
+msgstr "deixado de fora: {step} farma, e o farm do dia pode já ter acabado"
+
 msgid "left the corpse of {name}: {why}"
 msgstr "cadáver de {name} deixado: {why}"
 
@@ -6208,6 +6261,9 @@ msgstr "não há espaço livre para a frase {code} ({what})"
 msgid "no empty skill key for {skills}, so the bot can't use them"
 msgstr ""
 "não há tecla livre para as habilidades {skills}, então o bot não pode usá-las"
+
+msgid "no farming map fits level {level}"
+msgstr "nenhum mapa de farm serve para o nível {level}"
 
 msgid "no free rebirth left today"
 msgstr "não há reencarnações gratuitas restantes hoje"
@@ -7327,6 +7383,9 @@ msgstr "ida à bolsa"
 msgid "the bag's gems are as high as they go"
 msgstr "as gemas da bolsa já estão no nível máximo"
 
+msgid "the best map for level {level}: {map}"
+msgstr "o melhor mapa para o nível {level}: {map}"
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -7342,6 +7401,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
+
+msgid "the day of {name}"
+msgstr "o dia de {name}"
 
 msgid "the day's chores first"
 msgstr "primeiro, as tarefas diárias"
@@ -8030,6 +8092,9 @@ msgstr ""
 msgid "write it as: set name = value"
 msgstr "escreva assim: set nome = valor"
 
+msgid "write it as: triggers off"
+msgstr "escreva assim: triggers off"
+
 msgid "write it as: walk x y"
 msgstr "escreva assim: walk x y"
 
@@ -8041,6 +8106,15 @@ msgstr "escreva assim: {cmd} 50 Large Red Potion"
 
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "escreva assim: {cmd} Milkfish 20"
+
+msgid "written by Run, Autopilot - the Triggers lists don't run around it"
+msgstr ""
+"escrito por Executar, Piloto automático - as listas de Gatilhos não rodam em volta dele"
+
+msgid ""
+"written by Run, Autopilot: the best map for the level, with the Triggers lists around it"
+msgstr ""
+"escrito por Executar, Piloto automático: o melhor mapa para o nível, com as listas de Gatilhos em volta"
 
 msgid "yesterday"
 msgstr "ontem"
@@ -8787,11 +8861,22 @@ msgstr "{why} — sem usar mais {skill} nesta execução ({n} concluídos)"
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
 
+#~ msgid "&Farm with the plan:"
+#~ msgstr "&Farmar com o plano:"
+
+#~ msgid ""
+#~ "1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+#~ msgstr ""
+#~ "1. a lista Antes de farmar, de cima para baixo; 2. o plano, até terminar ou até a parada diária antes da virada do dia do jogo; 3. a lista Depois de farmar, quando o plano terminou sozinho (não depois de Parar). São as mesmas listas de Configurações do personagem, Gatilhos."
+
 #~ msgid "E&xperience card to keep running while farming:"
 #~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
 
 #~ msgid "Experience cards"
 #~ msgstr "Cartões de experiência"
+
+#~ msgid "Make a plan first (the Plans tab): the day farms with one."
+#~ msgstr "Crie um plano primeiro (aba Planos): o dia farma com ele."
 
 #~ msgid "Stop when HP stays &low"
 #~ msgstr "Parar se o HP permanecer &baixo"

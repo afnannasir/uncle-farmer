@@ -184,7 +184,7 @@ msgstr "&Equipo a mejorar:"
 msgid "&Experience:"
 msgstr "&Experiencia:"
 
-msgid "&Farm with the plan:"
+msgid "&Farm with:"
 msgstr ""
 
 msgid "&Feed the gang's breed beast at the Animal Shed"
@@ -416,6 +416,9 @@ msgstr "Elegir entre los monstruos cercanos (&P)"
 msgid "&Place:"
 msgstr "Lugar (&P):"
 
+msgid "&Plan:"
+msgstr ""
+
 msgid "&Plans"
 msgstr "&Planes"
 
@@ -480,6 +483,9 @@ msgstr "Ejecuta&r"
 msgid "&Run selected"
 msgstr "Ejecuta&r lo seleccionado"
 
+msgid "&Run the day as:"
+msgstr ""
+
 msgid "&Save"
 msgstr "Guardar (&S)"
 
@@ -534,6 +540,9 @@ msgstr "Decir lo&s eventos importantes con NVDA"
 msgid "&Start"
 msgstr "Iniciar (&S)"
 
+msgid "&Start:"
+msgstr ""
+
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "Dejar de farmear cada día a una hora fija, haga lo que haga el bot (&S)"
 
@@ -554,6 +563,9 @@ msgstr "Después (&T):"
 
 msgid "&Throw away:"
 msgstr "&Tirar:"
+
+msgid "&Time (HH:MM, this computer's clock):"
+msgstr ""
 
 msgid "&Time (hours:minutes):"
 msgstr "Hora (horas:minu&tos):"
@@ -596,6 +608,9 @@ msgstr "Dónde morir (&W):"
 
 msgid "&Write an email"
 msgstr "Escribir un correo (&W)"
+
+msgid "&Write the script of the day now"
+msgstr ""
 
 msgid "&Write to the files in the logs folder:"
 msgstr "Escribir en los archivos de la carpeta de registros (&W):"
@@ -697,7 +712,7 @@ msgid "1 level up"
 msgstr "1 subida de nivel"
 
 msgid ""
-"1. the Before farming list, top to bottom; 2. the plan, until it ends or the daily stop before the game's day reset; 3. the After farming list, when the plan ended by itself (not after Stop). These are the same lists as Character settings, Triggers."
+"1. the Before farming list, top to bottom; 2. the farming, until the plan ends or the daily stop before the game's day reset; 3. the After farming list, when the farming ended by itself (not after Stop). These are the same lists as Character settings, Triggers. The script of the day is written from them once; after that it is yours to change, until you write it again."
 msgstr ""
 
 msgid "10,000 arnebia (1,500 gang contribution)"
@@ -1367,6 +1382,9 @@ msgstr "No se pudo iniciar el juego: {err}"
 msgid "Couldn't work out a route: {err}"
 msgstr "No se pudo calcular una ruta: {err}"
 
+msgid "Couldn't write it: {err}"
+msgstr ""
+
 msgid "Couldn't."
 msgstr "No se pudo."
 
@@ -1634,6 +1652,9 @@ msgstr "Cada (minutos):"
 
 msgid "Every day"
 msgstr "Todos los días"
+
+msgid "Every day at the time below"
+msgstr ""
 
 msgid "Every end goes here - time up, drop time, a full bag, the last death"
 msgstr ""
@@ -2400,7 +2421,8 @@ msgstr "Fabricar una gema"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Fabricar una gema: elige cuál, su nivel y cuántas"
 
-msgid "Make a plan first (the Plans tab): the day farms with one."
+msgid ""
+"Make a plan first (the Plans tab), or farm on the best map for the level."
 msgstr ""
 
 msgid "Make a plan first, in the Plans tab."
@@ -2839,6 +2861,9 @@ msgstr "En {map}: {who}"
 msgid "Once"
 msgstr "Una vez"
 
+msgid "One script of the day (to read, change or schedule)"
+msgstr ""
+
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
 "Solo zon&as cuyos monstruos tengan como máximo esta cantidad de niveles por encima de ti:"
@@ -2849,6 +2874,9 @@ msgstr ""
 
 msgid "Only when HP is low"
 msgstr "Solo cuando la salud está baja"
+
+msgid "Only when I press Start"
+msgstr ""
 
 msgid "Only while the Chat window is open"
 msgstr "Solo mientras la ventana de Chat esté abierta"
@@ -3949,6 +3977,9 @@ msgstr "Solo el Mercado de fragmentos"
 msgid "The Shard Market only"
 msgstr "Solo el Mercado de fragmentos"
 
+msgid "The Triggers lists around the farming"
+msgstr ""
+
 msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "Falta el archivo del agente en la carpeta del agente de Uncle Farmer."
 
@@ -3975,6 +4006,9 @@ msgstr "La bolsa está llena al (% de su carga):"
 
 msgid "The best for this character"
 msgstr "Lo mejor para este personaje"
+
+msgid "The best map for the character's level"
+msgstr ""
 
 msgid "The best one on my hotkeys"
 msgstr "La mejor de mis teclas rápidas"
@@ -4007,6 +4041,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "La cueva (un personaje entra en una cueva por día de juego)"
 
+msgid "The character's plan"
+msgstr ""
+
 msgid "The collection"
 msgstr "La colección"
 
@@ -4015,6 +4052,10 @@ msgstr "El equipo se apagará en {n} segundos. ¿Cancelar el apagado?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "El equipo se apagará cuando los demás bots hayan terminado."
+
+msgid ""
+"The day is written as the script \"{name}\". Open it from the Plans tab to read or change it; \"Write the script of the day now\" writes it again from this window."
+msgstr ""
 
 msgid "The day:"
 msgstr ""
@@ -4827,6 +4868,9 @@ msgstr "Peor golpe normal recibido: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "¿Quieres cambiar a {language}?"
 
+msgid "Write the time as HH:MM, for example 06:30."
+msgstr ""
+
 msgid "X:"
 msgstr "X:"
 
@@ -5155,6 +5199,9 @@ msgstr ""
 
 msgid "can build at the {post}"
 msgstr "puede construir en {post}"
+
+msgid "can't choose the best map: the character's level isn't known yet"
+msgstr ""
 
 msgid ""
 "can't cross Polson Wetland: Poison Immunity isn't activated and no fusion beast would go on (a fused character takes no poison damage there)"
@@ -5980,6 +6027,9 @@ msgid ""
 msgstr ""
 "se omitieron {n} avisos de equipo de antes de esta ejecución (ya se atendieron entonces); el equipo roto se sigue reparando"
 
+msgid "left out: {step} farms, and the day's farming may be over by then"
+msgstr ""
+
 msgid "left the corpse of {name}: {why}"
 msgstr "se dejó el cadáver de {name}: {why}"
 
@@ -6209,6 +6259,9 @@ msgstr "no hay hueco de frase vacío para {code} ({what})"
 msgid "no empty skill key for {skills}, so the bot can't use them"
 msgstr ""
 "no hay tecla de habilidad vacía para {skills}, así que el bot no puede usarlas"
+
+msgid "no farming map fits level {level}"
+msgstr ""
 
 msgid "no free rebirth left today"
 msgstr "hoy no queda ningún renacimiento gratuito"
@@ -7324,6 +7377,9 @@ msgstr "el viaje de bolsa"
 msgid "the bag's gems are as high as they go"
 msgstr "las gemas de la bolsa están tan altas como pueden llegar"
 
+msgid "the best map for level {level}: {map}"
+msgstr ""
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -7339,6 +7395,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "el cofre ya no está: lo abrió otro"
+
+msgid "the day of {name}"
+msgstr ""
 
 msgid "the day's chores first"
 msgstr "primero las tareas del día"
@@ -8026,6 +8085,9 @@ msgstr ""
 msgid "write it as: set name = value"
 msgstr "escríbelo así: set nombre = valor"
 
+msgid "write it as: triggers off"
+msgstr ""
+
 msgid "write it as: walk x y"
 msgstr "escríbelo así: walk x y"
 
@@ -8037,6 +8099,13 @@ msgstr "escríbelo así: {cmd} 50 Large Red Potion"
 
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "escríbelo así: {cmd} Milkfish 20"
+
+msgid "written by Run, Autopilot - the Triggers lists don't run around it"
+msgstr ""
+
+msgid ""
+"written by Run, Autopilot: the best map for the level, with the Triggers lists around it"
+msgstr ""
 
 msgid "yesterday"
 msgstr "ayer"
