@@ -7,6 +7,8 @@
 - Updating a 1.2.0 copy to a newer build stopped with "no valid recovery journal" and put 1.2.0
   back every time. The newer updater now accepts the update record 1.2.0 starts, and writes one
   that a 1.2.0 copy's rescue files can still read.
+- Before a new version is published, the last releases now update to it for real, with their own
+  updater. A version they can't update to is never published.
 
 **Gang construction reaches every place, and all your highlands**
 

@@ -10,6 +10,8 @@
 #   actionlint  every workflow in .github/workflows checked by a pinned actionlint (Ubuntu)
 #   build    push to dev    -> development build, artifact UncleFarmer-dev-<sha>        (14 days)
 #            push to master -> production build,  artifact UncleFarmer-master-<ver>-<sha> (90 days)
+#            then update_compat.py: the latest release, the newest dev pre-release and 1.1.0 (the
+#            last without bootstrap.exe) update to the new build, with their own code and binaries
 #   publish-dev  after a dev build: the Dev release channel's pre-release v<ver>-dev.<run>
 #
 # Python 3.14 is the only Python the app supports and ships with, so there is no version matrix.
@@ -277,6 +279,18 @@ jobs:
           if-no-files-found: error
           retention-days: ${{ env.BUILD_TYPE == 'production' && 90 || 14 }}
           compression-level: 0      # the zip is already compressed
+
+      # Players update from the releases they have: each of those runs its OWN updater code and
+      # binaries (tagged source + published zip) against this build's zip, and this build's copier
+      # and bootstrap.exe must install it and start Uncle Farmer again. A build they can't update
+      # to fails here, after its upload (to look at), and publish-dev never publishes it.
+      - name: Update from the published releases to this build (update_compat.py)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          zip=$(ls dist/ci/UncleFarmer-*.zip)
+          uv run --locked python update_compat.py --new "$zip" --from master --from dev --from v1.1.0
 
       - name: Summary
         shell: bash
