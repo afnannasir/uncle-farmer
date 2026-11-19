@@ -216,6 +216,9 @@ msgstr ""
 msgid "&Gem:"
 msgstr ""
 
+msgid "&Gems to break:"
+msgstr ""
+
 msgid "&Get it:"
 msgstr ""
 
@@ -250,6 +253,9 @@ msgstr ""
 msgid "&Help"
 msgstr ""
 
+msgid "&Highest gem level to break:"
+msgstr ""
+
 msgid "&History"
 msgstr ""
 
@@ -269,6 +275,9 @@ msgid "&Install"
 msgstr ""
 
 msgid "&Items for sale (Enter searches):"
+msgstr ""
+
+msgid "&Keep at least this many of each gem and level:"
 msgstr ""
 
 msgid "&Keep at least this many of each level:"
@@ -473,6 +482,9 @@ msgstr ""
 msgid "&Search"
 msgstr ""
 
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
+msgstr ""
+
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr ""
 
@@ -508,6 +520,9 @@ msgid "&Start"
 msgstr ""
 
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
+msgstr ""
+
+msgid "&Stop when a death costs too little"
 msgstr ""
 
 msgid "&Supplies (ticked ones are refilled):"
@@ -805,6 +820,9 @@ msgstr ""
 msgid "After farming"
 msgstr ""
 
+msgid "Afterwards"
+msgstr ""
+
 msgid "Agent"
 msgstr ""
 
@@ -942,6 +960,24 @@ msgid "Bottomless pit"
 msgstr ""
 
 msgid "Bought:"
+msgstr ""
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr ""
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr ""
+
+msgid "Break &down to:"
+msgstr ""
+
+msgid "Break them now?"
+msgstr ""
+
+msgid "Breaking can't be undone."
+msgstr ""
+
+msgid "Breaks {n} {item}."
 msgstr ""
 
 msgid "Browse a category"
@@ -1292,6 +1328,9 @@ msgstr ""
 msgid "Cra&ftsman:"
 msgstr ""
 
+msgid "Craftsman and selling"
+msgstr ""
+
 msgid "Craftsman and spending"
 msgstr ""
 
@@ -1306,6 +1345,9 @@ msgid ""
 msgstr ""
 
 msgid "Crystals"
+msgstr ""
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 
 msgid "Cut Flesh"
@@ -1490,6 +1532,9 @@ msgid "Enhance &up to (+):"
 msgstr ""
 
 msgid "Enhance Crystals"
+msgstr ""
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
 msgid "Enter a name for the plan."
@@ -1740,6 +1785,15 @@ msgstr ""
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr ""
 
+msgid "Gem &level to stop at:"
+msgstr ""
+
+msgid "Gem Brea&ker"
+msgstr ""
+
+msgid "Gem Breaker"
+msgstr ""
+
 msgid "Gem Maker"
 msgstr ""
 
@@ -1747,6 +1801,9 @@ msgid "Gem Maker, Equipment Enhancer and chores"
 msgstr ""
 
 msgid "Gems"
+msgstr ""
+
+msgid "Gems of a level"
 msgstr ""
 
 msgid "Get crystal shards &from:"
@@ -1892,6 +1949,9 @@ msgstr ""
 
 msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
+msgstr ""
+
+msgid "Highest &crystal level to break:"
 msgstr ""
 
 msgid "Highest l&evel to make:"
@@ -2079,6 +2139,9 @@ msgstr ""
 msgid "Keep &old files:"
 msgstr ""
 
+msgid "Keep at least this many of each crystal and le&vel:"
+msgstr ""
+
 msgid "Keep away from bosses"
 msgstr ""
 
@@ -2153,6 +2216,9 @@ msgstr ""
 
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
+msgstr ""
+
+msgid "Leaves {n} {item}."
 msgstr ""
 
 msgid "Let everyone get replies &again"
@@ -2618,6 +2684,9 @@ msgid "Nothing today yet."
 msgstr ""
 
 msgid "Nothing was recorded: check the microphone the game uses."
+msgstr ""
+
+msgid "Nothing would be broken: tick what to break."
 msgstr ""
 
 msgid "Nothing yet."
@@ -3754,7 +3823,7 @@ msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr ""
 
 msgid ""
-"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. Each death takes a share of the experience earned in the level, so each costs a little less than the last: after three deaths the bot says how many more it will take, and it stops if the level can't reach your number. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
 
 msgid "The bot is busy on this game. Stop it first (Stop), then try again."
@@ -3923,6 +3992,9 @@ msgstr ""
 msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr ""
+
 msgid "The sound list must be a list of sound entries."
 msgstr ""
 
@@ -4012,7 +4084,7 @@ msgid ""
 "This is a development build from the dev branch: the newest changes, not yet a stable release, and it can break."
 msgstr ""
 
-msgid "This many"
+msgid "This many more"
 msgstr ""
 
 msgid ""
@@ -4049,6 +4121,9 @@ msgid "Thursday"
 msgstr ""
 
 msgid "Tick at least one day."
+msgstr ""
+
+msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
 
 msgid "Tick the lots to buy in Results first (Space)."
@@ -4104,6 +4179,9 @@ msgid "Tone from &everyone else:"
 msgstr ""
 
 msgid "Tone from &trusted players:"
+msgstr ""
+
+msgid "Too little &means under this much experience:"
 msgstr ""
 
 msgid "Tools"
@@ -4231,6 +4309,9 @@ msgid "Unmute every &game"
 msgstr ""
 
 msgid "Unpacking"
+msgstr ""
+
+msgid "Until the bag holds this many"
 msgstr ""
 
 msgid "Update"
@@ -4404,6 +4485,9 @@ msgstr ""
 msgid "What the bot knows about this character:"
 msgstr ""
 
+msgid "What to break"
+msgstr ""
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4541,6 +4625,9 @@ msgstr ""
 msgid "a condition or value is missing"
 msgstr ""
 
+msgid "a death now costs less than {n} experience - stopped"
+msgstr ""
+
 msgid "a monster"
 msgstr ""
 
@@ -4597,6 +4684,9 @@ msgid "already donated today"
 msgstr ""
 
 msgid "already done today"
+msgstr ""
+
+msgid "already in a town - staying here"
 msgstr ""
 
 msgid "already inside {cave}"
@@ -4761,6 +4851,15 @@ msgid "bought {n} {shard}: the bag has no room for more"
 msgstr ""
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
+msgstr ""
+
+msgid "breaking gems"
+msgstr ""
+
+msgid "broke {n} gems and crystals"
+msgstr ""
+
+msgid "broke {n} {item} into {k} {product}"
 msgstr ""
 
 msgid "browsing {cat}"
@@ -4967,7 +5066,13 @@ msgstr ""
 msgid "couldn't finish the run ({where}): {err}"
 msgstr ""
 
+msgid "couldn't get a hit in on that guard - trying another"
+msgstr ""
+
 msgid "couldn't get away - fighting on"
+msgstr ""
+
+msgid "couldn't get back into the gang's base ({why}) - staying here"
 msgstr ""
 
 msgid "couldn't get back to {place}: {why}"
@@ -5092,6 +5197,9 @@ msgid "couldn't talk to {npc}"
 msgstr ""
 
 msgid "couldn't throw away: {list}"
+msgstr ""
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
 msgstr ""
 
 msgid "couldn't tick the protection rune - not forging without it"
@@ -5352,6 +5460,9 @@ msgid "going back to where farming started"
 msgstr ""
 
 msgid "going back to where farming started, as {name} asked"
+msgstr ""
+
+msgid "going back to where the run started in the gang's base"
 msgstr ""
 
 msgid "going back to {map}"
@@ -5970,6 +6081,9 @@ msgid ""
 "not enough shards or spare arnebia for a Level {lv} {kind} Enhance Crystal ({need} shards, fee {fee})"
 msgstr ""
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr ""
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr ""
 
@@ -6028,6 +6142,12 @@ msgstr ""
 msgid "nothing"
 msgstr ""
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr ""
+
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr ""
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6055,6 +6175,9 @@ msgid "nothing left to make {gem} from, and getting more {shard} is off"
 msgstr ""
 
 msgid "nothing of the collection was sold"
+msgstr ""
+
+msgid "nothing to break with these settings"
 msgstr ""
 
 msgid "nothing to collect today"
@@ -6641,6 +6764,9 @@ msgstr ""
 msgid "that didn't work: {err}"
 msgstr ""
 
+msgid "that would leave {n} {item}"
+msgstr ""
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr ""
 
@@ -6653,11 +6779,20 @@ msgstr ""
 msgid "the Forger has no enhance equipment"
 msgstr ""
 
+msgid "the Gang Entrance didn't let us in"
+msgstr ""
+
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
 
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
+msgstr ""
+
 msgid "the Gang Entrance lists no gang called {gang}"
+msgstr ""
+
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
 msgstr ""
 
 msgid "the Gem Craftsman didn't ask how many"
@@ -6666,10 +6801,16 @@ msgstr ""
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr ""
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr ""
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman didn't list {item}"
+msgstr ""
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
 msgstr ""
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
@@ -6683,6 +6824,12 @@ msgid "the Gem Craftsman offered no way to make {gem}"
 msgstr ""
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
+msgstr ""
+
+msgid "the Gem Craftsman's menu has no way to break gems"
+msgstr ""
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
 msgstr ""
 
 msgid "the Gem Maker can't go on: {why}"
@@ -6780,6 +6927,9 @@ msgstr ""
 msgid "the bag is too full for more {shard}"
 msgstr ""
 
+msgid "the bag is too heavy to break any more: make room and start again"
+msgstr ""
+
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr ""
 
@@ -6789,6 +6939,9 @@ msgstr ""
 
 msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
+msgstr ""
+
+msgid "the bag showed no change after breaking {item}"
 msgstr ""
 
 msgid ""
@@ -6975,6 +7128,9 @@ msgid "the last 7 days"
 msgstr ""
 
 msgid "the last trip for {item} got none, and nothing has changed since"
+msgstr ""
+
+msgid "the limit of {most} deaths will stop the run before that"
 msgstr ""
 
 msgid ""
@@ -7206,6 +7362,18 @@ msgid ""
 "this game's agent can't warn before gear breaks - restart Mist World so the new agent loads; until then gear is repaired only once something breaks"
 msgstr ""
 
+msgid ""
+"this level holds about {top} experience: about {n} more deaths to reach {xp}"
+msgstr ""
+
+msgid ""
+"this level holds about {top} experience: about {n} more deaths, about {mins} min, to reach {xp}"
+msgstr ""
+
+msgid ""
+"this level holds only about {top} experience, so the goal of {goal} can't be reached - stopped"
+msgstr ""
+
 msgid "this number is too large: {expr}"
 msgstr ""
 
@@ -7389,6 +7557,9 @@ msgid "with {n} minutes of drop time saved"
 msgstr ""
 
 msgid "with {skill}"
+msgstr ""
+
+msgid "would break {n} {item}"
 msgstr ""
 
 msgid "would buy {n} for {cost} gold coins"
@@ -7951,6 +8122,9 @@ msgstr ""
 msgid "{n} used up"
 msgstr ""
 
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
+msgstr ""
+
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr ""
 
@@ -8016,6 +8190,9 @@ msgid "{shard} costs {price} at the market, more than your limit of {limit}"
 msgstr ""
 
 msgid "{shard}: {old} -> {new} arnebia"
+msgstr ""
+
+msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
 msgid "{skill} at {where}"

@@ -217,6 +217,9 @@ msgstr "&Criador de gemas"
 msgid "&Gem:"
 msgstr "&Gema:"
 
+msgid "&Gems to break:"
+msgstr "&Gemas a quebrar:"
+
 msgid "&Get it:"
 msgstr "&Obter:"
 
@@ -252,6 +255,9 @@ msgstr "Item da &pedra de retorno:"
 msgid "&Help"
 msgstr "A&juda"
 
+msgid "&Highest gem level to break:"
+msgstr "Nível mais alto de gema a quebrar (&H):"
+
 msgid "&History"
 msgstr "&Histórico"
 
@@ -272,6 +278,9 @@ msgstr "&Instalar"
 
 msgid "&Items for sale (Enter searches):"
 msgstr ""
+
+msgid "&Keep at least this many of each gem and level:"
+msgstr "Manter pelo menos esta quantidade de cada gema e nível (&K):"
 
 msgid "&Keep at least this many of each level:"
 msgstr "&Manter pelo menos esta quantidade de cada nível:"
@@ -478,6 +487,10 @@ msgstr "&Comandos de script"
 msgid "&Search"
 msgstr ""
 
+msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
+msgstr ""
+"Vender fragmentos pelas regras do gerenciador da mochila (&S) (no fim, ou se estiver pesado)"
+
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr ""
 "&Vender o que for coletado ao comprador de aquicultura, minério ou ervas"
@@ -517,6 +530,9 @@ msgstr "&Iniciar"
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr ""
 "&Parar a coleta todos os dias em um horário definido, independentemente do que o bot esteja fazendo"
+
+msgid "&Stop when a death costs too little"
+msgstr "&Parar quando uma morte custar muito pouco"
 
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Suprimentos (os marcados serão reabastecidos):"
@@ -820,6 +836,9 @@ msgstr "Após um &limite de tempo"
 msgid "After farming"
 msgstr "Depois da coleta"
 
+msgid "Afterwards"
+msgstr "Depois"
+
 msgid "Agent"
 msgstr "Agente"
 
@@ -966,6 +985,24 @@ msgstr "Abismo sem fundo"
 
 msgid "Bought:"
 msgstr "Comprado:"
+
+msgid "Break &Equipment Enhance Crystals"
+msgstr "Quebrar &Equipment Enhance Crystals"
+
+msgid "Break &Weapon Enhance Crystals"
+msgstr "Quebrar &Weapon Enhance Crystals"
+
+msgid "Break &down to:"
+msgstr "Quebrar até (&D):"
+
+msgid "Break them now?"
+msgstr "Quebrar agora?"
+
+msgid "Breaking can't be undone."
+msgstr "Quebrar não pode ser desfeito."
+
+msgid "Breaks {n} {item}."
+msgstr "Quebra {n} {item}."
 
 msgid "Browse a category"
 msgstr ""
@@ -1319,6 +1356,9 @@ msgstr "Não foi possível."
 msgid "Cra&ftsman:"
 msgstr "&Artesão:"
 
+msgid "Craftsman and selling"
+msgstr "Artesão e venda"
+
 msgid "Craftsman and spending"
 msgstr "Artesão e gastos"
 
@@ -1338,6 +1378,9 @@ msgstr ""
 
 msgid "Crystals"
 msgstr "Cristais"
+
+msgid "Crystals: what they give and cost is read from the craftsman's page."
+msgstr "Cristais: o que dão e custam é lido na página do artesão."
 
 msgid "Cut Flesh"
 msgstr "Cortar Carne"
@@ -1524,6 +1567,9 @@ msgstr "Aprimorar &até (+):"
 
 msgid "Enhance Crystals"
 msgstr "Cristais de aprimoramento"
+
+msgid "Enhance Crystals (breaking them costs arnebia)"
+msgstr "Enhance Crystals (quebrá-los custa arnebia)"
 
 msgid "Enter a name for the plan."
 msgstr "Informe um nome para o plano."
@@ -1781,6 +1827,15 @@ msgstr "Equipamento de nível {lo} ou superior: cristais de nível {lv}"
 msgid "Gear of levels {lo} to {hi}: Level {lv} crystals"
 msgstr "Equipamento dos níveis {lo} a {hi}: cristais de nível {lv}"
 
+msgid "Gem &level to stop at:"
+msgstr "Nível de gema onde parar (&L):"
+
+msgid "Gem Brea&ker"
+msgstr "Gem Brea&ker"
+
+msgid "Gem Breaker"
+msgstr "Gem Breaker"
+
 msgid "Gem Maker"
 msgstr "Criador de gemas"
 
@@ -1789,6 +1844,9 @@ msgstr "Criador de Gemas, Aprimorador de Equipamentos e tarefas"
 
 msgid "Gems"
 msgstr "Gemas"
+
+msgid "Gems of a level"
+msgstr "Gemas de um nível"
 
 msgid "Get crystal shards &from:"
 msgstr "Obter fragmentos de cristal &de:"
@@ -1939,6 +1997,9 @@ msgid ""
 "Hidden messages stay in the current chat buffers. Only filter rules are saved."
 msgstr ""
 "As mensagens ocultas permanecem nos buffers de conversa atuais. Somente as regras de filtro são salvas."
+
+msgid "Highest &crystal level to break:"
+msgstr "Nível mais alto de &cristal a quebrar:"
 
 msgid "Highest l&evel to make:"
 msgstr "Maior &nível a criar:"
@@ -2138,6 +2199,9 @@ msgstr "Entrar no grupo do &Telegram"
 msgid "Keep &old files:"
 msgstr "Manter arquivos &antigos:"
 
+msgid "Keep at least this many of each crystal and le&vel:"
+msgstr "Manter pelo menos esta quantidade de cada cristal e ní&vel:"
+
 msgid "Keep away from bosses"
 msgstr "Manter distância dos chefes"
 
@@ -2214,6 +2278,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Sair da área de coleta com esta antecedência em &minutos da meia hora (incluindo o trajeto):"
+
+msgid "Leaves {n} {item}."
+msgstr "Deixa {n} {item}."
 
 msgid "Let everyone get replies &again"
 msgstr "Permitir que todos recebam respostas &novamente"
@@ -2697,6 +2764,9 @@ msgstr "Nada hoje ainda."
 
 msgid "Nothing was recorded: check the microphone the game uses."
 msgstr "Nada foi gravado: verifique o microfone usado pelo jogo."
+
+msgid "Nothing would be broken: tick what to break."
+msgstr "Nada seria quebrado: marque o que quebrar."
 
 msgid "Nothing yet."
 msgstr "Nada ainda."
@@ -3887,9 +3957,9 @@ msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "O bot bebe assim que faltar essa quantidade de {what}."
 
 msgid ""
-"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+"The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. Each death takes a share of the experience earned in the level, so each costs a little less than the last: after three deaths the bot says how many more it will take, and it stops if the level can't reach your number. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
 msgstr ""
-"O bot localiza um guarda (à vista, em um local onde já foi visto ou na cidade mais próxima), muda o modo PK para todos, atinge o guarda uma vez e deixa que ele mate o personagem: sem poções, curas ou revide. O personagem renasce na cidade e repete o processo até que a experiência necessária para o próximo nível alcance o valor definido. Na vila mais próxima, o bot primeiro entra nela (o jogo revive o personagem morto na última cidade visitada) e depois morre junto aos portões, reduzindo o tempo de cada morte (no Pântano Melódico, 11 segundos na Vila Aria contra 29 na Cidade Tulipa). Se o jogo o reviver em outro local, ele morrerá para o guarda mais próximo. O mascote é guardado antes e o modo PK é restaurado ao final. As mortes desgastam o equipamento; personagens de nome preto (moralidade -1000 ou menos) podem perder equipamento vestido. Por isso, o bot não executa o Perdedor de EXP com esses personagens."
+"O bot localiza um guarda (à vista, em um local onde já foi visto ou na cidade mais próxima), muda o modo PK para todos, atinge o guarda uma vez e deixa que ele mate o personagem: sem poções, curas ou revide. O personagem renasce na cidade e repete o processo até que a experiência necessária para o próximo nível alcance o valor definido. Na vila mais próxima, o bot primeiro entra nela (o jogo revive o personagem morto na última cidade visitada) e depois morre junto aos portões, reduzindo o tempo de cada morte (no Pântano Melódico, 11 segundos na Vila Aria contra 29 na Cidade Tulipa). Se o jogo o reviver em outro local, ele morrerá para o guarda mais próximo. O mascote é guardado antes e o modo PK é restaurado ao final. As mortes desgastam o equipamento; personagens de nome preto (moralidade -1000 ou menos) podem perder equipamento vestido. Por isso, o bot não executa o Perdedor de EXP com esses personagens. Cada morte tira uma parte da experiência ganha no nível, então cada uma custa um pouco menos que a anterior: depois de três mortes o bot diz quantas ainda faltam, e para se o nível não puder chegar ao seu número."
 
 msgid "The bot is busy on this game. Stop it first (Stop), then try again."
 msgstr ""
@@ -4077,6 +4147,10 @@ msgid "The script's login character is not a known saved character: {name}"
 msgstr ""
 "O personagem usado para entrar no script não é um personagem salvo conhecido: {name}"
 
+msgid "The shards are worth about {total} arnebia at the last seen prices."
+msgstr ""
+"Os fragmentos valem cerca de {total} arnebia pelos últimos preços vistos."
+
 msgid "The sound list must be a list of sound entries."
 msgstr "A lista de sons deve conter entradas de som."
 
@@ -4180,8 +4254,8 @@ msgid ""
 msgstr ""
 "Esta é uma versão de desenvolvimento do branch dev: contém as alterações mais recentes, ainda não é estável e pode apresentar falhas."
 
-msgid "This many"
-msgstr "Esta quantidade"
+msgid "This many more"
+msgstr "Mais esta quantidade"
 
 msgid ""
 "This map can't be an end place. Choose one on the open world, or another end."
@@ -4224,6 +4298,9 @@ msgstr "Quinta-feira"
 
 msgid "Tick at least one day."
 msgstr "Marque pelo menos um dia."
+
+msgid "Tick at least one gem, or a kind of crystal."
+msgstr "Marque pelo menos uma gema ou um tipo de cristal."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -4281,6 +4358,9 @@ msgstr "Sinal sonoro de &outras pessoas:"
 
 msgid "Tone from &trusted players:"
 msgstr "Sinal sonoro de jogadores &confiáveis:"
+
+msgid "Too little &means under this much experience:"
+msgstr "Muito pouco &significa menos que esta experiência:"
 
 msgid "Tools"
 msgstr "Ferramentas"
@@ -4430,6 +4510,9 @@ msgstr "Ativar o som de todos os &jogos"
 
 msgid "Unpacking"
 msgstr "Descompactando"
+
+msgid "Until the bag holds this many"
+msgstr "Até a mochila ter esta quantidade"
 
 msgid "Update"
 msgstr "Atualizar"
@@ -4610,6 +4693,9 @@ msgstr "O que falta"
 msgid "What the bot knows about this character:"
 msgstr "O que o bot sabe sobre este personagem:"
 
+msgid "What to break"
+msgstr "O que quebrar"
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -4754,6 +4840,9 @@ msgstr "baú à vista, a {n} passos: indo abri-lo"
 msgid "a condition or value is missing"
 msgstr "falta uma condição ou um valor"
 
+msgid "a death now costs less than {n} experience - stopped"
+msgstr "agora uma morte custa menos de {n} de experiência — parado"
+
 msgid "a monster"
 msgstr "um monstro"
 
@@ -4812,6 +4901,9 @@ msgstr "já doou hoje"
 
 msgid "already done today"
 msgstr "já foi feito hoje"
+
+msgid "already in a town - staying here"
+msgstr "já está numa cidade — ficando aqui"
 
 msgid "already inside {cave}"
 msgstr "já está dentro de {cave}"
@@ -4979,6 +5071,15 @@ msgstr "{n} {shard} comprado(s): não há espaço na bolsa"
 
 msgid "bought {n} {shard}: the spare arnebia pays for no more"
 msgstr "{n} {shard} comprado(s): a Arnebia restante não permite comprar mais"
+
+msgid "breaking gems"
+msgstr "quebrando gemas"
+
+msgid "broke {n} gems and crystals"
+msgstr "{n} gemas e cristais quebrados"
+
+msgid "broke {n} {item} into {k} {product}"
+msgstr "{n} {item} quebrados em {k} {product}"
 
 msgid "browsing {cat}"
 msgstr ""
@@ -5205,8 +5306,14 @@ msgstr "não foi possível concluir os resultados: {err}"
 msgid "couldn't finish the run ({where}): {err}"
 msgstr "não foi possível concluir a execução ({where}): {err}"
 
+msgid "couldn't get a hit in on that guard - trying another"
+msgstr "não foi possível acertar esse guarda — tentando outro"
+
 msgid "couldn't get away - fighting on"
 msgstr "não deu para fugir — continuando a luta"
+
+msgid "couldn't get back into the gang's base ({why}) - staying here"
+msgstr "não foi possível voltar à base da gang ({why}) — ficando aqui"
 
 msgid "couldn't get back to {place}: {why}"
 msgstr "não foi possível voltar a {place}: {why}"
@@ -5333,6 +5440,10 @@ msgstr "não foi possível falar com {npc}"
 
 msgid "couldn't throw away: {list}"
 msgstr "não foi possível descartar: {list}"
+
+msgid "couldn't tick the box for {shard}: these tries go without its +20%"
+msgstr ""
+"não foi possível marcar a caixa de {shard}: estas tentativas ficam sem os +20%"
 
 msgid "couldn't tick the protection rune - not forging without it"
 msgstr ""
@@ -5605,6 +5716,9 @@ msgstr "voltando ao ponto inicial da coleta"
 
 msgid "going back to where farming started, as {name} asked"
 msgstr "voltando ao ponto inicial da coleta, conforme pedido de {name}"
+
+msgid "going back to where the run started in the gang's base"
+msgstr "voltando ao ponto da base da gang onde a execução começou"
 
 msgid "going back to {map}"
 msgstr "voltando a {map}"
@@ -6258,6 +6372,9 @@ msgid ""
 msgstr ""
 "fragmentos ou Arnebia insuficientes para um cristal de aprimoramento de {kind} nível {lv} ({need} fragmentos, taxa {fee})"
 
+msgid "not enough spare arnebia to break {item} (fee {fee} each)"
+msgstr "arnebia livre insuficiente para quebrar {item} (taxa de {fee} cada)"
+
 msgid "not enough spare arnebia to buy {shard}"
 msgstr "Arnebia restante insuficiente para comprar {shard}"
 
@@ -6317,6 +6434,12 @@ msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenh
 msgid "nothing"
 msgstr "nada"
 
+msgid "nothing came of that - asking for {n} {gem} tries instead"
+msgstr "nada resultou disso — pedindo {n} tentativas de {gem} em vez disso"
+
+msgid "nothing came of that - asking to break {n} {item} instead"
+msgstr "nada resultou disso — pedindo para quebrar {n} {item} em vez disso"
+
 msgid ""
 "nothing came of this round although the bag still has {what} - trying again"
 msgstr ""
@@ -6349,6 +6472,9 @@ msgstr ""
 
 msgid "nothing of the collection was sold"
 msgstr "nenhum item coletado foi vendido"
+
+msgid "nothing to break with these settings"
+msgstr "nada para quebrar com estas configurações"
 
 msgid "nothing to collect today"
 msgstr "nada para coletar hoje"
@@ -6952,6 +7078,9 @@ msgstr "não é possível multiplicar texto"
 msgid "that didn't work: {err}"
 msgstr "isso não funcionou: {err}"
 
+msgid "that would leave {n} {item}"
+msgstr "isso deixaria {n} {item}"
+
 msgid "the Animal Shed has nothing to feed now"
 msgstr "o Abrigo de Animais não tem nada para alimentar agora"
 
@@ -6964,13 +7093,22 @@ msgstr "o Ferreiro não informou de qual cristal {item} precisa — ignorando"
 msgid "the Forger has no enhance equipment"
 msgstr "o Ferreiro não tem equipamento para aprimorar"
 
+msgid "the Gang Entrance didn't let us in"
+msgstr "a Gang Entrance não deixou entrar"
+
 msgid ""
 "the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"
 msgstr ""
 "a Entrada da Guilda não oferece acesso ao salão interno de uma guilda — este personagem pertence a uma guilda?"
 
+msgid "the Gang Entrance led to {now}, not {was} - staying here"
+msgstr "a Gang Entrance levou a {now}, não a {was} — ficando aqui"
+
 msgid "the Gang Entrance lists no gang called {gang}"
 msgstr "a Entrada da Guilda não lista nenhuma guilda chamada {gang}"
+
+msgid "the Gem Breaker stopped: {n} kinds in a row couldn't be broken"
+msgstr "o Gem Breaker parou: {n} tipos seguidos não puderam ser quebrados"
 
 msgid "the Gem Craftsman didn't ask how many"
 msgstr "o Artesão de Gemas não perguntou a quantidade"
@@ -6978,11 +7116,17 @@ msgstr "o Artesão de Gemas não perguntou a quantidade"
 msgid "the Gem Craftsman didn't ask how many {gem} to make"
 msgstr "o Artesão de Gemas não perguntou quantas gemas {gem} criar"
 
+msgid "the Gem Craftsman didn't ask how many {item} to break"
+msgstr "o Gem Craftsman não perguntou quantos {item} quebrar"
+
 msgid "the Gem Craftsman didn't list {gem}"
 msgstr "o Artesão de Gemas não listou {gem}"
 
 msgid "the Gem Craftsman didn't list {item}"
 msgstr "o Artesão de Gemas não listou {item}"
+
+msgid "the Gem Craftsman is open; nothing was broken (check only)"
+msgstr "o Gem Craftsman está aberto; nada foi quebrado (só verificação)"
 
 msgid "the Gem Craftsman is open; nothing was made (check only)"
 msgstr "o Artesão de Gemas está aberto; nada foi criado (somente verificação)"
@@ -6997,6 +7141,12 @@ msgstr "o Artesão de Gemas não oferece uma forma de criar {gem}"
 
 msgid "the Gem Craftsman's menu has no gem synthesis"
 msgstr "o menu do Artesão de Gemas não tem síntese de gemas"
+
+msgid "the Gem Craftsman's menu has no way to break gems"
+msgstr "o menu do Gem Craftsman não tem como quebrar gemas"
+
+msgid "the Gem Craftsman's page for {gem} didn't come up - nothing was spent"
+msgstr "a página de {gem} do Gem Craftsman não apareceu — nada foi pago"
 
 msgid "the Gem Maker can't go on: {why}"
 msgstr "o Criador de Gemas não pode continuar: {why}"
@@ -7102,6 +7252,10 @@ msgstr ""
 msgid "the bag is too full for more {shard}"
 msgstr "a bolsa está cheia demais para mais {shard}"
 
+msgid "the bag is too heavy to break any more: make room and start again"
+msgstr ""
+"a mochila está pesada demais para quebrar mais: libere espaço e comece de novo"
+
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "a bolsa está {pct}% cheia (carga {load} de {max})"
 
@@ -7114,6 +7268,9 @@ msgid ""
 "the bag is {pct}% full with things you keep - going somewhere safe and stopping"
 msgstr ""
 "a bolsa está {pct}% cheia de itens que você mantém — indo para um local seguro e parando"
+
+msgid "the bag showed no change after breaking {item}"
+msgstr "a mochila não mudou depois de quebrar {item}"
 
 msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
@@ -7317,6 +7474,9 @@ msgstr "últimos 7 dias"
 
 msgid "the last trip for {item} got none, and nothing has changed since"
 msgstr "a última busca por {item} não trouxe nenhum, e nada mudou desde então"
+
+msgid "the limit of {most} deaths will stop the run before that"
+msgstr "o limite de {most} mortes vai parar a execução antes disso"
 
 msgid ""
 "the list Uncle Farmer came with (from {made}) - press Refresh for today's"
@@ -7568,6 +7728,21 @@ msgid ""
 msgstr ""
 "o agente desta versão do jogo não consegue avisar antes de o equipamento quebrar — reinicie o Mist World para carregar o novo agente; até lá, o equipamento só será reparado depois de quebrar"
 
+msgid ""
+"this level holds about {top} experience: about {n} more deaths to reach {xp}"
+msgstr ""
+"este nível comporta cerca de {top} de experiência: cerca de {n} mortes a mais para chegar a {xp}"
+
+msgid ""
+"this level holds about {top} experience: about {n} more deaths, about {mins} min, to reach {xp}"
+msgstr ""
+"este nível comporta cerca de {top} de experiência: cerca de {n} mortes a mais, cerca de {mins} min, para chegar a {xp}"
+
+msgid ""
+"this level holds only about {top} experience, so the goal of {goal} can't be reached - stopped"
+msgstr ""
+"este nível comporta só cerca de {top} de experiência, então a meta de {goal} não pode ser alcançada — parado"
+
 msgid "this number is too large: {expr}"
 msgstr "este número é grande demais: {expr}"
 
@@ -7759,6 +7934,9 @@ msgstr "com {n} minutos de tempo de coleta preservados"
 
 msgid "with {skill}"
 msgstr "com {skill}"
+
+msgid "would break {n} {item}"
+msgstr "quebraria {n} {item}"
 
 msgid "would buy {n} for {cost} gold coins"
 msgstr ""
@@ -8336,6 +8514,9 @@ msgstr "{n} vezes, de {first} a {last}: {why}"
 msgid "{n} used up"
 msgstr "{n} usados"
 
+msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
+msgstr "{n} {item}: cada um dá {k} {product} por {fee} arnebia"
+
 msgid "{n} {shard} in the bag; a Level {lv} crystal takes {per}"
 msgstr "{n} {shard} na bolsa; um cristal de nível {lv} exige {per}"
 
@@ -8405,6 +8586,9 @@ msgstr "{shard} custa {price} no mercado, acima do seu limite de {limit}"
 
 msgid "{shard}: {old} -> {new} arnebia"
 msgstr "{shard}: {old} -> {new} Arnebia"
+
+msgid "{shard}: {was} before, {now} after, {used} used"
+msgstr "{shard}: {was} antes, {now} depois, {used} usados"
 
 msgid "{skill} at {where}"
 msgstr "{skill} em {where}"
@@ -8541,3 +8725,11 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Stop when HP stays &low"
 #~ msgstr "Parar se o HP permanecer &baixo"
+
+#~ msgid ""
+#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
+#~ msgstr ""
+#~ "O bot localiza um guarda (à vista, em um local onde já foi visto ou na cidade mais próxima), muda o modo PK para todos, atinge o guarda uma vez e deixa que ele mate o personagem: sem poções, curas ou revide. O personagem renasce na cidade e repete o processo até que a experiência necessária para o próximo nível alcance o valor definido. Na vila mais próxima, o bot primeiro entra nela (o jogo revive o personagem morto na última cidade visitada) e depois morre junto aos portões, reduzindo o tempo de cada morte (no Pântano Melódico, 11 segundos na Vila Aria contra 29 na Cidade Tulipa). Se o jogo o reviver em outro local, ele morrerá para o guarda mais próximo. O mascote é guardado antes e o modo PK é restaurado ao final. As mortes desgastam o equipamento; personagens de nome preto (moralidade -1000 ou menos) podem perder equipamento vestido. Por isso, o bot não executa o Perdedor de EXP com esses personagens."
+
+#~ msgid "This many"
+#~ msgstr "Esta quantidade"

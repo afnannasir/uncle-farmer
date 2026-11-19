@@ -57,6 +57,7 @@ REFILL_POWER = 50  # ... and up to which it comes back before one is put on agai
                    # 2026-11-18: a beast on costs 3 a minute, moving or not; off, it comes back at
                    # 6 a minute. Put back on at MIN_POWER, it was off again within two minutes: a
                    # change every 2.5 minutes. From 50 it rides about 13 minutes, rests about 7.
+RIDE_MIN = 30      # steps: a walk shorter than this is not worth putting a beast on for (b.walk_left)
 POWER_EVERY = 20.0 # while riding, read fusion power with the T key this often (it costs nothing)
 _known: dict[str, dict[str, Any]] | None = None
 
@@ -202,7 +203,16 @@ def ensure(b: Bot, purpose: Any = None) -> None:
         return
     if active and active["id"] == want["id"]:
         return
+    if purpose == TRAVEL and _short_walk(b):
+        return            # whatever is on stays on: no change for a few steps
     _put_on(b, rows, want, active, purpose)
+
+
+def _short_walk(b: Bot) -> bool:
+    """The walk ahead on this map is known, and too short to be worth a beast: putting one on just
+    after a door or for the last few steps costs fusion power and saves nothing."""
+    left = getattr(b, "walk_left", None)
+    return left is not None and left < RIDE_MIN
 
 
 def _resting(b: Bot, pw: int | None) -> bool:

@@ -104,6 +104,14 @@ def in_safe_zone(mid: int | str, x: float, y: float) -> bool:
     return any(x1 <= cx <= x2 and y1 <= cy <= y2 for x1, y1, x2, y2 in safe_zones(mid))
 
 
+def in_town(mid: int | str, x: float, y: float) -> bool:
+    """True when the tile at (x, y) is inside a city or village: its safe zone, not the strips in
+    front of the map's exits. Monsters may be listed for the map all the same (a city's ducks)."""
+    cx, cy = int(x + 0.5), int(y + 0.5)
+    return any(len(r) >= 5 and r[4] == "town" and r[0] <= cx <= r[2] and r[1] <= cy <= r[3]
+               for r in safe_zone_rows(mid))
+
+
 _kinds: dict[int, str] | None = None
 
 def kind_words(k: str | None) -> str:
