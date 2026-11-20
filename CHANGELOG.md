@@ -23,7 +23,7 @@
 - Before and After farming triggers can apply a saved profile, and scripts can use
   `keyboard_profile "<name>"`.
 
-**Treasure chests: looked for when the game announces them**
+**Treasure chests: looked for when the game announces them** (seen in game on a crowded map only)
 
 - When the game says a chest has appeared on the map ("There's a Shining Small Chest in ... Go find
   it"), the bot goes looking for it: it stops picking monsters (it still fights back), sweeps the
@@ -38,7 +38,7 @@
   forgotten: the bot goes back for it, for up to 5 minutes. On Margit Rainforest, one waited three
   minutes that way.
 
-**A run that kills nothing for a long while does something about it**
+**A run that kills nothing for a long while does something about it** (untested in game so far)
 
 - After 10 minutes on the farm without a kill, the bot says so and walks to the part of the farming
   area furthest from where it is; after another 10 minutes, again; the third time it ends the run
