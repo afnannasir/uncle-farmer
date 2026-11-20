@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**Updates with Mist World open no longer break Uncle Farmer**
+
+- An update that ran while a game still had the bot's agent loaded could stop half way with
+  "backup verification failed: agent", and Uncle Farmer then wouldn't open at all. The game writes
+  its agent logs into the agent folder all the time, so the copy changed while it was being
+  backed up. The update now stops before it changes anything while a game has the agent loaded,
+  and says to close Mist World. The question that offers to close Mist World before an update
+  now also finds games it missed before, such as one started from a renamed game file.
+- If an update fails after all, it now puts the old version back even when the agent folder
+  changed meanwhile, instead of leaving a copy that never starts.
+- An update no longer stops on a file that a closing app still has open, like python314.dll.
+
 **Teleport skills find their places in the menu**
 
 - A teleport skill (seen with Elven Teleportation) never found the place in its menu: the bot
