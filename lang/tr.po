@@ -2311,6 +2311,11 @@ msgstr ""
 msgid "Let everyone get replies &again"
 msgstr "Herkes yeniden yanıt &alabilsin"
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+"Diğer programların oyunda tuşlara basmasına izin ver (NVDA Remote, oyun kumandası eşleyici) (&K)"
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr "Kazanılan seviye: {n}, şimdi seviye {level}"
 

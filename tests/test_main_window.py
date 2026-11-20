@@ -102,6 +102,7 @@ class Win:
         self.last_line: dict[int, str] = {}
         self.silenced: set[int] = set()
         self.voice_fixed: dict[int, bool] = {}
+        self.keys_allowed: dict[int, bool] = {}
         self.destroyed = False
         self.snap: tuple[int, dict[str, Any], float] | None = None
         self.game_list, self.log_filter, self.log_box = Widget(0), Widget(0), Widget()
@@ -529,6 +530,47 @@ def test_the_voice_fix_is_sent_only_when_it_changes(monkeypatch: pytest.MonkeyPa
     w.keep_voice_fix()
     started[2]()
     assert sent[-3:] == [(1, "voicefix on"), (2, "voicefix on"), (3, "voicefix on")]
+
+
+def test_other_programs_keys_are_switched_only_when_the_setting_changes(monkeypatch: pytest.MonkeyPatch) -> None:
+    started: list[Callable[[], object]] = []
+    sent: list[tuple[int, str]] = []
+
+    def thread(target: Callable[[], object], daemon: bool | None = None, name: str | None = None) -> SimpleNamespace:
+        return SimpleNamespace(start=lambda: started.append(target))
+
+    class Link:
+        def __init__(self, pid: int, timeout: float) -> None:
+            self.pid = pid
+
+        def __enter__(self) -> "Link":
+            return self
+
+        def __exit__(self, *exc: object) -> None:
+            pass
+
+        def send(self, line: str) -> str:
+            sent.append((self.pid, line))
+            return line.split()[-1]
+    monkeypatch.setattr(results_part.threading, "Thread", thread)
+    monkeypatch.setattr(results_part, "AgentLink", Link)
+    w = Win(games=[(1, "Ali", ""), (2, "Sara", "")], s={})
+    w.keep_other_keys()
+    assert started == [] and sent == []                  # taken by default, as every game with the agent starts: nothing to say
+    w.s["other_keys"] = False
+    w.keep_other_keys()
+    w.keep_other_keys()
+    assert len(started) == 1                             # once per change
+    started[0]()
+    assert sent == [(1, "injected off"), (2, "injected off")]
+    w.games.append((3, "Zoya", ""))
+    w.keep_other_keys()
+    started[1]()
+    assert sent[-1] == (3, "injected off")               # a game opened later is told too
+    w.s["other_keys"] = True
+    w.keep_other_keys()
+    started[2]()
+    assert sent[-3:] == [(1, "injected on"), (2, "injected on"), (3, "injected on")]
 
 
 def test_an_empty_game_folder_setting_is_filled_in_from_the_installed_agent(monkeypatch: pytest.MonkeyPatch) -> None:
