@@ -1,5 +1,18 @@
 # What's new
 
+## Unreleased
+
+**Bosses and demonized elites: kept further away**
+
+- A boss that keeps coming back is left behind for a while: after three walk-offs in five
+  minutes, or with nowhere further from it to go, the bot leaves through the nearest door far
+  from it, waits on the other side, and comes back to farm. The wait is 1 minute, doubled each
+  time the boss is still there (up to 5). Before, it farmed on next to the boss.
+- The patrol keeps clear of the bosses seen in the last minute and of the map's boss zones.
+- With **Leave demonized elites alone** ticked, the bot also leaves out the monsters within
+  40 steps of an elite (a fight there pulls it in), walks away from one that comes within 30
+  steps, and patrols clear of it. One that attacks us is still fought.
+
 ## 1.2.2
 
 **No more experience cards one after another in dungeons**

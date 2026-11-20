@@ -31,9 +31,18 @@ def test_a_demonized_elite_is_not_a_boss() -> None:
 
 
 def test_ticked_they_are_left_alone_and_said_why() -> None:
-    b = fighter(mob(-1, "demonized black bear", 105.0), mob(-2, "Wolf", 130.0))
+    b = fighter(mob(-1, "demonized black bear", 105.0), mob(-2, "Wolf", 150.0))
     assert [e["id"] for e in b.targets(b.snap())] == [-2]
     assert b.left_out == {"elite": 1}
+
+
+def test_ticked_what_is_close_to_one_is_left_alone_too() -> None:
+    """A monster within ELITE_CLEAR steps of the elite: fighting it would pull the elite in."""
+    b = fighter(mob(-1, "demonized black bear", 105.0), mob(-2, "Wolf", 130.0), mob(-3, "Boar", 150.0))
+    assert [e["id"] for e in b.targets(b.snap())] == [-3]
+    assert b.left_out == {"elite": 2}
+    b.attackers = lambda: {-2}                     # the wolf strikes us: it is fought
+    assert [e["id"] for e in b.targets(b.snap())] == [-2, -3]
 
 
 def test_unticked_by_default_they_are_fought() -> None:
