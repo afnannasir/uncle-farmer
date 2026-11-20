@@ -26,7 +26,7 @@ LEFT_OUT = {
     "kind": N_("of a kind that can't be attacked here"),
     "names": N_("left out by the only-fight / never-fight names"),
     "boss": N_("too close to a boss"),
-    "elite": N_("demonized elites, left alone as the character settings say"),
+    "elite": N_("demonized elites or too close to one, left alone as the character settings say"),
     "area": N_("outside the farming area"),
     "avoid": N_("in an elite or boss zone we keep out of"),
     "far": N_("further to walk than the chase range"),
@@ -542,6 +542,7 @@ class FightingMixin(Parts):
         # bosses are never targets, nor is anything close to one: fighting there pulls the boss in
         keep = self.p.get("boss_distance", 40)
         boss_list = bosses.in_sight(snap) if keep else []
+        elite_list = bosses.elites_in_sight(as_bot(self), snap)   # skip_demonized_elites: them and what is near them
         entities: list[dict[str, Any]] = snap["entities"]
         size = atlas.maps().get(snap_map(snap), {})
         left: dict[str, int] = {}      # why monsters in sight were left out -> how many
@@ -553,7 +554,7 @@ class FightingMixin(Parts):
             self.mob_names[e["id"]] = e["name"]
             if e["maxhp"] >= NPC_HP or e["name"].strip().lower() in skill_things():
                 continue        # a town NPC; our own (or another player's) trap or totem
-            why = self._left_out(snap, e, hitting, area, only, skip, avoid_rects, boss_list, keep, now)
+            why = self._left_out(snap, e, hitting, area, only, skip, avoid_rects, boss_list, keep, now, elite_list)
             if why is None:
                 hitting_us = e["id"] in hitting
                 steps[e["id"]] = self.walk_dist(snap, e, None if hitting_us else limit)
@@ -579,7 +580,8 @@ class FightingMixin(Parts):
 
     def _left_out(self, snap: dict[str, Any], e: dict[str, Any], hitting: set[int], area: Sequence[float] | None,
                   only: str | None, skip: str | None, avoid_rects: Sequence[tuple[float, float, float, float]],
-                  boss_list: list[dict[str, Any]], keep: float, now: float) -> str | None:
+                  boss_list: list[dict[str, Any]], keep: float, now: float,
+                  elite_list: Sequence[dict[str, Any]] = ()) -> str | None:
         """Why targets() leaves this monster out before any walking distance is worked out (a key
         of LEFT_OUT), or None when it may be a target."""
         if e["id"] in hitting and self._refused_again(e, now):
@@ -608,8 +610,9 @@ class FightingMixin(Parts):
             return "names"
         if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, keep)):
             return "boss"
-        if e["id"] not in hitting and self.p.get("skip_demonized_elites") and bosses.is_demonized_elite(e):
-            return "elite"      # one that attacks us is still fought: standing there is worse
+        if e["id"] not in hitting and self.p.get("skip_demonized_elites") and (
+                bosses.is_demonized_elite(e) or bosses.too_close(e, list(elite_list), bosses.ELITE_CLEAR)):
+            return "elite"      # it, or a monster it would join the fight for; one that attacks us is still fought
         if area and e["id"] not in hitting and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
             return "area"
         if any(r[0] <= e["x"] <= r[2] and r[1] <= e["y"] <= r[3] for r in avoid_rects):
