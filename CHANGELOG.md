@@ -17,7 +17,8 @@
 - The bot knows what every town's pharmacist and grocer sells, read from their menus in the game:
   the twelve potions, and the grocers' pills, hearthstones, pliers, toolboxes, repair scrolls and
   Pet Rice Rolls. A menu misread once no longer marks a town shop as lacking a potion for good: a
-  character in Tulip City went to Violet City for potions Pharmacist Evan sells.
+  character in Tulip City went to Violet City for potions Pharmacist Evan sells. A town shop whose
+  menu doesn't show it twice in a row is left out for it, until it is seen selling it again.
 - What no shop sells (food, teleport stones, Super potions) no longer starts a trip: the bot says
   so once. Prices the game data didn't have, like the pliers', now come from those lists.
 

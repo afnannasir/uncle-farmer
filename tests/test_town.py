@@ -762,21 +762,53 @@ def test_a_shop_without_it_is_remembered_and_the_next_nearest_tried(monkeypatch:
     assert DANI in town.shops_for("Large Red Potion")
 
 
-def test_a_town_shop_whose_list_has_it_is_never_noted_as_lacking_it(monkeypatch: pytest.MonkeyPatch,
-                                                                    shops: dict[Npc, float]) -> None:
-    # a Tulip City Elf went to Violet City for potions: one misread menu had marked Pharmacist Evan
-    # as lacking them, for good. Every town pharmacist sells the list's potions (read live 2026-11-19)
+def _magnus_without_it(monkeypatch: pytest.MonkeyPatch) -> tuple[list[Npc], TownBot]:
+    """A restock where Magnus's menu doesn't show the potion and Dani's does."""
     went = shop_visits(monkeypatch)
     tb = TownBot()
     tb.dialog = lambda: ({"open": 1, "top": menu(opt("Large Red Potion"))} if went[-1] == DANI
                          else {"open": 1, "top": menu(opt("welcome"))})
     monkeypatch.setattr(town, "open_section", stand_in(town.open_section, returning(False)))
     monkeypatch.setattr(town, "pick", stand_in(town.pick, lambda b, pattern, quantity: tb.add("Large Red Potion", quantity or 0)))
+    return went, tb
+
+
+def test_one_miss_doesn_t_hide_a_town_shop_whose_list_has_it(monkeypatch: pytest.MonkeyPatch,
+                                                             shops: dict[Npc, float]) -> None:
+    # a Tulip City Elf went to Violet City for potions: one misread menu had marked Pharmacist Evan
+    # as lacking them, for good. Every town pharmacist sells the list's potions (read live 2026-11-19)
+    went, tb = _magnus_without_it(monkeypatch)
     assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
     assert went == [MAGNUS, DANI]
     assert any("Potion Merchant Magnus's menu didn't show Large Red Potion" in line for line in tb.lines)
-    assert "1121|potion merchant magnus" not in town._shops_seen()
+    assert "large red potion" not in town._shops_seen()["1121|potion merchant magnus"]["lacks"]
     assert MAGNUS in town.shops_for("Large Red Potion")           # next time: still the nearest
+
+
+def test_a_listed_shop_that_misses_it_twice_is_left_out(monkeypatch: pytest.MonkeyPatch,
+                                                         shops: dict[Npc, float]) -> None:
+    # the lists were read in two towns only: a town shop that really doesn't stock it mustn't be
+    # walked to first on every restock
+    went, tb = _magnus_without_it(monkeypatch)
+    assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
+    assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
+    assert went == [MAGNUS, DANI, MAGNUS, DANI]
+    assert any("Potion Merchant Magnus doesn't sell Large Red Potion" in line for line in tb.lines)
+    assert MAGNUS not in town.shops_for("Large Red Potion")
+    went.clear()
+    assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
+    assert went == [DANI]                                           # straight to the one that has it
+
+
+def test_a_good_read_between_misses_starts_the_count_again(shops: dict[Npc, float]) -> None:
+    assert town.note_miss(MAGNUS, "Large Red Potion") == 1
+    town.note_shop(MAGNUS, "Large Red Potion", True)
+    assert town.note_miss(MAGNUS, "Large Red Potion") == 1
+    assert MAGNUS in town.shops_for("Large Red Potion")
+    assert town.note_miss(MAGNUS, "Large Red Potion") == town.MISSES_TO_LACK
+    assert MAGNUS not in town.shops_for("Large Red Potion")
+    town.note_shop(MAGNUS, "Large Red Potion", True)                # restocked, or a new menu
+    assert MAGNUS in town.shops_for("Large Red Potion")
 
 
 def test_an_old_lacks_note_doesn_t_hide_a_listed_town_shop(shops: dict[Npc, float]) -> None:
