@@ -630,23 +630,23 @@ def test_leave_instance_opens_our_own_treasure_chest_first() -> None:
     # a cleared team dungeon: the way out is our chest, never the Action menu
     b = Bot()
     b._map = 1832
-    b._me = dict(b._me, name="afnan")
-    b.entities = [{"kind": "npc", "id": -230, "name": "Treasure chest belongs to LordPotter", "x": 20.0, "y": 21.0},
-                  {"kind": "npc", "id": -231, "name": "Treasure chest belongs to  afnan", "x": 25.9, "y": 21.0}]
+    b._me = dict(b._me, name="Helper")
+    b.entities = [{"kind": "npc", "id": -230, "name": "Treasure chest belongs to Leader", "x": 20.0, "y": 21.0},
+                  {"kind": "npc", "id": -231, "name": "Treasure chest belongs to  Helper", "x": 25.9, "y": 21.0}]
     b.talk_value = True
     talked: list[tuple[str, Any]] = []
     b.talk = lambda name, at=None, stand=None: talked.append((name, at)) or True
     b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1702) or True
     assert b.leave_instance() is True
-    assert talked == [("Treasure chest belongs to  afnan", (25.9, 21.0))]
+    assert talked == [("Treasure chest belongs to  Helper", (25.9, 21.0))]
     assert b.chosen == [b.CHEST_EXIT] and b.keys == []
 
 
 def test_leave_instance_without_our_chest_uses_the_action_menu() -> None:
     b = Bot()
     b._map = 201
-    b._me = dict(b._me, name="afnan")
-    b.entities = [{"kind": "npc", "id": -230, "name": "Treasure chest belongs to LordPotter", "x": 20.0, "y": 21.0}]
+    b._me = dict(b._me, name="Helper")
+    b.entities = [{"kind": "npc", "id": -230, "name": "Treasure chest belongs to Leader", "x": 20.0, "y": 21.0}]
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
     b.dialog_value = {"open": 0, "top": None}
     b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1041) or True
