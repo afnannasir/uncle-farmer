@@ -37,7 +37,9 @@ PAUSE_MOVED = 0.75      # tiles: moved by hand this far while paused, walks plan
 class ReadingMixin(Parts):
     # Agent errors that only mean the game is in the middle of something (a map loading, a list
     # changing under the reader): worth a few seconds' patience before the run is given up.
-    TRANSIENT = ("busy:", "noplayer:", "noworld: entity map")
+    # agent 73: the game's connection has stayed closed (the game keeps showing the world it had)
+    CONNECTION_CLOSED = "noworld: the game's connection is closed"
+    TRANSIENT = ("busy:", "noplayer:", "noworld: entity map", CONNECTION_CLOSED)
     CONNECTION_GONE = ("noplayer:", "noworld:")
     RECONNECT_GRACE = 30.0
     RECONNECT_RETRY = 10.0
@@ -276,6 +278,9 @@ class ReadingMixin(Parts):
             if good(r):
                 return r
             why = (r.get("error") if jsonio.is_object(r) else None) or "?"
+            if why.startswith(self.CONNECTION_CLOSED) and next_reconnect == began + self.RECONNECT_GRACE:
+                # the connection is gone for sure (the agent waited 5 s): no grace before logging back in
+                next_reconnect = began
             if why.startswith(self.CONNECTION_GONE) and self.clock.time() > next_reconnect:
                 # The agent refuses while the game's connection is still up (the server only took
                 # the character away for a while), so a refused try is tried again a little later.
@@ -297,7 +302,7 @@ class ReadingMixin(Parts):
 
     def _patience(self, why: str) -> float:
         """How long a transient error may last before the run is given up."""
-        if why.startswith("noplayer:") and not why.startswith("noplayer: id 0 "):
+        if (why.startswith("noplayer:") and not why.startswith("noplayer: id 0 "))                 or why.startswith(self.CONNECTION_CLOSED):
             return self.SELF_GONE_WAIT
         return 5.0
 

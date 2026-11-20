@@ -40,6 +40,7 @@ public final class AgentTests {
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
+        aClosedConnectionMeansOurCharacterIsGone();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
         aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
@@ -864,6 +865,27 @@ public final class AgentTests {
 
     /** Another player's cast carries its targets and their HP after it (agent 44): a monster that
      *  someone else has started on is known at once. One struck to 0 is a death as before. */
+    /** After the game's connection drops, the game keeps showing its world: our character counts
+     *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
+    private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
+        Memory.resetConnection();
+        Memory.requireConnection(1000L, false);           // never up in this game: no verdict
+        Memory.requireConnection(99000L, false);
+        Memory.requireConnection(100000L, true);
+        Memory.requireConnection(101000L, false);         // closed: still inside the grace
+        Memory.requireConnection(105999L, false);
+        boolean gone = false;
+        try {
+            Memory.requireConnection(106000L, false);
+        } catch (Memory.Unavailable e) {
+            gone = e.getMessage().startsWith("noworld:");
+        }
+        check(gone, "a connection closed for 5 s means our character is gone (noworld)");
+        Memory.requireConnection(107000L, true);          // reconnected
+        Memory.requireConnection(108000L, false);
+        Memory.resetConnection();
+    }
+
     private static void everyCastSaysWhomItStruck(Map<String, String> contract) {
         String text = contract.get("cast_packet").replace("\\r", "\r").replace("\\n", "\n");
         byte[] body = text.getBytes(Protocol.UTF8);
