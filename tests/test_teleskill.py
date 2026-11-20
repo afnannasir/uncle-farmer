@@ -114,6 +114,19 @@ def test_the_menu_teaches_a_characters_own_list(own_profiles: Path) -> None:
     assert data == {"Someone": {"Teleportation": ["sunset square", "giant rock square"]}}
 
 
+def test_the_game_puts_the_names_in_the_options(own_profiles: Path) -> None:
+    """An Elf's menu as the game sent it (2026-11-20): every name in "options", text and raw empty."""
+    names = ["Soul Burial Village", "Plague Abyss", "Orchid woods Village", "City of the Ancient tower",
+             "mist gods Ruins", "West Sealing Tower", "Hermit Camp", "East Sealing Tower", "portal of the demon world"]
+    rows = [[{"flags": 0, "raw": None, "text": None, "options": ["Please select a location to teleport"]}]]
+    rows += [[{"flags": 264, "raw": None, "text": None, "options": [n], "cmd": [1261, 0]}] for n in names]
+    seen = teleskill.menu_places({"kind": 5, "rows": rows})
+    assert seen[1:] == [n.lower() for n in names]
+    w = Who(["Elven Teleportation"])
+    teleskill.learn(w, "Elven Teleportation", seen)  # pyright: ignore[reportArgumentType]
+    assert teleskill.places(w, "Elven Teleportation") == [n.lower() for n in names]  # pyright: ignore[reportArgumentType]
+
+
 # ---------------------------------------------------------------- casting it
 class Book:
     """A skill book with Teleportation on page 2, key 3."""
@@ -160,7 +173,9 @@ class Caster(TravelBot):
     def wait_dialog(self, seconds: float = 3.0, want_open: bool = True) -> dict[str, Any] | None:
         if self.menu is None:
             return None
-        return {"open": 1, "top": {"rows": [[{"text": t}] for t in self.menu]}}
+        rows = [[{"flags": 0, "raw": None, "text": None, "options": ["Please select a location to teleport"]}]]
+        rows += [[{"flags": 264, "raw": None, "text": None, "options": [t], "cmd": [1061, 0]}] for t in self.menu]
+        return {"open": 1, "top": {"kind": 5, "rows": rows}}
 
 
 @pytest.fixture(autouse=True)

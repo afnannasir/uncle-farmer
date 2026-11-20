@@ -80,13 +80,19 @@ def options(b: Bot) -> list[travel.Spell]:
 
 
 def menu_places(top: dict[str, Any] | None) -> list[str]:
-    """The place names in the teleport menu, lower case, in its order."""
+    """The place names in the teleport menu, lower case, in its order. The game puts each name in
+    the entry's "options" (its text and raw are empty: seen on an Elf, 2026-11-20); text and raw
+    are read too, for a menu that has them."""
     out: list[str] = []
     for row in (top or {}).get("rows", []):
         for e in row:
-            name = e and (e.get("text") or e.get("raw"))
-            if name and str(name).strip():
-                out.append(str(name).strip().lower())
+            if not e:
+                continue
+            names: list[Any] = [*(e.get("options") or []), e.get("text"), e.get("raw")]
+            for name in names:
+                if name and str(name).strip():
+                    out.append(str(name).strip().lower())
+                    break
     return out
 
 
