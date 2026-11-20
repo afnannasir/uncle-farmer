@@ -176,3 +176,58 @@ def test_the_sweep_points_cover_the_area_in_lanes() -> None:
     assert len(pts) >= 9
     ys = sorted({round(y, -1) for _x, y in pts})
     assert len(ys) >= 3                         # several lanes, LANE apart
+
+
+# ---------------------------------------------------------------- maps too quick to hunt on
+def chest_lasting(b: Hunter, seconds: float, opened: bool = True) -> None:
+    """One chest of the map: announced, then opened `seconds` later (or never)."""
+    b.a.say(APPEARS)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    hunt(b)
+    b.clock.advance(seconds)
+    if opened:
+        b.a.say(OPENED)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    hunt(b)
+
+
+def test_someone_else_opening_it_is_said() -> None:
+    b = Hunter()
+    started(b)
+    assert hunt(b)
+    b.a.say(OPENED)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    assert not hunt(b)
+    assert b.lines[-1] == ("the chest was opened by someone else - back to farming", False)
+
+
+def test_a_crowded_map_is_not_hunted_on_after_three_quick_chests() -> None:
+    """Underwater World, live: chests opened 3 s to 3 min after their announcement."""
+    b = Hunter()
+    hunt(b)
+    for seconds in (7, 60, 21):
+        chest_lasting(b, seconds)
+    assert ("chests on Margit Rainforest (5281) are opened by others within 31 s on average - "
+            "not looking for them here", True) in b.lines
+    walks = len(b.walks)
+    b.a.say(APPEARS)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    assert not hunt(b) and len(b.walks) == walks           # farmed on instead
+    said = [line for line, _speak in b.lines if "not looking for them here" in line]
+    assert len(said) == 1
+
+
+def test_a_quiet_map_is_hunted_on_and_a_crowded_one_again_once_chests_last() -> None:
+    b = Hunter()
+    hunt(b)
+    for seconds in (250, 200, 300):                        # Margit Rainforest, live: 3 to 18+ minutes
+        chest_lasting(b, seconds)
+    assert chesthunt.worth(as_bot(b), 5281)
+    for seconds in (5, 5, 5):
+        chest_lasting(b, seconds)
+    assert not chesthunt.worth(as_bot(b), 5281)
+    chest_lasting(b, 1000, opened=False)                   # nobody opens it: it counts as long
+    for seconds in (400, 400):
+        chest_lasting(b, seconds)
+    assert chesthunt.worth(as_bot(b), 5281)
+    assert ("chests on Margit Rainforest (5281) stay unopened longer now - looking for them again", False) in b.lines

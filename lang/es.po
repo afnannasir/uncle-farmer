@@ -5462,6 +5462,13 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr "en {map} otros abren los cofres en {n} s de media - no los busco aquí"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr "en {map} los cofres ahora duran más sin abrir - buscándolos otra vez"
+
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr ""
 
@@ -7615,6 +7622,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "el cofre ya no está: lo abrió otro"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "otra persona abrió el cofre - de vuelta a farmear"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

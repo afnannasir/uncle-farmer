@@ -31,6 +31,9 @@
   sees it. It stops when the chest is opened, by it or by someone else, when the area has all been
   seen, or after 5 minutes. Advanced → Fighting: **Look for a chest the game announces on the
   map**, with the minutes.
+- The bot times every chest of its map, looking or not. Where the last three were opened by others
+  within two minutes on average (Underwater World: 3 seconds to 3 minutes), it doesn't look there,
+  and says so once; it looks again when chests stay unopened longer.
 - A chest seen in the middle of a fight that was out of sight when the fight ended is no longer
   forgotten: the bot goes back for it, for up to 5 minutes. On Margit Rainforest, one waited three
   minutes that way.

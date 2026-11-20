@@ -5468,6 +5468,15 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"em {map} os baús são abertos por outros em {n} s em média — não vou procurá-los aqui"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr ""
+"em {map} os baús agora ficam fechados por mais tempo — procurando de novo"
+
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr "escolha os oficiais primeiro: Tools, Hunting bounties"
 
@@ -7625,6 +7634,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "outra pessoa abriu o baú — de volta ao farm"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

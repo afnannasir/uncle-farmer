@@ -5411,6 +5411,15 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"{map} haritasında sandıklar ortalama {n} sn içinde başkalarınca açılıyor - burada aranmıyor"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr ""
+"{map} haritasında sandıklar artık daha uzun kapalı kalıyor - yeniden aranıyor"
+
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr ""
 
@@ -7539,6 +7548,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "sandığı başkası açtı - farma dönülüyor"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

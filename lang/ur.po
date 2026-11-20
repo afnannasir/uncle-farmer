@@ -5448,6 +5448,14 @@ msgstr "tick kiye hue lots check kar raha hai..."
 msgid "checking {n} lots"
 msgstr "{n} lots check kar raha hai"
 
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"{map} par chests doosre aam taur par {n} s mein khol dete hain - yahan unhein nahin dhoondenge"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr "{map} par chests ab der tak band rehte hain - phir se dhoond rahe hain"
+
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr "pehle officers chuno: Tools, Hunting bounties"
 
@@ -7617,6 +7625,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "chest kisi aur ne khol diya - wapas farming"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

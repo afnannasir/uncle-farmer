@@ -5223,6 +5223,13 @@ msgstr ""
 msgid "checking {n} lots"
 msgstr ""
 
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr ""
+
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr ""
 
@@ -7281,6 +7288,9 @@ msgid ""
 msgstr ""
 
 msgid "the chest is gone: someone else opened it"
+msgstr ""
+
+msgid "the chest was opened by someone else - back to farming"
 msgstr ""
 
 msgid ""

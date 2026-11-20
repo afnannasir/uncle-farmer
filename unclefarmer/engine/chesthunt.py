@@ -10,7 +10,13 @@ What the game does (chestwatch.py, Margit Rainforest, 2026-11-14 and 2026-11-20)
   - On Margit Rainforest a chest came about every 21-24 minutes, and stayed unopened 3 to more than
     18 minutes (one player farming there opened 2 of 4, by chance). On a crowded map they go fast.
 
-So when our map's chest is announced, the farm loop stops picking monsters (it still fights what
+Live on Underwater World (2026-11-20, a crowded map), a chest came every 3 to 5 minutes and was
+opened 3 seconds to 3 minutes after its announcement: a hunt never got there first. Both lines are
+heard whether we hunt or not, so the bot times every chest of the map it is on: when the last
+QUICK_OF were opened under MIN_LIFE seconds after their announcement on average, it doesn't hunt
+there (said once), and takes it up again once chests stay unopened longer (a quiet hour).
+
+So when our map's chest is announced (and the map is worth it), the farm loop stops picking monsters (it still fights what
 attacks us) and sweeps the farm area in lanes LANE steps apart - the ground the agent sees from
 each lane overlaps the next - riding the Swift fusion beast as on a trip, nearest unseen ground
 first. chests.open_nearby opens the chest once it is in sight. The hunt ends when the chest is
@@ -38,6 +44,8 @@ OPENED = re.compile(r"opened the treasure chest in (.+?)\.", re.I)
 LISTEN_EVERY = 2.0      # seconds between two reads of the chat
 LANE = 100              # steps between two sweep lanes (the agent sees about 60 each side)
 VIEW = 50               # a sweep point within this of where we have been counts as seen
+QUICK_OF = 3            # the last this many chests of a map decide whether it is worth a hunt:
+MIN_LIFE = 120.0        # ... opened this soon after their announcement on average, it isn't
 
 
 class Hunt:
@@ -52,8 +60,36 @@ class Hunt:
 
 
 def _state(bot: Bot) -> dict[str, Any]:
-    st: dict[str, Any] = bot.__dict__.setdefault("chest_hunt", {"mark": None, "listened": -1e9, "hunt": None})
+    st: dict[str, Any] = bot.__dict__.setdefault("chest_hunt", {
+        "mark": None, "listened": -1e9, "hunt": None,
+        "appeared": {},      # map -> when its last chest was announced (not opened yet)
+        "lives": {},         # map -> seconds its last chests stayed unopened, newest last
+        "quick": set(),      # maps said to be too quick to hunt on
+    })
     return st
+
+
+def worth(bot: Bot, mid: int) -> bool:
+    """Whether a hunt has a chance on this map: fewer than QUICK_OF chests timed yet, or they
+    stayed unopened MIN_LIFE seconds or more on average."""
+    lives: list[float] = _state(bot)["lives"].get(mid, [])[-QUICK_OF:]
+    return len(lives) < QUICK_OF or sum(lives) / len(lives) >= MIN_LIFE
+
+
+def _timed(bot: Bot, mid: int, life: float) -> None:
+    """One more chest of this map timed: say when the map turns too quick to hunt on, or back."""
+    st = _state(bot)
+    lives: list[float] = st["lives"].setdefault(mid, [])
+    lives.append(life)
+    del lives[:-QUICK_OF]
+    ok = worth(bot, mid)
+    if not ok and mid not in st["quick"]:
+        st["quick"].add(mid)
+        bot.log(_("chests on {map} are opened by others within {n} s on average - not looking for them here",
+                  map=atlas.label(mid), n=int(sum(lives) / len(lives))), speak=True)
+    elif ok and mid in st["quick"]:
+        st["quick"].discard(mid)
+        bot.log(_("chests on {map} stay unopened longer now - looking for them again", map=atlas.label(mid)))
 
 
 def listen(bot: Bot, mid: int) -> Hunt | None:
@@ -81,12 +117,22 @@ def listen(bot: Bot, mid: int) -> Hunt | None:
         if line.get("channel") != CHANNEL or line.get("name"):
             continue
         text = str(line.get("text") or "")
+        said = now - float(line.get("age_ms") or 0) / 1000.0     # when the game said it
         m = APPEARED.search(text)
         if m and m.group(1).strip().lower() == here:
-            hunt = st["hunt"] = Hunt(mid, now, bot.chests.opened)
+            before = st["appeared"].get(mid)
+            if before is not None:
+                _timed(bot, mid, said - before)      # never opened: at least that long
+            st["appeared"][mid] = said
+            hunt = st["hunt"] = Hunt(mid, now, bot.chests.opened) if worth(bot, mid) else None
             continue
         m = OPENED.search(text)
         if m and m.group(1).strip().lower() == here:
+            began = st["appeared"].pop(mid, None)
+            if began is not None:
+                _timed(bot, mid, said - began)
+            if hunt is not None and bot.chests.opened == hunt.opened and hunt.points is not None:
+                bot.log(_("the chest was opened by someone else - back to farming"))
             hunt = st["hunt"] = None
             bot.chests.forget(mid)
     return hunt
