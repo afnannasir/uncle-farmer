@@ -8452,6 +8452,10 @@ msgstr "{name} - {server}"
 msgid "{name} asks: {what}"
 msgstr "{name} poochta hai: {what}"
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+"{name} raste mein hum par hamla kar raha hai - pehle us se lar rahe hain"
+
 msgid "{name} copy"
 msgstr "{name} naqal"
 

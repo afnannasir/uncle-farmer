@@ -8443,6 +8443,9 @@ msgstr "{name} - {server}"
 msgid "{name} asks: {what}"
 msgstr "{name} pregunta: {what}"
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+
 msgid "{name} copy"
 msgstr "copia de {name}"
 

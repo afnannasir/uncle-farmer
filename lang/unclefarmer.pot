@@ -8060,6 +8060,9 @@ msgstr ""
 msgid "{name} asks: {what}"
 msgstr ""
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+
 msgid "{name} copy"
 msgstr ""
 
