@@ -176,23 +176,26 @@ class BagMixin(Parts):
                 self.agent_act = False
         return transaction.removed(transaction.settle(as_bot(self)))
 
-    def bag_cursor(self, name: str) -> str | None:
+    def bag_cursor(self, name: str, *, item_type: int | None = None) -> str | None:
         """Put the bag panel's cursor on the item (panel 0, category 0, the short way round).
         Returns the bag row's name, or None."""
         p = self.p
 
         def bag() -> list[dict[str, Any]]:
-            rows = self.a.json("mem bag")
+            rows = self.a.json("mem bagfull" if item_type is not None else "mem bag")
             return rows if jsonio.is_array(rows) else []
 
         want = name.strip().lower()
         rows = bag()
-        names = [(r.get("name") or "").strip().lower() for r in rows]
-        if want not in names:
-            hits = [i for i, n in enumerate(names) if want in n]
-            if not hits:
-                self.log(_("there's no {item} in the bag", item=name), speak=True)
-                return None
+        def targets_in(rows: list[dict[str, Any]]) -> list[int]:
+            if item_type is not None:
+                return [i for i, row in enumerate(rows) if row.get("type") == item_type]
+            names = [(r.get("name") or "").strip().lower() for r in rows]
+            return [i for i, n in enumerate(names) if n == want] or [i for i, n in enumerate(names) if want in n]
+
+        if not targets_in(rows):
+            self.log(_("there's no {item} in the bag", item=name), speak=True)
+            return None
         u = self.ui()
         if not u:
             self.log(_("can't read the game's bag cursor - restart the game so the new agent loads"), speak=True)
@@ -215,8 +218,7 @@ class BagMixin(Parts):
         # 3. walk the cursor to the item, the short way round
         for _i in range(len(rows) + 3):
             rows = bag()
-            names = [(r.get("name") or "").strip().lower() for r in rows]
-            targets = [i for i, n in enumerate(names) if n == want] or [i for i, n in enumerate(names) if want in n]
+            targets = targets_in(rows)
             if not targets:
                 self.log(_("there's no {item} in the bag", item=name), speak=True)
                 return None

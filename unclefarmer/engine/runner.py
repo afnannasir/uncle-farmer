@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyslots, triggers, xpcard
+from . import chores, keyboard, keyslots, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
 from .botparts.parts import Sighting, Where
@@ -29,7 +29,7 @@ from .script import Runner, ScriptError
 AGENT_VERSION = 5   # the agent's StateServer.VERSION this app needs (4: dialog, target; 5: typing quantities)
 AGENT_SPEECH = 14   # from here the agent can silence the game and reads the own-HP key's answer
 AGENT_POINTS = 24   # from here the agent reads the accumulation-points key's answer (rage, marks, combos; 22-23 dropped its request)
-AGENT_TEAM = 27     # from here the agent sets quick phrases and reads teammates' positions ("/6")
+AGENT_TEAM = phrases.SET_AGENT  # also reads teammates' positions ("/6")
 AGENT_GUARD = 26    # from here the agent can ignore the player's own Shift/Ctrl/Alt while a run drives the game
 AGENT_STATE = 37    # from here `mem state` gives the lean map+self+entities snapshot, without bag/slots/modes/ui
 AGENT_KEYS = 38     # from here `keysup` releases only the keys this connection holds, not the whole game's
@@ -208,6 +208,8 @@ class Run(threading.Thread):
         character = self.character = snap["self"]["name"]
         server = server_name(link) if agent >= AGENT_SERVER else ""
         observed = settings.character_profile(character, snap["self"].get("id"), server)
+        if self._keyboard_errand() and self.profile and not settings.is_profile_of(observed, self.profile):
+            raise Stopped(_("Select the same character before applying the keyboard profile."))
         # The Games list may already know this client's server.  Keep that confirmed identity if
         # one server lookup briefly fails while starting the run.
         if not (self.profile and settings.same_character(self.profile, observed)
@@ -363,11 +365,17 @@ class Run(threading.Thread):
             # Max MP is only on the character sheet, and only farming reads it on its own:
             # without it a walk, `come` or `follow` never drank a blue potion.
             bot.refresh_sheet(force=True)
-        # what each quick phrase does, and the useful codes ("/6" finds teammates) on EMPTY slots
-        phrases.arrange(bot, self.game_folder(), here.get("id"), found.get("class"),
-                        agent >= AGENT_TEAM)
-        if not self.walk:
-            keyslots.arrange(bot)        # skills and items the bot needs, onto EMPTY keys only
+        if self._keyboard_errand():
+            bot.phrases = phrases.read(self.game_folder(), here.get("id"))
+        else:
+            # Useful defaults are filled only on empty slots during normal runs.
+            phrases.arrange(bot, self.game_folder(), here.get("id"), found.get("class"), agent >= AGENT_TEAM)
+            if not self.walk:
+                keyslots.arrange(bot)
+
+    def _keyboard_errand(self) -> bool:
+        return (getattr(self, "kind", "") == "errand"
+                and self.text.split(maxsplit=1)[:1] == [keyboard.COMMAND])
 
     def game_folder(self) -> str:
         """This game's own folder (the copy it runs from), else the settings' one."""

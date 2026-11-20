@@ -56,6 +56,9 @@ msgstr ""
 msgid "&Answer strangers:"
 msgstr ""
 
+msgid "&Apply profile"
+msgstr ""
+
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr ""
 
@@ -147,6 +150,9 @@ msgstr ""
 msgid "&Delete filter"
 msgstr ""
 
+msgid "&Delete profile"
+msgstr ""
+
 msgid "&Donation, once a day:"
 msgstr ""
 
@@ -154,6 +160,9 @@ msgid "&Dungeon:"
 msgstr ""
 
 msgid "&Edit"
+msgstr ""
+
+msgid "&Edit binding..."
 msgstr ""
 
 msgid "&Edit filter"
@@ -287,6 +296,9 @@ msgstr ""
 msgid "&Keep:"
 msgstr ""
 
+msgid "&Keyboard Manager"
+msgstr ""
+
 msgid "&Keyboard shortcuts"
 msgstr ""
 
@@ -354,6 +366,9 @@ msgid "&New chat with (name or id):"
 msgstr ""
 
 msgid "&New plan"
+msgstr ""
+
+msgid "&New profile"
 msgstr ""
 
 msgid "&No, keep current language"
@@ -471,6 +486,9 @@ msgid "&Run selected"
 msgstr ""
 
 msgid "&Save"
+msgstr ""
+
+msgid "&Save profile"
 msgstr ""
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
@@ -890,6 +908,15 @@ msgstr ""
 msgid "Answering"
 msgstr ""
 
+msgid "Applied keyboard profile {name}."
+msgstr ""
+
+msgid "Apply a keyboard profile while out of combat with game menus closed."
+msgstr ""
+
+msgid "Apply keyboard profile {name}"
+msgstr ""
+
 msgid "Area a&round me"
 msgstr ""
 
@@ -960,6 +987,9 @@ msgid "Best normal hit: {hit}"
 msgstr ""
 
 msgid "Between fights"
+msgstr ""
+
+msgid "Binding for {key}"
 msgstr ""
 
 msgid "Bot"
@@ -1041,6 +1071,9 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Cancel &reply"
+msgstr ""
+
+msgid "Capture current &keys"
 msgstr ""
 
 msgid "Category"
@@ -1127,6 +1160,9 @@ msgid ""
 msgstr ""
 
 msgid "Choose Before farming or After farming."
+msgstr ""
+
+msgid "Choose a bound self-buff or shield to prepare."
 msgstr ""
 
 msgid "Choose a category to browse."
@@ -1304,6 +1340,9 @@ msgstr ""
 msgid "Couldn't apply the settings: {err}"
 msgstr ""
 
+msgid "Couldn't assign {binding} to {key}."
+msgstr ""
+
 msgid "Couldn't change the game's settings: {err}"
 msgstr ""
 
@@ -1322,6 +1361,9 @@ msgstr ""
 msgid "Couldn't export the settings: {err}"
 msgstr ""
 
+msgid "Couldn't find this character's quick phrases in the game folder."
+msgstr ""
+
 msgid "Couldn't import the plan: {err}"
 msgstr ""
 
@@ -1334,7 +1376,13 @@ msgstr ""
 msgid "Couldn't open it: {err}"
 msgstr ""
 
+msgid "Couldn't prepare {skill}."
+msgstr ""
+
 msgid "Couldn't reach GitHub to look for updates: {why}"
+msgstr ""
+
+msgid "Couldn't read keyboard settings from the game."
 msgstr ""
 
 msgid "Couldn't read the game: {err}"
@@ -1344,6 +1392,9 @@ msgid "Couldn't save the schedules: {err}"
 msgstr ""
 
 msgid "Couldn't save: {err}"
+msgstr ""
+
+msgid "Couldn't set the quick phrase on {key}."
 msgstr ""
 
 msgid "Couldn't shut the computer down: {err}"
@@ -1414,6 +1465,9 @@ msgid "Deaths before stopping:"
 msgstr ""
 
 msgid "Delay after success (&seconds):"
+msgstr ""
+
+msgid "Delete keyboard profile {name}?"
 msgstr ""
 
 msgid "Delete the schedule for {what} ({who})?"
@@ -1520,7 +1574,13 @@ msgstr ""
 msgid "East edge (x):"
 msgstr ""
 
+msgid "Edit binding"
+msgstr ""
+
 msgid "Edit filter"
+msgstr ""
+
+msgid "Edit quick phrase"
 msgstr ""
 
 msgid "Edit schedule"
@@ -1574,7 +1634,13 @@ msgstr ""
 msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
+msgid "Enter a keyboard profile name on one line."
+msgstr ""
+
 msgid "Enter a name for the plan."
+msgstr ""
+
+msgid "Enter a quick phrase on one line."
 msgstr ""
 
 msgid "Enter a sound ID between 1 and 99999."
@@ -2149,6 +2215,9 @@ msgstr ""
 msgid "International"
 msgstr ""
 
+msgid "Invalid keyboard slot."
+msgstr ""
+
 msgid "Invalid sound reply from the game agent."
 msgstr ""
 
@@ -2161,7 +2230,13 @@ msgstr ""
 msgid "Item name, exactly as the game writes it:"
 msgstr ""
 
+msgid "Item type {id}"
+msgstr ""
+
 msgid "Item:"
+msgstr ""
+
+msgid "Items"
 msgstr ""
 
 msgid "Items with no rule: touch &only what this run picked up"
@@ -2195,6 +2270,15 @@ msgid "Keep the class's b&uffs up"
 msgstr ""
 
 msgid "Key"
+msgstr ""
+
+msgid "Key &bindings:"
+msgstr ""
+
+msgid "Keyboard Manager"
+msgstr ""
+
+msgid "Keyboard profile {name} was not found."
 msgstr ""
 
 msgid "Keyboard shortcuts"
@@ -2259,6 +2343,9 @@ msgstr ""
 
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
+msgstr ""
+
+msgid "Leave unchanged"
 msgstr ""
 
 msgid "Leaves {n} {item}."
@@ -2555,6 +2642,9 @@ msgid "Never spend arnebia belo&w:"
 msgstr ""
 
 msgid "New &script"
+msgstr ""
+
+msgid "New profile"
 msgstr ""
 
 msgid "New sc&ript"
@@ -2893,6 +2983,9 @@ msgstr ""
 msgid "Page"
 msgstr ""
 
+msgid "Page {page}, {key}"
+msgstr ""
+
 msgid "Patrol loops: {loops}"
 msgstr ""
 
@@ -3038,6 +3131,12 @@ msgstr ""
 msgid "Private messages to you"
 msgstr ""
 
+msgid "Profession skills"
+msgstr ""
+
+msgid "Profile na&me:"
+msgstr ""
+
 msgid "Program version: {v}"
 msgstr ""
 
@@ -3067,6 +3166,12 @@ msgid "Quick loop (the whole cave, lanes further apart)"
 msgstr ""
 
 msgid "Quick patrol loop"
+msgstr ""
+
+msgid "Quick phrase for {key} (blank leaves it unchanged)"
+msgstr ""
+
+msgid "Quick phrases"
 msgstr ""
 
 msgid "Range (tiles):"
@@ -3150,6 +3255,9 @@ msgid ""
 "Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
 msgstr ""
 
+msgid "Replace keyboard profile {name}?"
+msgstr ""
+
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
@@ -3169,6 +3277,10 @@ msgid "Rest &until HP (%):"
 msgstr ""
 
 msgid "Restart Uncle Farmer to switch the language."
+msgstr ""
+
+msgid ""
+"Restart the game with the current agent to apply these keyboard settings."
 msgstr ""
 
 msgid "Restock &now"
@@ -3285,10 +3397,20 @@ msgstr ""
 msgid "Save changes to the script?"
 msgstr ""
 
+msgid "Save the keyboard profile before applying it."
+msgstr ""
+
 msgid "Save the results"
 msgstr ""
 
 msgid "Saved account email:"
+msgstr ""
+
+msgid ""
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+msgstr ""
+
+msgid "Saved keyboard &profiles:"
 msgstr ""
 
 msgid "Saved. It's in the Plans tab as a script."
@@ -3358,6 +3480,9 @@ msgid "Select a game first."
 msgstr ""
 
 msgid "Select a plan first."
+msgstr ""
+
+msgid "Select the same character before applying the keyboard profile."
 msgstr ""
 
 msgid "Sell and store by these lists, then come back"
@@ -3825,6 +3950,9 @@ msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
 msgstr ""
 
+msgid "That keyboard profile no longer exists. Choose another action."
+msgstr ""
+
 msgid "That place is in your list already."
 msgstr ""
 
@@ -3914,6 +4042,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr ""
 
+msgid "The character hasn't learned {skill}."
+msgstr ""
+
 msgid "The clipboard couldn't be opened."
 msgstr ""
 
@@ -3941,6 +4072,9 @@ msgid "The end place is now where you stand: {map} ({x},{y})."
 msgstr ""
 
 msgid "The fastest one"
+msgstr ""
+
+msgid "The game didn't confirm {skill}."
 msgstr ""
 
 msgid "The game didn't play it: {why}"
@@ -4251,6 +4385,9 @@ msgstr ""
 msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr ""
 
+msgid "Toggle p&reparation"
+msgstr ""
+
 msgid "Tone from &everyone else:"
 msgstr ""
 
@@ -4433,6 +4570,9 @@ msgid "Use area &skills on this many monsters close together:"
 msgstr ""
 
 msgid "Use item"
+msgstr ""
+
+msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr ""
 
 msgid "Use the &combos of the activated talents"
@@ -7933,6 +8073,9 @@ msgstr ""
 msgid "{item} is broken"
 msgstr ""
 
+msgid "{item} is missing from the bag."
+msgstr ""
+
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr ""
 
@@ -8387,6 +8530,9 @@ msgstr ""
 msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
+msgid "{skill} (prepare when applied)"
+msgstr ""
+
 msgid "{skill} at {where}"
 msgstr ""
 
@@ -8406,6 +8552,9 @@ msgstr ""
 
 msgid ""
 "{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
+msgstr ""
+
+msgid "{skill} isn't ready to prepare."
 msgstr ""
 
 msgid "{skill} not cast at {name}: {why}"

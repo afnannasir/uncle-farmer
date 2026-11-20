@@ -13,6 +13,16 @@
   40 steps of an elite (a fight there pulls it in), walks away from one that comes within 30
   steps, and patrols clear of it. One that attacks us is still fought.
 
+**Keyboard Manager** (untested in game so far)
+
+- Tools, Keyboard Manager saves named key layouts per character: both skill pages, the profession
+  skills, the number-row items and the quick phrases. Capture current keys reads them from the
+  game; Apply sets them through the game's own binding keys and checks each one took. Slots marked
+  Leave unchanged keep what they have.
+- A profile can also cast chosen self-buffs or shields when it is applied.
+- Before and After farming triggers can apply a saved profile, and scripts can use
+  `keyboard_profile "<name>"`.
+
 ## 1.2.2
 
 **No more experience cards one after another in dungeons**
