@@ -385,7 +385,7 @@ Uncle Farmer fights them like any other monster unless you tick **Leave demonize
 
 - It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
   the elite in. The log counts them among the monsters left alone.
-- When one comes within 30 steps, it walks to the spot furthest from it, and says so once.
+- When one comes within 30 steps, it walks to the spot furthest from it, and notes it once in the log (not spoken: elites are common).
 - Its patrol keeps 40 steps clear of the elites it has seen in the last minute.
 - One that attacks you is still fought, and so is a monster near it that attacks you, since
   standing there would be worse. The bot never leaves the map because of an elite.

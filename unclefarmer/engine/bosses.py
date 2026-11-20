@@ -177,7 +177,8 @@ def keep_away(bot: Bot, snap: dict[str, Any], map_id: int, area: Sequence[float]
 
 
 def _tell(bot: Bot, e: dict[str, Any], keep: float, n: int) -> None:
-    """Say once for each boss or elite that it is close and kept away from."""
+    """Say once for each boss that it is close and kept away from; an elite only goes in the log
+    (they are common, and speech reaches every window)."""
     told = bot.__dict__.setdefault("bosses_told", set())
     if e["id"] in told:
         return
@@ -187,7 +188,7 @@ def _tell(bot: Bot, e: dict[str, Any], keep: float, n: int) -> None:
                   boss=e["name"], n=n, keep=int(keep)), speak=True)
     else:
         bot.log(_("{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it",
-                  elite=e["name"], n=n, keep=int(keep)), speak=True)
+                  elite=e["name"], n=n, keep=int(keep)))
 
 
 def _near(bot: Bot, snap: dict[str, Any], me: dict[str, Any], everyone: bool = False) -> list[tuple[dict[str, Any], float]]:
@@ -252,12 +253,19 @@ def leave_for_a_while(bot: Bot, map_id: int, boss: dict[str, Any], keep: float) 
         return False
     now = bot.clock.time()
     last = bot.__dict__.get("boss_left_at")
-    wait = AWAY_FIRST if last is None or now - last > AWAY_RESET else         min(AWAY_MOST, 2 * bot.__dict__.get("boss_wait", AWAY_FIRST))
+    if last is None or now - last > AWAY_RESET:
+        wait = AWAY_FIRST
+    else:
+        wait = min(AWAY_MOST, 2 * bot.__dict__.get("boss_wait", AWAY_FIRST))
     dest = int(door["dest"])
     bot.log(_("{boss} (a boss) keeps coming back - leaving for {map} for {n} s",
               boss=boss["name"], map=atlas.label(dest), n=int(wait)), speak=True)
     with bot.timed("search"):
-        bot.travel(dest)
+        # Through the door chosen above: travel alone takes the shortest way to that map, which on
+        # a map with two doors to it may be the one by the boss. The planned way only if the walk
+        # to the door didn't take us there.
+        if bot.walk_to((door["stand"][0], door["stand"][1]), map_change=True) != "map" or bot.map_id() != dest:
+            bot.travel(dest)
     if bot.map_id() == map_id:
         return False
     bot.__dict__["boss_left_at"] = now

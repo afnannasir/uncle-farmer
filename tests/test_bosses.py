@@ -58,6 +58,8 @@ class Walker:
         self.in_instance = False
         self.where = map_id
         self.trips: list[int] = []
+        self.doors: list[tuple[float, float]] = []
+        self.door_to: int | None = None
         self.hitting: set[int] = set()
         self.fought = 0
         self.modes = 0
@@ -92,7 +94,14 @@ class Walker:
                     **_kw: Any) -> tuple[int, int] | None:
         return self.cells.pop(0) if self.cells else None
 
-    def walk_to(self, cell: tuple[float, float], near: Callable[[dict[str, Any]], bool] | None=None) -> str:
+    def walk_to(self, cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None=None) -> str:
+        if map_change:                 # the walk to a door: through it when door_to is set
+            self.doors.append(cell)
+            if self.door_to is None:
+                return "arrived"
+            self.where = self.door_to
+            return "map"
         self.walked.append(cell)
         return "arrived"
 
@@ -192,6 +201,21 @@ def test_nowhere_further_off_the_map_is_left_for_a_while() -> None:
     assert w.clock.time() - start >= bosses.AWAY_FIRST
     assert w.lines[-2:] == ["Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s",
                             "back to Wolf Prairie (5121)"]
+
+
+def test_the_map_is_left_through_the_door_chosen_far_from_the_boss() -> None:
+    """The walk goes to that door's own cell: travel alone could take another door to the same
+    map, by the boss. travel is only the way back then."""
+    me: dict[str, Any] = {"id": ME, "x": 100.0, "y": 100.0}
+    worm = mob(-1, "Death Worm", 105.0, hp=900000)
+    snap: dict[str, Any] = {"self": me, "entities": [worm]}
+    w = Walker(snap, [])
+    w.door_to = 1041
+    door = bosses.way_out(5121, me, worm, 40)
+    assert door is not None
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.doors == [(door["stand"][0], door["stand"][1])]
+    assert w.trips == [5121] and w.where == 5121
 
 
 def test_a_boss_still_there_doubles_the_wait_up_to_five_minutes() -> None:
