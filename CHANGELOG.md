@@ -1,6 +1,6 @@
 # What's new
 
-## Unreleased
+## 1.2.2
 
 **No more experience cards one after another in dungeons**
 
