@@ -23,6 +23,7 @@ public final class BotAgent {
     public static void premain(String args, Instrumentation inst) {
         try {
             GamePorts.install(inst);       // first: the game's main class loads right after premain
+            InjectedKeys.install(inst);    // the same class: its check of keys other programs send
             Health.install();
             SpeechSwitch.install(inst);
             VoicePlayer.install(inst);

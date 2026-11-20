@@ -2322,6 +2322,11 @@ msgstr "{n} {item} bachenge."
 msgid "Let everyone get replies &again"
 msgstr "Sab ko dobara jawab dene &dein"
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+"Doosre programs ko game mein &keys dabaane dein (NVDA Remote, controller mapper)"
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr "Levels barhe: {n}, ab level {level}"
 
@@ -6372,6 +6377,9 @@ msgstr ""
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "kisi qareebi dukaan mein {item} nahi mila - logs\\dialogs.log dekhein"
 
+msgid "no shop sells {item}"
+msgstr "koi dukaan {item} nahi bechti"
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "{map} mein koi storehouse nahi - {item} nahi nikal rahe"
 
@@ -7423,6 +7431,11 @@ msgid ""
 msgstr ""
 "character sheet abhi Vitality nahi dikhati (game dobara shuru karein taake naya agent load ho) - khatam hone tak jama kar rahe hain"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+"dungeon ke andar character sheet par koi experience card nahi dikhta - jo card hamare paas hai wohi rakha, doosra istemal nahi kiya"
+
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
 
@@ -7737,6 +7750,9 @@ msgstr "storehouse mein {item} nahi"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "storehouse mein {item} nahi aur khareedne ke liye arnebia bhi nahi"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr "storehouse mein {item} nahi, aur koi dukaan use nahi bechti"
+
 msgid "the storehouse has {n} {item}"
 msgstr "storehouse mein {n} {item} hain"
 
@@ -7985,9 +8001,9 @@ msgid "usable items"
 msgstr "istemal ki cheezein"
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"{card} istemal kiya, magar character sheet par koi experience card chalta nahi dikhta - ek minute baad dobara koshish"
+"{card} istemal kiya, magar character sheet par woh nahi dikhta - {m} minute tak koi doosra experience card nahi"
 
 msgid "using the hearthstone key"
 msgstr "hearthstone key istemal kar rahe hain"
@@ -8441,6 +8457,10 @@ msgstr "{name} - {server}"
 msgid "{name} asks: {what}"
 msgstr "{name} poochta hai: {what}"
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+"{name} raste mein hum par hamla kar raha hai - pehle us se lar rahe hain"
+
 msgid "{name} copy"
 msgstr "{name} naqal"
 
@@ -8578,6 +8598,11 @@ msgstr "{npc} exchange nahi deta"
 
 msgid "{npc} offers no hunting bounty"
 msgstr "{npc} hunting bounty nahi deta"
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
+msgstr ""
+"{npc} ke menu mein {item} nahi dikha - logs\\dialogs.log dekhein; agli qareebi dukaan try kar rahe hain"
 
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} har ek"
@@ -9060,6 +9085,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr "Tools, Daily chores mein apni gang ki highland ka number likho"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "{card} istemal kiya, magar character sheet par koi experience card chalta nahi dikhta - ek minute baad dobara koshish"
 
 #~ msgid ""
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."

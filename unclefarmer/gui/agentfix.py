@@ -8,11 +8,15 @@ from collections.abc import Callable
 
 import wx
 
-from .. import gameinstall
+from .. import gameinstall, updater
 
 
 def running_pids() -> list[int]:
-    return [pid for pid, _folder in gameinstall.running_games()]
+    """Every running mw.exe, and every other process that has this copy's agent loaded (a game
+    started from a renamed exe still writes its agent.<pid>.port, holds the agent jar open and
+    logs into agent/run all the time: neither an update nor an agent reinstall may run beside it)."""
+    pids = [pid for pid, _folder in gameinstall.running_games()]
+    return pids + [pid for pid in updater.agent_games() if pid not in pids]
 
 
 def close_then(pids: list[int], then: Callable[[list[int]], None]) -> None:

@@ -1,5 +1,81 @@
 # What's new
 
+## 1.2.2
+
+**No more experience cards one after another in dungeons**
+
+- Inside a dungeon (Scorpion Cave), the character sheet doesn't show the experience card, so
+  the bot thought none was running and used a new card every minute: 14 or 15 cards a visit. The
+  game added each one's half hour (400 minutes left afterwards). Now, after a card the sheet
+  doesn't show, no other card is used for 30 minutes. Inside a dungeon, a card seen running or
+  paused before going in is kept.
+- Agent 74 reads the card inside a dungeon too, where the sheet shows only the bonus and the time
+  ("30% EXP bonus;29 minutes56 seconds remaining"), so the bot sees the real time left there.
+
+**Gathering in another gang's area works again**
+
+- Gathering in a friend's or ally's gang got into that gang's base, stood there about 15 seconds,
+  said "couldn't get into the gang's base" and walked out. The game takes you straight in when you
+  pick the gang's name, and the bot was still waiting for the move. Now it goes on to the area.
+- The fusion beast now comes off beside the area's entrance, not inside the area, so gathering
+  starts as soon as you land and none of the area's half hour goes on getting off.
+
+**A dropped connection is noticed again**
+
+- Agent 73: when the game's connection drops but the game keeps showing its old world, the bot
+  notices within seconds and logs back in (with automatic login set up), or stops after a minute.
+  One night it fought two left-behind monsters for 55 minutes, every attack refused, no kills.
+
+**No more walking past the monsters that hit you**
+
+- Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
+  first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
+  right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
+  monsters around it and chases far ones".
+
+**NVDA Remote and other programs can press keys in the game**
+
+- The game drops every key that another program sends, so nobody could play or help over NVDA
+  Remote, and a controller mapper or an on-screen keyboard did nothing. With the agent in the
+  game those keys now count, as the keyboard's do, while the game's window has focus.
+- File, Settings, Game: "Let other programs press keys in the game (NVDA Remote, a controller
+  mapper)". On by default. Untick it to have the game drop them again, as it does by itself; it
+  changes at once, in every open game, without starting the game again.
+- Needs the new game agent (72): the bot asks to reinstall it, and the game has to be started
+  again once.
+
+**Updates with Mist World open no longer break Uncle Farmer**
+
+- An update that ran while a game still had the bot's agent loaded could stop half way with
+  "backup verification failed: agent", and Uncle Farmer then wouldn't open at all. The game writes
+  its agent logs into the agent folder all the time, so the copy changed while it was being
+  backed up. The update now stops before it changes anything while a game has the agent loaded,
+  and says to close Mist World. The question that offers to close Mist World before an update
+  now also finds games it missed before, such as one started from a renamed game file.
+- If an update fails after all, it now puts the old version back even when the agent folder
+  changed meanwhile, instead of leaving a copy that never starts.
+- An update no longer stops on a file that a closing app still has open, like python314.dll.
+
+**Teleport skills find their places in the menu**
+
+- A teleport skill (seen with Elven Teleportation) never found the place in its menu: the bot
+  said "doesn't list ... for this character" for every place and walked instead. It now reads the
+  place names where the game puts them, so the trip teleports as planned.
+
+**Airships for VIPs, and potions bought in the town you are in**
+
+- An airship's menu has one entry: free for a VIP, 1,000 arnebia for everyone else. The bot now
+  takes it either way, whatever the VIP box says. A VIP who had left the box unticked was told
+  "the menu has no entry like ..." twice, and walked the long way round. Cable cars, whose menus
+  have a free row for VIPs next to the paying one, still follow the box.
+- The bot knows what every town's pharmacist and grocer sells, read from their menus in the game:
+  the twelve potions, and the grocers' pills, hearthstones, pliers, toolboxes, repair scrolls and
+  Pet Rice Rolls. A menu misread once no longer marks a town shop as lacking a potion for good: a
+  character in Tulip City went to Violet City for potions Pharmacist Evan sells. A town shop whose
+  menu doesn't show it twice in a row is left out for it, until it is seen selling it again.
+- What no shop sells (food, teleport stones, Super potions) no longer starts a trip: the bot says
+  so once. Prices the game data didn't have, like the pliers', now come from those lists.
+
 ## 1.2.1
 
 **Updates from 1.2.0 work again**

@@ -2311,6 +2311,11 @@ msgstr ""
 msgid "Let everyone get replies &again"
 msgstr "Herkes yeniden yanıt &alabilsin"
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+"Diğer programların oyunda tuşlara basmasına izin ver (NVDA Remote, oyun kumandası eşleyici) (&K)"
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr "Kazanılan seviye: {n}, şimdi seviye {level}"
 
@@ -6315,6 +6320,9 @@ msgstr ""
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "yeterince yakın hiçbir dükkan {item} satmıyor - bkz. logs\\dialogs.log"
 
+msgid "no shop sells {item}"
+msgstr ""
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "{map} haritasında depo yok - {item} çıkarılmıyor"
 
@@ -7349,6 +7357,10 @@ msgid ""
 msgstr ""
 "karakter sayfası henüz Canlılık göstermiyor (yeni ajanı yüklemesi için oyunu yeniden başlat) - bitene kadar toplanıyor"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
 
@@ -7656,6 +7668,9 @@ msgstr "depoda {item} yok"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "depoda {item} yok ve onu satın alacak arnebia da yok"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr ""
+
 msgid "the storehouse has {n} {item}"
 msgstr "depoda {n} {item} var"
 
@@ -7899,9 +7914,8 @@ msgid "usable items"
 msgstr ""
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"
 
 msgid "using the hearthstone key"
 msgstr "Kalp taşı tuşu kullanılıyor"
@@ -8350,6 +8364,9 @@ msgstr "{name} - {server}"
 msgid "{name} asks: {what}"
 msgstr "{name} soruyor: {what}"
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+
 msgid "{name} copy"
 msgstr "{name} kopyası"
 
@@ -8486,6 +8503,10 @@ msgid "{npc} offers no exchange"
 msgstr ""
 
 msgid "{npc} offers no hunting bounty"
+msgstr ""
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""
 
 msgid "{npc}, {price} {cur} each"
@@ -8846,3 +8867,8 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"

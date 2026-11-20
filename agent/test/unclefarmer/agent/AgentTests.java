@@ -40,6 +40,7 @@ public final class AgentTests {
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
+        aClosedConnectionMeansOurCharacterIsGone();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
         aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
@@ -64,6 +65,7 @@ public final class AgentTests {
         theVoiceFixCanBeSwitchedOff();
         theVoicePlayerRateFixMatchesTheGamesCode();
         theSpeechSwitchStillSilences();
+        keysFromOtherProgramsCountUntilSwitchedOff();
         SoundTests.run();
         LinkTests.run();
 
@@ -307,6 +309,15 @@ public final class AgentTests {
         eq(Sheet.expPaused, true, "paused");
         eq(Sheet.expSeconds, 3720, "an hour and two minutes");
         eq(Sheet.morality, -1200L, "a black name");
+        // inside a dungeon: no pause, only the bonus and the time ("minutes56", as the game writes it)
+        String dungeon = head + "8\r22\r30% EXP bonus;29 minutes56 seconds remaining|||Morality 2000;white name";
+        World.inbound(concat(new byte[] {62}, dungeon.getBytes(Protocol.UTF8)));
+        eq(Sheet.expBonus, 30, "a dungeon's card entry is a card too");
+        eq(Sheet.expPaused, false, "running (it can't be paused there)");
+        eq(Sheet.expSeconds, 29 * 60 + 56, "its time, read with no space after minutes");
+        String rows = head + "8\r22\r30% EXP bonus\r1 hour2 minutes remaining|||Morality 2000;white name";
+        World.inbound(concat(new byte[] {62}, rows.getBytes(Protocol.UTF8)));
+        eq(Sheet.expSeconds, 3720, "an hour and two minutes, as separate rows");
         World.inbound(concat(new byte[] {62}, head.getBytes(Protocol.UTF8)));
         eq(Sheet.expBonus, 0, "no entry: no card");
         eq(Sheet.expSeconds, -1, "and no time left");
@@ -393,6 +404,8 @@ public final class AgentTests {
         }
         eq(StateServer.handle("ping", armed, mine, guarded), "pong", "ping");
         eq(StateServer.handle("voicefix off", armed, mine, guarded), "unknown", "no voice player loaded: nothing to switch");
+        eq(StateServer.handle("injected", armed, mine, guarded), "unknown", "no game class loaded: no switch for the keys other programs send");
+        eq(StateServer.handle("injected off", armed, mine, guarded), "unknown", "... and nothing to switch");
         eq(StateServer.handle("frobnicate", armed, mine, guarded), "unknown command: frobnicate", "unknown");
         eq(StateServer.handle("ask vitals", armed, mine, guarded), "refused: send 'arm' first", "ask needs arm");
         eq(StateServer.handle("key j", armed, mine, guarded), "refused: send 'arm' first", "keys need arm");
@@ -861,6 +874,27 @@ public final class AgentTests {
 
     /** Another player's cast carries its targets and their HP after it (agent 44): a monster that
      *  someone else has started on is known at once. One struck to 0 is a death as before. */
+    /** After the game's connection drops, the game keeps showing its world: our character counts
+     *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
+    private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
+        Memory.resetConnection();
+        Memory.requireConnection(1000L, false);           // never up in this game: no verdict
+        Memory.requireConnection(99000L, false);
+        Memory.requireConnection(100000L, true);
+        Memory.requireConnection(101000L, false);         // closed: still inside the grace
+        Memory.requireConnection(105999L, false);
+        boolean gone = false;
+        try {
+            Memory.requireConnection(106000L, false);
+        } catch (Memory.Unavailable e) {
+            gone = e.getMessage().startsWith("noworld:");
+        }
+        check(gone, "a connection closed for 5 s means our character is gone (noworld)");
+        Memory.requireConnection(107000L, true);          // reconnected
+        Memory.requireConnection(108000L, false);
+        Memory.resetConnection();
+    }
+
     private static void everyCastSaysWhomItStruck(Map<String, String> contract) {
         String text = contract.get("cast_packet").replace("\\r", "\r").replace("\\n", "\n");
         byte[] body = text.getBytes(Protocol.UTF8);
@@ -1189,6 +1223,74 @@ public final class AgentTests {
                 default: spoken += 3;
             }
         }
+    }
+
+    /** The game's key method as far as its check of the injected mark goes: javac writes the same
+     *  `bipush 16; iand; bipush 16; if_icmpeq` for it as the game has (javap of game.Win, pc 480). */
+    public static final class KeyStandIn {
+        public static int taken;
+
+        public static int a(int flags, int scan, int vk) {
+            if ((flags & 16) != 16) {
+                taken++;
+                return 0;
+            }
+            return 1;
+        }
+
+        /** Another method of the same shape without the check: left alone. */
+        public static int b(int x, int y, int z) {
+            return x + y + z;
+        }
+    }
+
+    /** Two checks in one class: not the class we know, so nothing is changed. */
+    public static final class TwoChecksStandIn {
+        public static int a(int flags, int scan, int vk) {
+            return (flags & 16) != 16 ? 0 : 1;
+        }
+
+        public static int c(int flags, int scan, int vk) {
+            return (flags & 16) != 16 ? 2 : 3;
+        }
+    }
+
+    private static void keysFromOtherProgramsCountUntilSwitchedOff() throws Exception {
+        final String name = KeyStandIn.class.getName();
+        byte[] plain = classBytes("AgentTests$KeyStandIn.class");
+        final byte[] switched = InjectedKeys.patch(plain);
+        check(switched != null && switched != plain, "the check of the injected mark is found in the key method");
+        check(InjectedKeys.patch(switched) == switched, "a class that already has the switch is left as it is");
+        check(InjectedKeys.patch(classBytes("AgentTests$TwoChecksStandIn.class")) == null, "two checks: not the class we know");
+        check(InjectedKeys.patch(classBytes("AgentTests$SpeechStandIn.class")) == null, "no such method: not the class");
+        ClassLoader loader = new ClassLoader(AgentTests.class.getClassLoader()) {
+            @Override
+            protected Class<?> loadClass(String n, boolean resolve) throws ClassNotFoundException {
+                if (n.equals(name)) {
+                    Class<?> c = findLoadedClass(n);
+                    return c != null ? c : defineClass(n, switched, 0, switched.length);
+                }
+                return super.loadClass(n, resolve);
+            }
+        };
+        Class<?> c = loader.loadClass(name);       // verified as it is first used: a bad rewrite fails here
+        java.lang.reflect.Method key = c.getMethod("a", int.class, int.class, int.class);
+        java.lang.reflect.Field mask = c.getField(InjectedKeys.FIELD);
+        java.lang.reflect.Field taken = c.getField("taken");
+        eq(mask.getInt(null), 0, "the switch starts at: the keys other programs send count");
+        eq(key.invoke(null, 0, 0x1E, 65), 0, "a key of the keyboard is taken");
+        eq(key.invoke(null, 0x10, 0x1E, 65), 0, "a key another program sent is taken too");
+        eq(key.invoke(null, 0x10 | 0x80, 0x1E, 65), 0, "... and its release");
+        eq(taken.getInt(null), 3, "all three went into the method's own work");
+        mask.setInt(null, InjectedKeys.INJECTED);
+        eq(key.invoke(null, 0x10, 0x1E, 65), 1, "switched off: the injected key is dropped, as the game does");
+        eq(key.invoke(null, 0x10 | 0x80, 0x1E, 65), 1, "... and its release");
+        eq(key.invoke(null, 0, 0x1E, 65), 0, "a key of the keyboard still counts");
+        eq(key.invoke(null, 0x80 | 0x01, 0x4B, 37), 0, "... with its other marks");
+        eq(taken.getInt(null), 5, "only the keyboard's keys went on");
+        mask.setInt(null, 0);
+        eq(key.invoke(null, 0x10, 0x1E, 65), 0, "switched on again while it runs");
+        eq(c.getMethod("b", int.class, int.class, int.class).invoke(null, 1, 2, 3), 6, "the other method is as it was");
     }
 
     private static void theSpeechSwitchStillSilences() throws Exception {

@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 import re
 import threading
+import time
 from collections.abc import Callable
 from typing import Any, TypeAlias
 
@@ -46,10 +47,12 @@ class Agent:
     def __init__(self, game: Game) -> None:
         self.g = game
 
-    def json(self, line: str) -> dict[str, Any]:
+    def json(self, line: str) -> Any:
         g = self.g
         if line == "mem skills":
             return g.skills
+        if line == "mem beasts":
+            return []                       # no fusion beast: getting off one is nothing to do
         verb, _sp, rest = line.partition(" ")
         since = int(rest or 0)
         if verb == "casts":
@@ -241,6 +244,11 @@ class Game:
     def note_dialog(self, d: dict[str, Any], why: str) -> None:
         pass
 
+    def approach(self, name: str, at: tuple[float, float] | None=None) -> dict[str, Any] | None:
+        if name not in self.pages:
+            return None
+        return {"name": name, "x": at[0] if at else self.x, "y": at[1] if at else self.y}
+
     def talk(self, name: str, at: tuple[float, float] | None=None) -> bool:
         if name not in self.pages:
             return False
@@ -388,6 +396,22 @@ def test_the_gangs_lake_is_entered_once_a_day(inner_hall: None) -> None:
     entered, about, over = gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS), "Fishing")
     assert entered and over and g.mid == 4222
     assert about == "level 3, saturation 99.9%, entry 0 arnebia"
+
+
+def test_off_the_beast_beside_the_entrance_not_inside_the_area(inner_hall: None,
+                                                              monkeypatch: pytest.MonkeyPatch) -> None:
+    """Inside, the seconds of getting off would come out of the area's half hour."""
+    g = Game(map_id=4004)
+    gang_pages(g)
+    off_on: list[int] = []
+    monkeypatch.setattr(gathering.beasts, "off", stand_in(gathering.beasts.off, lambda b: off_on.append(g.mid)))
+    gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS), "Fishing")
+    assert off_on == [4004] and g.mid == 4222          # off in the base, then in
+    off_on.clear()
+    g = Game(map_id=4004)
+    gang_pages(g)
+    gathering.gang_area(as_bot(g), dict(gathering.DEFAULTS), "Fishing", check_only=True)
+    assert off_on == [] and g.mid == 4004               # only looking: the beast stays on
 
 
 def test_check_only_and_a_fee_above_the_limit_never_enter(inner_hall: None) -> None:
@@ -643,6 +667,13 @@ def test_another_gangs_base_is_found_by_name_at_the_gang_entrance(monkeypatch: p
     monkeypatch.setattr(gathering.crafting, "in_gang", stand_in(gathering.crafting.in_gang, lambda b: g.mid == 4002))
     gathering._into_gang(as_bot(g), "Friends")
     assert picked == ["Friends"] and g.mid == 4002                  # its inner hall, where the Lake Entrance is
+    # the game took us straight into the gang's base on choosing its name (no hall menu)
+    g.mid = 1041
+    monkeypatch.setattr(gathering.crafting, "pick_at_entrance",
+                        stand_in(gathering.crafting.pick_at_entrance, lambda b, gang: setattr(g, "mid", 4002) or True))
+    start = time.monotonic()
+    gathering._into_gang(as_bot(g), "Allies")
+    assert g.mid == 4002 and time.monotonic() - start < 5
     monkeypatch.setattr(gathering.crafting, "pick_at_entrance", stand_in(gathering.crafting.pick_at_entrance, lambda b, gang: False))
     with pytest.raises(Stopped, match="no gang called Nobody"):
         gathering._into_gang(as_bot(g), "Nobody")

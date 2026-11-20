@@ -2329,6 +2329,11 @@ msgstr "Deixa {n} {item}."
 msgid "Let everyone get replies &again"
 msgstr "Permitir que todos recebam respostas &novamente"
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+"Permitir que outros programas pressionem &teclas no jogo (NVDA Remote, um mapeador de controle)"
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr "Níveis ganhos: {n}, nível atual {level}"
 
@@ -6382,6 +6387,9 @@ msgstr "nenhuma loja em {map} vende {item} — não vou a outra cidade por isso"
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "nenhuma loja próxima oferece {item} — consulte logs\\dialogs.log"
 
+msgid "no shop sells {item}"
+msgstr "nenhuma loja vende {item}"
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "não há depósito em {map} — não retirando {item}"
 
@@ -7432,6 +7440,10 @@ msgid ""
 msgstr ""
 "a ficha do personagem ainda não mostra a vitalidade (reinicie o jogo para carregar o novo agente) — coletando até ela acabar"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
 
@@ -7746,6 +7758,9 @@ msgstr "não há {item} no depósito"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "não há {item} no depósito nem Arnebia para comprá-lo"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr "o storehouse não tem {item}, e nenhuma loja vende"
+
 msgid "the storehouse has {n} {item}"
 msgstr "o depósito tem {n} {item}"
 
@@ -7994,9 +8009,8 @@ msgid "usable items"
 msgstr ""
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"usou {card}, mas a ficha do personagem não mostra nenhum cartão de experiência ativo — tentando novamente em um minuto"
 
 msgid "using the hearthstone key"
 msgstr "usando a tecla da pedra de retorno"
@@ -8448,6 +8462,9 @@ msgstr "{name} — {server}"
 msgid "{name} asks: {what}"
 msgstr "{name} pergunta: {what}"
 
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+
 msgid "{name} copy"
 msgstr "cópia de {name}"
 
@@ -8584,6 +8601,11 @@ msgstr "{npc} não oferece a troca"
 
 msgid "{npc} offers no hunting bounty"
 msgstr "{npc} não oferece recompensa de caça"
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
+msgstr ""
+"o menu de {npc} não mostrou {item} - veja logs\\dialogs.log; tentando a próxima loja mais perto"
 
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} cada"
@@ -8957,3 +8979,8 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr ""
 #~ "digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "usou {card}, mas a ficha do personagem não mostra nenhum cartão de experiência ativo — tentando novamente em um minuto"

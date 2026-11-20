@@ -446,16 +446,17 @@ def _into_gang(b: Bot, gang: str) -> None:
         return
     b.close_dialogs()
     town.visit(b, "gang_entrance")
+    mid = b.map_id()        # before the pick: choosing another gang can take us straight into its base
     if not crafting.pick_at_entrance(b, gang):
         raise Stopped(_("the Gang Entrance lists no gang called {gang}", gang=gang))
-    mid = b.map_id()
-    d = b.wait_dialog(2.0)
+    d = None if b.map_id() != mid else b.wait_dialog(2.0)
     for hall in (r"(?i)inner\s+hall", r"(?i)outer\s+hall", r"(?i)^\s*enter\b"):
         if d and d.get("top") and b.find_entry(d["top"], hall) is not None:
             b.choose(hall)
             break
-    chores.confirm(b)
-    if not b.wait_map_change(mid, 15) or not crafting.in_gang(b):
+    if b.map_id() == mid:
+        chores.confirm(b)
+    if (b.map_id() == mid and not b.wait_map_change(mid, 15)) or not crafting.in_gang(b):
         b.close_dialogs()
         raise Stopped(_("couldn't get into the gang {gang}'s base", gang=gang))
 
@@ -491,6 +492,10 @@ def gang_area(b: Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,
     cell = _entrance(b, cfg, name)
     if cell is None:
         return False, _("the gang has no {npc}", npc=name), True
+    if not check_only and b.approach(name, cell) is not None:
+        # off the fusion beast here, beside the entrance: inside, the seconds it takes would come out
+        # of the area's half hour, and gathering starts the moment we land
+        beasts.off(b)
     if not b.talk(name, cell):
         return False, _("couldn't talk to the {npc}", npc=name), False
     b.wait_dialog(3.0)
@@ -672,7 +677,7 @@ def _gang_round(b: Bot, cfg: dict[str, Any], skill: str, end_at: float | None, n
         b.log(about)
         notes.append(about)
         return ""
-    beasts.off(b)
+    beasts.off(b)                          # (off at the entrance already: only a beast put on since)
     why = ""
     for _round in range(LEFT_MOST):
         try:

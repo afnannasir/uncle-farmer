@@ -854,9 +854,10 @@ class FightingMixin(Parts):
         u = getattr(self, "unselectable", {}).get(e["id"])
         return u is not None and u[0] >= 2 and self.untrackable(e, now)
 
-    def _approach(self, mob: dict[str, Any], way: "_Approach") -> dict[str, Any] | None:
+    def _approach(self, mob: dict[str, Any], way: "_Approach", turned: bool = False) -> dict[str, Any] | None:
         """Walk up to the monster unless it is in reach already. The monster as it is now, or None
-        when the farm loop should pick again (taken, about to die, stuck, another one on the way)."""
+        when the farm loop should pick again (taken, about to die, stuck, another one on the way).
+        turned: this walk is to one that attacked us on the way to another (it turns only once)."""
         mid = mob["id"]
         if way.reachable(self.me(), mob, way.engage):
             return mob
@@ -886,6 +887,12 @@ class FightingMixin(Parts):
             self.log(_("{name} is about to be killed by someone else - next one", name=mob["name"]))
             return None
         if walked == "near" and not way.reachable(self.me(), m, way.engage) and not way.opened_early:
+            other = way.attacking(snap)
+            if other is not None:
+                self.log(_("{name} attacks us on the way - fighting it first", name=other["name"]))
+                if turned:
+                    return other if way.reachable(self.me(), other, way.engage) else None
+                return self._approach(other, _Approach(self, other["id"], way.rng, way.engage, way.pull), True)
             return None           # stopped beside another one: the farm loop picks again
         return m
 
@@ -1351,6 +1358,7 @@ class _Approach:
         self.closing: tuple[float, tuple[float, float], float] | None = None   # (when, where we were, how far) at the previous look
         self.opened_early = False      # we stopped short and started casting on the way in
         self.doomed: list[dict[str, Any]] = []
+        self.attacker: int | None = None   # a nearer monster attacking us that the walk stopped for (stop)
 
     def left_map(self, snap: dict[str, Any]) -> bool:
         return _other_map(self.here, snap)
@@ -1386,10 +1394,41 @@ class _Approach:
             return True
         if self.pull and self._closing_in(me, m):
             return True
+        if self._attacked_by_a_nearer_one(snap, me, m):
+            return True
         if b.farm_filter is not None and not moving:
             return any(e["id"] != self.mid and self.reachable(me, e)
                        for e in b.targets(snap, *b.farm_filter, limit=self.rng + 2))
         return False
+
+    def _attacked_by_a_nearer_one(self, snap: dict[str, Any], me: dict[str, Any], m: dict[str, Any]) -> bool:
+        """Another monster is attacking us (or our pet), nearer than the one we walk to, and the
+        farm would fight it: stop and fight that one first. The fight's walk doesn't stop for hits
+        (in_fight), and the "another one in reach" rule below counts only monsters strictly in reach
+        with a clear shot - a monster chasing us trails a step behind, just outside a melee reach.
+        Measured on recorded nights (packets + field logs): a Warrior walked on 2-33 s while one hit
+        it from 0.6-5 tiles, to reach one 20-55 tiles off, 40 times a night; a Mage 257 times; a
+        Hunter in a maze cave 110 times - players saw it leave the monsters round it for far ones."""
+        b = self.b
+        if self.attacker is not None or not b.p.get("fight_back", True):
+            return False
+        hitting = b.attackers() - {self.mid}
+        if not hitting:
+            return False
+        ours = math.hypot(m["x"] - me["x"], m["y"] - me["y"])
+        near = [e for e in b.targets(snap) if e["id"] in hitting
+                and math.hypot(e["x"] - me["x"], e["y"] - me["y"]) < ours]
+        if not near:
+            return False
+        self.attacker = min(near, key=lambda e: math.hypot(e["x"] - me["x"], e["y"] - me["y"]))["id"]
+        return True
+
+    def attacking(self, snap: dict[str, Any]) -> dict[str, Any] | None:
+        """The attacker the walk stopped for (stop), as this look has it: alive and on this map."""
+        if self.attacker is None or self.left_map(snap):
+            return None
+        e = next((e for e in snap["entities"] if e["id"] == self.attacker), None)
+        return e if e is not None and e.get("hp", 0) > 0 else None
 
     def _closing_in(self, me: dict[str, Any], m: dict[str, Any]) -> bool:
         """The monster comes at us and is within the opening-fire range: fire early."""
