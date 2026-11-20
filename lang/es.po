@@ -2592,6 +2592,9 @@ msgstr "Mensaje añadido a la lista de filtros."
 msgid "Mining"
 msgstr "Minería"
 
+msgid "Minutes without a kill:"
+msgstr "Minutos sin matar:"
+
 msgid "Minutes:"
 msgstr "Minutos:"
 
@@ -4935,6 +4938,9 @@ msgstr "Cuando el farmeo se detiene solo (nunca después de pulsar Detener)"
 msgid "When its amiability is below:"
 msgstr "Cuando su cariño esté por debajo de:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Si no se mata nada durante un rato, probar en otro sitio y luego parar"
+
 msgid "When the bag is &full outside:"
 msgstr "Cuando la bolsa esté llena &fuera:"
 
@@ -6455,6 +6461,15 @@ msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 "no hay Piedra de Hogar en una tecla ni en la bolsa: un combate que va mal se sigue peleando"
+
+msgid "no kill for {n} minutes"
+msgstr "ninguna muerte en {n} minutos"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "ninguna muerte en {n} minutos - deteniendo la partida"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "ninguna muerte en {n} minutos - probando otra parte del mapa"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "no se conoce ninguna entrada para la mazmorra {name}"

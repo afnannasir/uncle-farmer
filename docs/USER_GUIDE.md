@@ -365,6 +365,20 @@ You can change the 40-step distance or turn boss avoidance off in **Advanced →
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
+### When nothing is killed for a while
+
+On a night nobody watches, a run can go on for hours without a kill: every monster taken by other players, a corner with nothing left, a monster the game keeps refusing. Uncle Farmer keeps an eye on that.
+
+- After 10 minutes on the farm with no kill, it says "no kill for 10 minutes - trying another part of the map" and walks to the part of the farming area furthest from where it is.
+- After another 10 minutes with still no kill, it does the same again.
+- The third time, it says "no kill for 30 minutes - stopping the run" and ends the run the way a used-up drop time does: it goes where your plan says a run ends.
+
+A farm that fights only some names (a rare monster) never stops for this: it only tries elsewhere.
+
+A kill starts the count again. So does a trip away from the map (town, a death, a boss left behind) or a long pause, which start the minutes again. It never applies in a dungeon, whose timer ends the visit.
+
+You can change the 10 minutes, or turn it off, in **Advanced → Fighting**: **When nothing is killed for a while, try elsewhere, then stop**.
+
 ### Treasure chests
 
 Now and then a treasure chest appears on a farming map, and the game announces it to everyone: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.

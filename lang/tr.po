@@ -2574,6 +2574,9 @@ msgstr "Mesaj filtre listesine eklendi."
 msgid "Mining"
 msgstr "Madencilik"
 
+msgid "Minutes without a kill:"
+msgstr "Öldürmeden geçen dakika:"
+
 msgid "Minutes:"
 msgstr "Dakika:"
 
@@ -4884,6 +4887,9 @@ msgstr "Farm kendiliğinden durunca (Durdur'a bastıktan sonra asla)"
 msgid "When its amiability is below:"
 msgstr "Sevgisi şunun altındayken:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Bir süre hiçbir şey öldürülmezse başka yerde dene, sonra dur"
+
 msgid "When the bag is &full outside:"
 msgstr "Dışarıda çanta dolunca (&F):"
 
@@ -6391,6 +6397,15 @@ msgstr "{village} içinde dövüşülecek muhafız yok - başka bir köy deneniy
 msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr "tuşta ya da çantada Kalp taşı yok - kötü giden dövüşe devam edilecek"
+
+msgid "no kill for {n} minutes"
+msgstr "{n} dakikadır öldürme yok"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "{n} dakikadır öldürme yok - oturum durduruluyor"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "{n} dakikadır öldürme yok - haritanın başka bir yeri deneniyor"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "{name} zindanının bilinen girişi yok"

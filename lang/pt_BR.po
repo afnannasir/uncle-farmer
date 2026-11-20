@@ -2595,6 +2595,9 @@ msgstr "Mensagem adicionada à lista de filtros."
 msgid "Mining"
 msgstr "Mineração"
 
+msgid "Minutes without a kill:"
+msgstr "Minutos sem matar:"
+
 msgid "Minutes:"
 msgstr "Minutos:"
 
@@ -4942,6 +4945,9 @@ msgstr "Quando a coleta parar sozinha (nunca depois de você pressionar Parar)"
 msgid "When its amiability is below:"
 msgstr "Quando a amabilidade estiver abaixo de:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Quando nada é morto por um tempo, tentar em outro lugar e depois parar"
+
 msgid "When the bag is &full outside:"
 msgstr "Quando a bolsa estiver &cheia fora da cidade:"
 
@@ -6461,6 +6467,15 @@ msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 "nenhuma hearthstone em uma tecla ou na bolsa — uma luta que vai mal continua"
+
+msgid "no kill for {n} minutes"
+msgstr "nenhuma morte há {n} minutos"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "nenhuma morte há {n} minutos — parando a sessão"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "nenhuma morte há {n} minutos — tentando outra parte do mapa"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "nenhuma entrada conhecida para a masmorra {name}"

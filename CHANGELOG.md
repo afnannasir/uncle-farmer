@@ -23,6 +23,14 @@
 - Before and After farming triggers can apply a saved profile, and scripts can use
   `keyboard_profile "<name>"`.
 
+**A run that kills nothing for a long while does something about it**
+
+- After 10 minutes on the farm without a kill, the bot says so and walks to the part of the farming
+  area furthest from where it is; after another 10 minutes, again; the third time it ends the run
+  the way a used-up drop time does. A kill starts the count again, and so does a trip away or a
+  long pause. Never in a dungeon. Advanced → Fighting: **When nothing is killed for a while, try
+  elsewhere, then stop** (on, 10 minutes).
+
 ## 1.2.2
 
 **No more experience cards one after another in dungeons**

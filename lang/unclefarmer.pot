@@ -2525,6 +2525,9 @@ msgstr ""
 msgid "Mining"
 msgstr ""
 
+msgid "Minutes without a kill:"
+msgstr ""
+
 msgid "Minutes:"
 msgstr ""
 
@@ -4722,6 +4725,9 @@ msgstr ""
 msgid "When its amiability is below:"
 msgstr ""
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr ""
+
 msgid "When the bag is &full outside:"
 msgstr ""
 
@@ -6172,6 +6178,15 @@ msgstr ""
 
 msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
+msgstr ""
+
+msgid "no kill for {n} minutes"
+msgstr ""
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr ""
+
+msgid "no kill for {n} minutes - trying another part of the map"
 msgstr ""
 
 msgid "no known entrance for the dungeon {name}"

@@ -792,6 +792,10 @@ class AdvancedDialog(Dialog):
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
                                    p.get("skip_demonized_elites", False))
+        no_kill = p.get("no_kill_minutes", 10)
+        self.no_kill_on, self.no_kill = f.optional(
+            _("When nothing is killed for a while, try elsewhere, then stop"), bool(no_kill),
+            _("Minutes without a kill:"), no_kill or 10, 3, 120)
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
@@ -894,6 +898,7 @@ class AdvancedDialog(Dialog):
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
         p["open_chests"] = self.open_chests.GetValue()
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
+        p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0
         p["smart_skills"] = self.smart.GetValue()
         others = "never" if self.skill_others.GetSelection() == 1 else "auto"
         p["skill_use_others"] = others
