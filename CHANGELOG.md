@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+**No more walking past the monsters that hit you**
+
+- Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
+  first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
+  right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
+  monsters around it and chases far ones".
+
 **NVDA Remote and other programs can press keys in the game**
 
 - The game drops every key that another program sends, so nobody could play or help over NVDA
