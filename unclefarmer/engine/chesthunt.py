@@ -12,7 +12,8 @@ What the game does (chestwatch.py, Margit Rainforest, 2026-11-14 and 2026-11-20)
 
 Live on Underwater World (2026-11-20, a crowded map), a chest came every 3 to 5 minutes and was
 opened 3 seconds to 3 minutes after its announcement: a hunt never got there first. Both lines are
-heard whether we hunt or not, so the bot times every chest of the map it is on: when the last
+heard whether we hunt or not, so the bot times every chest of the map it is on (not those it opens
+itself: that says nothing of how fast the others are): when the last
 QUICK_OF were opened under MIN_LIFE seconds after their announcement on average, it doesn't hunt
 there (said once), and takes it up again once chests stay unopened longer (a quiet hour).
 
@@ -62,7 +63,7 @@ class Hunt:
 def _state(bot: Bot) -> dict[str, Any]:
     st: dict[str, Any] = bot.__dict__.setdefault("chest_hunt", {
         "mark": None, "listened": -1e9, "hunt": None,
-        "appeared": {},      # map -> when its last chest was announced (not opened yet)
+        "appeared": {},      # map -> (when its last chest was announced, our chests opened then)
         "lives": {},         # map -> seconds its last chests stayed unopened, newest last
         "quick": set(),      # maps said to be too quick to hunt on
     })
@@ -122,15 +123,15 @@ def listen(bot: Bot, mid: int) -> Hunt | None:
         if m and m.group(1).strip().lower() == here:
             before = st["appeared"].get(mid)
             if before is not None:
-                _timed(bot, mid, said - before)      # never opened: at least that long
-            st["appeared"][mid] = said
+                _timed(bot, mid, said - before[0])   # never opened: at least that long
+            st["appeared"][mid] = (said, bot.chests.opened)
             hunt = st["hunt"] = Hunt(mid, now, bot.chests.opened) if worth(bot, mid) else None
             continue
         m = OPENED.search(text)
         if m and m.group(1).strip().lower() == here:
             began = st["appeared"].pop(mid, None)
-            if began is not None:
-                _timed(bot, mid, said - began)
+            if began is not None and bot.chests.opened == began[1]:
+                _timed(bot, mid, said - began[0])    # one we opened says nothing of the others
             if hunt is not None and bot.chests.opened == hunt.opened and hunt.points is not None:
                 bot.log(_("the chest was opened by someone else - back to farming"))
             hunt = st["hunt"] = None

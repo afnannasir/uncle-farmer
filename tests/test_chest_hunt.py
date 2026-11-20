@@ -231,3 +231,24 @@ def test_a_quiet_map_is_hunted_on_and_a_crowded_one_again_once_chests_last() -> 
         chest_lasting(b, seconds)
     assert chesthunt.worth(as_bot(b), 5281)
     assert ("chests on Margit Rainforest (5281) stay unopened longer now - looking for them again", False) in b.lines
+
+
+
+def test_a_chest_we_open_ourselves_is_not_timed() -> None:
+    """Live: the third chest timed on Underwater World was the character's own, opened at once - it made the
+    map look quicker than the others were."""
+    b = Hunter()
+    hunt(b)
+    for seconds in (300, 300):
+        chest_lasting(b, seconds)
+    b.a.say(APPEARS)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    hunt(b)
+    b.chests.opened += 1                         # ours, at once
+    b.clock.advance(3)
+    b.a.say(OPENED)
+    b.clock.advance(chesthunt.LISTEN_EVERY)
+    hunt(b)
+    chest_lasting(b, 5)                          # then one the others take fast
+    # timed: 302, 302, 7 - still worth it; counting ours (3 s) would have made it 302, 5, 7
+    assert chesthunt.worth(as_bot(b), 5281)
