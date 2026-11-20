@@ -1,5 +1,13 @@
 # What's new
 
+## Unreleased
+
+**Teleport skills find their places in the menu**
+
+- A teleport skill (seen with Elven Teleportation) never found the place in its menu: the bot
+  said "doesn't list ... for this character" for every place and walked instead. It now reads the
+  place names where the game puts them, so the trip teleports as planned.
+
 ## 1.2.1
 
 **Updates from 1.2.0 work again**
