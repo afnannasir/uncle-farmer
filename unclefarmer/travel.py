@@ -576,16 +576,26 @@ def usable(t: Row) -> bool:
 
 
 def ride_entry(t: Row, free: bool) -> list[str]:
-    """The menu entries to choose for this ride. A cable car's menu has a free row for VIPs next to
-    the paying row, so the profile's VIP box picks one. An airship's menu has a single row whose
-    words tell whether we are a VIP ("Go to Violet city; VIP are free", live 2026-11-19) or pay
-    ("... costs 1000 arnebia"): either is taken, whatever the box says - a VIP who left it unticked
-    was told "the menu has no entry like ..." twice and walked the long way round."""
+    """The menu entries to choose for this ride: the free row for VIPs when the profile's VIP box
+    says so (and the ride has one), else the paying row."""
+    return t["choose_vip"] if free else t["choose"]
+
+
+def ride_other(t: Row, free: bool) -> list[str] | None:
+    """An airship's other row, taken when the menu doesn't have the one ride_entry names; None for
+    every other ride. What an airship's menu shows depends on the player: a VIP sees one row, "Go
+    to Violet city; VIP are free" (live 2026-11-19), and with the VIP box unticked was told "the
+    menu has no entry like ...costs" twice and walked the long way round. Everyone else sees two,
+    the free row first: "Go to tulip city; VIP are free" and "Go to tulip city; Costs 1000
+    Arnebia" (live 2026-11-20, Moon City). One pattern for either row took the first one there,
+    the free row, so nobody without VIP could board an airship any more: "the Airship
+    Administrator didn't take me anywhere". So the box's row first, and the other only when that
+    one isn't in the menu."""
     fare_rows: list[str] = t["choose"]
     vip_rows: object = t.get("choose_vip")
     if t.get("kind") == "airship" and json.is_array(vip_rows) and len(fare_rows) == 1 and len(vip_rows) == 1:
-        return ["(?:%s)|(?:%s)" % (fare_rows[0], vip_rows[0])]
-    return t["choose_vip"] if free else fare_rows
+        return fare_rows if free else cast("list[str]", vip_rows)
+    return None
 
 
 def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
@@ -613,6 +623,9 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
         leg: Leg = {"do": "npc", "map": mid, "npc": t["npc"], "at": t.get("at"), "stand": t.get("stand"),
                "choose": choose, "dest": t["dest"], "ride": t.get("ride"), "id": t["id"], "kind": t["kind"],
                "cost": t.get("cost"), "vip": free}
+        other = ride_other(t, free)
+        if other is not None:
+            leg["choose_else"] = other
         node: Node = ("l", t["id"])
         g[stand].append((TALK.get(t["kind"], 60), node, leg))
         landed: dict[str, float] = land["ports"]
