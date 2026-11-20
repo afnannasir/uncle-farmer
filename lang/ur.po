@@ -5720,8 +5720,10 @@ msgstr ""
 msgid "defence break"
 msgstr "defence break"
 
-msgid "demonized elites, left alone as the character settings say"
-msgstr "demonized elites, character settings ke mutabiq chhor diye"
+msgid ""
+"demonized elites or too close to one, left alone as the character settings say"
+msgstr ""
+"demonized elites ya un ke bohat qareeb, character settings ke mutabiq chhor diye"
 
 msgid "died and came back outside {map}"
 msgstr "mar kar {map} se bahar wapas aaya"
@@ -8333,6 +8335,10 @@ msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 "{boss} (boss) {n} qadam door hai - us se {keep} qadam door reh rahe hain"
 
+msgid "{boss} (a boss) keeps coming back - leaving for {map} for {n} s"
+msgstr ""
+"{boss} (boss) baar baar wapas aa raha hai - {n} s ke liye {map} ja rahe hain"
+
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} naye)"
 
@@ -8394,6 +8400,11 @@ msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
 msgstr "{dmg} damage (kul ka {share})"
+
+msgid ""
+"{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
+msgstr ""
+"{elite} (demonized elite) {n} qadam door hai - us se {keep} qadam door reh rahe hain"
 
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: {lo} se {hi} tak number likhein"
@@ -9215,6 +9226,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "collected the hunting bounty"
 #~ msgstr "hunting bounty le li"
+
+#~ msgid "demonized elites, left alone as the character settings say"
+#~ msgstr "demonized elites, character settings ke mutabiq chhor diye"
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"

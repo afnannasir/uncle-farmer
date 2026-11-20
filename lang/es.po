@@ -5728,8 +5728,10 @@ msgstr "muerto, pero el menú de reaparición nunca se abrió: reaparece a mano"
 msgid "defence break"
 msgstr "ruptura de defensa"
 
-msgid "demonized elites, left alone as the character settings say"
-msgstr "élites demonizadas, no se atacan como dicen los ajustes del personaje"
+msgid ""
+"demonized elites or too close to one, left alone as the character settings say"
+msgstr ""
+"élites demonizados o demasiado cerca de uno, dejados en paz según los ajustes del personaje"
 
 msgid "died and came back outside {map}"
 msgstr "murió y volvió fuera de {map}"
@@ -8325,6 +8327,9 @@ msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 "{boss} (un jefe) está a {n} pasos: manteniendo {keep} pasos de distancia"
 
+msgid "{boss} (a boss) keeps coming back - leaving for {map} for {n} s"
+msgstr "{boss} (un jefe) sigue volviendo - yendo a {map} durante {n} s"
+
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} nuevos)"
 
@@ -8385,6 +8390,11 @@ msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
 msgstr "{dmg} de daño ({share} del total)"
+
+msgid ""
+"{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
+msgstr ""
+"{elite} (un élite demonizado) está a {n} pasos - manteniéndose a {keep} pasos"
 
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: escribe un número de {lo} a {hi}"
@@ -9098,6 +9108,9 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "collected the hunting bounty"
 #~ msgstr "recogida la recompensa de caza"
+
+#~ msgid "demonized elites, left alone as the character settings say"
+#~ msgstr "élites demonizadas, no se atacan como dicen los ajustes del personaje"
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "poder de fusión {n}: a pie hasta que vuelva"

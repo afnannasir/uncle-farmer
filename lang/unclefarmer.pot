@@ -5479,7 +5479,8 @@ msgstr ""
 msgid "defence break"
 msgstr ""
 
-msgid "demonized elites, left alone as the character settings say"
+msgid ""
+"demonized elites or too close to one, left alone as the character settings say"
 msgstr ""
 
 msgid "died and came back outside {map}"
@@ -7946,6 +7947,9 @@ msgstr ""
 msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 
+msgid "{boss} (a boss) keeps coming back - leaving for {map} for {n} s"
+msgstr ""
+
 msgid "{buffer} ({n} new)"
 msgstr ""
 
@@ -8005,6 +8009,10 @@ msgid ""
 msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
+msgstr ""
+
+msgid ""
+"{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
 msgstr ""
 
 msgid "{field}: enter a number from {lo} to {hi}"
