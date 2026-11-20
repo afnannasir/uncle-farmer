@@ -56,6 +56,9 @@ msgstr "Otro person&aje"
 msgid "&Answer strangers:"
 msgstr "Responder &a desconocidos:"
 
+msgid "&Apply profile"
+msgstr ""
+
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Asistente (mata por ti; no puedes pelear allí):"
 
@@ -79,6 +82,9 @@ msgstr "Llamarlos por su nombre (&C)"
 
 msgid "&Cancel the shutdown"
 msgstr "&Cancelar el apagado"
+
+msgid "&Capture current keys"
+msgstr ""
 
 msgid "&Category:"
 msgstr ""
@@ -148,6 +154,9 @@ msgstr "Eliminar (&D)"
 msgid "&Delete filter"
 msgstr "Eliminar filtro (&D)"
 
+msgid "&Delete profile"
+msgstr ""
+
 msgid "&Donation, once a day:"
 msgstr "&Donación, una vez al día:"
 
@@ -156,6 +165,9 @@ msgstr "Mazmorra (&D):"
 
 msgid "&Edit"
 msgstr "&Editar"
+
+msgid "&Edit binding..."
+msgstr ""
 
 msgid "&Edit filter"
 msgstr "&Editar filtro"
@@ -292,6 +304,9 @@ msgstr ""
 msgid "&Keep:"
 msgstr "Conservar (&K):"
 
+msgid "&Keyboard Manager"
+msgstr ""
+
 msgid "&Keyboard shortcuts"
 msgstr "Atajos de teclado (&K)"
 
@@ -361,6 +376,9 @@ msgstr "&Nuevo chat con (nombre o identificador):"
 
 msgid "&New plan"
 msgstr "&Nuevo plan"
+
+msgid "&New profile"
+msgstr ""
 
 msgid "&No, keep current language"
 msgstr "&No, mantener el idioma actual"
@@ -479,6 +497,9 @@ msgstr "Ejecuta&r lo seleccionado"
 
 msgid "&Save"
 msgstr "Guardar (&S)"
+
+msgid "&Save profile"
+msgstr ""
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
@@ -908,6 +929,15 @@ msgstr ""
 msgid "Answering"
 msgstr "Respondiendo"
 
+msgid "Applied keyboard profile {name}."
+msgstr ""
+
+msgid "Apply a keyboard profile while out of combat with game menus closed."
+msgstr ""
+
+msgid "Apply keyboard profile {name}"
+msgstr ""
+
 msgid "Area a&round me"
 msgstr "Zona a mi al&rededor"
 
@@ -984,6 +1014,9 @@ msgstr "Mejor golpe normal: {hit}"
 
 msgid "Between fights"
 msgstr "Entre combates"
+
+msgid "Binding for {key}"
+msgstr ""
 
 msgid "Bot"
 msgstr "Bot"
@@ -1153,6 +1186,9 @@ msgstr ""
 
 msgid "Choose Before farming or After farming."
 msgstr "Elige Antes de farmear o Después de farmear."
+
+msgid "Choose a bound self-buff or shield to prepare."
+msgstr ""
 
 msgid "Choose a category to browse."
 msgstr ""
@@ -1330,6 +1366,9 @@ msgstr ""
 msgid "Couldn't apply the settings: {err}"
 msgstr "No se pudieron aplicar los ajustes: {err}"
 
+msgid "Couldn't assign {binding} to {key}."
+msgstr ""
+
 msgid "Couldn't change the game's settings: {err}"
 msgstr "No se pudieron cambiar los ajustes del juego: {err}"
 
@@ -1348,6 +1387,9 @@ msgstr "No se pudo exportar el plan: {err}"
 msgid "Couldn't export the settings: {err}"
 msgstr "No se pudieron exportar los ajustes: {err}"
 
+msgid "Couldn't find this character's quick phrases in the game folder."
+msgstr ""
+
 msgid "Couldn't import the plan: {err}"
 msgstr "No se pudo importar el plan: {err}"
 
@@ -1360,8 +1402,14 @@ msgstr "No se pudo abrir."
 msgid "Couldn't open it: {err}"
 msgstr "No se pudo abrir: {err}"
 
+msgid "Couldn't prepare {skill}."
+msgstr ""
+
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "No se pudo conectar con GitHub para buscar actualizaciones: {why}"
+
+msgid "Couldn't read keyboard settings from the game."
+msgstr ""
 
 msgid "Couldn't read the game: {err}"
 msgstr "No se pudo leer el juego: {err}"
@@ -1371,6 +1419,9 @@ msgstr "No se pudieron guardar los horarios: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "No se pudo guardar: {err}"
+
+msgid "Couldn't set the quick phrase on {key}."
+msgstr ""
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "No se pudo apagar el equipo: {err}"
@@ -1445,6 +1496,9 @@ msgstr "Muertes antes de detenerse:"
 
 msgid "Delay after success (&seconds):"
 msgstr "Espera tras el éxito (&segundos):"
+
+msgid "Delete keyboard profile {name}?"
+msgstr ""
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "¿Eliminar el horario de {what} ({who})?"
@@ -1552,8 +1606,14 @@ msgstr "Ganancias hasta ahora: {n} arnebia (recogidas y vendidas)"
 msgid "East edge (x):"
 msgstr "Borde este (x):"
 
+msgid "Edit binding"
+msgstr ""
+
 msgid "Edit filter"
 msgstr "Editar filtro"
+
+msgid "Edit quick phrase"
+msgstr ""
 
 msgid "Edit schedule"
 msgstr "Editar horario"
@@ -1606,8 +1666,14 @@ msgstr "Cristales de mejora"
 msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
+msgid "Enter a keyboard profile name on one line."
+msgstr ""
+
 msgid "Enter a name for the plan."
 msgstr "Escribe un nombre para el plan."
+
+msgid "Enter a quick phrase on one line."
+msgstr ""
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "Escribe un ID de sonido entre 1 y 99999."
@@ -2207,6 +2273,9 @@ msgstr ""
 msgid "International"
 msgstr "Internacional"
 
+msgid "Invalid keyboard slot."
+msgstr ""
+
 msgid "Invalid sound reply from the game agent."
 msgstr "Respuesta de sonido no válida del agente del juego."
 
@@ -2219,8 +2288,14 @@ msgstr ""
 msgid "Item name, exactly as the game writes it:"
 msgstr "Nombre del objeto, exactamente como lo escribe el juego:"
 
+msgid "Item type {id}"
+msgstr ""
+
 msgid "Item:"
 msgstr "Objeto:"
+
+msgid "Items"
+msgstr ""
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "&Objetos sin regla: tocar solo lo que recogió esta ejecución"
@@ -2254,6 +2329,15 @@ msgstr "Mantener activas las mejoras de la clase (&u)"
 
 msgid "Key"
 msgstr "Tecla"
+
+msgid "Key &bindings:"
+msgstr ""
+
+msgid "Keyboard Manager"
+msgstr ""
+
+msgid "Keyboard profile {name} was not found."
+msgstr ""
 
 msgid "Keyboard shortcuts"
 msgstr "Atajos de teclado"
@@ -2320,6 +2404,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Salir del farmeo esta cantidad de &minutos antes de la media hora (incluido el camino):"
+
+msgid "Leave unchanged"
+msgstr ""
 
 msgid "Leaves {n} {item}."
 msgstr ""
@@ -2627,6 +2714,9 @@ msgstr "No gastar nunca arnebia por debajo de (&w):"
 
 msgid "New &script"
 msgstr "Nuevo &script"
+
+msgid "New profile"
+msgstr ""
 
 msgid "New sc&ript"
 msgstr "Nuevo sc&ript"
@@ -2980,6 +3070,9 @@ msgstr "Modo contraataque"
 msgid "Page"
 msgstr ""
 
+msgid "Page {page}, {key}"
+msgstr ""
+
 msgid "Patrol loops: {loops}"
 msgstr "Rutas de patrulla: {loops}"
 
@@ -3131,6 +3224,12 @@ msgstr "Los mensajes privados aún no están listos en este juego."
 msgid "Private messages to you"
 msgstr "Mensajes privados para ti"
 
+msgid "Profession skills"
+msgstr ""
+
+msgid "Profile &name:"
+msgstr ""
+
 msgid "Program version: {v}"
 msgstr "Versión del programa: {v}"
 
@@ -3163,6 +3262,12 @@ msgstr "Circuito rápido (toda la cueva, carriles más separados)"
 
 msgid "Quick patrol loop"
 msgstr "Ronda de patrulla rápida"
+
+msgid "Quick phrase for {key} (blank leaves it unchanged)"
+msgstr ""
+
+msgid "Quick phrases"
+msgstr ""
 
 msgid "Range (tiles):"
 msgstr "Alcance (casillas):"
@@ -3247,6 +3352,9 @@ msgid ""
 "Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
 msgstr ""
 
+msgid "Replace keyboard profile {name}?"
+msgstr ""
+
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
@@ -3271,6 +3379,10 @@ msgstr "Descansar hasta tener salud (%) (&u):"
 
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Reinicia Uncle Farmer para cambiar el idioma."
+
+msgid ""
+"Restart the game with the current agent to apply these keyboard settings."
+msgstr ""
 
 msgid "Restock &now"
 msgstr "Repo&ner ahora"
@@ -3390,11 +3502,21 @@ msgstr "Guardar como script"
 msgid "Save changes to the script?"
 msgstr "¿Guardar los cambios del script?"
 
+msgid "Save the keyboard profile before applying it."
+msgstr ""
+
 msgid "Save the results"
 msgstr ""
 
 msgid "Saved account email:"
 msgstr "Correo de la cuenta guardada:"
+
+msgid ""
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+msgstr ""
+
+msgid "Saved keyboard &profiles:"
+msgstr ""
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Guardado. Está en la pestaña Planes como script."
@@ -3464,6 +3586,9 @@ msgstr "Elige primero un juego."
 
 msgid "Select a plan first."
 msgstr "Elige primero un plan."
+
+msgid "Select the same character before applying the keyboard profile."
+msgstr ""
 
 msgid "Sell and store by these lists, then come back"
 msgstr "Vender y guardar según estas listas, y luego volver"
@@ -3955,6 +4080,9 @@ msgid ""
 msgstr ""
 "Eso supera los 200 caracteres del juego: se envía en {n} partes, una cada 2 segundos (3 en Global), tan rápido como lo permite el juego."
 
+msgid "That keyboard profile no longer exists. Choose another action."
+msgstr ""
+
 msgid "That place is in your list already."
 msgstr "Ese lugar ya está en tu lista."
 
@@ -4050,6 +4178,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "La cueva (un personaje entra en una cueva por día de juego)"
 
+msgid "The character hasn't learned {skill}."
+msgstr ""
+
 msgid "The clipboard couldn't be opened."
 msgstr ""
 
@@ -4080,6 +4211,9 @@ msgstr "El lugar final ahora es donde estás: {map} ({x},{y})."
 
 msgid "The fastest one"
 msgstr "La más rápida"
+
+msgid "The game didn't confirm {skill}."
+msgstr ""
 
 msgid "The game didn't play it: {why}"
 msgstr "El juego no la reprodujo: {why}"
@@ -4428,6 +4562,9 @@ msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr ""
 "Hoy: {cave} está hecha; la siguiente después del reinicio del día de juego."
 
+msgid "Toggle p&reparation"
+msgstr ""
+
 msgid "Tone from &everyone else:"
 msgstr "Tono para todos los d&emás:"
 
@@ -4634,6 +4771,9 @@ msgstr "U&sar habilidades de área con esta cantidad de monstruos juntos:"
 
 msgid "Use item"
 msgstr "Usar objeto"
+
+msgid "Use keyboard_profile followed by one quoted profile name."
+msgstr ""
 
 msgid "Use the &combos of the activated talents"
 msgstr "Usar los &combos de los talentos activados"
@@ -8301,6 +8441,9 @@ msgstr "{item} está a punto de romperse"
 msgid "{item} is broken"
 msgstr "{item} está roto"
 
+msgid "{item} is missing from the bag."
+msgstr ""
+
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} ya no está en la tecla {key}: el juego puso otra cosa allí"
 
@@ -8769,6 +8912,9 @@ msgstr "{shard}: {old} -> {new} arnebia"
 msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
+msgid "{skill} (prepare when applied)"
+msgstr ""
+
 msgid "{skill} at {where}"
 msgstr "{skill} en {where}"
 
@@ -8793,6 +8939,9 @@ msgid ""
 "{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
 msgstr ""
 "{skill} no está en una tecla de habilidad y no hay ninguna tecla de habilidad vacía: ponla en una para usarla"
+
+msgid "{skill} isn't ready to prepare."
+msgstr ""
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill} no se lanzó contra {name}: {why}"

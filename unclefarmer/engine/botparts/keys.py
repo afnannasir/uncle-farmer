@@ -68,6 +68,10 @@ class KeysMixin(Parts):
         self.check()
         if self.press_slot(k):
             return
+        self.tap_key(k, ms)
+
+    def tap_key(self, k: str, ms: int = 60) -> None:
+        """Use the game's keyboard handler when a key must keep its configured modifiers."""
         self.wait_keys_free()
         r = self._link.send("key %s %d" % (k, ms))
         if not r.startswith("tapped"):

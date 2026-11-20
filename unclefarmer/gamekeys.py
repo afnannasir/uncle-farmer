@@ -133,9 +133,13 @@ def _game() -> dict[str, str]:
     return read(settings.load_app().get("game_folder"))
 
 
+def attack_keys_with_defaults(binds: dict[str, str]) -> list[str]:
+    return [k or d for k, d in zip(attack_keys(binds), ATTACK_DEFAULTS)]
+
+
 def attack_key_list() -> list[str]:
     """The 10 skill keys of the player's game, the game's own default where one isn't bound."""
-    return [k or d for k, d in zip(attack_keys(_game()), ATTACK_DEFAULTS)]
+    return attack_keys_with_defaults(_game())
 
 
 def page_turn_key() -> str:

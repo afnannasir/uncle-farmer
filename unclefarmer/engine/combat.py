@@ -259,8 +259,9 @@ class SkillBook:
     _saving_pyroblast_for_next = False
     _last_pack_size = 1
 
-    def __init__(self, bot: Parts) -> None:
+    def __init__(self, bot: Parts, *, game_folder: str | None = None) -> None:
         self.b = bot
+        self.game_folder = game_folder
         self.ok = False
         self.used: dict[str, float] = {}          # skill name -> last press time
         self.marked_at = 0.0    # last time we pressed a skill that can mark (Hunter)
@@ -353,8 +354,13 @@ class SkillBook:
         learned = set(names.values())
         self.cls = max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None)
         info: dict[str, Skill] = {s["name"]: s for s in know.get(self.cls or "", [])}
-        keys = gamekeys.attack_key_list()
-        self.page_key = gamekeys.page_turn_key()
+        if self.game_folder is None:
+            keys = gamekeys.attack_key_list()
+            self.page_key = gamekeys.page_turn_key()
+        else:
+            binds = gamekeys.read(self.game_folder)
+            keys = gamekeys.attack_keys_with_defaults(binds)
+            self.page_key = binds.get("W_ATTACK_PAGETURN") or gamekeys.PAGE_TURN_DEFAULT
         self.slots = {}          # page -> [skill dict with "key"]
         attack_keys: dict[str, int] = sk["attack_keys"]
         for idx, sid in attack_keys.items():

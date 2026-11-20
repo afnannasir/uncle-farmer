@@ -16,6 +16,7 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      potions, grocer, bank, blacksmith, forger, gem_craftsman,
                                      artificer, shard_market, fish_buyer, herb_buyer, ore_buyer...
     restock                          top up the profile's restock list now (storehouse, then shops)
+    keyboard_profile <name>          apply a saved Keyboard Manager profile and prepare its selected skills
     gem_maker [check]                run the Gem Maker as set in Tools, Gem Maker (check: only look)
     gem_breaker [check]              run the Gem Breaker as set in Tools, Gem Breaker (check: only look)
     enhance [check]                  run the Equipment Enhancer as set in Tools (check: only look)
@@ -99,7 +100,7 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import chores, constructionscan, crafting, gembreak, dungeon, follow, market, survey, town, triggers
+from . import chores, constructionscan, crafting, gembreak, dungeon, follow, keyboard, market, survey, town, triggers
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -115,7 +116,7 @@ BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
 COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
-            "sound_watch", "sound_mute", "sound_wait") + BLOCKS
+            "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
@@ -866,8 +867,19 @@ def _prep_sound(node: Node, rest: str, n: int):
     node.opts.update(ids=ids.text, timeout=timeout)
 
 
+def _prep_keyboard_profile(node: Node, rest: str, n: int):
+    args = _split(rest, n)
+    if len(args) != 1:
+        raise ScriptError(n, _("Use keyboard_profile followed by one quoted profile name."))
+    try:
+        node.opts["name"] = keyboard.profile_name(args[0])
+    except ValueError as error:
+        raise ScriptError(n, str(error)) from error
+
+
 PREPARE = {
     "login": _prep_login,
+    keyboard.COMMAND: _prep_keyboard_profile,
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
@@ -1207,6 +1219,9 @@ class Runner:
 
     def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
         triggers.run_job(b, "restock")
+
+    def _do_keyboard_profile(self, node: Node, b: Bot, o: dict[str, Any]):
+        keyboard.apply(b, o["name"])
 
     def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])

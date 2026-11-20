@@ -54,6 +54,7 @@ def what(code: str | None) -> str:
 # for the player, and /7 only for classes that heal others.
 WANTED = ("/6", "/5", "/4", "/7")
 HEALERS = ("priest", "sorceress", "witcher")
+SET_AGENT = 27
 _told: set[int | None] = set()       # characters whose phrases were listed in the log this session
 
 
@@ -71,12 +72,16 @@ def known(game_folder: str, char_id: int | None) -> bool:
     return bool(game_folder) and os.path.isfile(os.path.join(game_folder, "mw.exe")) and os.path.isdir(folder)
 
 
-def read(game_folder: str, char_id: int | None) -> dict[int, str]:
+def read(game_folder: str, char_id: int | None, *, strict: bool = False) -> dict[int, str]:
     """{slot: text} of this character's phrases ({} when it has none or the file can't be read)."""
     try:
         with open(path(game_folder, char_id), encoding="utf-8", errors="replace") as f:
             lines = f.read().splitlines()
+    except FileNotFoundError:
+        return {}
     except OSError:
+        if strict:
+            raise
         return {}
     out: dict[int, str] = {}
     for line in lines:

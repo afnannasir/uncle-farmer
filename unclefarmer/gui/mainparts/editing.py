@@ -230,6 +230,21 @@ class EditingMixin(FrameParts):
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
+        if which == "keyboard":
+            from ..keyboard import KeyboardDialog
+            pid = self.selected_pid()
+            if pid is None or pid in self.runs:
+                return
+            with KeyboardDialog(self, name, pid) as d:
+                if d.ShowModal() != wx.ID_OK or not d.apply_name:
+                    return
+                profile_name = d.apply_name
+            if self.selected_pid() != pid or active_profile(self) != name:
+                error(self, _("Select the same character before applying the keyboard profile."))
+                return
+            from ...engine import keyboard
+            self.run_errand(keyboard.command(profile_name), _("Keyboard Manager"))
+            return
         if self.selected_pid() not in self.runs:
             self.scanned = getattr(self, "scanned", {})
             self.scanned.pop(name, None)

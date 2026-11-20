@@ -56,6 +56,9 @@ msgstr "&Doosra kirdaar"
 msgid "&Answer strangers:"
 msgstr "&Ajnabiyon ko jawab dein:"
 
+msgid "&Apply profile"
+msgstr "Profile &lagayen"
+
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Madadgar (yeh aap ke liye maarta hai; wahan aap lad nahi sakte):"
 
@@ -79,6 +82,9 @@ msgstr "Unhein unke &naam se pukarein"
 
 msgid "&Cancel the shutdown"
 msgstr "Shutdown &mansookh karein"
+
+msgid "&Capture current keys"
+msgstr "Maujooda keys &parhein"
 
 msgid "&Category:"
 msgstr "&Qism:"
@@ -148,6 +154,9 @@ msgstr "&Hataayein"
 msgid "&Delete filter"
 msgstr "Filter &hataayein"
 
+msgid "&Delete profile"
+msgstr "Profile &mitayen"
+
 msgid "&Donation, once a day:"
 msgstr "&Chanda, din mein ek baar:"
 
@@ -156,6 +165,9 @@ msgstr "&Dungeon:"
 
 msgid "&Edit"
 msgstr "&Tabdeel"
+
+msgid "&Edit binding..."
+msgstr "Binding &badlein..."
 
 msgid "&Edit filter"
 msgstr "Filter &badlein"
@@ -290,6 +302,9 @@ msgstr ""
 msgid "&Keep:"
 msgstr "&Rakhein:"
 
+msgid "&Keyboard Manager"
+msgstr "&Keyboard Manager"
+
 msgid "&Keyboard shortcuts"
 msgstr "&Keyboard ke shortcuts"
 
@@ -358,6 +373,9 @@ msgstr "&Nayi baat-cheet (naam ya id):"
 
 msgid "&New plan"
 msgstr "&Naya plan"
+
+msgid "&New profile"
+msgstr "&Naya profile"
 
 msgid "&No, keep current language"
 msgstr "&Nahin, mojooda zaban rakhein"
@@ -476,6 +494,9 @@ msgstr "Chuna hua &chalayein"
 
 msgid "&Save"
 msgstr "&Mahfooz"
+
+msgid "&Save profile"
+msgstr "Profile &save karein"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
@@ -904,6 +925,15 @@ msgstr ""
 msgid "Answering"
 msgstr "Jawab dena"
 
+msgid "Applied keyboard profile {name}."
+msgstr "Keyboard profile {name} laga diya."
+
+msgid "Apply a keyboard profile while out of combat with game menus closed."
+msgstr "Larrai ke bahar aur game ke menu band karke keyboard profile lagayen."
+
+msgid "Apply keyboard profile {name}"
+msgstr "Keyboard profile {name} lagayen"
+
 msgid "Area a&round me"
 msgstr "Mere a&as paas ka ilaqa"
 
@@ -980,6 +1010,9 @@ msgstr "Behtareen normal hit: {hit}"
 
 msgid "Between fights"
 msgstr "Ladaiyon ke darmiyan"
+
+msgid "Binding for {key}"
+msgstr "{key} ki binding"
 
 msgid "Bot"
 msgstr "Bot"
@@ -1149,6 +1182,10 @@ msgstr ""
 
 msgid "Choose Before farming or After farming."
 msgstr "Farming se pehle ya farming ke baad chunein."
+
+msgid "Choose a bound self-buff or shield to prepare."
+msgstr ""
+"Tayari ke liye key par laga hua buff ya shield chunen jo apne aap par cast ho."
 
 msgid "Choose a category to browse."
 msgstr "Dekhne ke liye ek qism chunein."
@@ -1326,6 +1363,9 @@ msgstr "Sound sunna band nahi ho saka; connection band hone par band hoga."
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
 
+msgid "Couldn't assign {binding} to {key}."
+msgstr "{binding} ko {key} par nahi laga sake."
+
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Game ki tarteeb badal nahi saka: {err}"
 
@@ -1344,6 +1384,9 @@ msgstr "Mansooba export nahi ho saka: {err}"
 msgid "Couldn't export the settings: {err}"
 msgstr "Tarteeb export nahi ho sakin: {err}"
 
+msgid "Couldn't find this character's quick phrases in the game folder."
+msgstr "Game ke folder mein is character ke quick phrases nahi mile."
+
 msgid "Couldn't import the plan: {err}"
 msgstr "Mansooba import nahi ho saka: {err}"
 
@@ -1356,8 +1399,14 @@ msgstr "Yeh khola nahi ja saka."
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
 
+msgid "Couldn't prepare {skill}."
+msgstr "{skill} ki tayari nahi ho saki."
+
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "Updates dekhne ke liye GitHub tak nahi pahunch saka: {why}"
+
+msgid "Couldn't read keyboard settings from the game."
+msgstr "Game se keyboard settings nahi parh sake."
 
 msgid "Couldn't read the game: {err}"
 msgstr "Game parhi nahi ja saki: {err}"
@@ -1367,6 +1416,9 @@ msgstr "Schedules mahfooz nahi ho sake: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Mahfooz nahi ho saka: {err}"
+
+msgid "Couldn't set the quick phrase on {key}."
+msgstr "{key} par quick phrase nahi laga sake."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Computer band nahi kar saka: {err}"
@@ -1442,6 +1494,9 @@ msgstr "Rokne se pehle kitni maut:"
 
 msgid "Delay after success (&seconds):"
 msgstr "Kaamyaabi ke baad waqfa (&seconds):"
+
+msgid "Delete keyboard profile {name}?"
+msgstr "Keyboard profile {name} mitayen?"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "{what} ({who}) ka schedule hataayein?"
@@ -1548,8 +1603,14 @@ msgstr "Ab tak ki kamai: {n} arnebia (uthaye aur beche gaye)"
 msgid "East edge (x):"
 msgstr "Mashriqi kinara (x):"
 
+msgid "Edit binding"
+msgstr "Binding badlein"
+
 msgid "Edit filter"
 msgstr "Filter badlein"
+
+msgid "Edit quick phrase"
+msgstr "Quick phrase badlein"
 
 msgid "Edit schedule"
 msgstr "Schedule tabdeel karein"
@@ -1602,8 +1663,14 @@ msgstr "Enhance Crystals"
 msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr "Enhance Crystals (inhen torne mein arnebia lagta hai)"
 
+msgid "Enter a keyboard profile name on one line."
+msgstr "Keyboard profile ka naam ek line mein likhein."
+
 msgid "Enter a name for the plan."
 msgstr "Mansoobe ka naam likhein."
+
+msgid "Enter a quick phrase on one line."
+msgstr "Quick phrase ek line mein likhein."
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "1 aur 99999 ke darmiyan sound ID likhein."
@@ -2203,6 +2270,9 @@ msgstr ""
 msgid "International"
 msgstr "International"
 
+msgid "Invalid keyboard slot."
+msgstr "Keyboard slot ghalat hai."
+
 msgid "Invalid sound reply from the game agent."
 msgstr "Game agent se na-qabil-e-qabool sound jawab aya."
 
@@ -2215,8 +2285,14 @@ msgstr "Cheez"
 msgid "Item name, exactly as the game writes it:"
 msgstr "Cheez ka naam, bilkul jaisa game likhta hai:"
 
+msgid "Item type {id}"
+msgstr "Item type {id}"
+
 msgid "Item:"
 msgstr "Cheez:"
+
+msgid "Items"
+msgstr "Items"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Bila rule wali cheezein: sirf wohi &chhuein jo is run ne uthaya"
@@ -2250,6 +2326,15 @@ msgstr "Class ke b&uffs barqarar rakhein"
 
 msgid "Key"
 msgstr "Key"
+
+msgid "Key &bindings:"
+msgstr "Key ki &bindings:"
+
+msgid "Keyboard Manager"
+msgstr "Keyboard Manager"
+
+msgid "Keyboard profile {name} was not found."
+msgstr "Keyboard profile {name} nahi mila."
 
 msgid "Keyboard shortcuts"
 msgstr "Keyboard ke shortcuts"
@@ -2315,6 +2400,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Aadhe ghante se itne &minute pehle farm chhodein (wahan tak ka rasta shamil):"
+
+msgid "Leave unchanged"
+msgstr "Jaisa hai rehne dein"
 
 msgid "Leaves {n} {item}."
 msgstr "{n} {item} bachenge."
@@ -2623,6 +2711,9 @@ msgstr "&Is se kam arnebia kabhi kharch na karein:"
 
 msgid "New &script"
 msgstr "Naya &script"
+
+msgid "New profile"
+msgstr "Naya profile"
 
 msgid "New sc&ript"
 msgstr "Naya sc&ript"
@@ -2975,6 +3066,9 @@ msgstr "Jawabi hamle ke sath pur-aman mode"
 msgid "Page"
 msgstr "Safha"
 
+msgid "Page {page}, {key}"
+msgstr "Page {page}, {key}"
+
 msgid "Patrol loops: {loops}"
 msgstr "Patrol loops: {loops}"
 
@@ -3125,6 +3219,12 @@ msgstr "Is game mein zaati paigham abhi tayyar nahi."
 msgid "Private messages to you"
 msgstr "Aap ko zaati paigham"
 
+msgid "Profession skills"
+msgstr "Profession ki skills"
+
+msgid "Profile &name:"
+msgstr "Profile ka &naam:"
+
 msgid "Program version: {v}"
 msgstr "Program ka version: {v}"
 
@@ -3157,6 +3257,12 @@ msgstr "Tez chakkar (poora ghaar, raaste door door)"
 
 msgid "Quick patrol loop"
 msgstr "Tez patrol loop"
+
+msgid "Quick phrase for {key} (blank leaves it unchanged)"
+msgstr "{key} ka quick phrase (khaali chhorne se jaisa hai waisa rahega)"
+
+msgid "Quick phrases"
+msgstr "Quick phrases"
 
 msgid "Range (tiles):"
 msgstr "Range (tiles):"
@@ -3242,6 +3348,9 @@ msgid ""
 msgstr ""
 "Hamari gang ki &highlands repair karo (pehle 100% se kam, 100% wali aakhir mein)"
 
+msgid "Replace keyboard profile {name}?"
+msgstr "Keyboard profile {name} badal dein?"
+
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
@@ -3265,6 +3374,11 @@ msgstr "HP (%) tak &aaram karein:"
 
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Zaban badalne ke liye Uncle Farmer restart karein."
+
+msgid ""
+"Restart the game with the current agent to apply these keyboard settings."
+msgstr ""
+"Ye keyboard settings lagane ke liye game ko maujooda agent ke sath dobara kholein."
 
 msgid "Restock &now"
 msgstr "Abhi restock &karein"
@@ -3384,11 +3498,22 @@ msgstr "Script ki tarah mahfooz karein"
 msgid "Save changes to the script?"
 msgstr "Script ki tabdeeliyan mahfooz karein?"
 
+msgid "Save the keyboard profile before applying it."
+msgstr "Keyboard profile lagane se pehle save karein."
+
 msgid "Save the results"
 msgstr "Nataij mahfooz karein"
 
 msgid "Saved account email:"
 msgstr "Mahfooz account email:"
+
+msgid ""
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+msgstr ""
+"Mahfooz bindings game ke un slots par lagti hain. Jaisa hai rehne dein wale slots ki bindings waisi hi rehti hain."
+
+msgid "Saved keyboard &profiles:"
+msgstr "Mahfooz keyboard &profiles:"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
@@ -3458,6 +3583,9 @@ msgstr "Pehle game chunein."
 
 msgid "Select a plan first."
 msgstr "Pehle plan chunein."
+
+msgid "Select the same character before applying the keyboard profile."
+msgstr "Keyboard profile lagane se pehle wohi character chunen."
 
 msgid "Sell and store by these lists, then come back"
 msgstr "In lists ke mutabiq bechein aur store karein, phir wapas aayein"
@@ -3948,6 +4076,9 @@ msgid ""
 msgstr ""
 "Yeh game ke 200 huroof se lamba hai: yeh {n} hisson mein jayega, har 2 second mein ek (Global par 3), jitni jaldi game ijazat de."
 
+msgid "That keyboard profile no longer exists. Choose another action."
+msgstr "Woh keyboard profile ab maujood nahi. Koi aur action chunen."
+
 msgid "That place is in your list already."
 msgstr "Yeh jagah pehle se aap ki list mein hai."
 
@@ -4044,6 +4175,9 @@ msgstr "Bot {cap} se zyada kharch hone se pehle khareedna rok deta hai."
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
 
+msgid "The character hasn't learned {skill}."
+msgstr "Character ne {skill} nahi seekhi."
+
 msgid "The clipboard couldn't be opened."
 msgstr "Clipboard khul nahi saka."
 
@@ -4074,6 +4208,9 @@ msgstr "Anjaam ki jagah ab wahan hai jahan aap khare hain: {map} ({x},{y})."
 
 msgid "The fastest one"
 msgstr "Sab se tez"
+
+msgid "The game didn't confirm {skill}."
+msgstr "Game ne {skill} ki tasdeeq nahi ki."
 
 msgid "The game didn't play it: {why}"
 msgstr "game ne nahi chalaya: {why}"
@@ -4416,6 +4553,9 @@ msgstr "Aaj: abhi koi ghaar nahi."
 msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr "Aaj: {cave} ho gaya - agla game ke din ke reset ke baad."
 
+msgid "Toggle p&reparation"
+msgstr "&Tayari chalu ya band karein"
+
 msgid "Tone from &everyone else:"
 msgstr "&Baqi sab ki awaaz:"
 
@@ -4622,6 +4762,9 @@ msgstr "Itne monsters paas paas hon to area &skills chalayein:"
 
 msgid "Use item"
 msgstr "Cheez istemal karein"
+
+msgid "Use keyboard_profile followed by one quoted profile name."
+msgstr "keyboard_profile ke baad quotes mein ek profile ka naam likhein."
 
 msgid "Use the &combos of the activated talents"
 msgstr "Chalu talents ke &combos istemal karein"
@@ -8311,6 +8454,9 @@ msgstr "{item} tootne wala hai"
 msgid "{item} is broken"
 msgstr "{item} toot gaya hai"
 
+msgid "{item} is missing from the bag."
+msgstr "{item} bag mein nahi hai."
+
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} ab key {key} par nahi hai - game ne wahan kuch aur rakh diya"
 
@@ -8784,6 +8930,9 @@ msgstr "{shard}: {old} -> {new} arnebia"
 msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr "{shard}: pehle {was}, baad mein {now}, {used} istemal hue"
 
+msgid "{skill} (prepare when applied)"
+msgstr "{skill} (profile lagate waqt tayar karein)"
+
 msgid "{skill} at {where}"
 msgstr "{skill}, {where} par"
 
@@ -8807,6 +8956,9 @@ msgid ""
 "{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
 msgstr ""
 "{skill} kisi skill key par nahi aur koi skill key khali nahi - istemal ke liye ise kisi key par lagayein"
+
+msgid "{skill} isn't ready to prepare."
+msgstr "{skill} tayari ke liye ready nahi hai."
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill} {name} par nahi chali: {why}"
