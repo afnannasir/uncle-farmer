@@ -64,6 +64,7 @@ public final class AgentTests {
         theVoiceFixCanBeSwitchedOff();
         theVoicePlayerRateFixMatchesTheGamesCode();
         theSpeechSwitchStillSilences();
+        keysFromOtherProgramsCountUntilSwitchedOff();
         SoundTests.run();
         LinkTests.run();
 
@@ -393,6 +394,8 @@ public final class AgentTests {
         }
         eq(StateServer.handle("ping", armed, mine, guarded), "pong", "ping");
         eq(StateServer.handle("voicefix off", armed, mine, guarded), "unknown", "no voice player loaded: nothing to switch");
+        eq(StateServer.handle("injected", armed, mine, guarded), "unknown", "no game class loaded: no switch for the keys other programs send");
+        eq(StateServer.handle("injected off", armed, mine, guarded), "unknown", "... and nothing to switch");
         eq(StateServer.handle("frobnicate", armed, mine, guarded), "unknown command: frobnicate", "unknown");
         eq(StateServer.handle("ask vitals", armed, mine, guarded), "refused: send 'arm' first", "ask needs arm");
         eq(StateServer.handle("key j", armed, mine, guarded), "refused: send 'arm' first", "keys need arm");
@@ -1189,6 +1192,74 @@ public final class AgentTests {
                 default: spoken += 3;
             }
         }
+    }
+
+    /** The game's key method as far as its check of the injected mark goes: javac writes the same
+     *  `bipush 16; iand; bipush 16; if_icmpeq` for it as the game has (javap of game.Win, pc 480). */
+    public static final class KeyStandIn {
+        public static int taken;
+
+        public static int a(int flags, int scan, int vk) {
+            if ((flags & 16) != 16) {
+                taken++;
+                return 0;
+            }
+            return 1;
+        }
+
+        /** Another method of the same shape without the check: left alone. */
+        public static int b(int x, int y, int z) {
+            return x + y + z;
+        }
+    }
+
+    /** Two checks in one class: not the class we know, so nothing is changed. */
+    public static final class TwoChecksStandIn {
+        public static int a(int flags, int scan, int vk) {
+            return (flags & 16) != 16 ? 0 : 1;
+        }
+
+        public static int c(int flags, int scan, int vk) {
+            return (flags & 16) != 16 ? 2 : 3;
+        }
+    }
+
+    private static void keysFromOtherProgramsCountUntilSwitchedOff() throws Exception {
+        final String name = KeyStandIn.class.getName();
+        byte[] plain = classBytes("AgentTests$KeyStandIn.class");
+        final byte[] switched = InjectedKeys.patch(plain);
+        check(switched != null && switched != plain, "the check of the injected mark is found in the key method");
+        check(InjectedKeys.patch(switched) == switched, "a class that already has the switch is left as it is");
+        check(InjectedKeys.patch(classBytes("AgentTests$TwoChecksStandIn.class")) == null, "two checks: not the class we know");
+        check(InjectedKeys.patch(classBytes("AgentTests$SpeechStandIn.class")) == null, "no such method: not the class");
+        ClassLoader loader = new ClassLoader(AgentTests.class.getClassLoader()) {
+            @Override
+            protected Class<?> loadClass(String n, boolean resolve) throws ClassNotFoundException {
+                if (n.equals(name)) {
+                    Class<?> c = findLoadedClass(n);
+                    return c != null ? c : defineClass(n, switched, 0, switched.length);
+                }
+                return super.loadClass(n, resolve);
+            }
+        };
+        Class<?> c = loader.loadClass(name);       // verified as it is first used: a bad rewrite fails here
+        java.lang.reflect.Method key = c.getMethod("a", int.class, int.class, int.class);
+        java.lang.reflect.Field mask = c.getField(InjectedKeys.FIELD);
+        java.lang.reflect.Field taken = c.getField("taken");
+        eq(mask.getInt(null), 0, "the switch starts at: the keys other programs send count");
+        eq(key.invoke(null, 0, 0x1E, 65), 0, "a key of the keyboard is taken");
+        eq(key.invoke(null, 0x10, 0x1E, 65), 0, "a key another program sent is taken too");
+        eq(key.invoke(null, 0x10 | 0x80, 0x1E, 65), 0, "... and its release");
+        eq(taken.getInt(null), 3, "all three went into the method's own work");
+        mask.setInt(null, InjectedKeys.INJECTED);
+        eq(key.invoke(null, 0x10, 0x1E, 65), 1, "switched off: the injected key is dropped, as the game does");
+        eq(key.invoke(null, 0x10 | 0x80, 0x1E, 65), 1, "... and its release");
+        eq(key.invoke(null, 0, 0x1E, 65), 0, "a key of the keyboard still counts");
+        eq(key.invoke(null, 0x80 | 0x01, 0x4B, 37), 0, "... with its other marks");
+        eq(taken.getInt(null), 5, "only the keyboard's keys went on");
+        mask.setInt(null, 0);
+        eq(key.invoke(null, 0x10, 0x1E, 65), 0, "switched on again while it runs");
+        eq(c.getMethod("b", int.class, int.class, int.class).invoke(null, 1, 2, 3), 6, "the other method is as it was");
     }
 
     private static void theSpeechSwitchStillSilences() throws Exception {

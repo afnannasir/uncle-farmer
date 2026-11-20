@@ -50,6 +50,9 @@ class SetupDialog(Dialog):
         self.status = f.readonly(_("Status:"), lines=2)
         self.install_btn, self.remove_btn = buttons(f.parent, f.box, (_("&Install"), self.on_install),
                                                     (_("&Remove"), self.on_remove))
+        # The game drops every key another program sends; the agent takes that check out (agent 72).
+        self.other_keys = f.check(_("Let other programs press &keys in the game (NVDA Remote, a controller mapper)"),
+                                  self.s.get("other_keys", True))
 
     def speech_page(self, nb: wx.Notebook) -> None:
         panel, box = page(nb, _("Speech and language"))
@@ -257,6 +260,7 @@ class SetupDialog(Dialog):
             self.s["skip_version"] = ""
         self.s["game_speech"] = SPEECH_MODES[max(0, self.game_speech.GetSelection())]
         self.s["fix_voice"] = self.fix_voice.GetValue()
+        self.s["other_keys"] = self.other_keys.GetValue()
         self.s["results_speak"] = "end" if self.speak_end.GetValue() else "never"
         self.s["results_every"] = self.every.GetValue() if self.progress.GetValue() else 0
         self.s["daily_stop"] = self.day_on.GetValue()

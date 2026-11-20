@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**NVDA Remote and other programs can press keys in the game**
+
+- The game drops every key that another program sends, so nobody could play or help over NVDA
+  Remote, and a controller mapper or an on-screen keyboard did nothing. With the agent in the
+  game those keys now count, as the keyboard's do, while the game's window has focus.
+- File, Settings, Game: "Let other programs press keys in the game (NVDA Remote, a controller
+  mapper)". On by default. Untick it to have the game drop them again, as it does by itself; it
+  changes at once, in every open game, without starting the game again.
+- Needs the new game agent (72): the bot asks to reinstall it, and the game has to be started
+  again once.
+
 **Updates with Mist World open no longer break Uncle Farmer**
 
 - An update that ran while a game still had the bot's agent loaded could stop half way with

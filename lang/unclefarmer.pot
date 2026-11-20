@@ -2267,6 +2267,10 @@ msgstr ""
 msgid "Let everyone get replies &again"
 msgstr ""
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr ""
 

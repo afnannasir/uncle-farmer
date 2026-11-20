@@ -16,10 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  *   game.Win.a(int flags, int scanCode, int vkCode)
  *
- * flags are the KBDLLHOOKSTRUCT flags: 0x80 = key up, 0x01 = extended key, and 0x10 = INJECTED. A
- * key with the injected bit is swallowed and ignored, which is why SendInput, NVDA Remote and
- * on-screen keyboards never worked and mwBot needs the Interception driver. Calling the method
- * ourselves with clean flags is indistinguishable from a physical key.
+ * flags are the KBDLLHOOKSTRUCT flags: 0x80 = key up, 0x01 = extended key, and 0x10 = INJECTED. The
+ * game swallows and ignores a key with the injected bit, which is why SendInput, NVDA Remote and
+ * on-screen keyboards never worked in it and mwBot needs the Interception driver. Calling the
+ * method ourselves with clean flags is indistinguishable from a physical key. (Since agent 72 the
+ * player's own injected keys count too: {@link InjectedKeys} puts a switch where that check was.)
  *
  * The method also ignores every key while the static boolean Win.v is false. windowActivated sets it
  * and windowDeactivated clears it, so it means "the game window has focus".
