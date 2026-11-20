@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**A dropped connection is noticed again**
+
+- Agent 73: when the game's connection drops but the game keeps showing its old world, the bot
+  notices within seconds and logs back in (with automatic login set up), or stops after a minute.
+  One night it fought two left-behind monsters for 55 minutes, every attack refused, no kills.
+
 **No more walking past the monsters that hit you**
 
 - Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
