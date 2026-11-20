@@ -26,9 +26,9 @@ class KeyboardDialog(Dialog):
         box = wx.BoxSizer(wx.VERTICAL)
         self.profiles = labeled(self, box, _("Saved keyboard &profiles:"), lambda w: wx.Choice(w))
         self.profiles.Bind(wx.EVT_CHOICE, self._choose)
-        buttons(self, box, (_("&New profile"), self._new), (_("&Capture current keys"), self._capture),
+        buttons(self, box, (_("&New profile"), self._new), (_("Capture current &keys"), self._capture),
                 (_("&Delete profile"), self._delete))
-        self.profile_name = labeled(self, box, _("Profile &name:"), lambda w: wx.TextCtrl(w))
+        self.profile_name = labeled(self, box, _("Profile na&me:"), lambda w: wx.TextCtrl(w))
         note = wx.StaticText(self, label=_("Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."))
         note.Wrap(510)
         box.Add(note, 0, wx.EXPAND | wx.ALL, 12)

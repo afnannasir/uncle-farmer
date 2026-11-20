@@ -83,9 +83,6 @@ msgstr "Unhein unke &naam se pukarein"
 msgid "&Cancel the shutdown"
 msgstr "Shutdown &mansookh karein"
 
-msgid "&Capture current keys"
-msgstr "Maujooda keys &parhein"
-
 msgid "&Category:"
 msgstr "&Qism:"
 
@@ -167,7 +164,7 @@ msgid "&Edit"
 msgstr "&Tabdeel"
 
 msgid "&Edit binding..."
-msgstr "Binding &badlein..."
+msgstr "Binding ba&dlein..."
 
 msgid "&Edit filter"
 msgstr "Filter &badlein"
@@ -1094,6 +1091,9 @@ msgstr "Mansookh"
 
 msgid "Cancel &reply"
 msgstr "&Jawab mansookh karein"
+
+msgid "Capture current &keys"
+msgstr "Maujooda &keys parhein"
 
 msgid "Category"
 msgstr "Qism"
@@ -2328,7 +2328,7 @@ msgid "Key"
 msgstr "Key"
 
 msgid "Key &bindings:"
-msgstr "Key ki &bindings:"
+msgstr "Key ki b&indings:"
 
 msgid "Keyboard Manager"
 msgstr "Keyboard Manager"
@@ -3222,8 +3222,8 @@ msgstr "Aap ko zaati paigham"
 msgid "Profession skills"
 msgstr "Profession ki skills"
 
-msgid "Profile &name:"
-msgstr "Profile ka &naam:"
+msgid "Profile na&me:"
+msgstr "Profile k&a naam:"
 
 msgid "Program version: {v}"
 msgstr "Program ka version: {v}"
@@ -9071,6 +9071,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Build at:"
 #~ msgstr "&Build kahan:"
 
+#~ msgid "&Capture current keys"
+#~ msgstr "Maujooda keys &parhein"
+
 #~ msgid "&Clean the bag (game menu, Clean the bag now)"
 #~ msgstr "&Basta saaf karein (game menu, Clean the bag now)"
 
@@ -9156,6 +9159,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Plan or script"
 #~ msgstr "Mansooba ya script"
+
+#~ msgid "Profile &name:"
+#~ msgstr "Profile ka &naam:"
 
 #~ msgid "Restoc&k supplies (game menu, Restock now)"
 #~ msgstr "Supplies dobara &bharein (game menu, Restock now)"

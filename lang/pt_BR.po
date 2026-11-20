@@ -57,7 +57,7 @@ msgid "&Answer strangers:"
 msgstr "&Responder a desconhecidos:"
 
 msgid "&Apply profile"
-msgstr ""
+msgstr "&Aplicar perfil"
 
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Assistente (ele luta por você; não é possível lutar nele):"
@@ -82,9 +82,6 @@ msgstr "Cham&á-los pelo nome"
 
 msgid "&Cancel the shutdown"
 msgstr "&Cancelar o desligamento"
-
-msgid "&Capture current keys"
-msgstr ""
 
 msgid "&Category:"
 msgstr ""
@@ -155,7 +152,7 @@ msgid "&Delete filter"
 msgstr "&Excluir filtro"
 
 msgid "&Delete profile"
-msgstr ""
+msgstr "Excluir perfil (&D)"
 
 msgid "&Donation, once a day:"
 msgstr "&Doação, uma vez por dia:"
@@ -167,7 +164,7 @@ msgid "&Edit"
 msgstr "&Editar"
 
 msgid "&Edit binding..."
-msgstr ""
+msgstr "&Editar atribuição..."
 
 msgid "&Edit filter"
 msgstr "&Editar filtro"
@@ -303,7 +300,7 @@ msgid "&Keep:"
 msgstr "&Manter:"
 
 msgid "&Keyboard Manager"
-msgstr ""
+msgstr "Gerenciador de teclado (&K)"
 
 msgid "&Keyboard shortcuts"
 msgstr "&Atalhos de teclado"
@@ -375,7 +372,7 @@ msgid "&New plan"
 msgstr "&Novo plano"
 
 msgid "&New profile"
-msgstr ""
+msgstr "&Novo perfil"
 
 msgid "&No, keep current language"
 msgstr "&Não, manter o idioma atual"
@@ -496,7 +493,7 @@ msgid "&Save"
 msgstr "&Salvar"
 
 msgid "&Save profile"
-msgstr ""
+msgstr "&Salvar perfil"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
@@ -931,13 +928,14 @@ msgid "Answering"
 msgstr "Respondendo"
 
 msgid "Applied keyboard profile {name}."
-msgstr ""
+msgstr "Perfil de teclado {name} aplicado."
 
 msgid "Apply a keyboard profile while out of combat with game menus closed."
 msgstr ""
+"Aplique um perfil de teclado fora de combate e com os menus do jogo fechados."
 
 msgid "Apply keyboard profile {name}"
-msgstr ""
+msgstr "Aplicar perfil de teclado {name}"
 
 msgid "Area a&round me"
 msgstr "Área ao meu &redor"
@@ -1017,7 +1015,7 @@ msgid "Between fights"
 msgstr "Entre combates"
 
 msgid "Binding for {key}"
-msgstr ""
+msgstr "Atribuição para {key}"
 
 msgid "Bot"
 msgstr "Bot"
@@ -1099,6 +1097,9 @@ msgstr "Cancelar"
 
 msgid "Cancel &reply"
 msgstr "Cancelar &resposta"
+
+msgid "Capture current &keys"
+msgstr "Capturar as teclas atuais (&K)"
 
 msgid "Category"
 msgstr ""
@@ -1190,6 +1191,7 @@ msgstr "Escolha Antes da coleta ou Depois da coleta."
 
 msgid "Choose a bound self-buff or shield to prepare."
 msgstr ""
+"Escolha um bônus próprio ou um escudo atribuído a uma tecla para preparar."
 
 msgid "Choose a category to browse."
 msgstr ""
@@ -1369,7 +1371,7 @@ msgid "Couldn't apply the settings: {err}"
 msgstr "Não foi possível aplicar as configurações: {err}"
 
 msgid "Couldn't assign {binding} to {key}."
-msgstr ""
+msgstr "Não foi possível atribuir {binding} a {key}."
 
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Não foi possível alterar as configurações do jogo: {err}"
@@ -1391,6 +1393,7 @@ msgstr "Não foi possível exportar as configurações: {err}"
 
 msgid "Couldn't find this character's quick phrases in the game folder."
 msgstr ""
+"Não foi possível encontrar as frases rápidas deste personagem na pasta do jogo."
 
 msgid "Couldn't import the plan: {err}"
 msgstr "Não foi possível importar o plano: {err}"
@@ -1405,13 +1408,13 @@ msgid "Couldn't open it: {err}"
 msgstr "Não foi possível abrir: {err}"
 
 msgid "Couldn't prepare {skill}."
-msgstr ""
+msgstr "Não foi possível preparar {skill}."
 
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "Não foi possível acessar o GitHub para procurar atualizações: {why}"
 
 msgid "Couldn't read keyboard settings from the game."
-msgstr ""
+msgstr "Não foi possível ler as configurações de teclado do jogo."
 
 msgid "Couldn't read the game: {err}"
 msgstr "Não foi possível ler os dados do jogo: {err}"
@@ -1423,7 +1426,7 @@ msgid "Couldn't save: {err}"
 msgstr "Não foi possível salvar: {err}"
 
 msgid "Couldn't set the quick phrase on {key}."
-msgstr ""
+msgstr "Não foi possível definir a frase rápida em {key}."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Não foi possível desligar o computador: {err}"
@@ -1500,7 +1503,7 @@ msgid "Delay after success (&seconds):"
 msgstr "Atraso após &sucesso (segundos):"
 
 msgid "Delete keyboard profile {name}?"
-msgstr ""
+msgstr "Excluir o perfil de teclado {name}?"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "Excluir o agendamento de {what} ({who})?"
@@ -1610,13 +1613,13 @@ msgid "East edge (x):"
 msgstr "Limite leste (x):"
 
 msgid "Edit binding"
-msgstr ""
+msgstr "Editar atribuição"
 
 msgid "Edit filter"
 msgstr "Editar filtro"
 
 msgid "Edit quick phrase"
-msgstr ""
+msgstr "Editar frase rápida"
 
 msgid "Edit schedule"
 msgstr "Editar agendamento"
@@ -1670,13 +1673,13 @@ msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr "Enhance Crystals (quebrá-los custa arnebia)"
 
 msgid "Enter a keyboard profile name on one line."
-msgstr ""
+msgstr "Digite o nome do perfil de teclado em uma única linha."
 
 msgid "Enter a name for the plan."
 msgstr "Informe um nome para o plano."
 
 msgid "Enter a quick phrase on one line."
-msgstr ""
+msgstr "Digite a frase rápida em uma única linha."
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "Digite um ID de som entre 1 e 99999."
@@ -2277,7 +2280,7 @@ msgid "International"
 msgstr "Internacional"
 
 msgid "Invalid keyboard slot."
-msgstr ""
+msgstr "Espaço de teclado inválido."
 
 msgid "Invalid sound reply from the game agent."
 msgstr "Resposta inválida de som recebida do agente do jogo."
@@ -2292,13 +2295,13 @@ msgid "Item name, exactly as the game writes it:"
 msgstr "Nome do item, exatamente como aparece no jogo:"
 
 msgid "Item type {id}"
-msgstr ""
+msgstr "Tipo de item {id}"
 
 msgid "Item:"
 msgstr "Item:"
 
 msgid "Items"
-msgstr ""
+msgstr "Itens"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Itens sem regra: afetar &somente o que foi coletado nesta execução"
@@ -2334,13 +2337,13 @@ msgid "Key"
 msgstr "Tecla"
 
 msgid "Key &bindings:"
-msgstr ""
+msgstr "Atribuições de teclas (&B):"
 
 msgid "Keyboard Manager"
-msgstr ""
+msgstr "Gerenciador de teclado"
 
 msgid "Keyboard profile {name} was not found."
-msgstr ""
+msgstr "O perfil de teclado {name} não foi encontrado."
 
 msgid "Keyboard shortcuts"
 msgstr "Atalhos de teclado"
@@ -2408,7 +2411,7 @@ msgstr ""
 "Sair da área de coleta com esta antecedência em &minutos da meia hora (incluindo o trajeto):"
 
 msgid "Leave unchanged"
-msgstr ""
+msgstr "Manter sem alteração"
 
 msgid "Leaves {n} {item}."
 msgstr "Deixa {n} {item}."
@@ -2717,7 +2720,7 @@ msgid "New &script"
 msgstr "Novo &script"
 
 msgid "New profile"
-msgstr ""
+msgstr "Novo perfil"
 
 msgid "New sc&ript"
 msgstr "Novo sc&ript"
@@ -3075,7 +3078,7 @@ msgid "Page"
 msgstr ""
 
 msgid "Page {page}, {key}"
-msgstr ""
+msgstr "Página {page}, {key}"
 
 msgid "Patrol loops: {loops}"
 msgstr "Rotas de patrulha: {loops}"
@@ -3229,10 +3232,10 @@ msgid "Private messages to you"
 msgstr "Mensagens privadas para você"
 
 msgid "Profession skills"
-msgstr ""
+msgstr "Habilidades de profissão"
 
-msgid "Profile &name:"
-msgstr ""
+msgid "Profile na&me:"
+msgstr "Nome do perfil (&M):"
 
 msgid "Program version: {v}"
 msgstr "Versão do programa: {v}"
@@ -3268,10 +3271,10 @@ msgid "Quick patrol loop"
 msgstr "Ronda rápida"
 
 msgid "Quick phrase for {key} (blank leaves it unchanged)"
-msgstr ""
+msgstr "Frase rápida para {key} (em branco mantém sem alteração)"
 
 msgid "Quick phrases"
-msgstr ""
+msgstr "Frases rápidas"
 
 msgid "Range (tiles):"
 msgstr "Alcance (blocos):"
@@ -3358,7 +3361,7 @@ msgstr ""
 "Reparar as &highlands da gangue (primeiro abaixo de 100%, as de 100% por último)"
 
 msgid "Replace keyboard profile {name}?"
-msgstr ""
+msgstr "Substituir o perfil de teclado {name}?"
 
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
@@ -3388,6 +3391,7 @@ msgstr "Reinicie o Uncle Farmer para alterar o idioma."
 msgid ""
 "Restart the game with the current agent to apply these keyboard settings."
 msgstr ""
+"Reinicie o jogo com o agente atual para aplicar estas configurações de teclado."
 
 msgid "Restock &now"
 msgstr "Reabastecer &agora"
@@ -3508,7 +3512,7 @@ msgid "Save changes to the script?"
 msgstr "Salvar as alterações no script?"
 
 msgid "Save the keyboard profile before applying it."
-msgstr ""
+msgstr "Salve o perfil de teclado antes de aplicá-lo."
 
 msgid "Save the results"
 msgstr ""
@@ -3519,9 +3523,10 @@ msgstr "E-mail da conta salvo:"
 msgid ""
 "Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
 msgstr ""
+"As atribuições salvas substituem seus espaços no jogo. Espaços marcados Manter sem alteração mantêm as atribuições atuais."
 
 msgid "Saved keyboard &profiles:"
-msgstr ""
+msgstr "&Perfis de teclado salvos:"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Salvo. Ele está na guia Planos como script."
@@ -3593,7 +3598,7 @@ msgid "Select a plan first."
 msgstr "Selecione um plano primeiro."
 
 msgid "Select the same character before applying the keyboard profile."
-msgstr ""
+msgstr "Selecione o mesmo personagem antes de aplicar o perfil de teclado."
 
 msgid "Sell and store by these lists, then come back"
 msgstr "Vender e guardar conforme estas listas e depois voltar"
@@ -4088,7 +4093,7 @@ msgstr ""
 "A mensagem excede o limite de 200 caracteres do jogo: será dividida em {n} partes, uma a cada 2 segundos (3 no canal Global), na velocidade máxima permitida pelo jogo."
 
 msgid "That keyboard profile no longer exists. Choose another action."
-msgstr ""
+msgstr "Esse perfil de teclado não existe mais. Escolha outra ação."
 
 msgid "That place is in your list already."
 msgstr "Esse local já está na sua lista."
@@ -4185,7 +4190,7 @@ msgid "The cave (a character goes into one cave a game day)"
 msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
 
 msgid "The character hasn't learned {skill}."
-msgstr ""
+msgstr "O personagem não aprendeu {skill}."
 
 msgid "The clipboard couldn't be opened."
 msgstr "Não foi possível abrir a área de transferência."
@@ -4219,7 +4224,7 @@ msgid "The fastest one"
 msgstr "O mais rápido"
 
 msgid "The game didn't confirm {skill}."
-msgstr ""
+msgstr "O jogo não confirmou {skill}."
 
 msgid "The game didn't play it: {why}"
 msgstr "O jogo não reproduziu: {why}"
@@ -4571,7 +4576,7 @@ msgstr ""
 "Hoje: {cave} foi concluída - a próxima estará disponível após a reinicialização do dia de jogo."
 
 msgid "Toggle p&reparation"
-msgstr ""
+msgstr "Ativar ou desativar p&reparação"
 
 msgid "Tone from &everyone else:"
 msgstr "Sinal sonoro de &outras pessoas:"
@@ -4780,7 +4785,7 @@ msgid "Use item"
 msgstr "Usar item"
 
 msgid "Use keyboard_profile followed by one quoted profile name."
-msgstr ""
+msgstr "Use keyboard_profile seguido de um nome de perfil entre aspas."
 
 msgid "Use the &combos of the activated talents"
 msgstr "Usar os &combos dos talentos ativados"
@@ -8458,7 +8463,7 @@ msgid "{item} is broken"
 msgstr "{item} está quebrado"
 
 msgid "{item} is missing from the bag."
-msgstr ""
+msgstr "{item} não está na mochila."
 
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} não está mais na tecla {key} — o jogo atribuiu outra coisa a ela"
@@ -8930,7 +8935,7 @@ msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr "{shard}: {was} antes, {now} depois, {used} usados"
 
 msgid "{skill} (prepare when applied)"
-msgstr ""
+msgstr "{skill} (preparar ao aplicar)"
 
 msgid "{skill} at {where}"
 msgstr "{skill} em {where}"
@@ -8958,7 +8963,7 @@ msgstr ""
 "{skill} não está atribuída a uma tecla de habilidade e não há tecla livre — atribua-a a uma tecla para usá-la"
 
 msgid "{skill} isn't ready to prepare."
-msgstr ""
+msgstr "{skill} não está pronta para preparar."
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill} não foi lançada em {name}: {why}"

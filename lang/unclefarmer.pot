@@ -83,9 +83,6 @@ msgstr ""
 msgid "&Cancel the shutdown"
 msgstr ""
 
-msgid "&Capture current keys"
-msgstr ""
-
 msgid "&Category:"
 msgstr ""
 
@@ -1074,6 +1071,9 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Cancel &reply"
+msgstr ""
+
+msgid "Capture current &keys"
 msgstr ""
 
 msgid "Category"
@@ -3134,7 +3134,7 @@ msgstr ""
 msgid "Profession skills"
 msgstr ""
 
-msgid "Profile &name:"
+msgid "Profile na&me:"
 msgstr ""
 
 msgid "Program version: {v}"

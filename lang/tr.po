@@ -57,7 +57,7 @@ msgid "&Answer strangers:"
 msgstr "Y&abancılara cevap ver:"
 
 msgid "&Apply profile"
-msgstr ""
+msgstr "Profili uygul&a"
 
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Asistan (senin yerine öldürür; orada sen dövüşemezsin):"
@@ -82,9 +82,6 @@ msgstr "Onlara adlarıyla hitap et (&C)"
 
 msgid "&Cancel the shutdown"
 msgstr "Kapatmayı iptal et (&C)"
-
-msgid "&Capture current keys"
-msgstr ""
 
 msgid "&Category:"
 msgstr ""
@@ -156,7 +153,7 @@ msgid "&Delete filter"
 msgstr "Filtreyi sil (&D)"
 
 msgid "&Delete profile"
-msgstr ""
+msgstr "Profili sil (&D)"
 
 msgid "&Donation, once a day:"
 msgstr "Bağış, gün&de bir kez:"
@@ -168,7 +165,7 @@ msgid "&Edit"
 msgstr "Düz&enle"
 
 msgid "&Edit binding..."
-msgstr ""
+msgstr "Atamayı düz&enle..."
 
 msgid "&Edit filter"
 msgstr "Filtr&eyi düzenle"
@@ -304,7 +301,7 @@ msgid "&Keep:"
 msgstr "Sa&kla:"
 
 msgid "&Keyboard Manager"
-msgstr ""
+msgstr "Klavye yöneticisi (&K)"
 
 msgid "&Keyboard shortcuts"
 msgstr "&Klavye kısayolları"
@@ -376,7 +373,7 @@ msgid "&New plan"
 msgstr "Ye&ni plan"
 
 msgid "&New profile"
-msgstr ""
+msgstr "Ye&ni profil"
 
 msgid "&No, keep current language"
 msgstr "Hayır, şimdiki dilde kal (&N)"
@@ -497,7 +494,7 @@ msgid "&Save"
 msgstr "Kaydet (&S)"
 
 msgid "&Save profile"
-msgstr ""
+msgstr "Profili kaydet (&S)"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr "Günün ganimet &süresinin bir kısmını sakla (karakterin ayarı yerine)"
@@ -925,13 +922,13 @@ msgid "Answering"
 msgstr "Yanıtlanıyor"
 
 msgid "Applied keyboard profile {name}."
-msgstr ""
+msgstr "{name} klavye profili uygulandı."
 
 msgid "Apply a keyboard profile while out of combat with game menus closed."
-msgstr ""
+msgstr "Klavye profilini dövüş dışındayken ve oyun menüleri kapalıyken uygula."
 
 msgid "Apply keyboard profile {name}"
-msgstr ""
+msgstr "{name} klavye profilini uygula"
 
 msgid "Area a&round me"
 msgstr "Çev&remdeki alan"
@@ -1009,7 +1006,7 @@ msgid "Between fights"
 msgstr "Dövüşler arasında"
 
 msgid "Binding for {key}"
-msgstr ""
+msgstr "{key} için atama"
 
 msgid "Bot"
 msgstr "Bot"
@@ -1091,6 +1088,9 @@ msgstr "İptal"
 
 msgid "Cancel &reply"
 msgstr "Yanıtı iptal et (&R)"
+
+msgid "Capture current &keys"
+msgstr "Geçerli tuşları al (&K)"
 
 msgid "Category"
 msgstr ""
@@ -1181,7 +1181,7 @@ msgid "Choose Before farming or After farming."
 msgstr "Farmdan önce ya da Farmdan sonra'yı seç."
 
 msgid "Choose a bound self-buff or shield to prepare."
-msgstr ""
+msgstr "Hazırlamak için bir tuşa atanmış kendi buff'ını ya da kalkanı seç."
 
 msgid "Choose a category to browse."
 msgstr ""
@@ -1360,7 +1360,7 @@ msgid "Couldn't apply the settings: {err}"
 msgstr "Ayarlar uygulanamadı: {err}"
 
 msgid "Couldn't assign {binding} to {key}."
-msgstr ""
+msgstr "{binding}, {key} tuşuna atanamadı."
 
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Oyunun ayarları değiştirilemedi: {err}"
@@ -1381,7 +1381,7 @@ msgid "Couldn't export the settings: {err}"
 msgstr "Ayarlar dışa aktarılamadı: {err}"
 
 msgid "Couldn't find this character's quick phrases in the game folder."
-msgstr ""
+msgstr "Bu karakterin hızlı ifadeleri oyun klasöründe bulunamadı."
 
 msgid "Couldn't import the plan: {err}"
 msgstr "Plan içe aktarılamadı: {err}"
@@ -1396,13 +1396,13 @@ msgid "Couldn't open it: {err}"
 msgstr "Açılamadı: {err}"
 
 msgid "Couldn't prepare {skill}."
-msgstr ""
+msgstr "{skill} hazırlanamadı."
 
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "Güncellemeleri aramak için GitHub'a ulaşılamadı: {why}"
 
 msgid "Couldn't read keyboard settings from the game."
-msgstr ""
+msgstr "Klavye ayarları oyundan okunamadı."
 
 msgid "Couldn't read the game: {err}"
 msgstr "Oyun okunamadı: {err}"
@@ -1414,7 +1414,7 @@ msgid "Couldn't save: {err}"
 msgstr "Kaydedilemedi: {err}"
 
 msgid "Couldn't set the quick phrase on {key}."
-msgstr ""
+msgstr "{key} tuşuna hızlı ifade konamadı."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Bilgisayar kapatılamadı: {err}"
@@ -1491,7 +1491,7 @@ msgid "Delay after success (&seconds):"
 msgstr "Başarıdan &sonra bekleme (saniye):"
 
 msgid "Delete keyboard profile {name}?"
-msgstr ""
+msgstr "{name} klavye profili silinsin mi?"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "{what} ({who}) için program silinsin mi?"
@@ -1598,13 +1598,13 @@ msgid "East edge (x):"
 msgstr "Doğu kenarı (x):"
 
 msgid "Edit binding"
-msgstr ""
+msgstr "Atamayı düzenle"
 
 msgid "Edit filter"
 msgstr "Filtreyi düzenle"
 
 msgid "Edit quick phrase"
-msgstr ""
+msgstr "Hızlı ifadeyi düzenle"
 
 msgid "Edit schedule"
 msgstr "Programı düzenle"
@@ -1658,13 +1658,13 @@ msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
 msgid "Enter a keyboard profile name on one line."
-msgstr ""
+msgstr "Klavye profilinin adını tek satırda yaz."
 
 msgid "Enter a name for the plan."
 msgstr "Plan için bir ad girin."
 
 msgid "Enter a quick phrase on one line."
-msgstr ""
+msgstr "Hızlı ifadeyi tek satırda yaz."
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "1 ile 99999 arasında bir ses kimliği gir."
@@ -2260,7 +2260,7 @@ msgid "International"
 msgstr "Uluslararası"
 
 msgid "Invalid keyboard slot."
-msgstr ""
+msgstr "Geçersiz klavye yuvası."
 
 msgid "Invalid sound reply from the game agent."
 msgstr "Oyun ajanından geçersiz ses yanıtı."
@@ -2275,13 +2275,13 @@ msgid "Item name, exactly as the game writes it:"
 msgstr "Eşya adı, tam olarak oyunun yazdığı gibi:"
 
 msgid "Item type {id}"
-msgstr ""
+msgstr "Eşya türü {id}"
 
 msgid "Item:"
 msgstr "Eşya:"
 
 msgid "Items"
-msgstr ""
+msgstr "Eşyalar"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Kuralı &olmayan eşyalar: yalnızca bu çalışmada toplananlara dokun"
@@ -2317,13 +2317,13 @@ msgid "Key"
 msgstr "Tuş"
 
 msgid "Key &bindings:"
-msgstr ""
+msgstr "Tuş atamaları (&B):"
 
 msgid "Keyboard Manager"
-msgstr ""
+msgstr "Klavye yöneticisi"
 
 msgid "Keyboard profile {name} was not found."
-msgstr ""
+msgstr "{name} klavye profili bulunamadı."
 
 msgid "Keyboard shortcuts"
 msgstr "Klavye kısayolları"
@@ -2390,7 +2390,7 @@ msgid ""
 msgstr "Yarı&m saatten şu kadar dakika önce farmı bırak (oraya yürüyüş dahil):"
 
 msgid "Leave unchanged"
-msgstr ""
+msgstr "Değiştirme"
 
 msgid "Leaves {n} {item}."
 msgstr ""
@@ -2699,7 +2699,7 @@ msgid "New &script"
 msgstr "Yeni betik (&S)"
 
 msgid "New profile"
-msgstr ""
+msgstr "Yeni profil"
 
 msgid "New sc&ript"
 msgstr "Yeni betik (&R)"
@@ -3052,7 +3052,7 @@ msgid "Page"
 msgstr ""
 
 msgid "Page {page}, {key}"
-msgstr ""
+msgstr "Sayfa {page}, {key}"
 
 msgid "Patrol loops: {loops}"
 msgstr "Devriye döngüleri: {loops}"
@@ -3206,10 +3206,10 @@ msgid "Private messages to you"
 msgstr "Sana gelen özel mesajlar"
 
 msgid "Profession skills"
-msgstr ""
+msgstr "Meslek becerileri"
 
-msgid "Profile &name:"
-msgstr ""
+msgid "Profile na&me:"
+msgstr "Profil adı (&M):"
 
 msgid "Program version: {v}"
 msgstr "Program sürümü: {v}"
@@ -3245,10 +3245,10 @@ msgid "Quick patrol loop"
 msgstr "Hızlı devriye döngüsü"
 
 msgid "Quick phrase for {key} (blank leaves it unchanged)"
-msgstr ""
+msgstr "{key} için hızlı ifade (boş bırakılırsa değişmez)"
 
 msgid "Quick phrases"
-msgstr ""
+msgstr "Hızlı ifadeler"
 
 msgid "Range (tiles):"
 msgstr "Menzil (kare):"
@@ -3333,7 +3333,7 @@ msgid ""
 msgstr ""
 
 msgid "Replace keyboard profile {name}?"
-msgstr ""
+msgstr "{name} klavye profilinin yerine yazılsın mı?"
 
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
@@ -3362,7 +3362,7 @@ msgstr "Dili değiştirmek için Uncle Farmer'ı yeniden başlat."
 
 msgid ""
 "Restart the game with the current agent to apply these keyboard settings."
-msgstr ""
+msgstr "Bu klavye ayarlarını uygulamak için oyunu güncel ajanla yeniden başlat."
 
 msgid "Restock &now"
 msgstr "Stoğu şimdi ye&nile"
@@ -3482,7 +3482,7 @@ msgid "Save changes to the script?"
 msgstr "Betikteki değişiklikler kaydedilsin mi?"
 
 msgid "Save the keyboard profile before applying it."
-msgstr ""
+msgstr "Uygulamadan önce klavye profilini kaydet."
 
 msgid "Save the results"
 msgstr ""
@@ -3493,9 +3493,10 @@ msgstr "Kayıtlı hesap e-postası:"
 msgid ""
 "Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
 msgstr ""
+"Kaydedilen atamalar oyundaki yuvalarının yerine geçer. Değiştirme olarak işaretli yuvalar şu anki atamalarını korur."
 
 msgid "Saved keyboard &profiles:"
-msgstr ""
+msgstr "Kayıtlı klavye &profilleri:"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Kaydedildi. Planlar sekmesinde betik olarak duruyor."
@@ -3567,7 +3568,7 @@ msgid "Select a plan first."
 msgstr "Önce bir plan seçin."
 
 msgid "Select the same character before applying the keyboard profile."
-msgstr ""
+msgstr "Klavye profilini uygulamadan önce aynı karakteri seç."
 
 msgid "Sell and store by these lists, then come back"
 msgstr "Bu listelere göre sat ve depola, sonra geri gel"
@@ -4050,7 +4051,7 @@ msgstr ""
 "Bu, oyunun 200 karakter sınırından uzun: oyunun izin verdiği hızla, {n} parça halinde her 2 saniyede bir (Genel kanalda 3) gider."
 
 msgid "That keyboard profile no longer exists. Choose another action."
-msgstr ""
+msgstr "Bu klavye profili artık yok. Başka bir eylem seç."
 
 msgid "That place is in your list already."
 msgstr "Bu yer zaten listende."
@@ -4146,7 +4147,7 @@ msgid "The cave (a character goes into one cave a game day)"
 msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 
 msgid "The character hasn't learned {skill}."
-msgstr ""
+msgstr "Karakter {skill} becerisini öğrenmemiş."
 
 msgid "The clipboard couldn't be opened."
 msgstr ""
@@ -4180,7 +4181,7 @@ msgid "The fastest one"
 msgstr "En hızlısı"
 
 msgid "The game didn't confirm {skill}."
-msgstr ""
+msgstr "Oyun {skill} becerisini onaylamadı."
 
 msgid "The game didn't play it: {why}"
 msgstr "Oyun onu çalmadı: {why}"
@@ -4518,7 +4519,7 @@ msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr "Bugün: {cave} tamamlandı - sıradaki, oyun günü sıfırlandıktan sonra."
 
 msgid "Toggle p&reparation"
-msgstr ""
+msgstr "Hazırlığı aç/kapat (&R)"
 
 msgid "Tone from &everyone else:"
 msgstr "Diğ&er herkesten gelen ses:"
@@ -4727,7 +4728,7 @@ msgid "Use item"
 msgstr "Eşya kullan"
 
 msgid "Use keyboard_profile followed by one quoted profile name."
-msgstr ""
+msgstr "keyboard_profile komutundan sonra tırnak içinde bir profil adı yaz."
 
 msgid "Use the &combos of the activated talents"
 msgstr "Etkin yeteneklerin kombolarını kullan (&C)"
@@ -8361,7 +8362,7 @@ msgid "{item} is broken"
 msgstr "{item} bozuk"
 
 msgid "{item} is missing from the bag."
-msgstr ""
+msgstr "{item} çantada yok."
 
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} artık {key} tuşunda değil - oyun oraya başka bir şey koydu"
@@ -8832,7 +8833,7 @@ msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
 msgid "{skill} (prepare when applied)"
-msgstr ""
+msgstr "{skill} (uygulanınca hazırla)"
 
 msgid "{skill} at {where}"
 msgstr "{skill}, {where}"
@@ -8859,7 +8860,7 @@ msgstr ""
 "{skill} bir beceri tuşunda değil ve boş beceri tuşu yok - kullanmak için bir tuşa koy"
 
 msgid "{skill} isn't ready to prepare."
-msgstr ""
+msgstr "{skill} hazırlanmaya hazır değil."
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill}, {name} hedefine kullanılmadı: {why}"
