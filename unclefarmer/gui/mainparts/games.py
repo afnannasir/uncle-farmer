@@ -212,6 +212,7 @@ class GamesMixin(FrameParts):
         self.progress()
         self.keep_silent()
         self.keep_voice_fix()
+        self.keep_other_keys()
         restorer = getattr(self, "sound_restorer", None)
         if restorer is not None:
             restorer.sync([game[0] for game in self.games])

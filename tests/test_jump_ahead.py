@@ -2,7 +2,7 @@
 """Escape to jump ahead (Phase 1b item 6, the Hunter's part): Escape jumps 12 tiles away from where
 we face, free of the global cooldown. The player turns first (a 0.1 s tap of the opposite key) so it
 carries them forward. The bot does that on a long walk on foot, only along a clear straight row that
-follows its planned way, and only once agent 74 shows the turn took."""
+follows its planned way, and only once agent 76 shows the turn took."""
 from __future__ import annotations
 
 from typing import Any

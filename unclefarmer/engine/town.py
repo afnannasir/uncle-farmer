@@ -387,33 +387,82 @@ def _shops_seen() -> dict[str, dict[str, list[str]]]:
         return {}
 
 
+def _save_shops_seen(seen: dict[str, dict[str, list[str]]]) -> None:
+    try:
+        with open(os.path.join(paths.PROFILES, SHOPS_SEEN), "w", encoding="utf-8") as f:
+            json.dump(seen, f, ensure_ascii=False, indent=1)
+    except OSError:
+        pass
+
+
 def note_shop(npc: Npc, item: str, sells: bool) -> None:
-    """Remember that this shop's menu listed the item (or didn't)."""
+    """Remember that this shop's menu listed the item (or didn't). A menu that lists it also wipes
+    out the misses counted against it (note_miss)."""
     with _shops_lock:
         seen = _shops_seen()
         row = seen.setdefault(_shop_key(npc), {"sells": [], "lacks": []})
         want, other = ("sells", "lacks") if sells else ("lacks", "sells")
         name = item.strip().lower()
-        row[other] = [x for x in row.get(other, []) if x != name]
+        drop = [other, "missed", "missed_twice"] if sells else [other]
+        for key in drop:
+            if key in row:
+                row[key] = [x for x in row[key] if x != name]
         if name not in row.setdefault(want, []):
             row[want].append(name)
-        try:
-            with open(os.path.join(paths.PROFILES, SHOPS_SEEN), "w", encoding="utf-8") as f:
-                json.dump(seen, f, ensure_ascii=False, indent=1)
-        except OSError:
-            pass
+        _save_shops_seen(seen)
+
+
+# A town shop whose list has the item is taken off the list of shops for it only when its menu
+# didn't show it this many times in a row. The lists were read in two towns (2026-11-19) and every
+# town's shop of the kind is assumed alike: one misread menu mustn't hide a shop that sells it, but
+# a shop that really doesn't stock it mustn't be walked to on every restock either.
+MISSES_TO_LACK = 2
+
+
+def note_miss(npc: Npc, item: str) -> int:
+    """A listed shop's menu didn't show the item: count it. Returns the misses in a row so far
+    (MISSES_TO_LACK or more: the shop is left out for it, shops_for)."""
+    with _shops_lock:
+        seen = _shops_seen()
+        row = seen.setdefault(_shop_key(npc), {"sells": [], "lacks": []})
+        name = item.strip().lower()
+        once, twice = row.setdefault("missed", []), row.setdefault("missed_twice", [])
+        if name in twice:
+            return MISSES_TO_LACK
+        if name in once:
+            row["missed"] = [x for x in once if x != name]
+            twice.append(name)
+            _save_shops_seen(seen)
+            return MISSES_TO_LACK
+        once.append(name)
+        _save_shops_seen(seen)
+        return 1
+
+
+def listed_shop(npc: Npc, item: str) -> bool:
+    """The item is on the list every town shop of this NPC's kind sells (knowledge.shop_lists): one
+    menu read without it doesn't make this shop one that lacks it (note_miss). The gang camps'
+    sellers aren't town shops - their menus were never read."""
+    role = knowledge.listed_role(item)
+    return bool(role) and atlas.kind(npc[0]) != "gang" and npc in knowledge.service_npcs(role or "")
 
 
 def shops_for(item: str) -> list[Npc]:
     """Where the item may be bought for arnebia: the shops the game data has seen selling it, and
-    every NPC of the kind that sells it (every town's potion seller or grocer) that hasn't turned
-    out not to stock it. The nearest one is visited first (buy)."""
+    every NPC of the kind that sells it (every town's potion seller or grocer). A town shop whose
+    list has it stays one until its menu didn't show it MISSES_TO_LACK times in a row (a "lacks"
+    note an older bot wrote from one reading doesn't count - a Tulip City Elf that once misread
+    Pharmacist Evan's menu went to Violet City for its potions for good); any other is left out
+    once its menu turned out not to stock it. The nearest one is visited first (buy)."""
     name = item.strip().lower()
     seen = _shops_seen()
     out: list[Npc] = [t[:4] for t in knowledge.traders(item, "sell") if t[5] == "arnebia"]
     role = knowledge.shop_role(item)
     for npc in knowledge.service_npcs(role) if role else []:
-        if npc not in out and name not in seen.get(_shop_key(npc), {}).get("lacks", []):
+        row = seen.get(_shop_key(npc), {})
+        gone = (name in row.get("missed_twice", []) if listed_shop(npc, item)
+                else name in row.get("lacks", []))
+        if npc not in out and not gone:
             out.append(npc)
     return out
 
@@ -431,6 +480,20 @@ def _buy_menu(b: Bot, item: str) -> bool:
         b.note_dialog(d, "looking for %s to buy" % item)
         return False
     return True
+
+
+def _not_on_menu(b: Bot, shop: Npc, item: str) -> None:
+    """The shop's menu didn't list the item. A town shop whose list has it is noted as lacking it
+    only after MISSES_TO_LACK misses in a row (one may be a misread menu, or not its own); any other
+    is at once, and isn't tried for it again."""
+    if listed_shop(shop, item):
+        if note_miss(shop, item) < MISSES_TO_LACK:
+            b.log(_("{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop",
+                    npc=shop[1], item=item))
+            return
+    else:
+        note_shop(shop, item, False)
+    b.log(_("{npc} doesn't sell {item} - trying the next nearest shop", npc=shop[1], item=item))
 
 
 def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
@@ -480,8 +543,7 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
                 note_shop(target, item, True)
                 type_number(b, n)
             elif not _buy_menu(b, item):
-                note_shop(target, item, False)
-                b.log(_("{npc} doesn't sell {item} - trying the next nearest shop", npc=target[1], item=item))
+                _not_on_menu(b, target, item)
                 continue
             else:
                 note_shop(target, item, True)
@@ -700,10 +762,15 @@ def possible(b: Bot, r: dict[str, Any], why: list[str], *, retry: bool = False) 
     lacks: set[str] = getattr(b, "storehouse_lacks", set())
     from_store = store and (retry or item not in lacks)
     price = knowledge.unit_price(item) or 1
-    from_shop = shop and (money is None or money >= price)
+    # no shop sells it (a grocer has no food or teleport stones): no trip for it, said once
+    sold = shop and bool(shops_for(r["item"]))
+    from_shop = sold and (money is None or money >= price)
     if from_store or from_shop:
         return True
-    if store and not shop:
+    if shop and not sold:
+        why.append(_("no shop sells {item}", item=r["item"]) if not store
+                   else _("the storehouse has no {item}, and no shop sells it", item=r["item"]))
+    elif store and not shop:
         why.append(_("the storehouse has no {item}", item=r["item"]))
     elif shop and money is not None and 0 < money < price:
         why.append(_("not enough arnebia to buy {item}: {price} each, {money} in the bag",
@@ -865,7 +932,9 @@ def _fill(b: Bot, r: dict[str, Any], missing: int, *, stock: int | None = None) 
                 break
     if stock is not None:
         missing = max(0, stock - counts(b).get(item.lower(), 0))
-    if missing > 0 and shop:
+    if missing > 0 and shop and (shops_for(item) or not store):
+        # from the storehouse and the shop, but no shop sells it: what the storehouse had is all
+        # (possible() said so); buying alone still says it doesn't know a shop (Stopped)
         got += buy(b, item, missing, **options) or 0
     return got
 

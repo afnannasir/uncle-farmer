@@ -1134,6 +1134,58 @@ def test_a_ride_that_fails_without_vip_changes_nothing_about_vip(clock: Clock) -
     assert not getattr(b, "vip_refused", False)
 
 
+# An airship's menu, live 2026-11-20 at Moon City with a character without VIP: two rows, the free
+# one first. A VIP sees only the free row (live 2026-11-19). The leg names the box's row and the
+# other one (travel.ride_other); the other is taken only when the menu hasn't the first.
+AIR_FREE, AIR_FARE = "Go to tulip city; VIP are free", "Go to tulip city; Costs 1000 Arnebia"
+AIR_FREE_ROW, AIR_FARE_ROW = "go to tulip city.*(vip|members) are free", "go to tulip city.*costs"
+
+
+def airship_bot(rows: list[str]) -> Bot:
+    b = Bot()
+    b.dialog_value = {"open": 1, "top": {"rows": [[entry(r)] for r in rows]}}
+    b.find_entry = lambda top, pattern: next(((i, 0) for i, r in enumerate(rows) if travel_mod.matches(pattern, r)), None)
+    state = {"changed": False}
+    b.map_id = lambda: 2000 if state["changed"] else 1001
+    b.settled_map = lambda seconds=15: 2000
+
+    def choose(pattern: str) -> dict[str, Any]:
+        b.chosen.append(pattern)
+        state["changed"] = True
+        return {"options": ["x"]}
+    b.choose = choose
+    return b
+
+
+def airship_leg(free: bool) -> dict[str, Any]:
+    first, other = (AIR_FREE_ROW, AIR_FARE_ROW) if free else (AIR_FARE_ROW, AIR_FREE_ROW)
+    return {**npc_leg(choose=(first,), npc="Airship Administrator", kind="airship"), "choose_else": [other], "vip": free}
+
+
+def test_without_vip_the_airship_s_paying_row_is_taken_though_the_free_row_comes_first() -> None:
+    b = airship_bot([AIR_FREE, AIR_FARE])
+    assert b.ride(airship_leg(free=False)) is True
+    assert b.chosen == [AIR_FARE_ROW]
+
+
+def test_a_vip_with_the_box_unticked_takes_the_one_row_the_airship_shows() -> None:
+    b = airship_bot([AIR_FREE])
+    assert b.ride(airship_leg(free=False)) is True
+    assert b.chosen == [AIR_FREE_ROW]
+
+
+def test_with_the_vip_box_ticked_the_airship_s_free_row_is_taken() -> None:
+    b = airship_bot([AIR_FREE, AIR_FARE])
+    assert b.ride(airship_leg(free=True)) is True
+    assert b.chosen == [AIR_FREE_ROW]
+
+
+def test_an_airship_menu_with_neither_row_is_asked_for_the_box_s_row_as_before() -> None:
+    b = airship_bot(["Leave"])
+    b.ride(airship_leg(free=False))
+    assert b.chosen == [AIR_FARE_ROW]          # choose() says the menu has no such entry, as it did
+
+
 def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map() -> None:
     b = Bot()
     state = {"changed": False}

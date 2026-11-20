@@ -98,7 +98,7 @@ FREEZE_TIME = 5.0        # seconds a freeze holds when the skill's text gives no
 # Escape as a kite (Phase 1b item 6, the Hunter's part): a monster on top of a ranged character that
 # has struck lately, HP under KITE_BELOW, and Escape up: jump the 12 tiles away from it (a cast at a
 # monster turns us to face it, measured), so it spends the next seconds walking instead of hitting.
-# Only with agent 74's facing, when the 12 tiles behind are walkable and the target is still within
+# Only with agent 76's facing, when the 12 tiles behind are walkable and the target is still within
 # reach from the landing. Under 60% HP the old rule still jumps without those checks.
 KITE_BELOW = 90          # % HP under which a monster on top is worth a jump
 KITE_ON_TOP = 3.0        # tiles: a monster this close is on top of us

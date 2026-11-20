@@ -2326,6 +2326,10 @@ msgstr ""
 msgid "Let everyone get replies &again"
 msgstr ""
 
+msgid ""
+"Let other programs press &keys in the game (NVDA Remote, a controller mapper)"
+msgstr ""
+
 msgid "Levels gained: {n}, now level {level}"
 msgstr ""
 
@@ -6226,6 +6230,9 @@ msgstr ""
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr ""
 
+msgid "no shop sells {item}"
+msgstr ""
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr ""
 
@@ -7535,6 +7542,9 @@ msgstr ""
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr ""
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr ""
+
 msgid "the storehouse has {n} {item}"
 msgstr ""
 
@@ -8352,6 +8362,10 @@ msgid "{npc} offers no exchange"
 msgstr ""
 
 msgid "{npc} offers no hunting bounty"
+msgstr ""
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""
 
 msgid "{npc}, {price} {cur} each"

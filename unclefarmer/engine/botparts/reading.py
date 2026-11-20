@@ -37,7 +37,7 @@ PAUSE_MOVED = 0.75      # tiles: moved by hand this far while paused, walks plan
 class ReadingMixin(Parts):
     # Agent errors that only mean the game is in the middle of something (a map loading, a list
     # changing under the reader): worth a few seconds' patience before the run is given up.
-    # agent 75: the game's connection has stayed closed (the game keeps showing the world it had)
+    # agent 73: the game's connection has stayed closed (the game keeps showing the world it had)
     CONNECTION_CLOSED = "noworld: the game's connection is closed"
     TRANSIENT = ("busy:", "noplayer:", "noworld: entity map", CONNECTION_CLOSED)
     CONNECTION_GONE = ("noplayer:", "noworld:")

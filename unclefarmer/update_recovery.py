@@ -26,9 +26,18 @@ PAYLOAD = "UncleFarmer.exe"     # the application, which updates replace
 BOOTSTRAP = "bootstrap.exe"     # native/bootstrap.c: runs updates and recovery, never replaced by one
 PROTECTED = {BOOTSTRAP, HERE, "profiles", "plans", "scripts", "logs", "messages", "results",
              "survey", "market", "update", "settings.json", "schedules.json"}
-# Journals written while the native front door was UncleFarmer.exe (and the app UncleFarmerApp.exe)
-# protected that name instead. Such a journal is still read, so its backups are never orphaned.
-LEGACY_PROTECTED = PROTECTED - {BOOTSTRAP} | {"unclefarmer.exe"}
+# A journal's "protected" list is a stamp, never a rule. What an update leaves alone is PROTECTED
+# above (_name refuses those entries) plus updater.NEVER, in the code that runs. Both directions
+# have to keep working across versions:
+# - Each copy's rescue runtime (.recovery/runtime) is published once and never updated, and a
+#   1.2.0 one accepts exactly this list. So every journal is written with JOURNAL_STAMP, as it
+#   is, forever: never derive it from PROTECTED or KEEP.
+# - The copier of a NEWER release continues the journal the running (older) app began. So any
+#   list of names is read: an older or a newer build may have written another. Once, a copier
+#   that wanted its own list exactly refused every 1.2.0 app's journal, and every update rolled back.
+JOURNAL_STAMP = ("agent/run", ".recovery", "bootstrap.exe", "data/game_texts.json", "logs", "messages",
+                 "plans", "profiles", "results", "schedules.json", "scripts", "settings.json", "survey",
+                 "update")
 KEEP = {"agent": "run", "data": "game_texts.json"}
 TERMINAL = {"COMMITTED", "ROLLED_BACK"}
 EARLY = {"DOWNLOADING", "EXTRACTING", "STAGING", "STAGED"}
@@ -148,16 +157,21 @@ def fingerprint(path: str) -> dict[str, str] | None:
     return result
 
 
-def durable_tree(path: str) -> None:
+def durable_tree(path: str, *, in_use_ok: bool = False) -> None:
+    """Flush every file under path. in_use_ok (the installed files, before an update): a file
+    another program has open as it runs (a DLL still loaded by a closing app, a game's agent jar)
+    can't be opened for writing, so it can't be flushed, and it needs no flush: nothing of ours
+    was written to it lately. Such a file is skipped instead of failing the update."""
     safe(path, path)
-    if os.path.isdir(path):
-        for parent, _, files in os.walk(path):
-            for name in files:
-                file = os.path.join(parent, name)
-                safe(file, path)
-                flush(file)
-    else:
-        flush(path)
+    files = [os.path.join(parent, name) for parent, _, names in os.walk(path) for name in names] \
+        if os.path.isdir(path) else [path]
+    for file in files:
+        safe(file, path)
+        try:
+            flush(file)
+        except PermissionError:
+            if not in_use_ok:
+                raise
 
 
 def durable_tree_for_entries(app: str, record: dict[str, Any]) -> None:
@@ -187,7 +201,7 @@ def validate(data: object, app: str) -> dict[str, Any]:
         raise RecoveryError("empty application replacement plan")
     if not 0 < record["owner"] <= 0xFFFFFFFF or record["owner_stamp"] <= 0:
         raise RecoveryError("invalid transaction process identity")
-    if record.get("protected") not in (protected_names(), protected_names(LEGACY_PROTECTED)):
+    if not _stamp(record.get("protected")):
         raise RecoveryError("invalid journal preservation rules")
     expected = os.path.join(app, HERE, record["id"])
     if (not isinstance(record.get("backup"), str) or not isinstance(record.get("staging"), str)
@@ -243,8 +257,13 @@ def _validate_progress(record: dict[str, Any]) -> None:
         raise RecoveryError("recovery progress does not match the backups")
 
 
-def protected_names(names: set[str] = PROTECTED) -> list[str]:
-    return sorted(names | {folder + "/" + name for folder, name in KEEP.items()})
+def _stamp(value: object) -> bool:
+    """A journal's protected stamp as any build writes one: distinct names (see JOURNAL_STAMP)."""
+    if not isinstance(value, list) or not 0 < len(cast(list[object], value)) <= 256:
+        return False
+    names = cast(list[object], value)
+    return (all(isinstance(n, str) and 0 < len(n) <= 260 for n in names)
+            and len({cast(str, n).casefold() for n in names}) == len(names))
 
 
 def _verify_preserved_entry(entry: dict[str, Any]) -> None:
@@ -350,7 +369,8 @@ def begin(app: str, previous: str, target: str, phase: str = "STAGING") -> dict[
     work = os.path.join(app, HERE, transaction)
     record: dict[str, Any] = dict(format=1, id=transaction, app=app, previous=previous, target=target, state=phase,
                                   staging=os.path.join(work, "new"), backup=os.path.join(work, "old"),
-                                  entries=[], backed_up=[], replaced=[], waiting=[], protected=protected_names(),
+                                  entries=[], backed_up=[], replaced=[], waiting=[],
+                                  protected=sorted(JOURNAL_STAMP),
                                   owner=os.getpid(), owner_stamp=current_stamp(), last="", rollback_required=True, committed=False)
     save(app, record, phase, "journal-created")
     return record
@@ -364,7 +384,7 @@ def plan(app: str, record: dict[str, Any], names: list[str]) -> None:
     for n in names:
         old = os.path.join(app, n)
         if os.path.exists(old):
-            durable_tree(old)
+            durable_tree(old, in_use_ok=True)
     atomic(os.path.join(os.path.dirname(record["backup"]), "plan.json"), record)
     save(app, record, "STAGED", "plan-durable")
 
@@ -418,10 +438,37 @@ def _remove_private_tree(path: str, app: str) -> None:
     checkpoint("cleanup-removed:" + os.path.relpath(path, app))
 
 
+def never_moved(app: str, record: dict[str, Any], entry: dict[str, Any]) -> bool:
+    """An installed entry this transaction never took out of place: its original is still there.
+    An original leaves only by one atomic move into the work folder's retired/ (it stays there
+    until cleanup: rollback copies from it, never consumes it), and only the staged replacement
+    takes its place. So an entry that is installed, has nothing in retired/ and is not the new
+    release's was never moved. This is read from the files, not from backed_up: a recovery that
+    fell back on plan.json has backed_up as the plan wrote it, empty. Its contents may still differ
+    from the plan's fingerprint: a game's agent appends its logs to agent/run while it runs, and a
+    backup taken a moment after the plan no longer matches. Rollback leaves such an entry as it is:
+    there is nothing to restore, and refusing would leave an update that can never be recovered
+    (every start retried it and failed the same way)."""
+    name, old = str(entry["name"]), entry["old"]
+    destination = os.path.join(app, name)
+    if old is None or not os.path.lexists(destination):
+        return False
+    retired = os.path.join(os.path.dirname(str(record["backup"])), "retired", name)
+    return not os.path.lexists(retired) and fingerprint(destination) != entry["new"]
+
+
+def unchanged(app: str, record: dict[str, Any]) -> bool:
+    """Every entry is as it was before the transaction (or was never moved)."""
+    return all(never_moved(app, record, e) or fingerprint(os.path.join(app, e["name"])) == e["old"]
+               for e in record["entries"])
+
+
 def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None]) -> None:
     # Validate all necessary recovery sources before modifying any destination.
     for entry in record["entries"]:
         name, old = entry["name"], entry["old"]
+        if never_moved(app, record, entry):
+            continue
         actual = fingerprint(os.path.join(app, name))
         if actual == old:
             continue
@@ -433,7 +480,7 @@ def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None
         name, old = entry["name"], entry["old"]
         destination = os.path.join(app, name)
         safe(destination, app)
-        if fingerprint(destination) == old:
+        if never_moved(app, record, entry) or fingerprint(destination) == old:
             continue
         if os.path.exists(destination):
             actual = fingerprint(destination)
@@ -468,7 +515,7 @@ def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None
             rename(restored, destination)
             checkpoint("rollback-restored:" + name)
         save(app, record, "ROLLING_BACK", "restored:" + name)
-    if any(fingerprint(os.path.join(app, e["name"])) != e["old"] for e in record["entries"]):
+    if not unchanged(app, record):
         raise RecoveryError("restored installation failed verification")
     save(app, record, "ROLLED_BACK", "rollback-verified")
 

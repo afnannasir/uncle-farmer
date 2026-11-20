@@ -473,7 +473,7 @@ def test_read_reconnects_a_dropped_game_and_keeps_reading(clock: Clock) -> None:
 
 
 def test_a_closed_connection_reconnects_at_once(clock: Clock) -> None:
-    # agent 75: the game kept its old world after the connection dropped (55 minutes of refused
+    # agent 73: the game kept its old world after the connection dropped (55 minutes of refused
     # casts at monsters no longer there): the agent says so, and the bot logs back in
     b = Read()
     ticking(b, clock)

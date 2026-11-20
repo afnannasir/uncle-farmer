@@ -446,7 +446,7 @@ def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
 
 
 def report_at(b: Bot) -> int | None:
-    """When the game's newest end-of-dungeon report arrived (agent 73 `report`), or None: one
+    """When the game's newest end-of-dungeon report arrived (agent 75 `report`), or None: one
     newer than this after a visit is that visit's."""
     try:
         r: Any = b.a.json("report")

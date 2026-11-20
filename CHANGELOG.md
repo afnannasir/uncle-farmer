@@ -8,9 +8,12 @@
   first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
   right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
   monsters around it and chases far ones".
-- Agent 75: when the game's connection drops but the game keeps showing its old world, the bot
-  now notices within seconds and logs back in. One night it fought two left-behind monsters for
-  55 minutes with every attack refused.
+
+**A dropped connection is noticed again**
+
+- Agent 73: when the game's connection drops but the game keeps showing its old world, the bot
+  notices within seconds and logs back in (with automatic login set up), or stops after a minute.
+  One night it fought two left-behind monsters for 55 minutes, every attack refused, no kills.
 
 **Following through team dungeons**
 
@@ -26,6 +29,59 @@
   counts for every death in this follow; respawn ask goes back to asking.
 - A map it can't plan its way to, or a minute without seeing you, no longer ends the follow: it
   waits and teleports to the team leader (Shift+P) as soon as the game allows. Only Stop ends it.
+
+**NVDA Remote and other programs can press keys in the game**
+
+- The game drops every key that another program sends, so nobody could play or help over NVDA
+  Remote, and a controller mapper or an on-screen keyboard did nothing. With the agent in the
+  game those keys now count, as the keyboard's do, while the game's window has focus.
+- File, Settings, Game: "Let other programs press keys in the game (NVDA Remote, a controller
+  mapper)". On by default. Untick it to have the game drop them again, as it does by itself; it
+  changes at once, in every open game, without starting the game again.
+- Needs the new game agent (72): the bot asks to reinstall it, and the game has to be started
+  again once.
+
+**Updates with Mist World open no longer break Uncle Farmer**
+
+- An update that ran while a game still had the bot's agent loaded could stop half way with
+  "backup verification failed: agent", and Uncle Farmer then wouldn't open at all. The game writes
+  its agent logs into the agent folder all the time, so the copy changed while it was being
+  backed up. The update now stops before it changes anything while a game has the agent loaded,
+  and says to close Mist World. The question that offers to close Mist World before an update
+  now also finds games it missed before, such as one started from a renamed game file.
+- If an update fails after all, it now puts the old version back even when the agent folder
+  changed meanwhile, instead of leaving a copy that never starts.
+- An update no longer stops on a file that a closing app still has open, like python314.dll.
+
+**Teleport skills find their places in the menu**
+
+- A teleport skill (seen with Elven Teleportation) never found the place in its menu: the bot
+  said "doesn't list ... for this character" for every place and walked instead. It now reads the
+  place names where the game puts them, so the trip teleports as planned.
+
+**Airships for VIPs, and potions bought in the town you are in**
+
+- An airship's menu has one entry: free for a VIP, 1,000 arnebia for everyone else. The bot now
+  takes it either way, whatever the VIP box says. A VIP who had left the box unticked was told
+  "the menu has no entry like ..." twice, and walked the long way round. Cable cars, whose menus
+  have a free row for VIPs next to the paying one, still follow the box.
+- The bot knows what every town's pharmacist and grocer sells, read from their menus in the game:
+  the twelve potions, and the grocers' pills, hearthstones, pliers, toolboxes, repair scrolls and
+  Pet Rice Rolls. A menu misread once no longer marks a town shop as lacking a potion for good: a
+  character in Tulip City went to Violet City for potions Pharmacist Evan sells. A town shop whose
+  menu doesn't show it twice in a row is left out for it, until it is seen selling it again.
+- What no shop sells (food, teleport stones, Super potions) no longer starts a trip: the bot says
+  so once. Prices the game data didn't have, like the pliers', now come from those lists.
+
+## 1.2.1
+
+**Updates from 1.2.0 work again**
+
+- Updating a 1.2.0 copy to a newer build stopped with "no valid recovery journal" and put 1.2.0
+  back every time. The newer updater now accepts the update record 1.2.0 starts, and writes one
+  that a 1.2.0 copy's rescue files can still read.
+- Before a new version is published, the last releases now update to it for real, with their own
+  updater. A version they can't update to is never published.
 
 **Gang construction reaches every place, and all your highlands**
 
@@ -354,7 +410,7 @@
   for 12 tiles instead of three. Only along a straight row with nothing in the way that follows
   the planned walk, and never on a beast. Escape is still kept for emergencies the same way; set
   it to "Emergency only" to stop the jumps ahead, or to Never to stop both. The log says "Escape
-  to jump ahead". Agent 74: the game's own facing is read, so the jump never goes the wrong way.
+  to jump ahead". Agent 76: the game's own facing is read, so the jump never goes the wrong way.
   Close the game and start it again to load the new agent.
 - Escape also kites now: when a monster on top of the Hunter has been hitting and HP is under
   90% (it waited for 60% before), the Hunter jumps 12 tiles away from it and keeps shooting while
@@ -364,7 +420,7 @@
 **The game's own report after a dungeon**
 
 - When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
-  The bot now reads it (agent 73) and adds it to its line about the visit, for example "Scorpion
+  The bot now reads it (agent 75) and adds it to its line about the visit, for example "Scorpion
   Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
   count is the true one: it includes kills the bot can't see.
 
@@ -431,7 +487,7 @@
   biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
   landed on it" and the results came out short. In one night of a character with such skills, 117
   kills were missed this way. The game reports these deaths in a message of their own, which the
-  agent now reads (agent 72). Close the game and start it again to load the new agent.
+  agent now reads (agent 74). Close the game and start it again to load the new agent.
 
 **The log says why a monster was left**
 
