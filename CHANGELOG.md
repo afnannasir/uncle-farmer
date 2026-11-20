@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**Teleport skills find their places in the menu**
+
+- A teleport skill (seen with Elven Teleportation) never found the place in its menu: the bot
+  said "doesn't list ... for this character" for every place and walked instead. It now reads the
+  place names where the game puts them, so the trip teleports as planned.
+
 **Airships for VIPs, and potions bought in the town you are in**
 
 - An airship's menu has one entry: free for a VIP, 1,000 arnebia for everyone else. The bot now
