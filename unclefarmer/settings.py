@@ -132,6 +132,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
+    "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
     "no_kill_minutes": 10,    # farming: no kill for this long -> another part of the map, the third time stop (engine/watchdog.py); 0: off
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for

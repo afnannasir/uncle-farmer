@@ -2405,6 +2405,9 @@ msgstr ""
 msgid "Logging"
 msgstr ""
 
+msgid "Look for a chest the game announces on the map"
+msgstr ""
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr ""
 
@@ -2523,6 +2526,9 @@ msgid "Message added to the filter list."
 msgstr ""
 
 msgid "Mining"
+msgstr ""
+
+msgid "Minutes to look for it:"
 msgstr ""
 
 msgid "Minutes without a kill:"
@@ -4840,6 +4846,9 @@ msgstr ""
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr ""
 
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr ""
+
 msgid "a condition or value is missing"
 msgstr ""
 
@@ -5707,6 +5716,9 @@ msgstr ""
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr ""
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr ""
+
 msgid "going back to where farming started"
 msgstr ""
 
@@ -5988,6 +6000,9 @@ msgstr ""
 msgid "login must be the first command in a script"
 msgstr ""
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr ""
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr ""
 
@@ -6140,6 +6155,9 @@ msgid "no cave lets in level {n} yet (the lowest needs level {low})"
 msgstr ""
 
 msgid "no chest came into the bag"
+msgstr ""
+
+msgid "no chest found in {n} minutes - back to farming"
 msgstr ""
 
 msgid "no construction of the gang was found to read"

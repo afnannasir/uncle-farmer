@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chests, corpses, keyslots, pets, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -160,8 +160,8 @@ class FarmingMixin(Parts):
                     continue
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if chests.open_nearby(as_bot(self), snap):
-                    continue
+                if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
+                    continue      # a chest opened, or the announced one looked for
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)

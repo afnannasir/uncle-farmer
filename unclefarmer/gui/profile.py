@@ -790,6 +790,10 @@ class AdvancedDialog(Dialog):
         self.boss_on, self.boss_keep = f.optional(
             _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
+        hunt = p.get("chest_hunt_minutes", 5)
+        self.hunt_on, self.hunt_minutes = f.optional(
+            _("Look for a chest the game announces on the map"), bool(hunt),
+            _("Minutes to look for it:"), hunt or 5, 1, 30)
         self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
                                    p.get("skip_demonized_elites", False))
         no_kill = p.get("no_kill_minutes", 10)
@@ -899,6 +903,7 @@ class AdvancedDialog(Dialog):
         p["open_chests"] = self.open_chests.GetValue()
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0
+        p["chest_hunt_minutes"] = self.hunt_minutes.GetValue() if self.hunt_on.GetValue() else 0
         p["smart_skills"] = self.smart.GetValue()
         others = "never" if self.skill_others.GetSelection() == 1 else "auto"
         p["skill_use_others"] = others

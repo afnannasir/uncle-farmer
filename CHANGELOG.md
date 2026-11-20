@@ -23,6 +23,18 @@
 - Before and After farming triggers can apply a saved profile, and scripts can use
   `keyboard_profile "<name>"`.
 
+**Treasure chests: looked for when the game announces them**
+
+- When the game says a chest has appeared on the map ("There's a Shining Small Chest in ... Go find
+  it"), the bot goes looking for it: it stops picking monsters (it still fights back), sweeps the
+  farming area on the travel beast in lanes about 100 steps apart, and opens the chest once it
+  sees it. It stops when the chest is opened, by it or by someone else, when the area has all been
+  seen, or after 5 minutes. Advanced → Fighting: **Look for a chest the game announces on the
+  map**, with the minutes.
+- A chest seen in the middle of a fight that was out of sight when the fight ended is no longer
+  forgotten: the bot goes back for it, for up to 5 minutes. On Margit Rainforest, one waited three
+  minutes that way.
+
 **A run that kills nothing for a long while does something about it**
 
 - After 10 minutes on the farm without a kill, the bot says so and walks to the part of the farming

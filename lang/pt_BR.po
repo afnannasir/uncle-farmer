@@ -2473,6 +2473,9 @@ msgstr "Entre primeiro com o personagem no jogo."
 msgid "Logging"
 msgstr "Registro"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Procurar o baú que o jogo anuncia no mapa"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Procurar uma nova &versão ao iniciar o Uncle Farmer"
 
@@ -2594,6 +2597,9 @@ msgstr "Mensagem adicionada à lista de filtros."
 
 msgid "Mining"
 msgstr "Mineração"
+
+msgid "Minutes to look for it:"
+msgstr "Minutos para procurar:"
 
 msgid "Minutes without a kill:"
 msgstr "Minutos sem matar:"
@@ -5066,6 +5072,9 @@ msgstr "uma linha de bate-papo"
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "baú à vista, a {n} passos: indo abri-lo"
 
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "um baú apareceu em {map} — procurando (até {n} minutos)"
+
 msgid "a condition or value is missing"
 msgstr "falta uma condição ou um valor"
 
@@ -5975,6 +5984,9 @@ msgstr "equipamento quebrado, sem caixa de ferramentas"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "obtendo até {n} cristais de aprimoramento de {kind} nível {lv}"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "voltando ao baú visto a {n} passos: indo abri-lo"
+
 msgid "going back to where farming started"
 msgstr "voltando ao ponto inicial da coleta"
 
@@ -6267,6 +6279,9 @@ msgstr "primeiro, entre em um personagem"
 msgid "login must be the first command in a script"
 msgstr "login deve ser o primeiro comando do script"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "a área toda foi vista, nenhum baú — de volta ao farm"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "cuidando de {pet}: PV {hp}/{max}"
 
@@ -6424,6 +6439,9 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr "nenhum baú entrou na mochila"
+
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "nenhum baú encontrado em {n} minutos — de volta ao farm"
 
 msgid "no construction of the gang was found to read"
 msgstr "nenhuma construção da gangue foi encontrada"

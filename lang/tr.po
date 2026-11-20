@@ -2452,6 +2452,9 @@ msgstr "Önce oyunda bu karakterle giriş yap."
 msgid "Logging"
 msgstr "Günlüğe kaydetme"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Oyunun haritada duyurduğu sandığı ara"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer açılırken yeni sürüm ara (&V)"
 
@@ -2573,6 +2576,9 @@ msgstr "Mesaj filtre listesine eklendi."
 
 msgid "Mining"
 msgstr "Madencilik"
+
+msgid "Minutes to look for it:"
+msgstr "Arama süresi (dakika):"
 
 msgid "Minutes without a kill:"
 msgstr "Öldürmeden geçen dakika:"
@@ -5009,6 +5015,9 @@ msgstr "bir sohbet satırı"
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "görüş alanında bir sandık var, {n} adım uzakta: açmaya gidiliyor"
 
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "{map} haritasında bir sandık çıktı - aranıyor ({n} dakikaya kadar)"
+
 msgid "a condition or value is missing"
 msgstr "bir koşul veya değer eksik"
 
@@ -5911,6 +5920,9 @@ msgstr "ekipman bozuk, alet kutusu yok"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Seviye {lv} {kind} Geliştirme Kristalleri {n} tane olana kadar alınıyor"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "{n} adım ötede görülen sandığa dönülüyor: açmaya gidiliyor"
+
 msgid "going back to where farming started"
 msgstr "farmın başladığı yere dönülüyor"
 
@@ -6203,6 +6215,9 @@ msgstr "önce bir karakterle giriş yap"
 msgid "login must be the first command in a script"
 msgstr "login bir betikteki ilk komut olmalı"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "bütün alana bakıldı, sandık yok - farma dönülüyor"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ile ilgileniliyor: HP {hp}/{max}"
 
@@ -6357,6 +6372,9 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr ""
+
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "{n} dakikada sandık bulunamadı - farma dönülüyor"
 
 msgid "no construction of the gang was found to read"
 msgstr ""

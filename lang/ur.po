@@ -2464,6 +2464,9 @@ msgstr "Pehle game mein character se login karein."
 msgid "Logging"
 msgstr "Logging"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Game map par jo chest announce kare, use dhoondo"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer shuru hone par naya &version dekhein"
 
@@ -2585,6 +2588,9 @@ msgstr "Paighaam filter fehrist mein shaamil ho gaya."
 
 msgid "Mining"
 msgstr "Mining (kaan kani)"
+
+msgid "Minutes to look for it:"
+msgstr "Dhoondne ke minutes:"
 
 msgid "Minutes without a kill:"
 msgstr "Kill ke baghair minutes:"
@@ -5046,6 +5052,9 @@ msgstr "ek chat line"
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "ek chest nazar aaya, {n} qadam door: kholne ja raha hai"
 
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "{map} par chest aaya hai - use dhoond rahe hain ({n} minutes tak)"
+
 msgid "a condition or value is missing"
 msgstr "koi condition ya value missing hai"
 
@@ -5960,6 +5969,10 @@ msgstr "equipment toot gaya, toolbox nahi"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Level {lv} {kind} Enhance Crystals ko {n} tak le ja rahe hain"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr ""
+"{n} qadam door dekhe gaye chest ki taraf wapas - use kholne ja rahe hain"
+
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
 
@@ -6253,6 +6266,9 @@ msgstr "pehle kisi kirdaar mein log in karein"
 msgid "login must be the first command in a script"
 msgstr "login script ka pehla command hona chahiye"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "poora area dekh liya, koi chest nahin - wapas farming"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ka khayal: HP {hp}/{max}"
 
@@ -6411,6 +6427,9 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr "bag mein koi chest nahi aaya"
+
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "{n} minutes mein koi chest nahin mila - wapas farming"
 
 msgid "no construction of the gang was found to read"
 msgstr "gang ki koi construction parhne ko nahi mili"

@@ -2470,6 +2470,9 @@ msgstr "Inicia sesión primero con el personaje en el juego."
 msgid "Logging"
 msgstr "Registros"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Buscar el cofre que el juego anuncia en el mapa"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Buscar una nueva &versión al iniciar Uncle Farmer"
 
@@ -2591,6 +2594,9 @@ msgstr "Mensaje añadido a la lista de filtros."
 
 msgid "Mining"
 msgstr "Minería"
+
+msgid "Minutes to look for it:"
+msgstr "Minutos para buscarlo:"
 
 msgid "Minutes without a kill:"
 msgstr "Minutos sin matar:"
@@ -5060,6 +5066,9 @@ msgstr "una línea de chat"
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "hay un cofre a la vista, a {n} pasos: voy a abrirlo"
 
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "apareció un cofre en {map} - buscándolo (hasta {n} minutos)"
+
 msgid "a condition or value is missing"
 msgstr "falta una condición o un valor"
 
@@ -5967,6 +5976,9 @@ msgstr "equipo roto, sin caja de herramientas"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "consiguiendo cristales de mejora de {kind} de nivel {lv} hasta {n}"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "volviendo al cofre visto a {n} pasos: voy a abrirlo"
+
 msgid "going back to where farming started"
 msgstr "volviendo al lugar donde empezó el farmeo"
 
@@ -6262,6 +6274,9 @@ msgstr "inicia sesión primero con un personaje"
 msgid "login must be the first command in a script"
 msgstr "login debe ser el primer comando de un script"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "se ha mirado toda la zona, ningún cofre - de vuelta a farmear"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "cuidando a {pet}: salud {hp}/{max}"
 
@@ -6418,6 +6433,9 @@ msgstr ""
 
 msgid "no chest came into the bag"
 msgstr ""
+
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "ningún cofre encontrado en {n} minutos - de vuelta a farmear"
 
 msgid "no construction of the gang was found to read"
 msgstr ""
