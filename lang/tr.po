@@ -7498,6 +7498,10 @@ msgid ""
 msgstr ""
 "karakter sayfası henüz Canlılık göstermiyor (yeni ajanı yüklemesi için oyunu yeniden başlat) - bitene kadar toplanıyor"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
 
@@ -8064,9 +8068,8 @@ msgid "usable items"
 msgstr ""
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"
 
 msgid "using the hearthstone key"
 msgstr "Kalp taşı tuşu kullanılıyor"
@@ -9060,3 +9063,8 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"

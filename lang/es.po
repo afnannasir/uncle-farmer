@@ -7571,6 +7571,10 @@ msgid ""
 msgstr ""
 "la hoja del personaje aún no muestra vitalidad (reinicia el juego para que cargue el agente nuevo): recolectando hasta que se agote"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+
 msgid "the chest is gone: someone else opened it"
 msgstr "el cofre ya no está: lo abrió otro"
 
@@ -8145,9 +8149,8 @@ msgid "usable items"
 msgstr ""
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"usé {card}, pero la hoja del personaje no muestra ninguna tarjeta de experiencia en marcha: se reintenta en un minuto"
 
 msgid "using the hearthstone key"
 msgstr "usando la tecla de la Piedra de Hogar"
@@ -9160,3 +9163,8 @@ msgstr "{w} por {h} casillas, {n} salidas."
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr ""
 #~ "escribe el número de las tierras altas de tu pandilla en Herramientas, Tareas diarias"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "usé {card}, pero la hoja del personaje no muestra ninguna tarjeta de experiencia en marcha: se reintenta en un minuto"

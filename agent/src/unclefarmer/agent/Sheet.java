@@ -39,10 +39,12 @@ final class Sheet {
     private static final Pattern MERIT = Pattern.compile("battlefield merit points (\\d+)");
     /** A running experience card: "30% EXP bonus; press to pause.28 minutes 55 seconds remaining",
      *  a paused one "30% EXP bonus.Paused; press to resume.28 minutes 55 seconds remaining" (the
-     *  recorder's captures, 2026-11-11). No such entry: no card running. */
+     *  recorder's captures, 2026-11-11). Inside a dungeon, where a card can't be paused, the entry
+     *  is only the bonus and the time, with no space after "minutes": "30% EXP bonus;29 minutes56
+     *  seconds remaining" (seen by a player, 2026-11-20). No such entry: no card running. */
     private static final Pattern EXP_BONUS = Pattern.compile(
-            "(\\d+)% EXP bonus\\W+(Paused; press to resume|press to pause)\\W+"
-            + "(?:(\\d+) hours?)?\\s*(?:(\\d+) minutes?)?\\s*(?:(\\d+) seconds?)?\\s*remaining");
+            "(\\d+)% EXP bonus\\W+(?:(Paused; press to resume|press to pause)\\W+)?"
+            + "(?:(\\d+)\\s*hours?)?\\s*(?:(\\d+)\\s*minutes?)?\\s*(?:(\\d+)\\s*seconds?)?\\s*remaining");
     /** "Morality 2000;white name": at -1000 or lower (a black name) a death can cost worn gear. */
     private static final Pattern MORALITY = Pattern.compile("\\bMorality (-?\\d+)");
     /** "public area drop 6 hours 48 minutes 16 seconds  remaining" / "... 7 hours  remaining": the
@@ -141,7 +143,7 @@ final class Sheet {
         Matcher eb = EXP_BONUS.matcher(text);
         if (eb.find()) {
             expBonus = Integer.parseInt(eb.group(1));
-            expPaused = eb.group(2).startsWith("Paused");
+            expPaused = eb.group(2) != null && eb.group(2).startsWith("Paused");
             int h = eb.group(3) == null ? 0 : Integer.parseInt(eb.group(3));
             int mi = eb.group(4) == null ? 0 : Integer.parseInt(eb.group(4));
             int se = eb.group(5) == null ? 0 : Integer.parseInt(eb.group(5));

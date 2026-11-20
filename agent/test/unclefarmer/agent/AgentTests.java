@@ -311,6 +311,15 @@ public final class AgentTests {
         eq(Sheet.expPaused, true, "paused");
         eq(Sheet.expSeconds, 3720, "an hour and two minutes");
         eq(Sheet.morality, -1200L, "a black name");
+        // inside a dungeon: no pause, only the bonus and the time ("minutes56", as the game writes it)
+        String dungeon = head + "8\r22\r30% EXP bonus;29 minutes56 seconds remaining|||Morality 2000;white name";
+        World.inbound(concat(new byte[] {62}, dungeon.getBytes(Protocol.UTF8)));
+        eq(Sheet.expBonus, 30, "a dungeon's card entry is a card too");
+        eq(Sheet.expPaused, false, "running (it can't be paused there)");
+        eq(Sheet.expSeconds, 29 * 60 + 56, "its time, read with no space after minutes");
+        String rows = head + "8\r22\r30% EXP bonus\r1 hour2 minutes remaining|||Morality 2000;white name";
+        World.inbound(concat(new byte[] {62}, rows.getBytes(Protocol.UTF8)));
+        eq(Sheet.expSeconds, 3720, "an hour and two minutes, as separate rows");
         World.inbound(concat(new byte[] {62}, head.getBytes(Protocol.UTF8)));
         eq(Sheet.expBonus, 0, "no entry: no card");
         eq(Sheet.expSeconds, -1, "and no time left");

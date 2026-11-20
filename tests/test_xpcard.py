@@ -62,6 +62,7 @@ class Game:
         self.in_instance = False
         self.here = 101
         self.old_sheet = False          # an agent before 60: no card fields on the sheet
+        self.hide_card = False          # the sheet shows no card while one runs (seen in dungeons)
         self.refuse = ""
         self.read_at = self.clock.now
         self.reads = 0
@@ -85,8 +86,9 @@ class Game:
             self.reads += 1
         sheet: dict[str, Any] = {"level": 79, "age": int(self.clock.now - self.read_at)}
         if not self.old_sheet:
-            sheet.update(exp_bonus=self.bonus, exp_paused=self.paused,
-                         exp_seconds=self.seconds if self.bonus else -1)
+            shown = 0 if self.hide_card else self.bonus
+            sheet.update(exp_bonus=shown, exp_paused=self.paused and bool(shown),
+                         exp_seconds=self.seconds if shown else -1)
         return sheet
 
     def bag_rows(self) -> list[dict[str, Any]]:
@@ -98,7 +100,8 @@ class Game:
                 r["count"] -= 1
                 self.used.append(name)
                 m = xpcard.strength(name)
-                self.bonus, self.paused, self.seconds = int(round(((m or 1) - 1) * 100)), False, 1800
+                stacked = self.seconds if self.bonus else 0     # the game adds a card to the one running
+                self.bonus, self.paused, self.seconds = int(round(((m or 1) - 1) * 100)), False, stacked + 1800
                 return True
         return False
 
@@ -260,6 +263,49 @@ def test_it_looks_at_the_card_only_now_and_then() -> None:
     g.clock.now += xpcard.LOOK_EVERY
     xpcard.on_farm(as_bot(g))
     assert g.sent == ["xpbonus resume"]
+
+
+def test_a_card_the_sheet_doesnt_show_is_not_followed_by_another_every_minute() -> None:
+    """Scorpion Cave, 2026-11-20: the sheet showed no card inside, the bot used one a minute (15),
+    and the game stacked them all (400 minutes left on leaving)."""
+    g = Game(bag=fresh_bag())
+    g.in_instance = True
+    g.hide_card = True
+    for _ in range(int(15 * 60 / xpcard.LOOK_EVERY)):      # a 15-minute cave visit, a look every 20 s
+        xpcard.on_farm(as_bot(g))
+        g.clock.now += xpcard.LOOK_EVERY
+    assert g.used == ["2x experience acceleration card"]
+    assert g.said("but the character sheet doesn't show it - no other experience card for 30 minutes")[0][1]
+    g.clock.now += xpcard.CARD_SECONDS                      # its half hour would be over: one more is fine
+    xpcard.on_farm(as_bot(g))
+    assert len(g.used) == 2
+
+
+def test_in_a_dungeon_a_sheet_with_no_card_is_not_believed_over_the_last_one_seen() -> None:
+    for paused in (False, True):
+        g = Game(bonus=100, paused=paused, seconds=17 * 60, bag=fresh_bag())
+        g.p["xp_card_pause"] = False                         # (no resume: only the new-card choice is tried)
+        xpcard.at_the_door(as_bot(g))                        # outside: the sheet shows the card
+        g.in_instance, g.hide_card = True, True
+        for _ in range(10):
+            xpcard.on_farm(as_bot(g))
+            g.clock.now += xpcard.LOOK_EVERY
+        assert g.used == [], paused
+        assert g.said("shows no experience card inside the dungeon")
+    # the running one's time is over: a new card inside is right
+    g = Game(bonus=100, seconds=60, bag=fresh_bag())
+    xpcard.at_the_door(as_bot(g))
+    g.in_instance, g.hide_card, g.bonus = True, True, 0
+    g.clock.now += 120
+    xpcard.on_farm(as_bot(g))
+    assert g.used == ["2x experience acceleration card"]
+    # outside a dungeon an empty sheet is believed (a server restart wipes the card)
+    g = Game(bonus=100, seconds=1700, bag=fresh_bag())
+    xpcard.on_farm(as_bot(g))
+    g.bonus = 0
+    g.clock.now += xpcard.LOOK_EVERY
+    xpcard.on_farm(as_bot(g))
+    assert g.used == ["2x experience acceleration card"]
 
 
 # ---------------------------------------------------------------------------------------- away
