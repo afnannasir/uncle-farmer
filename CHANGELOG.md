@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-**Bosses and demonized elites: kept further away**
+**Bosses and demonized elites: kept further away** (untested in game so far)
 
 - A boss that keeps coming back is left behind for a while: after three walk-offs in five
   minutes, or with nowhere further from it to go, the bot leaves through the nearest door far
