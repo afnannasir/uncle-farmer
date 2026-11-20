@@ -6372,6 +6372,9 @@ msgstr ""
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "kisi qareebi dukaan mein {item} nahi mila - logs\\dialogs.log dekhein"
 
+msgid "no shop sells {item}"
+msgstr "koi dukaan {item} nahi bechti"
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "{map} mein koi storehouse nahi - {item} nahi nikal rahe"
 
@@ -7737,6 +7740,9 @@ msgstr "storehouse mein {item} nahi"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "storehouse mein {item} nahi aur khareedne ke liye arnebia bhi nahi"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr "storehouse mein {item} nahi, aur koi dukaan use nahi bechti"
+
 msgid "the storehouse has {n} {item}"
 msgstr "storehouse mein {n} {item} hain"
 
@@ -8578,6 +8584,11 @@ msgstr "{npc} exchange nahi deta"
 
 msgid "{npc} offers no hunting bounty"
 msgstr "{npc} hunting bounty nahi deta"
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
+msgstr ""
+"{npc} ke menu mein {item} nahi dikha - logs\\dialogs.log dekhein; agli qareebi dukaan try kar rahe hain"
 
 msgid "{npc}, {price} {cur} each"
 msgstr "{npc}, {price} {cur} har ek"

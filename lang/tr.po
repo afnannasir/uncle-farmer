@@ -6315,6 +6315,9 @@ msgstr ""
 msgid "no shop near enough lists {item} - see logs\\dialogs.log"
 msgstr "yeterince yakın hiçbir dükkan {item} satmıyor - bkz. logs\\dialogs.log"
 
+msgid "no shop sells {item}"
+msgstr ""
+
 msgid "no storehouse in {map} - not taking {item} out"
 msgstr "{map} haritasında depo yok - {item} çıkarılmıyor"
 
@@ -7656,6 +7659,9 @@ msgstr "depoda {item} yok"
 msgid "the storehouse has no {item} and there is no arnebia to buy it"
 msgstr "depoda {item} yok ve onu satın alacak arnebia da yok"
 
+msgid "the storehouse has no {item}, and no shop sells it"
+msgstr ""
+
 msgid "the storehouse has {n} {item}"
 msgstr "depoda {n} {item} var"
 
@@ -8486,6 +8492,10 @@ msgid "{npc} offers no exchange"
 msgstr ""
 
 msgid "{npc} offers no hunting bounty"
+msgstr ""
+
+msgid ""
+"{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""
 
 msgid "{npc}, {price} {cur} each"

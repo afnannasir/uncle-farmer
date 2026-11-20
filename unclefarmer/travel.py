@@ -575,6 +575,19 @@ def usable(t: Row) -> bool:
             and t.get("kind") in TALK)
 
 
+def ride_entry(t: Row, free: bool) -> list[str]:
+    """The menu entries to choose for this ride. A cable car's menu has a free row for VIPs next to
+    the paying row, so the profile's VIP box picks one. An airship's menu has a single row whose
+    words tell whether we are a VIP ("Go to Violet city; VIP are free", live 2026-11-19) or pay
+    ("... costs 1000 arnebia"): either is taken, whatever the box says - a VIP who left it unticked
+    was told "the menu has no entry like ..." twice and walked the long way round."""
+    fare_rows: list[str] = t["choose"]
+    vip_rows: object = t.get("choose_vip")
+    if t.get("kind") == "airship" and json.is_array(vip_rows) and len(fare_rows) == 1 and len(vip_rows) == 1:
+        return ["(?:%s)|(?:%s)" % (fare_rows[0], vip_rows[0])]
+    return t["choose_vip"] if free else fare_rows
+
+
 def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
                      arnebia: int | None = None) -> collections.defaultdict[Node, list[Edge]]:
     """Port -> NPC stand -> landing, for every transport that can be taken: not avoided, a team
@@ -596,7 +609,7 @@ def _transport_edges(avoid: Collection[Hashable], vip: bool, team: bool = False,
                 g[("p", mid, i)].append((UNSEEN_NPC, stand, None))
         land: Row = t["lands"]
         free = bool(vip and t.get("choose_vip"))      # the menu's free entry, for VIPs
-        choose: list[str] = t["choose_vip"] if free else t["choose"]
+        choose: list[str] = ride_entry(t, free)
         leg: Leg = {"do": "npc", "map": mid, "npc": t["npc"], "at": t.get("at"), "stand": t.get("stand"),
                "choose": choose, "dest": t["dest"], "ride": t.get("ride"), "id": t["id"], "kind": t["kind"],
                "cost": t.get("cost"), "vip": free}
