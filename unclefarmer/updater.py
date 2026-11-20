@@ -451,6 +451,59 @@ def _alive(pid: int) -> bool:
         kernel.CloseHandle(h)
 
 
+FILETIME_EPOCH = 11644473600       # seconds from 1601-01-01 (a Windows FILETIME) to 1970-01-01
+PORT_SLACK = 2.0                   # a file time's coarseness, and a clock that moved a little
+
+
+def _started(pid: int) -> float | None:
+    """When the process pid started (Unix time), or None when it can't be read."""
+    if os.name != "nt":
+        return None
+    kernel = _kernel32()
+    handle = kernel.OpenProcess(0x1000, False, pid)     # PROCESS_QUERY_LIMITED_INFORMATION
+    if not handle:
+        return None
+    try:
+        return recovery.process_stamp(handle) / 1e7 - FILETIME_EPOCH
+    except (OSError, AttributeError, ValueError):
+        return None
+    finally:
+        kernel.CloseHandle(handle)
+
+
+def agent_games(app: str | None = None) -> list[int]:
+    """The processes that have this copy's agent loaded: every agent/run/agent.<pid>.port whose
+    process still runs and started before the agent wrote that file (a later process that Windows
+    gave the same PID is not one). Whatever the game's exe is called, its agent writes this file
+    as it starts, holds agent/unclefarmer-agent.jar open and appends its logs to agent/run for as
+    long as it runs: an update must not touch agent/ meanwhile (the backup of agent/ would not
+    match the plan, and the jar can't be moved)."""
+    run = os.path.join(app or paths.APP, "agent", "run")
+    found: set[int] = set()
+    for path in glob.glob(os.path.join(glob.escape(run), "agent.*.port")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                pid = int(f.read().split()[1])
+            written = os.path.getmtime(path)
+        except (OSError, ValueError, IndexError):
+            continue
+        if pid == os.getpid():
+            continue
+        started = _started(pid)
+        # None: gone, or a process we may not inspect (a game runs as the player, so it isn't one)
+        if started is None or started > written + PORT_SLACK or not _alive(pid):
+            continue
+        found.add(pid)
+    return sorted(found)
+
+
+def _refuse_running_agent(app: str) -> None:
+    games = agent_games(app)
+    if games:
+        raise UpdateError("Mist World is still running with Uncle Farmer's agent loaded (process %s). Close "
+                          "every Mist World window, then update again" % ", ".join(str(g) for g in games))
+
+
 def _stamp() -> int | None:
     """This process's creation time (update_recovery.current_stamp, as the journal's owner_stamp),
     which tells it from a later process Windows gives the same PID; None when it can't be read."""
@@ -1354,6 +1407,8 @@ def _apply_locked(app: str, src: str, log: Callable[[str], None], *, deadline: f
     if not os.path.isdir(app) or not os.path.isfile(os.path.join(app, EXE)) or _link(app) or _same(app, src):
         raise UpdateError("invalid destination application directory")
     files = _verify_release(src, deadline=deadline)
+    # before anything is copied: a running game's agent writes into agent/run all the time
+    _refuse_running_agent(app)
     managed = _managed_entries(app, src)
     _refuse_read_only(app, managed)
     needed = sum(files.values()) + SPACE_MARGIN
@@ -1393,8 +1448,7 @@ def _apply_locked(app: str, src: str, log: Callable[[str], None], *, deadline: f
         _verify_release(prepared, deadline=deadline)
         _install_tree(app, src, prepared, backup, log, deadline, transaction)
     except Exception:
-        if not transaction["entries"] or all(recovery.fingerprint(os.path.join(app, e["name"])) == e["old"]
-                                              for e in transaction["entries"]):
+        if not transaction["entries"] or recovery.unchanged(app, transaction):
             recovery.save(app, transaction, "ROLLED_BACK", "preparation-failed")
         raise
     finally:
