@@ -7431,6 +7431,11 @@ msgid ""
 msgstr ""
 "character sheet abhi Vitality nahi dikhati (game dobara shuru karein taake naya agent load ho) - khatam hone tak jama kar rahe hain"
 
+msgid ""
+"the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
+msgstr ""
+"dungeon ke andar character sheet par koi experience card nahi dikhta - jo card hamare paas hai wohi rakha, doosra istemal nahi kiya"
+
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
 
@@ -7996,9 +8001,9 @@ msgid "usable items"
 msgstr "istemal ki cheezein"
 
 msgid ""
-"used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+"used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
-"{card} istemal kiya, magar character sheet par koi experience card chalta nahi dikhta - ek minute baad dobara koshish"
+"{card} istemal kiya, magar character sheet par woh nahi dikhta - {m} minute tak koi doosra experience card nahi"
 
 msgid "using the hearthstone key"
 msgstr "hearthstone key istemal kar rahe hain"
@@ -9080,6 +9085,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "type your gang's highland number in Tools, Daily chores"
 #~ msgstr "Tools, Daily chores mein apni gang ki highland ka number likho"
+
+#~ msgid ""
+#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ msgstr ""
+#~ "{card} istemal kiya, magar character sheet par koi experience card chalta nahi dikhta - ek minute baad dobara koshish"
 
 #~ msgid ""
 #~ "when the day's drop time is used up; when the bag is full of things you keep; after the last death you allow; when broken gear can't be repaired. Those are set per character, in Character, Settings and Bag and supplies."

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+**No more experience cards one after another in dungeons**
+
+- Inside a dungeon (Scorpion Cave), the character sheet doesn't show the experience card, so
+  the bot thought none was running and used a new card every minute: 14 or 15 cards a visit. The
+  game added each one's half hour (400 minutes left afterwards). Now, after a card the sheet
+  doesn't show, no other card is used for 30 minutes. Inside a dungeon, a card seen running or
+  paused before going in is kept.
+- Agent 74 reads the card inside a dungeon too, where the sheet shows only the bonus and the time
+  ("30% EXP bonus;29 minutes56 seconds remaining"), so the bot sees the real time left there.
+
+**Gathering in another gang's area works again**
+
+- Gathering in a friend's or ally's gang got into that gang's base, stood there about 15 seconds,
+  said "couldn't get into the gang's base" and walked out. The game takes you straight in when you
+  pick the gang's name, and the bot was still waiting for the move. Now it goes on to the area.
+- The fusion beast now comes off beside the area's entrance, not inside the area, so gathering
+  starts as soon as you land and none of the area's half hour goes on getting off.
+
 **A dropped connection is noticed again**
 
 - Agent 73: when the game's connection drops but the game keeps showing its old world, the bot

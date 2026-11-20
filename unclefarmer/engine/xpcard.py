@@ -24,6 +24,13 @@ So, with the Character settings' ticks:
     runs again once farming starts on the farm (with either tick on). Never in a dungeon, and not
     with less than MIN_LEFT seconds left: the pause would cost more than it keeps.
 Whatever fails is said once and tried again after a rest; it never turns itself off for the run.
+
+A sheet with no card on it is not always the truth. Inside a dungeon, where a pause is invalid, the
+sheet showed no card while one ran (two players' nights, 2026-11-19 and -20, in Scorpion Cave):
+the bot used a card a minute, 14 and 15 of them, and the game added each one's half hour to the
+card running (400 minutes left on leaving). So a card used that the sheet doesn't show blocks any
+other for CARD_SECONDS, and in a dungeon "no card" is not believed while the last card seen (on a
+sheet that showed one) is paused or still has time left.
 """
 
 from __future__ import annotations
@@ -45,6 +52,7 @@ FRESH = 10                # seconds old a sheet may be for a pause or resume (th
 MIN_LEFT = 90             # seconds: a card this close to its end is not paused (a pause costs 60)
 WAIT = 3.0                # seconds the sheet has to show a change
 REST = 60.0               # seconds before trying again after something failed
+CARD_SECONDS = 1800       # one card's time: the game adds it to a card already running
 KINDS = (1.3, 1.5, 1.75, 2.0, 2.5, 3.0)   # the cards the game has, the ticks the Character settings offer
 
 
@@ -57,6 +65,9 @@ class Cards:
     used: int = 0                 # cards started this run
     paused: int = 0               # pauses this run
     resumed: int = 0
+    until: float = 0.0            # when the card last seen running ends (clock time; 0: none seen)
+    paused_seen: bool = False     # the last card seen was paused
+    blind_until: float = 0.0      # a card used that the sheet didn't show: no other before this
     said: set[str] = field(default_factory=lambda: set())   # reasons already logged once
 
 
@@ -149,6 +160,37 @@ def in_dungeon(b: Bot) -> bool:
     return bool(getattr(b, "in_instance", False)) or atlas.kind(b.map_id()) == "dungeon"
 
 
+def _note(b: Bot, st: Cards, card: dict[str, Any] | None) -> None:
+    """Remember the card a sheet shows. A sheet showing a card is believed anywhere; one showing
+    none only outside a dungeon (inside, the sheet showed none while a card ran)."""
+    if card is None:
+        return
+    now = b.clock.time()
+    if card["bonus"] > 0:
+        st.paused_seen = bool(card["paused"])
+        st.until = 0.0 if card["paused"] else now + max(0, int(card["seconds"]))
+    elif not in_dungeon(b):
+        st.until, st.paused_seen = 0.0, False
+
+
+def _look(b: Bot, st: Cards, fresh: bool) -> dict[str, Any] | None:
+    card = card_of(_sheet(b, fresh=fresh))
+    _note(b, st, card)
+    return card
+
+
+def _have_one(b: Bot, st: Cards, now: float) -> bool:
+    """The sheet shows no card, but one is there all the same: one used that the sheet didn't show
+    (for its half hour), or, inside a dungeon, the last one seen (paused, or with time left)."""
+    if now < st.blind_until:
+        return True
+    if in_dungeon(b) and (st.paused_seen or now < st.until):
+        _once(b, st, "dungeon blind", _("the character sheet shows no experience card inside the dungeon - "
+                                        "keeping the one we have, not using another"))
+        return True
+    return False
+
+
 def on_farm(b: Bot, now: float | None = None) -> None:
     """Between fights on the farm: a paused card runs again, and with kinds ticked (xp_cards) a new
     card of the strongest of them in the bag is used when none runs. Looks every LOOK_EVERY seconds at most."""
@@ -160,7 +202,7 @@ def on_farm(b: Bot, now: float | None = None) -> None:
     if now < st.next_look or now < st.rest_until or not _usable(b, st):
         return
     st.next_look = now + LOOK_EVERY
-    card = card_of(_sheet(b, fresh=False))
+    card = _look(b, st, fresh=False)
     if card is None:
         _once(b, st, "unknown", _("can't read the experience card from the character sheet yet"))
         return
@@ -168,7 +210,7 @@ def on_farm(b: Bot, now: float | None = None) -> None:
         if card["paused"]:
             _toggle(b, st, "resume", _("back on the farm"))
         return
-    if keep:
+    if keep and not _have_one(b, st, now):
         _use(b, st, keep)
 
 
@@ -179,10 +221,10 @@ def away(b: Bot, why: str) -> None:
     st = state(b)
     if b.clock.time() < st.rest_until or not _usable(b, st) or in_dungeon(b):
         return
-    card = card_of(_sheet(b, fresh=False))
+    card = _look(b, st, fresh=False)
     if card is None or card["bonus"] <= 0 or card["paused"]:
         return                     # nothing running (the sheet after every kill says so)
-    card = card_of(_sheet(b, fresh=True))
+    card = _look(b, st, fresh=True)
     if card is None or card["bonus"] <= 0 or card["paused"]:
         return
     if card["seconds"] < MIN_LEFT:
@@ -219,6 +261,7 @@ def _toggle(b: Bot, st: Cards, want: str, why: str) -> bool:
                                               what=_("paused") if paused else _("running")))
         return False
     assert card is not None
+    _note(b, st, card)
     if paused:
         st.paused += 1
         b.log(_("experience card paused ({card}): {why}", card=describe(card), why=why))
@@ -255,11 +298,16 @@ def _use(b: Bot, st: Cards, kinds: list[float]) -> bool:
         if card is not None and card["bonus"] > 0:
             break
     else:
-        st.rest_until = b.clock.time() + REST
-        _once(b, st, "unused " + name, _("used a {card}, but the character sheet shows no experience card running - "
-                                         "trying again in a minute", card=name))
+        # the game took it all the same (its time adds to any card running): no other for its half hour
+        st.used += 1
+        st.blind_until = b.clock.time() + CARD_SECONDS
+        first = "unused" not in st.said
+        st.said.add("unused")
+        b.log(_("used a {card}, but the character sheet doesn't show it - no other experience card for "
+                "{m} minutes", card=name, m=CARD_SECONDS // 60), speak=first)
         return False
     assert card is not None
+    _note(b, st, card)
     st.used += 1
     b.log(_("experience card started: {card} ({left} more in the bag; {now})", card=name, left=count - 1,
             now=describe(card)))
