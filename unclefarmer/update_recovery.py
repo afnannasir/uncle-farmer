@@ -157,16 +157,21 @@ def fingerprint(path: str) -> dict[str, str] | None:
     return result
 
 
-def durable_tree(path: str) -> None:
+def durable_tree(path: str, *, in_use_ok: bool = False) -> None:
+    """Flush every file under path. in_use_ok (the installed files, before an update): a file
+    another program has open as it runs (a DLL still loaded by a closing app, a game's agent jar)
+    can't be opened for writing, so it can't be flushed, and it needs no flush: nothing of ours
+    was written to it lately. Such a file is skipped instead of failing the update."""
     safe(path, path)
-    if os.path.isdir(path):
-        for parent, _, files in os.walk(path):
-            for name in files:
-                file = os.path.join(parent, name)
-                safe(file, path)
-                flush(file)
-    else:
-        flush(path)
+    files = [os.path.join(parent, name) for parent, _, names in os.walk(path) for name in names] \
+        if os.path.isdir(path) else [path]
+    for file in files:
+        safe(file, path)
+        try:
+            flush(file)
+        except PermissionError:
+            if not in_use_ok:
+                raise
 
 
 def durable_tree_for_entries(app: str, record: dict[str, Any]) -> None:
@@ -379,7 +384,7 @@ def plan(app: str, record: dict[str, Any], names: list[str]) -> None:
     for n in names:
         old = os.path.join(app, n)
         if os.path.exists(old):
-            durable_tree(old)
+            durable_tree(old, in_use_ok=True)
     atomic(os.path.join(os.path.dirname(record["backup"]), "plan.json"), record)
     save(app, record, "STAGED", "plan-durable")
 
@@ -433,10 +438,37 @@ def _remove_private_tree(path: str, app: str) -> None:
     checkpoint("cleanup-removed:" + os.path.relpath(path, app))
 
 
+def never_moved(app: str, record: dict[str, Any], entry: dict[str, Any]) -> bool:
+    """An installed entry this transaction never took out of place: its original is still there.
+    An original leaves only by one atomic move into the work folder's retired/ (it stays there
+    until cleanup: rollback copies from it, never consumes it), and only the staged replacement
+    takes its place. So an entry that is installed, has nothing in retired/ and is not the new
+    release's was never moved. This is read from the files, not from backed_up: a recovery that
+    fell back on plan.json has backed_up as the plan wrote it, empty. Its contents may still differ
+    from the plan's fingerprint: a game's agent appends its logs to agent/run while it runs, and a
+    backup taken a moment after the plan no longer matches. Rollback leaves such an entry as it is:
+    there is nothing to restore, and refusing would leave an update that can never be recovered
+    (every start retried it and failed the same way)."""
+    name, old = str(entry["name"]), entry["old"]
+    destination = os.path.join(app, name)
+    if old is None or not os.path.lexists(destination):
+        return False
+    retired = os.path.join(os.path.dirname(str(record["backup"])), "retired", name)
+    return not os.path.lexists(retired) and fingerprint(destination) != entry["new"]
+
+
+def unchanged(app: str, record: dict[str, Any]) -> bool:
+    """Every entry is as it was before the transaction (or was never moved)."""
+    return all(never_moved(app, record, e) or fingerprint(os.path.join(app, e["name"])) == e["old"]
+               for e in record["entries"])
+
+
 def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None]) -> None:
     # Validate all necessary recovery sources before modifying any destination.
     for entry in record["entries"]:
         name, old = entry["name"], entry["old"]
+        if never_moved(app, record, entry):
+            continue
         actual = fingerprint(os.path.join(app, name))
         if actual == old:
             continue
@@ -448,7 +480,7 @@ def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None
         name, old = entry["name"], entry["old"]
         destination = os.path.join(app, name)
         safe(destination, app)
-        if fingerprint(destination) == old:
+        if never_moved(app, record, entry) or fingerprint(destination) == old:
             continue
         if os.path.exists(destination):
             actual = fingerprint(destination)
@@ -483,7 +515,7 @@ def rollback(app: str, record: dict[str, Any], rename: Callable[[str, str], None
             rename(restored, destination)
             checkpoint("rollback-restored:" + name)
         save(app, record, "ROLLING_BACK", "restored:" + name)
-    if any(fingerprint(os.path.join(app, e["name"])) != e["old"] for e in record["entries"]):
+    if not unchanged(app, record):
         raise RecoveryError("restored installation failed verification")
     save(app, record, "ROLLED_BACK", "rollback-verified")
 
