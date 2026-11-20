@@ -1,5 +1,6 @@
-"""An airship's single menu row taken whatever the VIP box says, and the town shops' lists (read live
-2026-11-19): a listed item sold in every town, an unlisted one nowhere, and no trip for it."""
+"""An airship's menu row: the VIP box's row first, the other when the menu hasn't that one; and the
+town shops' lists (read live 2026-11-19): a listed item sold in every town, an unlisted one nowhere,
+and no trip for it."""
 
 from __future__ import annotations
 
@@ -19,24 +20,33 @@ def _takes(patterns: list[str], text: str) -> bool:
     return len(patterns) == 1 and travel.matches(patterns[0], text)
 
 
-def test_an_airship_takes_its_one_row_with_a_fare_or_free_whatever_the_box() -> None:
-    for free in (False, True):
-        choose = travel.ride_entry(VIOLET, free)
-        assert _takes(choose, VIP_ROW) and _takes(choose, FARE_ROW)
-        assert not _takes(choose, "Go to Moon City; VIP are free")
+def test_an_airship_names_the_box_s_row_first_and_the_other_row_as_its_second_choice() -> None:
+    # One pattern for both rows took whichever came first in the menu. Everyone without VIP sees
+    # two rows, the free one first (live 2026-11-20, Moon City: "Go to tulip city; VIP are free",
+    # then "Go to tulip city; Costs 1000 Arnebia"), chose that, and was taken nowhere.
+    paying, free = travel.ride_entry(VIOLET, False), travel.ride_entry(VIOLET, True)
+    assert _takes(paying, FARE_ROW) and not _takes(paying, VIP_ROW)
+    assert _takes(free, VIP_ROW) and not _takes(free, FARE_ROW)
+    other_paying, other_free = travel.ride_other(VIOLET, False), travel.ride_other(VIOLET, True)
+    assert other_paying is not None and _takes(other_paying, VIP_ROW)      # a VIP who left the box unticked
+    assert other_free is not None and _takes(other_free, FARE_ROW)
+    for rows in (paying, free, other_paying, other_free):
+        assert not _takes(rows, "Go to Moon City; VIP are free")
 
 
 def test_a_cable_car_still_takes_the_row_the_box_says() -> None:
     car = next(t for t in travel.transports() if t["kind"] == "cable_car" and t.get("choose_vip"))
     assert travel.ride_entry(car, True) == car["choose_vip"]
     assert travel.ride_entry(car, False) == car["choose"]
+    assert travel.ride_other(car, True) is None and travel.ride_other(car, False) is None
 
 
 def test_a_vip_with_the_box_unticked_still_flies_from_tulip_city() -> None:
     legs = travel.plan(1081, (345, 219), 1161, None, transport=True, avoid=set(), vip=False, bag=[], items=False)
     assert legs is not None
     flight = next(leg for leg in legs if leg.get("do") == "npc" and leg.get("kind") == "airship")
-    assert _takes(flight["choose"], VIP_ROW) and flight["vip"] is False
+    assert _takes(flight["choose"], FARE_ROW) and flight["vip"] is False
+    assert _takes(flight["choose_else"], VIP_ROW)      # the one row a VIP's menu has
 
 
 def test_the_shop_lists_cover_every_potion_and_grocer_good() -> None:

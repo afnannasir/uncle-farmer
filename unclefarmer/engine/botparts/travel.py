@@ -757,6 +757,19 @@ class TravelMixin(Parts):
         mode = m.get("target") if jsonio.is_object(m) else None
         return mode if isinstance(mode, int) else None
 
+    def _menu_has(self, pattern: str) -> bool:
+        """The open menu has an entry like pattern."""
+        top = self.dialog().get("top")
+        return bool(top) and self.find_entry(top, pattern) is not None
+
+    def _ride_row(self, leg: dict[str, Any], i: int, pick: str) -> str:
+        """The row to choose at step i of a ride's menu: the leg's own, or an airship's other row
+        (travel.ride_other) when the menu hasn't that one and has the other."""
+        other: list[str] = leg.get("choose_else") or []
+        if i < len(other) and not self._menu_has(pick) and self._menu_has(other[i]):
+            return other[i]
+        return pick
+
     def _ride(self, leg: dict[str, Any], mid: int) -> bool:
         if not self.talk(leg["npc"], leg.get("at"), leg.get("stand")):
             return False
@@ -766,7 +779,7 @@ class TravelMixin(Parts):
             if i and not self.wait_dialog(3.0):
                 self.log(_("the {npc}'s next menu didn't open", npc=leg["npc"]), speak=True)
                 return False
-            if self.choose(pick) is None:
+            if self.choose(self._ride_row(leg, i, pick)) is None:
                 return False
         # Some menus ask again (pay? sure?): accept that, never anything else.
         for _i in range(3):
