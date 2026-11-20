@@ -565,7 +565,52 @@ final class Memory {
         return null;
     }
 
+    /** How long the game's connection must stay closed before our character counts as gone. */
+    static final long CLOSED_GRACE_MS = 5000L;
+    private static final long CONNECTION_LOOK_MS = 1000L;
+    private static volatile long connectionLookAt;
+    private static volatile long closedSince;
+    private static volatile boolean everConnected;
+
+    /**
+     * The game keeps its world and every entity in it after its connection drops (live 2026-11-20
+     * 06:04: the channel closed, the bot fought two left-behind monsters for 55 minutes, every cast
+     * refused). Once the connection has been closed for CLOSED_GRACE_MS, after having been up in
+     * this game, our character counts as gone ("noworld"), which is what starts the bot's
+     * reconnect. Looked at once a second; a game version whose connection can't be read never
+     * counts as closed.
+     */
+    static void requireConnection(long now, boolean alive) throws Unavailable {
+        if (alive) {
+            everConnected = true;
+            closedSince = 0L;
+        } else if (everConnected && closedSince == 0L) {
+            closedSince = now;
+        }
+        if (closedSince != 0L && now - closedSince >= CLOSED_GRACE_MS) {
+            throw new Unavailable("noworld: the game's connection is closed");
+        }
+    }
+
+    private static void requireConnection() throws Unavailable {
+        long now = System.currentTimeMillis();
+        if (now - connectionLookAt >= CONNECTION_LOOK_MS) {
+            connectionLookAt = now;
+            requireConnection(now, AutomaticLogin.connectionAlive());
+        } else if (closedSince != 0L && now - closedSince >= CLOSED_GRACE_MS) {
+            throw new Unavailable("noworld: the game's connection is closed");
+        }
+    }
+
+    /** For tests: forget what was seen of the connection. */
+    static void resetConnection() {
+        connectionLookAt = 0L;
+        closedSince = 0L;
+        everConnected = false;
+    }
+
     private static Object selfEntity(Object world) throws Unavailable {
+        requireConnection();
         int id = intField(world, W_SELF_ID);
         Object me = entityMap(world).get(Integer.valueOf(id));
         if (me == null) throw new Unavailable("noplayer: id " + id + " not in the entity map");

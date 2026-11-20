@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+**No more walking past the monsters that hit you**
+
+- Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
+  first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
+  right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
+  monsters around it and chases far ones".
+- Agent 75: when the game's connection drops but the game keeps showing its old world, the bot
+  now notices within seconds and logs back in. One night it fought two left-behind monsters for
+  55 minutes with every attack refused.
+
+**Following through team dungeons**
+
+- A follower now helps the whole team: it fights any monster near you or a teammate that a player
+  has struck, that is wounded, or that attacks it. It no longer leaves a monster alone because
+  someone else is about to kill it. Followers that don't heal learn the team's names too.
+- Doors that open during a dungeon (Gnome excavation plant's secret doors and others like them)
+  no longer stop the follower with "no way": once nothing else gets there, it walks through.
+- At the end of a dungeon the follower leaves through its own treasure chest ("Open the treasure
+  chest and return"), as you do, instead of looking for a leave entry in the Action menu.
+- After a death while following, it never goes back to the city by itself. It asks you by private
+  message: answer respawn crystal, respawn map or respawn city. Sent before a death, that answer
+  counts for every death in this follow; respawn ask goes back to asking.
+- A map it can't plan its way to, or a minute without seeing you, no longer ends the follow: it
+  waits and teleports to the team leader (Shift+P) as soon as the game allows. Only Stop ends it.
+
 **Gang construction reaches every place, and all your highlands**
 
 - You choose where the day's builds go: highlands, Magic Cannon, Supply Camp, East and West posts.

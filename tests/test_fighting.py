@@ -1520,6 +1520,48 @@ def test_fight_takes_the_other_monster_its_walk_stopped_for() -> None:
     assert b.field_record["moved_to"] == -2 and "why" not in b.field_record and "reach_at" in b.field_record
 
 
+def test_the_walk_turns_to_a_nearer_monster_that_attacks_us() -> None:
+    """A monster chasing us trails just outside a melee reach: the walk went on to the far one
+    while it hit us (live: 2-33 s, from 0.6-5 tiles, to a monster 20-55 tiles off)."""
+    b = fight_bot(attack_range=4.5)
+    chaser = monster(-2, x=105.5, y=100.0)            # 5.5 away: out of reach, hitting us
+    b._attackers = {-2}
+    b.targets = lambda snap, area=None, only=None, skip=None, avoid_rects=(), limit=None: [chaser]
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    walks: list[tuple[float, float]] = []
+
+    def walk_to(cell: tuple[float, float], map_change: bool = False, near: Any = None) -> str:
+        walks.append(cell)
+        if len(walks) == 1:
+            return "near" if near(b.self_) else "arrived"
+        b.self_ = dict(b.self_, x=102.0)              # the second walk: up to the chaser
+        return "near" if near(b.self_) else "arrived"
+    b.walk_to = walk_to
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_),
+                      "entities": [monster(-1, x=140.0), chaser]}
+    b.field_record = {"id": -1}
+    b._fight(monster(-1, x=140.0))
+    assert walks == [(140.0, 100.0), (105.5, 100.0)]  # turned to it, then walked up to it
+    assert b.selects == [-2] and b.hit_calls == [-2]
+    assert b.field_record["moved_to"] == -2
+    assert any("attacks us on the way - fighting it first" in line for line in b.lines)
+
+
+def test_the_walk_keeps_on_for_an_attacker_further_than_ours() -> None:
+    # it shoots at us from further off than the one we walk to: ours first
+    b = fight_bot(attack_range=4.5)
+    archer = monster(-2, x=150.0, y=100.0)
+    b._attackers = {-2}
+    b.farm_filter = None
+    b.targets = lambda snap, area=None, only=None, skip=None, avoid_rects=(), limit=None: [archer]
+    b.doomed = lambda e, me, steps=None, rng=None: False
+    near_walk(b)
+    b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_),
+                      "entities": [monster(-1, x=120.0), archer]}
+    way = fighting._Approach(b, -1, 4.5, 4.5, 0.0)
+    assert way.stop(b.self_) is False and way.other is None
+
+
 @pytest.mark.parametrize("what", ["gone", "dead", "out of reach"])
 def test_fight_picks_again_when_the_other_monster_is_no_longer_there(what: str) -> None:
     b = fight_bot(attack_range=4.0)

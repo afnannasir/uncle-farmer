@@ -41,6 +41,7 @@ public final class AgentTests {
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
         aTickToZeroIsADeath();
+        aClosedConnectionMeansOurCharacterIsGone();
         theDungeonReportIsReadAsTheGameReadsIt();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
@@ -891,6 +892,27 @@ public final class AgentTests {
     /** IN op=42 sets an entity's HP outside a cast (damage over time): id, HP now, the change, a
      *  sound, one more short. A monster a tick takes to 0 has no "id,0" line in op=41, so this is
      *  the only word of its death (a packet of a live night: 2a ffffffde 00000000 fffffc8e 30e3 36c8). */
+    /** After the game's connection drops, the game keeps showing its world: our character counts
+     *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
+    private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
+        Memory.resetConnection();
+        Memory.requireConnection(1000L, false);           // never up in this game: no verdict
+        Memory.requireConnection(99000L, false);
+        Memory.requireConnection(100000L, true);
+        Memory.requireConnection(101000L, false);         // closed: still inside the grace
+        Memory.requireConnection(105999L, false);
+        boolean gone = false;
+        try {
+            Memory.requireConnection(106000L, false);
+        } catch (Memory.Unavailable e) {
+            gone = e.getMessage().startsWith("noworld:");
+        }
+        check(gone, "a connection closed for 5 s means our character is gone (noworld)");
+        Memory.requireConnection(107000L, true);          // reconnected
+        Memory.requireConnection(108000L, false);
+        Memory.resetConnection();
+    }
+
     private static void aTickToZeroIsADeath() {
         long before = System.currentTimeMillis() - 1;
         World.inbound(op42(-934, 882, -500, 12515, 14024));

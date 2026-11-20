@@ -80,6 +80,10 @@ class Parts:
     agent_misses: dict[str, int]          # agent command -> wrong answers in a row (agent_strike)
     failure_notes: set[tuple[str, str]]   # (where, error kind) of ignored failures already logged
     follow_buffs: bool          # following, and the leader's `buff` message turned buffs on
+    follow_respawn: str | None  # following: the leader's `respawn ...` sent before a death, for every death
+    respawn_answer: str | None  # following and dead: the leader's answer to "how do I respawn?"
+    respawn_asked: bool         # following and dead: that question is waiting for its answer
+    wait_said_at: float         # following: when "waiting here ... Shift+P" was last said aloud
     gather_casts: int           # gathering casts seen this run
     home_after_gathering: int | None   # kills when gathering ended: the way home after it has no fights
     corpses: Harvest            # corpse harvesting this run (engine/corpses.py)

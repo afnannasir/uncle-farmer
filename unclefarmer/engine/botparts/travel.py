@@ -13,7 +13,7 @@ from typing import Any, cast
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
 from .. import beasts, combat, combos, keyslots, teleskill, xpcard
-from .base import (CONFIRM, STOPPING, Stopped, note_failure)
+from .base import (CONFIRM, STOPPING, NoWay, Stopped, note_failure)
 from .parts import as_bot, Parts
 
 
@@ -310,7 +310,7 @@ class TravelMixin(Parts):
             if travel.gang_exit(mid) is not None:
                 raise Stopped(_("{a}: the gang base's way out is in its outer hall, walled off from here - "
                                 "walk out yourself and start again", a=atlas.label(mid)))
-            raise Stopped(_("no way from {a} to {b} - go there yourself and start again",
+            raise NoWay(_("no way from {a} to {b} - go there yourself and start again",
                             a=atlas.label(mid), b=atlas.label(dst)))
         return legs
 
@@ -550,6 +550,8 @@ class TravelMixin(Parts):
         mid = self.map_id()
         if travel.gang_exit(mid) is not None:
             return self.leave_here()
+        if self._open_own_chest(mid):
+            return True
         self.log(_("{map}: leaving through the Action menu", map=atlas.label(mid)))
         self.close_dialogs()
         self.key(self.p.get("action_menu_key", "lctrl+enter"))
@@ -564,6 +566,36 @@ class TravelMixin(Parts):
             if self.find_entry(d["top"], CONFIRM) is None:
                 break
             self.choose(CONFIRM)
+        ok = self.wait_map_change(mid, 15)
+        if not ok:
+            self.close_dialogs()
+        return ok
+
+    CHEST_EXIT = r"open the treasure chest and return"
+
+    def _open_own_chest(self, mid: int) -> bool:
+        """A cleared team dungeon's way out: our own "Treasure chest belongs to <us>" NPC, whose
+        one entry "Open the treasure chest and return" moves us out (the leader's recorded exits
+        from silver flying saucer and Nether Cave, 2026-11-18). The Action menu has no such entry
+        there: a follower looking for it stopped at the end of Nether Cave and Demon Cave. True
+        when the map changed."""
+        snap = self.snap()
+        me_row: dict[str, Any] = snap.get("self") or {}
+        me = " ".join(str(me_row.get("name") or "").split()).lower()
+        if not me:
+            return False
+        want = "treasure chest belongs to " + me
+        entities: list[dict[str, Any]] = snap.get("entities") or []
+        chest = next((e for e in entities if " ".join(str(e.get("name") or "").split()).lower() == want), None)
+        if chest is None:
+            return False
+        name = str(chest["name"])
+        self.log(_("{map}: leaving through our treasure chest", map=atlas.label(mid)))
+        if not self.talk(name, (chest["x"], chest["y"])):
+            return False
+        if self.choose(self.CHEST_EXIT) is None:
+            self.close_dialogs()
+            return False
         ok = self.wait_map_change(mid, 15)
         if not ok:
             self.close_dialogs()

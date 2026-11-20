@@ -2116,6 +2116,11 @@ msgid ""
 msgstr ""
 "Us se map nahi pata chal raha. Game mein E dabayein, Shift+C se copy karein aur bhejein: come <jo copy kiya>"
 
+msgid ""
+"I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
+msgstr ""
+"Main {map} par mar gaya. Wapas kaise aaun? Bhejein: respawn crystal, respawn map ya respawn city"
+
 msgid "I don't know where a Shard Market is"
 msgstr "mujhe nahi pata Shard Market kahan hai"
 
@@ -2144,6 +2149,9 @@ msgid ""
 msgstr ""
 "main wahan gaya jahan aap ko aakhri baar dekha tha ({map} par {x}, {y}) lekin aap ko nahi dekh sakta. Game mein E dabao, Shift+C se copy karo aur bhejo: come <jo aap ne copy kiya>"
 
+msgid "I'll ask you after each death."
+msgstr "Har maut ke baad aap se poochhunga."
+
 msgid "I'm a &VIP (cable cars and airships are free)"
 msgstr "Main &VIP hoon (cable cars aur airships muft hain)"
 
@@ -2160,6 +2168,9 @@ msgstr "Main kisi ke saath nahi chal raha."
 
 msgid "I'm not following anyone. Send follow first, then buff."
 msgstr "Main kisi ke peeche nahi chal raha. Pehle follow bhejein, phir buff."
+
+msgid "I'm not following anyone. Send follow first."
+msgstr "Main kisi ke peechhe nahi chal raha. Pehle follow bhejein."
 
 msgid "I'm not in a team"
 msgstr "main kisi team mein nahi hoon"
@@ -2183,6 +2194,15 @@ msgstr "Ice princess"
 
 msgid "Idle on {map}, HP {hp}%{mp}."
 msgstr "{map} par khaali, HP {hp}%{mp}."
+
+msgid "If I die, I'll respawn in the city."
+msgstr "Agar main mara to shehar mein zinda hounga."
+
+msgid "If I die, I'll respawn on the map."
+msgstr "Agar main mara to isi map par zinda hounga."
+
+msgid "If I die, I'll respawn with Resurrection Crystals."
+msgstr "Agar main mara to Resurrection Crystals se zinda hounga."
 
 msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
@@ -3312,6 +3332,15 @@ msgstr "Jawab ki lines"
 msgid "Replying to {name}: {message}"
 msgstr "{name} ko jawab: {message}"
 
+msgid "Respawning in the city."
+msgstr "Shehar mein zinda ho raha hoon."
+
+msgid "Respawning on this map."
+msgstr "Isi map par zinda ho raha hoon."
+
+msgid "Respawning with Resurrection Crystals."
+msgstr "Resurrection Crystals se zinda ho raha hoon."
+
 msgid "Rest &until HP (%):"
 msgstr "HP (%) tak &aaram karein:"
 
@@ -3551,6 +3580,9 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Kisi command ka kaam sunne ke liye help aur command ka naam bhejein, misaal: help follow"
+
+msgid "Send respawn crystal, respawn map or respawn city."
+msgstr "respawn crystal, respawn map ya respawn city bhejein."
 
 msgid ""
 "Send this to the whole gang as: {where}?\n"
@@ -5652,6 +5684,9 @@ msgstr "roz ke kaam mukammal: {list}"
 msgid "damage over time"
 msgstr "waqt ke saath damage"
 
+msgid "dead - asked {name} how to respawn, waiting for the answer"
+msgstr "mar gaya - {name} se poochha ke kaise zinda hoon, jawab ka intezar hai"
+
 msgid "dead, but the respawn menu never opened - please respawn by hand"
 msgstr ""
 "mar gaye, lekin respawn menu kabhi nahi khula - baraye meharbani khud respawn karein"
@@ -5817,9 +5852,9 @@ msgstr ""
 "{m} minute mein {n} baar bhaage - yeh map abhi bahut mushkil hai; yahin ruk rahe hain"
 
 msgid ""
-"follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+"follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
-"follow: main aap ke saath rehta hoon, aap ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress aap ki aur team ki shifa karta hai. Jab tak aap buff na bhejein, koi buff nahin. Ek minute tak aap nazar na aayen to main ruk jata hoon."
+"follow: main aap ke saath rehta hoon, team ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress team ko heal karta hai. buff bhejein to hi buffs. Gum hua to intezar karke leader ke paas teleport karta hoon."
 
 msgid "following {name}"
 msgstr "{name} ke saath chal raha hoon"
@@ -6953,6 +6988,11 @@ msgstr "debuffs hataata hai"
 msgid "repairing all the gear with a {tool} from {where} ({n} left)"
 msgstr "{where} se {tool} se saara equipment repair kar rahe hain ({n} baqi)"
 
+msgid ""
+"respawn crystal, map or city: how I come back when I die following you. I ask and wait; sent early it counts for every death. respawn ask: ask again."
+msgstr ""
+"respawn crystal, map ya city: aap ke peechhe chalte hue mar jaun to kaise wapas aaun. Main poochh kar intezar karta hoon; pehle bheja to har maut par chalega. respawn ask: phir se poochho."
+
 msgid "respawning: {how}"
 msgstr "respawn ho rahe hain: {how}"
 
@@ -7659,6 +7699,11 @@ msgstr ""
 
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
+
+msgid ""
+"the game won't teleport us ({why}) - waiting for {name} to come back here"
+msgstr ""
+"game teleport nahi karne deti ({why}) - {name} ke yahan wapas aane ka intezar hai"
 
 msgid "the game wouldn't select it ({why})"
 msgstr "game ne use select nahi kiya ({why})"
@@ -8499,6 +8544,9 @@ msgstr "{map}, {x}, {y}"
 msgid "{map}: heading for the exit to {dest}"
 msgstr "{map}: {dest} ke exit ki taraf ja rahe hain"
 
+msgid "{map}: leaving through our treasure chest"
+msgstr "{map}: apne treasure chest se nikal raha hoon"
+
 msgid "{map}: leaving through the Action menu"
 msgstr "{map}: Action menu se nikal rahe hain"
 
@@ -8572,6 +8620,10 @@ msgstr "{name} - {server}"
 
 msgid "{name} asks: {what}"
 msgstr "{name} poochta hai: {what}"
+
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
+"{name} raste mein hum par hamla kar raha hai - pehle us se lar rahe hain"
 
 msgid "{name} copy"
 msgstr "{name} naqal"
@@ -9039,6 +9091,11 @@ msgstr "{who} ka game {what} mein masroof hai"
 msgid "{why} - no more {skill} this run ({n} done)"
 msgstr "{why} - is run mein mazeed {skill} nahi ({n} hue)"
 
+msgid ""
+"{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game allows"
+msgstr ""
+"{why} - yahin intezar, aur game ijazat de to team leader ke paas teleport (Shift+P)"
+
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
@@ -9183,6 +9240,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "collected the hunting bounty"
 #~ msgstr "hunting bounty le li"
+
+#~ msgid ""
+#~ "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+#~ msgstr ""
+#~ "follow: main aap ke saath rehta hoon, aap ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress aap ki aur team ki shifa karta hai. Jab tak aap buff na bhejein, koi buff nahin. Ek minute tak aap nazar na aayen to main ruk jata hoon."
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "fusion power {n} - jab tak woh wapas na aaye, paidal"

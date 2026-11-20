@@ -420,6 +420,74 @@ def test_handle_death_respawn_in_city_setting(clock: Clock, monkeypatch: pytest.
     assert h.chosen[0] == RESPAWN["city"]
 
 
+MENU = {"open": 1, "top": {"rows": [[{"text": "Please select your respawn method"}],
+                                    [{"text": "Respawn On-Spot with Resurrection Crystal"}],
+                                    [{"text": "Map Respawn"}], [{"text": "Respawn back to the City"}]]}}
+
+
+def test_a_follower_never_goes_back_to_the_city_by_itself(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
+    # started without a message (nobody to ask), profile says city: the map's respawn point
+    monkeypatch.setattr(health.atlas, "label", stand_in(health.atlas.label, lambda mid: "Field"))
+    h = H({"respawn": "city", "max_deaths": 1, "stop_on_deaths": True})
+    h.following = "Leader"
+    h.deaths = 5                                          # no death limit while following
+    h._dlg = MENU
+    h._me = {"hp": 100}
+    with pytest.raises(Respawned):
+        h.handle_death()
+    assert h.chosen[0] == RESPAWN["map"]
+
+
+def test_a_follower_asks_the_leader_and_waits_for_the_answer(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(health.atlas, "label", stand_in(health.atlas.label, lambda mid: "Nether Cave"))
+    h = H()
+    h.following = "Leader"
+    told: list[str] = []
+    h.tell = told.append
+    h._dlg = MENU
+    h._me = {"hp": 0}
+    waits = {"n": 0}
+
+    def answer_later(s: float) -> None:            # the leader answers on the third look
+        waits["n"] += 1
+        if waits["n"] == 3:
+            assert h.respawn_asked
+            h.respawn_answer = "crystal"
+            h._me = {"hp": 100}
+    monkeypatch.setattr(h, "sleep", answer_later)
+    with pytest.raises(Respawned):
+        h.handle_death()
+    assert told == ["I died on Nether Cave. How do I come back? Send: respawn crystal, respawn map or respawn city"]
+    assert h.chosen[0] == RESPAWN["crystal_spot"]
+    assert not h.respawn_asked
+
+
+def test_a_follower_uses_the_rule_sent_before_the_death(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(health.atlas, "label", stand_in(health.atlas.label, lambda mid: "Field"))
+    h = H()
+    h.following = "Leader"
+    told: list[str] = []
+    h.tell = told.append
+    h.follow_respawn = "city"
+    h._dlg = MENU
+    h._me = {"hp": 100}
+    with pytest.raises(Respawned):
+        h.handle_death()
+    assert told == [] and h.chosen[0] == RESPAWN["city"]
+
+
+def test_a_follower_brought_back_meanwhile_stops_asking(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(health.atlas, "label", stand_in(health.atlas.label, lambda mid: "Field"))
+    h = H()
+    h.following = "Leader"
+    h.tell = lambda text: None
+    h._dlg = MENU
+    h._me = {"hp": 100}                                   # a healer raised us before any answer
+    with pytest.raises(Respawned):
+        h.handle_death()
+    assert h.chosen == []
+
+
 # ---------------------------------------------------------------- refresh_sheet
 def test_refresh_sheet_without_a_key(clock: Clock) -> None:
     h = H({"sheet_key": ""})

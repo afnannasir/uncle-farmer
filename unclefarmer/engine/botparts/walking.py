@@ -15,7 +15,7 @@ from ... import atlas
 from ...i18n import _
 from .. import beasts, combat
 from ...nearby import OWNER
-from .base import (DIRECTIONS, NPC_HP, STOPPING, Respawned, Stopped, note_failure, snap_map)
+from .base import (DIRECTIONS, NPC_HP, STOPPING, NoWay, Respawned, Stopped, note_failure, snap_map)
 from .parts import as_bot, Parts
 
 
@@ -522,7 +522,7 @@ class WalkingMixin(Parts):
         if not path:
             if replan and not m.ok(*here):
                 return None
-            raise Stopped(_("no way from {a} to {b} on {map}", a="%d,%d" % here,
+            raise NoWay(_("no way from {a} to {b} on {map}", a="%d,%d" % here,
                             b="%d,%d" % cell, map=atlas.label(mid)))
         return plan.diag_hops(path) if diagonal else plan.waypoints(path)
 

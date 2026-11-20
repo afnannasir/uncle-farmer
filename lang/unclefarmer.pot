@@ -2072,6 +2072,10 @@ msgid ""
 "I can't tell the map from that. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
 
+msgid ""
+"I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
+msgstr ""
+
 msgid "I don't know where a Shard Market is"
 msgstr ""
 
@@ -2098,6 +2102,9 @@ msgid ""
 "I went to where I last saw you ({map} at {x}, {y}) but can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
 
+msgid "I'll ask you after each death."
+msgstr ""
+
 msgid "I'm a &VIP (cable cars and airships are free)"
 msgstr ""
 
@@ -2112,6 +2119,9 @@ msgid "I'm not following anyone."
 msgstr ""
 
 msgid "I'm not following anyone. Send follow first, then buff."
+msgstr ""
+
+msgid "I'm not following anyone. Send follow first."
 msgstr ""
 
 msgid "I'm not in a team"
@@ -2134,6 +2144,15 @@ msgid "Ice princess"
 msgstr ""
 
 msgid "Idle on {map}, HP {hp}%{mp}."
+msgstr ""
+
+msgid "If I die, I'll respawn in the city."
+msgstr ""
+
+msgid "If I die, I'll respawn on the map."
+msgstr ""
+
+msgid "If I die, I'll respawn with Resurrection Crystals."
 msgstr ""
 
 msgid "If none of them is in the room, share with &anyone there"
@@ -3215,6 +3234,15 @@ msgstr ""
 msgid "Replying to {name}: {message}"
 msgstr ""
 
+msgid "Respawning in the city."
+msgstr ""
+
+msgid "Respawning on this map."
+msgstr ""
+
+msgid "Respawning with Resurrection Crystals."
+msgstr ""
+
 msgid "Rest &until HP (%):"
 msgstr ""
 
@@ -3448,6 +3476,9 @@ msgstr ""
 
 msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
+msgstr ""
+
+msgid "Send respawn crystal, respawn map or respawn city."
 msgstr ""
 
 msgid ""
@@ -5411,6 +5442,9 @@ msgstr ""
 msgid "damage over time"
 msgstr ""
 
+msgid "dead - asked {name} how to respawn, waiting for the answer"
+msgstr ""
+
 msgid "dead, but the respawn menu never opened - please respawn by hand"
 msgstr ""
 
@@ -5566,7 +5600,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+"follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
 
 msgid "following {name}"
@@ -6643,6 +6677,10 @@ msgstr ""
 msgid "repairing all the gear with a {tool} from {where} ({n} left)"
 msgstr ""
 
+msgid ""
+"respawn crystal, map or city: how I come back when I die following you. I ask and wait; sent early it counts for every death. respawn ask: ask again."
+msgstr ""
+
 msgid "respawning: {how}"
 msgstr ""
 
@@ -7310,6 +7348,10 @@ msgid ""
 msgstr ""
 
 msgid "the game won't let us hit {name} from here - next one"
+msgstr ""
+
+msgid ""
+"the game won't teleport us ({why}) - waiting for {name} to come back here"
 msgstr ""
 
 msgid "the game wouldn't select it ({why})"
@@ -8103,6 +8145,9 @@ msgstr ""
 msgid "{map}: heading for the exit to {dest}"
 msgstr ""
 
+msgid "{map}: leaving through our treasure chest"
+msgstr ""
+
 msgid "{map}: leaving through the Action menu"
 msgstr ""
 
@@ -8171,6 +8216,9 @@ msgid "{name} - {server}"
 msgstr ""
 
 msgid "{name} asks: {what}"
+msgstr ""
+
+msgid "{name} attacks us on the way - fighting it first"
 msgstr ""
 
 msgid "{name} copy"
@@ -8617,6 +8665,10 @@ msgid "{who}'s game is busy with {what}"
 msgstr ""
 
 msgid "{why} - no more {skill} this run ({n} done)"
+msgstr ""
+
+msgid ""
+"{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game allows"
 msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."

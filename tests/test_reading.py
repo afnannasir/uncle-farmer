@@ -472,6 +472,33 @@ def test_read_reconnects_a_dropped_game_and_keeps_reading(clock: Clock) -> None:
     assert len(tries) == 1 and 1030.0 < tries[0] < 1031.0
 
 
+def test_a_closed_connection_reconnects_at_once(clock: Clock) -> None:
+    # agent 75: the game kept its old world after the connection dropped (55 minutes of refused
+    # casts at monsters no longer there): the agent says so, and the bot logs back in
+    b = Read()
+    ticking(b, clock)
+    tries: list[float] = []
+
+    def reconnect() -> bool:
+        tries.append(clock.now)
+        b.link.answers["mem self"] = {"id": 4242}
+        return True
+
+    b.reconnect = reconnect
+    b.link.answers["mem self"] = {"error": "noworld: the game's connection is closed"}
+    assert b._read("mem self", lambda s: "error" not in s) == {"id": 4242}
+    assert len(tries) == 1 and tries[0] < 1001.0
+
+
+def test_a_closed_connection_without_reconnect_stops_after_the_wait(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem self"] = {"error": "noworld: the game's connection is closed"}
+    with pytest.raises(Stopped) as e:
+        b._read("mem self", lambda s: "error" not in s)
+    assert "connection is closed" in str(e.value) and 1060.0 < clock.now < 1062.0
+
+
 def test_read_tries_a_refused_reconnect_again_then_gives_up(clock: Clock) -> None:
     # the agent refuses while the game is still connected (the server only took the character away)
     b = Read()

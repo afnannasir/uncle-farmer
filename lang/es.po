@@ -2121,6 +2121,10 @@ msgid ""
 msgstr ""
 "No puedo saber el mapa con eso. Pulsa E en el juego, cópialo con Shift+C y envía: come <lo que copiaste>"
 
+msgid ""
+"I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
+msgstr ""
+
 msgid "I don't know where a Shard Market is"
 msgstr "No sé dónde hay un Mercado de fragmentos"
 
@@ -2149,6 +2153,9 @@ msgid ""
 msgstr ""
 "Fui al lugar donde te vi por última vez ({map} en {x}, {y}) pero no te veo. Pulsa E en el juego, cópialo con Shift+C y envía: come <lo que copiaste>"
 
+msgid "I'll ask you after each death."
+msgstr ""
+
 msgid "I'm a &VIP (cable cars and airships are free)"
 msgstr "Soy &VIP (los teleféricos y dirigibles son gratis)"
 
@@ -2165,6 +2172,9 @@ msgstr "No estoy siguiendo a nadie."
 
 msgid "I'm not following anyone. Send follow first, then buff."
 msgstr "No estoy siguiendo a nadie. Envía primero follow, luego buff."
+
+msgid "I'm not following anyone. Send follow first."
+msgstr ""
 
 msgid "I'm not in a team"
 msgstr "No estoy en un equipo"
@@ -2188,6 +2198,15 @@ msgstr "Princesa de hielo"
 
 msgid "Idle on {map}, HP {hp}%{mp}."
 msgstr "Inactivo en {map}, salud {hp} %{mp}."
+
+msgid "If I die, I'll respawn in the city."
+msgstr ""
+
+msgid "If I die, I'll respawn on the map."
+msgstr ""
+
+msgid "If I die, I'll respawn with Resurrection Crystals."
+msgstr ""
 
 msgid "If none of them is in the room, share with &anyone there"
 msgstr "Si ninguno está en la sala, compartir con cualquiera que esté &allí"
@@ -3315,6 +3334,15 @@ msgstr "Líneas de respuesta"
 msgid "Replying to {name}: {message}"
 msgstr "Respondiendo a {name}: {message}"
 
+msgid "Respawning in the city."
+msgstr ""
+
+msgid "Respawning on this map."
+msgstr ""
+
+msgid "Respawning with Resurrection Crystals."
+msgstr ""
+
 msgid "Rest &until HP (%):"
 msgstr "Descansar hasta tener salud (%) (&u):"
 
@@ -3554,6 +3582,9 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Envía help y el nombre de un comando para saber qué hace, por ejemplo: help follow"
+
+msgid "Send respawn crystal, respawn map or respawn city."
+msgstr ""
 
 msgid ""
 "Send this to the whole gang as: {where}?\n"
@@ -5655,6 +5686,9 @@ msgstr "tareas diarias terminadas: {list}"
 msgid "damage over time"
 msgstr "daño con el tiempo"
 
+msgid "dead - asked {name} how to respawn, waiting for the answer"
+msgstr ""
+
 msgid "dead, but the respawn menu never opened - please respawn by hand"
 msgstr "muerto, pero el menú de reaparición nunca se abrió: reaparece a mano"
 
@@ -5818,9 +5852,8 @@ msgstr ""
 "huí {n} veces en {m} minutos: este mapa es demasiado difícil por ahora; me detengo aquí"
 
 msgid ""
-"follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+"follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
-"follow: me quedo contigo, te ayudo en tus combates y voy a donde vayas. Un Sacerdote o una Hechicera te cura a ti y al equipo. Sin mejoras salvo que envíes buff. Tras un minuto sin verte, me detengo."
 
 msgid "following {name}"
 msgstr "siguiendo a {name}"
@@ -6948,6 +6981,10 @@ msgstr "quita debilitamientos"
 msgid "repairing all the gear with a {tool} from {where} ({n} left)"
 msgstr "reparando todo el equipo con {tool} de {where} (quedan {n})"
 
+msgid ""
+"respawn crystal, map or city: how I come back when I die following you. I ask and wait; sent early it counts for every death. respawn ask: ask again."
+msgstr ""
+
 msgid "respawning: {how}"
 msgstr "reapareciendo: {how}"
 
@@ -7650,6 +7687,10 @@ msgstr ""
 
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "el juego no nos deja golpear a {name} desde aquí: pasando al siguiente"
+
+msgid ""
+"the game won't teleport us ({why}) - waiting for {name} to come back here"
+msgstr ""
 
 msgid "the game wouldn't select it ({why})"
 msgstr "el juego no lo seleccionó ({why})"
@@ -8482,6 +8523,9 @@ msgstr "{map}, {x}, {y}"
 msgid "{map}: heading for the exit to {dest}"
 msgstr "{map}: rumbo a la salida hacia {dest}"
 
+msgid "{map}: leaving through our treasure chest"
+msgstr ""
+
 msgid "{map}: leaving through the Action menu"
 msgstr "{map}: saliendo por el menú de acción"
 
@@ -8554,6 +8598,9 @@ msgstr "{name} - {server}"
 
 msgid "{name} asks: {what}"
 msgstr "{name} pregunta: {what}"
+
+msgid "{name} attacks us on the way - fighting it first"
+msgstr ""
 
 msgid "{name} copy"
 msgstr "copia de {name}"
@@ -9019,6 +9066,10 @@ msgstr "el juego de {who} está ocupado con {what}"
 msgid "{why} - no more {skill} this run ({n} done)"
 msgstr "{why}: no más {skill} en esta ejecución ({n} hechos)"
 
+msgid ""
+"{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game allows"
+msgstr ""
+
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casillas, {n} salidas."
 
@@ -9064,6 +9115,11 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "collected the hunting bounty"
 #~ msgstr "recogida la recompensa de caza"
+
+#~ msgid ""
+#~ "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+#~ msgstr ""
+#~ "follow: me quedo contigo, te ayudo en tus combates y voy a donde vayas. Un Sacerdote o una Hechicera te cura a ti y al equipo. Sin mejoras salvo que envíes buff. Tras un minuto sin verte, me detengo."
 
 #~ msgid "fusion power {n} - on foot until it has come back"
 #~ msgstr "poder de fusión {n}: a pie hasta que vuelva"
