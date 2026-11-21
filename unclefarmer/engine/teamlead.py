@@ -259,14 +259,19 @@ def friends(b: Bot) -> trust.Trusted:
 
 # ------------------------------------------------------------------ taking requests
 def applicants(b: Bot, top: dict[str, Any]) -> list[tuple[int, str, int | None, bool]]:
-    """(row, name, id, selected) for each player in the "apply to join" list."""
+    """(row, name, id, selected) for each player in the "apply to join" list. A player's name ends
+    its cmd with their id and the selection (0, 1 once Enter selects them), and their id is the
+    first text beside it. Only the first row's cmd starts with [1, 6]: the others are [id, 0]
+    (live 2026-11-21, two players waiting - the second was left out when only [1, 6] counted)."""
     out: list[tuple[int, str, int | None, bool]] = []
     for r, row in enumerate(rows(top)[:MOST_APPLICANTS + 2]):
         e = row[0] if row else None
+        beside = row[1] if len(row) > 1 else None
         cmd = cmd_of(e)
-        if len(cmd) >= 4 and cmd[:2] == [1, 6]:
+        ids = b.entry_texts(beside) if beside else []
+        if len(cmd) >= 2 and cmd[-1] in (0, 1) and ids and ids[0].strip() == str(cmd[-2]):
             texts = b.entry_texts(e or {})
-            out.append((r, texts[0].strip() if texts else "?", int(cmd[2]), cmd[3] == 1))
+            out.append((r, texts[0].strip() if texts else "?", int(cmd[-2]), cmd[-1] == 1))
     return out
 
 

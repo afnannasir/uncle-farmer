@@ -80,8 +80,9 @@ class Game:
                 [entry("Action menu; lag 120", [0])], team_row, [entry("Disorder gang", [3, 3, 1])],
                 [entry("friends", [32, 6]), entry("Application: 1", [32, 7])]]
         elif self.menu == "apply":
-            rows = [[entry(str(name), [1, 6, int(pid), int(sel)]), entry(str(pid)),
-                     entry("private chat", [int(pid)], h=name)] for name, pid, sel in self.applicants]
+            # the first player's cmd is [1, 6, id, selected], the others' only [id, selected] (live)
+            rows = [[entry(str(name), ([1, 6] if i == 0 else []) + [int(pid), int(sel)]), entry(str(pid)),
+                     entry("private chat", [int(pid)], h=name)] for i, (name, pid, sel) in enumerate(self.applicants)]
             last: list[list[dict[str, Any] | None]] = [[entry("agree", [1])], [entry("refuse", [0])]]
             rows += last
         elif self.menu == "friends":
@@ -97,7 +98,7 @@ class Game:
             self.menu = "apply"
         elif text == "friends":
             self.menu = "friends"
-        elif self.menu == "apply" and e.get("cmd", [None])[:2] == [1, 6]:
+        elif self.menu == "apply" and any(a[0] == text for a in self.applicants):
             for a in self.applicants:
                 if a[0] == text:
                     a[2] = 1 - a[2]
@@ -177,6 +178,13 @@ def test_a_stranger_is_named_once_however_often_the_list_is_read() -> None:
         assert teamlead.take_requests(as_bot(b)) == []
     assert sum("Mallory" in line for line in b.lines) == 1
     assert "agree" not in game.opened and game.menu is None
+
+
+def test_every_player_waiting_is_read_not_only_the_first() -> None:
+    game = Game([("Carol", 31), ("Bob", 555)])         # Bob second: his cmd is only [555, 0]
+    b = Bot(game, team_accept_who="list", team_accept_list=["Carol", "Bob"])
+    assert sorted(teamlead.take_requests(as_bot(b))) == ["Bob", "Carol"]
+    assert game.applicants == []
 
 
 def test_a_list_of_names_and_ids_says_who_joins() -> None:
