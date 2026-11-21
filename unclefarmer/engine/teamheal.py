@@ -89,14 +89,15 @@ def mates(b: Bot, snap: dict[str, Any]) -> list[dict[str, Any]]:
 
 def learn(b: Bot) -> None:
     """Every LEARN_EVERY seconds outside fights, a round of "/6" presses: the game names each
-    teammate on this map, so the ones we don't follow get healed too. Needs the "/6" phrase on a
-    key (the run start puts it on an empty one)."""
+    teammate on this map, so the ones we don't follow get healed too, and every follower helps
+    with their fights (follow.help_target). Needs the "/6" phrase on a key (the run start puts it
+    on an empty one)."""
     now = clock_for(b).time()
     if getattr(b, "agent_version", 0) < 27 or b.in_fight or now < getattr(b, "team_learn_at", 0.0):
         return
     b.team_learn_at = now + LEARN_EVERY
     slot = phrase_book.slot_of(getattr(b, "phrases", None) or {}, "/6")
-    if not slot or not _healer(b):
+    if not slot or not (_healer(b) or getattr(b, "following", None)):
         return
     key = gamekeys.phrase_key_list()[slot - 1]
     t0 = b.a.json("team").get("now", 0)

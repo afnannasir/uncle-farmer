@@ -7,6 +7,7 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from typing import Any, Literal
 
 from ... import atlas, gamekeys, jsonio
@@ -20,6 +21,9 @@ from .parts import as_bot, Parts
 ASK_EVERY = 3.0       # seconds between keyless HP/MP requests (agent 39): no key, so no reason to wait long
 ASK_QUIET = 10.0      # the same while MP is well above the potion mark
 SHEET_ASK_EVERY = 5.0  # seconds between keyless sheet requests (agent 43): fresh after every kill
+RESPAWN_ASK_AGAIN = 180.0   # seconds: a follower's "how do I respawn?" asked again while unanswered
+# a follower's respawn answers (messages.cmd_respawn) -> the respawn menu entries to try, in order
+FOLLOW_RESPAWN: dict[str, list[str]] = {"crystal": ["crystal_spot", "crystal_map"], "map": ["map"], "city": ["city"]}
 SHEET_WAIT = 2.0      # how long a forced keyless reading waits for the sheet (it comes in ~0.3 s)
 
 
@@ -313,15 +317,10 @@ class HealthMixin(Parts):
         # the XP loser dies on purpose: its own lines say how it goes, a death each time is no news
         self.log(_("died on {map} ({n} so far)", map=where, n=self.deaths),
                  speak=not getattr(self, "dying_on_purpose", False))
-        limit = self.p.get("max_deaths", 3) if self.p.get("stop_on_deaths", True) else 0
+        following = getattr(self, "following", None)
+        limit = self.p.get("max_deaths", 3) if self.p.get("stop_on_deaths", True) and not following else 0
         last = bool(limit) and self.deaths > limit
-        order: list[str] = []
-        if self.p.get("use_resurrection_crystal", False) and not last:
-            order += ["crystal_spot", "crystal_map"]
-        if last or self.p.get("respawn", "map") != "map":
-            order += ["city", "map"]
-        else:
-            order += ["map", "city"]
+        order = self._respawn_order(last, bool(following))
         for _try in range(30):            # the menu takes a moment to open after dying
             d = self.dialog()
             top = d.get("top")
@@ -332,6 +331,8 @@ class HealthMixin(Parts):
             self.sleep(0.5)
         else:
             raise Stopped(_("dead, but the respawn menu never opened - please respawn by hand"), final=True)
+        if following:
+            order = self._follower_order(following, where, order)
         for k in order:
             if self.find_entry(top, RESPAWN[k]) is None:
                 continue
@@ -356,6 +357,64 @@ class HealthMixin(Parts):
                     raise Respawned()
                 self.sleep(0.5)
         raise Stopped(_("couldn't respawn - please do it by hand"), final=True)
+
+    def _respawn_order(self, last: bool, following: bool) -> list[str]:
+        """The respawn menu entries to try, in order (keys of RESPAWN)."""
+        order: list[str] = []
+        if self.p.get("use_resurrection_crystal", False) and not last:
+            order += ["crystal_spot", "crystal_map"]
+        if following:
+            order += ["map", "city"]      # never back to the city by itself: the team is in here
+        elif last or self.p.get("respawn", "city") != "map":
+            order += ["city", "map"]
+        else:
+            order += ["map", "city"]
+        return order
+
+    def _follower_order(self, leader: str, where: str, order: list[str]) -> list[str]:
+        """A follower's order: the leader's rule sent earlier, else their answer to our question,
+        first; Respawned when something brought us back while we waited."""
+        how = getattr(self, "follow_respawn", None) or self._ask_respawn(leader, where)
+        if how == "alive":
+            self.last_hp = None
+            self.log(_("alive again on {map}", map=atlas.label(self.map_id())))
+            raise Respawned()
+        if not how:
+            return order
+        return FOLLOW_RESPAWN[how] + [k for k in order if k not in FOLLOW_RESPAWN[how]]
+
+    def _ask_respawn(self, leader: str, where: str) -> str | None:
+        """Following and dead: ask the player who sent `follow` (by private message) how to come
+        back - Resurrection Crystals, the map's respawn point or the city - and wait for their
+        `respawn ...` answer (messages.cmd_respawn sets respawn_answer). Asked again every
+        RESPAWN_ASK_AGAIN seconds. "alive" when something else brought us back meanwhile; None
+        when there is nobody to ask (a follow started without a message): then crystals if the
+        profile allows them, else the map's respawn point."""
+        tell: Callable[[str], None] | None = getattr(self, "tell", None)
+        if tell is None:
+            return None
+        self.respawn_answer = None
+        self.respawn_asked = True
+        question = _("I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city",
+                     map=where)
+        try:
+            asked = -RESPAWN_ASK_AGAIN
+            while True:
+                now = self.clock.time()
+                if now - asked >= RESPAWN_ASK_AGAIN:
+                    asked = now
+                    tell(question)
+                    self.log(_("dead - asked {name} how to respawn, waiting for the answer", name=leader),
+                             speak=True)
+                self.check()
+                answer: str | None = getattr(self, "respawn_answer", None)
+                if answer:
+                    return answer
+                if self.me().get("hp", 0) > 0:
+                    return "alive"
+                self.sleep(0.5)
+        finally:
+            self.respawn_asked = False
 
     def refresh_sheet(self, force: bool = False) -> dict[str, Any] | None:
         """Open the character sheet (W_SELF_INFO, the backquote key), let the agent read it, close

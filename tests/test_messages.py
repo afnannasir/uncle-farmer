@@ -85,6 +85,21 @@ def test_buff_switches_buffs_for_the_follow() -> None:
     assert "Send buff" in (m.cmd_buff(5, "Friend", "maybe") or "")
 
 
+def test_respawn_answers_the_question_or_sets_the_rule() -> None:
+    run = FakeRun()
+    m = messenger(run)
+    assert m.cmd_respawn(5, "Friend", "map") == "If I die, I'll respawn on the map."
+    assert run.bot.follow_respawn == "map"
+    run.bot.respawn_asked = True                        # dead and waiting: this is the answer
+    assert m.cmd_respawn(5, "Friend", "crystal") == "Respawning with Resurrection Crystals."
+    assert run.bot.respawn_answer == "crystal" and run.bot.follow_respawn == "map"
+    assert m.cmd_respawn(5, "Friend", "ask") == "I'll ask you after each death."
+    assert run.bot.follow_respawn is None
+    assert "Send respawn" in (m.cmd_respawn(5, "Friend", "later") or "")
+    assert "not following" in (messenger().cmd_respawn(5, "Friend", "map") or "")
+    assert messages.parse_command("respawn city") == ("respawn", "city")
+
+
 def test_buff_without_a_follow() -> None:
     assert "not following" in (messenger().cmd_buff(5, "Friend", "") or "")
 

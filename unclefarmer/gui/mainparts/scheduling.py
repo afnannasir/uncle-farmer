@@ -106,6 +106,35 @@ class SchedulingMixin(FrameParts):
         except OSError as e:
             self.say(_("Couldn't save the schedules: {err}", err=e))
 
+    def open_autopilot(self) -> None:
+        """Run, Autopilot: the logged-in character's day (Before farming, a plan, After farming),
+        saved, and started on its game when the player says so."""
+        from ..autopilot import AutopilotDialog, sync_schedule
+        from ..common import error
+        from .editing import active_profile
+        name = active_profile(self)
+        pid = self.selected_pid()
+        if not name or pid is None:
+            error(self, _("Log in to the character in the game first."))
+            return
+        with AutopilotDialog(self, name, list(self.items), settings.last_run_of(self.s, name)) as d:
+            code = d.ShowModal()
+            item, p = d.item, d.p
+        if code not in (wx.ID_OK, wx.ID_YES):
+            return
+        # "every day at": the window's own daily schedule, made, changed or taken away to match
+        try:
+            sid = sync_schedule(self.scheduler, p, name, item, self.now())
+        except ValueError as e:
+            error(self, str(e))
+            sid = str(p.get("autopilot_schedule") or "")
+        if sid != str(p.get("autopilot_schedule") or ""):
+            p["autopilot_schedule"] = sid
+            settings.save_profile(name, p)
+        self.fill_runs()                 # a script the window wrote shows in the Plans tab
+        if code == wx.ID_YES and item is not None:
+            self.start(pid, item)
+
     def open_schedules(self) -> None:
         names = sorted({profile for profile, _email in settings.automatic_login_profiles()} |
                        {g[1] for g in self.games if g[1]} | set(stats.characters()), key=settings.profile_display)

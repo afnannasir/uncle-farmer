@@ -103,7 +103,7 @@ def test_a_dungeon_visit_fights_until_the_timer_end_to_end(sim_env: Callable[...
     settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, dungeon={"cave": "Spider cave"}))
     monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
     monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
-    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
+    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave, cfg=None: True))
     left: list[float] = []
     monkeypatch.setattr(Bot, "leave_instance", stand_in(Bot.leave_instance, lambda self: left.append(self.clock.time()) or True))
     game = sim_env()
@@ -134,7 +134,7 @@ def test_a_ranged_character_shoots_on_the_way_in_a_dungeon(sim_env: Callable[...
                                              dungeon={"cave": "Spider cave"}))
     monkeypatch.setattr(dungeon, "get_supplies", stand_in(dungeon.get_supplies, lambda b, cfg, check_only=False: []))
     monkeypatch.setattr(dungeon, "level_of", stand_in(dungeon.level_of, lambda b: 80))
-    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave: True))
+    monkeypatch.setattr(dungeon, "enter", stand_in(dungeon.enter, lambda b, cave, cfg=None: True))
     monkeypatch.setattr(Bot, "leave_instance", stand_in(Bot.leave_instance, lambda self: True))
     shots: list[int] = []
     real = FightingMixin.move_shot

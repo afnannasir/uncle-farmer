@@ -271,7 +271,7 @@ def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None):
     potion the storehouse failed to hand over (that used to send the trip on to a shop)."""
     houses = in_town(b, knowledge.service_npcs("storehouse"))
     if not houses:
-        b.log(_("no storehouse in {map} - not taking {item} out", map=atlas.label(getattr(b, "restock_town", 0) or 0),
+        b.log(_("no storehouse in {map} - not taking {item} out", map=atlas.label(getattr(b, "restock_town", None) or 0),
                 item=item))
         return 0
     visit(b, "storehouse", candidates=houses)
@@ -508,7 +508,7 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
     shops = in_town(b, shops)
     if not shops:
         b.log(_("no shop in {map} sells {item} - not going to another town for it",
-                map=atlas.label(getattr(b, "restock_town", 0) or 0), item=item), speak=True)
+                map=atlas.label(getattr(b, "restock_town", None) or 0), item=item), speak=True)
         return 0
     have = counts(b)
     before = have.get(item.lower(), 0)

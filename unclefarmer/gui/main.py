@@ -45,13 +45,15 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
     return {
         "run_start": available and not running and has_items, "run_stop": running,
         "run_pause": running, "run_stop_all": any_running, "run_walk": available and not running,
-        "run_schedules": True, "run_results": True, "run_speak_results": True,
+        "run_schedules": True, "run_autopilot": available and not running and has_items,
+        "run_results": True, "run_speak_results": True,
         "game_mute": available, "game_unmute": available, "game_mute_all": True, "game_unmute_all": True,
         "game_open": True, "messages_private": True, "messages_chat": available,
         "messages_reset": has_messengers, "character_settings": available, "character_bag": available,
         "character_scan": available and not running, "character_other": True,
         "character_export": True, "character_import": True,
         "tools_gem": available and not running, "tools_breaker": available and not running,
+        "tools_potions": available and not running,
         "tools_enhance": available and not running,
         "tools_keyboard": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
@@ -266,6 +268,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
 
         tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
                            command(_("Gem Brea&ker"), lambda e: self.open_tool("break"), "Ctrl+Shift+B"),
+                           command(_("P&otion Maker"), lambda e: self.open_tool("potions"), "Ctrl+Shift+O"),
                            command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
                            command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
@@ -282,7 +285,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
                            command(_("Sound Silencer"), lambda e: self.open_silencer()),
                            command(_("&Keyboard Manager"), lambda e: self.open_tool("keyboard"))],
-                          ("tools_gem", "tools_breaker", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
+                          ("tools_gem", "tools_breaker", "tools_potions", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
                            "tools_market", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer", "tools_keyboard"),
                           context=True)
@@ -307,9 +310,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("Stop &every bot"), lambda e: self.stop_all(), "Ctrl+Shift+S"),
                          command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
                          command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
+                         command(_("&Autopilot: the whole day"), lambda e: self.open_autopilot(), "Ctrl+Shift+A"),
                          command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
                          command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
-                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules",
+                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules", "run_autopilot",
                          "run_results", "run_speak_results"), context=True)
         game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
                          command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
@@ -546,12 +550,14 @@ Main window
   Ctrl+Shift+S       Stop every bot
   Ctrl+W              Walk to a dungeon entrance or a map (Pause stops the walk)
   Ctrl+Shift+H        Schedules: plans and scripts started at set times
+  Ctrl+Shift+A        Autopilot: the Before farming list, a plan and the After farming list, started together
   Ctrl+R              Results
   Ctrl+Shift+R        Speak the results
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
   Ctrl+G              Gem Maker
   Ctrl+Shift+B        Gem Breaker: gems and Enhance Crystals into shards
+  Ctrl+Shift+O        Potion Maker: make potions at the gang's Pharmacist and fuse them up
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
@@ -630,6 +636,12 @@ TOOLS
 Tools, Gem Breaker (Ctrl+Shift+B): break the gem colours you tick, up to the level you allow, into
 shards, and if you want the Weapon or Equipment Enhance Crystals too (they cost arnebia). It can't be
 undone: the window shows what would go, and asks before it starts.
+Tools, Potion Maker (Ctrl+Shift+O): the gang Pharmacist makes potions from Bloods and Pelts and
+fuses 5 of a size into 1 of the next (Small to Medium to Large, for free). Say how many of each potion
+you want in the bag; for Medium and Large choose between making them from Smalls and fusing (usually
+cheaper) or making them from their own recipe. Missing materials come from the town storehouse and
+the market, cheapest lots first and never above the most a piece you set for each material. Check
+only reads the real fees and says what it would do.
 Tools, Gem Maker (Ctrl+G): make a gem (choose which, its level and how many, or as many as you
 can; it gets more Level 1 shards from the storehouse or the Shard Market when you let it), or make
 the most of your bag (every shard into gems, then every colour up as far as it goes). Tools, Equipment Enhancer (Ctrl+Shift+E): your

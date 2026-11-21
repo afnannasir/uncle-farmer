@@ -26,9 +26,21 @@ What the game showed (hand runs logged 2026-10-27, one with a Hunter, one with a
   - Turned away because the day's cave is used, the game says "You have already entered an
     experience dungeon today".
 
+What the bot's own visits showed (2026-11-01 to 11-15, thirteen of them, field logs and packets):
+  - Everything done after landing is taken off the 15 minutes. Every visit with a pet stood 11 to
+    13 seconds on the spawn point first: a second for the game to settle, a second of target-mode
+    presses, the pet called - and then the "get off the Swift beast" press, which the server
+    ignores right after a pet came out (pets.keep_out), so 8.5 s more until the next one. The
+    hand runs called the pet at the door, ten seconds before going in, and it came in with them.
+  - The rest of a visit has no idle time worth the name: walking up to monsters (60-70% of a
+    Hunter's visit, on foot at 4.1 tiles a second), the game's own 0.7 s stand after each cast,
+    and 3 to 8 fights a visit that the server refuses or that end without a kill (3 to 6 s each).
+
 So a visit is: the supplies topped up before setting out (the pet's blue potions and Rice Rolls,
 our own blues and reds - a pet that fights and a lower character's potions are a good part of the
-damage), the walk to the entrance, "Enter the dungeon", then the farming fight in dungeon mode:
+damage), the walk to the entrance, getting ready at the door (make_ready: the fight's beast, the
+pet out, buffs up, keys filled - none of it on the timer), "Enter the dungeon", then the farming
+fight in dungeon mode:
 no trips out (the visit can't be taken up again), no resting (drink instead), area skills from two
 monsters together, chasing whatever is within 90 steps (caveloops.py: the chase range, not the
 loop, is what decides the kills here), until the game moves us out. The pet is the one chosen in
@@ -42,11 +54,13 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any
+from typing import Any, cast
 
 from .. import atlas, dungeons, jsonio, knowledge
+from ..clock import clock_for
+from ..link import AgentError
 from ..i18n import N_, _
-from . import chores, pets, town
+from . import beasts, chores, combat, keyslots, pets, town, xpcard
 from .bot import Bot, Stopped
 from .botparts.base import potion_kind
 
@@ -70,6 +84,12 @@ CHASE = 90                # walking steps to chase a monster from the loop: farm
                           # hardly matters with a monster nearly always that close
 ENTER = r"^\s*Enter the dungeon"
 LANDING = 10.0            # seconds the game has to move us in after "Enter the dungeon"
+LANDING_LOOK = 0.1        # ... looked at this often: the timer runs from the landing
+PET_WAIT = 180.0          # seconds to wait at the door for the run's pet to be ready to come out
+                          # (one put away comes back in about two minutes; one that died takes 10
+                          # to 30, and then we go in without it)
+DOOR_LOOKS = 5            # looks at ourselves at the door, DOOR_LOOK apart: each puts up one buff
+DOOR_LOOK = 0.6           # or drinks one potion, so none of it costs a cast inside
 TRIES = 3                 # goes at the entrance before giving up (none is written down for the day)
 RETRY_WAIT = 2.0          # seconds between two goes: a late move in shows meanwhile
 IN, USED, MISSED = "in", "used", "missed"     # what enter() got
@@ -234,14 +254,112 @@ def turned_away(b: Bot, since: int) -> bool:
     return any(re.search(ALREADY, line, re.I) for line in chores.said_since(b, since))
 
 
-def enter(b: Bot, cave: str) -> str:
-    """Walk to the cave's entrance, talk, choose "Enter the dungeon" and wait to land inside, up to
-    TRIES times: a menu that came late, a row not found or a slow move in is tried again, and a
-    move in that came after LANDING is seen before the next try. IN when inside; USED when the game
-    said the day's entry is used; MISSED when TRIES tries got nowhere (the day may still be free)."""
+def pet_ready(b: Bot) -> None:
+    """At the door: the run's pet out before we go in - it comes in with us (the hand runs called
+    theirs ten seconds before the door). One that is still cooling down is waited for when that is
+    soon (PET_WAIT), looking after ourselves meanwhile; a summon the game didn't take is tried
+    once more after the server's gap between such changes. A pet that was out already has its
+    description read here, not between two fights inside."""
+    names = pets.chosen(b)
+    if not names:
+        return
+    clock = clock_for(b)
+    rows = pets.owned(b)
+    mine = [r for r in rows if r.get("name") in names]
+    out_now = any(pets.state(r, clock) == "out" for r in rows)
+    if mine and not out_now and not any(pets.state(r, clock) == "ready" for r in mine):
+        soon = min(mine, key=lambda r: r["usable_at"])
+        wait = soon["usable_at"] - clock.time()
+        if wait > PET_WAIT:
+            b.log(_("{pet} can't come out for {n} more minutes - going in without it; it is called inside "
+                    "as soon as it can", pet=soon["name"], n=int(wait // 60) + 1), speak=True)
+        else:
+            b.log(_("{pet} can come out in {n} seconds - waiting for it at the door, where no timer runs",
+                    pet=soon["name"], n=int(wait) + 1), speak=True)
+            until = soon["usable_at"] + 1.0
+            while clock.time() < until:
+                b.look_after()
+                b.sleep(min(1.0, max(0.1, until - clock.time())))
+    for attempt in range(2):
+        b.pet_checked = 0.0               # look now, whenever the farm loop last did
+        pets.keep_out(b)
+        rows = pets.owned(b)
+        if any(pets.state(r, clock) == "out" for r in rows):
+            break
+        left = next((r for r in rows if r.get("name") in names and pets.state(r, clock) == "ready"), None)
+        if left is None or attempt:
+            break
+        b.pets_refused.pop(left["id"], None)      # not taken: once more after the server's gap
+        b.sleep(beasts.GAP)
+    out: dict[str, Any] | None = getattr(b, "pet_out", None)
+    if out and out.get("id") not in getattr(b, "pet_described", {}):
+        pets.describe(b)
+
+
+def make_ready(b: Bot, cave: str, cfg: dict[str, Any]) -> None:
+    """At the door, before "Enter the dungeon": everything the farm loop would otherwise do on the
+    spawn point inside, while the 15 minutes run (11 to 13 s of every visit with a pet, measured).
+      - the fight's beast: off the Swift one the trip ended on, or onto the Fierce one the
+        character fights in - first, because the server ignores a fusion change right after a
+        pet came out;
+      - the run's pet out (pet_ready);
+      - the skills read, and a few looks at ourselves: long buffs up, HP and MP topped up;
+      - potions back on empty keys, a paused experience card running again;
+      - the cave's map and loop worked out.
+    The target key can't be set here: talking to the entrance turns it to NPCs, so that is the
+    one thing left for the first moment inside (a few hundredths of a second a press)."""
+    b.log(_("getting ready at the door of {cave}: its timer starts the moment we are in", cave=_(cave)))
+    beasts.ensure(b, beasts.FIGHT)
+    pet_ready(b)
+    if b.skillbook is None and b.p.get("smart_skills", True):
+        b.skillbook = combat.SkillBook(b)
+    for _look in range(DOOR_LOOKS):
+        b.look_after()
+        b.sleep(DOOR_LOOK)
+    keyslots.refill(b)
+    xpcard.at_the_door(b)
+    mid = CAVES[cave]["map"]
+    atlas.model(mid)
+    if cfg.get("patrol") in PATROLS:
+        atlas.patrol_loop(mid, cfg["patrol"])
+
+
+def knock(b: Bot, entry: dict[str, Any]) -> bool:
+    """Talk to the entrance we stand next to (go_dungeon brought us): the NPC at the place the
+    entrance names, else the one in sight that is this dungeon's. True once its menu is open."""
+    if entry.get("at") and entry.get("npc"):
+        return b.talk(entry["npc"], (entry["at"][0], entry["at"][1]))
+    seen: list[dict[str, Any]] = b.snap()["entities"]
+    npc = next((e for e in seen if e.get("id", 0) < 0 and dungeons.is_entrance(entry, e.get("name"))), None)
+    return npc is not None and b.talk(npc["name"], (int(round(npc["x"])), int(round(npc["y"]))))
+
+
+def landed(b: Bot, mid: int) -> bool:
+    """After "Enter the dungeon": wait for the game to move us off map mid, looking ten times a
+    second, and go on the moment the new map can be read. True once it has. Not the trips'
+    wait_map_change: that one gives every new map a settling second, and here the timer runs
+    from the landing."""
+    end = b.clock.time() + LANDING
+    while b.clock.time() < end:
+        if b.map_id() != mid:
+            b.settled_map()
+            return True
+        b.sleep(LANDING_LOOK)
+    return False
+
+
+def enter(b: Bot, cave: str, cfg: dict[str, Any] | None = None) -> str:
+    """Walk to the cave's entrance, get ready there (make_ready), then talk, choose "Enter the
+    dungeon" and wait to land inside, up to TRIES times: a menu that came late, a row not found or
+    a slow move in is tried again, and a move in that came after LANDING is seen before the next
+    try. IN when inside; USED when the game said the day's entry is used; MISSED when TRIES tries
+    got nowhere (the day may still be free)."""
     entry = entrance(cave)
     if entry is None:
         raise Stopped(_("I don't know where {cave} is entered", cave=cave))
+    b.go_dungeon(entry)
+    make_ready(b, cave, cfg if cfg is not None else config(b.p))
+    entry = entrance(cave) or entry       # a circle found on the way is remembered with its place
     inside = CAVES[cave]["map"]
     said: list[str] = []
     for n in range(TRIES):
@@ -249,7 +367,10 @@ def enter(b: Bot, cave: str) -> str:
             return IN                  # the last try's move in came late
         if n:
             b.log(_("not in {cave} yet - trying again ({n} of {all})", cave=cave, n=n + 1, all=TRIES))
-        b.go_dungeon(entry, talk=True)
+        if not knock(b, entry):
+            b.log(_("couldn't talk to {npc}", npc=entry.get("npc") or cave))
+            b.sleep(RETRY_WAIT)
+            continue
         b.wait_dialog(3.0)
         mid = b.map_id()
         since = chores.said_mark(b)
@@ -257,7 +378,7 @@ def enter(b: Bot, cave: str) -> str:
             b.close_dialogs()
             b.log(_("{npc} offered no \"Enter the dungeon\"", npc=entry.get("npc") or cave), speak=True)
         else:
-            b.wait_map_change(mid, LANDING)
+            landed(b, mid)
             if b.map_id() == inside:
                 return IN
             b.close_dialogs()
@@ -279,7 +400,7 @@ def visit(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     game said is used (or our own way in) is written down for the day: one that just didn't work
     is tried again at the next run."""
     name = chores.who(b)
-    got = enter(b, cave)
+    got = enter(b, cave, cfg)
     if got == USED:
         chores.mark(name, done_key(cave), "not let in")
         return _("{cave}: the game didn't let us in (once a day)", cave=cave)
@@ -296,6 +417,7 @@ def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     """Inside a cave: the fight until the game moves us out, then a line about it."""
     mid = CAVES[cave]["map"]
     began, kills = b.clock.time(), b.kills
+    seen = report_at(b)
 
     def out() -> bool:
         return b.map_id() != mid or b.clock.time() - began >= (MINUTES + OVERTIME) * 60
@@ -316,7 +438,48 @@ def hunt(b: Bot, cfg: dict[str, Any], cave: str) -> str:
     made = b.kills - kills
     minutes = max(1.0, (b.clock.time() - began) / 60.0)
     line = _("{cave}: {n} kills in {m} minutes", cave=cave, n=made, m=int(round(minutes)))
+    told = game_report(b, seen)
+    if told:
+        line += "; " + told
     b.log(line, speak=True)
+    return line
+
+
+def report_at(b: Bot) -> int | None:
+    """When the game's newest end-of-dungeon report arrived (agent 76 `report`), or None: one
+    newer than this after a visit is that visit's."""
+    try:
+        r: Any = b.a.json("report")
+    except AgentError:         # the link broke: the visit goes on without it
+        return None
+    if not isinstance(r, dict):
+        return None
+    at: Any = cast(dict[str, Any], r).get("at")
+    return at if isinstance(at, int) else None
+
+
+def game_report(b: Bot, seen: int | None) -> str | None:
+    """What the game's own end report (IN op=66) says about this visit: our kills, damage and
+    healing, and the kills of everyone in it. None when no new report came (an older agent, or
+    the game sent none). The bot's own count misses kills it can't see; the game's doesn't."""
+    try:
+        got: Any = b.a.json("report")
+    except AgentError:
+        return None
+    if not isinstance(got, dict):
+        return None
+    r = cast(dict[str, Any], got)
+    players: list[dict[str, Any]] = r.get("players") or []
+    if not players or r.get("at") == seen:
+        return None
+    me_id = b.me().get("id")
+    mine: dict[str, Any] = next((p for p in players if p.get("id") == me_id), dict[str, Any]())
+    if not mine:
+        return _("the game's report: {total} kills", total=r.get("total_kills", 0))
+    line = _("the game's report: {n} of {total} kills, {dmg} damage", n=mine.get("kills", 0),
+             total=r.get("total_kills", 0), dmg=f"{int(mine.get('damage') or 0):,}")
+    if mine.get("healing"):
+        line += _(", {heal} healing", heal=f"{int(mine['healing']):,}")
     return line
 
 

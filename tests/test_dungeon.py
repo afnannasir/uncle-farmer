@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 
-from unclefarmer.engine import chores, dungeon, pets, script, town
+from unclefarmer.engine import beasts, chores, dungeon, pets, script, town
 from unclefarmer.engine.bot import Stopped
 from conftest import as_bot, as_kind, stand_in
 from collections.abc import Callable
@@ -30,10 +30,16 @@ class Agent:
 
     def __init__(self, pet_out: bool) -> None:
         self.pet_out = pet_out
+        self.pets: list[dict[str, Any]] | None = None      # a test's own pet list
+        self.reports: list[dict[str, Any]] = []             # `report` answers, the last one kept
 
     def json(self, line: str) -> Any:           # an agent answer: any JSON, as the real link
         if line == "mem pets":
+            if self.pets is not None:
+                return [dict(r) for r in self.pets]
             return [{"id": 77, "name": "Wild Eagle>><< Sparky", "usable_at": -1}] if self.pet_out else []
+        if line == "report" and self.reports:
+            return self.reports.pop(0) if len(self.reports) > 1 else self.reports[0]
         return {"error": "unknown"}
 
 
@@ -43,7 +49,16 @@ class Game:
     def __init__(self, level: int=80, bag: dict[str, int] | None=None, pets: bool=True, menu: bool=True, lets_in: bool=True, moves_out: bool=True, pet_out: bool=False) -> None:
         self.clock = Clock()
         self.a = Agent(pet_out)
-        self.p: dict[str, Any] = {"mp_use": True, "pets": [{"name": "Pixie Sparky", "use": pets}]}
+        self.p: dict[str, Any] = {"mp_use": True, "pets": [{"name": "Pixie Sparky", "use": pets}],
+                                  "smart_skills": False, "use_key": "enter"}
+        self.skillbook = None
+        self.in_fight = False
+        self.pets_refused: dict[int, float] = {}
+        self.pet_checked = 0.0
+        self.did: list[str] = []          # what was done, in order: at the door, then inside
+        self.keys: list[str] = []
+        self.cursor = 0
+        self.takes_summons = True
         self.character = "Hero"
         self.stop_event = threading.Event()
         self.level = level
@@ -85,24 +100,59 @@ class Game:
         return self.mid
 
     def go_dungeon(self, entry: dict[str, Any], talk: bool=False) -> None:
+        assert not talk                   # the door's menu is opened only once we are ready
         self.walked.append(entry["name"])
         self.cave = entry["name"]
+        self.did.append("arrived")
+
+    def snap(self) -> dict[str, Any]:
+        return {"self": {}, "entities": [{"id": -3, "name": self.cave, "x": 10.0, "y": 10.0}]}
+
+    def talk(self, name: str, at: tuple[float, float] | None=None) -> bool:
+        self.did.append("talk")
+        self.talked: tuple[str, tuple[float, float] | None] = (name, at)
+        return True
+
+    def look_after(self, me: dict[str, Any] | None=None) -> dict[str, Any]:
+        self.did.append("look")
+        return {}
+
+    def attackers(self) -> set[int]:
+        return set()
+
+    def goto_panel(self, panel: int) -> dict[str, Any] | None:
+        return None
+
+    def panel_cursor(self, panel: int, index: int, size: int) -> bool:
+        self.cursor = index
+        return True
+
+    def key(self, k: str, ms: int | None=None) -> None:
+        """The use key on the pet list: the pet under the cursor comes out, if the game takes it."""
+        self.keys.append(k)
+        rows = self.a.pets
+        if rows is not None and self.takes_summons:
+            rows[self.cursor]["usable_at"] = -1
+            self.did.append("pet out")
 
     def wait_dialog(self, seconds: float) -> dict[str, Any] | None:
         return {"open": 1}
 
     def choose(self, pattern: str) -> dict[str, Any] | None:
+        self.did.append("choose")
+        if self.menu and self.lets_in:
+            self.mid = dungeon.CAVES[self.cave]["map"]      # the game moves us in
         return {"text": pattern} if self.menu else None
+
+    def settled_map(self, seconds: float=15) -> int:
+        self.did.append("landed")
+        return self.mid
 
     def close_dialogs(self) -> None:
         pass
 
-    def wait_map_change(self, mid: int, seconds: float) -> bool:
-        if self.lets_in:
-            self.mid = dungeon.CAVES[self.cave]["map"]
-        return self.lets_in
-
     def farm(self, map_id: int, until: Callable[[], bool] | None=None, **kw: Any) -> None:
+        self.did.append("farm")
         self.farmed.append(dict(kw, map=map_id))
         self.shot_moving = self.move_shots
         for _i in range(100):
@@ -218,12 +268,34 @@ def test_a_visit_goes_in_fights_till_moved_out_and_is_done_for_the_day(shop: Non
     assert g.walked == ["Scorpion Cave"]
     assert g.farmed == [{"map": 1539, "patrol": "quick", "instance": True, "pack": 2, "chase": 90}]
     assert g.mid == 1531 and g.left == 0
-    assert g.slept == [dungeon.SETTLE]          # the game's move out finishes before the end place
+    assert g.slept[-1] == dungeon.SETTLE        # the game's move out finishes before the end place
+    assert g.slept[:-1] == [dungeon.DOOR_LOOK] * dungeon.DOOR_LOOKS     # all else: the looks at the door
+    assert g.did[-3:] == ["choose", "landed", "farm"]                   # no settling second inside
     assert vars(g)["shot_moving"] is True and g.move_shots is False    # inside only
     assert notes and "Scorpion Cave" in notes[0] and "kills" in notes[0]
     assert dungeon.done_today("Hero") == ["Scorpion Cave"]
     assert dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}})) == []
     assert g.walked == ["Scorpion Cave"]                      # not again today
+
+
+def test_the_visit_line_carries_the_games_own_report(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g._enter()
+    old = {"at": 5, "total_kills": 9, "players": [{"id": 1, "kills": 9, "damage": 10}]}
+    new = {"at": 9, "total_kills": 58, "players": [{"id": 2, "kills": 24, "damage": 7965187},
+                                                   {"id": 1, "kills": 34, "damage": 12286925, "healing": 0}]}
+    g.me = lambda: {"level": 80, "id": 1}  # type: ignore[method-assign]
+    g.a.reports = [old, new]
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
+    assert notes and notes[0].endswith("the game's report: 34 of 58 kills, 12,286,925 damage"), notes
+
+
+def test_an_old_report_or_none_leaves_the_line_alone(shop: None) -> None:
+    g = Game(bag={"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40})
+    g._enter()
+    g.a.reports = [{"at": 5, "total_kills": 9, "players": [{"id": 1, "kills": 9}]}]    # the same one before and after
+    notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
+    assert notes and "report" not in notes[0]
 
 
 def test_still_inside_after_the_timer_it_leaves_itself(shop: None) -> None:
@@ -251,7 +323,7 @@ def test_an_entry_that_just_didnt_work_is_tried_three_times_and_not_written_down
                                  "large blue potion": 80, "large red potion": 40})
     g.character = "Unlucky"
     notes = dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Spider cave"}}))
-    assert g.walked == ["Spider cave"] * dungeon.TRIES
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == dungeon.TRIES   # one walk, a knock a try
     assert g.farmed == []
     assert len(notes) == 1 and "couldn't get in after 3 tries" in notes[0]
     assert dungeon.done_today("Unlucky") == []                # the next run goes again
@@ -261,16 +333,16 @@ def test_an_entry_that_just_didnt_work_is_tried_three_times_and_not_written_down
 
 
 class LateMenuGame(Game):
-    """The entrance's menu isn't there in time at the first go."""
+    """The entrance's menu isn't there in time at the first knock."""
 
     def choose(self, pattern: str) -> dict[str, Any] | None:
-        return {"text": pattern} if len(self.walked) > 1 else None
+        return super().choose(pattern) if self.did.count("talk") > 1 else None
 
 
 def test_a_menu_that_comes_late_is_tried_again(shop: None) -> None:
     g = LateMenuGame()
     assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.IN
-    assert g.walked == ["Spider cave", "Spider cave"] and g.mid == 1503
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == 2 and g.mid == 1503
     assert any("trying again (2 of 3)" in line for line in g.lines)
 
 
@@ -306,7 +378,7 @@ def test_a_menu_without_enter_is_said(shop: None) -> None:
     g = Game(menu=False)
     assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.MISSED
     assert any("Enter the dungeon" in line for line in g.lines)
-    assert g.walked == ["Spider cave"] * dungeon.TRIES
+    assert g.walked == ["Spider cave"] and g.did.count("talk") == dungeon.TRIES
 
 
 def test_a_cave_above_the_characters_level_is_said_and_not_tried(shop: None) -> None:
@@ -519,3 +591,105 @@ def test_check_only_inside_a_cave_says_so_and_does_nothing(shop: None) -> None:
     g.mid = 1636
     assert dungeon.run(as_bot(g), dungeon.config({}), check_only=True) == ["already inside Bottomless pit"]
     assert g.farmed == [] and dungeon.done_today("Checking inside") == []
+
+
+# ------------------------------------------------------------------------- ready at the door
+FULL_BAG = {"pet large blue potion": 30, "pet rice roll": 5, "large blue potion": 80, "large red potion": 40}
+
+
+def door_game(character: str, pet_rows: list[dict[str, Any]], monkeypatch: pytest.MonkeyPatch) -> Game:
+    """A game at a cave's door with its own pet list; the fusion beast change is noted."""
+    g = Game(bag=dict(FULL_BAG))
+    g.character = character               # its own done list: other tests' visits don't count
+    g.a.pets = pet_rows
+    g.p["pets"] = [{"name": r["name"], "use": True} for r in pet_rows]
+    g._enter()
+
+    def beast(b: Any, purpose: Any = None) -> None:
+        g.did.append("beast " + str(purpose))
+    monkeypatch.setattr(beasts, "ensure", stand_in(beasts.ensure, beast))
+    return g
+
+
+def test_everything_is_made_ready_at_the_door_and_nothing_but_the_fight_is_left_inside(
+        shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Live, every visit with a pet stood 11 to 13 s on the spawn point: the pet was called inside,
+    # and the server ignores the "get off the beast" pressed right after a pet came out.
+    g = door_game("Door", [{"id": 5, "name": "Pixie Sparky", "usable_at": 0}], monkeypatch)
+    dungeon.run(as_bot(g), dungeon.config({"dungeon": {"cave": "Scorpion Cave"}}))
+    did = [d for d in g.did if d != "look"]
+    # the beast before the pet (twice: keep_out sees to it too), both before the door is knocked on
+    assert did == ["arrived", "beast fight", "beast fight", "pet out", "talk", "choose", "landed", "farm"]
+    assert g.did.count("look") == dungeon.DOOR_LOOKS
+    assert g.did.index("talk") > max(i for i, d in enumerate(g.did) if d == "look")
+    assert any("getting ready at the door of Scorpion Cave" in line for line in g.lines)
+    assert any("summoned Pixie Sparky" in line for line in g.lines)
+
+
+def test_the_landing_is_taken_the_moment_the_game_has_moved_us(shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("Landing", [], monkeypatch)
+    g.cave = "Scorpion Cave"
+    g.mid = 1539                                  # moved in already
+    assert dungeon.landed(as_bot(g), 1531) and g.slept == []      # no settling second on the timer
+    g.mid = 1531                                  # not let in: looked at till LANDING is over
+    began = g.clock.now
+    assert not dungeon.landed(as_bot(g), 1531)
+    assert g.clock.now - began == pytest.approx(dungeon.LANDING, abs=dungeon.LANDING_LOOK)
+    assert set(g.slept) == {dungeon.LANDING_LOOK}
+
+
+def test_a_pet_ready_soon_is_waited_for_at_the_door(shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("Soon", [], monkeypatch)
+    g.a.pets = [{"id": 5, "name": "Frog Hop", "usable_at": g.clock.now + 90}]
+    g.p["pets"] = [{"name": "Frog Hop", "use": True}]
+    began = g.clock.now
+    dungeon.pet_ready(as_bot(g))
+    assert 90 <= g.clock.now - began <= 95
+    assert any("Frog Hop can come out in" in line and "waiting for it at the door" in line for line in g.lines)
+    assert g.a.pets[0]["usable_at"] == -1 and any("summoned Frog Hop" in line for line in g.lines)
+
+
+def test_a_pet_that_takes_long_is_not_waited_for(shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("Late", [], monkeypatch)
+    g.a.pets = [{"id": 5, "name": "Frog Hop", "usable_at": g.clock.now + 20 * 60}]
+    g.p["pets"] = [{"name": "Frog Hop", "use": True}]
+    began = g.clock.now
+    dungeon.pet_ready(as_bot(g))
+    assert g.clock.now == began and g.keys == []
+    assert any("going in without it" in line for line in g.lines)
+
+
+def test_a_pet_already_out_is_left_as_it_is(shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("Out", [{"id": 5, "name": "Pixie Sparky", "usable_at": -1}], monkeypatch)
+    began = g.clock.now
+    dungeon.pet_ready(as_bot(g))
+    assert g.keys == []                           # nothing called, nothing put away
+    assert g.clock.now - began == 0.5             # only its description read (pets.describe), here
+    assert 5 in vars(g)["pet_described"]          # ... so not between two fights inside
+
+
+def test_a_summon_the_game_did_not_take_is_tried_once_more_after_the_gap(
+        shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("Refused", [{"id": 5, "name": "Pixie Sparky", "usable_at": 0}], monkeypatch)
+    g.takes_summons = False
+    dungeon.pet_ready(as_bot(g))
+    assert len(g.keys) == 2                       # the summon, and once more
+    assert beasts.GAP in g.slept
+    assert 5 in g.pets_refused                    # then it is the farm loop's, later
+
+
+def test_no_pet_for_the_run_nothing_is_called(shop: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = door_game("None", [{"id": 5, "name": "Pixie Sparky", "usable_at": 0}], monkeypatch)
+    vars(g)["pets_for_run"] = []
+    dungeon.pet_ready(as_bot(g))
+    assert g.keys == [] and g.a.pets is not None and g.a.pets[0]["usable_at"] == 0
+
+
+def test_an_entrance_without_a_known_place_is_knocked_on_where_it_is_seen() -> None:
+    g = Game()
+    g.cave = "Scorpion Cave"
+    assert dungeon.knock(as_bot(g), {"name": "Scorpion Cave", "map": 1531, "npc": None, "at": None})
+    assert g.talked == ("Scorpion Cave", (10, 10))
+    assert dungeon.knock(as_bot(g), {"name": "Spider cave", "map": 1502, "npc": "Spider cave", "at": [54, 4]})
+    assert g.talked == ("Spider cave", (54, 4))
+    assert not dungeon.knock(as_bot(g), {"name": "bottomless pit", "map": 1631, "npc": None, "at": None})

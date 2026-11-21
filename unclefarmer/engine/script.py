@@ -19,6 +19,9 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     keyboard_profile <name>          apply a saved Keyboard Manager profile and prepare its selected skills
     gem_maker [check]                run the Gem Maker as set in Tools, Gem Maker (check: only look)
     gem_breaker [check]              run the Gem Breaker as set in Tools, Gem Breaker (check: only look)
+    potion_maker [check]             make and fuse potions as set in Tools, Potion Maker (check: only look)
+    triggers off                     this script does its own Before/After farming steps: the
+                                     Triggers lists don't run around it (Run, Autopilot writes it)
     enhance [check]                  run the Equipment Enhancer as set in Tools (check: only look)
     chores [check] [only=a,b]        the day's chores as set in Tools, Daily chores, each once a game
                                      day: bank, pet_rebirth, contribution_chests, donation, construction, feed, secret_room
@@ -54,7 +57,9 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     farm [map=<map>] [minutes=N] [kills=N] [patrol=random|full|quick] [area=x1,y1,x2,y2]
          [only=<names>] [skip=<names>] [elites=fight|avoid] [until=<condition>]
                                      farm until a limit is reached (no limit = until stopped);
-                                     until= takes the rest of the line, so it goes last
+                                     until= takes the rest of the line, so it goes last;
+                                     map=best: the best field map for the character's level now
+                                     (monsters 9 below to 5 above it, the highest first)
     key <key> [milliseconds]         press a key: a-z 0-9 . , ; / space enter esc tab f1-f12 up down left right
     hold <key> <seconds>             hold a key down
     wait <seconds>
@@ -100,7 +105,7 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import chores, constructionscan, crafting, gembreak, dungeon, follow, keyboard, market, survey, town, triggers
+from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, survey, town
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -112,9 +117,10 @@ def _at(rest: str, n: int):
     return m.group(1), (int(m.group(2)), int(m.group(3)))
 
 
+BEST_MAP = "best"        # farm map=best: the best map for the character's level when the line runs
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
@@ -617,6 +623,11 @@ def _prep_survey(node: Node, rest: str, n: int):
     node.opts["scope"] = w
 
 
+def _prep_triggers(node: Node, rest: str, n: int):
+    if rest.strip().lower() != "off":
+        raise ScriptError(n, _("write it as: triggers off"))
+
+
 def _prep_check_only(node: Node, rest: str, n: int):
     if rest.strip().lower() not in ("", "check"):
         raise ScriptError(n, _("write it as: {cmd}  or  {cmd} check", cmd=node.kind))
@@ -824,7 +835,9 @@ def _farm_choices(opts: dict[str, Any], n: int):
 
 def _prep_farm(node: Node, rest: str, n: int):
     opts, rest = _farm_options(rest, n)
-    if "map" in opts:
+    if "map" in opts and str(opts["map"]).strip().lower() == BEST_MAP:
+        opts["map"] = BEST_MAP            # chosen when the line runs, for the level then (best_map)
+    elif "map" in opts:
         opts["map"] = atlas.resolve(opts["map"])
         if opts["map"] is None:
             raise ScriptError(n, _("unknown map: {map}", map=rest))
@@ -883,7 +896,7 @@ PREPARE = {
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
-    "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "bounties": _prep_check_only, "construction_scan": _prep_construction_scan, "visit": _prep_visit,
+    "triggers": _prep_triggers, "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "potion_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "bounties": _prep_check_only, "construction_scan": _prep_construction_scan, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "market": _prep_market,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
@@ -895,9 +908,13 @@ PREPARE = {
 
 # ---------------------------------------------------------------- running
 class Runner:
+    own_lists = False             # `triggers off`: the script does its own Before/After farming steps
+
     def __init__(self, bot: Bot, text: str):
         self.bot = bot
         self.main, self.subs, self.on_stop = parse(text)
+        # `triggers off` anywhere at the top: the script carries its own Before/After steps
+        self.own_lists = any(node.kind == "triggers" for node in self.main)
         self.vars: dict[str, Any] = dict(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
                                          sound_muted=False, sound_positioned=False)
         self.call_depth = 0
@@ -1146,51 +1163,15 @@ class Runner:
     def _do_survey(self, node: Node, b: Bot, o: dict[str, Any]):
         survey.survey(b, o["scope"])
 
-    def _do_gem_maker(self, node: Node, b: Bot, o: dict[str, Any]):
-        k = node.kind
-        cfg: dict[str, Any] = b.p.get("gem_maker" if k == "gem_maker" else "enhancer") or {}
-        if not cfg:
-            raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Maker") if k == "gem_maker"
-                            else _("Equipment Enhancer")))
-        with stats.doing(b, k):          # its shards, gems and fees are no farming loot
-            (crafting.gem_maker if k == "gem_maker" else crafting.enhance)(b, cfg, o.get("check", False))
+    # The Tools menu's jobs (engine/activities.py): the same code triggers and schedules run
+    def _do_activity(self, node: Node, b: Bot, o: dict[str, Any]):
+        activities.run(b, node.kind, o.get("check", False), o)
 
-    _do_enhance = _do_gem_maker
+    _do_gem_maker = _do_gem_breaker = _do_potion_maker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
+    _do_dungeon = _do_sell_collection = _do_bounties = _do_construction_scan = _do_activity
 
-    def _do_gem_breaker(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "gem_breaker"):
-            gembreak.run(b, gembreak.config(b.p), o.get("check", False))
-
-    def _do_chores(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "chores"):
-            chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
-
-    def _do_bounties(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "bounties"):
-            chores.collect_bounties(b, chores.config(b.p), o.get("check", False))
-
-    def _do_construction_scan(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "construction_scan"):
-            if o.get("auto"):
-                constructionscan.scan_and_publish(b, o["auto"])
-            elif o.get("publish"):
-                constructionscan.publish(b, o["publish"])
-            else:
-                constructionscan.scan(b)
-
-    def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
-
-    def _do_lose_xp(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "lose_xp", o.get("check", False))
-
-    def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
-        dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
-
-    def _do_sell_collection(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "sell_collection"):
-            if not town.sell_collection(b, o["kinds"]):
-                b.log(_("nothing of the collection was sold"))
+    def _do_triggers(self, node: Node, b: Bot, o: dict[str, Any]):
+        pass                      # read when the script is (own_lists): nothing to do as it runs
 
     def _do_market(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "market"):
@@ -1204,21 +1185,7 @@ class Runner:
         else:
             town.visit(b, None, name=w)
 
-    # The Tools menu's jobs: the same code the Character settings' triggers run (engine/triggers.py)
-    def _do_sell_shards(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "sell_shards")
-
-    def _do_clean_bag(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "clean_bag")
-
-    def _do_update_shard_prices(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "update_shard_prices")
-
-    def _do_store_items(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "store_items")
-
-    def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "restock")
+    _do_sell_shards = _do_clean_bag = _do_update_shard_prices = _do_store_items = _do_restock = _do_activity
 
     def _do_keyboard_profile(self, node: Node, b: Bot, o: dict[str, Any]):
         keyboard.apply(b, o["name"])
@@ -1277,11 +1244,27 @@ class Runner:
 
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
-        mid = o.get("map") or b.map_id()
+        mid = best_map(b) if o.get("map") == BEST_MAP else (o.get("map") or b.map_id())
         b.farm(mid, area=o.get("area"), minutes=o.get("minutes", 0), kills=o.get("kills", 0),
                only=o.get("only", ""), skip=o.get("skip", ""), patrol=o.get("patrol", "random"),
                avoid_elites=o.get("elites") == "avoid",
                until=(lambda: bool(self.value(until, node.line))) if until is not None else None)
+
+
+def best_map(b: Bot) -> int:
+    """`farm map=best`: the first of atlas.maps_for_level for the character's level as the sheet
+    says now - an ordinary field before a dungeon or any other kind, the highest fitting monsters
+    first. Stopped (said) when the level isn't known or no map fits it."""
+    sheet = b.refresh_sheet() or {}
+    level = sheet.get("level")
+    if not isinstance(level, int) or level <= 0:
+        raise Stopped(_("can't choose the best map: the character's level isn't known yet"), final=True)
+    fits = atlas.maps_for_level(level)
+    if not fits:
+        raise Stopped(_("no farming map fits level {level}", level=level), final=True)
+    mid, name = fits[0][0], fits[0][1]
+    b.log(_("the best map for level {level}: {map}", level=level, map=name))
+    return mid
 
 
 class _Lazy:

@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Potion Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -272,6 +272,22 @@ Uncle Farmer will not start another farming run between the daily stopping time 
 You can change this time in **File → Settings → Farming day**.
 
 By default, the daily stopping time is set to 10 minutes before the drop-time reset. In Pakistan, that means **04:50**. This gives your character some time to leave the farming area before the reset.
+
+### Autopilot: the whole day in one window
+
+**Run → Autopilot: the whole day** (Ctrl+Shift+A) shows the logged-in character's day together:
+
+1. the **Before farming** list (for example the day's chores, a cave, restocking), top to bottom;
+2. the farming, until the plan ends or the daily stopping time;
+3. the **After farming** list (for example selling shards, storing items, the Gem Maker), when the farming ended by itself.
+
+The two lists are the same ones as **Character settings → Triggers**: change them in either place. Three choices decide how the day goes:
+
+- **Farm with:** the character's plan (chosen under **Plan**), or the best map for the character's level. The best map is chosen when the day starts, from field maps whose monsters are 9 levels below to 5 above the character, so it follows the character as it levels up.
+- **Run the day as:** the Triggers lists around the farming, or one script of the day. The script is written from the lists and the farming the first time; after that it is yours to read, change or schedule from the Plans tab, and **Write the script of the day now** writes it again from the window. Steps that farm (a cave) are left out of its After part, since the day's farming may be over by then.
+- **Start:** only when you press **Start the day**, or every day at the time you write (HH:MM, this computer's clock). The daily start is an ordinary schedule in **Run → Schedules**; choosing "Only when I press Start" again takes it away.
+
+**Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
 ### After farming
 
@@ -899,6 +915,19 @@ A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 
 
 What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
 
+### Potion Maker
+
+Open **Tools, Potion Maker** or press **Ctrl+Shift+O**. It uses the Pharmacist in a gang base's outer hall: **Make Medicine** turns Bloods and Pelts into a batch of 50 (or 45) potions for a fee in arnebia (lower in your own gang), and **Fuse Medicine** turns 5 potions of a size into 1 of the next for free (Small to Medium to Large, red and blue, for you and for pets), up to 100 at a time.
+
+- **Potions** and **Pet potions**: how many of each to have in the bag. 0 means it isn't made. The window shows how many you have now.
+- **Make them** (Medium and Large potions): from Small ones, fused up, or each from its own recipe. Fusing is usually cheaper: 25 Small Red Potions (one Lesser Blood and half a fee) make 1 Large one.
+- **Fuse spare potions up to**: after making, fuse what is over your numbers up to Medium or Large, keeping at least the Small and Medium ones you say.
+- **Pharmacist**: your own gang's, or another gang's by its name. Arnebia below your reserve is never spent, and each fee is read on the Pharmacist's page before anything is paid.
+- **Take them from**: missing Bloods and Pelts come from only the bag, the town storehouse, the market, or the storehouse and then the market.
+- **Most gold coins a piece**: for each material, the most the market may charge. The cheapest lots are always bought first; with 0 any price is fine, still cheapest first. **Most gold coins to spend on materials in one run** caps the whole buy.
+
+**Check only** walks to the Pharmacist, reads the real fees and says what it would make, fuse and buy, without spending anything.
+
 ### Equipment Enhancer
 
 Open **Tools, Equipment Enhancer** or press **Ctrl+Shift+E**.
@@ -1358,9 +1387,20 @@ One thing to remember: pet supplies are checked only when the pet option is enab
 
 ### What happens during the dungeon run?
 
-Once your supplies are ready, Uncle Farmer travels to the entrance and selects **Enter the dungeon**.
+Once your supplies are ready, Uncle Farmer travels to the entrance.
 
-After your character reaches the safe landing area inside, the dungeon run begins. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
+**Getting ready at the door**
+
+The 15 minutes start the moment your character is inside, so Uncle Farmer gets everything ready before it selects **Enter the dungeon**:
+
+- It gets off the travel beast, or onto the fusion beast your character fights in.
+- It calls your pet, which comes in with you. If the pet can come out within three minutes, Uncle Farmer waits for it at the door. If it needs longer, Uncle Farmer goes in and calls it inside as soon as it can.
+- It puts your long buffs up and tops up HP and MP.
+- It puts potions back on empty keys and lets a paused experience card run again. A new experience card is started inside, so none is spent if the game turns your character away.
+
+Then it selects **Enter the dungeon**.
+
+After your character reaches the safe landing area inside, the dungeon run begins at once. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
 
 **Finding monsters**
 
