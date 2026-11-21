@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .. import gamekeys, sounds, trust
 from ..i18n import _
-from . import chores
+from . import chores, team
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -451,3 +451,49 @@ def between_fights(b: Bot) -> bool:
         remove_offline(b)
         return True
     return False
+
+
+# ------------------------------------------------------------------ handing the team over
+def heir(b: Bot, found: list[tuple[int, str, int]]) -> tuple[str, int] | None:
+    """The first of team_hand_to (names or ids, in the player's order) who is in the team."""
+    wanted = cast(list[object], b.p.get("team_hand_to", []) or [])
+    for want in wanted:
+        for _row, name, pid in found:
+            if str(want).strip().lower() in (name.lower(), str(pid)):
+                return name, pid
+    return None
+
+
+def hand_over(b: Bot) -> str | None:
+    """The run is over: the team goes to the first player of the list who is in it ("Transfer team
+    leader", confirmed; "<name> has become the team leader" for everyone). The new leader's name."""
+    got = _member_list(b)
+    if got is None:
+        return None
+    top, _lag = got
+    me = int(b.me().get("id", -1))
+    found = [m for m in members(b, top) if m[2] != me]
+    to = heir(b, found)
+    b.close_dialogs()
+    if to is None:
+        b.log(_("nobody to hand the team to is in it: it stays with this character"), speak=True)
+        return None
+    mark = chat_mark(b)
+    ok, said = team.make_leader(b, to[0])
+    b.log(said, speak=True)
+    if not ok:
+        return None
+    became = re.compile(r"^\s*%s has become the team leader" % re.escape(to[0]), re.I)
+    end = b.clock.time() + JOIN_WAIT
+    while b.clock.time() < end:
+        if any(became.match(line) for line in game_lines(b, mark)):
+            return to[0]
+        b.sleep(0.25)
+    b.log(_("the game didn't say {name} leads the team now", name=to[0]))
+    return None
+
+
+def at_end(b: Bot) -> None:
+    """The run's last gestures, on its last map."""
+    if b.p.get("team_hand_over", False):
+        hand_over(b)

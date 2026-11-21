@@ -581,6 +581,7 @@ class FarmingMixin(Parts):
         beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
             pets.recall(as_bot(self))
+        teamlead.at_end(as_bot(self))     # the team handed over, when the Team tab says so
 
     def _finish_safe(self) -> None:
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there
