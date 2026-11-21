@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-**Two maps in one day's drop time, and the results map by map**
+**Two maps in one day's drop time, and the results map by map** (untested in game so far)
 
 - A plan's spot can have a share of the day's drop time: three hours on the first map, the rest on
   the second. It is counted on the game's 7-hour drop clock, so a restart in the middle carries on
