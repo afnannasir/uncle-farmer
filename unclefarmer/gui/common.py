@@ -425,6 +425,11 @@ def guide_text(name: str) -> str:
             md = f.read()
     except OSError:
         return _("The guide {name} is missing from the docs folder.", name=name)
+    return markdown_text(md)
+
+
+def markdown_text(md: str) -> str:
+    """Keep headings and list structure as text a screen reader can read."""
     out: list[str] = []
     for line in md.splitlines():
         if re.match(r"^\|[-| ]+\|$", line.strip()):
