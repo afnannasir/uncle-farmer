@@ -98,7 +98,7 @@ FREEZE_TIME = 5.0        # seconds a freeze holds when the skill's text gives no
 # Escape as a kite (Phase 1b item 6, the Hunter's part): a monster on top of a ranged character that
 # has struck lately, HP under KITE_BELOW, and Escape up: jump the 12 tiles away from it (a cast at a
 # monster turns us to face it, measured), so it spends the next seconds walking instead of hitting.
-# Only with agent 76's facing, when the 12 tiles behind are walkable and the target is still within
+# Only with agent 77's facing, when the 12 tiles behind are walkable and the target is still within
 # reach from the landing. Under 60% HP the old rule still jumps without those checks.
 KITE_BELOW = 90          # % HP under which a monster on top is worth a jump
 KITE_ON_TOP = 3.0        # tiles: a monster this close is on top of us
@@ -298,8 +298,9 @@ class SkillBook:
     _saving_pyroblast_for_next = False
     _last_pack_size = 1
 
-    def __init__(self, bot: Parts) -> None:
+    def __init__(self, bot: Parts, *, game_folder: str | None = None) -> None:
         self.b = bot
+        self.game_folder = game_folder
         self.ok = False
         self.used: dict[str, float] = {}          # skill name -> last press time
         self.marked_at = 0.0    # last time we pressed a skill that can mark (Hunter)
@@ -406,8 +407,13 @@ class SkillBook:
         learned = set(names.values())
         self.cls = max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None)
         info: dict[str, Skill] = {s["name"]: s for s in know.get(self.cls or "", [])}
-        keys = gamekeys.attack_key_list()
-        self.page_key = gamekeys.page_turn_key()
+        if self.game_folder is None:
+            keys = gamekeys.attack_key_list()
+            self.page_key = gamekeys.page_turn_key()
+        else:
+            binds = gamekeys.read(self.game_folder)
+            keys = gamekeys.attack_keys_with_defaults(binds)
+            self.page_key = binds.get("W_ATTACK_PAGETURN") or gamekeys.PAGE_TURN_DEFAULT
         self.slots = {}          # page -> [skill dict with "key"]
         attack_keys: dict[str, int] = sk["attack_keys"]
         for idx, sid in attack_keys.items():

@@ -284,8 +284,9 @@ def test_a_card_the_sheet_doesnt_show_is_not_followed_by_another_every_minute() 
 def test_in_a_dungeon_a_sheet_with_no_card_is_not_believed_over_the_last_one_seen() -> None:
     for paused in (False, True):
         g = Game(bonus=100, paused=paused, seconds=17 * 60, bag=fresh_bag())
-        g.p["xp_card_pause"] = False                         # (no resume: only the new-card choice is tried)
-        xpcard.at_the_door(as_bot(g))                        # outside: the sheet shows the card
+        # outside, the sheet shows the card (a paused one is only read on leaving: it stays paused)
+        xpcard.away(as_bot(g), "a dungeon") if paused else xpcard.on_farm(as_bot(g))
+        g.clock.now += xpcard.LOOK_EVERY
         g.in_instance, g.hide_card = True, True
         for _ in range(10):
             xpcard.on_farm(as_bot(g))
@@ -294,7 +295,7 @@ def test_in_a_dungeon_a_sheet_with_no_card_is_not_believed_over_the_last_one_see
         assert g.said("shows no experience card inside the dungeon")
     # the running one's time is over: a new card inside is right
     g = Game(bonus=100, seconds=60, bag=fresh_bag())
-    xpcard.at_the_door(as_bot(g))
+    xpcard.on_farm(as_bot(g))
     g.in_instance, g.hide_card, g.bonus = True, True, 0
     g.clock.now += 120
     xpcard.on_farm(as_bot(g))

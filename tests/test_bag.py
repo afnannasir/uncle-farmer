@@ -26,6 +26,8 @@ class Link:
 
     def json(self, line: str) -> Any:           # an agent answer: any JSON, as the real link
         if line == "mem bag":
+            return [{"name": r["name"], "count": r.get("count", 0)} for r in self.bag]
+        if line == "mem bagfull":
             return [dict(r) for r in self.bag]
         return {}
 
@@ -249,6 +251,12 @@ def test_bag_rows_is_empty_when_the_game_sends_something_else() -> None:
 
 
 # ---------------------------------------------------------------- bag_cursor
+def test_bag_cursor_matches_the_exact_item_type_when_names_are_the_same() -> None:
+    b = Bot([{"name": "Potion", "type": 21}, {"name": "Potion", "type": 42}])
+    assert b.bag_cursor("Potion", item_type=42) == "Potion"
+    assert b.cursor == 1
+
+
 def test_bag_cursor_on_the_item_already() -> None:
     b = Bot(bag=[{"name": "Alpha", "count": 1}, {"name": "Beta", "count": 1}], cursor=1)
     assert b.bag_cursor("Beta") == "Beta"

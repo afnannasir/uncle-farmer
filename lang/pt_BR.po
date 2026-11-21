@@ -56,6 +56,9 @@ msgstr "&Outro personagem"
 msgid "&Answer strangers:"
 msgstr "&Responder a desconhecidos:"
 
+msgid "&Apply profile"
+msgstr "&Aplicar perfil"
+
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Assistente (ele luta por você; não é possível lutar nele):"
 
@@ -151,6 +154,9 @@ msgstr "&Excluir"
 msgid "&Delete filter"
 msgstr "&Excluir filtro"
 
+msgid "&Delete profile"
+msgstr "Excluir perfil (&D)"
+
 msgid "&Donation, once a day:"
 msgstr "&Doação, uma vez por dia:"
 
@@ -159,6 +165,9 @@ msgstr "&Masmorra:"
 
 msgid "&Edit"
 msgstr "&Editar"
+
+msgid "&Edit binding..."
+msgstr "&Editar atribuição..."
 
 msgid "&Edit filter"
 msgstr "&Editar filtro"
@@ -299,6 +308,9 @@ msgstr ""
 msgid "&Keep:"
 msgstr "&Manter:"
 
+msgid "&Keyboard Manager"
+msgstr "Gerenciador de teclado (&K)"
+
 msgid "&Keyboard shortcuts"
 msgstr "&Atalhos de teclado"
 
@@ -370,6 +382,9 @@ msgstr "&Nova conversa com (nome ou ID):"
 
 msgid "&New plan"
 msgstr "&Novo plano"
+
+msgid "&New profile"
+msgstr "&Novo perfil"
 
 msgid "&No, keep current language"
 msgstr "&Não, manter o idioma atual"
@@ -497,6 +512,9 @@ msgstr "&Rodar o dia como:"
 
 msgid "&Save"
 msgstr "&Salvar"
+
+msgid "&Save profile"
+msgstr "&Salvar perfil"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr ""
@@ -956,6 +974,16 @@ msgstr ""
 msgid "Answering"
 msgstr "Respondendo"
 
+msgid "Applied keyboard profile {name}."
+msgstr "Perfil de teclado {name} aplicado."
+
+msgid "Apply a keyboard profile while out of combat with game menus closed."
+msgstr ""
+"Aplique um perfil de teclado fora de combate e com os menus do jogo fechados."
+
+msgid "Apply keyboard profile {name}"
+msgstr "Aplicar perfil de teclado {name}"
+
 msgid "Area a&round me"
 msgstr "Área ao meu &redor"
 
@@ -1035,6 +1063,9 @@ msgstr "Maior dano normal: {hit}"
 
 msgid "Between fights"
 msgstr "Entre combates"
+
+msgid "Binding for {key}"
+msgstr "Atribuição para {key}"
 
 msgid "Bot"
 msgstr "Bot"
@@ -1116,6 +1147,9 @@ msgstr "Cancelar"
 
 msgid "Cancel &reply"
 msgstr "Cancelar &resposta"
+
+msgid "Capture current &keys"
+msgstr "Capturar as teclas atuais (&K)"
 
 msgid "Category"
 msgstr ""
@@ -1204,6 +1238,10 @@ msgstr ""
 
 msgid "Choose Before farming or After farming."
 msgstr "Escolha Antes da coleta ou Depois da coleta."
+
+msgid "Choose a bound self-buff or shield to prepare."
+msgstr ""
+"Escolha um bônus próprio ou um escudo atribuído a uma tecla para preparar."
 
 msgid "Choose a category to browse."
 msgstr ""
@@ -1382,6 +1420,9 @@ msgstr ""
 msgid "Couldn't apply the settings: {err}"
 msgstr "Não foi possível aplicar as configurações: {err}"
 
+msgid "Couldn't assign {binding} to {key}."
+msgstr "Não foi possível atribuir {binding} a {key}."
+
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Não foi possível alterar as configurações do jogo: {err}"
 
@@ -1400,6 +1441,10 @@ msgstr "Não foi possível exportar o plano: {err}"
 msgid "Couldn't export the settings: {err}"
 msgstr "Não foi possível exportar as configurações: {err}"
 
+msgid "Couldn't find this character's quick phrases in the game folder."
+msgstr ""
+"Não foi possível encontrar as frases rápidas deste personagem na pasta do jogo."
+
 msgid "Couldn't import the plan: {err}"
 msgstr "Não foi possível importar o plano: {err}"
 
@@ -1412,8 +1457,14 @@ msgstr "Não foi possível abrir."
 msgid "Couldn't open it: {err}"
 msgstr "Não foi possível abrir: {err}"
 
+msgid "Couldn't prepare {skill}."
+msgstr "Não foi possível preparar {skill}."
+
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "Não foi possível acessar o GitHub para procurar atualizações: {why}"
+
+msgid "Couldn't read keyboard settings from the game."
+msgstr "Não foi possível ler as configurações de teclado do jogo."
 
 msgid "Couldn't read the game: {err}"
 msgstr "Não foi possível ler os dados do jogo: {err}"
@@ -1423,6 +1474,9 @@ msgstr "Não foi possível salvar os agendamentos: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Não foi possível salvar: {err}"
+
+msgid "Couldn't set the quick phrase on {key}."
+msgstr "Não foi possível definir a frase rápida em {key}."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Não foi possível desligar o computador: {err}"
@@ -1500,6 +1554,9 @@ msgstr "Mortes antes de parar:"
 
 msgid "Delay after success (&seconds):"
 msgstr "Atraso após &sucesso (segundos):"
+
+msgid "Delete keyboard profile {name}?"
+msgstr "Excluir o perfil de teclado {name}?"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "Excluir o agendamento de {what} ({who})?"
@@ -1614,8 +1671,14 @@ msgstr "Ganhos até agora: {n} arnebia (coletada e vendida)"
 msgid "East edge (x):"
 msgstr "Limite leste (x):"
 
+msgid "Edit binding"
+msgstr "Editar atribuição"
+
 msgid "Edit filter"
 msgstr "Editar filtro"
+
+msgid "Edit quick phrase"
+msgstr "Editar frase rápida"
 
 msgid "Edit schedule"
 msgstr "Editar agendamento"
@@ -1668,8 +1731,14 @@ msgstr "Cristais de aprimoramento"
 msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr "Enhance Crystals (quebrá-los custa arnebia)"
 
+msgid "Enter a keyboard profile name on one line."
+msgstr "Digite o nome do perfil de teclado em uma única linha."
+
 msgid "Enter a name for the plan."
 msgstr "Informe um nome para o plano."
+
+msgid "Enter a quick phrase on one line."
+msgstr "Digite a frase rápida em uma única linha."
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "Digite um ID de som entre 1 e 99999."
@@ -2300,6 +2369,9 @@ msgstr ""
 msgid "International"
 msgstr "Internacional"
 
+msgid "Invalid keyboard slot."
+msgstr "Espaço de teclado inválido."
+
 msgid "Invalid sound reply from the game agent."
 msgstr "Resposta inválida de som recebida do agente do jogo."
 
@@ -2312,8 +2384,14 @@ msgstr ""
 msgid "Item name, exactly as the game writes it:"
 msgstr "Nome do item, exatamente como aparece no jogo:"
 
+msgid "Item type {id}"
+msgstr "Tipo de item {id}"
+
 msgid "Item:"
 msgstr "Item:"
+
+msgid "Items"
+msgstr "Itens"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Itens sem regra: afetar &somente o que foi coletado nesta execução"
@@ -2353,6 +2431,15 @@ msgstr "Manter os &bônus da classe ativos"
 
 msgid "Key"
 msgstr "Tecla"
+
+msgid "Key &bindings:"
+msgstr "Atribuições de teclas (&B):"
+
+msgid "Keyboard Manager"
+msgstr "Gerenciador de teclado"
+
+msgid "Keyboard profile {name} was not found."
+msgstr "O perfil de teclado {name} não foi encontrado."
 
 msgid "Keyboard shortcuts"
 msgstr "Atalhos de teclado"
@@ -2421,6 +2508,9 @@ msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr ""
 "Sair da área de coleta com esta antecedência em &minutos da meia hora (incluindo o trajeto):"
+
+msgid "Leave unchanged"
+msgstr "Manter sem alteração"
 
 msgid "Leaves {n} {item}."
 msgstr "Deixa {n} {item}."
@@ -2751,6 +2841,9 @@ msgstr "&Nunca gastar arnebia abaixo de:"
 
 msgid "New &script"
 msgstr "Novo &script"
+
+msgid "New profile"
+msgstr "Novo perfil"
 
 msgid "New sc&ript"
 msgstr "Novo sc&ript"
@@ -3132,6 +3225,9 @@ msgstr "Modo pacifista com contra-ataque"
 msgid "Page"
 msgstr ""
 
+msgid "Page {page}, {key}"
+msgstr "Página {page}, {key}"
+
 msgid "Patrol loops: {loops}"
 msgstr "Rotas de patrulha: {loops}"
 
@@ -3292,6 +3388,12 @@ msgstr "As mensagens privadas ainda não estão disponíveis neste jogo."
 msgid "Private messages to you"
 msgstr "Mensagens privadas para você"
 
+msgid "Profession skills"
+msgstr "Habilidades de profissão"
+
+msgid "Profile na&me:"
+msgstr "Nome do perfil (&M):"
+
 msgid "Program version: {v}"
 msgstr "Versão do programa: {v}"
 
@@ -3324,6 +3426,12 @@ msgstr "Circuito rápido (caverna inteira, trilhas mais afastadas)"
 
 msgid "Quick patrol loop"
 msgstr "Ronda rápida"
+
+msgid "Quick phrase for {key} (blank leaves it unchanged)"
+msgstr "Frase rápida para {key} (em branco mantém sem alteração)"
+
+msgid "Quick phrases"
+msgstr "Frases rápidas"
 
 msgid "Range (tiles):"
 msgstr "Alcance (blocos):"
@@ -3409,6 +3517,9 @@ msgid ""
 msgstr ""
 "Reparar as &highlands da gangue (primeiro abaixo de 100%, as de 100% por último)"
 
+msgid "Replace keyboard profile {name}?"
+msgstr "Substituir o perfil de teclado {name}?"
+
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
@@ -3442,6 +3553,11 @@ msgstr "Descansar &até que o HP chegue a (%):"
 
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Reinicie o Uncle Farmer para alterar o idioma."
+
+msgid ""
+"Restart the game with the current agent to apply these keyboard settings."
+msgstr ""
+"Reinicie o jogo com o agente atual para aplicar estas configurações de teclado."
 
 msgid "Restock &now"
 msgstr "Reabastecer &agora"
@@ -3561,11 +3677,22 @@ msgstr "Salvar como script"
 msgid "Save changes to the script?"
 msgstr "Salvar as alterações no script?"
 
+msgid "Save the keyboard profile before applying it."
+msgstr "Salve o perfil de teclado antes de aplicá-lo."
+
 msgid "Save the results"
 msgstr ""
 
 msgid "Saved account email:"
 msgstr "E-mail da conta salvo:"
+
+msgid ""
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+msgstr ""
+"As atribuições salvas substituem seus espaços no jogo. Espaços marcados Manter sem alteração mantêm as atribuições atuais."
+
+msgid "Saved keyboard &profiles:"
+msgstr "&Perfis de teclado salvos:"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Salvo. Ele está na guia Planos como script."
@@ -3638,6 +3765,9 @@ msgstr "Selecione um jogo primeiro."
 
 msgid "Select a plan first."
 msgstr "Selecione um plano primeiro."
+
+msgid "Select the same character before applying the keyboard profile."
+msgstr "Selecione o mesmo personagem antes de aplicar o perfil de teclado."
 
 msgid "Sell and store by these lists, then come back"
 msgstr "Vender e guardar conforme estas listas e depois voltar"
@@ -4137,6 +4267,9 @@ msgid ""
 msgstr ""
 "A mensagem excede o limite de 200 caracteres do jogo: será dividida em {n} partes, uma a cada 2 segundos (3 no canal Global), na velocidade máxima permitida pelo jogo."
 
+msgid "That keyboard profile no longer exists. Choose another action."
+msgstr "Esse perfil de teclado não existe mais. Escolha outra ação."
+
 msgid "That place is in your list already."
 msgstr "Esse local já está na sua lista."
 
@@ -4237,6 +4370,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
 
+msgid "The character hasn't learned {skill}."
+msgstr "O personagem não aprendeu {skill}."
+
 msgid "The character's plan"
 msgstr "O plano do personagem"
 
@@ -4281,6 +4417,9 @@ msgstr "O mais rápido"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The game didn't confirm {skill}."
+msgstr "O jogo não confirmou {skill}."
 
 msgid "The game didn't play it: {why}"
 msgstr "O jogo não reproduziu: {why}"
@@ -4640,6 +4779,9 @@ msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr ""
 "Hoje: {cave} foi concluída - a próxima estará disponível após a reinicialização do dia de jogo."
 
+msgid "Toggle p&reparation"
+msgstr "Ativar ou desativar p&reparação"
+
 msgid "Tone from &everyone else:"
 msgstr "Sinal sonoro de &outras pessoas:"
 
@@ -4845,6 +4987,9 @@ msgstr "U&sar habilidades de área em tantos monstros próximos:"
 
 msgid "Use item"
 msgstr "Usar item"
+
+msgid "Use keyboard_profile followed by one quoted profile name."
+msgstr "Use keyboard_profile seguido de um nome de perfil entre aspas."
 
 msgid "Use the &combos of the activated talents"
 msgstr "Usar os &combos dos talentos ativados"
@@ -5815,9 +5960,10 @@ msgstr "morreu, mas o menu de renascimento não abriu — renasça manualmente"
 msgid "defence break"
 msgstr "quebra de defesa"
 
-msgid "demonized elites, left alone as the character settings say"
+msgid ""
+"demonized elites or too close to one, left alone as the character settings say"
 msgstr ""
-"elites demonizados, deixados em paz como dizem as configurações do personagem"
+"elites demonizados ou perto demais de um, deixados de lado como mandam as configurações do personagem"
 
 msgid "died and came back outside {map}"
 msgstr "morreu e voltou para fora de {map}"
@@ -8551,6 +8697,9 @@ msgstr "{bonus}% mais experiência, restam {m} min {s} s"
 msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr "{boss} (chefe) está a {n} passos — mantendo distância de {keep} passos"
 
+msgid "{boss} (a boss) keeps coming back - leaving for {map} for {n} s"
+msgstr "{boss} (chefe) continua voltando — indo para {map} por {n} s"
+
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} novos)"
 
@@ -8613,6 +8762,11 @@ msgstr ""
 msgid "{dmg} damage ({share} of all)"
 msgstr "{dmg} de dano ({share} do total)"
 
+msgid ""
+"{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
+msgstr ""
+"{elite} (elite demonizado) está a {n} passos — mantendo distância de {keep} passos"
+
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: digite um número de {lo} a {hi}"
 
@@ -8674,6 +8828,9 @@ msgstr "{item} está prestes a quebrar"
 
 msgid "{item} is broken"
 msgstr "{item} está quebrado"
+
+msgid "{item} is missing from the bag."
+msgstr "{item} não está na mochila."
 
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} não está mais na tecla {key} — o jogo atribuiu outra coisa a ela"
@@ -9169,6 +9326,9 @@ msgstr "{shard}: {old} -> {new} Arnebia"
 msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr "{shard}: {was} antes, {now} depois, {used} usados"
 
+msgid "{skill} (prepare when applied)"
+msgstr "{skill} (preparar ao aplicar)"
+
 msgid "{skill} at {where}"
 msgstr "{skill} em {where}"
 
@@ -9196,6 +9356,9 @@ msgid ""
 "{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
 msgstr ""
 "{skill} não está atribuída a uma tecla de habilidade e não há tecla livre — atribua-a a uma tecla para usá-la"
+
+msgid "{skill} isn't ready to prepare."
+msgstr "{skill} não está pronta para preparar."
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill} não foi lançada em {name}: {why}"
@@ -9315,76 +9478,14 @@ msgstr ""
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
 
-#~ msgid "&Build at:"
-#~ msgstr "&Construir em:"
-
-#~ msgid "Collect &hunting bounties from a city officer"
-#~ msgstr "Coletar &recompensas de caça com um oficial da cidade"
-
-#~ msgid "E&xperience card to keep running while farming:"
-#~ msgstr "Cartão de e&xperiência a manter ativo durante a coleta:"
-
-#~ msgid "Experience cards"
-#~ msgstr "Cartões de experiência"
-
-#~ msgid "Gang construction"
-#~ msgstr "Construção da guilda"
-
-#~ msgid ""
-#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
+#~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr ""
-#~ "Terras Altas Ocupadas não contém a região {n} (lista: {list}) - confira o número em Ferramentas, Tarefas diárias"
-
-#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
-#~ msgstr "&Número das Terras Altas da nossa guilda (em Terras Altas Ocupadas):"
-
-#~ msgid "Stop when HP stays &low"
-#~ msgstr "Parar se o HP permanecer &baixo"
-
-#~ msgid ""
-#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
-#~ msgstr ""
-#~ "O bot localiza um guarda (à vista, em um local onde já foi visto ou na cidade mais próxima), muda o modo PK para todos, atinge o guarda uma vez e deixa que ele mate o personagem: sem poções, curas ou revide. O personagem renasce na cidade e repete o processo até que a experiência necessária para o próximo nível alcance o valor definido. Na vila mais próxima, o bot primeiro entra nela (o jogo revive o personagem morto na última cidade visitada) e depois morre junto aos portões, reduzindo o tempo de cada morte (no Pântano Melódico, 11 segundos na Vila Aria contra 29 na Cidade Tulipa). Se o jogo o reviver em outro local, ele morrerá para o guarda mais próximo. O mascote é guardado antes e o modo PK é restaurado ao final. As mortes desgastam o equipamento; personagens de nome preto (moralidade -1000 ou menos) podem perder equipamento vestido. Por isso, o bot não executa o Perdedor de EXP com esses personagens."
-
-#~ msgid "This many"
-#~ msgstr "Esta quantidade"
-
-#~ msgid ""
-#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-#~ msgstr ""
-#~ "Digite o número das Terras Altas da sua guilda: a Entrada das Terras Altas o lista em Terras Altas Ocupadas (\"Terras Altas da própria guilda 38\": 38)."
-
-#~ msgid "collected the hunting bounty"
-#~ msgstr "coletou a recompensa de caça"
+#~ "elites demonizados, deixados em paz como dizem as configurações do personagem"
 
 #~ msgid ""
 #~ "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
 #~ msgstr ""
 #~ "follow: fico com você, ajudo nas lutas e acompanho seus passos. Um Sacerdote ou uma Feiticeira cura você e a equipe. Não aplico reforços a menos que você envie buff. Paro após um minuto sem ver você."
 
-#~ msgid "hunting bounties can be collected here"
-#~ msgstr "as recompensas de caça podem ser coletadas aqui"
-
-#~ msgid "hunting bounty"
-#~ msgstr "recompensa de caça"
-
 #~ msgid "no way to walk there"
 #~ msgstr "não há caminho a pé até lá"
-
-#~ msgid "our gang's highland"
-#~ msgstr "Terras Altas da nossa guilda"
-
-#~ msgid "the inner hall's East and West posts"
-#~ msgstr "postos Leste e Oeste do salão interno"
-
-#~ msgid "the officer offers no hunting bounty"
-#~ msgstr "o oficial não oferece recompensa de caça"
-
-#~ msgid "type your gang's highland number in Tools, Daily chores"
-#~ msgstr ""
-#~ "digite o número das Terras Altas da sua guilda em Ferramentas, Tarefas diárias"
-
-#~ msgid ""
-#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
-#~ msgstr ""
-#~ "usou {card}, mas a ficha do personagem não mostra nenhum cartão de experiência ativo — tentando novamente em um minuto"

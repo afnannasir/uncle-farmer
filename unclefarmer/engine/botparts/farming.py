@@ -190,13 +190,14 @@ class FarmingMixin(Parts):
                 self.explain_left_out(map_id)
                 seen = self.sight_note()      # before the walk's own looks replace it
                 me = snap["self"]
+                no_go = bosses.no_go(as_bot(self), snap)   # bosses and elites, in sight or just seen
                 if loop:
                     if loop_i is None:
                         loop_i = min(range(len(loop)), key=lambda i: math.hypot(loop[i][0] - me["x"], loop[i][1] - me["y"]))
-                    cell = loop[loop_i]
-                    loop_i = (loop_i + 1) % len(loop)
+                    cell, loop_i = _next_clear(loop, loop_i, no_go)
                 else:
-                    cell = self.random_cell(map_id, area, me)
+                    cell = (self.random_cell(map_id, area, me, clear_of=no_go, keep_out=avoid)
+                            or self.random_cell(map_id, area, me))
                 if cell is None:
                     self.sleep(1.0)
                     continue
@@ -617,10 +618,14 @@ class FarmingMixin(Parts):
         self.restock_looked = now
         self.restock_now()
 
-    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
+    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40, *,
+                    clear_of: Sequence[tuple[float, float, float]] = (),
+                    keep_out: Sequence[tuple[float, float, float, float]] = ()) -> tuple[int, int] | None:
         """A walkable cell near us in the area that we can walk to: never on a map exit (stepping on
         one leaves the map mid-farm) and never in a part of the map walled off from ours (walk_to
-        would find no way and stop the run)."""
+        would find no way and stop the run). clear_of: circles (x, y, radius) it is never in - the
+        bosses and elites the patrol keeps away from (bosses.no_go); keep_out: rectangles likewise
+        (the map's boss and elite zones). None when no such cell turned up."""
         m = atlas.model(map_id)
         x0, y0, x1, y1 = (int(v) for v in (area or (1, 1, atlas.maps()[map_id]["w"], atlas.maps()[map_id]["h"])))
         mx, my = int(me["x"]), int(me["y"])
@@ -633,9 +638,24 @@ class FarmingMixin(Parts):
                  random.randint(*_near(y0, y1, my, radius)))
             if not m.ok(*c) or m.portal[c[1], c[0]]:
                 continue
+            if clear_of and not bosses.clear_of(c, clear_of):
+                continue
+            if any(r[0] <= c[0] <= r[2] and r[1] <= c[1] <= r[3] for r in keep_out):
+                continue
             if both is not None and c[1] * m.W + c[0] not in both:
                 continue
             if both is None and ours is not None and m.comp_of(*c) != ours:
                 continue
             return c
         return None
+
+
+def _next_clear(loop: list[tuple[int, int]], i: int,
+                no_go: Sequence[tuple[float, float, float]]) -> tuple[tuple[int, int], int]:
+    """The next cell of a patrol loop from i that keeps clear of the no-go circles, and the index
+    after it. Every cell in them: the next one anyway (keep_away deals with what comes close)."""
+    for k in range(len(loop)):
+        j = (i + k) % len(loop)
+        if bosses.clear_of(loop[j], no_go):
+            return loop[j], (j + 1) % len(loop)
+    return loop[i], (i + 1) % len(loop)

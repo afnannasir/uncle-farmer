@@ -86,9 +86,10 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     bar = frame.GetMenuBar()
     assert [bar.GetMenuLabelText(index) for index in range(bar.GetMenuCount())] == [
         "File", "View", "Game", "Messages", "Help"]
-    assert frame.action_menus["tools"].GetMenuItemCount() == 18
+    assert frame.action_menus["tools"].GetMenuItemCount() == 19
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
+    assert tool_labels.count("Keyboard Manager") == 1
     assert "Sound controls" not in tool_labels
     assert frame.action_menus["character"].GetMenuItemCount() == 6
     assert frame.action_menus["run"].GetMenuItemCount() == 9
@@ -109,6 +110,7 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     ("tools_shards", "sell_shards_now", ()), ("tools_clean", "clean_bag_now", ()),
     ("tools_store", "store_items_now", ()), ("tools_restock", "restock_now", ()),
     ("tools_prices", "update_shard_prices_now", ()), ("tools_silencer", "open_silencer", ()),
+    ("tools_keyboard", "open_tool", ("keyboard",)),
     ("character_settings", "edit_profile", ()),
     ("character_bag", "edit_bag", ()), ("character_scan", "scan_now", ()),
     ("character_other", "edit_other_profile", ()), ("character_export", "export_character_settings", ()),
@@ -126,7 +128,8 @@ def test_each_moved_command_calls_its_original_handler(frame: Any, key: str, han
     assert frame.calls == [(handler, args, {})]
 
 
-@pytest.mark.parametrize("key", ["tools_restock", "tools_gem", "tools_clean", "character_scan", "run_start", "run_walk"])
+@pytest.mark.parametrize("key", ["tools_restock", "tools_gem", "tools_clean", "tools_keyboard",
+                                "character_scan", "run_start", "run_walk"])
 def test_context_or_shortcut_command_cannot_bypass_running_guard(frame: Any, key: str) -> None:
     frame.runs[1] = object()
     frame.GetEventHandler().ProcessEvent(wx.CommandEvent(wx.EVT_MENU.typeId, frame.action_items[key].GetId()))
@@ -141,6 +144,7 @@ def test_missing_selection_and_empty_plan_list_keep_existing_availability(frame:
     frame.game_list.SetItemState(0, 0, wx.LIST_STATE_SELECTED)
     frame.sync_action_menus()
     assert not frame.action_items["tools_restock"].IsEnabled()
+    assert not frame.action_items["tools_keyboard"].IsEnabled()
     assert not frame.action_items["character_settings"].IsEnabled()
     assert frame.action_items["character_other"].IsEnabled()
     assert frame.action_items["run_schedules"].IsEnabled()
@@ -177,9 +181,10 @@ def test_popup_reopens_without_duplicating_or_destroying_its_submenus(
         frame.game_context_menu(event)
     assert shown == [frame.context_menu] * 3
     assert frame.context_menu.GetMenuItemCount() == 3
-    assert frame.action_menus["tools"].GetMenuItemCount() == 18
+    assert frame.action_menus["tools"].GetMenuItemCount() == 19
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
+    assert tool_labels.count("Keyboard Manager") == 1
     assert "Sound controls" not in tool_labels
 
 

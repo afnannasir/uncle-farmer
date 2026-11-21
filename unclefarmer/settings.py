@@ -52,6 +52,7 @@ LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next l
 
 PROFILE_DEFAULTS: dict[str, Any] = {
     "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
+    "keyboard_profiles": {},
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
     # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
     # the one pointing at the monster it chose, then checks the game selected that monster.
@@ -255,6 +256,7 @@ class Profile(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
+    keyboard_profiles: dict[str, Any] = PROFILE_DEFAULTS["keyboard_profiles"]
 
     move_keys: dict[str, str] = PROFILE_DEFAULTS["move_keys"]
     target_keys: dict[str, str] = PROFILE_DEFAULTS["target_keys"]

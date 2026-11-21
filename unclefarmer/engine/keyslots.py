@@ -139,22 +139,34 @@ def _place(bot: Bot, sb: combat.SkillBook, rows: list[dict[str, Any]], sid: int,
     """Put one skill on skill key `slot` (1-20) the game's way; True once the game shows it there."""
     keys = gamekeys.attack_key_list()
     page, n = divmod(slot - 1, 10)
-    index = next(i for i, r in enumerate(rows) if r["name"] == name)
+    if not bind_skill(bot, sb, rows, sid, name, slot, keys[n]):
+        return False
+    bot.log(_("{skill} put on the empty skill key {key} (page {page})", skill=name, key=keys[n], page=page + 1),
+            speak=True)
+    return True
+
+
+def bind_skill(bot: Bot, sb: combat.SkillBook, rows: list[dict[str, Any]], sid: int, name: str,
+               slot: int, key: str, *, bind_key: str | None = None) -> bool:
+    """Set a learned skill on a game slot and check that the assignment took effect."""
+    page = (slot - 1) // 10
+    index = next(i for i, r in enumerate(rows) if r["id"] == sid)
     if not bot.panel_cursor(4, index, len(rows)):
         bot.log(_("couldn't reach {skill} in the skills panel", skill=name))
         return False
     if not sb.flip_to(page):
         return False
-    bot.key("lctrl+alt+" + keys[n])
+    if bind_key is None:
+        bot.key("lctrl+alt+" + key)
+    else:
+        bot.tap_key(bind_key)
     bot.sleep(0.6)
     now = bot.a.json("mem skills")
     keys_now: dict[str, int] = (now.get("attack_keys") or {}) if json.is_object(now) else {}
     if keys_now.get(str(slot)) != sid:
         bot.log(_("the game didn't put {skill} on key {key} - leaving the keys as they are",
-                  skill=name, key=keys[n]), speak=True)
+                  skill=name, key=key), speak=True)
         return False
-    bot.log(_("{skill} put on the empty skill key {key} (page {page})", skill=name, key=keys[n], page=page + 1),
-            speak=True)
     return True
 
 

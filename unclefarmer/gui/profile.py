@@ -12,7 +12,7 @@ from typing import Any, TypedDict
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, potions, triggers, xpcard
+from ..engine import combat, keyboard, potions, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
@@ -383,7 +383,7 @@ class ProfileDialog(Dialog):
                     "again where it was farming)"))
                 self.skip_before.SetValue(bool(self.p.get("skip_before_on_farm", True)))
                 body.Add(self.skip_before, 0, wx.BOTTOM, 6)
-            editor = SequenceEditor(child, cfg)
+            editor = SequenceEditor(child, cfg, keyboard_names=tuple(keyboard.names(self.p)))
             self.trigger_editors[stage] = editor
             body.Add(editor, 1, wx.EXPAND)
         note = wx.StaticText(panel, label=_("Actions run from top to bottom. A failed DETERMINISTIC Before action also prevents farming. After runs automatically only when farming ends by itself."))

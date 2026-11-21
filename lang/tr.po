@@ -56,6 +56,9 @@ msgstr "B&aşka bir karakter"
 msgid "&Answer strangers:"
 msgstr "Y&abancılara cevap ver:"
 
+msgid "&Apply profile"
+msgstr "Profili uygul&a"
+
 msgid "&Assistant (it kills for you; you can't fight in there):"
 msgstr "&Asistan (senin yerine öldürür; orada sen dövüşemezsin):"
 
@@ -152,6 +155,9 @@ msgstr "Sil (&D)"
 msgid "&Delete filter"
 msgstr "Filtreyi sil (&D)"
 
+msgid "&Delete profile"
+msgstr "Profili sil (&D)"
+
 msgid "&Donation, once a day:"
 msgstr "Bağış, gün&de bir kez:"
 
@@ -160,6 +166,9 @@ msgstr "Zin&dan:"
 
 msgid "&Edit"
 msgstr "Düz&enle"
+
+msgid "&Edit binding..."
+msgstr "Atamayı düz&enle..."
 
 msgid "&Edit filter"
 msgstr "Filtr&eyi düzenle"
@@ -300,6 +309,9 @@ msgstr ""
 msgid "&Keep:"
 msgstr "Sa&kla:"
 
+msgid "&Keyboard Manager"
+msgstr "Klavye yöneticisi (&K)"
+
 msgid "&Keyboard shortcuts"
 msgstr "&Klavye kısayolları"
 
@@ -371,6 +383,9 @@ msgstr "Ye&ni sohbet (isim veya kimlik):"
 
 msgid "&New plan"
 msgstr "Ye&ni plan"
+
+msgid "&New profile"
+msgstr "Ye&ni profil"
 
 msgid "&No, keep current language"
 msgstr "Hayır, şimdiki dilde kal (&N)"
@@ -498,6 +513,9 @@ msgstr ""
 
 msgid "&Save"
 msgstr "Kaydet (&S)"
+
+msgid "&Save profile"
+msgstr "Profili kaydet (&S)"
 
 msgid "&Save some of the day's drop time (instead of the character's setting)"
 msgstr "Günün ganimet &süresinin bir kısmını sakla (karakterin ayarı yerine)"
@@ -949,6 +967,15 @@ msgstr ""
 msgid "Answering"
 msgstr "Yanıtlanıyor"
 
+msgid "Applied keyboard profile {name}."
+msgstr "{name} klavye profili uygulandı."
+
+msgid "Apply a keyboard profile while out of combat with game menus closed."
+msgstr "Klavye profilini dövüş dışındayken ve oyun menüleri kapalıyken uygula."
+
+msgid "Apply keyboard profile {name}"
+msgstr "{name} klavye profilini uygula"
+
 msgid "Area a&round me"
 msgstr "Çev&remdeki alan"
 
@@ -1026,6 +1053,9 @@ msgstr "En iyi normal vuruş: {hit}"
 
 msgid "Between fights"
 msgstr "Dövüşler arasında"
+
+msgid "Binding for {key}"
+msgstr "{key} için atama"
 
 msgid "Bot"
 msgstr "Bot"
@@ -1107,6 +1137,9 @@ msgstr "İptal"
 
 msgid "Cancel &reply"
 msgstr "Yanıtı iptal et (&R)"
+
+msgid "Capture current &keys"
+msgstr "Geçerli tuşları al (&K)"
 
 msgid "Category"
 msgstr ""
@@ -1195,6 +1228,9 @@ msgstr ""
 
 msgid "Choose Before farming or After farming."
 msgstr "Farmdan önce ya da Farmdan sonra'yı seç."
+
+msgid "Choose a bound self-buff or shield to prepare."
+msgstr "Hazırlamak için bir tuşa atanmış kendi buff'ını ya da kalkanı seç."
 
 msgid "Choose a category to browse."
 msgstr ""
@@ -1372,6 +1408,9 @@ msgstr "Ses dinleme bırakılamadı; bağlantı kapanınca bırakılır."
 msgid "Couldn't apply the settings: {err}"
 msgstr "Ayarlar uygulanamadı: {err}"
 
+msgid "Couldn't assign {binding} to {key}."
+msgstr "{binding}, {key} tuşuna atanamadı."
+
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Oyunun ayarları değiştirilemedi: {err}"
 
@@ -1390,6 +1429,9 @@ msgstr "Plan dışa aktarılamadı: {err}"
 msgid "Couldn't export the settings: {err}"
 msgstr "Ayarlar dışa aktarılamadı: {err}"
 
+msgid "Couldn't find this character's quick phrases in the game folder."
+msgstr "Bu karakterin hızlı ifadeleri oyun klasöründe bulunamadı."
+
 msgid "Couldn't import the plan: {err}"
 msgstr "Plan içe aktarılamadı: {err}"
 
@@ -1402,8 +1444,14 @@ msgstr "Açılamadı."
 msgid "Couldn't open it: {err}"
 msgstr "Açılamadı: {err}"
 
+msgid "Couldn't prepare {skill}."
+msgstr "{skill} hazırlanamadı."
+
 msgid "Couldn't reach GitHub to look for updates: {why}"
 msgstr "Güncellemeleri aramak için GitHub'a ulaşılamadı: {why}"
+
+msgid "Couldn't read keyboard settings from the game."
+msgstr "Klavye ayarları oyundan okunamadı."
 
 msgid "Couldn't read the game: {err}"
 msgstr "Oyun okunamadı: {err}"
@@ -1413,6 +1461,9 @@ msgstr "Programlar kaydedilemedi: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Kaydedilemedi: {err}"
+
+msgid "Couldn't set the quick phrase on {key}."
+msgstr "{key} tuşuna hızlı ifade konamadı."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Bilgisayar kapatılamadı: {err}"
@@ -1490,6 +1541,9 @@ msgstr "Durmadan önceki ölümler:"
 
 msgid "Delay after success (&seconds):"
 msgstr "Başarıdan &sonra bekleme (saniye):"
+
+msgid "Delete keyboard profile {name}?"
+msgstr "{name} klavye profili silinsin mi?"
 
 msgid "Delete the schedule for {what} ({who})?"
 msgstr "{what} ({who}) için program silinsin mi?"
@@ -1601,8 +1655,14 @@ msgstr "Şu ana kadarki kazanç: {n} arnebia (toplanan ve satılan)"
 msgid "East edge (x):"
 msgstr "Doğu kenarı (x):"
 
+msgid "Edit binding"
+msgstr "Atamayı düzenle"
+
 msgid "Edit filter"
 msgstr "Filtreyi düzenle"
+
+msgid "Edit quick phrase"
+msgstr "Hızlı ifadeyi düzenle"
 
 msgid "Edit schedule"
 msgstr "Programı düzenle"
@@ -1655,8 +1715,14 @@ msgstr "Geliştirme Kristalleri"
 msgid "Enhance Crystals (breaking them costs arnebia)"
 msgstr ""
 
+msgid "Enter a keyboard profile name on one line."
+msgstr "Klavye profilinin adını tek satırda yaz."
+
 msgid "Enter a name for the plan."
 msgstr "Plan için bir ad girin."
+
+msgid "Enter a quick phrase on one line."
+msgstr "Hızlı ifadeyi tek satırda yaz."
 
 msgid "Enter a sound ID between 1 and 99999."
 msgstr "1 ile 99999 arasında bir ses kimliği gir."
@@ -2282,6 +2348,9 @@ msgstr ""
 msgid "International"
 msgstr "Uluslararası"
 
+msgid "Invalid keyboard slot."
+msgstr "Geçersiz klavye yuvası."
+
 msgid "Invalid sound reply from the game agent."
 msgstr "Oyun ajanından geçersiz ses yanıtı."
 
@@ -2294,8 +2363,14 @@ msgstr ""
 msgid "Item name, exactly as the game writes it:"
 msgstr "Eşya adı, tam olarak oyunun yazdığı gibi:"
 
+msgid "Item type {id}"
+msgstr "Eşya türü {id}"
+
 msgid "Item:"
 msgstr "Eşya:"
+
+msgid "Items"
+msgstr "Eşyalar"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Kuralı &olmayan eşyalar: yalnızca bu çalışmada toplananlara dokun"
@@ -2335,6 +2410,15 @@ msgstr "Sınıfın b&ufflarını açık tut"
 
 msgid "Key"
 msgstr "Tuş"
+
+msgid "Key &bindings:"
+msgstr "Tuş atamaları (&B):"
+
+msgid "Keyboard Manager"
+msgstr "Klavye yöneticisi"
+
+msgid "Keyboard profile {name} was not found."
+msgstr "{name} klavye profili bulunamadı."
 
 msgid "Keyboard shortcuts"
 msgstr "Klavye kısayolları"
@@ -2402,6 +2486,9 @@ msgstr "Şeytanlaşmış el&itlere dokunma (saldırırlarsa yine dövüşülür)
 msgid ""
 "Leave the farm this many &minutes before the half hour (the walk there included):"
 msgstr "Yarı&m saatten şu kadar dakika önce farmı bırak (oraya yürüyüş dahil):"
+
+msgid "Leave unchanged"
+msgstr "Değiştirme"
 
 msgid "Leaves {n} {item}."
 msgstr ""
@@ -2731,6 +2818,9 @@ msgstr "Arnebia'yı asla şunun altına düşürme (&W):"
 
 msgid "New &script"
 msgstr "Yeni betik (&S)"
+
+msgid "New profile"
+msgstr "Yeni profil"
 
 msgid "New sc&ript"
 msgstr "Yeni betik (&R)"
@@ -3106,6 +3196,9 @@ msgstr "Barışçıl karşı saldırı modu"
 msgid "Page"
 msgstr ""
 
+msgid "Page {page}, {key}"
+msgstr "Sayfa {page}, {key}"
+
 msgid "Patrol loops: {loops}"
 msgstr "Devriye döngüleri: {loops}"
 
@@ -3266,6 +3359,12 @@ msgstr "Bu oyunda özel mesajlar henüz hazır değil."
 msgid "Private messages to you"
 msgstr "Sana gelen özel mesajlar"
 
+msgid "Profession skills"
+msgstr "Meslek becerileri"
+
+msgid "Profile na&me:"
+msgstr "Profil adı (&M):"
+
 msgid "Program version: {v}"
 msgstr "Program sürümü: {v}"
 
@@ -3298,6 +3397,12 @@ msgstr "Hızlı döngü (tüm mağara, şeritler daha aralıklı)"
 
 msgid "Quick patrol loop"
 msgstr "Hızlı devriye döngüsü"
+
+msgid "Quick phrase for {key} (blank leaves it unchanged)"
+msgstr "{key} için hızlı ifade (boş bırakılırsa değişmez)"
+
+msgid "Quick phrases"
+msgstr "Hızlı ifadeler"
 
 msgid "Range (tiles):"
 msgstr "Menzil (kare):"
@@ -3381,6 +3486,9 @@ msgid ""
 "Repair our gang's &highlands (first what is under 100%, what is at 100% last)"
 msgstr ""
 
+msgid "Replace keyboard profile {name}?"
+msgstr "{name} klavye profilinin yerine yazılsın mı?"
+
 msgid ""
 "Replace the saved Uncle Farmer settings for {character} with those exported from {source}?\n"
 "\n"
@@ -3414,6 +3522,10 @@ msgstr "HP ş&una çıkana kadar dinlen (%):"
 
 msgid "Restart Uncle Farmer to switch the language."
 msgstr "Dili değiştirmek için Uncle Farmer'ı yeniden başlat."
+
+msgid ""
+"Restart the game with the current agent to apply these keyboard settings."
+msgstr "Bu klavye ayarlarını uygulamak için oyunu güncel ajanla yeniden başlat."
 
 msgid "Restock &now"
 msgstr "Stoğu şimdi ye&nile"
@@ -3532,11 +3644,22 @@ msgstr "Betik olarak kaydet"
 msgid "Save changes to the script?"
 msgstr "Betikteki değişiklikler kaydedilsin mi?"
 
+msgid "Save the keyboard profile before applying it."
+msgstr "Uygulamadan önce klavye profilini kaydet."
+
 msgid "Save the results"
 msgstr ""
 
 msgid "Saved account email:"
 msgstr "Kayıtlı hesap e-postası:"
+
+msgid ""
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+msgstr ""
+"Kaydedilen atamalar oyundaki yuvalarının yerine geçer. Değiştirme olarak işaretli yuvalar şu anki atamalarını korur."
+
+msgid "Saved keyboard &profiles:"
+msgstr "Kayıtlı klavye &profilleri:"
 
 msgid "Saved. It's in the Plans tab as a script."
 msgstr "Kaydedildi. Planlar sekmesinde betik olarak duruyor."
@@ -3609,6 +3732,9 @@ msgstr "Önce bir oyun seçin."
 
 msgid "Select a plan first."
 msgstr "Önce bir plan seçin."
+
+msgid "Select the same character before applying the keyboard profile."
+msgstr "Klavye profilini uygulamadan önce aynı karakteri seç."
 
 msgid "Sell and store by these lists, then come back"
 msgstr "Bu listelere göre sat ve depola, sonra geri gel"
@@ -4096,6 +4222,9 @@ msgid ""
 msgstr ""
 "Bu, oyunun 200 karakter sınırından uzun: oyunun izin verdiği hızla, {n} parça halinde her 2 saniyede bir (Genel kanalda 3) gider."
 
+msgid "That keyboard profile no longer exists. Choose another action."
+msgstr "Bu klavye profili artık yok. Başka bir eylem seç."
+
 msgid "That place is in your list already."
 msgstr "Bu yer zaten listende."
 
@@ -4195,6 +4324,9 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 
+msgid "The character hasn't learned {skill}."
+msgstr "Karakter {skill} becerisini öğrenmemiş."
+
 msgid "The character's plan"
 msgstr ""
 
@@ -4238,6 +4370,9 @@ msgstr "En hızlısı"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The game didn't confirm {skill}."
+msgstr "Oyun {skill} becerisini onaylamadı."
 
 msgid "The game didn't play it: {why}"
 msgstr "Oyun onu çalmadı: {why}"
@@ -4583,6 +4718,9 @@ msgstr "Bugün: henüz mağara yok."
 msgid "Today: {cave} is done - the next one after the game day's reset."
 msgstr "Bugün: {cave} tamamlandı - sıradaki, oyun günü sıfırlandıktan sonra."
 
+msgid "Toggle p&reparation"
+msgstr "Hazırlığı aç/kapat (&R)"
+
 msgid "Tone from &everyone else:"
 msgstr "Diğ&er herkesten gelen ses:"
 
@@ -4788,6 +4926,9 @@ msgstr "Birbirine yakın bu kadar canavara alan becerileri kullan (&S):"
 
 msgid "Use item"
 msgstr "Eşya kullan"
+
+msgid "Use keyboard_profile followed by one quoted profile name."
+msgstr "keyboard_profile komutundan sonra tırnak içinde bir profil adı yaz."
 
 msgid "Use the &combos of the activated talents"
 msgstr "Etkin yeteneklerin kombolarını kullan (&C)"
@@ -5750,8 +5891,10 @@ msgstr "öldüm ama yeniden doğma menüsü hiç açılmadı - lütfen elle yeni
 msgid "defence break"
 msgstr "savunma kırma"
 
-msgid "demonized elites, left alone as the character settings say"
-msgstr "şeytanlaşmış elitler, karakter ayarlarının dediği gibi dokunulmuyor"
+msgid ""
+"demonized elites or too close to one, left alone as the character settings say"
+msgstr ""
+"demonized elitler veya birine çok yakın olanlar, karakter ayarlarına göre bırakıldı"
 
 msgid "died and came back outside {map}"
 msgstr "öldüm ve {map} dışında geri geldim"
@@ -8447,6 +8590,10 @@ msgstr "%{bonus} fazla deneyim, {m} dk {s} sn kaldı"
 msgid "{boss} (a boss) is {n} steps away - keeping {keep} steps from it"
 msgstr "{boss} (patron) {n} adım uzakta - ondan {keep} adım uzak duruluyor"
 
+msgid "{boss} (a boss) keeps coming back - leaving for {map} for {n} s"
+msgstr ""
+"{boss} (patron) geri gelip duruyor - {n} sn için {map} haritasına gidiliyor"
+
 msgid "{buffer} ({n} new)"
 msgstr "{buffer} ({n} yeni)"
 
@@ -8507,6 +8654,11 @@ msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
 msgstr "{dmg} hasar (toplamın {share} kadarı)"
+
+msgid ""
+"{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
+msgstr ""
+"{elite} (demonized elit) {n} adım uzakta - ondan {keep} adım uzak duruluyor"
 
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: {lo} ile {hi} arası bir sayı gir"
@@ -8569,6 +8721,9 @@ msgstr "{item} kırılmak üzere"
 
 msgid "{item} is broken"
 msgstr "{item} bozuk"
+
+msgid "{item} is missing from the bag."
+msgstr "{item} çantada yok."
 
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} artık {key} tuşunda değil - oyun oraya başka bir şey koydu"
@@ -9061,6 +9216,9 @@ msgstr "{shard}: {old} -> {new} arnebia"
 msgid "{shard}: {was} before, {now} after, {used} used"
 msgstr ""
 
+msgid "{skill} (prepare when applied)"
+msgstr "{skill} (uygulanınca hazırla)"
+
 msgid "{skill} at {where}"
 msgstr "{skill}, {where}"
 
@@ -9087,6 +9245,9 @@ msgid ""
 "{skill} isn't on a skill key and no skill key is empty - put it on one to use it"
 msgstr ""
 "{skill} bir beceri tuşunda değil ve boş beceri tuşu yok - kullanmak için bir tuşa koy"
+
+msgid "{skill} isn't ready to prepare."
+msgstr "{skill} hazırlanmaya hazır değil."
 
 msgid "{skill} not cast at {name}: {why}"
 msgstr "{skill}, {name} hedefine kullanılmadı: {why}"
@@ -9203,66 +9364,13 @@ msgstr ""
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
 
-#~ msgid "&Build at:"
-#~ msgstr "İnşa yeri (&B):"
-
-#~ msgid "Collect &hunting bounties from a city officer"
-#~ msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
-
-#~ msgid "Gang construction"
-#~ msgstr "Çete inşaatı"
-
-#~ msgid ""
-#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
-#~ msgstr ""
-#~ "İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
-
-#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
-#~ msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
-
-#~ msgid ""
-#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
-#~ msgstr ""
-#~ "Bot bir muhafız bulur (görüş alanında, daha önce görüldüğü yerde ya da en yakın şehirde), PK modunu tüm moda çevirir, muhafıza bir kez vurur ve karakteri öldürmesine izin verir: iksir yok, iyileştirme yok, karşılık yok. Şehirde yeniden doğar ve sonraki seviye için en az o kadar deneyim gerekene kadar tekrarlar. En yakın köy seçiliyse önce en yakın köye yürür (oyun ölen karakteri en son yürüyerek girdiği şehirde diriltir), sonra kapısında ölür; böylece her ölüm daha kısa sürer (Tuneful Sulak Alanı'nda Arya Köyü'nde 11 saniye, Lale Şehri'nde 29). Oyun onu başka bir yerde diriltirse en yakın muhafızda ölür. Önce evcil hayvan geri çağrılır, sonunda PK modu eski haline getirilir. Ölümler ekipmanı her ölüm gibi yıpratır; kara isimli bir karakter (Ahlak -1000 ya da altı) ölünce giydiği ekipmanı kaybedebilir, bu yüzden XP kaybettirici onun için çalışmaz."
-
-#~ msgid "This many"
-#~ msgstr "Bu kadar"
-
-#~ msgid ""
-#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-#~ msgstr ""
-#~ "Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
-
-#~ msgid "collected the hunting bounty"
-#~ msgstr "av ödülü toplandı"
+#~ msgid "demonized elites, left alone as the character settings say"
+#~ msgstr "şeytanlaşmış elitler, karakter ayarlarının dediği gibi dokunulmuyor"
 
 #~ msgid ""
 #~ "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
 #~ msgstr ""
 #~ "follow: Yanında kalırım, dövüşlerine yardım ederim ve gittiğin yere giderim. Rahip ya da Sihirbaz seni ve takımı iyileştirir. buff göndermedikçe buff yok. Seni bir dakika göremezsem dururum."
 
-#~ msgid "hunting bounties can be collected here"
-#~ msgstr "av ödülleri burada toplanabilir"
-
-#~ msgid "hunting bounty"
-#~ msgstr "av ödülü"
-
 #~ msgid "no way to walk there"
 #~ msgstr "oraya yürüyerek gidilecek yol yok"
-
-#~ msgid "our gang's highland"
-#~ msgstr "çetemizin yaylası"
-
-#~ msgid "the inner hall's East and West posts"
-#~ msgstr "iç salonun Doğu ve Batı noktaları"
-
-#~ msgid "the officer offers no hunting bounty"
-#~ msgstr "görevli av ödülü sunmuyor"
-
-#~ msgid "type your gang's highland number in Tools, Daily chores"
-#~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
-
-#~ msgid ""
-#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
-#~ msgstr ""
-#~ "{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"

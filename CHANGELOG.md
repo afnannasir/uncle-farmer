@@ -19,37 +19,6 @@
   [check]`; also in the Before/After farming lists and schedules. Built from one recorded hand run;
   not yet tried by the bot in the game.
 
-**No more experience cards one after another in dungeons**
-
-- Inside a dungeon (Scorpion Cave), the character sheet doesn't show the experience card, so
-  the bot thought none was running and used a new card every minute: 14 or 15 cards a visit. The
-  game added each one's half hour (400 minutes left afterwards). Now, after a card the sheet
-  doesn't show, no other card is used for 30 minutes. Inside a dungeon, a card seen running or
-  paused before going in is kept.
-- Agent 77 reads the card inside a dungeon too, where the sheet shows only the bonus and the time
-  ("30% EXP bonus;29 minutes56 seconds remaining"), so the bot sees the real time left there.
-
-**Gathering in another gang's area works again**
-
-- Gathering in a friend's or ally's gang got into that gang's base, stood there about 15 seconds,
-  said "couldn't get into the gang's base" and walked out. The game takes you straight in when you
-  pick the gang's name, and the bot was still waiting for the move. Now it goes on to the area.
-- The fusion beast now comes off beside the area's entrance, not inside the area, so gathering
-  starts as soon as you land and none of the area's half hour goes on getting off.
-
-**No more walking past the monsters that hit you**
-
-- Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
-  first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
-  right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
-  monsters around it and chases far ones".
-
-**A dropped connection is noticed again**
-
-- Agent 73: when the game's connection drops but the game keeps showing its old world, the bot
-  notices within seconds and logs back in (with automatic login set up), or stops after a minute.
-  One night it fought two left-behind monsters for 55 minutes, every attack refused, no kills.
-
 **Following through team dungeons**
 
 - A follower now helps the whole team: it fights any monster near you or a teammate that a player
@@ -64,6 +33,217 @@
   counts for every death in this follow; respawn ask goes back to asking.
 - A map it can't plan its way to, or a minute without seeing you, no longer ends the follow: it
   waits and teleports to the team leader (Shift+P) as soon as the game allows. Only Stop ends it.
+
+**Autopilot: the whole day in one window**
+
+- **Run, Autopilot: the whole day** (Ctrl+Shift+A) shows the character's Before farming list, the
+  farming and the After farming list together, and **Start the day** runs them in that order. The
+  lists are the same ones as Character settings, Triggers. Every way of running it is a choice:
+  - farm with the character's plan, or with the best map for its level when the day starts;
+  - run the lists around the farming, or as one script of the day that you can read, change and
+    schedule like any other (written once; **Write the script of the day now** writes it again);
+  - start only when you press Start, or every day at a time (kept as a schedule in Run, Schedules).
+- Scripts: `farm map=best` farms the best field map for the character's level when the line runs,
+  and `triggers off` tells a script that does its own Before and After steps not to get the
+  Triggers lists around it as well.
+
+**Maps for your level in the plan editor**
+
+- The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
+  monsters are from 9 levels below you to 5 above: the game's own rule for full experience and full
+  loot. Ordinary fields come first, then dungeons and the rest, each with the highest monsters first.
+  The game has to be running with your character logged in, so the bot knows your level.
+
+**Speed skills on long walks**
+
+- Wind Step and Swallow Dance (Warrior), Haste (Orc) and Shadow Steps (Assassin) were never used:
+  the bot only ever pressed skills that fight. Now a walk on foot of 25 steps or more starts with
+  the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
+  anyway), not in a fight, and never a skill you set to Never.
+
+**Leap Slash to reach a monster**
+
+- A Warrior only used Leap Slash with the Powerful Leap Attack talent, and then only on a monster
+  already in reach. Without the talent it was never pressed. Now, when a monster is more than a
+  step past melee reach but inside Leap Slash's 10 yards, with a clear line to it, the Warrior
+  jumps to it instead of walking: it lands beside the monster, stunned for 2.5 seconds. Not on a
+  beast, and never if you set Leap Slash to Never. The log says "Leap Slash to reach ...".
+
+**Mages freeze the crowd before channelling**
+
+- With two or more monsters hitting the Mage, and all of them within Frost Nova's 8 yards, the
+  Mage now casts Frost Nova first. It used it only 0 to 3 times a night. A frozen monster can't
+  strike, so the Ice Arrows that follow are no longer held back or broken by it: on two recorded
+  nights the arrows right after such moments broke about half the time. The freeze ends when its
+  5 seconds run out, when anything hurts the monster, or if it strikes anyway.
+
+**Hunters jump ahead with Escape**
+
+- Escape jumps 12 tiles away from where you face, and players turn first so it carries them
+  forward. The bot never did. Now, on a long walk on foot outside a fight, a Hunter taps the key
+  for the other way, checks that the character really turned, and presses Escape: about a second
+  for 12 tiles instead of three. Only along a straight row with nothing in the way that follows
+  the planned walk, and never on a beast. Escape is still kept for emergencies the same way; set
+  it to "Emergency only" to stop the jumps ahead, or to Never to stop both. The log says "Escape
+  to jump ahead". Agent 77: the game's own facing is read, so the jump never goes the wrong way.
+  Close the game and start it again to load the new agent.
+- Escape also kites now: when a monster on top of the Hunter has been hitting and HP is under
+  90% (it waited for 60% before), the Hunter jumps 12 tiles away from it and keeps shooting while
+  it walks back. Only when the game's facing shows the jump goes away from that monster, the
+  ground behind is clear, and the target is still in range from where it lands.
+
+**The game's own report after a dungeon**
+
+- When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
+  The bot now reads it (agent 76) and adds it to its line about the visit, for example "Scorpion
+  Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
+  count is the true one: it includes kills the bot can't see.
+
+**For contributors: a dungeon recipe from one recorded run**
+
+- `uv run python -m unclefarmer.recipedraft <packets log> --from 12:40 --to 13:10` turns the
+  recorder's log of one hand run into a draft recipe: each map in order, where you came in and
+  left, the way walked, every NPC talked to with the menu entries chosen (in the game's own words),
+  timers and the end report. `--json` writes it to a file. New dungeons are to be built from such a
+  draft, never from a guessed menu.
+- Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
+  `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
+  job is one entry there.
+- `uv run python -m unclefarmer.picksim` plays whole simulated cave visits with every pick made by
+  the bot's own target choice and an order under test, and prints the kills of each. The bot's own
+  order (nearest walk first) came out best or within a few kills of the best in both caves, for a
+  caster and a melee character; going toward crowds of monsters did not help.
+
+**Skills outside the global cooldown are used in every fight**
+
+- Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
+  (Priest, 20% less damage) and Summon Spirit (Witcher, 30% less damage) are "not affected by
+  global CD": pressing one costs no attack. Before, the bot kept the first two for a big monster or
+  a pack and the last two for emergencies, so they were never used in any recorded night.
+- Now Cold Winter and Scorch go up in every fight whenever they are ready, and Concentrated Will
+  and Summon Spirit whenever a monster is hitting you and you have lost some HP (under 90%). They
+  are pressed in the wait after each attack, so the attacks keep their pace. A skill set to Never
+  or to emergencies only in Character settings is left as you set it.
+- If you have learned Cold Winter or Scorch but put it on no key, the log now says so. The bot can
+  only press skills that are on a key.
+
+**Channelled skills wait for a gap between the monsters' swings**
+
+- Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the
+  channel's time is lost. In two Mage nights, 30 to 37% of all Ice Arrows broke this way. Monsters
+  swing on a fixed clock (about every 2 seconds), so the bot now remembers when each monster last
+  swung at you and starts a channel only when it will end before the next swing. Otherwise it uses
+  a skill with no channel: for the Mage that is Magic Sphere, which does the same damage at once.
+- Tried on the recorded nights first: the rule would have held back about half of the arrows that
+  broke, and half of the arrows it held back would have broken. The older idea of "no channel for a
+  while after a hit" held back as many good channels as broken ones.
+- The Elf's Pyroblast and Blazing Storm keep their own timing (Blazing Combo makes them instant).
+
+**The experience caves: ready at the door, fighting from the first second**
+
+- Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
+  in thirteen visits, 1 to 15 November). The bot now gets ready at the cave's door, before it
+  chooses "Enter the dungeon", where no timer runs:
+  - it gets off the travel beast (or onto the fusion beast the character fights in);
+  - it calls the pet, which comes in with you. A pet that can come out within three minutes is
+    waited for at the door; one that needs longer is called inside as soon as it can;
+  - it reads the skills, puts the long buffs up and tops up HP and MP;
+  - it puts potions back on empty keys and lets a paused experience card run again. A new
+    experience card is still started inside, so that none is spent when the game turns you away.
+- Why it stood so long: the pet was called first, and the game ignores a "get off the beast"
+  pressed right after a pet has come out. The bot then waited for its next try, 8.5 seconds every
+  time. The beast is now seen to before the pet, in the caves and at the start of every farm.
+- After landing inside, the bot no longer waits a second for the map to settle, and the target
+  key is set in a few hundredths of a second a press instead of a third of a second.
+
+**Kills by damage over time are counted**
+
+- A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps
+  biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
+  landed on it" and the results came out short. In one night of a character with such skills, 117
+  kills were missed this way. The game reports these deaths in a message of their own, which the
+  agent now reads (agent 75). Close the game and start it again to load the new agent.
+
+**The log says why a monster was left**
+
+- Every fight the bot picks and ends without a kill now records why, in the farming record
+  (`logs/field-<day>.jsonl`): stuck on the way, taken by someone else, another monster came into
+  reach, no clear shot, moved out of range, took no damage, and so on. Until now about a third of
+  the picks ended with no kill and nothing in the record to say why.
+- A search walk that starts with monsters in sight records how many there were, how many were left
+  out for each reason, and where the ones with no way to walk to were standing.
+- The "monsters in sight, none to fight" line names the map.
+- The night report (`nightwatch.py report`) adds these up: no-kill fights by reason with the time
+  each cost, monsters left out by reason, and the "no way to walk there" ones by map.
+- Nothing changes in how the bot fights. The times a monster is left alone are the same as before;
+  they are set in one place now instead of twelve.
+- Fixed in passing: a fight the bot had to stop for on its way to the picked monster (fighting
+  back) made the picked fight count as "never reached" in the night report, even when it was.
+- "no way to walk there" now reads "no way to walk there, or only a very long way round". Two
+  recorded nights (turkey cave and Margit Rainforest) were replayed: every monster the bot had
+  called unreachable could be walked to, by a way round of 150 to 400 steps. The bot is right to
+  leave those; the map data has no hole there.
+
+**No more picking the same monster over and over**
+
+- When the bot stops on its way to a monster because another one has come into reach, it now
+  fights that one at once. It used to hand the choice back, and when the first monster was the
+  shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
+  again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
+
+**Bosses and demonized elites: kept further away** (untested in game so far)
+
+- A boss that keeps coming back is left behind for a while: after three walk-offs in five
+  minutes, or with nowhere further from it to go, the bot leaves through the nearest door far
+  from it, waits on the other side, and comes back to farm. The wait is 1 minute, doubled each
+  time the boss is still there (up to 5). Before, it farmed on next to the boss.
+- The patrol keeps clear of the bosses seen in the last minute and of the map's boss zones.
+- With **Leave demonized elites alone** ticked, the bot also leaves out the monsters within
+  40 steps of an elite (a fight there pulls it in), walks away from one that comes within 30
+  steps, and patrols clear of it. One that attacks us is still fought.
+
+**Keyboard Manager** (untested in game so far)
+
+- Tools, Keyboard Manager saves named key layouts per character: both skill pages, the profession
+  skills, the number-row items and the quick phrases. Capture current keys reads them from the
+  game; Apply sets them through the game's own binding keys and checks each one took. Slots marked
+  Leave unchanged keep what they have.
+- A profile can also cast chosen self-buffs or shields when it is applied.
+- Before and After farming triggers can apply a saved profile, and scripts can use
+  `keyboard_profile "<name>"`.
+
+## 1.2.2
+
+**No more experience cards one after another in dungeons**
+
+- Inside a dungeon (Scorpion Cave), the character sheet doesn't show the experience card, so
+  the bot thought none was running and used a new card every minute: 14 or 15 cards a visit. The
+  game added each one's half hour (400 minutes left afterwards). Now, after a card the sheet
+  doesn't show, no other card is used for 30 minutes. Inside a dungeon, a card seen running or
+  paused before going in is kept.
+- Agent 74 reads the card inside a dungeon too, where the sheet shows only the bonus and the time
+  ("30% EXP bonus;29 minutes56 seconds remaining"), so the bot sees the real time left there.
+
+**Gathering in another gang's area works again**
+
+- Gathering in a friend's or ally's gang got into that gang's base, stood there about 15 seconds,
+  said "couldn't get into the gang's base" and walked out. The game takes you straight in when you
+  pick the gang's name, and the bot was still waiting for the move. Now it goes on to the area.
+- The fusion beast now comes off beside the area's entrance, not inside the area, so gathering
+  starts as soon as you land and none of the area's half hour goes on getting off.
+
+**A dropped connection is noticed again**
+
+- Agent 73: when the game's connection drops but the game keeps showing its old world, the bot
+  notices within seconds and logs back in (with automatic login set up), or stops after a minute.
+  One night it fought two left-behind monsters for 55 minutes, every attack refused, no kills.
+
+**No more walking past the monsters that hit you**
+
+- Walking to a far monster, the bot now stops for a nearer one that attacks it and fights that one
+  first. Before, it walked on while being hit: a Warrior for up to half a minute, from a monster
+  right beside it, and a Mage over 200 times a night. This is what players saw as "it leaves the
+  monsters around it and chases far ones".
 
 **NVDA Remote and other programs can press keys in the game**
 
@@ -393,163 +573,6 @@
   landings, where guards stand, how much experience a level holds) is kept in files next to the
   character profiles, and each of them showed up as a character in the profile list. They are left
   out now.
-
-**Autopilot: the whole day in one window**
-
-- **Run, Autopilot: the whole day** (Ctrl+Shift+A) shows the character's Before farming list, the
-  farming and the After farming list together, and **Start the day** runs them in that order. The
-  lists are the same ones as Character settings, Triggers. Every way of running it is a choice:
-  - farm with the character's plan, or with the best map for its level when the day starts;
-  - run the lists around the farming, or as one script of the day that you can read, change and
-    schedule like any other (written once; **Write the script of the day now** writes it again);
-  - start only when you press Start, or every day at a time (kept as a schedule in Run, Schedules).
-- Scripts: `farm map=best` farms the best field map for the character's level when the line runs,
-  and `triggers off` tells a script that does its own Before and After steps not to get the
-  Triggers lists around it as well.
-
-**Maps for your level in the plan editor**
-
-- The Farming spot window has a new tick box, "Only maps for my level". It lists the maps whose
-  monsters are from 9 levels below you to 5 above: the game's own rule for full experience and full
-  loot. Ordinary fields come first, then dungeons and the rest, each with the highest monsters first.
-  The game has to be running with your character logged in, so the bot knows your level.
-
-**Speed skills on long walks**
-
-- Wind Step and Swallow Dance (Warrior), Haste (Orc) and Shadow Steps (Assassin) were never used:
-  the bot only ever pressed skills that fight. Now a walk on foot of 25 steps or more starts with
-  the fastest of them that is ready. Not on a beast (a Swift beast casts nothing and is faster
-  anyway), not in a fight, and never a skill you set to Never.
-
-**Leap Slash to reach a monster**
-
-- A Warrior only used Leap Slash with the Powerful Leap Attack talent, and then only on a monster
-  already in reach. Without the talent it was never pressed. Now, when a monster is more than a
-  step past melee reach but inside Leap Slash's 10 yards, with a clear line to it, the Warrior
-  jumps to it instead of walking: it lands beside the monster, stunned for 2.5 seconds. Not on a
-  beast, and never if you set Leap Slash to Never. The log says "Leap Slash to reach ...".
-
-**Mages freeze the crowd before channelling**
-
-- With two or more monsters hitting the Mage, and all of them within Frost Nova's 8 yards, the
-  Mage now casts Frost Nova first. It used it only 0 to 3 times a night. A frozen monster can't
-  strike, so the Ice Arrows that follow are no longer held back or broken by it: on two recorded
-  nights the arrows right after such moments broke about half the time. The freeze ends when its
-  5 seconds run out, when anything hurts the monster, or if it strikes anyway.
-
-**Hunters jump ahead with Escape**
-
-- Escape jumps 12 tiles away from where you face, and players turn first so it carries them
-  forward. The bot never did. Now, on a long walk on foot outside a fight, a Hunter taps the key
-  for the other way, checks that the character really turned, and presses Escape: about a second
-  for 12 tiles instead of three. Only along a straight row with nothing in the way that follows
-  the planned walk, and never on a beast. Escape is still kept for emergencies the same way; set
-  it to "Emergency only" to stop the jumps ahead, or to Never to stop both. The log says "Escape
-  to jump ahead". Agent 76: the game's own facing is read, so the jump never goes the wrong way.
-  Close the game and start it again to load the new agent.
-- Escape also kites now: when a monster on top of the Hunter has been hitting and HP is under
-  90% (it waited for 60% before), the Hunter jumps 12 tiles away from it and keeps shooting while
-  it walks back. Only when the game's facing shows the jump goes away from that monster, the
-  ground behind is clear, and the target is still in range from where it lands.
-
-**The game's own report after a dungeon**
-
-- When a dungeon ends, the game sends a report of the visit: everyone's kills, damage and healing.
-  The bot now reads it (agent 75) and adds it to its line about the visit, for example "Scorpion
-  Cave: 40 kills in 15 minutes; the game's report: 46 of 46 kills, 4,581,352 damage". The game's
-  count is the true one: it includes kills the bot can't see.
-
-**For contributors: a dungeon recipe from one recorded run**
-
-- `uv run python -m unclefarmer.recipedraft <packets log> --from 12:40 --to 13:10` turns the
-  recorder's log of one hand run into a draft recipe: each map in order, where you came in and
-  left, the way walked, every NPC talked to with the menu entries chosen (in the game's own words),
-  timers and the end report. `--json` writes it to a file. New dungeons are to be built from such a
-  draft, never from a guessed menu.
-- Every Tools job (selling shards, chores, Gem Maker, dungeons and the rest) is now one entry in
-  `engine/activities.py`, which the Tools menu, the triggers, schedules and scripts all run. A new
-  job is one entry there.
-- `uv run python -m unclefarmer.picksim` plays whole simulated cave visits with every pick made by
-  the bot's own target choice and an order under test, and prints the kills of each. The bot's own
-  order (nearest walk first) came out best or within a few kills of the best in both caves, for a
-  caster and a melee character; going toward crowds of monsters did not help.
-
-**Skills outside the global cooldown are used in every fight**
-
-- Cold Winter (Mage, 20% faster attacks), Scorch (Elf, 50% more critical hits), Concentrated Will
-  (Priest, 20% less damage) and Summon Spirit (Witcher, 30% less damage) are "not affected by
-  global CD": pressing one costs no attack. Before, the bot kept the first two for a big monster or
-  a pack and the last two for emergencies, so they were never used in any recorded night.
-- Now Cold Winter and Scorch go up in every fight whenever they are ready, and Concentrated Will
-  and Summon Spirit whenever a monster is hitting you and you have lost some HP (under 90%). They
-  are pressed in the wait after each attack, so the attacks keep their pace. A skill set to Never
-  or to emergencies only in Character settings is left as you set it.
-- If you have learned Cold Winter or Scorch but put it on no key, the log now says so. The bot can
-  only press skills that are on a key.
-
-**Channelled skills wait for a gap between the monsters' swings**
-
-- Any hit you take breaks a channel (Ice Arrow, Divine Fire, Sear), with no message, and the
-  channel's time is lost. In two Mage nights, 30 to 37% of all Ice Arrows broke this way. Monsters
-  swing on a fixed clock (about every 2 seconds), so the bot now remembers when each monster last
-  swung at you and starts a channel only when it will end before the next swing. Otherwise it uses
-  a skill with no channel: for the Mage that is Magic Sphere, which does the same damage at once.
-- Tried on the recorded nights first: the rule would have held back about half of the arrows that
-  broke, and half of the arrows it held back would have broken. The older idea of "no channel for a
-  while after a hit" held back as many good channels as broken ones.
-- The Elf's Pyroblast and Blazing Storm keep their own timing (Blazing Combo makes them instant).
-
-**The experience caves: ready at the door, fighting from the first second**
-
-- Every cave visit with a pet lost 11 to 13 of its 900 seconds standing on the spawn point (measured
-  in thirteen visits, 1 to 15 November). The bot now gets ready at the cave's door, before it
-  chooses "Enter the dungeon", where no timer runs:
-  - it gets off the travel beast (or onto the fusion beast the character fights in);
-  - it calls the pet, which comes in with you. A pet that can come out within three minutes is
-    waited for at the door; one that needs longer is called inside as soon as it can;
-  - it reads the skills, puts the long buffs up and tops up HP and MP;
-  - it puts potions back on empty keys and lets a paused experience card run again. A new
-    experience card is still started inside, so that none is spent when the game turns you away.
-- Why it stood so long: the pet was called first, and the game ignores a "get off the beast"
-  pressed right after a pet has come out. The bot then waited for its next try, 8.5 seconds every
-  time. The beast is now seen to before the pet, in the caves and at the start of every farm.
-- After landing inside, the bot no longer waits a second for the map to settle, and the target
-  key is set in a few hundredths of a second a press instead of a third of a second.
-
-**Kills by damage over time are counted**
-
-- A monster that died to a damage-over-time tick (poison, burning, bleeding, a frost that keeps
-  biting) after your hit was not counted as a kill: the log said "is gone, and none of our hits
-  landed on it" and the results came out short. In one night of a character with such skills, 117
-  kills were missed this way. The game reports these deaths in a message of their own, which the
-  agent now reads (agent 74). Close the game and start it again to load the new agent.
-
-**The log says why a monster was left**
-
-- Every fight the bot picks and ends without a kill now records why, in the farming record
-  (`logs/field-<day>.jsonl`): stuck on the way, taken by someone else, another monster came into
-  reach, no clear shot, moved out of range, took no damage, and so on. Until now about a third of
-  the picks ended with no kill and nothing in the record to say why.
-- A search walk that starts with monsters in sight records how many there were, how many were left
-  out for each reason, and where the ones with no way to walk to were standing.
-- The "monsters in sight, none to fight" line names the map.
-- The night report (`nightwatch.py report`) adds these up: no-kill fights by reason with the time
-  each cost, monsters left out by reason, and the "no way to walk there" ones by map.
-- Nothing changes in how the bot fights. The times a monster is left alone are the same as before;
-  they are set in one place now instead of twelve.
-- Fixed in passing: a fight the bot had to stop for on its way to the picked monster (fighting
-  back) made the picked fight count as "never reached" in the night report, even when it was.
-- "no way to walk there" now reads "no way to walk there, or only a very long way round". Two
-  recorded nights (turkey cave and Margit Rainforest) were replayed: every monster the bot had
-  called unreachable could be walked to, by a way round of 150 to 400 steps. The bot is right to
-  leave those; the map data has no hole there.
-
-**No more picking the same monster over and over**
-
-- When the bot stops on its way to a monster because another one has come into reach, it now
-  fights that one at once. It used to hand the choice back, and when the first monster was the
-  shorter walk (round a corner, with no clear shot) it was picked again and the walk stopped
-  again at once: the same monster up to 66 times in 3 seconds, until one of the two moved.
 
 ## 1.2.0
 

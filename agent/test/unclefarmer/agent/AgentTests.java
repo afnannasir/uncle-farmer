@@ -901,9 +901,6 @@ public final class AgentTests {
         eq(World.targets(new String[] {"4152,8,Buff\n4152,64200"}), null, "a cast with no target line has none");
     }
 
-    /** IN op=42 sets an entity's HP outside a cast (damage over time): id, HP now, the change, a
-     *  sound, one more short. A monster a tick takes to 0 has no "id,0" line in op=41, so this is
-     *  the only word of its death (a packet of a live night: 2a ffffffde 00000000 fffffc8e 30e3 36c8). */
     /** After the game's connection drops, the game keeps showing its world: our character counts
      *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
     private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
@@ -925,6 +922,9 @@ public final class AgentTests {
         Memory.resetConnection();
     }
 
+    /** IN op=42 sets an entity's HP outside a cast (damage over time): id, HP now, the change, a
+     *  sound, one more short. A monster a tick takes to 0 has no "id,0" line in op=41, so this is
+     *  the only word of its death (a packet of a live night: 2a ffffffde 00000000 fffffc8e 30e3 36c8). */
     private static void aTickToZeroIsADeath() {
         long before = System.currentTimeMillis() - 1;
         World.inbound(op42(-934, 882, -500, 12515, 14024));

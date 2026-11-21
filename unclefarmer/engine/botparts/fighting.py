@@ -13,7 +13,7 @@ from typing import Any
 from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
-from .. import beasts, combat, pets, picking, teamheal
+from .. import beasts, bosses, combat, pets, picking, teamheal
 from .base import (MOVE_SHOT_REACH, STOPPING, LosingFight, Respawned, Stopped, agent_strike, note_failure,
                    skill_things, snap_map)
 from ...link import GameLink
@@ -26,7 +26,7 @@ LEFT_OUT = {
     "kind": N_("of a kind that can't be attacked here"),
     "names": N_("left out by the only-fight / never-fight names"),
     "boss": N_("too close to a boss"),
-    "elite": N_("demonized elites, left alone as the character settings say"),
+    "elite": N_("demonized elites or too close to one, left alone as the character settings say"),
     "area": N_("outside the farming area"),
     "avoid": N_("in an elite or boss zone we keep out of"),
     "far": N_("further to walk than the chase range"),
@@ -600,7 +600,8 @@ class FightingMixin(Parts):
             reach=rng)
         rules = picking.Rules(area=area, only=only, skip=skip, avoid_rects=avoid_rects, limit=limit,
                               boss_keep=self.p.get("boss_distance", 40),
-                              skip_elites=bool(self.p.get("skip_demonized_elites")))
+                              skip_elites=bool(self.p.get("skip_demonized_elites")),
+                              elites=bosses.elites_in_sight(as_bot(self), snap))
         got = picking.choose(snap, rules, notes,
                              walk=lambda e, lim: self.walk_dist(snap, e, lim),
                              doomed=lambda e, steps: self.doomed(e, me, steps, rng),

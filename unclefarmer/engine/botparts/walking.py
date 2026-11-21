@@ -335,7 +335,7 @@ class WalkingMixin(Parts):
             self.key(press[0])
 
     # A jump toward (dx, dy) goes away from where we face: the key that turns us, and the facing
-    # (agent 76 "compass", game.ak.C) it must give before the jump is pressed.
+    # (agent 77 "compass", game.ak.C) it must give before the jump is pressed.
     JUMP_TURN: dict[tuple[int, int], tuple[str, int]] = {
         (1, 0): ("left", 1), (-1, 0): ("right", 4), (0, 1): ("up", 2), (0, -1): ("down", 8)}
     JUMP_GAIN = 10.0      # the landing must be this far along the planned way, ...
@@ -358,7 +358,7 @@ class WalkingMixin(Parts):
             return False
         me = self.me()
         if "compass" not in me:
-            return False          # an agent before 74: the turn can't be checked
+            return False          # an agent before 77: the turn can't be checked
         here = (float(me["x"]), float(me["y"]))
         way = self._jump_way(here, hops)
         if way is None:

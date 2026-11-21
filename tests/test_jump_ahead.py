@@ -2,7 +2,7 @@
 """Escape to jump ahead (Phase 1b item 6, the Hunter's part): Escape jumps 12 tiles away from where
 we face, free of the global cooldown. The player turns first (a 0.1 s tap of the opposite key) so it
 carries them forward. The bot does that on a long walk on foot, only along a clear straight row that
-follows its planned way, and only once agent 76 shows the turn took."""
+follows its planned way, and only once agent 77 shows the turn took."""
 from __future__ import annotations
 
 from typing import Any
@@ -128,7 +128,7 @@ def test_no_jump_when_the_turn_didnt_take_or_the_agent_cant_tell(grid: Map) -> N
     b = JumpBot(turns=False)
     assert not b._jump_ahead([(40, 10)])
     assert [k for k, _ms in b.keys] == ["a"] and b.book.pressed == []      # turned, never jumped
-    b = JumpBot(compass=None)                                   # an agent before 74
+    b = JumpBot(compass=None)                                   # an agent before 77
     assert not b._jump_ahead([(40, 10)]) and b.keys == []
 
 

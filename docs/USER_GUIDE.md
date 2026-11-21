@@ -373,7 +373,9 @@ Uncle Farmer recognizes field bosses by name. Its list includes Pig-Face Bat Kin
 
 The bot avoids attacking these bosses. It also avoids attacking anything within 40 steps of a recognized boss.
 
-When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming.
+When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
+
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side (fighting back anything that attacks it), then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
 You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
 
@@ -395,8 +397,14 @@ Some maps have "demonized" elites (demonized Boar, demonized black bear, demoniz
 stronger than the monsters around them; one the same level as your character can still kill it,
 depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
 Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
-**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
-monsters left alone. One that attacks you is still fought, since standing there would be worse.
+**Advanced → Fighting**. Then it keeps away from them:
+
+- It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
+  the elite in. The log counts them among the monsters left alone.
+- When one comes within 30 steps, it walks to the spot furthest from it, and notes it once in the log (not spoken: elites are common).
+- Its patrol keeps 40 steps clear of the elites it has seen in the last minute.
+- One that attacks you is still fought, and so is a monster near it that attacks you, since
+  standing there would be worse. The bot never leaves the map because of an elite.
 
 ### Drop time and the next level
 
@@ -812,6 +820,14 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 
 ## Tools
+
+### Keyboard Manager
+
+Right-click a logged-in character and choose **Tools → Keyboard Manager**. Select **Capture current keys** to load the game's two combat skill pages, profession skills, number-row item slots, and quick phrases. Enter a name and choose **Save profile**. Use **New profile** to start with an empty draft, or enter a different name to save a copy.
+
+Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. An item needs to be in the bag when the profile assigns it to a new slot.
+
+Choose **Apply profile** while out of combat and with game menus closed. For automation, add **Apply keyboard profile** under **Character settings → Triggers → Before farming** or **After farming**. The Before farming list can be skipped if you start on the farming map. Use that tab's checkbox to control when it runs. Schedules can run either trigger sequence or a saved script with a `keyboard_profile` command. Place that command at the point where your script needs a different layout.
 
 ### Sound Silencer
 

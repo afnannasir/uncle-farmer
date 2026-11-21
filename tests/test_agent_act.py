@@ -51,7 +51,7 @@ class Bot(BagMixin, FightingMixin, HealthMixin):
     def ui(self) -> dict[str, Any]:
         return {"target": self.link.target}
 
-    def bag_cursor(self, name: str) -> str | None:                 # the arrow-key way, stood in for
+    def bag_cursor(self, name: str, *, item_type: int | None = None) -> str | None:   # the arrow-key way, stood in for
         self.cursor_asked.append(name)
         return name
 

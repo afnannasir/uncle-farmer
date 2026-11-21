@@ -539,7 +539,8 @@ def test_loop_wanders_to_a_random_cell() -> None:
     b = Farm()
     calls: list[tuple[int, Sequence[float] | None, dict[str, Any], int]] = []
 
-    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
+    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                    **_kw: Any) -> tuple[int, int] | None:
         calls.append((map_id, area, me, radius))
         return (7, 7)
 
@@ -552,7 +553,10 @@ def test_loop_wanders_to_a_random_cell() -> None:
 
 def test_loop_sleeps_when_there_is_nowhere_to_walk() -> None:
     b = Farm()
-    b.random_cell = lambda map_id, area, me, radius=40: None
+    def nowhere(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                **_kw: Any) -> tuple[int, int] | None:
+        return None
+    b.random_cell = nowhere
     run_loop(b, passes=2)
     assert b.sleeps == [1.0, 1.0]
     assert b.walk_calls == []
@@ -992,6 +996,41 @@ def test_random_cell_respects_one_way_gates(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(farming.random, "randint", randint_seq([8, 9, 2, 2]))
     assert b.random_cell(1, (1, 1, 8, 9), {"x": 5, "y": 5}) == (2, 2)
     assert m.two_way_calls == 1
+
+
+def test_random_cell_keeps_clear_of_bosses_and_their_zones(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Farm()
+    comps = {c: 1 for c in grid()}
+    m = Model(grid(), comps=comps)
+    monkeypatch.setattr(farming.atlas, "model", stand_in(farming.atlas.model, lambda mid: m))
+    monkeypatch.setattr(farming.random, "randint", randint_seq([8, 9, 7, 2, 2, 2]))
+    # (8, 9) is within 3 steps of a boss at (8, 8); (7, 2) is in a boss zone; (2, 2) is clear
+    got = b.random_cell(1, (1, 1, 8, 9), {"x": 5, "y": 5}, clear_of=[(8.0, 8.0, 3.0)], keep_out=[(6, 1, 8, 3)])
+    assert got == (2, 2)
+
+
+def test_the_patrol_loop_skips_cells_near_a_boss() -> None:
+    loop = [(1, 1), (5, 5), (9, 9)]
+    assert farming._next_clear(loop, 0, [(1.0, 1.0, 2.0)]) == ((5, 5), 2)
+    assert farming._next_clear(loop, 2, [(9.0, 9.0, 2.0)]) == ((1, 1), 1)
+    assert farming._next_clear(loop, 1, []) == ((5, 5), 2)
+    everywhere = [(5.0, 5.0, 100.0)]
+    assert farming._next_clear(loop, 1, everywhere) == ((5, 5), 2)    # nowhere clear: on anyway
+
+
+def test_the_loop_wanders_without_the_no_go_when_nothing_else_turns_up() -> None:
+    b = Farm()
+    calls: list[dict[str, Any]] = []
+
+    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                    **kw: Any) -> tuple[int, int] | None:
+        calls.append(kw)
+        return None if kw else (7, 7)
+
+    b.random_cell = random_cell
+    run_loop(b, avoid=[(1, 1, 2, 2)])
+    assert b.walk_calls == [(7, 7)]
+    assert calls == [{"clear_of": [], "keep_out": [(1, 1, 2, 2)]}, {}]
 
 
 def test_random_cell_gives_up_after_many_tries(monkeypatch: pytest.MonkeyPatch) -> None:

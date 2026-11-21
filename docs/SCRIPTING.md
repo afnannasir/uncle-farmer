@@ -1261,11 +1261,14 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Keys and healing
 
+    keyboard_profile <name>
     key <key> [ms]
     hold <key> <s>
     wait <s>
     heal
     hearthstone
+
+`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script. Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
 
 ### Messages and values
 

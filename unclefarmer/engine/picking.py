@@ -37,6 +37,7 @@ class Rules:
     limit: float | None = None               # the chase range in steps (not for attackers)
     boss_keep: float = 40                    # keep this far from a boss (0: bosses aren't looked for)
     skip_elites: bool = False                # leave demonized elites alone (skip_demonized_elites)
+    elites: Sequence[dict[str, Any]] = ()    # with skip_elites: the elites in sight, kept ELITE_CLEAR from
 
 
 @dataclass(frozen=True)
@@ -178,8 +179,9 @@ def left_out(e: dict[str, Any], map_id: Any, rules: Rules, notes: Notes, boss_li
         return "names"
     if boss_list and (bosses.is_boss(e) or bosses.too_close(e, boss_list, rules.boss_keep)):
         return "boss"
-    if not hit and rules.skip_elites and bosses.is_demonized_elite(e):
-        return "elite"      # one that attacks us is still fought: standing there is worse
+    if not hit and rules.skip_elites and (
+            bosses.is_demonized_elite(e) or bosses.too_close(e, list(rules.elites), bosses.ELITE_CLEAR)):
+        return "elite"      # it, or a monster it would join the fight for; one that attacks us is still fought
     area = rules.area
     if area and not hit and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
         return "area"

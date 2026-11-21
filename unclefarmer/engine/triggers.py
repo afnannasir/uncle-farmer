@@ -30,7 +30,7 @@ from .. import jsonio
 from ..errors import carry_on
 from ..i18n import N_, _
 from ..link import AgentError
-from . import activities, town
+from . import activities, keyboard, town
 from .botparts.base import GameBroken, Stopped
 
 if TYPE_CHECKING:
@@ -57,7 +57,9 @@ class TriggerFailed(Stopped):
 
 
 def step(action: str, delay: object = 0, enabled: object = True, deterministic: object = False) -> dict[str, Any]:
-    if action not in dict(TOOLS) and not (action.startswith("script:") and action[7:].strip()):
+    if action.startswith(keyboard.ACTION_PREFIX):
+        keyboard.profile_name(action.removeprefix(keyboard.ACTION_PREFIX))
+    elif action not in dict(TOOLS) and not (action.startswith("script:") and action[7:].strip()):
         raise ValueError(_("Choose a tool or a saved script."))
     if (isinstance(delay, bool) or not isinstance(delay, (int, float)) or not math.isfinite(delay) or delay < 0
             or delay > MAX_DELAY):
@@ -116,6 +118,8 @@ def what(job: str) -> str:
     """What the log calls the job ("selling shards")."""
     if job.startswith("script:"):
         return _("script {name}", name=job[7:])
+    if job.startswith(keyboard.ACTION_PREFIX):
+        return _("Apply keyboard profile {name}", name=job.removeprefix(keyboard.ACTION_PREFIX))
     return _(dict(TOOLS).get(job, job))
 
 
@@ -123,6 +127,8 @@ def action_text(b: Bot, action: str) -> str:
     """The script a step that isn't one of JOBS runs: a saved script's text, or the tool's own
     command (Dungeons with the ending place saved in Tools, Dungeons, as the Tools menu runs it)."""
     from .plan import script_path
+    if action.startswith(keyboard.ACTION_PREFIX):
+        return keyboard.command(action.removeprefix(keyboard.ACTION_PREFIX)) + "\n"
     if action.startswith("script:"):
         try:
             with open(script_path(action[7:]), encoding="utf-8-sig") as source:

@@ -5,16 +5,19 @@ from typing import Any
 
 import wx
 
-from ..engine import plan, triggers
+from ..engine import keyboard, plan, triggers
 from ..i18n import _
 from .common import ContextAction, Dialog, Form, buttons, error, labeled, ok_cancel, opens, popup_actions, read_decimal
 
 
 class StepEditor(Dialog):
-    def __init__(self, parent: wx.Window | None, row: dict[str, Any] | None = None) -> None:
+    def __init__(self, parent: wx.Window | None, row: dict[str, Any] | None = None, *,
+                 keyboard_names: tuple[str, ...] = ()) -> None:
         super().__init__(parent, title=_("Trigger action"))
         row = row or triggers.step("restock")
-        self.actions = [job for job, _label in triggers.TOOLS] + ["script:" + name for name in plan.script_names()]
+        self.keyboard_actions = [keyboard.ACTION_PREFIX + name for name in keyboard_names]
+        self.actions = ([job for job, _label in triggers.TOOLS] + self.keyboard_actions
+                        + ["script:" + name for name in plan.script_names()])
         if row["action"] not in self.actions:
             self.actions.append(row["action"])  # show a removed script so it can be repaired
         self.fields: dict[str, Any] = {}
@@ -37,6 +40,8 @@ class StepEditor(Dialog):
         row = triggers.step(self.actions[self.action.GetSelection()], delay, self.enabled.GetValue(), self.strict.GetValue())
         if row["action"].startswith("script:") and row["action"][7:] not in plan.script_names():
             raise ValueError(_("That script no longer exists. Choose another action."))
+        if row["action"].startswith(keyboard.ACTION_PREFIX) and row["action"] not in self.keyboard_actions:
+            raise ValueError(_("That keyboard profile no longer exists. Choose another action."))
         return row
 
     def on_ok(self, _evt: wx.Event) -> None:
@@ -49,9 +54,10 @@ class StepEditor(Dialog):
 
 
 class SequenceEditor(wx.Panel):
-    def __init__(self, parent: wx.Window, cfg: dict[str, Any]) -> None:
+    def __init__(self, parent: wx.Window, cfg: dict[str, Any], *, keyboard_names: tuple[str, ...] = ()) -> None:
         super().__init__(parent)
         self.rows: list[dict[str, Any]] = [dict(row) for row in cfg["steps"]]
+        self.keyboard_names = keyboard_names
         box = wx.BoxSizer(wx.VERTICAL)
         self.list = labeled(self, box, _("Actions in execution &order:"), lambda w: wx.ListBox(w, size=wx.Size(-1, 150)), 1)
         buttons(self, box, (opens(_("&Add")), lambda e: self.edit()))
@@ -88,7 +94,7 @@ class SequenceEditor(wx.Panel):
     def edit(self, index: int | None = None) -> None:
         if index is not None and not 0 <= index < len(self.rows):
             return
-        with StepEditor(self, self.rows[index] if index is not None else None) as d:
+        with StepEditor(self, self.rows[index] if index is not None else None, keyboard_names=self.keyboard_names) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             if index is None:

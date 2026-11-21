@@ -333,7 +333,7 @@ final class Memory {
         int id = intField(world, W_SELF_ID);
         Object me = selfEntity(world);
         entity(me, id, sb);
-        if (has(me, E_COMPASS)) {             // (agent 76) which way a jump backward goes
+        if (has(me, E_COMPASS)) {             // (agent 77) which way a jump backward goes
             sb.setLength(sb.length() - 1);
             sb.append(",\"compass\":").append(intField(me, E_COMPASS)).append('}');
         }
