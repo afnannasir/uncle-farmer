@@ -699,9 +699,6 @@ msgstr ""
 msgid "(was {n})"
 msgstr ""
 
-msgid "({n} fused)"
-msgstr ""
-
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
 msgstr ""
 
@@ -3381,6 +3378,10 @@ msgstr ""
 msgid "Put the pet &away when the run ends"
 msgstr "Ç&alışma bitince evcil hayvanı geri çağır"
 
+msgid ""
+"Put the potions made into the town st&orehouse, then make more, a bagful at a time (your numbers then count the storehouse too)"
+msgstr ""
+
 msgid "Quantity"
 msgstr ""
 
@@ -4531,6 +4532,10 @@ msgstr "Önce depo, sonra Parça pazarı"
 
 msgid "The storehouse only"
 msgstr "Yalnızca depo"
+
+msgid ""
+"The storehouse's potions count too: Check only reads them. It goes a bagful at a time."
+msgstr ""
 
 msgid "The strongest one"
 msgstr "En güçlüsü"
@@ -5797,6 +5802,9 @@ msgstr "çantada {item} eşyasına ulaşılamadı"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "beceri panelinde {skill} becerisine ulaşılamadı"
 
+msgid "couldn't read the storehouse's list: only the bag counts"
+msgstr ""
+
 msgid "couldn't respawn - please do it by hand"
 msgstr "yeniden doğulamadı - lütfen elle yap"
 
@@ -6468,9 +6476,6 @@ msgstr "{item} azaldı: {have} kaldı"
 
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Seviye {lv} {kind} Geliştirme Kristali yapıldı"
-
-msgid "made {n} batches of potions"
-msgstr ""
 
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "istenen {want} {gem} içinden {n} tane yapıldı; çantada {have}"
@@ -7231,6 +7236,10 @@ msgstr ""
 msgid "road"
 msgstr "yol"
 
+msgid ""
+"round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
 msgid "route to {map}: {steps}"
 msgstr "{map} rotası: {steps}"
 
@@ -7677,7 +7686,8 @@ msgstr ""
 msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
 msgstr ""
 
-msgid "the Potion Maker is done{fused}"
+msgid ""
+"the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
 
 msgid "the Secret room Manager summoned no assistant"
@@ -7722,11 +7732,11 @@ msgstr "uygulama o sırada çalışmıyordu"
 msgid "the bag"
 msgstr "çanta"
 
-msgid "the bag already has the potions asked for"
-msgstr ""
-
 msgid "the bag cursor is out of range"
 msgstr "çanta imleci menzil dışında"
+
+msgid "the bag has no room for more Bloods and Pelts"
+msgstr ""
 
 msgid "the bag is empty - nothing to throw away"
 msgstr "çanta boş - atılacak bir şey yok"
@@ -8103,6 +8113,9 @@ msgid ""
 "the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 "planın karakterinin kayıtlı hesabı ya da sunucusu yok. Önce bir kez onunla giriş yap."
+
+msgid "the potions asked for are already there"
+msgstr ""
 
 msgid "the ride from {map} never arrived"
 msgstr "{map} haritasından binilen araç hiç varmadı"

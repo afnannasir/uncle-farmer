@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+**Potion Maker: a bagful at a time, into the storehouse**
+
+- New tick box: put the potions made into the town storehouse. The Potion Maker then works a bagful
+  at a time: it fills the bag with Bloods and Pelts up to its full mark, makes and fuses, puts the
+  potions in the storehouse and goes again until your numbers are there. With the box ticked, the
+  numbers count what the storehouse holds too, and the potions you had in the bag stay there.
+- A bag over its full mark no longer matters while making and fusing: only the Bloods and Pelts
+  brought in are held to the full mark, so what is already in the bag is always used.
+- The gold limit for materials counts every round of the run. Not yet tried by the bot in the game.
+
 **New: Tools, Potion Maker (Ctrl+Shift+O)**
 
 - The gang Pharmacist makes potions from Bloods and Pelts ("Make Medicine", 50 or 45 a batch for a

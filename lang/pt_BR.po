@@ -702,9 +702,6 @@ msgstr ""
 msgid "(was {n})"
 msgstr ""
 
-msgid "({n} fused)"
-msgstr ""
-
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
 msgstr ""
 
@@ -3410,6 +3407,10 @@ msgstr ""
 msgid "Put the pet &away when the run ends"
 msgstr "&Guardar o mascote ao término da execução"
 
+msgid ""
+"Put the potions made into the town st&orehouse, then make more, a bagful at a time (your numbers then count the storehouse too)"
+msgstr ""
+
 msgid "Quantity"
 msgstr ""
 
@@ -4587,6 +4588,10 @@ msgstr "Primeiro o depósito, depois o Mercado de Fragmentos"
 
 msgid "The storehouse only"
 msgstr "Somente no depósito"
+
+msgid ""
+"The storehouse's potions count too: Check only reads them. It goes a bagful at a time."
+msgstr ""
 
 msgid "The strongest one"
 msgstr "O mais forte"
@@ -5864,6 +5869,9 @@ msgstr "não foi possível acessar {item} na bolsa"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "não foi possível acessar {skill} no painel de habilidades"
 
+msgid "couldn't read the storehouse's list: only the bag counts"
+msgstr ""
+
 msgid "couldn't respawn - please do it by hand"
 msgstr "não foi possível renascer — faça isso manualmente"
 
@@ -6538,9 +6546,6 @@ msgstr "pouco {item}: restam {have}"
 
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "criou {n} cristais de aprimoramento de {kind} nível {lv}"
-
-msgid "made {n} batches of potions"
-msgstr ""
 
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "criou {n} das {want} gemas {gem} solicitadas; há {have} na bolsa"
@@ -7319,6 +7324,10 @@ msgstr ""
 msgid "road"
 msgstr "estrada"
 
+msgid ""
+"round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
 msgid "route to {map}: {steps}"
 msgstr "rota até {map}: {steps}"
 
@@ -7766,7 +7775,8 @@ msgstr ""
 msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
 msgstr ""
 
-msgid "the Potion Maker is done{fused}"
+msgid ""
+"the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
 
 msgid "the Secret room Manager summoned no assistant"
@@ -7813,11 +7823,11 @@ msgstr "o aplicativo não estava em execução naquele momento"
 msgid "the bag"
 msgstr "a bolsa"
 
-msgid "the bag already has the potions asked for"
-msgstr ""
-
 msgid "the bag cursor is out of range"
 msgstr "o cursor da bolsa está fora do intervalo"
+
+msgid "the bag has no room for more Bloods and Pelts"
+msgstr ""
 
 msgid "the bag is empty - nothing to throw away"
 msgstr "a bolsa está vazia — nada para descartar"
@@ -8201,6 +8211,9 @@ msgid ""
 "the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 "o personagem do plano não tem conta ou servidor salvo. Entre nele uma vez primeiro."
+
+msgid "the potions asked for are already there"
+msgstr ""
 
 msgid "the ride from {map} never arrived"
 msgstr "o transporte de {map} não chegou"

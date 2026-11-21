@@ -48,6 +48,8 @@ class PotionMakerDialog(ToolDialog):
         self.keep_small = f.number(_("Keep at least this many of each &Small potion:"), c["keep_small"], 0, 1000000)
         self.keep_medium = f.number(_("Keep at least this many of each M&edium potion:"), c["keep_medium"], 0,
                                     1000000)
+        self.store = f.check(_("Put the potions made into the town st&orehouse, then make more, a bagful at a time "
+                               "(your numbers then count the storehouse too)"), c["store"])
         f = group(panel, box, _("Pharmacist and spending"))
         where = c.get("where", "gang")
         self.where = f.choice(_("&Pharmacist:"), [_("My own gang's (gangs pay less)"), _("Another gang's, by its name")],
@@ -79,6 +81,7 @@ class PotionMakerDialog(ToolDialog):
             spin.Bind(wx.EVT_SPINCTRL, changed)
         for choice in (self.way, self.fuse_up, self.supply):
             choice.Bind(wx.EVT_CHOICE, changed)
+        self.store.Bind(wx.EVT_CHECKBOX, changed)
         self.root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         self.finish_layout()
         self.sync()
@@ -95,7 +98,8 @@ class PotionMakerDialog(ToolDialog):
                 "way": pm.WAYS[self.way.GetSelection()], "fuse_up": pm.FUSE_UP[self.fuse_up.GetSelection()],
                 "keep_small": self.keep_small.GetValue(), "keep_medium": self.keep_medium.GetValue(),
                 "supply": pm.SUPPLIES[self.supply.GetSelection()], "gold_cap": self.gold_cap.GetValue(),
-                "prices": {m: s.GetValue() for m, s in self.prices.items() if s.GetValue()}}
+                "prices": {m: s.GetValue() for m, s in self.prices.items() if s.GetValue()},
+                "store": self.store.GetValue()}
 
     def plan_lines(self) -> list[str]:
         p = pm.plan(self.bag, self.settings_now())
@@ -106,6 +110,8 @@ class PotionMakerDialog(ToolDialog):
         lines = pm.describe(p, fees.get(where) or {})
         if p.batches and not fees.get(where):
             lines.append(_("The fees are read off the Pharmacist's pages (Check only shows them)."))
+        if self.store.GetValue():
+            lines.append(_("The storehouse's potions count too: Check only reads them. It goes a bagful at a time."))
         return lines
 
     def sync(self) -> None:

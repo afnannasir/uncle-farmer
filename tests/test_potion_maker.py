@@ -12,7 +12,7 @@ import pytest
 
 from conftest import Clock, as_bot
 from test_crafting import Bot as CraftBot, add, entry
-from unclefarmer.engine import activities, chores, crafting, market, potionmaker as pm, script, town
+from unclefarmer.engine import activities, bagrules, chores, crafting, market, potionmaker as pm, script, town
 from unclefarmer.engine.bot import Stopped
 
 FEE = 608
@@ -118,7 +118,8 @@ class Pharmacist:
 @pytest.fixture
 def game(monkeypatch: pytest.MonkeyPatch) -> Any:
     def make(bag: dict[str, int], arnebia: int = 10 ** 7, storage: dict[str, int] | None = None,
-             lots: list[market.Lot] | None = None) -> tuple[Bot, Pharmacist, dict[str, Any]]:
+             lots: list[market.Lot] | None = None, weights: dict[str, float] | None = None,
+             maxload: float = 0) -> tuple[Bot, Pharmacist, dict[str, Any]]:
         b = Bot(bag=[{"name": "Arnebia", "count": arnebia}] + [{"name": n, "count": k} for n, k in bag.items()],
                 profile={"gem_keep_arnebia": 0})
         ph = Pharmacist(b)
@@ -154,28 +155,63 @@ def game(monkeypatch: pytest.MonkeyPatch) -> Any:
             return k
         monkeypatch.setattr(crafting, "take_from_storage", take)
 
-        def read_pages(bot: Bot, cat: int, order: int, on_page: Any, first: int = 1, most: int = 0) -> int:
-            on_page(market.Page(cat=cat, order=order, page=1, last=1, unread=0, top={},
-                                lots=sorted(lots or [], key=lambda x: x.price)))
-            return 1
-        monkeypatch.setattr(market, "read_pages", read_pages)
-
-        def buy(bot: Bot, orders: list[market.Order], cap: int = 0, check: bool = False) -> list[tuple[market.Order, str, str]]:
-            out: list[tuple[market.Order, str, str]] = []
-            spent = 0
-            for o in orders:
-                cost = o.qty * o.lot.price
-                if cap and spent + cost > cap:
-                    out.append((o, market.CAP, "cap"))
-                    continue
-                spent += cost
-                add(b, o.lot.name, o.qty)
-                seen["bought"].append((o.lot.name, o.qty, o.lot.price))
-                out.append((o, market.BOUGHT, "bought"))
-            return out
-        monkeypatch.setattr(market, "buy", buy)
+        _pretend_market(monkeypatch, b, seen, lots)
+        _pretend_storehouse(monkeypatch, b, seen, weights, maxload)
         return b, ph, seen
     return make
+
+
+def _pretend_market(monkeypatch: pytest.MonkeyPatch, b: Bot, seen: dict[str, Any], lots: list[market.Lot] | None) -> None:
+    """The player market: one page, cheapest first; a lot sells out as it is bought."""
+    def read_pages(bot: Bot, cat: int, order: int, on_page: Any, first: int = 1, most: int = 0) -> int:
+        on_page(market.Page(cat=cat, order=order, page=1, last=1, unread=0, top={},
+                            lots=sorted((x for x in lots or [] if x.qty > 0), key=lambda x: x.price)))
+        return 1
+    monkeypatch.setattr(market, "read_pages", read_pages)
+
+    def buy(bot: Bot, orders: list[market.Order], cap: int = 0, check: bool = False) -> list[tuple[market.Order, str, str]]:
+        out: list[tuple[market.Order, str, str]] = []
+        spent = 0
+        for o in orders:
+            cost = o.qty * o.lot.price
+            if cap and spent + cost > cap:
+                out.append((o, market.CAP, "cap"))
+                continue
+            spent += cost
+            o.lot.qty -= o.qty                      # sold: the market has that much less
+            add(b, o.lot.name, o.qty)
+            seen["bought"].append((o.lot.name, o.qty, o.lot.price))
+            out.append((o, market.BOUGHT, "bought"))
+        return out
+    monkeypatch.setattr(market, "buy", buy)
+
+
+def _pretend_storehouse(monkeypatch: pytest.MonkeyPatch, b: Bot, seen: dict[str, Any], weights: dict[str, float] | None,
+                        maxload: float) -> None:
+    """Item weights, the sheet's load (maxload 0: no sheet), deposits and the storehouse's list."""
+    weight = {k.lower(): v for k, v in (weights or {}).items()}
+    monkeypatch.setattr(bagrules, "weights", lambda: dict(weight))
+    def learn_weight(*_args: Any) -> None:
+        return None
+    monkeypatch.setattr(bagrules, "learn_weight", learn_weight)
+
+    def sheet(force: bool = False) -> dict[str, Any] | None:
+        if not maxload:
+            return None
+        return {"maxload": maxload, "load": sum(r["count"] * weight.get(r["name"].lower(), 0) for r in b.bag)}
+    b.refresh_sheet = sheet                         # type: ignore[method-assign]
+
+    def deposit(bot: Any, item: str, n: int | None = None) -> int:
+        k = min(count(b, item), n if n is not None else 10 ** 9)
+        add(b, item, -k)
+        seen["storage"][item] = seen["storage"].get(item, 0) + k
+        seen.setdefault("deposits", []).append((item, k))
+        return k
+    monkeypatch.setattr(town, "deposit", deposit)
+
+    def stored_counts(bot: Any, names: Any) -> dict[str, int]:
+        return {n: seen["storage"].get(n, 0) for n in names}
+    monkeypatch.setattr(pm, "stored_counts", stored_counts)
 
 
 def lot(i: int, name: str, qty: int, price: int) -> market.Lot:
@@ -339,3 +375,53 @@ def test_a_job_and_a_script_command() -> None:
     assert activities.get("potion_maker").checks
     main, _subs, _stop = script.parse("potion_maker check\npotion_maker\n")
     assert [(n.kind, n.opts.get("check")) for n in main] == [("potion_maker", True), ("potion_maker", False)]
+
+
+# ---------------------------------------------------------------------------------------- a bagful at a time
+def test_a_bagful_at_a_time_into_the_storehouse(game: Any) -> None:
+    # 10 load free, a Lesser Blood weighs 1: 5 batches a bagful (10 Lesser Blood)
+    b, ph, seen = game({}, storage={"Lesser Blood": 100}, weights={"Lesser Blood": 1.0}, maxload=10)
+    pm.run(b, job(targets={"Small Red Potion": 300}, supply="storage", store=True))
+    assert ph.made == ["Small Red Potion"] * 6
+    assert seen["deposits"] == [("Small Red Potion", 250), ("Small Red Potion", 50)]
+    assert seen["storage"]["Small Red Potion"] == 300 and count(b, "Small Red Potion") == 0
+    assert any("round 2: 1 batches made" in line for line in b.lines)
+
+
+def test_the_storehouse_counts_and_the_bags_own_potions_stay(game: Any) -> None:
+    b, ph, seen = game({"Lesser Blood": 10, "Small Red Potion": 30}, storage={"Small Red Potion": 200})
+    pm.run(b, job(targets={"Small Red Potion": 280}, store=True))
+    assert ph.made == ["Small Red Potion"]                 # 30 in the bag + 200 stored + 50 made = 280
+    assert seen["deposits"] == [("Small Red Potion", 50)] and count(b, "Small Red Potion") == 30
+
+
+def test_smalls_fused_up_go_in_and_the_rest_waits_in_the_bag(game: Any) -> None:
+    b, ph, seen = game({"Lesser Blood": 4}, weights={"Lesser Blood": 1.0}, maxload=100)
+    pm.run(b, job(targets={"Medium Red Potion": 15}, store=True))
+    assert ph.fused == [("Medium Red Potion", 15)]
+    assert seen["deposits"] == [("Medium Red Potion", 15)]
+    assert count(b, "Small Red Potion") == 25                # 100 made, 75 fused: the rest stays for next time
+
+
+def test_making_and_fusing_go_on_in_a_bag_over_its_full_mark(game: Any) -> None:
+    # the load is over the bag's limit: no room for more materials, but what is in the bag is still used
+    b, ph, _seen = game({"Lesser Blood": 4, "Small Blue Potion": 50}, weights={"Lesser Blood": 30.0}, maxload=100)
+    pm.run(b, job(targets={"Small Red Potion": 100, "Medium Blue Potion": 10}))
+    assert ph.made == ["Small Red Potion"] * 2 and ph.fused == [("Medium Blue Potion", 10)]
+
+
+def test_a_full_bag_with_nothing_to_use_says_so(game: Any) -> None:
+    b, ph, _seen = game({"Small Red Potion": 1}, storage={"Lesser Blood": 50}, weights={"Small Red Potion": 200.0,
+                        "Lesser Blood": 1.0}, maxload=100)
+    pm.run(b, job(targets={"Small Red Potion": 500}, supply="storage"))
+    assert ph.made == []
+    assert any("no room for more Bloods and Pelts" in line for line in b.lines)
+
+
+def test_the_gold_limit_counts_every_round(game: Any) -> None:
+    lots = [lot(1, "Lesser Pelt", 1000, 10)]
+    b, ph, seen = game({}, lots=lots, weights={"Lesser Pelt": 1.0}, maxload=4)
+    pm.run(b, job(targets={"Small Blue Potion": 500}, supply="buy", gold_cap=100, store=True))
+    # 4 Lesser Pelt a bagful for 40 gold: two bagfuls fit under 100, the third doesn't
+    assert [q for _n, q, _p in seen["bought"]] == [4, 4]
+    assert ph.made == ["Small Blue Potion"] * 4
