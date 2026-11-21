@@ -139,6 +139,13 @@ def listen(bot: Bot, mid: int) -> Hunt | None:
     return hunt
 
 
+def lanes(lo: int, hi: int, lane: int = LANE) -> list[int]:
+    """Where the lanes run across [lo, hi]: half a lane in, then a lane apart. A side narrower
+    than half a lane still gets one, down its middle (a long narrow patrol area had none at
+    all, and was taken for searched before a step was walked)."""
+    return list(range(lo + lane // 2, hi + 1, lane)) or [(lo + hi) // 2]
+
+
 def sweep_points(mid: int, area: Sequence[float] | None, me: dict[str, Any],
                  lane: int = LANE) -> list[tuple[int, int]]:
     """Walkable points along lanes `lane` apart over the area (the whole map without one), lane by
@@ -149,8 +156,8 @@ def sweep_points(mid: int, area: Sequence[float] | None, me: dict[str, Any],
     ours = m.comp_of(mx, my) if m.ok(mx, my) else None
     x0, y0, x1, y1 = (int(v) for v in (area or (1, 1, m.w, m.h)))
     out: list[tuple[int, int]] = []
-    for i, y in enumerate(range(y0 + lane // 2, y1 + 1, lane)):
-        xs = list(range(x0 + lane // 2, x1 + 1, lane))
+    xs = lanes(x0, x1, lane)
+    for i, y in enumerate(lanes(y0, y1, lane)):
         for x in (xs if i % 2 == 0 else xs[::-1]):
             c = m.nearest_walkable(x, y, radius=lane // 3)
             if c is None or m.portal[c[1], c[0]] or (ours is not None and m.comp_of(c[0], c[1]) != ours):

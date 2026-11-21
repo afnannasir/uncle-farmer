@@ -178,6 +178,21 @@ def test_the_sweep_points_cover_the_area_in_lanes() -> None:
     assert len(ys) >= 3                         # several lanes, LANE apart
 
 
+def test_a_long_narrow_patrol_area_still_has_points_down_its_length() -> None:
+    """30 tiles wide, 250 long on Underwater World: narrower than half a lane, it had no point at
+    all and the hunt said the area was searched at once (found in review)."""
+    pts = chesthunt.sweep_points(5361, (135, 110, 165, 360), {"x": 150, "y": 200})
+    assert len(pts) >= 2
+    assert all(120 <= x <= 180 for x, _y in pts)              # down the middle, within reach of it
+    assert max(y for _x, y in pts) - min(y for _x, y in pts) >= chesthunt.LANE
+
+
+def test_a_side_narrower_than_half_a_lane_gets_one_lane_down_its_middle() -> None:
+    assert chesthunt.lanes(135, 165) == [150]
+    assert chesthunt.lanes(110, 360) == [160, 260, 360]
+    assert chesthunt.lanes(5, 5) == [5]
+
+
 # ---------------------------------------------------------------- maps too quick to hunt on
 def chest_lasting(b: Hunter, seconds: float, opened: bool = True) -> None:
     """One chest of the map: announced, then opened `seconds` later (or never)."""
