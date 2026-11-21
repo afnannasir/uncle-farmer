@@ -242,6 +242,7 @@ class FarmingMixin(Parts):
         with self.timed("town"):
             if why:
                 self.restock_now()
+                teamlead.after_trip(as_bot(self))    # members gone offline, when checked in town only
                 self.log(_("back to {map} after {why}", map=atlas.label(map_id), why=why))
             else:
                 self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))

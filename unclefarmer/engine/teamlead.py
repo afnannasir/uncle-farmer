@@ -23,8 +23,9 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, cast
 
-from .. import sounds, trust
+from .. import gamekeys, sounds, trust
 from ..i18n import _
+from . import chores
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -40,6 +41,11 @@ FRIENDS = r"^\s*friends\s*$"
 JOINED = re.compile(r"^\s*(.+?) joined the team", re.I)
 JOIN_WAIT = 3.0             # "joined the team" came at once live; a slow server gets three seconds
 MOST_APPLICANTS = 15        # rows looked at in one list (the script's bound too)
+MEMBER = re.compile(r"^\s*([^;,]+);(\d+)\s*$")     # a member list row: "<name>;<id>"
+REMOVE = r"^\s*remove\s*$"
+CONFIRM = r"^\s*Confirm\s*$"
+INFO_LEAST, INFO_MOST = 1.5, 6.0
+MOST_OPENINGS = 8           # member lists opened in one offline check (one per removal)
 
 
 @dataclass
@@ -49,6 +55,7 @@ class TeamLead:
     pending: bool = False              # a request was heard and not looked at yet
     left_waiting: set[str] = field(default_factory=set[str])   # not allowed in: said once each
     friends: trust.Trusted | None = None                       # the game's friends, read once a run
+    offline_at: float | None = None    # when members were last checked for being offline
     told: set[str] = field(default_factory=set[str])
 
 
@@ -278,23 +285,169 @@ def _joined(b: Bot, mark: int, wanted: list[str]) -> list[str]:
     return got
 
 
+# ------------------------------------------------------------------ members who went offline
+def plain(text: str) -> str:
+    """A spoken line without the game's markup: "(1(Bob)1)|||((,12;))|||Elf" -> "Bob,12;Elf"."""
+    text = text.replace(">||<", "").replace("|||", "")
+    return re.sub(r"\(\d?\(|\)\d?\)", "", text).strip()
+
+
+def answer_wait(lag: int | None) -> float:
+    """How long the info key's answer may take: it came within a second at 120 ms of lag; four
+    times the lag on top of half a second, never under 1.5 s nor over 6 s (the script's cap)."""
+    return min(INFO_MOST, max(INFO_LEAST, 0.5 + 4 * (lag or 0) / 1000.0))
+
+
+def members(b: Bot, top: dict[str, Any]) -> list[tuple[int, str, int]]:
+    """(row, name, id) of each member in the team's member list ("<name>;<id>" first in a row)."""
+    out: list[tuple[int, str, int]] = []
+    for r, row in enumerate(rows(top)):
+        first = row[0] if row else None
+        texts = b.entry_texts(first) if first else []
+        m = MEMBER.match(texts[0]) if texts else None
+        if m:
+            out.append((r, m.group(1).strip(), int(m.group(2))))
+    return out
+
+
+def _member_list(b: Bot) -> tuple[dict[str, Any], int | None] | None:
+    """The member list of the team we lead, open, and the lag; None (closed) when we don't lead one."""
+    top = open_action_menu(b)
+    if top is None:
+        return None
+    lag = lag_ms(b, top)
+    team = team_entry(b, top)
+    if team is None or not leads(b, top, team[0]):
+        b.close_dialogs()
+        _once(b, "not leader", _("team: this character doesn't lead a team"))
+        return None
+    if b.choose(r"^\s*%s\s*$" % re.escape(team[1])) is None:
+        return None
+    d = b.wait_dialog(3.0)
+    top = (d or {}).get("top")
+    if not top or not members(b, top):
+        b.close_dialogs()
+        return None
+    return top, lag
+
+
+def online(b: Bot, top: dict[str, Any], row: int, name: str, pid: int, wait: float) -> bool | None:
+    """Ask the game about the member on row (the info key with the cursor on them): True when it
+    answers "<name>,<id>;", False when it says nothing in time, None when the cursor didn't get there."""
+    if b.cursor_to(top, row, 0) is None:
+        return None
+    want = "%s,%d;" % (name.lower(), pid)
+    mark = chores.said_mark(b)
+    b.key(gamekeys.info_key())
+    end = b.clock.time() + wait
+    while True:
+        if any(plain(s).lower().startswith(want) for s in chores.said_since(b, mark)):
+            return True
+        if b.clock.time() >= end:
+            return False
+        b.sleep(0.1)
+
+
+def _remove(b: Bot, name: str, pid: int) -> bool:
+    mark = chat_mark(b)
+    if b.choose(REMOVE, row=r"^\s*%s;%d\b" % (re.escape(name), pid)) is None:
+        return False
+    if b.wait_dialog(3.0) is None or b.choose(CONFIRM) is None:
+        b.close_dialogs()
+        return False
+    gone = re.compile(r"^\s*%s has been removed from the team" % re.escape(name), re.I)
+    end = b.clock.time() + JOIN_WAIT
+    while b.clock.time() < end:
+        if any(gone.match(line) for line in game_lines(b, mark)):
+            return True
+        b.sleep(0.25)
+    return False
+
+
+def remove_offline(b: Bot) -> list[str]:
+    """Ask about each member in turn and remove those the game says nothing about - twice, the
+    second time with twice the wait, so a slow answer never costs anyone their place. The list is
+    opened again after each removal (the game closes it). The names removed."""
+    lead = state(b)
+    lead.offline_at = b.clock.time()
+    me = int(b.me().get("id", -1))
+    checked: set[int] = set()
+    removed: list[str] = []
+    for _opening in range(MOST_OPENINGS):
+        got = _member_list(b)
+        if got is None:
+            break
+        top, lag = got
+        todo = [m for m in members(b, top) if m[2] != me and m[2] not in checked]
+        gone = _first_offline(b, top, todo, answer_wait(lag), checked) if todo else None
+        if gone is None:
+            b.close_dialogs()
+            break
+        name, pid = gone
+        if _remove(b, name, pid):
+            removed.append(name)
+            b.log(_("removed {name} from the team: offline", name=name), speak=True)
+        else:
+            b.close_dialogs()
+            b.log(_("{name} seems offline, and the game didn't remove them from the team", name=name))
+    return removed
+
+
+def _first_offline(b: Bot, top: dict[str, Any], todo: list[tuple[int, str, int]], wait: float,
+                   checked: set[int]) -> tuple[str, int] | None:
+    for row, name, pid in todo:
+        checked.add(pid)
+        here = online(b, top, row, name, pid, wait)
+        if here is False:
+            top = b.dialog().get("top") or top
+            here = online(b, top, row, name, pid, wait * 2)
+        if here is None:
+            b.log(_("team: couldn't move to {name} in the member list", name=name))
+            return None
+        if not here:
+            return name, pid
+        top = b.dialog().get("top") or top
+    return None
+
+
+def offline_due(b: Bot) -> bool:
+    if not b.p.get("team_remove_offline", False) or b.p.get("team_offline_town_only", False):
+        return False
+    last = state(b).offline_at
+    every = max(1, int(b.p.get("team_offline_every", 10))) * 60
+    return last is None or b.clock.time() - last >= every
+
+
 # ------------------------------------------------------------------ in the run
 def on(b: Bot) -> bool:
     return bool(b.p.get("team_accept", False))
 
 
 def start_farm(b: Bot) -> None:
-    """A farm begins: listen for requests, and take the ones that came while we weren't farming."""
-    if not on(b):
-        return
-    listen(b)
-    take_requests(b)
+    """A farm begins: listen for requests, take the ones that came while we weren't farming, and
+    look for members who went offline."""
+    if on(b):
+        listen(b)
+        take_requests(b)
+    if b.p.get("team_remove_offline", False):
+        remove_offline(b)
+
+
+def after_trip(b: Bot) -> None:
+    """Back from a trip of our own (a town trip): the "only through a town" offline check."""
+    if b.p.get("team_remove_offline", False) and b.p.get("team_offline_town_only", False):
+        remove_offline(b)
 
 
 def between_fights(b: Bot) -> bool:
-    """The farm loop between fights: a request was heard and nobody is hitting us. True when the
-    menus were used (the loop looks around again)."""
-    if not on(b) or not heard_request(b) or b.attackers():
+    """The farm loop between fights, with nobody hitting us: a request was heard, or the offline
+    check is due. True when the menus were used (the loop looks around again)."""
+    if b.attackers():
         return False
-    take_requests(b)
-    return True
+    if on(b) and heard_request(b):
+        take_requests(b)
+        return True
+    if offline_due(b):
+        remove_offline(b)
+        return True
+    return False
