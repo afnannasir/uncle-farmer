@@ -10,7 +10,7 @@ from .. import settings
 from ..engine import keyboard
 from ..i18n import _
 from ..link import AgentError, AgentLink
-from .common import Dialog, ask, buttons, error, labeled, page, tabs
+from .common import Dialog, Form, ask, buttons, error, labeled, page, tabs
 
 
 class KeyboardDialog(Dialog):
@@ -24,16 +24,6 @@ class KeyboardDialog(Dialog):
         self.controls: dict[str, wx.ListBox] = {}
         self.cfg = settings.load_profile(character)
         box = wx.BoxSizer(wx.VERTICAL)
-        self.profiles = labeled(self, box, _("Saved keyboard &profiles:"), lambda w: wx.Choice(w))
-        self.profiles.Bind(wx.EVT_CHOICE, self._choose)
-        buttons(self, box, (_("&New profile"), self._new), (_("Capture current &keys"), self._capture),
-                (_("&Delete profile"), self._delete))
-        self.profile_name = labeled(self, box, _("Profile na&me:"), lambda w: wx.TextCtrl(w))
-        note = wx.TextCtrl(self, value=_("Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."),
-                           style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_WORDWRAP,
-                           size=self.FromDIP(wx.Size(-1, 62)))
-        note.SetName(_("Keyboard profile information"))
-        box.Add(note, 0, wx.EXPAND | wx.ALL, 12)
         notebook = tabs(self)
         for kind, title in (("skills", _("Skills")), ("profession", _("Profession skills")),
                             ("items", _("Items")), ("phrases", _("Quick phrases"))):
@@ -44,13 +34,35 @@ class KeyboardDialog(Dialog):
             buttons(panel, body, (_("&Edit binding..."), lambda e, k=kind: self._edit(k)))
             if kind == "skills":
                 buttons(panel, body, (_("Toggle p&reparation"), self._toggle_prepare))
-        box.Add(notebook, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 12)
-        buttons(self, box, (_("&Save profile"), self._save), (_("&Apply profile"), self._apply))
-        close = wx.Button(self, wx.ID_CANCEL, _("&Close"))
-        box.Add(close, 0, wx.ALIGN_RIGHT | wx.ALL, 12)
+        box.Add(notebook, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
+
+        profile = wx.Panel(self)
+        profile_box = wx.BoxSizer(wx.VERTICAL)
+        fields = Form(profile)
+        self.profiles = fields.choice(_("Saved keyboard &profiles:"), [])
+        self.profiles.Bind(wx.EVT_CHOICE, self._choose)
+        self.profile_name = fields.text(_("Profile na&me:"))
+        profile_box.Add(fields.grid, 0, wx.EXPAND)
+        buttons(profile, profile_box, (_("&New profile"), self._new), (_("Capture current &keys"), self._capture),
+                (_("&Delete profile"), self._delete))
+        note = wx.TextCtrl(profile, value=_("Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."),
+                           style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_WORDWRAP,
+                           size=self.FromDIP(wx.Size(-1, 62)))
+        note.SetName(_("Keyboard profile information"))
+        profile_box.Add(note, 0, wx.EXPAND | wx.TOP, 8)
+        profile.SetSizer(profile_box)
+        box.Add(profile, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
+
+        footer = wx.BoxSizer(wx.HORIZONTAL)
+        for label, action in ((_("&Save profile"), self._save), (_("&Apply profile"), self._apply)):
+            button = wx.Button(self, label=label)
+            button.Bind(wx.EVT_BUTTON, action)
+            footer.Add(button, 0, wx.RIGHT, 8)
+        footer.Add(wx.Button(self, wx.ID_CANCEL, _("&Close")))
+        box.Add(footer, 0, wx.ALIGN_RIGHT | wx.ALL, 12)
         self.SetSizerAndFit(box)
         self._load(next(iter(keyboard.names(self.cfg)), ""))
-        self.profiles.SetFocus()
+        notebook.SetFocus()
 
     def _game(self) -> keyboard.Capture:
         with wx.BusyCursor(), AgentLink(pid=self.pid, timeout=3) as agent:
