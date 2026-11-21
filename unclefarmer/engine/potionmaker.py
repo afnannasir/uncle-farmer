@@ -28,13 +28,13 @@ from __future__ import annotations
 import copy
 import math
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
 from ..clock import clock_for
 from ..i18n import N_, _
-from . import chores, crafting, market, town
+from . import bagrules, chores, crafting, market, town
 from .bot import Bot, Stopped
 
 ROLE = "pharmacist"
@@ -50,7 +50,8 @@ SETTLE = 3.0                     # seconds the bag is given to show what was mad
 NO_MATERIALS = re.compile(r"not enough materials", re.I)
 OVERWEIGHT = re.compile(r"\boverweight\b|bag is full|not enough space", re.I)
 MOST_BATCHES = 400               # a safety net: 20,000 potions in one run
-MARKET_PAGES = 60                # pages of materials read at most for one material
+MOST_ROUNDS = 50                 # bagfuls in one run, at most (each round that counts changes the bag)
+MARKET_PAGES = 60               # pages of materials read at most for one material
 MATERIALS_CATEGORY = 100         # the market's "materials" (market.CATEGORIES)
 
 
@@ -126,6 +127,7 @@ DEFAULTS: dict[str, Any] = {
     "supply": "both",
     "prices": {},                # material -> the most gold coins a piece (0 or none: cheapest first, any price)
     "gold_cap": 0,               # the most gold coins spent on materials in one run (0: no limit)
+    "store": False,              # put the potions made into the town storehouse, and go on a bagful at a time
 }
 _NEEDS = re.compile(r"(\d+)\s*(" + "|".join(re.escape(m) for m in MATERIALS) + r")", re.I)
 _ROW = re.compile(r"^\s*synthesize\s+(\d+)\s+(.+?)\s*$", re.I)
@@ -490,28 +492,124 @@ def buy_material(b: Bot, name: str, n: int, most: int, cap: int) -> tuple[int, i
     return max(0, town.counts(b).get(name.lower(), 0) - had), spent
 
 
-def fetch_materials(b: Bot, missing: Mapping[str, int], cfg: Mapping[str, Any]) -> dict[str, int]:
-    """Bring the missing materials into the bag, as cfg's supply says. What is still missing."""
+def _bring(b: Bot, mat: str, fetch: Callable[[], int]) -> int:
+    """fetch() brings some of a material; the first time, the load before and after teaches the bag
+    manager its weight (room_batches needs it)."""
+    if bagrules.weights().get(mat.lower()):
+        return fetch()
+    before = town.load_now(b)
+    got = fetch()
+    if got:
+        bagrules.learn_weight(mat, town.load_now(b), before, got)    # the load went up by got of it
+    return got
+
+
+def fetch_materials(b: Bot, missing: Mapping[str, int], cfg: Mapping[str, Any], spent: int = 0
+                    ) -> tuple[dict[str, int], int]:
+    """Bring the missing materials into the bag, as cfg's supply says. (what is still missing, the
+    gold coins spent on materials this run: `spent` before this call, and this call's)."""
     supply = cfg.get("supply", "both")
     left = {m: k for m, k in missing.items() if k > 0}
     if supply in ("storage", "both"):
         for mat in list(left):
-            left[mat] -= crafting.take_from_storage(b, mat, left[mat])
+            want = left[mat]
+            left[mat] -= _bring(b, mat, lambda m=mat, n=want: crafting.take_from_storage(b, m, n))
         left = {m: k for m, k in left.items() if k > 0}
     if supply in ("buy", "both") and left:
         prices: Mapping[str, Any] = cfg.get("prices") or {}
         cap = int(cfg.get("gold_cap") or 0)
-        spent = 0
         for mat in list(left):
             if cap and spent >= cap:
                 b.log(_("the gold limit for materials ({cap}) is spent", cap=cap), speak=True)
                 break
             most = int(prices.get(mat) or prices.get(mat.lower()) or 0)
-            got, cost = buy_material(b, mat, left[mat], most, cap - spent if cap else 0)
-            spent += cost
-            left[mat] -= got
+            costs: list[int] = []
+
+            def buy(m: str = mat, n: int = left[mat], top: int = most, budget: int = cap - spent if cap else 0) -> int:
+                got, cost = buy_material(b, m, n, top, budget)
+                costs.append(cost)
+                return got
+            left[mat] -= _bring(b, mat, buy)
+            spent += sum(costs)
         left = {m: k for m, k in left.items() if k > 0}
-    return left
+    return left, spent
+
+
+def room_batches(b: Bot, batches: Mapping[str, int], book: Mapping[str, Recipe]) -> dict[str, int]:
+    """The batches whose missing materials fit into the bag up to its full mark (the profile's
+    bag_full_at), Smalls first. Only the materials brought in are held to it: making and fusing
+    still work in a bag over its full mark, and the potions may take the load past it. A material
+    whose weight isn't known yet counts as nothing (it is weighed when it comes: _bring); with no
+    load on the sheet every batch is kept."""
+    sheet: dict[str, Any] = b.refresh_sheet(force=True) or {}
+    if not sheet.get("maxload"):
+        return dict(batches)
+    free = sheet["maxload"] * float(b.p.get("bag_full_at", 100)) / 100.0 - sheet.get("load", 0)
+    weight = bagrules.weights()
+    bag = {k.lower(): v for k, v in town.counts(b).items()}
+    out: dict[str, int] = {}
+    for name in sorted(batches, key=lambda n: (size_of(n) if size_of(n) >= 0 else 9, n)):
+        r = book[name.lower()]
+        n = 0
+        while n < batches[name]:
+            need = sum(max(0, k - max(0, bag.get(m.lower(), 0))) * weight.get(m.lower(), 0.0)
+                       for m, k in r.needs.items())
+            if need and need > free:
+                break                       # (materials already in the bag need no room)
+            free -= need
+            for m, k in r.needs.items():
+                bag[m.lower()] = bag.get(m.lower(), 0) - k
+            n += 1
+        if n:
+            out[name] = n
+    return out
+
+
+def stored_counts(b: Bot, names: Iterable[str]) -> dict[str, int]:
+    """How many of each potion the town storehouse holds (its item storage list)."""
+    names = list(names)
+    if not names:
+        return {}
+    town.visit(b, "storehouse")
+    try:
+        if not town.open_section(b, r"^\s*item storage"):
+            b.log(_("couldn't read the storehouse's list: only the bag counts"), speak=True)
+            return {}
+        return {n: crafting.storage_count(b, n) for n in names}
+    finally:
+        b.close_dialogs()
+
+
+def round_cfg(cfg: Mapping[str, Any], stored: Mapping[str, int]) -> dict[str, Any]:
+    """cfg with each target less what the storehouse holds of it: the plan works on the bag alone,
+    so a potion in the storehouse is never counted on for fusing."""
+    out = dict(cfg)
+    out["targets"] = {n: max(0, k - stored.get(n, 0)) for n, k in _wants(cfg).items()}
+    return out
+
+
+def to_store(cfg: Mapping[str, Any]) -> list[str]:
+    """The potions put into the storehouse after a round: the targets, and the size spare potions
+    are fused up to. The sizes fused from stay in the bag for the next round's fusing."""
+    out = list(_wants(cfg))
+    top = FUSE_UP.index(cfg.get("fuse_up", "no")) if cfg.get("fuse_up", "no") in FUSE_UP else 0
+    if top:
+        out += [c[top] for c in CHAINS if c[top] not in out]
+    return out
+
+
+def store_made(b: Bot, cfg: Mapping[str, Any], kept: Mapping[str, int], stored: dict[str, int]) -> int:
+    """Put the potions this run made (what the bag has over `kept`, its count at the start) into the
+    town storehouse; stored is counted up. How many went in."""
+    put = 0
+    have = town.counts(b)
+    for name in to_store(cfg):
+        n = have.get(name.lower(), 0) - kept.get(name.lower(), 0)
+        if n > 0:
+            k = int(town.deposit(b, name, n) or 0)
+            stored[name] = stored.get(name, 0) + k
+            put += k
+    return put
 
 
 def _shorten(batches: Mapping[str, int], book: Mapping[str, Recipe], have: Mapping[str, int]) -> dict[str, int]:
@@ -546,7 +644,11 @@ def describe(p: Plan, fees: Mapping[str, int]) -> list[str]:
 
 def _check(b: Bot, cfg: Mapping[str, Any], where: str) -> None:
     """Check only: the plan, with each recipe's fee read off its page; nothing is made or bought."""
-    p = plan(town.counts(b), cfg)
+    stored = stored_counts(b, _wants(cfg)) if cfg.get("store") else {}
+    for name, n in stored.items():
+        if n:
+            b.log(_("the storehouse has {n} {item}", n=n, item=name))
+    p = plan(town.counts(b), round_cfg(cfg, stored))
     fees = read_fees(b, where, p.batches) if p.batches else {}
     if not p.batches:
         open_pharmacist(b, where)
@@ -579,53 +681,89 @@ def _make_all(b: Bot, where: str, batches: Mapping[str, int], book: Mapping[str,
     return made
 
 
+@dataclass
+class _Run:
+    where: str
+    kept: dict[str, int]                  # the bag's potions at the start: they stay in the bag
+    stored: dict[str, int]                # the storehouse's, counted up as potions go in
+    book: dict[str, Recipe]
+    fees: dict[str, int]
+    spent: int = 0                        # gold coins on materials, all rounds
+    made: int = 0
+    fused: int = 0
+    put: int = 0
+    told_cap: bool = False
+
+
+def _make_round(b: Bot, cfg: Mapping[str, Any], st: _Run, p: Plan) -> int:
+    """Bring what a bagful of batches needs and make them. How many batches were made."""
+    unknown = [n for n in p.batches if n not in st.fees]
+    if unknown:
+        st.fees.update(read_fees(b, st.where, unknown))
+        if _open(b, st.where, MAKE):
+            st.book = live_recipes(b)
+        b.close_dialogs()
+    cap = affordable(p.batches, st.fees, crafting.spare_arnebia(b))
+    if sum(cap.values()) < sum(p.batches.values()) and not st.told_cap:
+        st.told_cap = True
+        b.log(_("the spare arnebia pays for {n} of the {all} batches", n=sum(cap.values()),
+                all=sum(p.batches.values())), speak=True)
+    fit = room_batches(b, cap, st.book)
+    if sum(cap.values()) and not fit:
+        b.log(_("the bag has no room for more Bloods and Pelts"), speak=True)
+        return 0
+    rp = plan(town.counts(b), round_cfg(cfg, st.stored), st.book, fit)
+    if rp.missing:
+        still, st.spent = fetch_materials(b, rp.missing, cfg, st.spent)
+        for mat, k in still.items():
+            b.log(_("{n} {item} still missing", n=k, item=mat), speak=True)
+    return _make_all(b, st.where, _shorten(rp.batches, st.book, town.counts(b)), st.book)
+
+
 def run(b: Bot, cfg: Mapping[str, Any], check_only: bool = False) -> None:
-    """The Potion Maker. cfg: config()."""
+    """The Potion Maker, a bagful at a time: bring materials up to the bag's full mark, make, fuse,
+    and with "store" on put what was made into the storehouse and go again until the targets (bag
+    and storehouse together) are met. cfg: config()."""
     if not _wants(cfg) and cfg.get("fuse_up", "no") == "no":
         raise Stopped(_("set it up first: Tools, {tool}", tool=_("Potion Maker")))
     where = _where(cfg)
     if check_only:
         _check(b, cfg, where)
         return
-    first = plan(town.counts(b), cfg)
-    if first.empty():
-        b.log(_("the bag already has the potions asked for"), speak=True)
-        return
-    book: dict[str, Recipe] = dict(BY_NAME)
-    if first.batches:
-        fees = known_fees(b, where)
-        unknown = [n for n in first.batches if n not in fees]
-        if unknown:
-            fees.update(read_fees(b, where, unknown))
-            if _open(b, where, MAKE):
-                book = live_recipes(b)
-            b.close_dialogs()
-        cap = affordable(first.batches, fees, crafting.spare_arnebia(b))
-        if sum(cap.values()) < sum(first.batches.values()):
-            b.log(_("the spare arnebia pays for {n} of the {all} batches", n=sum(cap.values()),
-                    all=sum(first.batches.values())), speak=True)
-        p = plan(town.counts(b), cfg, book, cap)
-        if p.missing:
-            still = fetch_materials(b, p.missing, cfg)
-            for mat, k in still.items():
-                b.log(_("{n} {item} still missing", n=k, item=mat), speak=True)
-        batches = _shorten(p.batches, book, town.counts(b))
-        made = _make_all(b, where, batches, book)
-        if made:
-            b.log(_("made {n} batches of potions", n=made))
-    fused = 0
-    after = plan(town.counts(b), cfg, book, make=False)
-    for name, n in after.fuses:
-        fused += fuse(b, where, name, n)
-    b.close_dialogs()
+    store = bool(cfg.get("store"))
+    st = _Run(where, {k.lower(): v for k, v in town.counts(b).items()},
+              stored_counts(b, _wants(cfg)) if store else {}, dict(BY_NAME), known_fees(b, where))
+    for rnd in range(MOST_ROUNDS):
+        if b.stop_event.is_set():
+            raise Stopped(_("stopped"))
+        p = plan(town.counts(b), round_cfg(cfg, st.stored), st.book)
+        if p.empty():
+            if rnd == 0:
+                b.log(_("the potions asked for are already there"), speak=True)
+            break
+        made = _make_round(b, cfg, st, p) if p.batches else 0
+        fused = sum(fuse(b, where, name, n)
+                    for name, n in plan(town.counts(b), round_cfg(cfg, st.stored), st.book, make=False).fuses)
+        b.close_dialogs()
+        put = store_made(b, cfg, st.kept, st.stored) if store else 0
+        st.made, st.fused, st.put = st.made + made, st.fused + fused, st.put + put
+        if not (made or fused or put):
+            break                          # nothing changed: another round would do the same
+        b.log(_("round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse",
+                n=rnd + 1, made=made, fused=fused, put=put))
+    _finish(b, cfg, st)
+
+
+def _finish(b: Bot, cfg: Mapping[str, Any], st: _Run) -> None:
     have = town.counts(b)
     wants = _wants(cfg)
-    short = {n: k - have.get(n.lower(), 0) for n, k in wants.items() if have.get(n.lower(), 0) < k}
+    total = {n: have.get(n.lower(), 0) + st.stored.get(n, 0) for n in wants}
+    short = {n: k - total[n] for n, k in wants.items() if total[n] < k}
     if short:
         b.log(_("still short of: {what}", what=", ".join("%d %s" % (k, n) for n, k in short.items())), speak=True)
     else:
-        b.log(_("the Potion Maker is done{fused}", fused=(" " + _("({n} fused)", n=fused)) if fused else ""),
-              speak=True)
+        b.log(_("the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse",
+                made=st.made, fused=st.fused, put=st.put), speak=True)
 
 
 def names_for(kind: str) -> Sequence[str]:

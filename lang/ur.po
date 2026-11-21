@@ -700,9 +700,6 @@ msgstr "(bechne wale gine nahi gaye)"
 msgid "(was {n})"
 msgstr "(pehle {n})"
 
-msgid "({n} fused)"
-msgstr "({n} fuse hue)"
-
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
 msgstr "({n} lots parhe nahi ja sake: logs\\dialogs.log dekhein)"
 
@@ -3402,6 +3399,11 @@ msgstr ""
 msgid "Put the pet &away when the run ends"
 msgstr "Run khatam hone par pet ko &wapas bhej dein"
 
+msgid ""
+"Put the potions made into the town st&orehouse, then make more, a bagful at a time (your numbers then count the storehouse too)"
+msgstr ""
+"Banaye gaye potions sheher ke st&orehouse mein rakhein, phir aur banayein, ek basta bhar ke (phir aapki taadaad mein storehouse bhi gina jata hai)"
+
 msgid "Quantity"
 msgstr "Tadaad"
 
@@ -4573,6 +4575,11 @@ msgstr "Pehle storehouse, phir Shard Market"
 
 msgid "The storehouse only"
 msgstr "Sirf storehouse"
+
+msgid ""
+"The storehouse's potions count too: Check only reads them. It goes a bagful at a time."
+msgstr ""
+"Storehouse ke potions bhi gine jate hain: sirf check unhein parhta hai. Kaam ek basta bhar ke hota hai."
 
 msgid "The strongest one"
 msgstr "Sab se taqatwar"
@@ -5853,6 +5860,9 @@ msgstr "baste mein {item} tak nahi pohanch sake"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "skills panel mein {skill} tak nahi pohanch sake"
 
+msgid "couldn't read the storehouse's list: only the bag counts"
+msgstr "storehouse ki fehrist nahi parh saka: sirf basta gina ja raha hai"
+
 msgid "couldn't respawn - please do it by hand"
 msgstr "respawn nahi ho saka - baraye meharbani khud karein"
 
@@ -6532,9 +6542,6 @@ msgstr "{item} kam hai: {have} bache hain"
 
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Level {lv} {kind} Enhance Crystals banaye"
-
-msgid "made {n} batches of potions"
-msgstr "potions ke {n} batch banaye"
 
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "mangi gayi {want} {gem} mein se {n} banaye; basta mein {have}"
@@ -7318,6 +7325,11 @@ msgstr "angoothiyan"
 msgid "road"
 msgstr "sadak"
 
+msgid ""
+"round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+"round {n}: {made} batch banaye, {fused} potions fuse kiye, {put} storehouse mein"
+
 msgid "route to {map}: {steps}"
 msgstr "{map} ka rasta: {steps}"
 
@@ -7765,8 +7777,10 @@ msgstr "{potion} ka Pharmacist wala safha nahi khula - kuch kharch nahi hua"
 msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
 msgstr "{potion} ke Pharmacist wale safhe par \"start synthesis\" nahi"
 
-msgid "the Potion Maker is done{fused}"
-msgstr "Potion Maker mukammal{fused}"
+msgid ""
+"the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+"Potion Maker mukammal: {made} batch banaye, {fused} potions fuse kiye, {put} storehouse mein"
 
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Secret room Manager ne koi madadgar nahi bulaya"
@@ -7811,11 +7825,11 @@ msgstr "us waqt app nahi chal rahi thi"
 msgid "the bag"
 msgstr "basta"
 
-msgid "the bag already has the potions asked for"
-msgstr "baste mein maange gaye potions pehle se hain"
-
 msgid "the bag cursor is out of range"
 msgstr "bag cursor hadd se bahar hai"
+
+msgid "the bag has no room for more Bloods and Pelts"
+msgstr "baste mein mazeed Bloods aur Pelts ki jagah nahi"
 
 msgid "the bag is empty - nothing to throw away"
 msgstr "basta khaali hai - phenkne ko kuch nahi"
@@ -8203,6 +8217,9 @@ msgid ""
 "the plan's character has no saved account or server. Log in to it once first."
 msgstr ""
 "Plan ke kirdar ka koi mahfooz account ya server nahi. Pehle ek martaba is mein login karein."
+
+msgid "the potions asked for are already there"
+msgstr "maange gaye potions pehle se maujood hain"
 
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
@@ -9486,6 +9503,9 @@ msgstr ""
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
+#~ msgid "({n} fused)"
+#~ msgstr "({n} fuse hue)"
+
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr "demonized elites, character settings ke mutabiq chhor diye"
 
@@ -9494,5 +9514,14 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "follow: main aap ke saath rehta hoon, aap ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress aap ki aur team ki shifa karta hai. Jab tak aap buff na bhejein, koi buff nahin. Ek minute tak aap nazar na aayen to main ruk jata hoon."
 
+#~ msgid "made {n} batches of potions"
+#~ msgstr "potions ke {n} batch banaye"
+
 #~ msgid "no way to walk there"
 #~ msgstr "wahan paidal jaane ka koi rasta nahi"
+
+#~ msgid "the Potion Maker is done{fused}"
+#~ msgstr "Potion Maker mukammal{fused}"
+
+#~ msgid "the bag already has the potions asked for"
+#~ msgstr "baste mein maange gaye potions pehle se hain"

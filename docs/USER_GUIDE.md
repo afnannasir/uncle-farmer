@@ -926,6 +926,8 @@ Open **Tools, Potion Maker** or press **Ctrl+Shift+O**. It uses the Pharmacist i
 - **Take them from**: missing Bloods and Pelts come from only the bag, the town storehouse, the market, or the storehouse and then the market.
 - **Most gold coins a piece**: for each material, the most the market may charge. The cheapest lots are always bought first; with 0 any price is fine, still cheapest first. **Most gold coins to spend on materials in one run** caps the whole buy.
 
+- **Put the potions made into the town storehouse**: then it works a bagful at a time: it fills the bag with Bloods and Pelts up to its full mark (Character settings, the bag's full mark), makes and fuses, puts the potions in the storehouse and goes again until your numbers are there. Your numbers then count what the storehouse holds too, and the potions you had in the bag before stay in the bag. Making and fusing still work when the bag is over its full mark: only the materials brought in are held to it.
+
 **Check only** walks to the Pharmacist, reads the real fees and says what it would make, fuse and buy, without spending anything.
 
 ### Equipment Enhancer
