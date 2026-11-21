@@ -298,6 +298,15 @@ This example stops the farming session when your bag has fewer than 20 Large Red
 
 **Important:** `until=` takes everything after it as its condition, so it must always be the last option on the line.
 
+A `farm` line whose `until=` condition is already true when the script reaches it is skipped, with no trip to the map: the log says "not farming ... is already true". If ten `farm` lines in a row are skipped that way (a `repeat` with nothing left to farm), the run stops.
+
+`drop_left` is the minutes of the day's drop time left (the game gives 7 hours a day), or -1 until the character sheet has said. It lets two maps share one day, kept across restarts:
+
+    farm map=5361 until=drop_left >= 0 and drop_left <= 240
+    farm map=5281
+
+The first line farms Underwater World until 4 hours of drop time are left, the second farms Margit Rainforest for the rest. Started again later in the day, the script skips the first line once its share is used up. Write `drop_left >= 0 and` first, so that an unknown drop time (-1) is never taken for a used-up share. The plan editor writes these lines for you (**A share of the day's drop time** on a spot).
+
 ### Combining farming options
 
 You can combine the options in any order, as long as `until=` comes last.
@@ -471,6 +480,7 @@ These values help you keep track of what your character has accomplished during 
 | `xp_gained` | Experience gained during this run |
 | `levels_gained` | Levels gained during this run |
 | `contribution_gained` | Contribution gained during this run |
+| `drop_left` | Minutes of the day's drop time left, -1 until the character sheet has said |
 
 For `shards_gained`, every shard picked up counts, even if it was later thrown away.
 

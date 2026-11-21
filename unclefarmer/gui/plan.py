@@ -55,6 +55,9 @@ class StepDialog(Dialog):
                                                    _("Minutes:"), step.get("minutes") or 30, 1, 100000)
         self.kills_on, self.kills = f.optional(_("&Kill limit"), bool(step.get("kills")),
                                                _("Kills:"), step.get("kills") or 100, 1, 1000000)
+        self.drop_on, self.drop = f.optional(
+            _("A share of the day's &drop time (kept across restarts)"), bool(step.get("drop_minutes")),
+            _("Minutes of drop time on this spot:"), step.get("drop_minutes") or 180, 1, plans.DROP_DAY)
         f = group(panel, box, _("Where"))
         self.patrol = f.choice(_("&Movement:"), patrol_names(), pick(PATROLS, step.get("patrol", "random")))
         area: list[int] = step.get("area") or [0, 0, 0, 0]
@@ -213,7 +216,8 @@ class StepDialog(Dialog):
                               "than the north edge."))
                 return
         self.step.update(map=mid, minutes=self.minutes.GetValue() if self.minutes_on.GetValue() else 0,
-                         kills=self.kills.GetValue() if self.kills_on.GetValue() else 0, patrol=patrol,
+                         kills=self.kills.GetValue() if self.kills_on.GetValue() else 0,
+                         drop_minutes=self.drop.GetValue() if self.drop_on.GetValue() else 0, patrol=patrol,
                          area=area, only=names_pattern(self.only.GetValue()),
                          skip=names_pattern(self.skip.GetValue()),
                          elites="avoid" if self.avoid.GetValue() else "fight")
@@ -247,7 +251,9 @@ def step_text(s: dict[str, Any], several: bool = True) -> str:
             bits.append(_("{n} minutes", n=s["minutes"]))
         if s.get("kills"):
             bits.append(_("{n} kills", n=s["kills"]))
-        if not s.get("minutes") and not s.get("kills"):
+        if s.get("drop_minutes"):
+            bits.append(_("{n} minutes of drop time", n=s["drop_minutes"]))
+        if not s.get("minutes") and not s.get("kills") and not s.get("drop_minutes"):
             bits.append(_("until the plan stops"))
     bits.append({"random": _("random"), "full": _("full loop"), "quick": _("quick loop"),
                  "short": _("short loop")}.get(s.get("patrol", "random"), _("random")))
@@ -275,7 +281,9 @@ def plan_text(p: dict[str, Any]) -> str:
     spots: list[dict[str, Any]] = p.get("spots", [])
     several = len(spots) > 1
     lines = ["%d. %s" % (i + 1, step_text(s, several)) for i, s in enumerate(spots)] or [_("No farming spots yet.")]
-    if several:
+    if several and plans.has_drop_shares(p):
+        lines.append(_("Goes through the spots once, sharing out the day's drop time."))
+    elif several:
         lines.append(_("Goes round the spots in turn.") if p.get("rotation", "round") == "round"
                      else _("Goes through the spots once."))
     stops: list[str] = []
@@ -595,6 +603,11 @@ class PlanDialog(Dialog):
             return
         if not p["spots"]:
             error(self, _("Add at least one farming spot."))
+            return
+        endless = plans.endless_spot(p)
+        if endless is not None:
+            error(self, _("Spot {n} never ends, so the spots after it never come, and they have a share of the "
+                          "day's drop time. Give spot {n} minutes, kills or a share of the drop time.", n=endless + 1))
             return
         problem = check_script(plans.to_script(p))
         if problem:

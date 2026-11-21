@@ -82,11 +82,15 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     on_stop ... end                  runs when the script ends or a stop rule fires (not on Stop)
 
 Conditions and expressions use: hp maxhp hp_pct mp maxmp mp_pct level map map_name x y kills
-minutes clock ("HH:MM") monsters, your own `set` names, numbers, "text", and/or/not,
+minutes clock ("HH:MM") monsters drop_left, your own `set` names, numbers, "text", and/or/not,
 < <= > >= == !=, + - * / and the functions bag("item"), random(a, b), min, max, abs, round, int.
 mp, maxmp, mp_pct and level come from the game (the own-HP key and the character sheet); they are -1
 until they have been seen. What this run earned: arnebia_gained contribution_gained xp_gained
-levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`.
+levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`. drop_left: minutes of the
+day's drop time left (the game gives 7 hours a day), -1 until the character sheet has said; a farm
+whose until= is already true when it is reached is skipped, trip and all:
+`farm map=5361 until=drop_left >= 0 and drop_left <= 240` farms Underwater World for the first three
+hours of the day's drop time, and only those - a restart in the middle carries on with what is left.
 """
 
 from __future__ import annotations
@@ -127,7 +131,10 @@ FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "el
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
              "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
-             "sound_muted", "sound_positioned")
+             "sound_muted", "sound_positioned", "drop_left")
+
+
+SKIPPED_MOST = 10     # farms in a row skipped as already done: a repeat with nothing left to farm
 
 
 class ScriptError(Exception):
@@ -848,6 +855,7 @@ def _prep_farm(node: Node, rest: str, n: int):
         opts["area"] = _farm_area(opts["area"], n)
     _farm_choices(opts, n)
     if "until" in opts:
+        opts["until_text"] = opts["until"]
         opts["until"] = compile_expr(opts["until"], n)
     node.opts = opts
 
@@ -919,6 +927,8 @@ class Runner:
                                          sound_muted=False, sound_positioned=False)
         self.call_depth = 0
         self.watched: set[Node] = set()
+        self.skipped_farms = 0          # farms in a row skipped as already done (SKIPPED_MOST)
+        self.sheet_asked = -1e9         # when drop_left last asked the game for the sheet
 
     def names(self) -> dict[str, Any]:
         """What an expression can read: the script's own values, then the game's (hp, map...)."""
@@ -935,12 +945,26 @@ class Runner:
                      map=snap_map.get("id"), map_name=snap_map.get("name"), x=me["x"], y=me["y"],
                      kills=b.kills, minutes=round(b.minutes(), 2), clock=time.strftime("%H:%M"))
         names["monsters"] = _Lazy(lambda: len(b.targets(b.snap())))
+        names["drop_left"] = _Lazy(lambda: self.drop_left(sheet))
         r: dict[str, Any] = b.tally.result() if b.tally else {}
         picked: dict[str, int] = r.get("picked") or {}
         names.update(arnebia_gained=r.get("arnebia", 0), contribution_gained=r.get("contribution", 0),
                      xp_gained=r.get("experience", 0), levels_gained=r.get("levels", 0),
                      shards_gained=sum(v for n, v in picked.items() if stats.is_shard(n)))
         return names
+
+    def drop_left(self, sheet: dict[str, Any]) -> int:
+        """Minutes of the day's drop time left, from the character sheet; -1 when it hasn't said.
+        No reading yet (a run that hasn't killed anything): the sheet is asked for, at most once a
+        minute."""
+        left = stats.drop_left(sheet)
+        now = clock_for(self.bot).time()
+        ask = getattr(self.bot, "ask_sheet", None)
+        if left is None and ask is not None and now - self.sheet_asked >= 60:
+            self.sheet_asked = now
+            got = ask(force=True)
+            left = stats.drop_left(got) if jsonio.is_object(got) else None
+        return -1 if left is None else int(left // 60)
 
     def funcs(self) -> dict[str, Callable[..., Any]]:
         def bag(item: str) -> int:
@@ -1248,6 +1272,15 @@ class Runner:
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
         mid = best_map(b) if o.get("map") == BEST_MAP else (o.get("map") or b.map_id())
+        if until is not None and self.value(until, node.line):
+            # Already done: no trip to it. A plan's spot whose share of the drop time is used up
+            # (a run restarted later in the day) goes straight on to the next spot.
+            self.skipped_farms += 1
+            b.log(_("not farming {map}: {cond} is already true", map=atlas.label(mid), cond=o.get("until_text", "")))
+            if self.skipped_farms >= SKIPPED_MOST:
+                raise Stopped(_("every farm of the script is already done - stopping"))
+            return
+        self.skipped_farms = 0
         b.farm(mid, area=o.get("area"), minutes=o.get("minutes", 0), kills=o.get("kills", 0),
                only=o.get("only", ""), skip=o.get("skip", ""), patrol=o.get("patrol", "random"),
                avoid_elites=o.get("elites") == "avoid",

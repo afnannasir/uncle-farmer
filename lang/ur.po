@@ -17,6 +17,9 @@ msgstr " (andaza: is mein shards shamil hain)"
 msgid " (locked here)"
 msgstr " (yahan band hai)"
 
+msgid " (worth about {v})"
+msgstr " (taqreeban {v} ki qeemat)"
+
 msgid " ({rate} an hour)"
 msgstr " (ek ghante mein {rate})"
 
@@ -815,6 +818,9 @@ msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
 msgstr "{name} naam ka script pehle se mojood hai. Isay badal dein?"
+
+msgid "A share of the day's &drop time (kept across restarts)"
+msgstr "Din ke &drop time ka hissa (restart ke baad bhi qaim)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "Sound ka khamosh intikhab on ya off hona chahiye."
@@ -2098,6 +2104,9 @@ msgstr ""
 msgid "Goes round the spots in turn."
 msgstr "Jagahein baari baari ghoomta hai."
 
+msgid "Goes through the spots once, sharing out the day's drop time."
+msgstr "Spots se ek baar guzarta hai, din ka drop time baant kar."
+
 msgid "Goes through the spots once."
 msgstr "Jagahein ek baar tay karta hai."
 
@@ -2693,6 +2702,9 @@ msgstr "{n} mazeed {gem} banayein."
 msgid "Map"
 msgstr "Map"
 
+msgid "Map by map:"
+msgstr "Map ba map:"
+
 msgid "Market buying"
 msgstr "Market se khareedari"
 
@@ -2753,6 +2765,9 @@ msgstr "Paighaam filter fehrist mein shaamil ho gaya."
 
 msgid "Mining"
 msgstr "Mining (kaan kani)"
+
+msgid "Minutes of drop time on this spot:"
+msgstr "Is spot par drop time ke minutes:"
 
 msgid "Minutes to look for it:"
 msgstr "Dhoondne ke minutes:"
@@ -4128,6 +4143,11 @@ msgstr "Kharch ki &had (0 = koi nahi):"
 
 msgid "Spider cave"
 msgstr "Spider cave"
+
+msgid ""
+"Spot {n} never ends, so the spots after it never come, and they have a share of the day's drop time. Give spot {n} minutes, kills or a share of the drop time."
+msgstr ""
+"Spot {n} kabhi khatam nahi hota, is liye us ke baad wale spots kabhi nahi aate, halanke un ka din ke drop time mein hissa hai. Spot {n} ko minute, kills ya drop time ka hissa dein."
 
 msgid "St&op"
 msgstr "R&okein"
@@ -6165,6 +6185,9 @@ msgstr "ghalati"
 msgid "every day at {time}"
 msgstr "har roz {time} baje"
 
+msgid "every farm of the script is already done - stopping"
+msgstr "script ka har farm pehle hi poora ho chuka hai - ruk rahe hain"
+
 msgid "everything"
 msgstr "sab kuch"
 
@@ -7104,6 +7127,9 @@ msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "dungeon ke liye saamaan kaafi nahi"
+
+msgid "not farming {map}: {cond} is already true"
+msgstr "{map} par farming nahin: {cond} pehle se sach hai"
 
 msgid "not fed: {why}"
 msgstr "nahi khilaya: {why}"
@@ -9398,6 +9424,9 @@ msgstr "{n} arnebia"
 msgid "{n} at level {lv}"
 msgstr "level {lv} par {n}"
 
+msgid "{n} chests"
+msgstr "{n} chests"
+
 msgid "{n} chests opened"
 msgstr "{n} chests khole"
 
@@ -9443,6 +9472,9 @@ msgstr "{n} minute"
 msgid "{n} minutes are up"
 msgstr "{n} minute poore ho gaye"
 
+msgid "{n} minutes of drop time"
+msgstr "{n} minutes drop time"
+
 msgid "{n} missed"
 msgstr "{n} miss"
 
@@ -9457,6 +9489,9 @@ msgstr "Inmein se {n} abhi numaish par hain aur chhor diye jayenge."
 
 msgid "{n} sellers looked up"
 msgstr "{n} bechne wale dekhe"
+
+msgid "{n} shards"
+msgstr "{n} shards"
 
 msgid "{n} shards at level {lv}"
 msgstr "level {lv} par {n} shards"
@@ -9668,6 +9703,9 @@ msgstr "{tool} - {name}"
 
 msgid "{tool} check"
 msgstr "{tool} check"
+
+msgid "{used}, {kills} kills"
+msgstr "{used}, {kills} kills"
 
 msgid "{village} on {map}"
 msgstr "{map} par {village}"

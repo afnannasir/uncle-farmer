@@ -380,6 +380,23 @@ class _Part:
                     or any(self.gains.values()) or self.xp or self.kills or self.deaths or self.chests)
 
 
+class _MapPart:
+    """What farming one map did in a run: the time on it (not the trips away from it, nor a pause),
+    the kills and deaths there, the chests opened there, and the arnebia and shards the bag gained
+    while on it."""
+
+    def __init__(self) -> None:
+        self.seconds = 0.0
+        self.kills = self.deaths = self.chests = 0
+        self.arnebia = 0
+        self.shards: dict[str, int] = {}
+
+    def record(self) -> dict[str, Any]:
+        return {"minutes": round(self.seconds / 60.0, 1), "kills": self.kills, "deaths": self.deaths,
+                "chests": self.chests, "arnebia": self.arnebia,
+                "shards": {n: v for n, v in self.shards.items() if v}}
+
+
 class Tally:
     """One run. update() is called by the bot between fights; result() can be read any time, from
     any thread: every change to the tally holds self.lock, and result()/results() build their
@@ -418,6 +435,9 @@ class Tally:
         self.drop_left: int | None = None   # seconds of the day's drop time left, at the last sheet seen
         self.counters = (0, 0)       # the bot's kills and deaths at the last reading
         self.maps: list[int] = []
+        self.by_map: dict[int, _MapPart] = {}    # farming, map by map (on_map)
+        self.farm_map: int | None = None         # the map being farmed now, None between farms
+        self.map_since = self.started            # when farm_map's time was last counted
         self.combat = CombatStats(clock)
         self.combat.on = self.main == FARMING
         self.last_update = 0.0
@@ -470,12 +490,19 @@ class Tally:
         kills, deaths = int(bot.kills or 0), int(getattr(bot, "deaths", 0) or 0)
         with self.lock:
             part = self._part()
+            here = self._on_the_farm(mid)
+            self._count_map_time(now, here is not None)
             if bag:
                 if self.bag0 is None:
                     self.bag0 = dict(bag)
                 elif part is not None:
                     part.add_changes(self.bag, bag)
+                    if here is not None:
+                        _map_changes(here, self.bag, bag)
                 self.bag = bag
+            if here is not None:
+                here.kills += max(0, kills - self.counters[0])
+                here.deaths += max(0, deaths - self.counters[1])
             self.note_sheet(me.get("sheet"))
             if part is not None:
                 if self.doing == FARMING:
@@ -491,6 +518,29 @@ class Tally:
             part = self._part()
             if part is not None and self.doing == FARMING:
                 part.chests += 1
+                if self.farm_map is not None:
+                    self.by_map.setdefault(self.farm_map, _MapPart()).chests += 1
+
+    def on_map(self, mid: int | None) -> None:
+        """A farm of map mid begins (None: it is over). From now on what farming gains on that map
+        is also counted for it, map by map."""
+        with self.lock:
+            self._count_map_time(self.clock.time(), True)
+            self.farm_map = int(mid) if mid else None
+            if self.farm_map is not None:
+                self.by_map.setdefault(self.farm_map, _MapPart())
+
+    def _on_the_farm(self, mid: int | None) -> _MapPart | None:
+        """The farmed map's part when a reading made on map mid counts for it: farming, on it."""
+        if self.farm_map is None or self.doing != FARMING or mid != self.farm_map:
+            return None
+        return self.by_map.setdefault(self.farm_map, _MapPart())
+
+    def _count_map_time(self, now: float, on_it: bool) -> None:
+        """The time since the last count goes to the farmed map when we were farming on it."""
+        if self.farm_map is not None and self.doing == FARMING and on_it:
+            self.by_map.setdefault(self.farm_map, _MapPart()).seconds += max(0.0, now - self.map_since)
+        self.map_since = now
 
     def note_sheet(self, sheet: dict[str, Any] | None) -> None:
         with self.lock:
@@ -551,6 +601,7 @@ class Tally:
             self.update(bot, force=True)        # outside the lock: it reads the game
         with self.lock:
             now = self.clock.time()
+            self._count_map_time(now, True)
             if self.doing is None:
                 self.paused_s += now - self.since
             else:
@@ -643,6 +694,7 @@ class Tally:
             # what the run's own selling jobs brought in, from loot farming picked up
             rec["sales"] = sum(p.arnebia_in for k, p in self.parts.items() if k in SELLING)
             rec["maps"] = list(self.maps)
+            rec["by_map"] = self._by_map(end)
             rec["combat"] = self.combat.result()
             rec["shard_value"] = sum(v * self.prices.get(n.lower(), 0) for n, v in picked.items() if is_shard(n))
         else:
@@ -660,6 +712,18 @@ class Tally:
             else:
                 rec["remaining_minutes"] = None
         return rec
+
+    def _by_map(self, end: float) -> dict[str, dict[str, Any]]:
+        """The record's map by map part: {map id: its numbers}, the time on the map farmed now
+        counted up to `end`."""
+        out: dict[str, dict[str, Any]] = {}
+        for mid, mp in self.by_map.items():
+            rec = mp.record()
+            if mid == self.farm_map and self.doing == FARMING:
+                rec["minutes"] = round((mp.seconds + max(0.0, end - self.map_since)) / 60.0, 1)
+            if rec["minutes"] or rec["kills"]:
+                out[str(mid)] = rec
+        return out
 
     def finish(self, bot: Parts | None = None) -> None:
         if bot is not None:
@@ -928,6 +992,7 @@ def add_up(results: Iterable[Record]) -> Record:
             _add(total["moved"].setdefault(how, {}), items)
         if r.get("earnings_from_net"):
             total["earnings_from_net"] = True
+        _add_by_map(total.setdefault("by_map", {}), r.get("by_map"))
         level = r.get("level")
         if isinstance(level, int) and not isinstance(level, bool) and level >= 0:
             total["level"], total["xp_needed"] = level, r.get("xp_needed", -1)
@@ -946,6 +1011,59 @@ def add_up(results: Iterable[Record]) -> Record:
     if total["kind"] == TOOL and len({r.get("tool") for r in results}) == 1:
         total["tool"] = results[0].get("tool")
     return total
+
+
+def _map_changes(here: _MapPart, was: Mapping[str, int], now: Mapping[str, int]) -> None:
+    """One bag reading's arnebia and shards, into the farmed map's part."""
+    for n in set(now) | set(was):
+        d = now.get(n, 0) - was.get(n, 0)
+        if not d:
+            continue
+        if n.lower() == ARNEBIA:
+            here.arnebia += d
+        elif is_shard(n) and d > 0:
+            here.shards[n] = here.shards.get(n, 0) + d
+
+
+def _add_by_map(dst: dict[str, dict[str, Any]], src: Mapping[str, Any] | None) -> None:
+    """Map by map numbers of one record, added into a total's."""
+    for mid, rec in (src or {}).items():
+        if not json.is_object(rec):
+            continue
+        t = dst.setdefault(str(mid), {"minutes": 0.0, "kills": 0, "deaths": 0, "chests": 0, "arnebia": 0, "shards": {}})
+        for k in ("minutes", "kills", "deaths", "chests", "arnebia"):
+            v = rec.get(k, 0)
+            t[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
+        t["minutes"] = round(t["minutes"], 1)
+        _add(t["shards"], rec.get("shards"))
+
+
+def _by_map_lines(r: Record) -> list[str]:
+    """"Map by map": one line for each map a record farmed - only when it farmed two or more."""
+    maps: dict[str, dict[str, Any]] = r.get("by_map") or {}
+    if len(maps) < 2:
+        return []
+    from . import atlas                     # here: atlas is heavy, and only this text needs it
+    prices = _prices()
+    out = [_("Map by map:")]
+    for mid, m in sorted(maps.items(), key=lambda kv: -float(kv[1].get("minutes") or 0)):
+        shards: dict[str, int] = m.get("shards") or {}
+        n = sum(shards.values())
+        worth = sum(v * prices.get(k.lower(), 0) for k, v in shards.items())
+        bits = [_("{used}, {kills} kills", used=_clock(m.get("minutes", 0)), kills=_n(m.get("kills", 0)))]
+        rate = _rate(m.get("kills", 0), float(m.get("minutes") or 0))
+        if rate:
+            bits[0] += _(" ({rate} an hour)", rate=rate)
+        if m.get("arnebia"):
+            bits.append(_("{n} arnebia", n=_n(m["arnebia"])))
+        if n:
+            bits.append(_("{n} shards", n=_n(n)) + (_(" (worth about {v})", v=_n(worth)) if worth else ""))
+        if m.get("chests"):
+            bits.append(_("{n} chests", n=m["chests"]))
+        if m.get("deaths"):
+            bits.append(_("{n} deaths", n=m["deaths"]))
+        out.append("    %s: %s" % (atlas.label(int(mid)), ", ".join(bits)))
+    return out
 
 
 def _n(v: float) -> str:
@@ -1222,6 +1340,7 @@ def report(r: Record, title: str) -> str:
     line(_("Battlefield merit"), r.get("merit", 0))
     gained = len(lines) > head
     lines += _earnings_lines(r)
+    lines += _by_map_lines(r)
     loot = len(lines)
 
     picked: dict[str, int] = r.get("picked") or {}

@@ -17,6 +17,9 @@ msgstr " (tahmini: parçaları da içerir)"
 msgid " (locked here)"
 msgstr " (burada kilitli)"
 
+msgid " (worth about {v})"
+msgstr " (yaklaşık {v} değerinde)"
+
 msgid " ({rate} an hour)"
 msgstr " (saatte {rate})"
 
@@ -811,6 +814,9 @@ msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
 msgstr "{name} adlı bir betik zaten var. Değiştirilsin mi?"
+
+msgid "A share of the day's &drop time (kept across restarts)"
+msgstr "Günün &drop süresinden bir pay (yeniden başlatmada korunur)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "Bir sesin susturma ayarı açık ya da kapalı olmalı."
@@ -2085,6 +2091,9 @@ msgstr "Kalp taşıyla şehre git, iyileş ve geri gel (farm sırasında)"
 msgid "Goes round the spots in turn."
 msgstr "Noktaları sırayla dolaşır."
 
+msgid "Goes through the spots once, sharing out the day's drop time."
+msgstr "Noktalardan bir kez geçer, günün drop süresini paylaştırarak."
+
 msgid "Goes through the spots once."
 msgstr "Noktalardan bir kez geçer."
 
@@ -2673,6 +2682,9 @@ msgstr "{n} tane daha {gem} yap."
 msgid "Map"
 msgstr "Harita"
 
+msgid "Map by map:"
+msgstr "Harita harita:"
+
 msgid "Market buying"
 msgstr ""
 
@@ -2733,6 +2745,9 @@ msgstr "Mesaj filtre listesine eklendi."
 
 msgid "Mining"
 msgstr "Madencilik"
+
+msgid "Minutes of drop time on this spot:"
+msgstr "Bu noktadaki drop süresi (dakika):"
 
 msgid "Minutes to look for it:"
 msgstr "Arama süresi (dakika):"
@@ -4089,6 +4104,10 @@ msgstr ""
 
 msgid "Spider cave"
 msgstr "Örümcek mağarası"
+
+msgid ""
+"Spot {n} never ends, so the spots after it never come, and they have a share of the day's drop time. Give spot {n} minutes, kills or a share of the drop time."
+msgstr ""
 
 msgid "St&op"
 msgstr ""
@@ -6092,6 +6111,9 @@ msgstr "hata"
 msgid "every day at {time}"
 msgstr "her gün saat {time}"
 
+msgid "every farm of the script is already done - stopping"
+msgstr "betiğin bütün farm satırları zaten bitti - duruluyor"
+
 msgid "everything"
 msgstr "her şey"
 
@@ -7004,6 +7026,9 @@ msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "zindan için yeterli sarf malzemesi yok"
+
+msgid "not farming {map}: {cond} is already true"
+msgstr "{map} farmlanmıyor: {cond} zaten doğru"
 
 msgid "not fed: {why}"
 msgstr "beslenmedi: {why}"
@@ -9262,6 +9287,9 @@ msgstr "{n} arnebia"
 msgid "{n} at level {lv}"
 msgstr "{lv}. seviyede {n}"
 
+msgid "{n} chests"
+msgstr "{n} sandık"
+
 msgid "{n} chests opened"
 msgstr "{n} sandık açıldı"
 
@@ -9307,6 +9335,9 @@ msgstr "{n} dakika"
 msgid "{n} minutes are up"
 msgstr "{n} dakika doldu"
 
+msgid "{n} minutes of drop time"
+msgstr "{n} dakika drop süresi"
+
 msgid "{n} missed"
 msgstr "{n} ıska"
 
@@ -9321,6 +9352,9 @@ msgstr ""
 
 msgid "{n} sellers looked up"
 msgstr ""
+
+msgid "{n} shards"
+msgstr "{n} shard"
 
 msgid "{n} shards at level {lv}"
 msgstr "{lv}. seviyede {n} parça"
@@ -9527,6 +9561,9 @@ msgstr "{tool} - {name}"
 
 msgid "{tool} check"
 msgstr "{tool} kontrolü"
+
+msgid "{used}, {kills} kills"
+msgstr "{used}, {kills} öldürme"
 
 msgid "{village} on {map}"
 msgstr "{village}, {map}"
