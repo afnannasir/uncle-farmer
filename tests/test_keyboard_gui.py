@@ -13,6 +13,26 @@ from unclefarmer.gui.keyboard import KeyboardDialog
 from unclefarmer.gui.triggers import StepEditor
 
 
+def test_keyboard_manager_has_tabs_above_profile_controls_and_one_footer() -> None:
+    app = wx.GetApp() or wx.App(False)
+    with KeyboardDialog(None, "Test character", 42) as dialog:
+        notebook = next(child for child in dialog.GetChildren() if isinstance(child, wx.Notebook))
+        assert [notebook.GetPageText(index) for index in range(notebook.GetPageCount())] == [
+            "Skills", "Profession skills", "Items", "Quick phrases",
+        ]
+        note = dialog.FindWindowByName("Keyboard profile information", dialog)
+        assert isinstance(note, wx.TextCtrl) and note.IsMultiLine() and not note.IsEditable()
+        assert "Slots marked Leave unchanged" in note.GetValue()
+        profile = dialog.profiles.GetParent()
+        assert profile == note.GetParent() == dialog.profile_name.GetParent()
+        assert notebook.GetRect().GetBottom() < profile.GetPosition().y
+        footer = [child for child in dialog.GetChildren() if isinstance(child, wx.Button)]
+        assert [button.GetLabelText() for button in footer] == ["Save profile", "Apply profile", "Close"]
+        assert len({button.GetPosition().y for button in footer}) == 1
+        assert profile.GetRect().GetBottom() < footer[0].GetPosition().y
+    app.ProcessPendingEvents()
+
+
 def test_capture_save_edit_and_reload_from_keyboard_manager(monkeypatch: pytest.MonkeyPatch) -> None:
     app = wx.GetApp() or wx.App(False)
     buff = keyboard.Binding(id=12, name="Bull's Eye")
@@ -20,9 +40,6 @@ def test_capture_save_edit_and_reload_from_keyboard_manager(monkeypatch: pytest.
     monkeypatch.setattr(KeyboardDialog, "_game", returning(keyboard.Capture(saved, [buff], [], [])))
     with KeyboardDialog(None, "Test character", 42) as dialog:
         assert set(dialog.controls) == {"skills", "profession", "items", "phrases"}
-        note = dialog.FindWindowByName("Keyboard profile information", dialog)
-        assert isinstance(note, wx.TextCtrl) and note.IsMultiLine() and not note.IsEditable()
-        assert "Slots marked Leave unchanged" in note.GetValue()
         dialog._capture(wx.CommandEvent())
         dialog.controls["skills"].SetSelection(10)
         dialog._toggle_prepare(wx.CommandEvent())
