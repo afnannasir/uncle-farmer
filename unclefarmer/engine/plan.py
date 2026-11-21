@@ -2,8 +2,8 @@
 
     {
       "name": "Turkey cave",
-      "spots": [ {"map": 5302, "minutes": 0, "kills": 0, "patrol": "full", "area": null,
-                  "only": "", "skip": "", "elites": "fight"} ],
+      "spots": [ {"map": 5302, "minutes": 0, "kills": 0, "drop_minutes": 0, "patrol": "full",
+                  "area": null, "only": "", "skip": "", "elites": "fight"} ],
       "rotation": "round",               # several spots: "round" (in turn, again and again) or "once"
       "stop_after_minutes": 300,         # 0 = no limit
       "stop_at_clock": "",               # "HH:MM", empty = no
@@ -17,6 +17,12 @@
 How long a plan farms is decided in one place, its stop rules (plus the character's own: drop
 time, the next level, a full bag, deaths, broken gear). With one spot it farms there until it stops; a spot's own
 minutes or kills only matter with several spots: how long before moving on to the next.
+
+A spot's drop_minutes is its share of the day's drop time (DROP_DAY, 7 hours a day for everyone):
+the spots share it out in their order - three hours on the first, the rest on the second - counted
+on the game's own drop clock, so a run restarted in the middle carries on where the day is, and a
+spot whose share is already used up is skipped. A plan with shares runs its spots once, in order:
+going round again would find every share used up.
 """
 
 from __future__ import annotations
@@ -43,8 +49,9 @@ PLAN_DEFAULTS: dict[str, Any] = {
     "end": {"how": "start"},
 }
 
-STEP_DEFAULTS: dict[str, Any] = {"map": 5121, "minutes": 30, "kills": 0, "patrol": "random", "area": None,
-                 "only": "", "skip": "", "elites": "fight"}
+STEP_DEFAULTS: dict[str, Any] = {"map": 5121, "minutes": 30, "kills": 0, "drop_minutes": 0, "patrol": "random",
+                 "area": None, "only": "", "skip": "", "elites": "fight"}
+DROP_DAY = 7 * 60     # minutes of drop time the game gives a day, the same for every character
 END_HOWS = ("start", "place", "hearthstone", "safe", "here")
 PLAN_EXPORT_FORMAT = "unclefarmer-plan"
 PLAN_EXPORT_VERSION = 1
@@ -66,6 +73,7 @@ class Spot(BaseModel):
     map: int = STEP_DEFAULTS["map"]
     minutes: int = STEP_DEFAULTS["minutes"]
     kills: int = STEP_DEFAULTS["kills"]
+    drop_minutes: int = STEP_DEFAULTS["drop_minutes"]
     patrol: str = STEP_DEFAULTS["patrol"]
     area: list[int] | None = STEP_DEFAULTS["area"]
     only: str = STEP_DEFAULTS["only"]
@@ -164,32 +172,51 @@ def to_script(plan: dict[str, Any]) -> str:
     lines.append("")
     spots: list[dict[str, Any]] = plan.get("spots", [])
     several = len(spots) > 1
+    shared = several and has_drop_shares(plan)
     body: list[str] = []
+    used = 0
     for s in spots:
-        opts = ["map=%s" % s["map"]]
-        if several and s.get("minutes"):
-            opts.append("minutes=%s" % s["minutes"])
-        if several and s.get("kills"):
-            opts.append("kills=%s" % s["kills"])
-        if s.get("patrol", "random") != "random":
-            opts.append("patrol=%s" % s["patrol"])
-        if s.get("area"):
-            opts.append("area=%s" % ",".join(str(int(v)) for v in s["area"]))
-        if s.get("only"):
-            opts.append("only=%s" % _q(s["only"]))
-        if s.get("skip"):
-            opts.append("skip=%s" % _q(s["skip"]))
-        if s.get("elites") == "avoid":
-            opts.append("elites=avoid")
+        until = ""
+        if shared and s.get("drop_minutes"):
+            used += int(s["drop_minutes"])
+            # its share ends once the day's drop time is down to what the spots after it get
+            until = "until=drop_left >= 0 and drop_left <= %d" % max(0, DROP_DAY - used)
         body.append("# %s" % atlas.label(s["map"]))
-        body.append("farm " + " ".join(opts))
-    if several and plan.get("rotation", "round") == "round":
+        body.append(farm_line(s, several, until))
+    if several and plan.get("rotation", "round") == "round" and not shared:
         lines.append("repeat")
         lines += ["  " + b for b in body]
         lines.append("end")
     else:
         lines += body
     return "\n".join(lines) + "\n"
+
+
+def farm_line(s: dict[str, Any], several: bool, until: str = "") -> str:
+    """One spot's farm line (its minutes and kills only matter with several spots)."""
+    opts = ["map=%s" % s["map"]]
+    if several and s.get("minutes"):
+        opts.append("minutes=%s" % s["minutes"])
+    if several and s.get("kills"):
+        opts.append("kills=%s" % s["kills"])
+    if s.get("patrol", "random") != "random":
+        opts.append("patrol=%s" % s["patrol"])
+    if s.get("area"):
+        opts.append("area=%s" % ",".join(str(int(v)) for v in s["area"]))
+    if s.get("only"):
+        opts.append("only=%s" % _q(s["only"]))
+    if s.get("skip"):
+        opts.append("skip=%s" % _q(s["skip"]))
+    if s.get("elites") == "avoid":
+        opts.append("elites=avoid")
+    if until:
+        opts.append(until)                  # until= takes the rest of the line: last
+    return "farm " + " ".join(opts)
+
+
+def has_drop_shares(plan: dict[str, Any]) -> bool:
+    """Whether a spot of this plan has a share of the day's drop time (then it runs once, in order)."""
+    return any(s.get("drop_minutes") for s in plan.get("spots", []))
 
 
 def path(name: str) -> str:

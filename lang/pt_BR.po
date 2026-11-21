@@ -17,6 +17,9 @@ msgstr " (estimado: inclui fragmentos)"
 msgid " (locked here)"
 msgstr " (bloqueado aqui)"
 
+msgid " (worth about {v})"
+msgstr " (valendo cerca de {v})"
+
 msgid " ({rate} an hour)"
 msgstr " ({rate} por hora)"
 
@@ -757,6 +760,9 @@ msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
 msgstr "Já existe um script chamado {name}. Substituí-lo?"
+
+msgid "A share of the day's &drop time (kept across restarts)"
+msgstr "Uma parte do tempo de &drop do dia (mantida entre reinícios)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "A opção de silenciar um som deve ser ativada ou desativada."
@@ -2003,6 +2009,9 @@ msgstr "Ir à cidade com a hearthstone, curar e voltar (durante a coleta)"
 msgid "Goes round the spots in turn."
 msgstr "Percorre os locais em sequência."
 
+msgid "Goes through the spots once, sharing out the day's drop time."
+msgstr "Passa pelos locais uma vez, dividindo o tempo de drop do dia."
+
 msgid "Goes through the spots once."
 msgstr "Passa pelos locais uma vez."
 
@@ -2543,6 +2552,9 @@ msgstr "Criar mais {n} {gem}."
 msgid "Map"
 msgstr "Mapa"
 
+msgid "Map by map:"
+msgstr "Mapa a mapa:"
+
 msgid "Market buying"
 msgstr ""
 
@@ -2594,6 +2606,9 @@ msgstr "Mensagem adicionada à lista de filtros."
 
 msgid "Mining"
 msgstr "Mineração"
+
+msgid "Minutes of drop time on this spot:"
+msgstr "Minutos de tempo de drop neste local:"
 
 msgid "Minutes:"
 msgstr "Minutos:"
@@ -5814,6 +5829,9 @@ msgstr "erro"
 msgid "every day at {time}"
 msgstr "todos os dias às {time}"
 
+msgid "every farm of the script is already done - stopping"
+msgstr "todos os farms do script já estão feitos — parando"
+
 msgid "everything"
 msgstr "tudo"
 
@@ -6674,6 +6692,9 @@ msgstr "Arnebia restante insuficiente para elevar {gem} (taxa {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "suprimentos insuficientes para a masmorra"
+
+msgid "not farming {map}: {cond} is already true"
+msgstr "sem farm em {map}: {cond} já é verdade"
 
 msgid "not fed: {why}"
 msgstr "não alimentado: {why}"
@@ -8789,6 +8810,9 @@ msgstr "{n} Arnebia"
 msgid "{n} at level {lv}"
 msgstr "{n} no nível {lv}"
 
+msgid "{n} chests"
+msgstr "{n} baús"
+
 msgid "{n} chests opened"
 msgstr "{n} baús abertos"
 
@@ -8834,6 +8858,9 @@ msgstr "{n} minutos"
 msgid "{n} minutes are up"
 msgstr "os {n} minutos acabaram"
 
+msgid "{n} minutes of drop time"
+msgstr "{n} minutos de tempo de drop"
+
 msgid "{n} missed"
 msgstr "{n} erros"
 
@@ -8848,6 +8875,9 @@ msgstr ""
 
 msgid "{n} sellers looked up"
 msgstr ""
+
+msgid "{n} shards"
+msgstr "{n} shards"
 
 msgid "{n} shards at level {lv}"
 msgstr "{n} fragmentos no nível {lv}"
@@ -9030,6 +9060,9 @@ msgstr "{tool} — {name}"
 
 msgid "{tool} check"
 msgstr "verificar {tool}"
+
+msgid "{used}, {kills} kills"
+msgstr "{used}, {kills} mortes"
 
 msgid "{village} on {map}"
 msgstr "{village} em {map}"

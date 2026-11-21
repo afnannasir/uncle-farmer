@@ -129,9 +129,14 @@ class FarmingMixin(Parts):
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
+        tally = getattr(self, "tally", None)
+        if tally is not None:
+            tally.on_map(map_id)          # the results, map by map
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
+            if tally is not None:
+                tally.on_map(None)
             self.farming_on = None
             self.on_farm_run = False
             self.in_instance, self.pack_min = was

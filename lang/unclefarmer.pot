@@ -17,6 +17,9 @@ msgstr ""
 msgid " (locked here)"
 msgstr ""
 
+msgid " (worth about {v})"
+msgstr ""
+
 msgid " ({rate} an hour)"
 msgstr ""
 
@@ -744,6 +747,9 @@ msgid ""
 msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
+msgstr ""
+
+msgid "A share of the day's &drop time (kept across restarts)"
 msgstr ""
 
 msgid "A sound's mute setting must be on or off."
@@ -1957,6 +1963,9 @@ msgstr ""
 msgid "Goes round the spots in turn."
 msgstr ""
 
+msgid "Goes through the spots once, sharing out the day's drop time."
+msgstr ""
+
 msgid "Goes through the spots once."
 msgstr ""
 
@@ -2474,6 +2483,9 @@ msgstr ""
 msgid "Map"
 msgstr ""
 
+msgid "Map by map:"
+msgstr ""
+
 msgid "Market buying"
 msgstr ""
 
@@ -2523,6 +2535,9 @@ msgid "Message added to the filter list."
 msgstr ""
 
 msgid "Mining"
+msgstr ""
+
+msgid "Minutes of drop time on this spot:"
 msgstr ""
 
 msgid "Minutes:"
@@ -5551,6 +5566,9 @@ msgstr ""
 msgid "every day at {time}"
 msgstr ""
 
+msgid "every farm of the script is already done - stopping"
+msgstr ""
+
 msgid "everything"
 msgstr ""
 
@@ -6369,6 +6387,9 @@ msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr ""
 
 msgid "not enough supplies for the dungeon"
+msgstr ""
+
+msgid "not farming {map}: {cond} is already true"
 msgstr ""
 
 msgid "not fed: {why}"
@@ -8379,6 +8400,9 @@ msgstr ""
 msgid "{n} at level {lv}"
 msgstr ""
 
+msgid "{n} chests"
+msgstr ""
+
 msgid "{n} chests opened"
 msgstr ""
 
@@ -8424,6 +8448,9 @@ msgstr ""
 msgid "{n} minutes are up"
 msgstr ""
 
+msgid "{n} minutes of drop time"
+msgstr ""
+
 msgid "{n} missed"
 msgstr ""
 
@@ -8437,6 +8464,9 @@ msgid "{n} of them are still on display and will be skipped."
 msgstr ""
 
 msgid "{n} sellers looked up"
+msgstr ""
+
+msgid "{n} shards"
 msgstr ""
 
 msgid "{n} shards at level {lv}"
@@ -8609,6 +8639,9 @@ msgid "{tool} - {name}"
 msgstr ""
 
 msgid "{tool} check"
+msgstr ""
+
+msgid "{used}, {kills} kills"
 msgstr ""
 
 msgid "{village} on {map}"
