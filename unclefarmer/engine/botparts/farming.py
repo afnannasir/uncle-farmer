@@ -147,8 +147,7 @@ class FarmingMixin(Parts):
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
-            if tally is not None:
-                tally.on_map(None)
+            self._farm_ends(tally)
             self.farming_on = None
             self.on_farm_run = False
             self.in_instance, self.pack_min = was
@@ -166,6 +165,18 @@ class FarmingMixin(Parts):
         if not instance:
             teamlead.start_farm(as_bot(self))
         return tally
+
+    def _farm_ends(self, tally: Any) -> None:
+        """The farm is over: its last reading (the kill that ended it) still counts for its map,
+        then the map is closed. A reading that fails here (a stop, a lost game) leaves the rest to
+        the run's own last reading, which counts for the run only."""
+        if tally is None:
+            return
+        try:
+            tally.update(self, force=True)
+        except Exception:  # noqa: BLE001 - never in the way of what ended the farm
+            pass
+        tally.on_map(None)
 
     def _farm_loop(self, map_id: int, area: Sequence[float] | None, only: str, skip: str, avoid: list[tuple[float, float, float, float]], loop: list[tuple[int, int]] | None, chase: float | None, done: Callable[[], bool], sighted: Callable[[dict[str, Any]], bool], last_supply_check: float) -> None:
         loop_i = None

@@ -152,3 +152,62 @@ def test_a_day_adds_the_maps_up() -> None:
     total = stats.add_up([a, b])["by_map"]
     assert total["5361"]["minutes"] == 90 and total["5361"]["kills"] == 500
     assert total["5361"]["shards"] == {"X Shard": 2} and total["5281"]["kills"] == 5
+
+
+# ---------------------------------------------------------------- found in review
+def test_the_kill_that_ends_a_spot_counts_for_its_map() -> None:
+    """The farm read its last kill after closing its map: one kill in the run's total and none
+    in the map's (replayed in review). The farm's end reads once more while the map still counts."""
+    from unclefarmer.engine.botparts.farming import FarmingMixin
+    clock = Clock()
+    t = stats.Tally("Hero", "Two", clock=clock)
+    b = Reader()
+    t.update(as_parts(b), force=True)
+    t.on_map(5361)
+    clock.advance(60)
+    b.kills = 1                                   # the kill that met the spot's limit
+    FarmingMixin._farm_ends(b, t)  # type: ignore[arg-type]  # pyright: ignore[reportPrivateUsage]
+    t.update(as_parts(b), force=True)             # the run's own later reading
+    r = t.result()
+    assert r["kills"] == 1 and r["by_map"]["5361"]["kills"] == 1
+
+
+def test_a_failing_last_reading_still_closes_the_map() -> None:
+    from unclefarmer.engine.botparts.farming import FarmingMixin
+
+    class Gone(Reader):
+        def bag_rows(self) -> list[dict[str, Any]]:
+            raise OSError("the game closed")
+    t = stats.Tally("Hero", "Two", clock=Clock())
+    t.on_map(5361)
+    FarmingMixin._farm_ends(Gone(), t)  # type: ignore[arg-type]  # pyright: ignore[reportPrivateUsage]
+    assert t.farm_map is None
+
+
+def endless_first() -> dict[str, Any]:
+    return {"name": "Two", "rotation": "round",
+            "spots": [dict(plan.new_step(5361), minutes=0, kills=0, drop_minutes=0),
+                      dict(plan.new_step(5281), minutes=0, drop_minutes=120)]}
+
+
+def test_a_spot_that_never_ends_before_a_share_is_found() -> None:
+    assert plan.endless_spot(endless_first()) == 0
+    for fix in ({"minutes": 30}, {"kills": 100}, {"drop_minutes": 60}):
+        p = endless_first()
+        p["spots"][0].update(fix)
+        assert plan.endless_spot(p) is None, fix
+    last_free = two_spots()                       # the last spot may farm on: nothing waits for it
+    assert plan.endless_spot(last_free) is None
+    no_shares = endless_first()
+    no_shares["spots"][1]["drop_minutes"] = 0     # no shares: the spots go round as before
+    assert plan.endless_spot(no_shares) is None
+
+
+def test_such_a_plan_is_not_imported(tmp_path: Any) -> None:
+    import json
+
+    import pytest
+    src = tmp_path / "two.json"
+    src.write_text(json.dumps(endless_first()), encoding="utf-8")
+    with pytest.raises(ValueError, match="spot 1 never ends"):
+        plan.read_import(str(src))

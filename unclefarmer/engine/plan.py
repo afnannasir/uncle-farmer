@@ -214,6 +214,20 @@ def farm_line(s: dict[str, Any], several: bool, until: str = "") -> str:
     return "farm " + " ".join(opts)
 
 
+def endless_spot(plan: dict[str, Any]) -> int | None:
+    """The first spot (from 0) that never ends while a later spot has a share of the drop time:
+    no share, no minutes and no kills of its own. A plan with shares goes through its spots once,
+    so the spots after it - and their shares - would never come. None when every spot can end
+    (the last one may farm on: nothing waits for it)."""
+    spots: list[dict[str, Any]] = plan.get("spots", [])
+    if len(spots) < 2 or not has_drop_shares(plan):
+        return None
+    for i, s in enumerate(spots[:-1]):
+        if not (s.get("drop_minutes") or s.get("minutes") or s.get("kills")):
+            return i
+    return None
+
+
 def has_drop_shares(plan: dict[str, Any]) -> bool:
     """Whether a spot of this plan has a share of the day's drop time (then it runs once, in order)."""
     return any(s.get("drop_minutes") for s in plan.get("spots", []))
@@ -280,6 +294,10 @@ def read_import(source: str) -> dict[str, Any]:
     plan["spots"] = [dict(STEP_DEFAULTS, **spot) for spot in plan["spots"]]
     if not isinstance(plan["name"], str) or not plan["name"].strip():
         raise ValueError("the plan has no name")
+    endless = endless_spot(plan)
+    if endless is not None:
+        raise ValueError("spot %d never ends, and the spots after it have a share of the drop time: give it "
+                         "minutes, kills or a share" % (endless + 1))
     plan["name"] = plan["name"].strip()
     return plan
 

@@ -3998,6 +3998,10 @@ msgstr ""
 msgid "Spider cave"
 msgstr ""
 
+msgid ""
+"Spot {n} never ends, so the spots after it never come, and they have a share of the day's drop time. Give spot {n} minutes, kills or a share of the drop time."
+msgstr ""
+
 msgid "St&op"
 msgstr ""
 

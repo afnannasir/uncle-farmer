@@ -4140,6 +4140,11 @@ msgstr ""
 msgid "Spider cave"
 msgstr "Caverna da Aranha"
 
+msgid ""
+"Spot {n} never ends, so the spots after it never come, and they have a share of the day's drop time. Give spot {n} minutes, kills or a share of the drop time."
+msgstr ""
+"O ponto {n} nunca termina, então os pontos depois dele nunca chegam, e eles têm uma parte do tempo de drop do dia. Dê ao ponto {n} minutos, kills ou uma parte do tempo de drop."
+
 msgid "St&op"
 msgstr ""
 

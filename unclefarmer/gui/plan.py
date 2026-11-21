@@ -604,6 +604,11 @@ class PlanDialog(Dialog):
         if not p["spots"]:
             error(self, _("Add at least one farming spot."))
             return
+        endless = plans.endless_spot(p)
+        if endless is not None:
+            error(self, _("Spot {n} never ends, so the spots after it never come, and they have a share of the "
+                          "day's drop time. Give spot {n} minutes, kills or a share of the drop time.", n=endless + 1))
+            return
         problem = check_script(plans.to_script(p))
         if problem:
             error(self, problem)
