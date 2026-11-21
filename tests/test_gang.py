@@ -8,8 +8,8 @@ import pytest
 
 from unclefarmer.clock import CLOCK
 
-from unclefarmer.engine import crafting, town
-from unclefarmer.engine.bot import Bot
+from unclefarmer.engine import chores, crafting, town
+from unclefarmer.engine.bot import Bot, Stopped
 from conftest import as_bot
 from typing import Any
 
@@ -47,6 +47,7 @@ class FB:
     def __init__(self, g: FakeGame) -> None:
         self.g = g
         self.logs: list[str] = []
+        self.chosen: list[str] = []
         self.stop_event = threading.Event()          # never set: the run goes on
         self.a = self
 
@@ -128,7 +129,7 @@ class FB:
                     g.input_open, g.rows = True, None
             else:
                 g.rows = None
-        self.chosen = getattr(self, "chosen", []) + [text]
+        self.chosen.append(text)
         return e
 
 
@@ -160,6 +161,16 @@ def test_own_gang_through_the_outer_hall() -> None:
     assert crafting.enter_gang(as_bot(b)) is True and b.chosen == ["Enter the Outer hall of the gang"]
 
 
+def test_gangless_character_does_not_try_either_own_hall(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = FB(FakeGame([]))
+    me = b.me
+    monkeypatch.setattr(b, "me", lambda: dict(me(), side=0))
+    assert not crafting.enter_gang(as_bot(b))
+    with pytest.raises(Stopped, match="in a gang"):
+        chores.inner_hall(as_bot(b))
+    assert b.chosen == [] and b.map_id() == 1041
+
+
 def test_landing_in_the_inner_half_walks_on_to_the_craftsmen() -> None:
     # the inner hall's door lets us out to the outer hall on foot (a recorded hand run, 2026-11-07)
     b = FB(FakeGame([], land=(41, 45)))
@@ -180,6 +191,94 @@ def test_another_gang_from_a_paged_list() -> None:
     b = FB(FakeGame(pages))
     assert crafting.enter_gang(as_bot(b), "iron wolves") is True
     assert b.chosen == ["all gangs", "next page", "Iron Wolves", "Enter the Outer hall of the gang"]
+
+
+def gang_listing(page: int, *, target: str = "", next_page: int | None = None) -> list[list[dict[str, Any]]]:
+    rows: list[list[dict[str, Any]]] = []
+    for i in range(1, 21):
+        name = target if i == 4 and target else f"Gang {page}-{i}"
+        rows.append([entry(f"{i};{name}; level 5"),
+                     entry("members 30; leader: Leader"),
+                     dict(entry("apply to join"), text="Please enter application message, less than 60 characters")])
+    if next_page is not None:
+        rows.append([entry(f"Next page: {next_page}")])
+    return rows
+
+
+@pytest.mark.parametrize("target_page", [1, 2, 3, 41])
+def test_numbered_gang_pages_skip_application_entries_and_enter_the_target(target_page: int) -> None:
+    pages = [(gang_listing(i, target="Iron Wolves" if i == target_page else "",
+                           next_page=i + 1 if i < target_page else None), f"p{i}")
+             for i in range(1, target_page + 1)]
+    b = FB(FakeGame(pages + [([[entry("Enter the Outer hall of the gang")]], "gang")]))
+    assert crafting.enter_gang(as_bot(b), "Iron Wolves") is True
+    assert b.chosen == (["all gangs"] + [f"Next page: {i}" for i in range(2, target_page + 1)]
+                        + ["4;Iron Wolves; level 5", "Enter the Outer hall of the gang"])
+    assert not b.g.typed
+
+
+def test_gang_search_stops_at_the_last_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = FB(FakeGame([(gang_listing(1, next_page=2), "p1"), (gang_listing(2), "p2")]))
+    reopen: list[str] = []
+
+    def reopen_entrance(bot: FB, role: str) -> None:
+        reopen.append(role)
+        bot.g.open([[entry("all gangs")]], "entrance")
+
+    monkeypatch.setattr(town, "visit", reopen_entrance)
+    b.g.open([[entry("all gangs")]], "entrance")
+    assert crafting.pick_at_entrance(as_bot(b), "Missing gang") is False
+    assert b.chosen == ["all gangs", "Next page: 2"]
+    assert reopen == []
+
+
+def test_gang_search_stops_on_a_page_that_does_not_advance(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = FB(FakeGame([(gang_listing(1, next_page=2), "p1")]))
+    b.g.open([[entry("all gangs")]], "entrance")
+    choose = b.choose
+
+    def stalled(pattern: str) -> dict[str, Any] | None:
+        old = b.g.rows
+        picked = choose(pattern)
+        if b.chosen[-1] == "Next page: 2":
+            b.g.rows = old
+        return picked
+
+    monkeypatch.setattr(b, "choose", stalled)
+    assert crafting.pick_at_entrance(as_bot(b), "Missing gang") is False
+    assert b.chosen == ["all gangs", "Next page: 2"]
+
+
+def test_gang_search_waits_for_a_slow_page_without_requesting_it_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    pages = [([[entry("Alpha")], [entry("Next page: 2")]], "p1"),
+             ([[entry("target gang")]], "p2"),
+             ([[entry("Enter the Outer hall of the gang")]], "gang")]
+    b = FB(FakeGame(pages))
+    now = 1000.0
+    delivered_at = 0.0
+    choose = b.choose
+
+    def sleep(seconds: float) -> None:
+        nonlocal now, delivered_at
+        now += seconds
+        if delivered_at and now >= delivered_at:
+            delivered_at = 0.0
+            b.g.screen_idx = 1
+            b.g.open(*pages[1])
+
+    def delayed_choose(pattern: str) -> dict[str, Any] | None:
+        nonlocal delivered_at
+        if b.g.screen != "p1" or b.find_entry(b.dialog()["top"], pattern) != (1, 0):
+            return choose(pattern)
+        b.chosen.append("Next page: 2")
+        delivered_at = now + 1.5
+        return entry("Next page: 2")
+
+    monkeypatch.setattr(CLOCK, "time", lambda: now)
+    monkeypatch.setattr(b, "sleep", sleep)
+    monkeypatch.setattr(b, "choose", delayed_choose)
+    assert crafting.enter_gang(as_bot(b), "target gang") is True
+    assert b.chosen == ["all gangs", "Next page: 2", "target gang", "Enter the Outer hall of the gang"]
 
 
 def test_another_gang_through_the_name_box() -> None:

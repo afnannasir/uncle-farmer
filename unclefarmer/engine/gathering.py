@@ -424,6 +424,13 @@ def gangs(cfg: dict[str, Any]) -> list[str]:
     return out
 
 
+def _available_gangs(b: Bot, cfg: dict[str, Any]) -> list[str]:
+    planned = gangs(cfg) if cfg.get("gang", True) else []
+    if "" in planned and crafting.is_gangless(b):
+        return [gang for gang in planned if gang]
+    return planned
+
+
 def gang_name(gang: str) -> str:
     return gang or _("our own gang")
 
@@ -568,7 +575,7 @@ def check(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: int 
     """What a run would do, walking only to read the gang area's entrance."""
     notes = [_("{skill}, {rank}; character level {level}", skill=_(skill), rank=rank_name(rank),
                level=level or "?")]
-    for gang in gangs(cfg) if cfg.get("gang", True) else []:
+    for gang in _available_gangs(b, cfg):
         done = gang_done_today(b, gang)
         if done:
             notes.append(_("{gang}: already today ({note})", gang=gang_name(gang), note=done.get("note", "")))
@@ -580,6 +587,7 @@ def check(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: int 
             if b.stop_event.is_set() or getattr(e, "final", False):
                 raise
             notes.append(_("{gang}: {about}", gang=gang_name(gang), about=e))
+        b.close_dialogs()
     if cfg.get("outside", True):
         found = places(cfg, skill)
         p = choose(found, level, rank, cfg)
@@ -603,7 +611,6 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     level = chores.char_level(b) or None
     if check_only:
         notes = check(b, cfg, skill, rank, level)
-        b.close_dialogs()
         b.log(_("gathering check: {notes}", notes="; ".join(notes)), speak=True)
         return notes
     b.log(_("gathering with {skill} ({rank})", skill=_(skill), rank=rank_name(rank)), speak=True)
@@ -613,7 +620,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     end_at = b.clock.time() + 60 * minutes if minutes else None
     notes: list[str] = []
     why = ""
-    for gang in gangs(cfg) if cfg.get("gang", True) else []:
+    for gang in _available_gangs(b, cfg):
         if gang_done_today(b, gang):
             continue
         why = _gang_round(b, cfg, skill, end_at, notes, gang)

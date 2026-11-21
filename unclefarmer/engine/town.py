@@ -654,46 +654,71 @@ def collection_left(p: dict[str, Any], rows: list[tuple[int, str, int]]) -> list
     return out
 
 
-def sell_collection(b: Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) -> int:
-    """Sell what gathering brought in to the nearest Aquaculture, Ore or Herb Buyer: each lists
-    what of its kind the bag holds ("101 Milkfish; Unit price 670 arnebia"), and every row is sold
-    (the bag manager's keep rules apart) until it says there is nothing left of its kind. A kind no
-    buyer is known for is said and passed over. Returns the arnebia it brought in."""
+def _collection_kinds(b: Bot) -> tuple[str, ...]:
+    """Route an automatic sale by profession, or by known goods when no profession is learned."""
+    from . import gathering
+
+    skill, _rank = gathering.read_skill(b)
+    if skill:
+        return (gathering.kind_of(skill),)
+    known_buyers = {npc["name"]: npc["role"] for npc in knowledge.data().get("npcs", [])
+                    if npc.get("role") in COLLECTION_BUYERS.values()}
+    roles: set[str] = set()
+    for item, count in counts(b).items():
+        if count <= 0 or not item:
+            continue
+        role = knowledge.buyer_role(item)
+        if role and role in COLLECTION_BUYERS.values():
+            roles.add(role)
+        else:
+            roles.update(known_buyers[name] for _, name, *_ in knowledge.traders(item, "buy") if name in known_buyers)
+    return tuple(kind for kind, role in COLLECTION_BUYERS.items() if role in roles)
+
+
+def _sell_to_collection_buyer(b: Bot, role: str, candidates: Sequence[Npc]) -> InventoryTransaction:
+    transaction = InventoryTransaction.begin(b)
+    attempted: set[str] = set()
+    npc = visit(b, role, candidates=candidates)
+    if not b.wait_dialog(3.0):
+        return transaction
+    for _round in range(60):
+        rows = buyer_rows(b)
+        if not rows and attempted:
+            # A sale can close the menu or leave a message. Reopen this buyer where we stand.
+            b.close_dialogs()
+            if not b.talk(npc) or not b.wait_dialog(3.0):
+                break
+            rows = buyer_rows(b)
+        todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
+        if not todo:
+            break
+        item, n = todo[0]
+        if not pick(b, r"^\s*\d+\s+" + re.escape(item) + r"\s*;\s*Unit price", n):
+            b.log(_("the {role} didn't take {item}", role=role.replace("_", " "), item=item))
+            break
+        attempted.add(item.lower())
+        transaction.expect(item, -n)
+    return transaction
+
+
+def sell_collection(b: Bot, kinds: tuple[str, ...] | None = None) -> int:
+    """Sell the specified collection, or choose its buyer from the character's activity.
+
+    The buyer lists the qualifying bag rows. Apply the bag manager's keep rules and count the
+    arnebia received for verified sales.
+    """
     earned = 0
-    for kind in kinds:
+    for kind in _collection_kinds(b) if kinds is None else kinds:
         role = COLLECTION_BUYERS[kind]
-        if not knowledge.service_npcs(role):
+        candidates = knowledge.service_npcs(role)
+        if not candidates:
             b.log(_("I don't know where a {role} is", role=role.replace("_", " ")))
             continue
-        transaction = InventoryTransaction.begin(b)
+        try:
+            transaction = _sell_to_collection_buyer(b, role, candidates)
+        finally:
+            b.close_dialogs()
         before = transaction.before.get("arnebia", 0)
-        attempted: set[str] = set()
-        for _round in range(60):
-            # Most buyer sales leave this fixed menu open. If this game version closes it,
-            # reopen the same buyer before reading the next verified list.
-            if _round == 0 or not b.dialog().get("open"):
-                visit(b, role)
-                if not b.wait_dialog(3.0):
-                    break
-            rows = buyer_rows(b)
-            if not rows and _round > 0:
-                # something else is on screen after a sale (a message, another menu): ask the
-                # buyer afresh once before taking an empty list for "nothing left to sell"
-                b.close_dialogs()
-                visit(b, role)
-                if not b.wait_dialog(3.0):
-                    break
-                rows = buyer_rows(b)
-            todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
-            if not todo:
-                break
-            item, n = todo[0]
-            if not pick(b, r"^\s*\d+\s+" + re.escape(item) + r"\s*;\s*Unit price", n):
-                b.log(_("the {role} didn't take {item}", role=role.replace("_", " "), item=item))
-                break
-            attempted.add(item.lower())
-            transaction.expect(item, -n)
-        b.close_dialogs()
         after = transaction.settle(b) if transaction.expected else transaction.before
         moved = transaction.removed(after)
         if moved:

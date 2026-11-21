@@ -112,6 +112,7 @@ def test_collection_sale_counts_money_that_comes_after_the_items(monkeypatch: py
     rows: list[tuple[int, str, int]] = [(4, "Milkfish", 100)]
     b.dialog = lambda: {"ok": True, "open": 1}  # type: ignore[attr-defined]
     b.wait_dialog = lambda seconds=3.0, want_open=True: {"open": 1}  # type: ignore[attr-defined]
+    b.talk = lambda name: name == "Buyer"  # type: ignore[attr-defined]
     b.p = {}  # type: ignore[attr-defined]
     monkeypatch.setattr(knowledge, "service_npcs", stand_in(knowledge.service_npcs, lambda role: [(1, "Buyer", 0, 0)]))
 

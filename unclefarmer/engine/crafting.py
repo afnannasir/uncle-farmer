@@ -82,6 +82,10 @@ IDLE_ROUNDS = 2          # rounds in a row that change nothing, with gems still 
 MAX_ROUNDS = 1000        # a safety net only: every round that counts changed the bag, and buying is bounded
 OFFER_WAIT = 5.0         # seconds the Forger's page for an item is given to show what its next level takes
 MENU_POLL = 0.15         # seconds between reads of a menu that is still changing
+GANG_PAGE_WAIT = 4.0
+GANG_LISTS = (r"(?i)^\s*all\s+gangs\s*$", r"(?i)^\s*allied\s+gangs\s*$")
+GANG_NEXT = r"(?i)^\s*(?:next(?:\s+page)?(?:\s*:\s*\d+)?|>>)\s*$"
+GANG_SEARCH = r"(?i)^\s*(?:search(?:\s+gang)?(?:\s+by\s+name)?|(?:please\s+)?enter\s+(?:the\s+)?gang\s+name)\s*[:?]?\s*$"
 PAGE_WAIT = 3.0          # seconds a gem's own page is given to come up: nothing is spent on any other page
 REFUSALS = 3             # batch sizes tried (each half the last) when the game makes nothing of one
 
@@ -93,6 +97,13 @@ def gang_map(mid: int) -> bool:
 
 def in_gang(b: Bot) -> bool:
     return gang_map(b.map_id())
+
+
+def is_gangless(b: Bot) -> bool:
+    """Whether the client's own-player state confirms there is no gang membership."""
+    # The game's gang attack mode checks this same field and requires a positive gang ID.
+    side = b.me().get("side")
+    return isinstance(side, int) and side <= 0
 
 
 def _same_gang(b: Bot, gang: str | None) -> bool:
@@ -153,29 +164,52 @@ def walks_between(mid: int, here: tuple[int, int], cell: tuple[int, int]) -> boo
     return m.gated_route((start[0], start[1]), (goal[0], goal[1])) is not None
 
 
+def _wait_gang_list(b: Bot, previous: object) -> tuple[dict[str, Any] | None, bool]:
+    """Wait for new rows or the name box. The old page can stay open while the server replies."""
+    end = clock_for(b).time() + GANG_PAGE_WAIT
+    while clock_for(b).time() < end:
+        state = b.a.json("input")
+        if state.get("ok") and state.get("open"):
+            return None, True
+        top = b.dialog().get("top")
+        if top and top["rows"] != previous and not any(b.find_entry(top, pattern) is not None for pattern in GANG_LISTS):
+            return top, False
+        b.sleep(MENU_POLL)
+    return None, False
+
+
 def _pick_gang(b: Bot, gang: str) -> bool:
-    """After "all gangs" (or "Allied gangs"): find that gang by name - typing it when the game asks
-    for a name, turning pages when there are pages - and choose it."""
-    want = r"(?i)(^|[^a-z0-9])%s([^a-z0-9]|$)" % re.escape(gang)
-    for _page in range(40):
-        if town.wait_input(b, True, 0.6):     # a box asking for the gang's name
-            if not town.type_text(b, gang):
+    """Look for the exact gang in each page, never its members or application entries."""
+    name = re.escape(gang.strip())
+    numbered = rf"(?i)^\s*\d+\s*;\s*{name}\s*;\s*level\s+\d+\s*$"
+    plain = rf"(?i)^\s*{name}\s*$"
+    previous = None
+    seen: set[str] = set()
+    allow_name_box = True
+    typed = False
+    while True:
+        top, name_box = _wait_gang_list(b, previous)
+        if name_box:
+            if not allow_name_box or typed or not town.type_text(b, gang):
                 return False
+            typed = True
             continue
-        d = b.wait_dialog(3.0)
-        if d is None or not d.get("top"):
+        if top is None:
             return False
-        top = d["top"]
-        if b.find_entry(top, want) is not None:
-            return b.choose(want) is not None
-        if b.find_entry(top, r"(?i)please enter|enter .*name|search|find") is not None:
-            b.choose(r"(?i)please enter|enter .*name|search|find")
-            continue
-        if b.find_entry(top, r"(?i)next\s*page|^\s*next\b|>>") is None:
+        previous = top["rows"]
+        page = repr(previous)
+        if page in seen:
             return False
-        b.choose(r"(?i)next\s*page|^\s*next\b|>>")
-        b.sleep(0.3)
-    return False
+        seen.add(page)
+        for target in (numbered, plain):
+            where = b.find_entry(top, target)
+            if where is not None and where[1] == 0:
+                return b.choose(target) is not None
+        choices = (GANG_NEXT,) if typed else (GANG_NEXT, GANG_SEARCH)
+        choice = next((pattern for pattern in choices if b.find_entry(top, pattern) is not None), None)
+        if choice is None or b.choose(choice) is None:
+            return False
+        allow_name_box = choice == GANG_SEARCH
 
 
 def pick_at_entrance(b: Bot, gang: str) -> bool:
@@ -184,12 +218,14 @@ def pick_at_entrance(b: Bot, gang: str) -> bool:
     list has it."""
     b.log(_("looking for the gang {gang} at the Gang Entrance", gang=gang))
     top: dict[str, Any] = b.dialog().get("top") or {}
-    for listing in (r"(?i)all\s+gangs", r"(?i)allied\s+gangs"):
-        if b.find_entry(top, listing) is not None and b.choose(listing) is not None and _pick_gang(b, gang):
+    listings = [pattern for pattern in GANG_LISTS if b.find_entry(top, pattern) is not None]
+    for index, listing in enumerate(listings):
+        if index:
+            b.close_dialogs()
+            town.visit(b, "gang_entrance")
+        if b.choose(listing) is not None and _pick_gang(b, gang):
             return True
-        b.close_dialogs()
-        town.visit(b, "gang_entrance")
-        top = b.dialog().get("top") or {}
+    b.close_dialogs()
     b.log(_("the Gang Entrance lists no gang called {gang}", gang=gang), speak=True)
     return False
 
@@ -200,6 +236,8 @@ def enter_gang(b: Bot, gang: str | None=None, role: str="gem_craftsman") -> bool
     but in the walled-off inner hall (or the wrong gang's): out and in again."""
     if in_gang(b) and _reachable(b, role) and _same_gang(b, gang):
         return True
+    if not gang and is_gangless(b):
+        return False
     b.close_dialogs()
     b.gang_base = None
     town.visit(b, "gang_entrance")          # (leaves a gang base first when we are in one)

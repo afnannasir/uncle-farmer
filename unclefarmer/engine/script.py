@@ -35,8 +35,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      in Tools, XP loser (check: only read the numbers and look)
     dungeon [check] [<cave>]         the cave named (Spider cave, Scorpion Cave), else the one chosen in
                                      Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
-    sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
-                                     and Herb Buyers (all of them, if no kind is given)
+    sell_collection [fish|ore|herb|all]   sell to the buyer for the character's gathering skill
+                                     (or the goods in the bag), unless a kind or all is specified
     sell_shards                      sell the shards the bag manager says to sell, at the nearest
                                      Shard Market (this city's when it has one)
     clean_bag                        throw away, where you stand, what is on the bag manager's
@@ -680,11 +680,11 @@ def _prep_construction_scan(node: Node, rest: str, n: int):
 
 
 def _prep_sell_collection(node: Node, rest: str, n: int):
-    w = rest.strip().lower() or "all"
+    w = rest.strip().lower()
     kinds = tuple(town.COLLECTION_BUYERS)
-    if w not in kinds + ("all",):
+    if w and w not in kinds + ("all",):
         raise ScriptError(n, _("write it as: sell_collection  or  sell_collection fish (fish, ore or herb)"))
-    node.opts["kinds"] = kinds if w == "all" else (w,)
+    node.opts["kinds"] = (kinds if w == "all" else (w,)) if w else None
 
 
 MARKET_HOW = N_("write it as: market scan [sellers] | market search [item=\"<name>\"] [cheapest] [max=<price>] "
