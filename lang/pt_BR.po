@@ -618,6 +618,9 @@ msgstr "&Viajar montado em besta de fusão:"
 msgid "&Unmute this game"
 msgstr "&Ativar o som deste jogo"
 
+msgid "&Update now"
+msgstr ""
+
 msgid "&Use the selected skill:"
 msgstr "&Usar a habilidade selecionada:"
 
@@ -689,9 +692,6 @@ msgstr "(versão de desenvolvimento)"
 
 msgid "(and {n} more with no price then)"
 msgstr "(e mais {n} sem preço informado)"
-
-msgid "(no notes)"
-msgstr "(sem observações)"
 
 msgid "(no plan yet)"
 msgstr "(nenhum plano ainda)"
@@ -1169,6 +1169,12 @@ msgstr "Alterar tecla"
 msgid "Change target mode"
 msgstr "Alterar modo de seleção de alvo"
 
+msgid "Change&log"
+msgstr ""
+
+msgid "Changelog"
+msgstr ""
+
 msgid "Changes apply when you save."
 msgstr "As alterações serão aplicadas ao salvar."
 
@@ -1447,6 +1453,10 @@ msgstr "Não foi possível importar o plano: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Não foi possível importar as configurações: {err}"
+
+msgid ""
+"Couldn't load the changelog. Check your internet connection and try again."
+msgstr ""
 
 msgid "Couldn't open it."
 msgstr "Não foi possível abrir."
@@ -2435,6 +2445,9 @@ msgstr "Atribuições de teclas (&B):"
 msgid "Keyboard Manager"
 msgstr "Gerenciador de teclado"
 
+msgid "Keyboard profile information"
+msgstr ""
+
 msgid "Keyboard profile {name} was not found."
 msgstr "O perfil de teclado {name} não foi encontrado."
 
@@ -2544,6 +2557,9 @@ msgid "Listen for sounds"
 msgstr "Escutar sons"
 
 msgid "Listing"
+msgstr ""
+
+msgid "Loading the changelog…"
 msgstr ""
 
 msgid "Location:"
@@ -2878,6 +2894,12 @@ msgstr "Nenhum bot está em execução."
 
 msgid "No browser opened. The Telegram group is at {link}"
 msgstr "Nenhum navegador foi aberto. O grupo do Telegram está em {link}"
+
+msgid "No changelog entry for {v}. Showing the full changelog."
+msgstr ""
+
+msgid "No changelog entry for {v}. Showing the release notes."
+msgstr ""
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3492,6 +3514,9 @@ msgstr "Reinstalar o agente"
 
 msgid "Release &channel:"
 msgstr "&Canal de lançamento:"
+
+msgid "Release notes"
+msgstr ""
 
 msgid "Remem&ber this item"
 msgstr ""
@@ -4893,17 +4918,8 @@ msgstr ""
 msgid ""
 "Uncle Farmer {v} is out (you have {cur}).\n"
 "\n"
-"What's new:\n"
-"{notes}\n"
-"\n"
-"Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+"Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
 msgstr ""
-"O Uncle Farmer {v} está disponível (sua versão é {cur}).\n"
-"\n"
-"Novidades:\n"
-"{notes}\n"
-"\n"
-"Atualizar agora? O Uncle Farmer será fechado, atualizado e reiniciado; seus personagens, planos, scripts e configurações serão mantidos."
 
 msgid "Uncle Farmer {v} is the newest version."
 msgstr "O Uncle Farmer {v} é a versão mais recente."
@@ -9490,6 +9506,24 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid "(no notes)"
+#~ msgstr "(sem observações)"
+
+#~ msgid ""
+#~ "Uncle Farmer {v} is out (you have {cur}).\n"
+#~ "\n"
+#~ "What's new:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+#~ msgstr ""
+#~ "O Uncle Farmer {v} está disponível (sua versão é {cur}).\n"
+#~ "\n"
+#~ "Novidades:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Atualizar agora? O Uncle Farmer será fechado, atualizado e reiniciado; seus personagens, planos, scripts e configurações serão mantidos."
 
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr ""
