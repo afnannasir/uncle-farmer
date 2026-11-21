@@ -53,7 +53,7 @@ class Game:
     def __init__(self, applicants: list[tuple[str, int]], leader: bool = True, team: str | None = "Farmers") -> None:
         self.applicants: list[list[Any]] = [[name, pid, 0] for name, pid in applicants]
         self.leader = leader
-        self.team = team
+        self.team: str | None = team
         self.members: list[str] = []
         self.chat: list[str] = []
         self.sounds: list[int] = []

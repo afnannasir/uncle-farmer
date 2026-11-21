@@ -1,4 +1,6 @@
-"""Leading a team (the character window's Team tab): taking requests to join by ourselves.
+"""Leading a team (the character window's Team tab): taking requests to join by ourselves,
+removing members who went offline, handing the team over at the end, making the team at the start
+(leaving one another player leads), and staying in town to manage it. Each only when ticked.
 
 What the game shows, read live on 2026-11-21 with two characters:
 
@@ -13,8 +15,17 @@ What the game shows, read live on 2026-11-21 with two characters:
   takes in the selected players: "<name> joined the team" (chat, a game line) for everyone.
 * "Application: <n>" beside "friends" is a FRIEND request, never a team one.
 
+* The member list (Enter on "<name> team") has a row per member, "<name>;<id>" first, and for
+  the leader "Transfer team leader" and "remove" beside each other member. The info key (W_INFO)
+  on a member makes the server answer "(1(<name>)1)|||((,<id>;))|||..." when they are online,
+  and nothing when they aren't.
+* Each choice asks "Are you sure ...?" with "Confirm" and "cancel"; then, in the chat for everyone:
+  "<name> has been removed from the team", "<name> has become the team leader", "<name> has quit
+  the team", "Team disbanded" (no name) and "<name> set up a team named <team>".
+
 Only players the profile lets in are selected (trusted players, the game's friends or a list of
-names and ids); the others are left waiting, never refused, and the log names them.
+names and ids); the others are left waiting, never refused, and the log names them. When another
+player disbands the team or takes it over, it isn't managed any more for the rest of the run.
 """
 
 from __future__ import annotations
@@ -23,9 +34,9 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, cast
 
-from .. import gamekeys, sounds, trust
+from .. import atlas, gamekeys, sounds, trust
 from ..i18n import _
-from . import chores, team
+from . import chores, team, town
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -46,6 +57,13 @@ REMOVE = r"^\s*remove\s*$"
 CONFIRM = r"^\s*Confirm\s*$"
 INFO_LEAST, INFO_MOST = 1.5, 6.0
 MOST_OPENINGS = 8           # member lists opened in one offline check (one per removal)
+QUIT = r"^\s*quit\s*$"
+QUIT_DONE = re.compile(r"has quit the team", re.I)
+DISBANDED = re.compile(r"^\s*Team disbanded", re.I)
+NEW_LEADER = re.compile(r"^\s*(.+?) has become the team leader", re.I)
+AFTER_DISBAND = 4.0         # the script's pause between disbanding and making the team again
+STAY_LOOK = 2.0             # seconds between looks while staying in town
+STAY_EVERY_LEAST = 5        # minutes between offline checks while staying, at least
 
 
 @dataclass
@@ -56,6 +74,11 @@ class TeamLead:
     left_waiting: set[str] = field(default_factory=set[str])   # not allowed in: said once each
     friends: trust.Trusted | None = None                       # the game's friends, read once a run
     offline_at: float | None = None    # when members were last checked for being offline
+    chat_from: int | None = None       # the chat cursor the safety watch reads from
+    own_disband: bool = False          # the next "Team disbanded" is ours
+    handed: bool = False               # we handed the team over ourselves
+    off: bool = False                  # someone else disbanded or took the team: hands off
+    create_later: bool = False         # the team is made at the first town
     told: set[str] = field(default_factory=set[str])
 
 
@@ -107,12 +130,35 @@ def listen(b: Bot) -> None:
     connection). A script's own sound wait sets its ids in its place and turns them off at its
     end: the next farm listens again."""
     lead = state(b)
+    if lead.chat_from is None:
+        lead.chat_from = chat_mark(b)
     try:
         lead.sound_from = sounds.events(b.a, 0)["now"]
         sounds.listen(b.a, str(REQUEST_SOUND))
     except Exception as e:         # an agent without sounds: requests are still seen at each farm start
         lead.sound_from = None
         _once(b, "no sound", _("can't hear team requests ({err}): they are looked at when farming starts", err=e))
+
+
+def watch(b: Bot) -> None:
+    """Another player disbanded the team, or became its leader: the team is no longer ours to
+    manage, for the rest of the run (said once)."""
+    lead = state(b)
+    if lead.chat_from is None or lead.off:
+        lead.chat_from = chat_mark(b) if lead.chat_from is None else lead.chat_from
+        return
+    lines = game_lines(b, lead.chat_from)
+    lead.chat_from = chat_mark(b)
+    for line in lines:
+        if DISBANDED.search(line) and not lead.own_disband:
+            lead.off = True
+        m = NEW_LEADER.match(line)
+        if m and not lead.handed and m.group(1).strip().lower() != str(b.me().get("name", "")).lower():
+            lead.off = True
+        if DISBANDED.search(line):
+            lead.own_disband = False
+    if lead.off:
+        b.log(_("someone else disbanded the team or took it over: no more managing it this run"), speak=True)
 
 
 def heard_request(b: Bot) -> bool:
@@ -411,7 +457,7 @@ def _first_offline(b: Bot, top: dict[str, Any], todo: list[tuple[int, str, int]]
 
 
 def offline_due(b: Bot) -> bool:
-    if not b.p.get("team_remove_offline", False) or b.p.get("team_offline_town_only", False):
+    if not removing(b) or b.p.get("team_offline_town_only", False):
         return False
     last = state(b).offline_at
     every = max(1, int(b.p.get("team_offline_every", 10))) * 60
@@ -420,7 +466,11 @@ def offline_due(b: Bot) -> bool:
 
 # ------------------------------------------------------------------ in the run
 def on(b: Bot) -> bool:
-    return bool(b.p.get("team_accept", False))
+    return bool(b.p.get("team_accept", False)) and not state(b).off
+
+
+def removing(b: Bot) -> bool:
+    return bool(b.p.get("team_remove_offline", False)) and not state(b).off
 
 
 def start_farm(b: Bot) -> None:
@@ -429,13 +479,15 @@ def start_farm(b: Bot) -> None:
     if on(b):
         listen(b)
         take_requests(b)
-    if b.p.get("team_remove_offline", False):
+    if removing(b):
         remove_offline(b)
 
 
 def after_trip(b: Bot) -> None:
-    """Back from a trip of our own (a town trip): the "only through a town" offline check."""
-    if b.p.get("team_remove_offline", False) and b.p.get("team_offline_town_only", False):
+    """In town on a trip of our own: the team that couldn't be made where the run started, and
+    the "only through a town" offline check."""
+    made_later(b)
+    if removing(b) and b.p.get("team_offline_town_only", False):
         remove_offline(b)
 
 
@@ -444,6 +496,8 @@ def between_fights(b: Bot) -> bool:
     check is due. True when the menus were used (the loop looks around again)."""
     if b.attackers():
         return False
+    if b.p.get("team_accept", False) or b.p.get("team_remove_offline", False):
+        watch(b)
     if on(b) and heard_request(b):
         take_requests(b)
         return True
@@ -483,6 +537,7 @@ def hand_over(b: Bot) -> str | None:
     b.log(said, speak=True)
     if not ok:
         return None
+    state(b).handed = True
     became = re.compile(r"^\s*%s has become the team leader" % re.escape(to[0]), re.I)
     end = b.clock.time() + JOIN_WAIT
     while b.clock.time() < end:
@@ -494,6 +549,153 @@ def hand_over(b: Bot) -> str | None:
 
 
 def at_end(b: Bot) -> None:
-    """The run's last gestures, on its last map."""
-    if b.p.get("team_hand_over", False):
-        hand_over(b)
+    """The run's last gestures, on its last map: the team handed over, or (still ours) managed
+    from the town until the player stops the run."""
+    if b.p.get("team_hand_over", False) and hand_over(b):
+        return
+    if b.p.get("team_stay_in_town", False) and not state(b).off:
+        if in_town(b):
+            stay(b)
+        else:
+            b.log(_("the run ended outside a town: not staying to manage the team"), speak=True)
+
+
+# ------------------------------------------------------------------ the team at the start
+def in_town(b: Bot) -> bool:
+    me = b.me()
+    return atlas.in_town(b.map_id(), float(me.get("x", 0)), float(me.get("y", 0)))
+
+
+def _confirm_and_hear(b: Bot, said: re.Pattern[str]) -> bool:
+    """Confirm the question the last choice asked, then hear the game's line about it."""
+    mark = chat_mark(b)
+    if b.wait_dialog(3.0) is None or b.choose(CONFIRM) is None:
+        b.close_dialogs()
+        return False
+    end = b.clock.time() + JOIN_WAIT
+    while b.clock.time() < end:
+        if any(said.search(line) for line in game_lines(b, mark)):
+            return True
+        b.sleep(0.25)
+    return False
+
+
+def leave_team(b: Bot, team_name: str) -> bool:
+    """Leave the team another player leads ("quit", confirmed; "<us> has quit the team")."""
+    if b.choose(QUIT, row=r"^\s*%s\s*$" % re.escape(team_name)) is None:
+        return False
+    if not _confirm_and_hear(b, QUIT_DONE):
+        b.log(_("the game didn't say this character left {team}", team=team_name), speak=True)
+        return False
+    b.log(_("left {team}, which another player leads", team=team_name), speak=True)
+    return True
+
+
+def disband(b: Bot, team_name: str) -> bool:
+    if b.choose(DISBAND, row=r"^\s*%s\s*$" % re.escape(team_name)) is None:
+        return False
+    if not _confirm_and_hear(b, DISBANDED):
+        b.log(_("the game didn't say {team} was disbanded", team=team_name), speak=True)
+        return False
+    state(b).own_disband = True
+    b.log(_("disbanded {team}: the team is to be called {name}", team=team_name, name=b.p.get("team_name", "")))
+    return True
+
+
+def create(b: Bot) -> bool:
+    """Make the team with the profile's name ("Create a team", the name typed in its box; "<us>
+    set up a team named <name>"). Only in a town (the script's rule: a team is made there)."""
+    name = str(b.p.get("team_name", "")).strip()
+    if not in_town(b):
+        state(b).create_later = True
+        b.log(_("the team {name} is made at the first town on the way: this isn't one", name=name))
+        return False
+    state(b).create_later = False
+    top = open_action_menu(b)
+    if top is None or b.choose(NO_TEAM) is None:
+        b.close_dialogs()
+        return False
+    mark = chat_mark(b)
+    if not town.type_text(b, name):
+        b.close_dialogs()
+        b.log(_("the game didn't take the team name {name}", name=name), speak=True)
+        return False
+    made = re.compile(r"set up a team named %s\s*$" % re.escape(name), re.I)
+    end = b.clock.time() + JOIN_WAIT
+    while b.clock.time() < end:
+        if any(made.search(line) for line in game_lines(b, mark)):
+            b.log(_("made the team {name}", name=name), speak=True)
+            return True
+        b.sleep(0.25)
+    b.log(_("the game didn't say the team {name} was made", name=name), speak=True)
+    return False
+
+
+def at_start(b: Bot) -> None:
+    """Before a farming run sets out: out of a team another player leads, into our own team with
+    its name - as the Team tab says. Nothing at all when none of it is ticked."""
+    p = b.p
+    if not (p.get("team_create", False) or p.get("team_remake", False) or p.get("team_leave_others", False)):
+        return
+    top = open_action_menu(b)
+    if top is None:
+        return
+    team = team_entry(b, top)
+    if team is not None and not leads(b, top, team[0]):
+        if not p.get("team_leave_others", False):
+            b.close_dialogs()
+            b.log(_("this character is in {team}, which another player leads", team=team[1]))
+            return
+        if not leave_team(b, team[1]):
+            return
+        team = None
+    elif team is not None and _remade(b, team[1]):
+        team = None
+        b.sleep(AFTER_DISBAND)       # the game needs a moment before "Create a team" comes back
+    elif team is not None:
+        b.close_dialogs()
+    if team is None and (p.get("team_create", False) or p.get("team_remake", False)):
+        create(b)
+
+
+def _remade(b: Bot, team_name: str) -> bool:
+    """Our team has another name and the profile says to make it again: disbanded (in a town)."""
+    want = str(b.p.get("team_name", "")).strip()
+    if not b.p.get("team_remake", False) or not want or team_name.lower() == ("%s team" % want).lower():
+        return False
+    if not in_town(b):
+        b.close_dialogs()
+        b.log(_("{team} isn't called {name}: it is made again in a town only", team=team_name, name=want))
+        return False
+    return disband(b, team_name)
+
+
+def made_later(b: Bot) -> None:
+    """In a town at last: the team that couldn't be made where the run started."""
+    if state(b).create_later and in_town(b):
+        create(b)
+
+
+# ------------------------------------------------------------------ staying in town
+def stay(b: Bot) -> None:
+    """Manage the team until the player stops the run: take requests as they come and remove
+    members who went offline, every so many minutes (the Team tab's, five at least)."""
+    if not (on(b) or removing(b)):
+        b.log(_("nothing to manage: tick taking requests or removing offline members on the Team tab"),
+              speak=True)
+        return
+    b.log(_("staying here managing the team until you stop the run"), speak=True)
+    if on(b):
+        listen(b)
+        take_requests(b)
+    every = max(STAY_EVERY_LEAST, int(b.p.get("team_offline_every", 10))) * 60
+    if removing(b):
+        remove_offline(b)
+    while not state(b).off:
+        watch(b)
+        if on(b) and heard_request(b):
+            take_requests(b)
+        last = state(b).offline_at
+        if removing(b) and (last is None or b.clock.time() - last >= every):
+            remove_offline(b)
+        b.sleep(STAY_LOOK)
