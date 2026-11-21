@@ -232,6 +232,28 @@ def test_staying_in_town_takes_requests_until_the_run_is_stopped() -> None:
     assert any("staying here managing the team" in line for line in b.lines)
 
 
+def test_manage_team_sets_the_team_up_first_then_manages_it() -> None:
+    """`manage_team` alone: out of another player's team, ours made, then requests taken."""
+    game = StartGame(team="Theirs", leader=False)
+    b = StartBot(game, team_leave_others=True, team_accept=True)
+    b.nap_limit = 60
+    game.applicants = [["Bob", 555, 0]]
+    with pytest.raises(Done):
+        teamlead.manage(as_bot(b))
+    assert "quit Confirm" in game.opened and game.team == "Farmers" and game.leader
+    assert "Bob" in game.members
+
+
+def test_manage_team_with_nothing_ticked_for_the_start_just_manages() -> None:
+    game = StartGame(team="Farmers")
+    b = StartBot(game, team_create=False, team_accept=True)
+    b.nap_limit = 40
+    game.applicants = [["Bob", 555, 0]]
+    with pytest.raises(Done):
+        teamlead.manage(as_bot(b))
+    assert "Create a team" not in game.opened and "Bob" in game.members
+
+
 def test_staying_needs_a_town_and_something_to_manage() -> None:
     game = StartGame(team="Farmers")
     b = StartBot(game, town=False, team_accept=True, team_stay_in_town=True)
