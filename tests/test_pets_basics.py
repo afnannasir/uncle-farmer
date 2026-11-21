@@ -304,3 +304,36 @@ def test_recall_nothing_when_no_pet_is_out(monkeypatch: pytest.MonkeyPatch) -> N
     b = Bot(rows(("Cat", 0)))
     pets.recall(as_bot(b))
     assert b.keys == []
+
+
+def test_the_fights_beast_is_seen_to_before_the_pet_is_called(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The server ignores a fusion change pressed right after a pet came out (recorded: 0.6 s
+    # after, ignored twice), so the first fight's "get off the Swift beast" cost 8.5 s.
+    from unclefarmer.engine import beasts
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    bot = Bot(rows(("Cat", 0)))
+    bot.p["pets"] = [{"name": "Cat", "use": True}]
+    order: list[str] = []
+
+    def beast(b: Any, purpose: Any = None) -> None:
+        order.append("beast " + str(purpose) + (" (pet out)" if bot.a.rows[0]["usable_at"] < 0 else ""))
+    monkeypatch.setattr(beasts, "ensure", stand_in(beasts.ensure, beast))
+    pets.keep_out(as_bot(bot))
+    assert order == ["beast fight"]                      # asked for while the pet was still in
+    assert bot.a.rows[0]["usable_at"] == -1
+
+
+def test_no_beast_change_when_no_pet_is_to_be_called(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.engine import beasts
+    clock = Clock()
+    monkeypatch.setattr(CLOCK, "time", clock)
+    bot = Bot(rows(("Cat", -1)))
+    bot.p["pets"] = [{"name": "Cat", "use": True}]
+    order: list[str] = []
+
+    def beast(b: Any, purpose: Any = None) -> None:
+        order.append("beast")
+    monkeypatch.setattr(beasts, "ensure", stand_in(beasts.ensure, beast))
+    pets.keep_out(as_bot(bot))
+    assert order == []

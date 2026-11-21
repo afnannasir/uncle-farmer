@@ -386,48 +386,44 @@ def test_reachable_without_map_data_is_optimistic(monkeypatch: pytest.MonkeyPatc
 # ---------------------------------------------------------------------------------------- _pick_gang
 def test_pick_gang_types_the_name_when_asked(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    states = iter([True, False])
-    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open, seconds: next(states)))
+    b.input_open = True
     typed: list[str] = []
-    monkeypatch.setattr(town, "type_text", stand_in(town.type_text, lambda b, text: typed.append(text) or True))
+    def type_name(bot: crafting.Bot, text: str) -> bool:
+        typed.append(text)
+        b.input_open = False
+        return True
 
-    def choose(pattern: str):
-        b.top = menu(["Harvest Team"])
-        return entry("Harvest Team")
-
-    b.on_choose = choose
+    monkeypatch.setattr(town, "type_text", type_name)
     b.top = menu(["Harvest Team"])
     b.open = True
-    assert crafting._pick_gang(as_bot(b), "Harvest") is True
-    assert typed == ["Harvest"]
+    assert crafting._pick_gang(as_bot(b), "Harvest Team") is True
+    assert typed == ["Harvest Team"]
 
 
 def test_pick_gang_gives_up_when_the_name_will_not_type(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open, seconds: True))
+    b.input_open = True
     monkeypatch.setattr(town, "type_text", stand_in(town.type_text, lambda b, text: False))
     assert crafting._pick_gang(as_bot(b), "Harvest") is False
 
 
-def test_pick_gang_chooses_a_search_entry_then_the_gang(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pick_gang_chooses_a_search_entry_then_the_gang() -> None:
     b = Bot(top=menu(["please enter the gang name"]))
-    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open, seconds: False))
     steps: list[str] = []
 
     def choose(pattern: str):
         steps.append(pattern)
-        if "please enter" in pattern:
+        if travel.matches(pattern, "please enter the gang name"):
             b.top = menu(["Harvest Team"])
         return entry("x")
 
     b.on_choose = choose
-    assert crafting._pick_gang(as_bot(b), "Harvest") is True
+    assert crafting._pick_gang(as_bot(b), "Harvest Team") is True
     assert len(steps) == 2
 
 
-def test_pick_gang_turns_the_page_then_finds_it(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pick_gang_turns_the_page_then_finds_it() -> None:
     b = Bot(top=menu(["next page"]))
-    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open, seconds: False))
     steps: list[str] = []
 
     def choose(pattern: str):
@@ -437,13 +433,12 @@ def test_pick_gang_turns_the_page_then_finds_it(monkeypatch: pytest.MonkeyPatch)
         return entry("x")
 
     b.on_choose = choose
-    assert crafting._pick_gang(as_bot(b), "Harvest") is True
+    assert crafting._pick_gang(as_bot(b), "Harvest Team") is True
     assert len(steps) == 2
 
 
-def test_pick_gang_with_no_way_on(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pick_gang_with_no_way_on() -> None:
     b = Bot(top=menu(["Some other gang"]))
-    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open, seconds: False))
     assert crafting._pick_gang(as_bot(b), "Harvest") is False
 
 

@@ -92,6 +92,10 @@ final class Memory {
      *  of "enemies"; monsters are -2; guards, other players' summons and war-zone towers 0; other
      *  players' traps and totems their owner's number (1000 and up). */
     static final String E_SIDE = "A";
+    /** game.ak.C: our own facing, a compass mask (1 = x-, 2 = y-, 4 = x+, 8 = y+; 3, 6, 9, 12 the
+     *  diagonals). A direction key sets it as a step starts (i.G() copies ak.D into it), and a skill
+     *  with no target sends it in its cast packet: Escape jumps the opposite way. */
+    static final String E_COMPASS = "C";
     /** game.B.f bit 2: the game's hostility check (game.i.a(ak,int,ak)) never counts it as an enemy. */
     static final int F_PROTECTED = 2;
     static final String BAG_COUNT = "m";
@@ -327,7 +331,12 @@ final class Memory {
 
     private static void self(Object world, StringBuilder sb) throws Unavailable {
         int id = intField(world, W_SELF_ID);
-        entity(selfEntity(world), id, sb);
+        Object me = selfEntity(world);
+        entity(me, id, sb);
+        if (has(me, E_COMPASS)) {             // (agent 77) which way a jump backward goes
+            sb.setLength(sb.length() - 1);
+            sb.append(",\"compass\":").append(intField(me, E_COMPASS)).append('}');
+        }
         // Level and MP aren't held by the client; they come from the last character sheet we saw.
         if (Sheet.seen != 0 && Sheet.id == id) {
             sb.setLength(sb.length() - 1);

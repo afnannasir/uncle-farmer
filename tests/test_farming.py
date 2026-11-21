@@ -161,8 +161,11 @@ class Farm(FarmingMixin):
 
     explained = 0
 
-    def explain_left_out(self) -> None:
+    def explain_left_out(self, map_id: int | None = None) -> None:
         self.explained += 1
+
+    def sight_note(self) -> dict[str, Any]:
+        return {}
 
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         return mobs[0]
@@ -170,7 +173,8 @@ class Farm(FarmingMixin):
     def note_pick(self, snap: dict[str, Any], mob: dict[str, Any], mobs: list[dict[str, Any]]) -> None:
         pass
 
-    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str) -> None:
+    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str,
+                    seen: dict[str, Any] | None = None) -> None:
         pass
 
     def walk_to(self, cell: tuple[float, float], map_change: bool=False, near: Callable[[dict[str, Any]], bool] | None=None) -> str:
@@ -269,6 +273,27 @@ def test_set_modes_presses_until_the_game_agrees() -> None:
     assert b.keys == ["b", "v"]
     assert "mode set: pacifist mode with counterattack" in b.lines
     assert "mode set: enemies" in b.lines
+
+
+def test_a_mode_press_is_taken_the_moment_it_shows_not_after_a_fixed_wait() -> None:
+    # three presses from "NPCs" round to "enemies" were the first second of a cave's 15 minutes
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 3})
+    order = [0, 1, 2]
+
+    def press(k: str, ms: int | None = None) -> None:
+        b.keys.append(k)
+        b.link.modes["target"] = order[len(b.keys) - 1]
+    b.key = press
+    b.set_modes()
+    assert b.keys == ["v", "v", "v"] and "mode set: enemies" in b.lines
+    assert b.sleeps == [b.MODE_LOOK] * 3
+
+
+def test_a_mode_press_that_shows_late_is_waited_for_as_long_as_before() -> None:
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 0})
+    b.set_modes()                             # the key changes nothing here
+    assert sum(b.sleeps[:6]) == pytest.approx(b.MODE_WAIT)
+    assert len(b.sleeps) == 6 * len(b.keys)
 
 
 def test_set_modes_leaves_a_locked_pk_mode_alone() -> None:

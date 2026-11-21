@@ -148,3 +148,28 @@ def test_the_walk_goes_through_gate_nine(real_maps: None) -> None:
     b = DoorBot(m, (329, 97), PRISON)
     assert b.walk_to((335, 98)) == "arrived"
     assert b.pos == (335, 98)
+
+
+GNOME = 1737      # Gnome excavation plant: "secret door" rows (石门5) shut by a raised stone wall
+
+
+@pytest.mark.parametrize("a, b", [((165, 169), (166, 174)), ((199, 186), (199, 177)), ((226, 162), (227, 173))])
+def test_a_door_slab_opens_only_when_nothing_else_gets_there(a: tuple[int, int], b: tuple[int, int]) -> None:
+    # the three walks a follower stopped on (2026-11-15), each across a door its leader had opened
+    m = atlas.model(GNOME)
+    assert m.route(a, b) is None                            # read flat, the slab is a wall for good
+    opened = m.barriers_open()
+    assert opened is not None and opened.route(a, b) is not None
+
+
+def test_door_slabs_are_only_the_thin_walls_beside_doors() -> None:
+    m = atlas.model(GNOME)
+    assert int(m.barrier.sum()) == 24                       # three 8-cell slabs, nothing else
+    assert m.barrier[171, 164:172].all() and m.barrier[180, 194:202].all() and m.barrier[171, 224:232].all()
+
+
+def test_the_walk_goes_through_an_opened_door(real_maps: None) -> None:
+    m = atlas.model(GNOME)
+    b = DoorBot(m, (165, 169), GNOME)
+    assert b.walk_to((166, 174)) == "arrived"
+    assert b.pos == (166, 174)

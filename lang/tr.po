@@ -68,6 +68,9 @@ msgstr "Beceriler okun&amadığında saldırı tuşları:"
 msgid "&Attack style:"
 msgstr "S&aldırı stili:"
 
+msgid "&Autopilot: the whole day"
+msgstr ""
+
 msgid "&Bag and supplies"
 msgstr "Çanta ve sarf malzemeleri (&B)"
 
@@ -188,6 +191,9 @@ msgstr "Geliştirilecek &ekipman:"
 msgid "&Experience:"
 msgstr "D&eneyim:"
 
+msgid "&Farm with:"
+msgstr ""
+
 msgid "&Feed the gang's breed beast at the Animal Shed"
 msgstr "Hayvan Kulübesi'nde çetenin yetiştirme canavarını besle (&F)"
 
@@ -205,6 +211,9 @@ msgstr "Bul: (&F)"
 
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "Oyunun kendi çaldığı sesli mesajların hızını düzelt (&F)"
+
+msgid "&Fuse spare potions up to:"
+msgstr ""
 
 msgid "&Game"
 msgstr "Oyun (&G)"
@@ -333,6 +342,9 @@ msgstr "Kaybedi&lecek deneyim:"
 msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr "Gerektiğinde kristal parçalarından Geliştir&me Kristali yap"
 
+msgid "&Make them:"
+msgstr ""
+
 msgid "&Map:"
 msgstr "Harita: (&M)"
 
@@ -414,11 +426,17 @@ msgstr "Dönem: (&P)"
 msgid "&Pet:"
 msgstr "Evcil hayvan: (&P)"
 
+msgid "&Pharmacist:"
+msgstr ""
+
 msgid "&Pick from monsters near me"
 msgstr "Yakınımdaki canavarlardan seç (&P)"
 
 msgid "&Place:"
 msgstr "Yer: (&P)"
+
+msgid "&Plan:"
+msgstr ""
 
 msgid "&Plans"
 msgstr "&Planlar"
@@ -490,6 +508,9 @@ msgstr "Çalıştı&r"
 msgid "&Run selected"
 msgstr "Seçileni çalıştı&r"
 
+msgid "&Run the day as:"
+msgstr ""
+
 msgid "&Save"
 msgstr "Kaydet (&S)"
 
@@ -549,6 +570,9 @@ msgstr "Önemli olayları NVDA ile &seslendir"
 msgid "&Start"
 msgstr "Başlat (&S)"
 
+msgid "&Start:"
+msgstr ""
+
 msgid "&Stop farming every day at a set time, whatever the bot is doing"
 msgstr "Bot ne yapıyor olursa olsun, her gün belirli bir &saatte farmı bırak"
 
@@ -557,6 +581,9 @@ msgstr ""
 
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Sarf malzemeleri (işaretli olanlar yeniden doldurulur):"
+
+msgid "&Take them from:"
+msgstr ""
 
 msgid "&Target keys pick:"
 msgstr "Hedef &tuşları şunu seçer:"
@@ -569,6 +596,9 @@ msgstr "Sonra: (&T)"
 
 msgid "&Throw away:"
 msgstr "A&tılacaklar:"
+
+msgid "&Time (HH:MM, this computer's clock):"
+msgstr ""
 
 msgid "&Time (hours:minutes):"
 msgstr "Zaman (saa&t:dakika):"
@@ -611,6 +641,9 @@ msgstr "Nerede ölünsün (&W):"
 
 msgid "&Write an email"
 msgstr "Bir e-posta yaz (&W)"
+
+msgid "&Write the script of the day now"
+msgstr ""
 
 msgid "&Write to the files in the logs folder:"
 msgstr "Günlükler klasöründeki dosyalara yaz (&W):"
@@ -657,6 +690,9 @@ msgstr "(ve o sırada fiyatı olmayan {n} tane daha)"
 msgid "(no notes)"
 msgstr "(not yok)"
 
+msgid "(no plan yet)"
+msgstr ""
+
 msgid "(sellers not counted)"
 msgstr ""
 
@@ -693,6 +729,9 @@ msgstr ", 2-3 kişilik takım"
 msgid ", worth about {v} arnebia at the Shard Market"
 msgstr ", Parça pazarında yaklaşık {v} arnebia değerinde"
 
+msgid ", {heal} healing"
+msgstr ""
+
 msgid ", {n} threads"
 msgstr ", {n} iş parçacığı"
 
@@ -707,6 +746,10 @@ msgstr "1 oyun, bot durduruldu"
 
 msgid "1 level up"
 msgstr "1 seviye atlama"
+
+msgid ""
+"1. the Before farming list, top to bottom; 2. the farming, until the plan ends or the daily stop before the game's day reset; 3. the After farming list, when the farming ended by itself (not after Stop). These are the same lists as Character settings, Triggers. The script of the day is written from them once; after that it is yours to change, until you write it again."
+msgstr ""
 
 msgid "10,000 arnebia (1,500 gang contribution)"
 msgstr "10.000 arnebia (1.500 çete katkısı)"
@@ -963,6 +1006,9 @@ msgstr "Saldırı tuşları: tuşları boşlukla ayırarak gir, örneğin: j y .
 
 msgid "Automatic, by class"
 msgstr "Otomatik, sınıfa göre"
+
+msgid "Autopilot"
+msgstr ""
 
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr "Kullanılabilir ses kimlikleri okunamadı. Ses eklenemiyor."
@@ -1425,6 +1471,9 @@ msgstr "Oyun başlatılamadı: {err}"
 msgid "Couldn't work out a route: {err}"
 msgstr "Rota bulunamadı: {err}"
 
+msgid "Couldn't write it: {err}"
+msgstr ""
+
 msgid "Couldn't."
 msgstr "Yapamadım."
 
@@ -1527,6 +1576,9 @@ msgstr "Eşleşmiyor"
 msgid "Don't donate"
 msgstr "Bağış yapma"
 
+msgid "Don't fuse"
+msgstr ""
+
 msgid "Don't go"
 msgstr "Gitme"
 
@@ -1587,6 +1639,9 @@ msgstr "Dışa aktar (&X)"
 
 msgid "E&xport character settings"
 msgstr "Karakter ayarlarını dışa aktar (&X)"
+
+msgid "Each from its own recipe"
+msgstr ""
 
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr "Her sesin bir kimliği, adı ve susturma ayarı olmalı."
@@ -1710,6 +1765,9 @@ msgstr "Her (dakika):"
 msgid "Every day"
 msgstr "Her gün"
 
+msgid "Every day at the time below"
+msgstr ""
+
 msgid "Every end goes here - time up, drop time, a full bag, the last death"
 msgstr ""
 "Her bitiş buraya gelir - süre doldu, ganimet süresi, dolu çanta, son ölüm"
@@ -1827,6 +1885,9 @@ msgstr "Cuma"
 
 msgid "From (+):"
 msgstr "Başlangıç (+):"
+
+msgid "From Small ones, fused up (5 for 1, usually cheaper)"
+msgstr ""
 
 msgid "From a level on"
 msgstr "Bir seviyeden itibaren"
@@ -2109,11 +2170,17 @@ msgstr "Ev."
 msgid "Hook unavailable: {reason}"
 msgstr "Kanca kullanılamıyor: {reason}"
 
+msgid "How"
+msgstr ""
+
 msgid "How &many of the selected lot:"
 msgstr ""
 
 msgid "How it works:"
 msgstr "Nasıl çalışır:"
+
+msgid "How many of each to have in the bag (0: don't make it)."
+msgstr ""
 
 msgid "How the game works"
 msgstr "Oyun nasıl işler"
@@ -2133,6 +2200,10 @@ msgid ""
 "I can't tell the map from that. Press E in the game, copy it with Shift+C and send: come <what you copied>"
 msgstr ""
 "Bundan haritayı çıkaramıyorum. Oyunda E'ye bas, Shift+C ile kopyala ve şunu gönder: come <kopyaladığın>"
+
+msgid ""
+"I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
+msgstr ""
 
 msgid "I don't know where a Shard Market is"
 msgstr "Bir Parça pazarının nerede olduğunu bilmiyorum"
@@ -2162,6 +2233,9 @@ msgid ""
 msgstr ""
 "Seni son gördüğüm yere gittim ({map}, {x}, {y}) ama seni göremiyorum. Oyunda E'ye bas, Shift+C ile kopyala ve şunu gönder: come <kopyaladığın>"
 
+msgid "I'll ask you after each death."
+msgstr ""
+
 msgid "I'm a &VIP (cable cars and airships are free)"
 msgstr "&VIP'im (teleferik ve hava gemileri ücretsiz)"
 
@@ -2178,6 +2252,9 @@ msgstr "Kimseyi takip etmiyorum."
 
 msgid "I'm not following anyone. Send follow first, then buff."
 msgstr "Kimseyi takip etmiyorum. Önce follow, sonra buff gönder."
+
+msgid "I'm not following anyone. Send follow first."
+msgstr ""
 
 msgid "I'm not in a team"
 msgstr "Bir takımda değilim"
@@ -2201,6 +2278,15 @@ msgstr "Buz prensesi"
 
 msgid "Idle on {map}, HP {hp}%{mp}."
 msgstr "{map} üzerinde boşta, HP %{hp}{mp}."
+
+msgid "If I die, I'll respawn in the city."
+msgstr ""
+
+msgid "If I die, I'll respawn on the map."
+msgstr ""
+
+msgid "If I die, I'll respawn with Resurrection Crystals."
+msgstr ""
 
 msgid "If none of them is in the room, share with &anyone there"
 msgstr "Hiçbiri od&ada değilse, oradaki herhangi biriyle paylaş"
@@ -2301,6 +2387,12 @@ msgstr "&Telegram grubuna katıl"
 msgid "Keep &old files:"
 msgstr "Eski d&osyaları sakla:"
 
+msgid "Keep at least this many of each &Small potion:"
+msgstr ""
+
+msgid "Keep at least this many of each M&edium potion:"
+msgstr ""
+
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
@@ -2345,6 +2437,9 @@ msgstr "Tür: {what}"
 
 msgid "Language"
 msgstr "Dil"
+
+msgid "Large"
+msgstr ""
 
 msgid "Last 30 days"
 msgstr "Son 30 gün"
@@ -2500,6 +2595,10 @@ msgstr "Bir mücevher yap"
 msgid "Make a gem: choose which, its level and how many"
 msgstr "Mücevher yap: hangisi, seviyesi ve kaç tane olduğunu seç"
 
+msgid ""
+"Make a plan first (the Plans tab), or farm on the best map for the level."
+msgstr ""
+
 msgid "Make a plan first, in the Plans tab."
 msgstr "Önce Planlar sekmesinde bir plan yap."
 
@@ -2562,6 +2661,15 @@ msgid "Matching filters disabled. Save to restore these messages in chat."
 msgstr ""
 "Eşleşen filtreler devre dışı bırakıldı. Bu mesajları sohbete geri getirmek için kaydet."
 
+msgid "Materials"
+msgstr ""
+
+msgid "Medium"
+msgstr ""
+
+msgid "Medium and Large potions"
+msgstr ""
+
 msgid "Messa&ge to {where}:"
 msgstr "Mesaj, {where} (&G):"
 
@@ -2576,6 +2684,9 @@ msgstr "Madencilik"
 
 msgid "Minutes:"
 msgstr "Dakika:"
+
+msgid "Missing Bloods and Pelts"
+msgstr ""
 
 msgid "Mist World"
 msgstr "Mist World"
@@ -2634,6 +2745,13 @@ msgid ""
 "Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run"
 msgstr ""
 "Ahlak {n} (kara isim): ölüm giyilen ekipmana mal olabilir, bu yüzden XP kaybettirici çalışmaz"
+
+msgid ""
+"Most gold coins a piece at the market (0: the cheapest first, any price)"
+msgstr ""
+
+msgid "Most gold coins to spend on materials in one run (0: no limit):"
+msgstr ""
 
 msgid "Most to pay per shard (arnebia):"
 msgstr "Parça başına ödenecek en yüksek miktar (arnebia):"
@@ -2788,6 +2906,10 @@ msgstr "Bilinen bir alıcı yok, bu yüzden depoya konacak"
 msgid "No monsters near you right now."
 msgstr "Şu anda yakınında canavar yok."
 
+msgid ""
+"No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
+msgstr ""
+
 msgid "No pet"
 msgstr "Evcil hayvan yok"
 
@@ -2882,6 +3004,10 @@ msgstr "Henüz hiçbir şey olmadı."
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr "Yapacak bir şey yok: Çantada henüz mücevher veya parça yok."
 
+msgid ""
+"Nothing to make: say how many of a potion to have, or choose what to fuse."
+msgstr ""
+
 msgid "Nothing today yet."
 msgstr "Bugün henüz bir şey yok."
 
@@ -2939,12 +3065,25 @@ msgstr "{map}: {who}"
 msgid "Once"
 msgstr "Bir kez"
 
+msgid "One script of the day (to read, change or schedule)"
+msgstr ""
+
 msgid "Only areas whose monsters are at most this many levels &above you:"
 msgstr ""
 "Yalnızca canavarları senden en fazla bu kadar seviye yüksek olan &alanlar:"
 
+msgid ""
+"Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
+msgstr ""
+
+msgid "Only what is in the bag"
+msgstr ""
+
 msgid "Only when HP is low"
 msgstr "Yalnızca HP düşük olduğunda"
+
+msgid "Only when I press Start"
+msgstr ""
 
 msgid "Only while the Chat window is open"
 msgstr "Yalnızca Sohbet penceresi açıkken"
@@ -3036,6 +3175,9 @@ msgstr "Dur&aklat ya da devam et"
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr "&Evcil hayvanlar (işaretliler çıkar, önce ilk hazır olan):"
 
+msgid "P&otion Maker"
+msgstr ""
+
 msgid "PK mode back to {mode}"
 msgstr "PK modu yeniden {mode}"
 
@@ -3102,6 +3244,9 @@ msgstr "Evcil hayvan mavi iksirleri"
 msgid "Pet food"
 msgstr "Evcil hayvan maması"
 
+msgid "Pet potions"
+msgstr ""
+
 msgid "Pet rebirth"
 msgstr "Evcil hayvanın yeniden doğuşu"
 
@@ -3114,6 +3259,9 @@ msgstr "Evcil hayvan:"
 
 msgid "Pets"
 msgstr "Evcil hayvanlar"
+
+msgid "Pharmacist and spending"
+msgstr ""
 
 msgid "Pick a voice message in Messages first."
 msgstr "Önce Mesajlar'dan bir sesli mesaj seç."
@@ -3168,6 +3316,9 @@ msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
 "Polson Sulak Alanı: Zehir Bağışıklığı etkin değil - füzyon canavarından inince zemini bizi zehirler ve oradaki her dövüş yaya yapılır"
+
+msgid "Potion Maker"
+msgstr ""
 
 msgid "Potions"
 msgstr "İksirler"
@@ -3226,6 +3377,10 @@ msgstr ""
 
 msgid "Put the pet &away when the run ends"
 msgstr "Ç&alışma bitince evcil hayvanı geri çağır"
+
+msgid ""
+"Put the potions made into the town st&orehouse, then make more, a bagful at a time (your numbers then count the storehouse too)"
+msgstr ""
 
 msgid "Quantity"
 msgstr ""
@@ -3353,6 +3508,15 @@ msgstr "Yanıt satırları"
 
 msgid "Replying to {name}: {message}"
 msgstr "{name} yanıtlanıyor: {message}"
+
+msgid "Respawning in the city."
+msgstr ""
+
+msgid "Respawning on this map."
+msgstr ""
+
+msgid "Respawning with Resurrection Crystals."
+msgstr ""
 
 msgid "Rest &until HP (%):"
 msgstr "HP ş&una çıkana kadar dinlen (%):"
@@ -3504,6 +3668,9 @@ msgstr "Kaydedildi. Planlar sekmesinde betik olarak duruyor."
 msgid "Saving and applying sound settings..."
 msgstr "Ses ayarları kaydedilip uygulanıyor..."
 
+msgid "Say how many of at least one potion to have, or choose what to fuse."
+msgstr ""
+
 msgid "Scan complete."
 msgstr "Tarama tamamlandı."
 
@@ -3610,6 +3777,9 @@ msgid ""
 "Send help and a command's name to hear what it does, for example: help follow"
 msgstr ""
 "Bir komutun ne yaptığını öğrenmek için help ve komutun adını gönder, örneğin: help follow"
+
+msgid "Send respawn crystal, respawn map or respawn city."
+msgstr ""
 
 msgid ""
 "Send this to the whole gang as: {where}?\n"
@@ -3853,6 +4023,9 @@ msgstr "Dep&ola:"
 msgid "Sta&rt"
 msgstr "Başlat (&R)"
 
+msgid "Sta&rt the day"
+msgstr ""
+
 msgid "Sta&tus:"
 msgstr ""
 
@@ -4089,6 +4262,9 @@ msgstr "Yalnızca Parça pazarı"
 msgid "The Shard Market only"
 msgstr "Yalnızca Parça pazarı"
 
+msgid "The Triggers lists around the farming"
+msgstr ""
+
 msgid "The agent file is missing from Uncle Farmer's agent folder."
 msgstr "Ajan dosyası Uncle Farmer'ın agent klasöründe yok."
 
@@ -4114,6 +4290,9 @@ msgstr "Çantanın dolu sayılacağı yük yüzdesi:"
 
 msgid "The best for this character"
 msgstr "Bu karakter için en iyisi"
+
+msgid "The best map for the character's level"
+msgstr ""
 
 msgid "The best one on my hotkeys"
 msgstr "Kısayol tuşlarımdaki en iyisi"
@@ -4149,6 +4328,9 @@ msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 msgid "The character hasn't learned {skill}."
 msgstr "Karakter {skill} becerisini öğrenmemiş."
 
+msgid "The character's plan"
+msgstr ""
+
 msgid "The clipboard couldn't be opened."
 msgstr ""
 
@@ -4160,6 +4342,13 @@ msgstr "Bilgisayar {n} saniye içinde kapanacak. Kapatma iptal edilsin mi?"
 
 msgid "The computer shuts down once the other bots have finished."
 msgstr "Diğer botların işi bittiğinde bilgisayar kapanır."
+
+msgid ""
+"The day is written as the script \"{name}\". Open it from the Plans tab to read or change it; \"Write the script of the day now\" writes it again from this window."
+msgstr ""
+
+msgid "The day:"
+msgstr ""
 
 msgid "The delay must be between 0 and {most} seconds."
 msgstr "Bekleme 0 ile {most} saniye arasında olmalı."
@@ -4179,6 +4368,9 @@ msgstr "Bitiş yeri artık durduğun yer: {map} ({x},{y})."
 
 msgid "The fastest one"
 msgstr "En hızlısı"
+
+msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
+msgstr ""
 
 msgid "The game didn't confirm {skill}."
 msgstr "Oyun {skill} becerisini onaylamadı."
@@ -4264,6 +4456,9 @@ msgstr ""
 msgid "The listener is busy or disconnected. Try again."
 msgstr "Dinleyici meşgul ya da bağlantısı kesik. Yeniden dene."
 
+msgid "The market"
+msgstr ""
+
 msgid "The nearest city's"
 msgstr "En yakın şehrin"
 
@@ -4338,6 +4533,10 @@ msgstr "Önce depo, sonra Parça pazarı"
 msgid "The storehouse only"
 msgstr "Yalnızca depo"
 
+msgid ""
+"The storehouse's potions count too: Check only reads them. It goes a bagful at a time."
+msgstr ""
+
 msgid "The strongest one"
 msgstr "En güçlüsü"
 
@@ -4345,6 +4544,12 @@ msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "Atılacaklar listesi boş. Önce Karakter, Çanta ve sarf malzemeleri'nde neyin atılacağını seç."
+
+msgid "The town storehouse"
+msgstr ""
+
+msgid "The town storehouse, then the market"
+msgstr ""
 
 msgid "The trigger sequence settings are invalid."
 msgstr "Tetikleyici sırası ayarları geçersiz."
@@ -4958,6 +5163,9 @@ msgstr "Alınan en kötü normal vuruş: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "{language} diline geçmek ister misin?"
 
+msgid "Write the time as HH:MM, for example 06:30."
+msgstr ""
+
 msgid "X:"
 msgstr "X:"
 
@@ -5121,6 +5329,9 @@ msgstr "{map} haritasına {x},{y} konumunda varıldı"
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} haritasına {x},{y} konumunda varıldı - yol buradan yeniden planlanıyor"
+
+msgid "asking for hunting bounties"
+msgstr ""
 
 msgid "at most {n} gold coins"
 msgstr ""
@@ -5296,6 +5507,9 @@ msgid "can build at the {post}"
 msgstr "{post} noktasında inşa edilebilir"
 
 msgid "can exchange contribution for a Contribution Chest"
+msgstr ""
+
+msgid "can't choose the best map: the character's level isn't known yet"
 msgstr ""
 
 msgid ""
@@ -5523,6 +5737,9 @@ msgstr "{gang} çetesinin üssüne girilemedi"
 msgid "couldn't get into the gang's inner hall"
 msgstr "çetenin iç salonuna girilemedi"
 
+msgid "couldn't get into the gang's outer hall to reach the Pharmacist"
+msgstr ""
+
 msgid "couldn't get into the secret room"
 msgstr "gizli odaya girilemedi"
 
@@ -5585,6 +5802,9 @@ msgstr "çantada {item} eşyasına ulaşılamadı"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "beceri panelinde {skill} becerisine ulaşılamadı"
 
+msgid "couldn't read the storehouse's list: only the bag counts"
+msgstr ""
+
 msgid "couldn't respawn - please do it by hand"
 msgstr "yeniden doğulamadı - lütfen elle yap"
 
@@ -5627,6 +5847,9 @@ msgstr "hedef tuşu NPC'lere çevrilemedi"
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "{item} depodan alınamadı: {why}"
 
+msgid "couldn't talk to the Pharmacist"
+msgstr ""
+
 msgid "couldn't talk to the {npc}"
 msgstr "{npc} ile konuşulamadı"
 
@@ -5666,6 +5889,9 @@ msgstr "günlük işler tamamlandı: {list}"
 
 msgid "damage over time"
 msgstr "zamanla hasar"
+
+msgid "dead - asked {name} how to respawn, waiting for the answer"
+msgstr ""
 
 msgid "dead, but the respawn menu never opened - please respawn by hand"
 msgstr "öldüm ama yeniden doğma menüsü hiç açılmadı - lütfen elle yeniden doğ"
@@ -5832,9 +6058,8 @@ msgstr ""
 "{m} dakikada {n} kez kaçıldı - bu harita şimdilik çok zor; burada duruluyor"
 
 msgid ""
-"follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
+"follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
-"follow: Yanında kalırım, dövüşlerine yardım ederim ve gittiğin yere giderim. Rahip ya da Sihirbaz seni ve takımı iyileştirir. buff göndermedikçe buff yok. Seni bir dakika göremezsem dururum."
 
 msgid "following {name}"
 msgstr "{name} takip ediliyor"
@@ -5862,6 +6087,12 @@ msgstr "bir ceset için yürüdüğümüzden daha uzakta"
 
 msgid "further to walk than the chase range"
 msgstr "yürüme mesafesi kovalama menzilinden uzun"
+
+msgid "fuse {n} {potion}"
+msgstr ""
+
+msgid "fused {k} {src} into {n} {potion}"
+msgstr ""
 
 msgid "fusion power {n} - on foot until it is back to {back}"
 msgstr "füzyon gücü {n} - {back} değerine dönene kadar yaya"
@@ -5905,6 +6136,10 @@ msgstr "ekipman bozuk, alet kutusu yok"
 msgid "getting Level {lv} {kind} Enhance Crystals up to {n}"
 msgstr "Seviye {lv} {kind} Geliştirme Kristalleri {n} tane olana kadar alınıyor"
 
+msgid ""
+"getting ready at the door of {cave}: its timer starts the moment we are in"
+msgstr ""
+
 msgid "going back to where farming started"
 msgstr "farmın başladığı yere dönülüyor"
 
@@ -5922,6 +6157,9 @@ msgstr "{map}{at} konumuna dönülüyor"
 
 msgid "going home with the hearthstone"
 msgstr "Kalp taşıyla eve gidiliyor"
+
+msgid "going into a dungeon"
+msgstr ""
 
 msgid "going into the dungeons without a pet (Tools, Dungeons)"
 msgstr "zindanlara evcil hayvansız giriliyor (Araçlar, Zindanlar)"
@@ -6143,6 +6381,9 @@ msgid ""
 msgstr ""
 "bu çalışmadan önceki {n} ekipman uyarısı atlandı (o zaman ilgilenilmişti); bozuk ekipman yine de onarılır"
 
+msgid "left out: {step} farms, and the day's farming may be over by then"
+msgstr ""
+
 msgid "left the corpse of {name}: {why}"
 msgstr "{name} cesedi bırakıldı: {why}"
 
@@ -6245,11 +6486,23 @@ msgstr "{used} {shard} ile {n} {gem} yapıldı"
 msgid "made {n} {gem}; {have} in the bag"
 msgstr "{n} {gem} yapıldı; çantada {have}"
 
+msgid "made {n} {potion} for {fee} arnebia"
+msgstr ""
+
+msgid "make {n} batches of {potion}"
+msgstr ""
+
+msgid "make {n} batches of {potion} ({fee} arnebia each)"
+msgstr ""
+
 msgid "making gems"
 msgstr "mücevher yapılıyor"
 
 msgid "making gems: {list}"
 msgstr "mücevher yapılıyor: {list}"
+
+msgid "making potions"
+msgstr ""
 
 msgid ""
 "market list made: {items} items in {lots} lots, {pages} pages, {min:.1f} minutes"
@@ -6291,6 +6544,9 @@ msgstr "ıska"
 msgid "mode set: {mode}"
 msgstr "mod ayarlandı: {mode}"
 
+msgid "monsters in sight, none to fight ({map}): {why}"
+msgstr ""
+
 msgid "monsters in sight, none to fight: {why}"
 msgstr "görüş alanında canavar var ama dövüşülecek yok: {why}"
 
@@ -6314,6 +6570,9 @@ msgstr "susturulan istek"
 
 msgid "near a boss"
 msgstr "bir boss yakınında"
+
+msgid "needs {n} {item} ({k} missing)"
+msgstr ""
 
 msgid "never again"
 msgstr "bir daha asla"
@@ -6373,6 +6632,9 @@ msgstr "{code} ({what}) için boş ifade yuvası yok"
 
 msgid "no empty skill key for {skills}, so the bot can't use them"
 msgstr "{skills} için boş beceri tuşu yok, bot bunları kullanamaz"
+
+msgid "no farming map fits level {level}"
+msgstr ""
 
 msgid "no free rebirth left today"
 msgstr "bugün ücretsiz yeniden doğuş kalmadı"
@@ -6492,8 +6754,8 @@ msgstr "{map} üzerinde {a} ile {b} arasında yol yok"
 msgid "no way out of the safe zone on {map} to cast {skill}"
 msgstr "{map} üzerinde {skill} kullanmak için güvenli bölgeden çıkış yolu yok"
 
-msgid "no way to walk there"
-msgstr "oraya yürüyerek gidilecek yol yok"
+msgid "no way to walk there, or only a very long way round"
+msgstr ""
 
 msgid "no yes/no question came up"
 msgstr ""
@@ -6591,6 +6853,9 @@ msgstr "{item} geliştirmek için yeterli boşta arnebia yok ({cost})"
 
 msgid "not enough spare arnebia to make {gem} (fee {fee} each)"
 msgstr "{gem} yapmak için yeterli boşta arnebia yok (her biri {fee} ücret)"
+
+msgid "not enough spare arnebia to make {potion} (fee {fee})"
+msgstr ""
 
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
@@ -6929,6 +7194,10 @@ msgstr "zayıflatıcıları kaldırır"
 msgid "repairing all the gear with a {tool} from {where} ({n} left)"
 msgstr "tüm ekipman {where} içindeki {tool} ile onarılıyor ({n} kaldı)"
 
+msgid ""
+"respawn crystal, map or city: how I come back when I die following you. I ask and wait; sent early it counts for every death. respawn ask: ask again."
+msgstr ""
+
 msgid "respawning: {how}"
 msgstr "yeniden doğuluyor: {how}"
 
@@ -6967,6 +7236,10 @@ msgstr ""
 msgid "road"
 msgstr "yol"
 
+msgid ""
+"round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
 msgid "route to {map}: {steps}"
 msgstr "{map} rotası: {steps}"
 
@@ -6981,6 +7254,9 @@ msgstr "zindan yapılıyor"
 
 msgid "running on_stop"
 msgstr "on_stop çalıştırılıyor"
+
+msgid "scanning the constructions"
+msgstr ""
 
 msgid "scanning the constructions, then a broadcast"
 msgstr ""
@@ -7156,6 +7432,9 @@ msgstr "{n} saniye sonra hâlâ {map} üzerinde - araç bizi götürmedi"
 
 msgid "still short after restocking: {what}"
 msgstr "stok yenilendikten sonra hâlâ eksik: {what}"
+
+msgid "still short of: {what}"
+msgstr ""
 
 msgid "stop rule: {cond}"
 msgstr "durdurma kuralı: {cond}"
@@ -7386,6 +7665,31 @@ msgstr ""
 msgid "the Pet Trainer offers no rebirth"
 msgstr "Evcil Hayvan Eğitmeni yeniden doğuş sunmuyor"
 
+msgid "the Pharmacist didn't ask how many {potion} to fuse"
+msgstr ""
+
+msgid "the Pharmacist doesn't list {potion}"
+msgstr ""
+
+msgid "the Pharmacist is open; nothing was made (check only)"
+msgstr ""
+
+msgid "the Pharmacist says there aren't enough materials for {potion}"
+msgstr ""
+
+msgid "the Pharmacist's menu has no \"{entry}\""
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} didn't come up - nothing was spent"
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
+msgstr ""
+
+msgid ""
+"the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Gizli oda yöneticisi asistan çağırmadı"
 
@@ -7431,6 +7735,9 @@ msgstr "çanta"
 msgid "the bag cursor is out of range"
 msgstr "çanta imleci menzil dışında"
 
+msgid "the bag has no room for more Bloods and Pelts"
+msgstr ""
+
 msgid "the bag is empty - nothing to throw away"
 msgstr "çanta boş - atılacak bir şey yok"
 
@@ -7453,6 +7760,9 @@ msgstr ""
 
 msgid "the bag is still full and nothing could be sold or stored - stopping"
 msgstr "çanta hâlâ dolu ve hiçbir şey satılamadı ya da depolanamadı - duruluyor"
+
+msgid "the bag is too full for more {potion}"
+msgstr ""
 
 msgid "the bag is too full for more {shard}"
 msgstr "çanta daha fazla {shard} için fazla dolu"
@@ -7481,11 +7791,20 @@ msgid ""
 msgstr ""
 "{gem} birleştirildikten sonra çantada değişiklik görülmedi - bu tur için bırakılıyor"
 
+msgid "the bag showed no new {potion} after fusing"
+msgstr ""
+
+msgid "the bag showed no new {potion} after making it"
+msgstr ""
+
 msgid "the bag trip"
 msgstr "çanta yolculuğu"
 
 msgid "the bag's gems are as high as they go"
 msgstr "çantadaki mücevherler gidebilecekleri en yüksek seviyede"
+
+msgid "the best map for level {level}: {map}"
+msgstr ""
 
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
@@ -7511,6 +7830,9 @@ msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"
 msgstr ""
 
+msgid "the day of {name}"
+msgstr ""
+
 msgid "the day's chores first"
 msgstr "önce günün işleri"
 
@@ -7527,6 +7849,9 @@ msgstr "bağış gerçekleşmedi: {why}"
 
 msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
 msgstr "ganimet süresi neredeyse bitti ({m} dk kaldı) - farma başlanmıyor"
+
+msgid "the fees come to {total} arnebia; {spare} is spare"
+msgstr ""
 
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
@@ -7622,6 +7947,10 @@ msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "oyun buradan {name} hedefine vurmamıza izin vermiyor - sıradaki"
 
+msgid ""
+"the game won't teleport us ({why}) - waiting for {name} to come back here"
+msgstr ""
+
 msgid "the game wouldn't select it ({why})"
 msgstr "oyun onu seçmedi ({why})"
 
@@ -7638,6 +7967,12 @@ msgstr "oyunun tuşları kullanılamıyor: {why}"
 
 msgid "the game's own speech is off while the bot runs"
 msgstr "bot çalışırken oyunun kendi konuşması kapalı"
+
+msgid "the game's report: {n} of {total} kills, {dmg} damage"
+msgstr ""
+
+msgid "the game's report: {total} kills"
+msgstr ""
 
 msgid "the gang has no {npc}"
 msgstr "çetede {npc} yok"
@@ -7663,6 +7998,9 @@ msgid ""
 "the gear needs repairing: the {tool} is only in the bag, so after this fight (put it on a hotkey to repair at once)"
 msgstr ""
 "ekipmanın onarılması gerekiyor: {tool} yalnızca çantada, bu yüzden bu dövüşten sonra (hemen onarmak için kısayol tuşuna koy)"
+
+msgid "the gold limit for materials ({cap}) is spent"
+msgstr ""
 
 msgid "the guard didn't strike back - trying another"
 msgstr "muhafız karşılık vermedi - başkası deneniyor"
@@ -7707,6 +8045,12 @@ msgid "the market didn't take the page number"
 msgstr ""
 
 msgid "the market has no category {cat}"
+msgstr ""
+
+msgid "the market has no {item} at {most} gold coins or less"
+msgstr ""
+
+msgid "the market has no {item} for sale"
 msgstr ""
 
 msgid "the market's category choice isn't on the page"
@@ -7770,6 +8114,9 @@ msgid ""
 msgstr ""
 "planın karakterinin kayıtlı hesabı ya da sunucusu yok. Önce bir kez onunla giriş yap."
 
+msgid "the potions asked for are already there"
+msgstr ""
+
 msgid "the ride from {map} never arrived"
 msgstr "{map} haritasından binilen araç hiç varmadı"
 
@@ -7796,6 +8143,9 @@ msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "beceri sayfası {key} ile değişiyor (oyunun bunun için tuşu)"
+
+msgid "the spare arnebia pays for {n} of the {all} batches"
+msgstr ""
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
@@ -8196,6 +8546,9 @@ msgstr ""
 msgid "write it as: set name = value"
 msgstr "şöyle yaz: set ad = değer"
 
+msgid "write it as: triggers off"
+msgstr ""
+
 msgid "write it as: walk x y"
 msgstr "şöyle yaz: walk x y"
 
@@ -8207,6 +8560,13 @@ msgstr "şöyle yaz: {cmd} 50 Large Red Potion"
 
 msgid "write it as: {cmd} Milkfish 20"
 msgstr "şöyle yaz: {cmd} Milkfish 20"
+
+msgid "written by Run, Autopilot - the Triggers lists don't run around it"
+msgstr ""
+
+msgid ""
+"written by Run, Autopilot: the best map for the level, with the Triggers lists around it"
+msgstr ""
 
 msgid "yesterday"
 msgstr "dün"
@@ -8354,6 +8714,9 @@ msgid ""
 msgstr ""
 "{items} bozuk ve onaracak bir şey yok - güvenli bir yere gidip duruluyor"
 
+msgid "{item} (you have {n}):"
+msgstr ""
+
 msgid "{item} ({count}, {where})"
 msgstr "{item} ({count}, {where})"
 
@@ -8394,6 +8757,9 @@ msgstr "{item} tanesi {w} ağırlığında"
 
 msgid "{item}, keeping {n}"
 msgstr "{item}, {n} tane saklanıyor"
+
+msgid "{item}:"
+msgstr ""
 
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
@@ -8446,6 +8812,9 @@ msgstr "{map}, {x}, {y}"
 
 msgid "{map}: heading for the exit to {dest}"
 msgstr "{map}: {dest} çıkışına gidiliyor"
+
+msgid "{map}: leaving through our treasure chest"
+msgstr ""
 
 msgid "{map}: leaving through the Action menu"
 msgstr "{map}: Eylem menüsünden çıkılıyor"
@@ -8767,6 +9136,9 @@ msgstr "{n} kez, {first} ile {last} arası: {why}"
 msgid "{n} used up"
 msgstr "{n} tükendi"
 
+msgid "{n} {item} still missing"
+msgstr ""
+
 msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
 msgstr ""
 
@@ -8781,6 +9153,14 @@ msgstr "{opt} geçerli bir ad deseni değil"
 
 msgid "{pct}% full ({load} of {max})"
 msgstr "%{pct} dolu ({load}/{max})"
+
+msgid ""
+"{pet} can come out in {n} seconds - waiting for it at the door, where no timer runs"
+msgstr ""
+
+msgid ""
+"{pet} can't come out for {n} more minutes - going in without it; it is called inside as soon as it can"
+msgstr ""
 
 msgid "{pet} didn't come out (no pets allowed here?) - trying again later"
 msgstr ""
@@ -8805,6 +9185,12 @@ msgstr "{pet}: bugün ücretsiz yeniden doğuş kalmadı"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet}: {n} ücretsiz yeniden doğuş, değer {before} -> {after}"
+
+msgid "{potion} (you have {n}):"
+msgstr ""
+
+msgid "{potion}:"
+msgstr ""
 
 msgid "{price} a unit is over the most you set ({most})"
 msgstr ""
@@ -8862,6 +9248,9 @@ msgstr ""
 msgid "{skill} doesn't list {place} for this character"
 msgstr "{skill} bu karakter için {place} yerini listelemiyor"
 
+msgid "{skill} for a long walk"
+msgstr ""
+
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr "{skill} bir beceri tuşunda değil (becerileri boş tuşlara koyma kapalı)"
 
@@ -8887,6 +9276,12 @@ msgstr "{skill} boş beceri tuşu {key} üzerine kondu (sayfa {page})"
 
 msgid "{skill} stopped - starting it again"
 msgstr "{skill} durduruldu - yeniden başlatılıyor"
+
+msgid "{skill} to jump ahead"
+msgstr ""
+
+msgid "{skill} to reach {name}"
+msgstr ""
 
 msgid ""
 "{skill} was broken off before it ended (something hit us) - fighting first"
@@ -8975,64 +9370,20 @@ msgstr "{who} oyuncusunun oyunu {what} ile meşgul"
 msgid "{why} - no more {skill} this run ({n} done)"
 msgstr "{why} - bu çalışmada artık {skill} yok ({n} yapıldı)"
 
+msgid ""
+"{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game allows"
+msgstr ""
+
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
-
-#~ msgid "&Build at:"
-#~ msgstr "İnşa yeri (&B):"
-
-#~ msgid "Collect &hunting bounties from a city officer"
-#~ msgstr "Bir şe&hir görevlisinden av ödüllerini topla"
-
-#~ msgid "Gang construction"
-#~ msgstr "Çete inşaatı"
-
-#~ msgid ""
-#~ "Occupied Highlands has no highland {n} (it lists: {list}) - check the number in Tools, Daily chores"
-#~ msgstr ""
-#~ "İşgal Edilmiş Yaylalar'da {n} numaralı yayla yok (listedekiler: {list}) - Araçlar, Günlük işler'deki numarayı kontrol et"
-
-#~ msgid "Our gang's &highland number (the one under Occupied Highlands):"
-#~ msgstr "Çetemizin yayla numarası (İşgal Edilmiş Yaylalar altındaki) (&H):"
-
-#~ msgid ""
-#~ "The bot finds a guard (in sight, where one was seen before, or in the nearest town), switches the PK mode to all mode, hits the guard once and lets it kill the character: no potions, no heals, no fighting back. It respawns in the city and goes again until the next level needs at least that much experience. At the nearest village, it walks into the nearest village first (the game brings a dead character back at the last town it walked into), then dies at its gates, so each death is quicker (on Tuneful Wetland, 11 seconds at Aria Village against 29 at Tulip City); if the game brings it back somewhere else, it dies at the nearest guard instead. The pet is put away first, and the PK mode is put back at the end. Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can lose worn gear when it dies, so the XP loser won't run for one."
-#~ msgstr ""
-#~ "Bot bir muhafız bulur (görüş alanında, daha önce görüldüğü yerde ya da en yakın şehirde), PK modunu tüm moda çevirir, muhafıza bir kez vurur ve karakteri öldürmesine izin verir: iksir yok, iyileştirme yok, karşılık yok. Şehirde yeniden doğar ve sonraki seviye için en az o kadar deneyim gerekene kadar tekrarlar. En yakın köy seçiliyse önce en yakın köye yürür (oyun ölen karakteri en son yürüyerek girdiği şehirde diriltir), sonra kapısında ölür; böylece her ölüm daha kısa sürer (Tuneful Sulak Alanı'nda Arya Köyü'nde 11 saniye, Lale Şehri'nde 29). Oyun onu başka bir yerde diriltirse en yakın muhafızda ölür. Önce evcil hayvan geri çağrılır, sonunda PK modu eski haline getirilir. Ölümler ekipmanı her ölüm gibi yıpratır; kara isimli bir karakter (Ahlak -1000 ya da altı) ölünce giydiği ekipmanı kaybedebilir, bu yüzden XP kaybettirici onun için çalışmaz."
-
-#~ msgid "This many"
-#~ msgstr "Bu kadar"
-
-#~ msgid ""
-#~ "Type your gang's highland number: the Highland Entrance lists it under Occupied Highlands (\"the own Gang's Highland 38\": 38)."
-#~ msgstr ""
-#~ "Çetenin yayla numarasını yaz: Yayla Girişi onu İşgal Edilmiş Yaylalar altında listeler (\"the own Gang's Highland 38\": 38)."
-
-#~ msgid "collected the hunting bounty"
-#~ msgstr "av ödülü toplandı"
 
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr "şeytanlaşmış elitler, karakter ayarlarının dediği gibi dokunulmuyor"
 
-#~ msgid "hunting bounties can be collected here"
-#~ msgstr "av ödülleri burada toplanabilir"
-
-#~ msgid "hunting bounty"
-#~ msgstr "av ödülü"
-
-#~ msgid "our gang's highland"
-#~ msgstr "çetemizin yaylası"
-
-#~ msgid "the inner hall's East and West posts"
-#~ msgstr "iç salonun Doğu ve Batı noktaları"
-
-#~ msgid "the officer offers no hunting bounty"
-#~ msgstr "görevli av ödülü sunmuyor"
-
-#~ msgid "type your gang's highland number in Tools, Daily chores"
-#~ msgstr "çetenin yayla numarasını Araçlar, Günlük işler'e yaz"
-
 #~ msgid ""
-#~ "used a {card}, but the character sheet shows no experience card running - trying again in a minute"
+#~ "follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."
 #~ msgstr ""
-#~ "{card} kullanıldı ama karakter sayfası çalışan bir deneyim kartı göstermiyor - bir dakika sonra yeniden denenecek"
+#~ "follow: Yanında kalırım, dövüşlerine yardım ederim ve gittiğin yere giderim. Rahip ya da Sihirbaz seni ve takımı iyileştirir. buff göndermedikçe buff yok. Seni bir dakika göremezsem dururum."
+
+#~ msgid "no way to walk there"
+#~ msgstr "oraya yürüyerek gidilecek yol yok"

@@ -32,8 +32,8 @@ from collections.abc import Callable
 from .. import atlas, gamekeys
 from ..clock import clock_for
 from ..i18n import _
-from .bot import snap_map, Bot, Stopped
-from .botparts.base import STOPPING, note_failure
+from .bot import snap_map, Bot
+from .botparts.base import STOPPING, NoWay, note_failure
 from .botparts.parts import Sighting
 from .. import phrases as phrase_book
 from . import teamheal
@@ -43,12 +43,14 @@ NEAR = 3          # tiles: close enough to stand beside them
 GAP = 4           # tiles: further than this and we catch up
 HELP = 10         # tiles from the player: monsters this close are theirs to fight, so ours to help with
 EXIT_NEAR = 6     # tiles: last seen this close to an exit and gone = they took it
-LOST = 60.0       # seconds without any sign of them before following ends
+LOST = 60.0       # seconds without any sign of them before we wait for a teleport to the leader
 TELEPORT_FROM = 25    # tiles: further than this, Shift+P to them when they lead the team
 TELEPORT_GAP = 51.0   # seconds: the game's teleport cooldown, measured 50.4 s
 LEADER_NEAR = 22      # tiles: after a teleport, this close to our player means they are the leader
 ASK_EVERY = 3.0       # seconds between two "/6" rounds when they are out of sight
 ASK_PRESSES = 5       # "/6" presses per round: each names the next teammate on the map
+WAIT_LOOK = 2.0       # seconds between two looks while waiting for a way to the player
+WAIT_SAY_AGAIN = 60.0 # seconds: the "waiting here" line is said aloud at most this often
 
 
 def find_player(snap: dict[str, Any], name: str):
@@ -324,12 +326,22 @@ def _come_answer(bot: Bot, went_to_cell: bool, looked: Sighting | None, map_id: 
     return _("I can't see you. Press E in the game, copy it with Shift+C and send: come <what you copied>")
 
 
+def _struck(bot: Bot, mid: int) -> bool:
+    """Another player (a teammate, most likely) struck this monster lately (agent 44 casts)."""
+    tracker = getattr(bot, "kill_tracker", None)
+    claimed = getattr(tracker, "claimed", None)
+    return bool(claimed and claimed(mid))
+
+
 def help_target(bot: Bot, snap: dict[str, Any], p: dict[str, Any]):
-    """A monster the player is fighting: within HELP of them and casting or wounded, nearest to
-    them first. Anything attacking us is handled by the walking code's fight-back."""
+    """A monster the team is fighting: within HELP of the player or of a teammate in view, and
+    struck by a player, wounded, or attacking us; nearest to the player first. It used to be only
+    the player's own wounded monsters, so a follower stood by while the rest of the team fought
+    (players asked why it was so slow)."""
     hitting = bot.attackers()
-    mobs = [e for e in bot.targets(snap) if _dist(e, p) <= HELP
-            and (e["id"] in hitting or e.get("hp", 0) < e.get("maxhp", 0))]
+    team = [p] + [m for m in teamheal.mates(bot, snap) if m.get("id") != p.get("id")]
+    mobs = [e for e in bot.targets(snap) if any(_dist(e, t) <= HELP for t in team)
+            and (e["id"] in hitting or e.get("hp", 0) < e.get("maxhp", 0) or _struck(bot, e["id"]))]
     return min(mobs, key=lambda e: _dist(e, p)) if mobs else None
 
 
@@ -347,7 +359,8 @@ def _exit_taken(mid: int, seen: tuple[float, float]) -> dict[str, Any] | None:
 
 def follow(bot: Bot, name: str):
     """Stay with the player until stopped: catch up when they move off, help with their fights,
-    and go along when they change map. Ends (Stopped) after LOST seconds without any sign of them."""
+    and go along when they change map. After LOST seconds without any sign of them, or with no way
+    to them, it waits and teleports to the team leader (_wait_for_leader): only the user stops it."""
     bot.log(_("following {name}", name=name), speak=True)
     # Buffs are held back while following (the leader may not want them, and each one costs a
     # global cooldown and mana); the `buff` message turns them on for this follow.
@@ -364,40 +377,88 @@ def _follow(bot: Bot, name: str):
     searched = False            # walked to where one of our games last saw them
     while True:
         bot.check()
-        snap = bot.snap()
-        me = bot.look_after(snap["self"])
-        here = snap_map(snap)
-        p = find_player(snap, name)
-        if teamheal.look_after(bot, snap):
-            continue
-        teamheal.learn(bot)
-        if p:
-            lost_since = None
-            seen = (here, p["x"], p["y"])
-            _keep_up(bot, name, snap, me, p)
-            continue
-        found = _follow_where_known(bot, name, here, me)
-        if found:
-            lost_since = None
-            if found is not True:
-                seen = found
-            continue
-        lost_since = lost_since or clock_for(bot).time()
-        if seen is None and not searched:
-            searched = True
-            spot = _last_seen(bot, name)
-            if spot:
-                _look_for(bot, name, spot)
-                lost_since = clock_for(bot).time()      # the walk there doesn't count as time lost
+        try:
+            snap = bot.snap()
+            me = bot.look_after(snap["self"])
+            here = snap_map(snap)
+            p = find_player(snap, name)
+            if teamheal.look_after(bot, snap):
                 continue
-        if seen and seen[0] == here:
-            went = _after_them(bot, name, here, me, seen)
-            if went:
-                seen = None if went == "exit" else seen
+            teamheal.learn(bot)
+            if p:
+                lost_since = None
+                seen = (here, p["x"], p["y"])
+                _keep_up(bot, name, snap, me, p)
                 continue
-        if clock_for(bot).time() - lost_since > LOST:
-            raise Stopped(_("lost sight of {name}", name=name))
-        bot.sleep(0.5)
+            found = _follow_where_known(bot, name, here, me)
+            if found:
+                lost_since = None
+                if found is not True:
+                    seen = found
+                continue
+            lost_since = lost_since or clock_for(bot).time()
+            if seen is None and not searched:
+                searched = True
+                spot = _last_seen(bot, name)
+                if spot:
+                    _look_for(bot, name, spot)
+                    lost_since = clock_for(bot).time()      # the walk there doesn't count as time lost
+                    continue
+            if seen and seen[0] == here:
+                went = _after_them(bot, name, here, me, seen)
+                if went:
+                    seen = None if went == "exit" else seen
+                    continue
+            if clock_for(bot).time() - lost_since > LOST:
+                _wait_for_leader(bot, name, _("lost sight of {name}", name=name))
+                lost_since, seen, searched = None, None, False
+                continue
+            bot.sleep(0.5)
+        except NoWay as e:
+            # a map we can't plan our way to (a dungeon entered through an NPC), a door still shut:
+            # never the end of the follow - wait for the game to let us teleport to the leader
+            _wait_for_leader(bot, name, str(e))
+            lost_since, seen, searched = None, None, False
+
+
+def _wait_for_leader(bot: Bot, name: str, why: str) -> None:
+    """No way to the player we know of: stay put (fighting what attacks us) and press Shift+P to
+    the team leader whenever the game allows, until it takes us there, the player comes into view,
+    or something moves us to another map (a respawn, the player's own summons). Said once, aloud;
+    a stop from the user still ends it. It used to stop the follow ("no way from ... - go there
+    yourself"), after a death outside a dungeon and at every map the bot can't plan its way to."""
+    now = clock_for(bot).time()
+    loud = now - getattr(bot, "wait_said_at", -WAIT_SAY_AGAIN) >= WAIT_SAY_AGAIN
+    if loud:
+        bot.wait_said_at = now
+    bot.log(_("{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game "
+              "allows", why=why), speak=loud)
+    start_map = bot.map_id()
+    # in view behind a door that is still shut: wait until they move on, not at once into the
+    # same "no way" again
+    was = find_player(bot.snap(), name)
+    tp = bot.__dict__.setdefault("_teleport", {"off": None, "next": 0.0, "not_leader": set()})
+    told_off = False
+    while True:
+        bot.check()
+        if bot.attackers():
+            bot.fight_back()
+            continue
+        if bot.map_id() != start_map:
+            return
+        them = find_player(bot.snap(), name)
+        if them is not None and (was is None or _dist(them, was) > GAP):
+            return
+        tp["not_leader"].discard(name.strip().lower())      # Shift+P goes to whoever leads: try it anyway
+        if teleport(bot, name):
+            return
+        if bot.map_id() != start_map:
+            return                      # it took us to the leader, who isn't our player: follow on from there
+        if tp["off"] and not told_off:
+            told_off = True
+            bot.log(_("the game won't teleport us ({why}) - waiting for {name} to come back here",
+                      why=tp["off"], name=name), speak=True)
+        bot.sleep(WAIT_LOOK)
 
 
 def _keep_up(bot: Bot, name: str, snap: dict[str, Any], me: dict[str, Any], p: dict[str, Any]):
