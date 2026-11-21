@@ -2569,6 +2569,9 @@ msgstr "Entre primeiro com o personagem no jogo."
 msgid "Logging"
 msgstr "Registro"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Procurar o baú que o jogo anuncia no mapa"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Procurar uma nova &versão ao iniciar o Uncle Farmer"
 
@@ -2704,6 +2707,12 @@ msgstr "Mensagem adicionada à lista de filtros."
 
 msgid "Mining"
 msgstr "Mineração"
+
+msgid "Minutes to look for it:"
+msgstr "Minutos para procurar:"
+
+msgid "Minutes without a kill:"
+msgstr "Minutos sem matar:"
 
 msgid "Minutes:"
 msgstr "Minutos:"
@@ -5151,6 +5160,9 @@ msgstr "Quando a coleta parar sozinha (nunca depois de você pressionar Parar)"
 msgid "When its amiability is below:"
 msgstr "Quando a amabilidade estiver abaixo de:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Quando nada é morto por um tempo, tentar em outro lugar e depois parar"
+
 msgid "When the bag is &full outside:"
 msgstr "Quando a bolsa estiver &cheia fora da cidade:"
 
@@ -5271,6 +5283,9 @@ msgstr "uma linha de bate-papo"
 
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "baú à vista, a {n} passos: indo abri-lo"
+
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "um baú apareceu em {map} — procurando (até {n} minutos)"
 
 msgid "a condition or value is missing"
 msgstr "falta uma condição ou um valor"
@@ -5671,6 +5686,15 @@ msgstr ""
 
 msgid "checking {n} lots"
 msgstr ""
+
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"em {map} os baús são abertos por outros em {n} s em média — não vou procurá-los aqui"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr ""
+"em {map} os baús agora ficam fechados por mais tempo — procurando de novo"
 
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr "escolha os oficiais primeiro: Tools, Hunting bounties"
@@ -6210,6 +6234,9 @@ msgid ""
 msgstr ""
 "preparando-se na porta de {cave}: o tempo começa a contar assim que entramos"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "voltando ao baú visto a {n} passos: indo abri-lo"
+
 msgid "going back to where farming started"
 msgstr "voltando ao ponto inicial da coleta"
 
@@ -6508,6 +6535,9 @@ msgstr "primeiro, entre em um personagem"
 msgid "login must be the first command in a script"
 msgstr "login deve ser o primeiro comando do script"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "a área toda foi vista, nenhum baú — de volta ao farm"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "cuidando de {pet}: PV {hp}/{max}"
 
@@ -6684,6 +6714,9 @@ msgstr ""
 msgid "no chest came into the bag"
 msgstr "nenhum baú entrou na mochila"
 
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "nenhum baú encontrado em {n} minutos — de volta ao farm"
+
 msgid "no construction of the gang was found to read"
 msgstr "nenhuma construção da gangue foi encontrada"
 
@@ -6729,6 +6762,15 @@ msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 "nenhuma hearthstone em uma tecla ou na bolsa — uma luta que vai mal continua"
+
+msgid "no kill for {n} minutes"
+msgstr "nenhuma morte há {n} minutos"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "nenhuma morte há {n} minutos — parando a sessão"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "nenhuma morte há {n} minutos — tentando outra parte do mapa"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "nenhuma entrada conhecida para a masmorra {name}"
@@ -7917,6 +7959,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "outra pessoa abriu o baú — de volta ao farm"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

@@ -381,15 +381,33 @@ You can change the 40-step distance or turn boss avoidance off in **Advanced →
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
+### When nothing is killed for a while
+
+On a night nobody watches, a run can go on for hours without a kill: every monster taken by other players, a corner with nothing left, a monster the game keeps refusing. Uncle Farmer keeps an eye on that.
+
+- After 10 minutes on the farm with no kill, it says "no kill for 10 minutes - trying another part of the map" and walks to the part of the farming area furthest from where it is.
+- After another 10 minutes with still no kill, it does the same again.
+- The third time, it says "no kill for 30 minutes - stopping the run" and ends the run the way a used-up drop time does: it goes where your plan says a run ends.
+
+A farm that fights only some names (a rare monster) never stops for this: it only tries elsewhere.
+
+A kill starts the count again. So does a trip away from the map (town, a death, a boss left behind) or a long pause, which start the minutes again. It never applies in a dungeon, whose timer ends the visit.
+
+You can change the 10 minutes, or turn it off, in **Advanced → Fighting**: **When nothing is killed for a while, try elsewhere, then stop**.
+
 ### Treasure chests
 
-Now and then a treasure chest appears on a farming map, and the game announces it to everyone: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
+Now and then a treasure chest appears on a farming map, and the game announces it to the players on that map: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
 
 When a chest comes into sight while farming, Uncle Farmer walks to it and opens it the way you would: it selects the chest, presses Enter and chooses **Open the chest**. It says "opened a chest" with the number opened so far, and the results count the chests opened.
 
-It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest it saw in the middle of a fight and lost from sight before the fight ended is not forgotten: it goes back for it ("going back to the chest seen 40 steps away"), for up to five minutes.
 
-You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
+The game tells the players on the map when a chest appears there, without saying where. When it does, Uncle Farmer goes looking for it: it says "a chest turned up on Margit Rainforest (5281) - looking for it (up to 5 minutes)", stops picking monsters (it still fights back anything that attacks it) and sweeps the farming area on the travel fusion beast, in lanes about 100 steps apart, nearest unseen ground first. The bot sees about 60 steps around it, three times what the radar keys reach. The search ends when the chest is found and opened, when the game says someone else opened it, when the whole area has been seen, or after the minutes you set. On a quiet map a chest can stay unopened for a quarter of an hour; on a crowded one it goes in a minute or two.
+
+The bot hears both of the game's lines, the chest turning up and someone opening it, whether it is looking or not, so it times every chest of the map it is on. When the last three were opened less than two minutes after they turned up on average, it stops looking on that map and says "chests on Underwater World (5361) are opened by others within 40 s on average - not looking for them here": on a map that crowded, a search never gets there first, and farming is worth more. It keeps timing them, and looks again once they stay unopened longer ("... stay unopened longer now - looking for them again"). When someone else opens the chest it is looking for, it says so and goes back to farming. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+
+You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**. The search for an announced chest has its own box there, **Look for a chest the game announces on the map**, with the minutes to look for it (5 by default).
 
 ### Demonized elites
 

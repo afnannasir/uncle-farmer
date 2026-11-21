@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -143,6 +143,7 @@ class FarmingMixin(Parts):
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
+        watchdog.start(as_bot(self), map_id)
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
@@ -169,13 +170,12 @@ class FarmingMixin(Parts):
                 pets.look_after(as_bot(self), snap)
                 if self._between_fights(map_id):
                     continue          # we went to town: the loop travels back first
-                if keyslots.refill(as_bot(self)):
+                if self._upkeep(map_id, area, only):
                     continue
-                xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if chests.open_nearby(as_bot(self), snap):
-                    continue
+                if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
+                    continue      # a chest opened, or the announced one looked for
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
@@ -209,6 +209,15 @@ class FarmingMixin(Parts):
                 loop_i = None
                 if self._set_back(map_id, setback):
                     break
+
+    def _upkeep(self, map_id: int, area: Sequence[float] | None, only: str) -> bool:
+        """Between fights: an empty potion key filled, the experience card, the no-kill watchdog.
+        True when one of them acted (the farm loop looks again)."""
+        if keyslots.refill(as_bot(self)):
+            return True
+        xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
+        # no kill for a long while: another part of the map (a farm of only some names never stops for it)
+        return watchdog.check(as_bot(self), map_id, area, hunting=bool(only))
 
     def _restock_check(self, map_id: int, last: float) -> float:
         """Every restock_check_every seconds, top up the restock rules and come back. Never in a
