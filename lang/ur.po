@@ -2624,6 +2624,9 @@ msgstr "Pehle game mein character se login karein."
 msgid "Logging"
 msgstr "Logging"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Game map par jo chest announce kare, use dhoondo"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer shuru hone par naya &version dekhein"
 
@@ -2765,6 +2768,12 @@ msgstr "Mining (kaan kani)"
 
 msgid "Minutes of drop time on this spot:"
 msgstr "Is spot par drop time ke minutes:"
+
+msgid "Minutes to look for it:"
+msgstr "Dhoondne ke minutes:"
+
+msgid "Minutes without a kill:"
+msgstr "Kill ke baghair minutes:"
 
 msgid "Minutes:"
 msgstr "Minute:"
@@ -5249,6 +5258,9 @@ msgstr "Jab kheti khud ruk jaye (aap Stop dabane ke baad kabhi nahi)"
 msgid "When its amiability is below:"
 msgstr "Jab uski amiability is se kam ho:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Jab kuch der koi kill na ho, kahin aur try karo, phir ruk jao"
+
 msgid "When the bag is &full outside:"
 msgstr "Bahar basta &bhar jaye to:"
 
@@ -5369,6 +5381,9 @@ msgstr "ek chat line"
 
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "ek chest nazar aaya, {n} qadam door: kholne ja raha hai"
+
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "{map} par chest aaya hai - use dhoond rahe hain ({n} minutes tak)"
 
 msgid "a condition or value is missing"
 msgstr "koi condition ya value missing hai"
@@ -5781,6 +5796,14 @@ msgstr "tick kiye hue lots check kar raha hai..."
 
 msgid "checking {n} lots"
 msgstr "{n} lots check kar raha hai"
+
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"{map} par chests doosre aam taur par {n} s mein khol dete hain - yahan unhein nahin dhoondenge"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr "{map} par chests ab der tak band rehte hain - phir se dhoond rahe hain"
 
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr "pehle officers chuno: Tools, Hunting bounties"
@@ -6332,6 +6355,10 @@ msgid ""
 msgstr ""
 "{cave} ke darwaze par tayyari ho rahi hai: andar jate hi iska timer shuru ho jata hai"
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr ""
+"{n} qadam door dekhe gaye chest ki taraf wapas - use kholne ja rahe hain"
+
 msgid "going back to where farming started"
 msgstr "wahan wapas ja raha hoon jahan farming shuru hui thi"
 
@@ -6635,6 +6662,9 @@ msgstr "pehle kisi kirdaar mein log in karein"
 msgid "login must be the first command in a script"
 msgstr "login script ka pehla command hona chahiye"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "poora area dekh liya, koi chest nahin - wapas farming"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ka khayal: HP {hp}/{max}"
 
@@ -6815,6 +6845,9 @@ msgstr ""
 msgid "no chest came into the bag"
 msgstr "bag mein koi chest nahi aaya"
 
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "{n} minutes mein koi chest nahin mila - wapas farming"
+
 msgid "no construction of the gang was found to read"
 msgstr "gang ki koi construction parhne ko nahi mili"
 
@@ -6861,6 +6894,15 @@ msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 "na key par na bag mein hearthstone hai - buri jati ladai bhi jari rahegi"
+
+msgid "no kill for {n} minutes"
+msgstr "{n} minutes se koi kill nahin"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "{n} minutes se koi kill nahin - run rok rahe hain"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "{n} minutes se koi kill nahin - map ka koi aur hissa try kar rahe hain"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
@@ -8096,6 +8138,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "chest kisi aur ne khol diya - wapas farming"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

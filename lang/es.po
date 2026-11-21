@@ -2623,6 +2623,9 @@ msgstr "Inicia sesión primero con el personaje en el juego."
 msgid "Logging"
 msgstr "Registros"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Buscar el cofre que el juego anuncia en el mapa"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Buscar una nueva &versión al iniciar Uncle Farmer"
 
@@ -2763,6 +2766,12 @@ msgstr "Minería"
 
 msgid "Minutes of drop time on this spot:"
 msgstr "Minutos de tiempo de drop en este sitio:"
+
+msgid "Minutes to look for it:"
+msgstr "Minutos para buscarlo:"
+
+msgid "Minutes without a kill:"
+msgstr "Minutos sin matar:"
 
 msgid "Minutes:"
 msgstr "Minutos:"
@@ -5237,6 +5246,9 @@ msgstr "Cuando el farmeo se detiene solo (nunca después de pulsar Detener)"
 msgid "When its amiability is below:"
 msgstr "Cuando su cariño esté por debajo de:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Si no se mata nada durante un rato, probar en otro sitio y luego parar"
+
 msgid "When the bag is &full outside:"
 msgstr "Cuando la bolsa esté llena &fuera:"
 
@@ -5358,6 +5370,9 @@ msgstr "una línea de chat"
 
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "hay un cofre a la vista, a {n} pasos: voy a abrirlo"
+
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "apareció un cofre en {map} - buscándolo (hasta {n} minutos)"
 
 msgid "a condition or value is missing"
 msgstr "falta una condición o un valor"
@@ -5767,6 +5782,13 @@ msgstr ""
 
 msgid "checking {n} lots"
 msgstr ""
+
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr "en {map} otros abren los cofres en {n} s de media - no los busco aquí"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr "en {map} los cofres ahora duran más sin abrir - buscándolos otra vez"
 
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr ""
@@ -6309,6 +6331,9 @@ msgid ""
 "getting ready at the door of {cave}: its timer starts the moment we are in"
 msgstr ""
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "volviendo al cofre visto a {n} pasos: voy a abrirlo"
+
 msgid "going back to where farming started"
 msgstr "volviendo al lugar donde empezó el farmeo"
 
@@ -6613,6 +6638,9 @@ msgstr "inicia sesión primero con un personaje"
 msgid "login must be the first command in a script"
 msgstr "login debe ser el primer comando de un script"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "se ha mirado toda la zona, ningún cofre - de vuelta a farmear"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "cuidando a {pet}: salud {hp}/{max}"
 
@@ -6791,6 +6819,9 @@ msgstr ""
 msgid "no chest came into the bag"
 msgstr ""
 
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "ningún cofre encontrado en {n} minutos - de vuelta a farmear"
+
 msgid "no construction of the gang was found to read"
 msgstr ""
 
@@ -6836,6 +6867,15 @@ msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr ""
 "no hay Piedra de Hogar en una tecla ni en la bolsa: un combate que va mal se sigue peleando"
+
+msgid "no kill for {n} minutes"
+msgstr "ninguna muerte en {n} minutos"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "ninguna muerte en {n} minutos - deteniendo la partida"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "ninguna muerte en {n} minutos - probando otra parte del mapa"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "no se conoce ninguna entrada para la mazmorra {name}"
@@ -8058,6 +8098,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "el cofre ya no está: lo abrió otro"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "otra persona abrió el cofre - de vuelta a farmear"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

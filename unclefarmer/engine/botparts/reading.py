@@ -314,6 +314,9 @@ class ReadingMixin(Parts):
         map_info = s.get("map")
         map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
+        chests = getattr(self, "chests", None)
+        if chests is not None:
+            chests.note(s, self._snap_at)      # a chest seen mid-fight is gone back for after it
         here = self._snap_map_id
         if here and here != self.notes_map:
             # Another map (0 is none: a change in progress). What the bot holds against monster
