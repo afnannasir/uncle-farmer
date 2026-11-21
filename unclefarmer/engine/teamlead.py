@@ -62,6 +62,7 @@ QUIT_DONE = re.compile(r"has quit the team", re.I)
 DISBANDED = re.compile(r"^\s*Team disbanded", re.I)
 NEW_LEADER = re.compile(r"^\s*(.+?) has become the team leader", re.I)
 AFTER_DISBAND = 4.0         # the script's pause between disbanding and making the team again
+AFTER_CREATE = 1.5          # live: the menu read a second after "set up a team" had no team yet
 STAY_LOOK = 2.0             # seconds between looks while staying in town
 LOOK_EVERY = 1.0            # the farm loop reads the sounds and the chat this often at most
 STAY_EVERY_LEAST = 5        # minutes between offline checks while staying, at least
@@ -638,6 +639,7 @@ def create(b: Bot) -> bool:
     while b.clock.time() < end:
         if any(made.search(line) for line in game_lines(b, mark)):
             b.log(_("made the team {name}", name=name), speak=True)
+            b.sleep(AFTER_CREATE)    # the Action menu shows the new team a moment after the line
             return True
         b.sleep(0.25)
     b.log(_("the game didn't say the team {name} was made", name=name), speak=True)
