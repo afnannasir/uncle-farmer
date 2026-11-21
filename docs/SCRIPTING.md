@@ -792,6 +792,8 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
     gem_maker check    only look: walk there, read the menus and prices, change nothing
     gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
     gem_breaker check  only look: say what would be broken, break nothing
+    potion_maker       make and fuse potions as set up in Tools, Potion Maker
+    potion_maker check only look: read the Pharmacist's fees, make and buy nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 

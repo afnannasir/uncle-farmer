@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+**New: Tools, Potion Maker (Ctrl+Shift+O)**
+
+- The gang Pharmacist makes potions from Bloods and Pelts ("Make Medicine", 50 or 45 a batch for a
+  fee in arnebia, less in your own gang) and fuses 5 of a size into 1 of the next for free ("Fuse
+  Medicine": Small to Medium to Large, red and blue, for you and for pets). Say how many of each
+  potion you want in the bag: all 28 potions, pet potions too.
+- Medium and Large potions are made from Small ones and fused up (usually cheaper), or each from its
+  own recipe, as you choose. You can also fuse spare potions up to Medium or Large and keep a few
+  Small and Medium ones.
+- Missing Bloods and Pelts come from the town storehouse, then the market: the cheapest lots first,
+  never above the most gold coins a piece you set for each material, and never above the run's gold
+  limit. With no price set it buys the cheapest first.
+- It never spends arnebia below your reserve, reads each fee on the Pharmacist's page before paying,
+  and Check only says what it would do without making anything. Script command: `potion_maker
+  [check]`; also in the Before/After farming lists and schedules. Built from one recorded hand run;
+  not yet tried by the bot in the game.
+
 **No more experience cards one after another in dungeons**
 
 - Inside a dungeon (Scorpion Cave), the character sheet doesn't show the experience card, so

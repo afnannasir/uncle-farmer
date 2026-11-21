@@ -203,6 +203,9 @@ msgstr "Bul: (&F)"
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "Oyunun kendi çaldığı sesli mesajların hızını düzelt (&F)"
 
+msgid "&Fuse spare potions up to:"
+msgstr ""
+
 msgid "&Game"
 msgstr "Oyun (&G)"
 
@@ -327,6 +330,9 @@ msgstr "Kaybedi&lecek deneyim:"
 msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr "Gerektiğinde kristal parçalarından Geliştir&me Kristali yap"
 
+msgid "&Make them:"
+msgstr ""
+
 msgid "&Map:"
 msgstr "Harita: (&M)"
 
@@ -404,6 +410,9 @@ msgstr "Dönem: (&P)"
 
 msgid "&Pet:"
 msgstr "Evcil hayvan: (&P)"
+
+msgid "&Pharmacist:"
+msgstr ""
 
 msgid "&Pick from monsters near me"
 msgstr "Yakınımdaki canavarlardan seç (&P)"
@@ -555,6 +564,9 @@ msgstr ""
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Sarf malzemeleri (işaretli olanlar yeniden doldurulur):"
 
+msgid "&Take them from:"
+msgstr ""
+
 msgid "&Target keys pick:"
 msgstr "Hedef &tuşları şunu seçer:"
 
@@ -667,6 +679,9 @@ msgid "(sellers not counted)"
 msgstr ""
 
 msgid "(was {n})"
+msgstr ""
+
+msgid "({n} fused)"
 msgstr ""
 
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
@@ -1510,6 +1525,9 @@ msgstr "Eşleşmiyor"
 msgid "Don't donate"
 msgstr "Bağış yapma"
 
+msgid "Don't fuse"
+msgstr ""
+
 msgid "Don't go"
 msgstr "Gitme"
 
@@ -1570,6 +1588,9 @@ msgstr "Dışa aktar (&X)"
 
 msgid "E&xport character settings"
 msgstr "Karakter ayarlarını dışa aktar (&X)"
+
+msgid "Each from its own recipe"
+msgstr ""
 
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr "Her sesin bir kimliği, adı ve susturma ayarı olmalı."
@@ -1801,6 +1822,9 @@ msgstr "Cuma"
 
 msgid "From (+):"
 msgstr "Başlangıç (+):"
+
+msgid "From Small ones, fused up (5 for 1, usually cheaper)"
+msgstr ""
 
 msgid "From a level on"
 msgstr "Bir seviyeden itibaren"
@@ -2083,11 +2107,17 @@ msgstr "Ev."
 msgid "Hook unavailable: {reason}"
 msgstr "Kanca kullanılamıyor: {reason}"
 
+msgid "How"
+msgstr ""
+
 msgid "How &many of the selected lot:"
 msgstr ""
 
 msgid "How it works:"
 msgstr "Nasıl çalışır:"
+
+msgid "How many of each to have in the bag (0: don't make it)."
+msgstr ""
 
 msgid "How the game works"
 msgstr "Oyun nasıl işler"
@@ -2285,6 +2315,12 @@ msgstr "&Telegram grubuna katıl"
 msgid "Keep &old files:"
 msgstr "Eski d&osyaları sakla:"
 
+msgid "Keep at least this many of each &Small potion:"
+msgstr ""
+
+msgid "Keep at least this many of each M&edium potion:"
+msgstr ""
+
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
@@ -2320,6 +2356,9 @@ msgstr "Tür: {what}"
 
 msgid "Language"
 msgstr "Dil"
+
+msgid "Large"
+msgstr ""
 
 msgid "Last 30 days"
 msgstr "Son 30 gün"
@@ -2538,6 +2577,15 @@ msgid "Matching filters disabled. Save to restore these messages in chat."
 msgstr ""
 "Eşleşen filtreler devre dışı bırakıldı. Bu mesajları sohbete geri getirmek için kaydet."
 
+msgid "Materials"
+msgstr ""
+
+msgid "Medium"
+msgstr ""
+
+msgid "Medium and Large potions"
+msgstr ""
+
 msgid "Messa&ge to {where}:"
 msgstr "Mesaj, {where} (&G):"
 
@@ -2552,6 +2600,9 @@ msgstr "Madencilik"
 
 msgid "Minutes:"
 msgstr "Dakika:"
+
+msgid "Missing Bloods and Pelts"
+msgstr ""
 
 msgid "Mist World"
 msgstr "Mist World"
@@ -2610,6 +2661,13 @@ msgid ""
 "Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run"
 msgstr ""
 "Ahlak {n} (kara isim): ölüm giyilen ekipmana mal olabilir, bu yüzden XP kaybettirici çalışmaz"
+
+msgid ""
+"Most gold coins a piece at the market (0: the cheapest first, any price)"
+msgstr ""
+
+msgid "Most gold coins to spend on materials in one run (0: no limit):"
+msgstr ""
 
 msgid "Most to pay per shard (arnebia):"
 msgstr "Parça başına ödenecek en yüksek miktar (arnebia):"
@@ -2761,6 +2819,10 @@ msgstr "Bilinen bir alıcı yok, bu yüzden depoya konacak"
 msgid "No monsters near you right now."
 msgstr "Şu anda yakınında canavar yok."
 
+msgid ""
+"No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
+msgstr ""
+
 msgid "No pet"
 msgstr "Evcil hayvan yok"
 
@@ -2855,6 +2917,10 @@ msgstr "Henüz hiçbir şey olmadı."
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr "Yapacak bir şey yok: Çantada henüz mücevher veya parça yok."
 
+msgid ""
+"Nothing to make: say how many of a potion to have, or choose what to fuse."
+msgstr ""
+
 msgid "Nothing today yet."
 msgstr "Bugün henüz bir şey yok."
 
@@ -2921,6 +2987,9 @@ msgstr ""
 
 msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
+msgstr ""
+
+msgid "Only what is in the bag"
 msgstr ""
 
 msgid "Only when HP is low"
@@ -3019,6 +3088,9 @@ msgstr "Dur&aklat ya da devam et"
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr "&Evcil hayvanlar (işaretliler çıkar, önce ilk hazır olan):"
 
+msgid "P&otion Maker"
+msgstr ""
+
 msgid "PK mode back to {mode}"
 msgstr "PK modu yeniden {mode}"
 
@@ -3082,6 +3154,9 @@ msgstr "Evcil hayvan mavi iksirleri"
 msgid "Pet food"
 msgstr "Evcil hayvan maması"
 
+msgid "Pet potions"
+msgstr ""
+
 msgid "Pet rebirth"
 msgstr "Evcil hayvanın yeniden doğuşu"
 
@@ -3094,6 +3169,9 @@ msgstr "Evcil hayvan:"
 
 msgid "Pets"
 msgstr "Evcil hayvanlar"
+
+msgid "Pharmacist and spending"
+msgstr ""
 
 msgid "Pick a voice message in Messages first."
 msgstr "Önce Mesajlar'dan bir sesli mesaj seç."
@@ -3148,6 +3226,9 @@ msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
 "Polson Sulak Alanı: Zehir Bağışıklığı etkin değil - füzyon canavarından inince zemini bizi zehirler ve oradaki her dövüş yaya yapılır"
+
+msgid "Potion Maker"
+msgstr ""
 
 msgid "Potions"
 msgstr "İksirler"
@@ -3462,6 +3543,9 @@ msgstr "Kaydedildi. Planlar sekmesinde betik olarak duruyor."
 
 msgid "Saving and applying sound settings..."
 msgstr "Ses ayarları kaydedilip uygulanıyor..."
+
+msgid "Say how many of at least one potion to have, or choose what to fuse."
+msgstr ""
 
 msgid "Scan complete."
 msgstr "Tarama tamamlandı."
@@ -4152,6 +4236,9 @@ msgstr "Bitiş yeri artık durduğun yer: {map} ({x},{y})."
 msgid "The fastest one"
 msgstr "En hızlısı"
 
+msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
+msgstr ""
+
 msgid "The game didn't play it: {why}"
 msgstr "Oyun onu çalmadı: {why}"
 
@@ -4232,6 +4319,9 @@ msgstr ""
 
 msgid "The listener is busy or disconnected. Try again."
 msgstr "Dinleyici meşgul ya da bağlantısı kesik. Yeniden dene."
+
+msgid "The market"
+msgstr ""
 
 msgid "The nearest city's"
 msgstr "En yakın şehrin"
@@ -4314,6 +4404,12 @@ msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "Atılacaklar listesi boş. Önce Karakter, Çanta ve sarf malzemeleri'nde neyin atılacağını seç."
+
+msgid "The town storehouse"
+msgstr ""
+
+msgid "The town storehouse, then the market"
+msgstr ""
 
 msgid "The trigger sequence settings are invalid."
 msgstr "Tetikleyici sırası ayarları geçersiz."
@@ -5495,6 +5591,9 @@ msgstr "{gang} çetesinin üssüne girilemedi"
 msgid "couldn't get into the gang's inner hall"
 msgstr "çetenin iç salonuna girilemedi"
 
+msgid "couldn't get into the gang's outer hall to reach the Pharmacist"
+msgstr ""
+
 msgid "couldn't get into the secret room"
 msgstr "gizli odaya girilemedi"
 
@@ -5598,6 +5697,9 @@ msgstr "hedef tuşu NPC'lere çevrilemedi"
 
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "{item} depodan alınamadı: {why}"
+
+msgid "couldn't talk to the Pharmacist"
+msgstr ""
 
 msgid "couldn't talk to the {npc}"
 msgstr "{npc} ile konuşulamadı"
@@ -5834,6 +5936,12 @@ msgstr "bir ceset için yürüdüğümüzden daha uzakta"
 
 msgid "further to walk than the chase range"
 msgstr "yürüme mesafesi kovalama menzilinden uzun"
+
+msgid "fuse {n} {potion}"
+msgstr ""
+
+msgid "fused {k} {src} into {n} {potion}"
+msgstr ""
 
 msgid "fusion power {n} - on foot until it is back to {back}"
 msgstr "füzyon gücü {n} - {back} değerine dönene kadar yaya"
@@ -6218,6 +6326,9 @@ msgstr "{item} azaldı: {have} kaldı"
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Seviye {lv} {kind} Geliştirme Kristali yapıldı"
 
+msgid "made {n} batches of potions"
+msgstr ""
+
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "istenen {want} {gem} içinden {n} tane yapıldı; çantada {have}"
 
@@ -6227,11 +6338,23 @@ msgstr "{used} {shard} ile {n} {gem} yapıldı"
 msgid "made {n} {gem}; {have} in the bag"
 msgstr "{n} {gem} yapıldı; çantada {have}"
 
+msgid "made {n} {potion} for {fee} arnebia"
+msgstr ""
+
+msgid "make {n} batches of {potion}"
+msgstr ""
+
+msgid "make {n} batches of {potion} ({fee} arnebia each)"
+msgstr ""
+
 msgid "making gems"
 msgstr "mücevher yapılıyor"
 
 msgid "making gems: {list}"
 msgstr "mücevher yapılıyor: {list}"
+
+msgid "making potions"
+msgstr ""
 
 msgid ""
 "market list made: {items} items in {lots} lots, {pages} pages, {min:.1f} minutes"
@@ -6299,6 +6422,9 @@ msgstr "susturulan istek"
 
 msgid "near a boss"
 msgstr "bir boss yakınında"
+
+msgid "needs {n} {item} ({k} missing)"
+msgstr ""
 
 msgid "never again"
 msgstr "bir daha asla"
@@ -6579,6 +6705,9 @@ msgstr "{item} geliştirmek için yeterli boşta arnebia yok ({cost})"
 
 msgid "not enough spare arnebia to make {gem} (fee {fee} each)"
 msgstr "{gem} yapmak için yeterli boşta arnebia yok (her biri {fee} ücret)"
+
+msgid "not enough spare arnebia to make {potion} (fee {fee})"
+msgstr ""
 
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
@@ -7152,6 +7281,9 @@ msgstr "{n} saniye sonra hâlâ {map} üzerinde - araç bizi götürmedi"
 msgid "still short after restocking: {what}"
 msgstr "stok yenilendikten sonra hâlâ eksik: {what}"
 
+msgid "still short of: {what}"
+msgstr ""
+
 msgid "stop rule: {cond}"
 msgstr "durdurma kuralı: {cond}"
 
@@ -7381,6 +7513,30 @@ msgstr ""
 msgid "the Pet Trainer offers no rebirth"
 msgstr "Evcil Hayvan Eğitmeni yeniden doğuş sunmuyor"
 
+msgid "the Pharmacist didn't ask how many {potion} to fuse"
+msgstr ""
+
+msgid "the Pharmacist doesn't list {potion}"
+msgstr ""
+
+msgid "the Pharmacist is open; nothing was made (check only)"
+msgstr ""
+
+msgid "the Pharmacist says there aren't enough materials for {potion}"
+msgstr ""
+
+msgid "the Pharmacist's menu has no \"{entry}\""
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} didn't come up - nothing was spent"
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
+msgstr ""
+
+msgid "the Potion Maker is done{fused}"
+msgstr ""
+
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Gizli oda yöneticisi asistan çağırmadı"
 
@@ -7423,6 +7579,9 @@ msgstr "uygulama o sırada çalışmıyordu"
 msgid "the bag"
 msgstr "çanta"
 
+msgid "the bag already has the potions asked for"
+msgstr ""
+
 msgid "the bag cursor is out of range"
 msgstr "çanta imleci menzil dışında"
 
@@ -7448,6 +7607,9 @@ msgstr ""
 
 msgid "the bag is still full and nothing could be sold or stored - stopping"
 msgstr "çanta hâlâ dolu ve hiçbir şey satılamadı ya da depolanamadı - duruluyor"
+
+msgid "the bag is too full for more {potion}"
+msgstr ""
 
 msgid "the bag is too full for more {shard}"
 msgstr "çanta daha fazla {shard} için fazla dolu"
@@ -7475,6 +7637,12 @@ msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
 msgstr ""
 "{gem} birleştirildikten sonra çantada değişiklik görülmedi - bu tur için bırakılıyor"
+
+msgid "the bag showed no new {potion} after fusing"
+msgstr ""
+
+msgid "the bag showed no new {potion} after making it"
+msgstr ""
 
 msgid "the bag trip"
 msgstr "çanta yolculuğu"
@@ -7528,6 +7696,9 @@ msgstr "bağış gerçekleşmedi: {why}"
 
 msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
 msgstr "ganimet süresi neredeyse bitti ({m} dk kaldı) - farma başlanmıyor"
+
+msgid "the fees come to {total} arnebia; {spare} is spare"
+msgstr ""
 
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
@@ -7675,6 +7846,9 @@ msgid ""
 msgstr ""
 "ekipmanın onarılması gerekiyor: {tool} yalnızca çantada, bu yüzden bu dövüşten sonra (hemen onarmak için kısayol tuşuna koy)"
 
+msgid "the gold limit for materials ({cap}) is spent"
+msgstr ""
+
 msgid "the guard didn't strike back - trying another"
 msgstr "muhafız karşılık vermedi - başkası deneniyor"
 
@@ -7718,6 +7892,12 @@ msgid "the market didn't take the page number"
 msgstr ""
 
 msgid "the market has no category {cat}"
+msgstr ""
+
+msgid "the market has no {item} at {most} gold coins or less"
+msgstr ""
+
+msgid "the market has no {item} for sale"
 msgstr ""
 
 msgid "the market's category choice isn't on the page"
@@ -7807,6 +7987,9 @@ msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "beceri sayfası {key} ile değişiyor (oyunun bunun için tuşu)"
+
+msgid "the spare arnebia pays for {n} of the {all} batches"
+msgstr ""
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
@@ -8366,6 +8549,9 @@ msgid ""
 msgstr ""
 "{items} bozuk ve onaracak bir şey yok - güvenli bir yere gidip duruluyor"
 
+msgid "{item} (you have {n}):"
+msgstr ""
+
 msgid "{item} ({count}, {where})"
 msgstr "{item} ({count}, {where})"
 
@@ -8403,6 +8589,9 @@ msgstr "{item} tanesi {w} ağırlığında"
 
 msgid "{item}, keeping {n}"
 msgstr "{item}, {n} tane saklanıyor"
+
+msgid "{item}:"
+msgstr ""
 
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
@@ -8779,6 +8968,9 @@ msgstr "{n} kez, {first} ile {last} arası: {why}"
 msgid "{n} used up"
 msgstr "{n} tükendi"
 
+msgid "{n} {item} still missing"
+msgstr ""
+
 msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
 msgstr ""
 
@@ -8825,6 +9017,12 @@ msgstr "{pet}: bugün ücretsiz yeniden doğuş kalmadı"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet}: {n} ücretsiz yeniden doğuş, değer {before} -> {after}"
+
+msgid "{potion} (you have {n}):"
+msgstr ""
+
+msgid "{potion}:"
+msgstr ""
 
 msgid "{price} a unit is over the most you set ({most})"
 msgstr ""

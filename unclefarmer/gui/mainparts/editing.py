@@ -226,6 +226,7 @@ class EditingMixin(FrameParts):
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemBreakerDialog, GemMakerDialog
+        from ..potions import PotionMakerDialog
         name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
@@ -241,6 +242,7 @@ class EditingMixin(FrameParts):
         from ..xploss import XpLoserDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "break": (GemBreakerDialog, "gem_breaker", _("Gem Breaker")),
+                           "potions": (PotionMakerDialog, "potion_maker", _("Potion Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
                            "bounties": (BountiesDialog, "bounties", _("Hunting bounties")),

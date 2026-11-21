@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Potion Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -898,6 +898,19 @@ A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 
 - **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
 
 What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
+
+### Potion Maker
+
+Open **Tools, Potion Maker** or press **Ctrl+Shift+O**. It uses the Pharmacist in a gang base's outer hall: **Make Medicine** turns Bloods and Pelts into a batch of 50 (or 45) potions for a fee in arnebia (lower in your own gang), and **Fuse Medicine** turns 5 potions of a size into 1 of the next for free (Small to Medium to Large, red and blue, for you and for pets), up to 100 at a time.
+
+- **Potions** and **Pet potions**: how many of each to have in the bag. 0 means it isn't made. The window shows how many you have now.
+- **Make them** (Medium and Large potions): from Small ones, fused up, or each from its own recipe. Fusing is usually cheaper: 25 Small Red Potions (one Lesser Blood and half a fee) make 1 Large one.
+- **Fuse spare potions up to**: after making, fuse what is over your numbers up to Medium or Large, keeping at least the Small and Medium ones you say.
+- **Pharmacist**: your own gang's, or another gang's by its name. Arnebia below your reserve is never spent, and each fee is read on the Pharmacist's page before anything is paid.
+- **Take them from**: missing Bloods and Pelts come from only the bag, the town storehouse, the market, or the storehouse and then the market.
+- **Most gold coins a piece**: for each material, the most the market may charge. The cheapest lots are always bought first; with 0 any price is fine, still cheapest first. **Most gold coins to spend on materials in one run** caps the whole buy.
+
+**Check only** walks to the Pharmacist, reads the real fees and says what it would make, fuse and buy, without spending anything.
 
 ### Equipment Enhancer
 

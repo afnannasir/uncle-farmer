@@ -202,6 +202,9 @@ msgstr "&Localizar:"
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "&Corrigir a velocidade das mensagens de voz reproduzidas pelo jogo"
 
+msgid "&Fuse spare potions up to:"
+msgstr ""
+
 msgid "&Game"
 msgstr "&Jogo"
 
@@ -326,6 +329,9 @@ msgstr "&Perder experiência:"
 msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr "&Criar cristais de aprimoramento com fragmentos quando necessário"
 
+msgid "&Make them:"
+msgstr ""
+
 msgid "&Map:"
 msgstr "&Mapa:"
 
@@ -403,6 +409,9 @@ msgstr "&Período:"
 
 msgid "&Pet:"
 msgstr "&Mascote:"
+
+msgid "&Pharmacist:"
+msgstr ""
 
 msgid "&Pick from monsters near me"
 msgstr "&Escolher entre os monstros próximos"
@@ -558,6 +567,9 @@ msgstr "&Parar quando uma morte custar muito pouco"
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Suprimentos (os marcados serão reabastecidos):"
 
+msgid "&Take them from:"
+msgstr ""
+
 msgid "&Target keys pick:"
 msgstr "&Seleção pelas teclas de alvo:"
 
@@ -670,6 +682,9 @@ msgid "(sellers not counted)"
 msgstr ""
 
 msgid "(was {n})"
+msgstr ""
+
+msgid "({n} fused)"
 msgstr ""
 
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
@@ -1522,6 +1537,9 @@ msgstr "Não corresponde"
 msgid "Don't donate"
 msgstr "Não doar"
 
+msgid "Don't fuse"
+msgstr ""
+
 msgid "Don't go"
 msgstr "Não ir"
 
@@ -1583,6 +1601,9 @@ msgstr "E&xportar"
 
 msgid "E&xport character settings"
 msgstr "E&xportar configurações do personagem"
+
+msgid "Each from its own recipe"
+msgstr ""
 
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr "Cada som precisa de um ID, um nome e uma opção de silenciamento."
@@ -1814,6 +1835,9 @@ msgstr "Sexta-feira"
 
 msgid "From (+):"
 msgstr "De (+):"
+
+msgid "From Small ones, fused up (5 for 1, usually cheaper)"
+msgstr ""
 
 msgid "From a level on"
 msgstr "A partir de um nível"
@@ -2098,11 +2122,17 @@ msgstr "Em casa."
 msgid "Hook unavailable: {reason}"
 msgstr "Hook indisponível: {reason}"
 
+msgid "How"
+msgstr ""
+
 msgid "How &many of the selected lot:"
 msgstr ""
 
 msgid "How it works:"
 msgstr "Como funciona:"
+
+msgid "How many of each to have in the bag (0: don't make it)."
+msgstr ""
 
 msgid "How the game works"
 msgstr "Como o jogo funciona"
@@ -2303,6 +2333,12 @@ msgstr "Entrar no grupo do &Telegram"
 msgid "Keep &old files:"
 msgstr "Manter arquivos &antigos:"
 
+msgid "Keep at least this many of each &Small potion:"
+msgstr ""
+
+msgid "Keep at least this many of each M&edium potion:"
+msgstr ""
+
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr "Manter pelo menos esta quantidade de cada cristal e ní&vel:"
 
@@ -2338,6 +2374,9 @@ msgstr "Tipo: {what}"
 
 msgid "Language"
 msgstr "Idioma"
+
+msgid "Large"
+msgstr ""
 
 msgid "Last 30 days"
 msgstr "Últimos 30 dias"
@@ -2558,6 +2597,15 @@ msgid "Matching filters disabled. Save to restore these messages in chat."
 msgstr ""
 "Os filtros de correspondência estão desativados. Salve para restaurar estas mensagens na conversa."
 
+msgid "Materials"
+msgstr ""
+
+msgid "Medium"
+msgstr ""
+
+msgid "Medium and Large potions"
+msgstr ""
+
 msgid "Messa&ge to {where}:"
 msgstr "&Mensagem para {where}:"
 
@@ -2572,6 +2620,9 @@ msgstr "Mineração"
 
 msgid "Minutes:"
 msgstr "Minutos:"
+
+msgid "Missing Bloods and Pelts"
+msgstr ""
 
 msgid "Mist World"
 msgstr "Mist World"
@@ -2630,6 +2681,13 @@ msgid ""
 "Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run"
 msgstr ""
 "Moralidade em {n} (nome preto): morrer pode custar equipamento vestido, então o perdedor de EXP não será executado."
+
+msgid ""
+"Most gold coins a piece at the market (0: the cheapest first, any price)"
+msgstr ""
+
+msgid "Most gold coins to spend on materials in one run (0: no limit):"
+msgstr ""
 
 msgid "Most to pay per shard (arnebia):"
 msgstr "Valor máximo por fragmento (arnebia):"
@@ -2782,6 +2840,10 @@ msgstr "Nenhum comprador conhecido; o item será guardado"
 msgid "No monsters near you right now."
 msgstr "Não há monstros por perto agora."
 
+msgid ""
+"No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
+msgstr ""
+
 msgid "No pet"
 msgstr "Sem mascote"
 
@@ -2878,6 +2940,10 @@ msgstr "Nada aconteceu ainda."
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr "Nada a fazer: ainda não há gemas ou fragmentos na mochila."
 
+msgid ""
+"Nothing to make: say how many of a potion to have, or choose what to fuse."
+msgstr ""
+
 msgid "Nothing today yet."
 msgstr "Nada hoje ainda."
 
@@ -2947,6 +3013,9 @@ msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 "Só mapas do meu &nível (monstros de 9 níveis abaixo a 5 acima: experiência e saque completos)"
+
+msgid "Only what is in the bag"
+msgstr ""
 
 msgid "Only when HP is low"
 msgstr "Somente quando o HP estiver baixo"
@@ -3045,6 +3114,9 @@ msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr ""
 "&Mascotes (os marcados serão invocados; primeiro, o que estiver pronto):"
 
+msgid "P&otion Maker"
+msgstr ""
+
 msgid "PK mode back to {mode}"
 msgstr "modo PK voltou para {mode}"
 
@@ -3108,6 +3180,9 @@ msgstr "Poções azuis do mascote"
 msgid "Pet food"
 msgstr "Comida do mascote"
 
+msgid "Pet potions"
+msgstr ""
+
 msgid "Pet rebirth"
 msgstr "Renascimento do mascote"
 
@@ -3119,6 +3194,9 @@ msgstr "Mascote:"
 
 msgid "Pets"
 msgstr "Mascotes"
+
+msgid "Pharmacist and spending"
+msgstr ""
 
 msgid "Pick a voice message in Messages first."
 msgstr "Primeiro, selecione uma mensagem de voz em Mensagens."
@@ -3174,6 +3252,9 @@ msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
 "Pântano de Polson: Imunidade a Veneno não está ativada - o solo nos envenena quando não estamos montados em uma besta de fusão, e todos os combates ocorrem a pé"
+
+msgid "Potion Maker"
+msgstr ""
 
 msgid "Potions"
 msgstr "Poções"
@@ -3491,6 +3572,9 @@ msgstr "Salvo. Ele está na guia Planos como script."
 
 msgid "Saving and applying sound settings..."
 msgstr "Salvando e aplicando configurações de som..."
+
+msgid "Say how many of at least one potion to have, or choose what to fuse."
+msgstr ""
 
 msgid "Scan complete."
 msgstr "Análise concluída."
@@ -4195,6 +4279,9 @@ msgstr "O local final agora é onde você está: {map} ({x},{y})."
 msgid "The fastest one"
 msgstr "O mais rápido"
 
+msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
+msgstr ""
+
 msgid "The game didn't play it: {why}"
 msgstr "O jogo não reproduziu: {why}"
 
@@ -4279,6 +4366,9 @@ msgstr ""
 
 msgid "The listener is busy or disconnected. Try again."
 msgstr "O ouvinte está ocupado ou desconectado. Tente novamente."
+
+msgid "The market"
+msgstr ""
 
 msgid "The nearest city's"
 msgstr "Da cidade mais próxima"
@@ -4366,6 +4456,12 @@ msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "A lista de descarte está vazia. Primeiro, escolha o que descartar em Personagem, Mochila e suprimentos."
+
+msgid "The town storehouse"
+msgstr ""
+
+msgid "The town storehouse, then the market"
+msgstr ""
 
 msgid "The trigger sequence settings are invalid."
 msgstr "As configurações da sequência de acionadores são inválidas."
@@ -5557,6 +5653,9 @@ msgstr "não foi possível entrar na base da guilda {gang}"
 msgid "couldn't get into the gang's inner hall"
 msgstr "não foi possível entrar no salão interno da guilda"
 
+msgid "couldn't get into the gang's outer hall to reach the Pharmacist"
+msgstr ""
+
 msgid "couldn't get into the secret room"
 msgstr "não foi possível entrar na sala secreta"
 
@@ -5661,6 +5760,9 @@ msgstr "não foi possível mudar a tecla de alvo para NPCs"
 
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "não foi possível retirar {item} do armazém: {why}"
+
+msgid "couldn't talk to the Pharmacist"
+msgstr ""
 
 msgid "couldn't talk to the {npc}"
 msgstr "não foi possível falar com {npc}"
@@ -5900,6 +6002,12 @@ msgstr "mais longe do que andamos por um cadáver"
 
 msgid "further to walk than the chase range"
 msgstr "distância maior que o alcance de perseguição"
+
+msgid "fuse {n} {potion}"
+msgstr ""
+
+msgid "fused {k} {src} into {n} {potion}"
+msgstr ""
 
 msgid "fusion power {n} - on foot until it is back to {back}"
 msgstr "poder de fusão {n} — a pé até voltar a {back}"
@@ -6285,6 +6393,9 @@ msgstr "pouco {item}: restam {have}"
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "criou {n} cristais de aprimoramento de {kind} nível {lv}"
 
+msgid "made {n} batches of potions"
+msgstr ""
+
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "criou {n} das {want} gemas {gem} solicitadas; há {have} na bolsa"
 
@@ -6294,11 +6405,23 @@ msgstr "criou {n} {gem} usando {used} {shard}"
 msgid "made {n} {gem}; {have} in the bag"
 msgstr "criou {n} {gem}; há {have} na bolsa"
 
+msgid "made {n} {potion} for {fee} arnebia"
+msgstr ""
+
+msgid "make {n} batches of {potion}"
+msgstr ""
+
+msgid "make {n} batches of {potion} ({fee} arnebia each)"
+msgstr ""
+
 msgid "making gems"
 msgstr "criando gemas"
 
 msgid "making gems: {list}"
 msgstr "criando gemas: {list}"
+
+msgid "making potions"
+msgstr ""
 
 msgid ""
 "market list made: {items} items in {lots} lots, {pages} pages, {min:.1f} minutes"
@@ -6366,6 +6489,9 @@ msgstr "solicitação silenciada"
 
 msgid "near a boss"
 msgstr "perto de um chefe"
+
+msgid "needs {n} {item} ({k} missing)"
+msgstr ""
 
 msgid "never again"
 msgstr "nunca mais"
@@ -6659,6 +6785,9 @@ msgstr "Arnebia restante insuficiente para aprimorar {item} ({cost})"
 
 msgid "not enough spare arnebia to make {gem} (fee {fee} each)"
 msgstr "Arnebia restante insuficiente para criar {gem} (taxa de {fee} cada)"
+
+msgid "not enough spare arnebia to make {potion} (fee {fee})"
+msgstr ""
 
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr "Arnebia restante insuficiente para elevar {gem} (taxa {fee})"
@@ -7237,6 +7366,9 @@ msgstr "ainda em {map} após {n} segundos — o transporte não nos levou adiant
 msgid "still short after restocking: {what}"
 msgstr "ainda faltando após o reabastecimento: {what}"
 
+msgid "still short of: {what}"
+msgstr ""
+
 msgid "stop rule: {cond}"
 msgstr "regra de parada: {cond}"
 
@@ -7467,6 +7599,30 @@ msgstr ""
 msgid "the Pet Trainer offers no rebirth"
 msgstr "o Treinador de Mascotes não oferece reencarnação"
 
+msgid "the Pharmacist didn't ask how many {potion} to fuse"
+msgstr ""
+
+msgid "the Pharmacist doesn't list {potion}"
+msgstr ""
+
+msgid "the Pharmacist is open; nothing was made (check only)"
+msgstr ""
+
+msgid "the Pharmacist says there aren't enough materials for {potion}"
+msgstr ""
+
+msgid "the Pharmacist's menu has no \"{entry}\""
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} didn't come up - nothing was spent"
+msgstr ""
+
+msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
+msgstr ""
+
+msgid "the Potion Maker is done{fused}"
+msgstr ""
+
 msgid "the Secret room Manager summoned no assistant"
 msgstr "o Gerente da Sala Secreta não invocou nenhum assistente"
 
@@ -7511,6 +7667,9 @@ msgstr "o aplicativo não estava em execução naquele momento"
 msgid "the bag"
 msgstr "a bolsa"
 
+msgid "the bag already has the potions asked for"
+msgstr ""
+
 msgid "the bag cursor is out of range"
 msgstr "o cursor da bolsa está fora do intervalo"
 
@@ -7538,6 +7697,9 @@ msgid "the bag is still full and nothing could be sold or stored - stopping"
 msgstr ""
 "a bolsa continua cheia e não foi possível vender nem guardar nada — parando"
 
+msgid "the bag is too full for more {potion}"
+msgstr ""
+
 msgid "the bag is too full for more {shard}"
 msgstr "a bolsa está cheia demais para mais {shard}"
 
@@ -7564,6 +7726,12 @@ msgstr "a mochila não mudou depois de quebrar {item}"
 msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
 msgstr "a bolsa não mudou após combinar {gem} — deixando para a próxima rodada"
+
+msgid "the bag showed no new {potion} after fusing"
+msgstr ""
+
+msgid "the bag showed no new {potion} after making it"
+msgstr ""
 
 msgid "the bag trip"
 msgstr "ida à bolsa"
@@ -7619,6 +7787,9 @@ msgstr "a doação não foi concluída: {why}"
 msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
 msgstr ""
 "o tempo de coleta está quase acabando ({m} min restantes) — não vou começar a farmar"
+
+msgid "the fees come to {total} arnebia; {spare} is spare"
+msgstr ""
 
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
@@ -7770,6 +7941,9 @@ msgid ""
 msgstr ""
 "o equipamento precisa de reparo: {tool} está somente na bolsa, então será usado após esta luta (atribua a uma tecla de atalho para reparar imediatamente)"
 
+msgid "the gold limit for materials ({cap}) is spent"
+msgstr ""
+
 msgid "the guard didn't strike back - trying another"
 msgstr "o guarda não revidou — tentando outro"
 
@@ -7812,6 +7986,12 @@ msgid "the market didn't take the page number"
 msgstr ""
 
 msgid "the market has no category {cat}"
+msgstr ""
+
+msgid "the market has no {item} at {most} gold coins or less"
+msgstr ""
+
+msgid "the market has no {item} for sale"
 msgstr ""
 
 msgid "the market's category choice isn't on the page"
@@ -7903,6 +8083,9 @@ msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "a página de habilidades muda com {key} (a tecla do jogo para isso)"
+
+msgid "the spare arnebia pays for {n} of the {all} batches"
+msgstr ""
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
@@ -8471,6 +8654,9 @@ msgid ""
 msgstr ""
 "{items} quebrados e nenhum meio de repará-los — indo para um local seguro e parando"
 
+msgid "{item} (you have {n}):"
+msgstr ""
+
 msgid "{item} ({count}, {where})"
 msgstr "{item} ({count}, {where})"
 
@@ -8508,6 +8694,9 @@ msgstr "{item} pesa {w} cada"
 
 msgid "{item}, keeping {n}"
 msgstr "{item}, mantendo {n}"
+
+msgid "{item}:"
+msgstr ""
 
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
@@ -8885,6 +9074,9 @@ msgstr "{n} vezes, de {first} a {last}: {why}"
 msgid "{n} used up"
 msgstr "{n} usados"
 
+msgid "{n} {item} still missing"
+msgstr ""
+
 msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
 msgstr "{n} {item}: cada um dá {k} {product} por {fee} arnebia"
 
@@ -8934,6 +9126,12 @@ msgstr "{pet}: nenhuma reencarnação gratuita restante hoje"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet}: {n} reencarnações gratuitas, recursos {before} -> {after}"
+
+msgid "{potion} (you have {n}):"
+msgstr ""
+
+msgid "{potion}:"
+msgstr ""
 
 msgid "{price} a unit is over the most you set ({most})"
 msgstr ""

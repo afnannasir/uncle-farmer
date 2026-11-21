@@ -202,6 +202,9 @@ msgstr "&Dhoondna:"
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "Game ke khud bajaaye voice messages ki &raftaar theek karein"
 
+msgid "&Fuse spare potions up to:"
+msgstr "Faltu potions ko &yahan tak fuse karein:"
+
 msgid "&Game"
 msgstr "&Game"
 
@@ -326,6 +329,9 @@ msgstr "Experience &kam karein:"
 msgid "&Make Enhance Crystals from crystal shards when needed"
 msgstr "&Zaroorat par crystal shards se Enhance Crystals banayein"
 
+msgid "&Make them:"
+msgstr "&Kaise banayein:"
+
 msgid "&Map:"
 msgstr "&Map:"
 
@@ -403,6 +409,9 @@ msgstr "&Muddat:"
 
 msgid "&Pet:"
 msgstr "&Pet:"
+
+msgid "&Pharmacist:"
+msgstr "&Pharmacist:"
 
 msgid "&Pick from monsters near me"
 msgstr "&Mere qareeb ke monsters mein se chunein"
@@ -556,6 +565,9 @@ msgstr "&Ruk jao jab ek death bohat kam experience le"
 msgid "&Supplies (ticked ones are refilled):"
 msgstr "&Supplies (tick wale dobara bhare jate hain):"
 
+msgid "&Take them from:"
+msgstr "&Kahan se lein:"
+
 msgid "&Target keys pick:"
 msgstr "&Target keys chunti hain:"
 
@@ -669,6 +681,9 @@ msgstr "(bechne wale gine nahi gaye)"
 
 msgid "(was {n})"
 msgstr "(pehle {n})"
+
+msgid "({n} fused)"
+msgstr "({n} fuse hue)"
 
 msgid "({n} lots couldn't be read: see logs\\dialogs.log)"
 msgstr "({n} lots parhe nahi ja sake: logs\\dialogs.log dekhein)"
@@ -1515,6 +1530,9 @@ msgstr "Nahin milta"
 msgid "Don't donate"
 msgstr "Chanda na dein"
 
+msgid "Don't fuse"
+msgstr "Fuse na karein"
+
 msgid "Don't go"
 msgstr "Na jaayein"
 
@@ -1576,6 +1594,9 @@ msgstr "E&xport karein"
 
 msgid "E&xport character settings"
 msgstr "Character settings e&xport karein"
+
+msgid "Each from its own recipe"
+msgstr "Har ek apni recipe se"
 
 msgid "Each sound needs an ID, a name, and a mute setting."
 msgstr "Har sound ko ID, naam aur khamosh intikhab chahiye."
@@ -1808,6 +1829,9 @@ msgstr "Jumma"
 
 msgid "From (+):"
 msgstr "Se (+):"
+
+msgid "From Small ones, fused up (5 for 1, usually cheaper)"
+msgstr "Small potions se, fuse kar ke (5 ka 1, aksar sasta)"
 
 msgid "From a level on"
 msgstr "Ek level se aage"
@@ -2091,11 +2115,17 @@ msgstr "Ghar."
 msgid "Hook unavailable: {reason}"
 msgstr "Hook dastiyab nahi: {reason}"
 
+msgid "How"
+msgstr "Kaise"
+
 msgid "How &many of the selected lot:"
 msgstr "Chune hue lot mein se &kitne:"
 
 msgid "How it works:"
 msgstr "Kaise kaam karta hai:"
+
+msgid "How many of each to have in the bag (0: don't make it)."
+msgstr "Baste mein har ek ke kitne hon (0: na banayein)."
 
 msgid "How the game works"
 msgstr "Game kaise kaam karti hai"
@@ -2297,6 +2327,12 @@ msgstr "&Telegram group join karein"
 msgid "Keep &old files:"
 msgstr "Purani files &rakhein:"
 
+msgid "Keep at least this many of each &Small potion:"
+msgstr "Har &Small potion ke kam az kam itne rakhein:"
+
+msgid "Keep at least this many of each M&edium potion:"
+msgstr "Har M&edium potion ke kam az kam itne rakhein:"
+
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr "Har crystal aur level ke kam az kam itne rakhein (&V):"
 
@@ -2332,6 +2368,9 @@ msgstr "Qism: {what}"
 
 msgid "Language"
 msgstr "Zaban"
+
+msgid "Large"
+msgstr "Large"
 
 msgid "Last 30 days"
 msgstr "Pichle 30 din"
@@ -2552,6 +2591,15 @@ msgid "Matching filters disabled. Save to restore these messages in chat."
 msgstr ""
 "Milne waale filters band hain. Paighaam chat mein waapas dikhaane ke liye mahfooz karein."
 
+msgid "Materials"
+msgstr "Materials"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Medium and Large potions"
+msgstr "Medium aur Large potions"
+
 msgid "Messa&ge to {where}:"
 msgstr "{where} ko pai&gham:"
 
@@ -2566,6 +2614,9 @@ msgstr "Mining (kaan kani)"
 
 msgid "Minutes:"
 msgstr "Minute:"
+
+msgid "Missing Bloods and Pelts"
+msgstr "Kam Bloods aur Pelts"
 
 msgid "Mist World"
 msgstr "Mist World"
@@ -2626,6 +2677,14 @@ msgid ""
 "Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run"
 msgstr ""
 "Morality {n} hai (black name): maut par pehna hua gear ja sakta hai, is liye XP loser nahi chalega"
+
+msgid ""
+"Most gold coins a piece at the market (0: the cheapest first, any price)"
+msgstr ""
+"Market mein ek ki zyada se zyada qeemat, gold coins mein (0: pehle sab se sasta, koi bhi qeemat)"
+
+msgid "Most gold coins to spend on materials in one run (0: no limit):"
+msgstr "Ek run mein materials par zyada se zyada gold coins (0: koi had nahi):"
 
 msgid "Most to pay per shard (arnebia):"
 msgstr "Har shard ke liye zyada se zyada (arnebia):"
@@ -2776,6 +2835,11 @@ msgstr "Koi maloom kharidaar nahi, is liye ise store kar diya jayega"
 msgid "No monsters near you right now."
 msgstr "Abhi aap ke qareeb koi monster nahi."
 
+msgid ""
+"No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
+msgstr ""
+"Kisi material ki zyada se zyada qeemat set nahi, is liye market ke sab se saste lots kisi bhi qeemat par khareede jayenge. Jaari rakhein?"
+
 msgid "No pet"
 msgstr "Koi pet nahi"
 
@@ -2871,6 +2935,11 @@ msgstr "Abhi tak kuch nahi hua."
 msgid "Nothing to do: no gems or shards in the bag yet."
 msgstr "Kuch karne ko nahi: abhi baste mein koi gems ya shards nahi."
 
+msgid ""
+"Nothing to make: say how many of a potion to have, or choose what to fuse."
+msgstr ""
+"Banane ko kuch nahi: batayein kisi potion ke kitne hon, ya chunein kya fuse karna hai."
+
 msgid "Nothing today yet."
 msgstr "Aaj abhi kuch nahi."
 
@@ -2940,6 +3009,9 @@ msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 "Sirf meri &level ke maps (monsters 9 level neeche se 5 oopar tak: poora experience aur loot)"
+
+msgid "Only what is in the bag"
+msgstr "Sirf jo baste mein hai"
 
 msgid "Only when HP is low"
 msgstr "Sirf jab HP kam ho"
@@ -3037,6 +3109,9 @@ msgstr "&Waqfa ya jari"
 msgid "P&ets (ticked ones come out, first ready one first):"
 msgstr "P&ets (tick wale bahar aate hain, pehle jo tayyar ho pehle):"
 
+msgid "P&otion Maker"
+msgstr "P&otion Maker"
+
 msgid "PK mode back to {mode}"
 msgstr "PK mode wapas {mode} par kar diya"
 
@@ -3099,6 +3174,9 @@ msgstr "Pet ke neele potions"
 msgid "Pet food"
 msgstr "Pet ka khana"
 
+msgid "Pet potions"
+msgstr "Pet potions"
+
 msgid "Pet rebirth"
 msgstr "Pet rebirth"
 
@@ -3110,6 +3188,9 @@ msgstr "Pet:"
 
 msgid "Pets"
 msgstr "Pets"
+
+msgid "Pharmacist and spending"
+msgstr "Pharmacist aur kharch"
 
 msgid "Pick a voice message in Messages first."
 msgstr "pehle Messages mein voice message chunein."
@@ -3165,6 +3246,9 @@ msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
 "Polson Wetland: Poison Immunity activate nahi hai - jab bhi hum fusion beast se utre hon, wahan ki zameen zehar deti hai, aur wahan har larai paidal hoti hai"
+
+msgid "Potion Maker"
+msgstr "Potion Maker"
 
 msgid "Potions"
 msgstr "Potions"
@@ -3481,6 +3565,10 @@ msgstr "Mahfooz ho gaya. Ye Plans tab mein script ki tarah mojood hai."
 
 msgid "Saving and applying sound settings..."
 msgstr "Sound tarteebat mahfooz aur laagu ki ja rahi hain..."
+
+msgid "Say how many of at least one potion to have, or choose what to fuse."
+msgstr ""
+"Kam az kam ek potion ki taadaad batayein, ya chunein kya fuse karna hai."
 
 msgid "Scan complete."
 msgstr "Scan mukammal."
@@ -4184,6 +4272,10 @@ msgstr "Anjaam ki jagah ab wahan hai jahan aap khare hain: {map} ({x},{y})."
 msgid "The fastest one"
 msgstr "Sab se tez"
 
+msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
+msgstr ""
+"Fees Pharmacist ke safhon se parhi jati hain (sirf check unhein dikhata hai)."
+
 msgid "The game didn't play it: {why}"
 msgstr "game ne nahi chalaya: {why}"
 
@@ -4268,6 +4360,9 @@ msgstr ""
 msgid "The listener is busy or disconnected. Try again."
 msgstr "Sunne wala masroof hai ya alag hai. Dobara koshish karein."
 
+msgid "The market"
+msgstr "Market"
+
 msgid "The nearest city's"
 msgstr "Sab se qareebi shehar ka"
 
@@ -4349,6 +4444,12 @@ msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "Phenkne wali list khaali hai. Pehle Kirdaar, Basta aur supplies mein chunein ke kya phenkna hai."
+
+msgid "The town storehouse"
+msgstr "Sheher ka storehouse"
+
+msgid "The town storehouse, then the market"
+msgstr "Sheher ka storehouse, phir market"
 
 msgid "The trigger sequence settings are invalid."
 msgstr "Trigger silsilay ki tarteeb durust nahin hai."
@@ -5541,6 +5642,9 @@ msgstr "gang {gang} ke base mein nahi ja sake"
 msgid "couldn't get into the gang's inner hall"
 msgstr "gang ke andarune hall mein nahi ja sake"
 
+msgid "couldn't get into the gang's outer hall to reach the Pharmacist"
+msgstr "Pharmacist tak pohanchne ke liye gang ke outer hall mein nahi ja saka"
+
 msgid "couldn't get into the secret room"
 msgstr "secret room mein nahi ja sake"
 
@@ -5647,6 +5751,9 @@ msgstr "target key ko NPCs par switch nahi kar sake"
 
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "storehouse se {item} nahi nikal sake: {why}"
+
+msgid "couldn't talk to the Pharmacist"
+msgstr "Pharmacist se baat nahi ho saki"
 
 msgid "couldn't talk to the {npc}"
 msgstr "{npc} se baat nahi kar sake"
@@ -5888,6 +5995,12 @@ msgstr "laash ke liye jitna chalte hain us se zyada door"
 
 msgid "further to walk than the chase range"
 msgstr "chase range se zyada door paidal"
+
+msgid "fuse {n} {potion}"
+msgstr "{n} {potion} fuse karna"
+
+msgid "fused {k} {src} into {n} {potion}"
+msgstr "{k} {src} ko {n} {potion} mein fuse kiya"
 
 msgid "fusion power {n} - on foot until it is back to {back}"
 msgstr "fusion power {n} - {back} tak wapas aane tak paidal"
@@ -6275,6 +6388,9 @@ msgstr "{item} kam hai: {have} bache hain"
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Level {lv} {kind} Enhance Crystals banaye"
 
+msgid "made {n} batches of potions"
+msgstr "potions ke {n} batch banaye"
+
 msgid "made {n} of the {want} {gem} asked for; {have} in the bag"
 msgstr "mangi gayi {want} {gem} mein se {n} banaye; basta mein {have}"
 
@@ -6284,11 +6400,23 @@ msgstr "{n} {gem} banaye {used} {shard} se"
 msgid "made {n} {gem}; {have} in the bag"
 msgstr "{n} {gem} banaye; basta mein {have}"
 
+msgid "made {n} {potion} for {fee} arnebia"
+msgstr "{fee} arnebia mein {n} {potion} banaye"
+
+msgid "make {n} batches of {potion}"
+msgstr "{potion} ke {n} batch banana"
+
+msgid "make {n} batches of {potion} ({fee} arnebia each)"
+msgstr "{potion} ke {n} batch banana ({fee} arnebia har ek)"
+
 msgid "making gems"
 msgstr "Gems banana"
 
 msgid "making gems: {list}"
 msgstr "gems bana rahe hain: {list}"
+
+msgid "making potions"
+msgstr "potions banana"
 
 msgid ""
 "market list made: {items} items in {lots} lots, {pages} pages, {min:.1f} minutes"
@@ -6357,6 +6485,9 @@ msgstr "khamosh darkhwast"
 
 msgid "near a boss"
 msgstr "boss ke qareeb"
+
+msgid "needs {n} {item} ({k} missing)"
+msgstr "{n} {item} chahiye ({k} kam)"
 
 msgid "never again"
 msgstr "dobara kabhi nahi"
@@ -6655,6 +6786,9 @@ msgstr "{item} enhance karne ke liye kaafi spare arnebia nahi ({cost})"
 
 msgid "not enough spare arnebia to make {gem} (fee {fee} each)"
 msgstr "{gem} banane ke liye itni extra arnebia nahi hai (fee {fee} har ek)"
+
+msgid "not enough spare arnebia to make {potion} (fee {fee})"
+msgstr "{potion} banane ke liye kaafi faltu arnebia nahi (fee {fee})"
 
 msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
@@ -7232,6 +7366,9 @@ msgstr "{n} second baad bhi {map} par - sawari ne aage nahi pohanchaya"
 msgid "still short after restocking: {what}"
 msgstr "restock ke baad bhi kami hai: {what}"
 
+msgid "still short of: {what}"
+msgstr "abhi bhi kam: {what}"
+
 msgid "stop rule: {cond}"
 msgstr "stop rule: {cond}"
 
@@ -7462,6 +7599,30 @@ msgstr ""
 msgid "the Pet Trainer offers no rebirth"
 msgstr "Pet Trainer rebirth nahi de raha"
 
+msgid "the Pharmacist didn't ask how many {potion} to fuse"
+msgstr "Pharmacist ne nahi poocha ke kitne {potion} fuse karne hain"
+
+msgid "the Pharmacist doesn't list {potion}"
+msgstr "Pharmacist ki fehrist mein {potion} nahi"
+
+msgid "the Pharmacist is open; nothing was made (check only)"
+msgstr "Pharmacist khula hai; kuch nahi bana (sirf check)"
+
+msgid "the Pharmacist says there aren't enough materials for {potion}"
+msgstr "Pharmacist kehta hai {potion} ke liye kaafi materials nahi"
+
+msgid "the Pharmacist's menu has no \"{entry}\""
+msgstr "Pharmacist ke menu mein \"{entry}\" nahi"
+
+msgid "the Pharmacist's page for {potion} didn't come up - nothing was spent"
+msgstr "{potion} ka Pharmacist wala safha nahi khula - kuch kharch nahi hua"
+
+msgid "the Pharmacist's page for {potion} has no \"start synthesis\""
+msgstr "{potion} ke Pharmacist wale safhe par \"start synthesis\" nahi"
+
+msgid "the Potion Maker is done{fused}"
+msgstr "Potion Maker mukammal{fused}"
+
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Secret room Manager ne koi madadgar nahi bulaya"
 
@@ -7505,6 +7666,9 @@ msgstr "us waqt app nahi chal rahi thi"
 msgid "the bag"
 msgstr "basta"
 
+msgid "the bag already has the potions asked for"
+msgstr "baste mein maange gaye potions pehle se hain"
+
 msgid "the bag cursor is out of range"
 msgstr "bag cursor hadd se bahar hai"
 
@@ -7531,6 +7695,9 @@ msgstr ""
 msgid "the bag is still full and nothing could be sold or stored - stopping"
 msgstr ""
 "basta ab bhi bhara hai aur kuch bech ya store nahi ho saka - rok rahe hain"
+
+msgid "the bag is too full for more {potion}"
+msgstr "basta mazeed {potion} ke liye bohat bhara hai"
 
 msgid "the bag is too full for more {shard}"
 msgstr "basta mazeed {shard} ke liye bohat bhara hai"
@@ -7559,6 +7726,12 @@ msgid ""
 "the bag showed no change after combining {gem} - leaving it for this round"
 msgstr ""
 "{gem} jorne ke baad baste mein koi tabdeeli nahi dikhi - is round ke liye chhor rahe hain"
+
+msgid "the bag showed no new {potion} after fusing"
+msgstr "fuse karne ke baad baste mein koi naya {potion} nahi aaya"
+
+msgid "the bag showed no new {potion} after making it"
+msgstr "banane ke baad baste mein koi naya {potion} nahi aaya"
 
 msgid "the bag trip"
 msgstr "bag ka chakkar"
@@ -7615,6 +7788,9 @@ msgstr "donation nahi hui: {why}"
 msgid "the drop time is nearly used up ({m} min left) - not starting to farm"
 msgstr ""
 "drop time taqreeban khatam hai ({m} min baqi) - farming shuru nahi kar rahe"
+
+msgid "the fees come to {total} arnebia; {spare} is spare"
+msgstr "fees {total} arnebia banti hain; {spare} faltu hain"
 
 msgid ""
 "the follow attack doesn't walk us to the monster here - walking up to them ourselves"
@@ -7766,6 +7942,9 @@ msgid ""
 msgstr ""
 "equipment ki marammat chahiye: {tool} sirf basta mein hai, is liye is lardai ke baad (foran marammat ke liye ise hotkey par lagayein)"
 
+msgid "the gold limit for materials ({cap}) is spent"
+msgstr "materials ki gold had ({cap}) kharch ho chuki"
+
 msgid "the guard didn't strike back - trying another"
 msgstr "guard ne jawab mein nahi maara - doosra aazma rahe hain"
 
@@ -7812,6 +7991,12 @@ msgstr "market ne safhe ka number nahi liya"
 
 msgid "the market has no category {cat}"
 msgstr "market mein {cat} ki qism nahi"
+
+msgid "the market has no {item} at {most} gold coins or less"
+msgstr "market mein {most} gold coins ya kam mein {item} nahi"
+
+msgid "the market has no {item} for sale"
+msgstr "market mein {item} bikne ke liye nahi"
 
 msgid "the market's category choice isn't on the page"
 msgstr "market ka qism chunne wala khana safhe par nahi"
@@ -7900,6 +8085,9 @@ msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "skill page {key} se badalta hai (game ki apni key)"
+
+msgid "the spare arnebia pays for {n} of the {all} batches"
+msgstr "faltu arnebia {all} mein se {n} batch ke liye kaafi hai"
 
 msgid ""
 "the storage list is empty - choose items to move to the storehouse in Character, Bag and supplies"
@@ -8470,6 +8658,9 @@ msgid ""
 msgstr ""
 "{items} toot gaye aur marammat ke liye kuch nahi - kisi mehfooz jagah jaakar ruk rahe hain"
 
+msgid "{item} (you have {n}):"
+msgstr "{item} (aapke paas {n}):"
+
 msgid "{item} ({count}, {where})"
 msgstr "{item} ({count}, {where})"
 
@@ -8507,6 +8698,9 @@ msgstr "har {item} ka wazan {w} hai"
 
 msgid "{item}, keeping {n}"
 msgstr "{item}, {n} rakh kar"
+
+msgid "{item}:"
+msgstr "{item}:"
 
 msgid ""
 "{item}: +{a} to +{b} needs {n} Level {lv} {kind} Enhance Crystal (you have {have}), {cost} arnebia, {chance}% chance; protection takes {runes} runes (you have {hr})"
@@ -8886,6 +9080,9 @@ msgstr "{n} baar, {first} se {last} tak: {why}"
 msgid "{n} used up"
 msgstr "{n} istemal hue"
 
+msgid "{n} {item} still missing"
+msgstr "{n} {item} abhi bhi kam"
+
 msgid "{n} {item}: each gives {k} {product} for {fee} arnebia"
 msgstr "{n} {item}: har ek {fee} arnebia mein {k} {product} deta hai"
 
@@ -8935,6 +9132,12 @@ msgstr "{pet}: aaj koi muft rebirth baqi nahi"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet}: {n} muft rebirth, assets {before} -> {after}"
+
+msgid "{potion} (you have {n}):"
+msgstr "{potion} (aapke paas {n}):"
+
+msgid "{potion}:"
+msgstr "{potion}:"
 
 msgid "{price} a unit is over the most you set ({most})"
 msgstr "ek ki {price} qeemat aap ki rakhi hui had ({most}) se zyada hai"
