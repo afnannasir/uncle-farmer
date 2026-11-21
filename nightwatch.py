@@ -518,6 +518,25 @@ def walking(records: list[Record]) -> Record | None:
     w["searches"] = len(searches)
     w["search_s"] = sum(r.get("s", 0) for r in searches)
     w["search_results"] = collections.Counter(r.get("result") for r in searches)
+    # Records that say how the fight ended ("killed", and "why" when it wasn't: fighting.NO_KILL)
+    # and what a search walk left out ("sight", "left"): older records carry neither.
+    told = [r for r in fights if "killed" in r]
+    lost = [r for r in told if not r["killed"]]
+    w["told"] = len(told)
+    w["no_kill"] = collections.Counter(r.get("why", "?") for r in lost)
+    w["no_kill_s"] = collections.Counter[str]()
+    for r in lost:
+        w["no_kill_s"][r.get("why", "?")] += r.get("end_s", 0)
+    passed = [r for r in searches if r.get("sight")]
+    w["passed"] = len(passed)
+    w["passed_s"] = sum(r.get("s", 0) for r in passed)
+    w["left"] = collections.Counter[str]()
+    w["no_way_maps"] = collections.Counter[Any]()
+    for r in passed:
+        left: dict[str, int] = r.get("left") or {}
+        w["left"].update(left)
+        if left.get("no way"):
+            w["no_way_maps"][r.get("map")] += left["no way"]
     w["stand"] = stand_point(fights)
     return w
 
@@ -828,13 +847,13 @@ def _md_character(who: str, c: Record) -> list[str]:
         md += ["Contribution by the hour: " + ", ".join(
             "%s +%d" % (at.strftime("%H:%M"), n) for at, n, _m in c["contribution"]), ""]
     md += _md_gaps(c)
-    md += _md_walking(c.get("walking"))
+    md += md_walking(c.get("walking"))
     if c["stops"]:
         md += ["Stops: " + "; ".join("%s %s" % (at.strftime("%H:%M"), t) for at, t in c["stops"]), ""]
     return md
 
 
-def _md_walking(w: Record | None) -> list[str]:
+def md_walking(w: Record | None) -> list[str]:
     if not w:
         return []
     n = w["fights"] or 1
@@ -851,6 +870,20 @@ def _md_walking(w: Record | None) -> list[str]:
           "Search walks with nothing in sight: %d, %s in all (%s)." % (
               w["searches"], _h(w["search_s"]), ", ".join("%s %d" % kv for kv in w["search_results"].most_common())
               or "none"), ""]
+    if w.get("told"):
+        lost = sum(w["no_kill"].values())
+        md += ["Fights that ended without the picked monster counted as our kill: %d of %d (%d%%), %s in all. "
+               "Why (\"down\" is a kill counted a moment later, \"?\" an ending the bot gave no reason for): %s." % (
+                   lost, w["told"], 100 * lost / w["told"], _h(sum(w["no_kill_s"].values())),
+                   ", ".join("%s %d (%s)" % (why, n, _h(w["no_kill_s"][why])) for why, n in w["no_kill"].most_common())
+                   or "none"), ""]
+    if w.get("passed"):
+        md += ["Search walks that began with monsters in sight and none to fight: %d, %s in all. Monsters left "
+               "out, by reason: %s." % (w["passed"], _h(w["passed_s"]),
+                                        ", ".join("%s %d" % kv for kv in w["left"].most_common())), ""]
+        if w["no_way_maps"]:
+            md += ["No way to walk there, by map: %s." % ", ".join(
+                "%s %d" % kv for kv in w["no_way_maps"].most_common()), ""]
     st = w["stand"]
     if st:
         mid, spot, share, actual, rows, reach = st

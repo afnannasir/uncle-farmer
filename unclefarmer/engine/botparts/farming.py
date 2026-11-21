@@ -37,6 +37,8 @@ class FarmingMixin(Parts):
     said_level_inside: bool
     in_instance: bool = False     # farm(instance=True) sets these for its own run
     pack_min: int = 3
+    MODE_WAIT = 0.3       # seconds a mode key's press has to show in the game's modes
+    MODE_LOOK = 0.05      # ... looked at this often
 
     def set_modes(self) -> None:
         """Press the mode keys until the game's PK mode and target mode are the profile's."""
@@ -57,14 +59,26 @@ class FarmingMixin(Parts):
                 continue
             for _press in range(size + 1):
                 self.key(key)
-                self.sleep(0.3)
-                m = self.a.json("mem modes")
+                m = self._modes_after(field, m.get(field))
                 if m.get(field) == want:
                     self.log(_("mode set: {mode}", mode=names[want]))
                     break
             else:
                 self.log(_("couldn't set the mode to {mode} with the {key} key", mode=names[want], key=key),
                          speak=True)
+
+    def _modes_after(self, field: str, was: object) -> dict[str, Any]:
+        """The game's modes once a press of a mode key shows in them, looked at every MODE_LOOK
+        seconds for MODE_WAIT at most. A fixed 0.3 s after every press made three presses (from
+        "NPCs", where talking to a dungeon's entrance leaves the target key, round to "enemies")
+        the first second of a cave's 15 minutes."""
+        m: dict[str, Any] = {}
+        for _look in range(max(1, round(self.MODE_WAIT / self.MODE_LOOK))):
+            self.sleep(self.MODE_LOOK)
+            m = self.a.json("mem modes")
+            if m.get(field) != was:
+                break
+        return m
 
     def farm(self, map_id: int, area: Sequence[float] | None = None, minutes: float = 0, kills: int = 0, only: str = "", skip: str = "", patrol: str = "random",
              avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None,
@@ -178,7 +192,8 @@ class FarmingMixin(Parts):
                     self.fight(mob)
                     continue
                 # Nothing to fight: keep moving (and say why, when monsters were in sight).
-                self.explain_left_out()
+                self.explain_left_out(map_id)
+                seen = self.sight_note()      # before the walk's own looks replace it
                 me = snap["self"]
                 no_go = bosses.no_go(as_bot(self), snap)   # bosses and elites, in sight or just seen
                 if loop:
@@ -194,7 +209,7 @@ class FarmingMixin(Parts):
                 started = self.clock.time()
                 with self.timed("search"):
                     result = self.walk_to(cell, near=sighted)
-                self.note_search(map_id, me, cell, started, result)
+                self.note_search(map_id, me, cell, started, result, seen)
             except (Respawned, LosingFight) as setback:
                 loop_i = None
                 if self._set_back(map_id, setback):
@@ -401,7 +416,7 @@ class FarmingMixin(Parts):
             return int(plan_keep) or None
         if not self.p.get("stop_before_level", False):
             return None
-        return int(self.p.get("level_keep_xp", 0) or 0) or None
+        return int(self.p.get("level_keep_xp", 100000) or 0) or None
 
     def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
         """End the run before the next level: the sheet's "upgrading requires N experience"

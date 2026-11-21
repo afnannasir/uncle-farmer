@@ -73,6 +73,12 @@ class Stopped(Exception):
         self.final = final
 
 
+class NoWay(Stopped):
+    """No way there that the bot knows: a map it can't plan its way to (a dungeon entered through
+    an NPC), or no walk across this map. A run stops on it like any Stopped; following catches it
+    and waits for a teleport to the team leader instead (follow._wait_for_leader)."""
+
+
 class GameBroken(Stopped):
     """The game itself stopped working (it ran out of memory): nothing the bot does there works any
     more, so no guarding, no walk to the end place, and no closing the game or the PC as if farming

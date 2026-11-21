@@ -66,7 +66,7 @@ class Healer:
         self.agent_version = 43
         self.walk_only = False
         self.in_fight = False
-        self.skillbook = Book()
+        self.skillbook: Book | None = Book()
         self.a = Link(members)
         self.phrases = {4: "/6"}
         self.lines: list[str] = []
@@ -189,6 +189,19 @@ def test_learning_the_team_presses_the_team_phrase_and_keeps_the_names(clock: Cl
     assert b.team_names == {"other"}
     teamheal.learn(as_bot(b))                                   # not again so soon
     assert len(b.pressed) == teamheal.LEARN_PRESSES
+
+
+def test_a_follower_that_doesnt_heal_learns_the_team_too(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:
+    # a Warrior following helps with the teammates' fights, so it needs their names as well
+    monkeypatch.setattr(teamheal.gamekeys, "phrase_key_list", stand_in(teamheal.gamekeys.phrase_key_list, lambda: ["shift+%d" % i for i in range(1, 13)]))
+    b = Healer(clock, members=["Other"])
+    b.skillbook = None
+    teamheal.learn(as_bot(b))
+    assert b.team_names == {"other"}
+    b = Healer(clock, following="", members=["Other"])
+    b.skillbook = None
+    teamheal.learn(as_bot(b))                                   # not following, no heals: nothing to learn
+    assert b.pressed == []
 
 
 def test_no_team_ends_the_round(clock: Clock, monkeypatch: pytest.MonkeyPatch) -> None:

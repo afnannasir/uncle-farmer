@@ -17,7 +17,7 @@ watching the game's data during a normal run: nothing a player has to do.
 
 | # | Task | Value | Effort | What the bot would do | What's still needed |
 |---|---|---|---|---|---|
-| 1 | **Best maps for my level** | High | Small | In the plan editor, list the maps whose monsters are 9 levels below to 5 above you (full loot and full experience, from the game's own rules) | Nothing: map monster levels are already in the atlas |
+| 1 | **Best maps for my level** (built: Farming spot, "Only maps for my level") | High | Small | In the plan editor, list the maps whose monsters are 9 levels below to 5 above you (full loot and full experience, from the game's own rules) | Done |
 | 2 | **Gems from shards** (built: the Gem Maker tool below) | High | Small | Shards into gems, from the bag, the storehouse or the Shard Market | Done |
 | 3 | **Corpse harvesting** (built: Character settings, Fighting, Corpses) | High | Medium | After each kill, cast the learned Draw Blood / Skinning / Cut Flesh at the corpse straight through the game (agent 61 `cast`, held and let go like a key press, no keys) for free potion and food materials, while Vitality lasts | First live night (2026-11-12) failed: the cast was never let go, so every walk stuck; fixed in agent 61. Next live run: harvests per corpse tried, no extra stucks |
 | 4 | **Daily chores** (built: Tools, Daily chores) | High | Small | One button, once a day per character: collect bank income and Value Products, hunting bounties, make the gang donation, do the gang construction builds, use the free pet rebirths, share arnebia in the secret room | Cultivating talent points; the first live run of each chore may show a confirm box still to learn |
@@ -65,7 +65,7 @@ gang's craftsmen (cheaper) or the nearest city's, never spend below your arnebia
 | 11 | **Enhancing and sockets** (Equipment Enhancer built; sockets to do) | Medium | Medium | Enhance gear at the Forger and insert gems at the Artificer, only with protection runes and only when the player asks; read out the success chance first | The rules are in the game's files and the chance is shown in the menu. Enhancing is a gamble, so the bot advises and the player confirms |
 | 12 | **Recycling** | Low | Small | Sell or recycle equipment you've outgrown on a town trip (a new list in Bag and supplies); recycled things can be bought back within 48 hours | Nothing: the menu texts are in the game's files |
 | 13 | **Experience dungeons** (Spider cave, Scorpion Cave, Bottomless pit and White Bone Cave built: Tools, Dungeons) | Medium | Large | The daily solo experience dungeon: go in, fight as many as possible in the time, come out | A live run of each; the other once-a-day dungeons, each from one hand run with the recorder |
-| 14 | **New skills** | Low | Small | Say when a new combat skill becomes learnable at your level, and where | Masters and levels are in the help |
+| 14 | **New skills** | Low | Small | Say when a new combat skill becomes learnable at your level, and where | The help names only each Master's level band (10, 15, 25, class mentors), not the level of each skill: one recorded visit to each Master's skill menu |
 
 
 ## Later, or not at all

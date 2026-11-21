@@ -66,11 +66,44 @@ SLOT_GAP = 0.08          # the same through agent 45's `slot`: a key's 30 ms hol
 BURST_MAX = 1.2          # ... for at most this long (out of range, no target: the cast never comes)
 LONG_BUFF = 60.0         # a buff lasting this long (or longer) is kept up all the time
 BUFF_RETRY = 20.0        # a buff press the game didn't cast (no rage, no combos yet) waits this long
+SPEED_WALK_MIN = 25      # a walk on foot this many steps long or more starts with a speed skill (Wind Step)
+LEAP_PAST_REACH = 1.0    # a leap to reach a monster (Leap Slash) only from this far past our own reach...
+LEAP_MARGIN = 0.5        # ... and this far inside the leap's range: positions are a moment old
+JUMP_BACK = 12.0         # tiles a jump backward (the Hunter's Escape) carries us, measured on 148 casts
+FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
 REFUSED_WAIT = 3.0       # a skill the game wouldn't cast for a whole burst is left this long...
 REFUSED_WAIT_RAGE = 8.0  # ... or this long when it spends rage or combos (they take several hits to build)
 LONG_FIGHT_HP = 3.0      # a target with this many times our max HP is a long fight
+# Channels and monsters' swings (Phase 1b, measured 2026-11-15/17 on two Mage nights): a hit on us
+# always breaks a channel, silently, and a monster swings at us on a fixed clock (median 2.02 s
+# between one monster's hits). So a channel is started only when no monster that swung at us lately
+# swings again before it ends. Replayed over 4,623 Ice Arrows: that keeps off 48% of the 1,597 that
+# broke, and of the arrows it holds back 52% would have broken (the rule "no channel within T s of
+# a hit" held back as many good ones as broken). For the Mage the arrow only stands in for Magic
+# Sphere, the same 4,000 attack with no channel, so a held-back arrow costs only an Ice Spike.
+SWING_GAP = 2.02         # a monster's swing gap until we have seen two of its swings at us
+SWING_GAP_MIN = 0.5      # no monster swings faster than this (a misread pair of reports)
+SWING_SEEN = 4.0         # a monster that last swung at us this long ago is no longer counted
+SWING_KEPT = 6           # swings kept per monster (enough for a median gap)
+# Frost Nova to make room (Phase 1b item 6, scored 2026-11-19 on the two Mage nights): the Mage cast
+# it 3 and 0 times a night. "When two or more monsters struck at us in the last 4 s and it is ready"
+# would have cast it 132 and 99 times, before 237 and 159 Ice Arrows of which 129 and 73 broke
+# (54% and 46%, against 37% and 28% of all). The 6 monsters our 3 Frost Novas froze swung at us 0
+# times while frozen (4 had in the 5 s before): a frozen monster doesn't swing, so a channel needn't
+# wait for it.
+ROOM_ATTACKERS = 2       # monsters striking at us that make a freezing area skill worth its cooldown
+FREEZE_TIME = 5.0        # seconds a freeze holds when the skill's text gives none
+# Escape as a kite (Phase 1b item 6, the Hunter's part): a monster on top of a ranged character that
+# has struck lately, HP under KITE_BELOW, and Escape up: jump the 12 tiles away from it (a cast at a
+# monster turns us to face it, measured), so it spends the next seconds walking instead of hitting.
+# Only with agent 77's facing, when the 12 tiles behind are walkable and the target is still within
+# reach from the landing. Under 60% HP the old rule still jumps without those checks.
+KITE_BELOW = 90          # % HP under which a monster on top is worth a jump
+KITE_ON_TOP = 3.0        # tiles: a monster this close is on top of us
+AWAY: dict[int, tuple[int, int]] = {1: (1, 0), 4: (-1, 0), 2: (0, 1), 8: (0, -1)}   # facing -> a jump backward
+CHANNEL_START = 0.15     # a press now starts the channel about this much later (the press's trip)
 MELEE = {"Warrior", "Orc", "Assassin"}
 # How far inside its base attack's range a class fights: at the very edge a monster stepping back
 # makes the cast "out of range". It was 2 tiles (a Hunter shot from 18 of its 20) and the player
@@ -232,6 +265,12 @@ class _PickView:
         return d is not None and t is not None and self.now - t < d - 1.5
 
 
+def speed_share(x: Skill) -> int:
+    """The movement speed a skill adds, in percent ("Increase 50% movement speed"), else 0."""
+    m = re.search(r"(\d+)% movement speed", x.get("text", ""), re.I)
+    return int(m.group(1)) if m else 0
+
+
 class SkillBook:
     """The character's skills on keys, with cooldown timing and a pick() for each moment."""
 
@@ -277,6 +316,8 @@ class SkillBook:
         self.pending_target: dict[str, int | None] = {}    # skill name -> the target id it was pressed at
         self.landed: dict[tuple[str, int | None], float] = {}     # (skill name, target id) -> when our cast landed there
         self.downed: dict[int, float] = {}       # monster id -> when a cast of ours left it at 0 HP
+        self.swings: dict[int, list[float]] = {}  # monster id -> when it last swung at us (channel_safe)
+        self.frozen: dict[int, float] = {}        # monster id -> until when our freeze holds it (_note_frozen)
         self.target_id = None
         self.combos = None
         self.gaps: list[float] = []           # seconds between our consecutive casts -> the global cooldown
@@ -331,6 +372,18 @@ class SkillBook:
         self._saving_pyroblast_for_next = value
         if self.combos is not None:
             self.combos.saving_pyroblast_for_next = value
+
+    def _swing_breaks(self, s: Skill, now: float) -> bool:
+        """A channel a monster's next swing would break before it ends (channel_safe). The Elf's
+        combo channels keep their own rules (Blazing Combo makes them instant), and an unpenalized
+        one has no channel to break."""
+        if not s.get("cast") or s.get("role") in NEVER:
+            return False
+        if s["name"] in elf_combos.CHANNEL_SKILLS and self.cls == "Elf":
+            return False
+        if elf_combos.unpenalized(s, self.available_to_channel_without_penalty):
+            return False
+        return not self.channel_safe(s, now)
 
     def _channeling_restricted(self, s: Skill) -> bool:
         if self.cls == "Elf" and s["name"] in elf_combos.CHANNEL_SKILLS:
@@ -613,6 +666,8 @@ class SkillBook:
                 self._fold_cast(c, me_id)
             else:
                 self._note_downed(c.get("targets") or [], c["t"] / 1000.0)
+                self._thaw(c)
+                self._note_swing(c, me_id)
         # A monster our pet, another player or a damage over time killed is just as dead: the
         # fight must not press at it again until its next full look (up to 2 s, a wasted cast).
         deaths: list[list[Any]] = r.get("deaths") or []
@@ -620,11 +675,96 @@ class SkillBook:
             if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and isinstance(row[1], (int, float)):
                 self._note_downed([[row[0], 0]], row[1] / 1000.0)
 
+    def _note_swing(self, c: dict[str, Any], me_id: int | None) -> None:
+        """A monster's cast that names us among whom it hit (a dodge too: it is still a swing) is
+        one of its swings, for channel_safe."""
+        caster = c.get("caster")
+        if me_id is None or not isinstance(caster, int) or caster >= 0:
+            return
+        rows: list[list[Any]] = list(c.get("hits") or []) or list(c.get("targets") or [])
+        if not any(row and row[0] == me_id for row in rows):
+            return
+        swings: dict[int, list[float]] = self.__dict__.setdefault("swings", {})
+        seen = swings.setdefault(caster, [])
+        t = c["t"] / 1000.0
+        if seen and t <= seen[-1]:
+            return
+        seen.append(t)
+        del seen[:-SWING_KEPT]
+        if len(swings) > 50:
+            newest = sorted(swings.items(), key=lambda kv: kv[1][-1])[-20:]
+            self.swings = dict(newest)
+
+    def _note_frozen(self, info: Skill, hits: list[list[int]], t: float) -> None:
+        """Our cast: a freezing one (Frost Nova) holds the monsters it struck until its time runs
+        out; any other that hurt a frozen monster frees it ("dealing damage to the target will
+        break its Frozen effect")."""
+        frozen: dict[int, float] = self.__dict__.setdefault("frozen", {})
+        struck = [h[0] for h in hits if h[0] < 0]
+        if "freeze" in (info.get("effects") or ()):
+            for mid in struck:
+                frozen[mid] = t + (self.duration(info) or FREEZE_TIME)
+            return
+        for mid in struck:
+            frozen.pop(mid, None)
+
+    def _thaw(self, c: dict[str, Any]) -> None:
+        """Someone else's cast: a frozen monster that strikes is frozen no longer, and one that
+        another player's or our pet's cast hurt is freed."""
+        frozen: dict[int, float] = self.__dict__.get("frozen") or {}
+        if not frozen:
+            return
+        caster = c.get("caster")
+        if isinstance(caster, int) and caster < 0:
+            frozen.pop(caster, None)
+            return
+        for row in list(c.get("hits") or []) or list(c.get("targets") or []):
+            if row and isinstance(row[0], int):
+                frozen.pop(row[0], None)
+
+    def swinging(self, now: float) -> list[int]:
+        """The monsters that struck at us in the last SWING_SEEN seconds and are neither down nor
+        frozen."""
+        swings: dict[int, list[float]] = self.__dict__.get("swings") or {}
+        downed: dict[int, float] = self.__dict__.get("downed") or {}
+        frozen: dict[int, float] = self.__dict__.get("frozen") or {}
+        return [mid for mid, seen in swings.items()
+                if seen and now - seen[-1] <= SWING_SEEN and downed.get(mid, -1.0) < seen[-1]
+                and frozen.get(mid, 0.0) <= now]
+
+    def channel_safe(self, s: Skill, now: float) -> bool:
+        """A channel pressed now ends before any monster that swung at us lately swings again
+        (each monster's gap: the median of its own, else SWING_GAP). A monster gone down since its
+        last swing doesn't count. A skill with no channel is always safe."""
+        d = float(s.get("cast") or 0)
+        if d <= 0:
+            return True
+        swings: dict[int, list[float]] = self.__dict__.get("swings") or {}
+        downed: dict[int, float] = self.__dict__.get("downed") or {}
+        frozen: dict[int, float] = self.__dict__.get("frozen") or {}
+        start = now + CHANNEL_START
+        for mid, seen in swings.items():
+            if not seen or now - seen[-1] > SWING_SEEN or downed.get(mid, -1.0) >= seen[-1]:
+                continue
+            if frozen.get(mid, 0.0) >= start + d:
+                continue          # frozen until after the channel ends: it can't strike
+            gaps = sorted(b - a for a, b in zip(seen, seen[1:]) if b - a < 6)
+            gap = max(SWING_GAP_MIN, gaps[len(gaps) // 2] if gaps else SWING_GAP)
+            nxt = seen[-1] + gap
+            if nxt <= start:
+                nxt += math.ceil((start - nxt) / gap + 1e-9) * gap
+            if nxt - start < d:
+                return False
+        return True
+
     def _note_downed(self, struck: list[list[Any]], t: float) -> None:
-        """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it)."""
+        """Monsters a report left at 0 HP, with when (downed: fighting.downed reads it). A dead one's
+        freeze goes with it: the game gives its id to the next monster."""
         downed: dict[int, float] = self.__dict__.setdefault("downed", {})    # (a test's book made without __init__)
+        frozen: dict[int, float] = self.__dict__.get("frozen") or {}
         for row in struck:
             if len(row) >= 2 and isinstance(row[0], int) and row[0] < 0 and row[1] == 0:
+                frozen.pop(row[0], None)
                 downed[row[0]] = max(t, downed.get(row[0], t))
         if len(downed) > 200:
             self.downed = dict(sorted(downed.items(), key=lambda kv: kv[1])[-100:])
@@ -636,14 +776,19 @@ class SkillBook:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
 
+    # Notes by monster id (or target id) that a map change clears (tests/test_fight_memory.py).
+    MAP_NOTES = ("downed", "swings", "frozen", "landed")
+
     def forget_the_map(self) -> None:
         """We are on another map: target ids mean other monsters here. What was noted against
         them goes - who is down, presses on their way to one, where our casts landed."""
-        self.downed.clear()
+        for note in self.MAP_NOTES:
+            held: dict[Any, Any] | None = self.__dict__.get(note)
+            if held:
+                held.clear()
         for name in [n for n, t in self.pending_target.items() if t is not None]:
             self.pending.pop(name, None)
             self.pending_target.pop(name, None)
-        self.landed.clear()
 
     def _fold_cast(self, c: dict[str, Any], me_id: int | None) -> None:
         """One cast of ours: its timing, whom it hit, the points it spent or made, its cooldown."""
@@ -671,6 +816,7 @@ class SkillBook:
             if len(self.landed) > 200:      # targets long dead
                 for k in sorted(self.landed, key=lambda k: self.landed[k])[:100]:
                     del self.landed[k]
+        self._note_frozen(info, [h for h in hits if h[1] & 7 != 2], t)
         self._count_points(name, t, info, touched)
         self.used[name] = t
         if info.get("role") not in CALM_ROLES:
@@ -682,8 +828,10 @@ class SkillBook:
 
     def _time_cast(self, name: str, t: float, info: Skill) -> None:
         """The global cooldown measured from the gaps between our casts, and the press confirmed."""
-        if name == elf_combos.IGNITION:
-            return  # Ignition cannot confirm or delay another attack's global cooldown.
+        if name == elf_combos.IGNITION or info.get("no_gcd"):
+            # Ignition, Cold Winter, Summon Spirit...: outside the global cooldown, so their
+            # report can neither confirm another attack's press nor time the cooldown.
+            return
         prev = self.last_gcd_cast
         if not info.get("no_gcd"):
             # a skill outside the global cooldown (Ignition) neither starts nor measures it
@@ -811,8 +959,9 @@ class SkillBook:
         return None
 
     def tell_missing(self, learned: set[str]) -> None:
-        """Name, once, the class's own heal, dispel and long buffs we have learned but put on no key:
-        the bot can only press what is on a key (either page, any key the player chose)."""
+        """Name, once, the class's own heal, dispel, long buffs and free buffs (Cold Winter) we have
+        learned but put on no key: the bot can only press what is on a key (either page, any key the
+        player chose)."""
         on = {x["name"] for row in self.slots.values() for x in row}
         info = {x["name"]: x for x in knowledge().get(self.cls or "", [])}
         want: list[str] = []
@@ -820,7 +969,8 @@ class SkillBook:
             if self.use_of(name) == "never":
                 continue          # the player doesn't want it used: not missing
             x: dict[str, Any] = info.get(name) or {}
-            if self.quick_heal(x) or self.big_heal(x) or self.shield(x) or self.self_dispel(x) or self.long_buff(x):
+            if (self.quick_heal(x) or self.big_heal(x) or self.shield(x) or self.self_dispel(x) or self.long_buff(x)
+                    or self.free_buff(x)):
                 want.append(name)
         if want:
             self.b.log(_("learned but on no skill key, so never used: {skills} - put them on a key "
@@ -909,6 +1059,109 @@ class SkillBook:
             return self.press_support(x, now)
         return None
 
+    @classmethod
+    def free_buff(cls, x: Skill) -> bool:
+        """A short buff for our own attacks outside the global cooldown (Cold Winter +20% attack
+        speed, Scorch +50% critical hit): a press costs no attack, so it goes in every fight."""
+        return bool(x.get("no_gcd")) and x.get("role") == "self_buff" and cls.fight_buff(x)
+
+    @classmethod
+    def free_guard(cls, x: Skill) -> bool:
+        """Less damage taken for a while, outside the global cooldown and without stopping us
+        (Concentrated Will -20%, Summon Spirit -30%, 15 s each)."""
+        return (bool(x.get("no_gcd")) and x.get("role") == "defensive" and cls.shield(x) == "free"
+                and cls.duration(x) is not None)
+
+    def free_press(self, me: dict[str, Any], now: float) -> Press | None:
+        """In a fight, while the global cooldown runs: a free buff whenever it is ready, a free
+        guard whenever a monster is striking us and we have lost HP. None of these takes an
+        attack's place (game text: "not affected by global CD"), and each costs 1% mana, so
+        before 2026-11-17 they waited for a big target, a pack or an emergency and were never
+        cast in any recorded night. Skills set to Never or emergency-only stay out (support_skills)."""
+        if not self.b.p.get("use_buffs", True):
+            return None
+        hurt = hp_pct(me) < FREE_GUARD_BELOW
+        for x in self.support_skills():
+            name = x["name"]
+            if not (self.free_buff(x) or (self.free_guard(x) and hurt)):
+                continue
+            if (not self.ready(x, now) or now - self.buff_tried.get(name, 0) < BUFF_RETRY
+                    or not self.affordable(x, now)):
+                continue
+            if now - self.used.get(name, 0) < (self.duration(x) or 0):
+                continue          # still on us
+            if self.free_guard(x) and not self.b.attackers():
+                continue
+            self.buff_tried[name] = now
+            return self.press_support(x, now)
+        return None
+
+    @staticmethod
+    def speed_skill(x: Skill) -> bool:
+        """More movement speed for a while (Wind Step, Swallow Dance, Haste, Shadow Steps), not a
+        jump (Escape)."""
+        t = x.get("text", "").lower()
+        return x.get("role") == "mobility" and "movement speed" in t and "jump" not in t
+
+    def speed_now(self, now: float) -> Press | None:
+        """(key, name) of a ready speed skill for a long walk on foot, else None. Never pressed by
+        any of our characters in any recording (2026-11-15): the picker never offers mobility
+        skills. The fastest one that is up; skills set to Never or emergency-only stay out. Waits
+        for no global cooldown: if one still runs, the walk just starts without it."""
+        if not self.ok or self.gcd_wait(now):
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.speed_skill(x) and self.allowed(x)]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)
+                 and now - self.buff_tried.get(x["name"], 0) >= BUFF_RETRY / 2]
+        if not cands:
+            return None
+        x = max(cands, key=lambda x: (speed_share(x), self.duration(x) or 0))
+        self.buff_tried[x["name"]] = now
+        return self.press_support(x, now)
+
+    @staticmethod
+    def leap_skill(x: Skill) -> bool:
+        """A jump to the target with no channel (Leap Slash): the way to reach a monster a few
+        steps past melee reach. Not Leap Gouge (a 2.5 s channel: needs a recorded Assassin first)."""
+        return (x.get("role") == "engage" and not x.get("cast")
+                and "jump to the target" in x.get("text", "").lower())
+
+    def leap_for(self, dist: float, now: float) -> Skill | None:
+        """The ready leap that reaches a monster `dist` yards off (straight line), else None (Phase
+        1b item 5). The picker only ever used Leap Slash with the Powerful Leap Attack talent, and
+        then in reach; without it the skill was never pressed at all. Skills set to Never or
+        emergency-only stay out; no press while the global cooldown runs."""
+        if not self.ok or self.gcd_wait(now):
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.leap_skill(x) and self.allowed(x) and float(x.get("range") or 0) - LEAP_MARGIN >= dist]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)]
+        return max(cands, key=lambda x: float(x.get("range") or 0)) if cands else None
+
+    @staticmethod
+    def jump_back_skill(x: Skill) -> bool:
+        """A jump backward (the Hunter's Escape): away from where we face, so facing the other way
+        first turns it into 12 tiles forward."""
+        return x.get("role") == "mobility" and "jump backward" in x.get("text", "").lower()
+
+    def jump_back_for(self, now: float) -> Skill | None:
+        """A ready jump backward the player lets the bot use outside emergencies, else None. It is
+        free of the global cooldown, so none is waited for."""
+        if not self.ok:
+            return None
+        cands = [dict(x, page=pg) for pg, row in self.slots.items() for x in row
+                 if self.jump_back_skill(x) and self.allowed(x)]
+        cands = [x for x in cands if self.ready(x, now) and self.affordable(x, now)]
+        return cands[0] if cands else None
+
+    def press_leap(self, x: Skill, now: float) -> Press | None:
+        """Get the leap's page up and record the press: (key, name), or None."""
+        if self.page() != x["page"] and not self.flip_to(x["page"]):
+            return None
+        self.pressed(x, now)
+        return x["key"], x["name"]
+
     def support(self, me: dict[str, Any], now: float, fight: tuple[bool, int] | None = None) -> Press | str | None:
         """What to press for ourselves before attacking: heal, dispel, then buffs. (key, name),
         "wait" while the global cooldown runs, or None."""
@@ -977,7 +1230,8 @@ class SkillBook:
             if self.combos:
                 for channel in elf_combos.CHANNEL_SKILLS:
                     self.combos.primed.pop(channel, None)
-        if choice["name"] != elf_combos.IGNITION:
+        if choice["name"] != elf_combos.IGNITION and not choice.get("no_gcd"):
+            # (a press outside the global cooldown leaves the attack's press timing alone)
             self.last_press = now
             self.press_confirmed = False
         if self.confirm:
@@ -1024,8 +1278,9 @@ class SkillBook:
         self.read_casts(me["id"])
         if self.gcd_wait(now):
             # A panic button outside the global cooldown (Concentrated Will, Summon Spirit) still
-            # goes now: emergency() lets only those through while the cooldown runs.
-            return self.emergency(me, now) or "wait"
+            # goes now: emergency() lets only those through while the cooldown runs. So do the
+            # free presses (free_press): the wait after every cast is their moment.
+            return self.emergency(me, now) or self.free_press(me, now) or "wait"
         # 0. ourselves first: a heal while HP is down, a dispel when a debuff is on us, buffs
         tgt_big = (target.get("maxhp") or target.get("hp") or 0) >= LONG_FIGHT_HP * max(1, me["maxhp"])
         near_target = sum(1 for e in snap["entities"] if is_foe(e)
@@ -1052,7 +1307,7 @@ class SkillBook:
             return mine
         # 1. in trouble: a shield support() didn't already use; 2. a ranged class with a monster on
         # top of it: jump away
-        choice = self._trouble_choice(v)
+        choice = self._trouble_choice(v) or self._room_choice(v) or self._kite_choice(v)
         # Fire Impact follow-ups and unlocked channels go before the player's ready attacks.
         if not choice and self.combos and (self.combos.pending_channelling or self.available_to_channel_without_penalty):
             elements = self.points(now) if self.cls == "Elf" else None
@@ -1095,7 +1350,7 @@ class SkillBook:
                     and getattr(self, "on_the_move", False)
                 ):
                     continue          # a channel (Pyroblast, Blazing Storm) breaks the moment we walk on
-                if self._channeling_restricted(s):
+                if self._channeling_restricted(s) or self._swing_breaks(s, now):
                     continue
                 seen.add(s["name"])
                 if s["name"] != elf_combos.IGNITION and s.get("use") == "ready" and s.get("role") not in NEVER_READY:
@@ -1112,6 +1367,49 @@ class SkillBook:
         if not choice and v.near_me and v.hp_share < 60 and self.cls in ("Hunter", "Mage", "Elf", "Priest", "Witcher"):
             choice = v.first("mobility", lambda s: "jump backward" in s.get("text", "").lower())
         return choice
+
+    def _kite_choice(self, v: _PickView) -> Skill | None:
+        """A jump backward away from a monster on top of us that has struck lately (KITE_BELOW):
+        it walks back to us while we keep shooting. None unless the jump is sure to go away from
+        it, along walkable ground, and land within reach of the target."""
+        if v.hp_share >= KITE_BELOW:
+            return None
+        jumps = [s for s in v.skills if self.jump_back_skill(s)]
+        step = AWAY.get(int(v.me.get("compass") or 0))
+        if not jumps or step is None or self.b.reach() < 8:
+            return None
+        att = set(self.swinging(v.now))
+        on_top = [e for e in v.foes if e["id"] in att
+                  and math.hypot(e["x"] - v.me["x"], e["y"] - v.me["y"]) <= KITE_ON_TOP]
+        if not on_top or any((e["x"] - v.me["x"]) * step[0] + (e["y"] - v.me["y"]) * step[1] > 0.5 for e in on_top):
+            return None           # one stands where the jump would go: it would land beside it
+        from .. import atlas
+        m = atlas.model(self.b.map_id())
+        cx, cy = int(v.me["x"] + 0.5), int(v.me["y"] + 0.5)
+        n = int(JUMP_BACK)
+        if not all(m.ok(cx + step[0] * k, cy + step[1] * k) for k in range(1, n + 1)):
+            return None
+        land = (v.me["x"] + step[0] * n, v.me["y"] + step[1] * n)
+        if math.hypot(v.target["x"] - land[0], v.target["y"] - land[1]) > self.b.reach():
+            return None
+        return jumps[0]
+
+    def _room_choice(self, v: _PickView) -> Skill | None:
+        """Two or more monsters striking at us and a channel to protect: the freezing area skill
+        round us (Frost Nova), when it reaches every one of them. Frozen, they can't break the
+        channels that follow (ROOM_ATTACKERS)."""
+        if not any(float(s.get("cast") or 0) > 0 for s in v.skills):
+            return None
+        att = self.swinging(v.now)
+        if len(att) < ROOM_ATTACKERS:
+            return None
+        where = {e["id"]: e for e in v.foes}
+        if not all(i in where for i in att):
+            return None
+        far = max(math.hypot(where[i]["x"] - v.me["x"], where[i]["y"] - v.me["y"]) for i in att)
+        rooms = [s for s in v.skills if s.get("role") == "aoe" and "freeze" in (s.get("effects") or ())
+                 and not s.get("cast") and far <= float(s.get("range") or 0) - 0.5]
+        return max(rooms, key=lambda s: (s["page"] == v.up, v.score(s)), default=None)
 
     def _wanted_choice(self, v: _PickView, wanted: list[Skill]) -> tuple[bool, Press | None]:
         """The hardest hitter of the player's "whenever ready" skills (a buff or heal among them on
@@ -1207,6 +1505,7 @@ class SkillBook:
                  and s["name"] != elf_combos.IGNITION
                  and in_range(s)
                  and not self._channeling_restricted(s)
+                 and not self._swing_breaks(s, now)
                  and now - self.used.get(self.cd_group(s), 0) >= (s.get("cd") or 0) + 0.3]
         if not cands:
             return None

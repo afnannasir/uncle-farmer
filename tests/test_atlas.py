@@ -430,3 +430,18 @@ def test_a_copy_with_cells_walled_off_keeps_the_bytes() -> None:
     assert isinstance(mm._walk_list, bytes) and len(mm._walk_list) == before
     assert not mm._walk_list[200 * m.W + 200]
     assert m._walk_list[200 * m.W + 200]              # the original is untouched
+
+
+def test_maps_for_level_keep_the_games_full_experience_window() -> None:
+    level = 60
+    found = atlas.maps_for_level(level)
+    assert found
+    for mid, _label, _extra in found:
+        fit = atlas.fitting_levels(mid, level)
+        assert fit and all(level - 9 <= v <= level + 5 for v in fit)
+    fields = [mid for mid, _l, _e in found if atlas.kind(mid) in (None, "field")]
+    tops = [max(atlas.fitting_levels(mid, level)) for mid in fields]
+    assert tops == sorted(tops, reverse=True)
+    # Every farming map with a fitting monster level is listed, and none without one.
+    wanted = {mid for mid, _l, _e in atlas.farming_maps() if atlas.fitting_levels(mid, level)}
+    assert {mid for mid, _l, _e in found} == wanted
