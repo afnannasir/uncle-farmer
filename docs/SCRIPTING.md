@@ -1259,6 +1259,7 @@ Use this section when you need a quick reminder of a command or its syntax.
 
     follow <player>
     come <player> [<map> [at x,y]]
+    manage_team                     stay, managing the team as the Team tab says, until the run is stopped
 
 ### Keys and healing
 

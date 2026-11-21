@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .. import atlas, gamekeys, sounds, trust
 from ..i18n import _
-from . import chores, team, town
+from . import team
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -382,6 +382,7 @@ def online(b: Bot, top: dict[str, Any], row: int, name: str, pid: int, wait: flo
     answers "<name>,<id>;", False when it says nothing in time, None when the cursor didn't get there."""
     if b.cursor_to(top, row, 0) is None:
         return None
+    from . import chores          # (chores needs the Bot, which imports this module)
     want = "%s,%d;" % (name.lower(), pid)
     mark = chores.said_mark(b)
     b.key(gamekeys.info_key())
@@ -615,6 +616,7 @@ def create(b: Bot) -> bool:
     if top is None or b.choose(NO_TEAM) is None:
         b.close_dialogs()
         return False
+    from . import town            # (town needs the Bot, which imports this module)
     mark = chat_mark(b)
     if not town.type_text(b, name):
         b.close_dialogs()

@@ -32,6 +32,9 @@ msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
+msgid "&Accept requests to join my team"
+msgstr "Meri team mein shamil hone ki darkhwastein &qubool karein"
+
 msgid "&Action:"
 msgstr "&Kaam:"
 
@@ -129,6 +132,10 @@ msgstr ""
 
 msgid "&Copy the address"
 msgstr "Pata &copy karein"
+
+msgid "&Create my team when the run starts, if I'm in none"
+msgstr ""
+"Run shuru hone par, agar main kisi team mein nahi, to apni team &banayein"
 
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr "&DETERMINISTIC: yeh kaam nakaam ho to silsila rok dein"
@@ -256,6 +263,9 @@ msgstr "&Rukhsati, har line mein ek:"
 msgid "&HP potion:"
 msgstr "&HP potion:"
 
+msgid "&Hand the team over when the run ends"
+msgstr "Run khatam hone par team &hawale karein"
+
 msgid ""
 "&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"
 msgstr ""
@@ -322,6 +332,10 @@ msgstr "&Kills ki hadd"
 
 msgid "&Language:"
 msgstr "&Zaban:"
+
+msgid "&Leave a team another player leads when the run starts"
+msgstr ""
+"Run shuru hone par woh team &chhor dein jise koi aur khilari chalata hai"
 
 msgid "&Let it shut down"
 msgstr "Shutdown &hone dein"
@@ -640,6 +654,9 @@ msgstr "&Jab basta bhar jaye:"
 msgid "&Where to die:"
 msgstr "&Kahan marna hai:"
 
+msgid "&Who may join:"
+msgstr "&Kaun shamil ho sakta hai:"
+
 msgid "&Write an email"
 msgstr "&Email likhein"
 
@@ -902,6 +919,10 @@ msgstr "&Waqt ki hadd ke baad"
 
 msgid "After farming"
 msgstr "Farming ke baad"
+
+msgid "After the run, &stay in town and manage the team until I stop it"
+msgstr ""
+"Run ke baad shehar mein &rukein aur team sambhalein jab tak main rok na doon"
 
 msgid "Afterwards"
 msgstr "Us ke baad"
@@ -1209,6 +1230,12 @@ msgstr "Sab se sasta pehle"
 
 msgid "Check for &updates"
 msgstr "&Updates dekhein"
+
+msgid "Check for offline members every (minutes):"
+msgstr "Offline members ko har itne minute baad check karein:"
+
+msgid "Check for offline members only when the run &passes through a town"
+msgstr "Offline members ko sirf tab check karein jab run kisi shehar se &guzre"
 
 msgid "Check o&nly"
 msgstr "Sirf che&ck"
@@ -1879,6 +1906,9 @@ msgstr "Filter ka matn ya &pattern:"
 msgid "Fishing"
 msgstr "Fishing (machhli)"
 
+msgid "Following a leader"
+msgstr "Leader ke peeche chalna"
+
 msgid "Following you."
 msgstr "Aap ke saath chal raha hoon."
 
@@ -2107,6 +2137,9 @@ msgstr "HP {pct}% - agli ladai se pehle aaram"
 msgid "HP:"
 msgstr "HP:"
 
+msgid "Hand it to (names or ids; the &first one in the team gets it):"
+msgstr "Kis ko dein (names ya ids; team mein &pehla wala le lega):"
+
 msgid "Heal a teammate when their HP is below (%):"
 msgstr "Teammate ka HP is se neeche ho to shifa dein (%):"
 
@@ -2137,9 +2170,6 @@ msgstr "Khud ko heal kiya"
 
 msgid "Healing by our skills (potions not counted):"
 msgstr "Hamari skills se healing (potions gine nahi gaye):"
-
-msgid "Healing teammates while following"
-msgstr "Peeche chalte hue teammates ki shifa"
 
 msgid "Healing the pet"
 msgstr "Pet ki shifa"
@@ -2297,6 +2327,10 @@ msgstr "Agar main mara to isi map par zinda hounga."
 
 msgid "If I die, I'll respawn with Resurrection Crystals."
 msgstr "Agar main mara to Resurrection Crystals se zinda hounga."
+
+msgid "If my team has another name, &disband it and create it again"
+msgstr ""
+"Agar meri team ka naam kuch aur hai, to use &disband kar ke dobara banayein"
 
 msgid "If none of them is in the room, share with &anyone there"
 msgstr ""
@@ -2483,6 +2517,9 @@ msgstr "Aakhri mara gaya monster: {name}"
 
 msgid "Last run: {r}"
 msgstr "Pichla run: {r}"
+
+msgid "Leading a team"
+msgstr "Team ki qayadat"
 
 msgid "Leads to: {maps}"
 msgstr "Yahan se jaata hai: {maps}"
@@ -2810,6 +2847,9 @@ msgstr "Phenkne mein le ja&yein"
 msgid "Mute e&very game"
 msgstr "Har game ki awaaz &band karein"
 
+msgid "My friends in the game"
+msgstr "Game mein mere dost"
+
 msgid "My list ({n})"
 msgstr "Meri fehrist ({n})"
 
@@ -2818,6 +2858,9 @@ msgstr "Mera apna gang (gang kam dete hain)"
 
 msgid "NPCs"
 msgstr "NPCs"
+
+msgid "Names or &ids who may join (separated by commas):"
+msgstr "Shamil ho sakne wale names ya &ids (comma se alag):"
 
 msgid "Nearby"
 msgstr "Aas paas"
@@ -3491,6 +3534,9 @@ msgstr "Yeh cheez &yaad rakhein"
 
 msgid "Remove"
 msgstr "Hatayein"
+
+msgid "Remove members who go &offline"
+msgstr "&Offline hone wale members ko nikal dein"
 
 msgid ""
 "Remove the agent from the game? The bot won't work until you install it again."
@@ -4238,8 +4284,24 @@ msgstr "Maghrib ko target karein"
 msgid "Team"
 msgstr "Team"
 
+msgid "Team &name (letters and numbers):"
+msgstr "Team ka &naam (huroof aur numbers):"
+
 msgid "Team mode"
 msgstr "Team mode"
+
+msgid ""
+"Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
+msgstr ""
+"Team tab: team ke naam mein 1 se 20 huroof aur numbers hon, spaces ke baghair."
+
+msgid ""
+"Team tab: type the names or ids who may join, or choose another \"Who may join\"."
+msgstr ""
+"Team tab: shamil ho sakne wale names ya ids likhein, ya koi aur \"Kaun shamil ho sakta hai\" chunein."
+
+msgid "Team tab: type who gets the team when the run ends."
+msgstr "Team tab: likhein ke run khatam hone par team kis ko mile."
 
 msgid "Teleport to the team leader"
 msgstr "Team leader ke paas teleport karein"
@@ -4501,6 +4563,9 @@ msgstr "Sunne wala masroof hai ya alag hai. Dobara koshish karein."
 
 msgid "The market"
 msgstr "Market"
+
+msgid "The names or ids below"
+msgstr "Neeche diye gaye names ya ids"
 
 msgid "The nearest city's"
 msgstr "Sab se qareebi shehar ka"
@@ -4812,6 +4877,9 @@ msgstr "Triggers"
 
 msgid "Trusted players"
 msgstr "Bharosemand khilari"
+
+msgid "Trusted players (Private messages)"
+msgstr "Bharosemand khilari (Private messages)"
 
 msgid ""
 "Trusted players are the names and ids in Private messages (Ctrl+Shift+M), where reading private messages out is set too."
@@ -5289,6 +5357,9 @@ msgstr "koi aur isay maarne wala hai"
 msgid "about {price}"
 msgstr "taqreeban {price}"
 
+msgid "accepted into the team: {names}"
+msgstr "team mein qubool kiye: {names}"
+
 msgid "accepted {name} into the team"
 msgstr "{name} ko team mein shamil kar liya"
 
@@ -5307,6 +5378,10 @@ msgstr "{n} kills ke baad"
 
 msgid "after {n} minutes"
 msgstr "{n} minute ke baad"
+
+msgid "agreed to {names} joining, and the game didn't say they joined"
+msgstr ""
+"{names} ko shamil karne par agree kiya, aur game ne nahi bataya ke woh shamil hue"
 
 msgid "alive again on {map}"
 msgstr "{map} par dobara zinda"
@@ -5590,6 +5665,11 @@ msgid ""
 "can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again"
 msgstr ""
 "{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega{pet} ko {skill} se heal nahi kar sakte: {why} - tab tak pet potions, aur heal dobara aazmaya jayega"
+
+msgid ""
+"can't hear team requests ({err}): they are looked at when farming starts"
+msgstr ""
+"team ki darkhwastein sunai nahi deteen ({err}): farming shuru hone par dekhi jati hain"
 
 msgid "can't read the experience card from the character sheet yet"
 msgstr "character sheet se experience card abhi nahi parha ja sakta"
@@ -5975,6 +6055,9 @@ msgstr "{n} dafa mar gaye - rok rahe hain; yeh jagah shayad bohot mushkil hai"
 
 msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
 msgstr "{n} baar mare: agle level ko ab {xp} experience chahiye (maqsad {goal})"
+
+msgid "disbanded {team}: the team is to be called {name}"
+msgstr "{team} disband ki: team ka naam {name} hona hai"
 
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr ""
@@ -6462,6 +6545,9 @@ msgstr "{map} chhor diya (mar gaye ya hil gaye?) - wapas ja rahe hain"
 msgid "left {map} while looking for the {name} circle"
 msgstr "{name} circle dhoondte hue {map} chhor diya"
 
+msgid "left {team}, which another player leads"
+msgstr "{team} chhor di, jise koi aur khilari chalata hai"
+
 msgid "level unknown"
 msgstr "level maloom nahi"
 
@@ -6539,6 +6625,9 @@ msgstr "bechne wale {ids} ke lots"
 
 msgid "low on {item}: {have} left"
 msgstr "{item} kam hai: {have} bache hain"
+
+msgid "made the team {name}"
+msgstr "team {name} bana di"
 
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
 msgstr "{n} Level {lv} {kind} Enhance Crystals banaye"
@@ -6856,6 +6945,10 @@ msgid "nobody I know buys {item} - storing it instead"
 msgstr ""
 "jise main jaanta hoon koi {item} nahi kharidta - is liye store kar rahe hain"
 
+msgid "nobody to hand the team to is in it: it stays with this character"
+msgstr ""
+"team dene ke liye koi bhi team mein nahi: team isi character ke paas rehti hai"
+
 msgid "nobody yet"
 msgstr "abhi koi nahi"
 
@@ -7035,6 +7128,11 @@ msgstr "in settings ke saath torne ko kuch nahi"
 
 msgid "nothing to collect today"
 msgstr "aaj lene ko kuch nahi"
+
+msgid ""
+"nothing to manage: tick taking requests or removing offline members on the Team tab"
+msgstr ""
+"sambhalne ko kuch nahi: Team tab par darkhwastein qubool karna ya offline members nikalna tick karein"
 
 msgid "now (waiting to start)"
 msgstr "abhi (shuru hone ke intezar mein)"
@@ -7255,6 +7353,9 @@ msgstr "rank maloom nahi"
 msgid "read {made}: {items} items in {lots} lots"
 msgstr "{made} ko parhi: {lots} lots mein {items} cheezein"
 
+msgid "read {n} friends from the game for team requests"
+msgstr "team ki darkhwaston ke liye game se {n} dost parhe"
+
 msgid "reading the whole market..."
 msgstr "poori market parh raha hai..."
 
@@ -7275,6 +7376,9 @@ msgstr "laal"
 
 msgid "remembered: {names}"
 msgstr "yaad rakha: {names}"
+
+msgid "removed {name} from the team: offline"
+msgstr "{name} ko team se nikal diya: offline"
 
 msgid "removes debuffs"
 msgstr "debuffs hataata hai"
@@ -7477,6 +7581,11 @@ msgstr "{n} {item} bech diye"
 msgid "sold {n} {item} at the Shard Market"
 msgstr "Shard Market par {n} {item} bech diye"
 
+msgid ""
+"someone else disbanded the team or took it over: no more managing it this run"
+msgstr ""
+"kisi aur ne team disband kar di ya le li: is run mein ab team nahi sambhali jayegi"
+
 msgid "sound request"
 msgstr "sound darkhwast"
 
@@ -7504,6 +7613,9 @@ msgid ""
 "status: what I'm doing (running, paused or idle), the run, its minutes and kills, my map, HP and MP."
 msgstr ""
 "status: main kya kar raha hoon (chal raha, waqfa ya khaali), run, uske minutes aur kills, mera map, HP aur MP."
+
+msgid "staying here managing the team until you stop the run"
+msgstr "yahan reh kar team sambhal raha hoon jab tak aap run rok na dein"
 
 msgid "still being attacked - fighting back before stopping"
 msgstr "ab bhi hamla ho raha hai - rukne se pehle jawabi hamla"
@@ -7631,6 +7743,21 @@ msgstr "jis par aap ka target hamla kar raha hai use target karein"
 
 msgid "taunt"
 msgstr "taunt"
+
+msgid "team requests: the Action menu didn't open"
+msgstr "team ki darkhwastein: Action menu nahi khula"
+
+msgid "team requests: the game didn't select {names}"
+msgstr "team ki darkhwastein: game ne {names} ko select nahi kiya"
+
+msgid "team requests: this character doesn't lead a team"
+msgstr "team ki darkhwastein: yeh character kisi team ka leader nahi"
+
+msgid "team: couldn't move to {name} in the member list"
+msgstr "team: member list mein {name} tak nahi ja saka"
+
+msgid "team: this character doesn't lead a team"
+msgstr "team: yeh character kisi team ka leader nahi"
 
 msgid "teleport"
 msgstr "teleport"
@@ -7990,6 +8117,18 @@ msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 "game ne {skill} ko key {key} par nahi rakha - keys waise hi chhod rahe hain"
 
+msgid "the game didn't say the team {name} was made"
+msgstr "game ne nahi bataya ke team {name} ban gayi"
+
+msgid "the game didn't say this character left {team}"
+msgstr "game ne nahi bataya ke is character ne {team} chhor di"
+
+msgid "the game didn't say {name} leads the team now"
+msgstr "game ne nahi bataya ke ab {name} team ka leader hai"
+
+msgid "the game didn't say {team} was disbanded"
+msgstr "game ne nahi bataya ke {team} disband ho gayi"
+
 msgid ""
 "the game didn't show the 5000 contribution price, so nothing was confirmed"
 msgstr ""
@@ -8003,6 +8142,9 @@ msgstr "game ne construction report nahi li"
 
 msgid "the game didn't take the number"
 msgstr "game ne number nahi liya"
+
+msgid "the game didn't take the team name {name}"
+msgstr "game ne team ka naam {name} qubool nahi kiya"
 
 msgid "the game didn't throw {item} away - see logs\\dialogs.log"
 msgstr "game ne {item} phenka nahi - logs\\dialogs.log dekhein"
@@ -8224,6 +8366,9 @@ msgstr "maange gaye potions pehle se maujood hain"
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
 
+msgid "the run ended outside a town: not staying to manage the team"
+msgstr "run shehar ke bahar khatam hua: team sambhalne ke liye nahi ruk raha"
+
 msgid ""
 "the run started inside {map}, which can't be walked back into - ending on the nearest map without monsters"
 msgstr ""
@@ -8297,6 +8442,9 @@ msgstr ""
 
 msgid "the target keys wouldn't select {name} - next one"
 msgstr "target keys se {name} select nahi hua - agla"
+
+msgid "the team {name} is made at the first town on the way: this isn't one"
+msgstr "team {name} raste ke pehle shehar mein banegi: yeh shehar nahi"
 
 msgid "the text grew too long (over {n} characters)"
 msgstr "text bohat lamba ho gaya ({n} haroof se zyada)"
@@ -8392,6 +8540,9 @@ msgid ""
 "this character is at the top level: there is no next level to stay away from"
 msgstr ""
 "yeh character sab se oonche level par hai: koi agla level nahi jis se door raha jaye"
+
+msgid "this character is in {team}, which another player leads"
+msgstr "yeh character {team} mein hai, jise koi aur khilari chalata hai"
 
 msgid "this expression is too complex (over {n} parts or {d} deep)"
 msgstr "yeh expression bohat mushkil hai ({n} parts ya {d} gehri se zyada)"
@@ -8987,6 +9138,10 @@ msgstr "{name} (speed +{speed}, level {level})"
 msgid "{name} ({id})"
 msgstr "{name} ({id})"
 
+msgid "{name} ({id}) asked to join the team and isn't allowed in: left waiting"
+msgstr ""
+"{name} ({id}) ne team mein shamil hone ki darkhwast ki aur use ijazat nahi: intezar mein chhor diya"
+
 msgid "{name} ({n} new)"
 msgstr "{name} ({n} naye)"
 
@@ -9065,6 +9220,9 @@ msgstr "{name} ki awaaz band ho gayi."
 
 msgid "{name} scanned."
 msgstr "{name} scan ho gaya."
+
+msgid "{name} seems offline, and the game didn't remove them from the team"
+msgstr "{name} offline lagta hai, aur game ne use team se nahi nikala"
 
 msgid "{name} takes no damage, leaving it"
 msgstr "{name} ko damage nahi lagta, ise chhor rahe hain"
@@ -9441,6 +9599,9 @@ msgid ""
 msgstr ""
 "{state}. Faal khamosh IDs: {mute}. Dekhe gaye: {observed}; roke gaye: {dropped}; live khamosh: {live}; gair-mahfooz: {unsupported}."
 
+msgid "{team} isn't called {name}: it is made again in a town only"
+msgstr "{team} ka naam {name} nahi: yeh sirf shehar mein dobara banti hai"
+
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"
 
@@ -9505,6 +9666,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "({n} fused)"
 #~ msgstr "({n} fuse hue)"
+
+#~ msgid "Healing teammates while following"
+#~ msgstr "Peeche chalte hue teammates ki shifa"
 
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr "demonized elites, character settings ke mutabiq chhor diye"
