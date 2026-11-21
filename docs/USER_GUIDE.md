@@ -213,6 +213,14 @@ With one spot, Uncle Farmer stays there until the plan stops.
 
 With several spots, it can either go around them in order repeatedly or visit each one once. Each spot has its own duration, which tells the bot how long to stay before moving to the next one.
 
+**Sharing the day's drop time between spots**
+
+A spot's time limit counts the minutes of the clock from when the spot began, so a restart starts it again from nothing. To split the day between two maps, for example three hours on Underwater World and the rest on Margit Rainforest, tick **A share of the day's drop time (kept across restarts)** on the first spot's **Farming** tab and set **Minutes of drop time on this spot** to 180.
+
+The game gives every character 7 hours of drop time a day, and the share is counted on that clock: the first spot farms until the day's drop time left is down to 4 hours, and the next spot gets the rest. If the bot restarts after two hours, the first spot only farms its last hour, and a run started when the share is already used up goes straight to the next spot, saying "not farming ... is already true". With several shares they follow each other in order. A plan with shares goes through its spots once, in order, whatever **With more than one spot** says: going round again would find every share used up.
+
+With a single spot, nothing changes.
+
 **Movement**
 
 You can choose between wandering randomly and following a patrol loop.
@@ -1792,6 +1800,10 @@ Depending on what the game provides, you can review:
 These statistics require agent version 28 or newer, the same version requirement used for crit-timed combos.
 
 If the game does not provide a particular statistic, Uncle Farmer displays `null` for that value.
+
+### Map by map
+
+When a run farmed two maps or more, its results add a **Map by map** part: for each map, the time spent farming on it (not the trips away from it, nor a pause), its kills and kills an hour, the arnebia and the shards gained on it, the chests opened there and the deaths. A day's or a week's results add the maps up the same way. A run that farmed one map shows the results it always did.
 
 ### Quick results and spoken summaries
 
