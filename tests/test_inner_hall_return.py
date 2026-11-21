@@ -137,6 +137,9 @@ class Door(Game):
         self.visited: list[Any] = []
         self.clock = Clock()
 
+    def me(self) -> dict[str, Any]:
+        return {"side": 1018}
+
     def talk(self, name: str, cell: Any = None) -> bool:
         self.talked.append(name)
         return True

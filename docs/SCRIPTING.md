@@ -857,10 +857,11 @@ To ask the officers ticked in **Tools, Hunting bounties** for what they pay, use
 
 If you want to sell the gathered items separately, use:
 
-    sell_collection              sell fish, ore and herbs
-    sell_collection fish         sell only one type: fish, ore or herb
+    sell_collection              sell the character's gathering type
+    sell_collection fish         sell only fish
+    sell_collection all          visit all three types of buyer
 
-The available types are `fish`, `ore`, and `herb`.
+The available types are `fish`, `ore`, and `herb`. If the character has no gathering skill and no type is specified, the bot chooses buyers for the goods it recognizes in the bag.
 
 ### Managing shards and your bag
 

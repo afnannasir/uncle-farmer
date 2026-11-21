@@ -513,6 +513,49 @@ def test_the_buyers_rows_are_read() -> None:
     assert town.buyer_rows(as_bot(g)) == rows
 
 
+@pytest.mark.parametrize(("activity", "role"), [
+    ("Mining", "ore_buyer"), ("Fishing", "fish_buyer"), ("Collect Herbs", "herb_buyer"),
+])
+def test_sell_collection_without_a_kind_routes_only_to_the_characters_buyer(
+        activity: str, role: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game()
+    g.skills = {"profession": [{"id": 13, "name": activity}]}
+    g.bag.update({"Milkfish": 3, "Silver ore": 4, "Sunflower": 5})
+    inspected: list[str] = []
+    visited: list[str | None] = []
+
+    def candidates(role: str) -> list[town.Npc]:
+        inspected.append(role)
+        return [(1041, role, 150, 190)]
+
+    def visit(b: town.Bot, role: str | None, **_kwargs: Any) -> str:
+        visited.append(role)
+        return role or ""
+
+    monkeypatch.setattr(town.knowledge, "service_npcs", candidates)
+    monkeypatch.setattr(town, "visit", visit)
+    script.Runner(as_bot(g), "sell_collection").run()
+    assert inspected == [role]
+    assert visited == [role]
+
+
+def test_reopening_the_same_collection_buyer_does_not_plan_another_trip(
+        market: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=1041)
+    g.bag.update({"Milkfish": 2, "Lobster": 1})
+    buyer(g, [("Milkfish", 670), ("Lobster", 1150)])
+    trips: list[str | None] = []
+    open_buyer = town.visit
+
+    def visit(b: town.Bot, role: str | None, **_kwargs: Any) -> str:
+        trips.append(role)
+        return open_buyer(b, role)
+
+    monkeypatch.setattr(town, "visit", visit)
+    assert town.sell_collection(as_bot(g), ("fish",)) == 2490
+    assert trips == ["fish_buyer"]
+
+
 # ---------------------------------------------------------------------------------------- the run
 def test_a_run_uses_the_gang_area_then_sells(inner_hall: None, market: None, monkeypatch: pytest.MonkeyPatch) -> None:
     g = Game(map_id=4004, vitality=6)
@@ -540,10 +583,11 @@ def test_no_gathering_skill_says_what_to_learn() -> None:
 
 # ---------------------------------------------------------------------------------------- scripts
 def test_the_script_commands_parse() -> None:
-    main, _subs, _stop = script.parse("gather check\nsell_collection fish\nsell_collection\n")
+    main, _subs, _stop = script.parse("gather check\nsell_collection fish\nsell_collection\nsell_collection all\n")
     assert main[0].opts["check"] is True
     assert main[1].opts["kinds"] == ("fish",)
-    assert main[2].opts["kinds"] == ("fish", "ore", "herb")
+    assert main[2].opts["kinds"] is None
+    assert main[3].opts["kinds"] == ("fish", "ore", "herb")
     with pytest.raises(script.ScriptError):
         script.parse("sell_collection gems\n")
 
@@ -650,6 +694,51 @@ def test_the_gang_list_keeps_the_players_order_once_each() -> None:
     assert gathering.gangs({}) == [""]
     assert gathering.gangs({"gangs": ["", "Friends", " friends ", "Allies"]}) == ["", "Friends", "Allies"]
     assert gathering.gang_name("") == "our own gang" and gathering.gang_name("Allies") == "Allies"
+
+
+@pytest.mark.parametrize("configured", [[], ["Friends"]])
+@pytest.mark.parametrize("check_only", [False, True])
+def test_gangless_gatherer_skips_own_gang_without_an_npc_detour(
+        configured: list[str], check_only: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=1041)
+    g.bag["Milkfish"] = 5
+    me = g.me
+    monkeypatch.setattr(g, "me", stand_in(g.me, lambda: dict(me(), side=0)))
+    trips: list[str] = []
+
+    def area(b: town.Bot, cfg: dict[str, Any], skill: str, check_only: bool = False,
+             gang: str = "") -> tuple[bool, str, bool]:
+        trips.append(gang or "own Gang Entrance")
+        if not gang:
+            raise Stopped("couldn't get into the gang's inner hall")
+        return False, "checked the configured area", False
+
+    def sell(b: town.Bot, kinds: tuple[str, ...] = ("fish", "ore", "herb")) -> int:
+        assert kinds == ("fish",)
+        trips.append("fish buyer")
+        g.bag["Milkfish"] = 0
+        return 100
+
+    monkeypatch.setattr(gathering, "gang_area", stand_in(gathering.gang_area, area))
+    monkeypatch.setattr(town, "sell_collection", sell)
+    cfg = dict(gathering.DEFAULTS, outside=False, gangs=["", *configured])
+    gathering.run(as_bot(g), cfg, check_only=check_only)
+    if check_only:
+        assert trips == configured
+    else:
+        assert trips == ["fish buyer", *configured]
+    assert not g.travelled
+
+
+def test_gangless_gathering_check_leaves_the_open_buyer_alone(monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=1041)
+    buyer(g, [("Milkfish", 670)])
+    g.page = "Aquaculture Buyer"
+    me = g.me
+    monkeypatch.setattr(g, "me", stand_in(g.me, lambda: dict(me(), side=0)))
+    gathering.run(as_bot(g), dict(gathering.DEFAULTS, outside=False), check_only=True)
+    assert g.page == "Aquaculture Buyer"
+    assert not g.travelled
 
 
 def test_another_gangs_base_is_found_by_name_at_the_gang_entrance(monkeypatch: pytest.MonkeyPatch) -> None:

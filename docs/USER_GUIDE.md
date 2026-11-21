@@ -1162,7 +1162,7 @@ This setting tells the bot how much Vitality to save for later. It reads your cu
 
 The **Check only** option reads the gang gathering area's entrance and tells you where Uncle Farmer would gather. It does not start gathering.
 
-You can also use **Sell the collection now** in the game's menu in the Games list to sell gathered items to all three types of buyers from your current location.
+Use **Sell the collection now** in the game's menu in the Games list to go to the buyer for your gathering skill. If the character has no gathering skill, the bot chooses buyers for the goods it recognizes in the bag.
 
 In a script, use:
 
@@ -1171,9 +1171,10 @@ gather
 gather check
 sell_collection
 sell_collection fish
+sell_collection all
 ```
 
-The first command starts gathering. The second checks what the bot would do. The last two sell your collection, with the final command specifying fish.
+The first command starts gathering and the second checks where the bot would gather. The three sale commands choose the buyer automatically, sell fish only, or visit all three types of buyer.
 
 
 
