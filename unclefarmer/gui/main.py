@@ -13,7 +13,7 @@ import os
 
 import wx
 
-from .. import __version__, applog, messages, paths, settings
+from .. import applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
@@ -36,6 +36,12 @@ VK_PAUSE = 0x13
 MOD_SHIFT = 0x0004
 MOD_NOREPEAT = 0x4000
 BOT_STOP_WAIT = 5.0         # seconds each running bot gets to end when the app closes
+
+
+def about_text() -> str:
+    """Help, About: this copy's version as the update check knows it - a dev build's own number
+    (1.2.2-dev.436) from its build.json, not only the release it was built from."""
+    return _("Uncle Farmer {v}\nA farming bot for Mist World.", v=updater.installed_version())
 
 
 def action_menu_states(*, available: bool, running: bool, any_running: bool, has_items: bool,
@@ -342,8 +348,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("Check for &updates"), lambda e: self.check_updates()),
                           command(_("Contact the &developer"), lambda e: self.contact_developer()),
                           command(_("Join the &Telegram group"), lambda e: self.join_telegram()),
-                          command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
-                                                                        v=__version__)))])
+                          command(_("&About Uncle Farmer"), lambda e: info(self, about_text()))])
         self.SetMenuBar(bar)
         plan_shortcuts: list[tuple[int, int, Handler]] = [
             (wx.ACCEL_CTRL, ord("E"), lambda e: self.edit_selected()),
