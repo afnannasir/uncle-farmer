@@ -37,6 +37,13 @@ LEFT_OUT = {
 
 class FightingMixin(Parts):
     MP_EMPTY = 10         # MP percent under which our skills can't be cast: no damage is our own doing
+    # A target another player stands nearer to than we do counts this many steps further when the
+    # targets are put in order: a free one about as far comes first. Measured live (Underwater
+    # World, an hour, 464 targets): 23% of the targets with a player nearer were lost to someone
+    # else, 10% of the others. Leaving those targets out would cost more kills than it saves (most
+    # are still ours, and only one or two monsters are in sight most of the time), so they are
+    # only put after a free one, never left out.
+    RIVAL_STEPS = 15
 
     POINTS_NAMES = {"Warrior": "rage", "Orc": "rage", "Hunter": "marked targets", "Assassin": "combos",
                     "Elf": "fire elements"}
@@ -569,13 +576,37 @@ class FightingMixin(Parts):
             out.append(e)
         self.left_out = left           # for the farm loop's "nothing to fight" line (explain_left_out)
         self.walk_steps = steps        # for note_pick: the walk the farm loop's choice would take
+        contested = self.contested_by_players(snap, out, hitting)
+        self.contested = contested     # for note_pick: a player stood nearer the target than we did
         # Those attacking us first; then those we have already hurt, close by: our hits make them
-        # partly ours, and finishing them gets the kill instead of leaving it to the next player.
+        # partly ours, and finishing them gets the kill instead of leaving it to the next player;
+        # then the nearest, one another player is nearer to counted RIVAL_STEPS further.
         out.sort(key=lambda e: (e["id"] not in hitting,
                                 not (tagged(e["id"]) and math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= near_tag),
-                                steps[e["id"]], math.hypot(e["x"] - me["x"], e["y"] - me["y"])))
+                                steps[e["id"]] + (self.RIVAL_STEPS if e["id"] in contested else 0),
+                                math.hypot(e["x"] - me["x"], e["y"] - me["y"])))
         if len(self.mob_names) > 2000:
             self.mob_names = {e["id"]: e["name"] for e in out}
+        return out
+
+    @staticmethod
+    def contested_by_players(snap: dict[str, Any], mobs: Sequence[dict[str, Any]], hitting: set[int]) -> set[int]:
+        """The ids of these monsters another player in sight stands nearer to than we do (straight
+        line) - not those attacking us, which are ours to fight whoever is near. Pets and summons
+        (" belongs to ", the game's players too) are no players."""
+        me: dict[str, Any] = snap["self"]
+        players = [(p["x"], p["y"]) for p in snap.get("entities", ())
+                   if p.get("kind") == "player" and p.get("id") != me.get("id")
+                   and " belongs to " not in str(p.get("name") or "") and "x" in p and "y" in p]
+        if not players:
+            return set()
+        out: set[int] = set()
+        for e in mobs:
+            if e["id"] in hitting:
+                continue
+            ours = math.hypot(e["x"] - me["x"], e["y"] - me["y"])
+            if any(math.hypot(e["x"] - x, e["y"] - y) < ours for x, y in players):
+                out.add(e["id"])
         return out
 
     def _left_out(self, snap: dict[str, Any], e: dict[str, Any], hitting: set[int], area: Sequence[float] | None,
@@ -689,6 +720,7 @@ class FightingMixin(Parts):
             "steps": None if steps == math.inf else round(steps, 1), "reach": round(rng, 1),
             "sight": len(mobs), "in_reach": sum(1 for e in mobs if dist(e) <= rng),
             "hurt": mob["hp"] < mob["maxhp"], "attacking": mob["id"] in self.attackers(),
+            "rival": mob["id"] in self.__dict__.get("contested", ()),
             "_at": self.clock.time(), "_kills": self.kills,
         }
 

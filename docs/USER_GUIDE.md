@@ -556,6 +556,8 @@ Damage-absorbing shields, such as Formless, can also be used while approaching o
 
 For melee characters, the bot prefers attacking a monster with fewer other monsters around it instead of jumping into the middle of a pack.
 
+On a busy map, a monster another player stands nearer to than you do is often gone before you get there: measured over an hour on Underwater World, about one in four of those went to someone else, against one in ten of the others. So when two monsters are about as far, the bot takes the one nobody else is closer to; one that another player is nearer to counts as 15 steps further away. It never leaves such a monster out, since most of them still end up as your kills, and a monster that attacks you is fought first, whoever stands near it. Pets and summons don't count as players.
+
 If no monsters are attacking but your HP is low, the bot rests before starting another fight.
 
 While travelling, the bot only fights monsters that attack it.
