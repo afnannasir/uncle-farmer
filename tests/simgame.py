@@ -899,6 +899,9 @@ class SimGame:
         """The chat channels' lines: nobody talks in the pretend game, and no chest is announced."""
         return json.dumps({"ok": True, "last": 0, "room": "", "chat": []})
 
+    def _cmd_report(self, arg: str, cid: int, w: World) -> str:
+        return "{}"               # agent 76: no end-of-dungeon report (the pretend caves send none)
+
     def _cmd_team(self, arg: str, cid: int, w: World) -> str:
         return json.dumps({"now": self._ms(), "members": []})
 

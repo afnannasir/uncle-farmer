@@ -205,6 +205,10 @@ Use `map=` to send your character to a particular map before farming.
 
 You can identify the map by its name or number, just like with the `travel` command.
 
+`map=best` picks the map when the line runs: the best field map for the character's level at that moment (monsters from 9 levels below to 5 above it, the highest first). The log says which map it chose, so a script that runs every day follows the character as it levels up.
+
+    farm map=best
+
 ### Setting a farming limit
 
 You can decide when a farming session should finish by setting a time limit or a kill target.
@@ -788,10 +792,20 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
     gem_maker check    only look: walk there, read the menus and prices, change nothing
     gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
     gem_breaker check  only look: say what would be broken, break nothing
+    potion_maker       make and fuse potions as set up in Tools, Potion Maker
+    potion_maker check only look: read the Pharmacist's fees, make and buy nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 
 The `check` options let you inspect what the bot would do without actually running the tool's actions.
+
+### A script with its own Before and After steps
+
+A farming script normally gets the character's **Before farming** and **After farming** lists (Character settings → Triggers) run around it. A script that does those steps itself says so at the top, and the lists then don't run a second time:
+
+    triggers off
+
+**Run → Autopilot** writes the day this way when you choose "One script of the day": the Before steps first, then the farming, then the After steps inside an `on_stop` block (which runs when the farming ends by itself or at the daily stop, never after you press Stop).
 
 ### Running daily chores
 
@@ -843,10 +857,11 @@ To ask the officers ticked in **Tools, Hunting bounties** for what they pay, use
 
 If you want to sell the gathered items separately, use:
 
-    sell_collection              sell fish, ore and herbs
-    sell_collection fish         sell only one type: fish, ore or herb
+    sell_collection              sell the character's gathering type
+    sell_collection fish         sell only fish
+    sell_collection all          visit all three types of buyer
 
-The available types are `fish`, `ore`, and `herb`.
+The available types are `fish`, `ore`, and `herb`. If the character has no gathering skill and no type is specified, the bot chooses buyers for the goods it recognizes in the bag.
 
 ### Managing shards and your bag
 
@@ -1208,8 +1223,9 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Farming
 
-    farm [map=<map>] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
+    farm [map=<map>|map=best] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
          [only=<names>] [skip=<names>] [elites=<fight|avoid>] [until=<condition>]
+    triggers off                    this script does its own Before/After farming steps
 
 ### NPCs, shops and storage
 

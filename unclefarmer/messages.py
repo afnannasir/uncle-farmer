@@ -92,6 +92,7 @@ COMMANDS = collections.OrderedDict([
     ("follow", (False, "stay with you and help you fight")),
     ("unfollow", (False, "stop following")),
     ("buff", (True, "buff (or buff off): use buffs while following you")),
+    ("respawn", (True, "respawn crystal|map|city: how I come back after a death while following you")),
     ("add", (False, "take your team application")),
     ("leader", (False, "make you team leader")),
     ("leave", (True, "leave (or quit): leave the team")),
@@ -124,9 +125,11 @@ def details():
         "home": _("home: I go back to where my farming started, then the run stops. If I don't know where that "
                   "was, the hearthstone takes me home."),
         "come": _("come: I walk to you. Best: press E, copy it with Shift+C and send come and what you copied. come and a map's name works too."),
-        "follow": _("follow: I stay with you, help with your fights and go where you go. A Priest or Sorceress heals you and the team. No buffs unless you send buff. After a minute without seeing you I stop."),
+        "follow": _("follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."),
         "unfollow": _("unfollow: I stop following you."),
         "buff": _("buff: while I follow you I keep my buffs up. buff off stops them again. Each new follow starts without buffs."),
+        "respawn": _("respawn crystal, map or city: how I come back when I die following you. I ask and wait; sent "
+                     "early it counts for every death. respawn ask: ask again."),
         "add": _("add: I accept your application to join my team."),
         "leader": _("leader: I make you the leader of my team."),
         "leave": _("leave (or quit team): I leave the team I'm in."),
@@ -657,6 +660,31 @@ class Messenger(threading.Thread):
             return _("I'm not following anyone. Send follow first, then buff.")
         bot.follow_buffs = word in ("", "on")
         return _("Buffs on.") if bot.follow_buffs else _("Buffs off.")
+
+    RESPAWN_WORDS = {"crystal": "crystal", "crystals": "crystal", "c": "crystal", "map": "map", "here": "map",
+                     "m": "map", "city": "city", "town": "city", "ask": "ask"}
+
+    def cmd_respawn(self, to: int, name: str, rest: str) -> str | None:
+        """How a follower comes back after a death: the answer to its question, or (sent while
+        alive) the rule for every death in this follow. "ask" drops that rule."""
+        how = self.RESPAWN_WORDS.get(rest.strip().lower())
+        if how is None:
+            return _("Send respawn crystal, respawn map or respawn city.")
+        run = self.host.run_for(self.pid)
+        bot = getattr(run, "bot", None) if run else None
+        if not run or not getattr(run, "follows", None) or bot is None:
+            return _("I'm not following anyone. Send follow first.")
+        if how == "ask":
+            bot.follow_respawn = None
+            return _("I'll ask you after each death.")
+        if getattr(bot, "respawn_asked", False):
+            bot.respawn_answer = how
+            return {"crystal": _("Respawning with Resurrection Crystals."), "map": _("Respawning on this map."),
+                    "city": _("Respawning in the city.")}[how]
+        bot.follow_respawn = how
+        return {"crystal": _("If I die, I'll respawn with Resurrection Crystals."),
+                "map": _("If I die, I'll respawn on the map."),
+                "city": _("If I die, I'll respawn in the city.")}[how]
 
     def cmd_add(self, to: int, name: str, rest: str) -> str | None:
         return self.chore(lambda bot: self.send(to, name, team.accept_application(bot, name)[1]),

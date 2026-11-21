@@ -86,13 +86,13 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     bar = frame.GetMenuBar()
     assert [bar.GetMenuLabelText(index) for index in range(bar.GetMenuCount())] == [
         "File", "View", "Game", "Messages", "Help"]
-    assert frame.action_menus["tools"].GetMenuItemCount() == 18
+    assert frame.action_menus["tools"].GetMenuItemCount() == 19
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
     assert tool_labels.count("Keyboard Manager") == 1
     assert "Sound controls" not in tool_labels
     assert frame.action_menus["character"].GetMenuItemCount() == 6
-    assert frame.action_menus["run"].GetMenuItemCount() == 8
+    assert frame.action_menus["run"].GetMenuItemCount() == 9
     for group in ("tools", "character", "run"):
         labels = [item.GetItemLabelText() for item in frame.action_menus[group].GetMenuItems()]
         assert len(labels) == len(set(labels))
@@ -181,7 +181,7 @@ def test_popup_reopens_without_duplicating_or_destroying_its_submenus(
         frame.game_context_menu(event)
     assert shown == [frame.context_menu] * 3
     assert frame.context_menu.GetMenuItemCount() == 3
-    assert frame.action_menus["tools"].GetMenuItemCount() == 18
+    assert frame.action_menus["tools"].GetMenuItemCount() == 19
     tool_labels = [item.GetItemLabelText() for item in frame.action_menus["tools"].GetMenuItems()]
     assert tool_labels.count("Sound Silencer") == 1
     assert tool_labels.count("Keyboard Manager") == 1

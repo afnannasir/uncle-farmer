@@ -146,6 +146,41 @@ def test_walking_from_the_field_log(logs: Path) -> None:
     assert share == pytest.approx(1 / 3)
 
 
+def test_the_report_tallies_why_fights_had_no_kill_and_what_searches_left(logs: Path) -> None:
+    recs = [
+        fight("2026-10-23 00:00:10", [100, 100], [105, 100], 5.0, reach_s=0.0, killed=True),
+        fight("2026-10-23 00:00:20", [100, 100], [130, 100], 30.0, end_s=4.0, kills=0, killed=False, why="stuck"),
+        fight("2026-10-23 00:00:30", [100, 100], [130, 100], 30.0, end_s=2.0, kills=0, killed=False, why="stuck"),
+        fight("2026-10-23 00:00:40", [100, 100], [130, 100], 30.0, end_s=1.0, kills=1, killed=False, why="leash"),
+        fight("2026-10-23 00:00:50", [100, 100], [130, 100], 30.0, end_s=9.0, kills=0),   # an older record: not told
+        {"at": "2026-10-23 00:01:00", "kind": "search", "who": "Hero", "map": 5302, "me": [160, 100],
+         "to": [190, 100], "s": 8.0, "result": "arrived", "sight": 4, "left": {"far": 3, "no way": 1},
+         "no_way": [[170.0, 90.0]]},
+        {"at": "2026-10-23 00:01:10", "kind": "search", "who": "Hero", "map": 5302, "me": [160, 100],
+         "to": [190, 100], "s": 3.0, "result": "near"},
+    ]
+    (logs / "field-2026-10-23.jsonl").write_text("".join(json.dumps(r) + "\n" for r in recs), encoding="utf-8")
+    w = nw.walking(nw.read_field(T0, T1)["Hero"])
+    assert w is not None
+    assert w["told"] == 4 and w["no_kill"] == {"stuck": 2, "leash": 1}
+    assert w["no_kill_s"] == {"stuck": 6.0, "leash": 1.0}
+    assert w["passed"] == 1 and w["passed_s"] == 8.0 and w["left"] == {"far": 3, "no way": 1}
+    assert w["no_way_maps"] == {5302: 1}
+    text = "\n".join(nw.md_walking(w))
+    assert "3 of 4 (75%)" in text and "stuck 2 (0:06)" in text and "leash 1 (0:01)" in text
+    assert "none to fight: 1, 0:08 in all" in text and "far 3, no way 1" in text
+    assert "by map: 5302 1." in text
+
+
+def test_a_night_of_older_records_reports_as_before(logs: Path) -> None:
+    rec = fight("2026-10-23 00:00:10", [100, 100], [105, 100], 5.0, reach_s=0.0)
+    (logs / "field-2026-10-23.jsonl").write_text(json.dumps(rec) + "\n", encoding="utf-8")
+    w = nw.walking(nw.read_field(T0, T1)["Hero"])
+    assert w is not None and w["told"] == 0 and w["passed"] == 0
+    text = "\n".join(nw.md_walking(w))
+    assert "counted as our kill" not in text and "none to fight" not in text
+
+
 def test_the_stand_point_finds_the_spot_with_the_most_in_reach() -> None:
     rows = [fight("x", [100, 100], [125, 100], 25.0), fight("x", [120, 100], [128, 100], 8.0),
             fight("x", [100, 100], [130, 100], 30.0)]

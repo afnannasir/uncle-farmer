@@ -117,6 +117,24 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.walk_left = None             # steps still to walk on this map, on a trip (None: not known)
         self.walk_target = None           # (map, cell) of the walk under way, for walk_left
         self.walk_only = False            # the walking assistant (go): Swift beast all the way, no fights
+        # Travel and supplies: what a trip and a restock know, created here in one place (master plan,
+        # Phase 5). Readers that still pass getattr a default must pass these same values
+        # (tests/test_run_state.py).
+        self.traveling = False            # on a trip (travel()): mounts, poison crossings, no farm fights
+        self.on_farm_run = False          # this run is a farming one (travel checks restocking on the way)
+        self.farmed = False               # it got to its farming map: the after-stop actions may run
+        self.crossing_poison = False      # walking through Polson Wetland's poison right now
+        self.warned_poison = False        # said once that crossing it needs the talent
+        self.ways_out = {}                # {map we couldn't plan out of: (where its way out led, cell)}
+        self.rides_too_high = {}          # {transport id: the level it needs}: left out of plans this run
+        self.restocking = False           # a restock trip is under way
+        self.restock_looked = 0.0         # when the restock rules were last looked at while farming
+        self.restock_town = None          # the one town (map) a restock trip does its errands in
+        self.restock_failed = {}          # {item: (when, how many)} that couldn't be bought or taken out
+        self.restock_skipped = set()      # items a restock left out this run (said once)
+        self.storehouse_lacks = set()     # items the storehouse had none of this run
+        self.supply_told = set()          # supply problems already said this run
+        self.potion_slots = None          # (when, keys...) the potion hotkeys were last read
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target
         self.gang_base = None             # (map id, gang name) of the named gang entered this run

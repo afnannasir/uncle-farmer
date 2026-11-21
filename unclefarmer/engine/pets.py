@@ -28,7 +28,7 @@ from typing import Any, TYPE_CHECKING
 from .. import jsonio
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import _
-from . import combat, potions, teamheal
+from . import beasts, combat, potions, teamheal
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -203,6 +203,13 @@ def keep_out(b: Bot) -> None:
             b.log(_("no pet ready to summon yet (cooldown); farming on without one"))
         return
     b.pet_said_waiting = False
+    # The fight's beast first, the pet after it. The server ignores a fusion change pressed right
+    # after a pet came out (0.6 s after one: ignored, both times recorded; 9 s after: taken), while
+    # a pet called half a second after a fusion change comes out. Summoning first, on the Swift
+    # beast the trip ended on, had the first fight's "get off" ignored: 8.5 s standing at the start
+    # of every farm, and of every cave's 15 minutes (the ignored press, then the gap before the
+    # next one).
+    beasts.ensure(b, beasts.FIGHT)
     if out:
         b.log(_("{better} is ready again - putting {pet} away for it", better=best["name"], pet=out["name"]))
         if not _press(b, rows, out, "away"):

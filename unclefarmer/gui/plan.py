@@ -42,6 +42,8 @@ class StepDialog(Dialog):
         self.maps = labeled(panel, box, _("&Map:"), lambda p: wx.ListBox(p, size=wx.Size(-1, 200)), 1)
         f = Form(panel)
         self.show_all = f.check(_("Include maps &without monsters"), False)
+        self.for_level = f.check(_("Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"),
+                                 False)
         box.Add(f.grid, 0, wx.TOP, 8)
         buttons(panel, box, (_("Use the &current map"), self.on_here))
         self.about = labeled(panel, box, _("About this map:"),
@@ -77,6 +79,7 @@ class StepDialog(Dialog):
 
         self.search.Bind(wx.EVT_TEXT, lambda e: self.fill())
         self.show_all.Bind(wx.EVT_CHECKBOX, lambda e: self.fill())
+        self.for_level.Bind(wx.EVT_CHECKBOX, self.on_for_level)
         self.maps.Bind(wx.EVT_LISTBOX, lambda e: self.describe())
         self.whole.Bind(wx.EVT_CHECKBOX, lambda e: self.enable_area())
         # Bound on the dialog, not the button: Enter in a text box sends OK to the dialog directly,
@@ -86,9 +89,25 @@ class StepDialog(Dialog):
         self.enable_area()
         self.maps.SetFocus()
 
+    def my_level(self) -> int:
+        me: dict[str, Any] = (self.game() or {}).get("self") or {}
+        return int(me.get("level") or 0)
+
+    def on_for_level(self, _evt: wx.Event) -> None:
+        if self.for_level.GetValue() and not self.my_level():
+            self.for_level.SetValue(False)
+            error(self, NOT_SEEN)
+            return
+        self.fill()
+
     def shown(self) -> list[tuple[int, str, str]]:
-        items = self.all_farming if not self.show_all.GetValue() else \
-            [(mid, lab, "") for mid, lab in atlas.all_maps()]
+        level = self.my_level() if self.for_level.GetValue() else 0
+        if level:
+            items = atlas.maps_for_level(level)
+        elif self.show_all.GetValue():
+            items = [(mid, lab, "") for mid, lab in atlas.all_maps()]
+        else:
+            items = self.all_farming
         q = self.search.GetValue().strip().lower()
         return [t for t in items if not q or q in t[1].lower()]
 

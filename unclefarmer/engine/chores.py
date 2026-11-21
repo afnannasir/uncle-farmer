@@ -426,6 +426,9 @@ def _by_the_guard(b: Bot) -> bool:
 def inner_hall(b: Bot) -> None:
     """Into our gang base's inner hall (Head of inner hall, Guru Elder, the construction posts):
     by the guard at its door from the outer hall, else through the nearest Gang Entrance."""
+    no_hall = _("the Gang Entrance has no way into a gang's inner hall - is this character in a gang?")
+    if crafting.is_gangless(b):
+        raise Stopped(no_hall)
     if crafting.in_gang(b) and crafting.reachable_cell(b, HEAD[1]):
         return
     if _by_the_guard(b):
@@ -434,7 +437,7 @@ def inner_hall(b: Bot) -> None:
     town.visit(b, "gang_entrance")
     mid = b.map_id()
     if b.choose(r"inner\s+hall") is None:
-        raise Stopped(_("the Gang Entrance has no way into a gang's inner hall - is this character in a gang?"))
+        raise Stopped(no_hall)
     confirm(b)
     if not b.wait_map_change(mid, 15) or not crafting.in_gang(b):
         b.close_dialogs()
