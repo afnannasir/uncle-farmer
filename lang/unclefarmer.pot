@@ -8049,9 +8049,6 @@ msgstr ""
 msgid "the target keys wouldn't select {name} - next one"
 msgstr ""
 
-msgid "the team {name} is made at the first town on the way: this isn't one"
-msgstr ""
-
 msgid "the text grew too long (over {n} characters)"
 msgstr ""
 
@@ -9145,9 +9142,6 @@ msgstr ""
 
 msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
-msgstr ""
-
-msgid "{team} isn't called {name}: it is made again in a town only"
 msgstr ""
 
 msgid "{tool} - {name}"

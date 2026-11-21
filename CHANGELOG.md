@@ -15,9 +15,9 @@
   town), the bot asks the game about each member with the info key (G); a member the game says
   nothing about is asked again, with twice the wait, before being removed.
 - **Hand the team over when the run ends**, to the first of your list who is in the team.
-- **Create my team when the run starts**, with its name, in a town (else at the first town on
-  the way); if your team has another name, it can be disbanded and made again. **Leave a team
-  another player leads** when the run starts.
+- **Create my team when the run starts**, with its name, wherever the run starts; if your team has
+  another name, it can be disbanded and made again. **Leave a team another player leads** when the
+  run starts.
 - **Stay in town and manage the team** after the run, until you stop it; scripts have
   `manage_team` for the same.
 - If another player disbands the team or takes it over, the bot stops managing it for the rest of

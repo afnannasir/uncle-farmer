@@ -8443,9 +8443,6 @@ msgstr ""
 msgid "the target keys wouldn't select {name} - next one"
 msgstr "target keys se {name} select nahi hua - agla"
 
-msgid "the team {name} is made at the first town on the way: this isn't one"
-msgstr "team {name} raste ke pehle shehar mein banegi: yeh shehar nahi"
-
 msgid "the text grew too long (over {n} characters)"
 msgstr "text bohat lamba ho gaya ({n} haroof se zyada)"
 
@@ -9599,9 +9596,6 @@ msgid ""
 msgstr ""
 "{state}. Faal khamosh IDs: {mute}. Dekhe gaye: {observed}; roke gaye: {dropped}; live khamosh: {live}; gair-mahfooz: {unsupported}."
 
-msgid "{team} isn't called {name}: it is made again in a town only"
-msgstr "{team} ka naam {name} nahi: yeh sirf shehar mein dobara banti hai"
-
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"
 
@@ -9689,3 +9683,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the bag already has the potions asked for"
 #~ msgstr "baste mein maange gaye potions pehle se hain"
+
+#~ msgid "the team {name} is made at the first town on the way: this isn't one"
+#~ msgstr "team {name} raste ke pehle shehar mein banegi: yeh shehar nahi"
+
+#~ msgid "{team} isn't called {name}: it is made again in a town only"
+#~ msgstr "{team} ka naam {name} nahi: yeh sirf shehar mein dobara banti hai"

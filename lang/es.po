@@ -8410,9 +8410,6 @@ msgstr ""
 msgid "the target keys wouldn't select {name} - next one"
 msgstr "las teclas de objetivo no seleccionaron a {name}: pasando al siguiente"
 
-msgid "the team {name} is made at the first town on the way: this isn't one"
-msgstr ""
-
 msgid "the text grew too long (over {n} characters)"
 msgstr "el texto creció demasiado (más de {n} caracteres)"
 
@@ -9549,9 +9546,6 @@ msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 "{state}. IDs silenciados activos: {mute}. Observados: {observed}; bloqueados: {dropped}; silenciados en vivo: {live}; no admitidos: {unsupported}."
-
-msgid "{team} isn't called {name}: it is made again in a town only"
-msgstr ""
 
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"

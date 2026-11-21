@@ -1897,10 +1897,9 @@ character keeps its own choices.
   answer is asked again, with twice the wait, before being removed.
 - **Hand the team over when the run ends**, to the first player of your list who is in the team.
   If none of them is, the team stays with your character and the log says so.
-- **Create my team when the run starts**, with the name you type (letters and numbers). This is
-  done in a town; started elsewhere, the team is made at the first town on the way. If your team
-  has another name, the bot can disband it and make it again (a separate tick, as disbanding sends
-  everyone out of the team).
+- **Create my team when the run starts**, with the name you type (letters and numbers), wherever
+  the run starts. If your team has another name, the bot can disband it and make it again (a
+  separate tick, as disbanding sends everyone out of the team).
 - **Leave a team another player leads** when the run starts.
 - **After the run, stay in town and manage the team** until you stop the run. A script can do the
   same with `manage_team`.

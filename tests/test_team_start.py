@@ -1,5 +1,5 @@
 """The team at the start of a run and after it (engine/teamlead.py): out of a team another player
-leads, our own team made (in a town only) or made again under its name, the safety watch when
+leads, our own team made (anywhere) or made again under its name, the safety watch when
 another player disbands or takes the team, and staying in town to manage it."""
 
 from __future__ import annotations
@@ -116,15 +116,17 @@ def test_no_team_in_a_town_it_is_made_with_its_name() -> None:
     assert any("made the team Farmers" in line for line in b.lines)
 
 
-def test_no_team_outside_a_town_it_is_made_at_the_first_town() -> None:
+def test_no_team_outside_a_town_it_is_made_there_too() -> None:
     game = StartGame(team=None)
-    b = StartBot(game, town=False)
+    b = StartBot(game, town=False)           # the game makes a team anywhere
     teamlead.at_start(as_bot(b))
-    assert game.team is None and "Create a team" not in game.opened
-    teamlead.after_trip(as_bot(b))           # still not a town
-    assert game.team is None
-    b.town = True
-    teamlead.after_trip(as_bot(b))
+    assert game.team == "Farmers"
+
+
+def test_our_team_under_another_name_is_made_again_outside_a_town_too() -> None:
+    game = StartGame(team="Old")
+    b = StartBot(game, town=False, team_remake=True)
+    teamlead.at_start(as_bot(b))
     assert game.team == "Farmers"
 
 

@@ -79,7 +79,6 @@ class TeamLead:
     own_disband: bool = False          # the next "Team disbanded" is ours
     handed: bool = False               # we handed the team over ourselves
     off: bool = False                  # someone else disbanded or took the team: hands off
-    create_later: bool = False         # the team is made at the first town
     looked_at: float = -1e9            # when the farm loop last read the sounds and the chat
     told: set[str] = field(default_factory=set[str])
 
@@ -495,9 +494,7 @@ def start_farm(b: Bot) -> None:
 
 
 def after_trip(b: Bot) -> None:
-    """In town on a trip of our own: the team that couldn't be made where the run started, and
-    the "only through a town" offline check."""
-    made_later(b)
+    """In town on a trip of our own: the "only through a town" offline check."""
     if removing(b) and b.p.get("team_offline_town_only", False):
         remove_offline(b)
 
@@ -618,13 +615,9 @@ def disband(b: Bot, team_name: str) -> bool:
 
 def create(b: Bot) -> bool:
     """Make the team with the profile's name ("Create a team", the name typed in its box; "<us>
-    set up a team named <name>"). Only in a town (the script's rule: a team is made there)."""
+    set up a team named <name>"). Anywhere: the game doesn't ask for a town (said by a player,
+    2026-11-21; the script waited for one)."""
     name = str(b.p.get("team_name", "")).strip()
-    if not in_town(b):
-        state(b).create_later = True
-        b.log(_("the team {name} is made at the first town on the way: this isn't one", name=name))
-        return False
-    state(b).create_later = False
     top = open_action_menu(b)
     if top is None or b.choose(NO_TEAM) is None:
         b.close_dialogs()
@@ -674,21 +667,11 @@ def at_start(b: Bot) -> None:
 
 
 def _remade(b: Bot, team_name: str) -> bool:
-    """Our team has another name and the profile says to make it again: disbanded (in a town)."""
+    """Our team has another name and the profile says to make it again: disbanded."""
     want = str(b.p.get("team_name", "")).strip()
     if not b.p.get("team_remake", False) or not want or team_name.lower() == ("%s team" % want).lower():
         return False
-    if not in_town(b):
-        b.close_dialogs()
-        b.log(_("{team} isn't called {name}: it is made again in a town only", team=team_name, name=want))
-        return False
     return disband(b, team_name)
-
-
-def made_later(b: Bot) -> None:
-    """In a town at last: the team that couldn't be made where the run started."""
-    if state(b).create_later and in_town(b):
-        create(b)
 
 
 # ------------------------------------------------------------------ staying in town

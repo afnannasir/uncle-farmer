@@ -8437,10 +8437,6 @@ msgstr ""
 msgid "the target keys wouldn't select {name} - next one"
 msgstr "as teclas de alvo não selecionaram {name} — tentando o próximo"
 
-msgid "the team {name} is made at the first town on the way: this isn't one"
-msgstr ""
-"a equipe {name} será criada na primeira cidade do caminho: aqui não é uma"
-
 msgid "the text grew too long (over {n} characters)"
 msgstr "o texto ficou longo demais (mais de {n} caracteres)"
 
@@ -9587,9 +9583,6 @@ msgid ""
 msgstr ""
 "{state}. IDs silenciados ativos: {mute}. Observados: {observed}; bloqueados: {dropped}; silenciados ao vivo: {live}; não compatíveis: {unsupported}."
 
-msgid "{team} isn't called {name}: it is made again in a town only"
-msgstr "{team} não se chama {name}: ela só é recriada em uma cidade"
-
 msgid "{tool} - {name}"
 msgstr "{tool} — {name}"
 
@@ -9665,3 +9658,10 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "no way to walk there"
 #~ msgstr "não há caminho a pé até lá"
+
+#~ msgid "the team {name} is made at the first town on the way: this isn't one"
+#~ msgstr ""
+#~ "a equipe {name} será criada na primeira cidade do caminho: aqui não é uma"
+
+#~ msgid "{team} isn't called {name}: it is made again in a town only"
+#~ msgstr "{team} não se chama {name}: ela só é recriada em uma cidade"
