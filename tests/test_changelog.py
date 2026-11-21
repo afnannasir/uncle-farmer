@@ -126,6 +126,7 @@ def test_changelog_dialog_waits_without_blocking_and_shows_read_only_text(
         return remote
 
     monkeypatch.setattr(updater, "read_changelog", fetch)
+    monkeypatch.setattr(updater, "installed_version", returning("2.0.0"))
     release = make_release(version, notes) if version is not None else None
     with changelog.ChangelogDialog(frame, release) as dialog:
         assert started.wait(2)
@@ -133,6 +134,10 @@ def test_changelog_dialog_waits_without_blocking_and_shows_read_only_text(
         assert "Loading the changelog" in dialog.text.GetValue()
         button = dialog.FindWindow(wx.ID_OK) if release is not None else dialog.FindWindow(wx.ID_CLOSE)
         assert button.IsEnabled() == (release is None)
+        if version is not None:
+            summary = next(child.GetLabel() for child in dialog.GetChildren() if isinstance(child, wx.StaticText))
+            assert f"{version} is out (you have 2.0.0)" in summary
+            assert ("development build from the dev branch" in summary) == updater.is_dev(version)
         respond.set()
         app = wx.GetApp()
         deadline = time.monotonic() + 3
