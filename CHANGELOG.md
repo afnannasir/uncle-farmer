@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**Team: `manage_team` sets the team up first**
+
+- In a script, `manage_team` now does what the start of a farming run does before managing the
+  team: it leaves a team another player leads and makes yours (or makes it again under its name),
+  as the Team tab says. Before, the team had to be there already.
+
 **Two maps in one day's drop time, and the results map by map** (untested in game so far)
 
 - A plan's spot can have a share of the day's drop time: three hours on the first map, the rest on

@@ -1258,7 +1258,7 @@ class Runner:
         b.go_home()
 
     def _do_manage_team(self, node: Node, b: Bot, o: dict[str, Any]):
-        teamlead.stay(b)            # until the run is stopped (the Team tab says what is managed)
+        teamlead.manage(b)          # the team set up, then managed until the run is stopped
 
     def _do_end_at(self, node: Node, b: Bot, o: dict[str, Any]):
         b.end_place = o["end"]

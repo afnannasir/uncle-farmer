@@ -1932,7 +1932,8 @@ character keeps its own choices.
   separate tick, as disbanding sends everyone out of the team).
 - **Leave a team another player leads** when the run starts.
 - **After the run, stay in town and manage the team** until you stop the run. A script can do the
-  same with `manage_team`. If both are ticked, the team is handed over and the bot doesn't stay;
+  same with `manage_team`, which first sets the team up as a run's start does (leaving another
+  player's team, making yours). If both are ticked, the team is handed over and the bot doesn't stay;
   it stays only when nobody from the list is in the team.
 
 If another player disbands the team or becomes its leader, Uncle Farmer stops managing it for the

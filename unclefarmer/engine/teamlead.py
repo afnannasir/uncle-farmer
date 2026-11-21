@@ -703,6 +703,14 @@ def _remade(b: Bot, team_name: str) -> bool:
 
 
 # ------------------------------------------------------------------ staying in town
+def manage(b: Bot) -> None:
+    """`manage_team` in a script: the team set up first as a farming run's start does (out of a
+    team another player leads, ours made or made again under its name - as the Team tab says),
+    then managed until the player stops the run."""
+    at_start(b)
+    stay(b)
+
+
 def stay(b: Bot) -> None:
     """Manage the team until the player stops the run: take requests as they come and remove
     members who went offline, every so many minutes (the Team tab's, five at least)."""
