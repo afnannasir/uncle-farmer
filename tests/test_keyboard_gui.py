@@ -20,6 +20,9 @@ def test_capture_save_edit_and_reload_from_keyboard_manager(monkeypatch: pytest.
     monkeypatch.setattr(KeyboardDialog, "_game", returning(keyboard.Capture(saved, [buff], [], [])))
     with KeyboardDialog(None, "Test character", 42) as dialog:
         assert set(dialog.controls) == {"skills", "profession", "items", "phrases"}
+        note = dialog.FindWindowByName("Keyboard profile information", dialog)
+        assert isinstance(note, wx.TextCtrl) and note.IsMultiLine() and not note.IsEditable()
+        assert "Slots marked Leave unchanged" in note.GetValue()
         dialog._capture(wx.CommandEvent())
         dialog.controls["skills"].SetSelection(10)
         dialog._toggle_prepare(wx.CommandEvent())

@@ -29,8 +29,10 @@ class KeyboardDialog(Dialog):
         buttons(self, box, (_("&New profile"), self._new), (_("Capture current &keys"), self._capture),
                 (_("&Delete profile"), self._delete))
         self.profile_name = labeled(self, box, _("Profile na&me:"), lambda w: wx.TextCtrl(w))
-        note = wx.StaticText(self, label=_("Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."))
-        note.Wrap(510)
+        note = wx.TextCtrl(self, value=_("Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."),
+                           style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_WORDWRAP,
+                           size=self.FromDIP(wx.Size(-1, 62)))
+        note.SetName(_("Keyboard profile information"))
         box.Add(note, 0, wx.EXPAND | wx.ALL, 12)
         notebook = tabs(self)
         for kind, title in (("skills", _("Skills")), ("profession", _("Profession skills")),

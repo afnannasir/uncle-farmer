@@ -609,6 +609,9 @@ msgstr ""
 msgid "&Unmute this game"
 msgstr ""
 
+msgid "&Update now"
+msgstr ""
+
 msgid "&Use the selected skill:"
 msgstr ""
 
@@ -679,9 +682,6 @@ msgid "(a development build)"
 msgstr ""
 
 msgid "(and {n} more with no price then)"
-msgstr ""
-
-msgid "(no notes)"
 msgstr ""
 
 msgid "(no plan yet)"
@@ -1143,6 +1143,12 @@ msgstr ""
 msgid "Change target mode"
 msgstr ""
 
+msgid "Change&log"
+msgstr ""
+
+msgid "Changelog"
+msgstr ""
+
 msgid "Changes apply when you save."
 msgstr ""
 
@@ -1414,6 +1420,10 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
+msgstr ""
+
+msgid ""
+"Couldn't load the changelog. Check your internet connection and try again."
 msgstr ""
 
 msgid "Couldn't open it."
@@ -2370,6 +2380,9 @@ msgstr ""
 msgid "Keyboard Manager"
 msgstr ""
 
+msgid "Keyboard profile information"
+msgstr ""
+
 msgid "Keyboard profile {name} was not found."
 msgstr ""
 
@@ -2476,6 +2489,9 @@ msgid "Listen for sounds"
 msgstr ""
 
 msgid "Listing"
+msgstr ""
+
+msgid "Loading the changelog…"
 msgstr ""
 
 msgid "Location:"
@@ -2799,6 +2815,12 @@ msgid "No bot is running."
 msgstr ""
 
 msgid "No browser opened. The Telegram group is at {link}"
+msgstr ""
+
+msgid "No changelog entry for {v}. Showing the full changelog."
+msgstr ""
+
+msgid "No changelog entry for {v}. Showing the release notes."
 msgstr ""
 
 msgid ""
@@ -3385,6 +3407,9 @@ msgid "Reinstall the agent"
 msgstr ""
 
 msgid "Release &channel:"
+msgstr ""
+
+msgid "Release notes"
 msgstr ""
 
 msgid "Remem&ber this item"
@@ -4691,10 +4716,7 @@ msgstr ""
 msgid ""
 "Uncle Farmer {v} is out (you have {cur}).\n"
 "\n"
-"What's new:\n"
-"{notes}\n"
-"\n"
-"Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+"Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
 msgstr ""
 
 msgid "Uncle Farmer {v} is the newest version."
