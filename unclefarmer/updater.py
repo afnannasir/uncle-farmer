@@ -76,6 +76,11 @@ from . import __version__, applog, jsonio as json, paths, update_recovery as rec
 REPO = "afnannasir/uncle-farmer"
 LATEST = "https://api.github.com/repos/%s/releases/latest"      # % REPO, when asked
 RELEASES = "https://api.github.com/repos/%s/releases?per_page=%d"   # % (REPO, DEV_PAGE)
+CHANGELOG_URL = "https://raw.githubusercontent.com/afnannasir/uncle-farmer/master/CHANGELOG.md"
+CHANGELOG_TTL = 300.0
+CHANGELOG_LIMIT = 2 * 1024 * 1024
+_changelog_lock = threading.Lock()
+_changelog_cache: tuple[float, str] | None = None
 DEV_PAGE = 30               # the newest releases looked through for dev builds (CI keeps 10)
 ASSET = re.compile(r"^UncleFarmer-[\w.\-]+\.zip$", re.I)
 # the dev channel's shapes; ci_build.py checks its own copy of DEV_VERSION against this one
@@ -261,6 +266,40 @@ def _ask(url: str, timeout: float) -> Any:
     # HTTPException: a connection cut mid-answer (IncompleteRead while the JSON is read)
     except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as e:
         raise UpdateError(str(getattr(e, "reason", e)) or type(e).__name__) from e
+
+
+def read_changelog(timeout: float = 10) -> str:
+    """Read the public changelog on a worker. Share a recent successful fetch between dialogs."""
+    global _changelog_cache
+    with _changelog_lock:
+        if _changelog_cache is not None and time.monotonic() < _changelog_cache[0]:
+            return _changelog_cache[1]
+        try:
+            with _open(CHANGELOG_URL, "text/plain, text/markdown", timeout) as response:
+                if response.headers.get_content_type() not in ("text/plain", "text/markdown"):
+                    raise UpdateError("unexpected changelog content type")
+                raw = response.read(CHANGELOG_LIMIT + 1)
+                length = response.headers.get("Content-Length")
+            if len(raw) > CHANGELOG_LIMIT:
+                raise UpdateError("changelog is too large")
+            if length is not None and len(raw) != int(length):
+                raise UpdateError("incomplete changelog response")
+            text = raw.decode("utf-8-sig").strip()
+        except (OSError, ValueError, http.client.HTTPException) as e:
+            raise UpdateError(str(getattr(e, "reason", e)) or type(e).__name__) from e
+        if "\0" in text or not re.match(r"^#{1,2}[ \t]+\S", text):
+            raise UpdateError("unreadable changelog")
+        _changelog_cache = time.monotonic() + CHANGELOG_TTL, text
+        return text
+
+
+def changelog_section(text: str, version: str) -> str | None:
+    """Find the exact version's level-two heading and retain its nested headings and bullets."""
+    heading = re.compile(rf"^##[ \t]+(?:\[[vV]?{re.escape(version)}\]|[vV]?{re.escape(version)})(?=\s|$)")
+    for section in re.split(r"(?m)(?=^##[ \t]+)", text):
+        if heading.match(section):
+            return section.strip()
+    return None
 
 
 DIGEST = re.compile(r"sha256:([0-9a-fA-F]{64})")

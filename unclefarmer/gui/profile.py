@@ -17,6 +17,7 @@ from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
                      labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
+from .teamtab import save_team, team_page
 from .triggers import SequenceEditor
 
 STYLES = ("auto", "follow", "stationary")
@@ -69,8 +70,6 @@ class PetCare(TypedDict):
     """pet_care's fields."""
     pet_heal: wx.CheckBox
     pet_heal_below: wx.SpinCtrl
-    team_heal: wx.CheckBox
-    team_heal_below: wx.SpinCtrl
     potions: dict[str, PotionTiming]
     food_on: wx.CheckBox
     food_below: wx.SpinCtrl
@@ -126,26 +125,21 @@ def _mark(v: object, default: float) -> float:
 
 
 def pet_care(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> PetCare:
-    """Healing the pet, healing teammates while following, the pet's potions and its food. The
+    """Healing the pet, the pet's potions and its food. The
     same fields are on the character window's Travel and pets tab and on Advanced settings' Pets
     page: both edit one profile, and the character window reloads its copy when Advanced closes."""
     f = group(panel, box, _("Healing the pet"))
     pet_heal = f.check(_("Heal the pet with my healing &skill (Priest, Sorceress)"),
                        p.get("pet_heal_with_skill", True))
     pet_heal_below = f.number(_("Heal it when its HP is below (%):"), _mark(p.get("pet_heal_below"), 85), 1, 99)
-    f = group(panel, box, _("Healing teammates while following"))
-    team_heal = f.check(_("Heal the player I follow and our &teammates with my healing skill "
-                          "(Priest, Sorceress)"), p.get("team_heal", True))
-    team_heal_below = f.number(_("Heal a teammate when their HP is below (%):"),
-                               _mark(p.get("team_heal_below"), 70), 1, 99)
     potions = {kind: potion_timing(group(panel, box, title), p, kind)
                for kind, title in (("pet_hp", _("Pet HP potions")), ("pet_mp", _("Pet MP potions")))}
     f = group(panel, box, _("Pet food"))
     food = p.get("pet_food_below", 70)
     food_on, food_below = f.optional(
         _("Feed the pet a Rice Roll"), bool(food), _("When its amiability is below:"), food or 70, 1, 99)
-    return {"pet_heal": pet_heal, "pet_heal_below": pet_heal_below, "team_heal": team_heal,
-            "team_heal_below": team_heal_below, "potions": potions, "food_on": food_on, "food_below": food_below}
+    return {"pet_heal": pet_heal, "pet_heal_below": pet_heal_below, "potions": potions, "food_on": food_on,
+            "food_below": food_below}
 
 
 def save_pet_care(p: dict[str, Any], ui: PetCare) -> None:
@@ -155,8 +149,6 @@ def save_pet_care(p: dict[str, Any], ui: PetCare) -> None:
         save_potion_timing(staged, kind, pui)
     staged["pet_heal_with_skill"] = ui["pet_heal"].GetValue()
     staged["pet_heal_below"] = ui["pet_heal_below"].GetValue()
-    staged["team_heal"] = ui["team_heal"].GetValue()
-    staged["team_heal_below"] = ui["team_heal_below"].GetValue()
     staged["pet_food_below"] = ui["food_below"].GetValue() if ui["food_on"].GetValue() else 0
     p.update(staged)
 
@@ -175,8 +167,6 @@ def load_pet_care(ui: PetCare, p: dict[str, Any]) -> None:
     """Show the profile's values again (after Advanced settings changed them)."""
     ui["pet_heal"].SetValue(bool(p.get("pet_heal_with_skill", True)))
     ui["pet_heal_below"].SetValue(int(_mark(p.get("pet_heal_below"), 85)))
-    ui["team_heal"].SetValue(bool(p.get("team_heal", True)))
-    ui["team_heal_below"].SetValue(int(_mark(p.get("team_heal_below"), 70)))
     for kind, pui in ui["potions"].items():
         below, gap = p.get(kind + "_below", "auto"), p.get(kind + "_cooldown", "auto")
         _set_optional(pui["below_on"], pui["below"], below not in (None, "", "auto"), _mark(below, 80))
@@ -223,6 +213,8 @@ class ProfileDialog(Dialog):
         self.fighting_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
+        panel, box = page(nb, _("Team"))
+        self.team_ui = team_page(panel, box, self.p)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced)])
@@ -603,6 +595,7 @@ class ProfileDialog(Dialog):
         p["pet_recall_at_end"] = self.pet_recall.GetValue()
         try:
             save_pet_care(p, self.pet_care)
+            save_team(p, self.team_ui)
         except ValueError as e:
             error(self, str(e))
             return

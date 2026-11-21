@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -144,6 +144,8 @@ class FarmingMixin(Parts):
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
         watchdog.start(as_bot(self), map_id)
+        if not instance:
+            teamlead.start_farm(as_bot(self))    # team requests: listened to, and the waiting ones taken
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
@@ -174,8 +176,8 @@ class FarmingMixin(Parts):
                     continue
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
-                    continue      # a chest opened, or the announced one looked for
+                if self._side_jobs(snap, map_id, area):
+                    continue          # a chest opened or looked for, or a request to join our team taken
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
@@ -219,6 +221,13 @@ class FarmingMixin(Parts):
         # no kill for a long while: another part of the map (a farm of only some names never stops for it)
         return watchdog.check(as_bot(self), map_id, area, hunting=bool(only))
 
+    def _side_jobs(self, snap: dict[str, Any], map_id: int, area: Sequence[float] | None) -> bool:
+        """Between fights: a chest in sight, the announced one looked for, then a request to join
+        the team we lead."""
+        if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
+            return True
+        return not self.in_instance and teamlead.between_fights(as_bot(self))
+
     def _restock_check(self, map_id: int, last: float) -> float:
         """Every restock_check_every seconds, top up the restock rules and come back. Never in a
         dungeon: its visit can't be left and taken up again. Returns when it last looked."""
@@ -243,6 +252,7 @@ class FarmingMixin(Parts):
         with self.timed("town"):
             if why:
                 self.restock_now()
+                teamlead.after_trip(as_bot(self))    # members gone offline, when checked in town only
                 self.log(_("back to {map} after {why}", map=atlas.label(map_id), why=why))
             else:
                 self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
@@ -581,6 +591,7 @@ class FarmingMixin(Parts):
         beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
             pets.recall(as_bot(self))
+        teamlead.at_end(as_bot(self))     # the team handed over, when the Team tab says so
 
     def _finish_safe(self) -> None:
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there

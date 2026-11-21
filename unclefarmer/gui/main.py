@@ -338,6 +338,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("&Script commands"), lambda e: self.script_help()),
                           command(_("&Commands for trusted players"),
                            lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
+                          command(opens(_("Change&log")), lambda e: self.show_changelog()),
                           command(_("Check for &updates"), lambda e: self.check_updates()),
                           command(_("Contact the &developer"), lambda e: self.contact_developer()),
                           command(_("Join the &Telegram group"), lambda e: self.join_telegram()),

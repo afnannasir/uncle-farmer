@@ -183,6 +183,20 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "pet_heal_below": 85,     # the pet's HP (%) under which it is healed with the skill
     "team_heal": True,        # while following, a class with a quick heal heals teammates with it
     "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
+    # Leading a team (Team tab; engine/teamlead.py). Everything off until the player ticks it.
+    "team_accept": False,     # take requests to join our team by ourselves
+    "team_accept_who": "trusted",  # who may join: "trusted" (Private messages), "friends" (the game's), "list"
+    "team_accept_list": [],   # names or ids for "list"
+    "team_remove_offline": False,  # remove members who went offline (they don't answer the info key)
+    "team_offline_every": 10,  # minutes between offline checks while farming
+    "team_offline_town_only": False,  # check only when the run passes through a town
+    "team_hand_over": False,  # hand the team over when the run ends...
+    "team_hand_to": [],       # ...to the first of these names or ids who is in it
+    "team_create": False,     # create the team when the run starts, if there is none
+    "team_name": "",          # its name: letters and numbers
+    "team_remake": False,     # a team of ours with another name is disbanded and made again
+    "team_leave_others": False,  # leave a team another player leads when the run starts
+    "team_stay_in_town": False,  # after the run, stay in town managing the team until stopped
     "smart_skills": True,     # pick skills from the game's own skill list and texts (off: cycle attack_keys)
     # The player's say over each skill on the keys, by name (engine/combat.py SKILL_USES):
     #   auto       the bot decides when (the default)
@@ -377,6 +391,19 @@ class Profile(BaseModel):
     pet_heal_below: Auto = PROFILE_DEFAULTS["pet_heal_below"]
     team_heal: bool = PROFILE_DEFAULTS["team_heal"]
     team_heal_below: Auto = PROFILE_DEFAULTS["team_heal_below"]
+    team_accept: bool = PROFILE_DEFAULTS["team_accept"]
+    team_accept_who: str = PROFILE_DEFAULTS["team_accept_who"]
+    team_accept_list: list[str | int] = PROFILE_DEFAULTS["team_accept_list"]
+    team_remove_offline: bool = PROFILE_DEFAULTS["team_remove_offline"]
+    team_offline_every: int = PROFILE_DEFAULTS["team_offline_every"]
+    team_offline_town_only: bool = PROFILE_DEFAULTS["team_offline_town_only"]
+    team_hand_over: bool = PROFILE_DEFAULTS["team_hand_over"]
+    team_hand_to: list[str | int] = PROFILE_DEFAULTS["team_hand_to"]
+    team_create: bool = PROFILE_DEFAULTS["team_create"]
+    team_name: str = PROFILE_DEFAULTS["team_name"]
+    team_remake: bool = PROFILE_DEFAULTS["team_remake"]
+    team_leave_others: bool = PROFILE_DEFAULTS["team_leave_others"]
+    team_stay_in_town: bool = PROFILE_DEFAULTS["team_stay_in_town"]
     smart_skills: bool = PROFILE_DEFAULTS["smart_skills"]
     skill_use: dict[str, str] = PROFILE_DEFAULTS["skill_use"]
     skill_use_others: str = PROFILE_DEFAULTS["skill_use_others"]
