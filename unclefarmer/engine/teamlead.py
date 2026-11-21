@@ -63,6 +63,7 @@ DISBANDED = re.compile(r"^\s*Team disbanded", re.I)
 NEW_LEADER = re.compile(r"^\s*(.+?) has become the team leader", re.I)
 AFTER_DISBAND = 4.0         # the script's pause between disbanding and making the team again
 STAY_LOOK = 2.0             # seconds between looks while staying in town
+LOOK_EVERY = 1.0            # the farm loop reads the sounds and the chat this often at most
 STAY_EVERY_LEAST = 5        # minutes between offline checks while staying, at least
 
 
@@ -79,6 +80,7 @@ class TeamLead:
     handed: bool = False               # we handed the team over ourselves
     off: bool = False                  # someone else disbanded or took the team: hands off
     create_later: bool = False         # the team is made at the first town
+    looked_at: float = -1e9            # when the farm loop last read the sounds and the chat
     told: set[str] = field(default_factory=set[str])
 
 
@@ -116,13 +118,20 @@ def chat_mark(b: Bot) -> int:
         return 0
 
 
+def game_chat(b: Bot, since: int) -> tuple[int, list[str]]:
+    """(the chat cursor now, the game's own lines - no player's name - after since), in one reading."""
+    try:
+        got = b.a.json("chat %d" % since)
+    except Exception:
+        return since, []
+    lines: list[dict[str, Any]] = got.get("chat", [])
+    return (int(got.get("last", since) or since),
+            [str(m.get("text") or "").strip() for m in lines if not m.get("name") and m.get("text")])
+
+
 def game_lines(b: Bot, since: int) -> list[str]:
     """The game's own chat lines (no player's name) after since."""
-    try:
-        lines: list[dict[str, Any]] = b.a.json("chat %d" % since).get("chat", [])
-    except Exception:
-        return []
-    return [str(m.get("text") or "").strip() for m in lines if not m.get("name") and m.get("text")]
+    return game_chat(b, since)[1]
 
 
 def listen(b: Bot) -> None:
@@ -144,11 +153,12 @@ def watch(b: Bot) -> None:
     """Another player disbanded the team, or became its leader: the team is no longer ours to
     manage, for the rest of the run (said once)."""
     lead = state(b)
-    if lead.chat_from is None or lead.off:
-        lead.chat_from = chat_mark(b) if lead.chat_from is None else lead.chat_from
+    if lead.off:
         return
-    lines = game_lines(b, lead.chat_from)
-    lead.chat_from = chat_mark(b)
+    if lead.chat_from is None:
+        lead.chat_from, lead.own_disband = chat_mark(b), False
+        return
+    lead.chat_from, lines = game_chat(b, lead.chat_from)
     for line in lines:
         if DISBANDED.search(line) and not lead.own_disband:
             lead.off = True
@@ -495,10 +505,13 @@ def after_trip(b: Bot) -> None:
 def between_fights(b: Bot) -> bool:
     """The farm loop between fights, with nobody hitting us: a request was heard, or the offline
     check is due. True when the menus were used (the loop looks around again)."""
-    if b.attackers():
+    if not (b.p.get("team_accept", False) or b.p.get("team_remove_offline", False)):
         return False
-    if b.p.get("team_accept", False) or b.p.get("team_remove_offline", False):
-        watch(b)
+    lead = state(b)
+    if b.clock.time() - lead.looked_at < LOOK_EVERY or b.attackers():
+        return False
+    lead.looked_at = b.clock.time()
+    watch(b)
     if on(b) and heard_request(b):
         take_requests(b)
         return True

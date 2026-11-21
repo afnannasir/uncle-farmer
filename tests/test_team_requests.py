@@ -227,11 +227,14 @@ def test_the_request_sound_is_heard_between_fights_and_only_then_the_menus_open(
     assert not teamlead.between_fights(as_bot(b))          # nothing heard: no menu
     game.applicants = [["Bob", 555, 0]]
     game.sounds += [1012, teamlead.REQUEST_SOUND, 1015]
+    assert not teamlead.between_fights(as_bot(b))          # read once a second at most
+    b.clock.now += teamlead.LOOK_EVERY
     b.hit_by = {9}
     assert not teamlead.between_fights(as_bot(b))          # something is hitting us: later
     b.hit_by = set()
     assert teamlead.between_fights(as_bot(b))
     assert game.members == ["Bob"]
+    b.clock.now += teamlead.LOOK_EVERY
     assert not teamlead.between_fights(as_bot(b))          # heard once, taken once
 
 
