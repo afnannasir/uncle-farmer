@@ -2596,6 +2596,9 @@ msgstr "Önce oyunda bu karakterle giriş yap."
 msgid "Logging"
 msgstr "Günlüğe kaydetme"
 
+msgid "Look for a chest the game announces on the map"
+msgstr "Oyunun haritada duyurduğu sandığı ara"
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr "Uncle Farmer açılırken yeni sürüm ara (&V)"
 
@@ -2730,6 +2733,12 @@ msgstr "Mesaj filtre listesine eklendi."
 
 msgid "Mining"
 msgstr "Madencilik"
+
+msgid "Minutes to look for it:"
+msgstr "Arama süresi (dakika):"
+
+msgid "Minutes without a kill:"
+msgstr "Öldürmeden geçen dakika:"
 
 msgid "Minutes:"
 msgstr "Dakika:"
@@ -5167,6 +5176,9 @@ msgstr "Farm kendiliğinden durunca (Durdur'a bastıktan sonra asla)"
 msgid "When its amiability is below:"
 msgstr "Sevgisi şunun altındayken:"
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr "Bir süre hiçbir şey öldürülmezse başka yerde dene, sonra dur"
+
 msgid "When the bag is &full outside:"
 msgstr "Dışarıda çanta dolunca (&F):"
 
@@ -5288,6 +5300,9 @@ msgstr "bir sohbet satırı"
 
 msgid "a chest in sight, {n} steps away: going to open it"
 msgstr "görüş alanında bir sandık var, {n} adım uzakta: açmaya gidiliyor"
+
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
+msgstr "{map} haritasında bir sandık çıktı - aranıyor ({n} dakikaya kadar)"
 
 msgid "a condition or value is missing"
 msgstr "bir koşul veya değer eksik"
@@ -5697,6 +5712,15 @@ msgstr ""
 
 msgid "checking {n} lots"
 msgstr ""
+
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+"{map} haritasında sandıklar ortalama {n} sn içinde başkalarınca açılıyor - burada aranmıyor"
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
+msgstr ""
+"{map} haritasında sandıklar artık daha uzun kapalı kalıyor - yeniden aranıyor"
 
 msgid "choose the officers first: Tools, Hunting bounties"
 msgstr ""
@@ -6231,6 +6255,9 @@ msgid ""
 "getting ready at the door of {cave}: its timer starts the moment we are in"
 msgstr ""
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr "{n} adım ötede görülen sandığa dönülüyor: açmaya gidiliyor"
+
 msgid "going back to where farming started"
 msgstr "farmın başladığı yere dönülüyor"
 
@@ -6532,6 +6559,9 @@ msgstr "önce bir karakterle giriş yap"
 msgid "login must be the first command in a script"
 msgstr "login bir betikteki ilk komut olmalı"
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr "bütün alana bakıldı, sandık yok - farma dönülüyor"
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr "{pet} ile ilgileniliyor: HP {hp}/{max}"
 
@@ -6708,6 +6738,9 @@ msgstr ""
 msgid "no chest came into the bag"
 msgstr ""
 
+msgid "no chest found in {n} minutes - back to farming"
+msgstr "{n} dakikada sandık bulunamadı - farma dönülüyor"
+
 msgid "no construction of the gang was found to read"
 msgstr ""
 
@@ -6750,6 +6783,15 @@ msgstr "{village} içinde dövüşülecek muhafız yok - başka bir köy deneniy
 msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
 msgstr "tuşta ya da çantada Kalp taşı yok - kötü giden dövüşe devam edilecek"
+
+msgid "no kill for {n} minutes"
+msgstr "{n} dakikadır öldürme yok"
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr "{n} dakikadır öldürme yok - oturum durduruluyor"
+
+msgid "no kill for {n} minutes - trying another part of the map"
+msgstr "{n} dakikadır öldürme yok - haritanın başka bir yeri deneniyor"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "{name} zindanının bilinen girişi yok"
@@ -7957,6 +7999,9 @@ msgstr ""
 
 msgid "the chest is gone: someone else opened it"
 msgstr "sandık gitti: başkası açtı"
+
+msgid "the chest was opened by someone else - back to farming"
+msgstr "sandığı başkası açtı - farma dönülüyor"
 
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"

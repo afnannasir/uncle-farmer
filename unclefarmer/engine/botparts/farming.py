@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chests, corpses, keyslots, pets, teamlead, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -143,6 +143,7 @@ class FarmingMixin(Parts):
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
+        watchdog.start(as_bot(self), map_id)
         if not instance:
             teamlead.start_farm(as_bot(self))    # team requests: listened to, and the waiting ones taken
         try:
@@ -171,13 +172,12 @@ class FarmingMixin(Parts):
                 pets.look_after(as_bot(self), snap)
                 if self._between_fights(map_id):
                     continue          # we went to town: the loop travels back first
-                if keyslots.refill(as_bot(self)):
+                if self._upkeep(map_id, area, only):
                     continue
-                xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if self._side_jobs(snap):
-                    continue          # a chest opened, or a request to join our team taken
+                if self._side_jobs(snap, map_id, area):
+                    continue          # a chest opened or looked for, or a request to join our team taken
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
@@ -212,9 +212,19 @@ class FarmingMixin(Parts):
                 if self._set_back(map_id, setback):
                     break
 
-    def _side_jobs(self, snap: dict[str, Any]) -> bool:
-        """Between fights: a chest in sight, then a request to join the team we lead."""
-        if chests.open_nearby(as_bot(self), snap):
+    def _upkeep(self, map_id: int, area: Sequence[float] | None, only: str) -> bool:
+        """Between fights: an empty potion key filled, the experience card, the no-kill watchdog.
+        True when one of them acted (the farm loop looks again)."""
+        if keyslots.refill(as_bot(self)):
+            return True
+        xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
+        # no kill for a long while: another part of the map (a farm of only some names never stops for it)
+        return watchdog.check(as_bot(self), map_id, area, hunting=bool(only))
+
+    def _side_jobs(self, snap: dict[str, Any], map_id: int, area: Sequence[float] | None) -> bool:
+        """Between fights: a chest in sight, the announced one looked for, then a request to join
+        the team we lead."""
+        if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
             return True
         return not self.in_instance and teamlead.between_fights(as_bot(self))
 

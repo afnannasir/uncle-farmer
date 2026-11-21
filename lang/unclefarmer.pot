@@ -2549,6 +2549,9 @@ msgstr ""
 msgid "Logging"
 msgstr ""
 
+msgid "Look for a chest the game announces on the map"
+msgstr ""
+
 msgid "Look for a new &version when Uncle Farmer starts"
 msgstr ""
 
@@ -2680,6 +2683,12 @@ msgid "Message added to the filter list."
 msgstr ""
 
 msgid "Mining"
+msgstr ""
+
+msgid "Minutes to look for it:"
+msgstr ""
+
+msgid "Minutes without a kill:"
 msgstr ""
 
 msgid "Minutes:"
@@ -5011,6 +5020,9 @@ msgstr ""
 msgid "When its amiability is below:"
 msgstr ""
 
+msgid "When nothing is killed for a while, try elsewhere, then stop"
+msgstr ""
+
 msgid "When the bag is &full outside:"
 msgstr ""
 
@@ -5124,6 +5136,9 @@ msgid "a chat line"
 msgstr ""
 
 msgid "a chest in sight, {n} steps away: going to open it"
+msgstr ""
+
+msgid "a chest turned up on {map} - looking for it (up to {n} minutes)"
 msgstr ""
 
 msgid "a condition or value is missing"
@@ -5514,6 +5529,13 @@ msgid "checking the ticked lots..."
 msgstr ""
 
 msgid "checking {n} lots"
+msgstr ""
+
+msgid ""
+"chests on {map} are opened by others within {n} s on average - not looking for them here"
+msgstr ""
+
+msgid "chests on {map} stay unopened longer now - looking for them again"
 msgstr ""
 
 msgid "choose the officers first: Tools, Hunting bounties"
@@ -6034,6 +6056,9 @@ msgid ""
 "getting ready at the door of {cave}: its timer starts the moment we are in"
 msgstr ""
 
+msgid "going back to the chest seen {n} steps away: going to open it"
+msgstr ""
+
 msgid "going back to where farming started"
 msgstr ""
 
@@ -6324,6 +6349,9 @@ msgstr ""
 msgid "login must be the first command in a script"
 msgstr ""
 
+msgid "looked over the whole area, no chest - back to farming"
+msgstr ""
+
 msgid "looking after {pet}: HP {hp}/{max}"
 msgstr ""
 
@@ -6499,6 +6527,9 @@ msgstr ""
 msgid "no chest came into the bag"
 msgstr ""
 
+msgid "no chest found in {n} minutes - back to farming"
+msgstr ""
+
 msgid "no construction of the gang was found to read"
 msgstr ""
 
@@ -6538,6 +6569,15 @@ msgstr ""
 
 msgid ""
 "no hearthstone on a key or in the bag - a fight that goes badly is fought on"
+msgstr ""
+
+msgid "no kill for {n} minutes"
+msgstr ""
+
+msgid "no kill for {n} minutes - stopping the run"
+msgstr ""
+
+msgid "no kill for {n} minutes - trying another part of the map"
 msgstr ""
 
 msgid "no known entrance for the dungeon {name}"
@@ -7706,6 +7746,9 @@ msgid ""
 msgstr ""
 
 msgid "the chest is gone: someone else opened it"
+msgstr ""
+
+msgid "the chest was opened by someone else - back to farming"
 msgstr ""
 
 msgid ""
