@@ -135,11 +135,11 @@ def _ask_to_close(pid: int) -> bool:
 
 
 def close_games(pids: list[int], wait: float = CLOSE_WAIT, clock: Clock = CLOCK,
-                alive: Callable[[int], bool] = _alive) -> list[int]:
+                alive: Callable[[int], bool] = _alive, *, force: bool = False) -> list[int]:
     """Close every game in pids: through its own close button where its agent answers, then
     whatever is still open after `wait` seconds (or has no agent to ask) is ended. Returns the
-    pids still running after that (normally none)."""
-    asked = [pid for pid in pids if alive(pid) and _ask_to_close(pid)]
+    pids still running after that. With force, end the processes without asking the game agent."""
+    asked = [] if force else [pid for pid in pids if alive(pid) and _ask_to_close(pid)]
     for pid in pids:
         if pid not in asked and alive(pid):
             _end(pid)

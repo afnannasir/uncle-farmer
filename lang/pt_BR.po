@@ -1001,6 +1001,12 @@ msgstr ""
 msgid "Apply keyboard profile {name}"
 msgstr "Aplicar perfil de teclado {name}"
 
+msgid ""
+"Are you sure you want to kill this game?\n"
+"\n"
+"{name}"
+msgstr ""
+
 msgid "Area a&round me"
 msgstr "Área ao meu &redor"
 
@@ -1480,6 +1486,9 @@ msgstr "Não foi possível importar o plano: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Não foi possível importar as configurações: {err}"
+
+msgid "Couldn't kill {name}. It may have already closed."
+msgstr ""
 
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
@@ -2493,6 +2502,9 @@ msgstr "Teclas"
 msgid "Keys read from the game."
 msgstr "Teclas lidas do jogo."
 
+msgid "Kill game"
+msgstr ""
+
 msgid "Kills:"
 msgstr "Abates:"
 
@@ -3067,6 +3079,9 @@ msgstr "Não instalado. Pressione Instalar e reinicie o jogo."
 
 msgid "Not logged in"
 msgstr "Não conectado"
+
+msgid "Not logged in (process {pid})"
+msgstr ""
 
 msgid "Not logged in."
 msgstr "Não conectado."

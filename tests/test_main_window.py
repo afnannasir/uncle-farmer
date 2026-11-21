@@ -92,6 +92,7 @@ class Win:
         self.clock = Clock()
         self.s = dict(s or {})
         self.games = list(games)
+        self.killing_games: set[int] = set()
         self.unavailable_agents: dict[int, tuple[int, str]] = {}
         self.runs = dict(runs or {})
         self.messengers: dict[int, Any] = {}       # a game's messenger, or the test's stand-in for one
@@ -113,6 +114,7 @@ class Win:
         self.started: list[tuple[int | None, Any, bool]] = []     # (pid, what to run, asked remotely)
         self.stopped: list[int | None] = []
         self.shutdowns = 0
+        self.status_text = ""
 
     def __getattr__(self, name: str) -> Any:
         attr = getattr(main.MainFrame, name)
@@ -132,6 +134,9 @@ class Win:
     def poll(self) -> None:
         pass
 
+    def SetStatusText(self, text: str) -> None:
+        self.status_text = text
+
     def shut_down(self) -> None:
         self.shutdowns += 1
 
@@ -146,6 +151,123 @@ def test_restock_now_tool_dispatches_the_shared_script_job() -> None:
     frame: Any = SimpleNamespace(run_errand=run_errand)
     editing.EditingMixin.restock_now(frame)
     assert calls == [("restock\n", "Restocking supplies")]
+
+
+def game_key(modifiers: int = wx.MOD_NONE, repeat: bool = False, key: int = wx.WXK_DELETE) -> SimpleNamespace:
+    return SimpleNamespace(GetKeyCode=returning(key), GetModifiers=returning(modifiers),
+                           IsAutoRepeat=returning(repeat), Skip=lambda: None)
+
+
+@pytest.mark.parametrize("answer", [wx.YES, wx.NO])
+def test_delete_confirms_the_selected_game_with_its_server_and_defaults_to_no(
+        monkeypatch: pytest.MonkeyPatch, answer: int) -> None:
+    profile = settings.character_profile("Second character", 27, "S1")
+    frame = Win([(4, "First character", "Town"), (9, profile, "Town")])
+    frame.game_list.selection = 1
+    confirmations: list[tuple[str, int]] = []
+    requests: list[tuple[list[int], bool]] = []
+
+    def confirm(message: str, title: str, style: int, parent: object) -> int:
+        confirmations.append((message, style))
+        frame.game_list.selection = 0       # a selection change while the modal is open cannot retarget it
+        return answer
+
+    def close(pids: list[int], then: Callable[[list[int]], None], *, force: bool) -> None:
+        requests.append((pids, force))
+
+    monkeypatch.setattr(wx, "MessageBox", confirm)
+    monkeypatch.setattr(games_part.agentfix, "close_then", close)
+    frame.on_game_key(game_key())
+    assert len(confirmations) == 1
+    assert "Second character - S1" in confirmations[0][0]
+    assert confirmations[0][1] & wx.YES_NO and confirmations[0][1] & wx.NO_DEFAULT
+    assert requests == ([([9], True)] if answer == wx.YES else [])
+
+
+def test_shift_delete_kills_without_asking_and_refreshes_after_the_worker(monkeypatch: pytest.MonkeyPatch) -> None:
+    frame = Win([(4, "First", "Town"), (9, "Second", "Town")])
+    frame.game_list.selection = 1
+    frame.snap = (9, {"ok": True}, frame.clock.time())
+    finished: list[Callable[[list[int]], None]] = []
+    refreshed: list[bool] = []
+
+    def unexpected(*_args: object) -> None:
+        pytest.fail("unexpected confirmation")
+
+    def close(pids: list[int], then: Callable[[list[int]], None], *, force: bool) -> None:
+        assert pids == [9] and force
+        finished.append(then)
+
+    monkeypatch.setattr(wx, "MessageBox", unexpected)
+    monkeypatch.setattr(games_part.agentfix, "close_then", close)
+    monkeypatch.setattr(frame, "refresh_games", lambda: refreshed.append(True))
+    frame.on_game_key(game_key(wx.MOD_SHIFT))
+    frame.on_game_key(game_key(wx.MOD_SHIFT))      # the same game is already being killed
+    assert len(finished) == 1 and frame.killing_games == {9}
+    assert not frame.stopped and not refreshed
+    finished[0]([])
+    assert frame.stopped == [9] and refreshed == [True] and not frame.killing_games
+    assert frame.snap is None
+
+
+def test_game_shortcuts_ignore_repeat_other_modifiers_and_no_game(monkeypatch: pytest.MonkeyPatch) -> None:
+    def unexpected(*_args: object, **_kwargs: object) -> None:
+        pytest.fail("no game should be killed or confirmed")
+
+    monkeypatch.setattr(wx, "MessageBox", unexpected)
+    monkeypatch.setattr(games_part.agentfix, "close_then", unexpected)
+    Win().on_game_key(game_key())
+    Win().on_game_key(game_key(wx.MOD_SHIFT))
+    frame = Win([(4, "First", "Town"), (9, "Second", "Town")])
+    frame.on_game_key(game_key(wx.MOD_SHIFT, repeat=True))
+    frame.on_game_key(game_key(wx.MOD_CONTROL))
+    frame.on_game_key(game_key(wx.MOD_SHIFT | wx.MOD_CONTROL))
+    frame.on_game_key(game_key(key=wx.WXK_BACK))
+
+
+def test_failed_game_kill_reports_the_error_and_refreshes_without_stopping_the_bot(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    frame = Win([(4, "Target", "Town")])
+    frame.killing_games.add(4)
+    messages: list[str] = []
+
+    def report(_parent: object, message: str) -> None:
+        messages.append(message)
+
+    monkeypatch.setattr(games_part, "error", report)
+    monkeypatch.setattr(frame, "refresh_games", lambda: messages.append("refreshed"))
+    frame._game_killed(4, "Target", [4])
+    assert "Couldn't kill Target." in messages[0] and messages[1:] == ["refreshed"]
+    assert not frame.killing_games and not frame.stopped
+
+
+def test_force_close_worker_checks_game_identity_and_keeps_the_requested_scope(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui import agentfix
+
+    closed: list[list[int]] = []
+    results: list[list[int]] = []
+
+    class ImmediateThread:
+        def __init__(self, *, target: Callable[[], None], daemon: bool, name: str) -> None:
+            self.target = target
+
+        def start(self) -> None:
+            self.target()
+
+    def close(pids: list[int], *, force: bool) -> list[int]:
+        assert force
+        closed.append(pids)
+        return []
+
+    def call_after(done: Callable[[list[int]], None], left: list[int]) -> None:
+        done(left)
+
+    monkeypatch.setattr(agentfix.threading, "Thread", ImmediateThread)
+    monkeypatch.setattr(agentfix, "running_pids", returning([4, 9]))
+    monkeypatch.setattr(agentfix.gameinstall, "close_games", close)
+    monkeypatch.setattr(wx, "CallAfter", call_after)
+    agentfix.close_then([9, 12], results.append, force=True)
+    assert closed == [[9]] and results == [[12]]
 
 
 class FakeRun:
@@ -441,6 +563,13 @@ def test_each_game_gets_one_messenger_and_one_chat_feed(monkeypatch: pytest.Monk
     w.keep_messengers()
     assert sorted(w.messengers) == [1] and gone.stopped
     assert Fake.made.count(1) == 2                         # one messenger and one feed, never again
+    services = [*w.messengers.values(), *w.chats.values()]
+    w.games = []
+    monkeypatch.setattr(games_part, "agents", returning([]))
+    w.poll = types.MethodType(games_part.GamesMixin.poll, w)
+    w.poll()
+    assert not w.messengers and not w.chats and all(service.stopped for service in services)
+    assert w.status_text == "0 games, 0 bots running"
 
 
 # ================================================================ results and the game's voice

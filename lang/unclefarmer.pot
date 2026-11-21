@@ -978,6 +978,12 @@ msgstr ""
 msgid "Apply keyboard profile {name}"
 msgstr ""
 
+msgid ""
+"Are you sure you want to kill this game?\n"
+"\n"
+"{name}"
+msgstr ""
+
 msgid "Area a&round me"
 msgstr ""
 
@@ -1444,6 +1450,9 @@ msgid "Couldn't import the plan: {err}"
 msgstr ""
 
 msgid "Couldn't import the settings: {err}"
+msgstr ""
+
+msgid "Couldn't kill {name}. It may have already closed."
 msgstr ""
 
 msgid ""
@@ -2425,6 +2434,9 @@ msgstr ""
 msgid "Keys read from the game."
 msgstr ""
 
+msgid "Kill game"
+msgstr ""
+
 msgid "Kills:"
 msgstr ""
 
@@ -2977,6 +2989,9 @@ msgid "Not installed. Press Install, then restart the game."
 msgstr ""
 
 msgid "Not logged in"
+msgstr ""
+
+msgid "Not logged in (process {pid})"
 msgstr ""
 
 msgid "Not logged in."

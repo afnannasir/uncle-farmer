@@ -448,6 +448,18 @@ def test_close_games_reports_one_that_wont_end(monkeypatch: pytest.MonkeyPatch) 
     assert gameinstall.close_games([7], clock=clock, alive=games.alive) == [7]
 
 
+def test_force_close_ends_only_the_requested_game_without_asking_its_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    games, clock = closing(monkeypatch, {1: None, 2: None})
+
+    def fail_if_asked(_pid: int) -> bool:
+        pytest.fail("force close must not ask the game agent")
+
+    monkeypatch.setattr(gameinstall, "_ask_to_close", fail_if_asked)
+    assert gameinstall.close_games([2], clock=clock, alive=games.alive, force=True) == []
+    assert games.ended == [2] and games.alive(1)
+    assert clock.time() < 1002.0
+
+
 # ------------------------------------------------------------------------------- asking a game's agent
 class _Agent:
     """link.AgentLink for one game: its replies by line, or "boom" to fail as a closed game does."""
