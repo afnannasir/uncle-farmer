@@ -105,7 +105,7 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, survey, town
+from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, survey, teamlead, town
 from .bot import Bot, Respawned, Stopped
 from collections.abc import Callable, Mapping
 
@@ -120,7 +120,7 @@ def _at(rest: str, n: int):
 BEST_MAP = "best"        # farm map=best: the best map for the character's level when the line runs
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone", "manage_team",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
@@ -1232,6 +1232,9 @@ class Runner:
 
     def _do_hearthstone(self, node: Node, b: Bot, o: dict[str, Any]):
         b.go_home()
+
+    def _do_manage_team(self, node: Node, b: Bot, o: dict[str, Any]):
+        teamlead.stay(b)            # until the run is stopped (the Team tab says what is managed)
 
     def _do_end_at(self, node: Node, b: Bot, o: dict[str, Any]):
         b.end_place = o["end"]

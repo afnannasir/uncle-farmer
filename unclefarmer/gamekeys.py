@@ -151,6 +151,12 @@ def page_turn_key() -> str:
     return _game().get("W_ATTACK_PAGETURN") or PAGE_TURN_DEFAULT
 
 
+def info_key() -> str:
+    """The key that asks about the player under the cursor (W_INFO): the server answers for a
+    player who is online, and says nothing for one who isn't."""
+    return _game().get("W_INFO") or "g"
+
+
 def notice_key() -> str:
     """The key that opens the notices (W_NOTICE): the gang's announcements are listed there."""
     return _game().get("W_NOTICE") or "backspace"

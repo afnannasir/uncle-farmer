@@ -32,6 +32,9 @@ msgstr ""
 msgid "&About Uncle Farmer"
 msgstr ""
 
+msgid "&Accept requests to join my team"
+msgstr ""
+
 msgid "&Action:"
 msgstr ""
 
@@ -127,6 +130,9 @@ msgid ""
 msgstr ""
 
 msgid "&Copy the address"
+msgstr ""
+
+msgid "&Create my team when the run starts, if I'm in none"
 msgstr ""
 
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
@@ -255,6 +261,9 @@ msgstr ""
 msgid "&HP potion:"
 msgstr ""
 
+msgid "&Hand the team over when the run ends"
+msgstr ""
+
 msgid ""
 "&Harvest the monsters we kill with the learned Draw Blood, Skinning or Cut Flesh"
 msgstr ""
@@ -318,6 +327,9 @@ msgid "&Kill limit"
 msgstr ""
 
 msgid "&Language:"
+msgstr ""
+
+msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
 msgid "&Let it shut down"
@@ -636,6 +648,9 @@ msgstr ""
 msgid "&Where to die:"
 msgstr ""
 
+msgid "&Who may join:"
+msgstr ""
+
 msgid "&Write an email"
 msgstr ""
 
@@ -888,6 +903,9 @@ msgid "After a &time limit"
 msgstr ""
 
 msgid "After farming"
+msgstr ""
+
+msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
 
 msgid "Afterwards"
@@ -1193,6 +1211,12 @@ msgid "Cheapest first"
 msgstr ""
 
 msgid "Check for &updates"
+msgstr ""
+
+msgid "Check for offline members every (minutes):"
+msgstr ""
+
+msgid "Check for offline members only when the run &passes through a town"
 msgstr ""
 
 msgid "Check o&nly"
@@ -1853,6 +1877,9 @@ msgstr ""
 msgid "Fishing"
 msgstr ""
 
+msgid "Following a leader"
+msgstr ""
+
 msgid "Following you."
 msgstr ""
 
@@ -2077,6 +2104,9 @@ msgstr ""
 msgid "HP:"
 msgstr ""
 
+msgid "Hand it to (names or ids; the &first one in the team gets it):"
+msgstr ""
+
 msgid "Heal a teammate when their HP is below (%):"
 msgstr ""
 
@@ -2104,9 +2134,6 @@ msgid "Healed ourselves"
 msgstr ""
 
 msgid "Healing by our skills (potions not counted):"
-msgstr ""
-
-msgid "Healing teammates while following"
 msgstr ""
 
 msgid "Healing the pet"
@@ -2256,6 +2283,9 @@ msgid "If I die, I'll respawn on the map."
 msgstr ""
 
 msgid "If I die, I'll respawn with Resurrection Crystals."
+msgstr ""
+
+msgid "If my team has another name, &disband it and create it again"
 msgstr ""
 
 msgid "If none of them is in the room, share with &anyone there"
@@ -2438,6 +2468,9 @@ msgid "Last monster killed: {name}"
 msgstr ""
 
 msgid "Last run: {r}"
+msgstr ""
+
+msgid "Leading a team"
 msgstr ""
 
 msgid "Leads to: {maps}"
@@ -2754,6 +2787,9 @@ msgstr ""
 msgid "Mute e&very game"
 msgstr ""
 
+msgid "My friends in the game"
+msgstr ""
+
 msgid "My list ({n})"
 msgstr ""
 
@@ -2761,6 +2797,9 @@ msgid "My own gang's (gangs pay less)"
 msgstr ""
 
 msgid "NPCs"
+msgstr ""
+
+msgid "Names or &ids who may join (separated by commas):"
 msgstr ""
 
 msgid "Nearby"
@@ -3416,6 +3455,9 @@ msgid "Remem&ber this item"
 msgstr ""
 
 msgid "Remove"
+msgstr ""
+
+msgid "Remove members who go &offline"
 msgstr ""
 
 msgid ""
@@ -4129,7 +4171,21 @@ msgstr ""
 msgid "Team"
 msgstr ""
 
+msgid "Team &name (letters and numbers):"
+msgstr ""
+
 msgid "Team mode"
+msgstr ""
+
+msgid ""
+"Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
+msgstr ""
+
+msgid ""
+"Team tab: type the names or ids who may join, or choose another \"Who may join\"."
+msgstr ""
+
+msgid "Team tab: type who gets the team when the run ends."
 msgstr ""
 
 msgid "Teleport to the team leader"
@@ -4372,6 +4428,9 @@ msgid "The listener is busy or disconnected. Try again."
 msgstr ""
 
 msgid "The market"
+msgstr ""
+
+msgid "The names or ids below"
 msgstr ""
 
 msgid "The nearest city's"
@@ -4655,6 +4714,9 @@ msgid "Triggers"
 msgstr ""
 
 msgid "Trusted players"
+msgstr ""
+
+msgid "Trusted players (Private messages)"
 msgstr ""
 
 msgid ""
@@ -5092,6 +5154,9 @@ msgstr ""
 msgid "about {price}"
 msgstr ""
 
+msgid "accepted into the team: {names}"
+msgstr ""
+
 msgid "accepted {name} into the team"
 msgstr ""
 
@@ -5108,6 +5173,9 @@ msgid "after {n} kills"
 msgstr ""
 
 msgid "after {n} minutes"
+msgstr ""
+
+msgid "agreed to {names} joining, and the game didn't say they joined"
 msgstr ""
 
 msgid "alive again on {map}"
@@ -5380,6 +5448,10 @@ msgstr ""
 
 msgid ""
 "can't heal {pet} with {skill}: {why} - pet potions meanwhile, and the heal is tried again"
+msgstr ""
+
+msgid ""
+"can't hear team requests ({err}): they are looked at when farming starts"
 msgstr ""
 
 msgid "can't read the experience card from the character sheet yet"
@@ -5741,6 +5813,9 @@ msgid "died {n} times - stopping; this place may be too hard"
 msgstr ""
 
 msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
+msgstr ""
+
+msgid "disbanded {team}: the team is to be called {name}"
 msgstr ""
 
 msgid "done here - going to {map}, where no monsters spawn"
@@ -6204,6 +6279,9 @@ msgstr ""
 msgid "left {map} while looking for the {name} circle"
 msgstr ""
 
+msgid "left {team}, which another player leads"
+msgstr ""
+
 msgid "level unknown"
 msgstr ""
 
@@ -6280,6 +6358,9 @@ msgid "lots of seller {ids}"
 msgstr ""
 
 msgid "low on {item}: {have} left"
+msgstr ""
+
+msgid "made the team {name}"
 msgstr ""
 
 msgid "made {n} Level {lv} {kind} Enhance Crystals"
@@ -6576,6 +6657,9 @@ msgstr ""
 msgid "nobody I know buys {item} - storing it instead"
 msgstr ""
 
+msgid "nobody to hand the team to is in it: it stays with this character"
+msgstr ""
+
 msgid "nobody yet"
 msgstr ""
 
@@ -6741,6 +6825,10 @@ msgid "nothing to break with these settings"
 msgstr ""
 
 msgid "nothing to collect today"
+msgstr ""
+
+msgid ""
+"nothing to manage: tick taking requests or removing offline members on the Team tab"
 msgstr ""
 
 msgid "now (waiting to start)"
@@ -6954,6 +7042,9 @@ msgstr ""
 msgid "read {made}: {items} items in {lots} lots"
 msgstr ""
 
+msgid "read {n} friends from the game for team requests"
+msgstr ""
+
 msgid "reading the whole market..."
 msgstr ""
 
@@ -6973,6 +7064,9 @@ msgid "red"
 msgstr ""
 
 msgid "remembered: {names}"
+msgstr ""
+
+msgid "removed {name} from the team: offline"
 msgstr ""
 
 msgid "removes debuffs"
@@ -7171,6 +7265,10 @@ msgstr ""
 msgid "sold {n} {item} at the Shard Market"
 msgstr ""
 
+msgid ""
+"someone else disbanded the team or took it over: no more managing it this run"
+msgstr ""
+
 msgid "sound request"
 msgstr ""
 
@@ -7195,6 +7293,9 @@ msgstr ""
 
 msgid ""
 "status: what I'm doing (running, paused or idle), the run, its minutes and kills, my map, HP and MP."
+msgstr ""
+
+msgid "staying here managing the team until you stop the run"
 msgstr ""
 
 msgid "still being attacked - fighting back before stopping"
@@ -7320,6 +7421,21 @@ msgid "target what your target is attacking"
 msgstr ""
 
 msgid "taunt"
+msgstr ""
+
+msgid "team requests: the Action menu didn't open"
+msgstr ""
+
+msgid "team requests: the game didn't select {names}"
+msgstr ""
+
+msgid "team requests: this character doesn't lead a team"
+msgstr ""
+
+msgid "team: couldn't move to {name} in the member list"
+msgstr ""
+
+msgid "team: this character doesn't lead a team"
 msgstr ""
 
 msgid "teleport"
@@ -7652,6 +7768,18 @@ msgstr ""
 msgid "the game didn't put {skill} on key {key} - leaving the keys as they are"
 msgstr ""
 
+msgid "the game didn't say the team {name} was made"
+msgstr ""
+
+msgid "the game didn't say this character left {team}"
+msgstr ""
+
+msgid "the game didn't say {name} leads the team now"
+msgstr ""
+
+msgid "the game didn't say {team} was disbanded"
+msgstr ""
+
 msgid ""
 "the game didn't show the 5000 contribution price, so nothing was confirmed"
 msgstr ""
@@ -7663,6 +7791,9 @@ msgid "the game didn't take the construction report"
 msgstr ""
 
 msgid "the game didn't take the number"
+msgstr ""
+
+msgid "the game didn't take the team name {name}"
 msgstr ""
 
 msgid "the game didn't throw {item} away - see logs\\dialogs.log"
@@ -7868,6 +7999,9 @@ msgstr ""
 msgid "the ride from {map} never arrived"
 msgstr ""
 
+msgid "the run ended outside a town: not staying to manage the team"
+msgstr ""
+
 msgid ""
 "the run started inside {map}, which can't be walked back into - ending on the nearest map without monsters"
 msgstr ""
@@ -8022,6 +8156,9 @@ msgstr ""
 
 msgid ""
 "this character is at the top level: there is no next level to stay away from"
+msgstr ""
+
+msgid "this character is in {team}, which another player leads"
 msgstr ""
 
 msgid "this expression is too complex (over {n} parts or {d} deep)"
@@ -8589,6 +8726,9 @@ msgstr ""
 msgid "{name} ({id})"
 msgstr ""
 
+msgid "{name} ({id}) asked to join the team and isn't allowed in: left waiting"
+msgstr ""
+
 msgid "{name} ({n} new)"
 msgstr ""
 
@@ -8662,6 +8802,9 @@ msgid "{name} muted."
 msgstr ""
 
 msgid "{name} scanned."
+msgstr ""
+
+msgid "{name} seems offline, and the game didn't remove them from the team"
 msgstr ""
 
 msgid "{name} takes no damage, leaving it"
