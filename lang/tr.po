@@ -627,6 +627,9 @@ msgstr "Yolculuk&ta füzyon canavarı:"
 msgid "&Unmute this game"
 msgstr "B&u oyunun sesini aç"
 
+msgid "&Update now"
+msgstr ""
+
 msgid "&Use the selected skill:"
 msgstr "Seçili beceriyi k&ullan:"
 
@@ -701,9 +704,6 @@ msgstr "(bir geliştirme sürümü)"
 
 msgid "(and {n} more with no price then)"
 msgstr "(ve o sırada fiyatı olmayan {n} tane daha)"
-
-msgid "(no notes)"
-msgstr "(not yok)"
 
 msgid "(no plan yet)"
 msgstr ""
@@ -1177,6 +1177,12 @@ msgstr "Tuşu değiştir"
 msgid "Change target mode"
 msgstr "Hedef modunu değiştir"
 
+msgid "Change&log"
+msgstr ""
+
+msgid "Changelog"
+msgstr ""
+
 msgid "Changes apply when you save."
 msgstr "Değişiklikler kaydedince uygulanır."
 
@@ -1458,6 +1464,10 @@ msgstr "Plan içe aktarılamadı: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Ayarlar içe aktarılamadı: {err}"
+
+msgid ""
+"Couldn't load the changelog. Check your internet connection and try again."
+msgstr ""
 
 msgid "Couldn't open it."
 msgstr "Açılamadı."
@@ -2444,6 +2454,9 @@ msgstr "Tuş atamaları (&B):"
 msgid "Keyboard Manager"
 msgstr "Klavye yöneticisi"
 
+msgid "Keyboard profile information"
+msgstr ""
+
 msgid "Keyboard profile {name} was not found."
 msgstr "{name} klavye profili bulunamadı."
 
@@ -2555,6 +2568,9 @@ msgid "Listen for sounds"
 msgstr "Sesleri dinle"
 
 msgid "Listing"
+msgstr ""
+
+msgid "Loading the changelog…"
 msgstr ""
 
 msgid "Location:"
@@ -2893,6 +2909,12 @@ msgstr "Hiçbir bot çalışmıyor."
 
 msgid "No browser opened. The Telegram group is at {link}"
 msgstr "Tarayıcı açılmadı. Telegram grubu: {link}"
+
+msgid "No changelog entry for {v}. Showing the full changelog."
+msgstr ""
+
+msgid "No changelog entry for {v}. Showing the release notes."
+msgstr ""
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3502,6 +3524,9 @@ msgstr "Ajanı yeniden yükle"
 
 msgid "Release &channel:"
 msgstr "Sürüm kanalı (&C):"
+
+msgid "Release notes"
+msgstr ""
 
 msgid "Remem&ber this item"
 msgstr ""
@@ -4894,17 +4919,8 @@ msgstr ""
 msgid ""
 "Uncle Farmer {v} is out (you have {cur}).\n"
 "\n"
-"What's new:\n"
-"{notes}\n"
-"\n"
-"Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+"Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
 msgstr ""
-"Uncle Farmer {v} çıktı (sendeki: {cur}).\n"
-"\n"
-"Yenilikler:\n"
-"{notes}\n"
-"\n"
-"Şimdi güncellensin mi? Uncle Farmer kapanır, güncellenir ve yeniden açılır; karakterlerin, planların, betiklerin ve ayarların olduğu gibi kalır."
 
 msgid "Uncle Farmer {v} is the newest version."
 msgstr "Uncle Farmer {v} en yeni sürüm."
@@ -9520,8 +9536,26 @@ msgstr ""
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
 
+#~ msgid "(no notes)"
+#~ msgstr "(not yok)"
+
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"
+
+#~ msgid ""
+#~ "Uncle Farmer {v} is out (you have {cur}).\n"
+#~ "\n"
+#~ "What's new:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+#~ msgstr ""
+#~ "Uncle Farmer {v} çıktı (sendeki: {cur}).\n"
+#~ "\n"
+#~ "Yenilikler:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Şimdi güncellensin mi? Uncle Farmer kapanır, güncellenir ve yeniden açılır; karakterlerin, planların, betiklerin ve ayarların olduğu gibi kalır."
 
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr "şeytanlaşmış elitler, karakter ayarlarının dediği gibi dokunulmuyor"

@@ -630,6 +630,9 @@ msgstr "Fusion beast par &safar:"
 msgid "&Unmute this game"
 msgstr "Is game ki awaaz &chalu karein"
 
+msgid "&Update now"
+msgstr "&Abhi update karein"
+
 msgid "&Use the selected skill:"
 msgstr "Chuni hui skill &istemal karein:"
 
@@ -704,9 +707,6 @@ msgstr "(development build)"
 
 msgid "(and {n} more with no price then)"
 msgstr "(aur {n} jin ki tab koi qeemat nahi thi)"
-
-msgid "(no notes)"
-msgstr "(koi notes nahi)"
 
 msgid "(no plan yet)"
 msgstr "(abhi koi plan nahi)"
@@ -1184,6 +1184,12 @@ msgstr "Key badlein"
 msgid "Change target mode"
 msgstr "Target mode tabdeel karein"
 
+msgid "Change&log"
+msgstr "Tabdeeliyon ki &fehrist"
+
+msgid "Changelog"
+msgstr "Tabdeeliyon ki fehrist"
+
 msgid "Changes apply when you save."
 msgstr "Tabdeeliyan mahfooz karne par laagu hongi."
 
@@ -1466,6 +1472,11 @@ msgstr "Mansooba import nahi ho saka: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Tarteeb import nahi ho sakin: {err}"
+
+msgid ""
+"Couldn't load the changelog. Check your internet connection and try again."
+msgstr ""
+"Tabdeeliyon ki fehrist load nahi ho saki. Internet connection check karein aur dobara koshish karein."
 
 msgid "Couldn't open it."
 msgstr "Yeh khola nahi ja saka."
@@ -2461,6 +2472,9 @@ msgstr "Key ki b&indings:"
 msgid "Keyboard Manager"
 msgstr "Keyboard Manager"
 
+msgid "Keyboard profile information"
+msgstr "Keyboard profile ki maloomat"
+
 msgid "Keyboard profile {name} was not found."
 msgstr "Keyboard profile {name} nahi mila."
 
@@ -2574,6 +2588,9 @@ msgstr "Sounds sunen"
 
 msgid "Listing"
 msgstr "Listing"
+
+msgid "Loading the changelog…"
+msgstr "Tabdeeliyon ki fehrist load ho rahi hai…"
 
 msgid "Location:"
 msgstr "Jagah:"
@@ -2915,6 +2932,14 @@ msgstr "Koi bot nahi chal raha."
 
 msgid "No browser opened. The Telegram group is at {link}"
 msgstr "Koi browser nahi khula. Telegram group yahan hai: {link}"
+
+msgid "No changelog entry for {v}. Showing the full changelog."
+msgstr ""
+"Version {v} ki tabdeeliyan fehrist mein nahi milin. Poori fehrist dikhayi ja rahi hai."
+
+msgid "No changelog entry for {v}. Showing the release notes."
+msgstr ""
+"Version {v} ki tabdeeliyan fehrist mein nahi milin. Release notes dikhaye ja rahe hain."
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3528,6 +3553,9 @@ msgstr "Agent dobara install karein"
 
 msgid "Release &channel:"
 msgstr "Release ka &channel:"
+
+msgid "Release notes"
+msgstr "Release ke notes"
 
 msgid "Remem&ber this item"
 msgstr "Yeh cheez &yaad rakhein"
@@ -4948,17 +4976,11 @@ msgstr ""
 msgid ""
 "Uncle Farmer {v} is out (you have {cur}).\n"
 "\n"
-"What's new:\n"
-"{notes}\n"
-"\n"
-"Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+"Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
 msgstr ""
 "Uncle Farmer {v} aa gaya hai (aap ke paas {cur} hai).\n"
 "\n"
-"Naya kya hai:\n"
-"{notes}\n"
-"\n"
-"Abhi update karein? Uncle Farmer band hoga, update hoga aur dobara shuru hoga; aap ke kirdaar, mansoobe, scripts aur tarteeb waise hi rahenge."
+"Uncle Farmer band hoga, update hoga aur dobara shuru hoga. Aap ke kirdaar, mansoobe, scripts aur tarteeb waise hi rahenge."
 
 msgid "Uncle Farmer {v} is the newest version."
 msgstr "Uncle Farmer {v} sab se naya version hai."
@@ -9658,11 +9680,29 @@ msgstr ""
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
+#~ msgid "(no notes)"
+#~ msgstr "(koi notes nahi)"
+
 #~ msgid "({n} fused)"
 #~ msgstr "({n} fuse hue)"
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Peeche chalte hue teammates ki shifa"
+
+#~ msgid ""
+#~ "Uncle Farmer {v} is out (you have {cur}).\n"
+#~ "\n"
+#~ "What's new:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Update now? Uncle Farmer closes, updates and starts again; your characters, plans, scripts and settings stay as they are."
+#~ msgstr ""
+#~ "Uncle Farmer {v} aa gaya hai (aap ke paas {cur} hai).\n"
+#~ "\n"
+#~ "Naya kya hai:\n"
+#~ "{notes}\n"
+#~ "\n"
+#~ "Abhi update karein? Uncle Farmer band hoga, update hoga aur dobara shuru hoga; aap ke kirdaar, mansoobe, scripts aur tarteeb waise hi rahenge."
 
 #~ msgid "demonized elites, left alone as the character settings say"
 #~ msgstr "demonized elites, character settings ke mutabiq chhor diye"
@@ -9683,9 +9723,3 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the bag already has the potions asked for"
 #~ msgstr "baste mein maange gaye potions pehle se hain"
-
-#~ msgid "the team {name} is made at the first town on the way: this isn't one"
-#~ msgstr "team {name} raste ke pehle shehar mein banegi: yeh shehar nahi"
-
-#~ msgid "{team} isn't called {name}: it is made again in a town only"
-#~ msgstr "{team} ka naam {name} nahi: yeh sirf shehar mein dobara banti hai"
