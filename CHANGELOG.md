@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-**Leading a team: a Team tab** (untested in game so far; the game's menus were read with two characters)
+**Leading a team: a Team tab** (tried in game with three players)
 
 - Character settings has a new **Team** tab. Everything on it is off until you tick it, and each
   character has its own choices.
@@ -19,7 +19,8 @@
   another name, it can be disbanded and made again. **Leave a team another player leads** when the
   run starts.
 - **Stay in town and manage the team** after the run, until you stop it; scripts have
-  `manage_team` for the same.
+  `manage_team` for the same. With both ticked, the team is handed over and the bot doesn't stay
+  (it stays when nobody from the list is in the team).
 - If another player disbands the team or takes it over, the bot stops managing it for the rest of
   the run and says so.
 - Healing teammates while following moved to the Team tab (the same settings, nothing to redo).
