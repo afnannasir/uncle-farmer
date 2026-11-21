@@ -24,6 +24,7 @@ class StartGame(HandGame):
         super().__init__({"Bob": (555, True)}, **kw)
         self.box: str | None = None
         self.typed = ""
+        self.ignore_creates = 0
 
     def top(self) -> dict[str, Any] | None:
         if self.menu in ("quit", "disband"):
@@ -70,6 +71,10 @@ class StartAgent:
             g.box = line[5:]
             return "typed"
         if line == "typeenter":
+            if g.ignore_creates:              # the server says nothing and makes nothing
+                g.ignore_creates -= 1
+                g.box = None
+                return "entered"
             g.team = str(g.box)
             g.leader, g.box = True, None
             g.chat.append("Hero set up a team named %s" % g.team)
@@ -139,6 +144,27 @@ def test_another_players_team_is_left_only_when_ticked() -> None:
     b = StartBot(game, team_leave_others=True)
     teamlead.at_start(as_bot(b))
     assert "quit Confirm" in game.opened and game.team == "Farmers" and game.leader
+
+
+def test_a_creation_the_game_ignores_is_asked_for_once_more_after_a_pause() -> None:
+    game = StartGame(team="Theirs", leader=False)
+    game.ignore_creates = 1                   # live: asked for in the second we left, ignored silently
+    b = StartBot(game, team_leave_others=True)
+    start = b.clock.now
+    teamlead.at_start(as_bot(b))
+    assert game.team == "Farmers" and game.leader
+    assert game.opened.count("Create a team") == 2
+    assert b.clock.now - start >= 2 * teamlead.AFTER_DISBAND     # after leaving, and before trying again
+    assert not any("didn't say the team" in line for line in b.lines)
+
+
+def test_a_creation_ignored_twice_is_said() -> None:
+    game = StartGame(team=None)
+    game.ignore_creates = 2
+    b = StartBot(game)
+    teamlead.at_start(as_bot(b))
+    assert game.team is None and game.opened.count("Create a team") == 2
+    assert any("didn't say the team Farmers was made" in line for line in b.lines)
 
 
 def test_our_team_under_another_name_is_made_again_only_when_ticked() -> None:

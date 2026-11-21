@@ -63,6 +63,7 @@ DISBANDED = re.compile(r"^\s*Team disbanded", re.I)
 NEW_LEADER = re.compile(r"^\s*(.+?) has become the team leader", re.I)
 AFTER_DISBAND = 4.0         # the script's pause between disbanding and making the team again
 AFTER_CREATE = 1.5          # live: the menu read a second after "set up a team" had no team yet
+CREATE_TRIES = 2
 STAY_LOOK = 2.0             # seconds between looks while staying in town
 LOOK_EVERY = 1.0            # the farm loop reads the sounds and the chat this often at most
 STAY_EVERY_LEAST = 5        # minutes between offline checks while staying, at least
@@ -622,8 +623,28 @@ def disband(b: Bot, team_name: str) -> bool:
 def create(b: Bot) -> bool:
     """Make the team with the profile's name ("Create a team", the name typed in its box; "<us>
     set up a team named <name>"). Anywhere: the game doesn't ask for a town (said by a player,
-    2026-11-21; the script waited for one)."""
+    2026-11-21; the script waited for one). Nothing heard: the Action menu says whether a team
+    came (ours, the line missed) or not (once more, after a pause: live, a team asked for in the
+    second we left another was ignored without a word)."""
     name = str(b.p.get("team_name", "")).strip()
+    for attempt in range(CREATE_TRIES):
+        if attempt:
+            b.sleep(AFTER_DISBAND)
+        made = _create_once(b, name)
+        if made is not None:
+            return made
+        top = open_action_menu(b)
+        team = team_entry(b, top) if top else None
+        b.close_dialogs()
+        if team is not None:
+            b.log(_("made the team {name}", name=name), speak=True)
+            return True
+    b.log(_("the game didn't say the team {name} was made", name=name), speak=True)
+    return False
+
+
+def _create_once(b: Bot, name: str) -> bool | None:
+    """True: made; False: refused (no menu, no box); None: nothing heard."""
     top = open_action_menu(b)
     if top is None or b.choose(NO_TEAM) is None:
         b.close_dialogs()
@@ -642,8 +663,7 @@ def create(b: Bot) -> bool:
             b.sleep(AFTER_CREATE)    # the Action menu shows the new team a moment after the line
             return True
         b.sleep(0.25)
-    b.log(_("the game didn't say the team {name} was made", name=name), speak=True)
-    return False
+    return None
 
 
 def at_start(b: Bot) -> None:
@@ -664,6 +684,7 @@ def at_start(b: Bot) -> None:
         if not leave_team(b, team[1]):
             return
         team = None
+        b.sleep(AFTER_DISBAND)       # live: a team asked for in the same second was ignored
     elif team is not None and _remade(b, team[1]):
         team = None
         b.sleep(AFTER_DISBAND)       # the game needs a moment before "Create a team" comes back
