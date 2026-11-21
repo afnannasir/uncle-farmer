@@ -77,6 +77,13 @@ LEFT_FOR = {"stuck": 120.0, "timeout": 120.0, "no damage": 120.0, "lost target":
 
 class FightingMixin(Parts):
     MP_EMPTY = 10         # MP percent under which our skills can't be cast: no damage is our own doing
+    # A target another player stands nearer to than we do counts this many steps further when the
+    # targets are put in order: a free one about as far comes first. Measured live (Underwater
+    # World, an hour, 464 targets): 23% of the targets with a player nearer were lost to someone
+    # else, 10% of the others. Leaving those targets out would cost more kills than it saves (most
+    # are still ours, and only one or two monsters are in sight most of the time), so they are
+    # only put after a free one, never left out.
+    RIVAL_STEPS = 15
 
     POINTS_NAMES = {"Warrior": "rage", "Orc": "rage", "Hunter": "marked targets", "Assassin": "combos",
                     "Elf": "fire elements"}
@@ -602,10 +609,23 @@ class FightingMixin(Parts):
                               boss_keep=self.p.get("boss_distance", 40),
                               skip_elites=bool(self.p.get("skip_demonized_elites")),
                               elites=bosses.elites_in_sight(as_bot(self), snap))
+        players = [(p["x"], p["y"]) for p in snap["entities"]
+                   if p.get("kind") == "player" and p.get("id") != me.get("id")
+                   and " belongs to " not in str(p.get("name") or "") and picking.placed(p, {})]
+        contested: set[int] = set()
+
+        def order(e: dict[str, Any], steps: float, ctx: picking.Context) -> tuple[Any, ...]:
+            key = picking.nearest(e, steps, ctx)
+            if e["id"] not in hitting and any(math.hypot(e["x"] - x, e["y"] - y) < key[3] for x, y in players):
+                contested.add(e["id"])
+                return key[0], key[1], steps + self.RIVAL_STEPS, key[3]
+            return key
+
         got = picking.choose(snap, rules, notes,
                              walk=lambda e, lim: self.walk_dist(snap, e, lim),
                              doomed=lambda e, steps: self.doomed(e, me, steps, rng),
-                             not_monsters=skill_things())
+                             not_monsters=skill_things(), order=order)
+        self.contested = contested   # for note_pick: a player stood nearer the target than we did
         for mid, kind in got.forgiven:
             self.skip.pop(mid, None)
             self.skip_names.pop(kind, None)
@@ -693,6 +713,7 @@ class FightingMixin(Parts):
             "steps": None if steps == math.inf else round(steps, 1), "reach": round(rng, 1),
             "sight": len(mobs), "in_reach": sum(1 for e in mobs if dist(e) <= rng),
             "hurt": mob["hp"] < mob["maxhp"], "attacking": mob["id"] in self.attackers(),
+            "rival": mob["id"] in self.__dict__.get("contested", ()),
             "_at": self.clock.time(), "_kills": self.kills,
         }
 

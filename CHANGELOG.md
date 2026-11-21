@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Busy maps: a free target before one another player is nearer to** (untested in game so far)
+
+- When two monsters are about as far, the bot takes the one no other player is closer to: one that
+  another player stands nearer to counts as 15 steps further. Measured over an hour on Underwater
+  World, 23% of those were lost to someone else, against 10% of the others. Such a monster is never
+  left out (most still end up as kills), and one attacking us still comes first. The field log
+  notes, for each target, whether a player was nearer to it ("rival").
+
 **Potion Maker: a bagful at a time, into the storehouse**
 
 - New tick box: put the potions made into the town storehouse. The Potion Maker then works a bagful
