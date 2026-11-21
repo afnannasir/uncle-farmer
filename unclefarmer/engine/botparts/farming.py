@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
+from .. import beasts, bosses, chests, corpses, keyslots, pets, teamlead, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -143,9 +143,7 @@ class FarmingMixin(Parts):
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
-        tally = getattr(self, "tally", None)
-        if tally is not None:
-            tally.on_map(map_id)          # the results, map by map
+        tally = self._farm_begins(map_id, instance)
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
@@ -158,6 +156,16 @@ class FarmingMixin(Parts):
             self.timing_report(final=True)
             self.timing = None
         self.log(_("finished farming {map}", map=atlas.label(map_id)))
+
+    def _farm_begins(self, map_id: int, instance: bool) -> Any:
+        """A farm sets out: the results count this map from now (Tally.on_map, returned for the
+        end), and outside a dungeon the team we lead hears requests and takes the waiting ones."""
+        tally = getattr(self, "tally", None)
+        if tally is not None:
+            tally.on_map(map_id)          # the results, map by map
+        if not instance:
+            teamlead.start_farm(as_bot(self))
+        return tally
 
     def _farm_loop(self, map_id: int, area: Sequence[float] | None, only: str, skip: str, avoid: list[tuple[float, float, float, float]], loop: list[tuple[int, int]] | None, chase: float | None, done: Callable[[], bool], sighted: Callable[[dict[str, Any]], bool], last_supply_check: float) -> None:
         loop_i = None
@@ -179,8 +187,8 @@ class FarmingMixin(Parts):
                 xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if chests.open_nearby(as_bot(self), snap):
-                    continue
+                if self._side_jobs(snap):
+                    continue          # a chest opened, or a request to join our team taken
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
@@ -215,6 +223,12 @@ class FarmingMixin(Parts):
                 if self._set_back(map_id, setback):
                     break
 
+    def _side_jobs(self, snap: dict[str, Any]) -> bool:
+        """Between fights: a chest in sight, then a request to join the team we lead."""
+        if chests.open_nearby(as_bot(self), snap):
+            return True
+        return not self.in_instance and teamlead.between_fights(as_bot(self))
+
     def _restock_check(self, map_id: int, last: float) -> float:
         """Every restock_check_every seconds, top up the restock rules and come back. Never in a
         dungeon: its visit can't be left and taken up again. Returns when it last looked."""
@@ -239,6 +253,7 @@ class FarmingMixin(Parts):
         with self.timed("town"):
             if why:
                 self.restock_now()
+                teamlead.after_trip(as_bot(self))    # members gone offline, when checked in town only
                 self.log(_("back to {map} after {why}", map=atlas.label(map_id), why=why))
             else:
                 self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
@@ -577,6 +592,7 @@ class FarmingMixin(Parts):
         beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
             pets.recall(as_bot(self))
+        teamlead.at_end(as_bot(self))     # the team handed over, when the Team tab says so
 
     def _finish_safe(self) -> None:
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there

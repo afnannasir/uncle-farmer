@@ -15,6 +15,29 @@
   kills an hour, arnebia, shards, chests, deaths), and a day's or a week's results add them up.
   One map: the results are as before.
 
+**Leading a team: a Team tab** (tried in game with three players)
+
+- Character settings has a new **Team** tab. Everything on it is off until you tick it, and each
+  character has its own choices.
+- **Accept requests to join my team**: the game plays a sound when a player asks to join; the bot
+  hears it between fights (never while something hits it) and lets in only the players you allow:
+  your trusted players (Private messages), your friends in the game, or a list of names and ids.
+  The others are left waiting, never refused, and the log names them once. Requests that came
+  while it wasn't farming are taken as farming starts.
+- **Remove members who go offline**: every few minutes (or only when the run passes through a
+  town), the bot asks the game about each member with the info key (G); a member the game says
+  nothing about is asked again, with twice the wait, before being removed.
+- **Hand the team over when the run ends**, to the first of your list who is in the team.
+- **Create my team when the run starts**, with its name, wherever the run starts; if your team has
+  another name, it can be disbanded and made again. **Leave a team another player leads** when the
+  run starts.
+- **Stay in town and manage the team** after the run, until you stop it; scripts have
+  `manage_team` for the same. With both ticked, the team is handed over and the bot doesn't stay
+  (it stays when nobody from the list is in the team).
+- If another player disbands the team or takes it over, the bot stops managing it for the rest of
+  the run and says so.
+- Healing teammates while following moved to the Team tab (the same settings, nothing to redo).
+
 **Busy maps: a free target before one another player is nearer to** (untested in game so far)
 
 - When two monsters are about as far, the bot takes the one no other player is closer to: one that

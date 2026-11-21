@@ -1892,6 +1892,34 @@ Uncle Farmer can also help your character locate teammates:
 
 The `come` and `follow` commands can use these features when the target is leading the team.
 
+**Leading a team (the Team tab)**
+
+Character settings has a **Team** tab. Nothing on it does anything until you tick it, and each
+character keeps its own choices.
+
+- **Accept requests to join my team.** When a player asks to join, the game plays a sound for the
+  leader. Uncle Farmer hears it between fights and lets in only the players you allow, chosen in
+  **Who may join**: your trusted players (Private messages), your friends in the game, or the
+  names and ids you type. Anyone else is left waiting: the bot never presses "refuse", and the log
+  names them once. Requests that arrived while the bot wasn't farming are looked at as farming
+  starts.
+- **Remove members who go offline.** Every few minutes (or only when the run passes through a
+  town), the bot opens the member list and presses the game's info key (G) on each member. The
+  game answers for a member who is online and says nothing for one who isn't. A member who doesn't
+  answer is asked again, with twice the wait, before being removed.
+- **Hand the team over when the run ends**, to the first player of your list who is in the team.
+  If none of them is, the team stays with your character and the log says so.
+- **Create my team when the run starts**, with the name you type (letters and numbers), wherever
+  the run starts. If your team has another name, the bot can disband it and make it again (a
+  separate tick, as disbanding sends everyone out of the team).
+- **Leave a team another player leads** when the run starts.
+- **After the run, stay in town and manage the team** until you stop the run. A script can do the
+  same with `manage_team`. If both are ticked, the team is handed over and the bot doesn't stay;
+  it stays only when nobody from the list is in the team.
+
+If another player disbands the team or becomes its leader, Uncle Farmer stops managing it for the
+rest of the run and says so. Healing teammates while following is on the same tab.
+
 
 ## Chat
 

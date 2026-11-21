@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyboard, keyslots, triggers, xpcard
+from . import chores, keyboard, keyslots, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken
 from .botparts.parts import Sighting, Where
@@ -411,6 +411,7 @@ class Run(threading.Thread):
         if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
                 self._level_first(bot, script.main)
+                teamlead.at_start(bot)         # out of another's team, into ours (the Team tab)
                 if not self._on_the_farm(bot, script):
                     self._before_farming()
             cfg = chores.config(bot.p)
