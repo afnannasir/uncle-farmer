@@ -5640,6 +5640,10 @@ msgstr ""
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr ""
 
+msgid ""
+"chose \"Open the chest\" but the chest is still there - once more with the keys"
+msgstr ""
+
 msgid "circles seen on {map}: {names}"
 msgstr ""
 
@@ -7973,6 +7977,9 @@ msgid ""
 msgstr ""
 
 msgid "the game isn't running with the agent"
+msgstr ""
+
+msgid "the game left the menu open after \"{entry}\" ({answer})"
 msgstr ""
 
 msgid "the game lost our target on {name} and won't take it back - next one"

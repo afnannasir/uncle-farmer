@@ -155,7 +155,7 @@ class Bot(TravelMixin):
     def wait_dialog(self, seconds: float = 3.0, want_open: bool = True) -> dict[str, Any] | None:
         return self.wait_dialog_value
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         self.chosen.append(pattern)
         return {"options": ["x"]} if self.choose_ok else None
 
@@ -388,7 +388,7 @@ def test_travel_crosses_an_exit_then_replans(monkeypatch: pytest.MonkeyPatch) ->
 
 def test_travel_leaves_out_a_transport_that_did_not_ride(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    b.ride = lambda leg: False
+    b.ride = lambda leg, keys=False: False
     b.map_id = lambda: 1001
     seen: list[set[str]] = []
     leg = {"do": "npc", "map": 1001, "npc": "Cable Car manager", "kind": "cable_car", "dest": 2222, "id": 3,
@@ -465,7 +465,7 @@ def test_travel_prefer_walking_plans_on_foot_and_without_items(monkeypatch: pyte
 
 def test_travel_gives_up_after_forty_legs(monkeypatch: pytest.MonkeyPatch) -> None:
     b = Bot()
-    b.ride = lambda leg: True
+    b.ride = lambda leg, keys=False: True
     monkeypatch.setattr(travel_mod, "plan", stand_in(travel_mod.plan, lambda *a, **kw: [
         {"do": "npc", "map": 1001, "npc": "Manager", "kind": "menu", "dest": 2000,
          "id": 1, "choose": ["go"]},
@@ -490,7 +490,7 @@ def test_travel_logs_a_multileg_route_once_per_new_route(monkeypatch: pytest.Mon
         return {1001: legs, 2000: legs[1:], 2001: legs[2:]}.get(here_map, [])
     monkeypatch.setattr(travel_mod, "plan", plan)
 
-    def ride(leg: dict[str, Any]) -> bool:
+    def ride(leg: dict[str, Any], keys: bool = False) -> bool:
         b._map = leg["dest"]           # the ride lands us on the next map
         return True
 
@@ -965,7 +965,7 @@ def test_ride_talks_chooses_and_lands() -> None:
     b.map_id = map_id
     b.settled_map = lambda seconds=15: 2000
 
-    def choose(pattern: str):
+    def choose(pattern: str, row: str | None = None, keys: bool = False):
         b.chosen.append(pattern)
         state["changed"] = True
         return {"options": ["x"]}
@@ -1022,7 +1022,7 @@ def test_ride_accepts_a_confirm_prompt() -> None:
     b.map_id = map_id
     b.settled_map = lambda seconds=15: 2000
 
-    def choose(pattern: str):
+    def choose(pattern: str, row: str | None = None, keys: bool = False):
         b.chosen.append(pattern)
         if pattern == CONFIRM:                  # only the confirm moves us on
             state["changed"] = True
@@ -1045,7 +1045,7 @@ def test_ride_waits_for_the_cable_car_to_carry_us(clock: Clock, monkeypatch: pyt
     b.map_id = map_id
     b.settled_map = lambda seconds=15: map_id()
 
-    def choose(pattern: str):
+    def choose(pattern: str, row: str | None = None, keys: bool = False):
         state["changed"] = True
         return {"options": ["x"]}
 
@@ -1149,7 +1149,7 @@ def airship_bot(rows: list[str]) -> Bot:
     b.map_id = lambda: 2000 if state["changed"] else 1001
     b.settled_map = lambda seconds=15: 2000
 
-    def choose(pattern: str) -> dict[str, Any]:
+    def choose(pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any]:
         b.chosen.append(pattern)
         state["changed"] = True
         return {"options": ["x"]}
@@ -1202,7 +1202,7 @@ def test_ride_waits_out_a_reload_that_leaves_us_on_the_same_map() -> None:
 
     b.settled_map = settled_map
 
-    def choose(pattern: str):
+    def choose(pattern: str, row: str | None = None, keys: bool = False):
         state["changed"] = True
         return {"options": ["x"]}
 

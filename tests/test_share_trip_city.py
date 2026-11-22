@@ -80,7 +80,7 @@ class Farmer(FarmingMixin):
         self.talked.append(name)
         return True
 
-    def choose(self, pattern: str) -> None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> None:
         return None
 
     def close_dialogs(self) -> None:

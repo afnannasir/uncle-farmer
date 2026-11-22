@@ -138,7 +138,7 @@ class Game:
     def wait_dialog(self, seconds: float) -> dict[str, Any] | None:
         return {"open": 1}
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         self.did.append("choose")
         if self.menu and self.lets_in:
             self.mid = dungeon.CAVES[self.cave]["map"]      # the game moves us in
@@ -335,7 +335,7 @@ def test_an_entry_that_just_didnt_work_is_tried_three_times_and_not_written_down
 class LateMenuGame(Game):
     """The entrance's menu isn't there in time at the first knock."""
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         return super().choose(pattern) if self.did.count("talk") > 1 else None
 
 

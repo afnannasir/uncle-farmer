@@ -5824,6 +5824,10 @@ msgstr "\"{entry}\" seçiliyor"
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr "\"Sandığı aç\" seçildi ama sandık hâlâ orada"
 
+msgid ""
+"chose \"Open the chest\" but the chest is still there - once more with the keys"
+msgstr "\"Sandığı aç\" seçildi ama sandık hâlâ orada - tuşlarla bir kez daha"
+
 msgid "circles seen on {map}: {names}"
 msgstr "{map} üzerinde görülen çemberler: {names}"
 
@@ -8233,6 +8237,9 @@ msgstr ""
 
 msgid "the game isn't running with the agent"
 msgstr "oyun ajanla çalışmıyor"
+
+msgid "the game left the menu open after \"{entry}\" ({answer})"
+msgstr "oyun \"{entry}\" sonrasında menüyü açık bıraktı ({answer})"
 
 msgid "the game lost our target on {name} and won't take it back - next one"
 msgstr "oyun {name} üzerindeki hedefimizi kaybetti ve geri almıyor - sıradaki"

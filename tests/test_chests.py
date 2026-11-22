@@ -65,7 +65,7 @@ class Bot:
             return False
         return self.answers
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         self.chosen.append(pattern)
         if not self.menu_has_open:
             return None
@@ -226,7 +226,7 @@ class LootBot(Bot):
         self.bag: list[dict[str, Any]] = [{"name": "arnebia", "count": 1000}, {"name": "Small Fish", "count": 2}]
         self.reads = 0
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         got = super().choose(pattern)
         self.bag = [{"name": "arnebia", "count": 1000}, {"name": "Small Fish", "count": 2},
                     {"name": "Level 1 Obsidian Shard", "count": 24}]

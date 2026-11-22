@@ -257,6 +257,7 @@ def choose_at(b: Bot, top: dict[str, Any], row: int, col: int) -> bool:
         return False
     answer = b.a.send("choose %d %d %d" % (row, col, sig))
     if answer.startswith("chosen "):
+        b.__dict__["last_choice"] = answer    # agent 78 adds what the game's Enter said: a note
         return True
     told: set[str] = b.__dict__.setdefault("menu_fallbacks", set())
     if "choose" not in told:

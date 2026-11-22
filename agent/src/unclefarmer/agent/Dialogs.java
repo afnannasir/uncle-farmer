@@ -311,6 +311,15 @@ final class Dialogs {
         return selected == null ? 0 : intField(selected, E_ID);
     }
 
+    /** The selected entity's id, or 0 when none is or it can't be read: only ever a note. */
+    private static int selectedOrNone(Object world) {
+        try {
+            return selectedId(world);
+        } catch (Throwable t) {
+            return 0;
+        }
+    }
+
     private static boolean pause(long until) {
         if (System.currentTimeMillis() >= until) return false;
         try {
@@ -342,12 +351,16 @@ final class Dialogs {
                 } catch (Menus.Refused r) {
                     return "refused: " + r.getMessage();
                 }
+                int selected = selectedOrNone(world);
                 setInt(y, D_ROW, row);
                 setInt(y, D_COL, col);
                 setInt(y, D_OPTION, 0);
-                enter.invoke(world, win);
-                Log.info("ACTION menu row " + row + " col " + col);
-                return "chosen " + row + " " + col;
+                Object took = enter.invoke(world, win);
+                // What the game's Enter answered and who was selected: a choice that the agent
+                // made but the game never acted on (seen on one player's computer only) can then
+                // be told apart from one the server turned down.
+                Log.info("ACTION menu row " + row + " col " + col + " enter " + took + " selected " + selected);
+                return "chosen " + row + " " + col + " enter " + took + " selected " + selected;
             }
         } catch (Memory.Unavailable u) {
             return "error: " + u.getMessage();

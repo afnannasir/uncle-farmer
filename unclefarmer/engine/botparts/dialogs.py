@@ -163,7 +163,7 @@ class DialogsMixin(Parts):
                     return r, c
         return None
 
-    def choose(self, pattern: str, row: str | None = None) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         """Pick the entry matching pattern in the open dialog, then Enter. row: only in the row
         whose first entry matches it (find_in_row). Returns the entry, or None (dialog closed
         again) if nothing matches.
@@ -171,7 +171,10 @@ class DialogsMixin(Parts):
         The entry is found once, in one reading of the menu. With agent 55 it is chosen right
         there (menus.choose_at: its row and column, checked against that reading); else the
         walking keys move the cursor to it - a row the shorter way round, as the game's rows wrap
-        (menus.row_keys) - and Enter chooses it."""
+        (menus.row_keys) - and Enter chooses it. keys: the keys way even with agent 55, for the
+        second try of a choice whose result is checked (a chest that stays, a ride or a dungeon
+        that doesn't take us): on one player's computer the direct choice was made and the game
+        did nothing, again and again."""
         d = self.dialog()
         top = d.get("top")
         if not top:
@@ -185,9 +188,10 @@ class DialogsMixin(Parts):
         r, c = where
         entry = top["rows"][r][c]
         name = (entry.get("options") or [None])[0] or entry.get("text") or entry.get("raw")
-        if menus.choose_at(as_bot(self), top, r, c):
+        if not keys and menus.choose_at(as_bot(self), top, r, c):
             self.log(_("choosing \"{entry}\"", entry=name))
-            self.wait_menu_change(top, depth=max(1, int(d.get("open") or 0)))
+            after = self.wait_menu_change(top, depth=max(1, int(d.get("open") or 0)))
+            self._note_unmoved(top, after, name)
             return entry
         top = self._move_to(top, r, c)
         if top is None:
@@ -198,6 +202,20 @@ class DialogsMixin(Parts):
         self.key(self.p.get("enter_key", "enter"))
         self.sleep(0.4)
         return entry
+
+    def _note_unmoved(self, top: dict[str, Any], after: dict[str, Any], name: Any) -> None:
+        """The game closes a menu the moment an entry is chosen. The same menu still up after a
+        direct choice means the game didn't act on it: said in the log and noted in dialogs.log
+        with the agent's answer (agent 78: what the game's Enter returned, who was selected)."""
+        now: dict[str, Any] = after.get("top") or {}
+        if not now or now.get("sig") != top.get("sig"):
+            return
+        box = self.a.json("input")
+        if box.get("ok") and box.get("open"):
+            return                     # a quantity box over the menu: the choice was taken
+        answer = str(self.__dict__.get("last_choice") or "")
+        self.note_dialog(after, "still open after choosing (%s)" % answer)
+        self.log(_("the game left the menu open after \"{entry}\" ({answer})", entry=name, answer=answer))
 
     def cursor_to(self, top: dict[str, Any], r: int, c: int) -> dict[str, Any] | None:
         """Put the menu's cursor on row r, column c without choosing it (a key that acts on the
