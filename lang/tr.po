@@ -3686,6 +3686,10 @@ msgstr "Sonuçlar"
 msgid "Results of {what}"
 msgstr "{what} sonuçları"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Di&riliş Kristalleriyle olduğun yerde diril"
 

@@ -3721,6 +3721,11 @@ msgstr "Nataij"
 msgid "Results of {what}"
 msgstr "{what} ke nataij"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+"{what} ke nataij, is ke {n} hisse jama kiye gaye (yeh ruka aur phir jaari hua)"
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Wahin par &Resurrection Crystals se zinda karein"
 

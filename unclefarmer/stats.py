@@ -424,6 +424,9 @@ class Tally:
         self.started = self.clock.time()
         self.ended: float | None = None
         self.main = tool or FARMING      # what the run is: the activity its own record is about
+        # A run carried on after an interruption (engine/resume.py): the start of its first part,
+        # written into each record so the parts can be added up (whole_run)
+        self.chain: str | None = None
         self.doing: str | None = self.main      # where gains go now; None while paused
         self.parts = {self.main: _Part()}
         self.since = self.started        # when `doing` began
@@ -691,6 +694,8 @@ class Tally:
             "experience": part.xp, "levels": part.levels,
             "level": s1.get("level", -1), "xp_needed": s1.get("xp_needed", -1),
         }
+        if self.chain:
+            rec["chain"] = self.chain
         if farming:
             # what the run's own selling jobs brought in, from loot farming picked up
             rec["sales"] = sum(p.arnebia_in for k, p in self.parts.items() if k in SELLING)
@@ -974,6 +979,24 @@ def _merge_skills(dst: dict[str, Any], src: Mapping[str, Any]) -> None:
 def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
     for n, d in (src or {}).items():
         dst[n] = dst.get(n, 0) + d
+
+
+def start_stamp(t: float) -> str:
+    """A clock time as a record's "start" says it."""
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
+
+
+def whole_run(r: Record) -> tuple[Record, int]:
+    """A record of a run carried on after interruptions, added up with its earlier parts (the saved
+    records of the same chain): (the whole, how many parts). Any other record: (itself, 1)."""
+    chain = r.get("chain")
+    if not chain or r.get("kind") != FARMING:
+        return r, 1
+    parts = [x for x in runs(str(r.get("character") or "")) if (x.get("chain") == chain or x.get("start") == chain)
+             and x.get("start") != r.get("start")]
+    if not parts:
+        return r, 1
+    return add_up([*parts, r]), len(parts) + 1
 
 
 def add_up(results: Iterable[Record]) -> Record:

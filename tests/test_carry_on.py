@@ -183,3 +183,19 @@ def test_a_lost_game_is_not_guarded_and_keeps_its_place() -> None:
     reason = run._stopped(GameLost("the game can't be read: noworld: gone"))   # pyright: ignore[reportPrivateUsage]
     assert run.game_lost and run.failed and not run.ended_by_itself
     assert "noworld" in reason
+
+
+# ---------------------------------------------------------------- the results of a run carried on
+def test_a_run_carried_on_reports_all_its_parts_added_up(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer import stats
+    monkeypatch.setattr(stats, "RESULTS", str(tmp_path))
+    first = {"kind": "farming", "character": "Hero", "run": "Night", "start": "2026-11-22 01:00:00",
+             "minutes": 30.0, "kills": 100, "arnebia": 5000}
+    second = dict(first, start="2026-11-22 01:31:00", minutes=20.0, kills=60, arnebia=3000, chain=first["start"])
+    other = dict(first, start="2026-11-22 05:00:00", kills=999)       # another run that day
+    lines = "\n".join(stats.json.dumps(r) for r in (first, second, other)) + "\n"
+    (tmp_path / "Hero.jsonl").write_text(lines, encoding="utf-8")
+    third = dict(first, start="2026-11-22 02:00:00", minutes=10.0, kills=40, arnebia=1000, chain=first["start"])
+    whole, parts = stats.whole_run(third)
+    assert parts == 3 and whole["kills"] == 200 and whole["minutes"] == 60.0 and whole["arnebia"] == 9000
+    assert stats.whole_run(other) == (other, 1)

@@ -3722,6 +3722,11 @@ msgstr "Resultados"
 msgid "Results of {what}"
 msgstr "Resultados de {what}"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+"Resultados de {what}, com as {n} partes somadas (foi interrompido e continuou)"
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Ressuscitar no local com Cristais de &Ressurreição"
 

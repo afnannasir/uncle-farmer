@@ -23,6 +23,7 @@ starts, the third restart of a day)
   carried on, instead of the run stopping there. A game out of memory found when a run stops counts too.
 - Results: today, yesterday and the Day list are the game's days (00:00 GMT to 00:00 GMT), as is the
   `today` private message; a night farmed across the computer's midnight is one day.
+- A run carried on ends with its results added up over all its parts, and says how many there were.
 - French: the Kill game strings are translated.
 
 **French translation**
