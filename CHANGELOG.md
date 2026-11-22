@@ -1,6 +1,15 @@
 # What's new
 
-## Unreleased
+## 1.2.3
+
+**Restock and sell shards in Dark Night City**
+
+- Farming runs can use the local potion merchant, grocer, storehouse, and shard broker
+  when starting from Dark Night City instead of travelling to Holy Blood City for them.
+
+**Elf XP Loser picks a village with guards**
+
+- XP Loser excludes the Elf teleport destinations when choosing a village for XP loss.
 
 **A lost game is opened again, and runs carry on where they were** (tested in game: a game killed
 mid-run and Uncle Farmer closed mid-run, twice each, carried on; not seen yet: a game that never
