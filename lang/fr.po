@@ -8243,6 +8243,12 @@ msgid ""
 msgstr ""
 "la fiche du personnage ne montre aucune carte d'expérience dans le donjon - on garde celle en cours, sans en utiliser une autre"
 
+msgid "the chest gave nothing that reached the bag"
+msgstr "le coffre n'a rien donné qui soit arrivé dans le sac"
+
+msgid "the chest gave: {loot}"
+msgstr "le coffre a donné : {loot}"
+
 msgid "the chest is gone: someone else opened it"
 msgstr "le coffre a disparu : quelqu'un d'autre l'a ouvert"
 

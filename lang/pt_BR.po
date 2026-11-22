@@ -8189,6 +8189,12 @@ msgid ""
 "the character sheet shows no experience card inside the dungeon - keeping the one we have, not using another"
 msgstr ""
 
+msgid "the chest gave nothing that reached the bag"
+msgstr "o baú não deu nada que chegasse à bolsa"
+
+msgid "the chest gave: {loot}"
+msgstr "o baú deu: {loot}"
+
 msgid "the chest is gone: someone else opened it"
 msgstr "o baú sumiu: outra pessoa o abriu"
 

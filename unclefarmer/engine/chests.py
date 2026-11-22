@@ -28,7 +28,7 @@ import math
 from typing import TYPE_CHECKING, Any
 
 from ..i18n import _
-from . import bosses
+from . import bosses, transactions
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -120,6 +120,7 @@ def open_nearby(bot: Bot, snap: dict[str, Any]) -> bool:
         bot.log(_("going back to the chest seen {n} steps away: going to open it", n=n))
     else:
         bot.log(_("a chest in sight, {n} steps away: going to open it", n=n))
+    before = _bag(bot)
     try:
         with bot.timed("approach"):
             opened = _open(bot, chest)
@@ -135,11 +136,43 @@ def open_nearby(bot: Bot, snap: dict[str, Any]) -> bool:
         if bot.tally is not None:
             bot.tally.note_chest()
         bot.log(_("opened a chest ({n} this run)", n=c.opened), speak=True)
+        _say_loot(bot, before)
     elif in_sight(bot.snap(), chest["id"]):
         c.skip[chest["id"]] = bot.clock.time() + GIVE_UP
     else:
         bot.log(_("the chest is gone: someone else opened it"))
     return True
+
+
+LOOT_WAIT = 3.0               # seconds the chest's arnebia and items get to reach the bag
+
+
+def _bag(bot: Bot) -> dict[str, int] | None:
+    """The bag before a chest is opened (None when it can't be read: no loot line then)."""
+    try:
+        return transactions.counts(bot)
+    except Exception:          # a reading that fails must never stop the opening
+        return None
+
+
+def _say_loot(bot: Bot, before: dict[str, int] | None) -> None:
+    """What the chest gave, into the log: the game puts it in the bag at once, the arnebia a
+    moment later (as a sale's). Kept to measure what a chest is worth against the time a hunt
+    costs (a night of 15 hunts on Margit Rainforest could only be judged on two old readings)."""
+    if before is None:
+        return
+    try:
+        deal = transactions.InventoryTransaction(before)
+        after = deal.paid(bot, transactions.counts(bot), LOOT_WAIT)
+        names = {(r.get("name") or "").strip().lower(): (r.get("name") or "").strip() for r in bot.bag_rows()}
+    except Exception:
+        return
+    got = [(names.get(n) or n, after[n] - before.get(n, 0)) for n in after if after[n] > before.get(n, 0)]
+    got.sort(key=lambda g: (g[0].lower() != transactions.ARNEBIA, g[0].lower()))
+    if got:
+        bot.log(_("the chest gave: {loot}", loot=", ".join("+{:,} {}".format(d, n) for n, d in got)))
+    else:
+        bot.log(_("the chest gave nothing that reached the bag"))
 
 
 def _open(bot: Bot, chest: dict[str, Any]) -> bool:

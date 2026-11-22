@@ -8205,6 +8205,12 @@ msgid ""
 msgstr ""
 "dungeon ke andar character sheet par koi experience card nahi dikhta - jo card hamare paas hai wohi rakha, doosra istemal nahi kiya"
 
+msgid "the chest gave nothing that reached the bag"
+msgstr "chest se bag mein kuch nahi aaya"
+
+msgid "the chest gave: {loot}"
+msgstr "chest se mila: {loot}"
+
 msgid "the chest is gone: someone else opened it"
 msgstr "chest ja chuka hai: kisi aur ne khol liya"
 
