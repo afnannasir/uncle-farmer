@@ -26,38 +26,27 @@ from collections.abc import Callable
 import math
 from typing import TYPE_CHECKING, Any
 
-from .. import jsonio, stats
+from .. import jsonio
 from ..errors import carry_on
 from ..i18n import N_, _
 from ..link import AgentError
-from . import gathering, town, xploss
+from . import activities, keyboard, town
 from .botparts.base import GameBroken, Stopped
 
 if TYPE_CHECKING:
     from .bot import Bot
 
 STAGES = ("before", "after")
-# (job = its script command and results part, what the log calls it), in the order they run
-JOBS: tuple[tuple[str, str], ...] = (
-    ("sell_shards", N_("selling shards")),
-    ("clean_bag", N_("cleaning the bag")),
-    ("update_shard_prices", N_("updating shard prices")),
-    ("gather", N_("gathering")),
-    ("store_items", N_("storing items")),
-    ("restock", N_("restocking supplies")),
-    ("lose_xp", N_("losing experience")),
-)
-# the town function each job is (looked up when it runs); gathering is gathering.run with its settings
-TOWN_JOBS = {"sell_shards": "sell_shards_now", "clean_bag": "clean_bag",
-             "update_shard_prices": "update_shard_prices", "store_items": "store_items", "restock": "restock_now"}
-FARMING_COMMANDS = ("farm", "dungeon")
-TOOLS = JOBS + (("chores", N_("daily chores")), ("gem_maker", N_("making gems")),
-                ("gem_breaker", N_("breaking gems")),
-                ("enhance", N_("enhancing equipment")), ("dungeon", N_("running a dungeon")),
-                ("sell_collection", N_("selling the collection")),
-                ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),
-                ("construction_scan auto=broadcast", N_("scanning the constructions, then a broadcast")),
-                ("construction_scan auto=system", N_("scanning the constructions, then a system message")))
+# (job = its script command and results part, what the log calls it), in the order they run: the
+# jobs a trigger runs straight, then those it runs through their script command (engine/activities.py)
+JOBS: tuple[tuple[str, str], ...] = tuple((a.key, a.label) for a in activities.ACTIVITIES if a.direct)
+# the town function each town job is (looked up when it runs)
+TOWN_JOBS = {a.key: a.town for a in activities.ACTIVITIES if a.town}
+FARMING_COMMANDS = ("farm",) + tuple(a.key for a in activities.ACTIVITIES if a.farms)
+TOOLS = tuple((a.key, a.label) for a in activities.ACTIVITIES if a.listed) + (
+    ("construction_scan auto=announcement", N_("scanning the constructions, then a gang announcement")),
+    ("construction_scan auto=broadcast", N_("scanning the constructions, then a broadcast")),
+    ("construction_scan auto=system", N_("scanning the constructions, then a system message")))
 
 
 MAX_DELAY = 3600.0       # seconds: a longer wait is a typo, not a plan (a schedule does long gaps)
@@ -68,7 +57,9 @@ class TriggerFailed(Stopped):
 
 
 def step(action: str, delay: object = 0, enabled: object = True, deterministic: object = False) -> dict[str, Any]:
-    if action not in dict(TOOLS) and not (action.startswith("script:") and action[7:].strip()):
+    if action.startswith(keyboard.ACTION_PREFIX):
+        keyboard.profile_name(action.removeprefix(keyboard.ACTION_PREFIX))
+    elif action not in dict(TOOLS) and not (action.startswith("script:") and action[7:].strip()):
         raise ValueError(_("Choose a tool or a saved script."))
     if (isinstance(delay, bool) or not isinstance(delay, (int, float)) or not math.isfinite(delay) or delay < 0
             or delay > MAX_DELAY):
@@ -127,6 +118,8 @@ def what(job: str) -> str:
     """What the log calls the job ("selling shards")."""
     if job.startswith("script:"):
         return _("script {name}", name=job[7:])
+    if job.startswith(keyboard.ACTION_PREFIX):
+        return _("Apply keyboard profile {name}", name=job.removeprefix(keyboard.ACTION_PREFIX))
     return _(dict(TOOLS).get(job, job))
 
 
@@ -134,6 +127,8 @@ def action_text(b: Bot, action: str) -> str:
     """The script a step that isn't one of JOBS runs: a saved script's text, or the tool's own
     command (Dungeons with the ending place saved in Tools, Dungeons, as the Tools menu runs it)."""
     from .plan import script_path
+    if action.startswith(keyboard.ACTION_PREFIX):
+        return keyboard.command(action.removeprefix(keyboard.ACTION_PREFIX)) + "\n"
     if action.startswith("script:"):
         try:
             with open(script_path(action[7:]), encoding="utf-8-sig") as source:
@@ -183,13 +178,7 @@ def run_action(b: Bot, action: str) -> None:
 def run_job(b: Bot, job: str, check_only: bool = False) -> object:
     """One job, the same whoever asks for it: the Tools menu (its script command), a trigger, or a
     player's script. Inside the job's own results part."""
-    with stats.doing(b, job):
-        if job == "gather":
-            return gathering.run(b, gathering.config(b.p), check_only)
-        if job == "lose_xp":
-            return xploss.run(b, xploss.config(b.p), check_only)
-        fn: Callable[[Bot], object] = getattr(town, TOWN_JOBS[job])
-        return fn(b)
+    return activities.run(b, job, check_only)
 
 
 def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
@@ -218,6 +207,8 @@ def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -
             kind = getattr(node, "kind", "")
             if kind == "farm":
                 mid = (getattr(node, "opts", {}) or {}).get("map")
+                if isinstance(mid, str):
+                    return True, None     # map=best: known only when the line runs
                 return True, int(mid) if mid else HERE
             if kind == "dungeon":
                 return True, None

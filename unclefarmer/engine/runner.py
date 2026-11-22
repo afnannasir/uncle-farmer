@@ -20,16 +20,16 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyslots, triggers, xpcard
+from . import chores, keyboard, keyslots, resume, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
-from .botparts.base import GameBroken
+from .botparts.base import GameBroken, GameLost
 from .botparts.parts import Sighting, Where
 from .script import Runner, ScriptError
 
 AGENT_VERSION = 5   # the agent's StateServer.VERSION this app needs (4: dialog, target; 5: typing quantities)
 AGENT_SPEECH = 14   # from here the agent can silence the game and reads the own-HP key's answer
 AGENT_POINTS = 24   # from here the agent reads the accumulation-points key's answer (rage, marks, combos; 22-23 dropped its request)
-AGENT_TEAM = 27     # from here the agent sets quick phrases and reads teammates' positions ("/6")
+AGENT_TEAM = phrases.SET_AGENT  # also reads teammates' positions ("/6")
 AGENT_GUARD = 26    # from here the agent can ignore the player's own Shift/Ctrl/Alt while a run drives the game
 AGENT_STATE = 37    # from here `mem state` gives the lean map+self+entities snapshot, without bag/slots/modes/ui
 AGENT_KEYS = 38     # from here `keysup` releases only the keys this connection holds, not the whole game's
@@ -89,6 +89,14 @@ class Run(threading.Thread):
         self.walk = walk
         self.done_called = False      # on_done() has run: it runs once, however the end went
         self.end_failures: list[tuple[str, Exception]] = []   # what failed on the way out (the end goes on regardless)
+        # Where this plan or script is (engine/resume.py): kept when the run doesn't end - the game
+        # lost or Uncle Farmer closed under it - so the next start can carry on from there.
+        self.resume_row: dict[str, Any] | None = None   # set by the window: carry on from this place
+        self.game_lost = False       # the game closed, froze or lost our character for good
+        self.app_closing = False     # Uncle Farmer is closing under the run: its place is kept
+        self.script: Runner | None = None    # the plan or script whose place is kept
+        self.place_lock = threading.Lock()
+        self.place_done = False      # the run's end has decided about its place: no more saves
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -143,6 +151,7 @@ class Run(threading.Thread):
             # or the PC as if farming had ended hides what happened. The player restarts the game.
             reason = str(e)
             self.failed = True
+            self.game_lost = True
         except triggers.TriggerFailed as e:
             reason = str(e)
             self.failed = True
@@ -155,9 +164,11 @@ class Run(threading.Thread):
             self.failed = True
         except AgentError as e:
             self.failed = True
+            self.game_lost = True
             reason = _("lost the connection to the game") if str(e) != "no_game" else _("the game isn't running with the agent")
         except OSError as e:
             self.failed = True
+            self.game_lost = True
             reason = _("lost the connection to the game: {err}", err=e)
         except Exception as e:   # never let the thread die silently
             self.failed = True
@@ -201,13 +212,21 @@ class Run(threading.Thread):
                             "the new one"))
         snap = link.json("mem state" if agent >= AGENT_STATE else "mem")
         if not snap.get("ok") and self.profile:
-            self._login_saved_character(link, agent)
+            try:
+                self._login_saved_character(link, agent)
+            except Stopped:
+                # carrying on in a game opened for it: a login that fails is the game lost again
+                # (the window opens it once more, up to resume.RESTARTS_MOST times a day)
+                self.game_lost = self.resume_row is not None and not self.stop_event.is_set()
+                raise
             snap = link.json("mem state" if agent >= AGENT_STATE else "mem")
         if not snap.get("ok"):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
         server = server_name(link) if agent >= AGENT_SERVER else ""
         observed = settings.character_profile(character, snap["self"].get("id"), server)
+        if self._keyboard_errand() and self.profile and not settings.is_profile_of(observed, self.profile):
+            raise Stopped(_("Select the same character before applying the keyboard profile."))
         # The Games list may already know this client's server.  Keep that confirmed identity if
         # one server lookup briefly fails while starting the run.
         if not (self.profile and settings.same_character(self.profile, observed)
@@ -363,11 +382,17 @@ class Run(threading.Thread):
             # Max MP is only on the character sheet, and only farming reads it on its own:
             # without it a walk, `come` or `follow` never drank a blue potion.
             bot.refresh_sheet(force=True)
-        # what each quick phrase does, and the useful codes ("/6" finds teammates) on EMPTY slots
-        phrases.arrange(bot, self.game_folder(), here.get("id"), found.get("class"),
-                        agent >= AGENT_TEAM)
-        if not self.walk:
-            keyslots.arrange(bot)        # skills and items the bot needs, onto EMPTY keys only
+        if self._keyboard_errand():
+            bot.phrases = phrases.read(self.game_folder(), here.get("id"))
+        else:
+            # Useful defaults are filled only on empty slots during normal runs.
+            phrases.arrange(bot, self.game_folder(), here.get("id"), found.get("class"), agent >= AGENT_TEAM)
+            if not self.walk:
+                keyslots.arrange(bot)
+
+    def _keyboard_errand(self) -> bool:
+        return (getattr(self, "kind", "") == "errand"
+                and self.text.split(maxsplit=1)[:1] == [keyboard.COMMAND])
 
     def game_folder(self) -> str:
         """This game's own folder (the copy it runs from), else the settings' one."""
@@ -397,16 +422,22 @@ class Run(threading.Thread):
             from . import dungeon
             text = dungeon.script(dungeon.config(bot.p))  # preserve the tool's saved ending place too
         script = Runner(bot, text)          # read first: a script that doesn't parse does nothing
+        self._take_place(script)
+        if getattr(script, "own_lists", False):     # (a test's stand-in runner has none)
+            # `triggers off` (Run, Autopilot's script of the day): its steps are written into it
+            self.before_farming_done = self.after_farming_done = True
         if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
                 self._level_first(bot, script.main)
-                if not self._on_the_farm(bot, script):
+                teamlead.at_start(bot)         # out of another's team, into ours (the Team tab)
+                if not self._on_the_farm(bot, script) and not self._carried_on_past_before():
                     self._before_farming()
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
                 with stats.doing(bot, "chores"):
                     chores.run(bot, cfg)
+        self._keep_place()
         script.run()
         if self.walk:
             return _("arrived")          # stay there, on the beast
@@ -423,6 +454,9 @@ class Run(threading.Thread):
         """The run stopped itself (stuck, a stop rule, the drop time...): a frozen game says so;
         otherwise guard, and end somewhere safe unless asked to stay."""
         reason = str(e)
+        if isinstance(e, GameLost):
+            self.failed = self.game_lost = True     # nothing to guard: our character isn't in the game
+            return reason
         bot = self.bot
         if bot is not None and not self.stop_event.is_set() and not self.walk:
             try:
@@ -430,6 +464,7 @@ class Run(threading.Thread):
                 broken = False
             except GameBroken as why:
                 reason, broken = str(why), True
+                self.failed = self.game_lost = True      # opened again (the window's revive)
             except Exception:      # the game gone: guard finds that out itself
                 broken = False
             if not broken:
@@ -521,6 +556,86 @@ class Run(threading.Thread):
             self.guard(self.bot)      # a bug is no reason to stand still while monsters hit us
         return reason
 
+    # ---------------------------------------------------------------- the run's place
+    def keeps_place(self) -> bool:
+        """Only a plan or a script is carried on: a tool, a trigger list, an errand or the walking
+        assistant is quick to start again by hand."""
+        return getattr(self, "kind", "") in ("plan", "script") and not self.walk
+
+    def _take_place(self, script: Runner) -> None:
+        """Carrying on an interrupted run (the window set resume_row): its place, when it is the
+        same plan or script as then; an edited one starts from its beginning."""
+        if not self.keeps_place():
+            return
+        self.script = script
+        row = self.resume_row
+        if row is None:
+            return
+        if row.get("text") != resume.fingerprint(self.text):
+            self.resume_row = None
+            self.log(_("{what} changed since it was interrupted, so it starts from the beginning", what=self.title))
+            return
+        script.resume_from(row)
+        if self.tally is not None and isinstance(row.get("chain"), str):
+            self.tally.chain = row["chain"]      # the results add the parts up at the end
+        self.log(_("carrying on the interrupted run of {what}", what=self.title), speak=True)
+
+    def _carried_on_past_before(self) -> bool:
+        """The interrupted run had done its Before farming list: not again."""
+        row = self.resume_row
+        if row is not None and row.get("before_done"):
+            self.before_farming_done = True
+            return True
+        return False
+
+    def _keep_place(self) -> None:
+        """Save the run's place now and then, on a thread of its own, until the run ends."""
+        if self.script is None:
+            return
+
+        def work() -> None:
+            while not self.stop_event.wait(resume.SAVE_EVERY) and not self.place_done:
+                self.save_place()
+        threading.Thread(target=work, daemon=True, name="unclefarmer-place-%d" % self.pid).start()
+
+    def save_place(self) -> None:
+        script, key = self.script, self.profile
+        if script is None or not key:
+            return
+        try:
+            where = script.position()
+            if where is None:
+                return
+            row = dict(where, item="%s:%s" % (getattr(self, "kind", ""), self.title), title=self.title,
+                       text=resume.fingerprint(self.text), before_done=self.before_farming_done,
+                       saved=time.time())
+            tally = self.tally
+            if tally is not None:      # the first part's start names the whole run's parts
+                row["chain"] = tally.chain or stats.start_stamp(tally.started)
+            with self.place_lock:
+                if not self.place_done:
+                    resume.save(key, row)
+        except Exception as e:      # a place that can't be kept must never stop the run
+            carry_on(e, "keeping the run's place")
+
+    def _settle_place(self) -> None:
+        """The run is over: its place kept when it didn't end (the game lost, Uncle Farmer closing),
+        else taken away - a finished run, Stop, or a failure that carrying on would only repeat."""
+        with self.place_lock:
+            if self.place_done:
+                return
+            self.place_done = True
+        if self.script is None:
+            return
+        keep = (self.game_lost or self.app_closing) and not self.ended_by_itself
+        try:
+            if keep:
+                self.log(_("the run's place is kept: it can carry on from there"))
+            else:
+                resume.clear(self.profile)
+        except Exception as e:
+            carry_on(e, "settling the run's place")
+
     # ---------------------------------------------------------------- the end
     def _end(self, app: dict[str, Any], reason: str) -> None:
         """However it ended: the results finished, the game let go, said, saved and reported - and
@@ -529,6 +644,7 @@ class Run(threading.Thread):
         with Start greyed out until the app was restarted. What failed is logged after on_done and
         passed to carry_on (in tests: raised), the first failure first, never one hiding another."""
         failures: list[tuple[str, Exception]] = []
+        self._settle_place()
         try:
             self._wrap_up(app, reason, failures)
         except Exception as e:      # nothing on the way out may keep the run on the list
@@ -585,13 +701,16 @@ class Run(threading.Thread):
                 failures.append(("saving the results", e))
                 self.log(_("couldn't save the results: {err}", err=e), speak=True)
             r, *jobs = self.tally.results()
-            for line in stats.report(r, _("Results of {what}", what=self.title)).splitlines():
+            whole, parts = stats.whole_run(r)       # a run carried on: with its parts before
+            title = (_("Results of {what}, its {n} parts added up (it was interrupted and carried on)",
+                       what=self.title, n=parts) if parts > 1 else _("Results of {what}", what=self.title))
+            for line in stats.report(whole, title).splitlines():
                 self.log(line)
             for job in jobs:              # chores or the Gem Maker on the way: apart from farming
                 for line in stats.report(job, _("Results of {what}", what=job["run"])).splitlines():
                     self.log(line)
             if app.get("results_speak", "end") == "end":
-                self.log(stats.short(r, self.tally.drop_left), speak=True)
+                self.log(stats.short(whole, self.tally.drop_left), speak=True)
 
     def _pause_card(self, bot: Bot | None) -> None:
         """A farming run over: its running experience card paused (xp_card_pause), so the minutes

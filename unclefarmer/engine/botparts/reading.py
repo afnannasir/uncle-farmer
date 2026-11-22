@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 from ... import gamemem, jsonio
 from ...errors import carry_on
 from ...i18n import _
-from .base import (STOPPING, GameBroken, Stopped)
+from .base import (STOPPING, GameBroken, GameLost, Stopped)
 from ...clock import Flag, StopFlag
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -291,6 +291,9 @@ class ReadingMixin(Parts):
                     next_reconnect = began + self.RECONNECT_GRACE
                     continue
             if not why.startswith(self.TRANSIENT) or self.clock.time() > began + self._patience(why):
+                if why.startswith(self.CONNECTION_GONE):
+                    # our character is out of the game and logging back in didn't bring it back
+                    raise GameLost(_("the game can't be read: {why}", why=why))
                 raise Stopped(_("the game can't be read: {why}", why=why), final=True)
             self.sleep(0.25)
 
@@ -299,6 +302,31 @@ class ReadingMixin(Parts):
     # its character readable again within 15 s. Id 0 is no character at all (logged out, kicked),
     # which no wait brings back.
     SELF_GONE_WAIT = 60.0
+    # A game whose world stopped (its world timer died, a thread hung) while the agent still
+    # answers: the character stands still whatever we press, and so does everything around it.
+    FROZEN_LOOKS = 4          # readings of the world...
+    FROZEN_GAP = 3.0          # ... this many seconds apart, all the same: frozen
+
+    def world_frozen(self) -> bool:
+        """Whether nothing at all changes in the game's world: our place and HP, and every
+        monster's, player's and effect's place and HP, the same over FROZEN_LOOKS readings. A
+        living map always has something moving (effects come and go every few seconds). With
+        nothing else in sight it can't be told: False."""
+        seen: object = None
+        for i in range(self.FROZEN_LOOKS):
+            if i:
+                self.sleep(self.FROZEN_GAP)
+            s = self._game.json("mem state" if getattr(self, "agent_state", False) else "mem")
+            rows: list[dict[str, Any]] = (s.get("entities") or []) if jsonio.is_object(s) and s.get("ok") else []
+            if not rows:
+                return False
+            me: dict[str, Any] = s.get("self") or {}
+            look = (me.get("x"), me.get("y"), me.get("hp"),
+                    frozenset((e.get("id"), e.get("x"), e.get("y"), e.get("hp")) for e in rows))
+            if seen is not None and look != seen:
+                return False
+            seen = look
+        return True
 
     def _patience(self, why: str) -> float:
         """How long a transient error may last before the run is given up."""
@@ -314,6 +342,9 @@ class ReadingMixin(Parts):
         map_info = s.get("map")
         map_data: dict[str, Any] = map_info if jsonio.is_object(map_info) else {}
         self._snap_map_id = int(map_data["id"]) if isinstance(map_data.get("id"), int) else None
+        chests = getattr(self, "chests", None)
+        if chests is not None:
+            chests.note(s, self._snap_at)      # a chest seen mid-fight is gone back for after it
         here = self._snap_map_id
         if here and here != self.notes_map:
             # Another map (0 is none: a change in progress). What the bot holds against monster

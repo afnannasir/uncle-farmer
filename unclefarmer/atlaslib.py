@@ -511,6 +511,7 @@ class MapModel(object):
         under = self._under
         self.barrier &= (under > 0) & ~(((under >= 200) & (under <= 226)) | (under == 299))
         del self._under
+        self.barrier |= self._door_slabs(rows)
         # A gang base's "inner door" (tile 209/210, every base at x 36-45, y 60) is painted with a
         # wall tile, but it is the inner hall's way out: players walk south through it to the outer
         # hall and the base's south exit (a recorded hand run, 2026-11-07, x 41 from y 43 to 117).
@@ -646,8 +647,46 @@ class MapModel(object):
                 return p
         return None
 
+    SLAB_LONG = 12      # cells: the longest door slab (Gnome excavation plant's are 8)
+
+    def _door_slabs(self, rows: Sequence[Row]) -> npt.NDArray[np.bool_]:
+        """The cells of the raised walls that close a door: a wall row one cell thick, above the
+        floor (z > 0), lying along a Door row (type 301-332) right beside it. Gnome excavation
+        plant's "secret door" rows (石门5) each have a "stone wall" at z=8 next to them; read
+        flat, that wall shut the door for good, and a follower stopped three times in six minutes
+        ("no way from 165,169 to 166,174") on the far side of doors its leader had opened and
+        walked through. Like the stage barriers, they only open in barriers_open."""
+        out = np.zeros(self.t.shape, dtype=bool)
+        doors: list[tuple[int, int, int, int]] = []
+        walls: list[tuple[int, int, int, int]] = []
+        for r in rows:
+            t = int(r["type_id"])
+            try:
+                z = float(r["z"])
+            except ValueError:
+                z = 0.0
+            box = (int(r["x1"]), int(r["y1"]), int(r["x2"]), int(r["y2"]))
+            if t in DOORS:
+                doors.append(box)
+            elif blocks(t) and z > 0 and (box[0] == box[2] or box[1] == box[3]) \
+                    and max(box[2] - box[0], box[3] - box[1]) < self.SLAB_LONG:
+                walls.append(box)
+        for wx1, wy1, wx2, wy2 in walls:
+            for dx1, dy1, dx2, dy2 in doors:
+                beside_rows = wy1 == wy2 and dy1 == dy2 and abs(wy1 - dy1) == 1 \
+                    and wx1 <= dx2 and dx1 <= wx2
+                beside_cols = wx1 == wx2 and dx1 == dx2 and abs(wx1 - dx1) == 1 \
+                    and wy1 <= dy2 and dy1 <= wy2
+                if beside_rows or beside_cols:
+                    xa, xb = max(1, wx1), min(self.w, wx2)
+                    ya, yb = max(1, wy1), min(self.h, wy2)
+                    if xa <= xb and ya <= yb:
+                        out[ya:yb + 1, xa:xb + 1] = self.solid[ya:yb + 1, xa:xb + 1]
+                    break
+        return out
+
     def barriers_open(self) -> "MapModel | None":
-        """A copy of the map with its stage barriers open (see _paint), or None when it has none.
+        """A copy of the map with its stage barriers and door slabs open (see _paint, _door_slabs), or None when it has none.
         A barrier stands until its stage is cleared, so routes keep to the walls the map draws and
         only a walk with no other way (a leader already through, a goal past the barrier) plans
         through one; a barrier still shut then stops the walk like any wall, and the stuck walk

@@ -73,10 +73,25 @@ class Stopped(Exception):
         self.final = final
 
 
+class NoWay(Stopped):
+    """No way there that the bot knows: a map it can't plan its way to (a dungeon entered through
+    an NPC), or no walk across this map. A run stops on it like any Stopped; following catches it
+    and waits for a teleport to the team leader instead (follow._wait_for_leader)."""
+
+
 class GameBroken(Stopped):
     """The game itself stopped working (it ran out of memory): nothing the bot does there works any
     more, so no guarding, no walk to the end place, and no closing the game or the PC as if farming
     had ended - the player restarts the game."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args, final=True)
+
+
+class GameLost(Stopped):
+    """Our character left the game and didn't come back (the connection dropped and logging back
+    in failed, or the player was logged out): nothing can be done in that game any more, so no
+    guarding and no walk to the end place. The run's place is kept, to carry on from later."""
 
     def __init__(self, *args: object) -> None:
         super().__init__(*args, final=True)

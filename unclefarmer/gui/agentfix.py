@@ -9,6 +9,7 @@ from collections.abc import Callable
 import wx
 
 from .. import gameinstall, updater
+from ..errors import carry_on
 
 
 def running_pids() -> list[int]:
@@ -19,12 +20,21 @@ def running_pids() -> list[int]:
     return pids + [pid for pid in updater.agent_games() if pid not in pids]
 
 
-def close_then(pids: list[int], then: Callable[[list[int]], None]) -> None:
+def close_then(pids: list[int], then: Callable[[list[int]], None], *, force: bool = False) -> None:
     """Close the games in pids on a worker (gameinstall.close_games: up to half a minute, and the
     window must not freeze meanwhile), then then(left) on the window's thread, left being the
-    games that wouldn't close."""
+    games that wouldn't close. Force only ends requested PIDs still identified as games."""
     def work() -> None:
-        left = gameinstall.close_games(pids)
+        if force:
+            try:
+                live_games = set(running_pids())
+                targets = [pid for pid in pids if pid in live_games]
+                left = [pid for pid in pids if pid not in live_games] + gameinstall.close_games(targets, force=True)
+            except OSError as e:
+                carry_on(e, "ending a game process")
+                left = pids
+        else:
+            left = gameinstall.close_games(pids)
         try:
             wx.CallAfter(then, left)
         except RuntimeError:            # the app is closing

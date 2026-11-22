@@ -136,6 +136,9 @@ class ToolboxScenario(GameBot, H):
         self.record("look_after")
         return HealthMixin.look_after(as_bot(self), me)
 
+    def tap_key(self, k: str, ms: int = 60) -> None:
+        KeysMixin.tap_key(as_bot(self), k, ms)
+
     def key(self, k: str, ms: int | None = None) -> None:
         KeysMixin.key(as_bot(self), k, 60 if ms is None else ms)
         self.record("key " + k)

@@ -388,7 +388,7 @@ def test_trigger_context_actions_edit_toggle_and_remove_selected_row(monkeypatch
     assert len(entries) == 3 and all(action[2] for action in entries)
     rows = editor.value()["steps"]
     class EditDialog:
-        def __init__(self, parent: Any, row: dict[str, Any]) -> None:
+        def __init__(self, parent: Any, row: dict[str, Any], *, keyboard_names: tuple[str, ...] = ()) -> None:
             assert row == rows[1]
             self.fields = dict(row, delay=12)
         def __enter__(self) -> Any:

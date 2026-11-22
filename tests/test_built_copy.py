@@ -15,7 +15,9 @@ import os
 import runpy
 import sys
 from collections.abc import Callable
+from contextlib import nullcontext
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -158,6 +160,9 @@ class Window:
 
     def SetStatusText(self, text: str) -> None:
         self.status.append(text)
+
+    def IsEnabled(self) -> bool:
+        return True
 
     def say(self, text: str, run: object = None) -> None:
         self.said.append(text)
@@ -332,17 +337,21 @@ def test_back_on_master_a_dev_build_is_told_why_nothing_is_offered(window: dict[
 
 @pytest.mark.usefixtures("built")
 def test_a_dev_build_is_offered_as_one(window: dict[str, list[str]], monkeypatch: pytest.MonkeyPatch) -> None:
+    import wx
+
     from unclefarmer.gui.mainparts import updates
-    asked: list[str] = []
-    def ask(parent: object, text: str, title: str | None = None) -> bool:
-        asked.append(text)
-        return True
-    monkeypatch.setattr(updates, "ask", ask)
+
+    offered: list[updater.Release] = []
+
+    def confirm(parent: Window, release: updater.Release) -> nullcontext[SimpleNamespace]:
+        offered.append(release)
+        return nullcontext(SimpleNamespace(ShowModal=returning(wx.ID_OK)))
+
+    monkeypatch.setattr(updates, "ChangelogDialog", confirm)
     monkeypatch.setattr(updater, "installed_version", returning("0.9.0-dev.57"))
     w = Window()
     w.s["update_channel"] = "dev"
     rel: updater.Release = {**REL, "version": "0.9.0-dev.58", "notes": "the notes"}
     w._checked_updates(rel, None)
-    assert len(asked) == 1 and "0.9.0-dev.58 is out (you have 0.9.0-dev.57)" in asked[0]
-    assert "development build from the dev branch" in asked[0] and "the notes" in asked[0]
+    assert offered == [rel]
     assert w.downloads == [rel]

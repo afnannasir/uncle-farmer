@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import contextlib
 
-from conftest import as_bot, ME
+from conftest import as_bot, Clock, ME
 from test_wrong_target import Fighter
 
 from unclefarmer.engine import bosses
@@ -49,11 +49,40 @@ def test_no_boss_and_nothing_near_one_is_a_target() -> None:
 
 
 class Walker:
-    def __init__(self, snap: dict[str, Any], cells: list[tuple[int, int]]) -> None:
-        self.p = {"boss_distance": 40}
+    def __init__(self, snap: dict[str, Any], cells: list[tuple[int, int]], map_id: int = 5121) -> None:
+        self.p: dict[str, Any] = {"boss_distance": 40}
         self.s, self.cells = snap, list(cells)
         self.lines: list[str] = []
         self.walked: list[tuple[float, float]] = []
+        self.clock = Clock()
+        self.in_instance = False
+        self.where = map_id
+        self.trips: list[int] = []
+        self.doors: list[tuple[float, float]] = []
+        self.door_to: int | None = None
+        self.hitting: set[int] = set()
+        self.fought = 0
+        self.modes = 0
+
+    def map_id(self) -> int:
+        return self.where
+
+    def travel(self, dst: int) -> None:
+        self.trips.append(dst)
+        self.where = dst
+
+    def attackers(self) -> set[int]:
+        return self.hitting
+
+    def fight_back(self) -> None:
+        self.fought += 1
+        self.hitting = set()
+
+    def sleep(self, seconds: float) -> None:
+        self.clock.advance(seconds)
+
+    def set_modes(self) -> None:
+        self.modes += 1
 
     def log(self, line: str, speak: bool=False) -> None:
         self.lines.append(line)
@@ -61,10 +90,18 @@ class Walker:
     def snap(self) -> dict[str, Any]:
         return self.s
 
-    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int=40) -> tuple[int, int] | None:
+    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int=40,
+                    **_kw: Any) -> tuple[int, int] | None:
         return self.cells.pop(0) if self.cells else None
 
-    def walk_to(self, cell: tuple[float, float], near: Callable[[dict[str, Any]], bool] | None=None) -> str:
+    def walk_to(self, cell: tuple[float, float], map_change: bool = False,
+                near: Callable[[dict[str, Any]], bool] | None=None) -> str:
+        if map_change:                 # the walk to a door: through it when door_to is set
+            self.doors.append(cell)
+            if self.door_to is None:
+                return "arrived"
+            self.where = self.door_to
+            return "map"
         self.walked.append(cell)
         return "arrived"
 
@@ -133,12 +170,13 @@ def test_too_close_compares_the_straight_line() -> None:
     assert not bosses.too_close(b, [mob(-1, "Death Worm", 100.0)], 5)
 
 
-def test_keep_away_does_nothing_without_a_reachable_cell() -> None:
+def test_keep_away_does_nothing_without_a_reachable_cell_or_a_door() -> None:
     snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
             "entities": [mob(-1, "Death Worm", 105.0, hp=900000)]}
     w = Walker(snap, [])
+    w.in_instance = True                       # a dungeon: its visit can't be left
     assert not bosses.keep_away(as_bot(w), snap, 5121, None)
-    assert w.walked == []
+    assert w.walked == [] and w.trips == []
 
 
 def test_keep_away_tries_the_whole_map_when_a_farm_area_is_set() -> None:
@@ -149,12 +187,127 @@ def test_keep_away_tries_the_whole_map_when_a_farm_area_is_set() -> None:
     assert w.walked == [(30, 100)]
 
 
-def test_keep_away_farms_on_when_nowhere_is_further_off() -> None:
+def test_nowhere_further_off_the_map_is_left_for_a_while() -> None:
+    """Wolf Prairie (5121): the nearest door far from the boss is the one to central plains (1041),
+    in its north-west corner. A minute there, fighting back what attacks us, then back."""
     snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
             "entities": [mob(-1, "Death Worm", 105.0, hp=900000)]}
     w = Walker(snap, [(101, 100), (102, 100)])
+    w.hitting = {-5}
+    start = w.clock.time()
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.walked == [] and w.trips == [1041, 5121] and w.where == 5121
+    assert w.fought == 1 and w.modes == 1
+    assert w.clock.time() - start >= bosses.AWAY_FIRST
+    assert w.lines[-2:] == ["Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s",
+                            "back to Wolf Prairie (5121)"]
+
+
+def test_the_map_is_left_through_the_door_chosen_far_from_the_boss() -> None:
+    """The walk goes to that door's own cell: travel alone could take another door to the same
+    map, by the boss. travel is only the way back then."""
+    me: dict[str, Any] = {"id": ME, "x": 100.0, "y": 100.0}
+    worm = mob(-1, "Death Worm", 105.0, hp=900000)
+    snap: dict[str, Any] = {"self": me, "entities": [worm]}
+    w = Walker(snap, [])
+    w.door_to = 1041
+    door = bosses.way_out(5121, me, worm, 40)
+    assert door is not None
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.doors == [(door["stand"][0], door["stand"][1])]
+    assert w.trips == [5121] and w.where == 5121
+
+
+def test_a_boss_still_there_doubles_the_wait_up_to_five_minutes() -> None:
+    snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "Death Worm", 105.0, hp=900000)]}
+    w = Walker(snap, [])
+    waits: list[float] = []
+    for _i in range(5):
+        before = w.clock.time()
+        assert bosses.keep_away(as_bot(w), snap, 5121, None)
+        waits.append(w.clock.time() - before)
+    assert waits == [60.0, 120.0, 240.0, 300.0, 300.0]
+    w.clock.advance(bosses.AWAY_RESET + 1)       # long gone: the wait starts over
+    before = w.clock.time()
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.clock.time() - before == 60.0
+
+
+def test_three_walk_offs_in_five_minutes_leave_the_map() -> None:
+    snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "Death Worm", 105.0, hp=900000)]}
+    w = Walker(snap, [])
+    w.random_cell = lambda *a, **k: (40, 100)   # type: ignore[method-assign]
+    for _i in range(3):
+        assert bosses.keep_away(as_bot(w), snap, 5121, None)
+        w.clock.advance(30)
+    assert w.walked == [(40, 100)] * 3 and w.trips == []
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.walked == [(40, 100)] * 3 and w.trips == [1041, 5121]
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)    # the count starts over after a trip
+    assert w.walked == [(40, 100)] * 4
+
+
+def test_walk_offs_spread_out_never_leave_the_map() -> None:
+    snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "Death Worm", 105.0, hp=900000)]}
+    w = Walker(snap, [])
+    w.random_cell = lambda *a, **k: (40, 100)   # type: ignore[method-assign]
+    for _i in range(6):
+        assert bosses.keep_away(as_bot(w), snap, 5121, None)
+        w.clock.advance(bosses.FLEE_WINDOW / 2)
+    assert w.trips == []
+
+
+def test_no_door_far_enough_from_the_boss_keeps_us_on_the_map() -> None:
+    me = {"x": 100.0, "y": 100.0}
+    door = bosses.way_out(5121, me, mob(-1, "Death Worm", 105.0), 40)
+    assert door is not None and door["dest"] == 1041
+    door = bosses.way_out(5121, me, mob(-1, "Death Worm", 10.0, 5.0), 40)    # by that door
+    assert door is not None and door["dest"] != 1041
+    assert bosses.way_out(5121, me, mob(-1, "Death Worm", 105.0), 600) is None
+
+
+def test_a_demonized_elite_is_walked_away_from_but_never_left_behind() -> None:
+    snap: dict[str, Any] = {"self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "demonized black bear", 120.0)]}
+    w = Walker(snap, [(40, 100)])
+    assert not bosses.keep_away(as_bot(w), snap, 5121, None)   # off unless elites are left alone
+    w.p["skip_demonized_elites"] = True
+    assert bosses.keep_away(as_bot(w), snap, 5121, None)
+    assert w.walked == [(40, 100)]
+    assert w.lines == ["demonized black bear (a demonized elite) is 20 steps away - keeping 30 steps from it"]
+    assert not bosses.keep_away(as_bot(w), snap, 5121, None)   # nowhere further off: farmed on
+    assert w.trips == []
+    snap["entities"][0]["x"] = 135.0                             # 35 steps: far enough
+    w.cells = [(40, 100)]
     assert not bosses.keep_away(as_bot(w), snap, 5121, None)
-    assert w.walked == []
+
+
+def test_an_elite_attacking_us_is_fought_not_run_from() -> None:
+    snap = {"self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "demonized black bear", 110.0)]}
+    w = Walker(snap, [(40, 100)])
+    w.p["skip_demonized_elites"] = True
+    w.hitting = {-1}
+    assert not bosses.keep_away(as_bot(w), snap, 5121, None) and w.walked == []
+
+
+def test_the_patrol_keeps_clear_of_bosses_and_elites_just_seen() -> None:
+    w = Walker({}, [])
+    w.p["skip_demonized_elites"] = True
+    snap = {"map": {"id": 5121}, "self": {"id": ME, "x": 100.0, "y": 100.0},
+            "entities": [mob(-1, "Death Worm", 150.0, hp=900000), mob(-2, "demonized Boar", 50.0),
+                         mob(-3, "Wolf", 60.0)]}
+    assert sorted(bosses.no_go(as_bot(w), snap)) == [(50.0, 100.0, 40.0), (150.0, 100.0, 40.0)]
+    snap["entities"] = []                        # out of sight: still kept clear of for a while
+    w.clock.advance(bosses.SEEN_FOR - 1)
+    assert len(bosses.no_go(as_bot(w), snap)) == 2
+    w.clock.advance(2)
+    assert bosses.no_go(as_bot(w), snap) == []
+    assert bosses.clear_of((100, 100), [(150.0, 100.0, 40.0)])
+    assert not bosses.clear_of((120, 100), [(150.0, 100.0, 40.0)])
 
 
 def test_keep_away_says_the_warning_once_per_boss() -> None:

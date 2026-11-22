@@ -11,6 +11,7 @@ from ...engine.runner import Run
 from ...errors import carry_on
 from ...i18n import _
 from ...link import AgentError, AgentLink, agents, games, server_name
+from .. import agentfix
 from ..common import error, first_selected, select_row
 from .base import SNAP_FRESH, FrameParts, Game, duration_text, out_of, profile_of, saved_item
 from typing import Any
@@ -36,6 +37,47 @@ class GamesMixin(FrameParts):
     def selected_pid(self) -> int | None:
         i = self.selected_index()
         return self.games[i][0] if i is not None else None
+
+    def on_game_key(self, event: wx.KeyEvent) -> None:
+        modifiers = event.GetModifiers()
+        if event.GetKeyCode() != wx.WXK_DELETE or modifiers not in (wx.MOD_NONE, wx.MOD_SHIFT):
+            event.Skip()
+            return
+        if event.IsAutoRepeat() or self.destroyed:
+            return
+        index = self.selected_index()
+        if index is None:
+            return
+        pid, profile, _where = self.games[index]
+        if pid in self.killing_games:
+            return
+        name = settings.profile_display(profile) if profile else _("Not logged in (process {pid})", pid=pid)
+        if modifiers == wx.MOD_NONE and wx.MessageBox(
+            _("Are you sure you want to kill this game?\n\n{name}", name=name), _("Kill game"),
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION, self,
+        ) != wx.YES:
+            return
+        # The list can refresh while the confirmation is open. Keep the original target.
+        if self.destroyed or not any(game[:2] == (pid, profile) for game in self.games):
+            return
+        self.killing_games.add(pid)
+        try:
+            agentfix.close_then([pid], lambda left: self._game_killed(pid, name, left), force=True)
+        except (OSError, RuntimeError) as e:
+            carry_on(e, "starting the game termination worker")
+            self._game_killed(pid, name, [pid])
+
+    def _game_killed(self, pid: int, name: str, left: list[int]) -> None:
+        self.killing_games.discard(pid)
+        if self.destroyed:
+            return
+        if left:
+            error(self, _("Couldn't kill {name}. It may have already closed.", name=name))
+        else:
+            if self.snap is not None and self.snap[0] == pid:
+                self.snap = None
+            self.stop(pid)
+        self.refresh_games()
 
     def selected_character(self) -> str | None:
         i = self.selected_index()
@@ -206,6 +248,8 @@ class GamesMixin(FrameParts):
         self.SetStatusText(_("{games} games, {bots} bots running", games=len(self.games), bots=running)
                            if len(self.games) != 1 else
                            (_("1 game, bot running") if running else _("1 game, bot stopped")))
+        self.keep_messengers()
+        self.keep_chats()
         if not self.games:
             self.show_status(activity=_("No game found. Start Mist World. (First time? File, Settings, Install.)"))
             return
@@ -216,8 +260,6 @@ class GamesMixin(FrameParts):
         restorer = getattr(self, "sound_restorer", None)
         if restorer is not None:
             restorer.sync([game[0] for game in self.games])
-        self.keep_messengers()
-        self.keep_chats()
         pid = self.selected_pid()
         run = self.runs.get(pid) if pid is not None else None
         values = {"run": self.run_text(run)}

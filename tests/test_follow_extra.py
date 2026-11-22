@@ -15,6 +15,7 @@ from unclefarmer.clock import CLOCK, Waitable
 from unclefarmer import gamekeys
 from unclefarmer.engine import follow
 from unclefarmer.engine.bot import Stopped
+from unclefarmer.engine.botparts.base import NoWay
 from unclefarmer.engine.botparts.parts import Sighting, Where
 from collections.abc import Callable, Sequence
 from typing import Any
@@ -457,6 +458,9 @@ class HelpBot:
     def __init__(self, targets: list[dict[str, Any]] | tuple[()]=(), attackers: list[int] | tuple[()]=()) -> None:
         self._targets = list(targets)
         self._attackers = set(attackers)
+        self.kill_tracker: Any = None
+        self.following: str | None = None
+        self.team_names: set[str] = set()
 
     def targets(self, snap: dict[str, Any]) -> list[dict[str, Any]]:
         return self._targets
@@ -495,6 +499,37 @@ def test_help_target_helps_what_attacks_us() -> None:
     healthy = mob(x=1.0, y=0.0, id=-7, hp=10, maxhp=10)
     b = HelpBot(targets=[healthy], attackers=[-7])
     assert follow.help_target(as_bot(b), world(), p) is healthy
+
+
+class _Tracker:
+    def __init__(self, struck: set[int]) -> None:
+        self.struck = struck
+
+    def claimed(self, mid: int) -> bool:
+        return mid in self.struck
+
+
+def test_help_target_joins_a_monster_another_player_struck() -> None:
+    # full HP to our eyes, but a player's strike landed on it: the team is on it, so are we
+    p = other(x=0.0, y=0.0)
+    fresh = mob(x=3.0, y=0.0, id=-4, hp=10, maxhp=10)
+    b = HelpBot(targets=[fresh])
+    b.kill_tracker = _Tracker({-4})
+    assert follow.help_target(as_bot(b), world(), p) is fresh
+
+
+def test_help_target_helps_a_teammate_away_from_the_player() -> None:
+    # the leader stands back; a teammate 30 tiles off fights a wounded monster beside them
+    p = other(x=0.0, y=0.0)
+    mate = other(name="Mate", x=30.0, y=0.0, id=11)
+    mate.update(hp=50, maxhp=100)
+    theirs = mob(x=32.0, y=0.0, id=-3)
+    b = HelpBot(targets=[theirs])
+    b.following = "Friend"
+    b.team_names = {"mate"}
+    assert follow.help_target(as_bot(b), world(entities=[p, mate]), p) is theirs
+    b.team_names = set()            # a stranger fighting it is not our team
+    assert follow.help_target(as_bot(b), world(entities=[p, mate]), p) is None
 
 
 # ---------------------------------------------------------------- _exit_taken
@@ -768,11 +803,50 @@ def test_follow_walks_back_to_where_they_were(monkeypatch: pytest.MonkeyPatch) -
     assert b.walks == [(2, 0)]
 
 
-def test_follow_gives_up_the_lost_player(fclock: Clock) -> None:
-    b = FollowBot(lambda: world(0.0, 0.0))
+def test_follow_waits_for_the_lost_player_instead_of_stopping(fclock: Clock) -> None:
+    # a minute without a sign of them: no stop - it waits (Shift+P when the game allows) until
+    # they turn up, then follows on
+    looks = {"n": 0}
+
+    def script() -> dict[str, Any]:
+        looks["n"] += 1
+        if looks["n"] > 40:
+            raise Stop()
+        return world(0.0, 0.0, entities=[other(x=2.0, y=0.0)] if looks["n"] > 6 else [])
+    b = FollowBot(script)
     b.on_sleep = lambda seconds: fclock.advance(100)
-    with pytest.raises(Stopped):
+    with pytest.raises(Stop):
         follow._follow(as_bot(b), "Friend")
-    assert b.sleeps == [0.5]
+    assert any(line.startswith("lost sight of Friend - waiting here") for line in b.logs)
+    assert follow.WAIT_LOOK in b.sleeps
+
+
+def test_no_way_there_waits_for_a_teleport_instead_of_stopping(fclock: Clock) -> None:
+    # the leader went into a dungeon we can't plan our way to: wait until something moves us
+    def no_way(mid: int, cell: tuple[float, float] | None = None) -> None:
+        raise NoWay("no way from central plains to Nether Cave - go there yourself and start again")
+    b = FollowBot(lambda: world(0.0, 0.0), locate=lambda name: (1832, 2, 20))
+    b.travel = no_way
+
+    def moved(seconds: float) -> None:          # the player's summons (or a teleport) took us there
+        b._map = 1832
+        b.locate = lambda name: None
+        b.snaps, b._script = [], None           # next look ends the test
+    b.on_sleep = moved
+    with pytest.raises(Stop):
+        follow._follow(as_bot(b), "Friend")
+    assert b.logs[1].startswith("no way from central plains to Nether Cave - go there yourself and start again"
+                                " - waiting here, and teleporting to the team leader (Shift+P)")
+
+
+def test_waiting_in_view_behind_a_shut_door_holds_until_they_move_on(fclock: Clock) -> None:
+    looks = {"n": 0}
+
+    def script() -> dict[str, Any]:
+        looks["n"] += 1
+        return world(0.0, 0.0, entities=[other(x=10.0 if looks["n"] < 4 else 30.0, y=0.0)])
+    b = FollowBot(script)
+    follow._wait_for_leader(as_bot(b), "Friend", "no way from 1,1 to 9,9 on Field")
+    assert looks["n"] == 4 and b.sleeps == [follow.WAIT_LOOK] * 2
 
 

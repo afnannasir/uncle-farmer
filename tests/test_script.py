@@ -836,10 +836,51 @@ def test_run_farm_passes_its_options() -> None:
 
 
 def test_run_farm_until_passes_a_callable() -> None:
-    bot = FakeBot(kills=4)
+    bot = FakeBot(kills=1)
     S.Runner(as_bot(bot), "farm until=kills >= 3").run()
     until = bot.calls[0][2]["until"]
+    assert until() is False
+    bot.kills = 4
     assert until() is True
+
+
+def test_a_farm_already_done_is_skipped_trip_and_all() -> None:
+    bot = FakeBot(kills=4)
+    S.Runner(as_bot(bot), "farm map=5121 until=kills >= 3\nfarm map=5361").run()
+    farms = [c for c in bot.calls if c[0] == "farm"]
+    assert [c[1] for c in farms] == [5361]
+    assert ("not farming Wolf Prairie (5121): kills >= 3 is already true", False) in bot.logs
+
+
+def test_a_repeat_with_every_farm_done_stops() -> None:
+    bot = FakeBot(kills=4)
+    with pytest.raises(Stopped, match="every farm of the script is already done"):
+        S.Runner(as_bot(bot), "repeat\n  farm map=5121 until=kills >= 3\nend").run()
+    assert not [c for c in bot.calls if c[0] == "farm"]
+
+
+def test_drop_left_is_the_minutes_the_sheet_says_or_minus_one() -> None:
+    bot = FakeBot()
+    r = S.Runner(as_bot(bot), "say {drop_left}")
+    r.run()
+    assert bot.logs[-2][0] == "-1"               # no sheet reading of it yet
+    bot.mev["sheet"] = {"level": 10, "mp": 20, "maxmp": 40, "drop_seconds": 14460, "age": 60}
+    S.Runner(as_bot(bot), "say {drop_left}").run()
+    assert bot.logs[-2][0] == "240"
+
+
+def test_drop_left_asks_for_the_sheet_once_a_minute_at_most() -> None:
+    bot = FakeBot()
+    asked: list[bool] = []
+
+    def ask_sheet(force: bool = False) -> dict[str, Any] | None:
+        asked.append(force)
+        return {"drop_seconds": 3600, "age": 0}
+    bot.ask_sheet = ask_sheet  # type: ignore[attr-defined]
+    r = S.Runner(as_bot(bot), "say {drop_left}\nsay {drop_left}")
+    r.run()
+    assert asked == [True]                       # the second look within the minute asks nothing
+    assert [line for line, _s in bot.logs[:2]] == ["60", "-1"]
 
 
 # ---------------------------------------------------------------- Runner: error paths

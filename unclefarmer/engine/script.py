@@ -16,8 +16,12 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      potions, grocer, bank, blacksmith, forger, gem_craftsman,
                                      artificer, shard_market, fish_buyer, herb_buyer, ore_buyer...
     restock                          top up the profile's restock list now (storehouse, then shops)
+    keyboard_profile <name>          apply a saved Keyboard Manager profile and prepare its selected skills
     gem_maker [check]                run the Gem Maker as set in Tools, Gem Maker (check: only look)
     gem_breaker [check]              run the Gem Breaker as set in Tools, Gem Breaker (check: only look)
+    potion_maker [check]             make and fuse potions as set in Tools, Potion Maker (check: only look)
+    triggers off                     this script does its own Before/After farming steps: the
+                                     Triggers lists don't run around it (Run, Autopilot writes it)
     enhance [check]                  run the Equipment Enhancer as set in Tools (check: only look)
     chores [check] [only=a,b]        the day's chores as set in Tools, Daily chores, each once a game
                                      day: bank, pet_rebirth, contribution_chests, donation, construction, feed, secret_room
@@ -31,8 +35,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      in Tools, XP loser (check: only read the numbers and look)
     dungeon [check] [<cave>]         the cave named (Spider cave, Scorpion Cave), else the one chosen in
                                      Tools, Dungeons - one a game day: supplies first, then all 15 minutes inside
-    sell_collection [fish|ore|herb|all]   sell what gathering brought in to the Aquaculture, Ore
-                                     and Herb Buyers (all of them, if no kind is given)
+    sell_collection [fish|ore|herb|all]   sell to the buyer for the character's gathering skill
+                                     (or the goods in the bag), unless a kind or all is specified
     sell_shards                      sell the shards the bag manager says to sell, at the nearest
                                      Shard Market (this city's when it has one)
     clean_bag                        throw away, where you stand, what is on the bag manager's
@@ -53,7 +57,9 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     farm [map=<map>] [minutes=N] [kills=N] [patrol=random|full|quick] [area=x1,y1,x2,y2]
          [only=<names>] [skip=<names>] [elites=fight|avoid] [until=<condition>]
                                      farm until a limit is reached (no limit = until stopped);
-                                     until= takes the rest of the line, so it goes last
+                                     until= takes the rest of the line, so it goes last;
+                                     map=best: the best field map for the character's level now
+                                     (monsters 9 below to 5 above it, the highest first)
     key <key> [milliseconds]         press a key: a-z 0-9 . , ; / space enter esc tab f1-f12 up down left right
     hold <key> <seconds>             hold a key down
     wait <seconds>
@@ -76,11 +82,15 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     on_stop ... end                  runs when the script ends or a stop rule fires (not on Stop)
 
 Conditions and expressions use: hp maxhp hp_pct mp maxmp mp_pct level map map_name x y kills
-minutes clock ("HH:MM") monsters, your own `set` names, numbers, "text", and/or/not,
+minutes clock ("HH:MM") monsters drop_left, your own `set` names, numbers, "text", and/or/not,
 < <= > >= == !=, + - * / and the functions bag("item"), random(a, b), min, max, abs, round, int.
 mp, maxmp, mp_pct and level come from the game (the own-HP key and the character sheet); they are -1
 until they have been seen. What this run earned: arnebia_gained contribution_gained xp_gained
-levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`.
+levels_gained shards_gained, e.g. `stop_when contribution_gained >= 5000`. drop_left: minutes of the
+day's drop time left (the game gives 7 hours a day), -1 until the character sheet has said; a farm
+whose until= is already true when it is reached is skipped, trip and all:
+`farm map=5361 until=drop_left >= 0 and drop_left <= 240` farms Underwater World for the first three
+hours of the day's drop time, and only those - a restart in the middle carries on with what is left.
 """
 
 from __future__ import annotations
@@ -99,8 +109,9 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import chores, constructionscan, crafting, gembreak, dungeon, follow, market, survey, town, triggers
+from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey, teamlead, town
 from .bot import Bot, Respawned, Stopped
+from .botparts.base import GameLost
 from collections.abc import Callable, Mapping
 
 def _at(rest: str, n: int):
@@ -111,16 +122,20 @@ def _at(rest: str, n: int):
     return m.group(1), (int(m.group(2)), int(m.group(3)))
 
 
+BEST_MAP = "best"        # farm map=best: the best map for the character's level when the line runs
 BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
-COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone",
+COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone", "manage_team",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
-            "sound_watch", "sound_mute", "sound_wait") + BLOCKS
+            "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
              "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
-             "sound_muted", "sound_positioned")
+             "sound_muted", "sound_positioned", "drop_left")
+
+
+SKIPPED_MOST = 10     # farms in a row skipped as already done: a repeat with nothing left to farm
 
 
 class ScriptError(Exception):
@@ -616,6 +631,11 @@ def _prep_survey(node: Node, rest: str, n: int):
     node.opts["scope"] = w
 
 
+def _prep_triggers(node: Node, rest: str, n: int):
+    if rest.strip().lower() != "off":
+        raise ScriptError(n, _("write it as: triggers off"))
+
+
 def _prep_check_only(node: Node, rest: str, n: int):
     if rest.strip().lower() not in ("", "check"):
         raise ScriptError(n, _("write it as: {cmd}  or  {cmd} check", cmd=node.kind))
@@ -668,11 +688,11 @@ def _prep_construction_scan(node: Node, rest: str, n: int):
 
 
 def _prep_sell_collection(node: Node, rest: str, n: int):
-    w = rest.strip().lower() or "all"
+    w = rest.strip().lower()
     kinds = tuple(town.COLLECTION_BUYERS)
-    if w not in kinds + ("all",):
+    if w and w not in kinds + ("all",):
         raise ScriptError(n, _("write it as: sell_collection  or  sell_collection fish (fish, ore or herb)"))
-    node.opts["kinds"] = kinds if w == "all" else (w,)
+    node.opts["kinds"] = (kinds if w == "all" else (w,)) if w else None
 
 
 MARKET_HOW = N_("write it as: market scan [sellers] | market search [item=\"<name>\"] [cheapest] [max=<price>] "
@@ -823,7 +843,9 @@ def _farm_choices(opts: dict[str, Any], n: int):
 
 def _prep_farm(node: Node, rest: str, n: int):
     opts, rest = _farm_options(rest, n)
-    if "map" in opts:
+    if "map" in opts and str(opts["map"]).strip().lower() == BEST_MAP:
+        opts["map"] = BEST_MAP            # chosen when the line runs, for the level then (best_map)
+    elif "map" in opts:
         opts["map"] = atlas.resolve(opts["map"])
         if opts["map"] is None:
             raise ScriptError(n, _("unknown map: {map}", map=rest))
@@ -834,6 +856,7 @@ def _prep_farm(node: Node, rest: str, n: int):
         opts["area"] = _farm_area(opts["area"], n)
     _farm_choices(opts, n)
     if "until" in opts:
+        opts["until_text"] = opts["until"]
         opts["until"] = compile_expr(opts["until"], n)
     node.opts = opts
 
@@ -866,12 +889,23 @@ def _prep_sound(node: Node, rest: str, n: int):
     node.opts.update(ids=ids.text, timeout=timeout)
 
 
+def _prep_keyboard_profile(node: Node, rest: str, n: int):
+    args = _split(rest, n)
+    if len(args) != 1:
+        raise ScriptError(n, _("Use keyboard_profile followed by one quoted profile name."))
+    try:
+        node.opts["name"] = keyboard.profile_name(args[0])
+    except ValueError as error:
+        raise ScriptError(n, str(error)) from error
+
+
 PREPARE = {
     "login": _prep_login,
+    keyboard.COMMAND: _prep_keyboard_profile,
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
     "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
-    "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "bounties": _prep_check_only, "construction_scan": _prep_construction_scan, "visit": _prep_visit,
+    "triggers": _prep_triggers, "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "potion_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "bounties": _prep_check_only, "construction_scan": _prep_construction_scan, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "market": _prep_market,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
@@ -883,13 +917,27 @@ PREPARE = {
 
 # ---------------------------------------------------------------- running
 class Runner:
+    own_lists = False             # `triggers off`: the script does its own Before/After farming steps
+
     def __init__(self, bot: Bot, text: str):
         self.bot = bot
         self.main, self.subs, self.on_stop = parse(text)
+        # `triggers off` anywhere at the top: the script carries its own Before/After steps
+        self.own_lists = any(node.kind == "triggers" for node in self.main)
         self.vars: dict[str, Any] = dict(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
                                          sound_muted=False, sound_positioned=False)
         self.call_depth = 0
         self.watched: set[Node] = set()
+        self.skipped_farms = 0          # farms in a row skipped as already done (SKIPPED_MOST)
+        self.sheet_asked = -1e9         # when drop_left last asked the game for the sheet
+        # Where the run is (engine/resume.py): one frame per block being run, its line ("i") and
+        # what the line there has done (a loop's "turn", an if's "branch", a farm's progress).
+        self.trail: list[dict[str, Any]] = []
+        self.ahead: list[dict[str, Any]] = []     # carrying on: the saved frames still to reach
+        self.arriving: tuple[Node, dict[str, Any]] | None = None   # the saved line being gone into
+        self.unwinding = False          # an exception is leaving the blocks: the trail is no place
+        self.minutes_before = 0.0       # carrying on: what the interrupted run had already done
+        self.kills_before = 0
 
     def names(self) -> dict[str, Any]:
         """What an expression can read: the script's own values, then the game's (hp, map...)."""
@@ -904,14 +952,29 @@ class Runner:
         names.update(hp=hp, maxhp=top, hp_pct=round(100.0 * hp / top, 1), mp=mp, maxmp=maxmp,
                      mp_pct=round(100.0 * mp / maxmp, 1) if maxmp > 0 else -1, level=sheet.get("level", -1),
                      map=snap_map.get("id"), map_name=snap_map.get("name"), x=me["x"], y=me["y"],
-                     kills=b.kills, minutes=round(b.minutes(), 2), clock=time.strftime("%H:%M"))
+                     kills=b.kills + self.kills_before, minutes=round(b.minutes() + self.minutes_before, 2),
+                     clock=time.strftime("%H:%M"))
         names["monsters"] = _Lazy(lambda: len(b.targets(b.snap())))
+        names["drop_left"] = _Lazy(lambda: self.drop_left(sheet))
         r: dict[str, Any] = b.tally.result() if b.tally else {}
         picked: dict[str, int] = r.get("picked") or {}
         names.update(arnebia_gained=r.get("arnebia", 0), contribution_gained=r.get("contribution", 0),
                      xp_gained=r.get("experience", 0), levels_gained=r.get("levels", 0),
                      shards_gained=sum(v for n, v in picked.items() if stats.is_shard(n)))
         return names
+
+    def drop_left(self, sheet: dict[str, Any]) -> int:
+        """Minutes of the day's drop time left, from the character sheet; -1 when it hasn't said.
+        No reading yet (a run that hasn't killed anything): the sheet is asked for, at most once a
+        minute."""
+        left = stats.drop_left(sheet)
+        now = clock_for(self.bot).time()
+        ask = getattr(self.bot, "ask_sheet", None)
+        if left is None and ask is not None and now - self.sheet_asked >= 60:
+            self.sheet_asked = now
+            got = ask(force=True)
+            left = stats.drop_left(got) if jsonio.is_object(got) else None
+        return -1 if left is None else int(left // 60)
 
     def funcs(self) -> dict[str, Callable[..., Any]]:
         def bag(item: str) -> int:
@@ -940,12 +1003,53 @@ class Runner:
         except (TypeError, OverflowError, ZeroDivisionError, ValueError) as e:
             raise Stopped(_("line {n}: {err}", n=line, err=e))
 
+    # ------------------------------------------------------------ the run's place
+    def resume_from(self, row: dict[str, Any]) -> None:
+        """Carry on an interrupted run (engine/resume.py): its place, its values, its minutes and kills."""
+        path: list[Any] = row.get("path") or []
+        self.ahead = [dict(f) for f in path if jsonio.is_object(f)]
+        saved: dict[str, Any] = row.get("vars") or {}
+        self.vars.update({k: v for k, v in saved.items() if isinstance(v, (int, float, str, bool))})
+        self.minutes_before = float(row.get("minutes") or 0.0)
+        self.kills_before = int(row.get("kills") or 0)
+
+    def position(self) -> dict[str, Any] | None:
+        """Where the run is now, to save (engine/resume.py); None when it can't be told (the blocks
+        are being left, or another thread changed a frame while it was read: the next save will do)."""
+        if self.unwinding or not self.trail:
+            return None
+        b = self.bot
+        now = clock_for(b).time()
+        try:
+            frames: list[dict[str, Any]] = []
+            for f in list(self.trail):
+                g = {k: v for k, v in list(f.items()) if not k.startswith("_")}
+                if "_farm_at" in f:
+                    g["farm_minutes"] = round(float(f.get("_farm_m0", 0.0)) + (now - float(f["_farm_at"])) / 60.0, 2)
+                    g["farm_kills"] = int(f.get("_farm_k0", 0)) + b.kills - int(f["_farm_kills"])
+                frames.append(g)
+        except (RuntimeError, KeyError, TypeError, ValueError):
+            return None
+        values = {k: v for k, v in list(self.vars.items()) if isinstance(v, (int, float, str, bool))}
+        return {"path": frames, "vars": values, "minutes": round(b.minutes() + self.minutes_before, 2),
+                "kills": b.kills + self.kills_before}
+
+    def _arrive(self, node: Node) -> dict[str, Any] | None:
+        """The saved frame of this line when the run is carrying on into it (once), else None."""
+        if self.arriving is not None and self.arriving[0] is node:
+            frame = self.arriving[1]
+            self.arriving = None
+            return frame
+        return None
+
     def run(self) -> None:
         try:
             self.block(self.main)
             self.bot.log(_("script finished"))
         except _End as e:
             self.bot.log(str(e) or _("script stopped itself"))
+        except GameLost:
+            raise                 # no on_stop: the game is gone
         except Stopped as e:
             if self.bot.stop_event.is_set():
                 raise
@@ -965,19 +1069,44 @@ class Runner:
             pass
 
     def block(self, nodes: list[Node]) -> None:
-        for node in nodes:
-            self.bot.check()
-            deaths = 0
-            while True:
-                try:
-                    self.step(node)
-                    break
-                except Respawned:
-                    # died during this line (travel, walk, talk...) and came back: do it again
-                    deaths += 1
-                    if deaths >= 3:
-                        raise Stopped(_("line {n}: died every time I tried it", n=node.line))
-                    self.bot.log(_("line {n} again after respawning", n=node.line))
+        saved = self.ahead.pop(0) if self.ahead else None
+        start = min(max(0, int(saved.get("i", 0))), len(nodes)) if saved else 0
+        frame: dict[str, Any] = {"i": start}
+        self.trail.append(frame)
+        try:
+            for i, node in enumerate(nodes):
+                if i < start:
+                    if node.kind in resume.KEPT:
+                        self._line(node)    # carrying on: what sets how the run ends still counts
+                    continue
+                frame.clear()
+                frame["i"] = i
+                if saved is not None and i == start:
+                    self.arriving = (node, saved)
+                    if node.kind not in resume.OPENS:
+                        self.ahead.clear()    # nothing deeper to reach
+                self.unwinding = False
+                self._line(node)
+        except BaseException:
+            self.unwinding = True     # the place to keep is the last one saved, not this
+            raise
+        finally:
+            self.trail.pop()
+
+    def _line(self, node: Node) -> None:
+        self.bot.check()
+        deaths = 0
+        while True:
+            try:
+                self.unwinding = False
+                self.step(node)
+                break
+            except Respawned:
+                # died during this line (travel, walk, talk...) and came back: do it again
+                deaths += 1
+                if deaths >= 3:
+                    raise Stopped(_("line {n}: died every time I tried it", n=node.line))
+                self.bot.log(_("line {n} again after respawning", n=node.line))
 
     LOOP_TURNS = 20.0     # a loop goes round at most this often a second
 
@@ -1006,20 +1135,33 @@ class Runner:
         return True
 
     def _do_repeat(self, node: Node, b: Bot, o: dict[str, Any]):
-        count = 0
+        frame = self.trail[-1]
+        saved = self._arrive(node)
+        count = max(0, int(saved.get("turn", 1)) - 1) if saved else 0
         while o["times"] is None or count < o["times"]:
             count += 1
+            frame["turn"] = count
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
     def _do_while(self, node: Node, b: Bot, o: dict[str, Any]):
-        while self.value(node.expr, node.line):
+        inside = self._arrive(node) is not None    # carrying on inside it: that turn goes on first
+        while inside or self.value(node.expr, node.line):
+            inside = False
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
     def _do_if(self, node: Node, b: Bot, o: dict[str, Any]):
-        for cond, body in node.branches:
+        frame = self.trail[-1]
+        saved = self._arrive(node)
+        taken = saved.get("branch") if saved else None
+        if isinstance(taken, int) and 0 <= taken < len(node.branches):
+            frame["branch"] = taken        # carrying on inside the branch it had taken
+            self.block(node.branches[taken][1])
+            return
+        for k, (cond, body) in enumerate(node.branches):
             if cond is None or self.value(cond, node.line):
+                frame["branch"] = k
                 self.block(body)
                 break
 
@@ -1045,7 +1187,7 @@ class Runner:
             self.watched.add(node)
             b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
             if b.tally is not None:       # the results' Time remaining counts down to the rule's end
-                at = end_time(expr, b.started, clock_for(b).time())
+                at = end_time(expr, b.started - self.minutes_before * 60.0, clock_for(b).time())
                 if at is not None:
                     b.tally.deadline(at)
 
@@ -1134,51 +1276,15 @@ class Runner:
     def _do_survey(self, node: Node, b: Bot, o: dict[str, Any]):
         survey.survey(b, o["scope"])
 
-    def _do_gem_maker(self, node: Node, b: Bot, o: dict[str, Any]):
-        k = node.kind
-        cfg: dict[str, Any] = b.p.get("gem_maker" if k == "gem_maker" else "enhancer") or {}
-        if not cfg:
-            raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Maker") if k == "gem_maker"
-                            else _("Equipment Enhancer")))
-        with stats.doing(b, k):          # its shards, gems and fees are no farming loot
-            (crafting.gem_maker if k == "gem_maker" else crafting.enhance)(b, cfg, o.get("check", False))
+    # The Tools menu's jobs (engine/activities.py): the same code triggers and schedules run
+    def _do_activity(self, node: Node, b: Bot, o: dict[str, Any]):
+        activities.run(b, node.kind, o.get("check", False), o)
 
-    _do_enhance = _do_gem_maker
+    _do_gem_maker = _do_gem_breaker = _do_potion_maker = _do_enhance = _do_chores = _do_gather = _do_lose_xp = _do_activity
+    _do_dungeon = _do_sell_collection = _do_bounties = _do_construction_scan = _do_activity
 
-    def _do_gem_breaker(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "gem_breaker"):
-            gembreak.run(b, gembreak.config(b.p), o.get("check", False))
-
-    def _do_chores(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "chores"):
-            chores.run(b, chores.config(b.p), o.get("check", False), o.get("only") or None)
-
-    def _do_bounties(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "bounties"):
-            chores.collect_bounties(b, chores.config(b.p), o.get("check", False))
-
-    def _do_construction_scan(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "construction_scan"):
-            if o.get("auto"):
-                constructionscan.scan_and_publish(b, o["auto"])
-            elif o.get("publish"):
-                constructionscan.publish(b, o["publish"])
-            else:
-                constructionscan.scan(b)
-
-    def _do_gather(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "gather", o.get("check", False))     # the catch and its sale are no farming loot
-
-    def _do_lose_xp(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "lose_xp", o.get("check", False))
-
-    def _do_dungeon(self, node: Node, b: Bot, o: dict[str, Any]):
-        dungeon.run(b, dungeon.config(b.p), o.get("check", False), o.get("cave"))
-
-    def _do_sell_collection(self, node: Node, b: Bot, o: dict[str, Any]):
-        with stats.doing(b, "sell_collection"):
-            if not town.sell_collection(b, o["kinds"]):
-                b.log(_("nothing of the collection was sold"))
+    def _do_triggers(self, node: Node, b: Bot, o: dict[str, Any]):
+        pass                      # read when the script is (own_lists): nothing to do as it runs
 
     def _do_market(self, node: Node, b: Bot, o: dict[str, Any]):
         with stats.doing(b, "market"):
@@ -1192,21 +1298,10 @@ class Runner:
         else:
             town.visit(b, None, name=w)
 
-    # The Tools menu's jobs: the same code the Character settings' triggers run (engine/triggers.py)
-    def _do_sell_shards(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "sell_shards")
+    _do_sell_shards = _do_clean_bag = _do_update_shard_prices = _do_store_items = _do_restock = _do_activity
 
-    def _do_clean_bag(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "clean_bag")
-
-    def _do_update_shard_prices(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "update_shard_prices")
-
-    def _do_store_items(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "store_items")
-
-    def _do_restock(self, node: Node, b: Bot, o: dict[str, Any]):
-        triggers.run_job(b, "restock")
+    def _do_keyboard_profile(self, node: Node, b: Bot, o: dict[str, Any]):
+        keyboard.apply(b, o["name"])
 
     def _do_buy(self, node: Node, b: Bot, o: dict[str, Any]):
         town.buy(b, o["item"], o["count"])
@@ -1251,6 +1346,9 @@ class Runner:
     def _do_hearthstone(self, node: Node, b: Bot, o: dict[str, Any]):
         b.go_home()
 
+    def _do_manage_team(self, node: Node, b: Bot, o: dict[str, Any]):
+        teamlead.manage(b)          # the team set up, then managed until the run is stopped
+
     def _do_end_at(self, node: Node, b: Bot, o: dict[str, Any]):
         b.end_place = o["end"]
 
@@ -1262,11 +1360,49 @@ class Runner:
 
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
-        mid = o.get("map") or b.map_id()
-        b.farm(mid, area=o.get("area"), minutes=o.get("minutes", 0), kills=o.get("kills", 0),
+        mid = best_map(b) if o.get("map") == BEST_MAP else (o.get("map") or b.map_id())
+        saved = self._arrive(node)
+        done_minutes = float(saved.get("farm_minutes", 0.0)) if saved else 0.0
+        done_kills = int(saved.get("farm_kills", 0)) if saved else 0
+        minutes, kills = float(o.get("minutes", 0) or 0), int(o.get("kills", 0) or 0)
+        if (minutes and done_minutes >= minutes) or (kills and done_kills >= kills):
+            b.log(_("not farming {map}: the interrupted run had already done it", map=atlas.label(mid)))
+            return
+        if until is not None and self.value(until, node.line):
+            # Already done: no trip to it. A plan's spot whose share of the drop time is used up
+            # (a run restarted later in the day) goes straight on to the next spot.
+            self.skipped_farms += 1
+            b.log(_("not farming {map}: {cond} is already true", map=atlas.label(mid), cond=o.get("until_text", "")))
+            if self.skipped_farms >= SKIPPED_MOST:
+                raise Stopped(_("every farm of the script is already done - stopping"))
+            return
+        self.skipped_farms = 0
+        if saved:
+            b.log(_("carrying on with {map} where it was: {minutes} minutes and {kills} kills done",
+                    map=atlas.label(mid), minutes=int(done_minutes), kills=done_kills))
+        frame = self.trail[-1]
+        frame.update(_farm_at=clock_for(b).time(), _farm_kills=b.kills, _farm_m0=done_minutes, _farm_k0=done_kills)
+        b.farm(mid, area=o.get("area"), minutes=minutes - done_minutes if minutes else 0,
+               kills=kills - done_kills if kills else 0,
                only=o.get("only", ""), skip=o.get("skip", ""), patrol=o.get("patrol", "random"),
                avoid_elites=o.get("elites") == "avoid",
                until=(lambda: bool(self.value(until, node.line))) if until is not None else None)
+
+
+def best_map(b: Bot) -> int:
+    """`farm map=best`: the first of atlas.maps_for_level for the character's level as the sheet
+    says now - an ordinary field before a dungeon or any other kind, the highest fitting monsters
+    first. Stopped (said) when the level isn't known or no map fits it."""
+    sheet = b.refresh_sheet() or {}
+    level = sheet.get("level")
+    if not isinstance(level, int) or level <= 0:
+        raise Stopped(_("can't choose the best map: the character's level isn't known yet"), final=True)
+    fits = atlas.maps_for_level(level)
+    if not fits:
+        raise Stopped(_("no farming map fits level {level}", level=level), final=True)
+    mid, name = fits[0][0], fits[0][1]
+    b.log(_("the best map for level {level}: {map}", level=level, map=name))
+    return mid
 
 
 class _Lazy:

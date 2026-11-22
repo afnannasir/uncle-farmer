@@ -7,6 +7,7 @@ Nothing here reads a real game: a fake bot hands the tally bag rows, a character
 
 from __future__ import annotations
 
+import calendar
 import time
 
 import pytest
@@ -641,12 +642,23 @@ def test_no_heal_lines_without_heals_and_old_runs_say_skills_were_not_counted() 
 
 def test_runs_can_end_at_a_time_and_days_lists_the_days_with_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(stats, "RESULTS", str(tmp_path))
-    lines = ['{"kind": "farming", "start": "%s", "minutes": 1}' % s
-             for s in ("2026-11-07 23:59:00", "2026-11-08 00:00:00", "2026-11-08 18:00:00", "2026-11-10 09:00:00")]
-    lines.append('{"kind": "tool", "start": "2026-11-09 10:00:00", "tool": "gem_maker"}')
+    # the game's days run from 00:00 GMT: the starts are written as this computer's clock shows them
+    def at(gmt: str) -> str:
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(calendar.timegm(time.strptime(gmt, "%Y-%m-%d %H:%M"))))
+    starts = [at(s) for s in ("2026-11-07 23:59", "2026-11-08 00:00", "2026-11-08 18:00", "2026-11-10 09:00")]
+    lines = ['{"kind": "farming", "start": "%s", "minutes": 1}' % s for s in starts]
+    lines.append('{"kind": "tool", "start": "%s", "tool": "gem_maker"}' % at("2026-11-09 10:00"))
     (tmp_path / "Hero.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
     since, until = stats.day_bounds("2026-11-08")
     assert until - since == 86400
-    assert [r["start"] for r in stats.runs("Hero", since, until=until)] == ["2026-11-08 00:00:00", "2026-11-08 18:00:00"]
+    assert [r["start"] for r in stats.runs("Hero", since, until=until)] == starts[1:3]
     assert stats.days("Hero") == ["2026-11-10", "2026-11-08", "2026-11-07"]
     assert stats.days("Hero", stats.TOOL) == ["2026-11-09"]
+
+
+def test_a_game_day_runs_from_midnight_gmt_to_midnight_gmt() -> None:
+    late = float(calendar.timegm(time.strptime("2026-11-08 23:30", "%Y-%m-%d %H:%M")))
+    assert stats.game_day_of(late) == "2026-11-08"
+    assert stats.game_day_of(late + 3600) == "2026-11-09"       # past 00:00 GMT: the next day
+    since, until = stats.day_bounds("2026-11-09")
+    assert since == late + 1800 and until == since + 86400

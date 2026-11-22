@@ -75,3 +75,49 @@ def test_an_older_agent_is_never_asked() -> None:
     b = Bot(Agent(oom=1), version=35)
     b.check_game(force=True)
     assert b.agent.asked == 0 and b.broken is None
+
+
+# ---------------------------------------------------------------- a frozen world
+class World:
+    """`mem state` readings, one after another (the last one again once they run out)."""
+
+    def __init__(self, *readings: dict[str, Any]) -> None:
+        self.readings = list(readings)
+
+    def send(self, line: str) -> str:
+        return "ok"
+
+    def json(self, line: str) -> dict[str, Any]:
+        return self.readings.pop(0) if len(self.readings) > 1 else self.readings[0]
+
+
+class Looker(Bot):
+    def sleep(self, seconds: float) -> None:
+        pass
+
+
+def reading(monster_x: float = 10.0, effect: int | None = None) -> dict[str, Any]:
+    rows: list[dict[str, Any]] = [{"id": 5, "x": monster_x, "y": 3.0, "hp": 100}]
+    if effect is not None:
+        rows.append({"id": effect, "x": 1.0, "y": 1.0, "hp": 1})
+    return {"ok": True, "self": {"x": 1.0, "y": 1.0, "hp": 50}, "entities": rows}
+
+
+def frozen(world: World) -> bool:
+    b = Looker(Agent())
+    b.a = world                          # pyright: ignore[reportAttributeAccessIssue]
+    return b.world_frozen()
+
+
+def test_a_world_where_nothing_moves_is_frozen() -> None:
+    assert frozen(World(reading()))
+
+
+def test_a_monster_that_moves_or_an_effect_that_comes_means_the_game_lives() -> None:
+    assert not frozen(World(reading(), reading(), reading(monster_x=11.0)))
+    assert not frozen(World(reading(), reading(effect=900)))
+
+
+def test_with_nothing_in_sight_a_freeze_is_not_assumed() -> None:
+    assert not frozen(World({"ok": True, "self": {"x": 1.0, "y": 1.0, "hp": 50}, "entities": []}))
+    assert not frozen(World({"error": "noworld: entity map"}))

@@ -205,6 +205,10 @@ Use `map=` to send your character to a particular map before farming.
 
 You can identify the map by its name or number, just like with the `travel` command.
 
+`map=best` picks the map when the line runs: the best field map for the character's level at that moment (monsters from 9 levels below to 5 above it, the highest first). The log says which map it chose, so a script that runs every day follows the character as it levels up.
+
+    farm map=best
+
 ### Setting a farming limit
 
 You can decide when a farming session should finish by setting a time limit or a kill target.
@@ -293,6 +297,15 @@ You can use `until=` to stop farming as soon as a condition becomes true.
 This example stops the farming session when your bag has fewer than 20 Large Red Potions.
 
 **Important:** `until=` takes everything after it as its condition, so it must always be the last option on the line.
+
+A `farm` line whose `until=` condition is already true when the script reaches it is skipped, with no trip to the map: the log says "not farming ... is already true". If ten `farm` lines in a row are skipped that way (a `repeat` with nothing left to farm), the run stops.
+
+`drop_left` is the minutes of the day's drop time left (the game gives 7 hours a day), or -1 until the character sheet has said. It lets two maps share one day, kept across restarts:
+
+    farm map=5361 until=drop_left >= 0 and drop_left <= 240
+    farm map=5281
+
+The first line farms Underwater World until 4 hours of drop time are left, the second farms Margit Rainforest for the rest. Started again later in the day, the script skips the first line once its share is used up. Write `drop_left >= 0 and` first, so that an unknown drop time (-1) is never taken for a used-up share. The plan editor writes these lines for you (**A share of the day's drop time** on a spot).
 
 ### Combining farming options
 
@@ -467,6 +480,7 @@ These values help you keep track of what your character has accomplished during 
 | `xp_gained` | Experience gained during this run |
 | `levels_gained` | Levels gained during this run |
 | `contribution_gained` | Contribution gained during this run |
+| `drop_left` | Minutes of the day's drop time left, -1 until the character sheet has said |
 
 For `shards_gained`, every shard picked up counts, even if it was later thrown away.
 
@@ -788,10 +802,20 @@ If you've configured these tools in Uncle Farmer, you can run them directly from
     gem_maker check    only look: walk there, read the menus and prices, change nothing
     gem_breaker        run the Gem Breaker as set up in Tools: this can't be undone
     gem_breaker check  only look: say what would be broken, break nothing
+    potion_maker       make and fuse potions as set up in Tools, Potion Maker
+    potion_maker check only look: read the Pharmacist's fees, make and buy nothing
     enhance            run the Equipment Enhancer as set up in Tools
     enhance check      only look
 
 The `check` options let you inspect what the bot would do without actually running the tool's actions.
+
+### A script with its own Before and After steps
+
+A farming script normally gets the character's **Before farming** and **After farming** lists (Character settings → Triggers) run around it. A script that does those steps itself says so at the top, and the lists then don't run a second time:
+
+    triggers off
+
+**Run → Autopilot** writes the day this way when you choose "One script of the day": the Before steps first, then the farming, then the After steps inside an `on_stop` block (which runs when the farming ends by itself or at the daily stop, never after you press Stop).
 
 ### Running daily chores
 
@@ -843,10 +867,11 @@ To ask the officers ticked in **Tools, Hunting bounties** for what they pay, use
 
 If you want to sell the gathered items separately, use:
 
-    sell_collection              sell fish, ore and herbs
-    sell_collection fish         sell only one type: fish, ore or herb
+    sell_collection              sell the character's gathering type
+    sell_collection fish         sell only fish
+    sell_collection all          visit all three types of buyer
 
-The available types are `fish`, `ore`, and `herb`.
+The available types are `fish`, `ore`, and `herb`. If the character has no gathering skill and no type is specified, the bot chooses buyers for the goods it recognizes in the bag.
 
 ### Managing shards and your bag
 
@@ -1208,8 +1233,9 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Farming
 
-    farm [map=<map>] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
+    farm [map=<map>|map=best] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
          [only=<names>] [skip=<names>] [elites=<fight|avoid>] [until=<condition>]
+    triggers off                    this script does its own Before/After farming steps
 
 ### NPCs, shops and storage
 
@@ -1243,14 +1269,18 @@ Use this section when you need a quick reminder of a command or its syntax.
 
     follow <player>
     come <player> [<map> [at x,y]]
+    manage_team                     set the team up (Team tab), then manage it until the run is stopped
 
 ### Keys and healing
 
+    keyboard_profile <name>
     key <key> [ms]
     hold <key> <s>
     wait <s>
     heal
     hearthstone
+
+`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script. Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
 
 ### Messages and values
 

@@ -133,9 +133,13 @@ def _game() -> dict[str, str]:
     return read(settings.load_app().get("game_folder"))
 
 
+def attack_keys_with_defaults(binds: dict[str, str]) -> list[str]:
+    return [k or d for k, d in zip(attack_keys(binds), ATTACK_DEFAULTS)]
+
+
 def attack_key_list() -> list[str]:
     """The 10 skill keys of the player's game, the game's own default where one isn't bound."""
-    return [k or d for k, d in zip(attack_keys(_game()), ATTACK_DEFAULTS)]
+    return attack_keys_with_defaults(_game())
 
 
 def page_turn_key() -> str:
@@ -145,6 +149,12 @@ def page_turn_key() -> str:
     were pressed on empty keys (live 2026-11-16: an Elf cast only the two skills of her second
     page for a whole night)."""
     return _game().get("W_ATTACK_PAGETURN") or PAGE_TURN_DEFAULT
+
+
+def info_key() -> str:
+    """The key that asks about the player under the cursor (W_INFO): the server answers for a
+    player who is online, and says nothing for one who isn't."""
+    return _game().get("W_INFO") or "g"
 
 
 def notice_key() -> str:

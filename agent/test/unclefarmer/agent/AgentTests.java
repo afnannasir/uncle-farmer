@@ -40,7 +40,9 @@ public final class AgentTests {
         aSheetWeAskedForIsReadAndKeptFromTheGame(contract);
         theExperienceCardIsReadAndToggledOnlyFromAFreshSheet();
         everyCastSaysWhomItStruck(contract);
+        aTickToZeroIsADeath();
         aClosedConnectionMeansOurCharacterIsGone();
+        theDungeonReportIsReadAsTheGameReadsIt();
         professionRanksAreKeptFromTheLoginList();
         corpseSkillsTakeOnlyAFreshCorpseInReach();
         aCorpseCastIsHeldLikeTheKeyAndAlwaysLetGo();
@@ -874,27 +876,6 @@ public final class AgentTests {
 
     /** Another player's cast carries its targets and their HP after it (agent 44): a monster that
      *  someone else has started on is known at once. One struck to 0 is a death as before. */
-    /** After the game's connection drops, the game keeps showing its world: our character counts
-     *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
-    private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
-        Memory.resetConnection();
-        Memory.requireConnection(1000L, false);           // never up in this game: no verdict
-        Memory.requireConnection(99000L, false);
-        Memory.requireConnection(100000L, true);
-        Memory.requireConnection(101000L, false);         // closed: still inside the grace
-        Memory.requireConnection(105999L, false);
-        boolean gone = false;
-        try {
-            Memory.requireConnection(106000L, false);
-        } catch (Memory.Unavailable e) {
-            gone = e.getMessage().startsWith("noworld:");
-        }
-        check(gone, "a connection closed for 5 s means our character is gone (noworld)");
-        Memory.requireConnection(107000L, true);          // reconnected
-        Memory.requireConnection(108000L, false);
-        Memory.resetConnection();
-    }
-
     private static void everyCastSaysWhomItStruck(Map<String, String> contract) {
         String text = contract.get("cast_packet").replace("\\r", "\r").replace("\\n", "\n");
         byte[] body = text.getBytes(Protocol.UTF8);
@@ -918,6 +899,89 @@ public final class AgentTests {
         World.inbound(op41("4152,9,Level 2 Draw Blood\n-6,-1\r\n0\r\n0"));
         check(World.castSince(4152, before, "Draw Blood"), "a ranked name of the skill counts");
         eq(World.targets(new String[] {"4152,8,Buff\n4152,64200"}), null, "a cast with no target line has none");
+    }
+
+    /** After the game's connection drops, the game keeps showing its world: our character counts
+     *  as gone once the connection has stayed closed CLOSED_GRACE_MS, so the bot reconnects. */
+    private static void aClosedConnectionMeansOurCharacterIsGone() throws Exception {
+        Memory.resetConnection();
+        Memory.requireConnection(1000L, false);           // never up in this game: no verdict
+        Memory.requireConnection(99000L, false);
+        Memory.requireConnection(100000L, true);
+        Memory.requireConnection(101000L, false);         // closed: still inside the grace
+        Memory.requireConnection(105999L, false);
+        boolean gone = false;
+        try {
+            Memory.requireConnection(106000L, false);
+        } catch (Memory.Unavailable e) {
+            gone = e.getMessage().startsWith("noworld:");
+        }
+        check(gone, "a connection closed for 5 s means our character is gone (noworld)");
+        Memory.requireConnection(107000L, true);          // reconnected
+        Memory.requireConnection(108000L, false);
+        Memory.resetConnection();
+    }
+
+    /** IN op=42 sets an entity's HP outside a cast (damage over time): id, HP now, the change, a
+     *  sound, one more short. A monster a tick takes to 0 has no "id,0" line in op=41, so this is
+     *  the only word of its death (a packet of a live night: 2a ffffffde 00000000 fffffc8e 30e3 36c8). */
+    private static void aTickToZeroIsADeath() {
+        long before = System.currentTimeMillis() - 1;
+        World.inbound(op42(-934, 882, -500, 12515, 14024));
+        check(!World.casts(before).contains("[-934,"), "a tick that leaves it HP is no death");
+        World.inbound(op42(-934, 0, -882, 12515, 14024));
+        String got = World.casts(before);
+        check(got.contains("[-934,"), "a tick that takes a monster to 0 HP is a death: " + got);
+        World.inbound(op42(4934, 0, -100, 0, 0));
+        check(!World.casts(before).contains("[4934,"), "a player at 0 HP is no kill");
+        World.inbound(new byte[] {42, -1, -1, -4, 89, 0, 0, 0, 0});          // id -935, HP 0, nothing after
+        check(World.casts(before).contains("[-935,"), "the short form with only the HP counts too");
+        World.inbound(new byte[] {42, -1, -1, -4, 88, 0, 0});                // id -936 and a short: not HP
+        World.inbound(new byte[] {42, -1, -1, -4, 87});                      // cut off
+        got = World.casts(before);
+        check(!got.contains("[-936,") && !got.contains("[-937,"), "the id-and-short message is no HP report: " + got);
+    }
+
+    private static void theDungeonReportIsReadAsTheGameReadsIt() {
+        // Laid out as a recorded five-player Demon Cave report (2026-11-17), two players here.
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(256);
+        b.put((byte) 66).put((byte) 7).putShort((short) 0x0402)
+         .putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 58);
+        reportRow(b, 2001, 3 * 2 + 1, 79, 34, 12286925, 0, 188265);
+        reportRow(b, 2002, 7 * 2 + 2, 79, 24, 7965187, 2207812, 843962);
+        b.putInt(0).put("Demon  Cave,Demon  Cave floor 13,First,Second".getBytes(java.nio.charset.Charset.forName("GBK")));
+        byte[] m = java.util.Arrays.copyOf(b.array(), b.position());
+        Report.forget();
+        check(Report.since(0L).equals("{}"), "no report yet: " + Report.since(0L));
+        long before = System.currentTimeMillis() - 1;
+        World.inbound(m);
+        String got = Report.since(before);
+        check(got.contains("\"total_kills\":58") && got.contains("\"place\":\"Demon  Cave\"")
+              && got.contains("\"part\":\"Demon  Cave floor 13\""), "the head and the place: " + got);
+        check(got.contains("{\"id\":2001,\"class\":3,\"female\":false,\"level\":79,\"kills\":34,\"damage\":12286925"),
+              "the first row: " + got);
+        check(got.contains("\"highest_area_hit\":188265,\"highest_heal\":0,\"highest_area_heal\":0,\"name\":\"First\"}"),
+              "the first row's highest hits and its name: " + got);
+        check(got.contains("\"id\":2002,\"class\":7,\"female\":true") && got.contains("\"healing\":2207812")
+              && got.contains("\"name\":\"Second\""), "the second row: " + got);
+        check(Report.since(System.currentTimeMillis() + 1000).equals("{}"), "nothing newer than asked");
+        World.inbound(java.util.Arrays.copyOf(m, 40));                  // cut off inside a row
+        check(Report.since(before).equals(got), "a cut-off report changes nothing");
+        Report.forget();
+    }
+
+    private static void reportRow(java.nio.ByteBuffer b, int id, int cs, int level, int kills, int damage,
+                                  int healing, int areaHit) {
+        b.putInt(id).putShort((short) cs).put((byte) level).putShort((short) 0).putShort((short) 0)
+         .putShort((short) 0).putShort((short) kills).putInt(damage).putInt(healing)
+         .putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 0).putShort((short) 0)
+         .putInt(areaHit / 2).putInt(areaHit).putInt(0).putInt(0);
+    }
+
+    private static byte[] op42(int id, int hp, int change, int sound, int extra) {
+        java.nio.ByteBuffer b = java.nio.ByteBuffer.allocate(17);
+        b.put((byte) 42).putInt(id).putInt(hp).putInt(change).putShort((short) sound).putShort((short) extra);
+        return b.array();
     }
 
     private static byte[] op41(String text) {

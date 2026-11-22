@@ -110,6 +110,44 @@ def test_a_village_without_guards_falls_back_to_the_nearest_guard(one_village: l
     assert g.deaths == 1
 
 
+@pytest.mark.parametrize(("skill", "teleport_enabled", "eligible_maps", "use_spells"), [
+    ("Elven Teleportation", True, [CITY], False),
+    ("Elven Teleportation", False, [CITY], False),
+    ("Teleportation", True, [1531, 1731, CITY], True),
+])
+def test_village_run_filters_elf_teleports(
+    one_village: list[Any], monkeypatch: pytest.MonkeyPatch, skill: str, teleport_enabled: bool,
+    eligible_maps: list[int], use_spells: bool,
+) -> None:
+    g = Game()
+    far_away(g)
+    g.p["use_teleport_skills"] = teleport_enabled
+    monkeypatch.setattr(g, "teleport_skills", [skill], raising=False)
+    candidates = [(1531, "Soul Burial Village", 71, 167, 123, 201),
+                  (1731, "", 143, 15, 226, 98), VILLAGE]
+
+    def villages(skip: Collection[tuple[int, int, int]] = ()) -> list[xploss.Village]:
+        return [v for v in candidates if (v[0], v[2], v[3]) not in skip]
+
+    def nearest(b: Any, role: str | None, candidates: list[xploss.town.Npc]) -> xploss.town.Npc:
+        assert [row[0] for row in candidates] == eligible_maps
+        assert b.p["use_teleport_skills"] is use_spells
+        return next(row for row in candidates if row[0] == CITY)
+
+    monkeypatch.setattr(xploss, "villages", villages)
+    monkeypatch.setattr(xploss.town, "nearest", nearest)
+    original_travel = g.travel
+
+    def travel(dst: int, cell: Any = None) -> None:
+        assert g.p["use_teleport_skills"] is use_spells
+        original_travel(dst, cell)
+
+    g.travel = travel
+    assert lose(g, until_needed=1500, where="village") == "done"
+    assert g.travelled == [(CITY, MIDDLE)]
+    assert g.p["use_teleport_skills"] is teleport_enabled
+
+
 def test_the_village_is_the_default_and_the_guard_still_a_choice() -> None:
     assert xploss.DEFAULTS["where"] == "village"
     g = Game()

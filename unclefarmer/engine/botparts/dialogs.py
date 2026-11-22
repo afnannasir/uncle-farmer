@@ -199,6 +199,12 @@ class DialogsMixin(Parts):
         self.sleep(0.4)
         return entry
 
+    def cursor_to(self, top: dict[str, Any], r: int, c: int) -> dict[str, Any] | None:
+        """Put the menu's cursor on row r, column c without choosing it (a key that acts on the
+        entry under the cursor comes next: the info key on a team member). The menu as it
+        stands, or None if the cursor didn't get there."""
+        return self._move_to(top, r, c)
+
     def _move_to(self, top: dict[str, Any], r: int, c: int) -> dict[str, Any] | None:
         """Move the menu's cursor to row r, column c with the walking keys: the row first, the
         shorter way round (the game's rows wrap), then the column (they don't wrap; Left/Right

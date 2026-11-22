@@ -20,7 +20,7 @@ import pytest
 
 from unclefarmer.clock import CLOCK, Waitable
 from unclefarmer import atlas
-from unclefarmer.engine.botparts.base import NPC_HP, Respawned, Stopped
+from unclefarmer.engine.botparts.base import NPC_HP, GameLost, Respawned, Stopped
 from unclefarmer.engine.botparts.parts import Rect
 from unclefarmer.engine.botparts.walking import WalkingMixin
 from collections.abc import Callable, Iterable, Sequence
@@ -387,6 +387,11 @@ class MapBot(WalkingMixin):
     def check_game(self, force: bool=False) -> None:
         pass
 
+    frozen = False                  # what world_frozen answers
+
+    def world_frozen(self) -> bool:
+        return self.frozen
+
     def move_key(self, direction: str) -> str:
         return self.p["move_keys"][direction]
 
@@ -649,6 +654,16 @@ def test_walk_to_gives_up_after_the_stuck_limit(model: Map) -> None:
     with pytest.raises(Stopped):
         b.walk_to((10, 10))
     assert b.unstuck_calls and b.fight_count == 1
+
+
+def test_a_stuck_walk_in_a_frozen_game_is_the_game_lost_not_a_stop(model: Map) -> None:
+    b = MapBot(model, pos=(1, 1))
+    b.p["stuck_limit"] = 1
+    b.frozen = True
+    b.walk_diag = lambda target, map_before=None, tol=0.5, timeout=60.0, near=None: "stuck"
+    b.get_unstuck = lambda at: b.unstuck_calls.append(at) or False
+    with pytest.raises(GameLost):
+        b.walk_to((10, 10))
 
 
 def test_walk_to_hands_a_stuck_walk_to_get_unstuck(model: Map) -> None:

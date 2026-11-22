@@ -161,8 +161,11 @@ class Farm(FarmingMixin):
 
     explained = 0
 
-    def explain_left_out(self) -> None:
+    def explain_left_out(self, map_id: int | None = None) -> None:
         self.explained += 1
+
+    def sight_note(self) -> dict[str, Any]:
+        return {}
 
     def next_target(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> dict[str, Any]:
         return mobs[0]
@@ -170,7 +173,8 @@ class Farm(FarmingMixin):
     def note_pick(self, snap: dict[str, Any], mob: dict[str, Any], mobs: list[dict[str, Any]]) -> None:
         pass
 
-    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str) -> None:
+    def note_search(self, map_id: int, me: dict[str, Any], cell: tuple[float, float], start: float, result: str,
+                    seen: dict[str, Any] | None = None) -> None:
         pass
 
     def walk_to(self, cell: tuple[float, float], map_change: bool=False, near: Callable[[dict[str, Any]], bool] | None=None) -> str:
@@ -271,6 +275,27 @@ def test_set_modes_presses_until_the_game_agrees() -> None:
     assert "mode set: enemies" in b.lines
 
 
+def test_a_mode_press_is_taken_the_moment_it_shows_not_after_a_fixed_wait() -> None:
+    # three presses from "NPCs" round to "enemies" were the first second of a cave's 15 minutes
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 3})
+    order = [0, 1, 2]
+
+    def press(k: str, ms: int | None = None) -> None:
+        b.keys.append(k)
+        b.link.modes["target"] = order[len(b.keys) - 1]
+    b.key = press
+    b.set_modes()
+    assert b.keys == ["v", "v", "v"] and "mode set: enemies" in b.lines
+    assert b.sleeps == [b.MODE_LOOK] * 3
+
+
+def test_a_mode_press_that_shows_late_is_waited_for_as_long_as_before() -> None:
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1, "target": 0})
+    b.set_modes()                             # the key changes nothing here
+    assert sum(b.sleeps[:6]) == pytest.approx(b.MODE_WAIT)
+    assert len(b.sleeps) == 6 * len(b.keys)
+
+
 def test_set_modes_leaves_a_locked_pk_mode_alone() -> None:
     b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2, "pk_locked": True})
     b.set_modes()
@@ -283,6 +308,34 @@ def test_set_modes_warns_when_the_game_refuses() -> None:
     b.set_modes()
     assert b.keys == ["v", "v", "v", "v", "v"]          # len(TARGET_MODES) + 1 tries
     assert any("couldn't set the mode to enemies with the v key" in line for line in b.spoken)
+
+
+def test_a_mode_the_game_refused_is_tried_again_later_quietly() -> None:
+    # just after logging in, the PK key changed nothing; three minutes later it worked at once
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2})
+    b.clock = Clock()
+    b.set_modes()
+    assert len(b.spoken) == 1 and b.modes_retry_at == b.clock.time() + b.MODE_RETRY
+    b.modes_again()                       # too soon: nothing pressed
+    pressed = len(b.keys)
+    assert len(b.keys) == pressed
+    b.clock.advance(b.MODE_RETRY)
+    b.map_keys = {"b": ("pk", 1)}         # the game takes the key now
+    b.modes_again()
+    assert "mode set: pacifist mode with counterattack" in b.lines
+    assert b.modes_retry_at is None and b.modes_retries == 0 and len(b.spoken) == 1
+
+
+def test_a_mode_that_never_takes_is_left_after_a_few_tries() -> None:
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2})
+    b.clock = Clock()
+    b.set_modes()
+    for _try in range(b.MODE_RETRIES):
+        b.clock.advance(b.MODE_RETRY)
+        b.modes_again()
+    assert b.modes_retry_at is None
+    assert any("still won't change its mode" in line for line in b.lines)
+    assert len(b.spoken) == 1
 
 
 def test_set_modes_skips_a_mode_the_game_does_not_report() -> None:
@@ -514,7 +567,8 @@ def test_loop_wanders_to_a_random_cell() -> None:
     b = Farm()
     calls: list[tuple[int, Sequence[float] | None, dict[str, Any], int]] = []
 
-    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
+    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                    **_kw: Any) -> tuple[int, int] | None:
         calls.append((map_id, area, me, radius))
         return (7, 7)
 
@@ -527,7 +581,10 @@ def test_loop_wanders_to_a_random_cell() -> None:
 
 def test_loop_sleeps_when_there_is_nowhere_to_walk() -> None:
     b = Farm()
-    b.random_cell = lambda map_id, area, me, radius=40: None
+    def nowhere(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                **_kw: Any) -> tuple[int, int] | None:
+        return None
+    b.random_cell = nowhere
     run_loop(b, passes=2)
     assert b.sleeps == [1.0, 1.0]
     assert b.walk_calls == []
@@ -967,6 +1024,41 @@ def test_random_cell_respects_one_way_gates(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(farming.random, "randint", randint_seq([8, 9, 2, 2]))
     assert b.random_cell(1, (1, 1, 8, 9), {"x": 5, "y": 5}) == (2, 2)
     assert m.two_way_calls == 1
+
+
+def test_random_cell_keeps_clear_of_bosses_and_their_zones(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = Farm()
+    comps = {c: 1 for c in grid()}
+    m = Model(grid(), comps=comps)
+    monkeypatch.setattr(farming.atlas, "model", stand_in(farming.atlas.model, lambda mid: m))
+    monkeypatch.setattr(farming.random, "randint", randint_seq([8, 9, 7, 2, 2, 2]))
+    # (8, 9) is within 3 steps of a boss at (8, 8); (7, 2) is in a boss zone; (2, 2) is clear
+    got = b.random_cell(1, (1, 1, 8, 9), {"x": 5, "y": 5}, clear_of=[(8.0, 8.0, 3.0)], keep_out=[(6, 1, 8, 3)])
+    assert got == (2, 2)
+
+
+def test_the_patrol_loop_skips_cells_near_a_boss() -> None:
+    loop = [(1, 1), (5, 5), (9, 9)]
+    assert farming._next_clear(loop, 0, [(1.0, 1.0, 2.0)]) == ((5, 5), 2)
+    assert farming._next_clear(loop, 2, [(9.0, 9.0, 2.0)]) == ((1, 1), 1)
+    assert farming._next_clear(loop, 1, []) == ((5, 5), 2)
+    everywhere = [(5.0, 5.0, 100.0)]
+    assert farming._next_clear(loop, 1, everywhere) == ((5, 5), 2)    # nowhere clear: on anyway
+
+
+def test_the_loop_wanders_without_the_no_go_when_nothing_else_turns_up() -> None:
+    b = Farm()
+    calls: list[dict[str, Any]] = []
+
+    def random_cell(map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40,
+                    **kw: Any) -> tuple[int, int] | None:
+        calls.append(kw)
+        return None if kw else (7, 7)
+
+    b.random_cell = random_cell
+    run_loop(b, avoid=[(1, 1, 2, 2)])
+    assert b.walk_calls == [(7, 7)]
+    assert calls == [{"clear_of": [], "keep_out": [(1, 1, 2, 2)]}, {}]
 
 
 def test_random_cell_gives_up_after_many_tries(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -11,7 +11,8 @@ import wx
 from ... import __version__, applog, settings, updater
 from ...i18n import _
 from .. import agentfix
-from ..common import ask, ask_ok, error, info, save_file
+from ..changelog import ChangelogDialog
+from ..common import ask_ok, error, info, save_file
 from .base import FrameParts
 
 
@@ -95,20 +96,23 @@ class UpdatesMixin(FrameParts):
         else:
             self.offer_update(rel, False)
 
+    def show_changelog(self) -> None:
+        with ChangelogDialog(self) as dialog:
+            dialog.ShowModal()
+
     def offer_update(self, rel: updater.Release, at_start: bool) -> None:
+        if self.destroyed or self.updating:
+            return
+        if not self.IsEnabled():
+            # A native modal (e.g. the startup agent question) runs its own event loop.
+            # Accepting an update over it can leave MainLoop stuck after the frame is destroyed.
+            wx.CallLater(250, self.offer_update, rel, at_start)
+            return
+        with ChangelogDialog(self, rel) as dialog:
+            accepted = dialog.ShowModal() == wx.ID_OK
         if self.destroyed:
             return
-        notes = rel.get("notes") or _("(no notes)")
-        if len(notes) > 1500:
-            notes = notes[:1500].rstrip() + " ..."
-        if updater.is_dev(rel["version"]):
-            notes = _("This is a development build from the dev branch: the newest changes, not yet a stable "
-                      "release, and it can break.") + "\n" + notes
-        if not ask(self, _("Uncle Farmer {v} is out (you have {cur}).\n\nWhat's new:\n{notes}\n\n"
-                           "Update now? Uncle Farmer closes, updates and starts again; your characters, plans, "
-                           "scripts and settings stay as they are.", v=rel["version"],
-                           cur=updater.installed_version(), notes=notes),
-                   _("Update")):
+        if not accepted:
             if at_start:                      # not asked again at start for this one; the Help menu still offers it
                 self.s["skip_version"] = rel["version"]
                 save_file(self, settings.save_app, self.s)

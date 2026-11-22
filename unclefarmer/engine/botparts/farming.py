@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chests, corpses, keyslots, pets, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -37,6 +37,15 @@ class FarmingMixin(Parts):
     said_level_inside: bool
     in_instance: bool = False     # farm(instance=True) sets these for its own run
     pack_min: int = 3
+    MODE_WAIT = 0.3       # seconds a mode key's press has to show in the game's modes
+    MODE_LOOK = 0.05      # ... looked at this often
+    # A mode the game didn't take is tried again while farming: just after logging in (a lost game
+    # opened again), the PK key changed nothing for 7 presses while the target key worked, and the
+    # same key set the mode at once three minutes later (seen live, 2026-11-22).
+    MODE_RETRY = 30.0     # seconds before the next try
+    MODE_RETRIES = 5      # ... and no more tries than this in a run
+    modes_retry_at: float | None = None   # when to try the modes again; None: nothing to try
+    modes_retries: int = 0
 
     def set_modes(self) -> None:
         """Press the mode keys until the game's PK mode and target mode are the profile's."""
@@ -49,6 +58,7 @@ class FarmingMixin(Parts):
             return
         jobs = (("pk", p["pk_key"], p["pk_mode"], PK_MODES, len(PK_MODES)),
                 ("target", p["target_mode_key"], p["target_mode"], TARGET_MODES, len(TARGET_MODES)))
+        missed = False
         for field, key, want, names, size in jobs:
             if field not in m or m[field] == want:
                 continue
@@ -57,14 +67,50 @@ class FarmingMixin(Parts):
                 continue
             for _press in range(size + 1):
                 self.key(key)
-                self.sleep(0.3)
-                m = self.a.json("mem modes")
+                m = self._modes_after(field, m.get(field))
                 if m.get(field) == want:
                     self.log(_("mode set: {mode}", mode=names[want]))
                     break
             else:
-                self.log(_("couldn't set the mode to {mode} with the {key} key", mode=names[want], key=key),
-                         speak=True)
+                missed = True
+                if not self.modes_retries:    # said once; the tries again are quiet
+                    self.log(_("couldn't set the mode to {mode} with the {key} key", mode=names[want], key=key),
+                             speak=True)
+        self._mode_retry(missed)
+
+    def _mode_retry(self, missed: bool) -> None:
+        """After set_modes: a mode the game didn't take is tried again MODE_RETRY seconds later, up to
+        MODE_RETRIES times a run; once every mode is right, nothing more is tried."""
+        if not missed:
+            self.modes_retry_at = None
+            self.modes_retries = 0
+            return
+        if self.modes_retries >= self.MODE_RETRIES:
+            self.modes_retry_at = None
+            self.log(_("the game still won't change its mode - farming on in the mode it has"))
+            return
+        self.modes_retries += 1
+        self.modes_retry_at = self.clock.time() + self.MODE_RETRY
+
+    def modes_again(self) -> None:
+        """Between fights: the modes tried again once their time has come (_mode_retry)."""
+        at = self.modes_retry_at
+        if at is not None and self.clock.time() >= at:
+            self.modes_retry_at = None
+            self.set_modes()
+
+    def _modes_after(self, field: str, was: object) -> dict[str, Any]:
+        """The game's modes once a press of a mode key shows in them, looked at every MODE_LOOK
+        seconds for MODE_WAIT at most. A fixed 0.3 s after every press made three presses (from
+        "NPCs", where talking to a dungeon's entrance leaves the target key, round to "enemies")
+        the first second of a cave's 15 minutes."""
+        m: dict[str, Any] = {}
+        for _look in range(max(1, round(self.MODE_WAIT / self.MODE_LOOK))):
+            self.sleep(self.MODE_LOOK)
+            m = self.a.json("mem modes")
+            if m.get(field) != was:
+                break
+        return m
 
     def farm(self, map_id: int, area: Sequence[float] | None = None, minutes: float = 0, kills: int = 0, only: str = "", skip: str = "", patrol: str = "random",
              avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None,
@@ -129,9 +175,12 @@ class FarmingMixin(Parts):
         was = (self.in_instance, self.pack_min)
         self.in_instance, self.pack_min = instance, int(pack or 3)
         self.farming_on = None if instance else map_id      # where a lost fight may flee from (may_flee)
+        watchdog.start(as_bot(self), map_id)
+        tally = self._farm_begins(map_id, instance)
         try:
             self._farm_loop(map_id, area, only, skip, avoid, loop, chase, done, sighted, last_supply_check)
         finally:
+            self._farm_ends(tally)
             self.farming_on = None
             self.on_farm_run = False
             self.in_instance, self.pack_min = was
@@ -139,6 +188,28 @@ class FarmingMixin(Parts):
             self.timing_report(final=True)
             self.timing = None
         self.log(_("finished farming {map}", map=atlas.label(map_id)))
+
+    def _farm_begins(self, map_id: int, instance: bool) -> Any:
+        """A farm sets out: the results count this map from now (Tally.on_map, returned for the
+        end), and outside a dungeon the team we lead hears requests and takes the waiting ones."""
+        tally = getattr(self, "tally", None)
+        if tally is not None:
+            tally.on_map(map_id)          # the results, map by map
+        if not instance:
+            teamlead.start_farm(as_bot(self))
+        return tally
+
+    def _farm_ends(self, tally: Any) -> None:
+        """The farm is over: its last reading (the kill that ended it) still counts for its map,
+        then the map is closed. A reading that fails here (a stop, a lost game) leaves the rest to
+        the run's own last reading, which counts for the run only."""
+        if tally is None:
+            return
+        try:
+            tally.update(self, force=True)
+        except Exception:  # noqa: BLE001 - never in the way of what ended the farm
+            pass
+        tally.on_map(None)
 
     def _farm_loop(self, map_id: int, area: Sequence[float] | None, only: str, skip: str, avoid: list[tuple[float, float, float, float]], loop: list[tuple[int, int]] | None, chase: float | None, done: Callable[[], bool], sighted: Callable[[dict[str, Any]], bool], last_supply_check: float) -> None:
         loop_i = None
@@ -155,13 +226,12 @@ class FarmingMixin(Parts):
                 pets.look_after(as_bot(self), snap)
                 if self._between_fights(map_id):
                     continue          # we went to town: the loop travels back first
-                if keyslots.refill(as_bot(self)):
+                if self._upkeep(map_id, area, only):
                     continue
-                xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
                 if bosses.keep_away(as_bot(self), snap, map_id, area):
                     continue
-                if chests.open_nearby(as_bot(self), snap):
-                    continue
+                if self._side_jobs(snap, map_id, area):
+                    continue          # a chest opened or looked for, or a request to join our team taken
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
@@ -173,26 +243,45 @@ class FarmingMixin(Parts):
                     self.fight(mob)
                     continue
                 # Nothing to fight: keep moving (and say why, when monsters were in sight).
-                self.explain_left_out()
+                self.explain_left_out(map_id)
+                seen = self.sight_note()      # before the walk's own looks replace it
                 me = snap["self"]
+                no_go = bosses.no_go(as_bot(self), snap)   # bosses and elites, in sight or just seen
                 if loop:
                     if loop_i is None:
                         loop_i = min(range(len(loop)), key=lambda i: math.hypot(loop[i][0] - me["x"], loop[i][1] - me["y"]))
-                    cell = loop[loop_i]
-                    loop_i = (loop_i + 1) % len(loop)
+                    cell, loop_i = _next_clear(loop, loop_i, no_go)
                 else:
-                    cell = self.random_cell(map_id, area, me)
+                    cell = (self.random_cell(map_id, area, me, clear_of=no_go, keep_out=avoid)
+                            or self.random_cell(map_id, area, me))
                 if cell is None:
                     self.sleep(1.0)
                     continue
                 started = self.clock.time()
                 with self.timed("search"):
                     result = self.walk_to(cell, near=sighted)
-                self.note_search(map_id, me, cell, started, result)
+                self.note_search(map_id, me, cell, started, result, seen)
             except (Respawned, LosingFight) as setback:
                 loop_i = None
                 if self._set_back(map_id, setback):
                     break
+
+    def _upkeep(self, map_id: int, area: Sequence[float] | None, only: str) -> bool:
+        """Between fights: an empty potion key filled, the experience card, the no-kill watchdog.
+        True when one of them acted (the farm loop looks again)."""
+        if keyslots.refill(as_bot(self)):
+            return True
+        self.modes_again()             # a mode the game didn't take, tried again
+        xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
+        # no kill for a long while: another part of the map (a farm of only some names never stops for it)
+        return watchdog.check(as_bot(self), map_id, area, hunting=bool(only))
+
+    def _side_jobs(self, snap: dict[str, Any], map_id: int, area: Sequence[float] | None) -> bool:
+        """Between fights: a chest in sight, the announced one looked for, then a request to join
+        the team we lead."""
+        if chests.open_nearby(as_bot(self), snap) or chesthunt.hunt(as_bot(self), snap, map_id, area):
+            return True
+        return not self.in_instance and teamlead.between_fights(as_bot(self))
 
     def _restock_check(self, map_id: int, last: float) -> float:
         """Every restock_check_every seconds, top up the restock rules and come back. Never in a
@@ -218,6 +307,7 @@ class FarmingMixin(Parts):
         with self.timed("town"):
             if why:
                 self.restock_now()
+                teamlead.after_trip(as_bot(self))    # members gone offline, when checked in town only
                 self.log(_("back to {map} after {why}", map=atlas.label(map_id), why=why))
             else:
                 self.log(_("left {map} (died or moved?) - going back", map=atlas.label(map_id)))
@@ -395,7 +485,7 @@ class FarmingMixin(Parts):
             return int(plan_keep) or None
         if not self.p.get("stop_before_level", False):
             return None
-        return int(self.p.get("level_keep_xp", 0) or 0) or None
+        return int(self.p.get("level_keep_xp", 100000) or 0) or None
 
     def level_check(self, sheet: dict[str, Any], inside: bool = False) -> None:
         """End the run before the next level: the sheet's "upgrading requires N experience"
@@ -556,6 +646,7 @@ class FarmingMixin(Parts):
         beasts.off(as_bot(self))
         if self.p.get("pet_recall_at_end", False):
             pets.recall(as_bot(self))
+        teamlead.at_end(as_bot(self))     # the team handed over, when the Team tab says so
 
     def _finish_safe(self) -> None:
         """The old ending: somewhere no monster spawns. The hearthstone is the shortest way there
@@ -602,10 +693,14 @@ class FarmingMixin(Parts):
         self.restock_looked = now
         self.restock_now()
 
-    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40) -> tuple[int, int] | None:
+    def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40, *,
+                    clear_of: Sequence[tuple[float, float, float]] = (),
+                    keep_out: Sequence[tuple[float, float, float, float]] = ()) -> tuple[int, int] | None:
         """A walkable cell near us in the area that we can walk to: never on a map exit (stepping on
         one leaves the map mid-farm) and never in a part of the map walled off from ours (walk_to
-        would find no way and stop the run)."""
+        would find no way and stop the run). clear_of: circles (x, y, radius) it is never in - the
+        bosses and elites the patrol keeps away from (bosses.no_go); keep_out: rectangles likewise
+        (the map's boss and elite zones). None when no such cell turned up."""
         m = atlas.model(map_id)
         x0, y0, x1, y1 = (int(v) for v in (area or (1, 1, atlas.maps()[map_id]["w"], atlas.maps()[map_id]["h"])))
         mx, my = int(me["x"]), int(me["y"])
@@ -618,9 +713,24 @@ class FarmingMixin(Parts):
                  random.randint(*_near(y0, y1, my, radius)))
             if not m.ok(*c) or m.portal[c[1], c[0]]:
                 continue
+            if clear_of and not bosses.clear_of(c, clear_of):
+                continue
+            if any(r[0] <= c[0] <= r[2] and r[1] <= c[1] <= r[3] for r in keep_out):
+                continue
             if both is not None and c[1] * m.W + c[0] not in both:
                 continue
             if both is None and ours is not None and m.comp_of(*c) != ours:
                 continue
             return c
         return None
+
+
+def _next_clear(loop: list[tuple[int, int]], i: int,
+                no_go: Sequence[tuple[float, float, float]]) -> tuple[tuple[int, int], int]:
+    """The next cell of a patrol loop from i that keeps clear of the no-go circles, and the index
+    after it. Every cell in them: the next one anyway (keep_away deals with what comes close)."""
+    for k in range(len(loop)):
+        j = (i + k) % len(loop)
+        if bosses.clear_of(loop[j], no_go):
+            return loop[j], (j + 1) % len(loop)
+    return loop[i], (i + 1) % len(loop)

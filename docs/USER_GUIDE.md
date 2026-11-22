@@ -111,7 +111,7 @@ This is where you control your farming runs. It shows:
 
 Each game in the Games list has its own menu. Select the game and press the **Applications** key or **Shift+F10**, or right-click it. The menu has three submenus:
 
-- **Tools:** Gem Maker, Gem Breaker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
+- **Tools:** Gem Maker, Gem Breaker, Potion Maker, Equipment Enhancer, Daily chores, Gathering, Dungeons, Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, and Update shard prices.
 - **Character:** Settings, Bag and supplies, Scan now, Another character, Export character settings, and Import character settings. Fighting, pets, equipment choices and other character preferences stay inside their existing settings windows.
 - **Run:** Start, Stop, Pause or go on, Stop every bot, Walk to a dungeon or map, Schedules, Results, and Speak the results.
 
@@ -213,6 +213,14 @@ With one spot, Uncle Farmer stays there until the plan stops.
 
 With several spots, it can either go around them in order repeatedly or visit each one once. Each spot has its own duration, which tells the bot how long to stay before moving to the next one.
 
+**Sharing the day's drop time between spots**
+
+A spot's time limit counts the minutes of the clock from when the spot began, so a restart starts it again from nothing. To split the day between two maps, for example three hours on Underwater World and the rest on Margit Rainforest, tick **A share of the day's drop time (kept across restarts)** on the first spot's **Farming** tab and set **Minutes of drop time on this spot** to 180.
+
+The game gives every character 7 hours of drop time a day, and the share is counted on that clock: the first spot farms until the day's drop time left is down to 4 hours, and the next spot gets the rest. If the bot restarts after two hours, the first spot only farms its last hour, and a run started when the share is already used up goes straight to the next spot, saying "not farming ... is already true". With several shares they follow each other in order. A plan with shares goes through its spots once, in order, whatever **With more than one spot** says: going round again would find every share used up.
+
+With a single spot, nothing changes.
+
 **Movement**
 
 You can choose between wandering randomly and following a patrol loop.
@@ -272,6 +280,36 @@ Uncle Farmer will not start another farming run between the daily stopping time 
 You can change this time in **File → Settings → Farming day**.
 
 By default, the daily stopping time is set to 10 minutes before the drop-time reset. In Pakistan, that means **04:50**. This gives your character some time to leave the farming area before the reset.
+
+### Autopilot: the whole day in one window
+
+**Run → Autopilot: the whole day** (Ctrl+Shift+A) shows the logged-in character's day together:
+
+1. the **Before farming** list (for example the day's chores, a cave, restocking), top to bottom;
+2. the farming, until the plan ends or the daily stopping time;
+3. the **After farming** list (for example selling shards, storing items, the Gem Maker), when the farming ended by itself.
+
+The two lists are the same ones as **Character settings → Triggers**: change them in either place. Three choices decide how the day goes:
+
+- **Farm with:** the character's plan (chosen under **Plan**), or the best map for the character's level. The best map is chosen when the day starts, from field maps whose monsters are 9 levels below to 5 above the character, so it follows the character as it levels up.
+- **Run the day as:** the Triggers lists around the farming, or one script of the day. The script is written from the lists and the farming the first time; after that it is yours to read, change or schedule from the Plans tab, and **Write the script of the day now** writes it again from the window. Steps that farm (a cave) are left out of its After part, since the day's farming may be over by then.
+- **Start:** only when you press **Start the day**, or every day at the time you write (HH:MM, this computer's clock). The daily start is an ordinary schedule in **Run → Schedules**; choosing "Only when I press Start" again takes it away.
+
+**Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
+
+### A lost game, and runs that didn't finish
+
+While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 seconds: the line it is on, the turn of each loop, how many minutes and kills the current farm has done, the run's own minutes and kills, and the script's `set` values.
+
+**When the game is lost in the middle of a run** (it closed, crashed or froze, or the server logged the character out and logging back in failed), Uncle Farmer closes that game if it is still open, opens a new one, logs in to the same character and carries on where the run was. It says so each time. This happens at most 3 times a day of the game (00:00 GMT to 00:00 GMT) for each character; after that the run ends there. The character's account must be known: log in to it once by hand. To turn this off: **File → Settings → Farming day → When a game is lost during a run**.
+
+**When Uncle Farmer itself stopped under a run** (you closed it, an update restarted it, or the computer restarted), the next time it starts it shows the runs that didn't finish. They carry on where they were after 10 seconds; press **Carry on now** to start them at once, or **Don't carry on** (Escape) to forget them. A game is opened and logged in to when the character isn't in one, as a schedule does.
+
+A run is carried on only the same day of the game, and only with the same plan or script: one you edited since starts from its beginning. Lines such as `stop_when` and `keep_drop` count again on the way, so a time limit still counts the minutes already farmed. A run you stopped with **Stop**, one that finished, or one that ended on an error is never carried on.
+
+Each part of a run that was carried on is saved in the results as its own run; at the end, the results said and written in the log add all the parts up.
+
+A slow game is waited for while it starts (up to 4 minutes) instead of a second one being opened beside it; one that never shows the agent in that time is closed.
 
 ### After farming
 
@@ -357,21 +395,41 @@ Uncle Farmer recognizes field bosses by name. Its list includes Pig-Face Bat Kin
 
 The bot avoids attacking these bosses. It also avoids attacking anything within 40 steps of a recognized boss.
 
-When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming.
+When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
+
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side (fighting back anything that attacks it), then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
 You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
+### When nothing is killed for a while
+
+On a night nobody watches, a run can go on for hours without a kill: every monster taken by other players, a corner with nothing left, a monster the game keeps refusing. Uncle Farmer keeps an eye on that.
+
+- After 10 minutes on the farm with no kill, it says "no kill for 10 minutes - trying another part of the map" and walks to the part of the farming area furthest from where it is.
+- After another 10 minutes with still no kill, it does the same again.
+- The third time, it says "no kill for 30 minutes - stopping the run" and ends the run the way a used-up drop time does: it goes where your plan says a run ends.
+
+A farm that fights only some names (a rare monster) never stops for this: it only tries elsewhere.
+
+A kill starts the count again. So does a trip away from the map (town, a death, a boss left behind) or a long pause, which start the minutes again. It never applies in a dungeon, whose timer ends the visit.
+
+You can change the 10 minutes, or turn it off, in **Advanced → Fighting**: **When nothing is killed for a while, try elsewhere, then stop**.
+
 ### Treasure chests
 
-Now and then a treasure chest appears on a farming map, and the game announces it to everyone: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
+Now and then a treasure chest appears on a farming map, and the game announces it to the players on that map: "There's a Shining Small Chest in Margit Rainforest. Go find it and see what's inside!". The first player to open it gets what's inside, usually arnebia and a pile of shards.
 
 When a chest comes into sight while farming, Uncle Farmer walks to it and opens it the way you would: it selects the chest, presses Enter and chooses **Open the chest**. It says "opened a chest" with the number opened so far, and the results count the chests opened.
 
-It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+It finishes any fight first, leaves a chest that is within the boss distance of a boss, and doesn't go more than 80 steps out of its way. A chest it saw in the middle of a fight and lost from sight before the fight ended is not forgotten: it goes back for it ("going back to the chest seen 40 steps away"), for up to five minutes.
 
-You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**.
+The game tells the players on the map when a chest appears there, without saying where. When it does, Uncle Farmer goes looking for it: it says "a chest turned up on Margit Rainforest (5281) - looking for it (up to 5 minutes)", stops picking monsters (it still fights back anything that attacks it) and sweeps the farming area on the travel fusion beast, in lanes about 100 steps apart, nearest unseen ground first. The bot sees about 60 steps around it, three times what the radar keys reach. The search ends when the chest is found and opened, when the game says someone else opened it, when the whole area has been seen, or after the minutes you set. On a quiet map a chest can stay unopened for a quarter of an hour; on a crowded one it goes in a minute or two.
+
+The bot hears both of the game's lines, the chest turning up and someone opening it, whether it is looking or not, so it times every chest of the map it is on. When the last three were opened less than two minutes after they turned up on average, it stops looking on that map and says "chests on Underwater World (5361) are opened by others within 40 s on average - not looking for them here": on a map that crowded, a search never gets there first, and farming is worth more. It keeps timing them, and looks again once they stay unopened longer ("... stay unopened longer now - looking for them again"). When someone else opens the chest it is looking for, it says so and goes back to farming. A chest that won't open is left alone for five minutes. When someone else gets there first, the bot just goes back to farming.
+
+You can turn this off in **Advanced → Fighting**: untick **Open the chests that turn up while farming**. The search for an announced chest has its own box there, **Look for a chest the game announces on the map**, with the minutes to look for it (5 by default).
 
 ### Demonized elites
 
@@ -379,8 +437,14 @@ Some maps have "demonized" elites (demonized Boar, demonized black bear, demoniz
 stronger than the monsters around them; one the same level as your character can still kill it,
 depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
 Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
-**Advanced → Fighting**: then it never picks one as a target, and the log counts them among the
-monsters left alone. One that attacks you is still fought, since standing there would be worse.
+**Advanced → Fighting**. Then it keeps away from them:
+
+- It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
+  the elite in. The log counts them among the monsters left alone.
+- When one comes within 30 steps, it walks to the spot furthest from it, and notes it once in the log (not spoken: elites are common).
+- Its patrol keeps 40 steps clear of the elites it has seen in the last minute.
+- One that attacks you is still fought, and so is a monster near it that attacks you, since
+  standing there would be worse. The bot never leaves the map because of an elite.
 
 ### Drop time and the next level
 
@@ -547,6 +611,8 @@ When several monsters are attacking and your HP is dropping, the bot uses your c
 Damage-absorbing shields, such as Formless, can also be used while approaching or leaving a fight. They are not limited to the time spent attacking.
 
 For melee characters, the bot prefers attacking a monster with fewer other monsters around it instead of jumping into the middle of a pack.
+
+On a busy map, a monster another player stands nearer to than you do is often gone before you get there: measured over an hour on Underwater World, about one in four of those went to someone else, against one in ten of the others. So when two monsters are about as far, the bot takes the one nobody else is closer to; one that another player is nearer to counts as 15 steps further away. It never leaves such a monster out, since most of them still end up as your kills, and a monster that attacks you is fought first, whoever stands near it. Pets and summons don't count as players.
 
 If no monsters are attacking but your HP is low, the bot rests before starting another fight.
 
@@ -797,6 +863,14 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 ## Tools
 
+### Keyboard Manager
+
+Right-click a logged-in character and choose **Tools → Keyboard Manager**. Select **Capture current keys** to load the game's two combat skill pages, profession skills, number-row item slots, and quick phrases. Enter a name and choose **Save profile**. Use **New profile** to start with an empty draft, or enter a different name to save a copy.
+
+Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. An item needs to be in the bag when the profile assigns it to a new slot.
+
+Choose **Apply profile** while out of combat and with game menus closed. For automation, add **Apply keyboard profile** under **Character settings → Triggers → Before farming** or **After farming**. The Before farming list can be skipped if you start on the farming map. Use that tab's checkbox to control when it runs. Schedules can run either trigger sequence or a saved script with a `keyboard_profile` command. Place that command at the point where your script needs a different layout.
+
 ### Sound Silencer
 
 Select a game and choose **Tools, Sound Silencer** from its context menu. The dialog directly shows
@@ -882,6 +956,21 @@ A gem breaks into 3 gems of the level below, for free, and a Level 1 gem into 3 
 - **Sell shards by the bag manager's rules**: off at first. Does what **Sell shards now** does: gem and crystal shards marked to sell go to the Shard Market, and what you keep or store stays.
 
 What a break leaves can weigh more than what it took: when the game says "overweight", the Gem Breaker asks for fewer. If not even one fits, it sells when that box is ticked and carries on; otherwise, or when nothing sells, it stops with a message.
+
+### Potion Maker
+
+Open **Tools, Potion Maker** or press **Ctrl+Shift+O**. It uses the Pharmacist in a gang base's outer hall: **Make Medicine** turns Bloods and Pelts into a batch of 50 (or 45) potions for a fee in arnebia (lower in your own gang), and **Fuse Medicine** turns 5 potions of a size into 1 of the next for free (Small to Medium to Large, red and blue, for you and for pets), up to 100 at a time.
+
+- **Potions** and **Pet potions**: how many of each to have in the bag. 0 means it isn't made. The window shows how many you have now.
+- **Make them** (Medium and Large potions): from Small ones, fused up, or each from its own recipe. Fusing is usually cheaper: 25 Small Red Potions (one Lesser Blood and half a fee) make 1 Large one.
+- **Fuse spare potions up to**: after making, fuse what is over your numbers up to Medium or Large, keeping at least the Small and Medium ones you say.
+- **Pharmacist**: your own gang's, or another gang's by its name. Arnebia below your reserve is never spent, and each fee is read on the Pharmacist's page before anything is paid.
+- **Take them from**: missing Bloods and Pelts come from only the bag, the town storehouse, the market, or the storehouse and then the market.
+- **Most gold coins a piece**: for each material, the most the market may charge. The cheapest lots are always bought first; with 0 any price is fine, still cheapest first. **Most gold coins to spend on materials in one run** caps the whole buy.
+
+- **Put the potions made into the town storehouse**: then it works a bagful at a time: it fills the bag with Bloods and Pelts up to its full mark (Character settings, the bag's full mark), makes and fuses, puts the potions in the storehouse and goes again until your numbers are there. Your numbers then count what the storehouse holds too, and the potions you had in the bag before stay in the bag. Making and fusing still work when the bag is over its full mark: only the materials brought in are held to it.
+
+**Check only** walks to the Pharmacist, reads the real fees and says what it would make, fuse and buy, without spending anything.
 
 ### Equipment Enhancer
 
@@ -1115,7 +1204,7 @@ This setting tells the bot how much Vitality to save for later. It reads your cu
 
 The **Check only** option reads the gang gathering area's entrance and tells you where Uncle Farmer would gather. It does not start gathering.
 
-You can also use **Sell the collection now** in the game's menu in the Games list to sell gathered items to all three types of buyers from your current location.
+Use **Sell the collection now** in the game's menu in the Games list to go to the buyer for your gathering skill. If the character has no gathering skill, the bot chooses buyers for the goods it recognizes in the bag.
 
 In a script, use:
 
@@ -1124,9 +1213,10 @@ gather
 gather check
 sell_collection
 sell_collection fish
+sell_collection all
 ```
 
-The first command starts gathering. The second checks what the bot would do. The last two sell your collection, with the final command specifying fish.
+The first command starts gathering and the second checks where the bot would gather. The three sale commands choose the buyer automatically, sell fish only, or visit all three types of buyer.
 
 
 
@@ -1342,9 +1432,20 @@ One thing to remember: pet supplies are checked only when the pet option is enab
 
 ### What happens during the dungeon run?
 
-Once your supplies are ready, Uncle Farmer travels to the entrance and selects **Enter the dungeon**.
+Once your supplies are ready, Uncle Farmer travels to the entrance.
 
-After your character reaches the safe landing area inside, the dungeon run begins. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
+**Getting ready at the door**
+
+The 15 minutes start the moment your character is inside, so Uncle Farmer gets everything ready before it selects **Enter the dungeon**:
+
+- It gets off the travel beast, or onto the fusion beast your character fights in.
+- It calls your pet, which comes in with you. If the pet can come out within three minutes, Uncle Farmer waits for it at the door. If it needs longer, Uncle Farmer goes in and calls it inside as soon as it can.
+- It puts your long buffs up and tops up HP and MP.
+- It puts potions back on empty keys and lets a paused experience card run again. A new experience card is started inside, so none is spent if the game turns your character away.
+
+Then it selects **Enter the dungeon**.
+
+After your character reaches the safe landing area inside, the dungeon run begins at once. Uncle Farmer keeps your character moving and fighting until the visit ends. It won't stop to rest or leave for extra supplies.
 
 **Finding monsters**
 
@@ -1620,6 +1721,8 @@ You can choose which period to review:
 - Last 30 days.
 - All time.
 
+Today, yesterday and the days of the **Day** list are the game's days: from 00:00 GMT to 00:00 GMT, when the drop time starts again (05:00 in Pakistan). A night farmed across your computer's midnight counts as one day. A run belongs to the day it started on. The `today` private message command counts the same way.
+
 
 
 ### Understanding your farming time
@@ -1732,6 +1835,10 @@ These statistics require agent version 28 or newer, the same version requirement
 
 If the game does not provide a particular statistic, Uncle Farmer displays `null` for that value.
 
+### Map by map
+
+When a run farmed two maps or more, its results add a **Map by map** part: for each map, the time spent farming on it (not the trips away from it, nor a pause), its kills and kills an hour, the arnebia and the shards gained on it, the chests opened there and the deaths. A day's or a week's results add the maps up the same way. A run that farmed one map shows the results it always did.
+
 ### Quick results and spoken summaries
 
 You don't always need to open the Results window to check how things are going.
@@ -1818,6 +1925,35 @@ Uncle Farmer can also help your character locate teammates:
 - If your character is more than 20 yards away from the team leader and on the same map, Uncle Farmer can press **Shift+P** to teleport to the leader. It checks approximately every 50 seconds.
 
 The `come` and `follow` commands can use these features when the target is leading the team.
+
+**Leading a team (the Team tab)**
+
+Character settings has a **Team** tab. Nothing on it does anything until you tick it, and each
+character keeps its own choices.
+
+- **Accept requests to join my team.** When a player asks to join, the game plays a sound for the
+  leader. Uncle Farmer hears it between fights and lets in only the players you allow, chosen in
+  **Who may join**: your trusted players (Private messages), your friends in the game, or the
+  names and ids you type. Anyone else is left waiting: the bot never presses "refuse", and the log
+  names them once. Requests that arrived while the bot wasn't farming are looked at as farming
+  starts.
+- **Remove members who go offline.** Every few minutes (or only when the run passes through a
+  town), the bot opens the member list and presses the game's info key (G) on each member. The
+  game answers for a member who is online and says nothing for one who isn't. A member who doesn't
+  answer is asked again, with twice the wait, before being removed.
+- **Hand the team over when the run ends**, to the first player of your list who is in the team.
+  If none of them is, the team stays with your character and the log says so.
+- **Create my team when the run starts**, with the name you type (letters and numbers), wherever
+  the run starts. If your team has another name, the bot can disband it and make it again (a
+  separate tick, as disbanding sends everyone out of the team).
+- **Leave a team another player leads** when the run starts.
+- **After the run, stay in town and manage the team** until you stop the run. A script can do the
+  same with `manage_team`, which first sets the team up as a run's start does (leaving another
+  player's team, making yours). If both are ticked, the team is handed over and the bot doesn't stay;
+  it stays only when nobody from the list is in the team.
+
+If another player disbands the team or becomes its leader, Uncle Farmer stops managing it for the
+rest of the run and says so. Healing teammates while following is on the same tab.
 
 
 ## Chat
@@ -2271,6 +2407,13 @@ the game's own Spanish and Turkish language packs, so they match what the game s
 shortcut is the same letter as in English; when the translated word has no such letter, it is shown
 in brackets at the end, for example `(&S)`. Trusted-player commands and script words stay in English,
 because the bot only understands them that way.
+
+### French translation
+
+Uncle Farmer includes a French translation in `lang\fr.po`. Game names (maps, NPCs, items, skills,
+the Storehouse, the Shard Broker and so on) stay in English: the bot's log lines name them in
+English whatever the game's language pack, so the two always match. Trusted-player commands and
+script words stay in English, because the bot only understands them that way.
 
 ### Urdu translation
 

@@ -101,6 +101,15 @@ def test_a_monster_dying_fast_far_off_is_doomed(clock: Clock) -> None:
     assert b.targets(snap) == []
 
 
+def test_following_never_leaves_the_teams_monster_as_doomed(clock: Clock) -> None:
+    # the same fast death: a teammate is killing it, and a follower goes to help, not walks off
+    b = Fighter()
+    b.following = "Leader"
+    snap = seen(b, clock, [1000, 800, 600])
+    assert not b.doomed(snap["entities"][0], snap["self"])
+    assert [e["id"] for e in b.targets(snap)] == [-1]
+
+
 def test_one_that_holds_its_hp_is_worth_the_walk(clock: Clock) -> None:
     b = Fighter()
     snap = seen(b, clock, [1000, 1000, 1000])

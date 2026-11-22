@@ -13,10 +13,11 @@ import os
 
 import wx
 
-from .. import __version__, applog, messages, paths, settings
+from .. import applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
+from .mainparts.carryon import CarryOnMixin
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -38,6 +39,12 @@ MOD_NOREPEAT = 0x4000
 BOT_STOP_WAIT = 5.0         # seconds each running bot gets to end when the app closes
 
 
+def about_text() -> str:
+    """Help, About: this copy's version as the update check knows it - a dev build's own number
+    (1.2.2-dev.436) from its build.json, not only the release it was built from."""
+    return _("Uncle Farmer {v}\nA farming bot for Mist World.", v=updater.installed_version())
+
+
 def action_menu_states(*, available: bool, running: bool, any_running: bool, has_items: bool,
                        has_messengers: bool, selected: tuple[str, str] | None) -> dict[str, bool]:
     """The menu availability matrix, kept separate from wx so every game and plan state is testable."""
@@ -45,14 +52,17 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
     return {
         "run_start": available and not running and has_items, "run_stop": running,
         "run_pause": running, "run_stop_all": any_running, "run_walk": available and not running,
-        "run_schedules": True, "run_results": True, "run_speak_results": True,
+        "run_schedules": True, "run_autopilot": available and not running and has_items,
+        "run_results": True, "run_speak_results": True,
         "game_mute": available, "game_unmute": available, "game_mute_all": True, "game_unmute_all": True,
         "game_open": True, "messages_private": True, "messages_chat": available,
         "messages_reset": has_messengers, "character_settings": available, "character_bag": available,
         "character_scan": available and not running, "character_other": True,
         "character_export": True, "character_import": True,
         "tools_gem": available and not running, "tools_breaker": available and not running,
+        "tools_potions": available and not running,
         "tools_enhance": available and not running,
+        "tools_keyboard": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
         "tools_silencer": available, "tools_market": available, "tools_bounties": available and not running,
@@ -66,7 +76,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, SchedulingMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, CarryOnMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -84,6 +94,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.sound_restorer = SoundRestore()
         self.pending_update: updater.ApplyProcess | None = None
         self.games = []          # [(pid, character, map name)]
+        self.killing_games: set[int] = set()
         self.unavailable_agents = {}  # pid -> (port, secret) for stale or unreachable agent records
         self.items = []          # [("plan"|"script", name)]
         self.log_lines = []      # [(text, important)]
@@ -97,6 +108,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.snap_busy = False
         self.scanning = set()    # characters being scanned on a worker thread
         self.pending_logins = {} # profile -> when automatic login opened its client
+        self.opened_games = {}   # pid -> when this window opened that game
         self.updating = False
         self.preparing_update = False   # the update copier is being started on a worker (updates.py)
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
@@ -135,6 +147,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.refresh_games()
         self.update_buttons()
         self.start_schedules()
+        self.start_carry_on()
         self.game_list.SetFocus()
         wx.CallAfter(self.first_run)
 
@@ -148,6 +161,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             self.game_list.InsertColumn(i, title, width=width)
         self.game_list.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: None if self.filling else self.game_changed())
         self.game_list.Bind(wx.EVT_CONTEXT_MENU, self.game_context_menu)
+        self.game_list.Bind(wx.EVT_KEY_DOWN, self.on_game_key)
 
         row = wx.BoxSizer(wx.HORIZONTAL)
         row.Add(wx.StaticText(panel, label=_("Pla&n:")), 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
@@ -265,6 +279,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
 
         tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
                            command(_("Gem Brea&ker"), lambda e: self.open_tool("break"), "Ctrl+Shift+B"),
+                           command(_("P&otion Maker"), lambda e: self.open_tool("potions"), "Ctrl+Shift+O"),
                            command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
                            command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
                            command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
@@ -279,10 +294,11 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("S&tore items now"), lambda e: self.store_items_now()),
                            command(_("Restock &now"), lambda e: self.restock_now()),
                            command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
-                           command(_("Sound Silencer"), lambda e: self.open_silencer())],
-                          ("tools_gem", "tools_breaker", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
+                           command(_("Sound Silencer"), lambda e: self.open_silencer()),
+                           command(_("&Keyboard Manager"), lambda e: self.open_tool("keyboard"))],
+                          ("tools_gem", "tools_breaker", "tools_potions", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
                            "tools_market", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
-                           "tools_silencer"),
+                           "tools_silencer", "tools_keyboard"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
                                              command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
@@ -305,9 +321,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("Stop &every bot"), lambda e: self.stop_all(), "Ctrl+Shift+S"),
                          command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
                          command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
+                         command(_("&Autopilot: the whole day"), lambda e: self.open_autopilot(), "Ctrl+Shift+A"),
                          command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
                          command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
-                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules",
+                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules", "run_autopilot",
                          "run_results", "run_speak_results"), context=True)
         game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
                          command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
@@ -332,11 +349,11 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                           command(_("&Script commands"), lambda e: self.script_help()),
                           command(_("&Commands for trusted players"),
                            lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
+                          command(opens(_("Change&log")), lambda e: self.show_changelog()),
                           command(_("Check for &updates"), lambda e: self.check_updates()),
                           command(_("Contact the &developer"), lambda e: self.contact_developer()),
                           command(_("Join the &Telegram group"), lambda e: self.join_telegram()),
-                          command(_("&About Uncle Farmer"), lambda e: info(self, _("Uncle Farmer {v}\nA farming bot for Mist World.",
-                                                                        v=__version__)))])
+                          command(_("&About Uncle Farmer"), lambda e: info(self, about_text()))])
         self.SetMenuBar(bar)
         plan_shortcuts: list[tuple[int, int, Handler]] = [
             (wx.ACCEL_CTRL, ord("E"), lambda e: self.edit_selected()),
@@ -465,6 +482,16 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
 
+    def _stop_timers(self) -> None:
+        down = applog.teardown
+        with down.step("stop the game list timer", must=False):
+            self.timer.Stop()
+        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on")):
+            timer: wx.Timer | None = getattr(self, name, None)   # none if the window never got that far
+            if timer is not None:
+                with down.step("stop the %s timer" % what, must=False):
+                    timer.Stop()
+
     def on_close(self, evt: wx.CloseEvent) -> None:
         """Stop what runs, let go of the hotkeys and the timer, and go. Each step is in
         teardown.log; one that fails is written down there and the others still happen, so the
@@ -487,6 +514,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             runs = list(self.runs.values())
             with down.step("ask %d bot%s to stop" % (len(runs), "" if len(runs) == 1 else "s"), must=False):
                 for run in runs:
+                    run.app_closing = True      # not the player's Stop: the run's place is kept
                     run.stop()
             with down.step("wait for the bots to end", must=False):
                 for run in runs:
@@ -516,12 +544,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             for hotkey in self.hotkeys:
                 if not self.UnregisterHotKey(hotkey):
                     down.problem("Windows didn't take back hotkey %#x" % hotkey)
-        with down.step("stop the game list timer", must=False):
-            self.timer.Stop()
-        timer: wx.Timer | None = getattr(self, "schedule_timer", None)   # none if the window never got that far
-        if timer is not None:
-            with down.step("stop the schedules timer", must=False):
-                timer.Stop()
+        self._stop_timers()
         with down.step("destroy the window", must=False):
             self.destroyed = self.Destroy()  # only successful destruction authorizes the paused updater
 
@@ -544,12 +567,16 @@ Main window
   Ctrl+Shift+S       Stop every bot
   Ctrl+W              Walk to a dungeon entrance or a map (Pause stops the walk)
   Ctrl+Shift+H        Schedules: plans and scripts started at set times
+  Ctrl+Shift+A        Autopilot: the Before farming list, a plan and the After farming list, started together
   Ctrl+R              Results
   Ctrl+Shift+R        Speak the results
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
+  Delete              Confirm killing the selected game (Games list only)
+  Shift+Delete        Kill the selected game immediately (Games list only)
   Ctrl+G              Gem Maker
   Ctrl+Shift+B        Gem Breaker: gems and Enhance Crystals into shards
+  Ctrl+Shift+O        Potion Maker: make potions at the gang's Pharmacist and fuse them up
   Ctrl+Shift+E        Equipment Enhancer
   Ctrl+Shift+D        Daily chores
   Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
@@ -628,6 +655,12 @@ TOOLS
 Tools, Gem Breaker (Ctrl+Shift+B): break the gem colours you tick, up to the level you allow, into
 shards, and if you want the Weapon or Equipment Enhance Crystals too (they cost arnebia). It can't be
 undone: the window shows what would go, and asks before it starts.
+Tools, Potion Maker (Ctrl+Shift+O): the gang Pharmacist makes potions from Bloods and Pelts and
+fuses 5 of a size into 1 of the next (Small to Medium to Large, for free). Say how many of each potion
+you want in the bag; for Medium and Large choose between making them from Smalls and fusing (usually
+cheaper) or making them from their own recipe. Missing materials come from the town storehouse and
+the market, cheapest lots first and never above the most a piece you set for each material. Check
+only reads the real fees and says what it would do.
 Tools, Gem Maker (Ctrl+G): make a gem (choose which, its level and how many, or as many as you
 can; it gets more Level 1 shards from the storehouse or the Shard Market when you let it), or make
 the most of your bag (every shard into gems, then every colour up as far as it goes). Tools, Equipment Enhancer (Ctrl+Shift+E): your

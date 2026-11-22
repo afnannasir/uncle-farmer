@@ -67,10 +67,12 @@ class EditingMixin(FrameParts):
         if not gameinstall.is_game_folder(folder) or gameinstall.status(folder) != "installed":
             return _("The agent isn't installed in the game yet. Install it in Settings first.")
         try:
-            subprocess.Popen([os.path.join(folder, "mw.exe")], cwd=folder, close_fds=True,
-                             creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8))
+            game = subprocess.Popen([os.path.join(folder, "mw.exe")], cwd=folder, close_fds=True,
+                                    creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8))
         except OSError as e:
             return _("Couldn't start the game: {err}", err=e)
+        # the game's agent writes this same pid (runs.starting_games waits for it)
+        self.opened_games[game.pid] = self.clock.time()
         return None
 
     def open_client(self) -> None:
@@ -226,9 +228,25 @@ class EditingMixin(FrameParts):
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
         logged-in character, then check or start it as a job on that game."""
         from ..crafting import CHECK, START, EnhancerDialog, GemBreakerDialog, GemMakerDialog
+        from ..potions import PotionMakerDialog
         name = active_profile(self)
         if not name:
             error(self, _("Log in to the character in the game first."))
+            return
+        if which == "keyboard":
+            from ..keyboard import KeyboardDialog
+            pid = self.selected_pid()
+            if pid is None or pid in self.runs:
+                return
+            with KeyboardDialog(self, name, pid) as d:
+                if d.ShowModal() != wx.ID_OK or not d.apply_name:
+                    return
+                profile_name = d.apply_name
+            if self.selected_pid() != pid or active_profile(self) != name:
+                error(self, _("Select the same character before applying the keyboard profile."))
+                return
+            from ...engine import keyboard
+            self.run_errand(keyboard.command(profile_name), _("Keyboard Manager"))
             return
         if self.selected_pid() not in self.runs:
             self.scanned = getattr(self, "scanned", {})
@@ -241,6 +259,7 @@ class EditingMixin(FrameParts):
         from ..xploss import XpLoserDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "break": (GemBreakerDialog, "gem_breaker", _("Gem Breaker")),
+                           "potions": (PotionMakerDialog, "potion_maker", _("Potion Maker")),
                            "enhance": (EnhancerDialog, "enhance", _("Equipment Enhancer")),
                            "chores": (ChoresDialog, "chores", _("Daily chores")),
                            "bounties": (BountiesDialog, "bounties", _("Hunting bounties")),

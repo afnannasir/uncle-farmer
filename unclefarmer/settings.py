@@ -30,6 +30,7 @@ APP_DEFAULTS: dict[str, Any] = {
     "daily_stop": True,       # every run ends at the daily stop time, before the game's day turns over
     "daily_stop_at": "",      # "HH:MM" on this computer's clock; empty = the drop reset (00:00 GMT) - 10 min
     "after_stop": "nothing",  # when farming stops by itself (never after Stop): nothing | close_game | shutdown
+    "restart_lost_games": True,  # a game lost mid-run (closed, frozen) is opened again and the run carries on
     "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
     "check_updates": True,    # look for a new release on GitHub when the app starts
     "skip_version": "",       # a release the player said no to: not offered again at start
@@ -52,6 +53,7 @@ LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next l
 
 PROFILE_DEFAULTS: dict[str, Any] = {
     "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
+    "keyboard_profiles": {},
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
     # Target keys pick the nearest target in one direction (the game's "turn" keys); the bot presses
     # the one pointing at the monster it chose, then checks the game selected that monster.
@@ -84,6 +86,12 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "stop_before_level": False,  # end the run when the next level needs less than level_keep_xp experience
     "level_keep_xp": 100000,  # ... that much experience still to go: the run stops before the level
     "skip_before_on_farm": True,  # a run that starts on its first farming map skips the Before farming list
+    "autopilot_plan": "",       # Run, Autopilot: the plan the day farms with ("plan:<name>"; "" = the last one run)
+    "autopilot_farm": "plan",   # ... farm with that plan, or "best": the best map for the level when it starts
+    "autopilot_how": "lists",   # ... the Triggers lists around the farming, or "script": the script of the day
+    "autopilot_start": "manual",  # ... only when Start is pressed, or "daily" at autopilot_time (Run, Schedules)
+    "autopilot_time": "06:00",
+    "autopilot_schedule": "",   # ... the id of the daily schedule the window made ("" = none)
     "gem_keep_arnebia": 20000,  # making gems never spends arnebia below this (fares and potions)
     "bag_rules": {},          # the bag manager: item (lower case) -> {"action": keep|store|sell|throw, "keep": n}
     "only_this_run": True,    # items without a rule of the player's: touch only what this run picked up
@@ -131,6 +139,8 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
+    "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
+    "no_kill_minutes": 10,    # farming: no kill for this long -> another part of the map, the third time stop (engine/watchdog.py); 0: off
     "rest_below": 60,         # HP % under which we rest (drinking) before taking on the next monster
     "rest_until": 90,         # HP % a rest waits for
     "repair_with": "toolbox",  # repair the gear when the game warns: "toolbox" (from the bag) or "off"
@@ -174,6 +184,20 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "pet_heal_below": 85,     # the pet's HP (%) under which it is healed with the skill
     "team_heal": True,        # while following, a class with a quick heal heals teammates with it
     "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
+    # Leading a team (Team tab; engine/teamlead.py). Everything off until the player ticks it.
+    "team_accept": False,     # take requests to join our team by ourselves
+    "team_accept_who": "trusted",  # who may join: "trusted" (Private messages), "friends" (the game's), "list"
+    "team_accept_list": [],   # names or ids for "list"
+    "team_remove_offline": False,  # remove members who went offline (they don't answer the info key)
+    "team_offline_every": 10,  # minutes between offline checks while farming
+    "team_offline_town_only": False,  # check only when the run passes through a town
+    "team_hand_over": False,  # hand the team over when the run ends...
+    "team_hand_to": [],       # ...to the first of these names or ids who is in it
+    "team_create": False,     # create the team when the run starts, if there is none
+    "team_name": "",          # its name: letters and numbers
+    "team_remake": False,     # a team of ours with another name is disbanded and made again
+    "team_leave_others": False,  # leave a team another player leads when the run starts
+    "team_stay_in_town": False,  # after the run, stay in town managing the team until stopped
     "smart_skills": True,     # pick skills from the game's own skill list and texts (off: cycle attack_keys)
     # The player's say over each skill on the keys, by name (engine/combat.py SKILL_USES):
     #   auto       the bot decides when (the default)
@@ -235,6 +259,7 @@ class AppSettings(BaseModel):
     daily_stop: bool = APP_DEFAULTS["daily_stop"]
     daily_stop_at: str = APP_DEFAULTS["daily_stop_at"]
     after_stop: str = APP_DEFAULTS["after_stop"]
+    restart_lost_games: bool = APP_DEFAULTS["restart_lost_games"]
     shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
     check_updates: bool = APP_DEFAULTS["check_updates"]
     skip_version: str = APP_DEFAULTS["skip_version"]
@@ -249,6 +274,7 @@ class Profile(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
+    keyboard_profiles: dict[str, Any] = PROFILE_DEFAULTS["keyboard_profiles"]
 
     move_keys: dict[str, str] = PROFILE_DEFAULTS["move_keys"]
     target_keys: dict[str, str] = PROFILE_DEFAULTS["target_keys"]
@@ -280,6 +306,12 @@ class Profile(BaseModel):
     stop_before_level: bool = PROFILE_DEFAULTS["stop_before_level"]
     level_keep_xp: int = PROFILE_DEFAULTS["level_keep_xp"]
     skip_before_on_farm: bool = PROFILE_DEFAULTS["skip_before_on_farm"]
+    autopilot_plan: str = PROFILE_DEFAULTS["autopilot_plan"]
+    autopilot_farm: str = PROFILE_DEFAULTS["autopilot_farm"]
+    autopilot_how: str = PROFILE_DEFAULTS["autopilot_how"]
+    autopilot_start: str = PROFILE_DEFAULTS["autopilot_start"]
+    autopilot_time: str = PROFILE_DEFAULTS["autopilot_time"]
+    autopilot_schedule: str = PROFILE_DEFAULTS["autopilot_schedule"]
     gem_keep_arnebia: int = PROFILE_DEFAULTS["gem_keep_arnebia"]
     bag_rules: dict[str, Any] = PROFILE_DEFAULTS["bag_rules"]
     only_this_run: bool = PROFILE_DEFAULTS["only_this_run"]
@@ -361,6 +393,19 @@ class Profile(BaseModel):
     pet_heal_below: Auto = PROFILE_DEFAULTS["pet_heal_below"]
     team_heal: bool = PROFILE_DEFAULTS["team_heal"]
     team_heal_below: Auto = PROFILE_DEFAULTS["team_heal_below"]
+    team_accept: bool = PROFILE_DEFAULTS["team_accept"]
+    team_accept_who: str = PROFILE_DEFAULTS["team_accept_who"]
+    team_accept_list: list[str | int] = PROFILE_DEFAULTS["team_accept_list"]
+    team_remove_offline: bool = PROFILE_DEFAULTS["team_remove_offline"]
+    team_offline_every: int = PROFILE_DEFAULTS["team_offline_every"]
+    team_offline_town_only: bool = PROFILE_DEFAULTS["team_offline_town_only"]
+    team_hand_over: bool = PROFILE_DEFAULTS["team_hand_over"]
+    team_hand_to: list[str | int] = PROFILE_DEFAULTS["team_hand_to"]
+    team_create: bool = PROFILE_DEFAULTS["team_create"]
+    team_name: str = PROFILE_DEFAULTS["team_name"]
+    team_remake: bool = PROFILE_DEFAULTS["team_remake"]
+    team_leave_others: bool = PROFILE_DEFAULTS["team_leave_others"]
+    team_stay_in_town: bool = PROFILE_DEFAULTS["team_stay_in_town"]
     smart_skills: bool = PROFILE_DEFAULTS["smart_skills"]
     skill_use: dict[str, str] = PROFILE_DEFAULTS["skill_use"]
     skill_use_others: str = PROFILE_DEFAULTS["skill_use_others"]

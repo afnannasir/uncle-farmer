@@ -17,6 +17,7 @@ line; contribution goes up instead.
 
 from __future__ import annotations
 
+import calendar
 import contextlib
 import copy
 import math
@@ -46,7 +47,7 @@ FARMING = "farming"          # a record's kind: farming, or a job that isn't (TO
 TOOL = "tool"
 # The jobs kept apart from farming, by the script command that runs them: on their own from the
 # Tools menu, or inside a farming run (chores before farming, `gem_maker` in a script).
-TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "gem_breaker": N_("Gem Breaker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
+TOOLS: dict[str, str] = {"gem_maker": N_("Gem Maker"), "gem_breaker": N_("Gem Breaker"), "potion_maker": N_("Potion Maker"), "enhance": N_("Equipment Enhancer"), "chores": N_("Daily chores"),
                          "gather": N_("Gathering"), "sell_collection": N_("Selling the collection"),
                          "sell_shards": N_("Selling shards"), "clean_bag": N_("Cleaning the bag"),
                          "update_shard_prices": N_("Updating shard prices"), "store_items": N_("Storing items"),
@@ -380,6 +381,23 @@ class _Part:
                     or any(self.gains.values()) or self.xp or self.kills or self.deaths or self.chests)
 
 
+class _MapPart:
+    """What farming one map did in a run: the time on it (not the trips away from it, nor a pause),
+    the kills and deaths there, the chests opened there, and the arnebia and shards the bag gained
+    while on it."""
+
+    def __init__(self) -> None:
+        self.seconds = 0.0
+        self.kills = self.deaths = self.chests = 0
+        self.arnebia = 0
+        self.shards: dict[str, int] = {}
+
+    def record(self) -> dict[str, Any]:
+        return {"minutes": round(self.seconds / 60.0, 1), "kills": self.kills, "deaths": self.deaths,
+                "chests": self.chests, "arnebia": self.arnebia,
+                "shards": {n: v for n, v in self.shards.items() if v}}
+
+
 class Tally:
     """One run. update() is called by the bot between fights; result() can be read any time, from
     any thread: every change to the tally holds self.lock, and result()/results() build their
@@ -406,6 +424,9 @@ class Tally:
         self.started = self.clock.time()
         self.ended: float | None = None
         self.main = tool or FARMING      # what the run is: the activity its own record is about
+        # A run carried on after an interruption (engine/resume.py): the start of its first part,
+        # written into each record so the parts can be added up (whole_run)
+        self.chain: str | None = None
         self.doing: str | None = self.main      # where gains go now; None while paused
         self.parts = {self.main: _Part()}
         self.since = self.started        # when `doing` began
@@ -418,6 +439,9 @@ class Tally:
         self.drop_left: int | None = None   # seconds of the day's drop time left, at the last sheet seen
         self.counters = (0, 0)       # the bot's kills and deaths at the last reading
         self.maps: list[int] = []
+        self.by_map: dict[int, _MapPart] = {}    # farming, map by map (on_map)
+        self.farm_map: int | None = None         # the map being farmed now, None between farms
+        self.map_since = self.started            # when farm_map's time was last counted
         self.combat = CombatStats(clock)
         self.combat.on = self.main == FARMING
         self.last_update = 0.0
@@ -470,12 +494,19 @@ class Tally:
         kills, deaths = int(bot.kills or 0), int(getattr(bot, "deaths", 0) or 0)
         with self.lock:
             part = self._part()
+            here = self._on_the_farm(mid)
+            self._count_map_time(now, here is not None)
             if bag:
                 if self.bag0 is None:
                     self.bag0 = dict(bag)
                 elif part is not None:
                     part.add_changes(self.bag, bag)
+                    if here is not None:
+                        _map_changes(here, self.bag, bag)
                 self.bag = bag
+            if here is not None:
+                here.kills += max(0, kills - self.counters[0])
+                here.deaths += max(0, deaths - self.counters[1])
             self.note_sheet(me.get("sheet"))
             if part is not None:
                 if self.doing == FARMING:
@@ -491,6 +522,29 @@ class Tally:
             part = self._part()
             if part is not None and self.doing == FARMING:
                 part.chests += 1
+                if self.farm_map is not None:
+                    self.by_map.setdefault(self.farm_map, _MapPart()).chests += 1
+
+    def on_map(self, mid: int | None) -> None:
+        """A farm of map mid begins (None: it is over). From now on what farming gains on that map
+        is also counted for it, map by map."""
+        with self.lock:
+            self._count_map_time(self.clock.time(), True)
+            self.farm_map = int(mid) if mid else None
+            if self.farm_map is not None:
+                self.by_map.setdefault(self.farm_map, _MapPart())
+
+    def _on_the_farm(self, mid: int | None) -> _MapPart | None:
+        """The farmed map's part when a reading made on map mid counts for it: farming, on it."""
+        if self.farm_map is None or self.doing != FARMING or mid != self.farm_map:
+            return None
+        return self.by_map.setdefault(self.farm_map, _MapPart())
+
+    def _count_map_time(self, now: float, on_it: bool) -> None:
+        """The time since the last count goes to the farmed map when we were farming on it."""
+        if self.farm_map is not None and self.doing == FARMING and on_it:
+            self.by_map.setdefault(self.farm_map, _MapPart()).seconds += max(0.0, now - self.map_since)
+        self.map_since = now
 
     def note_sheet(self, sheet: dict[str, Any] | None) -> None:
         with self.lock:
@@ -551,6 +605,7 @@ class Tally:
             self.update(bot, force=True)        # outside the lock: it reads the game
         with self.lock:
             now = self.clock.time()
+            self._count_map_time(now, True)
             if self.doing is None:
                 self.paused_s += now - self.since
             else:
@@ -639,10 +694,13 @@ class Tally:
             "experience": part.xp, "levels": part.levels,
             "level": s1.get("level", -1), "xp_needed": s1.get("xp_needed", -1),
         }
+        if self.chain:
+            rec["chain"] = self.chain
         if farming:
             # what the run's own selling jobs brought in, from loot farming picked up
             rec["sales"] = sum(p.arnebia_in for k, p in self.parts.items() if k in SELLING)
             rec["maps"] = list(self.maps)
+            rec["by_map"] = self._by_map(end)
             rec["combat"] = self.combat.result()
             rec["shard_value"] = sum(v * self.prices.get(n.lower(), 0) for n, v in picked.items() if is_shard(n))
         else:
@@ -660,6 +718,18 @@ class Tally:
             else:
                 rec["remaining_minutes"] = None
         return rec
+
+    def _by_map(self, end: float) -> dict[str, dict[str, Any]]:
+        """The record's map by map part: {map id: its numbers}, the time on the map farmed now
+        counted up to `end`."""
+        out: dict[str, dict[str, Any]] = {}
+        for mid, mp in self.by_map.items():
+            rec = mp.record()
+            if mid == self.farm_map and self.doing == FARMING:
+                rec["minutes"] = round((mp.seconds + max(0.0, end - self.map_since)) / 60.0, 1)
+            if rec["minutes"] or rec["kills"]:
+                out[str(mid)] = rec
+        return out
 
     def finish(self, bot: Parts | None = None) -> None:
         if bot is not None:
@@ -769,18 +839,22 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING,
     return out
 
 
+def game_day_of(t: float) -> str:
+    """The game's day ("2026-11-08") a clock time falls on: its days run from 00:00 GMT to 00:00
+    GMT, when the drop time starts again - a night farmed across the computer's midnight is one day."""
+    return time.strftime("%Y-%m-%d", time.gmtime(t))
+
+
 def days(character: str, kind: str | None = FARMING) -> list[str]:
-    """The days ("2026-11-08") a character has runs on, newest first: the day each run started."""
-    found = {str(r.get("start"))[:10] for r in runs(character, kind=kind) if start_time(r) is not None}
+    """The game days ("2026-11-08") a character has runs on, newest first: the day each run started."""
+    found = {game_day_of(t) for t in (start_time(r) for r in runs(character, kind=kind)) if t is not None}
     return sorted(found, reverse=True)
 
 
 def day_bounds(day: str) -> tuple[float, float]:
-    """(start, end) of a day ("2026-11-08") as clock times: its local midnight and the next one
-    (mktime evens out a day with a clock change in it)."""
-    t = time.strptime(day, "%Y-%m-%d")
-    end = time.mktime((t.tm_year, t.tm_mon, t.tm_mday + 1, 0, 0, 0, 0, 0, -1))
-    return time.mktime(t), end
+    """(start, end) of a game day ("2026-11-08") as clock times: its 00:00 GMT and the next one."""
+    start = float(calendar.timegm(time.strptime(day, "%Y-%m-%d")))
+    return start, start + 86400.0
 
 
 def _record(line: str) -> Record | None:
@@ -907,6 +981,24 @@ def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
         dst[n] = dst.get(n, 0) + d
 
 
+def start_stamp(t: float) -> str:
+    """A clock time as a record's "start" says it."""
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
+
+
+def whole_run(r: Record) -> tuple[Record, int]:
+    """A record of a run carried on after interruptions, added up with its earlier parts (the saved
+    records of the same chain): (the whole, how many parts). Any other record: (itself, 1)."""
+    chain = r.get("chain")
+    if not chain or r.get("kind") != FARMING:
+        return r, 1
+    parts = [x for x in runs(str(r.get("character") or "")) if (x.get("chain") == chain or x.get("start") == chain)
+             and x.get("start") != r.get("start")]
+    if not parts:
+        return r, 1
+    return add_up([*parts, r]), len(parts) + 1
+
+
 def add_up(results: Iterable[Record]) -> Record:
     """One result from many (a day, a week) of one kind."""
     results = [upgrade(dict(r)) for r in results]
@@ -928,6 +1020,7 @@ def add_up(results: Iterable[Record]) -> Record:
             _add(total["moved"].setdefault(how, {}), items)
         if r.get("earnings_from_net"):
             total["earnings_from_net"] = True
+        _add_by_map(total.setdefault("by_map", {}), r.get("by_map"))
         level = r.get("level")
         if isinstance(level, int) and not isinstance(level, bool) and level >= 0:
             total["level"], total["xp_needed"] = level, r.get("xp_needed", -1)
@@ -946,6 +1039,59 @@ def add_up(results: Iterable[Record]) -> Record:
     if total["kind"] == TOOL and len({r.get("tool") for r in results}) == 1:
         total["tool"] = results[0].get("tool")
     return total
+
+
+def _map_changes(here: _MapPart, was: Mapping[str, int], now: Mapping[str, int]) -> None:
+    """One bag reading's arnebia and shards, into the farmed map's part."""
+    for n in set(now) | set(was):
+        d = now.get(n, 0) - was.get(n, 0)
+        if not d:
+            continue
+        if n.lower() == ARNEBIA:
+            here.arnebia += d
+        elif is_shard(n) and d > 0:
+            here.shards[n] = here.shards.get(n, 0) + d
+
+
+def _add_by_map(dst: dict[str, dict[str, Any]], src: Mapping[str, Any] | None) -> None:
+    """Map by map numbers of one record, added into a total's."""
+    for mid, rec in (src or {}).items():
+        if not json.is_object(rec):
+            continue
+        t = dst.setdefault(str(mid), {"minutes": 0.0, "kills": 0, "deaths": 0, "chests": 0, "arnebia": 0, "shards": {}})
+        for k in ("minutes", "kills", "deaths", "chests", "arnebia"):
+            v = rec.get(k, 0)
+            t[k] += v if isinstance(v, (int, float)) and not isinstance(v, bool) else 0
+        t["minutes"] = round(t["minutes"], 1)
+        _add(t["shards"], rec.get("shards"))
+
+
+def _by_map_lines(r: Record) -> list[str]:
+    """"Map by map": one line for each map a record farmed - only when it farmed two or more."""
+    maps: dict[str, dict[str, Any]] = r.get("by_map") or {}
+    if len(maps) < 2:
+        return []
+    from . import atlas                     # here: atlas is heavy, and only this text needs it
+    prices = _prices()
+    out = [_("Map by map:")]
+    for mid, m in sorted(maps.items(), key=lambda kv: -float(kv[1].get("minutes") or 0)):
+        shards: dict[str, int] = m.get("shards") or {}
+        n = sum(shards.values())
+        worth = sum(v * prices.get(k.lower(), 0) for k, v in shards.items())
+        bits = [_("{used}, {kills} kills", used=_clock(m.get("minutes", 0)), kills=_n(m.get("kills", 0)))]
+        rate = _rate(m.get("kills", 0), float(m.get("minutes") or 0))
+        if rate:
+            bits[0] += _(" ({rate} an hour)", rate=rate)
+        if m.get("arnebia"):
+            bits.append(_("{n} arnebia", n=_n(m["arnebia"])))
+        if n:
+            bits.append(_("{n} shards", n=_n(n)) + (_(" (worth about {v})", v=_n(worth)) if worth else ""))
+        if m.get("chests"):
+            bits.append(_("{n} chests", n=m["chests"]))
+        if m.get("deaths"):
+            bits.append(_("{n} deaths", n=m["deaths"]))
+        out.append("    %s: %s" % (atlas.label(int(mid)), ", ".join(bits)))
+    return out
 
 
 def _n(v: float) -> str:
@@ -1222,6 +1368,7 @@ def report(r: Record, title: str) -> str:
     line(_("Battlefield merit"), r.get("merit", 0))
     gained = len(lines) > head
     lines += _earnings_lines(r)
+    lines += _by_map_lines(r)
     loot = len(lines)
 
     picked: dict[str, int] = r.get("picked") or {}

@@ -894,6 +894,25 @@ def test_sell_when_the_buyer_does_not_list_it(monkeypatch: pytest.MonkeyPatch, n
 
 
 # ============================================================ restock
+def test_dark_night_city_uses_its_own_shops_storehouse_and_shard_broker() -> None:
+    b = TownBot(bag=[{"name": "Arnebia", "count": 100_000}])
+    b.map, b.me_at = 1181, (225, 230)
+    bot = as_bot(b)
+    rules = [
+        {"item": "Large Red Potion", "min": 5, "stock": 10, "source": "both", "on": True},
+        {"item": "Large Blue Potion", "min": 5, "stock": 10, "source": "buy", "on": True},
+        {"item": "Pet Rice Roll", "min": 5, "stock": 10, "source": "buy", "on": True},
+    ]
+
+    assert town.restock_town(bot, town.needs(bot, rules, start=True)) == 1181
+    for item in ("Large Red Potion", "Large Blue Potion", "Pet Large Red Potion", "Pet Large Blue Potion"):
+        assert town.nearest(bot, None, candidates=town.shops_for(item)) == (1181, "Potion Merchant Leisa", 207, 243)
+    for item in ("Pet Rice Roll", "Large Toolbox"):
+        assert town.nearest(bot, None, candidates=town.shops_for(item)) == (1181, "Grocer Morabi", 185, 243)
+    assert town.nearest(bot, "storehouse") == (1181, "Ansible Space-Time Storehouse", 233, 233)
+    assert town.nearest(bot, None, candidates=town.market_candidates({})) == (1181, "Shard Broker", 255, 233)
+
+
 def test_restock_tell_only_says_it_once(monkeypatch: pytest.MonkeyPatch) -> None:
     b = TownBot(bag=[{"name": "Potion", "count": 1}])
     rules = [{"item": "Potion", "min": 5, "stock": 50, "source": "tell", "on": True}]
