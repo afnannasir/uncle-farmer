@@ -7,7 +7,8 @@ import io
 import threading
 import time
 import urllib.error
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
+from contextlib import nullcontext
 from http.client import HTTPMessage
 from types import SimpleNamespace
 from typing import cast
@@ -157,7 +158,8 @@ def test_changelog_dialog_waits_without_blocking_and_shows_read_only_text(
 def test_update_confirmation_keeps_existing_install_and_skip_behavior(at_start: bool, choice: int, skipped: bool,
                                                                      monkeypatch: pytest.MonkeyPatch) -> None:
     installed: list[updater.Release] = []
-    fake = SimpleNamespace(destroyed=False, s=settings.load_app(), install_update=installed.append)
+    fake = SimpleNamespace(destroyed=False, updating=False, IsEnabled=returning(True),
+                           s=settings.load_app(), install_update=installed.append)
     release = make_release("2.1.0")
 
     class Offer:
@@ -177,3 +179,35 @@ def test_update_confirmation_keeps_existing_install_and_skip_behavior(at_start: 
     updates.UpdatesMixin.offer_update(cast(updates.UpdatesMixin, fake), release, at_start)
     assert installed == ([release] if choice == wx.ID_OK else [])
     assert (settings.load_app().get("skip_version") == release["version"]) == skipped
+
+
+@pytest.mark.parametrize("closed", [False, True])
+def test_update_offer_waits_for_the_open_dialog_to_close(closed: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    installed: list[updater.Release] = []
+    waiting: list[tuple[Callable[[updater.Release, bool], None], updater.Release, bool]] = []
+    enabled = False
+    release = make_release("2.1.0")
+    fake = SimpleNamespace(destroyed=False, updating=False, IsEnabled=lambda: enabled,
+                           install_update=installed.append)
+    frame = cast(updates.UpdatesMixin, fake)
+    fake.offer_update = updates.UpdatesMixin.offer_update.__get__(frame)
+
+    def later(ms: int, offer: Callable[[updater.Release, bool], None], rel: updater.Release, start: bool) -> None:
+        waiting.append((offer, rel, start))
+
+    def dialog(parent: object, rel: updater.Release) -> nullcontext[SimpleNamespace]:
+        assert enabled and parent is fake and rel is release
+        return nullcontext(SimpleNamespace(ShowModal=returning(wx.ID_OK)))
+
+    monkeypatch.setattr(wx, "CallLater", later)
+    monkeypatch.setattr(updates, "ChangelogDialog", dialog)
+    frame.offer_update(release, True)
+    assert not installed and len(waiting) == 1
+    offer, rel, at_start = waiting.pop()
+    offer(rel, at_start)     # still modal: keep waiting
+    assert not installed and len(waiting) == 1
+    enabled = True
+    fake.destroyed = closed
+    offer, rel, at_start = waiting.pop()
+    offer(rel, at_start)
+    assert installed == ([] if closed else [release]) and not waiting

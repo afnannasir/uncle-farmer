@@ -101,7 +101,12 @@ class UpdatesMixin(FrameParts):
             dialog.ShowModal()
 
     def offer_update(self, rel: updater.Release, at_start: bool) -> None:
-        if self.destroyed:
+        if self.destroyed or self.updating:
+            return
+        if not self.IsEnabled():
+            # A native modal (e.g. the startup agent question) runs its own event loop.
+            # Accepting an update over it can leave MainLoop stuck after the frame is destroyed.
+            wx.CallLater(250, self.offer_update, rel, at_start)
             return
         with ChangelogDialog(self, rel) as dialog:
             accepted = dialog.ShowModal() == wx.ID_OK
