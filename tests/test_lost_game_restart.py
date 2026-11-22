@@ -53,7 +53,7 @@ class Window(SimpleNamespace):
 
 
 def window(restart: bool = True) -> Window:
-    return Window(destroyed=False, s={"restart_lost_games": restart}, items=[("plan", "Night")])
+    return Window(destroyed=False, killing_games=set(), s={"restart_lost_games": restart}, items=[("plan", "Night")])
 
 
 @pytest.fixture
@@ -121,6 +121,39 @@ def test_nothing_is_opened_again_after_stop_or_with_the_setting_off(can_log_in: 
     off = window(restart=False)
     revive(off, lost_run())
     assert frame.reopened == [] and off.reopened == []
+
+
+@pytest.mark.parametrize("worker_finished", [False, True])
+def test_an_intentional_kill_is_not_reopened(can_log_in: None, worker_finished: bool) -> None:
+    resume.save(HERO, {"item": "plan:Night", "text": "x"})
+    frame = window()
+    run = lost_run()
+    if worker_finished:
+        run.stop()             # the kill completion reached the window first
+    else:
+        frame.killing_games = {run.pid}  # the loss notification reached it first
+    revive(frame, run)
+    assert frame.reopened == [] and resume.restarts_today(HERO) == 0
+    assert resume.get(HERO) is None
+
+
+@pytest.mark.parametrize(("updating", "enabled"), [(True, True), (False, False)])
+def test_carry_on_waits_until_the_window_can_open_a_dialog(updating: bool, enabled: bool,
+                                                        monkeypatch: pytest.MonkeyPatch) -> None:
+    waiting: list[object] = []
+
+    def later(delay: int, callback: object) -> None:
+        waiting.append(callback)
+
+    def rows_before_ready() -> None:
+        pytest.fail("the carry-on offer should wait while another dialog or update is active")
+
+    frame = Window(destroyed=False, updating=updating, IsEnabled=returning(enabled),
+                   carry_on_rows=rows_before_ready)
+    frame.offer_carry_on = carry_part.CarryOnMixin.offer_carry_on.__get__(cast(Any, frame))
+    monkeypatch.setattr(carry_part.wx, "CallLater", later)
+    frame.offer_carry_on()
+    assert waiting == [frame.offer_carry_on]
 
 
 def test_a_character_without_a_saved_account_is_only_told(monkeypatch: pytest.MonkeyPatch) -> None:

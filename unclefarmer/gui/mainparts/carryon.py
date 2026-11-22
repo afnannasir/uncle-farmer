@@ -44,6 +44,9 @@ class CarryOnMixin(FrameParts):
     def offer_carry_on(self) -> None:
         if self.destroyed:
             return
+        if self.updating or not self.IsEnabled():
+            wx.CallLater(OFFER_AFTER_MS, self.offer_carry_on)
+            return
         rows = self.carry_on_rows()
         if not rows:
             return
@@ -108,8 +111,13 @@ class CarryOnMixin(FrameParts):
         out for good): the game is closed if it is still there, opened again, logged in to, and the
         run carries on where it was - at most resume.RESTARTS_MOST times a game day per character,
         and only with the setting on. Never after Stop or when Uncle Farmer is closing."""
-        if (self.destroyed or not getattr(run, "game_lost", False) or run.stop_event.is_set() or run.app_closing
-                or not run.keeps_place() or not self.s.get("restart_lost_games", True)):
+        if (self.destroyed or not getattr(run, "game_lost", False) or run.app_closing or not run.keeps_place()):
+            return
+        # A run can report the lost connection before the intentional kill worker calls Stop.
+        if run.stop_event.is_set() or run.pid in self.killing_games:
+            resume.clear(run.profile)
+            return
+        if not self.s.get("restart_lost_games", True):
             return
         key = run.profile
         item: Item = (run.kind, run.title)
