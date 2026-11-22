@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**Two maps in one day's drop time, and the results map by map** (untested in game so far)
+
+- A plan's spot can have a share of the day's drop time: three hours on the first map, the rest on
+  the second. It is counted on the game's 7-hour drop clock, so a restart in the middle carries on
+  where the day is, and a spot whose share is used up is skipped. Farming spot, Farming tab:
+  **A share of the day's drop time (kept across restarts)**. A plan with shares goes through its
+  spots once, in order.
+- Scripts: `drop_left`, the minutes of drop time left (-1 until the sheet has said). A `farm` line
+  whose `until=` is already true is skipped, trip and all; ten in a row stop the run.
+- Results: a run that farmed two maps or more shows them map by map (time on the map, kills and
+  kills an hour, arnebia, shards, chests, deaths), and a day's or a week's results add them up.
+  One map: the results are as before.
+
 **Leading a team: a Team tab** (tried in game with three players)
 
 - Character settings has a new **Team** tab. Everything on it is off until you tick it, and each

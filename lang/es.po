@@ -17,6 +17,9 @@ msgstr " (estimado: incluye fragmentos)"
 msgid " (locked here)"
 msgstr " (bloqueado aquí)"
 
+msgid " (worth about {v})"
+msgstr " (valen unos {v})"
+
 msgid " ({rate} an hour)"
 msgstr " ({rate} por hora)"
 
@@ -815,6 +818,9 @@ msgstr ""
 
 msgid "A script called {name} exists. Replace it?"
 msgstr "Ya existe un script llamado {name}. ¿Reemplazarlo?"
+
+msgid "A share of the day's &drop time (kept across restarts)"
+msgstr "Una parte del tiempo de &drop del día (se mantiene al reiniciar)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "El ajuste de silencio de un sonido debe ser activado o desactivado."
@@ -2108,6 +2114,9 @@ msgstr ""
 msgid "Goes round the spots in turn."
 msgstr "Recorre los puntos por turno."
 
+msgid "Goes through the spots once, sharing out the day's drop time."
+msgstr "Recorre los sitios una vez, repartiendo el tiempo de drop del día."
+
 msgid "Goes through the spots once."
 msgstr "Recorre los puntos una sola vez."
 
@@ -2703,6 +2712,9 @@ msgstr "Fabricar {n} {gem} más."
 msgid "Map"
 msgstr "Mapa"
 
+msgid "Map by map:"
+msgstr "Mapa por mapa:"
+
 msgid "Market buying"
 msgstr ""
 
@@ -2763,6 +2775,9 @@ msgstr "Mensaje añadido a la lista de filtros."
 
 msgid "Mining"
 msgstr "Minería"
+
+msgid "Minutes of drop time on this spot:"
+msgstr "Minutos de tiempo de drop en este sitio:"
 
 msgid "Minutes to look for it:"
 msgstr "Minutos para buscarlo:"
@@ -4134,6 +4149,10 @@ msgstr ""
 
 msgid "Spider cave"
 msgstr "Cueva de arañas"
+
+msgid ""
+"Spot {n} never ends, so the spots after it never come, and they have a share of the day's drop time. Give spot {n} minutes, kills or a share of the drop time."
+msgstr ""
 
 msgid "St&op"
 msgstr ""
@@ -6159,6 +6178,9 @@ msgstr "error"
 msgid "every day at {time}"
 msgstr "todos los días a las {time}"
 
+msgid "every farm of the script is already done - stopping"
+msgstr "todos los farm del script ya están hechos - deteniendo"
+
 msgid "everything"
 msgstr "todo"
 
@@ -7089,6 +7111,9 @@ msgstr "no hay arnebia de sobra para subir {gem} (tarifa {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "no hay suministros suficientes para la mazmorra"
+
+msgid "not farming {map}: {cond} is already true"
+msgstr "no se farmea {map}: {cond} ya se cumple"
 
 msgid "not fed: {why}"
 msgstr "no se alimentó: {why}"
@@ -9358,6 +9383,9 @@ msgstr "{n} arnebia"
 msgid "{n} at level {lv}"
 msgstr "{n} en el nivel {lv}"
 
+msgid "{n} chests"
+msgstr "{n} cofres"
+
 msgid "{n} chests opened"
 msgstr "{n} cofres abiertos"
 
@@ -9403,6 +9431,9 @@ msgstr "{n} minutos"
 msgid "{n} minutes are up"
 msgstr "se cumplieron {n} minutos"
 
+msgid "{n} minutes of drop time"
+msgstr "{n} minutos de tiempo de drop"
+
 msgid "{n} missed"
 msgstr "{n} fallos"
 
@@ -9417,6 +9448,9 @@ msgstr ""
 
 msgid "{n} sellers looked up"
 msgstr ""
+
+msgid "{n} shards"
+msgstr "{n} shards"
 
 msgid "{n} shards at level {lv}"
 msgstr "{n} fragmentos de nivel {lv}"
@@ -9626,6 +9660,9 @@ msgstr "{tool} - {name}"
 
 msgid "{tool} check"
 msgstr "comprobación de {tool}"
+
+msgid "{used}, {kills} kills"
+msgstr "{used}, {kills} muertes"
 
 msgid "{village} on {map}"
 msgstr "{village} en {map}"
