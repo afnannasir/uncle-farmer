@@ -67,10 +67,12 @@ class EditingMixin(FrameParts):
         if not gameinstall.is_game_folder(folder) or gameinstall.status(folder) != "installed":
             return _("The agent isn't installed in the game yet. Install it in Settings first.")
         try:
-            subprocess.Popen([os.path.join(folder, "mw.exe")], cwd=folder, close_fds=True,
-                             creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8))
+            game = subprocess.Popen([os.path.join(folder, "mw.exe")], cwd=folder, close_fds=True,
+                                    creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8))
         except OSError as e:
             return _("Couldn't start the game: {err}", err=e)
+        # the game's agent writes this same pid (runs.starting_games waits for it)
+        self.opened_games[game.pid] = self.clock.time()
         return None
 
     def open_client(self) -> None:

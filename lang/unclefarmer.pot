@@ -92,6 +92,9 @@ msgstr ""
 msgid "&Cancel the shutdown"
 msgstr ""
 
+msgid "&Carry on now"
+msgstr ""
+
 msgid "&Category:"
 msgstr ""
 
@@ -163,6 +166,9 @@ msgid "&Delete filter"
 msgstr ""
 
 msgid "&Delete profile"
+msgstr ""
+
+msgid "&Don't carry on"
 msgstr ""
 
 msgid "&Donation, once a day:"
@@ -411,6 +417,10 @@ msgid "&Only fight (names, separated by commas):"
 msgstr ""
 
 msgid "&Open the chests that turn up while farming"
+msgstr ""
+
+msgid ""
+"&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
 
 msgid "&Open the log folder"
@@ -1152,6 +1162,9 @@ msgstr ""
 msgid "Capture current &keys"
 msgstr ""
 
+msgid "Carry on the interrupted runs"
+msgstr ""
+
 msgid "Category"
 msgstr ""
 
@@ -1429,6 +1442,9 @@ msgid "Couldn't apply the settings: {err}"
 msgstr ""
 
 msgid "Couldn't assign {binding} to {key}."
+msgstr ""
+
+msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr ""
 
 msgid "Couldn't change the game's settings: {err}"
@@ -4418,6 +4434,9 @@ msgstr ""
 msgid "The game isn't readable. Is it running, with a character logged in?"
 msgstr ""
 
+msgid "The game opened for logging in didn't start in time, so it is closed."
+msgstr ""
+
 msgid "The game sends voice messages only to Team, Gang and private chats."
 msgstr ""
 
@@ -4461,6 +4480,9 @@ msgid "The hearthstone didn't work."
 msgstr ""
 
 msgid "The highest cave my level lets in"
+msgstr ""
+
+msgid "The interrupted runs won't carry on."
 msgstr ""
 
 msgid ""
@@ -4597,7 +4619,13 @@ msgstr ""
 msgid "There's no plan to run."
 msgstr ""
 
+msgid "These runs didn't finish:"
+msgstr ""
+
 msgid "These sound IDs are not available in this game: {ids}"
+msgstr ""
+
+msgid "They carry on where they were in {n} seconds."
 msgstr ""
 
 msgid "They come from {source}, a bagful at a time."
@@ -5040,6 +5068,9 @@ msgid "When"
 msgstr ""
 
 msgid "When HP stays &low:"
+msgstr ""
+
+msgid "When a game is lost during a run"
 msgstr ""
 
 msgid "When an &item runs low"
@@ -5538,6 +5569,13 @@ msgid "can't switch the skill page yet ({why}); using the page that is up"
 msgstr ""
 
 msgid "cancel the team's navigation target"
+msgstr ""
+
+msgid "carrying on the interrupted run of {what}"
+msgstr ""
+
+msgid ""
+"carrying on with {map} where it was: {minutes} minutes and {kills} kills done"
 msgstr ""
 
 msgid "cast {n} times"
@@ -6252,6 +6290,9 @@ msgid ""
 "it's {time} - the day's farming is over (the drop time resets at {reset})"
 msgstr ""
 
+msgid "its game is busy with {what}"
+msgstr ""
+
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr ""
 
@@ -6818,6 +6859,9 @@ msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr ""
 
 msgid "not enough supplies for the dungeon"
+msgstr ""
+
+msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
 
 msgid "not farming {map}: {cond} is already true"
@@ -8093,6 +8137,9 @@ msgid ""
 "the run started where monsters spawn ({map} {x},{y}) - ending on the nearest map without them"
 msgstr ""
 
+msgid "the run's place is kept: it can carry on from there"
+msgstr ""
+
 msgid "the script is too long (over {max} characters)"
 msgstr ""
 
@@ -8383,6 +8430,9 @@ msgid "voice message"
 msgstr ""
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
+msgstr ""
+
+msgid "waiting for the game opened for {name} to start"
 msgstr ""
 
 msgid "walk to the enemy"
@@ -8875,6 +8925,9 @@ msgstr ""
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr ""
 
+msgid "{name} isn't logged in to one available game"
+msgstr ""
+
 msgid "{name} leads the team now"
 msgstr ""
 
@@ -8912,6 +8965,18 @@ msgid "{name} was taken by someone else - next one"
 msgstr ""
 
 msgid "{name} went to {map} - going too"
+msgstr ""
+
+msgid ""
+"{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost, and the bot can't log in to it by itself: log in to it once by hand so its account is known."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
 msgstr ""
 
 msgid "{name}, last run ({what}, started {when})"
@@ -9268,6 +9333,13 @@ msgid "{used}, {kills} kills"
 msgstr ""
 
 msgid "{village} on {map}"
+msgstr ""
+
+msgid ""
+"{what} changed since it was interrupted, so it starts from the beginning"
+msgstr ""
+
+msgid "{what} for {name}"
 msgstr ""
 
 msgid "{what} for {who} is waiting: {why}"

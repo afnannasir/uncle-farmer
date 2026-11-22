@@ -92,6 +92,9 @@ msgstr "Llamarlos por su nombre (&C)"
 msgid "&Cancel the shutdown"
 msgstr "&Cancelar el apagado"
 
+msgid "&Carry on now"
+msgstr ""
+
 msgid "&Category:"
 msgstr ""
 
@@ -165,6 +168,9 @@ msgstr "Eliminar filtro (&D)"
 
 msgid "&Delete profile"
 msgstr "Eliminar perfil (&D)"
+
+msgid "&Don't carry on"
+msgstr ""
 
 msgid "&Donation, once a day:"
 msgstr "&Donación, una vez al día:"
@@ -418,6 +424,10 @@ msgstr "Pelear s&olo con (nombres, separados por comas):"
 
 msgid "&Open the chests that turn up while farming"
 msgstr "Abrir l&os cofres que aparecen mientras se farmea"
+
+msgid ""
+"&Open the game again, log in and carry on where the run was (at most {n} times a day)"
+msgstr ""
 
 msgid "&Open the log folder"
 msgstr "Abrir la carpeta de registr&os"
@@ -1176,6 +1186,9 @@ msgstr "Cancelar &respuesta"
 msgid "Capture current &keys"
 msgstr "Capturar las teclas actuales (&K)"
 
+msgid "Carry on the interrupted runs"
+msgstr ""
+
 msgid "Category"
 msgstr ""
 
@@ -1457,6 +1470,9 @@ msgstr "No se pudieron aplicar los ajustes: {err}"
 
 msgid "Couldn't assign {binding} to {key}."
 msgstr "No se pudo asignar {binding} a {key}."
+
+msgid "Couldn't carry on {what} for {name}: {why}"
+msgstr ""
 
 msgid "Couldn't change the game's settings: {err}"
 msgstr "No se pudieron cambiar los ajustes del juego: {err}"
@@ -4563,6 +4579,9 @@ msgid "The game isn't readable. Is it running, with a character logged in?"
 msgstr ""
 "No se puede leer el juego. ¿Está en marcha, con un personaje con sesión iniciada?"
 
+msgid "The game opened for logging in didn't start in time, so it is closed."
+msgstr ""
+
 msgid "The game sends voice messages only to Team, Gang and private chats."
 msgstr ""
 "El juego envía mensajes de voz solo a Equipo, Pandilla y chats privados."
@@ -4613,6 +4632,9 @@ msgstr "La Piedra de Hogar no funcionó."
 
 msgid "The highest cave my level lets in"
 msgstr "La cueva más alta que permite mi nivel"
+
+msgid "The interrupted runs won't carry on."
+msgstr ""
 
 msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
@@ -4766,8 +4788,14 @@ msgstr "Luego permanecer en silencio durante (minutos) (&q):"
 msgid "There's no plan to run."
 msgstr "No hay ningún plan que ejecutar."
 
+msgid "These runs didn't finish:"
+msgstr ""
+
 msgid "These sound IDs are not available in this game: {ids}"
 msgstr "Estos IDs de sonido no están disponibles en este juego: {ids}"
+
+msgid "They carry on where they were in {n} seconds."
+msgstr ""
 
 msgid "They come from {source}, a bagful at a time."
 msgstr "Vienen de {source}, una bolsa llena cada vez."
@@ -5248,6 +5276,9 @@ msgstr "Cuándo"
 
 msgid "When HP stays &low:"
 msgstr "Cuando &la salud se mantenga baja:"
+
+msgid "When a game is lost during a run"
+msgstr ""
 
 msgid "When an &item runs low"
 msgstr "Cuando un objeto se agote (&i)"
@@ -5771,6 +5802,13 @@ msgstr ""
 
 msgid "cancel the team's navigation target"
 msgstr "cancelar el objetivo de navegación del equipo"
+
+msgid "carrying on the interrupted run of {what}"
+msgstr ""
+
+msgid ""
+"carrying on with {map} where it was: {minutes} minutes and {kills} kills done"
+msgstr ""
 
 msgid "cast {n} times"
 msgstr "lanzado {n} veces"
@@ -6509,6 +6547,9 @@ msgid ""
 msgstr ""
 "son las {time}: el farmeo del día terminó (el tiempo de caída de recompensas se reinicia a las {reset})"
 
+msgid "its game is busy with {what}"
+msgstr ""
+
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr ""
 "sus objetos no son los verificados (puede que el juego lo haya cambiado)"
@@ -7111,6 +7152,9 @@ msgstr "no hay arnebia de sobra para subir {gem} (tarifa {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "no hay suministros suficientes para la mazmorra"
+
+msgid "not farming {map}: the interrupted run had already done it"
+msgstr ""
 
 msgid "not farming {map}: {cond} is already true"
 msgstr "no se farmea {map}: {cond} ya se cumple"
@@ -8443,6 +8487,9 @@ msgid ""
 msgstr ""
 "la ejecución empezó donde aparecen monstruos ({map} {x},{y}): terminando en el mapa más cercano sin ellos"
 
+msgid "the run's place is kept: it can carry on from there"
+msgstr ""
+
 msgid "the script is too long (over {max} characters)"
 msgstr "el script es demasiado largo (más de {max} caracteres)"
 
@@ -8750,6 +8797,9 @@ msgstr "mensaje de voz"
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "mensaje de voz de {name}: reprodúcelo en Chat (Ctrl+T)"
+
+msgid "waiting for the game opened for {name} to start"
+msgstr ""
 
 msgid "walk to the enemy"
 msgstr "caminar hacia el enemigo"
@@ -9259,6 +9309,9 @@ msgstr "{name} no está en mi equipo"
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name} no ha iniciado sesión en un juego que tenga el agente."
 
+msgid "{name} isn't logged in to one available game"
+msgstr ""
+
 msgid "{name} leads the team now"
 msgstr "{name} lidera el equipo ahora"
 
@@ -9297,6 +9350,18 @@ msgstr "{name} fue tomado por otro: pasando al siguiente"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name} fue a {map}: voy también"
+
+msgid ""
+"{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost, and the bot can't log in to it by itself: log in to it once by hand so its account is known."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+msgstr ""
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, última ejecución ({what}, iniciada {when})"
@@ -9666,6 +9731,13 @@ msgstr "{used}, {kills} muertes"
 
 msgid "{village} on {map}"
 msgstr "{village} en {map}"
+
+msgid ""
+"{what} changed since it was interrupted, so it starts from the beginning"
+msgstr ""
+
+msgid "{what} for {name}"
+msgstr ""
 
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{what} para {who} está en espera: {why}"

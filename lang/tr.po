@@ -92,6 +92,9 @@ msgstr "Onlara adlarıyla hitap et (&C)"
 msgid "&Cancel the shutdown"
 msgstr "Kapatmayı iptal et (&C)"
 
+msgid "&Carry on now"
+msgstr ""
+
 msgid "&Category:"
 msgstr ""
 
@@ -166,6 +169,9 @@ msgstr "Filtreyi sil (&D)"
 
 msgid "&Delete profile"
 msgstr "Profili sil (&D)"
+
+msgid "&Don't carry on"
+msgstr ""
 
 msgid "&Donation, once a day:"
 msgstr "Bağış, gün&de bir kez:"
@@ -416,6 +422,10 @@ msgstr "Yalnızca bunlarla dövüş (adlar, virgülle ayrılmış) (&O):"
 
 msgid "&Open the chests that turn up while farming"
 msgstr "Farm sırasında çıkan sandıkları aç (&O)"
+
+msgid ""
+"&Open the game again, log in and carry on where the run was (at most {n} times a day)"
+msgstr ""
 
 msgid "&Open the log folder"
 msgstr "Günlük klasörünü aç (&O)"
@@ -1168,6 +1178,9 @@ msgstr "Yanıtı iptal et (&R)"
 msgid "Capture current &keys"
 msgstr "Geçerli tuşları al (&K)"
 
+msgid "Carry on the interrupted runs"
+msgstr ""
+
 msgid "Category"
 msgstr ""
 
@@ -1449,6 +1462,9 @@ msgstr "Ayarlar uygulanamadı: {err}"
 
 msgid "Couldn't assign {binding} to {key}."
 msgstr "{binding}, {key} tuşuna atanamadı."
+
+msgid "Couldn't carry on {what} for {name}: {why}"
+msgstr ""
 
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Oyunun ayarları değiştirilemedi: {err}"
@@ -4525,6 +4541,9 @@ msgstr "Oyun çalışıyor ama giriş yapmış karakter yok."
 msgid "The game isn't readable. Is it running, with a character logged in?"
 msgstr "Oyun okunamıyor. Çalışıyor ve bir karakterle giriş yapılmış mı?"
 
+msgid "The game opened for logging in didn't start in time, so it is closed."
+msgstr ""
+
 msgid "The game sends voice messages only to Team, Gang and private chats."
 msgstr "Oyun yalnızca Takım, Çete ve özel sohbetlere sesli mesaj gönderir."
 
@@ -4571,6 +4590,9 @@ msgstr "Kalp taşı işe yaramadı."
 
 msgid "The highest cave my level lets in"
 msgstr "Seviyemin izin verdiği en yüksek mağara"
+
+msgid "The interrupted runs won't carry on."
+msgstr ""
 
 msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
@@ -4721,8 +4743,14 @@ msgstr "Sonra şu kadar sessiz kal (dakika) (&Q):"
 msgid "There's no plan to run."
 msgstr "Çalıştırılacak plan yok."
 
+msgid "These runs didn't finish:"
+msgstr ""
+
 msgid "These sound IDs are not available in this game: {ids}"
 msgstr "Bu ses kimlikleri bu oyunda yok: {ids}"
+
+msgid "They carry on where they were in {n} seconds."
+msgstr ""
 
 msgid "They come from {source}, a bagful at a time."
 msgstr "Her seferinde bir çanta dolusu, {source} kaynağından gelirler."
@@ -5197,6 +5225,9 @@ msgstr "Ne zaman"
 
 msgid "When HP stays &low:"
 msgstr "HP düşük ka&lınca:"
+
+msgid "When a game is lost during a run"
+msgstr ""
 
 msgid "When an &item runs low"
 msgstr "B&ir eşya azalınca"
@@ -5720,6 +5751,13 @@ msgstr ""
 
 msgid "cancel the team's navigation target"
 msgstr "takımın yön hedefini iptal et"
+
+msgid "carrying on the interrupted run of {what}"
+msgstr ""
+
+msgid ""
+"carrying on with {map} where it was: {minutes} minutes and {kills} kills done"
+msgstr ""
 
 msgid "cast {n} times"
 msgstr "{n} kez kullanıldı"
@@ -6455,6 +6493,9 @@ msgid ""
 msgstr ""
 "saat {time} - günün farmı bitti (ganimet süresi {reset} saatinde sıfırlanır)"
 
+msgid "its game is busy with {what}"
+msgstr ""
+
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr "eşyaları doğrulanmış olanlar değil (oyun değiştirmiş olabilir)"
 
@@ -7041,6 +7082,9 @@ msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "zindan için yeterli sarf malzemesi yok"
+
+msgid "not farming {map}: the interrupted run had already done it"
+msgstr ""
 
 msgid "not farming {map}: {cond} is already true"
 msgstr "{map} farmlanmıyor: {cond} zaten doğru"
@@ -8365,6 +8409,9 @@ msgid ""
 msgstr ""
 "çalışma canavar çıkan bir yerde başladı ({map} {x},{y}) - canavarsız en yakın haritada bitiriliyor"
 
+msgid "the run's place is kept: it can carry on from there"
+msgstr ""
+
 msgid "the script is too long (over {max} characters)"
 msgstr "betik çok uzun ({max} karakter üstü)"
 
@@ -8669,6 +8716,9 @@ msgstr "sesli mesaj"
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "{name} kişisinden sesli mesaj - Sohbet'te oynat (Ctrl+T)"
+
+msgid "waiting for the game opened for {name} to start"
+msgstr ""
 
 msgid "walk to the enemy"
 msgstr "düşmana yürü"
@@ -9177,6 +9227,9 @@ msgstr "{name} takımımda değil"
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name}, ajanı olan bir oyunda giriş yapmamış."
 
+msgid "{name} isn't logged in to one available game"
+msgstr ""
+
 msgid "{name} leads the team now"
 msgstr "takımı artık {name} yönetiyor"
 
@@ -9216,6 +9269,18 @@ msgstr "{name} başkası tarafından alındı - sıradaki"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name}, {map} haritasına gitti - ben de gidiyorum"
+
+msgid ""
+"{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost, and the bot can't log in to it by itself: log in to it once by hand so its account is known."
+msgstr ""
+
+msgid ""
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+msgstr ""
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, son çalışma ({what}, başlangıç {when})"
@@ -9582,6 +9647,13 @@ msgstr "{used}, {kills} öldürme"
 
 msgid "{village} on {map}"
 msgstr "{village}, {map}"
+
+msgid ""
+"{what} changed since it was interrupted, so it starts from the beginning"
+msgstr ""
+
+msgid "{what} for {name}"
+msgstr ""
 
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} için {what} bekliyor: {why}"

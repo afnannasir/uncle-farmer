@@ -88,6 +88,15 @@ class GameBroken(Stopped):
         super().__init__(*args, final=True)
 
 
+class GameLost(Stopped):
+    """Our character left the game and didn't come back (the connection dropped and logging back
+    in failed, or the player was logged out): nothing can be done in that game any more, so no
+    guarding and no walk to the end place. The run's place is kept, to carry on from later."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args, final=True)
+
+
 class Respawned(Exception):
     """We died and came back (map respawn or the city): whatever we were doing starts over."""
 

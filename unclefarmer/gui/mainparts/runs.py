@@ -3,20 +3,46 @@
 from __future__ import annotations
 
 import time
+from typing import Any
 
 import wx
 
-from ... import settings
+from ... import gameinstall, settings
 from ...engine import plan as plans, triggers
 from ...engine.runner import Run
 from ...engine.script import check as check_script, login_target
 from ...i18n import _
+from .. import agentfix
 from ..common import error, save_file
 from ..plan import plan_text
 from .base import FrameParts, Item, foreground_pid, saved_item
 from collections.abc import Callable
 
 LOGIN_OPEN_RETRY = 90.0
+LOGIN_START_MOST = 240.0     # seconds a game we opened has to show its agent before it is closed
+
+
+def starting_games(frame: FrameParts) -> list[int]:
+    """The games this window opened that haven't shown their agent yet: a slow one is waited for
+    (opening another beside it left two signed-out games, and no login), and one that never shows
+    it in LOGIN_START_MOST seconds is closed, so a new one can be opened."""
+    opened: dict[int, float] = getattr(frame, "opened_games", {})
+    if not opened:
+        return []
+    listed = {g[0] for g in frame.games}
+    alive = {pid for pid, _folder in gameinstall.running_games()}
+    now = frame.clock.time()
+    out: list[int] = []
+    for pid, at in list(opened.items()):
+        if pid in listed or pid not in alive:
+            del opened[pid]
+        elif now - at > LOGIN_START_MOST:
+            del opened[pid]
+            frame.say(_("The game opened for logging in didn't start in time, so it is closed."))
+            agentfix.close_then([pid], lambda _left: None, force=True)
+        else:
+            out.append(pid)
+    return out
 
 
 def run_text_and_profile(item: Item, profile: str | None) -> tuple[str | None, str | None, str | None]:
@@ -202,6 +228,8 @@ class RunsMixin(FrameParts):
         label = settings.profile_display(profile)
         if len(signed_out) > 1:
             return None, _("{name} has more than one signed-out game; close the extras or log in first", name=label)
+        if starting_games(self):
+            return None, _("waiting for the game opened for {name} to start", name=label)
         opened = pending.get(profile)
         if opened is not None and time.monotonic() - opened < LOGIN_OPEN_RETRY:
             return None, _("opening a game for {name}", name=label)
@@ -231,8 +259,10 @@ class RunsMixin(FrameParts):
         return saved_item(last) if last and saved_item(last) in self.items else item
 
     def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False,
-              profile: str | None = None, schedule_mark: tuple[str, str] | None = None) -> str | None:
-        """Start a bot. remote: asked by private message - no message boxes; returns what to answer."""
+              profile: str | None = None, schedule_mark: tuple[str, str] | None = None,
+              resume_row: dict[str, Any] | None = None) -> str | None:
+        """Start a bot. remote: asked by private message - no message boxes; returns what to answer.
+        resume_row: carry on an interrupted run from its saved place (engine/resume.py)."""
         def fail(text: str) -> str | None:
             if remote:
                 return text
@@ -278,6 +308,7 @@ class RunsMixin(FrameParts):
         run.last_seen = self.last_seen
         run.kind = item[0]
         run.schedule = schedule_mark  # set before the thread can complete a short tool
+        run.resume_row = resume_row
         run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
         run.profile = profile or name
         self.runs[pid] = run

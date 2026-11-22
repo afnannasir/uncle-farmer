@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**A lost game is opened again, and runs carry on where they were** (untested in game so far)
+
+- A plan or script keeps its place while it runs: the line, each loop's turn, what the current farm
+  has done, the run's minutes and kills, its `set` values.
+- When the game is lost mid-run (closed, crashed, frozen, or the character logged out for good),
+  the game is closed if needed, opened again, logged in to, and the run carries on there. At most 3
+  times a game day per character. **File, Settings, Farming day: When a game is lost during a run**
+  (on by default).
+- When Uncle Farmer was closed under a run (by you, an update or the computer restarting), its next
+  start offers to carry on, the same game day, and does so after a 10-second countdown.
+- A game opened for logging in is waited for while it starts, instead of a second one being opened
+  beside it (that left two signed-out games and no login); one that never starts is closed.
+- French: the Kill game strings are translated.
+
 **French translation**
 
 - Uncle Farmer is now available in French (Settings, Language: Français), every string. Game

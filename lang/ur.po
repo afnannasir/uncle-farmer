@@ -92,6 +92,9 @@ msgstr "Unhein unke &naam se pukarein"
 msgid "&Cancel the shutdown"
 msgstr "Shutdown &mansookh karein"
 
+msgid "&Carry on now"
+msgstr "&Abhi jaari rakhein"
+
 msgid "&Category:"
 msgstr "&Qism:"
 
@@ -166,6 +169,9 @@ msgstr "Filter &hataayein"
 
 msgid "&Delete profile"
 msgstr "Profile &mitayen"
+
+msgid "&Don't carry on"
+msgstr "Jaari &na rakhein"
 
 msgid "&Donation, once a day:"
 msgstr "&Chanda, din mein ek baar:"
@@ -417,6 +423,11 @@ msgstr "&Sirf in se larein (naam, comma se alag):"
 
 msgid "&Open the chests that turn up while farming"
 msgstr "Farming ke dauran milne wale chests &kholein"
+
+msgid ""
+"&Open the game again, log in and carry on where the run was (at most {n} times a day)"
+msgstr ""
+"Game dobara &kholein, login karein aur run wahin se jaari rakhein jahan tha (din mein zyada se zyada {n} baar)"
 
 msgid "&Open the log folder"
 msgstr "Log folder khol&ein"
@@ -1178,6 +1189,9 @@ msgstr "&Jawab mansookh karein"
 msgid "Capture current &keys"
 msgstr "Maujooda &keys parhein"
 
+msgid "Carry on the interrupted runs"
+msgstr "Ruke hue runs jaari rakhein"
+
 msgid "Category"
 msgstr "Qism"
 
@@ -1460,6 +1474,9 @@ msgstr "Tarteeb lagayi nahi ja saki: {err}"
 
 msgid "Couldn't assign {binding} to {key}."
 msgstr "{binding} ko {key} par nahi laga sake."
+
+msgid "Couldn't carry on {what} for {name}: {why}"
+msgstr "{name} ke liye {what} jaari nahi rakh sake: {why}"
 
 msgid "Couldn't change the game's settings: {err}"
 msgstr "Game ki tarteeb badal nahi saka: {err}"
@@ -4579,6 +4596,10 @@ msgid "The game isn't readable. Is it running, with a character logged in?"
 msgstr ""
 "Game parha nahi ja sakta. Kya ye chal raha hai, aur koi kirdaar login hai?"
 
+msgid "The game opened for logging in didn't start in time, so it is closed."
+msgstr ""
+"Login ke liye khola gaya game waqt par shuru nahi hua, is liye band kar diya gaya."
+
 msgid "The game sends voice messages only to Team, Gang and private chats."
 msgstr "game voice message sirf Team, Gang aur private chats mein bhejta hai."
 
@@ -4627,6 +4648,9 @@ msgstr "Hearthstone kaam nahi kiya."
 
 msgid "The highest cave my level lets in"
 msgstr "Sab se ooncha ghaar jis mein mera level jaane de"
+
+msgid "The interrupted runs won't carry on."
+msgstr "Ruke hue runs jaari nahi rahenge."
 
 msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
@@ -4779,8 +4803,14 @@ msgstr "Phir (minutes) tak &khamosh rahein:"
 msgid "There's no plan to run."
 msgstr "Chalane ke liye koi plan nahi."
 
+msgid "These runs didn't finish:"
+msgstr "Yeh runs mukammal nahi hue:"
+
 msgid "These sound IDs are not available in this game: {ids}"
 msgstr "Yeh sound IDs is game mein dastiyab nahi: {ids}"
+
+msgid "They carry on where they were in {n} seconds."
+msgstr "Yeh {n} second mein wahin se jaari rahenge jahan the."
 
 msgid "They come from {source}, a bagful at a time."
 msgstr "Ye {source} se aate hain, ek waqt mein poora basta."
@@ -5263,6 +5293,9 @@ msgstr "Kab"
 
 msgid "When HP stays &low:"
 msgstr "Jab HP &kam rahe:"
+
+msgid "When a game is lost during a run"
+msgstr "Jab run ke dauran game kho jaye"
 
 msgid "When an &item runs low"
 msgstr "Jab koi &cheez kam ho jaye"
@@ -5788,6 +5821,13 @@ msgstr ""
 
 msgid "cancel the team's navigation target"
 msgstr "team ka navigation target mansookh karein"
+
+msgid "carrying on the interrupted run of {what}"
+msgstr "{what} ka ruka hua run jaari hai"
+
+msgid ""
+"carrying on with {map} where it was: {minutes} minutes and {kills} kills done"
+msgstr "{map} wahin se jaari: {minutes} minute aur {kills} kills ho chuke"
 
 msgid "cast {n} times"
 msgstr "{n} baar cast hui"
@@ -6537,6 +6577,9 @@ msgid ""
 msgstr ""
 "{time} ho gaya - aaj ki kheti khatam (drop time {reset} par reset hota hai)"
 
+msgid "its game is busy with {what}"
+msgstr "is ka game {what} mein masroof hai"
+
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr "is ki cheezein tasdeeq shuda nahi (shayad game ne ise badal diya hai)"
 
@@ -7145,6 +7188,9 @@ msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "dungeon ke liye saamaan kaafi nahi"
+
+msgid "not farming {map}: the interrupted run had already done it"
+msgstr "{map} par farming nahi: ruka hua run yeh pehle hi kar chuka tha"
 
 msgid "not farming {map}: {cond} is already true"
 msgstr "{map} par farming nahin: {cond} pehle se sach hai"
@@ -8490,6 +8536,9 @@ msgid ""
 msgstr ""
 "run wahan shuru hua jahan monsters paida hote hain ({map} {x},{y}) - qareeb tareen baghair monsters wale map par khatam kar rahe hain"
 
+msgid "the run's place is kept: it can carry on from there"
+msgstr "run ki jagah mehfooz hai: yeh wahin se jaari reh sakta hai"
+
 msgid "the script is too long (over {max} characters)"
 msgstr "script bohat lambi hai ({max} characters se zyada)"
 
@@ -8799,6 +8848,9 @@ msgstr "voice message"
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "{name} ka voice message - Chat (Ctrl+T) mein sunein"
+
+msgid "waiting for the game opened for {name} to start"
+msgstr "{name} ke liye khole gaye game ke shuru hone ka intezar"
 
 msgid "walk to the enemy"
 msgstr "dushman tak chalo"
@@ -9317,6 +9369,9 @@ msgstr "{name} meri team mein nahi hai"
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name} aise game mein login nahi hai jis mein agent ho."
 
+msgid "{name} isn't logged in to one available game"
+msgstr "{name} kisi dastiyab game mein login nahi hai"
+
 msgid "{name} leads the team now"
 msgstr "ab {name} team lead kar raha hai"
 
@@ -9356,6 +9411,21 @@ msgstr "{name} kisi aur ne le liya - agla"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name} {map} gaya - hum bhi ja rahe hain"
+
+msgid ""
+"{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."
+msgstr ""
+"{name} ka game phir kho gaya. Aaj yeh pehle hi {n} baar dobara khola ja chuka hai, is liye run yahin khatam."
+
+msgid ""
+"{name}'s game was lost, and the bot can't log in to it by itself: log in to it once by hand so its account is known."
+msgstr ""
+"{name} ka game kho gaya, aur bot khud login nahi kar sakta: ek baar haath se login karein taake is ka account maloom ho."
+
+msgid ""
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+msgstr ""
+"{name} ka game kho gaya: dobara khol kar run wahin se jaari hai (aaj {most} mein se {n})."
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, pichla run ({what}, shuru {when})"
@@ -9727,6 +9797,13 @@ msgstr "{used}, {kills} kills"
 
 msgid "{village} on {map}"
 msgstr "{map} par {village}"
+
+msgid ""
+"{what} changed since it was interrupted, so it starts from the beginning"
+msgstr "{what} rukne ke baad badal gaya, is liye shuru se chalega"
+
+msgid "{what} for {name}"
+msgstr "{name} ke liye {what}"
 
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} ke liye {what} intezar mein hai: {why}"

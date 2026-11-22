@@ -79,6 +79,8 @@ class LogMixin(FrameParts):
         self.label_games()
         self.update_buttons()
         self.poll()
+        if run is not None:
+            self.revive(run)                     # a lost game opened again, the run carried on
         if run is not None and run.ended_by_itself and run.farmed() and run.after_stop == "shutdown":
             self.shutdown_wanted = True
         if getattr(self, "shutdown_wanted", False):
