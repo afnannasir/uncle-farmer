@@ -1005,6 +1005,15 @@ msgstr "Appliquer un profil de clavier hors combat, menus du jeu fermés."
 msgid "Apply keyboard profile {name}"
 msgstr "Appliquer le profil de clavier {name}"
 
+msgid ""
+"Are you sure you want to kill this game?\n"
+"\n"
+"{name}"
+msgstr ""
+"Voulez-vous vraiment forcer la fermeture de ce jeu ?\n"
+"\n"
+"{name}"
+
 msgid "Area a&round me"
 msgstr "Zone &autour de moi"
 
@@ -1484,6 +1493,10 @@ msgstr "Impossible d'importer le plan : {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Impossible d'importer les réglages : {err}"
+
+msgid "Couldn't kill {name}. It may have already closed."
+msgstr ""
+"Impossible de forcer la fermeture de {name}. Il est peut-être déjà fermé."
 
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
@@ -2504,6 +2517,9 @@ msgstr "Touches"
 msgid "Keys read from the game."
 msgstr "Touches lues depuis le jeu."
 
+msgid "Kill game"
+msgstr "Forcer la fermeture du jeu"
+
 msgid "Kills:"
 msgstr "Kills :"
 
@@ -3102,6 +3118,9 @@ msgstr "Non installé. Appuyez sur Installer, puis redémarrez le jeu."
 
 msgid "Not logged in"
 msgstr "Non connecté"
+
+msgid "Not logged in (process {pid})"
+msgstr "Non connecté (processus {pid})"
 
 msgid "Not logged in."
 msgstr "Non connecté."
