@@ -997,6 +997,12 @@ msgstr "Klavye profilini dövüş dışındayken ve oyun menüleri kapalıyken u
 msgid "Apply keyboard profile {name}"
 msgstr "{name} klavye profilini uygula"
 
+msgid ""
+"Are you sure you want to kill this game?\n"
+"\n"
+"{name}"
+msgstr ""
+
 msgid "Area a&round me"
 msgstr "Çev&remdeki alan"
 
@@ -1470,6 +1476,9 @@ msgstr "Plan içe aktarılamadı: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Ayarlar içe aktarılamadı: {err}"
+
+msgid "Couldn't kill {name}. It may have already closed."
+msgstr ""
 
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
@@ -2478,6 +2487,9 @@ msgstr "Tuşlar"
 msgid "Keys read from the game."
 msgstr "Tuşlar oyundan okundu."
 
+msgid "Kill game"
+msgstr ""
+
 msgid "Kills:"
 msgstr "Öldürmeler:"
 
@@ -3062,6 +3074,9 @@ msgstr "Yüklü değil. Yükle'ye bas, sonra oyunu yeniden başlat."
 
 msgid "Not logged in"
 msgstr "Giriş yapılmadı"
+
+msgid "Not logged in (process {pid})"
+msgstr ""
 
 msgid "Not logged in."
 msgstr "Giriş yapılmadı."

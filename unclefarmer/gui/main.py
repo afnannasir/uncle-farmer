@@ -93,6 +93,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.sound_restorer = SoundRestore()
         self.pending_update: updater.ApplyProcess | None = None
         self.games = []          # [(pid, character, map name)]
+        self.killing_games: set[int] = set()
         self.unavailable_agents = {}  # pid -> (port, secret) for stale or unreachable agent records
         self.items = []          # [("plan"|"script", name)]
         self.log_lines = []      # [(text, important)]
@@ -157,6 +158,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             self.game_list.InsertColumn(i, title, width=width)
         self.game_list.Bind(wx.EVT_LIST_ITEM_SELECTED, lambda e: None if self.filling else self.game_changed())
         self.game_list.Bind(wx.EVT_CONTEXT_MENU, self.game_context_menu)
+        self.game_list.Bind(wx.EVT_KEY_DOWN, self.on_game_key)
 
         row = wx.BoxSizer(wx.HORIZONTAL)
         row.Add(wx.StaticText(panel, label=_("Pla&n:")), 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
@@ -561,6 +563,8 @@ Main window
   Ctrl+Shift+R        Speak the results
   Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
   Ctrl+O              Open another game window
+  Delete              Confirm killing the selected game (Games list only)
+  Shift+Delete        Kill the selected game immediately (Games list only)
   Ctrl+G              Gem Maker
   Ctrl+Shift+B        Gem Breaker: gems and Enhance Crystals into shards
   Ctrl+Shift+O        Potion Maker: make potions at the gang's Pharmacist and fuse them up

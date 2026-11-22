@@ -1002,6 +1002,15 @@ msgstr "Larrai ke bahar aur game ke menu band karke keyboard profile lagayen."
 msgid "Apply keyboard profile {name}"
 msgstr "Keyboard profile {name} lagayen"
 
+msgid ""
+"Are you sure you want to kill this game?\n"
+"\n"
+"{name}"
+msgstr ""
+"Kya aap waqai is game ko foran band karna chahte hain?\n"
+"\n"
+"{name}"
+
 msgid "Area a&round me"
 msgstr "Mere a&as paas ka ilaqa"
 
@@ -1478,6 +1487,9 @@ msgstr "Mansooba import nahi ho saka: {err}"
 
 msgid "Couldn't import the settings: {err}"
 msgstr "Tarteeb import nahi ho sakin: {err}"
+
+msgid "Couldn't kill {name}. It may have already closed."
+msgstr "{name} ko band nahi kar sake. Mumkin hai yeh pehle hi band ho chuki ho."
 
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
@@ -2496,6 +2508,9 @@ msgstr "Keys"
 msgid "Keys read from the game."
 msgstr "Game se parhi gayi keys."
 
+msgid "Kill game"
+msgstr "Game foran band karein"
+
 msgid "Kills:"
 msgstr "Kills:"
 
@@ -3088,6 +3103,9 @@ msgstr "Install nahi hai. Install dabayein, phir game restart karein."
 
 msgid "Not logged in"
 msgstr "Login nahi hai"
+
+msgid "Not logged in (process {pid})"
+msgstr "Login nahi hai (process {pid})"
 
 msgid "Not logged in."
 msgstr "Login nahi hai."
