@@ -161,6 +161,9 @@ class Window:
     def SetStatusText(self, text: str) -> None:
         self.status.append(text)
 
+    def IsEnabled(self) -> bool:
+        return True
+
     def say(self, text: str, run: object = None) -> None:
         self.said.append(text)
 
