@@ -8298,6 +8298,9 @@ msgid ""
 msgstr ""
 "el juego dice que este personaje ya ha estado en una mazmorra de experiencia hoy"
 
+msgid "the game still won't change its mode - farming on in the mode it has"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "el juego no nos deja golpear a {name} desde aquí: pasando al siguiente"
 

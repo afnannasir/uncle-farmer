@@ -14,6 +14,8 @@
   start offers to carry on, the same game day, and does so after a 10-second countdown.
 - A game opened for logging in is waited for while it starts, instead of a second one being opened
   beside it (that left two signed-out games and no login); one that never starts is closed.
+- A PK or target mode the game didn't take (just after logging in, the PK key changed nothing) is
+  tried again while farming, every 30 seconds, up to 5 times, and said only once.
 - French: the Kill game strings are translated.
 
 **French translation**

@@ -39,6 +39,13 @@ class FarmingMixin(Parts):
     pack_min: int = 3
     MODE_WAIT = 0.3       # seconds a mode key's press has to show in the game's modes
     MODE_LOOK = 0.05      # ... looked at this often
+    # A mode the game didn't take is tried again while farming: just after logging in (a lost game
+    # opened again), the PK key changed nothing for 7 presses while the target key worked, and the
+    # same key set the mode at once three minutes later (seen live, 2026-11-22).
+    MODE_RETRY = 30.0     # seconds before the next try
+    MODE_RETRIES = 5      # ... and no more tries than this in a run
+    modes_retry_at: float | None = None   # when to try the modes again; None: nothing to try
+    modes_retries: int = 0
 
     def set_modes(self) -> None:
         """Press the mode keys until the game's PK mode and target mode are the profile's."""
@@ -51,6 +58,7 @@ class FarmingMixin(Parts):
             return
         jobs = (("pk", p["pk_key"], p["pk_mode"], PK_MODES, len(PK_MODES)),
                 ("target", p["target_mode_key"], p["target_mode"], TARGET_MODES, len(TARGET_MODES)))
+        missed = False
         for field, key, want, names, size in jobs:
             if field not in m or m[field] == want:
                 continue
@@ -64,8 +72,32 @@ class FarmingMixin(Parts):
                     self.log(_("mode set: {mode}", mode=names[want]))
                     break
             else:
-                self.log(_("couldn't set the mode to {mode} with the {key} key", mode=names[want], key=key),
-                         speak=True)
+                missed = True
+                if not self.modes_retries:    # said once; the tries again are quiet
+                    self.log(_("couldn't set the mode to {mode} with the {key} key", mode=names[want], key=key),
+                             speak=True)
+        self._mode_retry(missed)
+
+    def _mode_retry(self, missed: bool) -> None:
+        """After set_modes: a mode the game didn't take is tried again MODE_RETRY seconds later, up to
+        MODE_RETRIES times a run; once every mode is right, nothing more is tried."""
+        if not missed:
+            self.modes_retry_at = None
+            self.modes_retries = 0
+            return
+        if self.modes_retries >= self.MODE_RETRIES:
+            self.modes_retry_at = None
+            self.log(_("the game still won't change its mode - farming on in the mode it has"))
+            return
+        self.modes_retries += 1
+        self.modes_retry_at = self.clock.time() + self.MODE_RETRY
+
+    def modes_again(self) -> None:
+        """Between fights: the modes tried again once their time has come (_mode_retry)."""
+        at = self.modes_retry_at
+        if at is not None and self.clock.time() >= at:
+            self.modes_retry_at = None
+            self.set_modes()
 
     def _modes_after(self, field: str, was: object) -> dict[str, Any]:
         """The game's modes once a press of a mode key shows in them, looked at every MODE_LOOK
@@ -239,6 +271,7 @@ class FarmingMixin(Parts):
         True when one of them acted (the farm loop looks again)."""
         if keyslots.refill(as_bot(self)):
             return True
+        self.modes_again()             # a mode the game didn't take, tried again
         xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
         # no kill for a long while: another part of the map (a farm of only some names never stops for it)
         return watchdog.check(as_bot(self), map_id, area, hunting=bool(only))

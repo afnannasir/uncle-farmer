@@ -8344,6 +8344,9 @@ msgid ""
 msgstr ""
 "game kehta hai ke yeh kirdaar aaj pehle hi experience dungeon mein ja chuka hai"
 
+msgid "the game still won't change its mode - farming on in the mode it has"
+msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
 

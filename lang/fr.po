@@ -8382,6 +8382,10 @@ msgid ""
 msgstr ""
 "selon le jeu, ce personnage est déjà allé dans un donjon d'expérience aujourd'hui"
 
+msgid "the game still won't change its mode - farming on in the mode it has"
+msgstr ""
+"le jeu ne veut toujours pas changer de mode - le farming continue dans le mode actuel"
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "le jeu ne nous laisse pas frapper {name} d'ici - au suivant"
 

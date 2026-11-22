@@ -7960,6 +7960,9 @@ msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
 
+msgid "the game still won't change its mode - farming on in the mode it has"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr ""
 

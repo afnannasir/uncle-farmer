@@ -310,6 +310,34 @@ def test_set_modes_warns_when_the_game_refuses() -> None:
     assert any("couldn't set the mode to enemies with the v key" in line for line in b.spoken)
 
 
+def test_a_mode_the_game_refused_is_tried_again_later_quietly() -> None:
+    # just after logging in, the PK key changed nothing; three minutes later it worked at once
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2})
+    b.clock = Clock()
+    b.set_modes()
+    assert len(b.spoken) == 1 and b.modes_retry_at == b.clock.time() + b.MODE_RETRY
+    b.modes_again()                       # too soon: nothing pressed
+    pressed = len(b.keys)
+    assert len(b.keys) == pressed
+    b.clock.advance(b.MODE_RETRY)
+    b.map_keys = {"b": ("pk", 1)}         # the game takes the key now
+    b.modes_again()
+    assert "mode set: pacifist mode with counterattack" in b.lines
+    assert b.modes_retry_at is None and b.modes_retries == 0 and len(b.spoken) == 1
+
+
+def test_a_mode_that_never_takes_is_left_after_a_few_tries() -> None:
+    b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 0, "target": 2})
+    b.clock = Clock()
+    b.set_modes()
+    for _try in range(b.MODE_RETRIES):
+        b.clock.advance(b.MODE_RETRY)
+        b.modes_again()
+    assert b.modes_retry_at is None
+    assert any("still won't change its mode" in line for line in b.lines)
+    assert len(b.spoken) == 1
+
+
 def test_set_modes_skips_a_mode_the_game_does_not_report() -> None:
     b = Farm(profile={"pk_mode": 1, "target_mode": 2}, modes={"pk": 1})
     b.set_modes()
