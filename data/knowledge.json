@@ -5188,6 +5188,342 @@
    ]
   },
   {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "activity envoy",
+   "x": 225,
+   "y": 225,
+   "role": "other",
+   "kind": "",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:48"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Airship Administrator",
+   "x": 220,
+   "y": 275,
+   "role": "airship",
+   "kind": "airship flights between the capitals and their affiliated cities",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:40"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Ansible Space-time marketplace; Press G to check the product details.",
+   "x": 233,
+   "y": 218,
+   "role": "market",
+   "kind": "player market: buy goods, sell goods, your listings",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:40"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Ansible Space-Time Storehouse",
+   "x": 233,
+   "y": 233,
+   "role": "storehouse",
+   "kind": "storage: item/equipment/fusion beast storage, deposit and take out",
+   "description": "An exotic space opened by super magic instrument. You can store your equipment, items and fusion beasts there for free.",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:40"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Armor Merchant Maca",
+   "x": 244,
+   "y": 265,
+   "role": "armor_merchant",
+   "kind": "sells armor",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:41"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Artificer Wapier",
+   "x": 266,
+   "y": 243,
+   "role": "artificer",
+   "kind": "socketing: insert and take out gems",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:41"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Bank receptionistClaudia",
+   "x": 244,
+   "y": 207,
+   "role": "bank",
+   "kind": "bank: diamonds, daily income card, VIP card",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:41"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Blacksmith Payne",
+   "x": 244,
+   "y": 243,
+   "role": "blacksmith",
+   "kind": "repairs equipment",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:41"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Chef Zulkin",
+   "x": 185,
+   "y": 265,
+   "role": "chef",
+   "kind": "cooking",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:42"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Civilian Heidi",
+   "x": 237,
+   "y": 222,
+   "role": "townsfolk",
+   "kind": "",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:42"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Forger Robert",
+   "x": 247,
+   "y": 240,
+   "role": "forger",
+   "kind": "forging: raises equipment enhancement level with Equipment Enhance Crystals and arnebia",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:42"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Gang Entrance",
+   "x": 266,
+   "y": 207,
+   "role": "gang_entrance",
+   "kind": "enter the gang's outer/inner hall",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:42"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Gem Craftsman Frewin",
+   "x": 262,
+   "y": 240,
+   "role": "gem_craftsman",
+   "kind": "gem synthesis, shard synthesis (enhance crystals and gems), break gems into shards, batch synthesis",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:43"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Godmother Zoira",
+   "x": 206,
+   "y": 185,
+   "role": "other",
+   "kind": "offers missions for demon hunters",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:43"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Grocer Morabi",
+   "x": 185,
+   "y": 243,
+   "role": "grocer",
+   "kind": "sells food, pet food, repair tools, hearthstones",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:44"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "High Priest Illidan",
+   "x": 202,
+   "y": 203,
+   "role": "skill_master",
+   "kind": "teaches Elven Teleportation and Elven Teleportation Portal",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:44"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Hunting list",
+   "x": 204,
+   "y": 189,
+   "role": "board",
+   "kind": "rankings / hunting list",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:45"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Jewelry Merchant Dorothy",
+   "x": 266,
+   "y": 265,
+   "role": "jewelry_merchant",
+   "kind": "sells jewelry (necklaces, rings, bracelets)",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:45"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Knight Commander George",
+   "x": 204,
+   "y": 181,
+   "role": "other",
+   "kind": "resets talents and handles hunting bounties",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:46"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Pet Trainer Svarna",
+   "x": 266,
+   "y": 185,
+   "role": "pet_trainer",
+   "kind": "pet rebirth, pet character change, pet assets",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:47"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Potion Merchant Leisa",
+   "x": 207,
+   "y": 243,
+   "role": "potions",
+   "kind": "sells HP/MP potions (red/blue, pet red/blue)",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:47"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Recycle Station",
+   "x": 275,
+   "y": 236,
+   "role": "recycle",
+   "kind": "retrieves recycled items, equipment and fusion beasts",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:47"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Shard Broker",
+   "x": 255,
+   "y": 233,
+   "role": "shard_market",
+   "kind": "buys and sells gem shards",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:48"
+  },
+  {
+   "map": 1181,
+   "map_name": "black wasteland",
+   "name": "Weapon Merchant Brandon",
+   "x": 207,
+   "y": 265,
+   "role": "weapon_merchant",
+   "kind": "sells weapons",
+   "description": "",
+   "sources": [
+    "survey 2026-11-22 19:48"
+   ],
+   "menus_read": "2026-11-22 19:48"
+  },
+  {
    "map": 1531,
    "map_name": "thousand miles of rivers",
    "name": "Scorpion Cave",
@@ -7987,7 +8323,148 @@
     278,
     278
    ],
-   "services": {}
+   "services": {
+    "airship": [
+     {
+      "name": "Airship Administrator",
+      "x": 220,
+      "y": 275
+     }
+    ],
+    "market": [
+     {
+      "name": "Ansible Space-time marketplace; Press G to check the product details.",
+      "x": 233,
+      "y": 218
+     }
+    ],
+    "storehouse": [
+     {
+      "name": "Ansible Space-Time Storehouse",
+      "x": 233,
+      "y": 233
+     }
+    ],
+    "armor_merchant": [
+     {
+      "name": "Armor Merchant Maca",
+      "x": 244,
+      "y": 265
+     }
+    ],
+    "artificer": [
+     {
+      "name": "Artificer Wapier",
+      "x": 266,
+      "y": 243
+     }
+    ],
+    "bank": [
+     {
+      "name": "Bank receptionistClaudia",
+      "x": 244,
+      "y": 207
+     }
+    ],
+    "blacksmith": [
+     {
+      "name": "Blacksmith Payne",
+      "x": 244,
+      "y": 243
+     }
+    ],
+    "chef": [
+     {
+      "name": "Chef Zulkin",
+      "x": 185,
+      "y": 265
+     }
+    ],
+    "forger": [
+     {
+      "name": "Forger Robert",
+      "x": 247,
+      "y": 240
+     }
+    ],
+    "gang_entrance": [
+     {
+      "name": "Gang Entrance",
+      "x": 266,
+      "y": 207
+     }
+    ],
+    "gem_craftsman": [
+     {
+      "name": "Gem Craftsman Frewin",
+      "x": 262,
+      "y": 240
+     }
+    ],
+    "grocer": [
+     {
+      "name": "Grocer Morabi",
+      "x": 185,
+      "y": 243
+     }
+    ],
+    "skill_master": [
+     {
+      "name": "High Priest Illidan",
+      "x": 202,
+      "y": 203
+     }
+    ],
+    "board": [
+     {
+      "name": "Hunting list",
+      "x": 204,
+      "y": 189
+     }
+    ],
+    "jewelry_merchant": [
+     {
+      "name": "Jewelry Merchant Dorothy",
+      "x": 266,
+      "y": 265
+     }
+    ],
+    "pet_trainer": [
+     {
+      "name": "Pet Trainer Svarna",
+      "x": 266,
+      "y": 185
+     }
+    ],
+    "potions": [
+     {
+      "name": "Potion Merchant Leisa",
+      "x": 207,
+      "y": 243
+     }
+    ],
+    "recycle": [
+     {
+      "name": "Recycle Station",
+      "x": 275,
+      "y": 236
+     }
+    ],
+    "shard_market": [
+     {
+      "name": "Shard Broker",
+      "x": 255,
+      "y": 233
+     }
+    ],
+    "weapon_merchant": [
+     {
+      "name": "Weapon Merchant Brandon",
+      "x": 207,
+      "y": 265
+     }
+    ]
+   }
   }
  ],
  "squares": {
