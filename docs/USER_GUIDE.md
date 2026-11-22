@@ -307,6 +307,8 @@ While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 
 
 A run is carried on only the same day of the game, and only with the same plan or script: one you edited since starts from its beginning. Lines such as `stop_when` and `keep_drop` count again on the way, so a time limit still counts the minutes already farmed. A run you stopped with **Stop**, one that finished, or one that ended on an error is never carried on.
 
+Each part of a run that was carried on is saved in the results as its own run; at the end, the results said and written in the log add all the parts up.
+
 A slow game is waited for while it starts (up to 4 minutes) instead of a second one being opened beside it; one that never shows the agent in that time is closed.
 
 ### After farming
@@ -1718,6 +1720,8 @@ You can choose which period to review:
 - Last 7 days.
 - Last 30 days.
 - All time.
+
+Today, yesterday and the days of the **Day** list are the game's days: from 00:00 GMT to 00:00 GMT, when the drop time starts again (05:00 in Pakistan). A night farmed across your computer's midnight counts as one day. A run belongs to the day it started on. The `today` private message command counts the same way.
 
 
 

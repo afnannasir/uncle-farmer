@@ -17,6 +17,7 @@ line; contribution goes up instead.
 
 from __future__ import annotations
 
+import calendar
 import contextlib
 import copy
 import math
@@ -423,6 +424,9 @@ class Tally:
         self.started = self.clock.time()
         self.ended: float | None = None
         self.main = tool or FARMING      # what the run is: the activity its own record is about
+        # A run carried on after an interruption (engine/resume.py): the start of its first part,
+        # written into each record so the parts can be added up (whole_run)
+        self.chain: str | None = None
         self.doing: str | None = self.main      # where gains go now; None while paused
         self.parts = {self.main: _Part()}
         self.since = self.started        # when `doing` began
@@ -690,6 +694,8 @@ class Tally:
             "experience": part.xp, "levels": part.levels,
             "level": s1.get("level", -1), "xp_needed": s1.get("xp_needed", -1),
         }
+        if self.chain:
+            rec["chain"] = self.chain
         if farming:
             # what the run's own selling jobs brought in, from loot farming picked up
             rec["sales"] = sum(p.arnebia_in for k, p in self.parts.items() if k in SELLING)
@@ -833,18 +839,22 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING,
     return out
 
 
+def game_day_of(t: float) -> str:
+    """The game's day ("2026-11-08") a clock time falls on: its days run from 00:00 GMT to 00:00
+    GMT, when the drop time starts again - a night farmed across the computer's midnight is one day."""
+    return time.strftime("%Y-%m-%d", time.gmtime(t))
+
+
 def days(character: str, kind: str | None = FARMING) -> list[str]:
-    """The days ("2026-11-08") a character has runs on, newest first: the day each run started."""
-    found = {str(r.get("start"))[:10] for r in runs(character, kind=kind) if start_time(r) is not None}
+    """The game days ("2026-11-08") a character has runs on, newest first: the day each run started."""
+    found = {game_day_of(t) for t in (start_time(r) for r in runs(character, kind=kind)) if t is not None}
     return sorted(found, reverse=True)
 
 
 def day_bounds(day: str) -> tuple[float, float]:
-    """(start, end) of a day ("2026-11-08") as clock times: its local midnight and the next one
-    (mktime evens out a day with a clock change in it)."""
-    t = time.strptime(day, "%Y-%m-%d")
-    end = time.mktime((t.tm_year, t.tm_mon, t.tm_mday + 1, 0, 0, 0, 0, 0, -1))
-    return time.mktime(t), end
+    """(start, end) of a game day ("2026-11-08") as clock times: its 00:00 GMT and the next one."""
+    start = float(calendar.timegm(time.strptime(day, "%Y-%m-%d")))
+    return start, start + 86400.0
 
 
 def _record(line: str) -> Record | None:
@@ -969,6 +979,24 @@ def _merge_skills(dst: dict[str, Any], src: Mapping[str, Any]) -> None:
 def _add(dst: dict[str, int], src: Mapping[str, int] | None) -> None:
     for n, d in (src or {}).items():
         dst[n] = dst.get(n, 0) + d
+
+
+def start_stamp(t: float) -> str:
+    """A clock time as a record's "start" says it."""
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
+
+
+def whole_run(r: Record) -> tuple[Record, int]:
+    """A record of a run carried on after interruptions, added up with its earlier parts (the saved
+    records of the same chain): (the whole, how many parts). Any other record: (itself, 1)."""
+    chain = r.get("chain")
+    if not chain or r.get("kind") != FARMING:
+        return r, 1
+    parts = [x for x in runs(str(r.get("character") or "")) if (x.get("chain") == chain or x.get("start") == chain)
+             and x.get("start") != r.get("start")]
+    if not parts:
+        return r, 1
+    return add_up([*parts, r]), len(parts) + 1
 
 
 def add_up(results: Iterable[Record]) -> Record:

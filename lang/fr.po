@@ -3743,6 +3743,11 @@ msgstr "Résultats"
 msgid "Results of {what}"
 msgstr "Résultats de {what}"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+"Résultats de {what}, ses {n} parties additionnées (elle a été interrompue puis reprise)"
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Revivre sur place avec des &Resurrection Crystals"
 
@@ -8381,6 +8386,9 @@ msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
 "selon le jeu, ce personnage est déjà allé dans un donjon d'expérience aujourd'hui"
+
+msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr "le jeu semble figé : rien n'y bouge plus - il est rouvert"
 
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""

@@ -3686,6 +3686,10 @@ msgstr "Sonuçlar"
 msgid "Results of {what}"
 msgstr "{what} sonuçları"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Di&riliş Kristalleriyle olduğun yerde diril"
 
@@ -8219,6 +8223,9 @@ msgstr "oyun dedi ki: {lines}"
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
+
+msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr ""
 
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""

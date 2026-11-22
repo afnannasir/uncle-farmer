@@ -3721,6 +3721,11 @@ msgstr "Nataij"
 msgid "Results of {what}"
 msgstr "{what} ke nataij"
 
+msgid ""
+"Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+"{what} ke nataij, is ke {n} hisse jama kiye gaye (yeh ruka aur phir jaari hua)"
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Wahin par &Resurrection Crystals se zinda karein"
 
@@ -8343,6 +8348,10 @@ msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
 "game kehta hai ke yeh kirdaar aaj pehle hi experience dungeon mein ja chuka hai"
+
+msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr ""
+"game ruka hua lagta hai: is mein kuch nahi hila - ise dobara khola ja raha hai"
 
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"

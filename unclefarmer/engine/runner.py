@@ -464,6 +464,7 @@ class Run(threading.Thread):
                 broken = False
             except GameBroken as why:
                 reason, broken = str(why), True
+                self.failed = self.game_lost = True      # opened again (the window's revive)
             except Exception:      # the game gone: guard finds that out itself
                 broken = False
             if not broken:
@@ -575,6 +576,8 @@ class Run(threading.Thread):
             self.log(_("{what} changed since it was interrupted, so it starts from the beginning", what=self.title))
             return
         script.resume_from(row)
+        if self.tally is not None and isinstance(row.get("chain"), str):
+            self.tally.chain = row["chain"]      # the results add the parts up at the end
         self.log(_("carrying on the interrupted run of {what}", what=self.title), speak=True)
 
     def _carried_on_past_before(self) -> bool:
@@ -606,6 +609,9 @@ class Run(threading.Thread):
             row = dict(where, item="%s:%s" % (getattr(self, "kind", ""), self.title), title=self.title,
                        text=resume.fingerprint(self.text), before_done=self.before_farming_done,
                        saved=time.time())
+            tally = self.tally
+            if tally is not None:      # the first part's start names the whole run's parts
+                row["chain"] = tally.chain or stats.start_stamp(tally.started)
             with self.place_lock:
                 if not self.place_done:
                     resume.save(key, row)
@@ -695,13 +701,16 @@ class Run(threading.Thread):
                 failures.append(("saving the results", e))
                 self.log(_("couldn't save the results: {err}", err=e), speak=True)
             r, *jobs = self.tally.results()
-            for line in stats.report(r, _("Results of {what}", what=self.title)).splitlines():
+            whole, parts = stats.whole_run(r)       # a run carried on: with its parts before
+            title = (_("Results of {what}, its {n} parts added up (it was interrupted and carried on)",
+                       what=self.title, n=parts) if parts > 1 else _("Results of {what}", what=self.title))
+            for line in stats.report(whole, title).splitlines():
                 self.log(line)
             for job in jobs:              # chores or the Gem Maker on the way: apart from farming
                 for line in stats.report(job, _("Results of {what}", what=job["run"])).splitlines():
                     self.log(line)
             if app.get("results_speak", "end") == "end":
-                self.log(stats.short(r, self.tally.drop_left), speak=True)
+                self.log(stats.short(whole, self.tally.drop_left), speak=True)
 
     def _pause_card(self, bot: Bot | None) -> None:
         """A farming run over: its running experience card paused (xp_card_pause), so the minutes
