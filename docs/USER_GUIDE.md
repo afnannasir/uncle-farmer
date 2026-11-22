@@ -297,6 +297,18 @@ The two lists are the same ones as **Character settings → Triggers**: change t
 
 **Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
+### A lost game, and runs that didn't finish
+
+While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 seconds: the line it is on, the turn of each loop, how many minutes and kills the current farm has done, the run's own minutes and kills, and the script's `set` values.
+
+**When the game is lost in the middle of a run** (it closed, crashed or froze, or the server logged the character out and logging back in failed), Uncle Farmer closes that game if it is still open, opens a new one, logs in to the same character and carries on where the run was. It says so each time. This happens at most 3 times a day of the game (00:00 GMT to 00:00 GMT) for each character; after that the run ends there. The character's account must be known: log in to it once by hand. To turn this off: **File → Settings → Farming day → When a game is lost during a run**.
+
+**When Uncle Farmer itself stopped under a run** (you closed it, an update restarted it, or the computer restarted), the next time it starts it shows the runs that didn't finish. They carry on where they were after 10 seconds; press **Carry on now** to start them at once, or **Don't carry on** (Escape) to forget them. A game is opened and logged in to when the character isn't in one, as a schedule does.
+
+A run is carried on only the same day of the game, and only with the same plan or script: one you edited since starts from its beginning. Lines such as `stop_when` and `keep_drop` count again on the way, so a time limit still counts the minutes already farmed. A run you stopped with **Stop**, one that finished, or one that ended on an error is never carried on.
+
+A slow game is waited for while it starts (up to 4 minutes) instead of a second one being opened beside it; one that never shows the agent in that time is closed.
+
 ### After farming
 
 The **Farming day** tab also lets you choose what Uncle Farmer should do after farming stops automatically.

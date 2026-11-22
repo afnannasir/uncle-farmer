@@ -17,6 +17,7 @@ from .. import applog, messages, paths, settings
 from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
+from .mainparts.carryon import CarryOnMixin
 from .mainparts.editing import EditingMixin
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -75,7 +76,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, SchedulingMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, CarryOnMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -107,6 +108,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.snap_busy = False
         self.scanning = set()    # characters being scanned on a worker thread
         self.pending_logins = {} # profile -> when automatic login opened its client
+        self.opened_games = {}   # pid -> when this window opened that game
         self.updating = False
         self.preparing_update = False   # the update copier is being started on a worker (updates.py)
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
@@ -145,6 +147,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.refresh_games()
         self.update_buttons()
         self.start_schedules()
+        self.start_carry_on()
         self.game_list.SetFocus()
         wx.CallAfter(self.first_run)
 
@@ -479,6 +482,16 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.nb.SetSelection(i)
         (self.game_list, self.plan_list, self.log_box)[i].SetFocus()
 
+    def _stop_timers(self) -> None:
+        down = applog.teardown
+        with down.step("stop the game list timer", must=False):
+            self.timer.Stop()
+        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on")):
+            timer: wx.Timer | None = getattr(self, name, None)   # none if the window never got that far
+            if timer is not None:
+                with down.step("stop the %s timer" % what, must=False):
+                    timer.Stop()
+
     def on_close(self, evt: wx.CloseEvent) -> None:
         """Stop what runs, let go of the hotkeys and the timer, and go. Each step is in
         teardown.log; one that fails is written down there and the others still happen, so the
@@ -501,6 +514,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             runs = list(self.runs.values())
             with down.step("ask %d bot%s to stop" % (len(runs), "" if len(runs) == 1 else "s"), must=False):
                 for run in runs:
+                    run.app_closing = True      # not the player's Stop: the run's place is kept
                     run.stop()
             with down.step("wait for the bots to end", must=False):
                 for run in runs:
@@ -530,12 +544,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
             for hotkey in self.hotkeys:
                 if not self.UnregisterHotKey(hotkey):
                     down.problem("Windows didn't take back hotkey %#x" % hotkey)
-        with down.step("stop the game list timer", must=False):
-            self.timer.Stop()
-        timer: wx.Timer | None = getattr(self, "schedule_timer", None)   # none if the window never got that far
-        if timer is not None:
-            with down.step("stop the schedules timer", must=False):
-                timer.Stop()
+        self._stop_timers()
         with down.step("destroy the window", must=False):
             self.destroyed = self.Destroy()  # only successful destruction authorizes the paused updater
 

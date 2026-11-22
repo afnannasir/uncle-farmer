@@ -109,8 +109,9 @@ from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, survey, teamlead, town
+from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey, teamlead, town
 from .bot import Bot, Respawned, Stopped
+from .botparts.base import GameLost
 from collections.abc import Callable, Mapping
 
 def _at(rest: str, n: int):
@@ -929,6 +930,14 @@ class Runner:
         self.watched: set[Node] = set()
         self.skipped_farms = 0          # farms in a row skipped as already done (SKIPPED_MOST)
         self.sheet_asked = -1e9         # when drop_left last asked the game for the sheet
+        # Where the run is (engine/resume.py): one frame per block being run, its line ("i") and
+        # what the line there has done (a loop's "turn", an if's "branch", a farm's progress).
+        self.trail: list[dict[str, Any]] = []
+        self.ahead: list[dict[str, Any]] = []     # carrying on: the saved frames still to reach
+        self.arriving: tuple[Node, dict[str, Any]] | None = None   # the saved line being gone into
+        self.unwinding = False          # an exception is leaving the blocks: the trail is no place
+        self.minutes_before = 0.0       # carrying on: what the interrupted run had already done
+        self.kills_before = 0
 
     def names(self) -> dict[str, Any]:
         """What an expression can read: the script's own values, then the game's (hp, map...)."""
@@ -943,7 +952,8 @@ class Runner:
         names.update(hp=hp, maxhp=top, hp_pct=round(100.0 * hp / top, 1), mp=mp, maxmp=maxmp,
                      mp_pct=round(100.0 * mp / maxmp, 1) if maxmp > 0 else -1, level=sheet.get("level", -1),
                      map=snap_map.get("id"), map_name=snap_map.get("name"), x=me["x"], y=me["y"],
-                     kills=b.kills, minutes=round(b.minutes(), 2), clock=time.strftime("%H:%M"))
+                     kills=b.kills + self.kills_before, minutes=round(b.minutes() + self.minutes_before, 2),
+                     clock=time.strftime("%H:%M"))
         names["monsters"] = _Lazy(lambda: len(b.targets(b.snap())))
         names["drop_left"] = _Lazy(lambda: self.drop_left(sheet))
         r: dict[str, Any] = b.tally.result() if b.tally else {}
@@ -993,12 +1003,53 @@ class Runner:
         except (TypeError, OverflowError, ZeroDivisionError, ValueError) as e:
             raise Stopped(_("line {n}: {err}", n=line, err=e))
 
+    # ------------------------------------------------------------ the run's place
+    def resume_from(self, row: dict[str, Any]) -> None:
+        """Carry on an interrupted run (engine/resume.py): its place, its values, its minutes and kills."""
+        path: list[Any] = row.get("path") or []
+        self.ahead = [dict(f) for f in path if jsonio.is_object(f)]
+        saved: dict[str, Any] = row.get("vars") or {}
+        self.vars.update({k: v for k, v in saved.items() if isinstance(v, (int, float, str, bool))})
+        self.minutes_before = float(row.get("minutes") or 0.0)
+        self.kills_before = int(row.get("kills") or 0)
+
+    def position(self) -> dict[str, Any] | None:
+        """Where the run is now, to save (engine/resume.py); None when it can't be told (the blocks
+        are being left, or another thread changed a frame while it was read: the next save will do)."""
+        if self.unwinding or not self.trail:
+            return None
+        b = self.bot
+        now = clock_for(b).time()
+        try:
+            frames: list[dict[str, Any]] = []
+            for f in list(self.trail):
+                g = {k: v for k, v in list(f.items()) if not k.startswith("_")}
+                if "_farm_at" in f:
+                    g["farm_minutes"] = round(float(f.get("_farm_m0", 0.0)) + (now - float(f["_farm_at"])) / 60.0, 2)
+                    g["farm_kills"] = int(f.get("_farm_k0", 0)) + b.kills - int(f["_farm_kills"])
+                frames.append(g)
+        except (RuntimeError, KeyError, TypeError, ValueError):
+            return None
+        values = {k: v for k, v in list(self.vars.items()) if isinstance(v, (int, float, str, bool))}
+        return {"path": frames, "vars": values, "minutes": round(b.minutes() + self.minutes_before, 2),
+                "kills": b.kills + self.kills_before}
+
+    def _arrive(self, node: Node) -> dict[str, Any] | None:
+        """The saved frame of this line when the run is carrying on into it (once), else None."""
+        if self.arriving is not None and self.arriving[0] is node:
+            frame = self.arriving[1]
+            self.arriving = None
+            return frame
+        return None
+
     def run(self) -> None:
         try:
             self.block(self.main)
             self.bot.log(_("script finished"))
         except _End as e:
             self.bot.log(str(e) or _("script stopped itself"))
+        except GameLost:
+            raise                 # no on_stop: the game is gone
         except Stopped as e:
             if self.bot.stop_event.is_set():
                 raise
@@ -1018,19 +1069,44 @@ class Runner:
             pass
 
     def block(self, nodes: list[Node]) -> None:
-        for node in nodes:
-            self.bot.check()
-            deaths = 0
-            while True:
-                try:
-                    self.step(node)
-                    break
-                except Respawned:
-                    # died during this line (travel, walk, talk...) and came back: do it again
-                    deaths += 1
-                    if deaths >= 3:
-                        raise Stopped(_("line {n}: died every time I tried it", n=node.line))
-                    self.bot.log(_("line {n} again after respawning", n=node.line))
+        saved = self.ahead.pop(0) if self.ahead else None
+        start = min(max(0, int(saved.get("i", 0))), len(nodes)) if saved else 0
+        frame: dict[str, Any] = {"i": start}
+        self.trail.append(frame)
+        try:
+            for i, node in enumerate(nodes):
+                if i < start:
+                    if node.kind in resume.KEPT:
+                        self._line(node)    # carrying on: what sets how the run ends still counts
+                    continue
+                frame.clear()
+                frame["i"] = i
+                if saved is not None and i == start:
+                    self.arriving = (node, saved)
+                    if node.kind not in resume.OPENS:
+                        self.ahead.clear()    # nothing deeper to reach
+                self.unwinding = False
+                self._line(node)
+        except BaseException:
+            self.unwinding = True     # the place to keep is the last one saved, not this
+            raise
+        finally:
+            self.trail.pop()
+
+    def _line(self, node: Node) -> None:
+        self.bot.check()
+        deaths = 0
+        while True:
+            try:
+                self.unwinding = False
+                self.step(node)
+                break
+            except Respawned:
+                # died during this line (travel, walk, talk...) and came back: do it again
+                deaths += 1
+                if deaths >= 3:
+                    raise Stopped(_("line {n}: died every time I tried it", n=node.line))
+                self.bot.log(_("line {n} again after respawning", n=node.line))
 
     LOOP_TURNS = 20.0     # a loop goes round at most this often a second
 
@@ -1059,20 +1135,33 @@ class Runner:
         return True
 
     def _do_repeat(self, node: Node, b: Bot, o: dict[str, Any]):
-        count = 0
+        frame = self.trail[-1]
+        saved = self._arrive(node)
+        count = max(0, int(saved.get("turn", 1)) - 1) if saved else 0
         while o["times"] is None or count < o["times"]:
             count += 1
+            frame["turn"] = count
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
     def _do_while(self, node: Node, b: Bot, o: dict[str, Any]):
-        while self.value(node.expr, node.line):
+        inside = self._arrive(node) is not None    # carrying on inside it: that turn goes on first
+        while inside or self.value(node.expr, node.line):
+            inside = False
             if not self._loop_turn(node.body, clock_for(b).time()):
                 break
 
     def _do_if(self, node: Node, b: Bot, o: dict[str, Any]):
-        for cond, body in node.branches:
+        frame = self.trail[-1]
+        saved = self._arrive(node)
+        taken = saved.get("branch") if saved else None
+        if isinstance(taken, int) and 0 <= taken < len(node.branches):
+            frame["branch"] = taken        # carrying on inside the branch it had taken
+            self.block(node.branches[taken][1])
+            return
+        for k, (cond, body) in enumerate(node.branches):
             if cond is None or self.value(cond, node.line):
+                frame["branch"] = k
                 self.block(body)
                 break
 
@@ -1098,7 +1187,7 @@ class Runner:
             self.watched.add(node)
             b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
             if b.tally is not None:       # the results' Time remaining counts down to the rule's end
-                at = end_time(expr, b.started, clock_for(b).time())
+                at = end_time(expr, b.started - self.minutes_before * 60.0, clock_for(b).time())
                 if at is not None:
                     b.tally.deadline(at)
 
@@ -1272,6 +1361,13 @@ class Runner:
     def _do_farm(self, node: Node, b: Bot, o: dict[str, Any]):
         until = o.get("until")
         mid = best_map(b) if o.get("map") == BEST_MAP else (o.get("map") or b.map_id())
+        saved = self._arrive(node)
+        done_minutes = float(saved.get("farm_minutes", 0.0)) if saved else 0.0
+        done_kills = int(saved.get("farm_kills", 0)) if saved else 0
+        minutes, kills = float(o.get("minutes", 0) or 0), int(o.get("kills", 0) or 0)
+        if (minutes and done_minutes >= minutes) or (kills and done_kills >= kills):
+            b.log(_("not farming {map}: the interrupted run had already done it", map=atlas.label(mid)))
+            return
         if until is not None and self.value(until, node.line):
             # Already done: no trip to it. A plan's spot whose share of the drop time is used up
             # (a run restarted later in the day) goes straight on to the next spot.
@@ -1281,7 +1377,13 @@ class Runner:
                 raise Stopped(_("every farm of the script is already done - stopping"))
             return
         self.skipped_farms = 0
-        b.farm(mid, area=o.get("area"), minutes=o.get("minutes", 0), kills=o.get("kills", 0),
+        if saved:
+            b.log(_("carrying on with {map} where it was: {minutes} minutes and {kills} kills done",
+                    map=atlas.label(mid), minutes=int(done_minutes), kills=done_kills))
+        frame = self.trail[-1]
+        frame.update(_farm_at=clock_for(b).time(), _farm_kills=b.kills, _farm_m0=done_minutes, _farm_k0=done_kills)
+        b.farm(mid, area=o.get("area"), minutes=minutes - done_minutes if minutes else 0,
+               kills=kills - done_kills if kills else 0,
                only=o.get("only", ""), skip=o.get("skip", ""), patrol=o.get("patrol", "random"),
                avoid_elites=o.get("elites") == "avoid",
                until=(lambda: bool(self.value(until, node.line))) if until is not None else None)

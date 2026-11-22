@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 from ... import gamemem, jsonio
 from ...errors import carry_on
 from ...i18n import _
-from .base import (STOPPING, GameBroken, Stopped)
+from .base import (STOPPING, GameBroken, GameLost, Stopped)
 from ...clock import Flag, StopFlag
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -291,6 +291,9 @@ class ReadingMixin(Parts):
                     next_reconnect = began + self.RECONNECT_GRACE
                     continue
             if not why.startswith(self.TRANSIENT) or self.clock.time() > began + self._patience(why):
+                if why.startswith(self.CONNECTION_GONE):
+                    # our character is out of the game and logging back in didn't bring it back
+                    raise GameLost(_("the game can't be read: {why}", why=why))
                 raise Stopped(_("the game can't be read: {why}", why=why), final=True)
             self.sleep(0.25)
 

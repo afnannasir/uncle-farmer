@@ -30,6 +30,7 @@ APP_DEFAULTS: dict[str, Any] = {
     "daily_stop": True,       # every run ends at the daily stop time, before the game's day turns over
     "daily_stop_at": "",      # "HH:MM" on this computer's clock; empty = the drop reset (00:00 GMT) - 10 min
     "after_stop": "nothing",  # when farming stops by itself (never after Stop): nothing | close_game | shutdown
+    "restart_lost_games": True,  # a game lost mid-run (closed, frozen) is opened again and the run carries on
     "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
     "check_updates": True,    # look for a new release on GitHub when the app starts
     "skip_version": "",       # a release the player said no to: not offered again at start
@@ -258,6 +259,7 @@ class AppSettings(BaseModel):
     daily_stop: bool = APP_DEFAULTS["daily_stop"]
     daily_stop_at: str = APP_DEFAULTS["daily_stop_at"]
     after_stop: str = APP_DEFAULTS["after_stop"]
+    restart_lost_games: bool = APP_DEFAULTS["restart_lost_games"]
     shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
     check_updates: bool = APP_DEFAULTS["check_updates"]
     skip_version: str = APP_DEFAULTS["skip_version"]

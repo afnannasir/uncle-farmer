@@ -9,6 +9,7 @@ from typing import Any
 import wx
 
 from .. import __version__, applog, daily, gameinstall, i18n, paths, updater
+from ..engine import resume
 from ..i18n import _
 from . import agentfix
 from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, modal, ok_cancel, opens, page, tabs
@@ -97,6 +98,10 @@ class SetupDialog(Dialog):
                               self.s.get("shutdown_delay", 60), 10, 600)
         self.after.Bind(wx.EVT_CHOICE, lambda e: self.sync_after())
         self.sync_after()
+        f = group(panel, box, _("When a game is lost during a run"))
+        self.restart_lost = f.check(
+            _("&Open the game again, log in and carry on where the run was (at most {n} times a day)",
+              n=resume.RESTARTS_MOST), self.s.get("restart_lost_games", True))
 
         def sync(_evt: wx.Event | None = None) -> None:
             self.day_at.Enable(self.day_on.GetValue())
@@ -265,6 +270,7 @@ class SetupDialog(Dialog):
         self.s["results_every"] = self.every.GetValue() if self.progress.GetValue() else 0
         self.s["daily_stop"] = self.day_on.GetValue()
         self.s["after_stop"] = AFTER[max(0, self.after.GetSelection())]
+        self.s["restart_lost_games"] = self.restart_lost.GetValue()
         self.s["shutdown_delay"] = self.delay.GetValue()
         self.s["log_level"] = applog.LEVELS[max(0, self.level.GetSelection())]
         self.s["log_max_mb"] = self.log_mb.GetValue()
