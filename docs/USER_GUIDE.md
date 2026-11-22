@@ -459,6 +459,8 @@ way: when what is left is already down to what you save, it says "the drop time 
 
 A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
 
+In the XP loser window, **as much as is worth it** lets the bot decide: each death takes the same share of what is left to lose in the level (1.6% to 1.8% on the characters measured), so the last few per cent cost ever more deaths. The bot stops where a death would take less than 0.05% of the level, about 97% of it, and allows itself the deaths that takes, with a small margin. It learns the level after three deaths, and remembers it for the character until the level changes, so the next run knows its goal at once.
+
 Inside a dungeon, leaving would lose the visit, so it never stops there: it only says, once, that the next level is close. Before going into an experience dungeon, it checks first: if the next level already needs less than your number, it doesn't go in and says so, and the day's cave is still yours to use.
 
 A plan's **When to stop** page can set either one for that plan only, in place of the character's setting. In a script, use `keep_drop` and `keep_level`.

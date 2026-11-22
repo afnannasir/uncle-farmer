@@ -1017,6 +1017,9 @@ msgstr ""
 msgid "As many as I can"
 msgstr ""
 
+msgid "As much as is worth it:"
+msgstr ""
+
 msgid "At a &clock time"
 msgstr ""
 
@@ -4359,6 +4362,10 @@ msgstr ""
 msgid "The bot reads the real one from the Forger every try."
 msgstr ""
 
+msgid ""
+"The bot sets the goal and the number of deaths itself: it stops where a death would take less than 0.05% of the level (about 97% of it). The deaths limit above only counts until it knows the level: after three deaths, or at once when an earlier run learned it."
+msgstr ""
+
 msgid "The bot stops buying before it would spend more than {cap}."
 msgstr ""
 
@@ -5172,6 +5179,10 @@ msgid "XP loser"
 msgstr ""
 
 msgid ""
+"XP loser: the next level needs {xp} experience; dying to guards as long as it is worth it (the goal is set after {k} deaths)"
+msgstr ""
+
+msgid ""
 "XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}"
 msgstr ""
 
@@ -5330,6 +5341,9 @@ msgid "arrived on {map} at {x},{y}"
 msgstr ""
 
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
+msgstr ""
+
+msgid "as much as is worth it (the bot decides the goal and the deaths)"
 msgstr ""
 
 msgid "asking for hunting bounties"
@@ -5913,10 +5927,18 @@ msgstr ""
 msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
 msgstr ""
 
+msgid ""
+"died {n} times: the next level needs {xp} experience now (the goal is set after {k} deaths)"
+msgstr ""
+
 msgid "disbanded {team}: the team is to be called {name}"
 msgstr ""
 
 msgid "done here - going to {map}, where no monsters spawn"
+msgstr ""
+
+msgid ""
+"done: a death would now take less than {share}% of the level (the next level needs at least {goal} experience)"
 msgstr ""
 
 msgid "done: made {n} {gem}; {have} in the bag"
@@ -7324,6 +7346,9 @@ msgid "selling the collection"
 msgstr ""
 
 msgid "selling to the nearest {role}"
+msgstr ""
+
+msgid "set after {k} deaths"
 msgstr ""
 
 msgid "set it up first: Tools, {tool}"

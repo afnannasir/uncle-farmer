@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**XP loser: as much as is worth it**
+
+- A third choice in Tools, XP loser: the bot sets the goal and the number of deaths itself. It stops
+  where a death would take less than 0.05% of the level (about 97% of it; on one character 177 deaths
+  reached 95% and 234 reached 98%), and allows the deaths its forecast says, plus a margin.
+- What the XP loser learns of a level (what it holds, what a death takes) is kept until the level
+  changes, no longer forgotten after 7 days, and under the character itself (name, server, id).
+
 **What a chest gave, in the log**
 
 - After a chest is opened, the log says what it gave ("the chest gave: +9,190 arnebia, +24 Level 1

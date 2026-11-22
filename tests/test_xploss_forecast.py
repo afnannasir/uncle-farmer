@@ -138,12 +138,12 @@ def test_a_remembered_level_also_skips_deaths_worth_too_little() -> None:
     assert late.deaths == 0
 
 
-def test_a_remembered_top_runs_out_and_a_lower_one_is_ignored() -> None:
+def test_a_remembered_top_is_kept_until_the_level_changes_and_a_lower_one_is_ignored() -> None:
     first = Level(TOP - 50)
     lose(first, until_needed=4_100_000)
     old = Level(first.xp)
-    old.clock.now += 2 * xploss.TOP_KEEP
-    assert lose(old, until_needed=4_100_000) == "stalled" and old.deaths == xploss.STALLS
+    old.clock.now += 14 * 86400.0                      # two weeks later, the same level: still known
+    assert lose(old, until_needed=4_100_000) == "impossible" and old.deaths == 0
     higher = Level(TOP + 10_000, top=TOP + 500_000)
     assert lose(higher, until_needed=TOP + 20_000, max_deaths=999) == "done"
 
@@ -186,3 +186,61 @@ def test_no_potion_while_dying_on_purpose() -> None:
     HealthMixin._hp_potion(as_bot(d), 10, 1000, 1.0, 100.0, None)  # pyright: ignore[reportPrivateUsage]
     HealthMixin._mp_potion(as_bot(d), {}, 100.0)  # pyright: ignore[reportPrivateUsage]
     assert d.mp_share is None
+
+
+# ---------------------------------------------------------------- "worth": the bot decides
+WORTH_GOAL = TOP - -(-xploss.WORTH_SHARE * TOP // SHARE)     # where a death takes 0.05% of the level
+
+
+def test_worth_decides_its_goal_and_its_deaths_after_three() -> None:
+    g = Level(1_000_000)
+    assert lose(g, mode="worth", max_deaths=30) == "done"      # 30 would stop it: the bot decided more
+    assert abs(g.xp - WORTH_GOAL) < 3000 and g.deaths > 30
+    assert "set after 3 deaths" in g.text()
+    assert "a death would now take less than 0.05% of the level" in g.text()
+    assert not any("the limit of" in s for s in spoken(g))
+
+
+def test_worth_remembers_the_level_and_sets_its_goal_at_once() -> None:
+    lose(Level(1_000_000), mode="worth", max_deaths=30)
+    again = Level(2_000_000)
+    assert lose(again, mode="worth", max_deaths=30) == "done"
+    assert any("dying to guards until it needs" in line for line, _speak in again.lines)   # known at once
+    assert abs(again.xp - WORTH_GOAL) < 3000
+
+
+def test_worth_past_its_goal_has_nothing_to_lose() -> None:
+    first = Level(1_000_000)
+    lose(first, mode="worth", max_deaths=30)
+    done = Level(first.xp + 10)
+    assert lose(done, mode="worth") == "done" and done.deaths == 0
+    assert "nothing to lose" in done.text()
+
+
+def test_worth_that_cant_learn_the_level_keeps_the_settings_limit() -> None:
+    g = Game(xp=1000, loss=500)                  # the same loss every time: no share fits
+    assert lose(g, mode="worth", max_deaths=6) == "deaths" and g.deaths == 6
+
+
+def test_worth_allows_the_forecast_and_a_margin() -> None:
+    r = xploss._Run(as_bot(Level(10)), {**xploss.DEFAULTS, "mode": "worth"})   # pyright: ignore[reportPrivateUsage]
+    r.start, r.top, r.rate = 1_000_000, TOP, SHARE
+    goal = r.decide(1_000_000)
+    n = xploss.deaths_to(1_000_000, goal, TOP, SHARE)
+    assert r.most == n + max(xploss.WORTH_EXTRA, -(-n * xploss.WORTH_MARGIN // 1)) <= xploss.DEATHS_MOST
+
+
+def test_a_check_in_worth_says_the_goal_comes_later() -> None:
+    g = Level(1_000_000)
+    assert xploss.run(as_bot(g), {**xploss.DEFAULTS, "mode": "worth"}, check_only=True) == "checked"
+    assert "goal set after 3 deaths" in g.text() and g.deaths == 0
+
+
+def test_the_level_is_kept_under_the_character_and_an_older_row_still_counts(tmp_path: Path) -> None:
+    rows = {"Hero|90": {"top": TOP, "rate": SHARE, "at": 0}}
+    (tmp_path / xploss.LEVEL_TOPS).write_text(json.dumps(rows), encoding="utf-8")
+    g = Level(1_000_000)
+    g.profile_key = "Hero\x1fS1\x1f7"            # pyright: ignore[reportAttributeAccessIssue]
+    assert lose(g, until_needed=1_300_000, max_deaths=999) == "done"
+    saved = json.loads((tmp_path / xploss.LEVEL_TOPS).read_text(encoding="utf-8"))
+    assert "Hero\x1fS1\x1f7|90" in saved

@@ -1032,6 +1032,9 @@ msgstr ""
 msgid "As many as I can"
 msgstr "Yapabildiğim kadar"
 
+msgid "As much as is worth it:"
+msgstr ""
+
 msgid "At a &clock time"
 msgstr "Belirli bir saatte (&C)"
 
@@ -4463,6 +4466,10 @@ msgstr "Bot çalışmıyor."
 msgid "The bot reads the real one from the Forger every try."
 msgstr "Bot gerçeğini her denemede Dökümcü'den okur."
 
+msgid ""
+"The bot sets the goal and the number of deaths itself: it stops where a death would take less than 0.05% of the level (about 97% of it). The deaths limit above only counts until it knows the level: after three deaths, or at once when an earlier run learned it."
+msgstr ""
+
 msgid "The bot stops buying before it would spend more than {cap}."
 msgstr ""
 
@@ -5332,6 +5339,10 @@ msgid "XP loser"
 msgstr "XP kaybettirici"
 
 msgid ""
+"XP loser: the next level needs {xp} experience; dying to guards as long as it is worth it (the goal is set after {k} deaths)"
+msgstr ""
+
+msgid ""
 "XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}"
 msgstr ""
 "XP kaybettirici: sonraki seviye için {xp} deneyim gerekiyor; {goal} gerekene kadar muhafızlara ölünüyor"
@@ -5497,6 +5508,9 @@ msgstr "{map} haritasına {x},{y} konumunda varıldı"
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} haritasına {x},{y} konumunda varıldı - yol buradan yeniden planlanıyor"
+
+msgid "as much as is worth it (the bot decides the goal and the deaths)"
+msgstr ""
 
 msgid "asking for hunting bounties"
 msgstr ""
@@ -6105,11 +6119,19 @@ msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
 msgstr ""
 "{n} kez ölündü: sonraki seviye için şimdi {xp} deneyim gerekiyor (hedef {goal})"
 
+msgid ""
+"died {n} times: the next level needs {xp} experience now (the goal is set after {k} deaths)"
+msgstr ""
+
 msgid "disbanded {team}: the team is to be called {name}"
 msgstr ""
 
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr "burada iş bitti - canavar çıkmayan {map} haritasına gidiliyor"
+
+msgid ""
+"done: a death would now take less than {share}% of the level (the next level needs at least {goal} experience)"
+msgstr ""
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "bitti: {n} {gem} yapıldı; çantada {have}"
@@ -7557,6 +7579,9 @@ msgstr "koleksiyon satılıyor"
 
 msgid "selling to the nearest {role}"
 msgstr "en yakın {role} kişisine satılıyor"
+
+msgid "set after {k} deaths"
+msgstr ""
 
 msgid "set it up first: Tools, {tool}"
 msgstr "önce ayarla: Araçlar, {tool}"

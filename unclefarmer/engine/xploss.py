@@ -56,8 +56,19 @@ from ..settings import PK_MODES, Saved
 from . import beasts, combat, pets, teleskill, town
 from .bot import Bot, Respawned, Stopped
 
-MODES = ("until", "lose")
-MODE_NAMES = (N_("until the next level needs at least"), N_("lose this much experience"))
+MODES = ("until", "lose", "worth")
+MODE_NAMES = (N_("until the next level needs at least"), N_("lose this much experience"),
+              N_("as much as is worth it (the bot decides the goal and the deaths)"))
+# "worth": the bot sets the goal itself, from what a death takes and what the level holds (fit_rate,
+# top_of, or what an earlier run learned): it stops where a death would take less than WORTH_SHARE
+# of the level. Each death takes the same share of what is left to lose, so the last few per cent
+# cost ever more deaths for ever less: on one character (247 deaths, 2026-11-22, 11 s each), 72% of
+# the level took 71 deaths, 89% 129, 95% 177, 98% 234. 0.05% of the level is about 97% of it.
+WORTH_SHARE = 0.0005
+WORTH_MARGIN = 0.1        # deaths allowed past the forecast, as a share of it...
+WORTH_EXTRA = 5           # ... and at least this many
+DEATHS_MOST = 999         # the most deaths a run may set itself (as the window's own limit)
+UNKNOWN_GOAL = 2_000_000_000   # "worth" before the level is known: no goal yet
 # Where to die: at the nearest guard, or at the nearest village. The game brings a dead character
 # back at the last town it walked into, and a village's gate guards are a few steps from its
 # respawn point: on Tuneful Wetland a death took 11 s at Aria Village and 29 s at Tulip City, where
@@ -95,7 +106,6 @@ FIT_FROM = 200            # ... each at least this big: smaller ones are mostly 
 RATE_LOW, RATE_HIGH = 0.005, 0.1   # a share of the level outside these isn't what a death does: no forecast
 MARGIN = 0.1              # a goal is out of reach only this far (of what is left) past the estimate
 LEVEL_TOPS = "_learned_level_tops.json"   # in the profiles folder: per character and level
-TOP_KEEP = 7 * 86400.0    # seconds a remembered level top is believed
 SEARCH = 240.0            # seconds spent walking around a map looking for a guard
 SEARCH_WALKS = 12         # ... and never more walks than this (a walk that ends at once can't spin)
 LOOK = 0.5
@@ -473,27 +483,61 @@ class _Run:
         self.stamps: list[float] = []                    # when we came back from each death
         self.stalls = self.smalls = 0                    # deaths in a row costing nothing / too little
         self.told = self.timed = False                   # the forecast was said / said with its time
+        self.most: int | None = None                     # "worth": the deaths it decided to allow
+        self.goal = 0                                    # the goal now ("worth" sets it as it learns)
 
     # -- what the deaths will bring
     def know(self, start: int) -> None:
-        """What an earlier run learned of this character's level, if it still holds."""
+        """What an earlier run learned of this character's level, kept until the level changes (what
+        a level holds is a rule of the game; what a death takes is measured again after three)."""
         b = self.b
         self.start = start
         name = b.me().get("name")
         level = (b.refresh_sheet() or {}).get("level")
         if not name or not level:
             return
-        self.key = "%s|%s" % (name, level)
-        row: dict[str, Any] = _tops().get(self.key) or {}
+        # the character itself (name, server, id), so a namesake on the other server keeps its own;
+        # a row an older copy saved under the name alone still counts
+        who = getattr(b, "profile_key", None) or name
+        self.key = "%s|%s" % (who, level)
+        tops = _tops()
+        row: dict[str, Any] = tops.get(self.key) or tops.get("%s|%s" % (name, level)) or {}
         top, rate = row.get("top"), row.get("rate")
-        fresh = b.clock.time() - float(row.get("at") or 0) < TOP_KEEP
-        if fresh and isinstance(top, int) and top >= start:
+        if isinstance(top, int) and top >= start:
             self.top = top
             self.rate = float(rate) if isinstance(rate, (int, float)) else None
 
     def save(self) -> None:
         if self.key and self.top is not None:
             _save_top(self.key, {"top": self.top, "rate": self.rate, "at": self.b.clock.time()})
+
+    @property
+    def worth(self) -> bool:
+        return self.cfg.get("mode") == "worth"
+
+    def worth_goal(self) -> int | None:
+        """The goal "worth" sets: where a death would take WORTH_SHARE of the level. None while
+        what the level holds or what a death takes isn't known."""
+        if self.top is None or self.rate is None:
+            return None
+        return max(self.start, self.top - math.ceil(WORTH_SHARE * self.top / self.rate))
+
+    def decide(self, needed: int) -> int:
+        """"worth": the goal, and once it is first known, the deaths allowed to reach it (the
+        forecast and a margin; the setting's limit while nothing is known). UNKNOWN_GOAL until then."""
+        goal_now = self.worth_goal()
+        if goal_now is None:
+            return UNKNOWN_GOAL
+        if self.most is None and self.top is not None and self.rate is not None:
+            n = deaths_to(needed, goal_now, self.top, self.rate)
+            self.most = min(DEATHS_MOST, self.deaths + n + max(WORTH_EXTRA, math.ceil(n * WORTH_MARGIN)))
+        return goal_now
+
+    def limit(self) -> int:
+        """The most deaths this run: the one "worth" decided, else the setting's."""
+        if self.worth and self.most is not None:
+            return self.most
+        return int(self.cfg.get("max_deaths") or DEFAULTS["max_deaths"])
 
     def out_of_reach(self, needed: int, target: int) -> bool:
         return self.top is not None and target >= needed + (self.top - needed) * (1.0 + MARGIN)
@@ -502,7 +546,7 @@ class _Run:
         """Before the first death, from what an earlier run learned: why not to start, if so."""
         if self.top is None:
             return None
-        if self.out_of_reach(self.start, target):
+        if not self.worth and self.out_of_reach(self.start, target):
             return "impossible"
         if self.rate is not None:
             if self.min_loss and (self.top - self.start) * self.rate < self.min_loss:
@@ -528,7 +572,7 @@ class _Run:
         else:
             b.log(_("this level holds about {top} experience: about {n} more deaths to reach {xp}",
                     top=top, n=n, xp=reach), speak=True)
-        most = int(self.cfg.get("max_deaths") or DEFAULTS["max_deaths"])
+        most = self.limit()
         if n > most - self.deaths and not self.told:
             b.log(_("the limit of {most} deaths will stop the run before that", most=most), speak=True)
         self.told = True
@@ -544,6 +588,8 @@ class _Run:
         if rate is not None:
             self.rate = rate
             self.top = max(now, top_of(self.start, self.losses[0], rate))
+        if self.worth:
+            target = self.goal = self.decide(now)
         if now >= target:
             return None
         if self.stalls >= STALLS:
@@ -560,7 +606,9 @@ class _Run:
     def ending(self, why: str, target: int) -> str:
         """Why the run ended, in words."""
         return {
-            "done": _("done: the next level needs at least {goal} experience", goal=target),
+            "done": (_("done: a death would now take less than {share}% of the level (the next level needs at "
+                       "least {goal} experience)", share=WORTH_SHARE * 100, goal=target) if self.worth
+                     else _("done: the next level needs at least {goal} experience", goal=target)),
             "deaths": _("stopped after {n} deaths, as you set", n=self.deaths),
             "stalled": _("dying costs no more experience on this level - stopped"),
             "small": _("a death now costs less than {n} experience - stopped", n=self.min_loss),
@@ -857,11 +905,12 @@ class _Run:
     def run(self, target: int, start: int) -> str:
         b = self.b
         needed = start
+        self.goal = target
         while True:
             b.check()
-            if needed >= target:
+            if needed >= self.goal:
                 return "done"
-            if self.deaths >= int(self.cfg.get("max_deaths") or DEFAULTS["max_deaths"]):
+            if self.deaths >= self.limit():
                 return "deaths"
             try:
                 # all mode BEFORE looking: only then does the game count guards as enemies (its
@@ -889,8 +938,10 @@ class _Run:
                 if now is None:
                     raise Stopped(_("can't read the experience from the character sheet any more"), final=True)
                 b.log(_("died {n} times: the next level needs {xp} experience now (goal {goal})",
-                        n=self.deaths, xp=now, goal=target))
-                stop = self.after_death(needed, now, target)
+                        n=self.deaths, xp=now, goal=self.goal) if self.goal < UNKNOWN_GOAL else
+                      _("died {n} times: the next level needs {xp} experience now (the goal is set after "
+                        "{k} deaths)", n=self.deaths, xp=now, k=FIT_AFTER))
+                stop = self.after_death(needed, now, self.goal)
                 if stop:
                     return stop
                 needed = now
@@ -909,21 +960,29 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
     if honour is not None and honour <= BLACK_NAME:
         raise Stopped(_("Morality is {n} (a black name): a death can cost worn gear, so the XP loser won't run",
                         n=honour), final=True)
-    target = goal(cfg, start)
+    r: _Run | None = None
+    if cfg.get("mode") == "worth":
+        r = _Run(b, cfg)
+        r.know(start)
+        target = r.decide(start)
+    else:
+        target = goal(cfg, start)
     if start >= target:
         b.log(_("the next level already needs {xp} experience (goal {goal}) - nothing to lose", xp=start, goal=target),
               speak=True)
         return "done"
     m = modes(b)
-    r = _Run(b, cfg)
-    r.know(start)
+    if r is None:
+        r = _Run(b, cfg)
+        r.know(start)
     if check_only:
         snap = b.snap()
         found = guards(snap, mid=b.map_id())
         note(b.map_id(), found)
         b.log(_("check: the next level needs {xp} experience, goal {goal}; {n} guards in sight here, "
                 "{k} remembered spots; PK mode {pk}{locked}",
-                xp=start, goal=target, n=len(found), k=len(spots()),
+                xp=start, goal=target if target < UNKNOWN_GOAL else _("set after {k} deaths", k=FIT_AFTER),
+                n=len(found), k=len(spots()),
                 pk=pk_name(m.get("pk")),
                 locked=_(" (locked here)") if m.get("pk_locked") else ""), speak=True)
         r.forecast(start, target)
@@ -938,8 +997,12 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
     saved = b.p
     b.p = {**saved, **DYING}
     b.dying_on_purpose = True
-    b.log(_("XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}",
-            xp=start, goal=target))
+    if target < UNKNOWN_GOAL:
+        b.log(_("XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}",
+                xp=start, goal=target))
+    else:
+        b.log(_("XP loser: the next level needs {xp} experience; dying to guards as long as it is worth it "
+                "(the goal is set after {k} deaths)", xp=start, k=FIT_AFTER))
     why = "?"
     try:
         r.skip_elf_teleports()
@@ -951,7 +1014,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
         r.save()
         if isinstance(was_pk, int) and was_pk != ALL_MODE:
             put_back_pk(b, was_pk)
-    end = r.ending(why, target)
+    end = r.ending(why, r.goal or target)
     b.log(_("XP loser: {end} ({n} deaths)", end=end, n=r.deaths), speak=True)
     if why in ("no guard", "locked"):
         raise Stopped(end, final=True)

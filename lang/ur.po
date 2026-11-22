@@ -1041,6 +1041,9 @@ msgstr ""
 msgid "As many as I can"
 msgstr "Jitne ban sakein"
 
+msgid "As much as is worth it:"
+msgstr "Jitna faida ho:"
+
 msgid "At a &clock time"
 msgstr "&Ghadi ke waqt par"
 
@@ -4516,6 +4519,11 @@ msgstr "Bot nahi chal raha."
 msgid "The bot reads the real one from the Forger every try."
 msgstr "Bot har koshish par Forger se asal wala parhta hai."
 
+msgid ""
+"The bot sets the goal and the number of deaths itself: it stops where a death would take less than 0.05% of the level (about 97% of it). The deaths limit above only counts until it knows the level: after three deaths, or at once when an earlier run learned it."
+msgstr ""
+"Bot maqsad aur maut ki tadaad khud tay karta hai: jab ek maut level ka 0.05% se kam le, to ruk jata hai (level ka taqreeban 97%). Upar wali maut ki had sirf tab tak lagti hai jab tak bot level ko na jaan le: teen maut ke baad, ya foran agar pichle run ne seekh liya ho."
+
 msgid "The bot stops buying before it would spend more than {cap}."
 msgstr "Bot {cap} se zyada kharch hone se pehle khareedna rok deta hai."
 
@@ -5400,6 +5408,11 @@ msgid "XP loser"
 msgstr "XP loser"
 
 msgid ""
+"XP loser: the next level needs {xp} experience; dying to guards as long as it is worth it (the goal is set after {k} deaths)"
+msgstr ""
+"XP loser: agle level ko {xp} experience chahiye; jab tak faida ho guards se marna (maqsad {k} maut ke baad tay hoga)"
+
+msgid ""
 "XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}"
 msgstr ""
 "XP loser: agle level ko {xp} experience chahiye; guards se mar rahe hain jab tak {goal} na chahiye"
@@ -5567,6 +5580,9 @@ msgstr "{map} par {x},{y} par pohanch gaye"
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr ""
 "{map} par {x},{y} par pohanch gaye - yahan se aage ka rasta bana rahe hain"
+
+msgid "as much as is worth it (the bot decides the goal and the deaths)"
+msgstr "jitna faida ho (bot maqsad aur maut khud tay kare)"
 
 msgid "asking for hunting bounties"
 msgstr "hunting bounties maangna"
@@ -6184,12 +6200,22 @@ msgstr "{n} dafa mar gaye - rok rahe hain; yeh jagah shayad bohot mushkil hai"
 msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
 msgstr "{n} baar mare: agle level ko ab {xp} experience chahiye (maqsad {goal})"
 
+msgid ""
+"died {n} times: the next level needs {xp} experience now (the goal is set after {k} deaths)"
+msgstr ""
+"{n} baar mare: agle level ko ab {xp} experience chahiye (maqsad {k} maut ke baad tay hoga)"
+
 msgid "disbanded {team}: the team is to be called {name}"
 msgstr "{team} disband ki: team ka naam {name} hona hai"
 
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr ""
 "yahan kaam khatam - {map} ja rahe hain, jahan koi monster paida nahi hota"
+
+msgid ""
+"done: a death would now take less than {share}% of the level (the next level needs at least {goal} experience)"
+msgstr ""
+"mukammal: ab ek maut level ka {share}% se kam legi (agle level ko kam az kam {goal} experience chahiye)"
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "ho gaya: {n} {gem} banaye; basta mein {have}"
@@ -7670,6 +7696,9 @@ msgstr "Collection bechna"
 
 msgid "selling to the nearest {role}"
 msgstr "sab se qareebi {role} ko bech rahe hain"
+
+msgid "set after {k} deaths"
+msgstr "{k} maut ke baad tay hoga"
 
 msgid "set it up first: Tools, {tool}"
 msgstr "pehle ise set karein: Tools, {tool}"

@@ -1044,6 +1044,9 @@ msgstr ""
 msgid "As many as I can"
 msgstr "Autant que possible"
 
+msgid "As much as is worth it:"
+msgstr "Tant que ça vaut la peine :"
+
 msgid "At a &clock time"
 msgstr "À une &heure précise"
 
@@ -4541,6 +4544,11 @@ msgstr "Le bot n'est pas en cours."
 msgid "The bot reads the real one from the Forger every try."
 msgstr "Le bot lit le vrai niveau chez le Forger à chaque essai."
 
+msgid ""
+"The bot sets the goal and the number of deaths itself: it stops where a death would take less than 0.05% of the level (about 97% of it). The deaths limit above only counts until it knows the level: after three deaths, or at once when an earlier run learned it."
+msgstr ""
+"Le bot fixe lui-même le but et le nombre de morts : il s'arrête quand une mort prendrait moins de 0,05 % du niveau (environ 97 % de celui-ci). La limite de morts ci-dessus ne compte que tant qu'il ne connaît pas le niveau : après trois morts, ou tout de suite si une partie précédente l'a appris."
+
 msgid "The bot stops buying before it would spend more than {cap}."
 msgstr "Le bot arrête d'acheter avant de dépenser plus de {cap}."
 
@@ -5437,6 +5445,11 @@ msgid "XP loser"
 msgstr "XP loser"
 
 msgid ""
+"XP loser: the next level needs {xp} experience; dying to guards as long as it is worth it (the goal is set after {k} deaths)"
+msgstr ""
+"XP loser : le prochain niveau demande {xp} d'expérience ; morts face aux gardes tant que ça vaut la peine (le but est fixé après {k} morts)"
+
+msgid ""
 "XP loser: the next level needs {xp} experience; dying to guards until it needs {goal}"
 msgstr ""
 "XP loser : le prochain niveau demande {xp} d'expérience ; morts face aux gardes jusqu'à ce qu'il demande {goal}"
@@ -5602,6 +5615,9 @@ msgstr "arrivé sur {map} en {x},{y}"
 
 msgid "arrived on {map} at {x},{y} - planning the way on from here"
 msgstr "arrivé sur {map} en {x},{y} - calcul de la suite du trajet d'ici"
+
+msgid "as much as is worth it (the bot decides the goal and the deaths)"
+msgstr "tant que ça vaut la peine (le bot décide du but et des morts)"
 
 msgid "asking for hunting bounties"
 msgstr "demande des primes de chasse"
@@ -6225,11 +6241,21 @@ msgid "died {n} times: the next level needs {xp} experience now (goal {goal})"
 msgstr ""
 "{n} morts : le prochain niveau demande maintenant {xp} d'expérience (objectif {goal})"
 
+msgid ""
+"died {n} times: the next level needs {xp} experience now (the goal is set after {k} deaths)"
+msgstr ""
+"{n} morts : le prochain niveau demande maintenant {xp} d'expérience (le but est fixé après {k} morts)"
+
 msgid "disbanded {team}: the team is to be called {name}"
 msgstr "{team} dissoute : l'équipe doit s'appeler {name}"
 
 msgid "done here - going to {map}, where no monsters spawn"
 msgstr "terminé ici - départ vers {map}, sans monstres"
+
+msgid ""
+"done: a death would now take less than {share}% of the level (the next level needs at least {goal} experience)"
+msgstr ""
+"terminé : une mort prendrait maintenant moins de {share} % du niveau (le prochain niveau demande au moins {goal} d'expérience)"
 
 msgid "done: made {n} {gem}; {have} in the bag"
 msgstr "terminé : {n} {gem} fabriqués ; {have} dans le sac"
@@ -7704,6 +7730,9 @@ msgstr "vente de la collection"
 
 msgid "selling to the nearest {role}"
 msgstr "vente au {role} le plus proche"
+
+msgid "set after {k} deaths"
+msgstr "fixé après {k} morts"
 
 msgid "set it up first: Tools, {tool}"
 msgstr "le configurer d'abord : Outils, {tool}"
