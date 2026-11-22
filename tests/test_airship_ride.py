@@ -101,7 +101,7 @@ class Flyer(Bot):
         self._aboard("exit %s" % leg["map"])
         self.sky.map, self.sky.pos = leg["dest"], (100.0, 100.0)    # walked out to the next map
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         self.chosen.append(pattern)
         self.sky.board()                       # the administrator flies us at once
         return {"options": [pattern]}
@@ -246,7 +246,7 @@ def test_a_refused_menu_puts_the_mode_back(clock: Clock) -> None:
     b.dialog_value = {"open": 1, "top": {"rows": [[entry("no chance")]]}}
     b.find_entry = lambda top, pattern: None
 
-    def no_flight(pattern: str) -> dict[str, Any]:
+    def no_flight(pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any]:
         b.chosen.append(pattern)
         return {"options": [pattern]}
     b.choose = no_flight

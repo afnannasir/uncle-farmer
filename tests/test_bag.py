@@ -569,7 +569,7 @@ def test_throw_item_discards_and_confirms(monkeypatch: pytest.MonkeyPatch) -> No
     b.find_entry = lambda top, pattern: (0, 0)
     b.note_dialog = lambda d, why: None
 
-    def choose(pattern: str) -> dict[str, Any] | None:
+    def choose(pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         b.link.bag = [{"name": "Junk", "count": 1}]
         return {"text": pattern}
 
@@ -591,7 +591,7 @@ def test_throw_item_answers_how_many(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(town, "type_number", type_number)
     b.dialog = lambda: {"open": False}
 
-    def choose(pattern: str) -> dict[str, Any] | None:
+    def choose(pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         b.link.bag = []
         return {"text": pattern}
 

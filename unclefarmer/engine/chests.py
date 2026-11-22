@@ -176,13 +176,27 @@ def _say_loot(bot: Bot, before: dict[str, int] | None) -> None:
 
 
 def _open(bot: Bot, chest: dict[str, Any]) -> bool:
-    """Walk up to it, Enter, "Open the chest"; True once it has gone from sight."""
-    if not bot.talk(NAME, at=(chest["x"], chest["y"])) or bot.choose(OPEN) is None:
-        return False
-    end = bot.clock.time() + GONE_WAIT
-    while bot.clock.time() < end:
-        if not in_sight(bot.snap(), chest["id"]):
-            return True
-        bot.sleep(0.25)
+    """Walk up to it, Enter, "Open the chest"; True once it has gone from sight. A chest still
+    there after that is tried once more, choosing with the keys (bot.choose keys): on one
+    player's computer the direct choice was made and the chest stayed, 24 times in 25, while
+    the same menu opened chests on another computer. What the game said meanwhile goes to the
+    log when it still didn't open."""
+    from . import chores           # chores uses the town errands, which use the whole Bot
+    since = chores.said_mark(bot)
+    for keys in (False, True):
+        if not bot.talk(NAME, at=(chest["x"], chest["y"])):
+            return False
+        if (bot.choose(OPEN, keys=True) if keys else bot.choose(OPEN)) is None:
+            return False
+        end = bot.clock.time() + GONE_WAIT
+        while bot.clock.time() < end:
+            if not in_sight(bot.snap(), chest["id"]):
+                return True
+            bot.sleep(0.25)
+        if not keys:
+            bot.log(_("chose \"Open the chest\" but the chest is still there - once more with the keys"))
     bot.log(_("chose \"Open the chest\" but the chest is still there"))
+    said = chores.said_since(bot, since)
+    if said:
+        bot.log(_("the game said: {lines}", lines=" / ".join(said[-3:])))
     return False

@@ -150,12 +150,12 @@ class Rider:
     def close_dialogs(self) -> None:
         pass
 
-    def _ride(self, leg: dict[str, Any], mid: int) -> bool:
+    def _ride(self, leg: dict[str, Any], mid: int, keys: bool = False) -> bool:
         self.rides += 1
         return False
 
-    def ride(self, leg: dict[str, Any]) -> bool:
-        return TravelMixin.ride(as_bot(self), leg)
+    def ride(self, leg: dict[str, Any], keys: bool = False) -> bool:
+        return TravelMixin.ride(as_bot(self), leg, keys)
 
 
 def leg_of(t: dict[str, Any]) -> dict[str, Any]:

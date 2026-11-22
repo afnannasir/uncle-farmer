@@ -161,7 +161,7 @@ class H(HealthMixin):
                     return r, c
         return None
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         self.chosen.append(pattern)
         return {}
 
@@ -394,7 +394,7 @@ def test_handle_death_uses_the_resurrection_crystal_first(clock: Clock, monkeypa
 def test_handle_death_choice_that_fails_is_skipped(clock: Clock) -> None:
     h = H({"respawn": "map"})
     h._dlg = {"open": 1, "top": {"rows": [[{"text": "Map Respawn"}]]}}
-    h.choose = lambda pattern: None
+    h.choose = lambda pattern, row=None, keys=False: None
     with pytest.raises(Stopped) as e:
         h.handle_death()
     assert "couldn't respawn" in str(e.value)

@@ -126,7 +126,7 @@ class TravelBot(TravelMixin):
     def wait_dialog(self, seconds: float = 3.0, want_open: bool = True) -> dict[str, Any] | None:
         return GANG_ACTION_MENU
 
-    def choose(self, pattern: str) -> dict[str, Any] | None:
+    def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
         return None                      # nothing in that menu matches a "leave" pattern
 
     def cross_exit(self, leg: dict[str, Any]) -> None:

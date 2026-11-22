@@ -5896,6 +5896,11 @@ msgstr "chun raha hoon \"{entry}\""
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr "\"Open the chest\" chuna lekin chest abhi bhi wahan hai"
 
+msgid ""
+"chose \"Open the chest\" but the chest is still there - once more with the keys"
+msgstr ""
+"\"Open the chest\" chuna lekin chest abhi bhi wahan hai - ek baar phir keys se"
+
 msgid "circles seen on {map}: {names}"
 msgstr "{map} par nazar aaye circles: {names}"
 
@@ -8361,6 +8366,9 @@ msgstr ""
 
 msgid "the game isn't running with the agent"
 msgstr "game agent ke saath nahi chal raha"
+
+msgid "the game left the menu open after \"{entry}\" ({answer})"
+msgstr "game ne \"{entry}\" ke baad menu khula chhor diya ({answer})"
 
 msgid "the game lost our target on {name} and won't take it back - next one"
 msgstr "game ne {name} par humara target kho diya aur wapas nahi le raha - agla"

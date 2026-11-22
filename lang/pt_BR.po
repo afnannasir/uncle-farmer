@@ -5898,6 +5898,11 @@ msgstr "escolhendo \"{entry}\""
 msgid "chose \"Open the chest\" but the chest is still there"
 msgstr "selecionou \"Abrir baú\", mas o baú ainda está lá"
 
+msgid ""
+"chose \"Open the chest\" but the chest is still there - once more with the keys"
+msgstr ""
+"selecionou \"Abrir baú\", mas o baú ainda está lá - mais uma vez com as teclas"
+
 msgid "circles seen on {map}: {names}"
 msgstr "círculos vistos em {map}: {names}"
 
@@ -8345,6 +8350,9 @@ msgstr ""
 
 msgid "the game isn't running with the agent"
 msgstr "o jogo não está executando com o agente"
+
+msgid "the game left the menu open after \"{entry}\" ({answer})"
+msgstr "o jogo deixou o menu aberto depois de \"{entry}\" ({answer})"
 
 msgid "the game lost our target on {name} and won't take it back - next one"
 msgstr ""
