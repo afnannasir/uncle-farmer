@@ -2392,6 +2392,13 @@ shortcut is the same letter as in English; when the translated word has no such 
 in brackets at the end, for example `(&S)`. Trusted-player commands and script words stay in English,
 because the bot only understands them that way.
 
+### French translation
+
+Uncle Farmer includes a French translation in `lang\fr.po`. Game names (maps, NPCs, items, skills,
+the Storehouse, the Shard Broker and so on) stay in English: the bot's log lines name them in
+English whatever the game's language pack, so the two always match. Trusted-player commands and
+script words stay in English, because the bot only understands them that way.
+
 ### Urdu translation
 
 Uncle Farmer includes an Urdu translation in `lang\ur.po`.

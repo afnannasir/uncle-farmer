@@ -81,7 +81,7 @@ Uncle Farmer has plenty of features to help with everyday farming and more compl
 
 - 📊 **Run results and statistics:** Track kills, contribution, experience, arnebia, and every shard picked up. See how many items were thrown away, sold, or stored. Check results for the current run, today, this week, or all time. Gem making and daily chores are tracked separately from farming.
 
-- 🌍 **Language support:** Uncle Farmer works with the game's language packs. The program itself is available in English, Roman Urdu, Brazilian Portuguese, Spanish and Turkish.
+- 🌍 **Language support:** Uncle Farmer works with the game's language packs. The program itself is available in English, Roman Urdu, Brazilian Portuguese, Spanish, Turkish and French.
 
 ## Requirements
 

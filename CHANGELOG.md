@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**French translation**
+
+- Uncle Farmer is now available in French (Settings, Language: Français), every string. Game
+  names stay in English (maps, NPCs, items, skills, the Storehouse, the Shard Broker), the way the
+  bot says them in its log lines, whatever the game's language pack. Script words and trusted-player
+  commands stay in English too.
+
+**Help, About shows the dev build's number**
+
+- A dev build's About window said only the release it was built from ("1.2.2"). It now shows the
+  build's own number ("1.2.2-dev.436"), as the update check and the changelog windows do.
+
 **Team: `manage_team` sets the team up first**
 
 - In a script, `manage_team` now does what the start of a farming run does before managing the
