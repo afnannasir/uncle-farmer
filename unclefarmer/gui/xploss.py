@@ -11,7 +11,7 @@ import wx
 from .. import settings
 from ..engine import xploss
 from ..i18n import _
-from .common import Dialog, Form, Reader, save_file, with_code
+from .common import Dialog, Form, Reader, enable_label, save_file, with_code
 from .crafting import CHECK, START
 
 
@@ -46,6 +46,7 @@ class XpLoserDialog(Dialog):
         start = int(c["until_needed"] if c["mode"] == "until" else c["lose"]) or (now or 0)
         self.amount = f.number(_("&Experience:"), start, 0, 2_000_000_000)
         self.max_deaths = f.number(_("Stop after at most this many &deaths:"), int(c["max_deaths"]), 1, 999)
+        self.mode.Bind(wx.EVT_CHOICE, lambda e: self.sync_mode())
         self.where = f.choice(_("&Where to die:"), [_(w) for w in xploss.WHERE_NAMES],
                               xploss.WHERE.index(c["where"]) if c.get("where") in xploss.WHERE else 0)
         self.stop_small = f.check(_("&Stop when a death costs too little"), c["stop_small"])
@@ -67,6 +68,10 @@ class XpLoserDialog(Dialog):
             "The pet is put away first, and the PK mode is put back at the end. "
             "Deaths wear your gear like any death; a black-name character (Morality -1000 or lower) can "
             "lose worn gear when it dies, so the XP loser won't run for one."), lines=10)
+        f.readonly(_("As much as is worth it:"), _(
+            "The bot sets the goal and the number of deaths itself: it stops where a death would take less "
+            "than 0.05% of the level (about 97% of it). The deaths limit above only counts until it knows "
+            "the level: after three deaths, or at once when an earlier run learned it."), lines=3)
         root.Add(f.grid, 1, wx.EXPAND | wx.ALL, 12)
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         for label, code in ((_("Save"), wx.ID_OK), (_("&Check only"), CHECK), (_("Sta&rt"), START)):
@@ -77,11 +82,18 @@ class XpLoserDialog(Dialog):
         root.Add(buttons, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(560, 420))
+        self.sync_mode()
+
+    def sync_mode(self) -> None:
+        """"as much as is worth it" takes no amount: the bot decides the goal."""
+        own = xploss.MODES[max(0, self.mode.GetSelection())] != "worth"
+        self.amount.Enable(own)
+        enable_label(self.amount, own)
 
     def done(self, code: int) -> None:
         mode = xploss.MODES[max(0, self.mode.GetSelection())]
         amount = self.amount.GetValue()
-        if code == START and amount <= 0:
+        if code == START and amount <= 0 and mode != "worth":
             wx.MessageBox(_("Type how much experience: the most the next level should need, or how much to lose."),
                           _("XP loser"), wx.OK | wx.ICON_INFORMATION, self)
             self.amount.SetFocus()
@@ -89,7 +101,8 @@ class XpLoserDialog(Dialog):
         self.cfg.update(mode=mode, max_deaths=self.max_deaths.GetValue(),
                         stop_small=self.stop_small.GetValue(), min_loss=self.min_loss.GetValue(),
                         where=xploss.WHERE[max(0, self.where.GetSelection())])
-        self.cfg["until_needed" if mode == "until" else "lose"] = amount
+        if mode != "worth":
+            self.cfg["until_needed" if mode == "until" else "lose"] = amount
         self.p["xp_loser"] = self.cfg
         if save_file(self, settings.save_profile, self.character, self.p):
             self.EndModal(code)

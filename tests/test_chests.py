@@ -215,3 +215,38 @@ def test_a_chest_someone_else_opened_is_not_held_against_it() -> None:
     assert go(b)
     assert b.chests.opened == 0 and b.chests.skip == {}
     assert any("someone else opened it" in line for line, _speak in b.lines)
+
+
+# ---------------------------------------------------------------- what a chest gave
+class LootBot(Bot):
+    """A bag that gets the chest's items when it opens, and its arnebia a moment later."""
+
+    def __init__(self, entities: list[dict[str, Any]]) -> None:
+        super().__init__(entities)
+        self.bag: list[dict[str, Any]] = [{"name": "arnebia", "count": 1000}, {"name": "Small Fish", "count": 2}]
+        self.reads = 0
+
+    def choose(self, pattern: str) -> dict[str, Any] | None:
+        got = super().choose(pattern)
+        self.bag = [{"name": "arnebia", "count": 1000}, {"name": "Small Fish", "count": 2},
+                    {"name": "Level 1 Obsidian Shard", "count": 24}]
+        return got
+
+    def bag_rows(self) -> list[dict[str, Any]]:
+        if any(r["name"] == "Level 1 Obsidian Shard" for r in self.bag):
+            self.reads += 1
+            if self.reads >= 3:              # the arnebia comes in after the items
+                self.bag[0] = {"name": "arnebia", "count": 10190}
+        return [dict(r) for r in self.bag]
+
+
+def test_what_a_chest_gave_is_written_in_the_log() -> None:
+    b = LootBot([chest(x=110, y=104)])
+    assert go(b)
+    assert ("the chest gave: +9,190 arnebia, +24 Level 1 Obsidian Shard", False) in b.lines
+
+
+def test_a_bag_that_cannot_be_read_leaves_the_loot_line_out() -> None:
+    b = Bot([chest(x=110, y=104)])           # no bag_rows at all
+    assert go(b)
+    assert not any("the chest gave" in line for line, _speak in b.lines)
