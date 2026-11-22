@@ -29,8 +29,8 @@ WEEKDAYS = (N_("Monday"), N_("Tuesday"), N_("Wednesday"), N_("Thursday"), N_("Fr
 
 
 def day_of(t: float) -> str:
-    """The local day ("2026-11-08") a clock time falls on."""
-    return time.strftime("%Y-%m-%d", time.localtime(t))
+    """The game day ("2026-11-08", 00:00 GMT to 00:00 GMT) a clock time falls on."""
+    return stats.game_day_of(t)
 
 
 def day_label(day: str, today: str) -> str:

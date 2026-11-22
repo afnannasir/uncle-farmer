@@ -510,7 +510,7 @@ class Messenger(threading.Thread):
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
         who = settings.profile_name(self.host.character(self.pid))
-        since = time.mktime(time.strptime(time.strftime("%Y-%m-%d"), "%Y-%m-%d"))
+        since = stats.day_bounds(stats.game_day_of(time.time()))[0]    # the game's day: from 00:00 GMT
         rs = stats.runs(who, since)
         run = self.host.run_for(self.pid)
         if run and run.tally:

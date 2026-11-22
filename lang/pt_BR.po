@@ -8329,6 +8329,9 @@ msgid ""
 msgstr ""
 "o jogo informa que este personagem já entrou em uma masmorra de experiência hoje"
 
+msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr "o jogo parece travado: nada nele se moveu - ele será aberto de novo"
+
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "o jogo ainda não muda o modo - a coleta continua no modo atual"
 

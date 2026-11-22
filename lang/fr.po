@@ -8382,6 +8382,9 @@ msgid ""
 msgstr ""
 "selon le jeu, ce personnage est déjà allé dans un donjon d'expérience aujourd'hui"
 
+msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr "le jeu semble figé : rien n'y bouge plus - il est rouvert"
+
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 "le jeu ne veut toujours pas changer de mode - le farming continue dans le mode actuel"

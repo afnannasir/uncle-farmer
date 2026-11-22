@@ -18,6 +18,11 @@ starts, the third restart of a day)
   beside it (that left two signed-out games and no login); one that never starts is closed.
 - A PK or target mode the game didn't take (just after logging in, the PK key changed nothing) is
   tried again while farming, every 30 seconds, up to 5 times, and said only once.
+- A game whose world stopped while the agent still answers (a stuck walk with every way out failed,
+  and nothing in sight moving for about 10 seconds) is taken as the game lost: opened again and
+  carried on, instead of the run stopping there. A game out of memory found when a run stops counts too.
+- Results: today, yesterday and the Day list are the game's days (00:00 GMT to 00:00 GMT), as is the
+  `today` private message; a night farmed across the computer's midnight is one day.
 - French: the Kill game strings are translated.
 
 **French translation**

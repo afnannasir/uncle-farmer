@@ -17,6 +17,7 @@ line; contribution goes up instead.
 
 from __future__ import annotations
 
+import calendar
 import contextlib
 import copy
 import math
@@ -833,18 +834,22 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING,
     return out
 
 
+def game_day_of(t: float) -> str:
+    """The game's day ("2026-11-08") a clock time falls on: its days run from 00:00 GMT to 00:00
+    GMT, when the drop time starts again - a night farmed across the computer's midnight is one day."""
+    return time.strftime("%Y-%m-%d", time.gmtime(t))
+
+
 def days(character: str, kind: str | None = FARMING) -> list[str]:
-    """The days ("2026-11-08") a character has runs on, newest first: the day each run started."""
-    found = {str(r.get("start"))[:10] for r in runs(character, kind=kind) if start_time(r) is not None}
+    """The game days ("2026-11-08") a character has runs on, newest first: the day each run started."""
+    found = {game_day_of(t) for t in (start_time(r) for r in runs(character, kind=kind)) if t is not None}
     return sorted(found, reverse=True)
 
 
 def day_bounds(day: str) -> tuple[float, float]:
-    """(start, end) of a day ("2026-11-08") as clock times: its local midnight and the next one
-    (mktime evens out a day with a clock change in it)."""
-    t = time.strptime(day, "%Y-%m-%d")
-    end = time.mktime((t.tm_year, t.tm_mon, t.tm_mday + 1, 0, 0, 0, 0, 0, -1))
-    return time.mktime(t), end
+    """(start, end) of a game day ("2026-11-08") as clock times: its 00:00 GMT and the next one."""
+    start = float(calendar.timegm(time.strptime(day, "%Y-%m-%d")))
+    return start, start + 86400.0
 
 
 def _record(line: str) -> Record | None:

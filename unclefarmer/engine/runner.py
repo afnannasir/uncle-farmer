@@ -464,6 +464,7 @@ class Run(threading.Thread):
                 broken = False
             except GameBroken as why:
                 reason, broken = str(why), True
+                self.failed = self.game_lost = True      # opened again (the window's revive)
             except Exception:      # the game gone: guard finds that out itself
                 broken = False
             if not broken:

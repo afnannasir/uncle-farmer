@@ -15,7 +15,8 @@ from ... import atlas
 from ...i18n import _
 from .. import beasts, combat
 from ...nearby import OWNER
-from .base import (DIRECTIONS, NPC_HP, STOPPING, NoWay, Respawned, Stopped, note_failure, snap_map)
+from .base import (DIRECTIONS, NPC_HP, STOPPING, GameLost, NoWay, Respawned, Stopped, note_failure,
+                   snap_map)
 from .parts import as_bot, Parts
 
 
@@ -631,6 +632,10 @@ class WalkingMixin(Parts):
                 return True          # get_unstuck tries its next way out / the fight skips this monster
             if self.get_unstuck(at):
                 return True          # moved away: the caller plans again from here
+            if self.world_frozen():
+                # nothing moves in the game at all: the game froze, not the character stuck
+                # (the window closes it, opens it again and the run carries on)
+                raise GameLost(_("the game seems frozen: nothing in it has moved - it is opened again"))
             raise Stopped(_("stuck near {cell} and every way out failed - stopping", cell=at))
         self.log(_("stuck near {cell}, stepping aside", cell=at))
         self.key(self.move_key(random.choice(list(DIRECTIONS.values()))), 400)

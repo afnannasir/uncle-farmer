@@ -1719,6 +1719,8 @@ You can choose which period to review:
 - Last 30 days.
 - All time.
 
+Today, yesterday and the days of the **Day** list are the game's days: from 00:00 GMT to 00:00 GMT, when the drop time starts again (05:00 in Pakistan). A night farmed across your computer's midnight counts as one day. A run belongs to the day it started on. The `today` private message command counts the same way.
+
 
 
 ### Understanding your farming time
