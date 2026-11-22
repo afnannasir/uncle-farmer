@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-**A lost game is opened again, and runs carry on where they were** (untested in game so far)
+**A lost game is opened again, and runs carry on where they were** (tested in game: a game killed
+mid-run and Uncle Farmer closed mid-run, twice each, carried on; not seen yet: a game that never
+starts, the third restart of a day)
 
 - A plan or script keeps its place while it runs: the line, each loop's turn, what the current farm
   has done, the run's minutes and kills, its `set` values.
