@@ -52,8 +52,8 @@ from typing import Any
 
 from .. import atlas, jsonio as json, paths, travel
 from ..i18n import N_, _
-from ..settings import PK_MODES
-from . import beasts, combat, pets, town
+from ..settings import PK_MODES, Saved
+from . import beasts, combat, pets, teleskill, town
 from .bot import Bot, Respawned, Stopped
 
 MODES = ("until", "lose")
@@ -463,7 +463,7 @@ class _Run:
         self.where = cfg.get("where") if cfg.get("where") in WHERE else "guard"
         self.village: Village | None = None              # the village we die at (where "village")
         self.entered = False                             # ... and we walked into it: we respawn there
-        self.left_villages: set[tuple[int, int, int]] = set()   # (map, x1, y1) with no guard to fight
+        self.left_villages: set[tuple[int, int, int]] = set()   # (map, x1, y1) excluded for this run
         self.min_loss = int(cfg.get("min_loss") or 0) if cfg.get("stop_small") else 0
         self.key: str | None = None                      # this character and level, for LEVEL_TOPS
         self.start = 0                                   # the sheet's number before the first death
@@ -690,6 +690,19 @@ class _Run:
         b.sleep(SETTLE)
         self.entered = True
         return True
+
+    def skip_elf_teleports(self) -> None:
+        """Exclude Elf teleport maps from village runs, which need a guard at the gates."""
+        b = self.b
+        skill = "Elven Teleportation"
+        if self.where != "village" or skill not in teleskill.skills(b):
+            return
+        landings = (travel.spell_landing(skill, place) for place in teleskill.places(b, skill))
+        maps = {landing[0] for landing in landings if landing is not None}
+        self.left_villages.update((v[0], v[2], v[3]) for v in villages() if v[0] in maps)
+        # Use the same travel options for ranking and for the trip. A save during the
+        # run must leave the character's teleport setting alone.
+        b.p = Saved({**b.p, "use_teleport_skills": False})
 
     def pick_village(self) -> Village | None:
         """The village cheapest to reach from here, of those not left out."""
@@ -929,6 +942,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> str:
             xp=start, goal=target))
     why = "?"
     try:
+        r.skip_elf_teleports()
         pets.recall(b)
         why = r.run(target, start)
     finally:
