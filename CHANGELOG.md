@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**Teleport skills on the way to a dungeon** (untested in game)
+
+- The walking assistant - the way to a dungeon's entrance and Walk to - left the teleport skills
+  out, so an Elf walked about 4 minutes from Tulip City to White Bone Cave by the cable car and the
+  mine, when Elven Teleportation to West Sealing Tower lands about 40 cells from its entrance. It
+  now plans with them like any trip: a Mage's or an Elf's teleport is cast when it is the shorter
+  way, off the Swift beast for the cast and back on after. **Use the class's teleport skill** still
+  turns them off.
+
 **Menu choices the game didn't act on** (agent 78; untested in game)
 
 - On one player's computer, choosing in a menu did nothing, again and again: chests stayed shut (24

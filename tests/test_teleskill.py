@@ -103,6 +103,23 @@ def test_options_are_the_learned_skills_places() -> None:
     assert teleskill.options(Who(["Teleportation"], use_teleport_skills=False)) == []  # pyright: ignore[reportArgumentType]
 
 
+def test_the_walking_assistant_plans_with_the_teleport_skills_too() -> None:
+    w = Who(["Elven Teleportation"])
+    w.walk_only = True                  # the way to a dungeon, or Walk to
+    assert ("Elven Teleportation", "west sealing tower") in teleskill.options(w)  # pyright: ignore[reportArgumentType]
+    w.p["use_teleport_skills"] = False
+    assert teleskill.options(w) == []  # pyright: ignore[reportArgumentType]
+
+
+def test_the_way_to_white_bone_cave_starts_with_the_elves_teleport() -> None:
+    # from Tulip City's field: West Sealing Tower lands on ancient Sealed Land, near the entrance
+    spells = [("Elven Teleportation", p) for p in travel.SPELLS["Elven Teleportation"]]
+    legs, cost = travel.plan(1081, (342, 161), 1761, (61, 110), with_cost=True, spells=spells)
+    _walked, on_foot = travel.plan(1081, (342, 161), 1761, (61, 110), with_cost=True)
+    assert legs and legs[0]["do"] == "skill" and legs[0]["place"] == "west sealing tower"
+    assert cost is not None and on_foot is not None and cost < on_foot / 3
+
+
 def test_the_menu_teaches_a_characters_own_list(own_profiles: Path) -> None:
     w = Who(["Teleportation"])
     top = {"rows": [[{"text": "Sunset Square"}], [{"text": "Giant rock square"}], [None]]}
