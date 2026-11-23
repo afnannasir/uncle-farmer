@@ -55,7 +55,7 @@ jobs:
       # uv's download cache follows the lock and pyproject.toml; only the tests job saves it, so
       # the parallel jobs don't race to write the same entry. The .venv itself is never cached.
       - name: Set up uv and Python 3.14
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
           enable-cache: true
@@ -84,7 +84,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up uv and Python 3.14
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
           enable-cache: true
@@ -125,7 +125,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up uv and Python 3.14
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
           enable-cache: true
@@ -152,14 +152,14 @@ jobs:
           persist-credentials: false
 
       - name: Set up a JDK (Temurin 17; the jar targets Java 8 with --release 8)
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
 
       # The agent's scripts use the standard library only: no dependencies to install or cache.
       - name: Set up Python 3.14
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
 
@@ -229,7 +229,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up uv and Python 3.14 (the release Python)
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
           enable-cache: true
@@ -244,7 +244,7 @@ jobs:
       # No Nuitka compile cache: builds are rare, so each one compiles from nothing (~18 minutes)
       # rather than keeping a per-branch cache in the repository's Actions storage.
       - name: Set up a JDK for the agent
-        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "17"
@@ -339,7 +339,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Python 3.14
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           python-version: "3.14"
 
