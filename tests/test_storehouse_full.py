@@ -144,3 +144,46 @@ def test_a_bag_trip_says_the_storehouse_is_full(monkeypatch: pytest.MonkeyPatch)
     assert town.unload(as_bot(tb)) == 1
     assert any("the storehouse is full - these stay in the bag until there is room in it: Level 2 Obsidian Shard"
                in line for line in tb.spoken)
+
+
+class LateHouse(FullHouse):
+    """The game takes the item out of the bag a moment after the menu closes (`late` sleeps
+    later), as it does: the storehouse has room."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch, tb: TownBot, late: int = 3) -> None:
+        super().__init__(monkeypatch, tb, holds=set(), says_full=False)
+        pending: list[tuple[str, int]] = []
+
+        def pick(b: Any, pattern: str, quantity: int | None = None) -> bool:
+            name = next(r["name"] for r in tb.bag if town.re.search(pattern, r["name"], town.re.I))
+            pending.append((name, quantity or 0))
+            return True
+        monkeypatch.setattr(town, "pick", stand_in(town.pick, pick))
+        sleeps = [0]
+        real_sleep = tb.sleep
+
+        def sleep(seconds: float) -> None:
+            sleeps[0] += 1
+            real_sleep(seconds)
+            if sleeps[0] == late:
+                for name, n in pending:
+                    tb.remove(name, n)
+                pending.clear()
+        tb.sleep = sleep
+
+
+def test_an_item_the_bag_lets_go_of_a_moment_later_counts_as_stored(monkeypatch: pytest.MonkeyPatch) -> None:
+    # "maybe the storage is full" while there was room: the bag was read before the game took it out
+    tb = TownBot(bag=[dict(r) for r in BAG])
+    LateHouse(monkeypatch, tb)
+    assert town.deposit(as_bot(tb), "Level 2 Obsidian Shard") == 3
+    assert any("put 3 Level 2 Obsidian Shard into the storehouse" in line for line in tb.lines)
+    assert town.refused(as_bot(tb)) == set()
+
+
+def test_store_items_no_longer_says_may_be_full_for_a_late_bag(monkeypatch: pytest.MonkeyPatch) -> None:
+    tb = TownBot(bag=[dict(r) for r in BAG], profile={"bag_rules": store_rules(Level_2_Obsidian_Shard=("store", 0))})
+    LateHouse(monkeypatch, tb)
+    town.store_items(as_bot(tb))
+    assert not any("may be full" in line for line in tb.spoken)
+    assert any("stored 3 Level 2 Obsidian Shard" in line for line in tb.spoken)

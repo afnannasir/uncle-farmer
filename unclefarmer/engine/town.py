@@ -355,7 +355,12 @@ def deposit(b: Bot, item: str, n: int | None=None):
             return 0
     finally:
         b.close_dialogs()
-    put = have - counts(b).get(item.lower(), 0)
+    # The game takes the item out of the bag a moment after the menu closes: counted at once, a
+    # deposit that worked read "put 0" and "the storehouse may be full" with room to spare, or a
+    # stack of it already there. The bag is given that moment (as a withdrawal is).
+    transaction = InventoryTransaction({item.lower(): have})
+    transaction.expect(item, -n)
+    put = have - transaction.settle(b).get(item.lower(), 0)
     if put <= 0 and _heard_full(b, since):
         refused(b).add(item.strip().lower())
         b.log(_("the storehouse is full: {item} has no place in it", item=item))
