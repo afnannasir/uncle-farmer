@@ -321,8 +321,10 @@ class TravelMixin(Parts):
         elif leg["do"] == "npc":
             free = rides_free(self)
             # a second try at the NPC chooses with the keys (choose keys): on one player's
-            # computer the direct choice closed the menu and the airship never left
-            if not self.ride(leg, keys=failed.get(leg["id"], 0) > 0):
+            # computer the direct choice closed the menu and the airship never left. Only with
+            # the character's menu_keys_retry ticked (off by default).
+            keys = failed.get(leg["id"], 0) > 0 and bool(self.p.get("menu_keys_retry", False))
+            if not self.ride(leg, keys=keys):
                 if free and not rides_free(self):
                     # the free entry was refused (_vip_refused): no fault of this NPC's, so it is
                     # neither counted against it nor left out - the next plan pays its fare

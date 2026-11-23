@@ -643,6 +643,9 @@ class AdvancedDialog(Dialog):
                 (_("&Read keys from the game"), self.on_read))
         f = Form(panel)
         self.attack_keys = f.text(_("&Attack keys when skills can't be read:"), " ".join(self.p["attack_keys"]))
+        self.menu_keys_retry = f.check(
+            _("When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow "
+              "keys and Enter"), self.p.get("menu_keys_retry", False))
         box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 10)
 
     def change_key(self) -> None:
@@ -884,6 +887,7 @@ class AdvancedDialog(Dialog):
         for k, _l in KEYS:
             set_key(p, k, (self.keys[k] or "").strip().lower())
         p["attack_keys"] = [k.lower() for k in attack]
+        p["menu_keys_retry"] = self.menu_keys_retry.GetValue()
         p["attack_gap"] = gap
         p["attack_range"] = rng if rng else "auto"
         p["pull_range"] = pull
