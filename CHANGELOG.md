@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Storing items: no more "the storehouse may be full" with room in it** (untested in game)
+
+- A player's characters said "not stored (the storehouse may be full)" though it had room, or a
+  stack of the item already. The game takes a stored item out of the bag a moment after the menu
+  closes, and the bag was counted at once: the deposit read "put 0". The bag is now given that
+  moment, as it already was for taking items out. A storehouse that really is full still says
+  so ("item storage is full").
+
 **A dropped connection, and a death after it** (untested in game)
 
 - Three games lost their connection at the same second (the player's internet), and logging back
