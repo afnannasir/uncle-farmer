@@ -6668,6 +6668,12 @@ msgstr "yük {a}/{b}"
 msgid "log in to a character first"
 msgstr "önce bir karakterle giriş yap"
 
+msgid "logging back in didn't start: {why}"
+msgstr ""
+
+msgid "logging back in didn't work: {why}"
+msgstr ""
+
 msgid "login must be the first command in a script"
 msgstr "login bir betikteki ilk komut olmalı"
 
@@ -7701,6 +7707,9 @@ msgstr "hâlâ saldırı altında - durmadan önce karşılık veriliyor"
 msgid "still broken after the repair: {items}"
 msgstr "onarımdan sonra hâlâ bozuk: {items}"
 
+msgid "still dead - the after-farming list is left out"
+msgstr ""
+
 msgid "still on display - it can't be bought in its first hour"
 msgstr ""
 
@@ -8267,6 +8276,9 @@ msgid ""
 msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
+msgstr ""
+
+msgid "the game shows: {shown}"
 msgstr ""
 
 msgid "the game still won't change its mode - farming on in the mode it has"
@@ -9321,6 +9333,9 @@ msgstr "{name} başkası tarafından alındı - sıradaki"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name}, {map} haritasına gitti - ben de gidiyorum"
+
+msgid "{name}'s game is back on line by itself: carrying on in it"
+msgstr ""
 
 msgid ""
 "{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."

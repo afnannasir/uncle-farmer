@@ -302,6 +302,14 @@ def test_clear_popups_closes_a_plain_notice() -> None:
     assert b.closed == 1
 
 
+def test_clear_popups_leaves_the_respawn_menu_to_the_death_handling() -> None:
+    # Escape doesn't close it in the game, and the log said "closed" while it stayed up
+    b = DlgBot(top=menu([entry("Please select your respawn method")],
+                        [entry("Respawn back to the City (tulip square)")]))
+    assert b.clear_popups(force=True) is False
+    assert b.closed == 0 and not any("closed a window" in line for line in b.logs)
+
+
 def test_clear_popups_nothing_to_do() -> None:
     b = DlgBot()
     assert b.clear_popups(force=True) is False

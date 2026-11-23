@@ -18,7 +18,7 @@ import pytest
 from unclefarmer.clock import CLOCK
 from conftest import Clock, as_kind
 
-from unclefarmer.engine.botparts.base import Stopped
+from unclefarmer.engine.botparts.base import GameLost, Stopped
 from unclefarmer.engine.botparts.reading import ReadingMixin
 from unclefarmer.stats import Tally
 from collections.abc import Callable
@@ -496,7 +496,36 @@ def test_a_closed_connection_without_reconnect_stops_after_the_wait(clock: Clock
     b.link.answers["mem self"] = {"error": "noworld: the game's connection is closed"}
     with pytest.raises(Stopped) as e:
         b._read("mem self", lambda s: "error" not in s)
-    assert "connection is closed" in str(e.value) and 1060.0 < clock.now < 1062.0
+    # a few minutes without internet: logging back in is waited for that long, not one minute
+    assert "connection is closed" in str(e.value) and 1300.0 < clock.now < 1302.0
+    assert isinstance(e.value, GameLost) and e.value.connection
+
+
+def test_what_the_game_shows_is_noted_before_logging_back_in(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["dialog"] = {"ok": True, "open": 1, "top": {"rows": [
+        [{"options": ["Disconnected; exiting game"]}], [{"text": "OK"}]]}}
+    b.link.answers["said 0"] = {"now": 90000}
+    b.link.answers["said 30000"] = {"said": [{"text": "Connection lost"}]}     # the last minute
+
+    def reconnect() -> bool:
+        b.link.answers["mem self"] = {"id": 4242}
+        return True
+    b.reconnect = reconnect
+    b.link.answers["mem self"] = {"error": "noworld: the game's connection is closed"}
+    assert b._read("mem self", lambda s: "error" not in s) == {"id": 4242}
+    shown = [line for line in b.lines if line.startswith("the game shows:")]
+    assert shown == ["the game shows: Disconnected; exiting game / OK / Connection lost"]
+
+
+def test_a_character_gone_for_a_while_still_waits_one_minute(clock: Clock) -> None:
+    b = Read()
+    ticking(b, clock)
+    b.link.answers["mem self"] = {"error": "noplayer: id 4242 not in the world"}
+    with pytest.raises(GameLost) as e:
+        b._read("mem self", lambda s: "error" not in s)
+    assert 1060.0 < clock.now < 1062.0 and not e.value.connection
 
 
 def test_read_tries_a_refused_reconnect_again_then_gives_up(clock: Clock) -> None:

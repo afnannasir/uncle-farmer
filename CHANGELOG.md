@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+**A dropped connection, and a death after it** (untested in game)
+
+- Three games lost their connection at the same second (the player's internet), and logging back
+  in was given up after about two minutes: all three were closed and opened again just as the
+  connection came back. Logging back in inside the same game is now tried for up to 5 minutes
+  (`RECONNECT_FOR`); a character the server only took away for a while still waits one minute.
+- One of them had logged back in by itself as its run was ending, and was closed anyway: a game
+  lost through its connection that shows its character again is now carried on in, not closed.
+  A frozen or closed game is opened again as before.
+- Before each try at logging back in, the log says what the game shows - the window over the
+  lost world and its last spoken lines, the game's own voice being off ("the game shows: ...");
+  the window also goes to logs\dialogs.log. A failed try says why ("logging back in didn't
+  work: ...").
+- The character opened again died at once among the monsters, and the respawn menu came about 50
+  seconds later. The death now waits 90 seconds for that menu (it waited 15); one death is counted
+  once, however often the run's ending finds it; the after-farming list is left out while the
+  character is still dead; and the window closer leaves the respawn menu alone (it pressed
+  Escape on it, which the game ignores, and said it had closed it).
+
 **Teleport skills on the way to a dungeon** (untested in game)
 
 - The walking assistant - the way to a dungeon's entrance and Walk to - left the teleport skills

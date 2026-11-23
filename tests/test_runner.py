@@ -584,3 +584,54 @@ def test_guard_swallows_a_second_defend_failure(allow_ignored_failures: None) ->
     bot.defend, bot.finish = defend, finish
     run.guard(as_bot(bot))                     # must not raise
     assert bot.events == ["defend", "finish", "defend"]
+
+
+# ---------------------------------------------------------------- why logging back in failed
+class ReconnectLink:
+    """The agent's reconnect: started (or refused with `refusal`), then its status."""
+
+    def __init__(self, status: str = "ready", refusal: str | None = None) -> None:
+        self.status = status
+        self.refusal = refusal
+
+    def send(self, line: str) -> str:
+        return "armed" if line == "arm" else "ok"
+
+    def json(self, line: str) -> dict[str, Any]:
+        if line.startswith("reconnect "):
+            return {"ok": False, "error": self.refusal} if self.refusal else {"ok": True}
+        if line == "autologinstatus":
+            return {"running": False, "status": self.status}
+        return {}
+
+
+def reconnecting(monkeypatch: pytest.MonkeyPatch, link: ReconnectLink) -> tuple[Run, list[str]]:
+    def write_log(_line: str) -> None:
+        pass
+    monkeypatch.setattr(R, "_write_log", write_log)
+    lines: list[str] = []
+
+    def on_log(line: str, _speak: bool, _run: Run) -> None:
+        lines.append(line)
+
+    def on_done(_reason: str, _run: Run) -> None:
+        pass
+    run = Run("wait 1\n", "Night", 7, on_log, on_done)
+    run.profile = settings.character_profile("Hero", 4242, "S1")
+    run.link = link  # pyright: ignore[reportAttributeAccessIssue]
+    return run, lines
+
+
+def test_a_failed_login_try_says_why(monkeypatch: pytest.MonkeyPatch) -> None:
+    run, lines = reconnecting(monkeypatch, ReconnectLink(status="timed out loading character"))
+    assert run._reconnect_saved_character(as_bot(types.SimpleNamespace()), R.AGENT_RECONNECT) is False  # pyright: ignore[reportPrivateUsage]
+    assert any("didn't work: timed out loading character" in line for line in lines)
+
+
+def test_a_refused_start_says_why_unless_the_game_is_still_connected(monkeypatch: pytest.MonkeyPatch) -> None:
+    run, lines = reconnecting(monkeypatch, ReconnectLink(refusal="no saved account selected"))
+    assert run._reconnect_saved_character(as_bot(types.SimpleNamespace()), R.AGENT_RECONNECT) is False  # pyright: ignore[reportPrivateUsage]
+    assert any("didn't start: no saved account selected" in line for line in lines)
+    run, lines = reconnecting(monkeypatch, ReconnectLink(refusal="the game is still connected"))
+    assert run._reconnect_saved_character(as_bot(types.SimpleNamespace()), R.AGENT_RECONNECT) is False  # pyright: ignore[reportPrivateUsage]
+    assert lines == []                    # the server only took the character away: tried again later

@@ -199,3 +199,50 @@ def test_automatic_login_waits_for_a_game_it_opened(monkeypatch: pytest.MonkeyPa
     frame.open_client_for_login = lambda: pytest.fail("a second game was opened")
     pid, why = runs_part.RunsMixin.automatic_login_window(frame, HERO)
     assert pid is None and "waiting for the game opened" in why
+
+
+# ---------------------------------------------------------------- a game back on line by itself
+def reopening(monkeypatch: pytest.MonkeyPatch, names: dict[int, str | None]) -> tuple[Window, list[list[int]]]:
+    """A window whose games list shows names (pid -> character, None: not logged in), and the
+    closes asked for."""
+    closed: list[list[int]] = []
+
+    def close_then(pids: list[int], then: Any, force: bool = False) -> None:
+        closed.append(list(pids))
+    monkeypatch.setattr(gameinstall, "running_games", returning([(pid, "C:/Game") for pid in names]))
+    monkeypatch.setattr(agentfix, "close_then", close_then)
+    frame = window()
+    frame.games = [(pid, name, "Margit Rainforest") for pid, name in names.items()]
+    frame.refresh_games = quiet
+    carried: list[Any] = []
+    frame.carried = carried
+
+    def back_on_line(run: Run, key: str) -> bool:
+        return carry_part.CarryOnMixin.back_on_line(cast(Any, frame), run, key)
+    frame.carry_on = carried.extend
+    frame.back_on_line = back_on_line
+    return frame, closed
+
+
+def reopen(frame: Window, run: Run) -> None:
+    carry_part.CarryOnMixin._reopen(cast(Any, frame), run, HERO, {"item": "plan:Night"}, ("plan", "Night"))  # pyright: ignore[reportPrivateUsage]
+
+
+def test_a_game_that_logged_back_in_by_itself_is_carried_on_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the connection came back as the run was ending: closing the game would throw that away
+    frame, closed = reopening(monkeypatch, {7: HERO})
+    reopen(frame, lost_run(lost_connection=True))
+    assert closed == [] and len(frame.carried) == 1
+    assert "back on line" in frame.said[0]
+
+
+def test_a_game_still_off_line_is_closed_and_opened_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    frame, closed = reopening(monkeypatch, {7: None})
+    reopen(frame, lost_run(lost_connection=True))
+    assert closed == [[7]] and frame.carried == []
+
+
+def test_a_frozen_game_is_opened_again_whatever_it_shows(monkeypatch: pytest.MonkeyPatch) -> None:
+    frame, closed = reopening(monkeypatch, {7: HERO})
+    reopen(frame, lost_run(lost_connection=False))
+    assert closed == [[7]] and frame.carried == []

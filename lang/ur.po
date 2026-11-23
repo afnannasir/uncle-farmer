@@ -6761,6 +6761,12 @@ msgstr "{b} mein se {a} load"
 msgid "log in to a character first"
 msgstr "pehle kisi kirdaar mein log in karein"
 
+msgid "logging back in didn't start: {why}"
+msgstr "dobara login shuru nahi hua: {why}"
+
+msgid "logging back in didn't work: {why}"
+msgstr "dobara login kaam nahi aaya: {why}"
+
 msgid "login must be the first command in a script"
 msgstr "login script ka pehla command hona chahiye"
 
@@ -7821,6 +7827,9 @@ msgstr "ab bhi hamla ho raha hai - rukne se pehle jawabi hamla"
 msgid "still broken after the repair: {items}"
 msgstr "repair ke baad bhi toota hua: {items}"
 
+msgid "still dead - the after-farming list is left out"
+msgstr "abhi tak mara hua hai - farming ke baad ki list chhor di gayi"
+
 msgid "still on display - it can't be bought in its first hour"
 msgstr "abhi numaish par hai - pehle ghante mein khareeda nahi ja sakta"
 
@@ -8400,6 +8409,9 @@ msgstr ""
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
 "game ruka hua lagta hai: is mein kuch nahi hila - ise dobara khola ja raha hai"
+
+msgid "the game shows: {shown}"
+msgstr "game dikha raha hai: {shown}"
 
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"
@@ -9471,6 +9483,9 @@ msgstr "{name} kisi aur ne le liya - agla"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name} {map} gaya - hum bhi ja rahe hain"
+
+msgid "{name}'s game is back on line by itself: carrying on in it"
+msgstr "{name} ka game khud hi dobara online ho gaya: run usi mein jari hai"
 
 msgid ""
 "{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."

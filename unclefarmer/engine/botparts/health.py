@@ -6,14 +6,13 @@ through self whatever part they live in.
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable
 from typing import Any, Literal
 
 from ... import atlas, gamekeys, jsonio
 from ...i18n import _
 from .. import combat, potions, repair
-from .base import (CONFIRM, RESPAWN, RESPAWN_MENU, LosingFight, Respawned, Stopped, potion_kind)
+from .base import (CONFIRM, RESPAWN, LosingFight, Respawned, Stopped, is_respawn_menu, potion_kind)
 from ...link import GameLink
 from .parts import as_bot, Parts
 
@@ -24,6 +23,7 @@ SHEET_ASK_EVERY = 5.0  # seconds between keyless sheet requests (agent 43): fres
 RESPAWN_ASK_AGAIN = 180.0   # seconds: a follower's "how do I respawn?" asked again while unanswered
 # a follower's respawn answers (messages.cmd_respawn) -> the respawn menu entries to try, in order
 FOLLOW_RESPAWN: dict[str, list[str]] = {"crystal": ["crystal_spot", "crystal_map"], "map": ["map"], "city": ["city"]}
+RESPAWN_MENU_WAIT = 90.0   # seconds a death waits for the respawn menu before asking the player
 MP_TOP_UP = 2         # blue potions drunk at most before a cast that needs MP (mp_up_to)
 MP_TOP_UP_WAIT = 15.0  # seconds at most waited for a blue potion's cooldown then
 MP_TAKES = 1.0        # seconds for a potion's MP to show
@@ -52,6 +52,7 @@ class HealthMixin(Parts):
     mp_peak: int
     mp_seen: float
     mp_added: float
+    dead_noted: bool             # this death is counted (handle_death); False once alive again
     mp_mark: float
     low_since: float | None
     no_rest_until: float
@@ -312,28 +313,32 @@ class HealthMixin(Parts):
         rule: no bag items unless allowed). Stops after max_deaths, so a map that is too hard
         doesn't kill us all night - but only once we are alive again in the city, never leaving
         the character dead where it fell. With stop_on_deaths off (or max_deaths 0) it never
-        stops for deaths: it respawns and goes back every time."""
-        self.deaths += 1
-        self.last_death = self.clock.time()
-        self.let_go()
+        stops for deaths: it respawns and goes back every time.
+        One death is counted once: what runs after a respawn menu that never opened (the run's
+        ending) finds the same death and only waits for the menu again."""
         where = atlas.label(self.map_id())
-        # the XP loser dies on purpose: its own lines say how it goes, a death each time is no news
-        self.log(_("died on {map} ({n} so far)", map=where, n=self.deaths),
-                 speak=not getattr(self, "dying_on_purpose", False))
+        if not getattr(self, "dead_noted", False):
+            self.dead_noted = True
+            self.deaths += 1
+            self.last_death = self.clock.time()
+            # the XP loser dies on purpose: its own lines say how it goes, a death each time is no news
+            self.log(_("died on {map} ({n} so far)", map=where, n=self.deaths),
+                     speak=not getattr(self, "dying_on_purpose", False))
+        self.let_go()
         following = getattr(self, "following", None)
         limit = self.p.get("max_deaths", 3) if self.p.get("stop_on_deaths", True) and not following else 0
         last = bool(limit) and self.deaths > limit
         order = self._respawn_order(last, bool(following))
-        for _try in range(30):            # the menu takes a moment to open after dying
-            d = self.dialog()
-            top = d.get("top")
-            if top and any(re.search(RESPAWN_MENU, t, re.I) for row in top["rows"] for e in row if e
-                           for t in self.entry_texts(e)) or (top and any(
-                               self.find_entry(top, RESPAWN[k]) for k in ("map", "city"))):
+        # The menu takes a moment to open after dying - after a game opened again or logged back
+        # in, close to a minute (seen: 50 s).
+        for _try in range(int(RESPAWN_MENU_WAIT / 0.5)):
+            top = self.dialog().get("top")
+            if is_respawn_menu(self, top):
                 break
             self.sleep(0.5)
         else:
             raise Stopped(_("dead, but the respawn menu never opened - please respawn by hand"), final=True)
+        assert top is not None
         if following:
             order = self._follower_order(following, where, order)
         for k in order:
@@ -354,6 +359,7 @@ class HealthMixin(Parts):
                 me = self.me()
                 if me.get("hp", 0) > 0:
                     self.last_hp = None
+                    self.dead_noted = False
                     self.log(_("alive again on {map}", map=atlas.label(self.map_id())))
                     if last:
                         raise Stopped(_("died {n} times - stopping; this place may be too hard", n=self.deaths), final=True)
@@ -601,6 +607,8 @@ class HealthMixin(Parts):
         me = me or self.me()
         if me.get("hp", 1) <= 0:
             self.handle_death()
+        elif getattr(self, "dead_noted", False):
+            self.dead_noted = False      # alive again (respawned by hand): the next death is a new one
         now = self.clock.time()
         hp, top = me.get("hp", 0), me.get("maxhp", 0) or 1
         share = 100.0 * hp / top

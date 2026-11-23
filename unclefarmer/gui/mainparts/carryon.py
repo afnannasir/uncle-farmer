@@ -139,6 +139,16 @@ class CarryOnMixin(FrameParts):
                    "({n} of {most} today).", name=name, n=n, most=resume.RESTARTS_MOST))
         self._reopen(run, key, row, item)
 
+    def back_on_line(self, run: Run, key: str) -> bool:
+        """A run lost through the game's connection whose game has that character in its world
+        again (logging back in worked as the run was ending). A frozen or closed game is opened
+        again whatever it shows."""
+        if not getattr(run, "lost_connection", False):
+            return False
+        self.refresh_games()
+        return any(pid == run.pid and name and settings.is_profile_of(name, key)
+                   for pid, name, _where in self.games)
+
     def _reopen(self, run: Run, key: str, row: dict[str, Any], item: Item) -> None:
         """The lost game closed first when it is still running (frozen, or showing a world it lost),
         then the run is carried on: its character's game is opened and logged in to."""
@@ -146,6 +156,14 @@ class CarryOnMixin(FrameParts):
             if not self.destroyed:
                 self.refresh_games()
                 self.carry_on([(key, row, item)])
+        if self.back_on_line(run, key):
+            # its connection came back while the run was ending (a few minutes without internet):
+            # closing it now would only throw that login away, and land the character among the
+            # monsters again a minute later
+            self.say(_("{name}'s game is back on line by itself: carrying on in it",
+                       name=settings.profile_display(key)))
+            then([])
+            return
         if run.pid in {pid for pid, _folder in gameinstall.running_games()}:
             agentfix.close_then([run.pid], then, force=True)
         else:
