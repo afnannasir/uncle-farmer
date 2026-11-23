@@ -237,3 +237,36 @@ def test_the_tools_menu_runs_both_by_hand_whatever_the_settings_say(monkeypatch:
     assert "Sell shards now: started by hand" in lines and "Clean the bag now: started by hand" in lines
     after = settings.load_profile("Hero")                 # running by hand changes no setting
     assert after["sell_shards_after_farming"] is ticked and after["clean_bag_after_farming"] is ticked
+
+
+def test_a_dead_character_runs_no_after_farming_job(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the respawn menu never opened and the run ended: the shard sale set off with the character
+    # still dead while the player respawned it by hand
+    from types import SimpleNamespace
+    from unclefarmer.engine import triggers
+    started: list[str] = []
+
+    def run_stage(*_args: Any, **_kw: Any) -> None:
+        started.append("after")
+
+    def write_log(_line: str) -> None:
+        pass
+    monkeypatch.setattr(triggers, "run_stage", run_stage)
+    monkeypatch.setattr(R, "_write_log", write_log)
+    lines: list[str] = []
+
+    def on_log(line: str, _speak: bool, _run: R.Run) -> None:
+        lines.append(line)
+
+    def on_done(_reason: str, _run: R.Run) -> None:
+        pass
+    run = R.Run("farm map=5121\n", "Night", 7, on_log, on_done)
+    run.kind = "plan"
+    run.ended_by_itself = True
+    run.bot = SimpleNamespace(farmed=True, me=lambda: {"hp": 0})    # pyright: ignore[reportAttributeAccessIssue]
+    run._after_farming()
+    assert started == [] and any("still dead" in line for line in lines)
+    run.after_farming_done = False
+    run.bot = SimpleNamespace(farmed=True, me=lambda: {"hp": 900})  # pyright: ignore[reportAttributeAccessIssue]
+    run._after_farming()
+    assert started == ["after"]

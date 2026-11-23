@@ -4,6 +4,7 @@ fixed texts and a few small helpers."""
 from __future__ import annotations
 
 import math
+import re
 from typing import Any
 
 from ... import jsonio
@@ -91,10 +92,13 @@ class GameBroken(Stopped):
 class GameLost(Stopped):
     """Our character left the game and didn't come back (the connection dropped and logging back
     in failed, or the player was logged out): nothing can be done in that game any more, so no
-    guarding and no walk to the end place. The run's place is kept, to carry on from later."""
+    guarding and no walk to the end place. The run's place is kept, to carry on from later.
+    connection: lost through the game's connection to the server (not a frozen or closed game),
+    so a game that is back on line by the time it would be opened again is carried on in."""
 
-    def __init__(self, *args: object) -> None:
+    def __init__(self, *args: object, connection: bool = False) -> None:
         super().__init__(*args, final=True)
+        self.connection = connection
 
 
 class Respawned(Exception):
@@ -152,3 +156,14 @@ def note_failure(bot: Any, where: str, exc: BaseException) -> None:
 RESPAWN_MENU = r"select your respawn method"
 RESPAWN = {"map": r"^\s*Map Respawn\s*$", "city": r"back to the City",
            "crystal_spot": r"On-Spot with Resurrection Crystal", "crystal_map": r"Map Respawn with Resurrection Crystal"}
+
+
+def is_respawn_menu(b: Any, top: dict[str, Any] | None) -> bool:
+    """The game's "Please select your respawn method" menu (or one with its map or city entry):
+    the death handling answers it, nothing else closes it (Escape doesn't, in the game)."""
+    if not top:
+        return False
+    if any(re.search(RESPAWN_MENU, t, re.I) for row in top.get("rows", []) for e in row if e
+           for t in b.entry_texts(e)):
+        return True
+    return any(b.find_entry(top, RESPAWN[k]) for k in ("map", "city"))

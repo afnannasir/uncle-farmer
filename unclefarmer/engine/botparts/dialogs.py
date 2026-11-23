@@ -13,7 +13,7 @@ from typing import Any
 from ... import applog, atlas, jsonio as json, knowledge, travel
 from ...i18n import _
 from .. import menus, team
-from .base import (Stopped, note_failure, steps)
+from .base import (Stopped, is_respawn_menu, note_failure, steps)
 from ...link import GameLink
 from .parts import as_bot, Parts
 
@@ -47,6 +47,8 @@ class DialogsMixin(Parts):
         if repair.owns_question(as_bot(self), d):
             return False  # look_after will resume the pending repair, not press Escape
         top: dict[str, Any] = d.get("top") or {}
+        if is_respawn_menu(self, top):
+            return False  # the death handling answers it (Escape doesn't close it anyway)
         rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
         texts = [t for row in rows for e in row if e for t in self.entry_texts(e)[:1]]
         inv = team.invite_in(texts)

@@ -6754,6 +6754,12 @@ msgstr "carregar {a} de {b}"
 msgid "log in to a character first"
 msgstr "primeiro, entre em um personagem"
 
+msgid "logging back in didn't start: {why}"
+msgstr "a reconexão não começou: {why}"
+
+msgid "logging back in didn't work: {why}"
+msgstr "a reconexão não funcionou: {why}"
+
 msgid "login must be the first command in a script"
 msgstr "login deve ser o primeiro comando do script"
 
@@ -7807,6 +7813,9 @@ msgstr "ainda sob ataque — revidando antes de parar"
 msgid "still broken after the repair: {items}"
 msgstr "ainda quebrado após o reparo: {items}"
 
+msgid "still dead - the after-farming list is left out"
+msgstr "ainda morto - a lista de depois da coleta foi pulada"
+
 msgid "still on display - it can't be bought in its first hour"
 msgstr ""
 
@@ -8384,6 +8393,9 @@ msgstr ""
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr "o jogo parece travado: nada nele se moveu - ele será aberto de novo"
+
+msgid "the game shows: {shown}"
+msgstr "o jogo mostra: {shown}"
 
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "o jogo ainda não muda o modo - a coleta continua no modo atual"
@@ -9448,6 +9460,9 @@ msgstr "{name} foi escolhido por outra pessoa — tentando o próximo"
 
 msgid "{name} went to {map} - going too"
 msgstr "{name} foi para {map} — indo também"
+
+msgid "{name}'s game is back on line by itself: carrying on in it"
+msgstr "o jogo de {name} voltou a ficar online sozinho: continuando nele"
 
 msgid ""
 "{name}'s game was lost again. It was opened again {n} times today already, so the run ends here."

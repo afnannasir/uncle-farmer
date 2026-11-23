@@ -93,6 +93,7 @@ class Run(threading.Thread):
         # lost or Uncle Farmer closed under it - so the next start can carry on from there.
         self.resume_row: dict[str, Any] | None = None   # set by the window: carry on from this place
         self.game_lost = False       # the game closed, froze or lost our character for good
+        self.lost_connection = False  # ... through its connection to the server (GameLost connection)
         self.app_closing = False     # Uncle Farmer is closing under the run: its place is kept
         self.script: Runner | None = None    # the plan or script whose place is kept
         self.place_lock = threading.Lock()
@@ -342,13 +343,22 @@ class Run(threading.Thread):
         if link is None or not entity_id or agent < AGENT_RECONNECT:
             return False
         try:
-            if link.send("arm") != "armed" or not link.json("reconnect %s" % entity_id).get("ok"):
+            if link.send("arm") != "armed":
+                return False
+            started = link.json("reconnect %s" % entity_id)
+            if not started.get("ok"):
+                why = str(started.get("error") or "?")
+                if "still connected" not in why:     # the server only took the character away a while
+                    self.log(_("logging back in didn't start: {why}", why=why))
                 return False
             while not self.stop_event.wait(0.25):
                 state = link.json("autologinstatus")
                 if state.get("running"):
                     continue
                 if state.get("status") != "ready":
+                    # why this try failed (the connection refused again, the character never
+                    # loaded...): what the next lost connection is understood from
+                    self.log(_("logging back in didn't work: {why}", why=state.get("status") or "?"))
                     return False
                 link.send("keysup")
                 bot.held.clear()
@@ -456,6 +466,7 @@ class Run(threading.Thread):
         reason = str(e)
         if isinstance(e, GameLost):
             self.failed = self.game_lost = True     # nothing to guard: our character isn't in the game
+            self.lost_connection = e.connection
             return reason
         bot = self.bot
         if bot is not None and not self.stop_event.is_set() and not self.walk:
@@ -543,9 +554,21 @@ class Run(threading.Thread):
                 or getattr(self, "kind", "") in ("tool", "trigger")):
             return
         self.after_farming_done = True
+        if self._dead(bot):
+            # a respawn menu that never opened ended the run: no errand walks off with a dead
+            # character (seen: the shard sale set off while the player respawned by hand)
+            self.log(_("still dead - the after-farming list is left out"), speak=True)
+            return
         # the daily stop stays in force: only the waits between steps run past it (run_stage), and
         # a step that farms is held to the day's window (farming_window)
         triggers.run_stage(bot, "after", self.log, self.stop_event.is_set, self.farming_window)
+
+    @staticmethod
+    def _dead(bot: Bot) -> bool:
+        try:
+            return bot.me().get("hp", 1) <= 0
+        except Exception:             # the game can't be read: the errands find that out themselves
+            return False
 
     def _crashed(self, e: Exception) -> str:
         carry_on(e, "the run")

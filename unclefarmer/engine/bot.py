@@ -88,6 +88,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.following: str | None = None   # the player a follow run stays with
         self.team_ask_at = 0.0            # when follow next asks the team phrase where its player is
         self.deaths = 0
+        self.dead_noted = False
         self.skillbook = None         # combat.SkillBook, read from the game at the first fight
         self.last_vitals_key = 0.0    # the own-HP key (R): HP and MP from the server, no window
         self.last_points_key = 0.0    # the accumulation-points key (T): rage, marks, combos
