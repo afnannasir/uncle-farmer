@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**Teleport skills on the way to a dungeon** (untested in game)
+
+- The walking assistant - the way to a dungeon's entrance and Walk to - left the teleport skills
+  out, so an Elf walked about 4 minutes from Tulip City to White Bone Cave by the cable car and the
+  mine, when Elven Teleportation to West Sealing Tower lands about 40 cells from its entrance. It
+  now plans with them like any trip: a Mage's or an Elf's teleport is cast when it is the shorter
+  way, off the Swift beast for the cast and back on after. **Use the class's teleport skill** still
+  turns them off.
+- Short of the 30% MP a teleport costs, a Mage or an Elf now drinks a blue potion (up to two,
+  each after its cooldown) and casts, instead of giving that place up for the trip at once.
+
 **The daily stop no longer cuts the way back short**
 
 - Back from a dungeon, the daily stop time came on the way to where the run started, one map

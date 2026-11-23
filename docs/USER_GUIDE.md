@@ -1551,6 +1551,8 @@ During travel, Uncle Farmer uses your fastest available Swift fusion beast, incl
 
 It does not stop to fight monsters along the way, but it still uses potions to keep your character's HP up.
 
+A Mage or an Elf also casts its teleport skill when that is the shorter way (an Elf's Elven Teleportation to West Sealing Tower lands near White Bone Cave, for example): it gets off the beast to cast, then back on. Untick **Use the class's teleport skill (Mage, Elf)** on the Travel page of Advanced settings to walk instead. A monster attacking right then is fought first, as a hit breaks the cast.
+
 You can press **Pause** to stop the journey.
 
 ### Polson Wetland and its poison

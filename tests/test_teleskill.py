@@ -103,6 +103,23 @@ def test_options_are_the_learned_skills_places() -> None:
     assert teleskill.options(Who(["Teleportation"], use_teleport_skills=False)) == []  # pyright: ignore[reportArgumentType]
 
 
+def test_the_walking_assistant_plans_with_the_teleport_skills_too() -> None:
+    w = Who(["Elven Teleportation"])
+    w.walk_only = True                  # the way to a dungeon, or Walk to
+    assert ("Elven Teleportation", "west sealing tower") in teleskill.options(w)  # pyright: ignore[reportArgumentType]
+    w.p["use_teleport_skills"] = False
+    assert teleskill.options(w) == []  # pyright: ignore[reportArgumentType]
+
+
+def test_the_way_to_white_bone_cave_starts_with_the_elves_teleport() -> None:
+    # from Tulip City's field: West Sealing Tower lands on ancient Sealed Land, near the entrance
+    spells = [("Elven Teleportation", p) for p in travel.SPELLS["Elven Teleportation"]]
+    legs, cost = travel.plan(1081, (342, 161), 1761, (61, 110), with_cost=True, spells=spells)
+    _walked, on_foot = travel.plan(1081, (342, 161), 1761, (61, 110), with_cost=True)
+    assert legs and legs[0]["do"] == "skill" and legs[0]["place"] == "west sealing tower"
+    assert cost is not None and on_foot is not None and cost < on_foot / 3
+
+
 def test_the_menu_teaches_a_characters_own_list(own_profiles: Path) -> None:
     w = Who(["Teleportation"])
     top = {"rows": [[{"text": "Sunset Square"}], [{"text": "Giant rock square"}], [None]]}
@@ -150,6 +167,8 @@ class Caster(TravelBot):
         super().__init__()
         self.skillbook: Any = Book()
         self.mp: tuple[float, float] | None = (900.0, 1000.0)
+        self.potions_give = 0.0             # MP the blue potions bring back (none: no potion)
+        self.topped: list[float] = []
         self.hitting: list[set[int]] = []
         self.character = "Someone"
         self._map = 1041
@@ -166,6 +185,13 @@ class Caster(TravelBot):
 
     def mp_now(self, me: dict[str, Any], now: float) -> tuple[float, float] | None:
         return self.mp
+
+    def mp_up_to(self, need: float) -> bool:
+        """The blue potions (HealthMixin.mp_up_to, tested in test_health): potions_give MP each."""
+        self.topped.append(need)
+        if self.mp is not None and self.potions_give:
+            self.mp = (min(self.mp[1], self.mp[0] + self.potions_give), self.mp[1])
+        return self.mp is None or self.mp[0] >= need * self.mp[1]
 
     def attackers(self) -> set[int]:
         return self.hitting.pop(0) if self.hitting else set()
@@ -227,8 +253,22 @@ def test_attacked_before_casting_it_fights_and_waits() -> None:
 
 def test_not_enough_mp_goes_another_way() -> None:
     b = Caster()
-    b.mp = (200.0, 1000.0)                          # the cast costs 30%
+    b.mp = (200.0, 1000.0)                          # the cast costs 30%, and no blue potion helps
     assert b.cast_teleport(dict(LEG)) is False and b.keys == []
+    assert b.topped == [teleskill.MANA]             # the potions were tried first
+
+
+def test_short_of_mp_it_drinks_then_casts() -> None:
+    b = Caster()
+    b.mp = (200.0, 1000.0)
+    b.potions_give = 400.0
+    assert b.cast_teleport(dict(LEG)) is True and b.keys == ["e"]
+    assert b.topped == [teleskill.MANA]
+
+
+def test_with_enough_mp_no_potion_is_drunk_for_the_cast() -> None:
+    b = Caster()
+    assert b.cast_teleport(dict(LEG)) is True and b.topped == []
 
 
 def test_a_place_the_menu_doesnt_have_is_dropped(own_profiles: Path) -> None:

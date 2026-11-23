@@ -24,7 +24,10 @@ SHEET_ASK_EVERY = 5.0  # seconds between keyless sheet requests (agent 43): fres
 RESPAWN_ASK_AGAIN = 180.0   # seconds: a follower's "how do I respawn?" asked again while unanswered
 # a follower's respawn answers (messages.cmd_respawn) -> the respawn menu entries to try, in order
 FOLLOW_RESPAWN: dict[str, list[str]] = {"crystal": ["crystal_spot", "crystal_map"], "map": ["map"], "city": ["city"]}
-SHEET_WAIT = 2.0      # how long a forced keyless reading waits for the sheet (it comes in ~0.3 s)
+MP_TOP_UP = 2         # blue potions drunk at most before a cast that needs MP (mp_up_to)
+MP_TOP_UP_WAIT = 15.0  # seconds at most waited for a blue potion's cooldown then
+MP_TAKES = 1.0        # seconds for a potion's MP to show
+SHEET_WAIT = 2.0     # how long a forced keyless reading waits for the sheet (it comes in ~0.3 s)
 
 
 class HealthMixin(Parts):
@@ -684,6 +687,36 @@ class HealthMixin(Parts):
                 self.last_mp_key = now
                 # unknown potion: assume it filled us up until the next reading
                 self.mp_added += potions.recovers(inf, top_mp) if inf else top_mp
+
+    def mp_up_to(self, need: float) -> bool:
+        """Blue potions until MP looks like at least need (a share of max MP), for a cast that
+        costs it - a Mage's or an Elf's teleport (30%). Each potion waits for its cooldown;
+        what it gives back is counted as _mp_potion does, until a new reading. True: enough, or
+        MP not known (the cast is tried). False: no blue potion to drink, or still short after
+        MP_TOP_UP potions."""
+        key, name = self.potion("mp")
+        for n in range(MP_TOP_UP + 1):
+            now = self.clock.time()
+            reading = self.mp_now(self.me(), now)
+            if reading is None:
+                return True
+            mp, top = reading
+            have = min(top, mp + self.mp_added)
+            if have >= need * top:
+                return True
+            if n == MP_TOP_UP or not (key or (name and self.bag_in_fight())):
+                return False
+            _below, gap, inf = self.potion_plan("mp", top)
+            wait = self.last_mp_key + gap - now
+            if wait > 0:
+                self.sleep(min(wait, MP_TOP_UP_WAIT))
+            self.log(_("MP about {pct}% - {item}", pct=int(100.0 * have / top), item=key or name))
+            if not self.drink("mp", name, key):
+                return False
+            self.last_mp_key = self.clock.time()
+            self.mp_added += potions.recovers(inf, top) if inf else top
+            self.sleep(MP_TAKES)
+        return False
 
     def rest_up(self, me: dict[str, Any]) -> bool:
         self.resting = True

@@ -69,8 +69,12 @@ def places(b: Bot, skill: str) -> list[str]:
 
 
 def options(b: Bot) -> list[travel.Spell]:
-    """(skill, place) pairs travel may plan with, or none when the profile switches them off."""
-    if not b.p.get("use_teleport_skills", True) or getattr(b, "walk_only", False):
+    """(skill, place) pairs travel may plan with, or none when the profile switches them off.
+    The walking assistant (walk_only: the way to a dungeon, Walk to) plans with them too: its aim
+    is to get there, and the cast gets off the Swift beast first (cast_teleport), the way on gets
+    back on it. (Seen: an Elf walked 4 minutes to White Bone Cave, West Sealing Tower lands 40
+    cells from its entrance.)"""
+    if not b.p.get("use_teleport_skills", True):
         return []
     try:
         return [(s, p) for s in skills(b) for p in places(b, s)]
