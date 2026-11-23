@@ -577,12 +577,22 @@ class FarmingMixin(Parts):
           safe         the nearest map without monsters (the hearthstone first, if the profile says)
           here         stay
         If the way there fails, the nearest map without monsters. After gathering (and nothing
-        killed since), the way is walked without fights, as the walking assistant goes."""
+        killed since), the way is walked without fights, as the walking assistant goes.
+        The daily stop doesn't cut the way short: it is there to stop the farming before the drop
+        time resets, and the farming is over. (Seen: back from a dungeon, the stop time came on the
+        last map but one, and the run ended in the cave nearby instead of where it started.)"""
         from .. import gathering      # here: gathering imports the Bot, which this is part of
-        if gathering.going_home(as_bot(self)):
-            with gathering.homeward(as_bot(self)):
-                return self._finish_at()
-        return self._finish_at()
+        held = bool(getattr(self, "daily_done", False))
+        self.daily_done = True
+        try:
+            if gathering.going_home(as_bot(self)):
+                with gathering.homeward(as_bot(self)):
+                    return self._finish_at()
+            return self._finish_at()
+        finally:
+            stop_at = float(getattr(self, "daily_stop_at", 0.0) or 0.0)
+            if not held and not (stop_at and self.clock.time() >= stop_at):
+                self.daily_done = False     # not due yet: it still ends what comes after
 
     def _finish_at(self) -> None:
         how: EndPlace = self.end_place or ("start",)
@@ -627,12 +637,19 @@ class FarmingMixin(Parts):
                 return self._finish_safe()
         except Respawned:
             raise
-        except Stopped:
+        except Stopped as why:
             if self.stop_event.is_set():
                 raise
-            self.log(_("couldn't get there - going to the nearest map without monsters"), speak=True)
-            self.leave_monsters()
+            self._way_failed(why)
         self._finish_off()
+
+    def _way_failed(self, why: Stopped) -> None:
+        """The way to the end place failed: why (already in the player's language), then the
+        nearest map without monsters."""
+        if str(why):
+            self.log(str(why))
+        self.log(_("couldn't get there - going to the nearest map without monsters"), speak=True)
+        self.leave_monsters()
 
     def _in_town(self) -> bool:
         me = self.me()

@@ -5307,6 +5307,11 @@ msgstr "Kab"
 msgid "When HP stays &low:"
 msgstr "Jab HP &kam rahe:"
 
+msgid ""
+"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
+msgstr ""
+"Jab chest, airship, cable car ya dungeon ka menu kuch na kare, to arrow keys aur Enter se ek baar &dobara koshish karein"
+
 msgid "When a game is lost during a run"
 msgstr "Jab run ke dauran game kho jaye"
 

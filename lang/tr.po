@@ -5237,6 +5237,10 @@ msgstr "Ne zaman"
 msgid "When HP stays &low:"
 msgstr "HP düşük ka&lınca:"
 
+msgid ""
+"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
+msgstr ""
+
 msgid "When a game is lost during a run"
 msgstr ""
 
