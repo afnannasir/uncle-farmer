@@ -5237,10 +5237,6 @@ msgstr "Ne zaman"
 msgid "When HP stays &low:"
 msgstr "HP düşük ka&lınca:"
 
-msgid ""
-"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
-msgstr ""
-
 msgid "When a game is lost during a run"
 msgstr ""
 
@@ -5255,6 +5251,10 @@ msgstr "Farm kendiliğinden durunca (Durdur'a bastıktan sonra asla)"
 
 msgid "When its amiability is below:"
 msgstr "Sevgisi şunun altındayken:"
+
+msgid ""
+"When menus do nothing (chests, rides, dungeons, shops): wait a moment before choosing, and try once &more with the arrow keys and Enter"
+msgstr ""
 
 msgid "When nothing is killed for a while, try elsewhere, then stop"
 msgstr "Bir süre hiçbir şey öldürülmezse başka yerde dene, sonra dur"
@@ -8486,6 +8486,9 @@ msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
 msgstr ""
 "parça fiyatları {hours} önce okundu - {most} saat dolmadan onlar için yeniden Parça pazarına gidilmiyor"
+
+msgid "the shop's \"{entry}\" did nothing - once more with the keys"
+msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "beceri sayfası {key} ile değişiyor (oyunun bunun için tuşu)"

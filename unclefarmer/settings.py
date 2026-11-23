@@ -157,7 +157,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
                               # None: not carried over from xp_card_name yet) (engine/xpcard.py)
     "xp_card_pause": False,   # ... and pause it while a farming run is away from the monsters
     "skills_by_slot": True,   # press attack skills through the game's own key method (agent 45), not the keyboard
-    "menu_keys_retry": False,  # a chest, ride or dungeon menu the game didn't act on: once more with the keys
+    "menu_keys_retry": False,  # menus the game ignores: a moment before each choice, and once more with the keys
     "set_modes": True,        # before farming, set the game's modes below
     "pk_key": "b",            # cycles the PK mode
     "pk_mode": 1,             # PK_MODES index: pacifist mode with counterattack

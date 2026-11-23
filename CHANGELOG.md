@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**The menu box on the Keys page: a moment before each choice, and shops too** (untested in game)
+
+- On one player's computer, menus that work by hand did nothing for the bot: every shop's
+  "Purchase" (6 of 6), most chests even with the second try by the keys, and a cable car once.
+  By hand a menu is read for a second or more before the choice; the bot chose the moment it
+  opened. With the box ticked (now **When menus do nothing (chests, rides, dungeons, shops): wait
+  a moment before choosing, and try once more with the arrow keys and Enter**), every choice gives
+  the menu a second first, and a shop's buying section that leaves the menu as it was is tried
+  once more with the keys. Off by default: nothing changes for anyone else.
+- The agent's "enter false" in these notes is what the game's Enter always answers (every menu,
+  on every computer, including the ones that worked): it says nothing about a refusal. A menu left
+  open is what tells.
+
 **The run ends off the beast after the after-farming list too** (untested in game)
 
 - The run's end gets off the fusion beast, then the after-farming list (a shard sale, storing)

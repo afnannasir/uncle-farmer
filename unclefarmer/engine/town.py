@@ -242,13 +242,14 @@ def pick(b: Bot, pattern: str, quantity: int | None = None) -> bool:
     return type_number(b, quantity)
 
 
-def open_section(b: Bot, pattern: str) -> bool:
-    """Choose a section and wait for its menu, rather than accepting the still-open parent."""
+def open_section(b: Bot, pattern: str, keys: bool = False) -> bool:
+    """Choose a section and wait for its menu, rather than accepting the still-open parent.
+    keys: choose it with the keys (bot.choose keys), for a second try."""
     d = b.dialog()
     if d["open"] and d.get("top") and b.find_entry(d["top"], pattern) is not None:
         before: dict[str, Any] = d["top"]
         depth = max(1, int(d["open"]))
-        if b.choose(pattern) is None:
+        if (b.choose(pattern, keys=True) if keys else b.choose(pattern)) is None:
             return False
         after = b.wait_menu_change(before, seconds=3.0, depth=depth)
         top: dict[str, Any] = after.get("top") or {}
@@ -477,14 +478,35 @@ def _buy_menu(b: Bot, item: str) -> bool:
     d = b.dialog()
     if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
         # a top menu first ("buy goods", "buy", "shop")
-        for section in (r"^\s*buy\b", r"\bbuy goods", r"\bshop\b", r"\bpurchase"):
-            if open_section(b, section):
-                break
+        _buy_section(b)
         d = b.dialog()
     if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
         b.note_dialog(d, "looking for %s to buy" % item)
         return False
     return True
+
+
+BUY_SECTIONS = (r"^\s*buy\b", r"\bbuy goods", r"\bshop\b", r"\bpurchase")
+
+
+def _buy_section(b: Bot) -> bool:
+    """Open the shop's buying list from its top menu. A choice the game left open is tried once
+    more with the keys when the character's menu_keys_retry is ticked: on one player's computer
+    "Purchase" left the menu as it was at every shop, though it works by hand."""
+    if any(open_section(b, section) for section in BUY_SECTIONS):
+        return True
+    if not b.p.get("menu_keys_retry", False):
+        return False
+    d = b.dialog()
+    top: dict[str, Any] | None = d.get("top") if d.get("open") else None
+    found = next(((s, w) for s in BUY_SECTIONS if top for w in [b.find_entry(top, s)] if w is not None), None)
+    if top is None or found is None:
+        return False                   # the menu has no buying section at all
+    section, (r, c) = found
+    entry: dict[str, Any] = top["rows"][r][c] or {}
+    name = (entry.get("options") or [None])[0] or entry.get("text") or entry.get("raw") or section
+    b.log(_("the shop's \"{entry}\" did nothing - once more with the keys", entry=name))
+    return open_section(b, section, keys=True)
 
 
 def _not_on_menu(b: Bot, shop: Npc, item: str) -> None:

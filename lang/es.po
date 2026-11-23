@@ -5288,10 +5288,6 @@ msgstr "Cuándo"
 msgid "When HP stays &low:"
 msgstr "Cuando &la salud se mantenga baja:"
 
-msgid ""
-"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
-msgstr ""
-
 msgid "When a game is lost during a run"
 msgstr ""
 
@@ -5306,6 +5302,10 @@ msgstr "Cuando el farmeo se detiene solo (nunca después de pulsar Detener)"
 
 msgid "When its amiability is below:"
 msgstr "Cuando su cariño esté por debajo de:"
+
+msgid ""
+"When menus do nothing (chests, rides, dungeons, shops): wait a moment before choosing, and try once &more with the arrow keys and Enter"
+msgstr ""
 
 msgid "When nothing is killed for a while, try elsewhere, then stop"
 msgstr "Si no se mata nada durante un rato, probar en otro sitio y luego parar"
@@ -8565,6 +8565,9 @@ msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
 msgstr ""
 "los precios de los fragmentos se leyeron hace {hours}: no vuelvo al Mercado de fragmentos por ellos antes de {most} horas"
+
+msgid "the shop's \"{entry}\" did nothing - once more with the keys"
+msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr ""

@@ -5081,10 +5081,6 @@ msgstr ""
 msgid "When HP stays &low:"
 msgstr ""
 
-msgid ""
-"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
-msgstr ""
-
 msgid "When a game is lost during a run"
 msgstr ""
 
@@ -5098,6 +5094,10 @@ msgid "When farming stops by itself (never after you press Stop)"
 msgstr ""
 
 msgid "When its amiability is below:"
+msgstr ""
+
+msgid ""
+"When menus do nothing (chests, rides, dungeons, shops): wait a moment before choosing, and try once &more with the arrow keys and Enter"
 msgstr ""
 
 msgid "When nothing is killed for a while, try elsewhere, then stop"
@@ -8212,6 +8212,9 @@ msgstr ""
 
 msgid ""
 "the shard prices were read {hours} ago - not going to the Shard Broker for them again before {most} hours"
+msgstr ""
+
+msgid "the shop's \"{entry}\" did nothing - once more with the keys"
 msgstr ""
 
 msgid "the skill page turns with {key} (the game's key for it)"
