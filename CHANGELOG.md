@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**The daily stop no longer cuts the way back short**
+
+- Back from a dungeon, the daily stop time came on the way to where the run started, one map
+  before it: the way back was dropped, and the run ended in a cave nearby ("couldn't get there").
+  The daily stop is there to end the farming before the drop time resets; once the farming is
+  over, the way to the end place is walked out.
+- When the way to the end place does fail, the log now says why before going to the nearest map
+  without monsters.
+
 **Menu choices the game didn't act on** (agent 78; untested in game)
 
 - On one player's computer, choosing in a menu did nothing, again and again: chests stayed shut (24

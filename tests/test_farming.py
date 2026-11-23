@@ -803,6 +803,66 @@ def test_finish_start_walks_back_when_far(monkeypatch: pytest.MonkeyPatch) -> No
     assert any("going back to Map 5 (5) (10,20)" in line for line in b.spoken)
 
 
+def _daily_stop_on_the_way(b: Farm, clock: Clock, stop_at: float, takes: float) -> None:
+    """The way back takes `takes` seconds and checks the daily stop on the way, as check() does."""
+    b.clock = clock
+    b.daily_stop_at = stop_at
+    b.daily_done = False
+    real_travel = b.travel
+
+    def travel(dst: int | str, cell: tuple[float, float] | None = None) -> None:
+        clock.advance(takes)
+        if b.daily_stop_at and not b.daily_done and clock.time() >= b.daily_stop_at:
+            b.daily_done = True
+            raise Stopped("it's 23:50 - the day's farming is over")
+        real_travel(dst, cell)
+    b.travel = travel
+
+
+def test_the_daily_stop_does_not_cut_the_way_back_short(monkeypatch: pytest.MonkeyPatch) -> None:
+    # back from a dungeon, the stop time came on the way: the run went to a cave nearby instead
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    monkeypatch.setattr(Farm, "spawns", False)
+    b = Farm()
+    b.start_place = (5, 10, 20)
+    b.sn = {"self": {"id": 1, "x": 0, "y": 0}}
+    b.leave_monsters = lambda: b.leave_calls.append(True)
+    clock = Clock()
+    _daily_stop_on_the_way(b, clock, stop_at=clock.time() + 30, takes=60)
+    b.finish()
+    assert b.travels == [(5, (10, 20))] and b.leave_calls == []
+    assert b.daily_done                 # the stop time has passed: it doesn't fire later on
+
+
+def test_the_daily_stop_still_ends_what_comes_after_an_early_finish(monkeypatch: pytest.MonkeyPatch) -> None:
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    monkeypatch.setattr(Farm, "spawns", False)
+    b = Farm()
+    b.start_place = (5, 10, 20)
+    b.sn = {"self": {"id": 1, "x": 0, "y": 0}}
+    clock = Clock()
+    _daily_stop_on_the_way(b, clock, stop_at=clock.time() + 3600, takes=60)
+    b.finish()
+    assert b.travels == [(5, (10, 20))] and not b.daily_done
+
+
+def test_a_failed_way_back_says_why(monkeypatch: pytest.MonkeyPatch) -> None:
+    labels(monkeypatch)
+    monkeypatch.setattr(farming.beasts, "off", stand_in(farming.beasts.off, lambda b: None))
+    monkeypatch.setattr(Farm, "spawns", False)
+    b = Farm()
+    b.start_place = (5, 10, 20)
+    b.sn = {"self": {"id": 1, "x": 0, "y": 0}}
+    b.leave_monsters = lambda: b.leave_calls.append(True)
+    b.travel_error = Stopped("stuck near 3,4 and every way out failed - stopping")
+    b.finish()
+    assert b.leave_calls == [True]
+    i = b.lines.index("stuck near 3,4 and every way out failed - stopping")
+    assert "couldn't get there" in b.lines[i + 1]
+
+
 def test_finish_started_inside_a_dungeon_now_left_goes_safe(monkeypatch: pytest.MonkeyPatch) -> None:
     # a run started inside Scorpion Cave that the timer moved out: no way back in, so no travel
     labels(monkeypatch)
