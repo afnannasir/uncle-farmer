@@ -167,6 +167,8 @@ class Caster(TravelBot):
         super().__init__()
         self.skillbook: Any = Book()
         self.mp: tuple[float, float] | None = (900.0, 1000.0)
+        self.potions_give = 0.0             # MP the blue potions bring back (none: no potion)
+        self.topped: list[float] = []
         self.hitting: list[set[int]] = []
         self.character = "Someone"
         self._map = 1041
@@ -183,6 +185,13 @@ class Caster(TravelBot):
 
     def mp_now(self, me: dict[str, Any], now: float) -> tuple[float, float] | None:
         return self.mp
+
+    def mp_up_to(self, need: float) -> bool:
+        """The blue potions (HealthMixin.mp_up_to, tested in test_health): potions_give MP each."""
+        self.topped.append(need)
+        if self.mp is not None and self.potions_give:
+            self.mp = (min(self.mp[1], self.mp[0] + self.potions_give), self.mp[1])
+        return self.mp is None or self.mp[0] >= need * self.mp[1]
 
     def attackers(self) -> set[int]:
         return self.hitting.pop(0) if self.hitting else set()
@@ -244,8 +253,22 @@ def test_attacked_before_casting_it_fights_and_waits() -> None:
 
 def test_not_enough_mp_goes_another_way() -> None:
     b = Caster()
-    b.mp = (200.0, 1000.0)                          # the cast costs 30%
+    b.mp = (200.0, 1000.0)                          # the cast costs 30%, and no blue potion helps
     assert b.cast_teleport(dict(LEG)) is False and b.keys == []
+    assert b.topped == [teleskill.MANA]             # the potions were tried first
+
+
+def test_short_of_mp_it_drinks_then_casts() -> None:
+    b = Caster()
+    b.mp = (200.0, 1000.0)
+    b.potions_give = 400.0
+    assert b.cast_teleport(dict(LEG)) is True and b.keys == ["e"]
+    assert b.topped == [teleskill.MANA]
+
+
+def test_with_enough_mp_no_potion_is_drunk_for_the_cast() -> None:
+    b = Caster()
+    assert b.cast_teleport(dict(LEG)) is True and b.topped == []
 
 
 def test_a_place_the_menu_doesnt_have_is_dropped(own_profiles: Path) -> None:

@@ -509,7 +509,8 @@ class TravelMixin(Parts):
             if atlas.in_safe_zone(mid, me["x"], me["y"]):
                 return None
         mp = self.mp_now(me, self.clock.time())
-        if mp is not None and mp[0] < teleskill.MANA * mp[1]:
+        if mp is not None and mp[0] < teleskill.MANA * mp[1] and not self.mp_up_to(teleskill.MANA):
+            # short of the cast's MP, and the blue potions didn't bring it up
             self.log(_("not enough MP for {skill} ({mp} of {top}) - going another way",
                        skill=skill, mp=int(mp[0]), top=int(mp[1])))
             return False

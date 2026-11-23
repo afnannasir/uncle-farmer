@@ -10,6 +10,8 @@
   now plans with them like any trip: a Mage's or an Elf's teleport is cast when it is the shorter
   way, off the Swift beast for the cast and back on after. **Use the class's teleport skill** still
   turns them off.
+- Short of the 30% MP a teleport costs, a Mage or an Elf now drinks a blue potion (up to two,
+  each after its cooldown) and casts, instead of giving that place up for the trip at once.
 
 **The daily stop no longer cuts the way back short**
 

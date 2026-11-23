@@ -441,6 +441,44 @@ def test_look_after_drinks_an_mp_potion(clock: Clock) -> None:
     assert h.last_mp_key == clock.now
 
 
+def _short_of_mp(mp: int, **profile: Any) -> H:
+    h = H({"mp_key": "6", "mp_potion": "Large Blue Potion", "mp_below": 80, "mp_cooldown": 3, **profile})
+    h.maxmp = 1000
+    h._me = {"hp": 900, "maxhp": 1000, "vitals": {"mp": mp, "age_ms": 500}}
+    return h
+
+
+def test_short_of_mp_for_a_teleport_a_blue_potion_is_drunk_first(clock: Clock) -> None:
+    h = _short_of_mp(200)                                    # the teleport costs 30%
+    assert h.mp_up_to(0.30)
+    assert h.keys_pressed == ["6"] and h.last_mp_key == clock.now
+
+
+def test_enough_mp_for_a_teleport_drinks_nothing(clock: Clock) -> None:
+    h = _short_of_mp(500)
+    assert h.mp_up_to(0.30) and h.keys_pressed == []
+
+
+def test_no_blue_potion_means_not_enough_mp(clock: Clock) -> None:
+    h = _short_of_mp(200, mp_key="", mp_potion="")
+    assert not h.mp_up_to(0.30) and h.keys_pressed == []
+
+
+def test_mp_not_known_lets_the_cast_be_tried(clock: Clock) -> None:
+    h = _short_of_mp(200)
+    h._me = {"hp": 900, "maxhp": 1000}
+    h.maxmp = 0
+    assert h.mp_up_to(0.30) and h.keys_pressed == []
+
+
+def test_a_blue_potion_still_cooling_down_is_waited_for(clock: Clock) -> None:
+    h = _short_of_mp(200)
+    h.last_mp_key = clock.now - 1.0                          # a potion a second ago
+    assert h.mp_up_to(0.30)
+    assert h.keys_pressed == ["6"]
+    assert len(h.sleeps) == 2 and 0 < h.sleeps[0] <= health.MP_TOP_UP_WAIT   # the cooldown, then the potion taking
+
+
 def test_look_after_healer_drinks_red_only_below_the_backup(clock: Clock) -> None:
     h = low_red(H(), hp=700)                                 # 70%
     h._heals = True
