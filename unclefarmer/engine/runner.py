@@ -561,7 +561,26 @@ class Run(threading.Thread):
             return
         # the daily stop stays in force: only the waits between steps run past it (run_stage), and
         # a step that farms is held to the day's window (farming_window)
-        triggers.run_stage(bot, "after", self.log, self.stop_event.is_set, self.farming_window)
+        try:
+            triggers.run_stage(bot, "after", self.log, self.stop_event.is_set, self.farming_window)
+        finally:
+            self._off_again(bot)
+
+    def _off_again(self, bot: Bot) -> None:
+        """The run's end got off the beast (and put the pet away when asked) before the list, and
+        the list's trips get back on to travel: off again once it is over, so the run still ends
+        on foot (seen: both characters left riding in town after a shard sale). Not after Stop."""
+        if self.stop_event.is_set():
+            return
+        from . import beasts, pets
+        try:
+            beasts.off(bot)
+            if bot.p.get("pet_recall_at_end", False):
+                pets.recall(bot)
+        except Stopped:
+            pass                       # the game went away meanwhile: nothing to get off
+        except Exception as e:         # a beast left on is no reason to lose the run's end
+            carry_on(e, "getting off the beast after the after-farming list")
 
     @staticmethod
     def _dead(bot: Bot) -> bool:
