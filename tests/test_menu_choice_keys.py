@@ -3,7 +3,8 @@
 made and nothing happened (chests stayed, the airship never left, a dungeon didn't let us in),
 while the same menus worked on another computer. The same menu still up after a direct choice is
 said with the agent's answer, and the choices whose result is checked are tried once more with
-the keys (the cursor walked to the entry, then Enter)."""
+the keys (the cursor walked to the entry, then Enter) - only when the character's
+menu_keys_retry is ticked: it is off by default, and then nothing is tried again with the keys."""
 
 from __future__ import annotations
 
@@ -91,8 +92,9 @@ def test_choosing_with_the_keys_never_goes_through_the_agent(monkeypatch: pytest
 class StubbornChest(ChestBot):
     """The direct choice leaves the chest there; the keys open it (or not, opens_by_keys)."""
 
-    def __init__(self, entities: list[dict[str, Any]], opens_by_keys: bool = True) -> None:
+    def __init__(self, entities: list[dict[str, Any]], opens_by_keys: bool = True, retry: bool = True) -> None:
         super().__init__(entities)
+        self.p["menu_keys_retry"] = retry
         self.opens = False
         self.opens_by_keys = opens_by_keys
         self.ways: list[bool] = []
@@ -122,6 +124,21 @@ def test_a_chest_that_stays_either_way_is_left_and_what_the_game_said_is_logged(
     assert any("the game said: You are too far away" in line for line in lines)
 
 
+def test_without_the_setting_a_chest_that_stays_takes_one_try() -> None:
+    b = StubbornChest([chest(x=110, y=104)], retry=False)
+    assert go(b)
+    assert b.ways == [False] and len(b.talks) == 1
+    assert b.chests.opened == 0 and -129 in b.chests.skip
+    lines = [line for line, _speak in b.lines]
+    assert not any("once more with the keys" in line for line in lines)
+    assert any("the game said: You are too far away" in line for line in lines)   # still noted
+
+
+def test_the_setting_is_off_by_default() -> None:
+    from unclefarmer import settings
+    assert settings.PROFILE_DEFAULTS["menu_keys_retry"] is False
+
+
 def test_a_chest_opened_at_once_takes_one_try() -> None:
     b = StubbornChest([chest(x=110, y=104)])
     b.opens_by_keys = True
@@ -139,8 +156,9 @@ def test_a_chest_opened_at_once_takes_one_try() -> None:
 class KeyedGame(Game):
     """Lets us in only when the entry is chosen with the keys."""
 
-    def __init__(self, **kw: Any) -> None:
+    def __init__(self, retry: bool = True, **kw: Any) -> None:
         super().__init__(lets_in=False, **kw)
+        self.p["menu_keys_retry"] = retry
         self.ways: list[bool] = []
 
     def choose(self, pattern: str, row: str | None = None, keys: bool = False) -> dict[str, Any] | None:
@@ -156,10 +174,18 @@ def test_the_second_try_at_a_dungeon_chooses_with_the_keys() -> None:
     assert g.ways == [False, True]
 
 
+@pytest.mark.usefixtures("shop")
+def test_without_the_setting_every_try_at_a_dungeon_is_the_direct_choice() -> None:
+    g = KeyedGame(retry=False)
+    assert dungeon.enter(as_bot(g), "Spider cave") == dungeon.MISSED
+    assert g.ways == [False] * dungeon.TRIES
+
+
 # ---------------------------------------------------------------- a ride
 class KeyedRider(Rider):
-    def __init__(self) -> None:
+    def __init__(self, retry: bool = True) -> None:
         super().__init__([])
+        self.p["menu_keys_retry"] = retry
         self.ways: list[bool] = []
 
     def _ride(self, leg: dict[str, Any], mid: int, keys: bool = False) -> bool:
@@ -175,6 +201,16 @@ def test_the_second_try_at_a_transport_chooses_with_the_keys() -> None:
     TravelMixin._take_leg(as_bot(who), leg, avoid, failed)
     TravelMixin._take_leg(as_bot(who), leg, avoid, failed)
     assert who.ways == [False, True] and leg["id"] in avoid
+
+
+def test_without_the_setting_the_second_try_at_a_transport_is_the_direct_choice() -> None:
+    who = KeyedRider(retry=False)
+    leg = leg_of(airship(TULIP, VIOLET))
+    avoid: set[Any] = set()
+    failed: dict[Any, int] = {}
+    TravelMixin._take_leg(as_bot(who), leg, avoid, failed)
+    TravelMixin._take_leg(as_bot(who), leg, avoid, failed)
+    assert who.ways == [False, False] and leg["id"] in avoid
 
 
 def test_a_ride_that_failed_logs_what_the_game_said() -> None:

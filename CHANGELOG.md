@@ -16,9 +16,11 @@
 - On one player's computer, choosing in a menu did nothing, again and again: chests stayed shut (24
   of 25), the airship never left (18 of 18) and a dungeon didn't let them in, while the same menus
   worked on another computer. The agent had made the choice each time, and nothing said why.
-- A chest still there after "Open the chest", a transport that didn't take us and a dungeon that
-  didn't let us in are now tried once more with the keys: the cursor goes down to the entry and
-  Enter chooses it, as a player does. Nothing changes where the first choice works.
+- A new box on the Keys page of Advanced settings, **When a chest, airship, cable car or dungeon
+  menu does nothing, try once more with the arrow keys and Enter**, off by default: a chest still
+  there after "Open the chest", a transport that didn't take us and a dungeon that didn't let us
+  in are then tried once more with the keys - the cursor goes down to the entry and Enter chooses
+  it, as a player does. Nothing changes where the first choice works, nor with the box unticked.
 - So the cause can be found: the agent says what the game's Enter answered and what was selected
   (agent 78), the log says when the game left the menu open after a choice (with that answer, also
   in logs\dialogs.log), and what the game said is logged when a chest or a ride still didn't work.

@@ -375,8 +375,10 @@ def enter(b: Bot, cave: str, cfg: dict[str, Any] | None = None) -> str:
         mid = b.map_id()
         since = chores.said_mark(b)
         # A later try chooses with the keys (bot.choose keys): on one player's computer the
-        # direct choice was made and the game didn't let us in, three tries in a row.
-        if (b.choose(ENTER, keys=True) if n else b.choose(ENTER)) is None:
+        # direct choice was made and the game didn't let us in, three tries in a row. Only with
+        # the character's menu_keys_retry ticked (off by default).
+        if (b.choose(ENTER, keys=True) if n and b.p.get("menu_keys_retry", False)
+                else b.choose(ENTER)) is None:
             b.close_dialogs()
             b.log(_("{npc} offered no \"Enter the dungeon\"", npc=entry.get("npc") or cave), speak=True)
         else:

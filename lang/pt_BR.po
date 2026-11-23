@@ -5308,6 +5308,11 @@ msgstr "Quando"
 msgid "When HP stays &low:"
 msgstr "Quando o HP continuar &baixo:"
 
+msgid ""
+"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
+msgstr ""
+"Quando o menu de um baú, aeronave, teleférico ou masmorra não fizer nada, tentar &mais uma vez com as setas e Enter"
+
 msgid "When a game is lost during a run"
 msgstr "Quando um jogo é perdido durante uma execução"
 
