@@ -644,8 +644,8 @@ class AdvancedDialog(Dialog):
         f = Form(panel)
         self.attack_keys = f.text(_("&Attack keys when skills can't be read:"), " ".join(self.p["attack_keys"]))
         self.menu_keys_retry = f.check(
-            _("When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow "
-              "keys and Enter"), self.p.get("menu_keys_retry", False))
+            _("When menus do nothing (chests, rides, dungeons, shops): wait a moment before choosing, and "
+              "try once &more with the arrow keys and Enter"), self.p.get("menu_keys_retry", False))
         box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 10)
 
     def change_key(self) -> None:

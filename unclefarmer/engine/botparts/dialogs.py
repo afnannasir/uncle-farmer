@@ -18,6 +18,9 @@ from ...link import GameLink
 from .parts import as_bot, Parts
 
 
+MENU_WAIT = 1.0       # seconds a menu is given before a choice, with the profile's menu_keys_retry
+
+
 class DialogsMixin(Parts):
     NPC_SPOT = 10.0       # an NPC sought at a known spot is the one of that name this close to it
     TRANSIENT: tuple[str, ...]
@@ -176,7 +179,13 @@ class DialogsMixin(Parts):
         (menus.row_keys) - and Enter chooses it. keys: the keys way even with agent 55, for the
         second try of a choice whose result is checked (a chest that stays, a ride or a dungeon
         that doesn't take us): on one player's computer the direct choice was made and the game
-        did nothing, again and again."""
+        did nothing, again and again.
+
+        With the character's menu_keys_retry ticked, the menu is given MENU_WAIT first: that
+        player's menus work by hand, a second or more after they open, and the bot chose in the
+        same instant."""
+        if self.p.get("menu_keys_retry", False):
+            self.sleep(MENU_WAIT)
         d = self.dialog()
         top = d.get("top")
         if not top:

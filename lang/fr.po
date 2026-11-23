@@ -5341,11 +5341,6 @@ msgstr "Quand"
 msgid "When HP stays &low:"
 msgstr "&Lorsque les HP restent bas :"
 
-msgid ""
-"When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
-msgstr ""
-"Quand le menu d'un coffre, d'un aéronef, d'un téléphérique ou d'un donjon ne fait rien, réessayer une fois avec les flèches et &Entrée"
-
 msgid "When a game is lost during a run"
 msgstr "Quand un jeu est perdu pendant une partie"
 
@@ -5361,6 +5356,11 @@ msgstr ""
 
 msgid "When its amiability is below:"
 msgstr "Quand son amabilité passe sous :"
+
+msgid ""
+"When menus do nothing (chests, rides, dungeons, shops): wait a moment before choosing, and try once &more with the arrow keys and Enter"
+msgstr ""
+"Quand les menus ne font rien (coffres, transports, donjons, boutiques) : attendre un instant avant de choisir, et réessayer une fois avec les flèches et &Entrée"
 
 msgid "When nothing is killed for a while, try elsewhere, then stop"
 msgstr ""
@@ -8664,6 +8664,10 @@ msgid ""
 msgstr ""
 "les prix des shards ont été lus il y a {hours} - pas de nouveau passage chez le Shard Broker avant {most} heures"
 
+msgid "the shop's \"{entry}\" did nothing - once more with the keys"
+msgstr ""
+"le « {entry} » de la boutique n'a rien fait - nouvel essai avec les touches"
+
 msgid "the skill page turns with {key} (the game's key for it)"
 msgstr "la page de sorts change avec {key} (la touche du jeu pour cela)"
 
@@ -9973,3 +9977,8 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} sur {h} cases, {n} sorties."
+
+#~ msgid ""
+#~ "When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"
+#~ msgstr ""
+#~ "Quand le menu d'un coffre, d'un aéronef, d'un téléphérique ou d'un donjon ne fait rien, réessayer une fois avec les flèches et &Entrée"
