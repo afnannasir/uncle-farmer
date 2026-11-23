@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**The run ends off the beast after the after-farming list too** (untested in game)
+
+- The run's end gets off the fusion beast, then the after-farming list (a shard sale, storing)
+  rode to town on it again, and the characters were left riding when the run was over. The beast
+  is now got off once more after the list (and the pet put away, when the profile says so).
+
 **Storing items: no more "the storehouse may be full" with room in it** (untested in game)
 
 - A player's characters said "not stored (the storehouse may be full)" though it had room, or a
