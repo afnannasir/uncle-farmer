@@ -15,9 +15,10 @@ is not among its other items (`mem bagfull`) but in the equipment list (`mem equ
 0 for a piece in the bag), and a row's field "o" is its rarity by that order - crude 0, perfect 3,
 rare 4, legendary 5 seen; medals, sacks and rings have 9, no rarity at all.
 
-The agent's direct discard (57) checks and sends for the bag's other items only: equipment is
-thrown with GEAR_DISCARD_AGENT's own request, once the game's packet for it has been read off a
-piece thrown by hand. Until then nothing is sent.
+The agent's direct discard (57) checks and sends for the bag's other items only. Equipment goes
+with agent 79's `discardgear`: the packet the game itself sent for a piece thrown by hand from the
+bag's equipment tab (op 18, panel 1, then 2 - read live 2026-11-24), after the agent has checked
+every piece is in the bag and not worn.
 """
 
 from __future__ import annotations
@@ -35,7 +36,7 @@ LABELS = {"crude": N_("Crude"), "common": N_("Common"), "sophisticated": N_("Sop
           "perfect": N_("Perfect"), "rare": N_("Rare"), "legendary": N_("Legendary")}
 DEFAULT_MINUTES = 30
 MOST = 30                 # pieces in one sweep, as the community script
-GEAR_DISCARD_AGENT = 10_000      # not yet: the agent that throws equipment away (`discardgear`)
+GEAR_DISCARD_AGENT = 79          # the agent that throws equipment away (`discardgear`)
 
 
 def chosen(p: dict[str, Any]) -> set[str]:

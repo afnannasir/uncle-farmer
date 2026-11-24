@@ -539,7 +539,7 @@ A full bag means the bag has reached its carrying limit. By default, the bot kee
 
 You can set a lower limit if you want the bot to stop or handle the bag before it reaches full capacity.
 
-**Equipment picked up while farming** has one box per rarity, as the game names them: Crude, Common, Sophisticated, Perfect, Rare and Legendary. None is ticked. The pieces of the ticked rarities are thrown away where the character stands, every so many minutes of farming (30 by default) and whenever the bag is full. Only pieces picked up during the run are thrown: a piece that was already in the bag when the run began is never thrown, whatever its rarity. Each piece thrown is written in the log with its rarity. (Not working yet: the bot can't read a piece's rarity until it has been read in the game.)
+**Equipment picked up while farming** has one box per rarity, as the game names them: Crude, Common, Sophisticated, Perfect, Rare and Legendary. None is ticked. The pieces of the ticked rarities are thrown away where the character stands, every so many minutes of farming (30 by default) and whenever the bag is full. Only pieces picked up during the run are thrown: a piece that was already in the bag when the run began is never thrown, whatever its rarity. Each piece thrown is written in the log with its rarity. This needs the agent that comes with this version: restart the game once after updating.
 
 ### Storing items now
 

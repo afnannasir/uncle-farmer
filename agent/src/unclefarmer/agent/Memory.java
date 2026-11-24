@@ -106,6 +106,7 @@ final class Memory {
     // Panel lists (javap 2026-10-04): W 0..6 = items ad, equipment ae, fusion beasts af, pets t,
     // combat skills ag, talents ah, profession skills ai; ak / al = attack / profession key -> skill.
     static final String W_EQUIP = "ae";
+    static final String EQUIP_WORN = "m";      // 1 worn, 0 in the bag (EQUIP_ROW's "equipped")
     static final String W_BEASTS = "af";
     static final String W_PETS = "t";
     static final String W_COMBAT = "ag";
@@ -601,6 +602,23 @@ final class Memory {
         } catch (Unavailable u) {
             return error(u.getMessage());
         }
+    }
+
+    /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
+    static String gearDiscardable(int[] uids) throws Unavailable {
+        Object gear = get(world(), W_EQUIP, ArrayList.class);
+        if (gear == null) throw new Unavailable("noequipment");
+        java.util.HashSet<Integer> loose = new java.util.HashSet<Integer>();
+        for (Object piece : copy((ArrayList<?>) gear)) {
+            if (piece != null && intField(piece, EQUIP_WORN) == 0) loose.add(Integer.valueOf(intField(piece, E_ID)));
+        }
+        java.util.HashSet<Integer> asked = new java.util.HashSet<Integer>();
+        for (int uid : uids) {
+            Integer key = Integer.valueOf(uid);
+            if (!loose.contains(key)) return "error: no equipment " + uid + " in the bag";
+            if (!asked.add(key)) return "error: equipment " + uid + " asked twice";
+        }
+        return null;
     }
 
     static String discardable(int[] uids) throws Unavailable {

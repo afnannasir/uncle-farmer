@@ -2,8 +2,7 @@
 
 ## Unreleased
 
-**Equipment picked up while farming, thrown away by rarity** (not working yet: the agent doesn't
-report a piece's rarity until it has been read live)
+**Equipment picked up while farming, thrown away by rarity** (untested in game; agent 79)
 
 - The bag manager's Full bag page has one box per rarity, the game's own: Crude, Common,
   Sophisticated, Perfect, Rare, Legendary, none ticked. The ticked ones are thrown away every so

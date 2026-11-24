@@ -49,6 +49,7 @@ public final class AgentTests {
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
+        equipmentIsThrownAsTheGameThrowsIt();
         directShardPacketUsesTheVerifiedLayout();
         commandsAnswerWithoutTheGame();
         theStateServerListensOnLoopbackOnly();
@@ -358,6 +359,14 @@ public final class AgentTests {
         StringBuilder sb = new StringBuilder();
         for (byte b : packet) sb.append(sb.length() == 0 ? "" : " ").append(b & 0xFF);
         return sb.toString();
+    }
+
+    /** Live (2026-11-24): a piece thrown away from the bag's equipment tab went as 12 01 00fef144 02. */
+    private static void equipmentIsThrownAsTheGameThrowsIt() {
+        byte[] p = Act.gearDiscardPacket(16707908);
+        StringBuilder hex = new StringBuilder();
+        for (byte b : p) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100fef14402", "the equipment discard packet");
     }
 
     // ---------------------------------------------------------------- chat queue

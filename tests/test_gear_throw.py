@@ -82,7 +82,7 @@ def test_a_piece_without_rarity_or_worn_is_never_thrown() -> None:
 
 def test_an_agent_that_can_t_throw_equipment_sends_nothing() -> None:
     bot = Bot([], ["common"])
-    bot.agent_version = 79
+    bot.agent_version = gearthrow.GEAR_DISCARD_AGENT - 1
     gearthrow.note_start(as_bot(bot))
     bot.a.bag.append(piece(2, "Iron Sword", "common"))
     assert gearthrow.sweep(as_bot(bot)) == 0 and bot.a.sent == []
