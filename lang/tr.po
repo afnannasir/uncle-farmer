@@ -325,6 +325,9 @@ msgstr ""
 msgid "&Keep at least this many of each level:"
 msgstr "Her seviyeden en az bu &kadarını sakla:"
 
+msgid "&Keep pieces with a bonus (\"plus\" in their details, the G key)"
+msgstr ""
+
 msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
@@ -6703,6 +6706,9 @@ msgstr ""
 
 msgid "kept in the bag, as their rules say: {list}"
 msgstr "kurallarının dediği gibi çantada tutuldu: {list}"
+
+msgid "kept {name}: it has a bonus"
+msgstr ""
 
 msgid "key {key}"
 msgstr "tuş {key}"

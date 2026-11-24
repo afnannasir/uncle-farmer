@@ -363,6 +363,8 @@ class BagManagerDialog(Dialog):
         self.gear = {r: f.check(keys[r], r in thrown) for r in gearthrow.RARITIES}
         self.gear_minutes = f.number(_("Every this many minutes of farmin&g, and when the bag is full:"),
                                      p.get("gear_throw_minutes", gearthrow.DEFAULT_MINUTES), 1, 600)
+        self.gear_bonus = f.check(_("&Keep pieces with a bonus (\"plus\" in their details, the G key)"),
+                                  p.get("gear_keep_bonus", True))
         box.Add(wx.StaticText(panel, label=_("Only pieces picked up during the run are thrown away: never one that "
                                              "was in the bag when it began.")), 0, wx.TOP, 6)
 
@@ -379,5 +381,6 @@ class BagManagerDialog(Dialog):
         p["when_bag_full"] = FULL_LABELS[max(0, self.when_full.GetSelection())][0]
         p["gear_throw"] = [r for r, c in self.gear.items() if c.GetValue()]
         p["gear_throw_minutes"] = self.gear_minutes.GetValue()
+        p["gear_keep_bonus"] = self.gear_bonus.GetValue()
         if save_file(self, settings.save_profile, self.character, p):
             self.EndModal(wx.ID_OK)

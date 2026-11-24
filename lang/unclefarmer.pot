@@ -322,6 +322,9 @@ msgstr ""
 msgid "&Keep at least this many of each level:"
 msgstr ""
 
+msgid "&Keep pieces with a bonus (\"plus\" in their details, the G key)"
+msgstr ""
+
 msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
@@ -6497,6 +6500,9 @@ msgid ""
 msgstr ""
 
 msgid "kept in the bag, as their rules say: {list}"
+msgstr ""
+
+msgid "kept {name}: it has a bonus"
 msgstr ""
 
 msgid "key {key}"

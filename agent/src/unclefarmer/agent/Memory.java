@@ -604,6 +604,16 @@ final class Memory {
         }
     }
 
+    /** Whether uid is one of our equipment pieces, worn or in the bag. */
+    static boolean hasGear(int uid) throws Unavailable {
+        Object gear = get(world(), W_EQUIP, ArrayList.class);
+        if (gear == null) throw new Unavailable("noequipment");
+        for (Object piece : copy((ArrayList<?>) gear)) {
+            if (piece != null && intField(piece, E_ID) == uid) return true;
+        }
+        return false;
+    }
+
     /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
     static String gearDiscardable(int[] uids) throws Unavailable {
         Object gear = get(world(), W_EQUIP, ArrayList.class);

@@ -326,6 +326,9 @@ msgstr "Garder au &moins ce nombre de chaque gemme et niveau :"
 msgid "&Keep at least this many of each level:"
 msgstr "Garder au &moins ce nombre de chaque niveau :"
 
+msgid "&Keep pieces with a bonus (\"plus\" in their details, the G key)"
+msgstr "&Garder les pièces avec un bonus (« plus » dans leur détail, touche G)"
+
 msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
@@ -6839,6 +6842,9 @@ msgstr ""
 
 msgid "kept in the bag, as their rules say: {list}"
 msgstr "gardés dans le sac, comme le veulent leurs règles : {list}"
+
+msgid "kept {name}: it has a bonus"
+msgstr "{name} gardé : il a un bonus"
 
 msgid "key {key}"
 msgstr "touche {key}"

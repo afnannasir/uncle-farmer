@@ -386,6 +386,27 @@ final class Act {
         return "sent all " + uids.length;
     }
 
+    /** The details key (G) on a piece in the bag's equipment tab: live (2026-11-24) op 20, the
+     *  equipment panel, the piece's id; the game says the piece's details at once (Said), with
+     *  ">||<plus: ...>||<" on one with a bonus. */
+    static final int OP_DETAIL = 20;
+
+    /** `gearinfo <uid>`: ask the game for that equipment piece's details, as G does. */
+    static String gearInfo(int uid) {
+        try {
+            if (!Memory.hasGear(uid)) return "error: no equipment " + uid;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        String failed = Ask.send(gearInfoPacket(uid), "equipment details " + uid);
+        return failed != null ? failed : "asked " + uid;
+    }
+
+    static byte[] gearInfoPacket(int uid) {
+        return new byte[] {(byte) OP_DETAIL, (byte) GEAR_PANEL,
+                (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid};
+    }
+
     static byte[] gearDiscardPacket(int uid) {
         return new byte[] {(byte) OP_USE, (byte) GEAR_PANEL,
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, (byte) GEAR_DISCARD};

@@ -367,6 +367,9 @@ public final class AgentTests {
         StringBuilder hex = new StringBuilder();
         for (byte b : p) hex.append(String.format("%02x", b & 0xFF));
         eq(hex.toString(), "120100fef14402", "the equipment discard packet");
+        hex.setLength(0);
+        for (byte b : Act.gearInfoPacket(16707907)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "140100fef143", "the equipment details packet (G)");
     }
 
     // ---------------------------------------------------------------- chat queue

@@ -325,6 +325,9 @@ msgstr "Har gem aur level ke kam az kam itne rakhein (&K):"
 msgid "&Keep at least this many of each level:"
 msgstr "&Har level ke kam az kam itne rakhein:"
 
+msgid "&Keep pieces with a bonus (\"plus\" in their details, the G key)"
+msgstr "Bonus wale pieces &rakhein (detail mein \"plus\", G key)"
+
 msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
@@ -6800,6 +6803,9 @@ msgstr ""
 
 msgid "kept in the bag, as their rules say: {list}"
 msgstr "baste mein rakhe, jaisa un ke rules kehte hain: {list}"
+
+msgid "kept {name}: it has a bonus"
+msgstr "{name} rakha: is mein bonus hai"
 
 msgid "key {key}"
 msgstr "key {key}"

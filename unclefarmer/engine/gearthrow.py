@@ -5,6 +5,11 @@ Farming fills the bag with equipment nobody keeps: the player ticks the rarities
 pieces of those rarities are thrown away where the character stands, as a bag rule's throw is
 (the agent's direct discard, no menu).
 
+A piece with a bonus is kept when gear_keep_bonus is ticked (the default): before it would go,
+its details are asked for as the details key (G) does (agent 79 `gearinfo`), and the game's answer
+(`said`) names a bonus as ">||<plus: When attacked critical hit resistance increase 3>||<". A piece
+whose details don't come back is kept too.
+
 Only what this run picked up: a piece already in the bag when the run began is never thrown,
 whatever its rarity (the bag's pieces are noted by their own id when farming starts), and every
 piece thrown is written in the log with its name and rarity.
@@ -36,6 +41,8 @@ LABELS = {"crude": N_("Crude"), "common": N_("Common"), "sophisticated": N_("Sop
           "perfect": N_("Perfect"), "rare": N_("Rare"), "legendary": N_("Legendary")}
 DEFAULT_MINUTES = 30
 MOST = 30                 # pieces in one sweep, as the community script
+DETAILS_WAIT = 3.0        # seconds for a piece's details to come back (live: the same second)
+BONUS = "plus:"           # in a piece's details: it has a bonus
 GEAR_DISCARD_AGENT = 79          # the agent that throws equipment away (`discardgear`)
 
 
@@ -73,7 +80,45 @@ def picked_up(bot: Bot) -> list[dict[str, Any]]:
         return []           # nothing chosen, or farming never noted the bag: nothing is the run's
     out = [r for r in rows(bot) if isinstance(r.get("uid"), int) and r["uid"] not in start
            and rarity_of(r) in want]
+    if bot.p.get("gear_keep_bonus", True):
+        out = [r for r in out[:MOST] if has_bonus(bot, r) is False]
     return out[:MOST]
+
+
+def details(bot: Bot, row: dict[str, Any]) -> str | None:
+    """A piece's details as the game says them for the details key, or None when none came."""
+    heard = bot.a.json("said 0")
+    since = int(heard.get("now", 0)) if jsonio.is_object(heard) else 0
+    if not bot.a.send("gearinfo %d" % int(row["uid"])).startswith("asked"):
+        return None
+    name = str(row.get("name") or "").strip().lower()
+    end = bot.clock.time() + DETAILS_WAIT
+    while True:
+        got = bot.a.json("said %d" % since)
+        lines: list[dict[str, Any]] = (got.get("said") or []) if jsonio.is_object(got) else []
+        for line in lines:
+            text = str(line.get("text") or "")
+            if text.strip().lower().startswith(name) and "quality" in text.lower():
+                return text
+        if bot.clock.time() >= end:
+            return None
+        bot.sleep(0.2)
+
+
+def has_bonus(bot: Bot, row: dict[str, Any]) -> bool | None:
+    """Whether the piece has a bonus ("plus:" in its details), remembered by its id for the run;
+    None when the game didn't say (the piece is then kept)."""
+    known: dict[int, bool] = bot.__dict__.setdefault("gear_bonus", {})
+    uid = int(row["uid"])
+    if uid in known:
+        return known[uid]
+    text = details(bot, row)
+    if text is None:
+        return None
+    known[uid] = BONUS in text.lower()
+    if known[uid]:
+        bot.log(_("kept {name}: it has a bonus", name=row.get("name") or "?"))
+    return known[uid]
 
 
 def sweep(bot: Bot) -> int:

@@ -9,6 +9,12 @@
   many minutes of farming (30 by default) and whenever the bag is full, where the character stands.
 - Only pieces picked up during the run: one already in the bag when it began is never thrown, and
   every piece thrown is written in the log with its rarity.
+- **Keep pieces with a bonus** (ticked by default): before a piece goes, its details are asked for
+  as the G key does, and one whose details have a "plus:" bonus is kept, as is one whose details
+  don't come back.
+- Read live: the bag's equipment is apart from its other items, a piece's rarity is a number in the
+  game's order, and the game throws a piece away and gives its details with requests of their own;
+  agent 79 has `discardgear` and `gearinfo` for them.
 
 **A farming spot's own patrol points and no-go circles** (untested in game)
 

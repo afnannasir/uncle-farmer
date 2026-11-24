@@ -81,6 +81,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "bag_full_at": 100,       # percent of the bag's load limit that counts as full (100: really full)
     "gear_throw": [],         # rarities of the equipment picked up while farming to throw away (engine/gearthrow.py)
     "gear_throw_minutes": 30,  # ... every this many minutes of farming, and whenever the bag is full
+    "gear_keep_bonus": True,  # ... but never a piece with a bonus ("plus:" in its details)
     "when_bag_full": "stop",  # after throwing what the rules say: "stop" go somewhere safe and stop; "unload" sell/store and come back; "nothing"
     "stop_on_drop_time": True,  # end the run when the day's drop time is down to drop_keep_minutes
     "drop_keep_minutes": 0,   # drop time to leave unused (minutes)
@@ -305,6 +306,7 @@ class Profile(BaseModel):
     when_bag_full: str = PROFILE_DEFAULTS["when_bag_full"]
     gear_throw: list[str] = PROFILE_DEFAULTS["gear_throw"]
     gear_throw_minutes: int = PROFILE_DEFAULTS["gear_throw_minutes"]
+    gear_keep_bonus: bool = PROFILE_DEFAULTS["gear_keep_bonus"]
     stop_on_drop_time: bool = PROFILE_DEFAULTS["stop_on_drop_time"]
     drop_keep_minutes: int = PROFILE_DEFAULTS["drop_keep_minutes"]
     drop_tail_seconds: int = PROFILE_DEFAULTS["drop_tail_seconds"]
