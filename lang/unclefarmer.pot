@@ -122,6 +122,9 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
+msgid "&Circles (x,y,radius; ...):"
+msgstr ""
+
 msgid "&Close"
 msgstr ""
 
@@ -430,6 +433,9 @@ msgid "&PK mode:"
 msgstr ""
 
 msgid "&Pages at most (0 = all):"
+msgstr ""
+
+msgid "&Patrol points (x,y; x,y; ... up to 10):"
 msgstr ""
 
 msgid "&Pause"
@@ -807,6 +813,9 @@ msgstr ""
 msgid "A name for this place:"
 msgstr ""
 
+msgid "A no-go circle of {r} tiles around {x}, {y} added."
+msgstr ""
+
 msgid "A plan named {name} already exists. Replace it?"
 msgstr ""
 
@@ -821,6 +830,9 @@ msgid "A share of the day's &drop time (kept across restarts)"
 msgstr ""
 
 msgid "A sound's mute setting must be on or off."
+msgstr ""
+
+msgid "A spot has 10 patrol points at most."
 msgstr ""
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
@@ -866,6 +878,9 @@ msgstr ""
 msgid "Ad&vanced"
 msgstr ""
 
+msgid "Add a circle aro&und me"
+msgstr ""
+
 msgid "Add a gang"
 msgstr ""
 
@@ -876,6 +891,10 @@ msgid "Add a gang to gather in, or untick gathering in gangs' areas."
 msgstr ""
 
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
+msgstr ""
+
+msgid ""
+"Add a patrol point first (Add where I stand), or choose another movement."
 msgstr ""
 
 msgid "Add a place"
@@ -900,6 +919,9 @@ msgid "Add selected to Saved Sounds"
 msgstr ""
 
 msgid "Add to &filter list"
+msgstr ""
+
+msgid "Add where I &stand"
 msgstr ""
 
 msgid "Added to the draft. Choose Save to apply."
@@ -2882,6 +2904,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr ""
 
+msgid "My own points, in order, round and round"
+msgstr ""
+
 msgid "NPCs"
 msgstr ""
 
@@ -3042,6 +3067,10 @@ msgstr ""
 
 msgid ""
 "No {what} potion on your hotkeys. Put one on a hotkey and scan, or choose one from the bag."
+msgstr ""
+
+msgid ""
+"No-go circles: no monster in them is looked for, and the patrol keeps out"
 msgstr ""
 
 msgid "Nobody in sight"
@@ -3389,6 +3418,9 @@ msgstr ""
 msgid "Players near:"
 msgstr ""
 
+msgid "Point {n} added at {x}, {y}. Movement is now My own points."
+msgstr ""
+
 msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
@@ -3477,6 +3509,9 @@ msgid "Quick phrase for {key} (blank leaves it unchanged)"
 msgstr ""
 
 msgid "Quick phrases"
+msgstr ""
+
+msgid "Radius of a new c&ircle:"
 msgstr ""
 
 msgid "Range (tiles):"
@@ -5213,6 +5248,14 @@ msgstr ""
 msgid "Would you like to switch to {language}?"
 msgstr ""
 
+msgid ""
+"Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"
+msgstr ""
+
+msgid ""
+"Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"
+msgstr ""
+
 msgid "Write the time as HH:MM, for example 06:30."
 msgstr ""
 
@@ -6348,6 +6391,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in a no-go circle of this farming spot"
+msgstr ""
+
 msgid "in an elite or boss zone we keep out of"
 msgstr ""
 
@@ -6879,6 +6925,9 @@ msgstr ""
 msgid "nobody yet"
 msgstr ""
 
+msgid "nogo is x,y,radius;x,y,radius;..."
+msgstr ""
+
 msgid "none"
 msgstr ""
 
@@ -7188,7 +7237,10 @@ msgstr ""
 msgid "pant legs"
 msgstr ""
 
-msgid "patrol is random, full, quick or short"
+msgid "patrol is random, full, quick, short or points"
+msgstr ""
+
+msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""
 
 msgid "pause"
@@ -7228,6 +7280,9 @@ msgid ""
 msgstr ""
 
 msgid "points"
+msgstr ""
+
+msgid "points is x,y;x,y;... (up to 10)"
 msgstr ""
 
 msgid "probably a dungeon - no way out on foot"
@@ -9284,7 +9339,13 @@ msgstr ""
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr ""
 
+msgid "{n} no-go circles"
+msgstr ""
+
 msgid "{n} of them are still on display and will be skipped."
+msgstr ""
+
+msgid "{n} own points"
 msgstr ""
 
 msgid "{n} sellers looked up"

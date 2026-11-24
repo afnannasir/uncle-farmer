@@ -122,6 +122,9 @@ msgstr "&Comprobar (F5)"
 msgid "&Check only"
 msgstr "Solo &comprobar"
 
+msgid "&Circles (x,y,radius; ...):"
+msgstr ""
+
 msgid "&Close"
 msgstr "&Cerrar"
 
@@ -436,6 +439,9 @@ msgid "&PK mode:"
 msgstr "Modo &PK:"
 
 msgid "&Pages at most (0 = all):"
+msgstr ""
+
+msgid "&Patrol points (x,y; x,y; ... up to 10):"
 msgstr ""
 
 msgid "&Pause"
@@ -818,6 +824,9 @@ msgstr ""
 msgid "A name for this place:"
 msgstr "Un nombre para este lugar:"
 
+msgid "A no-go circle of {r} tiles around {x}, {y} added."
+msgstr ""
+
 msgid "A plan named {name} already exists. Replace it?"
 msgstr "Ya existe un plan llamado {name}. ¿Reemplazarlo?"
 
@@ -834,6 +843,9 @@ msgstr "Una parte del tiempo de &drop del día (se mantiene al reiniciar)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "El ajuste de silencio de un sonido debe ser activado o desactivado."
+
+msgid "A spot has 10 patrol points at most."
+msgstr ""
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Una mazmorra de equipo: el juego admite grupos de 2 a 3 jugadores."
@@ -879,6 +891,9 @@ msgstr "Actividad:"
 msgid "Ad&vanced"
 msgstr "A&vanzado"
 
+msgid "Add a circle aro&und me"
+msgstr ""
+
 msgid "Add a gang"
 msgstr "Añadir una pandilla"
 
@@ -891,6 +906,10 @@ msgstr ""
 
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
 msgstr "Añadir un fragmento sobrante a juego para +20 % (nivel 2 en adelante)"
+
+msgid ""
+"Add a patrol point first (Add where I stand), or choose another movement."
+msgstr ""
 
 msgid "Add a place"
 msgstr "Añadir un lugar"
@@ -915,6 +934,9 @@ msgstr "Añadir lo seleccionado a Sonidos guardados"
 
 msgid "Add to &filter list"
 msgstr "Añadir a la lista de &filtros"
+
+msgid "Add where I &stand"
+msgstr ""
 
 msgid "Added to the draft. Choose Save to apply."
 msgstr "Añadido al borrador. Elige Guardar para aplicar."
@@ -2955,6 +2977,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr "De mi propia pandilla (las pandillas pagan menos)"
 
+msgid "My own points, in order, round and round"
+msgstr ""
+
 msgid "NPCs"
 msgstr "NPC"
 
@@ -3124,6 +3149,10 @@ msgid ""
 "No {what} potion on your hotkeys. Put one on a hotkey and scan, or choose one from the bag."
 msgstr ""
 "No hay poción de {what} en tus teclas rápidas. Pon una en una tecla y analiza, o elige una de la bolsa."
+
+msgid ""
+"No-go circles: no monster in them is looked for, and the patrol keeps out"
+msgstr ""
 
 msgid "Nobody in sight"
 msgstr "No hay nadie a la vista"
@@ -3483,6 +3512,9 @@ msgstr "Planes y scripts"
 msgid "Players near:"
 msgstr "Jugadores cerca:"
 
+msgid "Point {n} added at {x}, {y}. Movement is now My own points."
+msgstr ""
+
 msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
@@ -3575,6 +3607,9 @@ msgstr "Frase rápida para {key} (en blanco la deja sin cambios)"
 
 msgid "Quick phrases"
 msgstr "Frases rápidas"
+
+msgid "Radius of a new c&ircle:"
+msgstr ""
 
 msgid "Range (tiles):"
 msgstr "Alcance (casillas):"
@@ -5424,6 +5459,14 @@ msgstr "Peor golpe normal recibido: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "¿Quieres cambiar a {language}?"
 
+msgid ""
+"Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"
+msgstr ""
+
+msgid ""
+"Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"
+msgstr ""
+
 msgid "Write the time as HH:MM, for example 06:30."
 msgstr ""
 
@@ -6605,6 +6648,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in a no-go circle of this farming spot"
+msgstr ""
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "en una zona de élite o jefe de la que nos mantenemos alejados"
 
@@ -7163,6 +7209,9 @@ msgstr ""
 msgid "nobody yet"
 msgstr "nadie todavía"
 
+msgid "nogo is x,y,radius;x,y,radius;..."
+msgstr ""
+
 msgid "none"
 msgstr "ninguno"
 
@@ -7488,8 +7537,11 @@ msgstr "página {page} tecla {key} ({skill})"
 msgid "pant legs"
 msgstr ""
 
-msgid "patrol is random, full, quick or short"
-msgstr "patrol es random, full, quick o short"
+msgid "patrol is random, full, quick, short or points"
+msgstr ""
+
+msgid "patrol=points needs points=x,y;x,y;..."
+msgstr ""
 
 msgid "pause"
 msgstr "pausar"
@@ -7533,6 +7585,9 @@ msgstr ""
 
 msgid "points"
 msgstr "puntos"
+
+msgid "points is x,y;x,y;... (up to 10)"
+msgstr ""
 
 msgid "probably a dungeon - no way out on foot"
 msgstr "probablemente una mazmorra: no hay salida a pie"
@@ -9671,7 +9726,13 @@ msgstr "{n} más"
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr "{n} {gem} más requerirían unos {k} {shard} más"
 
+msgid "{n} no-go circles"
+msgstr ""
+
 msgid "{n} of them are still on display and will be skipped."
+msgstr ""
+
+msgid "{n} own points"
 msgstr ""
 
 msgid "{n} sellers looked up"
@@ -9988,3 +10049,6 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "no way to walk there"
 #~ msgstr "no hay camino a pie hasta allí"
+
+#~ msgid "patrol is random, full, quick or short"
+#~ msgstr "patrol es random, full, quick o short"

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**A farming spot's own patrol points and no-go circles** (untested in game)
+
+- A plan's spot can go round the player's own points, in order (**My own points, in order, round and
+  round**, up to 10, with **Add where I stand**), fighting what comes near on the way, as on the
+  game's patrol loops.
+- **No-go circles** on the spot: no monster inside one is looked for and the patrol never heads into
+  one; one that attacks from inside is still fought. **Add a circle around me** puts one where the
+  character stands.
+- Scripts: `farm ... points=120,80;150,90` (alone, it means `patrol=points`) and
+  `nogo=26,219,45;300,40,10`.
+
 **Private message `wait`: out for a while, then back to farming** (untested in game)
 
 - A trusted player sends `wait 45`: the character logs out (the setting menu's Switch account), waits 45 minutes at the login screen, logs back in with the game's saved account and the run goes on, the wait counted as a pause. `wait` alone takes the minutes set in Private messages. Off unless **They may log me out for a while and back in (wait)** is ticked. Stop during the wait leaves the character out; five failed logins, a minute apart, end the run.

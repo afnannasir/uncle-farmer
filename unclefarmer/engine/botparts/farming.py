@@ -114,8 +114,12 @@ class FarmingMixin(Parts):
 
     def farm(self, map_id: int, area: Sequence[float] | None = None, minutes: float = 0, kills: int = 0, only: str = "", skip: str = "", patrol: str = "random",
              avoid_elites: bool = False, avoid_bosses: bool = True, until: Callable[[], bool] | None = None,
-             instance: bool = False, pack: int | None = None, chase: int | None = None) -> None:
+             instance: bool = False, pack: int | None = None, chase: int | None = None,
+             nogo: Sequence[Sequence[float]] = (), points: Sequence[Sequence[int]] = ()) -> None:
         """Farm a map until minutes or kills are reached (0 = no limit) or until() is true.
+        nogo: the player's circles (x, y, radius) on this map: no monster in them is looked for
+        (one that attacks us is still fought) and the patrol never heads into them. points: with
+        patrol "points", the player's own patrol cells, gone round in order.
         instance: a dungeon we are standing in (engine/dungeon.py) - its visit can't be left and
         taken up again, so no trip out (restocking, a full bag, the secret room), no resting
         (potions instead: the timer runs), and being moved off the map ends it. pack: area skills
@@ -141,6 +145,9 @@ class FarmingMixin(Parts):
         if avoid_bosses:
             avoid += [z["rect"] for z in atlas.zones(map_id, ("boss",))]
         loop = atlas.patrol_loop(map_id, patrol) if patrol in ("full", "quick", "short") else None
+        if patrol == "points" and points:
+            loop = [(int(p[0]), int(p[1])) for p in points]
+        self.spot_no_go = [(float(c[0]), float(c[1]), float(c[2])) for c in nogo]
         # On a patrol loop, only what is within chase_range walking steps is chased: the loop
         # passes near the rest (a short loop keeps nearly the whole map that close). Wandering at
         # random, the nearest is taken however far.
@@ -185,6 +192,7 @@ class FarmingMixin(Parts):
             self.on_farm_run = False
             self.in_instance, self.pack_min = was
             self.farm_filter = None
+            self.spot_no_go = []
             self.timing_report(final=True)
             self.timing = None
         self.log(_("finished farming {map}", map=atlas.label(map_id)))
@@ -246,14 +254,16 @@ class FarmingMixin(Parts):
                 self.explain_left_out(map_id)
                 seen = self.sight_note()      # before the walk's own looks replace it
                 me = snap["self"]
-                no_go = bosses.no_go(as_bot(self), snap)   # bosses and elites, in sight or just seen
+                mine = list(getattr(self, "spot_no_go", ()))   # the player's no-go circles: never walked into
+                no_go = bosses.no_go(as_bot(self), snap) + mine   # and the bosses and elites, in sight or just seen
                 if loop:
                     if loop_i is None:
                         loop_i = min(range(len(loop)), key=lambda i: math.hypot(loop[i][0] - me["x"], loop[i][1] - me["y"]))
                     cell, loop_i = _next_clear(loop, loop_i, no_go)
                 else:
                     cell = (self.random_cell(map_id, area, me, clear_of=no_go, keep_out=avoid)
-                            or self.random_cell(map_id, area, me))
+                            or (self.random_cell(map_id, area, me, clear_of=mine) if mine
+                                else self.random_cell(map_id, area, me)))
                 if cell is None:
                     self.sleep(1.0)
                     continue

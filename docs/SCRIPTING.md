@@ -227,7 +227,7 @@ The first example farms Wolf Prairie for 30 minutes. The second stops after 200 
 
 By default, the bot wanders around the map at random. You can change this with `patrol=`.
 
-    patrol=<random|full|quick|short>
+    patrol=<random|full|quick|short|points>
 
 Here is what each option does:
 
@@ -235,12 +235,22 @@ Here is what each option does:
 - `full` follows a patrol loop that passes close to every spot on the map.
 - `quick` follows a shorter loop that passes close to most spots.
 - `short` takes the shortest lap that keeps nearly the whole map within 40 walking steps. This is especially useful in mazes, such as turkey cave.
+- `points` goes round your own points, in order, then from the first again. Give them with `points=`, up to 10, each as `x,y`, separated by semicolons. `points=` alone means `patrol=points`.
 
 When using a patrol loop, monsters more than 40 walking steps away are left alone until the next lap brings your character close enough.
 
 For example:
 
     farm map="Wolf Prairie" patrol=full
+    farm map="Margit Rainforest" points=120,80;150,90;180,140
+
+### Keeping out of a part of the map
+
+Use `nogo=` for circles the bot keeps out of: no monster inside one is looked for, and the patrol
+never heads into one. A monster that attacks your character from inside is still fought. Each circle
+is `x,y,radius`, separated by semicolons.
+
+    farm map="Margit Rainforest" nogo=26,219,45
 
 ### Limiting the farming area
 
@@ -1234,6 +1244,7 @@ Use this section when you need a quick reminder of a command or its syntax.
 ### Farming
 
     farm [map=<map>|map=best] [minutes=<N>] [kills=<N>] [patrol=<kind>] [area=<x1>,<y1>,<x2>,<y2>]
+         [points=<x,y;...>] [nogo=<x,y,radius;...>]
          [only=<names>] [skip=<names>] [elites=<fight|avoid>] [until=<condition>]
     triggers off                    this script does its own Before/After farming steps
 

@@ -29,6 +29,7 @@ LEFT_OUT = {
     "elite": N_("demonized elites or too close to one, left alone as the character settings say"),
     "area": N_("outside the farming area"),
     "avoid": N_("in an elite or boss zone we keep out of"),
+    "nogo": N_("in a no-go circle of this farming spot"),
     "far": N_("further to walk than the chase range"),
     # Replayed over two nights (turkey cave, Margit Rainforest, 2026-11-15): every one of these
     # could be walked to, by a way round longer than walk_dist's DIST_LIMIT. None was a hole in the map.
@@ -606,6 +607,7 @@ class FightingMixin(Parts):
             untrackable=frozenset(e["id"] for e in held if self.untrackable(e, now)),
             reach=rng)
         rules = picking.Rules(area=area, only=only, skip=skip, avoid_rects=avoid_rects, limit=limit,
+                              no_go=tuple(getattr(self, "spot_no_go", ())),
                               boss_keep=self.p.get("boss_distance", 40),
                               skip_elites=bool(self.p.get("skip_demonized_elites")),
                               elites=bosses.elites_in_sight(as_bot(self), snap))

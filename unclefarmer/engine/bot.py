@@ -138,6 +138,7 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.potion_slots = None          # (when, keys...) the potion hotkeys were last read
         self._dists = None                # (map, cell, model, steps from that cell): walk_dist's search
         self.farm_filter = None           # (area, only, skip, avoid) while farming: what counts as a target
+        self.spot_no_go: list[tuple[float, float, float]] = []   # the farming spot's no-go circles (farm)
         self.gang_base = None             # (map id, gang name) of the named gang entered this run
         self.vip_refused = False          # a ride's free VIP entry took us nowhere: fares from now on
         self.in_instance = False          # farming a dungeon: no trips out, no resting, leaving ends it

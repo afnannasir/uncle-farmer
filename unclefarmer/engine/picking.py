@@ -34,6 +34,7 @@ class Rules:
     only: str | None = None                  # only monsters whose name matches (regex)
     skip: str | None = None                  # never monsters whose name matches (regex)
     avoid_rects: Sequence[Rect] = ()         # elite and boss zones kept out of
+    no_go: Sequence[tuple[float, float, float]] = ()   # the spot's no-go circles (x, y, radius)
     limit: float | None = None               # the chase range in steps (not for attackers)
     boss_keep: float = 40                    # keep this far from a boss (0: bosses aren't looked for)
     skip_elites: bool = False                # leave demonized elites alone (skip_demonized_elites)
@@ -182,6 +183,8 @@ def left_out(e: dict[str, Any], map_id: Any, rules: Rules, notes: Notes, boss_li
     if not hit and rules.skip_elites and (
             bosses.is_demonized_elite(e) or bosses.too_close(e, list(rules.elites), bosses.ELITE_CLEAR)):
         return "elite"      # it, or a monster it would join the fight for; one that attacks us is still fought
+    if not hit and not bosses.clear_of((e["x"], e["y"]), rules.no_go):
+        return "nogo"       # the player's no-go circle: one that attacks us from there is still fought
     area = rules.area
     if area and not hit and not (area[0] - 3 <= e["x"] <= area[2] + 3 and area[1] - 3 <= e["y"] <= area[3] + 3):
         return "area"

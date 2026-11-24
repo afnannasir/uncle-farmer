@@ -15,13 +15,34 @@ from ..i18n import _
 from .common import (ContextAction, Dialog, Form, Reader, ask, buttons, enable_label, error, group, info, labeled,
                      modal, opens, ok_cancel, page, pick, popup_actions, save_file, show_text, standing, tabs)
 
-PATROLS = ("random", "full", "quick", "short")
+PATROLS = ("random", "full", "quick", "short", "points")
+MOST_POINTS = 10
+CIRCLE_RADIUS = 30          # a new no-go circle's radius, until the player changes it
 NOT_SEEN = _("The game isn't readable. Is it running, with a character logged in?")
 
 
 def patrol_names() -> list[str]:
     return [_("Wander at random"), _("Full patrol loop"), _("Quick patrol loop"),
-            _("Short patrol loop (fights what comes near it)")]
+            _("Short patrol loop (fights what comes near it)"), _("My own points, in order, round and round")]
+
+
+def cells_text(cells: Sequence[Sequence[int]] | None) -> str:
+    """[[120, 80], [150, 90]] as the player edits it: "120,80; 150,90"."""
+    return "; ".join(",".join(str(int(v)) for v in c) for c in cells or [])
+
+
+def parse_cells(text: str, size: int) -> list[list[int]] | None:
+    """The player's "120,80; 150,90" (size 2) or "26,219,45; ..." (size 3) back as lists of whole
+    numbers, or None when a part isn't size numbers."""
+    out: list[list[int]] = []
+    for part in text.replace("|", ";").split(";"):
+        if not part.strip():
+            continue
+        bits = [b.strip() for b in part.replace(" ", ",").split(",") if b.strip()]
+        if len(bits) != size or not all(b.isdigit() for b in bits):
+            return None
+        out.append([int(b) for b in bits])
+    return out
 
 
 class StepDialog(Dialog):
@@ -67,6 +88,12 @@ class StepDialog(Dialog):
         self.x2 = f.number(_("East edge (x):"), area[2], 0, 2000)
         self.y2 = f.number(_("South edge (y):"), area[3], 0, 2000)
         buttons(f.parent, f.box, (_("Area a&round me"), self.on_around))
+        self.points = f.text(_("&Patrol points (x,y; x,y; ... up to 10):"), cells_text(step.get("points")))
+        buttons(f.parent, f.box, (_("Add where I &stand"), self.on_point))
+        f = group(panel, box, _("No-go circles: no monster in them is looked for, and the patrol keeps out"))
+        self.nogo = f.text(_("&Circles (x,y,radius; ...):"), cells_text(step.get("nogo")))
+        self.radius = f.number(_("Radius of a new c&ircle:"), CIRCLE_RADIUS, 1, 400)
+        buttons(f.parent, f.box, (_("Add a circle aro&und me"), self.on_circle))
 
         panel, box = page(nb, _("Monsters"))
         f = group(panel, box, _("Monsters"))
@@ -182,6 +209,35 @@ class StepDialog(Dialog):
         self.y2.SetValue(y + 40)
         info(self, _("The area is now 40 tiles around you."))
 
+    def where_i_stand(self) -> tuple[int, int] | None:
+        me: dict[str, Any] = (self.game() or {}).get("self") or {}
+        if not me:
+            error(self, NOT_SEEN)
+            return None
+        return int(me["x"]), int(me["y"])
+
+    def on_point(self, _evt: wx.Event) -> None:
+        at = self.where_i_stand()
+        if at is None:
+            return
+        have = parse_cells(self.points.GetValue(), 2) or []
+        if len(have) >= MOST_POINTS:
+            error(self, _("A spot has 10 patrol points at most."))
+            return
+        have.append(list(at))
+        self.points.SetValue(cells_text(have))
+        self.patrol.SetSelection(PATROLS.index("points"))
+        info(self, _("Point {n} added at {x}, {y}. Movement is now My own points.", n=len(have), x=at[0], y=at[1]))
+
+    def on_circle(self, _evt: wx.Event) -> None:
+        at = self.where_i_stand()
+        if at is None:
+            return
+        have = parse_cells(self.nogo.GetValue(), 3) or []
+        have.append([at[0], at[1], self.radius.GetValue()])
+        self.nogo.SetValue(cells_text(have))
+        info(self, _("A no-go circle of {r} tiles around {x}, {y} added.", r=self.radius.GetValue(), x=at[0], y=at[1]))
+
     def on_mobs(self, _evt: wx.Event) -> None:
         snap = self.game()
         if not snap:
@@ -205,7 +261,18 @@ class StepDialog(Dialog):
             error(self, _("Choose a map."))
             return
         patrol = PATROLS[self.patrol.GetSelection()]
-        if patrol != "random" and not atlas.patrol_loop(mid, patrol):
+        points = parse_cells(self.points.GetValue(), 2)
+        nogo = parse_cells(self.nogo.GetValue(), 3)
+        if points is None or len(points) > MOST_POINTS:
+            error(self, _("Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"))
+            return
+        if nogo is None or any(c[2] < 1 for c in nogo):
+            error(self, _("Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"))
+            return
+        if patrol == "points" and not points:
+            error(self, _("Add a patrol point first (Add where I stand), or choose another movement."))
+            return
+        if patrol not in ("random", "points") and not atlas.patrol_loop(mid, patrol):
             error(self, _("This map has no patrol loop. Choose Wander at random."))
             return
         area: list[int] | None = None
@@ -220,7 +287,7 @@ class StepDialog(Dialog):
                          drop_minutes=self.drop.GetValue() if self.drop_on.GetValue() else 0, patrol=patrol,
                          area=area, only=names_pattern(self.only.GetValue()),
                          skip=names_pattern(self.skip.GetValue()),
-                         elites="avoid" if self.avoid.GetValue() else "fight")
+                         elites="avoid" if self.avoid.GetValue() else "fight", points=points, nogo=nogo)
         self.EndModal(wx.ID_OK)
 
 
@@ -256,7 +323,10 @@ def step_text(s: dict[str, Any], several: bool = True) -> str:
         if not s.get("minutes") and not s.get("kills") and not s.get("drop_minutes"):
             bits.append(_("until the plan stops"))
     bits.append({"random": _("random"), "full": _("full loop"), "quick": _("quick loop"),
-                 "short": _("short loop")}.get(s.get("patrol", "random"), _("random")))
+                 "short": _("short loop"), "points": _("{n} own points", n=len(s.get("points") or []))
+                 }.get(s.get("patrol", "random"), _("random")))
+    if s.get("nogo"):
+        bits.append(_("{n} no-go circles", n=len(s["nogo"])))
     if s.get("only"):
         bits.append(_("only {names}", names=names_text(s["only"])))
     if s.get("elites") == "avoid":

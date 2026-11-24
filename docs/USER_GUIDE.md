@@ -229,6 +229,12 @@ The short patrol loop is the quickest route that still passes within 40 steps of
 
 When following any patrol loop, the bot only goes after monsters that are within 40 walking steps. It leaves other monsters alone until the patrol brings it close to them.
 
+**My own points, in order, round and round** goes round points you choose, up to 10. Stand where you want a point in the game and press **Add where I stand**; the points are in the **Patrol points** box as `x,y`, separated by semicolons, and can be typed there too. The bot goes to each one in turn, fighting what comes near on the way, then starts again from the first.
+
+**No-go circles**
+
+On the same tab, **No-go circles** keep the bot out of parts of the map: no monster inside one is looked for, and the patrol never heads into one. A monster that attacks your character from inside is still fought. Stand at the middle of the part to keep out of, set **Radius of a new circle** and press **Add a circle around me**, or type the circles as `x,y,radius`, separated by semicolons.
+
 ### When to stop
 
 You can set conditions that tell Uncle Farmer when to end a farming run. These include:

@@ -205,6 +205,7 @@ class Parts:
     _potions_warned: set[str]
     _potions_warned_out: set[str]
     farm_filter: FarmFilter | None
+    spot_no_go: list[tuple[float, float, float]]
     walk_only: bool
     walk_left: float | None     # steps still to walk on this map, on a trip (beasts.RIDE_MIN)
     walk_target: tuple[int, tuple[int, int]] | None

@@ -123,6 +123,9 @@ msgstr "Kontrol et (F5) (&C)"
 msgid "&Check only"
 msgstr "Yalnız&ca kontrol et"
 
+msgid "&Circles (x,y,radius; ...):"
+msgstr ""
+
 msgid "&Close"
 msgstr "Kapat (&C)"
 
@@ -434,6 +437,9 @@ msgid "&PK mode:"
 msgstr "&PK modu:"
 
 msgid "&Pages at most (0 = all):"
+msgstr ""
+
+msgid "&Patrol points (x,y; x,y; ... up to 10):"
 msgstr ""
 
 msgid "&Pause"
@@ -814,6 +820,9 @@ msgstr ""
 msgid "A name for this place:"
 msgstr "Bu yer için bir ad:"
 
+msgid "A no-go circle of {r} tiles around {x}, {y} added."
+msgstr ""
+
 msgid "A plan named {name} already exists. Replace it?"
 msgstr "{name} adlı bir plan zaten mevcut. Değiştirilsin mi?"
 
@@ -830,6 +839,9 @@ msgstr "Günün &drop süresinden bir pay (yeniden başlatmada korunur)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "Bir sesin susturma ayarı açık ya da kapalı olmalı."
+
+msgid "A spot has 10 patrol points at most."
+msgstr ""
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Takım zindanı: Oyun 2 ila 3 oyunculu gruplara izin verir."
@@ -875,6 +887,9 @@ msgstr "Etkinlik:"
 msgid "Ad&vanced"
 msgstr "Gelişmiş (&V)"
 
+msgid "Add a circle aro&und me"
+msgstr ""
+
 msgid "Add a gang"
 msgstr "Bir çete ekle"
 
@@ -887,6 +902,10 @@ msgstr ""
 
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
 msgstr "+%20 için artan eşleşen bir parça ekle (seviye 2 ve üstü)"
+
+msgid ""
+"Add a patrol point first (Add where I stand), or choose another movement."
+msgstr ""
 
 msgid "Add a place"
 msgstr "Bir yer ekle"
@@ -911,6 +930,9 @@ msgstr "Seçileni Kayıtlı seslere ekle"
 
 msgid "Add to &filter list"
 msgstr "&Filtre listesine ekle"
+
+msgid "Add where I &stand"
+msgstr ""
 
 msgid "Added to the draft. Choose Save to apply."
 msgstr "Taslağa eklendi. Uygulamak için Kaydet'i seç."
@@ -2936,6 +2958,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr "Kendi çetemin (çete üyeleri daha az öder)"
 
+msgid "My own points, in order, round and round"
+msgstr ""
+
 msgid "NPCs"
 msgstr "NPC'ler"
 
@@ -3103,6 +3128,10 @@ msgid ""
 "No {what} potion on your hotkeys. Put one on a hotkey and scan, or choose one from the bag."
 msgstr ""
 "Kısayol tuşlarında {what} iksiri yok. Birini kısayol tuşuna koyup tara ya da çantadan birini seç."
+
+msgid ""
+"No-go circles: no monster in them is looked for, and the patrol keeps out"
+msgstr ""
 
 msgid "Nobody in sight"
 msgstr "Görünürde kimse yok"
@@ -3462,6 +3491,9 @@ msgstr "Planlar ve betikler"
 msgid "Players near:"
 msgstr "Yakındaki oyuncular:"
 
+msgid "Point {n} added at {x}, {y}. Movement is now My own points."
+msgstr ""
+
 msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
@@ -3554,6 +3586,9 @@ msgstr "{key} için hızlı ifade (boş bırakılırsa değişmez)"
 
 msgid "Quick phrases"
 msgstr "Hızlı ifadeler"
+
+msgid "Radius of a new c&ircle:"
+msgstr ""
 
 msgid "Range (tiles):"
 msgstr "Menzil (kare):"
@@ -5373,6 +5408,14 @@ msgstr "Alınan en kötü normal vuruş: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "{language} diline geçmek ister misin?"
 
+msgid ""
+"Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"
+msgstr ""
+
+msgid ""
+"Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"
+msgstr ""
+
 msgid "Write the time as HH:MM, for example 06:30."
 msgstr ""
 
@@ -6550,6 +6593,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in a no-go circle of this farming spot"
+msgstr ""
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
 
@@ -7099,6 +7145,9 @@ msgstr ""
 msgid "nobody yet"
 msgstr "henüz kimse"
 
+msgid "nogo is x,y,radius;x,y,radius;..."
+msgstr ""
+
 msgid "none"
 msgstr "hiçbiri"
 
@@ -7414,8 +7463,11 @@ msgstr "sayfa {page} tuş {key} ({skill})"
 msgid "pant legs"
 msgstr ""
 
-msgid "patrol is random, full, quick or short"
-msgstr "patrol için random, full, quick ya da short yaz"
+msgid "patrol is random, full, quick, short or points"
+msgstr ""
+
+msgid "patrol=points needs points=x,y;x,y;..."
+msgstr ""
 
 msgid "pause"
 msgstr "duraklat"
@@ -7459,6 +7511,9 @@ msgstr ""
 
 msgid "points"
 msgstr "puan"
+
+msgid "points is x,y;x,y;... (up to 10)"
+msgstr ""
 
 msgid "probably a dungeon - no way out on foot"
 msgstr "muhtemelen bir zindan - yürüyerek çıkış yok"
@@ -9589,7 +9644,13 @@ msgstr "{n} tane daha"
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr "{n} tane daha {gem} için yaklaşık {k} tane daha {shard} gerekir"
 
+msgid "{n} no-go circles"
+msgstr ""
+
 msgid "{n} of them are still on display and will be skipped."
+msgstr ""
+
+msgid "{n} own points"
 msgstr ""
 
 msgid "{n} sellers looked up"
@@ -9901,3 +9962,6 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "no way to walk there"
 #~ msgstr "oraya yürüyerek gidilecek yol yok"
+
+#~ msgid "patrol is random, full, quick or short"
+#~ msgstr "patrol için random, full, quick ya da short yaz"

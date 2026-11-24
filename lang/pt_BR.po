@@ -122,6 +122,9 @@ msgstr "&Verificar (F5)"
 msgid "&Check only"
 msgstr "&Somente verificar"
 
+msgid "&Circles (x,y,radius; ...):"
+msgstr "&Círculos (x,y,raio; ...):"
+
 msgid "&Close"
 msgstr "&Fechar"
 
@@ -437,6 +440,9 @@ msgstr "Modo &PK:"
 
 msgid "&Pages at most (0 = all):"
 msgstr ""
+
+msgid "&Patrol points (x,y; x,y; ... up to 10):"
+msgstr "&Pontos de patrulha (x,y; x,y; ... até 10):"
 
 msgid "&Pause"
 msgstr "&Pausar"
@@ -822,6 +828,9 @@ msgstr ""
 msgid "A name for this place:"
 msgstr "Um nome para este local:"
 
+msgid "A no-go circle of {r} tiles around {x}, {y} added."
+msgstr "Círculo proibido de {r} quadrados em volta de {x}, {y} adicionado."
+
 msgid "A plan named {name} already exists. Replace it?"
 msgstr "Já existe um plano chamado {name}. Substituí-lo?"
 
@@ -838,6 +847,9 @@ msgstr "Uma parte do tempo de &drop do dia (mantida entre reinícios)"
 
 msgid "A sound's mute setting must be on or off."
 msgstr "A opção de silenciar um som deve ser ativada ou desativada."
+
+msgid "A spot has 10 patrol points at most."
+msgstr "Um local tem no máximo 10 pontos de patrulha."
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Masmorra em equipe: o jogo permite grupos de 2 a 3 jogadores."
@@ -883,6 +895,9 @@ msgstr "Atividade:"
 msgid "Ad&vanced"
 msgstr "Avan&çado"
 
+msgid "Add a circle aro&und me"
+msgstr "Adicionar um círculo ao meu red&or"
+
 msgid "Add a gang"
 msgstr "Adicionar uma guilda"
 
@@ -896,6 +911,11 @@ msgstr ""
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
 msgstr ""
 "Adicionar um fragmento compatível restante para +20% (nível 2 ou superior)"
+
+msgid ""
+"Add a patrol point first (Add where I stand), or choose another movement."
+msgstr ""
+"Adicione primeiro um ponto de patrulha (Adicionar onde estou), ou escolha outro movimento."
 
 msgid "Add a place"
 msgstr "Adicionar local"
@@ -920,6 +940,9 @@ msgstr "Adicionar seleção aos sons salvos"
 
 msgid "Add to &filter list"
 msgstr "Adicionar à lista de &filtros"
+
+msgid "Add where I &stand"
+msgstr "Adicionar onde e&stou"
 
 msgid "Added to the draft. Choose Save to apply."
 msgstr "Adicionado ao rascunho. Escolha Salvar para aplicar."
@@ -2965,6 +2988,9 @@ msgstr ""
 msgid "My own gang's (gangs pay less)"
 msgstr "Da minha própria guilda (guildas pagam menos)"
 
+msgid "My own points, in order, round and round"
+msgstr "Meus próprios pontos, em ordem, em círculo"
+
 msgid "NPCs"
 msgstr "NPCs"
 
@@ -3135,6 +3161,11 @@ msgid ""
 "No {what} potion on your hotkeys. Put one on a hotkey and scan, or choose one from the bag."
 msgstr ""
 "Nenhuma poção de {what} nos atalhos. Atribua uma tecla e faça uma análise ou escolha uma poção da mochila."
+
+msgid ""
+"No-go circles: no monster in them is looked for, and the patrol keeps out"
+msgstr ""
+"Círculos proibidos: nenhum monstro é procurado neles, e a patrulha fica fora"
 
 msgid "Nobody in sight"
 msgstr "Ninguém à vista"
@@ -3497,6 +3528,10 @@ msgstr "Planos e scripts"
 msgid "Players near:"
 msgstr "Jogadores próximos:"
 
+msgid "Point {n} added at {x}, {y}. Movement is now My own points."
+msgstr ""
+"Ponto {n} adicionado em {x}, {y}. O movimento agora é Meus próprios pontos."
+
 msgid ""
 "Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever we are off a fusion beast, and every fight there is on foot"
 msgstr ""
@@ -3589,6 +3624,9 @@ msgstr "Frase rápida para {key} (em branco mantém sem alteração)"
 
 msgid "Quick phrases"
 msgstr "Frases rápidas"
+
+msgid "Radius of a new c&ircle:"
+msgstr "Raio de um novo círcu&lo:"
 
 msgid "Range (tiles):"
 msgstr "Alcance (blocos):"
@@ -5446,6 +5484,16 @@ msgstr "Maior dano normal recebido: {hit}"
 msgid "Would you like to switch to {language}?"
 msgstr "Deseja mudar para {language}?"
 
+msgid ""
+"Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"
+msgstr ""
+"Escreva cada círculo proibido como x,y,raio, separados por ponto e vírgula: 26,219,45"
+
+msgid ""
+"Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"
+msgstr ""
+"Escreva os pontos de patrulha como x,y separados por ponto e vírgula, até 10: 120,80; 150,90"
+
 msgid "Write the time as HH:MM, for example 06:30."
 msgstr "Escreva a hora como HH:MM, por exemplo 06:30."
 
@@ -6638,6 +6686,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr "recompensas de caça: {list}"
 
+msgid "in a no-go circle of this farming spot"
+msgstr "em um círculo proibido deste local de farm"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "evitamos áreas de monstros de elite ou chefes"
 
@@ -7194,6 +7245,9 @@ msgstr "ninguém para receber a equipe está nela: ela fica com este personagem"
 msgid "nobody yet"
 msgstr "ninguém ainda"
 
+msgid "nogo is x,y,radius;x,y,radius;..."
+msgstr "nogo é x,y,raio;x,y,raio;..."
+
 msgid "none"
 msgstr "nenhum"
 
@@ -7521,8 +7575,11 @@ msgstr "página {page}, tecla {key} ({skill})"
 msgid "pant legs"
 msgstr ""
 
-msgid "patrol is random, full, quick or short"
-msgstr "a patrulha pode ser aleatória, completa, rápida ou curta"
+msgid "patrol is random, full, quick, short or points"
+msgstr "patrol é random, full, quick, short ou points"
+
+msgid "patrol=points needs points=x,y;x,y;..."
+msgstr "patrol=points precisa de points=x,y;x,y;..."
 
 msgid "pause"
 msgstr "pausar"
@@ -7566,6 +7623,9 @@ msgstr ""
 
 msgid "points"
 msgstr "pontos"
+
+msgid "points is x,y;x,y;... (up to 10)"
+msgstr "points é x,y;x,y;... (até 10)"
 
 msgid "probably a dungeon - no way out on foot"
 msgstr "provavelmente uma masmorra — não há saída a pé"
@@ -9723,8 +9783,14 @@ msgstr "mais {n}"
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr "mais {n} {gem} exigiriam cerca de mais {k} {shard}"
 
+msgid "{n} no-go circles"
+msgstr "{n} círculos proibidos"
+
 msgid "{n} of them are still on display and will be skipped."
 msgstr ""
+
+msgid "{n} own points"
+msgstr "{n} pontos próprios"
 
 msgid "{n} sellers looked up"
 msgstr ""
@@ -10047,3 +10113,6 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "no way to walk there"
 #~ msgstr "não há caminho a pé até lá"
+
+#~ msgid "patrol is random, full, quick or short"
+#~ msgstr "a patrulha pode ser aleatória, completa, rápida ou curta"
