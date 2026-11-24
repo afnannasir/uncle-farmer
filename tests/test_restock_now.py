@@ -37,7 +37,7 @@ def supplies(monkeypatch: pytest.MonkeyPatch) -> tuple[SupplyBot, list[int]]:
     requested: list[int] = []
     shop = (1, "Apothecary", 0.0, 0.0)
     monkeypatch.setattr(town, "shops_for", stand_in(town.shops_for, lambda item: [shop]))
-    monkeypatch.setattr(town, "nearest", stand_in(town.nearest, lambda b, role, candidates=None:
+    monkeypatch.setattr(town, "nearest", stand_in(town.nearest, lambda b, role, candidates=None, back_to=None:
                                                 candidates[0] if candidates else None))
     monkeypatch.setattr(town, "visit", stand_in(town.visit, lambda b, role, name=None, candidates=None: "Apothecary"))
     monkeypatch.setattr(town.menus, "pick", stand_in(town.menus.pick, returning(None)))

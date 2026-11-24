@@ -15,15 +15,18 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from contextlib import nullcontext
 from typing import Any
 
 import pytest
-from conftest import as_bot, stand_in
+from conftest import as_bot, returning, stand_in
 
+from simgame import SimClock, World
 from test_town import TownBot
 from unclefarmer import knowledge
 from unclefarmer.engine import town
 from unclefarmer.engine.bot import Bot
+from unclefarmer.engine.botparts.farming import FarmingMixin
 
 RULE = {"item": "Large Red Potion", "min": 30, "stock": 200, "source": "both", "on": True}
 
@@ -66,6 +69,59 @@ def test_the_town_we_stand_in_is_used_when_it_has_what_is_needed(monkeypatch: py
     b = bot(10)
     b.map = 1121
     assert town.restock_town(as_bot(b), town.needs(as_bot(b), [RULE])) == 1121
+
+
+class FarmingMage(TownBot):
+    in_instance = False
+    farming_on: int
+
+    def me(self) -> dict[str, Any]:
+        return dict(super().me(), level=69)
+
+    def talk(self, npc: str, at: tuple[float, float] | None = None) -> bool:
+        if at is not None:
+            self.me_at = at
+        return super().talk(npc, at)
+
+    def timed(self, phase: str) -> nullcontext[None]:
+        return nullcontext()
+
+    def restock_now(self, start: bool = False) -> bool:
+        return FarmingMixin.restock_now(as_bot(self), start)
+
+    def set_modes(self) -> None:
+        pass
+
+
+@pytest.mark.parametrize(("farm_map", "shop_map"), [
+    (5321, 1181), (5322, 1181), (5121, 1061), (5122, 1061), (5242, 1141), (5661, 1061), (5662, 1061),
+])
+def test_farming_mage_restocks_on_the_shortest_round_trip(
+        farm_map: int, shop_map: int, monkeypatch: pytest.MonkeyPatch) -> None:
+    world = World(farm_map, SimClock(1000), monsters=0)
+    items = ("Large Red Potion", "Large Blue Potion")
+    rules = [dict(RULE, item=item, source="buy", stock=80) for item in items]
+    mage = FarmingMage(bag=[{"name": "Arnebia", "count": 100_000}],
+                       profile={"restock": rules, "use_travel_items": False})
+    mage.map, mage.me_at = world.map_id, (world.x, world.y)
+    mage.farming_on = farm_map
+    mage.__dict__["teleport_skills"] = ["Teleportation"]
+    seen: dict[str, dict[str, list[str]]] = {}
+    monkeypatch.setattr(town, "_shops_seen", returning(seen))
+    monkeypatch.setattr(town, "note_shop", returning(None))
+    monkeypatch.setattr(town, "_buy_menu", returning(True))
+
+    def purchase(b: Bot, pattern: str, quantity: int | None = None) -> bool:
+        item = next(item for item in items if town.item_pattern(item) == pattern)
+        assert quantity is not None
+        mage.add(item, quantity)
+        return True
+
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, purchase))
+    FarmingMixin._restock_check(as_bot(mage), farm_map, mage.clock.time() - 31)
+
+    assert [mid for mid, _cell in mage.travels] == [shop_map, shop_map, farm_map]
+    assert all(town.counts(as_bot(mage))[item.lower()] == 80 for item in items)
 
 
 def test_buy_stays_in_the_trips_town(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -127,7 +183,7 @@ def test_a_trip_that_got_nothing_is_not_repeated_until_something_changes(monkeyp
     calls: list[str] = []
     monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: calls.append("withdraw") or 0))
     monkeypatch.setattr(town, "buy", stand_in(town.buy, lambda b, item, n: calls.append("buy") or 0))
-    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, lambda b, todo: 1041))
+    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, returning(1041)))
     assert town.restock(as_bot(b), [RULE]) is True                 # the trip: nothing to be had
     assert calls == ["withdraw", "buy"]
     for _second in range(5):
