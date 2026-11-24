@@ -614,6 +614,54 @@ final class Memory {
         return false;
     }
 
+    /** `memwin`: every simple field (numbers, booleans, text, and a list's or map's size) of the game
+     *  window and of its world, static ones too, to tell two states of the game apart (a login
+     *  back after Switch account that left the game taking no command). Read-only. */
+    static String describeWindow() {
+        Frame win = window();
+        if (win == null) return "error: no game window";
+        StringBuilder sb = new StringBuilder("win ");
+        simpleFields(win, sb);
+        Object world = null;
+        try {
+            world = get(win, WIN_WORLD, null);
+        } catch (Unavailable ignored) {
+            // no world yet
+        }
+        sb.append(" || world ");
+        if (world == null) sb.append("null");
+        else simpleFields(world, sb);
+        return sb.toString();
+    }
+
+    private static void simpleFields(Object o, StringBuilder sb) {
+        for (Class<?> k = o.getClass(); k != null && k.getName().startsWith("game."); k = k.getSuperclass()) {
+            for (Field f : k.getDeclaredFields()) {
+                Class<?> t = f.getType();
+                try {
+                    f.setAccessible(true);
+                    Object v = f.get(java.lang.reflect.Modifier.isStatic(f.getModifiers()) ? null : o);
+                    String shown;
+                    if (t.isPrimitive() || t == String.class || v instanceof Number || v instanceof Boolean) {
+                        shown = String.valueOf(v);
+                        if (shown.length() > 40) shown = shown.substring(0, 40);
+                    } else if (v instanceof int[] && ((int[]) v).length <= 16) {
+                        shown = java.util.Arrays.toString((int[]) v).replace(" ", "");
+                    } else if (v instanceof java.util.Collection) {
+                        shown = "#" + ((java.util.Collection<?>) v).size();
+                    } else if (v instanceof Map) {
+                        shown = "#" + ((Map<?, ?>) v).size();
+                    } else {
+                        shown = v == null ? "null" : "obj";
+                    }
+                    sb.append(k.getSimpleName()).append('.').append(f.getName()).append('=').append(shown).append(' ');
+                } catch (Throwable ignored) {
+                    // a field we can't read is left out
+                }
+            }
+        }
+    }
+
     /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
     static String gearDiscardable(int[] uids) throws Unavailable {
         Object gear = get(world(), W_EQUIP, ArrayList.class);

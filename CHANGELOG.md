@@ -42,6 +42,12 @@
 
 - A trusted player sends `wait 45`: the character logs out (the setting menu's Switch account), waits 45 minutes at the login screen, logs back in with the game's saved account and the run goes on, the wait counted as a pause. `wait` alone takes the minutes set in Private messages. Off unless **They may log me out for a while and back in (wait)** is ticked. Stop during the wait leaves the character out; five failed logins, a minute apart, end the run.
 - No private message reaches a character that is logged out: during a wait the Games list says **Logged out for a while (N min left)** and the Pause button (F6) reads **Log back in now**, which ends the wait early.
+- Logging back in after Switch account (seen in game): the automatic login took the client a logout
+  leaves behind for a connection under way and never started ("timed out waiting for character
+  picker"); then, logged in, the character took no key at all, the player's included: the game
+  still read the sign-in screen's cursor, left on the account box, for every key. The agent now
+  counts only a live connection, and puts that cursor on Log in first, as the player's own login
+  has it.
 - One action at a time: while a wait, a walk home or a `come` is under way, another action is answered "Busy, one command at a time. Still on: wait (12 min left)." Questions and stop, pause, resume and quit game always work.
 
 **Chat: each international room and private channel apart** (untested in game)
