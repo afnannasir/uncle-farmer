@@ -370,6 +370,24 @@ final class Dialogs {
         }
     }
 
+    /** Remember the sender envelope game.i passes with a confirmed roster action. */
+    static String cacheTeam(int sig) {
+        try {
+            Object world = Memory.world();
+            synchronized (world) {
+                List<Object> open = copy(list(world, W_DIALOGS));
+                if (open.isEmpty()) return "refused: no menu is open";
+                Object y = open.get(open.size() - 1);
+                if (intField(y, D_KIND) != 1 || Menus.signature(model(y, false)) != sig) {
+                    return "refused: the roster changed";
+                }
+                return TeamHandoff.learn(world, intField(y, "a"), intField(y, "c"), model(y));
+            }
+        } catch (Exception e) {
+            return "refused: roster unavailable";
+        }
+    }
+
     private static volatile Method choose;
 
     /** world.a(Win): public, boolean, the window its only parameter - the one method of that shape

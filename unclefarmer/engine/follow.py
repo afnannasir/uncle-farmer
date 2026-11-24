@@ -28,16 +28,18 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from .. import atlas, gamekeys
+from .. import phrases as phrase_book
 from ..clock import clock_for
 from ..i18n import _
-from .bot import snap_map, Bot
-from .botparts.base import STOPPING, NoWay, note_failure
-from .botparts.parts import Sighting
-from .. import phrases as phrase_book
 from . import teamheal
-from typing import Any
+from .botparts.base import STOPPING, NoWay, note_failure, snap_map
+from .botparts.parts import Sighting
+
+if TYPE_CHECKING:
+    from .bot import Bot
 
 NEAR = 3          # tiles: close enough to stand beside them
 GAP = 4           # tiles: further than this and we catch up
@@ -140,12 +142,16 @@ def teammate_position(bot: Bot, name: str):
     return None
 
 
-def teleport(bot: Bot, name: str, them: dict[str, Any] | None = None) -> bool:
+def teleport(bot: Bot, name: str, them: dict[str, Any] | None = None, *, verified_leader: bool = False) -> bool:
     """Shift+P to the team leader, when that may be our player. True when it put us within
     LEADER_NEAR of them. them: where they are, when known (decides who leads from a refusal)."""
     tp = bot.__dict__.setdefault("_teleport", {"off": None, "next": 0.0, "not_leader": set()})
     who = name.strip().lower()
     now = clock_for(bot).time()
+    if verified_leader:
+        tp["off"] = None
+        tp["not_leader"].discard(who)
+        tp["server_cooldown"] = False
     if _agent(bot) < 25 or tp["off"] or now < tp["next"] or who in tp["not_leader"] or bot.in_fight:
         return False
     key = bot.p.get("teleport_key") or "shift+p"
@@ -169,6 +175,8 @@ def teleport(bot: Bot, name: str, them: dict[str, Any] | None = None) -> bool:
     wait = re.search(r"(\d+) seconds?;? teleport cooldown", text)
     if wait:
         tp["next"] = now + int(wait.group(1)) + 0.5
+        if verified_leader:
+            tp["server_cooldown"] = True
         return False
     if "not on this map" in text or "within 20 yards" in text:
         if far or ("not on this map" in text and them is not None):

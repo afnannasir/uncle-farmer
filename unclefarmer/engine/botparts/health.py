@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 from ... import atlas, gamekeys, jsonio
 from ...i18n import _
-from .. import combat, potions, repair
+from .. import combat, potions, repair, teamhunt
 from .base import (CONFIRM, RESPAWN, LosingFight, Respawned, Stopped, is_respawn_menu, potion_kind)
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -609,6 +609,8 @@ class HealthMixin(Parts):
             self.handle_death()
         elif getattr(self, "dead_noted", False):
             self.dead_noted = False      # alive again (respawned by hand): the next death is a new one
+        if getattr(self, "farming_on", None) is not None:
+            teamhunt.observe(as_bot(self), me)
         now = self.clock.time()
         hp, top = me.get("hp", 0), me.get("maxhp", 0) or 1
         share = 100.0 * hp / top

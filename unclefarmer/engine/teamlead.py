@@ -80,6 +80,8 @@ class TeamLead:
     chat_from: int | None = None       # the chat cursor the safety watch reads from
     own_disband: bool = False          # the next "Team disbanded" is ours
     handed: bool = False               # we handed the team over ourselves
+    hunt_transfer: tuple[str, float] | None = None
+    hunt_away: bool = False           # temporarily leading from another game during a hunt
     off: bool = False                  # someone else disbanded or took the team: hands off
     looked_at: float = -1e9            # when the farm loop last read the sounds and the chat
     told: set[str] = field(default_factory=set[str])
@@ -164,12 +166,28 @@ def watch(b: Bot) -> None:
         if DISBANDED.search(line) and not lead.own_disband:
             lead.off = True
         m = NEW_LEADER.match(line)
-        if m and not lead.handed and m.group(1).strip().lower() != str(b.me().get("name", "")).lower():
+        if m and not lead.handed and _lost_lead(b, lead, m.group(1).strip().casefold()):
             lead.off = True
         if DISBANDED.search(line):
             lead.own_disband = False
     if lead.off:
         b.log(_("someone else disbanded the team or took it over: no more managing it this run"), speak=True)
+
+
+def note_hunt_handoff(b: Bot, target: str, until: float) -> None:
+    state(b).hunt_transfer = target.casefold(), until
+
+
+def _lost_lead(b: Bot, lead: TeamLead, target: str) -> bool:
+    if target == str(b.me().get("name", "")).casefold():
+        lead.hunt_away = False
+        lead.hunt_transfer = None
+        return False
+    planned = lead.hunt_transfer
+    lead.hunt_transfer = None
+    if planned and target == planned[0] and b.clock.time() < planned[1]:
+        lead.hunt_away = True
+    return not lead.hunt_away
 
 
 def heard_request(b: Bot) -> bool:
@@ -483,11 +501,13 @@ def offline_due(b: Bot) -> bool:
 
 # ------------------------------------------------------------------ in the run
 def on(b: Bot) -> bool:
-    return bool(b.p.get("team_accept", False)) and not state(b).off
+    lead = state(b)
+    return bool(b.p.get("team_accept", False)) and not (lead.off or lead.hunt_away)
 
 
 def removing(b: Bot) -> bool:
-    return bool(b.p.get("team_remove_offline", False)) and not state(b).off
+    lead = state(b)
+    return bool(b.p.get("team_remove_offline", False)) and not (lead.off or lead.hunt_away)
 
 
 def start_farm(b: Bot) -> None:

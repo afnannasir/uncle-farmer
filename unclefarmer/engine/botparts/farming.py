@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamlead, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamhunt, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
@@ -177,7 +177,9 @@ class FarmingMixin(Parts):
             return bool(until and until())
 
         def sighted(_me: dict[str, Any]) -> bool:
-            return bool(self.targets(self.snap(), area, only, skip, avoid, limit=chase))
+            snap = self.snap()
+            return teamhunt.interrupt_patrol(as_bot(self), snap) or bool(
+                self.targets(snap, area, only, skip, avoid, limit=chase))
 
         last_supply_check = self.clock.time()
         was = (self.in_instance, self.pack_min)
@@ -244,12 +246,7 @@ class FarmingMixin(Parts):
                 if corpses.harvest(as_bot(self), snap):
                     continue          # Draw Blood, Skinning or Cut Flesh on a kill of ours
                 mobs = self.targets(snap, area, only, skip, avoid, limit=chase)
-                if mobs:
-                    mob = self.next_target(snap, mobs)
-                    if not self.in_instance and mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
-                        continue
-                    self.note_pick(snap, mob, mobs)
-                    self.fight(mob)
+                if self._farm_fight(snap, mobs):
                     continue
                 # Nothing to fight: keep moving (and say why, when monsters were in sight).
                 self.explain_left_out(map_id)
@@ -276,6 +273,18 @@ class FarmingMixin(Parts):
                 loop_i = None
                 if self._set_back(map_id, setback):
                     break
+
+    def _farm_fight(self, snap: dict[str, Any], mobs: list[dict[str, Any]]) -> bool:
+        if teamhunt.tick(as_bot(self), snap, mobs):
+            return True
+        if not mobs:
+            return False
+        mob = self.next_target(snap, mobs)
+        if not self.in_instance and mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
+            return True
+        self.note_pick(snap, mob, mobs)
+        self.fight(mob)
+        return True
 
     def _upkeep(self, map_id: int, area: Sequence[float] | None, only: str) -> bool:
         """Between fights: an empty potion key filled, the experience card, the no-kill watchdog.

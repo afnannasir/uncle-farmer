@@ -161,7 +161,7 @@ final class Ask {
     }
 
     /** The game's live channel (a reconnect replaces it, so it is read every time), or null. */
-    private static Object gameChannel() {
+    static Object gameChannel() {
         try {
             if (channel == null && !find()) return null;
             Object n = self.get(null);

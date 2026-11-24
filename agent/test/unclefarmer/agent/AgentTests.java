@@ -51,6 +51,7 @@ public final class AgentTests {
         chatQueueCutsLongTextAtSpaces();
         equipmentIsThrownAsTheGameThrowsIt();
         directShardPacketUsesTheVerifiedLayout();
+        directTeamTransferNeedsTheLeadersOwnRoster();
         commandsAnswerWithoutTheGame();
         theStateServerListensOnLoopbackOnly();
         theLoggedShopAndMarketMenusAreRecognised();
@@ -77,6 +78,44 @@ public final class AgentTests {
     }
 
     // ---------------------------------------------------------------- protocol
+    private static void directTeamTransferNeedsTheLeadersOwnRoster() throws Exception {
+        Menus.Menu roster = new Menus.Menu();
+        roster.rows.add(java.util.Arrays.asList(new Menus.Entry(8192, new String[] {"Hero;10", "leader"}, new int[] {10})));
+        Menus.Entry bob = new Menus.Entry(8192, new String[] {"Bob;20"}, new int[] {20});
+        Menus.Entry transfer = new Menus.Entry(14, new String[] {"Transfer team leader"}, new int[] {1, 9, 20});
+        roster.rows.add(java.util.Arrays.asList(bob, transfer));
+        TeamHandoff.Proof proof = TeamHandoff.proof(roster, 10);
+        check(proof != null && proof.commands.containsKey(20) && !proof.commands.containsKey(10),
+                "certify only another member's actual transfer entry");
+        Object world = new Object(), connection = new Object();
+        java.lang.reflect.Method sender = AgentTests.class.getMethod("recordHandoff", int.class, int.class, int[].class);
+        TeamHandoff.remember(world, connection, 10, 456, 17, sender, proof);
+        check(TeamHandoff.send(30, world, connection, 10).startsWith("refused"), "refuse an unknown member");
+        check(TeamHandoff.send(20, world, new Object(), 10).startsWith("refused"), "refuse a different connection");
+        TeamHandoff.chat(46, "Bob", "Bob has become the team leader");
+        eq(TeamHandoff.send(20, world, connection, 10), "sent", "verified owner calls the sender");
+        eq(handoff, "456,17,[1, 9, 20]", "preserve the observed envelope and command");
+        TeamHandoff.chat(46, "", "Bob has become the team leader");
+        check(TeamHandoff.send(20, world, connection, 10).startsWith("refused"), "new leader revokes authority");
+        TeamHandoff.chat(46, "", "Hero has become the team leader");
+        check(TeamHandoff.send(20, world, connection, 10).equals("sent"), "authority can return within the same roster");
+        TeamHandoff.chat(46, "", "Carol joined the team");
+        check(TeamHandoff.send(20, world, connection, 10).startsWith("refused"), "membership invalidates the roster");
+        check(TeamHandoff.proof(roster, 20) == null, "a follower cannot certify a transfer");
+        roster.rows.set(1, java.util.Arrays.asList(bob,
+                new Menus.Entry(14, new String[] {"Transfer team leader"}, new int[] {1, 8, 20})));
+        check(TeamHandoff.proof(roster, 10) == null, "refuse a row with the remove-member action");
+        roster.rows.set(1, java.util.Arrays.asList(bob,
+                new Menus.Entry(14, new String[] {"Transfer team leader"}, new int[] {1, 9, 30})));
+        check(TeamHandoff.proof(roster, 10) == null, "refuse a transfer for another row's player");
+    }
+
+    private static String handoff;
+
+    public static void recordHandoff(int dialog, int kind, int[] command) {
+        handoff = dialog + "," + kind + "," + java.util.Arrays.toString(command);
+    }
+
     private static void protocolReadsNumbersAndNeverPastTheEnd() {
         byte[] m = {0x00, 0x12, (byte) 0xD6, (byte) 0x87, 0x7F};
         eq(Protocol.readInt(m, 0), 1234567, "readInt big-endian");
