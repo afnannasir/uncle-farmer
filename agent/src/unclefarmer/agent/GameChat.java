@@ -136,6 +136,27 @@ final class GameChat {
         }
     }
 
+    /**
+     * The rooms of one channel (0 international, 1 private channel) the player is in: those the
+     * chat model keeps lines for, the one it has up, and every one it has had up since the game
+     * started. Switching rooms in the game's chat line doesn't leave one (live 2026-11-24: back on
+     * French, a line into English still went there), but the chat model keeps no lines for a room
+     * nothing was said in yet, so the rooms seen up are remembered too. Under NAMES' lock.
+     */
+    private static List<Integer> seen(int i) {
+        int out = i == 0 ? INTERNATIONAL_OUT : PRIVATE_CHANNEL_OUT;
+        List<Integer> ids = new ArrayList<Integer>();
+        for (int id : joined[i]) ids.add(id);
+        if (current[i] > 0 && !ids.contains(current[i])) ids.add(current[i]);
+        for (String key : NAMES.keySet()) {
+            int colon = key.indexOf(':');
+            if (Integer.parseInt(key.substring(0, colon)) != out) continue;
+            Integer id = Integer.valueOf(key.substring(colon + 1));
+            if (!ids.contains(id)) ids.add(id);
+        }
+        return ids;
+    }
+
     /** "rooms":[{"channel":5,"id":10,"name":"English","current":true}, ...]: every joined room. */
     private static void rooms(StringBuilder sb) {
         readRooms();
@@ -144,9 +165,7 @@ final class GameChat {
         synchronized (NAMES) {
             for (int i = 0; i < 2; i++) {
                 int out = i == 0 ? INTERNATIONAL_OUT : PRIVATE_CHANNEL_OUT;
-                List<Integer> ids = new ArrayList<Integer>();
-                for (int id : joined[i]) ids.add(id);
-                if (current[i] > 0 && !ids.contains(current[i])) ids.add(current[i]);
+                List<Integer> ids = seen(i);
                 for (int id : ids) {
                     if (!first) sb.append(',');
                     first = false;
@@ -210,11 +229,9 @@ final class GameChat {
             roomsRead = 0;
         }
         readRooms();
-        boolean in = false;
+        boolean in;
         synchronized (NAMES) {
-            int i = channel == INTERNATIONAL_OUT ? 0 : 1;
-            for (int id : joined[i]) in |= id == target;
-            in |= current[i] == target;
+            in = seen(channel == INTERNATIONAL_OUT ? 0 : 1).contains(Integer.valueOf(target));
         }
         if (!in) return "error: not in that room";
         if (PrivateChat.sender() == null) return "error: the game's chat sender wasn't found";
