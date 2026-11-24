@@ -334,6 +334,7 @@ class Run(threading.Thread):
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
         bot.tell = getattr(self, "tell", None)       # answers the player who asked for this run
         bot.reconnect = lambda: self._reconnect_saved_character(bot, agent)
+        bot.after_login = lambda: self._rearm(bot, agent)
         self.bot = bot
         return bot
 
@@ -360,14 +361,22 @@ class Run(threading.Thread):
                     # loaded...): what the next lost connection is understood from
                     self.log(_("logging back in didn't work: {why}", why=state.get("status") or "?"))
                     return False
-                link.send("keysup")
-                bot.held.clear()
-                bot.guarding = self._arm(link, agent, bot.p, settings.load_app()) == "on"
+                self._rearm(bot, agent)
                 self.log(_("automatic reconnection finished"), speak=True)
                 return True
         except (AgentError, OSError, Stopped):
             return False
         return False
+
+    def _rearm(self, bot: Bot, agent: int) -> None:
+        """Back in the game after a reconnect or a wait: nothing held, the keys armed, the player's
+        modifiers kept out and the game's speech off again, as at the start."""
+        link = self.link
+        if link is None:
+            return
+        link.send("keysup")
+        bot.held.clear()
+        bot.guarding = self._arm(link, agent, bot.p, settings.load_app()) == "on"
 
     def _set_up(self, bot: Bot, snap: dict[str, Any], profile: dict[str, Any], found: dict[str, Any], agent: int,
                 app: dict[str, Any]) -> None:

@@ -12,7 +12,9 @@ list at once, never the same line twice, then one goodbye line and silence for a
 
 Trusted players (names in the list) can instead send a command as the whole message:
     help  status  where  results  today  bag  drop  pause  resume  stop  start [plan]
-    home  add  leader  leave  mute  unmute  quit game
+    home  add  leader  leave  mute  unmute  quit game  wait [minutes]
+One action at a time: while one is under way (a wait, a walk home...), another is answered "Busy"
+- the questions (status, where, results...) and stop, pause, resume and quit game always work.
 Anything else they write is treated as a chat between people and answered at most with a short
 "away" note while a bot runs. Team invites from trusted players are accepted (engine/team.py).
 """
@@ -29,7 +31,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar, TypeVarTuple
 
 from . import applog, jsonio, nearby, paths, settings, stats, trust
 from .clock import CLOCK, Clock
-from .engine import follow, team
+from .engine import follow, logout, team
 from .engine.bot import Bot, Stopped
 from .engine.botparts.parts import Where
 from .errors import carry_on
@@ -60,6 +62,8 @@ DEFAULTS = {
     "pm_speak": "trusted",       # speak arriving messages: "never", "trusted", "everyone"
     "pm_away_note": True,        # trusted chat while a bot runs: one short note every half hour
     "pm_accept_invites": True,   # accept team invites from trusted players
+    "pm_wait": False,            # trusted players may log the character out for a while (wait)
+    "pm_wait_minutes": logout.DEFAULT_MINUTES,   # a wait with no number
 }
 
 DEFAULT_REPLIES = """Hi {name}! I'm away from the keyboard right now.
@@ -99,7 +103,11 @@ COMMANDS = collections.OrderedDict([
     ("mute", (False, "silence the game")),
     ("unmute", (False, "the game talks again")),
     ("quit", (True, "quit game: close the game")),
+    ("wait", (True, "wait [minutes]: log out for a while, then back in and go on")),
 ])
+# answered at any time, even while an action is under way: questions, and the ways to stop
+FREE = {"help", "status", "where", "players", "pet", "results", "today", "bag", "drop", "pause", "resume", "stop",
+        "quit"}
 ALIASES = {"stats": "results", "commands": "help", "pos": "where", "accept": "add", "tfl": "leader",
            "comehere": "come", "followme": "follow", "stopfollow": "unfollow", "who": "players",
            "nearby": "players"}
@@ -136,6 +144,8 @@ def details():
         "mute": _("mute: the game stops talking (only my game)."),
         "unmute": _("unmute: the game talks again."),
         "quit": _("quit game: I close the game. Any run stops first. A plain quit means leave the team."),
+        "wait": _("wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back "
+                  "in and go on farming. Turned on in Uncle Farmer's private messages settings."),
     }
 
 
@@ -258,6 +268,8 @@ class Messenger(threading.Thread):
     host.character(pid)."""
 
     clock: Clock = CLOCK
+    busy: tuple[str, float | None, object] | None = None   # (action under way, when it should end, its run)
+    asked = ""                                 # the command being answered (command)
 
     def __init__(self, pid: int, host: Host, clock: Clock = CLOCK) -> None:
         super().__init__(daemon=True, name="unclefarmer-pm-%d" % pid)
@@ -425,6 +437,11 @@ class Messenger(threading.Thread):
     # -------------------------------------------------- trusted players
     def command(self, to: int, name: str, word: str, rest: str):
         self.say(_("{name} asks: {what}", name=name, what=(word + " " + rest).strip()), private=True)
+        still = self.still_on()
+        if still and word not in FREE:
+            self.send(to, name, _("Busy, one command at a time. Still on: {what}.", what=still), first=True)
+            return
+        self.asked = word
         try:
             answer = getattr(self, "cmd_" + word)(to, name, rest)
         except Exception as e:          # an answer must never take the messenger down
@@ -696,13 +713,78 @@ class Messenger(threading.Thread):
     def cmd_leave(self, to: int, name: str, rest: str) -> str | None:
         return self.chore(lambda bot: self.send(to, name, team.leave(bot)[1]), None, to, name)
 
+    def still_on(self) -> str | None:
+        """The action under way ("wait (12 min left)"), or None. One the run ended before doing
+        (its run is gone or another) is over."""
+        if self.busy is None:
+            return None
+        word, ends, run = self.busy
+        if run is not self.host.run_for(self.pid):
+            self.busy = None
+            return None
+        if ends is None:
+            return word
+        left = max(1, int((ends - self.clock.time()) / 60 + 0.99))
+        return _("{what} ({n} min left)", what=word, n=left)
+
+    def cmd_wait(self, to: int, name: str, rest: str) -> str | None:
+        cfg = config()
+        if not cfg["pm_wait"]:
+            return _("That command is turned off on this character.")
+        minutes = logout.minutes_in(rest, int(cfg["pm_wait_minutes"]))
+        if minutes is None:
+            return _("Send wait and 1 to 999 minutes, for example: wait 45")
+        run = self.host.run_for(self.pid)
+        going_on = bool(run and run.bot)
+
+        def tell(text: str) -> None:
+            self.send(to, name, text, first=True)
+            self.say(text)
+
+        def job(bot: Bot) -> None:
+            # the answer goes before the character leaves: sent by this thread's own loop (a run's
+            # bot does the job on its thread, and the link is this thread's)
+            end = self.clock.time() + 6
+            while any(n == name for _t, n, _x, _w in list(self.outbox)) and self.clock.time() < end:
+                self.clock.wait(bot.stop_event, 0.2)
+            logout.wait_out(bot, minutes, name, tell)
+
+        if going_on:
+            self.chore(job, None, to, name, ends=self.clock.time() + minutes * 60)
+            return _("Got it: logging out for {n} minutes, then back to farming.", n=minutes)
+        bot = self.idle_bot()
+        if bot is None:
+            return _("Not logged in.")
+        bot.stop_event = self.halt           # Uncle Farmer closing ends the wait
+        self.send(to, name, _("Got it: logging out for {n} minutes, then back in.", n=minutes), first=True)
+        self.flush_now()
+        self.busy = ("wait", self.clock.time() + minutes * 60, None)
+        try:
+            job(bot)
+        except Stopped as e:
+            self.say(str(e), True)
+        finally:
+            self.busy = None
+        return None
+
     idle_bot_ref: Bot | None = None
 
-    def chore(self, job: Callable[[Bot], object], first: str | None, to: int, name: str) -> str | None:
-        """A running bot does it between two steps; with no run, this thread does it now."""
+    def chore(self, job: Callable[[Bot], object], first: str | None, to: int, name: str,
+              ends: float | None = None) -> str | None:
+        """A running bot does it between two steps; with no run, this thread does it now. Until
+        it is done, other actions are answered "Busy" (ends: when it should be over, if known)."""
         run = self.host.run_for(self.pid)
         if run and run.bot:
-            run.bot.requests.put(job)
+            word = self.asked or "?"
+            self.busy = (word, ends, run)
+
+            def done_then_free(bot: Bot) -> None:
+                try:
+                    job(bot)
+                finally:
+                    if self.busy and self.busy[2] is run:
+                        self.busy = None
+            run.bot.requests.put(done_then_free)
             return first
         bot = self.idle_bot()
         if bot is None:

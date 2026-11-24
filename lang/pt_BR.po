@@ -1072,6 +1072,9 @@ msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr ""
 "Não foi possível ler os IDs de som disponíveis. Não é possível adicionar sons."
 
+msgid "Back in after {minutes} minutes."
+msgstr "De volta depois de {minutes} minutos."
+
 msgid "Back where the run started"
 msgstr "De volta ao ponto de partida"
 
@@ -1166,6 +1169,9 @@ msgstr "Construir o S&upply Camp em construção"
 
 msgid "Busy - send stop first."
 msgstr "Ocupado - envie o comando de parada primeiro."
+
+msgid "Busy, one command at a time. Still on: {what}."
+msgstr "Ocupado, um comando por vez. Ainda em: {what}."
 
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr ""
@@ -1468,6 +1474,10 @@ msgstr "Copiar &seleção"
 msgid "Corpses"
 msgstr "Cadáveres"
 
+msgid "Could not log back in after the wait, so the run is stopping."
+msgstr ""
+"Não consegui entrar de novo depois da espera, então a execução vai parar."
+
 msgid "Could not read known sound IDs: {error}"
 msgstr "Não foi possível ler os IDs de som conhecidos: {error}"
 
@@ -1522,6 +1532,9 @@ msgstr ""
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
 msgstr ""
+
+msgid "Couldn't log out: {why}"
+msgstr "Não consegui sair: {why}"
 
 msgid "Couldn't open it."
 msgstr "Não foi possível abrir."
@@ -2167,6 +2180,12 @@ msgstr "Continuando."
 msgid "Going outside was stopped: {why}"
 msgstr ""
 
+msgid "Got it: logging out for {n} minutes, then back in."
+msgstr "Entendido: saindo por {n} minutos, depois volto."
+
+msgid "Got it: logging out for {n} minutes, then back to farming."
+msgstr "Entendido: saindo por {n} minutos, depois volto a farmar."
+
 msgid "Grand Master"
 msgstr "Grão-mestre"
 
@@ -2306,6 +2325,11 @@ msgstr ""
 msgid ""
 "I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
 msgstr ""
+
+msgid ""
+"I don't know this character's saved account, so I couldn't log back in. Log in to it once with Uncle Farmer open first."
+msgstr ""
+"Não conheço a conta salva deste personagem, então não conseguiria entrar de novo. Entre nele uma vez com o Uncle Farmer aberto primeiro."
 
 msgid "I don't know where a Shard Market is"
 msgstr "Não sei onde fica um Mercado de Fragmentos"
@@ -2815,6 +2839,9 @@ msgstr "Minutos de tempo de drop neste local:"
 
 msgid "Minutes to look for it:"
 msgstr "Minutos para procurar:"
+
+msgid "Minutes to wait when they gi&ve no number:"
+msgstr "Minutos de espera sem número (wait so&zinho):"
 
 msgid "Minutes without a kill:"
 msgstr "Minutos sem matar:"
@@ -3963,6 +3990,9 @@ msgstr ""
 "\n"
 "{report}"
 
+msgid "Send wait and 1 to 999 minutes, for example: wait 45"
+msgstr "Envie wait e 1 a 999 minutos, por exemplo: wait 45"
+
 msgid "Set the attack &range myself"
 msgstr "Definir manualmente o &alcance de ataque"
 
@@ -4421,6 +4451,9 @@ msgstr "Avisá-los de vez em quando que estou &ausente"
 msgid "Test &message:"
 msgstr "&Mensagem de teste:"
 
+msgid "That command is turned off on this character."
+msgstr "Esse comando está desligado neste personagem."
+
 msgid "That filter already exists."
 msgstr "Esse filtro já existe."
 
@@ -4837,6 +4870,9 @@ msgstr "Elas continuam de onde estavam em {n} segundos."
 
 msgid "They come from {source}, a bagful at a time."
 msgstr "Eles vêm de {source}, uma mochila cheia por vez."
+
+msgid "They may &log me out for a while and back in (wait)"
+msgstr "Eles podem me &desconectar por um tempo e me conectar de novo (wait)"
 
 msgid "This character has no gathering skill to add a place for."
 msgstr ""
@@ -5556,6 +5592,9 @@ msgid ""
 "already on {map}, where this run farms first - the Before farming list is skipped"
 msgstr ""
 "já está em {map}, primeiro local de coleta desta execução — ignorando a lista Antes da coleta"
+
+msgid "another character came in"
+msgstr "outro personagem entrou"
 
 msgid "anything"
 msgstr ""
@@ -6769,8 +6808,14 @@ msgstr "carregar {a} de {b}"
 msgid "log in to a character first"
 msgstr "primeiro, entre em um personagem"
 
+msgid "logged out for {minutes} minutes, as {name} asked"
+msgstr "desconectado por {minutes} minutos, como {name} pediu"
+
 msgid "logging back in didn't start: {why}"
 msgstr "a reconexão não começou: {why}"
+
+msgid "logging back in didn't work ({n} of {most}): {why}"
+msgstr "entrar de novo não funcionou ({n} de {most}): {why}"
 
 msgid "logging back in didn't work: {why}"
 msgstr "a reconexão não funcionou: {why}"
@@ -7875,6 +7920,9 @@ msgstr "parou antes do próximo nível"
 msgid "stopped by you"
 msgstr "parado por você"
 
+msgid "stopped by you during the wait: the character stays logged out"
+msgstr "parado por você durante a espera: o personagem continua desconectado"
+
 msgid "stopped with {n} Vitality left, as you set"
 msgstr "parou com {n} de vitalidade restante, conforme definido"
 
@@ -8241,6 +8289,9 @@ msgstr "as gemas da bolsa já estão no nível máximo"
 msgid "the best map for level {level}: {map}"
 msgstr "o melhor mapa para o nível {level}: {map}"
 
+msgid "the character didn't leave the game"
+msgstr "o personagem não saiu do jogo"
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -8513,6 +8564,9 @@ msgid ""
 "the list Uncle Farmer came with (from {made}) - press Refresh for today's"
 msgstr ""
 
+msgid "the login took too long"
+msgstr "a entrada demorou demais"
+
 msgid ""
 "the market can't be used with this agent: restart the game so agent {n} loads"
 msgstr ""
@@ -8617,6 +8671,12 @@ msgstr "o ponto da execução foi guardado: ela pode continuar dali"
 msgid "the script is too long (over {max} characters)"
 msgstr "o script é longo demais (mais de {max} caracteres)"
 
+msgid "the setting menu didn't open"
+msgstr "o menu de configurações não abriu"
+
+msgid "the setting menu has no Switch account"
+msgstr "o menu de configurações não tem Switch account"
+
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 "não foi possível ler a lista de preços dos fragmentos (data\\shards.json)"
@@ -8696,6 +8756,9 @@ msgstr "nível máximo — nada a perder"
 
 msgid "the village at {x},{y} on {map}"
 msgstr "a vila em {x},{y} no mapa {map}"
+
+msgid "the wait is over: logging back in"
+msgstr "a espera acabou: entrando de novo"
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr "a passagem em {cell} continua fechada — a etapa ainda não foi concluída"
@@ -8926,6 +8989,11 @@ msgstr "mensagem de voz"
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
 msgstr "mensagem de voz de {name} — reproduza no Chat (Ctrl+T)"
+
+msgid ""
+"wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
+msgstr ""
+"wait 45: saio por 45 minutos (só wait: os minutos definidos no Uncle Farmer), depois entro de novo e continuo farmando. Ligado nas configurações de mensagens privadas do Uncle Farmer."
 
 msgid "waiting for the game opened for {name} to start"
 msgstr "esperando o jogo aberto para {name} iniciar"
@@ -9172,6 +9240,9 @@ msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
 msgstr "{dmg} de dano ({share} do total)"
+
+msgid "{done} of {minutes} minutes waited"
+msgstr "{done} de {minutes} minutos esperados"
 
 msgid ""
 "{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
@@ -9876,6 +9947,9 @@ msgstr "{used}, {kills} mortes"
 
 msgid "{village} on {map}"
 msgstr "{village} em {map}"
+
+msgid "{what} ({n} min left)"
+msgstr "{what} (faltam {n} min)"
 
 msgid ""
 "{what} changed since it was interrupted, so it starts from the beginning"

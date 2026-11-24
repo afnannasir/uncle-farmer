@@ -2220,10 +2220,19 @@ Available commands include:
 - `mute` — Mutes the game.
 - `unmute` — Unmutes the game.
 - `quit game` — Closes the game.
+- `wait [minutes]` — Logs your character out for a while, then back in, and the run goes on (off unless ticked, see below).
+
+One action at a time: while one is under way (a wait, a walk home, `come`), another action is answered "Busy, one command at a time. Still on: ...". Questions (`status`, `where`, `results`...) and `stop`, `pause`, `resume` and `quit game` are always answered.
 
 Send `help` to see the available commands. You can also send `help` followed by a command name for more information.
 
 Uncle Farmer automatically accepts team invitations from trusted players. It declines invitations from other players by pressing **Escape** while the bot is running.
+
+### Using `wait`
+
+`wait 45` logs your character out for 45 minutes, then logs the same character back in and the run goes on where it was (the minutes logged out don't count in its results). `wait` alone waits the minutes set in **Private messages**. It works only with **They may log me out for a while and back in (wait)** ticked there; otherwise it answers "That command is turned off on this character."
+
+The bot logs out the way you do (the setting menu, F1, then Switch account) and logs back in with the game's saved account, so the character must have been logged in once with Uncle Farmer open. While logged out, no private message can reach it. Press **Stop** in Uncle Farmer during the wait and the character stays logged out. If logging back in fails five times, a minute apart, the run stops.
 
 ### Using `come`
 

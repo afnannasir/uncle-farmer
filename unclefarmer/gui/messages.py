@@ -39,6 +39,8 @@ class MessagesDialog(Dialog):
                                          c["pm_commands_in_front"])
         self.invites = f.check(_("Accept their team &invites"), c["pm_accept_invites"])
         self.away = f.check(_("Tell them now and then that I'm a&way"), c["pm_away_note"])
+        self.wait = f.check(_("They may &log me out for a while and back in (wait)"), c["pm_wait"])
+        self.wait_minutes = f.number(_("Minutes to wait when they gi&ve no number:"), c["pm_wait_minutes"], 1, 999)
         f = group(panel, box, _("Speech"))
         self.speak = f.choice(_("S&peak incoming messages:"), [_("From trusted players"), _("From everyone"),
                                                                _("Never")],
@@ -83,6 +85,8 @@ class MessagesDialog(Dialog):
         s["pm_commands_in_front"] = self.commands_in_front.GetValue()
         s["pm_accept_invites"] = self.invites.GetValue()
         s["pm_away_note"] = self.away.GetValue()
+        s["pm_wait"] = self.wait.GetValue()
+        s["pm_wait_minutes"] = self.wait_minutes.GetValue()
         s["pm_call_by_name"] = self.call_by_name.GetValue()
         s["pm_max_replies"] = self.max.GetValue()
         s["pm_quiet_minutes"] = self.quiet.GetValue()
