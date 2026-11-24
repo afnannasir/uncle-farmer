@@ -57,7 +57,11 @@ final class AutomaticLogin {
         }
         synchronized (LOCK) {
             if (running) return "{\"ok\":false,\"error\":\"automatic login is already running\"}";
-            String connected = connectedAccount();
+            // A client left over from a logout (Switch account) still names its account while its
+            // connection is closed: taken for one connecting, no login was started and the picker
+            // never came (live 2026-11-24, a wait's login back: "timed out waiting for character
+            // picker" five times). Only a live connection counts as one connecting.
+            String connected = connectionAlive() ? connectedAccount() : null;
             if (connected != null && !connected.equalsIgnoreCase(email)) {
                 return "{\"ok\":false,\"error\":\"another saved account is already connecting\"}";
             }
