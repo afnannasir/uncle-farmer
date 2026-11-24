@@ -975,6 +975,9 @@ msgstr "También: {names}"
 msgid "Always"
 msgstr "Siempre"
 
+msgid "Always Sell Gathering Before Going Outside"
+msgstr ""
+
 msgid ""
 "Always fight the &nearest monster (off: melee picks a calm one beside a pack)"
 msgstr ""
@@ -2153,6 +2156,9 @@ msgstr "Continuando"
 
 msgid "Going on."
 msgstr "Continuando."
+
+msgid "Going outside was stopped: {why}"
+msgstr ""
 
 msgid "Grand Master"
 msgstr "Gran maestro"
@@ -5417,6 +5423,9 @@ msgstr "Ayer"
 msgid "You are already on {map}."
 msgstr "Ya estás en {map}."
 
+msgid "You aren't in {room} any more: join it again in the game."
+msgstr "Ya no estás en {room}: vuelve a unirte en el juego."
+
 msgid "You have (last scan):"
 msgstr "Tienes (último análisis):"
 
@@ -6039,6 +6048,9 @@ msgstr "no se pudo mover a la opción del menú"
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "no se pudo abrir la síntesis de fragmentos del sintetizador de gemas"
 
+msgid "couldn't open the collection buyer's list"
+msgstr ""
+
 msgid "couldn't put the PK mode back ({why})"
 msgstr "no se pudo volver a poner el modo PK ({why})"
 
@@ -6405,6 +6417,9 @@ msgstr "revisión de recolección: {notes}"
 
 msgid "gathering finished: {notes}"
 msgstr "recolección terminada: {notes}"
+
+msgid "gathering items remain unsold: {items}"
+msgstr ""
 
 msgid "gathering with {skill} ({rank})"
 msgstr "recolectando con {skill} ({rank})"
@@ -7586,6 +7601,9 @@ msgstr ""
 msgid "road"
 msgstr "camino"
 
+msgid "room {n}"
+msgstr "sala {n}"
+
 msgid ""
 "round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
@@ -7739,6 +7757,9 @@ msgstr "se vendieron {n} {item}"
 
 msgid "sold {n} {item} at the Shard Market"
 msgstr "se vendieron {n} {item} en el Mercado de fragmentos"
+
+msgid "some gathering items are still unsold"
+msgstr ""
 
 msgid ""
 "someone else disbanded the team or took it over: no more managing it this run"
@@ -9076,6 +9097,9 @@ msgstr "{cave}: {n} monstruos eliminados en {m} minutos"
 
 msgid "{cell} can't be reached on {map}"
 msgstr "no se puede llegar a {cell} en {map}"
+
+msgid "{channel}: {room}"
+msgstr "{channel}: {room}"
 
 msgid "{chore}: {note}"
 msgstr "{chore}: {note}"

@@ -971,6 +971,9 @@ msgstr "Ayrıca: {names}"
 msgid "Always"
 msgstr "Her zaman"
 
+msgid "Always Sell Gathering Before Going Outside"
+msgstr ""
+
 msgid ""
 "Always fight the &nearest monster (off: melee picks a calm one beside a pack)"
 msgstr ""
@@ -2139,6 +2142,9 @@ msgstr "Devam ediliyor"
 
 msgid "Going on."
 msgstr "Devam ediyorum."
+
+msgid "Going outside was stopped: {why}"
+msgstr ""
 
 msgid "Grand Master"
 msgstr "Büyük Usta"
@@ -5366,6 +5372,9 @@ msgstr "Dün"
 msgid "You are already on {map}."
 msgstr "Zaten {map} üzerindesin."
 
+msgid "You aren't in {room} any more: join it again in the game."
+msgstr "Artık {room} içinde değilsiniz: oyunda yeniden katılın."
+
 msgid "You have (last scan):"
 msgstr "Sende olan (son tarama):"
 
@@ -5986,6 +5995,9 @@ msgstr "menü girdisine gidilemedi"
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "Mücevher Ustasının parça sentezi açılamadı"
 
+msgid "couldn't open the collection buyer's list"
+msgstr ""
+
 msgid "couldn't put the PK mode back ({why})"
 msgstr "PK modu eski haline getirilemedi ({why})"
 
@@ -6350,6 +6362,9 @@ msgstr "toplama kontrolü: {notes}"
 
 msgid "gathering finished: {notes}"
 msgstr "toplama bitti: {notes}"
+
+msgid "gathering items remain unsold: {items}"
+msgstr ""
 
 msgid "gathering with {skill} ({rank})"
 msgstr "{skill} ({rank}) ile toplama"
@@ -7512,6 +7527,9 @@ msgstr ""
 msgid "road"
 msgstr "yol"
 
+msgid "room {n}"
+msgstr "oda {n}"
+
 msgid ""
 "round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
@@ -7665,6 +7683,9 @@ msgstr "{n} {item} satıldı"
 
 msgid "sold {n} {item} at the Shard Market"
 msgstr "Parça pazarında {n} {item} satıldı"
+
+msgid "some gathering items are still unsold"
+msgstr ""
 
 msgid ""
 "someone else disbanded the team or took it over: no more managing it this run"
@@ -8994,6 +9015,9 @@ msgstr "{cave}: {m} dakikada {n} öldürme"
 
 msgid "{cell} can't be reached on {map}"
 msgstr "{map} üzerinde {cell} hücresine ulaşılamıyor"
+
+msgid "{channel}: {room}"
+msgstr "{channel}: {room}"
 
 msgid "{chore}: {note}"
 msgstr "{chore}: {note}"

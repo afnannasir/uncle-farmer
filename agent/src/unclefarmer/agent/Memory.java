@@ -52,6 +52,10 @@ final class Memory {
     static final String CHAT_MODEL_CLASS = "game.t";
     static final String CHAT_INTERNATIONAL = "i";
     static final String CHAT_PRIVATE_CHANNEL = "j";
+    static final String CHAT_INTERNATIONAL_NAME = "y";
+    static final String CHAT_PRIVATE_CHANNEL_NAME = "z";
+    static final String CHAT_INTERNATIONAL_LINES = "w";
+    static final String CHAT_PRIVATE_CHANNEL_LINES = "x";
     static final String WIN_WORLD = "n";
 
     static final String W_ENTITIES = "i";
@@ -162,21 +166,77 @@ final class Memory {
      *  international lines with its field i and private-channel lines with its field j (javap of
      *  game.Win, 2026-10-21). Found by type, read by name. */
     static int[] chatRooms() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new int[] {0, 0};
+        return new int[] {intField(t, CHAT_INTERNATIONAL), intField(t, CHAT_PRIVATE_CHANNEL)};
+    }
+
+    /** The names of the international room and the private channel the chat model has up now
+     *  ({international, private channel}, null when none), read live on 2026-11-24 as its fields y
+     *  and z: "French" then "English" in y as the player switched rooms, one private
+     *  channel's name then another's in z. */
+    static String[] chatRoomNames() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new String[] {null, null};
+        return new String[] {stringOrNull(t, CHAT_INTERNATIONAL_NAME), stringOrNull(t, CHAT_PRIVATE_CHANNEL_NAME)};
+    }
+
+    /** The rooms the chat model keeps lines for ({international ids, private channel ids}): its
+     *  fields w and x map each joined room's id to that room's own lines (live, 2026-11-24: w[10]
+     *  English and w[30] French, x[116] and x[136] two private channels). Empty when not a map. */
+    static int[][] chatJoined() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new int[][] {{}, {}};
+        return new int[][] {mapKeys(t, CHAT_INTERNATIONAL_LINES), mapKeys(t, CHAT_PRIVATE_CHANNEL_LINES)};
+    }
+
+    private static Object chatModel() throws Unavailable {
         Object w = world();
         for (Class<?> k = w.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
             for (Field f : k.getDeclaredFields()) {
                 if (!f.getType().getName().equals(CHAT_MODEL_CLASS)) continue;
                 try {
                     f.setAccessible(true);
-                    Object t = f.get(w);
-                    if (t == null) return new int[] {0, 0};
-                    return new int[] {intField(t, CHAT_INTERNATIONAL), intField(t, CHAT_PRIVATE_CHANNEL)};
+                    return f.get(w);
                 } catch (IllegalAccessException e) {
                     throw new Unavailable("chat model unreadable");
                 }
             }
         }
         throw new Unavailable("no chat model in the world");
+    }
+
+    private static String stringOrNull(Object o, String name) {
+        Field f = field(o.getClass(), name);
+        if (f == null || f.getType() != String.class) return null;
+        try {
+            return (String) f.get(o);
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    private static int[] mapKeys(Object o, String name) {
+        Field f = field(o.getClass(), name);
+        if (f == null) return new int[0];
+        Object v;
+        try {
+            v = f.get(o);
+        } catch (IllegalAccessException e) {
+            return new int[0];
+        }
+        if (!(v instanceof Map)) return new int[0];
+        List<Integer> ids = new ArrayList<Integer>();
+        try {
+            for (Object key : ((Map<?, ?>) v).keySet().toArray()) {
+                if (key instanceof Number) ids.add(((Number) key).intValue());
+            }
+        } catch (RuntimeException e) {
+            return new int[0];        // the game changed it while we read
+        }
+        int[] out = new int[ids.size()];
+        for (int i = 0; i < out.length; i++) out[i] = ids.get(i);
+        return out;
     }
 
     // ---------------------------------------------------------------- snapshots

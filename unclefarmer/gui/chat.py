@@ -1,7 +1,8 @@
 """The Chat window: the game's chat while the bot farms, read and written without the game's keys.
 
 Two tabs, as in the game: Channels (All, Team, Gang, Nearby, Map, Global, International, the
-Private channel players join, and the game's Notices) and Private chats (one conversation per
+Private channel players join, and the game's Notices, then one buffer for each international room
+and private channel the player is in, where a line typed goes into that room) and Private chats (one conversation per
 person, only the people this character has talked with). Ctrl+Tab moves between the tabs, Ctrl+1 ..
 Ctrl+9 between the channels. Everything lives in memory only (chat.py) and is gone when Uncle
 Farmer closes.
@@ -45,10 +46,12 @@ def stamp(when: float, clock: str | None) -> str:
     return time.strftime("%I:%M %p", t).lstrip("0") if clock == "12" else time.strftime("%H:%M", t)
 
 
-def line_text(line: chat.Line, where: bool = True, clock: str | None = None) -> str:
+def line_text(line: chat.Line, where: bool = True, clock: str | None = None, room: bool = False) -> str:
     """"Team, Ali: hello, 16:05" - the time after the words, so a screen reader starts with who and
     what; clock None leaves it out (speech, or the player turned it off). where=False inside a
-    channel's own buffer or a conversation: "Ali: hello, 16:05", and our own lines read "you: ..."."""
+    channel's own buffer or a conversation: "Ali: hello, 16:05", and our own lines read "you: ...".
+    room=True (International or Private channel, holding all their rooms) puts the room first:
+    "French, Ali: salut"; where=True names it with its channel: "International: French, Ali: salut"."""
     words = line["text"]
     if line.get("voice"):
         words = _("voice message") + (" " + words if words else "")
@@ -56,8 +59,12 @@ def line_text(line: chat.Line, where: bool = True, clock: str | None = None) -> 
         who = _("to {name}", name=line["to"]) if where else _("you")
     else:
         who = line["name"] or ""
+    place = None
     if where:
-        place = chat.channel_name(line["channel"])
+        place = chat.place_of(line)
+    elif room and line.get("room"):
+        place = line.get("room_name") or _("room {n}", n=line["room"])
+    if place:
         who = "%s, %s" % (place, who) if who else place
     text = "%s: %s" % (who, words) if who else words
     return "%s, %s" % (text, stamp(line["when"], clock)) if clock else text
@@ -86,9 +93,10 @@ class ChatFrame(wx.Frame):
         self.filters = chat_filters.load(self.s)
         self.replies: dict[bool, chat.Line] = {}
         self.reply_controls: dict[bool, tuple[wx.StaticText, wx.Button]] = {}
-        self.ch_keys = [k for k, _n in channel_buffers()]
-        self.ch_names = dict(channel_buffers())
-        self.unread = {k: 0 for k in self.ch_keys}
+        self.ch_keys: list[str] = []
+        self.ch_names: dict[str, str] = {}
+        self.unread: dict[str, int] = {}
+        self.buffer_rows()
         self.ch_lines: list[chat.Line] = []
         self.pm_unread: dict[str, int] = {}            # conversation key -> new messages not looked at
         self.started: dict[str, dict[str, Any]] = {}   # conversations begun here before any message
@@ -104,7 +112,7 @@ class ChatFrame(wx.Frame):
         panel, box = page(self.nb, _("Channels"))
         start = self.s.get("chat_buffer", ALL)
         self.channel = labeled(panel, box, _("C&hannel:"),
-                               lambda w: wx.Choice(w, choices=[n for _k, n in channel_buffers()]))
+                               lambda w: wx.Choice(w, choices=[self.ch_names[k] for k in self.ch_keys]))
         self.channel.SetSelection(self.ch_keys.index(start) if start in self.ch_keys else 0)
         self.ch_list = labeled(panel, box, _("&Messages:"), lambda w: wx.ListBox(w, style=wx.LB_SINGLE), 1)
         self.ch_label = wx.StaticText(panel, label=_("Messa&ge:"))
@@ -269,14 +277,38 @@ class ChatFrame(wx.Frame):
 
     # ---------------------------------------------------------------- channels
     def channel_key(self) -> str:
-        return self.ch_keys[self.channel.GetSelection()]
+        i = self.channel.GetSelection()
+        return self.ch_keys[i] if 0 <= i < len(self.ch_keys) else ALL
+
+    def buffer_rows(self) -> bool:
+        """The Channel list's buffers: the fixed ones (Ctrl+1 .. Ctrl+9), then one per international
+        room and private channel the player is in. True when that changed."""
+        f = self.feed()
+        rows = channel_buffers() + ([(k, f.room_label(k)) for k in f.rooms()] if f else [])
+        keys = [k for k, _n in rows]
+        if keys == self.ch_keys and dict(rows) == self.ch_names:
+            return False
+        self.ch_keys, self.ch_names = keys, dict(rows)
+        self.unread = {k: self.unread.get(k, 0) for k in keys}
+        return True
+
+    def refresh_rooms(self) -> None:
+        """A room joined or named since the list was made: into the Channel list, keeping the choice."""
+        keep = self.channel_key()
+        if not self.buffer_rows():
+            return
+        self.channel.Set([self.ch_names[k] for k in self.ch_keys])
+        self.channel.SetSelection(self.ch_keys.index(keep) if keep in self.ch_keys else 0)
+        self.label_channels()
 
     def show_channel(self) -> None:
+        self.refresh_rooms()
         k = self.channel_key()
         f = self.feed()
         self.ch_lines = [line for line in (f.buffer(k) if f else [])
                          if not chat_filters.matching(self.filters, line["text"])]
-        self.ch_list.Set([line_text(x, where=k == ALL, clock=clock_of(self.s)) for x in self.ch_lines])
+        self.ch_list.Set([line_text(x, where=k == ALL, clock=clock_of(self.s), room=k in chat.ROOM_CHANNELS)
+                          for x in self.ch_lines])
         if self.ch_lines:
             self.ch_list.SetSelection(len(self.ch_lines) - 1)
         self.unread[k] = 0
@@ -296,20 +328,22 @@ class ChatFrame(wx.Frame):
         selected line's channel, else the last one used."""
         reply = self.replies.get(False)
         if reply and reply["channel"] in chat.CHANNEL_KEYS:
-            return reply["channel"]
+            return chat.line_key(reply) or reply["channel"]       # a room's line: back into that room
         k = self.channel_key()
-        if k in chat.CHANNEL_KEYS:
+        if k in chat.CHANNEL_KEYS or chat.is_room(k):
             return k
         i = self.ch_list.GetSelection()
         line = self.ch_lines[i] if 0 <= i < len(self.ch_lines) else None
         if k == ALL and line and line["channel"] in chat.CHANNEL_KEYS:
-            return line["channel"]
+            return chat.line_key(line) or line["channel"]
         last: str = self.s.get("chat_channel", "4")
-        return last if last in chat.CHANNEL_KEYS else "4"
+        return last if last in chat.CHANNEL_KEYS or last in self.ch_keys else "4"
 
     def label_channel_message(self) -> None:
+        k = self.channel_target()
+        f = self.feed()
         set_label(self.ch_label, self.ch_text,
-                  _("Messa&ge to {where}:", where=chat.channel_name(self.channel_target())))
+                  _("Messa&ge to {where}:", where=f.place(k) if f else chat.channel_name(k)))
 
     # ---------------------------------------------------------------- private chats
     def conversations(self) -> list[dict[str, Any]]:
@@ -424,11 +458,15 @@ class ChatFrame(wx.Frame):
                 self.pm_unread[key] = self.pm_unread.get(key, 0) + 1
             self.refresh_people(select_key=self.peer_key() or key)
             return
+        room = chat.line_key(line)
+        if room and room not in self.ch_keys:
+            self.refresh_rooms()          # a room heard from for the first time
         k = self.channel_key()
-        if k == line["channel"] or (k == ALL and line["channel"] not in (chat.NOTICE, chat.PRIVATE)):
+        if k in (line["channel"], room) or (k == ALL and line["channel"] not in (chat.NOTICE, chat.PRIVATE)):
             at_end = self.ch_list.GetSelection() in (wx.NOT_FOUND, self.ch_list.GetCount() - 1)
             self.ch_lines.append(line)
-            self.ch_list.Append(line_text(line, where=k == ALL, clock=clock_of(self.s)))
+            self.ch_list.Append(line_text(line, where=k == ALL, clock=clock_of(self.s),
+                                          room=k in chat.ROOM_CHANNELS))
             if self.ch_list.GetCount() > chat.KEEP:
                 self.ch_list.Delete(0)
                 self.ch_lines.pop(0)
@@ -436,7 +474,9 @@ class ChatFrame(wx.Frame):
                 self.ch_list.SetSelection(self.ch_list.GetCount() - 1)
             return
         if not line.get("mine"):
-            self.unread[line["channel"]] = self.unread.get(line["channel"], 0) + 1
+            for key in (line["channel"], room):
+                if key and key != k and key in self.unread:
+                    self.unread[key] += 1
             if line["channel"] != chat.NOTICE and k != ALL:
                 self.unread[ALL] += 1
             self.label_channels()
@@ -461,7 +501,7 @@ class ChatFrame(wx.Frame):
             why = self.send_private(f, text)
         else:
             k = self.channel_target()
-            why = f.say(int(k), text)
+            why = f.say_to(k, text)
             if not why:
                 self.s["chat_channel"] = k
         if why:

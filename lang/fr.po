@@ -979,6 +979,9 @@ msgstr "Aussi : {names}"
 msgid "Always"
 msgstr "Toujours"
 
+msgid "Always Sell Gathering Before Going Outside"
+msgstr "Toujours vendre la récolte avant de sortir"
+
 msgid ""
 "Always fight the &nearest monster (off: melee picks a calm one beside a pack)"
 msgstr ""
@@ -2167,6 +2170,9 @@ msgstr "Reprise"
 
 msgid "Going on."
 msgstr "Reprise."
+
+msgid "Going outside was stopped: {why}"
+msgstr "Sortie arrêtée : {why}"
 
 msgid "Grand Master"
 msgstr "Grand Master"
@@ -5474,6 +5480,9 @@ msgstr "Hier"
 msgid "You are already on {map}."
 msgstr "Vous êtes déjà sur {map}."
 
+msgid "You aren't in {room} any more: join it again in the game."
+msgstr "Vous n'êtes plus dans {room} : rejoignez-le de nouveau dans le jeu."
+
 msgid "You have (last scan):"
 msgstr "Vous avez (dernier scan) :"
 
@@ -6105,6 +6114,9 @@ msgstr "impossible d'aller sur la ligne du menu"
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "impossible d'ouvrir la synthèse de shards du Gem Craftsman"
 
+msgid "couldn't open the collection buyer's list"
+msgstr "impossible d'ouvrir la liste de l'acheteur de récolte"
+
 msgid "couldn't put the PK mode back ({why})"
 msgstr "impossible de remettre le mode PK ({why})"
 
@@ -6478,6 +6490,9 @@ msgstr "vérification de la récolte : {notes}"
 
 msgid "gathering finished: {notes}"
 msgstr "récolte terminée : {notes}"
+
+msgid "gathering items remain unsold: {items}"
+msgstr "objets de récolte encore invendus : {items}"
 
 msgid "gathering with {skill} ({rank})"
 msgstr "récolte avec {skill} ({rank})"
@@ -7664,6 +7679,9 @@ msgstr "anneaux"
 msgid "road"
 msgstr "route"
 
+msgid "room {n}"
+msgstr "salon {n}"
+
 msgid ""
 "round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
@@ -7818,6 +7836,9 @@ msgstr "{n} {item} vendu(s)"
 
 msgid "sold {n} {item} at the Shard Market"
 msgstr "{n} {item} vendu(s) au Shard Market"
+
+msgid "some gathering items are still unsold"
+msgstr "des objets de récolte sont encore invendus"
 
 msgid ""
 "someone else disbanded the team or took it over: no more managing it this run"
@@ -9184,6 +9205,9 @@ msgstr "{cave} : {n} kills en {m} minutes"
 
 msgid "{cell} can't be reached on {map}"
 msgstr "{cell} est inaccessible sur {map}"
+
+msgid "{channel}: {room}"
+msgstr "{channel} : {room}"
 
 msgid "{chore}: {note}"
 msgstr "{chore} : {note}"

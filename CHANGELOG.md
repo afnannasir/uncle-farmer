@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**Chat: each international room and private channel apart** (untested in game)
+
+- A player in two international rooms (French and English) or two private channels had both
+  rooms' messages mixed in one Chat buffer, with nothing to tell them apart, and a line typed there
+  went to whichever room the game had up. The game keeps every room's lines apart; the agent threw
+  the room away. Agent 79 keeps each international and private-channel line's room, lists the
+  joined rooms with their names (once the game has shown them), and sends into one room with
+  `sayin`.
+- The Chat window lists each room after Notices ("International: French"), with its own lines
+  and unread count; a line typed there goes into that room, and a reply into the room of the
+  line it answers. International and Private channel keep all their rooms together, each line
+  starting with its room. Ctrl+1 .. Ctrl+9 reach the same channels as before. Restart the game
+  once for the new agent.
+
 **The menu box on the Keys page: a moment before each choice, and shops too** (untested in game)
 
 - On one player's computer, menus that work by hand did nothing for the bot: every shop's

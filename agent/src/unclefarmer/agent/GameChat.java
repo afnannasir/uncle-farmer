@@ -3,7 +3,9 @@ package unclefarmer.agent;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The game's chat channels for the Chat window: what arrives, and sending a line. Kept in memory
@@ -24,6 +26,11 @@ import java.util.List;
  *              international and the private channel (the chat model's fields, Memory.chatRooms).
  *              It refuses a second line within 2 s (3 s on global) with a spoken warning, as when
  *              the player types.
+ *
+ * A player can be in several international rooms and several private channels at once (switched
+ * in the game's own chat line): every international and private-channel line carries its room's
+ * id, kept with the line, and the chat model keeps each room's lines apart (Memory.chatJoined) and
+ * names the room it has up now (Memory.chatRoomNames). Names are remembered as rooms come up.
  */
 final class GameChat {
 
@@ -32,9 +39,18 @@ final class GameChat {
     private static final int INTERNATIONAL_OUT = 5;
     private static final int PRIVATE_CHANNEL_OUT = 6;
 
-    private static final List<Object[]> LINES = new ArrayList<Object[]>();   // {seq, at, channel, name, text, voice}
+    private static final int INTERNATIONAL_IN = 15;
+    private static final int PRIVATE_CHANNEL_IN = 18;
+    private static final long ROOMS_EVERY_MS = 1000;
+
+    private static final List<Object[]> LINES = new ArrayList<Object[]>();   // {seq, at, channel, name, text, voice, room}
     private static long seq;
     private static volatile int room;          // the international room we are in, 0 until known
+    // "<out channel>:<room id>" -> its name, as the chat model showed it
+    private static final Map<String, String> NAMES = new LinkedHashMap<String, String>();
+    private static int[][] joined = {{}, {}};
+    private static int[] current = {0, 0};
+    private static long roomsRead;
 
     private GameChat() { }
 
@@ -48,9 +64,10 @@ final class GameChat {
         }
         String[] parts = split(m, nameStart(m));
         if (parts == null || parts[1].trim().isEmpty()) return;
+        int in = channel == INTERNATIONAL_IN || channel == PRIVATE_CHANNEL_IN ? roomOf(m) : 0;
         synchronized (LINES) {
             LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, parts[0] == null ? "" : parts[0],
-                    parts[1].replace("\r", "").replace("\n", " ").trim(), null});
+                    parts[1].replace("\r", "").replace("\n", " ").trim(), null, in});
             while (LINES.size() > KEEP) LINES.remove(0);
             LINES.notifyAll();
         }
@@ -69,7 +86,7 @@ final class GameChat {
             if (id == null) continue;
             String name = new String(m, start, i - start, UTF8);
             synchronized (LINES) {
-                LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, plausibleName(name) ? name : "", "", id});
+                LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, plausibleName(name) ? name : "", "", id, 0});
                 while (LINES.size() > KEEP) LINES.remove(0);
                 LINES.notifyAll();
             }
@@ -82,6 +99,66 @@ final class GameChat {
         if (m.length < 7 || m[1] != INTERNATIONAL_OUT) return;
         int r = Protocol.readInt(m, 2);
         if (r > 0 && r < 0x10000) room = r;
+    }
+
+    /**
+     * The room id an international or private-channel line came from: the 4 bytes after the
+     * channel byte (and its 2 extra bytes when it has flag 32), where the game's reader takes it
+     * (nameStart). 0 when the line is too short.
+     */
+    static int roomOf(byte[] m) {
+        int at = 14;
+        if ((m[13] & 32) == 32) at += 2;
+        int r = Protocol.readInt(m, at);
+        return r > 0 ? r : 0;
+    }
+
+    /** The joined rooms and their names from the chat model, at most once a second. */
+    private static void readRooms() {
+        long now = System.currentTimeMillis();
+        synchronized (NAMES) {
+            if (now - roomsRead < ROOMS_EVERY_MS) return;
+            roomsRead = now;
+            try {
+                int[] up = Memory.chatRooms();
+                String[] names = Memory.chatRoomNames();
+                joined = Memory.chatJoined();
+                current = up;
+                for (int i = 0; i < 2; i++) {
+                    String n = names[i];
+                    if (up[i] > 0 && n != null && !n.trim().isEmpty()) {
+                        NAMES.put((i == 0 ? INTERNATIONAL_OUT : PRIVATE_CHANNEL_OUT) + ":" + up[i], n.trim());
+                    }
+                }
+            } catch (Memory.Unavailable e) {
+                // not logged in yet: what was read before stands
+            }
+        }
+    }
+
+    /** "rooms":[{"channel":5,"id":10,"name":"English","current":true}, ...]: every joined room. */
+    private static void rooms(StringBuilder sb) {
+        readRooms();
+        sb.append(",\"rooms\":[");
+        boolean first = true;
+        synchronized (NAMES) {
+            for (int i = 0; i < 2; i++) {
+                int out = i == 0 ? INTERNATIONAL_OUT : PRIVATE_CHANNEL_OUT;
+                List<Integer> ids = new ArrayList<Integer>();
+                for (int id : joined[i]) ids.add(id);
+                if (current[i] > 0 && !ids.contains(current[i])) ids.add(current[i]);
+                for (int id : ids) {
+                    if (!first) sb.append(',');
+                    first = false;
+                    String name = NAMES.get(out + ":" + id);
+                    sb.append("{\"channel\":").append(out).append(",\"id\":").append(id).append(",\"name\":");
+                    if (name == null) sb.append("null");
+                    else sb.append('"').append(Protocol.jsonEscape(name)).append('"');
+                    sb.append(",\"current\":").append(id == current[i]).append('}');
+                }
+            }
+        }
+        sb.append(']');
     }
 
     /** `chat <after> [ms]`: lines numbered above `after`, waiting up to ms for one. */
@@ -110,10 +187,39 @@ final class GameChat {
                   .append(Protocol.jsonEscape((String) e[3])).append("\",\"text\":\"")
                   .append(Protocol.jsonEscape((String) e[4])).append('"');
                 if (e[5] != null) sb.append(",\"voice\":\"").append(e[5]).append('"');
+                if ((Integer) e[6] != 0) sb.append(",\"room\":").append(e[6]);
                 sb.append('}');
             }
         }
-        return sb.append("]}").toString();
+        sb.append(']');
+        rooms(sb);
+        return sb.append('}').toString();
+    }
+
+    /**
+     * `sayin <5|6> <room> <text>`: a line into one of the international rooms or private channels
+     * the player has joined, the one the game has up or not - the game's sender takes the room as
+     * its target either way.
+     */
+    static String sayIn(int channel, int target, String text) {
+        if ((channel != INTERNATIONAL_OUT && channel != PRIVATE_CHANNEL_OUT) || target <= 0
+                || text == null || text.trim().isEmpty()) {
+            return "error: sayin <5|6> <room> <text>";
+        }
+        synchronized (NAMES) {
+            roomsRead = 0;
+        }
+        readRooms();
+        boolean in = false;
+        synchronized (NAMES) {
+            int i = channel == INTERNATIONAL_OUT ? 0 : 1;
+            for (int id : joined[i]) in |= id == target;
+            in |= current[i] == target;
+        }
+        if (!in) return "error: not in that room";
+        if (PrivateChat.sender() == null) return "error: the game's chat sender wasn't found";
+        ChatQueue.add(channel, target, text);
+        return "sent";
     }
 
     /** `say <channel> <text>`: a line on channel 0-6 (the numbers it is sent with). */

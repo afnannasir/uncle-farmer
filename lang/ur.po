@@ -977,6 +977,9 @@ msgstr "Yeh bhi: {names}"
 msgid "Always"
 msgstr "Hamesha"
 
+msgid "Always Sell Gathering Before Going Outside"
+msgstr "Bahar jaane se pehle gathering hamesha bechein"
+
 msgid ""
 "Always fight the &nearest monster (off: melee picks a calm one beside a pack)"
 msgstr ""
@@ -2156,6 +2159,9 @@ msgstr "Jari hai"
 
 msgid "Going on."
 msgstr "Jari hai."
+
+msgid "Going outside was stopped: {why}"
+msgstr "Bahar jaana rok diya gaya: {why}"
 
 msgid "Grand Master"
 msgstr "Grand Master"
@@ -5437,6 +5443,9 @@ msgstr "Kal"
 msgid "You are already on {map}."
 msgstr "Aap pehle se {map} par hain."
 
+msgid "You aren't in {room} any more: join it again in the game."
+msgstr "Aap ab {room} mein nahin hain: game mein dobara join karein."
+
 msgid "You have (last scan):"
 msgstr "Aap ke paas (aakhri scan):"
 
@@ -6067,6 +6076,9 @@ msgstr "menu entry tak nahi ja sake"
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr "Gem Craftsman ki shard synthesis khol nahi sake"
 
+msgid "couldn't open the collection buyer's list"
+msgstr "collection buyer ki list nahin khul saki"
+
 msgid "couldn't put the PK mode back ({why})"
 msgstr "PK mode wapas nahi ho saka ({why})"
 
@@ -6439,6 +6451,9 @@ msgstr "jama karne ka check: {notes}"
 
 msgid "gathering finished: {notes}"
 msgstr "jama karna mukammal: {notes}"
+
+msgid "gathering items remain unsold: {items}"
+msgstr "gathering items abhi tak nahin bike: {items}"
 
 msgid "gathering with {skill} ({rank})"
 msgstr "{skill} se jama kar rahe hain ({rank})"
@@ -7630,6 +7645,9 @@ msgstr "angoothiyan"
 msgid "road"
 msgstr "sadak"
 
+msgid "room {n}"
+msgstr "room {n}"
+
 msgid ""
 "round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
@@ -7784,6 +7802,9 @@ msgstr "{n} {item} bech diye"
 
 msgid "sold {n} {item} at the Shard Market"
 msgstr "Shard Market par {n} {item} bech diye"
+
+msgid "some gathering items are still unsold"
+msgstr "kuch gathering items abhi tak nahin bike"
 
 msgid ""
 "someone else disbanded the team or took it over: no more managing it this run"
@@ -9139,6 +9160,9 @@ msgstr "{cave}: {m} minute mein {n} kills"
 
 msgid "{cell} can't be reached on {map}"
 msgstr "{map} par {cell} tak nahi pohanch sakte"
+
+msgid "{channel}: {room}"
+msgstr "{channel}: {room}"
 
 msgid "{chore}: {note}"
 msgstr "{chore}: {note}"

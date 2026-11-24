@@ -819,6 +819,14 @@ public final class AgentTests {
         byte[] voice = chatLine(12 + Voice.FLAG, 0x00000932, "magoestelar", VOICE_NAME);
         GameChat.inbound(concat(voice, new byte[] {1, 2, 10, 10}));
         eq(lastChatName(GameChat.since(0, 0)), "magoestelar", "a voice line's name, without the sender's id");
+        GameChat.inbound(chatLine(15, 0x00000932, "Ali", "salut"));
+        check(GameChat.since(0, 0).contains("\"name\":\"Ali\",\"text\":\"salut\",\"room\":7}"),
+                "an international line keeps its room");
+        GameChat.inbound(chatLine(18, 0x00000932, "Ali", "yo"));
+        check(GameChat.since(0, 0).contains("\"text\":\"yo\",\"room\":7}"), "a private-channel line keeps its room");
+        GameChat.inbound(chatLine(3, 0x00000932, "Ali", "gang"));
+        check(GameChat.since(0, 0).contains("\"text\":\"gang\"}"), "a gang line has no room");
+        check(GameChat.since(0, 0).endsWith("],\"rooms\":[]}"), "no joined room without a game");
     }
 
     private static void voiceMessagesArriveWithTheirName() {

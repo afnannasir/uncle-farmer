@@ -5211,6 +5211,9 @@ msgstr ""
 msgid "You are already on {map}."
 msgstr ""
 
+msgid "You aren't in {room} any more: join it again in the game."
+msgstr ""
+
 msgid "You have (last scan):"
 msgstr ""
 
@@ -7292,6 +7295,9 @@ msgstr ""
 msgid "road"
 msgstr ""
 
+msgid "room {n}"
+msgstr ""
+
 msgid ""
 "round {n}: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
@@ -8716,6 +8722,9 @@ msgid "{cave}: {n} kills in {m} minutes"
 msgstr ""
 
 msgid "{cell} can't be reached on {map}"
+msgstr ""
+
+msgid "{channel}: {room}"
 msgstr ""
 
 msgid "{chore}: {note}"
