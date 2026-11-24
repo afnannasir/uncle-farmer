@@ -58,17 +58,16 @@ def item_pattern(item: str) -> str:
 Npc = tuple[int, str, float, float]      # (map, name, x, y)
 
 
-Place = tuple[int, tuple[float, float]]     # (map, cell)
+Place = tuple[int, tuple[float, float] | None]     # (map, optional cell)
 
 
 def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
             back_to: Place | None = None) -> Npc | None:
     """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y).
 
-    back_to: where the trip goes on to afterwards (a farming run's share trip goes back to its
-    farm). The way there AND back is counted then: on the way there alone, the hearthstone's square
-    looked cheapest from almost anywhere (one teleport), so a farm next to Tulip City sent the trip
-    back to the city the run started in - and then walked the whole way out to the farm again.
+    back_to: where the trip goes on to afterwards (a farming errand goes back to its farm).
+    With no cell, count to the point of entry on that map. Counting the return matters when the
+    hearthstone makes a distant city easy to reach but leaves a long walk back to the farm.
 
     From inside a map we can't plan our way out of (a gang base, a dungeon) every other map costs
     the same unknown "leave", so the first NPC in the data's order used to win: a Gem Maker in the
@@ -83,7 +82,8 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
     rides, off = travel.ride_rules(b.p, int(me.get("level") or 0))
     spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
 
-    def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int, to_cell: tuple[float, float]) -> float | None:
+    def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int,
+                to_cell: tuple[float, float] | None) -> float | None:
         legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
                                  transport=rides, vip=rides_free(b), avoid=off,
                                  bag=rows if b.p.get("use_travel_items", False) else [],
@@ -834,11 +834,11 @@ def possible(b: Bot, r: dict[str, Any], why: list[str], *, retry: bool = False) 
     return False
 
 
-def restock_town(b: Bot, todo: Sequence[Need]) -> int | None:
+def restock_town(b: Bot, todo: Sequence[Need], *, back_to: Place | None = None) -> int | None:
     """The one town (a map) a restock trip goes to: the nearest that has what the trip needs - a
     storehouse for the rules that take from it, a shop of the right kind for those that buy -
-    preferring one with all of it. The town we are in first, whatever else is near. None when no
-    town has any of it."""
+    preferring one with all of it. Count the way back as well when a return map is given. The town
+    we are in first, whatever else is near. None when no town has any of it."""
     want_store = any(_sources(r)[0] for r, _h, _w in todo)
     shop_items = [r["item"] for r, _h, _w in todo if _sources(r)[1]]
     towns: dict[int, list[Npc]] = {}
@@ -861,7 +861,7 @@ def restock_town(b: Bot, todo: Sequence[Need]) -> int | None:
     here = b.map_id()
     if here in full:
         return here
-    near = nearest(b, None, [npc for m in full for npc in towns[m]])
+    near = nearest(b, None, [npc for m in full for npc in towns[m]], back_to=back_to)
     return near[0] if near else None
 
 
@@ -903,7 +903,9 @@ def restock(b: Bot, rules: list[dict[str, Any]], start: bool = False) -> bool:
         return False
     # once we're going anyway, top up everything that's short (and can be had)
     todo = [t for t in needs(b, rules, True) if bagrules.supply_rule(t[0]) != "tell" and possible(b, t[0], [], retry=start)]
-    where = restock_town(b, todo)
+    farm = getattr(b, "farming_on", None)
+    back_to = (farm, None) if not start and farm is not None else None
+    where = restock_town(b, todo, back_to=back_to)
     what = ", ".join("%s %d/%d" % (r["item"], h, w) for r, h, w in todo)
     if where is None:
         # no town found from here by the data: the errands look for their NPCs themselves

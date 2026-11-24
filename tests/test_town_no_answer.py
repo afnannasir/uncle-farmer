@@ -34,7 +34,7 @@ def silent(*_a: Any, **_k: Any) -> int:
 
 def test_the_farm_loop_s_restock_survives_a_shop_that_doesn_t_answer(monkeypatch: pytest.MonkeyPatch) -> None:
     b = bot(10, arnebia=50000)
-    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, lambda b, todo: 1041))
+    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, returning(1041)))
     monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, lambda b, item, n: 0))
     monkeypatch.setattr(town, "buy", stand_in(town.buy, silent))
     assert town.restock(as_bot(b), [RULE]) is True            # no Stopped: the run goes on
@@ -45,7 +45,7 @@ def test_the_farm_loop_s_restock_survives_a_shop_that_doesn_t_answer(monkeypatch
 
 def test_a_storehouse_that_doesn_t_answer_leaves_the_item_to_the_shop(monkeypatch: pytest.MonkeyPatch) -> None:
     b = bot(10, arnebia=50000)
-    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, lambda b, todo: 1041))
+    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, returning(1041)))
     monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, silent))
     bought: list[int] = []
 
@@ -61,7 +61,7 @@ def test_a_storehouse_that_doesn_t_answer_leaves_the_item_to_the_shop(monkeypatc
 @pytest.mark.parametrize("start", [False, True])
 def test_stop_still_ends_the_run(monkeypatch: pytest.MonkeyPatch, start: bool) -> None:
     b = bot(10, arnebia=50000)
-    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, lambda b, todo: 1041))
+    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, returning(1041)))
     monkeypatch.setattr(town, "withdraw", stand_in(town.withdraw, nothing))
     monkeypatch.setattr(town, "buy", stand_in(town.buy, silent))
     b.stop_event.set()
@@ -71,7 +71,7 @@ def test_stop_still_ends_the_run(monkeypatch: pytest.MonkeyPatch, start: bool) -
 
 def test_a_final_stop_still_ends_the_run(monkeypatch: pytest.MonkeyPatch) -> None:
     b = bot(10, arnebia=50000)
-    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, lambda b, todo: 1041))
+    monkeypatch.setattr(town, "restock_town", stand_in(town.restock_town, returning(1041)))
 
     def broken(*_a: Any, **_k: Any) -> int:
         raise Stopped("the game can't be read", final=True)
