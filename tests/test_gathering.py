@@ -17,9 +17,10 @@ from typing import Any, TypeAlias
 
 import pytest
 
+from unclefarmer import knowledge, travel
 from unclefarmer.engine import chores, gathering, script, town
 from unclefarmer.engine.bot import Stopped
-from conftest import as_bot, stand_in
+from conftest import as_bot, returning, stand_in
 from unclefarmer.clock import Waitable
 
 ME = 1234
@@ -461,7 +462,7 @@ def test_the_skill_s_area_is_found_at_whichever_end_of_the_hall_it_stands(monkey
 
 
 # ---------------------------------------------------------------------------------------- selling
-def buyer(g: Game, lines: list[tuple[str, int]]) -> None:
+def buyer(g: Game, lines: list[tuple[str, int]], name: str = "Aquaculture Buyer") -> None:
     def menu(_g: Game) -> list[Entry]:
         rows: list[Entry] = [("Hello Hero, what would you like to sell?", None)]
         for item, price in lines:
@@ -470,8 +471,8 @@ def buyer(g: Game, lines: list[tuple[str, int]]) -> None:
         if len(rows) == 1:
             rows.append(("You have no fish and shrimp to sell", None))
         return rows
-    g.pages["Aquaculture Buyer"] = menu
-    g.prices = dict(lines)
+    g.pages[name] = menu
+    g.prices.update(lines)
 
 
 @pytest.fixture
@@ -572,6 +573,120 @@ def test_a_run_uses_the_gang_area_then_sells(inner_hall: None, market: None, mon
     gang_pages(g2)
     gathering.run(as_bot(g2), dict(gathering.DEFAULTS, outside=False))
     assert g2.mid == 4004
+
+
+@pytest.mark.parametrize("city", sorted({c["map"] for c in knowledge.cities()}))
+def test_gang_collection_is_sold_before_outside_in_each_city(city: int, inner_hall: None,
+                                                             monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=4004)
+    gang_pages(g)
+    goods = {"fish_buyer": ("Milkfish", 670), "ore_buyer": ("Silver ore", 600), "herb_buyer": ("Strange bark", 240)}
+    assert knowledge.buyer_role("Strange bark") is None    # only the simulated buyer's menu identifies it
+    for role, item_price in goods.items():
+        for _mid, npc, _x, _y in knowledge.service_npcs(role):
+            buyer(g, [item_price], npc)
+    g.p["bag_rules"] = {"milkfish": {"action": "sell", "keep": 1}}
+    g.bag.update({"Silver ore": 5, "Strange bark": 5})
+
+    def leave() -> bool:
+        g.mid, g.x, g.y = next(square for square in travel.SQUARES.values() if square[0] == city)
+        return True
+
+    def gather(b: town.Bot, cfg: dict[str, Any], skill: str, place: dict[str, Any] | None,
+               end_at: float | None) -> str:
+        if place is None:
+            assert g.mid == 4222
+            g.bag["Milkfish"] = 5
+            return "left"
+        assert g.mid == place["map"]
+        assert (g.bag["Milkfish"], g.bag["Silver ore"], g.bag["Strange bark"]) == (1, 0, 0)
+        return "time"
+
+    def sell(b: town.Bot, pattern: str, quantity: int | None = None) -> bool:
+        assert g.mid in {1041, 1081, 1121} and quantity is not None
+        item = next(item for item in g.prices if re.search(pattern, f"{g.bag.get(item, 0)} {item}; Unit price"))
+        assert quantity == g.bag[item] - (1 if item == "Milkfish" else 0)
+        g.bag[item] -= quantity
+        g.bag["Arnebia"] += quantity * g.prices[item]
+        g.page = None
+        return True
+
+    monkeypatch.setattr(g, "leave_instance", leave)
+    monkeypatch.setattr(gathering, "gather_here", stand_in(gathering.gather_here, gather))
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, sell))
+    cfg = dict(gathering.DEFAULTS, sell=False, sell_before_outside=True, known_places=False, places=[own()])
+    gathering.run(as_bot(g), cfg)
+
+    assert g.travelled[-1] == (1561, (186, 205))
+    assert g.bag["Arnebia"] == 50000 + 4 * 670 + 5 * 600 + 5 * 240
+
+
+@pytest.mark.parametrize(("enabled", "sale_sizes", "outside"), [
+    (True, [0], False), (True, [2, 0], False), (True, [2, 3], True), (False, [0], True),
+])
+def test_outside_requires_verified_sale_when_enabled(
+        enabled: bool, sale_sizes: list[int], outside: bool, market: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=1041)
+    g.bag["Milkfish"] = 5
+    buyer(g, [("Milkfish", 670)])
+    offered = iter(sale_sizes)
+
+    def sell(b: town.Bot, pattern: str, quantity: int | None = None) -> bool:
+        count = next(offered)
+        g.bag["Milkfish"] -= count
+        g.bag["Arnebia"] += count * 670
+        g.page = None
+        return True             # a menu action alone doesn't prove that the bag changed
+
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, sell))
+    monkeypatch.setattr(gathering, "gather_here", stand_in(gathering.gather_here, returning("time")))
+    cfg = dict(gathering.DEFAULTS, gang=False, sell=False, sell_before_outside=enabled,
+               known_places=False, places=[own()])
+    notes = gathering.run(as_bot(g), cfg)
+
+    assert bool(g.travelled) is outside
+    if enabled:
+        assert g.bag["Milkfish"] == 5 - sum(sale_sizes)
+        assert any("Going outside was stopped" in note for note in notes) is not outside
+
+
+def test_a_menu_only_gathering_item_also_blocks_departure(market: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game(map_id=1041)
+    g.bag["Strange shell"] = 5
+    buyer(g, [("Strange shell", 670)])
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, returning(False)))
+    cfg = dict(gathering.DEFAULTS, gang=False, sell=False, sell_before_outside=True,
+               known_places=False, places=[own()])
+    notes = gathering.run(as_bot(g), cfg)
+    assert not g.travelled and g.bag["Strange shell"] == 5
+    assert any("5 strange shell" in note for note in notes)
+
+
+def test_gathering_selling_checkbox_is_saved(monkeypatch: pytest.MonkeyPatch) -> None:
+    import wx
+    from unclefarmer.gui.gathering import GatheringDialog
+
+    app = wx.GetApp() or wx.App(False)
+    frame = wx.Frame(None)
+    dlg = GatheringDialog(frame, "Hero", lambda: None)
+    try:
+        box = dlg.sell_before_outside
+        assert box.GetLabel() == "Always Sell Gathering Before Going Outside"
+        assert not box.GetValue()
+        box.SetValue(True)
+        done: list[int] = []
+        monkeypatch.setattr(dlg, "EndModal", done.append)
+        dlg.done(wx.ID_OK)
+        assert done == [wx.ID_OK]
+        reopened = GatheringDialog(frame, "Hero", lambda: None)
+        try:
+            assert reopened.sell_before_outside.GetValue()
+        finally:
+            reopened.Destroy()
+    finally:
+        dlg.Destroy()
+        frame.Destroy()
+        app.Yield()
 
 
 def test_no_gathering_skill_says_what_to_learn() -> None:

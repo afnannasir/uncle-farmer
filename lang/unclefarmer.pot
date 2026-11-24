@@ -960,6 +960,9 @@ msgstr ""
 msgid "Always"
 msgstr ""
 
+msgid "Always Sell Gathering Before Going Outside"
+msgstr ""
+
 msgid ""
 "Always fight the &nearest monster (off: melee picks a calm one beside a pack)"
 msgstr ""
@@ -2108,6 +2111,9 @@ msgid "Going on"
 msgstr ""
 
 msgid "Going on."
+msgstr ""
+
+msgid "Going outside was stopped: {why}"
 msgstr ""
 
 msgid "Grand Master"
@@ -5798,6 +5804,9 @@ msgstr ""
 msgid "couldn't open the Gem Craftsman's shard synthesis"
 msgstr ""
 
+msgid "couldn't open the collection buyer's list"
+msgstr ""
+
 msgid "couldn't put the PK mode back ({why})"
 msgstr ""
 
@@ -6150,6 +6159,9 @@ msgid "gathering check: {notes}"
 msgstr ""
 
 msgid "gathering finished: {notes}"
+msgstr ""
+
+msgid "gathering items remain unsold: {items}"
 msgstr ""
 
 msgid "gathering with {skill} ({rank})"
@@ -7430,6 +7442,9 @@ msgid "sold {n} {item}"
 msgstr ""
 
 msgid "sold {n} {item} at the Shard Market"
+msgstr ""
+
+msgid "some gathering items are still unsold"
 msgstr ""
 
 msgid ""

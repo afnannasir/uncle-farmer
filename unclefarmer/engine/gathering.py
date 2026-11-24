@@ -79,6 +79,7 @@ DEFAULTS: dict[str, Any] = {
     "minutes": 0,             # 0: until Vitality runs out
     "stop_vitality": 0,       # outside: stop once the sheet's Vitality is down to this (0: until it runs out)
     "sell": True,             # sell the collection at the buyer
+    "sell_before_outside": False,  # require a verified sale before leaving to gather outside
     "when_full": "sell",      # the bag full outside: "sell" and come back, or "stop"
     "free_load": 1000,        # before setting out: less room left than this (load) is a full bag
     "refused": {},            # place key -> the rank the game didn't let us gather there at
@@ -593,7 +594,7 @@ def check(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: int 
         p = choose(found, level, rank, cfg)
         notes.append(_("outside: {place} (area level {level})", place=p["label"], level=p.get("level") or "?")
                      if p else _("outside: no place for this character - add one where you stand"))
-    if cfg.get("sell", True):
+    if cfg.get("sell", True) or cfg.get("outside", True) and cfg.get("sell_before_outside"):
         role = town.COLLECTION_BUYERS[kind_of(skill)]
         from .. import knowledge
         notes.append(_("selling to the nearest {role}", role=role.replace("_", " "))
@@ -632,7 +633,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
     # walked like the walking assistant's: no stopping to fight, even what attacks us, riding the
     # Swift beast past it; potions still keep us up. Fights before, while gathering, as ever.
     b.home_after_gathering = b.kills
-    if getattr(b, "gather_casts", 0) or _holding(b, skill):
+    if why != "unsold" and (getattr(b, "gather_casts", 0) or _holding(b, skill)):
         with homeward(b):
             _sell(b, cfg, skill)
     if why == "vitality":
@@ -729,15 +730,26 @@ def _room(b: Bot, cfg: dict[str, Any], skill: str, notes: list[str]) -> bool:
     return False
 
 
-def _ready(b: Bot, cfg: dict[str, Any], skill: str, notes: list[str]) -> str:
-    """Before setting out to an outside place: room in the bag ("full" when there is none, even
-    after selling) and Vitality above the player's mark ("kept"). "" when ready."""
+def _ready(b: Bot, cfg: dict[str, Any], skill: str, notes: list[str], end_at: float | None) -> str:
+    """Verify the required sale, bag room, Vitality and time before setting out."""
+    if cfg.get("sell_before_outside"):
+        try:
+            town.sell_collection(b, (kind_of(skill),), require_empty=True)
+        except Stopped as e:
+            if b.stop_event.is_set() or e.final:
+                raise
+            message = _("Going outside was stopped: {why}", why=e)
+            notes.append(message)
+            b.log(message, speak=True)
+            return "unsold"
     if not _room(b, cfg, skill, notes):
         return "full"
     v = vitality_kept(b, cfg, force=True)
     if v is not None:
         b.log(_("Vitality is down to {n}, where you set gathering outside to stop", n=v), speak=True)
         return "kept"
+    if end_at is not None and b.clock.time() >= end_at:
+        return "time"
     return ""
 
 
@@ -758,7 +770,7 @@ def _outside(b: Bot, cfg: dict[str, Any], skill: str, rank: int | None, level: i
             b.log(msg, speak=True)
             notes.append(msg)
             return why
-        ready = _ready(b, cfg, skill, notes)
+        ready = _ready(b, cfg, skill, notes, end_at)
         if ready:
             return ready
         try:

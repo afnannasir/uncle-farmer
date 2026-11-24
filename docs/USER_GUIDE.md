@@ -1182,6 +1182,11 @@ This check is especially important for gang gathering areas. The bot cannot leav
 
 #### Selling gathered items
 
+Enable **Always Sell Gathering Before Going Outside** on the **Selling** tab to sell the gang
+collection and check your bag before travelling to an outside gathering spot. If a sale leaves
+items behind, the bot retries while it can sell more. Outside gathering stops if the sale cannot
+be completed. This option works even when the regular selling checkbox is off.
+
 When your bag becomes full while gathering outside a gang area, Uncle Farmer travels to the nearest suitable buyer:
 
 - Aquaculture Buyer for fish.

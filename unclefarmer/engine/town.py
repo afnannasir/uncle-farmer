@@ -681,6 +681,22 @@ def collection_left(p: dict[str, Any], rows: list[tuple[int, str, int]]) -> list
     return out
 
 
+def _collection_items(bag: dict[str, int]) -> dict[str, set[str]]:
+    """Known gathering items in the bag, grouped by buyer role."""
+    known_buyers: dict[str, str] = {npc["name"]: npc["role"] for npc in knowledge.data().get("npcs", [])
+                                     if npc.get("role") in COLLECTION_BUYERS.values()}
+    groups: dict[str, set[str]] = {}
+    for item, count in bag.items():
+        if count <= 0 or not item:
+            continue
+        role = knowledge.buyer_role(item)
+        roles = {role} if role and role in COLLECTION_BUYERS.values() else {
+            known_buyers[name] for _, name, *_ in knowledge.traders(item, "buy") if name in known_buyers}
+        for buyer in roles:
+            groups.setdefault(buyer, set()).add(item)
+    return groups
+
+
 def _collection_kinds(b: Bot) -> tuple[str, ...]:
     """Route an automatic sale by profession, or by known goods when no profession is learned."""
     from . import gathering
@@ -688,25 +704,18 @@ def _collection_kinds(b: Bot) -> tuple[str, ...]:
     skill, _rank = gathering.read_skill(b)
     if skill:
         return (gathering.kind_of(skill),)
-    known_buyers = {npc["name"]: npc["role"] for npc in knowledge.data().get("npcs", [])
-                    if npc.get("role") in COLLECTION_BUYERS.values()}
-    roles: set[str] = set()
-    for item, count in counts(b).items():
-        if count <= 0 or not item:
-            continue
-        role = knowledge.buyer_role(item)
-        if role and role in COLLECTION_BUYERS.values():
-            roles.add(role)
-        else:
-            roles.update(known_buyers[name] for _, name, *_ in knowledge.traders(item, "buy") if name in known_buyers)
+    roles = _collection_items(counts(b))
     return tuple(kind for kind, role in COLLECTION_BUYERS.items() if role in roles)
 
 
-def _sell_to_collection_buyer(b: Bot, role: str, candidates: Sequence[Npc]) -> InventoryTransaction:
+def _sell_to_collection_buyer(b: Bot, role: str, candidates: Sequence[Npc],
+                              required: set[str] | None = None) -> InventoryTransaction:
     transaction = InventoryTransaction.begin(b)
     attempted: set[str] = set()
     npc = visit(b, role, candidates=candidates)
     if not b.wait_dialog(3.0):
+        if required is not None:
+            raise Stopped(_("couldn't open the collection buyer's list"))
         return transaction
     for _round in range(60):
         rows = buyer_rows(b)
@@ -716,7 +725,10 @@ def _sell_to_collection_buyer(b: Bot, role: str, candidates: Sequence[Npc]) -> I
             if not b.talk(npc) or not b.wait_dialog(3.0):
                 break
             rows = buyer_rows(b)
-        todo = [(item, n) for item, n in collection_left(b.p, rows) if item.lower() not in attempted]
+        saleable = collection_left(b.p, rows)
+        if required is not None:
+            required.update(item.lower() for item, _n in saleable)
+        todo = [(item, n) for item, n in saleable if item.lower() not in attempted]
         if not todo:
             break
         item, n = todo[0]
@@ -728,35 +740,69 @@ def _sell_to_collection_buyer(b: Bot, role: str, candidates: Sequence[Npc]) -> I
     return transaction
 
 
-def sell_collection(b: Bot, kinds: tuple[str, ...] | None = None) -> int:
+def _collection_remaining(b: Bot, bag: dict[str, int], items: set[str]) -> list[tuple[str, int]]:
+    return collection_left(b.p, [(bag.get(item, 0), item, 0) for item in sorted(items)])
+
+
+def _collection_sale(b: Bot, kind: str, candidates: Sequence[Npc],
+                     required: set[str] | None) -> tuple[int, list[tuple[str, int]]]:
+    try:
+        transaction = _sell_to_collection_buyer(b, COLLECTION_BUYERS[kind], candidates, required)
+    finally:
+        b.close_dialogs()
+    after = transaction.settle(b) if transaction.expected else transaction.before
+    moved = transaction.removed(after)
+    if moved:
+        after = transaction.paid(b, after)      # the money comes in after the items go
+    got = max(0, after.get("arnebia", 0) - transaction.before.get("arnebia", 0)) if moved else 0
+    for item, n in moved:
+        b.log(_("sold {n} {item}", n=n, item=item))
+        stats.moved(b, "sold", item, n)
+    if moved:
+        b.log(_("sold the {kind} for {n} arnebia", kind=_collection_word(kind), n=got), speak=True)
+    if required is None:
+        return got, []
+    remaining = _collection_remaining(b, counts(b), required)
+    if remaining and not moved:
+        raise Stopped(_("gathering items remain unsold: {items}", items=", ".join(f"{n} {item}" for item, n in remaining)))
+    return got, remaining
+
+
+def sell_collection(b: Bot, kinds: tuple[str, ...] | None = None, *, require_empty: bool = False) -> int:
     """Sell the specified collection, or choose its buyer from the character's activity.
 
     The buyer lists the qualifying bag rows. Apply the bag manager's keep rules and count the
-    arnebia received for verified sales.
+    arnebia received for verified sales. When a gathering trip requires a clear bag, check all
+    collection buyers so items missing from the catalog are also seen and verified.
     """
+    selected = _collection_kinds(b) if kinds is None else kinds
+    groups: dict[str, set[str]] = {}
+    if require_empty:
+        bag = counts(b)
+        if not _collection_remaining(b, bag, set(bag) - {"arnebia"}):
+            return 0
+        groups = _collection_items(bag)
+        selected = tuple(dict.fromkeys((*selected, *COLLECTION_BUYERS)))
     earned = 0
-    for kind in _collection_kinds(b) if kinds is None else kinds:
+    for kind in selected:
         role = COLLECTION_BUYERS[kind]
         candidates = knowledge.service_npcs(role)
         if not candidates:
-            b.log(_("I don't know where a {role} is", role=role.replace("_", " ")))
+            message = _("I don't know where a {role} is", role=role.replace("_", " "))
+            if require_empty:
+                raise Stopped(message)
+            b.log(message)
             continue
-        try:
-            transaction = _sell_to_collection_buyer(b, role, candidates)
-        finally:
-            b.close_dialogs()
-        before = transaction.before.get("arnebia", 0)
-        after = transaction.settle(b) if transaction.expected else transaction.before
-        moved = transaction.removed(after)
-        if moved:
-            after = transaction.paid(b, after)      # the money comes in after the items go
-        got = after.get("arnebia", 0) - before
-        for item, n in moved:
-            b.log(_("sold {n} {item}", n=n, item=item))
-            stats.moved(b, "sold", item, n)
-        if moved:
-            earned += max(0, got)
-            b.log(_("sold the {kind} for {n} arnebia", kind=_collection_word(kind), n=max(0, got)), speak=True)
+        required = groups.get(role, set()) if require_empty else None
+        for _attempt in range(60):
+            if require_empty:
+                b.check()
+            got, remaining = _collection_sale(b, kind, candidates, required)
+            earned += got
+            if not remaining:
+                break
+        else:
+            raise Stopped(_("some gathering items are still unsold"))
     return earned
 
 

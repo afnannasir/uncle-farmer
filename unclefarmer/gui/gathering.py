@@ -83,6 +83,7 @@ class GatheringDialog(Dialog):
         panel, box = page(nb, _("Selling"))
         f = group(panel, box, _("The collection"))
         self.sell = f.check(_("&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"), c["sell"])
+        self.sell_before_outside = f.check(_("Always Sell Gathering Before Going Outside"), c["sell_before_outside"])
         self.full = f.choice(_("When the bag is &full outside:"),
                              [_("Sell it and come back"), _("Stop")], WHEN_FULL.index(c["when_full"])
                              if c["when_full"] in WHEN_FULL else 0)
@@ -277,7 +278,8 @@ class GatheringDialog(Dialog):
                         outside=self.outside.GetValue(),
                         known_places=self.known.GetValue(), above=self.above.GetValue(),
                         place=self.choices[i] if 0 < i < len(self.choices) else "", places=self.own,
-                        sell=self.sell.GetValue(), when_full=WHEN_FULL[self.full.GetSelection()],
+                        sell=self.sell.GetValue(), sell_before_outside=self.sell_before_outside.GetValue(),
+                        when_full=WHEN_FULL[self.full.GetSelection()],
                         free_load=self.free.GetValue(), stop_vitality=self.vitality.GetValue(),
                         minutes=self.minutes.GetValue())
         self.p["gathering"] = self.cfg
