@@ -57,13 +57,18 @@ final class AutomaticLogin {
         }
         synchronized (LOCK) {
             if (running) return "{\"ok\":false,\"error\":\"automatic login is already running\"}";
-            String connected = connectedAccount();
+            // A client left over from a logout (Switch account) still names its account while its
+            // connection is closed: taken for one connecting, no login was started and the picker
+            // never came (live 2026-11-24, a wait's login back: "timed out waiting for character
+            // picker" five times). Only a live connection counts as one connecting.
+            String connected = connectionAlive() ? connectedAccount() : null;
             if (connected != null && !connected.equalsIgnoreCase(email)) {
                 return "{\"ok\":false,\"error\":\"another saved account is already connecting\"}";
             }
             if (connected == null) {
                 String problem = selectSavedServer(server);
                 if (problem != null) return "{\"ok\":false,\"error\":\"" + Protocol.jsonEscape(problem) + "\"}";
+                pointAtLogin();
                 problem = startSavedAccount(email);
                 if (problem != null) return "{\"ok\":false,\"error\":\"" + Protocol.jsonEscape(problem) + "\"}";
             }
@@ -95,6 +100,7 @@ final class AutomaticLogin {
             running = true; status = "dismissing connection error";
             new Thread(new Runnable() { @Override public void run() { try {
                 Keys.tap("enter", 60L); Thread.sleep(300L); status = "logging in";
+                pointAtLogin();
                 String problem = startSavedAccount(email);
                 status = problem == null && waitForCharacter(id, System.currentTimeMillis() + WORLD_TIMEOUT_MILLIS)
                         ? "ready" : (problem == null ? "timed out loading character" : problem);
@@ -201,6 +207,41 @@ final class AutomaticLogin {
                     : "could not select the saved server";
         } catch (Throwable ignored) {
             return "could not select the saved server";
+        }
+    }
+
+    /** Kind of the sign-in screen's Log in entry (game.an.a). */
+    static final int LOGIN_ENTRY = 11;
+
+    /**
+     * Puts the sign-in screen's cursor (Win.g[0]) on its Log in entry, where the player's own login
+     * has it when Enter goes down. Once logged in, the game still reads that cursor for every key
+     * (Keys: with g[1] at 999 a key goes on only while the entry under g[0] is of kind 11): left on
+     * the account box, as Switch account leaves it, every key of the player's and the bot's alike
+     * was dropped and the character could do nothing (live 2026-11-24, after a wait). At the game's
+     * first start the cursor is already there, which is why the first login always worked.
+     */
+    private static void pointAtLogin() {
+        Frame window = Memory.window();
+        if (window == null) return;
+        try {
+            Object screens = staticField(window.getClass(), "h");
+            Object cursor = staticField(window.getClass(), "g");
+            if (!(screens instanceof List) || !(cursor instanceof int[]) || ((int[]) cursor).length == 0) return;
+            List<?> entries = (List<?>) screens;
+            StringBuilder kinds = new StringBuilder();
+            int login = -1;
+            for (int n = 0; n < entries.size(); n++) {
+                Object kind = field(entries.get(n), "a");
+                kinds.append(n).append('=').append(kind).append(' ');
+                if (login < 0 && kind instanceof Integer && ((Integer) kind).intValue() == LOGIN_ENTRY) login = n;
+            }
+            int[] g = (int[]) cursor;
+            Log.info("sign-in screen: cursor " + g[0] + ", entries " + kinds.toString().trim()
+                    + (login >= 0 ? ", cursor put on " + login : ", no Log in entry"));
+            if (login >= 0) g[0] = login;
+        } catch (Throwable t) {
+            Log.error("putting the sign-in cursor on Log in", t);
         }
     }
 

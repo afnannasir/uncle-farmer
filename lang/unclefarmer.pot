@@ -122,6 +122,9 @@ msgstr ""
 msgid "&Check only"
 msgstr ""
 
+msgid "&Circles (x,y,radius; ...):"
+msgstr ""
+
 msgid "&Close"
 msgstr ""
 
@@ -139,6 +142,9 @@ msgid "&Copy the address"
 msgstr ""
 
 msgid "&Create my team when the run starts, if I'm in none"
+msgstr ""
+
+msgid "&Crude"
 msgstr ""
 
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
@@ -316,6 +322,9 @@ msgstr ""
 msgid "&Keep at least this many of each level:"
 msgstr ""
 
+msgid "&Keep pieces with a bonus (\"plus\" in their details, the G key)"
+msgstr ""
+
 msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
@@ -341,6 +350,9 @@ msgstr ""
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Legendary"
+msgstr ""
+
 msgid "&Let it shut down"
 msgstr ""
 
@@ -348,6 +360,9 @@ msgid "&Level:"
 msgstr ""
 
 msgid "&Log"
+msgstr ""
+
+msgid "&Log back in now"
 msgstr ""
 
 msgid "&Log:"
@@ -432,6 +447,9 @@ msgstr ""
 msgid "&Pages at most (0 = all):"
 msgstr ""
 
+msgid "&Patrol points (x,y; x,y; ... up to 10):"
+msgstr ""
+
 msgid "&Pause"
 msgstr ""
 
@@ -439,6 +457,9 @@ msgid "&Pause between attack keys (seconds):"
 msgstr ""
 
 msgid "&People:"
+msgstr ""
+
+msgid "&Perfect"
 msgstr ""
 
 msgid "&Period:"
@@ -475,6 +496,9 @@ msgid "&Publish"
 msgstr ""
 
 msgid "&Quick guide"
+msgstr ""
+
+msgid "&Rare"
 msgstr ""
 
 msgid "&Read keys from the game"
@@ -575,6 +599,9 @@ msgid ""
 msgstr ""
 
 msgid "&Show the time after each message"
+msgstr ""
+
+msgid "&Sophisticated"
 msgstr ""
 
 msgid "&Sounds:"
@@ -807,6 +834,9 @@ msgstr ""
 msgid "A name for this place:"
 msgstr ""
 
+msgid "A no-go circle of {r} tiles around {x}, {y} added."
+msgstr ""
+
 msgid "A plan named {name} already exists. Replace it?"
 msgstr ""
 
@@ -821,6 +851,9 @@ msgid "A share of the day's &drop time (kept across restarts)"
 msgstr ""
 
 msgid "A sound's mute setting must be on or off."
+msgstr ""
+
+msgid "A spot has 10 patrol points at most."
 msgstr ""
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
@@ -866,6 +899,9 @@ msgstr ""
 msgid "Ad&vanced"
 msgstr ""
 
+msgid "Add a circle aro&und me"
+msgstr ""
+
 msgid "Add a gang"
 msgstr ""
 
@@ -876,6 +912,10 @@ msgid "Add a gang to gather in, or untick gathering in gangs' areas."
 msgstr ""
 
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
+msgstr ""
+
+msgid ""
+"Add a patrol point first (Add where I stand), or choose another movement."
 msgstr ""
 
 msgid "Add a place"
@@ -900,6 +940,9 @@ msgid "Add selected to Saved Sounds"
 msgstr ""
 
 msgid "Add to &filter list"
+msgstr ""
+
+msgid "Add where I &stand"
 msgstr ""
 
 msgid "Added to the draft. Choose Save to apply."
@@ -1044,6 +1087,9 @@ msgstr ""
 msgid "Available sound IDs could not be read. Adding sounds is unavailable."
 msgstr ""
 
+msgid "Back in after {minutes} minutes."
+msgstr ""
+
 msgid "Back where the run started"
 msgstr ""
 
@@ -1138,6 +1184,9 @@ msgstr ""
 msgid "Busy - send stop first."
 msgstr ""
 
+msgid "Busy, one command at a time. Still on: {what}."
+msgstr ""
+
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr ""
 
@@ -1154,6 +1203,9 @@ msgid "C&hat"
 msgstr ""
 
 msgid "C&lock:"
+msgstr ""
+
+msgid "C&ommon"
 msgstr ""
 
 msgid "C&opy"
@@ -1389,6 +1441,9 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
+msgid "Common"
+msgstr ""
+
 msgid "Connected"
 msgstr ""
 
@@ -1432,6 +1487,9 @@ msgid "Copy &selection"
 msgstr ""
 
 msgid "Corpses"
+msgstr ""
+
+msgid "Could not log back in after the wait, so the run is stopping."
 msgstr ""
 
 msgid "Could not read known sound IDs: {error}"
@@ -1485,6 +1543,9 @@ msgstr ""
 
 msgid ""
 "Couldn't load the changelog. Check your internet connection and try again."
+msgstr ""
+
+msgid "Couldn't log out: {why}"
 msgstr ""
 
 msgid "Couldn't open it."
@@ -1546,6 +1607,9 @@ msgstr ""
 
 msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
+msgstr ""
+
+msgid "Crude"
 msgstr ""
 
 msgid "Crystals"
@@ -1803,6 +1867,9 @@ msgstr ""
 msgid "Equipment Enhancer"
 msgstr ""
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr ""
+
 msgid "Errors only"
 msgstr ""
 
@@ -1820,6 +1887,9 @@ msgstr ""
 
 msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
+msgstr ""
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
 msgstr ""
 
 msgid "Everyone can get replies again."
@@ -2116,6 +2186,12 @@ msgstr ""
 msgid "Going outside was stopped: {why}"
 msgstr ""
 
+msgid "Got it: logging out for {n} minutes, then back in."
+msgstr ""
+
+msgid "Got it: logging out for {n} minutes, then back to farming."
+msgstr ""
+
 msgid "Grand Master"
 msgstr ""
 
@@ -2247,6 +2323,10 @@ msgstr ""
 
 msgid ""
 "I died on {map}. How do I come back? Send: respawn crystal, respawn map or respawn city"
+msgstr ""
+
+msgid ""
+"I don't know this character's saved account, so I couldn't log back in. Log in to it once with Uncle Farmer open first."
 msgstr ""
 
 msgid "I don't know where a Shard Market is"
@@ -2538,6 +2618,9 @@ msgstr ""
 msgid "Leaves {n} {item}."
 msgstr ""
 
+msgid "Legendary"
+msgstr ""
+
 msgid "Let everyone get replies &again"
 msgstr ""
 
@@ -2592,7 +2675,13 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr ""
 
+msgid "Logged out for a while ({n} min left)"
+msgstr ""
+
 msgid "Logging"
+msgstr ""
+
+msgid "Logging back in now."
 msgstr ""
 
 msgid "Look for a chest the game announces on the map"
@@ -2740,6 +2829,9 @@ msgstr ""
 msgid "Minutes to look for it:"
 msgstr ""
 
+msgid "Minutes to wait when they gi&ve no number:"
+msgstr ""
+
 msgid "Minutes without a kill:"
 msgstr ""
 
@@ -2855,6 +2947,9 @@ msgid "My list ({n})"
 msgstr ""
 
 msgid "My own gang's (gangs pay less)"
+msgstr ""
+
+msgid "My own points, in order, round and round"
 msgstr ""
 
 msgid "NPCs"
@@ -3019,6 +3114,10 @@ msgid ""
 "No {what} potion on your hotkeys. Put one on a hotkey and scan, or choose one from the bag."
 msgstr ""
 
+msgid ""
+"No-go circles: no monster in them is looked for, and the patrol keeps out"
+msgstr ""
+
 msgid "Nobody in sight"
 msgstr ""
 
@@ -3136,6 +3235,10 @@ msgstr ""
 
 msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
+msgstr ""
+
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
 msgstr ""
 
 msgid "Only what is in the bag"
@@ -3278,6 +3381,9 @@ msgstr ""
 msgid "Paying to go in"
 msgstr ""
 
+msgid "Perfect"
+msgstr ""
+
 msgid "Pet HP"
 msgstr ""
 
@@ -3362,6 +3468,9 @@ msgid "Plans and scripts"
 msgstr ""
 
 msgid "Players near:"
+msgstr ""
+
+msgid "Point {n} added at {x}, {y}. Movement is now My own points."
 msgstr ""
 
 msgid ""
@@ -3454,7 +3563,13 @@ msgstr ""
 msgid "Quick phrases"
 msgstr ""
 
+msgid "Radius of a new c&ircle:"
+msgstr ""
+
 msgid "Range (tiles):"
+msgstr ""
+
+msgid "Rare"
 msgstr ""
 
 msgid "Re&move"
@@ -3836,6 +3951,9 @@ msgid ""
 "{report}"
 msgstr ""
 
+msgid "Send wait and 1 to 999 minutes, for example: wait 45"
+msgstr ""
+
 msgid "Set the attack &range myself"
 msgstr ""
 
@@ -3974,6 +4092,9 @@ msgid "Sold:"
 msgstr ""
 
 msgid "Some sound requests were missed because the event buffer filled."
+msgstr ""
+
+msgid "Sophisticated"
 msgstr ""
 
 msgid "Sound &ID:"
@@ -4267,6 +4388,9 @@ msgid "Tell them now and then that I'm a&way"
 msgstr ""
 
 msgid "Test &message:"
+msgstr ""
+
+msgid "That command is turned off on this character."
 msgstr ""
 
 msgid "That filter already exists."
@@ -4646,6 +4770,9 @@ msgid "They carry on where they were in {n} seconds."
 msgstr ""
 
 msgid "They come from {source}, a bagful at a time."
+msgstr ""
+
+msgid "They may &log me out for a while and back in (wait)"
 msgstr ""
 
 msgid "This character has no gathering skill to add a place for."
@@ -5179,6 +5306,14 @@ msgstr ""
 msgid "Would you like to switch to {language}?"
 msgstr ""
 
+msgid ""
+"Write each no-go circle as x,y,radius, separated by semicolons: 26,219,45"
+msgstr ""
+
+msgid ""
+"Write the patrol points as x,y separated by semicolons, 10 at most: 120,80; 150,90"
+msgstr ""
+
 msgid "Write the time as HH:MM, for example 06:30."
 msgstr ""
 
@@ -5209,6 +5344,9 @@ msgid "Yesterday"
 msgstr ""
 
 msgid "You are already on {map}."
+msgstr ""
+
+msgid "You aren't in {room} any more: join it again in the game."
 msgstr ""
 
 msgid "You have (last scan):"
@@ -5315,6 +5453,9 @@ msgstr ""
 
 msgid ""
 "already on {map}, where this run farms first - the Before farming list is skipped"
+msgstr ""
+
+msgid "another character came in"
 msgstr ""
 
 msgid "anything"
@@ -6308,6 +6449,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in a no-go circle of this farming spot"
+msgstr ""
+
 msgid "in an elite or boss zone we keep out of"
 msgstr ""
 
@@ -6356,6 +6500,9 @@ msgid ""
 msgstr ""
 
 msgid "kept in the bag, as their rules say: {list}"
+msgstr ""
+
+msgid "kept {name}: it has a bonus"
 msgstr ""
 
 msgid "key {key}"
@@ -6470,7 +6617,13 @@ msgstr ""
 msgid "log in to a character first"
 msgstr ""
 
+msgid "logged out for {minutes} minutes, as {name} asked"
+msgstr ""
+
 msgid "logging back in didn't start: {why}"
+msgstr ""
+
+msgid "logging back in didn't work ({n} of {most}): {why}"
 msgstr ""
 
 msgid "logging back in didn't work: {why}"
@@ -6833,6 +6986,9 @@ msgstr ""
 msgid "nobody yet"
 msgstr ""
 
+msgid "nogo is x,y,radius;x,y,radius;..."
+msgstr ""
+
 msgid "none"
 msgstr ""
 
@@ -7142,7 +7298,10 @@ msgstr ""
 msgid "pant legs"
 msgstr ""
 
-msgid "patrol is random, full, quick or short"
+msgid "patrol is random, full, quick, short or points"
+msgstr ""
+
+msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""
 
 msgid "pause"
@@ -7182,6 +7341,9 @@ msgid ""
 msgstr ""
 
 msgid "points"
+msgstr ""
+
+msgid "points is x,y;x,y;... (up to 10)"
 msgstr ""
 
 msgid "probably a dungeon - no way out on foot"
@@ -7290,6 +7452,9 @@ msgid "rings"
 msgstr ""
 
 msgid "road"
+msgstr ""
+
+msgid "room {n}"
 msgstr ""
 
 msgid ""
@@ -7524,6 +7689,9 @@ msgid "stopped before the next level"
 msgstr ""
 
 msgid "stopped by you"
+msgstr ""
+
+msgid "stopped by you during the wait: the character stays logged out"
 msgstr ""
 
 msgid "stopped with {n} Vitality left, as you set"
@@ -7875,6 +8043,9 @@ msgstr ""
 msgid "the best map for level {level}: {map}"
 msgstr ""
 
+msgid "the character didn't leave the game"
+msgstr ""
+
 msgid ""
 "the character sheet didn't show the experience card {what} - looking again in a minute"
 msgstr ""
@@ -7984,6 +8155,9 @@ msgstr ""
 msgid "the game didn't take the construction report"
 msgstr ""
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr ""
+
 msgid "the game didn't take the number"
 msgstr ""
 
@@ -8037,6 +8211,10 @@ msgid "the game shows: {shown}"
 msgstr ""
 
 msgid "the game still won't change its mode - farming on in the mode it has"
+msgstr ""
+
+msgid ""
+"the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
 
 msgid "the game won't let us hit {name} from here - next one"
@@ -8126,6 +8304,9 @@ msgstr ""
 
 msgid ""
 "the list Uncle Farmer came with (from {made}) - press Refresh for today's"
+msgstr ""
+
+msgid "the login took too long"
 msgstr ""
 
 msgid ""
@@ -8222,6 +8403,12 @@ msgstr ""
 msgid "the script is too long (over {max} characters)"
 msgstr ""
 
+msgid "the setting menu didn't open"
+msgstr ""
+
+msgid "the setting menu has no Switch account"
+msgstr ""
+
 msgid "the shard price list (data\\shards.json) can't be read"
 msgstr ""
 
@@ -8294,6 +8481,12 @@ msgid "the top level - nothing to lose"
 msgstr ""
 
 msgid "the village at {x},{y} on {map}"
+msgstr ""
+
+msgid "the wait is over: logging back in"
+msgstr ""
+
+msgid "the wait was cut short from Uncle Farmer"
 msgstr ""
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
@@ -8404,6 +8597,9 @@ msgstr ""
 msgid "threw away {list}"
 msgstr ""
 
+msgid "threw away {name} ({rarity}), picked up while farming"
+msgstr ""
+
 msgid "through the teleport at {cell}"
 msgstr ""
 
@@ -8512,6 +8708,10 @@ msgid "voice message"
 msgstr ""
 
 msgid "voice message from {name} - play it in Chat (Ctrl+T)"
+msgstr ""
+
+msgid ""
+"wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
 msgstr ""
 
 msgid "waiting for the game opened for {name} to start"
@@ -8718,6 +8918,9 @@ msgstr ""
 msgid "{cell} can't be reached on {map}"
 msgstr ""
 
+msgid "{channel}: {room}"
+msgstr ""
+
 msgid "{chore}: {note}"
 msgstr ""
 
@@ -8744,6 +8947,9 @@ msgid ""
 msgstr ""
 
 msgid "{dmg} damage ({share} of all)"
+msgstr ""
+
+msgid "{done} of {minutes} minutes waited"
 msgstr ""
 
 msgid ""
@@ -9207,7 +9413,13 @@ msgstr ""
 msgid "{n} more {gem} would take about {k} more {shard}"
 msgstr ""
 
+msgid "{n} no-go circles"
+msgstr ""
+
 msgid "{n} of them are still on display and will be skipped."
+msgstr ""
+
+msgid "{n} own points"
 msgstr ""
 
 msgid "{n} sellers looked up"
@@ -9247,6 +9459,10 @@ msgid "{n}. {action} — {state}; delay {seconds} s; deterministic: {strict}"
 msgstr ""
 
 msgid "{opt} isn't a valid name pattern"
+msgstr ""
+
+msgid ""
+"{other} is logged in now, not {name}: the run stops rather than farming as the wrong character"
 msgstr ""
 
 msgid "{pct}% full ({load} of {max})"
@@ -9418,6 +9634,9 @@ msgid "{used}, {kills} kills"
 msgstr ""
 
 msgid "{village} on {map}"
+msgstr ""
+
+msgid "{what} ({n} min left)"
 msgstr ""
 
 msgid ""

@@ -71,6 +71,7 @@ class Parts:
     tell: Callable[[str], None] | None             # answers the player who asked for this run
     kind: str
     reconnect: Callable[[], bool] | None
+    after_login: Callable[[], None] | None      # the run's keys and guards again after a login (runner)
 
     # ---------------------------------------------------------------- state the engine modules keep
     # on the bot for a run (pets, team heals, repairs, follow, gathering...): set where they are used,
@@ -204,6 +205,7 @@ class Parts:
     _potions_warned: set[str]
     _potions_warned_out: set[str]
     farm_filter: FarmFilter | None
+    spot_no_go: list[tuple[float, float, float]]
     walk_only: bool
     walk_left: float | None     # steps still to walk on this map, on a trip (beasts.RIDE_MIN)
     walk_target: tuple[int, tuple[int, int]] | None

@@ -101,6 +101,18 @@ class GameLost(Stopped):
         self.connection = connection
 
 
+class WrongCharacter(Stopped):
+    """Another character is in the run's game now (switched to by hand in the same game, an account
+    holding several characters): the run ends at once, as the community script does ("rather than
+    farming as the wrong character"), with nothing done in the game - no guarding, no walk to the end
+    place, no restock - since every rule it holds is the other character's. Live 2026-11-24: a run
+    paused, the player switched to another character, and the run went on with its own restock on
+    that one. Not carried on later, and the game is not opened again."""
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args, final=True)
+
+
 class Respawned(Exception):
     """We died and came back (map respawn or the city): whatever we were doing starts over."""
 

@@ -54,7 +54,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     deposit <item> [count]           put into the storehouse (all, if no count)
     login [character]                select this saved character before the script runs
     walk <x> <y>                     walk to a cell on the current map
-    farm [map=<map>] [minutes=N] [kills=N] [patrol=random|full|quick] [area=x1,y1,x2,y2]
+    farm [map=<map>] [minutes=N] [kills=N] [patrol=random|full|quick|short|points] [area=x1,y1,x2,y2]
+         [points=x,y;x,y;...] [nogo=x,y,radius;...]
          [only=<names>] [skip=<names>] [elites=fight|avoid] [until=<condition>]
                                      farm until a limit is reached (no limit = until stopped);
                                      until= takes the rest of the line, so it goes last;
@@ -111,7 +112,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
 from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey, teamlead, town
 from .bot import Bot, Respawned, Stopped
-from .botparts.base import GameLost
+from .botparts.base import GameLost, WrongCharacter
 from collections.abc import Callable, Mapping
 
 def _at(rest: str, n: int):
@@ -128,7 +129,8 @@ END_WORDS = ("start", "safe", "hearthstone", "here")
 COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone", "manage_team",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
             "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
-FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "only", "skip", "elites", "until")
+FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "points", "nogo", "only", "skip", "elites", "until")
+MOST_POINTS = 10          # a farm's own patrol points (patrol=points)
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
              "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
@@ -828,9 +830,29 @@ def _farm_area(text: str, n: int) -> list[int]:
     return [min(box[0], box[2]), min(box[1], box[3]), max(box[0], box[2]), max(box[1], box[3])]
 
 
+def _farm_cells(text: str, n: int, size: int, what: str) -> list[list[int]]:
+    """"x,y;x,y" (size 2) or "x,y,r;..." (size 3) as lists of numbers."""
+    out: list[list[int]] = []
+    for part in text.split(";"):
+        if not part.strip():
+            continue
+        nums = [int(_number(v.strip(), n, what)) for v in part.split(",")]
+        if len(nums) != size or any(v < 0 for v in nums):
+            raise ScriptError(n, _("points is x,y;x,y;... (up to 10)") if size == 2
+                              else _("nogo is x,y,radius;x,y,radius;..."))
+        out.append(nums)
+    return out
+
+
 def _farm_choices(opts: dict[str, Any], n: int):
-    if opts.get("patrol", "random") not in ("random", "full", "quick", "short"):
-        raise ScriptError(n, _("patrol is random, full, quick or short"))
+    if "points" in opts and "patrol" not in opts:
+        opts["patrol"] = "points"         # points alone: go round them
+    if opts.get("patrol", "random") not in ("random", "full", "quick", "short", "points"):
+        raise ScriptError(n, _("patrol is random, full, quick, short or points"))
+    if opts.get("patrol") == "points" and not opts.get("points"):
+        raise ScriptError(n, _("patrol=points needs points=x,y;x,y;..."))
+    if len(opts.get("points") or []) > MOST_POINTS:
+        raise ScriptError(n, _("points is x,y;x,y;... (up to 10)"))
     if opts.get("elites", "fight") not in ("fight", "avoid"):
         raise ScriptError(n, _("elites is fight or avoid"))
     for rx in ("only", "skip"):
@@ -854,6 +876,10 @@ def _prep_farm(node: Node, rest: str, n: int):
             opts[num] = _number(opts[num], n, num)
     if "area" in opts:
         opts["area"] = _farm_area(opts["area"], n)
+    if "points" in opts:
+        opts["points"] = _farm_cells(opts["points"], n, 2, "points")
+    if "nogo" in opts:
+        opts["nogo"] = _farm_cells(opts["nogo"], n, 3, "nogo")
     _farm_choices(opts, n)
     if "until" in opts:
         opts["until_text"] = opts["until"]
@@ -1048,8 +1074,8 @@ class Runner:
             self.bot.log(_("script finished"))
         except _End as e:
             self.bot.log(str(e) or _("script stopped itself"))
-        except GameLost:
-            raise                 # no on_stop: the game is gone
+        except (GameLost, WrongCharacter):
+            raise                 # no on_stop: the game is gone, or another character is in it
         except Stopped as e:
             if self.bot.stop_event.is_set():
                 raise
@@ -1386,7 +1412,8 @@ class Runner:
                kills=kills - done_kills if kills else 0,
                only=o.get("only", ""), skip=o.get("skip", ""), patrol=o.get("patrol", "random"),
                avoid_elites=o.get("elites") == "avoid",
-               until=(lambda: bool(self.value(until, node.line))) if until is not None else None)
+               until=(lambda: bool(self.value(until, node.line))) if until is not None else None,
+               nogo=o.get("nogo") or (), points=o.get("points") or ())
 
 
 def best_map(b: Bot) -> int:

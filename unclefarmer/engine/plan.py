@@ -50,7 +50,7 @@ PLAN_DEFAULTS: dict[str, Any] = {
 }
 
 STEP_DEFAULTS: dict[str, Any] = {"map": 5121, "minutes": 30, "kills": 0, "drop_minutes": 0, "patrol": "random",
-                 "area": None, "only": "", "skip": "", "elites": "fight"}
+                 "area": None, "only": "", "skip": "", "elites": "fight", "points": [], "nogo": []}
 DROP_DAY = 7 * 60     # minutes of drop time the game gives a day, the same for every character
 END_HOWS = ("start", "place", "hearthstone", "safe", "here")
 PLAN_EXPORT_FORMAT = "unclefarmer-plan"
@@ -79,6 +79,8 @@ class Spot(BaseModel):
     only: str = STEP_DEFAULTS["only"]
     skip: str = STEP_DEFAULTS["skip"]
     elites: str = STEP_DEFAULTS["elites"]
+    points: list[list[int]] = Field(default_factory=list[list[int]])   # patrol "points": x, y each
+    nogo: list[list[int]] = Field(default_factory=list[list[int]])     # no-go circles: x, y, radius each
 
 
 class Plan(BaseModel):
@@ -203,6 +205,10 @@ def farm_line(s: dict[str, Any], several: bool, until: str = "") -> str:
         opts.append("patrol=%s" % s["patrol"])
     if s.get("area"):
         opts.append("area=%s" % ",".join(str(int(v)) for v in s["area"]))
+    if s.get("patrol") == "points" and s.get("points"):
+        opts.append("points=%s" % ";".join("%d,%d" % (int(p[0]), int(p[1])) for p in s["points"]))
+    if s.get("nogo"):
+        opts.append("nogo=%s" % ";".join("%d,%d,%d" % (int(c[0]), int(c[1]), int(c[2])) for c in s["nogo"]))
     if s.get("only"):
         opts.append("only=%s" % _q(s["only"]))
     if s.get("skip"):

@@ -7,6 +7,10 @@ no key is pressed, so the bot's keys and the chat never get in each other's way.
 Chat lives in memory only, as private as the game's own chat box: a few hundred lines per game,
 never written to a file or a log, and gone when Uncle Farmer closes. Private messages are the Messenger's
 (messages.py): they show here too, but it is the Messenger that speaks and sends them.
+
+A player can be in several international rooms and several private channels at once (the game's
+"switch channel"). From agent 79 each of their lines carries its room, so every room has a buffer
+of its own ("5@10": International, room 10) beside the channel's, which has them all.
 """
 
 from __future__ import annotations
@@ -23,6 +27,8 @@ from .link import AgentError, AgentLink
 
 AGENT_CHAT = 32
 AGENT_VOICE = 42           # voice messages: the "voice" of chat and pms rows, `voice play/record/send`
+AGENT_ROOMS = 79           # each international and private-channel line's room, the joined rooms, `sayin`
+ROOM_CHANNELS = ("5", "6")    # International and the private channel: a player can be in several rooms of each
 VOICE_CHANNELS = ("3", "4")   # the game sends voice to Gang and Team, and in private messages
 KEEP = 500                 # the All buffer: the channels (notices and private messages left out)
 KEEP_EACH = 300            # each channel's own buffer
@@ -73,7 +79,42 @@ def channel_of(incoming: int) -> str:
     return NOTICE
 
 
+def room_key(channel: str, room: int) -> str:
+    """One room's buffer key: "5@10" is the international room 10."""
+    return "%s@%d" % (channel, room)
+
+
+def is_room(key: str) -> bool:
+    return "@" in key
+
+
+def room_of(key: str) -> tuple[str, int]:
+    """("5", 10) for "5@10"."""
+    channel, _at, room = key.partition("@")
+    return channel, int(room) if room.isdigit() else 0
+
+
+def room_name(channel: str, room: int, name: str | None) -> str:
+    """"International: French", or "International: room 10" while the game hasn't named it."""
+    return _("{channel}: {room}", channel=channel_name(channel), room=name or _("room {n}", n=room))
+
+
+def line_key(line: Line) -> str | None:
+    """The room buffer a line belongs to, or None (a line of any other channel, or from an older agent)."""
+    return room_key(line["channel"], line["room"]) if line.get("room") else None
+
+
+def place_of(line: Line) -> str:
+    """Where a line was said: its channel, and its room when it has one."""
+    if line.get("room"):
+        return room_name(line["channel"], line["room"], line.get("room_name"))
+    return channel_name(line["channel"])
+
+
 def channel_name(key: str) -> str:
+    if is_room(key):
+        channel, room = room_of(key)
+        return room_name(channel, room, None)
     if key == PRIVATE:
         return _("Private messages")
     if key == NOTICE:
@@ -103,6 +144,9 @@ class Feed(threading.Thread):
         self.sender_used = 0.0        # time.monotonic() of the sending connection's last answer
         self.version = 0
         self.voice_parts = 0
+        self.room_names: dict[str, str] = {}      # room key -> its name, once the game has shown it
+        self.room_keys: list[str] = []            # every room joined or heard from, in the order met
+        self.current_rooms: dict[str, str] = {}   # "5"/"6" -> the room the game has up
 
     def stop(self) -> None:
         self.halt.set()
@@ -111,9 +155,48 @@ class Feed(threading.Thread):
         """The lines of one buffer: "all", or a channel key."""
         return list(self.lines) if key == "all" else list(self.buffers.get(key, ()))
 
+    def rooms(self) -> list[str]:
+        """Every room's key, International's first, each channel's in the order they were met."""
+        return sorted(self.room_keys, key=lambda k: ROOM_CHANNELS.index(room_of(k)[0]))
+
+    def room_label(self, key: str) -> str:
+        channel, room = room_of(key)
+        return room_name(channel, room, self.room_names.get(key))
+
+    def place(self, key: str) -> str:
+        """A buffer's or a sending target's name: a channel, or one room with its name."""
+        return self.room_label(key) if is_room(key) else channel_name(key)
+
+    def note_room(self, key: str) -> None:
+        if key not in self.room_keys:
+            self.room_keys.append(key)
+
+    def note_rooms(self, rows: list[dict[str, Any]]) -> None:
+        """The agent's "rooms": every joined room, its name once the game has shown it, and the one up."""
+        for r in rows:
+            channel, room = str(r.get("channel")), int(r.get("id") or 0)
+            if channel not in ROOM_CHANNELS or room <= 0:
+                continue
+            key = room_key(channel, room)
+            self.note_room(key)
+            if r.get("current"):
+                self.current_rooms[channel] = key
+            name = r.get("name")
+            if name and self.room_names.get(key) != name:
+                self.room_names[key] = name
+                for line in self.buffers.get(key, ()):
+                    line["room_name"] = name        # the lines heard before the game named it
+
     def add(self, channel: str, name: str, text: str, mine: bool = False, to: str | None = None, peer_id: int = 0,
-            voice: str | None = None) -> None:
+            voice: str | None = None, room: int = 0) -> None:
         line: Line = {"when": time.time(), "channel": channel, "name": name, "text": text, "mine": mine}
+        if room and channel in ROOM_CHANNELS:
+            key = room_key(channel, room)
+            line["room"] = room
+            if key in self.room_names:
+                line["room_name"] = self.room_names[key]
+            self.note_room(key)
+            self.buffers[key].append(line)
         if to:
             line["to"] = to
         if voice:
@@ -144,9 +227,10 @@ class Feed(threading.Thread):
                 got = self.link.json("chat %d %d" % (last, WAIT_MS))
                 last = got.get("last", last)
                 self.room = got.get("room", self.room)
+                self.note_rooms(got.get("rooms") or [])
                 for c in got.get("chat", []):
                     self.add(channel_of(c.get("channel", -1)), c.get("name") or "", c.get("text") or "",
-                             voice=c.get("voice"))
+                             voice=c.get("voice"), room=int(c.get("room") or 0))
                 pms = self.link.json("pms %d" % last_pm)
                 last_pm = pms.get("last", last_pm)
                 for pm in pms.get("pms", []):
@@ -276,18 +360,29 @@ class Feed(threading.Thread):
         except (AgentError, OSError):
             self.sender = None
 
-    def say(self, channel: int, text: str) -> str | None:
-        """A line on a chat channel (0-6). Returns None when sent, else why not, for the player."""
+    def say_to(self, key: str, text: str) -> str | None:
+        """A line to a channel ("0".."6") or to one room ("5@10"). None when sent, else why not."""
+        if is_room(key):
+            channel, room = room_of(key)
+            return self.say(int(channel), text, room=room)
+        return self.say(int(key), text)
+
+    def say(self, channel: int, text: str, room: int = 0) -> str | None:
+        """A line on a chat channel (0-6), or into one of its rooms (5 and 6). Returns None when
+        sent, else why not, for the player."""
         text = " ".join(text.split())
         if not text:
             return _("Type a message first.")
         try:
-            r = self._ask("say %d %s" % (channel, text))
+            r = self._ask("sayin %d %d %s" % (channel, room, text) if room else "say %d %s" % (channel, text))
         except (AgentError, OSError) as e:
             self.sender = None
             return _("The game didn't take it: {why}", why=e)
         if r == "sent":
             return None
+        if "not in that room" in r:
+            return _("You aren't in {room} any more: join it again in the game.",
+                     room=self.room_label(room_key(str(channel), room)))
         if "international" in r:
             return _("Join an international room in the game first.")
         if "private channel" in r:

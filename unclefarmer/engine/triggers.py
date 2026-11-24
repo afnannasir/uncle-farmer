@@ -31,7 +31,7 @@ from ..errors import carry_on
 from ..i18n import N_, _
 from ..link import AgentError
 from . import activities, keyboard, town
-from .botparts.base import GameBroken, Stopped
+from .botparts.base import GameBroken, Stopped, WrongCharacter
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -291,7 +291,7 @@ def run_stage(b: Bot, stage: str, log: Callable[..., None], stopped: Callable[[]
         try:
             run_step(b, job, farming_window, log)
             done.append((job, True))
-        except GameBroken:
+        except (GameBroken, WrongCharacter):
             done.append((job, False))
             if stage == "before":
                 raise

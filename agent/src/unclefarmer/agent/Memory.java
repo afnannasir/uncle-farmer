@@ -52,6 +52,10 @@ final class Memory {
     static final String CHAT_MODEL_CLASS = "game.t";
     static final String CHAT_INTERNATIONAL = "i";
     static final String CHAT_PRIVATE_CHANNEL = "j";
+    static final String CHAT_INTERNATIONAL_NAME = "y";
+    static final String CHAT_PRIVATE_CHANNEL_NAME = "z";
+    static final String CHAT_INTERNATIONAL_LINES = "w";
+    static final String CHAT_PRIVATE_CHANNEL_LINES = "x";
     static final String WIN_WORLD = "n";
 
     static final String W_ENTITIES = "i";
@@ -102,6 +106,7 @@ final class Memory {
     // Panel lists (javap 2026-10-04): W 0..6 = items ad, equipment ae, fusion beasts af, pets t,
     // combat skills ag, talents ah, profession skills ai; ak / al = attack / profession key -> skill.
     static final String W_EQUIP = "ae";
+    static final String EQUIP_WORN = "m";      // 1 worn, 0 in the bag (EQUIP_ROW's "equipped")
     static final String W_BEASTS = "af";
     static final String W_PETS = "t";
     static final String W_COMBAT = "ag";
@@ -162,21 +167,77 @@ final class Memory {
      *  international lines with its field i and private-channel lines with its field j (javap of
      *  game.Win, 2026-10-21). Found by type, read by name. */
     static int[] chatRooms() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new int[] {0, 0};
+        return new int[] {intField(t, CHAT_INTERNATIONAL), intField(t, CHAT_PRIVATE_CHANNEL)};
+    }
+
+    /** The names of the international room and the private channel the chat model has up now
+     *  ({international, private channel}, null when none), read live on 2026-11-24 as its fields y
+     *  and z: "French" then "English" in y as the player switched rooms, one private
+     *  channel's name then another's in z. */
+    static String[] chatRoomNames() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new String[] {null, null};
+        return new String[] {stringOrNull(t, CHAT_INTERNATIONAL_NAME), stringOrNull(t, CHAT_PRIVATE_CHANNEL_NAME)};
+    }
+
+    /** The rooms the chat model keeps lines for ({international ids, private channel ids}): its
+     *  fields w and x map each joined room's id to that room's own lines (live, 2026-11-24: w[10]
+     *  English and w[30] French, x[116] and x[136] two private channels). Empty when not a map. */
+    static int[][] chatJoined() throws Unavailable {
+        Object t = chatModel();
+        if (t == null) return new int[][] {{}, {}};
+        return new int[][] {mapKeys(t, CHAT_INTERNATIONAL_LINES), mapKeys(t, CHAT_PRIVATE_CHANNEL_LINES)};
+    }
+
+    private static Object chatModel() throws Unavailable {
         Object w = world();
         for (Class<?> k = w.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
             for (Field f : k.getDeclaredFields()) {
                 if (!f.getType().getName().equals(CHAT_MODEL_CLASS)) continue;
                 try {
                     f.setAccessible(true);
-                    Object t = f.get(w);
-                    if (t == null) return new int[] {0, 0};
-                    return new int[] {intField(t, CHAT_INTERNATIONAL), intField(t, CHAT_PRIVATE_CHANNEL)};
+                    return f.get(w);
                 } catch (IllegalAccessException e) {
                     throw new Unavailable("chat model unreadable");
                 }
             }
         }
         throw new Unavailable("no chat model in the world");
+    }
+
+    private static String stringOrNull(Object o, String name) {
+        Field f = field(o.getClass(), name);
+        if (f == null || f.getType() != String.class) return null;
+        try {
+            return (String) f.get(o);
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+    }
+
+    private static int[] mapKeys(Object o, String name) {
+        Field f = field(o.getClass(), name);
+        if (f == null) return new int[0];
+        Object v;
+        try {
+            v = f.get(o);
+        } catch (IllegalAccessException e) {
+            return new int[0];
+        }
+        if (!(v instanceof Map)) return new int[0];
+        List<Integer> ids = new ArrayList<Integer>();
+        try {
+            for (Object key : ((Map<?, ?>) v).keySet().toArray()) {
+                if (key instanceof Number) ids.add(((Number) key).intValue());
+            }
+        } catch (RuntimeException e) {
+            return new int[0];        // the game changed it while we read
+        }
+        int[] out = new int[ids.size()];
+        for (int i = 0; i < out.length; i++) out[i] = ids.get(i);
+        return out;
     }
 
     // ---------------------------------------------------------------- snapshots
@@ -525,6 +586,99 @@ final class Memory {
 
     /** Null when every requested discard still has a matching bag unit; otherwise why not.
      * Repeated uids mean several units from the same stack. */
+    /** `memitem <uid>`: every field of that bag or equipment row (Describe), to find what the
+     *  rows' known fields don't say (an equipment piece's bonus). Read-only. */
+    static String describeItem(int uid) {
+        try {
+            Object world = world();
+            for (String list : new String[] {W_BAG, W_EQUIP}) {
+                Object rows = get(world, list, ArrayList.class);
+                if (rows == null) continue;
+                for (Object row : copy((ArrayList<?>) rows)) {
+                    if (row != null && intField(row, E_ID) == uid) return list + ": " + Describe.of(row);
+                }
+            }
+            return "error: no item " + uid;
+        } catch (Unavailable u) {
+            return error(u.getMessage());
+        }
+    }
+
+    /** Whether uid is one of our equipment pieces, worn or in the bag. */
+    static boolean hasGear(int uid) throws Unavailable {
+        Object gear = get(world(), W_EQUIP, ArrayList.class);
+        if (gear == null) throw new Unavailable("noequipment");
+        for (Object piece : copy((ArrayList<?>) gear)) {
+            if (piece != null && intField(piece, E_ID) == uid) return true;
+        }
+        return false;
+    }
+
+    /** `memwin`: every simple field (numbers, booleans, text, and a list's or map's size) of the game
+     *  window and of its world, static ones too, to tell two states of the game apart (a login
+     *  back after Switch account that left the game taking no command). Read-only. */
+    static String describeWindow() {
+        Frame win = window();
+        if (win == null) return "error: no game window";
+        StringBuilder sb = new StringBuilder("win ");
+        simpleFields(win, sb);
+        Object world = null;
+        try {
+            world = get(win, WIN_WORLD, null);
+        } catch (Unavailable ignored) {
+            // no world yet
+        }
+        sb.append(" || world ");
+        if (world == null) sb.append("null");
+        else simpleFields(world, sb);
+        return sb.toString();
+    }
+
+    private static void simpleFields(Object o, StringBuilder sb) {
+        for (Class<?> k = o.getClass(); k != null && k.getName().startsWith("game."); k = k.getSuperclass()) {
+            for (Field f : k.getDeclaredFields()) {
+                Class<?> t = f.getType();
+                try {
+                    f.setAccessible(true);
+                    Object v = f.get(java.lang.reflect.Modifier.isStatic(f.getModifiers()) ? null : o);
+                    String shown;
+                    if (t.isPrimitive() || t == String.class || v instanceof Number || v instanceof Boolean) {
+                        shown = String.valueOf(v);
+                        if (shown.length() > 40) shown = shown.substring(0, 40);
+                    } else if (v instanceof int[] && ((int[]) v).length <= 16) {
+                        shown = java.util.Arrays.toString((int[]) v).replace(" ", "");
+                    } else if (v instanceof java.util.Collection) {
+                        shown = "#" + ((java.util.Collection<?>) v).size();
+                    } else if (v instanceof Map) {
+                        shown = "#" + ((Map<?, ?>) v).size();
+                    } else {
+                        shown = v == null ? "null" : "obj";
+                    }
+                    sb.append(k.getSimpleName()).append('.').append(f.getName()).append('=').append(shown).append(' ');
+                } catch (Throwable ignored) {
+                    // a field we can't read is left out
+                }
+            }
+        }
+    }
+
+    /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
+    static String gearDiscardable(int[] uids) throws Unavailable {
+        Object gear = get(world(), W_EQUIP, ArrayList.class);
+        if (gear == null) throw new Unavailable("noequipment");
+        java.util.HashSet<Integer> loose = new java.util.HashSet<Integer>();
+        for (Object piece : copy((ArrayList<?>) gear)) {
+            if (piece != null && intField(piece, EQUIP_WORN) == 0) loose.add(Integer.valueOf(intField(piece, E_ID)));
+        }
+        java.util.HashSet<Integer> asked = new java.util.HashSet<Integer>();
+        for (int uid : uids) {
+            Integer key = Integer.valueOf(uid);
+            if (!loose.contains(key)) return "error: no equipment " + uid + " in the bag";
+            if (!asked.add(key)) return "error: equipment " + uid + " asked twice";
+        }
+        return null;
+    }
+
     static String discardable(int[] uids) throws Unavailable {
         Object bag = get(world(), W_BAG, ArrayList.class);
         if (bag == null) throw new Unavailable("nobag");

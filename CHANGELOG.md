@@ -2,6 +2,67 @@
 
 ## Unreleased
 
+**A run never goes on as another character** (seen in game)
+
+- One account holds several characters, switched between in the same game (Switch account). A run
+  read its character once, at its start: paused, then switched to another character by hand, a run
+  went on as its own on that one, with its own restock (it took potions out of the Storehouse). The
+  run now checks the game's character by its id at every reading and when a pause ends: another
+  one stops it at once, with nothing more done in the game, as the community script does ("rather
+  than farming as the wrong character"). Not carried on later.
+- A run paused when its game closes (the player had the game) is no longer opened again and carried
+  on, which logged its character back in over the one the player wanted.
+
+**Equipment picked up while farming, thrown away by rarity** (untested in game; agent 79)
+
+- The bag manager's Full bag page has one box per rarity, the game's own: Crude, Common,
+  Sophisticated, Perfect, Rare, Legendary, none ticked. The ticked ones are thrown away every so
+  many minutes of farming (30 by default) and whenever the bag is full, where the character stands.
+- Only pieces picked up during the run: one already in the bag when it began is never thrown, and
+  every piece thrown is written in the log with its rarity.
+- **Keep pieces with a bonus** (ticked by default): before a piece goes, its details are asked for
+  as the G key does, and one whose details have a "plus:" bonus is kept, as is one whose details
+  don't come back.
+- Read live: the bag's equipment is apart from its other items, a piece's rarity is a number in the
+  game's order, and the game throws a piece away and gives its details with requests of their own;
+  agent 79 has `discardgear` and `gearinfo` for them.
+
+**A farming spot's own patrol points and no-go circles** (untested in game)
+
+- A plan's spot can go round the player's own points, in order (**My own points, in order, round and
+  round**, up to 10, with **Add where I stand**), fighting what comes near on the way, as on the
+  game's patrol loops.
+- **No-go circles** on the spot: no monster inside one is looked for and the patrol never heads into
+  one; one that attacks from inside is still fought. **Add a circle around me** puts one where the
+  character stands.
+- Scripts: `farm ... points=120,80;150,90` (alone, it means `patrol=points`) and
+  `nogo=26,219,45;300,40,10`.
+
+**Private message `wait`: out for a while, then back to farming** (untested in game)
+
+- A trusted player sends `wait 45`: the character logs out (the setting menu's Switch account), waits 45 minutes at the login screen, logs back in with the game's saved account and the run goes on, the wait counted as a pause. `wait` alone takes the minutes set in Private messages. Off unless **They may log me out for a while and back in (wait)** is ticked. Stop during the wait leaves the character out; five failed logins, a minute apart, end the run.
+- No private message reaches a character that is logged out: during a wait the Games list says **Logged out for a while (N min left)** and the Pause button (F6) reads **Log back in now**, which ends the wait early.
+- Logging back in after Switch account (seen in game): the automatic login took the client a logout
+  leaves behind for a connection under way and never started ("timed out waiting for character
+  picker"); then, logged in, the character took no key at all, the player's included: the game
+  still read the sign-in screen's cursor, left on the account box, for every key. The agent now
+  counts only a live connection, and puts that cursor on Log in first, as the player's own login
+  has it.
+- One action at a time: while a wait, a walk home or a `come` is under way, another action is answered "Busy, one command at a time. Still on: wait (12 min left)." Questions and stop, pause, resume and quit game always work.
+
+**Chat: each international room and private channel apart** (untested in game)
+
+- A player in two international rooms (French and English) or two private channels had both
+  rooms' messages mixed in one Chat buffer, with nothing to tell them apart, and a line typed there
+  went to whichever room the game had up. The game keeps every room's lines apart; the agent threw
+  the room away. Agent 79 keeps each international and private-channel line's room, lists the
+  joined rooms with their names (once the game has shown them), and sends into one room with
+  `sayin`.
+- The Chat window lists each room where International and Private channel were ("International:
+  French"), with its own lines and unread count, and no buffer mixing the rooms; a line typed there
+  goes into that room, and a reply into the room of the line it answers. Restart the game once for
+  the new agent (with an older one the list is as before).
+
 **The menu box on the Keys page: a moment before each choice, and shops too** (untested in game)
 
 - On one player's computer, menus that work by hand did nothing for the bot: every shop's

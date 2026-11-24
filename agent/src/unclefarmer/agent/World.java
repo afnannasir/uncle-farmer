@@ -146,6 +146,7 @@ final class World {
             } else if (op == 25) {
                 PrivateChat.outbound(m);
             }
+            UseLog.outbound(m);
         } catch (Throwable t) {
             Log.error("world out", t);
         }

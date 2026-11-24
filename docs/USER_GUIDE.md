@@ -229,6 +229,12 @@ The short patrol loop is the quickest route that still passes within 40 steps of
 
 When following any patrol loop, the bot only goes after monsters that are within 40 walking steps. It leaves other monsters alone until the patrol brings it close to them.
 
+**My own points, in order, round and round** goes round points you choose, up to 10. Stand where you want a point in the game and press **Add where I stand**; the points are in the **Patrol points** box as `x,y`, separated by semicolons, and can be typed there too. The bot goes to each one in turn, fighting what comes near on the way, then starts again from the first.
+
+**No-go circles**
+
+On the same tab, **No-go circles** keep the bot out of parts of the map: no monster inside one is looked for, and the patrol never heads into one. A monster that attacks your character from inside is still fought. Stand at the middle of the part to keep out of, set **Radius of a new circle** and press **Add a circle around me**, or type the circles as `x,y,radius`, separated by semicolons.
+
 ### When to stop
 
 You can set conditions that tell Uncle Farmer when to end a farming run. These include:
@@ -532,6 +538,8 @@ Choose what Uncle Farmer should do when the bag becomes full. The option to stop
 A full bag means the bag has reached its carrying limit. By default, the bot keeps farming until the load reaches that limit. It can also treat the bag as full if the load stops increasing just below the limit while monsters continue to die.
 
 You can set a lower limit if you want the bot to stop or handle the bag before it reaches full capacity.
+
+**Equipment picked up while farming** has one box per rarity, as the game names them: Crude, Common, Sophisticated, Perfect, Rare and Legendary. None is ticked. The pieces of the ticked rarities are thrown away where the character stands, every so many minutes of farming (30 by default) and whenever the bag is full. Only pieces picked up during the run are thrown: a piece that was already in the bag when the run began is never thrown, whatever its rarity. Each piece thrown is written in the log with its rarity. With **Keep pieces with a bonus** ticked (the default), the bot first asks for each piece's details, as the G key does, and keeps one that has a "plus:" bonus. This needs the agent that comes with this version: restart the game once after updating.
 
 ### Storing items now
 
@@ -1999,6 +2007,19 @@ To send a message, type it into the message field and press **Enter**. The field
 
 When **All** is selected, your message is sent to the same channel as the currently selected message.
 
+**Several international rooms and private channels**
+
+The game lets you be in more than one international room (French and English, for example) and
+more than one private channel at once. Each of them gets its own line in the channel list, where
+International and Private channel were, such as **International: French** or **Private channel:
+room 136**; there is no line mixing all the rooms. A room shows up once the game has shown it (the
+room up in the game, or one a message came from) and shows its name once you have switched to it in
+the game; until then it shows its number.
+
+A message typed in a room's own line goes into that room, whichever room the game has up. A reply
+goes back into the room of the message you reply to. This needs the agent that comes with this
+version: restart the game once after updating; with an older agent the channel list is as before.
+
 ### Private conversations
 
 The second tab lets you read and send private messages.
@@ -2206,10 +2227,19 @@ Available commands include:
 - `mute` — Mutes the game.
 - `unmute` — Unmutes the game.
 - `quit game` — Closes the game.
+- `wait [minutes]` — Logs your character out for a while, then back in, and the run goes on (off unless ticked, see below).
+
+One action at a time: while one is under way (a wait, a walk home, `come`), another action is answered "Busy, one command at a time. Still on: ...". Questions (`status`, `where`, `results`...) and `stop`, `pause`, `resume` and `quit game` are always answered.
 
 Send `help` to see the available commands. You can also send `help` followed by a command name for more information.
 
 Uncle Farmer automatically accepts team invitations from trusted players. It declines invitations from other players by pressing **Escape** while the bot is running.
+
+### Using `wait`
+
+`wait 45` logs your character out for 45 minutes, then logs the same character back in and the run goes on where it was (the minutes logged out don't count in its results). `wait` alone waits the minutes set in **Private messages**. It works only with **They may log me out for a while and back in (wait)** ticked there; otherwise it answers "That command is turned off on this character."
+
+The bot logs out the way you do (the setting menu, F1, then Switch account) and logs back in with the game's saved account, so the character must have been logged in once with Uncle Farmer open. While logged out, no private message can reach it. Meanwhile the Games list says **Logged out for a while** with the minutes left, and the **Pause** button (F6) reads **Log back in now**: press it to end the wait early. Press **Stop** in Uncle Farmer during the wait and the character stays logged out. If logging back in fails five times, a minute apart, the run stops.
 
 ### Using `come`
 

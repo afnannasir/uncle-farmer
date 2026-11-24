@@ -49,6 +49,7 @@ public final class AgentTests {
         theAttackKeyMethodIsFoundByItsShape();
         aSlotPressIsLetGoLikeAKey();
         chatQueueCutsLongTextAtSpaces();
+        equipmentIsThrownAsTheGameThrowsIt();
         directShardPacketUsesTheVerifiedLayout();
         commandsAnswerWithoutTheGame();
         theStateServerListensOnLoopbackOnly();
@@ -358,6 +359,17 @@ public final class AgentTests {
         StringBuilder sb = new StringBuilder();
         for (byte b : packet) sb.append(sb.length() == 0 ? "" : " ").append(b & 0xFF);
         return sb.toString();
+    }
+
+    /** Live (2026-11-24): a piece thrown away from the bag's equipment tab went as 12 01 00fef144 02. */
+    private static void equipmentIsThrownAsTheGameThrowsIt() {
+        byte[] p = Act.gearDiscardPacket(16707908);
+        StringBuilder hex = new StringBuilder();
+        for (byte b : p) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100fef14402", "the equipment discard packet");
+        hex.setLength(0);
+        for (byte b : Act.gearInfoPacket(16707907)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "140100fef143", "the equipment details packet (G)");
     }
 
     // ---------------------------------------------------------------- chat queue
@@ -819,6 +831,14 @@ public final class AgentTests {
         byte[] voice = chatLine(12 + Voice.FLAG, 0x00000932, "magoestelar", VOICE_NAME);
         GameChat.inbound(concat(voice, new byte[] {1, 2, 10, 10}));
         eq(lastChatName(GameChat.since(0, 0)), "magoestelar", "a voice line's name, without the sender's id");
+        GameChat.inbound(chatLine(15, 0x00000932, "Ali", "salut"));
+        check(GameChat.since(0, 0).contains("\"name\":\"Ali\",\"text\":\"salut\",\"room\":7}"),
+                "an international line keeps its room");
+        GameChat.inbound(chatLine(18, 0x00000932, "Ali", "yo"));
+        check(GameChat.since(0, 0).contains("\"text\":\"yo\",\"room\":7}"), "a private-channel line keeps its room");
+        GameChat.inbound(chatLine(3, 0x00000932, "Ali", "gang"));
+        check(GameChat.since(0, 0).contains("\"text\":\"gang\"}"), "a gang line has no room");
+        check(GameChat.since(0, 0).endsWith("],\"rooms\":[]}"), "no joined room without a game");
     }
 
     private static void voiceMessagesArriveWithTheirName() {

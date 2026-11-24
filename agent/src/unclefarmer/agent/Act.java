@@ -364,6 +364,54 @@ final class Act {
     }
 
     /** op 18, bag panel 0, uid, then minus the count: what N.b(0, uid, -count) writes. */
+    /** The bag's equipment tab: live (2026-11-24) the game threw a piece away as op 18, this panel,
+     *  the piece's id, then GEAR_DISCARD. */
+    static final int GEAR_PANEL = 1;
+    static final int GEAR_DISCARD = 2;
+
+    /** `discardgear <uid> ...`: throw these equipment pieces in the bag away, as the game does from
+     *  the bag's equipment tab, after checking every one is in the bag and not worn. */
+    static String discardGear(int[] uids) {
+        if (uids.length == 0) return "error: discardgear needs equipment ids";
+        try {
+            String refused = Memory.gearDiscardable(uids);
+            if (refused != null) return refused;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        for (int uid : uids) {
+            String failed = Ask.send(gearDiscardPacket(uid), "discard equipment " + uid);
+            if (failed != null) return failed;
+        }
+        return "sent all " + uids.length;
+    }
+
+    /** The details key (G) on a piece in the bag's equipment tab: live (2026-11-24) op 20, the
+     *  equipment panel, the piece's id; the game says the piece's details at once (Said), with
+     *  ">||<plus: ...>||<" on one with a bonus. */
+    static final int OP_DETAIL = 20;
+
+    /** `gearinfo <uid>`: ask the game for that equipment piece's details, as G does. */
+    static String gearInfo(int uid) {
+        try {
+            if (!Memory.hasGear(uid)) return "error: no equipment " + uid;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        String failed = Ask.send(gearInfoPacket(uid), "equipment details " + uid);
+        return failed != null ? failed : "asked " + uid;
+    }
+
+    static byte[] gearInfoPacket(int uid) {
+        return new byte[] {(byte) OP_DETAIL, (byte) GEAR_PANEL,
+                (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid};
+    }
+
+    static byte[] gearDiscardPacket(int uid) {
+        return new byte[] {(byte) OP_USE, (byte) GEAR_PANEL,
+                (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, (byte) GEAR_DISCARD};
+    }
+
     static byte[] discardPacket(int uid, int count) {
         int n = -count;
         return new byte[] {(byte) OP_USE, (byte) BAG_PANEL,

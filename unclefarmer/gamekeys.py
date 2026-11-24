@@ -157,6 +157,11 @@ def info_key() -> str:
     return _game().get("W_INFO") or "g"
 
 
+def option_key() -> str:
+    """The key that opens the setting menu (W_OPTION), where Switch account logs out."""
+    return _game().get("W_OPTION") or "f1"
+
+
 def notice_key() -> str:
     """The key that opens the notices (W_NOTICE): the gang's announcements are listed there."""
     return _game().get("W_NOTICE") or "backspace"
