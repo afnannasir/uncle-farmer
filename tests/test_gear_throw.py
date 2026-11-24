@@ -9,11 +9,10 @@ from conftest import Clock, as_bot
 from unclefarmer.engine import gearthrow
 
 
-def piece(uid: int, name: str, rarity: str | None) -> dict[str, Any]:
-    row: dict[str, Any] = {"uid": uid, "type": 30000 + uid, "name": name, "count": 1}
-    if rarity:
-        row["rarity"] = rarity
-    return row
+def piece(uid: int, name: str, rarity: str | None, equipped: int = 0) -> dict[str, Any]:
+    """A `mem equipment` row as the agent gives it: "o" is the rarity (9: a medal, no rarity)."""
+    o = gearthrow.RARITIES.index(rarity) if rarity else 9
+    return {"uid": uid, "type": 30000 + uid, "name": name, "equipped": equipped, "n": 0, "o": o, "p": 0, "q": 0}
 
 
 class Link:
@@ -24,13 +23,13 @@ class Link:
         self.asked = 0
 
     def json(self, line: str) -> Any:
-        assert line == "mem bagfull"
+        assert line == "mem equipment"
         self.asked += 1
         return list(self.bag)
 
     def send(self, line: str) -> str:
         self.sent.append(line)
-        if line.startswith("discarddirectall "):
+        if line.startswith("discardgear "):
             gone = {int(u) for u in line.split()[1:]}
             self.bag = [r for r in self.bag if r["uid"] not in gone]
         return self.answer
@@ -41,7 +40,7 @@ class Bot:
         self.a = Link(bag, answer)
         self.p: dict[str, Any] = {"gear_throw": throw, "gear_throw_minutes": 30}
         self.clock = Clock()
-        self.agent_version = 79
+        self.agent_version = gearthrow.GEAR_DISCARD_AGENT
         self.lines: list[str] = []
 
     def log(self, text: str, speak: bool = False) -> None:
@@ -60,7 +59,7 @@ def test_only_pieces_picked_up_during_the_run_go() -> None:
     bot.a.bag += [piece(2, "Iron Sword", "common"), piece(3, "Cloth Hat", "crude"),
                   piece(4, "Dragon Blade", "legendary"), piece(5, "Large Red Potion", None)]
     assert gearthrow.sweep(as_bot(bot)) == 2
-    assert bot.a.sent == ["discarddirectall 2 3"]
+    assert bot.a.sent == ["discardgear 2 3"]
     assert [r["uid"] for r in bot.a.bag] == [1, 4, 5]          # the run's start piece and the rest stay
     assert bot.lines == ["threw away Iron Sword (Common), picked up while farming",
                          "threw away Cloth Hat (Crude), picked up while farming"]
@@ -71,14 +70,29 @@ def test_a_second_spot_keeps_the_first_start() -> None:
     gearthrow.note_start(as_bot(bot))
     bot.a.bag.append(piece(2, "Iron Sword", "common"))
     gearthrow.note_start(as_bot(bot))                           # the plan's next spot: the run's own start stands
-    assert gearthrow.sweep(as_bot(bot)) == 1 and bot.a.sent == ["discarddirectall 2"]
+    assert gearthrow.sweep(as_bot(bot)) == 1 and bot.a.sent == ["discardgear 2"]
 
 
-def test_an_agent_that_doesn_t_say_the_rarity_throws_nothing() -> None:
+def test_a_piece_without_rarity_or_worn_is_never_thrown() -> None:
     bot = Bot([], ["common"])
     gearthrow.note_start(as_bot(bot))
-    bot.a.bag.append(piece(2, "Iron Sword", None))
+    bot.a.bag += [piece(2, "Tutor Medal", None), piece(3, "Iron Sword", "common", equipped=1)]
     assert gearthrow.sweep(as_bot(bot)) == 0 and bot.a.sent == []
+
+
+def test_an_agent_that_can_t_throw_equipment_sends_nothing() -> None:
+    bot = Bot([], ["common"])
+    bot.agent_version = 79
+    gearthrow.note_start(as_bot(bot))
+    bot.a.bag.append(piece(2, "Iron Sword", "common"))
+    assert gearthrow.sweep(as_bot(bot)) == 0 and bot.a.sent == []
+
+
+def test_the_rarity_is_the_row_s_field_o_as_read_live() -> None:
+    seen = {"Firestorm Leggings": 0, "Firestorm Tabard": 3, "Sunfire Robe": 4, "silk hat": 5}
+    assert {n: gearthrow.rarity_of({"o": o}) for n, o in seen.items()} == {
+        "Firestorm Leggings": "crude", "Firestorm Tabard": "perfect", "Sunfire Robe": "rare", "silk hat": "legendary"}
+    assert gearthrow.rarity_of({"o": 9}) is None and gearthrow.rarity_of({}) is None
 
 
 def test_no_start_noted_throws_nothing() -> None:

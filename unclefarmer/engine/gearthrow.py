@@ -10,9 +10,14 @@ whatever its rarity (the bag's pieces are noted by their own id when farming sta
 piece thrown is written in the log with its name and rarity.
 
 The game's rarities, lowest first, as its own English text has them (language\\english\\basic.txt):
-crude, common, sophisticated, perfect, rare, legendary. The game's bag menu reads a piece as
-"Name;rare"; where `mem bagfull` keeps the rarity is still to be read live, so until the agent
-reports it (a row's "rarity") nothing is thrown.
+crude, common, sophisticated, perfect, rare, legendary. Read live (2026-11-24): the bag's equipment
+is not among its other items (`mem bagfull`) but in the equipment list (`mem equipment`, "equipped"
+0 for a piece in the bag), and a row's field "o" is its rarity by that order - crude 0, perfect 3,
+rare 4, legendary 5 seen; medals, sacks and rings have 9, no rarity at all.
+
+The agent's direct discard (57) checks and sends for the bag's other items only: equipment is
+thrown with GEAR_DISCARD_AGENT's own request, once the game's packet for it has been read off a
+piece thrown by hand. Until then nothing is sent.
 """
 
 from __future__ import annotations
@@ -30,7 +35,7 @@ LABELS = {"crude": N_("Crude"), "common": N_("Common"), "sophisticated": N_("Sop
           "perfect": N_("Perfect"), "rare": N_("Rare"), "legendary": N_("Legendary")}
 DEFAULT_MINUTES = 30
 MOST = 30                 # pieces in one sweep, as the community script
-DIRECT_DISCARD_AGENT = 57
+GEAR_DISCARD_AGENT = 10_000      # not yet: the agent that throws equipment away (`discardgear`)
 
 
 def chosen(p: dict[str, Any]) -> set[str]:
@@ -40,14 +45,15 @@ def chosen(p: dict[str, Any]) -> set[str]:
 
 
 def rarity_of(row: dict[str, Any]) -> str | None:
-    """A bag row's rarity, lower case, or None (not equipment, or an agent that doesn't say)."""
-    r = str(row.get("rarity") or "").strip().lower()
-    return r if r in RARITIES else None
+    """An equipment row's rarity (its field "o"), or None (a medal, a ring: no rarity)."""
+    o = row.get("o")
+    return RARITIES[o] if isinstance(o, int) and 0 <= o < len(RARITIES) else None
 
 
 def rows(bot: Bot) -> list[dict[str, Any]]:
-    got = bot.a.json("mem bagfull")
-    return got if jsonio.is_array(got) else []
+    """The equipment pieces in the bag (not those worn)."""
+    got = bot.a.json("mem equipment")
+    return [r for r in got if not r.get("equipped")] if jsonio.is_array(got) else []
 
 
 def note_start(bot: Bot) -> None:
@@ -71,7 +77,7 @@ def picked_up(bot: Bot) -> list[dict[str, Any]]:
 
 def sweep(bot: Bot) -> int:
     """Throw away the picked-up pieces of the chosen rarities. How many left the bag."""
-    if not chosen(bot.p) or getattr(bot, "agent_version", 0) < DIRECT_DISCARD_AGENT:
+    if not chosen(bot.p) or getattr(bot, "agent_version", 0) < GEAR_DISCARD_AGENT:
         return 0
     bot.__dict__["gear_swept"] = bot.clock.time()
     todo = picked_up(bot)
@@ -80,7 +86,7 @@ def sweep(bot: Bot) -> int:
     uids: list[int] = []
     for r in todo:
         uids += [int(r["uid"])] * max(1, int(r.get("count") or 1))
-    reply = bot.a.send("discarddirectall " + " ".join(str(u) for u in uids))
+    reply = bot.a.send("discardgear " + " ".join(str(u) for u in uids))
     if not reply.startswith("sent all "):
         bot.log(_("the game didn't take the equipment to throw away: {why}", why=reply))
         return 0

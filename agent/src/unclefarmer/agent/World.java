@@ -145,6 +145,8 @@ final class World {
                 Points.outbound(m);
             } else if (op == 25) {
                 PrivateChat.outbound(m);
+            } else if (op == Act.OP_USE) {
+                UseLog.outbound(m);
             }
         } catch (Throwable t) {
             Log.error("world out", t);

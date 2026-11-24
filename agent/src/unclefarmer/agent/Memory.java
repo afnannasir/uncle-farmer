@@ -585,6 +585,24 @@ final class Memory {
 
     /** Null when every requested discard still has a matching bag unit; otherwise why not.
      * Repeated uids mean several units from the same stack. */
+    /** `memitem <uid>`: every field of that bag or equipment row (Describe), to find what the
+     *  rows' known fields don't say (an equipment piece's bonus). Read-only. */
+    static String describeItem(int uid) {
+        try {
+            Object world = world();
+            for (String list : new String[] {W_BAG, W_EQUIP}) {
+                Object rows = get(world, list, ArrayList.class);
+                if (rows == null) continue;
+                for (Object row : copy((ArrayList<?>) rows)) {
+                    if (row != null && intField(row, E_ID) == uid) return list + ": " + Describe.of(row);
+                }
+            }
+            return "error: no item " + uid;
+        } catch (Unavailable u) {
+            return error(u.getMessage());
+        }
+    }
+
     static String discardable(int[] uids) throws Unavailable {
         Object bag = get(world(), W_BAG, ArrayList.class);
         if (bag == null) throw new Unavailable("nobag");
