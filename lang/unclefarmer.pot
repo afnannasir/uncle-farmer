@@ -353,6 +353,9 @@ msgstr ""
 msgid "&Log"
 msgstr ""
 
+msgid "&Log back in now"
+msgstr ""
+
 msgid "&Log:"
 msgstr ""
 
@@ -2636,7 +2639,13 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr ""
 
+msgid "Logged out for a while ({n} min left)"
+msgstr ""
+
 msgid "Logging"
+msgstr ""
+
+msgid "Logging back in now."
 msgstr ""
 
 msgid "Look for a chest the game announces on the map"
@@ -8416,6 +8425,9 @@ msgid "the village at {x},{y} on {map}"
 msgstr ""
 
 msgid "the wait is over: logging back in"
+msgstr ""
+
+msgid "the wait was cut short from Uncle Farmer"
 msgstr ""
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"

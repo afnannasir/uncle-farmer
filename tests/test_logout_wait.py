@@ -153,6 +153,33 @@ def test_stop_during_the_wait_leaves_the_character_out() -> None:
     assert not link.inside and not any(x.startswith("autologin ") for x in link.sent)
 
 
+class CutClock(Clock):
+    """A clock that cuts the wait short from Uncle Farmer five minutes in."""
+
+    bot: Any = None
+
+    def wait(self, event: Any, timeout: float | None = None) -> bool:
+        got = super().wait(event, timeout)
+        if self.bot is not None and logout.waiting(self.bot) is not None and self.now >= 1000 + 5 * 60:
+            assert logout.cut_short(self.bot)
+        return got
+
+
+def test_the_wait_is_cut_short_from_uncle_farmer() -> None:
+    link = Link()
+    bot = Bot(link)
+    clock = CutClock()
+    bot.clock = clock
+    clock.bot = bot
+    told: list[str] = []
+    assert logout.waiting(as_bot(bot)) is None and not logout.cut_short(as_bot(bot))     # not waiting: nothing to cut
+    logout.wait_out(as_bot(bot), 45, "Bob", told.append)
+    assert clock.now - 1000 < 10 * 60 and link.inside
+    assert "the wait was cut short from Uncle Farmer" in bot.lines
+    assert told == ["Back in after 5 minutes."]
+    assert logout.waiting(as_bot(bot)) is None                                   # over: the button is Pause again
+
+
 @pytest.mark.parametrize("rest, want", [("", 30), ("45", 45), ("45 min", 45), ("10minutes", 10), ("0", None),
                                         ("1000", None), ("soon", None)])
 def test_the_minutes_asked_for(rest: str, want: int | None) -> None:

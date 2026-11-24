@@ -2238,7 +2238,7 @@ Uncle Farmer automatically accepts team invitations from trusted players. It dec
 
 `wait 45` logs your character out for 45 minutes, then logs the same character back in and the run goes on where it was (the minutes logged out don't count in its results). `wait` alone waits the minutes set in **Private messages**. It works only with **They may log me out for a while and back in (wait)** ticked there; otherwise it answers "That command is turned off on this character."
 
-The bot logs out the way you do (the setting menu, F1, then Switch account) and logs back in with the game's saved account, so the character must have been logged in once with Uncle Farmer open. While logged out, no private message can reach it. Press **Stop** in Uncle Farmer during the wait and the character stays logged out. If logging back in fails five times, a minute apart, the run stops.
+The bot logs out the way you do (the setting menu, F1, then Switch account) and logs back in with the game's saved account, so the character must have been logged in once with Uncle Farmer open. While logged out, no private message can reach it. Meanwhile the Games list says **Logged out for a while** with the minutes left, and the **Pause** button (F6) reads **Log back in now**: press it to end the wait early. Press **Stop** in Uncle Farmer during the wait and the character stays logged out. If logging back in fails five times, a minute apart, the run stops.
 
 ### Using `come`
 

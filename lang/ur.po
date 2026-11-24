@@ -358,6 +358,9 @@ msgstr "&Level:"
 msgid "&Log"
 msgstr "&Log"
 
+msgid "&Log back in now"
+msgstr "Abhi dobara &login karein"
+
 msgid "&Log:"
 msgstr "&Log:"
 
@@ -2708,8 +2711,14 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Pehle game mein character se login karein."
 
+msgid "Logged out for a while ({n} min left)"
+msgstr "Kuch dair ke liye logout ({n} minute baqi)"
+
 msgid "Logging"
 msgstr "Logging"
+
+msgid "Logging back in now."
+msgstr "Abhi dobara login ho raha hai."
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Game map par jo chest announce kare, use dhoondo"
@@ -8833,6 +8842,9 @@ msgstr "{map} par {x},{y} wala gaon"
 
 msgid "the wait is over: logging back in"
 msgstr "intezar khatam: dobara login"
+
+msgid "the wait was cut short from Uncle Farmer"
+msgstr "Uncle Farmer se intezar jaldi khatam kiya"
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""

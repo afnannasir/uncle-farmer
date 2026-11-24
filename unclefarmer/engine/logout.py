@@ -12,11 +12,14 @@ chosen the game has no character at once (`mem`: "noplayer: id 0") and the conne
 the map it was left on.
 
 Stopped from Uncle Farmer during the wait (Stop), the character stays logged out: the player is
-at the computer. A login that fails TRIES times, a minute apart, ends the run.
+at the computer. No private message reaches a character that is logged out, so the wait is cut
+short from Uncle Farmer (cut_short: the Pause button reads "Log back in now" meanwhile). A login
+that fails TRIES times, a minute apart, ends the run.
 """
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -101,14 +104,42 @@ def log_in(bot: Bot, who: tuple[str, int, str]) -> str | None:
     return _("the login took too long")
 
 
+def waiting(bot: Bot | None) -> float | None:
+    """When this bot's wait at the login screen ends, while it is in one; else None."""
+    return getattr(bot, "waiting_until", None) if bot is not None else None
+
+
+def cut_short(bot: Bot) -> bool:
+    """End the wait now: the character logs back in at once. False when it isn't waiting."""
+    cut: threading.Event | None = getattr(bot, "wait_cut", None)
+    if cut is None or waiting(bot) is None:
+        return False
+    cut.set()
+    return True
+
+
 def hold(bot: Bot, minutes: int, tell: Tell) -> bool:
-    """Wait at the login screen. False when Uncle Farmer's Stop ended the wait."""
+    """Wait at the login screen. False when Uncle Farmer's Stop ended the wait; cut_short ends it
+    early (True: log back in now)."""
     end = bot.clock.time() + minutes * 60
     asked = said = bot.clock.time()
     done = 0
+    cut = threading.Event()
+    bot.__dict__.update(wait_cut=cut, waiting_until=end)
+    try:
+        return _hold(bot, end, cut, minutes, tell, asked, said, done)
+    finally:
+        bot.__dict__.update(wait_cut=None, waiting_until=None)
+
+
+def _hold(bot: Bot, end: float, cut: threading.Event, minutes: int, tell: Tell, asked: float, said: float,
+          done: int) -> bool:
     while bot.clock.time() < end:
         if bot.clock.wait(bot.stop_event, min(1.0, max(0.0, end - bot.clock.time()))):
             return False
+        if cut.is_set():
+            bot.log(_("the wait was cut short from Uncle Farmer"))
+            return True
         now = bot.clock.time()
         if now - asked >= KEEPALIVE:
             asked = now
@@ -139,6 +170,7 @@ def wait_out(bot: Bot, minutes: int, asked_by: str, tell: Tell) -> None:
         tell(_("Couldn't log out: {why}", why=why))
         return
     bot.log(_("logged out for {minutes} minutes, as {name} asked", minutes=minutes, name=asked_by), speak=True)
+    began = bot.clock.time()
     if not hold(bot, minutes, bot.log):
         raise Stopped(_("stopped by you during the wait: the character stays logged out"), final=True)
     bot.log(_("the wait is over: logging back in"), speak=True)
@@ -156,7 +188,7 @@ def wait_out(bot: Bot, minutes: int, asked_by: str, tell: Tell) -> None:
     bot.__dict__["_snap_at"] = 0.0
     if count is not None:
         count(False)
-    tell(_("Back in after {minutes} minutes.", minutes=minutes))
+    tell(_("Back in after {minutes} minutes.", minutes=max(1, round((bot.clock.time() - began) / 60))))
 
 
 def minutes_in(rest: str, default: int) -> int | None:

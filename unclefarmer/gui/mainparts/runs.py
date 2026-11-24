@@ -8,7 +8,7 @@ from typing import Any
 import wx
 
 from ... import gameinstall, settings
-from ...engine import plan as plans, triggers
+from ...engine import logout, plan as plans, triggers
 from ...engine.runner import Run
 from ...engine.script import check as check_script, login_target
 from ...i18n import _
@@ -169,21 +169,38 @@ class RunsMixin(FrameParts):
         run = self.runs.get(pid) if pid is not None else None
         return bool(run and run.bot is not None and run.bot.paused.is_set())
 
+    def waiting_bot(self, pid: int | None) -> Any:
+        """The bot of this game that is logged out for a while (a private message's wait), or None:
+        the run's, or with no run the message thread's own."""
+        if pid is None:
+            return None
+        run = self.runs.get(pid)
+        bot = run.bot if run else getattr(self.messengers.get(pid), "idle_bot_ref", None)
+        return bot if logout.waiting(bot) is not None else None
+
     def sync_pause(self) -> None:
         """The Pause button follows the selected game's run: Pause while it runs, Go on while paused
-        (a private message can pause and resume it too)."""
+        (a private message can pause and resume it too), Log back in now while a wait has the
+        character logged out."""
         pid = self.selected_pid()
         run = self.runs.get(pid) if pid is not None else None
-        label = _("Go &on") if self.is_paused(pid) else _("&Pause")
+        waiting = self.waiting_bot(pid) is not None
+        label = _("&Log back in now") if waiting else _("Go &on") if self.is_paused(pid) else _("&Pause")
         if self.pause_btn.GetLabel() != label:
             self.pause_btn.SetLabel(label)
-        self.pause_btn.Enable(bool(run and run.bot is not None))
+        self.pause_btn.Enable(waiting or bool(run and run.bot is not None))
 
     def toggle_pause(self, pid: int | None = None) -> None:
         """Pause the run where it is - keys let go, the run not ended - or let a paused one go on.
         While paused the game is the player's: their own Shift, Ctrl and Alt work in it again."""
         pid = self.selected_pid() if pid is None else pid
         run = self.runs.get(pid) if pid is not None else None
+        waiting = self.waiting_bot(pid)
+        if waiting is not None:
+            if logout.cut_short(waiting):
+                self.say(_("Logging back in now."), run)
+            self.sync_pause()
+            return
         if not run or run.bot is None:
             self.say(_("The bot isn't running."))
             return

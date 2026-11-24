@@ -358,6 +358,9 @@ msgstr "&Niveau :"
 msgid "&Log"
 msgstr "&Journal"
 
+msgid "&Log back in now"
+msgstr "Se &reconnecter maintenant"
+
 msgid "&Log:"
 msgstr "&Journal :"
 
@@ -2718,8 +2721,14 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Connectez-vous d'abord au personnage dans le jeu."
 
+msgid "Logged out for a while ({n} min left)"
+msgstr "Déconnecté un moment (encore {n} min)"
+
 msgid "Logging"
 msgstr "Journalisation"
+
+msgid "Logging back in now."
+msgstr "Reconnexion maintenant."
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Chercher un coffre que le jeu annonce sur la carte"
@@ -8879,6 +8888,9 @@ msgstr "le village en {x},{y} sur {map}"
 
 msgid "the wait is over: logging back in"
 msgstr "l'attente est finie : reconnexion"
+
+msgid "the wait was cut short from Uncle Farmer"
+msgstr "l'attente a été écourtée depuis Uncle Farmer"
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr ""

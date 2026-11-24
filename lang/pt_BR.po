@@ -358,6 +358,9 @@ msgstr "&Nível:"
 msgid "&Log"
 msgstr "&Registro"
 
+msgid "&Log back in now"
+msgstr "&Entrar de novo agora"
+
 msgid "&Log:"
 msgstr "&Registro:"
 
@@ -2712,8 +2715,14 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Entre primeiro com o personagem no jogo."
 
+msgid "Logged out for a while ({n} min left)"
+msgstr "Desconectado por um tempo (faltam {n} min)"
+
 msgid "Logging"
 msgstr "Registro"
+
+msgid "Logging back in now."
+msgstr "Entrando de novo agora."
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Procurar o baú que o jogo anuncia no mapa"
@@ -8819,6 +8828,9 @@ msgstr "a vila em {x},{y} no mapa {map}"
 
 msgid "the wait is over: logging back in"
 msgstr "a espera acabou: entrando de novo"
+
+msgid "the wait was cut short from Uncle Farmer"
+msgstr "a espera foi encurtada pelo Uncle Farmer"
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"
 msgstr "a passagem em {cell} continua fechada — a etapa ainda não foi concluída"

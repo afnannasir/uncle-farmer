@@ -7,6 +7,7 @@ import threading
 import wx
 
 from ... import applog, jsonio, nearby, scan, settings
+from ...engine import logout
 from ...engine.runner import Run
 from ...errors import carry_on
 from ...i18n import _
@@ -90,7 +91,10 @@ class GamesMixin(FrameParts):
     def game_row(self, game: Game) -> tuple[str, str, str]:
         pid, name, where = game
         run = self.runs.get(pid)
-        if not run:
+        until = logout.waiting(self.waiting_bot(pid))
+        if until is not None:
+            state = _("Logged out for a while ({n} min left)", n=max(1, int((until - self.clock.time()) / 60 + 0.99)))
+        elif not run:
             state = _("Stopped")
         elif self.is_paused(pid):
             state = _("Paused {what}", what=run.title)

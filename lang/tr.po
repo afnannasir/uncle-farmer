@@ -357,6 +357,9 @@ msgstr "Seviye: (&L)"
 msgid "&Log"
 msgstr "Gün&lük"
 
+msgid "&Log back in now"
+msgstr ""
+
 msgid "&Log:"
 msgstr "Gün&lük:"
 
@@ -2683,8 +2686,14 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Önce oyunda bu karakterle giriş yap."
 
+msgid "Logged out for a while ({n} min left)"
+msgstr ""
+
 msgid "Logging"
 msgstr "Günlüğe kaydetme"
+
+msgid "Logging back in now."
+msgstr ""
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Oyunun haritada duyurduğu sandığı ara"
@@ -8692,6 +8701,9 @@ msgid "the village at {x},{y} on {map}"
 msgstr "{map} üzerinde {x},{y} konumundaki köy"
 
 msgid "the wait is over: logging back in"
+msgstr ""
+
+msgid "the wait was cut short from Uncle Farmer"
 msgstr ""
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"

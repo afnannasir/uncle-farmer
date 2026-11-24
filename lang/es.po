@@ -358,6 +358,9 @@ msgstr "Nive&l:"
 msgid "&Log"
 msgstr "Registro (&L)"
 
+msgid "&Log back in now"
+msgstr ""
+
 msgid "&Log:"
 msgstr "Registro (&L):"
 
@@ -2701,8 +2704,14 @@ msgstr ""
 msgid "Log in to the character in the game first."
 msgstr "Inicia sesión primero con el personaje en el juego."
 
+msgid "Logged out for a while ({n} min left)"
+msgstr ""
+
 msgid "Logging"
 msgstr "Registros"
+
+msgid "Logging back in now."
+msgstr ""
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Buscar el cofre que el juego anuncia en el mapa"
@@ -8773,6 +8782,9 @@ msgid "the village at {x},{y} on {map}"
 msgstr "la aldea en {x},{y} de {map}"
 
 msgid "the wait is over: logging back in"
+msgstr ""
+
+msgid "the wait was cut short from Uncle Farmer"
 msgstr ""
 
 msgid "the way on at {cell} is still shut - its stage isn't cleared yet"

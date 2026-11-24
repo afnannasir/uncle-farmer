@@ -16,6 +16,7 @@
 **Private message `wait`: out for a while, then back to farming** (untested in game)
 
 - A trusted player sends `wait 45`: the character logs out (the setting menu's Switch account), waits 45 minutes at the login screen, logs back in with the game's saved account and the run goes on, the wait counted as a pause. `wait` alone takes the minutes set in Private messages. Off unless **They may log me out for a while and back in (wait)** is ticked. Stop during the wait leaves the character out; five failed logins, a minute apart, end the run.
+- No private message reaches a character that is logged out: during a wait the Games list says **Logged out for a while (N min left)** and the Pause button (F6) reads **Log back in now**, which ends the wait early.
 - One action at a time: while a wait, a walk home or a `come` is under way, another action is answered "Busy, one command at a time. Still on: wait (12 min left)." Questions and stop, pause, resume and quit game always work.
 
 **Chat: each international room and private channel apart** (untested in game)
