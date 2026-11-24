@@ -10,7 +10,7 @@ from typing import Any
 
 from ... import jsonio
 from ...i18n import _
-from .. import bagrules
+from .. import bagrules, gearthrow
 from .base import (CONFIRM, Stopped, agent_strike)
 from .parts import as_bot, Parts
 
@@ -268,7 +268,8 @@ class BagMixin(Parts):
         self.load_share = share
         if share < full and not self.bag_stalled(sheet, full):
             return False
-        if self.throw_by_rules():
+        gear = gearthrow.sweep(as_bot(self)) > 0       # the equipment of the rarities thrown away first
+        if self.throw_by_rules() or gear:
             # Item removal can arrive before the sheet's new load. Give it time to settle
             # before deciding that the remaining items require a town trip: up to 12 readings
             # within BAG_SETTLE seconds (a reading by the sheet key alone takes up to 3 s).

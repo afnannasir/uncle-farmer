@@ -144,6 +144,9 @@ msgstr ""
 msgid "&Create my team when the run starts, if I'm in none"
 msgstr ""
 
+msgid "&Crude"
+msgstr ""
+
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr ""
 
@@ -344,6 +347,9 @@ msgstr ""
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Legendary"
+msgstr ""
+
 msgid "&Let it shut down"
 msgstr ""
 
@@ -450,6 +456,9 @@ msgstr ""
 msgid "&People:"
 msgstr ""
 
+msgid "&Perfect"
+msgstr ""
+
 msgid "&Period:"
 msgstr ""
 
@@ -484,6 +493,9 @@ msgid "&Publish"
 msgstr ""
 
 msgid "&Quick guide"
+msgstr ""
+
+msgid "&Rare"
 msgstr ""
 
 msgid "&Read keys from the game"
@@ -584,6 +596,9 @@ msgid ""
 msgstr ""
 
 msgid "&Show the time after each message"
+msgstr ""
+
+msgid "&Sophisticated"
 msgstr ""
 
 msgid "&Sounds:"
@@ -1187,6 +1202,9 @@ msgstr ""
 msgid "C&lock:"
 msgstr ""
 
+msgid "C&ommon"
+msgstr ""
+
 msgid "C&opy"
 msgstr ""
 
@@ -1420,6 +1438,9 @@ msgstr ""
 msgid "Commands: {list}"
 msgstr ""
 
+msgid "Common"
+msgstr ""
+
 msgid "Connected"
 msgstr ""
 
@@ -1583,6 +1604,9 @@ msgstr ""
 
 msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
+msgstr ""
+
+msgid "Crude"
 msgstr ""
 
 msgid "Crystals"
@@ -1840,6 +1864,9 @@ msgstr ""
 msgid "Equipment Enhancer"
 msgstr ""
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr ""
+
 msgid "Errors only"
 msgstr ""
 
@@ -1857,6 +1884,9 @@ msgstr ""
 
 msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
+msgstr ""
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
 msgstr ""
 
 msgid "Everyone can get replies again."
@@ -2585,6 +2615,9 @@ msgstr ""
 msgid "Leaves {n} {item}."
 msgstr ""
 
+msgid "Legendary"
+msgstr ""
+
 msgid "Let everyone get replies &again"
 msgstr ""
 
@@ -3201,6 +3234,10 @@ msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
+msgstr ""
+
 msgid "Only what is in the bag"
 msgstr ""
 
@@ -3339,6 +3376,9 @@ msgid "Pay at most this &entry fee (arnebia):"
 msgstr ""
 
 msgid "Paying to go in"
+msgstr ""
+
+msgid "Perfect"
 msgstr ""
 
 msgid "Pet HP"
@@ -3524,6 +3564,9 @@ msgid "Radius of a new c&ircle:"
 msgstr ""
 
 msgid "Range (tiles):"
+msgstr ""
+
+msgid "Rare"
 msgstr ""
 
 msgid "Re&move"
@@ -4046,6 +4089,9 @@ msgid "Sold:"
 msgstr ""
 
 msgid "Some sound requests were missed because the event buffer filled."
+msgstr ""
+
+msgid "Sophisticated"
 msgstr ""
 
 msgid "Sound &ID:"
@@ -8103,6 +8149,9 @@ msgstr ""
 msgid "the game didn't take the construction report"
 msgstr ""
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr ""
+
 msgid "the game didn't take the number"
 msgstr ""
 
@@ -8536,6 +8585,9 @@ msgid "this text is too long: {expr}"
 msgstr ""
 
 msgid "threw away {list}"
+msgstr ""
+
+msgid "threw away {name} ({rarity}), picked up while farming"
 msgstr ""
 
 msgid "through the teleport at {cell}"

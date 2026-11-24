@@ -146,6 +146,9 @@ msgid "&Create my team when the run starts, if I'm in none"
 msgstr ""
 "Run shuru hone par, agar main kisi team mein nahi, to apni team &banayein"
 
+msgid "&Crude"
+msgstr "&Crude"
+
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr "&DETERMINISTIC: yeh kaam nakaam ho to silsila rok dein"
 
@@ -349,6 +352,9 @@ msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 "Run shuru hone par woh team &chhor dein jise koi aur khilari chalata hai"
 
+msgid "&Legendary"
+msgstr "&Legendary"
+
 msgid "&Let it shut down"
 msgstr "Shutdown &hone dein"
 
@@ -456,6 +462,9 @@ msgstr "Attack keys ke darmiyan &waqfa (second):"
 msgid "&People:"
 msgstr "&Log:"
 
+msgid "&Perfect"
+msgstr "&Perfect"
+
 msgid "&Period:"
 msgstr "&Muddat:"
 
@@ -492,6 +501,9 @@ msgstr "&Publish"
 
 msgid "&Quick guide"
 msgstr "&Mukhtasar guide"
+
+msgid "&Rare"
+msgstr "&Rare"
 
 msgid "&Read keys from the game"
 msgstr "Game se &keys parhein"
@@ -595,6 +607,9 @@ msgstr ""
 
 msgid "&Show the time after each message"
 msgstr "Har paigham ke baad &waqt dikhayein"
+
+msgid "&Sophisticated"
+msgstr "&Sophisticated"
 
 msgid "&Sounds:"
 msgstr "&Sounds:"
@@ -1215,6 +1230,9 @@ msgstr "C&hat"
 msgid "C&lock:"
 msgstr "&Ghari:"
 
+msgid "C&ommon"
+msgstr "C&ommon"
+
 msgid "C&opy"
 msgstr "C&opy"
 
@@ -1452,6 +1470,9 @@ msgstr "Trusted players ke commands"
 msgid "Commands: {list}"
 msgstr "Hukm: {list}"
 
+msgid "Common"
+msgstr "Common"
+
 msgid "Connected"
 msgstr "Jura hua"
 
@@ -1621,6 +1642,9 @@ msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
 msgstr ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
+
+msgid "Crude"
+msgstr "Crude"
 
 msgid "Crystals"
 msgstr "Crystals"
@@ -1880,6 +1904,9 @@ msgstr "Equipment"
 msgid "Equipment Enhancer"
 msgstr "Equipment Enhancer"
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr "Farming mein uthaya gaya equipment: yeh rarities phenk dein"
+
 msgid "Errors only"
 msgstr "Sirf errors"
 
@@ -1900,6 +1927,9 @@ msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
 msgstr ""
 "Har shard ko gems mein, phir har rang ko jitna mumkin upar (fail hone par shard wapas milta hai, jo dobara istemal hota hai). Tawaqqo:"
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr "Har itne minute farmin&g ke baad, aur jab bag bhar jaye:"
 
 msgid "Everyone can get replies again."
 msgstr "Ab sab ko jawab mil sakta hai."
@@ -2654,6 +2684,9 @@ msgstr "Jaisa hai rehne dein"
 msgid "Leaves {n} {item}."
 msgstr "{n} {item} bachenge."
 
+msgid "Legendary"
+msgstr "Legendary"
+
 msgid "Let everyone get replies &again"
 msgstr "Sab ko dobara jawab dene &dein"
 
@@ -3300,6 +3333,11 @@ msgid ""
 msgstr ""
 "Sirf meri &level ke maps (monsters 9 level neeche se 5 oopar tak: poora experience aur loot)"
 
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
+msgstr ""
+"Sirf run ke dauran uthaye gaye pieces phenke jate hain: shuru mein bag mein mojood koi nahin."
+
 msgid "Only what is in the bag"
 msgstr "Sirf jo baste mein hai"
 
@@ -3445,6 +3483,9 @@ msgstr "Zyada se zyada itni &dakhla fee dein (arnebia):"
 
 msgid "Paying to go in"
 msgstr "Andar jaane ki adaigi"
+
+msgid "Perfect"
+msgstr "Perfect"
 
 msgid "Pet HP"
 msgstr "Pet HP"
@@ -3637,6 +3678,9 @@ msgstr "Naye c&ircle ka radius:"
 
 msgid "Range (tiles):"
 msgstr "Range (tiles):"
+
+msgid "Rare"
+msgstr "Rare"
 
 msgid "Re&move"
 msgstr "&Hataayein"
@@ -4188,6 +4232,9 @@ msgstr "Beche gaye:"
 
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr "Kuch sound darkhwastein reh gayin kyun ke event buffer bhar gaya."
+
+msgid "Sophisticated"
+msgstr "Sophisticated"
 
 msgid "Sound &ID:"
 msgstr "Sound &ID:"
@@ -8495,6 +8542,9 @@ msgstr "game ne gang ke ilaqe mein {skill} shuru nahi ki"
 msgid "the game didn't take the construction report"
 msgstr "game ne construction report nahi li"
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr "game ne equipment phenkna qabool nahin kiya: {why}"
+
 msgid "the game didn't take the number"
 msgstr "game ne number nahi liya"
 
@@ -8964,6 +9014,9 @@ msgstr "yeh text bohat lamba hai: {expr}"
 
 msgid "threw away {list}"
 msgstr "{list} phenk diye"
+
+msgid "threw away {name} ({rarity}), picked up while farming"
+msgstr "{name} ({rarity}) phenk diya, farming mein uthaya tha"
 
 msgid "through the teleport at {cell}"
 msgstr "{cell} wale teleport se guzar gaye"

@@ -15,7 +15,7 @@ from typing import Any
 import wx
 
 from .. import settings, speech, stats
-from ..engine import bagrules
+from ..engine import bagrules, gearthrow
 from ..engine.town import shard_catalog
 from ..i18n import N_, _
 from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel,
@@ -356,6 +356,15 @@ class BagManagerDialog(Dialog):
         acts = [a for a, _l in FULL_LABELS]
         self.when_full = f.choice(_("&When the bag is full:"), [_(l) for _a, l in FULL_LABELS],
                                   pick(acts, p.get("when_bag_full", "stop")))
+        f = group(panel, box, _("Equipment picked up while farming: throw away these rarities"))
+        keys = {"crude": _("&Crude"), "common": _("C&ommon"), "sophisticated": _("&Sophisticated"),
+                "perfect": _("&Perfect"), "rare": _("&Rare"), "legendary": _("&Legendary")}
+        thrown = gearthrow.chosen(p)
+        self.gear = {r: f.check(keys[r], r in thrown) for r in gearthrow.RARITIES}
+        self.gear_minutes = f.number(_("Every this many minutes of farmin&g, and when the bag is full:"),
+                                     p.get("gear_throw_minutes", gearthrow.DEFAULT_MINUTES), 1, 600)
+        box.Add(wx.StaticText(panel, label=_("Only pieces picked up during the run are thrown away: never one that "
+                                             "was in the bag when it began.")), 0, wx.TOP, 6)
 
     # ------------------------------------------------------------ save
     def on_ok(self, _evt: wx.Event) -> None:
@@ -368,5 +377,7 @@ class BagManagerDialog(Dialog):
         p["restock"] = [r for r in self.supplies if r.get("on", True) or r.get("source") != "tell"]
         p["bag_full_at"] = self.full_at.GetValue()
         p["when_bag_full"] = FULL_LABELS[max(0, self.when_full.GetSelection())][0]
+        p["gear_throw"] = [r for r, c in self.gear.items() if c.GetValue()]
+        p["gear_throw_minutes"] = self.gear_minutes.GetValue()
         if save_file(self, settings.save_profile, self.character, p):
             self.EndModal(wx.ID_OK)

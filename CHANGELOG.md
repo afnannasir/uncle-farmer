@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**Equipment picked up while farming, thrown away by rarity** (not working yet: the agent doesn't
+report a piece's rarity until it has been read live)
+
+- The bag manager's Full bag page has one box per rarity, the game's own: Crude, Common,
+  Sophisticated, Perfect, Rare, Legendary, none ticked. The ticked ones are thrown away every so
+  many minutes of farming (30 by default) and whenever the bag is full, where the character stands.
+- Only pieces picked up during the run: one already in the bag when it began is never thrown, and
+  every piece thrown is written in the log with its rarity.
+
 **A farming spot's own patrol points and no-go circles** (untested in game)
 
 - A plan's spot can go round the player's own points, in order (**My own points, in order, round and

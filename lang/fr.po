@@ -147,6 +147,9 @@ msgstr "&Copier l'adresse"
 msgid "&Create my team when the run starts, if I'm in none"
 msgstr "&Créer mon équipe au début de la partie, si je ne suis dans aucune"
 
+msgid "&Crude"
+msgstr "&Crude"
+
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr "&DÉTERMINISTE : arrêter la séquence si cette action échoue"
 
@@ -349,6 +352,9 @@ msgstr "&Langue :"
 msgid "&Leave a team another player leads when the run starts"
 msgstr "&Quitter une équipe menée par un autre joueur au début de la partie"
 
+msgid "&Legendary"
+msgstr "&Legendary"
+
 msgid "&Let it shut down"
 msgstr "&Laisser l'ordinateur s'éteindre"
 
@@ -456,6 +462,9 @@ msgstr "&Pause entre les touches d'attaque (secondes) :"
 msgid "&People:"
 msgstr "&Personnes :"
 
+msgid "&Perfect"
+msgstr "&Perfect"
+
 msgid "&Period:"
 msgstr "Pér&iode :"
 
@@ -492,6 +501,9 @@ msgstr "&Publier"
 
 msgid "&Quick guide"
 msgstr "Guide &rapide"
+
+msgid "&Rare"
+msgstr "&Rare"
 
 msgid "&Read keys from the game"
 msgstr "&Lire les touches du jeu"
@@ -596,6 +608,9 @@ msgstr ""
 
 msgid "&Show the time after each message"
 msgstr "&Afficher l'heure après chaque message"
+
+msgid "&Sophisticated"
+msgstr "&Sophisticated"
 
 msgid "&Sounds:"
 msgstr "&Sons :"
@@ -1218,6 +1233,9 @@ msgstr "C&hat"
 msgid "C&lock:"
 msgstr "&Horloge :"
 
+msgid "C&ommon"
+msgstr "C&ommon"
+
 msgid "C&opy"
 msgstr "C&opier"
 
@@ -1457,6 +1475,9 @@ msgstr "Commandes pour les joueurs de confiance"
 msgid "Commands: {list}"
 msgstr "Commandes : {list}"
 
+msgid "Common"
+msgstr "Common"
+
 msgid "Connected"
 msgstr "Connecté"
 
@@ -1628,6 +1649,9 @@ msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
 msgstr ""
 "Coups critiques : {crits}, défenses brisées : {breaks}, coups normaux : {normals}"
+
+msgid "Crude"
+msgstr "Crude"
 
 msgid "Crystals"
 msgstr "Cristaux"
@@ -1889,6 +1913,9 @@ msgstr "Équipement"
 msgid "Equipment Enhancer"
 msgstr "Equipment Enhancer"
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr "Équipement ramassé en farmant : jeter ces raretés"
+
 msgid "Errors only"
 msgstr "Erreurs seulement"
 
@@ -1909,6 +1936,9 @@ msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
 msgstr ""
 "Chaque shard en gemmes, puis chaque couleur aussi haut que possible (un échec rend un shard, qui est réutilisé). Résultat attendu :"
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr "Toutes les combien de minutes de farmin&g, et quand le sac est plein :"
 
 msgid "Everyone can get replies again."
 msgstr "Tout le monde peut de nouveau recevoir des réponses."
@@ -2664,6 +2694,9 @@ msgstr "Laisser inchangé"
 msgid "Leaves {n} {item}."
 msgstr "Laisse {n} {item}."
 
+msgid "Legendary"
+msgstr "Legendary"
+
 msgid "Let everyone get replies &again"
 msgstr "Laisser tout le monde &recevoir à nouveau des réponses"
 
@@ -3315,6 +3348,11 @@ msgid ""
 msgstr ""
 "Seulement les cartes de mon &niveau (monstres de 9 niveaux en dessous à 5 au-dessus : expérience et butin complets)"
 
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
+msgstr ""
+"Seules les pièces ramassées pendant la partie sont jetées : jamais une pièce déjà dans le sac au début."
+
 msgid "Only what is in the bag"
 msgstr "Seulement ce qui est dans le sac"
 
@@ -3461,6 +3499,9 @@ msgstr "Payer au plus ces frais d'&entrée (arnebia) :"
 
 msgid "Paying to go in"
 msgstr "Payer pour entrer"
+
+msgid "Perfect"
+msgstr "Perfect"
 
 msgid "Pet HP"
 msgstr "HP du familier"
@@ -3655,6 +3696,9 @@ msgstr "Rayon d'un nouveau cerc&le :"
 
 msgid "Range (tiles):"
 msgstr "Portée (cases) :"
+
+msgid "Rare"
+msgstr "Rare"
 
 msgid "Re&move"
 msgstr "Suppri&mer"
@@ -4212,6 +4256,9 @@ msgstr "Vendu :"
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr ""
 "Des demandes de sons ont été manquées car la mémoire tampon des événements était pleine."
+
+msgid "Sophisticated"
+msgstr "Sophisticated"
 
 msgid "Sound &ID:"
 msgstr "&ID du son :"
@@ -8534,6 +8581,9 @@ msgstr "le jeu n'a pas lancé {skill} dans la zone du gang"
 msgid "the game didn't take the construction report"
 msgstr "le jeu n'a pas accepté le rapport de construction"
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr "le jeu n'a pas accepté de jeter l'équipement : {why}"
+
 msgid "the game didn't take the number"
 msgstr "le jeu n'a pas accepté le nombre"
 
@@ -9009,6 +9059,9 @@ msgstr "ce texte est trop long : {expr}"
 
 msgid "threw away {list}"
 msgstr "jeté : {list}"
+
+msgid "threw away {name} ({rarity}), picked up while farming"
+msgstr "{name} ({rarity}) jeté, ramassé en farmant"
 
 msgid "through the teleport at {cell}"
 msgstr "passage par le téléporteur en {cell}"

@@ -146,6 +146,9 @@ msgstr "Adresi kopyala (&C)"
 msgid "&Create my team when the run starts, if I'm in none"
 msgstr ""
 
+msgid "&Crude"
+msgstr ""
+
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr "ZORUNLU: bu eylem başarısız olursa sırayı &durdur"
 
@@ -348,6 +351,9 @@ msgstr "Di&l:"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Legendary"
+msgstr ""
+
 msgid "&Let it shut down"
 msgstr "Kapanmasına izin ver (&L)"
 
@@ -454,6 +460,9 @@ msgstr "Saldırı tuşları arasında duraklama (saniye): (&P)"
 msgid "&People:"
 msgstr "Kişiler (&P):"
 
+msgid "&Perfect"
+msgstr ""
+
 msgid "&Period:"
 msgstr "Dönem: (&P)"
 
@@ -490,6 +499,9 @@ msgstr ""
 
 msgid "&Quick guide"
 msgstr "Hızlı kılavuz (&Q)"
+
+msgid "&Rare"
+msgstr ""
 
 msgid "&Read keys from the game"
 msgstr "Tuşla&rı oyundan oku"
@@ -591,6 +603,9 @@ msgstr ""
 
 msgid "&Show the time after each message"
 msgstr "Her me&sajdan sonra saati göster"
+
+msgid "&Sophisticated"
+msgstr ""
 
 msgid "&Sounds:"
 msgstr "&Sesler:"
@@ -1203,6 +1218,9 @@ msgstr "So&hbet"
 msgid "C&lock:"
 msgstr "Saat: (&L)"
 
+msgid "C&ommon"
+msgstr ""
+
 msgid "C&opy"
 msgstr "K&opyala"
 
@@ -1439,6 +1457,9 @@ msgstr "Güvenilir oyuncular için komutlar"
 msgid "Commands: {list}"
 msgstr "Komutlar: {list}"
 
+msgid "Common"
+msgstr ""
+
 msgid "Connected"
 msgstr "Bağlandı"
 
@@ -1607,6 +1628,9 @@ msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
 msgstr ""
 "Kritik vuruşlar: {crits}, savunma kırılmaları: {breaks}, normal vuruşlar: {normals}"
+
+msgid "Crude"
+msgstr ""
 
 msgid "Crystals"
 msgstr "Kristaller"
@@ -1864,6 +1888,9 @@ msgstr "Ekipman"
 msgid "Equipment Enhancer"
 msgstr "Ekipman Geliştirici"
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr ""
+
 msgid "Errors only"
 msgstr "Yalnızca hatalar"
 
@@ -1884,6 +1911,9 @@ msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
 msgstr ""
 "Her parça mücevhere, sonra her renk gidebildiği kadar yükseltilir (başarısızlık bir parçayı geri verir, o da yeniden kullanılır). Beklenen:"
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr ""
 
 msgid "Everyone can get replies again."
 msgstr "Herkes tekrar yanıt alabilir."
@@ -2629,6 +2659,9 @@ msgstr "Değiştirme"
 msgid "Leaves {n} {item}."
 msgstr ""
 
+msgid "Legendary"
+msgstr ""
+
 msgid "Let everyone get replies &again"
 msgstr "Herkes yeniden yanıt &alabilsin"
 
@@ -3264,6 +3297,10 @@ msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
+msgstr ""
+
 msgid "Only what is in the bag"
 msgstr ""
 
@@ -3409,6 +3446,9 @@ msgstr "&En fazla bu giriş ücretini öde (arnebia):"
 
 msgid "Paying to go in"
 msgstr "Giriş ücreti ödeniyor"
+
+msgid "Perfect"
+msgstr ""
 
 msgid "Pet HP"
 msgstr "Evcil Hayvan HP'si"
@@ -3601,6 +3641,9 @@ msgstr ""
 
 msgid "Range (tiles):"
 msgstr "Menzil (kare):"
+
+msgid "Rare"
+msgstr ""
 
 msgid "Re&move"
 msgstr "Kaldır (&M)"
@@ -4142,6 +4185,9 @@ msgstr "Satılanlar:"
 
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr "Olay arabelleği dolduğu için bazı ses istekleri kaçırıldı."
+
+msgid "Sophisticated"
+msgstr ""
 
 msgid "Sound &ID:"
 msgstr "Ses k&imliği:"
@@ -8360,6 +8406,9 @@ msgstr "oyun çetenin alanında {skill} başlatmadı"
 msgid "the game didn't take the construction report"
 msgstr ""
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr ""
+
 msgid "the game didn't take the number"
 msgstr "oyun sayıyı kabul etmedi"
 
@@ -8819,6 +8868,9 @@ msgstr "bu metin çok uzun: {expr}"
 
 msgid "threw away {list}"
 msgstr "{list} atıldı"
+
+msgid "threw away {name} ({rarity}), picked up while farming"
+msgstr ""
 
 msgid "through the teleport at {cell}"
 msgstr "{cell} üzerindeki ışınlanmadan geçerek"

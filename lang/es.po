@@ -145,6 +145,9 @@ msgstr "&Copiar la dirección"
 msgid "&Create my team when the run starts, if I'm in none"
 msgstr ""
 
+msgid "&Crude"
+msgstr ""
+
 msgid "&DETERMINISTIC: stop the sequence if this action fails"
 msgstr "&DETERMINISTA: detener la secuencia si esta acción falla"
 
@@ -349,6 +352,9 @@ msgstr "Idioma (&L):"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Legendary"
+msgstr ""
+
 msgid "&Let it shut down"
 msgstr "Dejar que se apague (&L)"
 
@@ -456,6 +462,9 @@ msgstr "&Pausa entre teclas de ataque (segundos):"
 msgid "&People:"
 msgstr "&Personas:"
 
+msgid "&Perfect"
+msgstr ""
+
 msgid "&Period:"
 msgstr "&Periodo:"
 
@@ -492,6 +501,9 @@ msgstr ""
 
 msgid "&Quick guide"
 msgstr "Guía rápida (&Q)"
+
+msgid "&Rare"
+msgstr ""
 
 msgid "&Read keys from the game"
 msgstr "Lee&r las teclas del juego"
@@ -594,6 +606,9 @@ msgstr ""
 
 msgid "&Show the time after each message"
 msgstr "Mo&strar la hora después de cada mensaje"
+
+msgid "&Sophisticated"
+msgstr ""
 
 msgid "&Sounds:"
 msgstr "&Sonidos:"
@@ -1211,6 +1226,9 @@ msgstr "C&hat"
 msgid "C&lock:"
 msgstr "Re&loj:"
 
+msgid "C&ommon"
+msgstr ""
+
 msgid "C&opy"
 msgstr "C&opiar"
 
@@ -1446,6 +1464,9 @@ msgstr "Comandos para jugadores de confianza"
 msgid "Commands: {list}"
 msgstr "Comandos: {list}"
 
+msgid "Common"
+msgstr ""
+
 msgid "Connected"
 msgstr "Conectado"
 
@@ -1616,6 +1637,9 @@ msgid ""
 "Critical hits: {crits}, defence breaks: {breaks}, normal hits: {normals}"
 msgstr ""
 "Golpes críticos: {crits}, rupturas de defensa: {breaks}, golpes normales: {normals}"
+
+msgid "Crude"
+msgstr ""
 
 msgid "Crystals"
 msgstr "Cristales"
@@ -1875,6 +1899,9 @@ msgstr "Equipo"
 msgid "Equipment Enhancer"
 msgstr "Mejorador de equipo"
 
+msgid "Equipment picked up while farming: throw away these rarities"
+msgstr ""
+
 msgid "Errors only"
 msgstr "Solo errores"
 
@@ -1895,6 +1922,9 @@ msgid ""
 "Every shard into gems, then each colour up as far as it goes (failures give back a shard, which is used again). Expected:"
 msgstr ""
 "Cada fragmento se convierte en gemas, y luego cada color sube hasta donde llegue (los fallos devuelven un fragmento, que se vuelve a usar). Esperado:"
+
+msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr ""
 
 msgid "Everyone can get replies again."
 msgstr "Todos pueden volver a recibir respuestas."
@@ -2647,6 +2677,9 @@ msgstr "Dejar sin cambios"
 msgid "Leaves {n} {item}."
 msgstr ""
 
+msgid "Legendary"
+msgstr ""
+
 msgid "Let everyone get replies &again"
 msgstr "Dej&ar que todos reciban respuestas otra vez"
 
@@ -3285,6 +3318,10 @@ msgid ""
 "Only maps for my &level (monsters 9 levels below to 5 above: full experience and loot)"
 msgstr ""
 
+msgid ""
+"Only pieces picked up during the run are thrown away: never one that was in the bag when it began."
+msgstr ""
+
 msgid "Only what is in the bag"
 msgstr ""
 
@@ -3430,6 +3467,9 @@ msgstr "Pagar como máximo esta &entrada (arnebia):"
 
 msgid "Paying to go in"
 msgstr "Pagando para entrar"
+
+msgid "Perfect"
+msgstr ""
 
 msgid "Pet HP"
 msgstr "Salud de la mascota"
@@ -3622,6 +3662,9 @@ msgstr ""
 
 msgid "Range (tiles):"
 msgstr "Alcance (casillas):"
+
+msgid "Rare"
+msgstr ""
 
 msgid "Re&move"
 msgstr "Quitar (&m)"
@@ -4170,6 +4213,9 @@ msgstr "Vendido:"
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr ""
 "Se perdieron algunas peticiones de sonido porque se llenó el búfer de eventos."
+
+msgid "Sophisticated"
+msgstr ""
 
 msgid "Sound &ID:"
 msgstr "&ID del sonido:"
@@ -8437,6 +8483,9 @@ msgstr "el juego no inició {skill} en la zona de la pandilla"
 msgid "the game didn't take the construction report"
 msgstr ""
 
+msgid "the game didn't take the equipment to throw away: {why}"
+msgstr ""
+
 msgid "the game didn't take the number"
 msgstr "el juego no aceptó el número"
 
@@ -8902,6 +8951,9 @@ msgstr "este texto es demasiado largo: {expr}"
 
 msgid "threw away {list}"
 msgstr "tirado {list}"
+
+msgid "threw away {name} ({rarity}), picked up while farming"
+msgstr ""
 
 msgid "through the teleport at {cell}"
 msgstr "por el teletransporte de {cell}"

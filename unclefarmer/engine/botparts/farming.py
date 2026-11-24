@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, keyslots, pets, teamlead, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
 from .parts import as_bot, EndPlace, Parts
 
@@ -134,6 +134,7 @@ class FarmingMixin(Parts):
         if getattr(self, "bag_start", None) is None:
             from .. import town
             self.bag_start = town.counts(as_bot(self))   # what was ours before the run: never sold or stored
+        gearthrow.note_start(as_bot(self))       # and its equipment, piece by piece: never thrown
         if not instance:
             self.on_farm_run = True       # travel checks the restock rules on the way (restock_on_the_way)
             self.travel(map_id)
@@ -281,6 +282,8 @@ class FarmingMixin(Parts):
         True when one of them acted (the farm loop looks again)."""
         if keyslots.refill(as_bot(self)):
             return True
+        if gearthrow.between_fights(as_bot(self)):
+            return True                # equipment picked up, of the rarities the player throws away
         self.modes_again()             # a mode the game didn't take, tried again
         xpcard.on_farm(as_bot(self))   # a paused experience card runs again, or a new one starts
         # no kill for a long while: another part of the map (a farm of only some names never stops for it)
