@@ -112,7 +112,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
 from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey, teamlead, town
 from .bot import Bot, Respawned, Stopped
-from .botparts.base import GameLost
+from .botparts.base import GameLost, WrongCharacter
 from collections.abc import Callable, Mapping
 
 def _at(rest: str, n: int):
@@ -1074,8 +1074,8 @@ class Runner:
             self.bot.log(_("script finished"))
         except _End as e:
             self.bot.log(str(e) or _("script stopped itself"))
-        except GameLost:
-            raise                 # no on_stop: the game is gone
+        except (GameLost, WrongCharacter):
+            raise                 # no on_stop: the game is gone, or another character is in it
         except Stopped as e:
             if self.bot.stop_event.is_set():
                 raise

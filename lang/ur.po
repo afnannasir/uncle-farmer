@@ -8611,6 +8611,11 @@ msgstr "game dikha raha hai: {shown}"
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"
 
+msgid ""
+"the game went while the run was paused: it isn't opened again or carried on"
+msgstr ""
+"run pause mein tha jab game chala gaya: na dobara khola jayega na jaari rakha jayega"
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "game yahan se {name} ko maarne nahi deta - agla"
 
@@ -9921,6 +9926,11 @@ msgstr "{n}. {action} — {state}; waqfa {seconds} s; deterministic: {strict}"
 
 msgid "{opt} isn't a valid name pattern"
 msgstr "{opt} valid name pattern nahi hai"
+
+msgid ""
+"{other} is logged in now, not {name}: the run stops rather than farming as the wrong character"
+msgstr ""
+"ab {other} login hai, {name} nahin: ghalat character se farming ke bajaye run ruk raha hai"
 
 msgid "{pct}% full ({load} of {max})"
 msgstr "{pct}% bhara ({load} / {max})"

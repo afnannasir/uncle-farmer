@@ -22,7 +22,7 @@ from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
 from . import chores, keyboard, keyslots, resume, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
-from .botparts.base import GameBroken, GameLost
+from .botparts.base import GameBroken, GameLost, WrongCharacter
 from .botparts.parts import Sighting, Where
 from .script import Runner, ScriptError
 
@@ -156,6 +156,12 @@ class Run(threading.Thread):
         except triggers.TriggerFailed as e:
             reason = str(e)
             self.failed = True
+        except WrongCharacter as e:
+            # nothing more in this game: its character isn't ours (no guarding, no end place, no
+            # carrying on later, no opening the game again)
+            reason = str(e)
+            self.failed = True
+            self.log(reason, speak=True)
         except Stopped as e:
             if getattr(self, "kind", "") in ("tool", "trigger") and not self.stop_event.is_set():
                 self.failed = True
@@ -175,6 +181,7 @@ class Run(threading.Thread):
             self.failed = True
             reason = self._crashed(e)
         finally:
+            self._paused_game_lost()
             try:
                 self._after_farming()
             except triggers.TriggerFailed as e:
@@ -192,6 +199,16 @@ class Run(threading.Thread):
                 self.failed = True
                 self.ended_by_itself = False
             self._end(app, reason)
+
+    def _paused_game_lost(self) -> None:
+        """A run paused when its game went (closed, logged out): the player had the game, so it is
+        neither opened again nor carried on later. Live 2026-11-24: a paused run's game closed by
+        the player came back logged in as that run's character, over the one the player wanted."""
+        paused = getattr(self.bot, "paused", None)
+        if self.game_lost and paused is not None and paused.is_set():
+            self.game_lost = False
+            self.failed = True
+            self.log(_("the game went while the run was paused: it isn't opened again or carried on"))
 
     # ---------------------------------------------------------------- starting
     def _start(self, app: dict[str, Any]) -> Bot:
@@ -322,6 +339,8 @@ class Run(threading.Thread):
             self.log(_("farming stops at {time} at the latest (the drop time resets at {reset})",
                        time=day_end.strftime("%H:%M"), reset=bot.daily_reset))
         bot.character = self.character   # names the game in logs/dialogs.log when several run
+        me_id = settings.profile_id(self.profile or "")
+        bot.char_id = int(me_id) if me_id else None      # another character in this game ends the run
         bot.profile_key = self.profile   # the daily chores are kept per character, not per name
         name = self.profile or self.character or ""
 

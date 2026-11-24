@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 from ... import gamemem, jsonio
 from ...errors import carry_on
 from ...i18n import _
-from .base import (STOPPING, GameBroken, GameLost, Stopped)
+from .base import (STOPPING, GameBroken, GameLost, Stopped, WrongCharacter)
 from ...clock import Flag, StopFlag
 from ...link import GameLink
 from .parts import as_bot, Parts
@@ -123,6 +123,8 @@ class ReadingMixin(Parts):
                 if talking and self._game.send("speech") == "on":
                     self._game.send("speech off")      # muted again, as it was (unless the player muted it)
                 self._speech_at = 0.0              # the points key's speech check reads it afresh
+            # the player may have switched to another character meanwhile: never go on as this one there
+            self.same_character(self._game.json("mem self"))
             self._count_pause(False)
             self._snap_at = 0.0                    # nothing read before the pause holds now
             moved = self._moved_since(before)
@@ -366,9 +368,22 @@ class ReadingMixin(Parts):
         except Exception as e:          # a note is a convenience; never stop a reconnect for it
             carry_on(e, "noting what the game shows")
 
+    char_id: int | None = None      # the run's character, by the game's id (runner): another one ends the run
+
+    def same_character(self, me: dict[str, Any] | None) -> None:
+        """WrongCharacter when the game has another character in than the run's (by the game's id;
+        a reading with no id, or id 0 mid-login, says nothing)."""
+        want = self.char_id
+        got = (me or {}).get("id")
+        if want and isinstance(got, int) and got and got != want:
+            raise WrongCharacter(_("{other} is logged in now, not {name}: the run stops rather than farming as the "
+                                   "wrong character", other=(me or {}).get("name") or got,
+                                   name=getattr(self, "character", None) or want))
+
     def snap(self) -> dict[str, Any]:
         s = self._read("mem state" if getattr(self, "agent_state", False) else "mem",
                        lambda s: s.get("ok"))
+        self.same_character(s.get("self"))
         self._snap_at = self.clock.time()
         self._snap_self = s.get("self")
         map_info = s.get("map")

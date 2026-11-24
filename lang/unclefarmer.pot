@@ -8213,6 +8213,10 @@ msgstr ""
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 
+msgid ""
+"the game went while the run was paused: it isn't opened again or carried on"
+msgstr ""
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr ""
 
@@ -9455,6 +9459,10 @@ msgid "{n}. {action} — {state}; delay {seconds} s; deterministic: {strict}"
 msgstr ""
 
 msgid "{opt} isn't a valid name pattern"
+msgstr ""
+
+msgid ""
+"{other} is logged in now, not {name}: the run stops rather than farming as the wrong character"
 msgstr ""
 
 msgid "{pct}% full ({load} of {max})"

@@ -8650,6 +8650,11 @@ msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 "le jeu ne veut toujours pas changer de mode - le farming continue dans le mode actuel"
 
+msgid ""
+"the game went while the run was paused: it isn't opened again or carried on"
+msgstr ""
+"le jeu s'est fermé pendant que la partie était en pause : il n'est ni rouvert ni repris"
+
 msgid "the game won't let us hit {name} from here - next one"
 msgstr "le jeu ne nous laisse pas frapper {name} d'ici - au suivant"
 
@@ -9966,6 +9971,11 @@ msgstr "{n}. {action} — {state} ; délai {seconds} s ; déterministe : {strict
 
 msgid "{opt} isn't a valid name pattern"
 msgstr "{opt} n'est pas un motif de nom valide"
+
+msgid ""
+"{other} is logged in now, not {name}: the run stops rather than farming as the wrong character"
+msgstr ""
+"{other} est connecté maintenant, pas {name} : la partie s'arrête plutôt que de farmer avec le mauvais personnage"
 
 msgid "{pct}% full ({load} of {max})"
 msgstr "plein à {pct} % ({load} sur {max})"
