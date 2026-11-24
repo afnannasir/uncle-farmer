@@ -127,6 +127,9 @@ class Frame:
     def sync_pause(self):
         self.syncs += 1
 
+    def waiting_bot(self, pid: int | None) -> None:
+        return None              # no wait has a character logged out
+
     def label_games(self):
         self.labels += 1
 
