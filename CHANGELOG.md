@@ -41,11 +41,10 @@
   the room away. Agent 79 keeps each international and private-channel line's room, lists the
   joined rooms with their names (once the game has shown them), and sends into one room with
   `sayin`.
-- The Chat window lists each room after Notices ("International: French"), with its own lines
-  and unread count; a line typed there goes into that room, and a reply into the room of the
-  line it answers. International and Private channel keep all their rooms together, each line
-  starting with its room. Ctrl+1 .. Ctrl+9 reach the same channels as before. Restart the game
-  once for the new agent.
+- The Chat window lists each room where International and Private channel were ("International:
+  French"), with its own lines and unread count, and no buffer mixing the rooms; a line typed there
+  goes into that room, and a reply into the room of the line it answers. Restart the game once for
+  the new agent (with an older one the list is as before).
 
 **The menu box on the Keys page: a moment before each choice, and shops too** (untested in game)
 

@@ -1,9 +1,9 @@
 """The Chat window: the game's chat while the bot farms, read and written without the game's keys.
 
-Two tabs, as in the game: Channels (All, Team, Gang, Nearby, Map, Global, International, the
-Private channel players join, and the game's Notices, then one buffer for each international room
-and private channel the player is in, where a line typed goes into that room) and Private chats (one conversation per
-person, only the people this character has talked with). Ctrl+Tab moves between the tabs, Ctrl+1 ..
+Two tabs, as in the game: Channels (All, Team, Gang, Nearby, Map, Global, one buffer for each
+international room and each private channel the player is in - where a line typed goes into that
+room - and the game's Notices) and Private chats (one conversation per person, only the people
+this character has talked with). Ctrl+Tab moves between the tabs, Ctrl+1 ..
 Ctrl+9 between the channels. Everything lives in memory only (chat.py) and is gone when Uncle
 Farmer closes.
 """
@@ -281,10 +281,18 @@ class ChatFrame(wx.Frame):
         return self.ch_keys[i] if 0 <= i < len(self.ch_keys) else ALL
 
     def buffer_rows(self) -> bool:
-        """The Channel list's buffers: the fixed ones (Ctrl+1 .. Ctrl+9), then one per international
-        room and private channel the player is in. True when that changed."""
+        """The Channel list's buffers, in the order Ctrl+1 .. Ctrl+9 reach them. With an agent that
+        tells the rooms apart (79), International and the Private channel are one buffer per room
+        the player is in, where they stood ("International: French"), never all rooms mixed (the
+        player found the mix useless, 2026-11-24). True when that changed."""
         f = self.feed()
-        rows = channel_buffers() + ([(k, f.room_label(k)) for k in f.rooms()] if f else [])
+        rows: list[tuple[str, str]] = []
+        rooms = f.rooms() if f is not None and f.version >= chat.AGENT_ROOMS else None
+        for k, name in channel_buffers():
+            if rooms is not None and f is not None and k in chat.ROOM_CHANNELS:
+                rows += [(r, f.room_label(r)) for r in rooms if chat.room_of(r)[0] == k]
+            else:
+                rows.append((k, name))
         keys = [k for k, _n in rows]
         if keys == self.ch_keys and dict(rows) == self.ch_names:
             return False

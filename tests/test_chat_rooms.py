@@ -124,26 +124,36 @@ def pick(frame: gui.ChatFrame, key: str) -> None:
     frame.show_channel()
 
 
-def test_the_window_lists_each_room_after_the_fixed_channels(window: Any) -> None:
+def test_each_room_has_its_own_buffer_where_its_channel_stood(window: Any) -> None:
     frame, feed = window
-    fixed = [k for k, _n in gui.channel_buffers()]
-    assert frame.ch_keys == fixed                        # no room yet: Ctrl+1 .. Ctrl+9 as before
+    feed.version = chat.AGENT_ROOMS
     feed.note_rooms(ROOMS[:2])
     arrive(frame, feed, "5", "salut", 30)
-    assert frame.ch_keys == fixed + ["5@30", "5@10"]
-    assert frame.channel.GetString(len(fixed)).startswith("International: French")
+    fixed = [k for k, _n in gui.channel_buffers()]
+    at = fixed.index("5")
+    assert frame.ch_keys == fixed[:at] + ["5@30", "5@10", chat.NOTICE]   # no mixed International, no channel 6 room
+    assert frame.channel.GetString(at).startswith("International: French")
     pick(frame, "5@30")
     assert [x["text"] for x in frame.ch_lines] == ["salut"]
     arrive(frame, feed, "5", "hello", 10)                # another room's line: not in this one
     assert [x["text"] for x in frame.ch_lines] == ["salut"]
-    assert frame.unread["5@10"] == 1 and frame.unread["5"] == 1
-    pick(frame, "5")
-    assert frame.ch_list.GetStrings() == ["French, Ali: salut, " + gui.stamp(feed.buffer("5")[0]["when"], "24"),
-                                          "English, Ali: hello, " + gui.stamp(feed.buffer("5")[1]["when"], "24")]
+    assert frame.unread["5@10"] == 1 and "5" not in frame.unread
+    feed.note_rooms(ROOMS[2:3])
+    arrive(frame, feed, "6", "yo", 116)
+    assert frame.ch_keys[at:] == ["5@30", "5@10", "6@116", chat.NOTICE]
+
+
+def test_an_older_agent_keeps_the_channels_as_they_were(window: Any) -> None:
+    frame, feed = window
+    feed.version = chat.AGENT_ROOMS - 1
+    feed.add("5", "Ali", "salut")
+    frame.show_channel()
+    assert frame.ch_keys == [k for k, _n in gui.channel_buffers()]
 
 
 def test_typing_in_a_room_s_buffer_sends_there(window: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     frame, feed = window
+    feed.version = chat.AGENT_ROOMS
     feed.note_rooms(ROOMS[:2])
     arrive(frame, feed, "5", "salut", 30)
     pick(frame, "5@30")

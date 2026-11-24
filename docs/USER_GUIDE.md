@@ -2010,16 +2010,15 @@ When **All** is selected, your message is sent to the same channel as the curren
 **Several international rooms and private channels**
 
 The game lets you be in more than one international room (French and English, for example) and
-more than one private channel at once. Each of them gets its own line in the channel list, after
-Notices, such as **International: French** or **Private channel: room 136**. A room shows its
-name once the game has shown it, so a room you haven't switched to since the game started shows
-its number until you do. **International** and **Private channel** still hold all of their rooms
-together, each message starting with its room's name.
+more than one private channel at once. Each of them gets its own line in the channel list, where
+International and Private channel were, such as **International: French** or **Private channel:
+room 136**; there is no line mixing all the rooms. A room shows up once the game has shown it (the
+room up in the game, or one a message came from) and shows its name once you have switched to it in
+the game; until then it shows its number.
 
-A message typed in a room's own line goes into that room, whichever room the game has up. In
-**International** or **Private channel**, it goes to the room the game has up, as in the game
-itself. A reply goes back into the room of the message you reply to. This needs the agent that
-comes with this version: restart the game once after updating.
+A message typed in a room's own line goes into that room, whichever room the game has up. A reply
+goes back into the room of the message you reply to. This needs the agent that comes with this
+version: restart the game once after updating; with an older agent the channel list is as before.
 
 ### Private conversations
 
