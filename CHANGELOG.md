@@ -51,6 +51,16 @@
   lost game, or another character in the game, for a way that failed and went on - getting off the
   beast, putting the pet away and handing the team over as that other character.
 
+**Each character's results in a file of its own** (untested in game)
+
+- Results were kept in results/<name>.jsonl: two characters of the same name on two servers shared
+  one file, and the day's totals, the last run and the "today" private message mixed them up. Each
+  character now has results/<name>--<server>--<id>.jsonl, named like its settings file. The file a
+  character had under its name alone becomes its own the first time it is logged in or farms with
+  this version, all of its history with it (the first character of that name to come takes it);
+  until then it is still read as the character's. The Results window says each character as
+  "name - server".
+
 **Private message jobs without a run use the character's own settings** (untested in game)
 
 - With no run going, a private message's job (wait, come, a team invite...) built its character's

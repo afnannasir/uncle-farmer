@@ -425,8 +425,10 @@ class Run(threading.Thread):
                 # the results count contribution and experience from the first sheet they see: a
                 # fresh one now, or the first reading comes after the first kills and leaves them out
                 bot.ask_sheet(force=True)
+            if self.profile:
+                stats.adopt_old_file(self.profile)      # its name-only results become its own, once
             bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
-                                                 tool=self._tool())
+                                                 tool=self._tool(), profile=self.profile)
             if getattr(bot, "daily_stop_at", 0.0):
                 bot.tally.deadline(bot.daily_stop_at)     # Time remaining counts down to it at the latest
             bot.tally.update(bot, force=True)

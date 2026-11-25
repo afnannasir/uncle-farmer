@@ -16,7 +16,7 @@ from typing import Any
 
 import wx
 
-from .. import speech, stats
+from .. import settings, speech, stats
 from ..clock import CLOCK, Clock
 from ..i18n import N_, _
 from ..stats import Tally
@@ -56,7 +56,8 @@ class ResultsDialog(Dialog):
         self.names = names or [_("nobody yet")]
         root = wx.BoxSizer(wx.VERTICAL)
         form = Form(self)
-        self.who = form.choice(_("&Character:"), self.names,
+        # the names are the characters' keys (their own results files): said as "Hero - S1"
+        self.who = form.choice(_("&Character:"), [settings.profile_display(n) for n in self.names],
                                self.names.index(character) if character in self.names else 0)
         self.when = form.choice(_("&Period:"), [_("This run (or the last one)"), _("Today"), _("Yesterday"),
                                                 _("A day of my choice"), _("Last 7 days"), _("Last 30 days"),
@@ -115,6 +116,7 @@ class ResultsDialog(Dialog):
     def result(self) -> tuple[str | None, str]:
         """(text, what to speak) for the chosen character, period and kind."""
         name = self.names[max(0, self.who.GetSelection())]
+        shown = settings.profile_display(name)
         period = PERIODS[max(0, self.when.GetSelection())]
         kind = SHOW[max(0, self.what.GetSelection())]
         tally = self.live(name)
@@ -122,20 +124,20 @@ class ResultsDialog(Dialog):
         now = self.clock.time()
         if period == "run":
             if tally and live:
-                title = _("{name}, this run ({what}, running)", name=name, what=tally.title)
+                title = _("{name}, this run ({what}, running)", name=shown, what=tally.title)
                 return self.texts(kind, live, title, single=True)
             past = stats.runs(name, kind=kind)
             if past:
-                title = _("{name}, last run ({what}, started {when})", name=name,
+                title = _("{name}, last run ({what}, started {when})", name=shown,
                           what=past[-1].get("run"), when=past[-1].get("start"))
                 return self.texts(kind, [r for r in past if r["start"] == past[-1]["start"]], title, single=True)
-            return None, _("{name}: no runs yet", name=name)
+            return None, _("{name}: no runs yet", name=shown)
         today = day_of(now)
         until: float | None = None
         if period in ("today", "yesterday", "day"):
             if period == "day":
                 if not self.days:
-                    return None, _("{name}: no runs yet", name=name)
+                    return None, _("{name}: no runs yet", name=shown)
                 day = self.days[max(0, self.day.GetSelection())]
             else:
                 day = today if period == "today" else day_of(stats.day_bounds(today)[0] - 3600)
@@ -148,8 +150,8 @@ class ResultsDialog(Dialog):
             label = {"week": _("the last 7 days"), "month": _("the last 30 days"), "all": _("everything")}[period]
         results = stats.runs(name, since, kind=kind, until=until) + live
         if not results:
-            return None, _("{name}, {period}: no runs", name=name, period=label)
-        return self.texts(kind, results, _("{name}, {period}", name=name, period=label))
+            return None, _("{name}, {period}: no runs", name=shown, period=label)
+        return self.texts(kind, results, _("{name}, {period}", name=shown, period=label))
 
     @staticmethod
     def texts(kind: str, results: list[dict[str, Any]], title: str, single: bool = False) -> tuple[str, str]:

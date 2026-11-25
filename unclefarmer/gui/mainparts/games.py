@@ -6,7 +6,7 @@ import threading
 
 import wx
 
-from ... import applog, jsonio, nearby, scan, settings
+from ... import applog, jsonio, nearby, scan, settings, stats
 from ...engine import logout
 from ...engine.runner import Run
 from ...errors import carry_on
@@ -265,6 +265,8 @@ class GamesMixin(FrameParts):
             if (new_name, new_where) != (name, where):
                 self.games[i] = (pid, new_name, new_where)
                 changed = True
+                if new_name:
+                    stats.adopt_old_file(new_name)
         if changed:
             self.label_games()
 
@@ -343,6 +345,8 @@ class GamesMixin(FrameParts):
         if not same or game[1] != profile or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
             self.games[i] = (game[0], profile, s["map"]["name"])
             self.label_games()
+            if profile:
+                stats.adopt_old_file(profile)   # logged in: its name-only results become its own
         elif game[1]:
             profile = game[1]       # retain the server label gathered with this game's first reading
         account = s.get("_account")

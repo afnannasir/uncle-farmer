@@ -536,11 +536,11 @@ class Messenger(threading.Thread):
         run = self.host.run_for(self.pid)
         if run and run.tally:
             return _("This run: {r}", r=stats.short(run.tally.result(), run.tally.drop_left))
-        past = stats.runs(settings.profile_name(self.host.character(self.pid)))
+        past = stats.runs(self.host.character(self.pid) or "")      # its own results file (its key)
         return _("Last run: {r}", r=stats.short(past[-1], self.drop_now())) if past else _("No results yet.")
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
-        who = settings.profile_name(self.host.character(self.pid))
+        who = self.host.character(self.pid) or ""
         since = stats.day_bounds(stats.game_day_of(time.time()))[0]    # the game's day: from 00:00 GMT
         rs = stats.runs(who, since)
         run = self.host.run_for(self.pid)

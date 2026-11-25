@@ -17,11 +17,12 @@ from .base import FrameParts, foreground_pid
 class ResultsMixin(FrameParts):
     # ------------------------------------------------------------ results and the game's voice
     def live_tally(self, character: str) -> Tally | None:
-        run = next((r for r in self.runs.values() if r.character == character and r.tally), None)
+        run = next((r for r in self.runs.values() if r.tally and (r.profile == character or r.character == character)),
+                   None)
         return run.tally if run else None
 
     def show_results(self) -> None:
-        with ResultsDialog(self, settings.profile_name(self.selected_character()) or None, self.live_tally) as d:
+        with ResultsDialog(self, self.selected_character() or None, self.live_tally) as d:
             d.ShowModal()
 
     def open_results_folder(self) -> None:
@@ -33,13 +34,14 @@ class ResultsMixin(FrameParts):
         pid = foreground_pid() if front else None
         if pid not in {g[0] for g in self.games}:
             pid = self.selected_pid()
-        name = settings.profile_name(next((g[1] for g in self.games if g[0] == pid), None)) or None
+        key = next((g[1] for g in self.games if g[0] == pid), None) or None
+        name = settings.profile_name(key) or None
         run = self.runs.get(pid) if pid is not None else None
         if run and run.tally:
             speech.speak(_("{name}: {results}", name=run.character or name,
                            results=stats.short(run.tally.result(), run.tally.drop_left)))
             return
-        past = stats.runs(name) if name else []
+        past = stats.runs(key) if key else []
         if past:
             # the drop time is today's, from the game open now (the last run may be from yesterday)
             snap = self.snapshot(pid) if pid is not None else None
