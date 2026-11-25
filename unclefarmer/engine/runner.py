@@ -94,6 +94,7 @@ class Run(threading.Thread):
         self.resume_row: dict[str, Any] | None = None   # set by the window: carry on from this place
         self.game_lost = False       # the game closed, froze or lost our character for good
         self.lost_connection = False  # ... through its connection to the server (GameLost connection)
+        self.other_character = False  # another character came into the game (WrongCharacter): nothing more there
         self.app_closing = False     # Uncle Farmer is closing under the run: its place is kept
         self.script: Runner | None = None    # the plan or script whose place is kept
         self.place_lock = threading.Lock()
@@ -121,17 +122,36 @@ class Run(threading.Thread):
                 return
             except Respawned:
                 continue            # died while guarding and came back: guard again from there
-            except Exception as e:    # stuck again, the game gone, or the same bug once more
+            except (GameLost, WrongCharacter) as e:
+                self._lost_while_guarding(e)
+                return
+            except Exception as e:    # stuck again, or the same bug once more
                 carry_on(e, "finishing safely")
                 if self.stop_event.is_set():
                     return
                 self.log(_("couldn't finish safely: {err}", err=e))
                 try:
                     bot.defend()    # finishing failed (stuck again?): at least stay on guard
+                except (GameLost, WrongCharacter) as e2:
+                    self._lost_while_guarding(e2)
                 except Exception as e2:
                     carry_on(e2, "staying on guard")
                     self.log(_("couldn't stay on guard either: {err}", err=e2))
                 return
+
+    def _lost_while_guarding(self, e: Stopped) -> None:
+        """The game went, or another character came in, while the run ended: noted as if the run
+        had stopped on it. Swallowed as any other error, it made the run one that ended by itself:
+        the After farming list ran on a game that was gone, the after-stop action closed the game
+        (perhaps another player's character now) or shut the PC down, and the run's place, which a
+        lost game keeps to carry on from, was cleared."""
+        self.failed = True
+        if isinstance(e, GameLost):
+            self.game_lost = True
+            self.lost_connection = e.connection
+        else:
+            self.other_character = True
+        self.log(str(e), speak=True)
 
     def log(self, message: str, speak: bool=False) -> None:
         line = "%s  %s" % (time.strftime("%H:%M:%S"), message)
@@ -509,9 +529,10 @@ class Run(threading.Thread):
             if not broken:
                 self.guard(bot, finish=not getattr(e, "stay", False))
                 # called away by a player (come, follow, home): not the end of farming, so no
-                # closing the game or the PC
+                # closing the game or the PC; nor a game lost (or another character) meanwhile
                 self.ended_by_itself = (not self.stop_event.is_set() and not getattr(e, "stay", False)
-                                        and not getattr(e, "asked", False))
+                                        and not getattr(e, "asked", False)
+                                        and not self.game_lost and not self.other_character)
         return reason
 
     @staticmethod

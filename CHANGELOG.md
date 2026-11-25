@@ -10,6 +10,16 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A game lost while a run ends is a lost game, not a finished run** (untested in game)
+
+- When a run stopped on its own (a stop rule, stuck, a "wait" whose logging back in failed), the
+  bot first guards the character; if the game turned out to be gone, or another character had
+  come in, that was taken for an ordinary error. The run then counted as one that ended by itself:
+  the After farming list ran on a game that was gone, the after-stop action closed the game
+  (perhaps with another player's character in it now) or shut the PC down, and the run's place,
+  which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
+  another character in the game ends the run with nothing more done.
+
 **A hearthstone a hit stopped is not a flee** (untested in game)
 
 - When HP stays low and the bot flees with the hearthstone, a hit that stops the cast was counted
