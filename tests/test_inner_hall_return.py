@@ -194,3 +194,15 @@ def test_the_real_map_reaches_the_guard_from_the_outer_hall_only() -> None:
     assert crafting.walks_between(BASE, (59, 93), chores.HALL_GUARD[1])
     assert crafting.walks_between(BASE, START, chores.HALL_GUARD[1])       # out through the one-way door
     assert not crafting.walks_between(BASE, chores.HALL_GUARD[1], START)
+
+
+def test_a_game_lost_on_the_way_back_in_is_not_staying_here(monkeypatch: pytest.MonkeyPatch, outside: list[int]) -> None:
+    # swallowed, the run went on to get off the beast, put the pet away and hand the team over -
+    # as another character, when one had come into the game
+    from unclefarmer.engine.botparts.base import GameLost, WrongCharacter
+    for gone in (GameLost("the game can't be read"), WrongCharacter("another character is in this game")):
+        def lost(b: Any, gone: Exception = gone) -> None:
+            raise gone
+        monkeypatch.setattr(chores, "inner_hall", lost)
+        with pytest.raises(type(gone)):
+            back(Game())

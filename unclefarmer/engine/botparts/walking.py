@@ -15,7 +15,7 @@ from ... import atlas
 from ...i18n import _
 from .. import beasts, combat
 from ...nearby import OWNER
-from .base import (DIRECTIONS, NPC_HP, STOPPING, GameLost, NoWay, Respawned, Stopped, note_failure,
+from .base import (DIRECTIONS, NPC_HP, STOPPING, GameLost, NoWay, Respawned, Stopped, WrongCharacter, note_failure,
                    snap_map)
 from .parts import as_bot, Parts
 
@@ -659,8 +659,8 @@ class WalkingMixin(Parts):
                 try:
                     if step():
                         return True
-                except Respawned:
-                    raise
+                except (Respawned, GameLost, WrongCharacter):
+                    raise           # the game gone or another character in it: not a way out that failed
                 except Stopped:
                     if self.stop_event.is_set():
                         raise           # the player pressed Stop

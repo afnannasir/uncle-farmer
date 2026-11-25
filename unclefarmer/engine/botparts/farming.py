@@ -15,7 +15,7 @@ from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamlead, watchdog, xpcard
-from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
+from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
 
@@ -652,8 +652,8 @@ class FarmingMixin(Parts):
                     self.travel(mid, cell)
             else:
                 return self._finish_safe()
-        except Respawned:
-            raise
+        except (Respawned, GameLost, WrongCharacter):
+            raise           # the game gone, or another character in it: no way, nothing more to do there
         except Stopped as why:
             if self.stop_event.is_set():
                 raise

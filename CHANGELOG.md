@@ -46,6 +46,10 @@
   (perhaps with another player's character in it now) or shut the PC down, and the run's place,
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
+- The same on three ways of ending a run: the walk to the end place, the way into the gang's base
+  ("couldn't get back into the gang's base - staying here") and the ways out of a stuck spot took a
+  lost game, or another character in the game, for a way that failed and went on - getting off the
+  beast, putting the pet away and handing the team over as that other character.
 
 **Private message jobs without a run use the character's own settings** (untested in game)
 
