@@ -59,6 +59,7 @@ AHEAD_DEGREES = 90.0     # "yards ahead": the arc a melee sweep covers
 CONE_SLACK = 5.0         # degrees past the arc's edge still counted: positions are a step behind
 LEAD = 0.1               # press this much before the cooldown ends: the press still travels to the server
 RETRY = 0.3              # a press the game didn't cast (sent too early, lost) is pressed again this soon
+PENDING_CAST_WINDOW = 1.5 # seconds a skill waits for confirmation, plus its cast time
 BURST_EARLY = 0.15       # with press_burst, start pressing this long before the cooldown should end
 BURST_GAP = 0.05         # ... and press again this often until the game casts it
 SLOT_GAP = 0.08          # the same through agent 45's `slot`: a key's 30 ms hold plus BURST_GAP, so the
@@ -73,6 +74,7 @@ JUMP_BACK = 12.0         # tiles a jump backward (the Hunter's Escape) carries u
 FREE_GUARD_BELOW = 90    # a free guard (Summon Spirit) goes up under attack once HP is below this %
 POINTS_FRESH = 6.0       # a T-key reading (rage, marks, combos) older than this isn't trusted
 MARK_SHOTS = ("Marked Shot", "Burst Shot")   # hit every marked target; the marks go
+HUNTER_BASE_RANGE = 20.0                   # Arcane Shot in the skill data
 REFUSED_WAIT = 3.0       # a skill the game wouldn't cast for a whole burst is left this long...
 REFUSED_WAIT_RAGE = 8.0  # ... or this long when it spends rage or combos (they take several hits to build)
 LONG_FIGHT_HP = 3.0      # a target with this many times our max HP is a long fight
@@ -303,7 +305,6 @@ class SkillBook:
         self.game_folder = game_folder
         self.ok = False
         self.used: dict[str, float] = {}          # skill name -> last press time
-        self.marked_at = 0.0    # last time we pressed a skill that can mark (Hunter)
         self.can_flip = True    # the page key reaches the game (agent v8 knows Caps Lock)
         self.page_key = gamekeys.PAGE_TURN_DEFAULT   # the game's page key (load() reads input.ini)
         # Casts the game confirmed (agent v9 `casts`: IN op=41 "caster,seq,Level N Skill"). Live
@@ -544,7 +545,7 @@ class SkillBook:
         refused: dict[str, float] = getattr(self, "refused", {})     # a book a test made without __init__
         if refused.get(s["name"], 0) > now:
             return False
-        if now - self.pending.get(s["name"], 0) < 1.5 + (s.get("cast") or 0):
+        if now - self.pending.get(s["name"], 0) < PENDING_CAST_WINDOW + (s.get("cast") or 0):
             return False          # pressed a moment ago; its cast may still be on the way
         return now - self.used.get(self.cd_group(s), 0) >= self._cooldown(s) + 0.3
 
@@ -625,6 +626,11 @@ class SkillBook:
         (a fight's start: the T key isn't pressed between fights) it waits for one - the answer is
         a moment away, and a guess cost a whole refused burst each time (live: a Warrior's Battle
         Cry at every fight's start, Execute after every Cleave). Without the T key: yes."""
+        if x["name"] in MARK_SHOTS:
+            now = now if now is not None else clock_for(self.b).time()
+            return (self.points(now) or 0) > 0 and not any(
+                name in self.pending and now - self.pending[name] < PENDING_CAST_WINDOW for name in MARK_SHOTS
+            )
         need = self.cost(x)
         if not need:
             return True
@@ -632,6 +638,15 @@ class SkillBook:
         if have is None:
             return not self.b.p.get("points_key")
         return have >= need
+
+    def extended_mark_shot(self, dist: float, now: float) -> bool:
+        """A Hunter can stay on a drifting target if a marked shot still reaches it."""
+        if self.cls != "Hunter" or dist <= HUNTER_BASE_RANGE or not self.points(now):
+            return False
+        up = self.page()
+        return any(s["name"] in MARK_SHOTS and self.affordable(s, now) and self.allowed(s)
+                   and self.ready(s, now) and self.reaches(s, dist)
+                   for pg, row in self.slots.items() if pg == up or self.can_flip for s in row)
 
     def refuse(self, name: str, now: float) -> None:
         """A whole burst of presses and the game cast nothing: most often a skill that spends rage
@@ -1268,7 +1283,8 @@ class SkillBook:
     def _adjust_pyroblast_target(self, choice: Skill | None, target: dict[str, Any], v: _PickView) -> Skill | None:
         return elf_combos.adjust_pyroblast_target(self, choice, v, lambda: self._pyroblast_wasted_on(target, v))
 
-    def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
+    def pick(self, snap: dict[str, Any], target: dict[str, Any], *,
+             target_check: Callable[[Skill], bool] | None = None) -> Press | str | None:
         """(key, skill name) to press now, or None to fall back to the profile's attack keys."""
         if not self.ok:
             return None
@@ -1301,7 +1317,8 @@ class SkillBook:
             channel = self.combos.channel_pick(lambda name: next((s for s in skills
                                                if s["name"] == name and v.in_range(s)), None))
             if channel:
-                return self._press_pick(channel, skills, up, now, v.in_range, ignition=ignition)
+                return self._press_pick(channel, skills, up, now, v.in_range, ignition=ignition,
+                                        target_check=target_check)
         mine = self.support(me, now, fight=(tgt_big, near_target))
         if mine:
             return mine
@@ -1314,7 +1331,7 @@ class SkillBook:
             choice = self.combos.pick(skills, target, now, v.in_range, elements)
         # the player's own: skills set to "whenever ready" go before the bot's choices
         if not choice and wanted:
-            done, answer = self._wanted_choice(v, wanted)
+            done, answer = self._wanted_choice(v, wanted, target_check)
             if done:
                 return answer
         # combos: what our last casts set up (a frozen target for Ice Lance, a cooldown a critical hit
@@ -1330,7 +1347,7 @@ class SkillBook:
         choice = self._adjust_pyroblast_target(choice, target, v)
         if not choice:
             return None
-        return self._press_pick(choice, skills, up, now, v.in_range, ignition=ignition)
+        return self._press_pick(choice, skills, up, now, v.in_range, ignition=ignition, target_check=target_check)
 
     def _usable(self, up: int, urgent: bool, now: float) -> tuple[list[Skill], list[Skill]]:
         """(skills the bot may pick now, the player's "whenever ready" ones), from both pages; a
@@ -1411,7 +1428,8 @@ class SkillBook:
                  and not s.get("cast") and far <= float(s.get("range") or 0) - 0.5]
         return max(rooms, key=lambda s: (s["page"] == v.up, v.score(s)), default=None)
 
-    def _wanted_choice(self, v: _PickView, wanted: list[Skill]) -> tuple[bool, Press | None]:
+    def _wanted_choice(self, v: _PickView, wanted: list[Skill],
+                       target_check: Callable[[Skill], bool] | None = None) -> tuple[bool, Press | None]:
         """The hardest hitter of the player's "whenever ready" skills (a buff or heal among them on
         the stationary key, at us). (True, the answer) when pick is done, (False, None) to go on."""
         mine = [s for s in wanted if s.get("role") in SELF_ROLES or v.in_range(s)]
@@ -1419,7 +1437,7 @@ class SkillBook:
             return False, None
         pick = max(mine, key=lambda s: (v.score(s), s["page"] == v.up))
         if pick.get("role") not in SELF_ROLES:
-            return True, self._press_pick(pick, v.skills, v.up, v.now, v.in_range)
+            return True, self._press_pick(pick, v.skills, v.up, v.now, v.in_range, target_check=target_check)
         if pick["page"] == v.up or self.flip_to(pick["page"]):
             self.pressed(pick, v.now)
             return True, (pick.get("still") or pick["key"], pick["name"])
@@ -1430,7 +1448,7 @@ class SkillBook:
         skill (a Hunter's marked shots), else the strongest single-target skill or the base attack.
         (Control skills are left out on purpose for farming: a stun costs a global cooldown that
         damage would have used, and bosses ignore it.)"""
-        skills, now, up = v.skills, v.now, v.up
+        skills, up = v.skills, v.up
         choice = None
         # 3. a long fight: debuffs once per cooldown (Viper Sting, Sear, Armor Break ...)
         if v.big:
@@ -1438,13 +1456,9 @@ class SkillBook:
                      and self.debuff_worth(x, v.hp_share)]
             choice = (max(worth, key=lambda x: (self.debuff_worth(x, v.hp_share), x["page"] == up), default=None)
                       or v.first("dot", lambda s: not v.running(s)))
-        # 4. a Hunter spends its marks with Marked Shot on a pack
+        # 4. Spend confirmed marks on a pack, or when a distant target needs the longer shot.
         need = getattr(self.b, "pack_min", 3)
-        if not choice and v.pack >= need and self.cls == "Hunter" and (
-                marks >= 2 if marks is not None else now - self.marked_at < 8):
-            choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
-        # several targets marked (the T key counts them): one shot hits them all
-        if not choice and marks is not None and marks >= 3:
+        if not choice and marks and (marks >= 3 or (marks >= 2 and v.pack >= need) or v.dist > HUNTER_BASE_RANGE):
             choice = v.first("aoe", lambda s: s["name"] in MARK_SHOTS)
         if not choice:
             choice = self._damage_choice(v, need)
@@ -1486,7 +1500,8 @@ class SkillBook:
             return unknown[1]
         return best
 
-    def fallback(self, now: float, reaches: Callable[[Skill], bool] | None = None) -> Press | None:
+    def fallback(self, now: float, reaches: Callable[[Skill], bool] | None = None, *,
+                 target_check: Callable[[Skill], bool] | None = None) -> Press | None:
         """A press when pick() found nothing: the hardest-hitting attack the player allows whose own
         cooldown is over, even one refuse() set aside for a while. Pressing the profile's attack
         keys instead would cast whatever sits on them, a skill set to Never included; pressing
@@ -1503,6 +1518,7 @@ class SkillBook:
         cands = [dict(s, page=pg) for pg, row in self.slots.items() for s in row
                  if self.allowed(s) and s.get("role") not in NEVER and s.get("role") not in CALM_ROLES
                  and s["name"] != elf_combos.IGNITION
+                 and (s["name"] not in MARK_SHOTS or self.affordable(s, now))
                  and in_range(s)
                  and not self._channeling_restricted(s)
                  and not self._swing_breaks(s, now)
@@ -1513,10 +1529,11 @@ class SkillBook:
             s["page"] == up,
             damage_rate(s, weight(s), gcd, unpenalized=elf_combos.unpenalized(s, self.available_to_channel_without_penalty)),
         ))
-        return self._press_pick(best, cands, up, now, in_range)
+        return self._press_pick(best, cands, up, now, in_range, target_check=target_check)
 
     def _press_pick(self, choice: Skill, skills: list[Skill], up: int, now: float,
-                    in_range: Callable[[Skill], bool], *, ignition: Skill | None = None) -> Press | None:
+                    in_range: Callable[[Skill], bool], *, ignition: Skill | None = None,
+                    target_check: Callable[[Skill], bool] | None = None) -> Press | None:
         """Get the chosen skill's page up (else the best of its kind on this page) and record the
         press: (key, name), or None."""
         if choice["page"] != up and not self.flip_to(choice["page"]):
@@ -1533,11 +1550,15 @@ class SkillBook:
         if (choice["name"] in elf_combos.CHANNEL_SKILLS and self.combos
                 and choice["name"] != self.combos.channel_name()):
             return None
+        if target_check is not None and choice.get("role") not in CALM_ROLES and not target_check(choice):
+            return None
         # Resolve the attack's page first: a failed flip may have changed the planned skill.
         if (ignition is not None and self.combos and in_range(ignition)
                 and (not self.b.p.get("points_key") or self.points(now) is not None)
                 and self.combos.ignition_before(choice, self.points(now) if self.cls == "Elf" else None)
                 and (ignition["page"] == choice["page"] or self.flip_to(ignition["page"]))):
+            if ignition["page"] != choice["page"] and target_check is not None and not target_check(choice):
+                return None
             for channel in elf_combos.CHANNEL_SKILLS:
                 self.combos.primed.pop(channel, None)
             self.combos.primed[choice["name"]] = float("inf")
@@ -1545,9 +1566,4 @@ class SkillBook:
         if self._channeling_restricted(choice):
             return None
         self.pressed(choice, now)
-        if self.cls == "Hunter":
-            if choice["name"] in ("Multi Shot", "Rapid Arrows"):
-                self.marked_at = now      # several targets carry marks now
-            elif choice["name"] in ("Marked Shot", "Burst Shot"):
-                self.marked_at = 0.0      # "the marks disappear after the attack"
         return choice["key"], choice["name"]

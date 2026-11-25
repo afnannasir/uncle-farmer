@@ -150,6 +150,7 @@ class TwoMonsters:
         self.casts: list[tuple[float, int]] = []          # (when, who was struck)
         self.deaths: list[list[int]] = []                  # [who, when in ms]
         self.last_cast = 0.0
+        self.selected = -9
         self.lock = threading.Lock()
 
     def press(self) -> None:
@@ -198,7 +199,7 @@ class TwoMonsters:
                 deaths = [d for d in self.deaths if d[1] > since and d[1] <= now * 1000]
             return {"casts": casts, "deaths": deaths}
         return {"mem self": self.mem()["self"], "mem map": {"id": 5302},
-                "mem ui": {"target": -9, "panel": 0, "cursor": 0, "attack_page": 0},
+                "mem ui": {"target": self.selected, "panel": 0, "cursor": 0, "attack_page": 0},
                 "input": {"ok": True, "open": False}, "dialog": {"ok": True, "open": 0}}.get(
             line, [] if line in ("mem equipment", "mem bag", "mem bagfull") else {})
 
@@ -210,7 +211,11 @@ def bot(world: TwoMonsters, clock: Clock) -> tuple[Bot, list[Any]]:
     lines: list[str] = []
     b = Bot(world, p, lambda line, speak=False: lines.append(line), threading.Event(), clock)
     b.potion = lambda kind: (None, None)
-    b.select_target = lambda mob, by_keys=False: True
+    def select_target(mob: dict[str, Any], by_keys: bool = False) -> bool:
+        world.selected = mob["id"]
+        return True
+
+    b.select_target = select_target
     b.reach = lambda: 4.0
     b.clear_shot = lambda me, mob, mid=None: True
     bash = dict({s["name"]: s for s in combat.knowledge()["Warrior"]}["Bash"], key="j", still="alt+j", use="auto")
@@ -232,6 +237,7 @@ def test_hits_landing_on_another_monster_move_the_fight_to_it(clock: Clock) -> N
     b, lines = bot(world, clock)
     b._hit_until_down(orc())
     assert world.hp[-7] <= 0, lines
+    assert world.selected == -7
     assert not any("takes no damage" in line for line in lines), lines
     assert "our hits land on Wolf - fighting that one" in lines
     assert -9 not in b.skip                              # our pick is still there to be fought
@@ -257,5 +263,9 @@ def test_no_damage_is_judged_on_fresh_cast_reports_not_on_the_last_full_reading(
     b._hit_until_down(orc())
     assert world.hp[-9] <= 0, lines
     assert not any("takes no damage" in line for line in lines), lines
+    # The monster can go out of view before its death report. The next farm-loop read
+    # picks up the report and credits the kill without another attack.
+    clock.advance(0.06)
+    b.count_kills(world.mem())
     assert any(line.endswith("down (1 so far)") for line in lines), lines
     assert -9 not in b.skip

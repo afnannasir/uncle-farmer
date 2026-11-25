@@ -24,6 +24,7 @@ import pytest
 
 from unclefarmer.clock import CLOCK, StopFlag, Waitable
 from unclefarmer import paths, settings
+from unclefarmer.engine import combat
 from unclefarmer.engine import picking
 from unclefarmer.engine.botparts import fighting
 from unclefarmer.engine.botparts.base import NPC_HP, LosingFight, Respawned, Stopped
@@ -32,7 +33,7 @@ from unclefarmer.engine.botparts.keys import KeysMixin
 from unclefarmer.engine.botparts.walking import WalkingMixin
 from unclefarmer.engine.kills import KillTracker
 from collections.abc import Callable, Iterable, Iterator
-from conftest import as_kind, stand_in
+from conftest import Bot as PickerBot, Clock as PickerClock, Game as PickerGame, as_kind, as_parts, stand_in
 from unclefarmer.engine.combat import Press, SkillBook
 from contextlib import AbstractContextManager
 
@@ -157,9 +158,26 @@ class Pick:
     def gcd_wait(self, now: float) -> bool:
         return self._ready > 0
 
-    def pick(self, snap: dict[str, Any], target: dict[str, Any]) -> Press | str | None:
+    def pick(self, snap: dict[str, Any], target: dict[str, Any], *,
+             target_check: Callable[[combat.Skill], bool] | None = None) -> Press | str | None:
         self.picked.append(target["id"])
+        if isinstance(self._pick, tuple) and target_check is not None:
+            skill = self.skill(self._pick[1]) or {"name": self._pick[1]}
+            if skill.get("role") not in combat.CALM_ROLES and not target_check(skill):
+                return None
+        if self._pick == "j" and target_check is not None and not target_check({"name": "Attack"}):
+            return None
         return self._pick
+
+    def fallback(self, now: float, reaches: Callable[[combat.Skill], bool], *,
+                 target_check: Callable[[combat.Skill], bool] | None = None) -> Press | None:
+        return None
+
+    def extended_mark_shot(self, dist: float, now: float) -> bool:
+        return False
+
+    def reaches(self, s: combat.Skill, dist: float) -> bool:
+        return s.get("range") is None or dist <= s["range"]
 
     def follow_key(self) -> str | None:
         return self._follow_key
@@ -179,6 +197,7 @@ class FakeTracker:
         self.live = live
         self._landed = dict(landed or {})
         self._tagged = set(tagged)
+        self.struck: dict[int, list[tuple[int, float]]] = {}
 
     def update(self, me_id: int) -> list[int]:
         return []
@@ -1954,7 +1973,7 @@ def test_hit_until_down_gives_up_a_lost_target(clock: Clock) -> None:
     b.snap = snap
     b._hit_until_down(mob)
     assert b.skip[-1] == clock.now + 30
-    assert b.keys_pressed == ["j", "j", "j"]   # every third press re-selects the target
+    assert b.keys_pressed == []           # a cast must not go to the wrong selected target
     assert any("lost our target" in line for line in b.lines)   # the give-up says why
 
 
@@ -1997,6 +2016,107 @@ def test_a_target_that_steps_past_our_reach_goes_back_to_the_farm_loop(clock: Cl
     assert -1 not in b.skip                    # not written off: the farm loop walks up
     assert clock.now - began < 6.0             # and it did not stand there the whole fight timeout
     assert getattr(b, "follow_stalls", 0) == 0   # no follow attack here to blame
+
+
+@pytest.mark.parametrize("change", ["monster moves", "player moves", "blocked", "gone", "dead", "target switches"])
+def test_fight_rechecks_before_retrying_a_missed_shot(clock: Clock, change: str) -> None:
+    mob = monster(-1, x=119.0)
+    sb = Pick(want_follow=False, pick=("j", "Arcane Shot"),
+              info={"Arcane Shot": {"name": "Arcane Shot", "range": 20, "role": "base_attack"}})
+    b = until_bot(profile(attack_range=20.0, fight_timeout=1.0), sb)
+    b.link = b.a = Link(send="pressed 4")
+    b.agent_slots = True
+    b.entities = [mob]
+    b.stop_event = WaitEvent(clock)
+    b.sleep = clock.advance
+    target = -1
+    blocked = False
+    b.clear_shot = lambda me, mob, mid=None: not blocked
+    b.ui = lambda: {"target": target}
+
+    def cast_report(me: Any) -> None:
+        nonlocal blocked, target
+        if change == "monster moves":
+            mob["x"] = 120.5
+        elif change == "player moves":
+            b.self_["x"] = 98.5
+        elif change == "blocked":
+            blocked = True
+        elif change == "gone":
+            b.entities.clear()
+        elif change == "dead":
+            mob["hp"] = 0
+        elif change == "target switches":
+            target = -2
+
+    sb.read_casts = cast_report
+    b._hit_until_down(mob)
+    assert [cmd for cmd in b.link.sent if cmd.startswith("slot ")] == ["slot 4"]
+    assert sb.refused == []
+    if change == "blocked":
+        assert b.skip[-1] > clock.now
+
+
+def test_fight_does_not_start_a_shot_after_picker_learns_of_a_foreign_kill(clock: Clock) -> None:
+    mob = monster(-1, x=119.0)
+    game = PickerGame(as_kind(PickerClock, clock), ["Arcane Shot"], version=44)
+    sb = SkillBook(as_parts(PickerBot(game)))
+    game.casts.append({"t": int(clock.now * 1000), "caster": 2002, "skill": "Bash", "targets": [[-1, 0]]})
+    b = until_bot(profile(attack_range=20.0, fight_timeout=1.0))
+    b.skillbook = sb
+    b.entities = [mob]
+    b.sleep = clock.advance
+    bursts: list[str] = []
+    b.burst = lambda key, me_id, longest=1.0: (bursts.append(key), True)[1]
+    b._hit_until_down(mob)
+    assert bursts == []
+    assert sb.downed[-1] == clock.now and sb.last_press == 0.0
+
+
+@pytest.mark.parametrize(("distance", "marks", "long_shot"), [(20.5, 0, False), (29.0, 1, True), (30.5, 1, False)])
+def test_hunter_can_follow_up_with_a_marked_shot_when_the_monster_drifts(
+    clock: Clock, distance: float, marks: int, long_shot: bool,
+) -> None:
+    mob = monster(-1, x=119.0)
+    game = PickerGame(as_kind(PickerClock, clock), ["Arcane Shot", "Marked Shot"], version=44)
+    sb = SkillBook(as_parts(PickerBot(game)))
+    b = until_bot(profile(attack_range=19.5, fight_timeout=6.0, press_burst=False))
+    b.skillbook = sb
+    b.entities = [mob]
+    b.sleep = clock.advance
+    arcane, marked = sb.skill("Arcane Shot"), sb.skill("Marked Shot")
+    assert arcane and marked
+
+    def press(k: str, ms: int | None = None) -> None:
+        b.keys_pressed.append(k)
+        if len(b.keys_pressed) == 1:
+            mob["x"] = 100 + distance
+            clock.advance(1.8)  # next attack is due while full upkeep is still deferred
+            sb.pts, sb.pts_at = marks, clock.now
+        else:
+            b.entities.clear()
+
+    b.key = press
+    b._hit_until_down(mob)
+    assert b.keys_pressed == [arcane["key"]] + ([marked["key"]] if long_shot else [])
+
+
+@pytest.mark.parametrize("foreign_hits", [False, True])
+def test_fight_distinguishes_low_hp_from_recent_foreign_damage(clock: Clock, foreign_hits: bool) -> None:
+    mob = monster(-1, x=115.0, hp=20)
+    sb = Pick(want_follow=False, pick=("j", "Aimed Shot"),
+              info={"Aimed Shot": {"name": "Aimed Shot", "range": 20, "cast": 1.0}})
+    b = until_bot(profile(attack_range=20.0, fight_timeout=0.2), sb)
+    b.entities = [mob]
+    b.sleep = clock.advance
+    b.kill_tracker = KillTracker(b.a)
+    if foreign_hits:
+        now = int(clock.now * 1000)
+        b.kill_tracker.struck[-1] = [(now - 600, 500), (now, 20)]
+    bursts: list[str] = []
+    b.burst = lambda key, me_id, longest=1.0: (bursts.append(key), clock.advance(1.0), True)[2]
+    b._hit_until_down(mob)
+    assert bursts == ([] if foreign_hits else ["j"])
 
 
 def test_hit_until_down_presses_the_follow_key_while_walking_in(clock: Clock) -> None:
@@ -2045,12 +2165,12 @@ def test_hit_until_down_leaves_a_monster_the_game_casts_nothing_at(clock: Clock)
     b.skillbook = as_kind(SkillBook, sb)
     b.burst = lambda key, me_id, longest=1.0: (clock.advance(1.0), False)[1]
     b.ui = lambda: {"target": -1}
-    mob = monster(-1, x=105.0)
+    mob = monster(-1, x=105.0, name="poisonous spider")
     b.snap = lambda: {"map": {"id": 5121}, "self": dict(b.self_), "entities": [dict(mob)]}
     b._hit_until_down(mob)
     assert b.skip[-1] == clock.now + b.UNSELECTED_SKIP
     assert sb.refused == ["Arcane Shot"] * b.REFUSED_RUN
-    assert any("won't let us hit Wolf from here" in line for line in b.lines)
+    assert any("the game won't let us hit poisonous spider from here - next one" in line for line in b.lines)
     assert not any("takes no damage" in line for line in b.lines)
 
 

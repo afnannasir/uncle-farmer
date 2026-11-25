@@ -17,6 +17,41 @@ def test_fireball_fills_not_the_long_pyroblast(clock: Clock) -> None:
     assert "Pyroblast" not in g.log and g.log.count("Fireball") > 10, g.log
 
 
+@pytest.mark.parametrize("name", ["Marked Shot", "Burst Shot"])
+@pytest.mark.parametrize(("distance", "marks", "use", "expected"), [
+    (19.0, 0, "ready", "Arcane Shot"),
+    (20.5, 0, "ready", None),
+    (20.5, None, "ready", None),
+    (20.5, 1, "auto", "Marked"),
+    (30.0, 1, "auto", "Marked"),
+    (30.5, 3, "auto", None),
+])
+def test_hunter_uses_long_shots_only_with_actual_marks(
+    clock: Clock, name: str, distance: float, marks: int | None, use: str, expected: str | None,
+) -> None:
+    b = Bot(Game(clock, ["Arcane Shot", name], []))
+    b.p["skill_use"] = {name: use}
+    sb = combat.SkillBook(as_parts(b))
+    sb.pts, sb.pts_at = marks, clock.now
+    me = {"id": ME, "x": 50, "y": 50, "hp": 1000, "maxhp": 1000}
+    mob = {"id": -5, "x": 50 + distance, "y": 50, "hp": 1000, "maxhp": 1000,
+           "name": "Wolf", "kind": "monster", "side": -2}
+    picked = sb.pick({"self": me, "entities": [me, mob]}, mob)
+    assert (picked[1] if isinstance(picked, tuple) else picked) == (name if expected == "Marked" else expected)
+    if not marks:
+        fallback = sb.fallback(clock.now, lambda s: sb.reaches(s, distance))
+        assert fallback is None or fallback[1] == "Arcane Shot"
+
+
+def test_hunter_fallback_waits_for_the_marks_spent_by_a_pending_shot(clock: Clock) -> None:
+    sb = combat.SkillBook(as_parts(Bot(Game(clock, ["Marked Shot", "Burst Shot"], []))))
+    sb.pts, sb.pts_at = 2, clock.now
+    sb.pending["Marked Shot"] = clock.now
+    assert sb.fallback(clock.now) is None
+    clock.advance(combat.PENDING_CAST_WINDOW)
+    assert sb.fallback(clock.now) is not None
+
+
 @pytest.fixture
 def elf_ignition(clock: Clock) -> tuple[combat.SkillBook, dict[str, Any], dict[str, Any]]:
     skills = ["Fireball", "Fire Impact", "Pyroblast", "Blazing Storm", "Ignition"]
