@@ -68,8 +68,10 @@ def fake_runs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runs_part, "Run", FakeRun)
 
 
-def errand(frame: Frame, text: str = "restock\n", **kw: Any) -> None:
-    runs_part.RunsMixin.run_errand(frame, text, "Restocking supplies", **kw)  # type: ignore[arg-type]
+def errand(frame: Frame, text: str = "restock\n", **kw: Any) -> bool:
+    started = runs_part.RunsMixin.run_errand(frame, text, "Restocking supplies", **kw)  # type: ignore[arg-type]
+    assert started == bool(FakeRun.made)          # True exactly when a job started (the Market window reads it)
+    return started
 
 
 def test_a_tool_at_the_login_screen_starts_nothing() -> None:

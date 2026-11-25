@@ -336,22 +336,23 @@ class RunsMixin(FrameParts):
         self.poll()
         return _("Starting {what}.", what=item[1])
 
-    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None) -> None:
+    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None) -> bool:
         """A one-off job, run like a script: a tool from the Tools menu, the Market window's own
         game (pid), or the walking assistant (walk). pid is the selected game unless given.
         Nothing starts at the login screen: the job would log in whichever character the Games
-        list last named there (or stop at once), so a character must be logged in first."""
+        list last named there (or stop at once), so a character must be logged in first.
+        True when the job started."""
         if pid is None:
             pid = self.selected_pid()
         if pid is None:
             self.say(_("No game with the agent is running."))
-            return
+            return False
         if pid in self.runs:
             self.say(_("Stop the bot first."))
-            return
+            return False
         if not character_of(self.snapshot(pid)):
             self.say(_("Log in to the character in the game first."))
-            return
+            return False
         run = Run(text, title, pid, self.on_log, self.on_done, walk=walk, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
@@ -363,6 +364,7 @@ class RunsMixin(FrameParts):
         self.label_games()
         self.update_buttons()
         run.start()
+        return True
 
     def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
                    follows: str | None = None) -> str | None:
