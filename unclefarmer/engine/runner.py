@@ -556,7 +556,15 @@ class Run(threading.Thread):
         Before farming list - often a trip to town and back - is left out. True (and said) then."""
         if not bot.p.get("skip_before_on_farm", True):
             return False
-        first = triggers.first_farm_map(script.main, script.subs)
+        def done(node: Any) -> bool:
+            # a spot whose share of the drop time is used up is skipped by the run without a trip:
+            # it isn't the map the run farms first (the Before list ran, or was skipped, by it)
+            until = (getattr(node, "opts", {}) or {}).get("until")
+            try:
+                return until is not None and bool(script.value(until, node.line))
+            except Exception:           # not known yet: the line counts, as before
+                return False
+        first = triggers.first_farm_map(script.main, script.subs, done)
         here = bot.map_id()
         if first is None or first not in (triggers.HERE, here):
             return False

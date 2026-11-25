@@ -47,6 +47,14 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
+**"Skip this list on the first farming map" knows the drop time shares** (untested in game)
+
+- With spots that share the day's drop time, the first spot's share may be used up when the run
+  starts, and the run then begins with the second. The Before farming list was skipped by the
+  first spot's map all the same: started on the second spot's map, the list ran (often a trip to
+  town and back); started on the first's, it was skipped and the run went on to the second spot
+  without it. It now goes by the spot the run really farms first.
+
 **Interrupted runs of other characters are no longer lost** (untested in game)
 
 - With several games running, each saves its place every 20 seconds in one file. When another
