@@ -10,6 +10,13 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A plan's stop time is never missed** (untested in game)
+
+- A plan's "Stop at" time was a rule true for that one minute only: a run busy all through it (an
+  MP wait, logging back in, a game opened again, a pause) farmed on until the daily stop. Once that
+  time has passed since the run began (the first part's start, for a run carried on), the run
+  stops at its next check.
+
 **Opening a lost game again leaves the player's own games alone** (untested in game)
 
 - A game closed in the middle of a run is opened again and the run carried on, and nothing could

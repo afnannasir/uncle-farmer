@@ -223,6 +223,12 @@ def compile_expr(text: str, line: int) -> ast.expr:
     return tree.body
 
 
+def _clock_rule(expr: ast.expr | None) -> bool:
+    """`clock == "HH:MM"`: a plan's stop time."""
+    return (isinstance(expr, ast.Compare) and len(expr.ops) == 1 and isinstance(expr.ops[0], ast.Eq)
+            and isinstance(expr.left, ast.Name) and expr.left.id == "clock")
+
+
 def end_time(expr: ast.expr | None, started: float, now: float) -> float | None:
     """The clock time a stop rule ends the run at, for the two kinds a plan writes: a time limit
     (`minutes >= 300`, counted from the run's start like the `minutes` value) and a stop time
@@ -1211,11 +1217,19 @@ class Runner:
         expr, line = node.expr, node.line
         if node not in self.watched:      # a stop_when in a loop must not pile up watchers
             self.watched.add(node)
-            b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
-            if b.tally is not None:       # the results' Time remaining counts down to the rule's end
-                at = end_time(expr, b.started - self.minutes_before * 60.0, clock_for(b).time())
-                if at is not None:
-                    b.tally.deadline(at)
+            began: float | None = getattr(b, "started", None)
+            start = began - self.minutes_before * 60.0 if began is not None else None   # carried on: the first part's
+            at = end_time(expr, start, start) if start is not None else None
+            if at is not None and _clock_rule(expr):
+                # `clock == "04:30"` is true for one minute only: a run busy all through it (a wait,
+                # logging back in, a game opened again, a pause) farmed on until the daily stop.
+                # Past the first such time since the run began, it is over all the same
+                clock = clock_for(b)
+                b.watches.append((lambda: bool(self.value(expr, line)) or clock.time() >= at, o["message"]))
+            else:
+                b.watches.append((lambda: bool(self.value(expr, line)), o["message"]))
+            if b.tally is not None and at is not None:   # the results' Time remaining counts down to it
+                b.tally.deadline(at)
 
     def _do_stop(self, node: Node, b: Bot, o: dict[str, Any]):
         raise _End(node.args)
