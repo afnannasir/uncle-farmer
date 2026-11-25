@@ -209,9 +209,7 @@ class TravelMixin(Parts):
             said = steps[1:]
             # a leg into Polson Wetland, or across it, on the way somewhere else: on a beast first
             crossing = dst != POISON_MAP and POISON_MAP in (mid, legs[0].get("dest"))
-            if crossing:
-                self._ride_into_poison(leaving=mid == POISON_MAP)
-            self.crossing_poison = crossing
+            self.crossing_poison = self._ride_into_poison(leaving=mid == POISON_MAP) if crossing else False
             try:
                 if self._take_leg_noting(legs[0], avoid, failed):
                     return
@@ -250,16 +248,16 @@ class TravelMixin(Parts):
         self.log(_("Polson Wetland: Poison Immunity isn't activated - its ground poisons us whenever "
                    "we are off a fusion beast, and every fight there is on foot"), speak=True)
 
-    def _ride_into_poison(self, leaving: bool = False) -> None:
+    def _ride_into_poison(self, leaving: bool = False) -> bool:
         """Crossing Polson Wetland without Poison Immunity: get on a fusion beast (any kind) before
         the step in, waiting out the server's combat time if a fight was just over. Stopped when
         none will go on: walking through on foot would poison us the whole way. Already on it
-        (leaving): one try, and out either way - standing still waiting is worse."""
+        (leaving): one try, and out either way - standing still waiting is worse. Returns True only
+        when we actually must cross on a beast without fighting back."""
         if self.poison_immune():
-            return
+            return False
         if leaving:
-            beasts.ride_any(as_bot(self))
-            return
+            return beasts.ride_any(as_bot(self))
         end = self.clock.time() + POISON_MOUNT_WAIT
         while not beasts.ride_any(as_bot(self)):
             if self.clock.time() >= end:
@@ -268,6 +266,7 @@ class TravelMixin(Parts):
                 self.log(why, speak=True)
                 raise Stopped(why)
             self.sleep(2.0)
+        return True
 
     def _take_leg_noting(self, leg: dict[str, Any], avoid: set[Any], failed: dict[Any, int]) -> bool:
         """_take_leg, remembering how each map we can't plan out of (a gang base, a dungeon) was

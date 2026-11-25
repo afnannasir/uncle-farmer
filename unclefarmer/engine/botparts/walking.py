@@ -107,6 +107,7 @@ class WalkingMixin(Parts):
         every ATTACK_EVERY seconds; never on the walking assistant (it never fights) or with
         fighting back off."""
         if (not getattr(self, "traveling", False) or self.in_fight or self.walk_only
+                or getattr(self, "crossing_poison", False)
                 or not self.p.get("fight_back", True)):
             return False
         now = self.clock.time()

@@ -329,6 +329,9 @@ class FightingMixin(Parts):
             snap = self.snap()
             me = snap["self"]
             hitting = self.attackers()
+            if (not hitting and getattr(self, "casts_seen", True)
+                    and self.clock.time() - getattr(self, "_attackers_at", 0) < 0.5):
+                hitting = self.fresh_attackers()
             blind = not getattr(self, "casts_seen", True)
             close = [e for e in self.targets(snap)
                      if e["id"] in hitting
