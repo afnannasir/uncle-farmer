@@ -329,7 +329,7 @@ class MarketFrame(wx.Frame):
             return False
         self.job = line.split()[1] if len(line.split()) > 1 else line
         self.status_seen = time.time()
-        self.host.run_errand(STAY + line + "\n", title)
+        self.host.run_errand(STAY + line + "\n", title, pid=self.pid)     # this window's game, not the selected one
         return True
 
     def start_scan(self) -> None:

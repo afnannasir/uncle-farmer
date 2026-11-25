@@ -51,7 +51,8 @@ def _host():  # type: ignore[no-untyped-def]
     host.runs = {}                           # type: ignore[attr-defined]
     host.market_windows = {}                 # type: ignore[attr-defined]
     host.started = []                        # type: ignore[attr-defined]
-    host.run_errand = lambda text, title: host.started.append(text)   # type: ignore[attr-defined]
+    host.run_errand = lambda text, title, pid=None: host.started.append(text) or host.on_game.append(pid)  # type: ignore[attr-defined]
+    host.on_game = []                        # type: ignore[attr-defined]
     host.stop = lambda pid=None: None        # type: ignore[attr-defined]
     return host
 
@@ -73,6 +74,7 @@ def test_the_window_shows_only_the_boxes_a_search_kind_uses_and_stays_at_the_mar
         w.start_search()
         # the bot stays at the marketplace afterwards, ready for the next search
         assert host.started == ["end_at here\nmarket search\n"]   # type: ignore[attr-defined]
+        assert host.on_game == [0]           # type: ignore[attr-defined]  # this window's game, not the selected one
         assert w.nb.GetSelection() == 1
         w.Destroy()
     finally:

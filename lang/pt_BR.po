@@ -5085,6 +5085,11 @@ msgstr "Horários"
 msgid "To (seconds):"
 msgstr "Até (segundos):"
 
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+"Para escanear ou publicar, entre primeiro com o personagem no jogo e pare o bot dele."
+
 msgid "Today"
 msgstr "Hoje"
 

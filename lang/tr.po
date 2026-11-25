@@ -5010,6 +5010,11 @@ msgstr "Kez"
 msgid "To (seconds):"
 msgstr "En çok (saniye):"
 
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+"Taramak ya da yayımlamak için önce oyunda karakterle giriş yap ve botunu durdur."
+
 msgid "Today"
 msgstr "Bugün"
 

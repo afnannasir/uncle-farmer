@@ -18,7 +18,7 @@ from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
 from .mainparts.carryon import CarryOnMixin
-from .mainparts.editing import EditingMixin
+from .mainparts.editing import EditingMixin, active_profile
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
 from .mainparts.results import ResultsMixin
@@ -469,6 +469,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         pid = self.selected_pid()
         if pid is None:
             error(self, _("No game found. Start Mist World first."))
+            return
+        if not active_profile(self):
+            error(self, _("Log in to the character in the game first."))
             return
         window = self.market_windows.get(pid)
         if window is None:

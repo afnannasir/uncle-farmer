@@ -4877,6 +4877,10 @@ msgstr ""
 msgid "To (seconds):"
 msgstr ""
 
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+
 msgid "Today"
 msgstr ""
 

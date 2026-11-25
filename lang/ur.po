@@ -5079,6 +5079,11 @@ msgstr "Waqt"
 msgid "To (seconds):"
 msgstr "Tak (seconds):"
 
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+"Scan ya publish karne ke liye pehle game mein character se login karein aur uska bot rokein."
+
 msgid "Today"
 msgstr "Aaj"
 

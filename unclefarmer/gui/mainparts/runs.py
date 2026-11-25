@@ -15,7 +15,7 @@ from ...i18n import _
 from .. import agentfix
 from ..common import error, save_file
 from ..plan import plan_text
-from .base import FrameParts, Item, foreground_pid, saved_item
+from .base import FrameParts, Item, character_of, foreground_pid, saved_item
 from collections.abc import Callable
 
 LOGIN_OPEN_RETRY = 90.0
@@ -336,21 +336,27 @@ class RunsMixin(FrameParts):
         self.poll()
         return _("Starting {what}.", what=item[1])
 
-    def run_errand(self, text: str, title: str, walk: bool = False) -> None:
-        """A one-off job for the selected game, run like a script: a tool from the Tools menu, or
-        the walking assistant (walk)."""
-        pid = self.selected_pid()
+    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None) -> None:
+        """A one-off job, run like a script: a tool from the Tools menu, the Market window's own
+        game (pid), or the walking assistant (walk). pid is the selected game unless given.
+        Nothing starts at the login screen: the job would log in whichever character the Games
+        list last named there (or stop at once), so a character must be logged in first."""
+        if pid is None:
+            pid = self.selected_pid()
         if pid is None:
             self.say(_("No game with the agent is running."))
             return
         if pid in self.runs:
             self.say(_("Stop the bot first."))
             return
+        if not character_of(self.snapshot(pid)):
+            self.say(_("Log in to the character in the game first."))
+            return
         run = Run(text, title, pid, self.on_log, self.on_done, walk=walk, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = "errand"
-        run.profile = self.selected_character()
+        run.profile = self.character(pid)
         run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")

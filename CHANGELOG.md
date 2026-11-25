@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**The Tools wait for a logged-in character** (untested in game)
+
+- Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, Update
+  shard prices and the Construction scanner's Scan started a job at the game's login screen. It
+  logged in whichever character the Games list last named there (it keeps that name after Switch
+  account), or stopped at once. Every tool job now asks for a logged-in character first: "Log in to
+  the character in the game first." Walk to asks it before its destination is chosen.
+- The Construction scanner still opens without a game, to read and copy the last report; Scan and
+  Publish stay greyed until a character is logged in and its bot is stopped, so Publish no longer
+  asks its question for nothing.
+- The Market searcher and buyer opens only with a logged-in character, and its searches and
+  purchases run on its own game: they went to the game selected in the Games list, another
+  character when two games were open and the selection had moved.
+
 **A run never goes on as another character** (seen in game)
 
 - One account holds several characters, switched between in the same game (Switch account). A run

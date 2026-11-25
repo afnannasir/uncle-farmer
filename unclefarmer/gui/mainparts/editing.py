@@ -218,6 +218,9 @@ class EditingMixin(FrameParts):
         if self.selected_pid() in self.runs:
             self.say(_("Stop the bot first."))
             return
+        if not active_profile(self):        # asked before the destination, not after it (run_errand)
+            self.say(_("Log in to the character in the game first."))
+            return
         with WalkDialog(self, self.snapshot) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
@@ -281,7 +284,9 @@ class EditingMixin(FrameParts):
     def open_construction_scan(self) -> None:
         """Tools, Construction scanner: read the last report, or scan or publish on the selected game."""
         from ..chores import PUBLISH_REPORT, SCAN_CONSTRUCTIONS, ConstructionScanDialog
-        with ConstructionScanDialog(self) as d:
+        pid = self.selected_pid()
+        can_act = pid is not None and pid not in self.runs and bool(active_profile(self))
+        with ConstructionScanDialog(self, can_act) as d:
             code = d.ShowModal()
             kind = d.kind
         if code == SCAN_CONSTRUCTIONS:

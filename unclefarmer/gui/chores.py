@@ -188,9 +188,10 @@ class BountiesDialog(Dialog):
 
 class ConstructionScanDialog(Dialog):
     """Tools, Construction scanner: the last reading of the gang's constructions, to read, copy or publish.
-    Publishing takes a gang elder's rights, and always asks first."""
+    Publishing takes a gang elder's rights, and always asks first. can_act: a character is logged in on
+    the selected game and no bot runs there; without it the last report can still be read and copied."""
 
-    def __init__(self, parent: wx.Window) -> None:
+    def __init__(self, parent: wx.Window, can_act: bool = True) -> None:
         super().__init__(parent, title=_("Construction scanner"), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.report = constructionscan.load()
         self.kind = PUBLISH_KINDS[0]
@@ -206,13 +207,20 @@ class ConstructionScanDialog(Dialog):
         form = Form(self)
         self.where = form.choice(_("Publish &as:"), [_("Gang announcement"), _("Broadcast (with a sound)"),
                                                      _("System message")], 0)
+        self.where.Enable(can_act)
         root.Add(form.grid, 0, wx.LEFT | wx.RIGHT, 12)
+        if not can_act:
+            root.Add(wx.StaticText(self, label=_("To scan or publish, log in to the character in the game and stop "
+                                                 "its bot first.")), 0, wx.LEFT | wx.RIGHT | wx.TOP, 12)
         buttons = wx.BoxSizer(wx.HORIZONTAL)
-        for label, handler in ((_("&Scan the constructions"), self.on_scan), (_("C&opy"), self.on_copy),
-                               (_("&Publish"), self.on_publish)):
+        self.buttons: dict[str, wx.Button] = {}
+        for key, label, handler in (("scan", _("&Scan the constructions"), self.on_scan),
+                                    ("copy", _("C&opy"), self.on_copy), ("publish", _("&Publish"), self.on_publish)):
             btn = wx.Button(self, label=label)
             btn.Bind(wx.EVT_BUTTON, handler)
-            btn.Enable(self.report is not None or handler == self.on_scan)
+            has_report = self.report is not None or key == "scan"
+            btn.Enable(has_report and (can_act or key == "copy"))
+            self.buttons[key] = btn
             buttons.Add(btn, 0, wx.RIGHT, 8)
         buttons.Add(wx.Button(self, wx.ID_CANCEL, _("Close")), 0)
         root.Add(buttons, 0, wx.ALL | wx.ALIGN_RIGHT, 12)
