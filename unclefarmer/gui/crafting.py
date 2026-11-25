@@ -102,7 +102,7 @@ class ToolDialog(Dialog):
 
 SUPPLY = ("none", "both", "storage", "buy")
 AMOUNT = ("count", "most", "total")
-MODES = ("gem", "bag")
+MODES = ("gem", "bag", "stock")
 
 
 def colour_of(name: str | None) -> str | None:
@@ -123,13 +123,14 @@ class GemMakerDialog(ToolDialog):
         # profiles saved before the three questions: take what they had ("kind" made one shard's gems)
         colour: str = c.get("colour") or colour_of(c.get("kind")) or ""
         amount = "most" if c.get("amount") in ("most", "fill") else "total" if c.get("amount") == "total" else "count"
-        mode = "bag" if c.get("mode") == "bag" else "gem"
+        mode = c.get("mode") if c.get("mode") in MODES else "gem"
         nb = tabs(self)
 
         panel, box = page(nb, _("Gems"))
         f = Form(panel)
         self.mode = f.choice(_("&What to do:"), [_("Make a gem: choose which, its level and how many"),
-                                                 _("Make the most of my bag: every shard and gem as high as it goes")],
+                                                 _("Make the most of my bag: every shard and gem as high as it goes"),
+                                                 _("Stock shards: buy Level 1 shards and keep them in the storehouse")],
                              MODES.index(mode))
         box.Add(f.grid, 0, wx.EXPAND)
 
@@ -151,6 +152,12 @@ class GemMakerDialog(ToolDialog):
         self.price_on, self.max_price = f.optional(_("Limit the &price at the market"), bool(c.get("max_price")),
                                                    _("Most to pay per shard (arnebia):"),
                                                    c.get("max_price") or 2000, 1, 100000000)
+        self.store_gems = f.check(_("Put finished gems in the s&torehouse, so the bag keeps its room"),
+                                  c.get("store_gems", False))
+
+        # ------------------------------------------------------------ stocking shards
+        f = group(panel, box, _("Stock shards (the gem and the price limit above)"))
+        self.stock_count = f.number(_("Number of &shards to stock:"), c.get("stock_count", 1000), 1, 100000000)
 
         # ------------------------------------------------------------ the whole bag
         f = group(panel, box, _("Make the most of my bag"))
@@ -182,9 +189,9 @@ class GemMakerDialog(ToolDialog):
             self.show_plan()
         for choice in (self.mode, self.colour, self.amount, self.supply):
             choice.Bind(wx.EVT_CHOICE, changed)
-        for spin in (self.level, self.count, self.up_to, self.keep):
+        for spin in (self.level, self.count, self.up_to, self.keep, self.stock_count):
             spin.Bind(wx.EVT_SPINCTRL, changed)
-        for box_ in (self.price_on, self.boost, self.protect):
+        for box_ in (self.price_on, self.boost, self.protect, self.store_gems):
             box_.Bind(wx.EVT_CHECKBOX, changed)
         self.colour_list.Bind(wx.EVT_CHECKLISTBOX, changed)
         self.root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
@@ -193,12 +200,15 @@ class GemMakerDialog(ToolDialog):
         self.show_plan()
 
     def sync(self) -> None:
-        gem_mode = self.mode.GetSelection() == 0
-        for ctrl in (self.colour, self.level, self.amount, self.supply):
+        mode = MODES[self.mode.GetSelection()]
+        gem_mode, stock_mode = mode == "gem", mode == "stock"
+        for ctrl in (self.level, self.amount, self.supply, self.store_gems):
             _enable(ctrl, gem_mode)
+        _enable(self.colour, gem_mode or stock_mode)
         for ctrl in (self.colour_list, self.up_to, self.keep):
-            _enable(ctrl, not gem_mode)
-        market = gem_mode and self.supply.GetSelection() not in (0, 2)
+            _enable(ctrl, mode == "bag")
+        _enable(self.stock_count, stock_mode)
+        market = stock_mode or (gem_mode and self.supply.GetSelection() not in (0, 2))
         _enable(self.count, gem_mode and AMOUNT[self.amount.GetSelection()] != "most")
         _enable(self.price_on, market)
         _enable(self.max_price, market and self.price_on.GetValue())
@@ -260,7 +270,20 @@ class GemMakerDialog(ToolDialog):
         return lines
 
     def show_plan(self) -> None:
-        self.plan.ChangeValue("\n".join(self.gem_plan() if self.mode.GetSelection() == 0 else self.bag_plan()))
+        plans = {"gem": self.gem_plan, "bag": self.bag_plan, "stock": self.stock_plan}
+        self.plan.ChangeValue("\n".join(plans[MODES[self.mode.GetSelection()]]()))
+
+    def stock_plan(self) -> list[str]:
+        if not self.gem_colours:
+            return [_("No gem kinds known yet.")]
+        col = self.gem_colours[max(0, self.colour.GetSelection())]
+        shard1, n = "Level 1 %s Shard" % col, self.stock_count.GetValue()
+        known: dict[str, Any] = shard_catalog()[0].get(shard1) or {}
+        price = known.get("price")
+        cost = _(", about {total} arnebia at the market's last seen price", total=n * price) if price else ""
+        return [_("Buy {n} {shard} at the Shard Market, a bagful at a time, and put each bagful in the storehouse{cost}.",
+                  n=n, shard=shard1, cost=cost),
+                _("It stops at the number, the price limit, your arnebia reserve, or a full storehouse.")]
 
     def bag_plan(self) -> list[str]:
         lines: list[str] = []
@@ -317,6 +340,8 @@ class GemMakerDialog(ToolDialog):
         c["count"] = self.count.GetValue()
         c["supply"] = SUPPLY[self.supply.GetSelection()]
         c["max_price"] = self.max_price.GetValue() if self.price_on.GetValue() else 0
+        c["store_gems"] = self.store_gems.GetValue()
+        c["stock_count"] = self.stock_count.GetValue()
         c["colours"] = [col for i, col in enumerate(self.colours) if self.colour_list.IsChecked(i)]
         c["up_to"] = self.up_to.GetValue()
         c["keep"] = self.keep.GetValue()

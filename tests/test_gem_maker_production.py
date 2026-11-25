@@ -280,3 +280,136 @@ def test_storehouse_takes_out_a_bagful_in_one_go(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(town, "pick", pick)
     assert crafting.fill_with(as_bot(b), SHARD, 1.0, "storage", 0) == 6000
     assert taken == [6000] and b.trades == []
+
+
+# ---------------------------------------------------------------- storing finished gems, stocking shards
+def storehouse(monkeypatch: pytest.MonkeyPatch, takes: int | None = None) -> list[tuple[str, int]]:
+    """A pretend storehouse: deposit takes the item out of the bag, at most `takes` in all (None: no
+    limit). Returns the deposits made, (item, how many)."""
+    deposits: list[tuple[str, int]] = []
+    room = [takes]
+
+    def deposit(bot: Bot, item: str, n: int | None = None) -> int:
+        k = count(bot, item) if n is None else min(n, count(bot, item))
+        if room[0] is not None:
+            k = min(k, room[0])
+            room[0] -= k
+        if k > 0:
+            add(bot, item, -k)
+            deposits.append((item, k))
+        return k
+    monkeypatch.setattr(town, "deposit", deposit)
+    return deposits
+
+
+def stored(deposits: list[tuple[str, int]], item: str) -> int:
+    return sum(k for name, k in deposits if name == item)
+
+
+def test_finished_gems_go_to_the_storehouse_and_count_toward_the_target(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({"Level 1 Topaz": 400}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=2, count=3, amount=3, store_gems=True))
+    assert stored(deposits, "Level 2 Topaz") == 3 and count(b, "Level 2 Topaz") == 0
+    assert said(b, "done: made 3 Level 2 Topaz") and said(b, "3 Level 2 Topaz went into the storehouse")
+
+
+def test_gems_are_stored_before_more_shards_are_bought_and_when_the_job_ends(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(4), maxload=300)
+    events: list[str] = []
+    held: list[int] = []                                            # target gems in the bag at each buy
+    put = town.deposit
+
+    def deposit(bot: Bot, item: str, n: int | None = None) -> int:
+        events.append("store")
+        return put(as_bot(bot), item, n)
+    monkeypatch.setattr(town, "deposit", deposit)
+    market = town.shard_trade
+
+    def trade(b: Any, name: str, action: str, n: int) -> int:
+        events.append("buy")
+        held.append(count(b, "Level 3 Topaz"))
+        return market(b, name, action, n)
+    monkeypatch.setattr(town, "shard_trade", stand_in(town.shard_trade, trade))
+    crafting.gem_maker(as_bot(b), job(level=3, count=4, amount=4, supply="buy", store_gems=True))
+    assert stored(deposits, "Level 3 Topaz") == 4 and said(b, "done: made 4 Level 3 Topaz")
+    assert events[-1] == "store"                                   # the job ends with it
+    assert "store" in events[:-1] and "buy" in events[events.index("store"):]   # stored, then bought again
+    assert held and set(held) == {0}                               # no finished gem in the bag at any buy
+    assert b.load() <= b.maxload
+
+
+def test_gems_are_not_stored_after_every_round(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, rounds = game({"Level 1 Topaz": 400}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=2, count=3, amount=3, store_gems=True))
+    assert len(rounds) > 1 and len(deposits) == 1               # no shards were needed: one trip, at the end
+    assert stored(deposits, "Level 2 Topaz") == 3
+
+
+def test_finished_gems_stay_in_the_bag_unless_asked(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({"Level 1 Topaz": 400}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=2, count=3, amount=3))
+    assert deposits == [] and count(b, "Level 2 Topaz") == 3
+
+
+def test_gems_the_bag_held_before_the_job_are_stored_too(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({"Level 1 Topaz": 400, "Level 2 Topaz": 5}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=2, count=3, amount=3, store_gems=True))
+    assert stored(deposits, "Level 2 Topaz") == 8 and count(b, "Level 2 Topaz") == 0
+    assert said(b, "done: made 3 Level 2 Topaz")                  # the 5 it began with are not "made"
+
+
+def test_a_full_storehouse_leaves_the_gems_in_the_bag_and_the_job_goes_on(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch, takes=0)
+    b, _c, _rounds = game({"Level 1 Topaz": 400}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=2, count=3, amount=3, store_gems=True))
+    assert deposits == [] and count(b, "Level 2 Topaz") == 3
+    assert said(b, "storing gems is off for the rest of this job") and said(b, "done: made 3 Level 2 Topaz")
+
+
+def test_stocking_buys_a_bagful_at_a_time_and_stores_each(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 350})
+    assert stored(deposits, SHARD) == 350 and count(b, SHARD) == 0
+    assert len(deposits) >= 4 and all(k <= 100 for _n, k in deposits)
+    assert said(b, "stocked 350 of the 350 Level 1 Topaz Shard in the storehouse")
+
+
+def test_stocking_ends_when_the_arnebia_is_at_the_reserve(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(1), arnebia=20_000 + 10 * PRICE, maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 350})
+    assert stored(deposits, SHARD) == 10 and said(b, "stocked 10 of the 350")
+
+
+def test_stocking_keeps_the_shards_the_bag_held_and_stops_at_a_full_storehouse(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch, takes=30)
+    b, _c, _rounds = game({SHARD: 7}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 60})
+    assert stored(deposits, SHARD) == 30 and said(b, "the storehouse took")
+    assert count(b, SHARD) == 7 + 60 - 30                       # the 7 it held, and the 30 the storehouse refused
+
+
+def test_stocking_check_only_buys_and_stores_nothing(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 50}, check_only=True)
+    assert deposits == [] and b.trades == [] and said(b, "check only")
+
+
+def test_a_level_1_job_stores_the_level_1_gems_the_bag_already_held(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({"Level 1 Topaz": 6, SHARD: 12}, coin(1))
+    crafting.gem_maker(as_bot(b), job(level=1, count=3, amount=3, store_gems=True))
+    assert stored(deposits, "Level 1 Topaz") == 9 and count(b, "Level 1 Topaz") == 0
+    assert said(b, "done: made 3 Level 1 Topaz")

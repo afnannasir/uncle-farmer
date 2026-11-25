@@ -622,11 +622,12 @@ def fees_owed(b: Bot, shards: Iterable[str]) -> float:
     return sum(have.get(s.lower(), 0) * (fee_per_shard(b, s) or 0) for s in shards)
 
 
-def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=False, owed: float = 0) -> int:
+def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=False, owed: float = 0,
+               keep_fees: bool = True) -> int:
     """Buy up to n of a shard at the nearest Shard Market, at no more than max_price each (0: any
     price), and never below the arnebia reserve. The market's own row gives the price. Shards are
     bought only as far as the gem fee for them can be paid too: a shard bought but never made into a
-    gem is money lost.
+    gem is money lost. keep_fees=False (shards bought to be stored, not made) keeps no fee back.
 
     The market's "how many" box takes at most town.TRADE_MOST at a time, so a bigger buy goes in
     batches. Each batch is worked out afresh: what is still wanted, what the box takes, what still
@@ -661,7 +662,7 @@ def buy_shards(b: Bot, shard: str, n: int, max_price: int = 0, check_only: bool=
             b.log(_("{shard} costs {price} at the market, more than your limit of {limit}",
                     shard=shard, price=price, limit=max_price), speak=True)
             return 0
-        fee = fee_per_shard(b, shard)
+        fee = fee_per_shard(b, shard) if keep_fees else 0.0
 
         def affordable(bought: int) -> int:
             """How many more the spare arnebia pays for, with the gem fees of those bought so far kept back."""
@@ -974,6 +975,8 @@ def gem_maker(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     colour = (cfg.get("colour") or "").strip()
     if not colour:
         raise Stopped(_("set it up first: Tools, {tool}", tool=_("Gem Maker")))
+    if cfg.get("mode") == "stock":
+        return stock_shards(b, cfg, check_only)
     job = _GemJob(b, cfg, colour)
     if check_only:
         _gem_check(b, job)
@@ -982,7 +985,7 @@ def gem_maker(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     for _round in range(MAX_ROUNDS):
         if b.stop_event.is_set():
             raise Stopped(_("stopped"))
-        if not job.most and gem_levels(b, colour).get(job.level, 0) >= job.target:
+        if not job.most and gem_levels(b, colour).get(job.level, 0) + job.stored >= job.target:
             break
         before = _colour_state(b, colour)
         blocked: list[str] = []
@@ -1005,12 +1008,74 @@ def gem_maker(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
         if job.supply == "none":
             b.log(_("nothing left to make {gem} from, and getting more {shard} is off", gem=job.gem, shard=job.shard1))
             break
+        _store_finished(b, job)           # the bag needs its room for the shards: the gems go first
         if not _gem_refill(b, job):
             break
         idle = 0
     else:
         b.log(_("the Gem Maker stopped after {n} rounds", n=MAX_ROUNDS), speak=True)
+    _store_finished(b, job)               # however the loop ended, the gems it made go to the storehouse
     _gem_report(b, job)
+    b.close_dialogs()
+
+
+def _store_finished(b: Bot, job: _GemJob) -> int:
+    """With "store finished gems" on: put every gem of the target level in the bag, those the bag
+    held when the job began too, into the storehouse, so the bag has its room for shards. They count
+    toward the target through job.stored (the target counts what the bag held at the start as well).
+    A storehouse that takes fewer than asked (it is full) turns this off for the rest of the job:
+    the gems stay in the bag and the job goes on."""
+    if not job.store:
+        return 0
+    have = gem_levels(b, job.colour).get(job.level, 0)
+    if have <= 0:
+        return 0
+    put = town.deposit(b, job.gem, have)
+    job.stored += max(0, put)
+    if put < have:
+        job.store = False
+        b.log(_("the storehouse took {put} of the {n} {gem}: storing gems is off for the rest of this job",
+                put=max(0, put), n=have, gem=job.gem), speak=True)
+    return max(0, put)
+
+
+def stock_shards(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
+    """Buy cfg["stock_count"] Level 1 shards of cfg["colour"] at the Shard Market and put them in
+    the storehouse, a bagful at a time (the bag's room and the market's batch limit set the size;
+    the arnebia reserve and cfg["max_price"] set the end). Only what was bought is stored: shards
+    the bag held already stay. Ends when the number is reached, or when no more shards come, the
+    spare arnebia is gone or the storehouse is full, and says which."""
+    colour = (cfg.get("colour") or "").strip()
+    shard = "Level 1 %s Shard" % colour
+    want = max(1, int(cfg.get("stock_count") or 1))
+    max_price = int(cfg.get("max_price") or 0)
+    if check_only:
+        buy_shards(b, shard, 1, max_price, check_only=True, keep_fees=False)
+        b.log(_("check only: nothing was bought or stored"))
+        b.close_dialogs()
+        return
+    stocked = 0
+    for _round in range(MAX_ROUNDS):
+        if b.stop_event.is_set():
+            raise Stopped(_("stopped"))
+        if stocked >= want:
+            break
+        before = town.load_now(b)
+        got = buy_shards(b, shard, want - stocked, max_price, keep_fees=False)
+        if got and room_for(b, shard, 1.0) is None:
+            bagrules.learn_weight(shard, town.load_now(b), before, got)     # the next bagful can be judged
+        if not got:
+            b.log(_("no more {shard} came - stocking stops here", shard=shard), speak=True)
+            break
+        put = town.deposit(b, shard, got)
+        stocked += max(0, put)
+        if put < got:
+            b.log(_("the storehouse took {put} of the {got} {shard}: stocking stops here",
+                    put=put, got=got, shard=shard), speak=True)
+            break
+    else:
+        b.log(_("stocking stopped after {n} rounds", n=MAX_ROUNDS), speak=True)
+    b.log(_("stocked {n} of the {want} {shard} in the storehouse", n=stocked, want=want, shard=shard), speak=True)
     b.close_dialogs()
 
 
@@ -1067,6 +1132,8 @@ class _GemJob:
         self.start = gem_levels(b, colour).get(self.level, 0)
         count = max(1, int(cfg.get("count", 1)))
         self.target = count if cfg.get("amount") == "total" else self.start + count
+        self.store = bool(cfg.get("store_gems", False))
+        self.stored = 0                  # target gems this job put in the storehouse: they count as made
 
 
 def _gem_check(b: Bot, job: _GemJob) -> None:
@@ -1105,7 +1172,7 @@ def _gem_round(b: Bot, job: _GemJob, blocked: list[str] | None = None) -> int:
         k = gems.get(lv, 0) // 3
         if not job.most:
             short, _need = shortfall(gems, shard_levels(b, colour), level,
-                                     job.target - gems.get(level, 0), job.protect)
+                                     job.target - job.stored - gems.get(level, 0), job.protect)
             need = short.get(lv + 1, 0)
             # half the tries work; for the gem asked for itself, never more tries than are missing:
             # a lucky run then doesn't make (and pay for) more than was asked
@@ -1132,7 +1199,8 @@ def _gem_refill(b: Bot, job: _GemJob) -> int:
     want: int | None = None
     if not job.most:
         gems = gem_levels(b, colour)
-        _short, want = shortfall(gems, shard_levels(b, colour), level, job.target - gems.get(level, 0), job.protect)
+        _short, want = shortfall(gems, shard_levels(b, colour), level,
+                                 job.target - job.stored - gems.get(level, 0), job.protect)
         if want <= 0:
             b.log(_("nothing left to make {gem} from", gem=job.gem), speak=True)
             return 0
@@ -1147,13 +1215,16 @@ def _gem_refill(b: Bot, job: _GemJob) -> int:
 
 def _gem_report(b: Bot, job: _GemJob) -> None:
     have = gem_levels(b, job.colour).get(job.level, 0)
+    made = have + job.stored - job.start
     if job.most:
-        b.log(_("made {n} {gem}; {have} in the bag", n=have - job.start, gem=job.gem, have=have), speak=True)
-    elif have >= job.target:
-        b.log(_("done: made {n} {gem}; {have} in the bag", n=have - job.start, gem=job.gem, have=have), speak=True)
+        b.log(_("made {n} {gem}; {have} in the bag", n=made, gem=job.gem, have=have), speak=True)
+    elif have + job.stored >= job.target:
+        b.log(_("done: made {n} {gem}; {have} in the bag", n=made, gem=job.gem, have=have), speak=True)
     else:
-        b.log(_("made {n} of the {want} {gem} asked for; {have} in the bag", n=have - job.start,
+        b.log(_("made {n} of the {want} {gem} asked for; {have} in the bag", n=made,
                 want=job.target - job.start, gem=job.gem, have=have), speak=True)
+    if job.stored:
+        b.log(_("{n} {gem} went into the storehouse", n=job.stored, gem=job.gem), speak=True)
 
 
 # ---------------------------------------------------------------------------------------- enhancing

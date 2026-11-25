@@ -935,7 +935,7 @@ Most tools also have a **Check only** option. This sends your character to the r
 
 Open **Tools, Gem Maker** or press **Ctrl+G**.
 
-The Gem Maker has two jobs.
+The Gem Maker has three jobs.
 
 **Make a gem**
 
@@ -947,9 +947,15 @@ It collects shards in batches based on how much room is available in your bag. I
 
 The Shard Broker can sell no more than 2,000 shards in one purchase. The Gem Maker works out each batch using the available bag space and your spare arnebia. When collecting from the storehouse, it takes a bagful at a time.
 
+Tick **Put finished gems in the storehouse** to keep the bag from filling with finished gems. The Gem Maker takes the gems of the level you asked for to the storehouse at two moments: just before it gets more shards (so the bag has room for them), and when the job ends, however it ends. They still count toward your number, so the job ends when you have made enough, whether they are in the bag or the storehouse. Gems of that level that were already in your bag go too. It is off by default. If the storehouse is full, the gems stay in the bag, storing is switched off for the rest of that job, and the job goes on.
+
 **Make the most of my bag**
 
 This job uses every shard in your bag to make gems. It then upgrades each gem colour as far as possible.
+
+**Stock shards**
+
+This job buys Level 1 shards of the chosen gem from the Shard Broker and puts them in the storehouse, so a later Gem Maker run can take them out instead of shopping. Set **Number of shards to stock**. The price limit works as in **Make a gem**. It buys a bagful at a time, in batches of at most 2,000, stores it, and repeats. It does not hold back arnebia for the craftsman's fees, because nothing is made. It stops when it has the number, when your arnebia reserve would be reached, when the price is over your limit, when no more shards are sold, or when the storehouse is full. Shards that were already in your bag stay in the bag. **Check only** reads the price and buys nothing.
 
 **When the job stops**
 
