@@ -189,6 +189,11 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "team_heal": True,        # while following, a class with a quick heal heals teammates with it
     "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
     # Leading a team (Team tab; engine/teamlead.py). Everything off until the player ticks it.
+    "team_hunt": False,
+    "team_hunt_subscribe": False,
+    "team_hunt_threshold": 0,
+    "team_hunt_message": "",
+    "team_hunt_return": False,
     "team_accept": False,     # take requests to join our team by ourselves
     "team_accept_who": "trusted",  # who may join: "trusted" (Private messages), "friends" (the game's), "list"
     "team_accept_list": [],   # names or ids for "list"

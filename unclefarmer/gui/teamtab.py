@@ -9,6 +9,7 @@ from typing import Any, TypedDict, cast
 
 import wx
 
+from ..engine import teamhunt
 from ..i18n import _
 from .common import group
 
@@ -32,6 +33,11 @@ class TeamUI(TypedDict):
     stay: wx.CheckBox
     heal: wx.CheckBox
     heal_below: wx.SpinCtrl
+    hunt: wx.CheckBox
+    hunt_subscribe: wx.CheckBox
+    hunt_threshold: wx.SpinCtrl
+    hunt_message: wx.TextCtrl
+    hunt_return: wx.CheckBox
 
 
 def names_text(values: object) -> str:
@@ -80,10 +86,19 @@ def team_page(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> TeamUI:
     heal = f.check(_("Heal the player I follow and our &teammates with my healing skill (Priest, Sorceress)"),
                    p.get("team_heal", True))
     heal_below = f.number(_("Heal a teammate when their HP is below (%):"), _below(p.get("team_heal_below"), 70), 1, 99)
+    f = group(panel, box, _("Team Monster Hunting"))
+    hunt = f.check(_("Enable Team Monster Hunting"), p.get("team_hunt", False))
+    hunt_subscribe = f.check(_("Subscribe to Team Hunting"), p.get("team_hunt_subscribe", False))
+    hunt_threshold = f.number(_("Call the team when there are more monsters than:"),
+                              p.get("team_hunt_threshold", 0), 0, teamhunt.MAX_THRESHOLD)
+    hunt_message = f.text(_("Monster encounter message:"), p.get("team_hunt_message", ""))
+    hunt_message.SetMaxLength(teamhunt.MAX_MESSAGE)
+    hunt_return = f.check(_("Return Leadership to Original Leader Between Encounters"), p.get("team_hunt_return", False))
     return {"accept": accept, "who": who, "accept_list": accept_list, "remove_offline": remove_offline,
             "offline_every": offline_every, "town_only": town_only, "hand_over": hand_over, "hand_to": hand_to,
             "create": create, "name": name, "remake": remake, "leave_others": leave_others, "stay": stay,
-            "heal": heal, "heal_below": heal_below}
+            "heal": heal, "heal_below": heal_below, "hunt": hunt, "hunt_subscribe": hunt_subscribe,
+            "hunt_threshold": hunt_threshold, "hunt_message": hunt_message, "hunt_return": hunt_return}
 
 
 def load_team(ui: TeamUI, p: dict[str, Any]) -> None:
@@ -118,10 +133,15 @@ def save_team(p: dict[str, Any], ui: TeamUI) -> None:
         raise ValueError(_("Team tab: type the names or ids who may join, or choose another \"Who may join\"."))
     if ui["hand_over"].GetValue() and not hand_to:
         raise ValueError(_("Team tab: type who gets the team when the run ends."))
+    hunt = dict(team_hunt=ui["hunt"].GetValue(), team_hunt_subscribe=ui["hunt_subscribe"].GetValue(),
+                team_hunt_threshold=ui["hunt_threshold"].GetValue(),
+                team_hunt_message=ui["hunt_message"].GetValue().strip(), team_hunt_return=ui["hunt_return"].GetValue())
+    if hunt["team_hunt"] and teamhunt.profile_rules(hunt, 0) is None:
+        raise ValueError(_("Team tab: enter a one-line monster encounter message to enable Team Monster Hunting."))
     p.update(team_accept=ui["accept"].GetValue(), team_accept_who=who, team_accept_list=accept_list,
              team_remove_offline=ui["remove_offline"].GetValue(), team_offline_every=ui["offline_every"].GetValue(),
              team_offline_town_only=ui["town_only"].GetValue(), team_hand_over=ui["hand_over"].GetValue(),
              team_hand_to=hand_to, team_create=ui["create"].GetValue(), team_name=name,
              team_remake=ui["remake"].GetValue(), team_leave_others=ui["leave_others"].GetValue(),
              team_stay_in_town=ui["stay"].GetValue(), team_heal=ui["heal"].GetValue(),
-             team_heal_below=ui["heal_below"].GetValue())
+             team_heal_below=ui["heal_below"].GetValue(), **hunt)

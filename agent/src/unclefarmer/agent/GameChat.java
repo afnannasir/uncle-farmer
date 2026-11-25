@@ -64,10 +64,12 @@ final class GameChat {
         }
         String[] parts = split(m, nameStart(m));
         if (parts == null || parts[1].trim().isEmpty()) return;
+        String name = parts[0] == null ? "" : parts[0];
+        String text = parts[1].replace("\r", "").replace("\n", " ").trim();
+        TeamHandoff.chat(channel, name, text);
         int in = channel == INTERNATIONAL_IN || channel == PRIVATE_CHANNEL_IN ? roomOf(m) : 0;
         synchronized (LINES) {
-            LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, parts[0] == null ? "" : parts[0],
-                    parts[1].replace("\r", "").replace("\n", " ").trim(), null, in});
+            LINES.add(new Object[] {++seq, System.currentTimeMillis(), channel, name, text, null, in});
             while (LINES.size() > KEEP) LINES.remove(0);
             LINES.notifyAll();
         }

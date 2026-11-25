@@ -69,22 +69,23 @@ TRANSFER = r"^\s*transfer team leader"
 YES = r"^\s*(yes|confirm|ok|sure)\b"
 
 
-def make_leader(bot: Bot, name: str):
+def make_leader(bot: Bot, name: str, *, member_id: int | None = None):
     """Hand the team's leadership to name. The team row opens the member list, one row per member:
     "name;id" first, then (for the leader only) "Transfer team leader" and "remove" for that member.
     The transfer entry of name's own row is the one: the first "transfer" or "leader" anywhere was
     another member's, or our own row's "leader" (live 2026-10-22: the leadership never moved)."""
+    member = _name(name) if member_id is None else r"^\s*%s;%d\s*$" % (re.escape(name), member_id)
     if _menu(bot, [r"\bteam\b"], close=False) is not None:
         return False, _("I'm not in a team")
     d = bot.wait_dialog(3.0)
     top = (d or {}).get("top")
-    if bot.find_in_row(top, _name(name), TRANSFER) is None:
+    if bot.find_in_row(top, member, TRANSFER) is None:
         bot.close_dialogs()
-        if top and any(row and row[0] and any(re.match(_name(name), t, re.I) for t in bot.entry_texts(row[0]))
+        if top and any(row and row[0] and any(re.match(member, t, re.I) for t in bot.entry_texts(row[0]))
                        for row in top["rows"]):
             return False, _("I'm not the team leader")
         return False, _("{name} isn't in my team", name=name)
-    if bot.choose(TRANSFER, row=_name(name)) is None:
+    if bot.choose(TRANSFER, row=member) is None:
         return False, _("{name} isn't in my team", name=name)
     # the game asks "Are you sure you want to transfer the team leader to this member?"
     asked = None

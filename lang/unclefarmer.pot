@@ -1234,6 +1234,9 @@ msgstr ""
 msgid "C&opy"
 msgstr ""
 
+msgid "Call the team when there are more monsters than:"
+msgstr ""
+
 msgid "Cancel"
 msgstr ""
 
@@ -1812,6 +1815,9 @@ msgid "Edit schedule"
 msgstr ""
 
 msgid "Elite"
+msgstr ""
+
+msgid "Enable Team Monster Hunting"
 msgstr ""
 
 msgid "Enable/&disable"
@@ -2935,6 +2941,9 @@ msgstr ""
 msgid "Monday"
 msgstr ""
 
+msgid "Monster encounter message:"
+msgstr ""
+
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
 msgstr ""
@@ -3816,6 +3825,9 @@ msgid ""
 "Results of {what}, its {n} parts added up (it was interrupted and carried on)"
 msgstr ""
 
+msgid "Return Leadership to Original Leader Between Encounters"
+msgstr ""
+
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr ""
 
@@ -4426,6 +4438,9 @@ msgstr ""
 msgid "Strangers"
 msgstr ""
 
+msgid "Subscribe to Team Hunting"
+msgstr ""
+
 msgid "Summary:"
 msgstr ""
 
@@ -4468,6 +4483,9 @@ msgstr ""
 msgid "Team &name (letters and numbers):"
 msgstr ""
 
+msgid "Team Monster Hunting"
+msgstr ""
+
 msgid "Team mode"
 msgstr ""
 
@@ -4475,6 +4493,10 @@ msgid "Team settings"
 msgstr ""
 
 msgid "Team settings: set as theirs"
+msgstr ""
+
+msgid ""
+"Team tab: enter a one-line monster encounter message to enable Team Monster Hunting."
 msgstr ""
 
 msgid ""

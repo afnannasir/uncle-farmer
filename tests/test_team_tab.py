@@ -54,6 +54,42 @@ def test_every_leader_choice_is_off_by_default() -> None:
     assert p["team_accept_who"] == "trusted" and p["team_name"] == ""
 
 
+def test_team_hunting_settings_are_opt_in_and_saved(frame: Any) -> None:
+    from unclefarmer.gui.profile import ProfileDialog
+    start = settings.load_profile("Hero")
+    assert start["team_hunt"] is False and start["team_hunt_subscribe"] is False
+    window = ProfileDialog(frame, "Hero")
+    try:
+        ui = window.team_ui
+        ui["hunt"].SetValue(True)
+        ui["hunt_threshold"].SetValue(7)
+        ui["hunt_message"].SetValue("Bring the team here")
+        ui["hunt_return"].SetValue(True)
+        ui["hunt_subscribe"].SetValue(True)
+        window.on_ok(wx.CommandEvent())
+    finally:
+        window.Destroy()
+    saved = settings.load_profile("Hero")
+    assert saved["team_hunt"] is True and saved["team_hunt_subscribe"] is True
+    assert saved["team_hunt_threshold"] == 7 and saved["team_hunt_return"] is True
+    assert saved["team_hunt_message"] == "Bring the team here"
+
+
+def test_hunting_requires_a_configured_encounter_message(frame: Any) -> None:
+    from unclefarmer.gui.profile import ProfileDialog
+    from unclefarmer.gui.teamtab import save_team
+    window = ProfileDialog(frame, "Hero")
+    try:
+        window.team_ui["hunt"].SetValue(True)
+        window.team_ui["hunt_message"].SetValue(" ")
+        profile: dict[str, Any] = {"team_hunt": False}
+        with pytest.raises(ValueError, match="encounter message"):
+            save_team(profile, window.team_ui)
+        assert profile == {"team_hunt": False}
+    finally:
+        window.Destroy()
+
+
 def test_the_tab_comes_after_travel_with_its_two_groups(frame: Any) -> None:
     from unclefarmer.gui.profile import AdvancedDialog, ProfileDialog
     d = ProfileDialog(frame, "Hero")

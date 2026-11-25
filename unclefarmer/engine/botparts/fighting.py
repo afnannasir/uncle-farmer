@@ -543,6 +543,13 @@ class FightingMixin(Parts):
         now = self.clock.time()
         if now - getattr(self, "_attackers_at", 0) < 0.5:
             return self._attackers | pets.suspects(as_bot(self))
+        return self._read_attackers(now)
+
+    def fresh_attackers(self) -> set[int]:
+        """Read attacks again before a team teleport, even if the last read was recent."""
+        return self._read_attackers(self.clock.time())
+
+    def _read_attackers(self, now: float) -> set[int]:
         self._attackers_at = now
         r = self._game.json("casts %d" % int((now - 4) * 1000))
         data: dict[str, Any] = r if jsonio.is_object(r) else {}

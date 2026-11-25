@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import collections
 import gc
+import json
 import os
 import threading
 import tracemalloc
@@ -64,6 +65,177 @@ def errors_logged() -> str:
 
 def farm(minutes: float) -> str:
     return "end_at here\nfarm minutes=%g" % minutes
+
+
+def spawn_hunt_pack(world: simgame.World, ids: tuple[int, ...]) -> None:
+    for i, mid in enumerate(ids):
+        if mid not in world.monsters:
+            mob = simgame.Monster(mid, world.x, world.y, world.zones[0], 55)
+            mob.hp = mob.maxhp = 30_000 if i else 90_000
+            world.monsters[mid] = mob
+
+
+@pytest.mark.parametrize("when", ["locked", "fighting"])
+def test_team_hunt_finishes_the_locked_monster_before_rallying(
+        soak_env: Callable[..., simgame.SimGame], monkeypatch: pytest.MonkeyPatch, when: str,
+) -> None:
+    from unclefarmer import settings
+    from unclefarmer.engine import teamhunt
+
+    game = soak_env(monsters=0)
+    w = game.world
+    soak = simgame.Soak(game, farm(5), watchdog=120)
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, team_hunt_subscribe=True))
+    destination = w.model.nearest_walkable(int(w.x) + 30, int(w.y), 8)
+    assert destination is not None
+    main = -101
+    locked_ids = (main, -102) if when == "locked" else (main,)
+    leader = "Guide"
+    scout = "Scout"
+    message = "A pack by the cave"
+    players = {simgame.NAME: simgame.ME, leader: 31, scout: 32}
+    lines: list[dict[str, object]] = []
+    roster_checks: list[str] = []
+    teleports: list[tuple[bool, int, float]] = []
+    promoted = False
+    replied_at: int | None = None
+
+    def chat(text: str, name: str, channel: int) -> None:
+        lines.append({"n": len(lines) + 1, "text": text, "name": name, "channel": channel,
+                      "at": game.clock.time()})
+
+    chat(teamhunt.Rules(31, 999, False, message).welcome(), leader, 12)
+
+    def read_chat(arg: str, _cid: int, _w: simgame.World) -> str:
+        now = game.clock.time()
+        return json.dumps({"last": len(lines), "chat": [dict(row, age_ms=int((now - float(str(row["at"]))) * 1000))
+                           for row in lines[int(arg or 0):]]})
+
+    def read_roster(_bot: object) -> teamhunt.Roster:
+        roster_checks.append(leader)
+        return teamhunt.Roster("Test team", leader, players)
+
+    def shortcut_reply(_arg: str, _cid: int, _w: simgame.World) -> str:
+        now = int(game.clock.time() * 1000)
+        members = [] if replied_at is None else [{"name": leader, "id": players[leader], "x": destination[0],
+                                                  "y": destination[1], "age_ms": now - replied_at}]
+        return json.dumps({"now": now, "members": members})
+
+    key = game._cmd_key  # pyright: ignore[reportPrivateUsage]
+    handle = game._handle  # pyright: ignore[reportPrivateUsage]
+    entities = w.entities
+
+    def world_entities() -> list[dict[str, object]]:
+        rows: list[dict[str, object]] = entities()
+        if teleports:
+            rows.append({"kind": "player", "name": scout, "id": players[scout], "x": destination[0], "y": destination[1]})
+        return rows
+
+    def press(arg: str, cid: int, world: simgame.World) -> str:
+        nonlocal replied_at
+        if arg == "shift+'":
+            game.clock.advance(0.05)
+            replied_at = int(game.clock.time() * 1000)
+            return "tapped " + arg
+        if arg == "shift+p":
+            bot = soak.run.bot
+            assert bot is not None
+            locked = any(world.monsters[mid].hp > 0 for mid in locked_ids if mid in world.monsters)
+            teleports.append((bot.in_fight or locked, world.truth["kills"], game.clock.time()))
+            world.x, world.y = map(float, destination)
+            return "tapped " + arg
+        return key(arg, cid, world)
+
+    def commands(line: str, cid: int, world: simgame.World) -> str:
+        nonlocal leader, promoted
+        result = handle(line, cid, world)
+        bot = soak.run.bot
+        hunt = getattr(bot, "team_hunt_state", None)
+        if getattr(hunt, "rules", None) is None or promoted:
+            return result
+        spawn_hunt_pack(world, locked_ids)
+        if when == "locked" or world.truth["casts"]:
+            assert bot is not None and bot.in_fight == (when == "fighting")
+            if when == "locked":
+                # The attacks arrive just after the bot's half-second attacker cache was filled.
+                bot.__dict__.update(_attackers_at=game.clock.time(), _attackers=set[int]())
+                for mid in locked_ids:
+                    world.casts.append({"t": int(game.clock.time() * 1000), "caster": mid, "seq": mid,
+                                        "skill": "Level 1 Bite", "hits": [[simgame.ME, 3, 1]]})
+            chat(message, scout, 12)
+            leader = scout
+            chat(f"{scout} has become the team leader", "", 46)
+            promoted = True
+        return result
+
+    monkeypatch.setattr(teamhunt, "read_roster", read_roster)
+    monkeypatch.setattr(game, "_cmd_chat", read_chat)
+    monkeypatch.setattr(game, "_cmd_team", shortcut_reply)
+    monkeypatch.setattr(game, "_cmd_key", press)
+    monkeypatch.setattr(game, "_handle", commands)
+    monkeypatch.setattr(w, "entities", world_entities)
+    soak.go()
+    assert soak.reason == "finished", list(soak.lines)[-20:]
+    assert_clean(soak, game)
+    assert promoted and len(teleports) == 1, (teleports, list(soak.lines)[-20:])
+    assert teleports[0][:2] == (False, len(locked_ids))
+    assert teleports[0][2] - float(str(lines[-1]["at"])) > 12
+    assert roster_checks == ["Guide"]
+
+
+def test_team_hunt_sends_a_direct_handoff_without_leaving_combat(
+        soak_env: Callable[..., simgame.SimGame], monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from unclefarmer import settings
+    from unclefarmer.engine import teamhunt
+
+    game = soak_env(monsters=0)
+    monkeypatch.setattr(teamhunt, "DIRECT_AGENT", game.version)
+    soak = simgame.Soak(game, farm(2), watchdog=120)
+    message = "A pack by the cave"
+    main = -101
+    settings.save_profile(simgame.NAME, dict(settings.PROFILE_DEFAULTS, team_hunt=True,
+                          team_hunt_threshold=999, team_hunt_message=message))
+    roster = teamhunt.Roster("Test team", simgame.NAME, {simgame.NAME: simgame.ME, "Scout": 32})
+    events: list[dict[str, object]] = []
+    transfers: list[tuple[bool, bool]] = []
+    spawned = False
+    handle = game._handle  # pyright: ignore[reportPrivateUsage]
+
+    def read_chat(arg: str, _cid: int, _world: simgame.World) -> str:
+        return json.dumps({"last": len(events), "chat": events[int(arg or 0):]})
+
+    def read_roster(_bot: object) -> teamhunt.Roster:
+        return roster
+
+    def commands(line: str, cid: int, world: simgame.World) -> str:
+        nonlocal spawned
+        bot = soak.run.bot
+        if line.startswith("say 4 "):
+            return "sent"
+        if line == "teamtransfer 32":
+            assert bot is not None
+            transfers.append((bot.in_fight, world.monsters[main].hp > 0))
+            events.append(dict(n=2, name="", text="Scout has become the team leader", channel=46))
+            return "sent"
+        result = handle(line, cid, world)
+        hunt = getattr(bot, "team_hunt_state", None)
+        if bot is not None and getattr(hunt, "rules", None) is not None:
+            if not spawned:
+                spawn_hunt_pack(world, (main,))
+                spawned = True
+            if not events and bot.in_fight and 0 < world.monsters[main].hp < world.monsters[main].maxhp:
+                events.append(dict(n=1, name="Scout", text=message, channel=12))
+        return result
+
+    monkeypatch.setattr(teamhunt, "read_roster", read_roster)
+    monkeypatch.setattr(game, "_cmd_chat", read_chat)
+    monkeypatch.setattr(game, "_handle", commands)
+    soak.go()
+    assert soak.reason == "finished", list(soak.lines)[-20:]
+    assert_clean(soak, game)
+    assert transfers == [(True, True)]
+    assert game.world.truth["kills"] == 1
 
 
 def assert_clean(s: simgame.Soak, game: simgame.SimGame, dropped: bool = False) -> None:
