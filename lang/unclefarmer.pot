@@ -9340,6 +9340,9 @@ msgstr ""
 msgid "{npc} offers no hunting bounty"
 msgstr ""
 
+msgid "{npc}'s menu didn't open its list - trying the next nearest shop"
+msgstr ""
+
 msgid ""
 "{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""

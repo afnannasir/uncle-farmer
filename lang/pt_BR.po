@@ -9787,6 +9787,9 @@ msgstr "{npc} não oferece a troca"
 msgid "{npc} offers no hunting bounty"
 msgstr "{npc} não oferece recompensa de caça"
 
+msgid "{npc}'s menu didn't open its list - trying the next nearest shop"
+msgstr "o menu de {npc} não abriu a lista - tentando a próxima loja mais perto"
+
 msgid ""
 "{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""

@@ -9808,6 +9808,10 @@ msgstr "{npc} exchange nahi deta"
 msgid "{npc} offers no hunting bounty"
 msgstr "{npc} hunting bounty nahi deta"
 
+msgid "{npc}'s menu didn't open its list - trying the next nearest shop"
+msgstr ""
+"{npc} ke menu ne apni list nahi kholi - agli qareeb tareen shop try kar raha hoon"
+
 msgid ""
 "{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
 msgstr ""

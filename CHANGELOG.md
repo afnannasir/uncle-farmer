@@ -10,6 +10,16 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A shop whose menu doesn't react is no longer written off** (untested in game)
+
+- When a shop's "Purchase" did nothing (on one player's computer it left every shop's menu as it
+  was), the bot took it for a shop without the item: after two trips it wrote off the town's potion
+  seller for that item, for good, and in time every town's ("no shop sells ..."). A menu that
+  doesn't open its list now counts as a shop that didn't answer: the next nearest one is tried, and
+  nothing is noted against it.
+- A town shop whose list really lacks the item is left out for a week, then tried again. Write-offs
+  saved by an earlier version have no date and have run out already.
+
 **What the bag held before the run stays the player's** (untested in game)
 
 - The bag was read once when farming began, and a reading the game didn't answer (a short drop, a

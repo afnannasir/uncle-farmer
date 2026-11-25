@@ -109,7 +109,7 @@ def test_farming_mage_restocks_on_the_shortest_round_trip(
     seen: dict[str, dict[str, list[str]]] = {}
     monkeypatch.setattr(town, "_shops_seen", returning(seen))
     monkeypatch.setattr(town, "note_shop", returning(None))
-    monkeypatch.setattr(town, "_buy_menu", returning(True))
+    monkeypatch.setattr(town, "_buy_menu", returning(town.LISTED))
 
     def purchase(b: Bot, pattern: str, quantity: int | None = None) -> bool:
         item = next(item for item in items if town.item_pattern(item) == pattern)
@@ -133,7 +133,7 @@ def test_buy_stays_in_the_trips_town(monkeypatch: pytest.MonkeyPatch) -> None:
                                                 visited.append(list(candidates or [])) or "x"))
     monkeypatch.setattr(town, "nearest", stand_in(town.nearest, lambda b, role, candidates=None:
                                                   (candidates or [None])[0]))
-    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: False))
+    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: town.MISSING))
     assert town.buy(as_bot(b), "Large Red Potion", 50) == 0
     assert visited and all(npc[0] == 1121 for c in visited for npc in c)      # never Giant Rock
 

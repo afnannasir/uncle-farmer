@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 import re
 import threading
+import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any
 
@@ -424,7 +425,7 @@ def _shop_key(npc: Npc) -> str:
     return "%d|%s" % (npc[0], npc[1].strip().lower())
 
 
-def _shops_seen() -> dict[str, dict[str, list[str]]]:
+def _shops_seen() -> dict[str, dict[str, Any]]:
     try:
         with open(os.path.join(paths.PROFILES, SHOPS_SEEN), encoding="utf-8") as f:
             got = json.load(f)
@@ -433,7 +434,7 @@ def _shops_seen() -> dict[str, dict[str, list[str]]]:
         return {}
 
 
-def _save_shops_seen(seen: dict[str, dict[str, list[str]]]) -> None:
+def _save_shops_seen(seen: dict[str, dict[str, Any]]) -> None:
     try:
         with open(os.path.join(paths.PROFILES, SHOPS_SEEN), "w", encoding="utf-8") as f:
             json.dump(seen, f, ensure_ascii=False, indent=1)
@@ -453,6 +454,8 @@ def note_shop(npc: Npc, item: str, sells: bool) -> None:
         for key in drop:
             if key in row:
                 row[key] = [x for x in row[key] if x != name]
+        if sells and json.is_object(row.get("missed_at")):
+            row["missed_at"].pop(name, None)
         if name not in row.setdefault(want, []):
             row[want].append(name)
         _save_shops_seen(seen)
@@ -463,21 +466,42 @@ def note_shop(npc: Npc, item: str, sells: bool) -> None:
 # town's shop of the kind is assumed alike: one misread menu mustn't hide a shop that sells it, but
 # a shop that really doesn't stock it mustn't be walked to on every restock either.
 MISSES_TO_LACK = 2
+# ...and for this long only (seconds): the shop is tried again after it, as a shop restocks. A
+# write-off used to be for good, and a menu whose "Purchase" did nothing on one player's computer
+# wrote off every town's potion seller in two trips; a write-off saved without its time (by an
+# older bot) has run out already.
+MISS_FORGET = 7 * 24 * 3600.0
+
+
+def _note_missed_at(row: dict[str, Any], name: str) -> None:
+    if not json.is_object(row.get("missed_at")):
+        row["missed_at"] = {}
+    row["missed_at"][name] = time.time()
+
+
+def _written_off(row: dict[str, Any], name: str) -> bool:
+    """The listed shop's menu didn't show it MISSES_TO_LACK times, within MISS_FORGET."""
+    at: object = row["missed_at"].get(name) if json.is_object(row.get("missed_at")) else None
+    return (name in row.get("missed_twice", []) and isinstance(at, (int, float))
+            and time.time() - at < MISS_FORGET)
 
 
 def note_miss(npc: Npc, item: str) -> int:
     """A listed shop's menu didn't show the item: count it. Returns the misses in a row so far
-    (MISSES_TO_LACK or more: the shop is left out for it, shops_for)."""
+    (MISSES_TO_LACK or more: the shop is left out for it for MISS_FORGET, shops_for)."""
     with _shops_lock:
         seen = _shops_seen()
         row = seen.setdefault(_shop_key(npc), {"sells": [], "lacks": []})
         name = item.strip().lower()
         once, twice = row.setdefault("missed", []), row.setdefault("missed_twice", [])
         if name in twice:
+            _note_missed_at(row, name)      # written off again, from now (it had run out)
+            _save_shops_seen(seen)
             return MISSES_TO_LACK
         if name in once:
             row["missed"] = [x for x in once if x != name]
             twice.append(name)
+            _note_missed_at(row, name)
             _save_shops_seen(seen)
             return MISSES_TO_LACK
         once.append(name)
@@ -506,24 +530,34 @@ def shops_for(item: str) -> list[Npc]:
     role = knowledge.shop_role(item)
     for npc in knowledge.service_npcs(role) if role else []:
         row = seen.get(_shop_key(npc), {})
-        gone = (name in row.get("missed_twice", []) if listed_shop(npc, item)
+        gone = (_written_off(row, name) if listed_shop(npc, item)
                 else name in row.get("lacks", []))
         if npc not in out and not gone:
             out.append(npc)
     return out
 
 
-def _buy_menu(b: Bot, item: str) -> bool:
-    """With a shop's menu open: get to the list that names the item. True when it is there."""
+LISTED, MISSING, STUCK = "listed", "missing", "stuck"
+
+
+def _buy_menu(b: Bot, item: str) -> str:
+    """With a shop's menu open: get to the list that names the item. LISTED when it is there;
+    MISSING when the menu has no such list or the list doesn't name it; STUCK when the menu has a
+    buying section that didn't open (its choice did nothing): that says nothing about the shop's
+    stock, and isn't counted against it (it was, and the shop was written off)."""
     d = b.dialog()
+    opened = True
     if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
         # a top menu first ("buy goods", "buy", "shop")
-        _buy_section(b)
+        opened = _buy_section(b)
         d = b.dialog()
     if not d.get("open") or not d.get("top") or b.find_entry(d["top"], item_pattern(item)) is None:
         b.note_dialog(d, "looking for %s to buy" % item)
-        return False
-    return True
+        top: dict[str, Any] | None = d.get("top") if d.get("open") else None
+        if not opened and top and any(b.find_entry(top, s) is not None for s in BUY_SECTIONS):
+            return STUCK
+        return MISSING
+    return LISTED
 
 
 BUY_SECTIONS = (r"^\s*buy\b", r"\bbuy goods", r"\bshop\b", r"\bpurchase")
@@ -561,6 +595,26 @@ def _not_on_menu(b: Bot, shop: Npc, item: str) -> None:
     else:
         note_shop(shop, item, False)
     b.log(_("{npc} doesn't sell {item} - trying the next nearest shop", npc=shop[1], item=item))
+
+
+def _order(b: Bot, shop: Npc, item: str, n: int) -> str:
+    """With the shop's menu open: order n of item. LISTED when ordered; STUCK (its menu didn't
+    open its list) or MISSING (noted, _not_on_menu) when the next shop is to be tried."""
+    # a potion seller's verified list: the item by its index, no walk down the list
+    if menus.pick(b, menus.POTION_SHOP, name=item) is not None:
+        note_shop(shop, item, True)
+        type_number(b, n)
+        return LISTED
+    found = _buy_menu(b, item)
+    if found == STUCK:
+        b.log(_("{npc}'s menu didn't open its list - trying the next nearest shop", npc=shop[1]))
+        return STUCK
+    if found != LISTED:
+        _not_on_menu(b, shop, item)
+        return MISSING
+    note_shop(shop, item, True)
+    pick(b, item_pattern(item), n)
+    return LISTED
 
 
 def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
@@ -605,16 +659,11 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
                 if n <= 0:
                     return 0
                 before = counts(b).get(item.lower(), 0)
-            # a potion seller's verified list: the item by its index, no walk down the list
-            if menus.pick(b, menus.POTION_SHOP, name=item) is not None:
-                note_shop(target, item, True)
-                type_number(b, n)
-            elif not _buy_menu(b, item):
-                _not_on_menu(b, target, item)
+            found = _order(b, target, item, n)
+            if found == STUCK:
+                silent.append(target)       # like a shop that didn't answer: not noted, the next one
+            if found != LISTED:
                 continue
-            else:
-                note_shop(target, item, True)
-                pick(b, item_pattern(item), n)
         finally:
             b.close_dialogs()
         if stock is not None:
