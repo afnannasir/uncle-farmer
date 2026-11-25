@@ -3650,6 +3650,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Zaroori skills aur cheezein &khali keys par rakhein (kabhi istemal wali keys par nahi)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"Fighting settings ko default par wapas karein? Attack keys ke beech ka pause, fight chhorne ke waqt aur casts, skill dabana, attack range, chase, target keys, har skill ka use, fight readings, aur character window ke fighting boxes. Keys, bag, supplies aur baaki sab waise hi rahenge. Mahfooz karne tak kuch nahi rakha jata."
+
 msgid "Put the pet &away when the run ends"
 msgstr "Run khatam hone par pet ko &wapas bhej dein"
 
@@ -3797,6 +3802,12 @@ msgstr "Jawab ki lines"
 
 msgid "Replying to {name}: {message}"
 msgstr "{name} ko jawab: {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "&Fighting settings ko default par wapas karein"
+
+msgid "Reset the fighting settings"
+msgstr "Fighting settings reset karein"
 
 msgid "Respawning in the city."
 msgstr "Shehar mein zinda ho raha hoon."
@@ -4721,6 +4732,10 @@ msgstr "Sab se tez"
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
 "Fees Pharmacist ke safhon se parhi jati hain (sirf check unhein dikhata hai)."
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr ""
+"Fighting settings default par wapas aa gayi hain. Rakhne ke liye mahfooz karein."
 
 msgid "The game didn't confirm {skill}."
 msgstr "Game ne {skill} ki tasdeeq nahi ki."

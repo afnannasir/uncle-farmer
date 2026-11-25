@@ -926,6 +926,18 @@ def _upgrade_dropped(p: dict[str, Any]) -> None:
         p.pop(k, None)
 
 
+def _upgrade_low_hp(p: dict[str, Any]) -> None:
+    """2026-11-18: "When HP stays low" acts at 30% for 3 s (it was 25% for 10 s, and with fleeing
+    added, 10 s under a quarter of the HP was often a death). A profile keeps every value it was
+    saved with, so the old default stayed in it for good: changed once, both together, and only
+    when neither number was the player's own."""
+    if p.get("low_hp_defaults"):
+        return
+    if p.get("panic_below") in (25, None) and p.get("panic_after") in (10, 10.0, None):
+        p["panic_below"], p["panic_after"] = 30, 3.0
+    p["low_hp_defaults"] = True
+
+
 def _upgrade_class_reach(p: dict[str, Any]) -> None:
     """Every class fights from its own base attack's distance (Bot.reach, "auto"): a range typed in
     by hand before that became the rule goes back to auto, once. One set after this is kept."""
@@ -953,6 +965,7 @@ UPGRADES: list[Callable[[dict[str, Any]], None]] = [
     # trip to town and back unless the player ticked the skip; it is ticked now, once, for everyone:
     # a supply or a bag that needs a town is seen to by the farm loop itself anyway.
     _upgrade_once("skip_before_ticked", "skip_before_on_farm", (False, None), True),
+    _upgrade_low_hp,
 ]
 
 

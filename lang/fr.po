@@ -3669,6 +3669,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Placer les sorts et objets nécessaires sur des touches vid&es (jamais sur des touches utilisées)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"Remettre les réglages de combat à leurs valeurs par défaut ? La pause entre les touches d'attaque, les temps et les sorts avant d'abandonner un combat, l'appui des sorts, la portée d'attaque, la poursuite, les touches de ciblage, l'usage de chaque sort, les lectures en combat et les cases de combat de la fenêtre du personnage. Les touches, le sac, le ravitaillement et tout le reste ne changent pas. Rien n'est gardé avant l'enregistrement."
+
 msgid "Put the pet &away when the run ends"
 msgstr "R&anger le familier à la fin de la partie"
 
@@ -3818,6 +3823,12 @@ msgstr "Phrases de réponse"
 
 msgid "Replying to {name}: {message}"
 msgstr "Réponse à {name} : {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "Remettre les réglages de combat par dé&faut"
+
+msgid "Reset the fighting settings"
+msgstr "Remettre les réglages de combat par défaut"
 
 msgid "Respawning in the city."
 msgstr "Réapparition en ville."
@@ -4748,6 +4759,10 @@ msgstr "La plus rapide"
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
 "Les frais sont lus sur les pages du Pharmacist (« Contrôler seulement » ne fait que les afficher)."
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr ""
+"Les réglages de combat sont revenus à leurs valeurs par défaut. Enregistrer pour les garder."
 
 msgid "The game didn't confirm {skill}."
 msgstr "Le jeu n'a pas confirmé {skill}."

@@ -3538,6 +3538,10 @@ msgstr ""
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+
 msgid "Put the pet &away when the run ends"
 msgstr ""
 
@@ -3676,6 +3680,12 @@ msgid "Reply lines"
 msgstr ""
 
 msgid "Replying to {name}: {message}"
+msgstr ""
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr ""
+
+msgid "Reset the fighting settings"
 msgstr ""
 
 msgid "Respawning in the city."
@@ -4552,6 +4562,9 @@ msgid "The fastest one"
 msgstr ""
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
+msgstr ""
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
 msgstr ""
 
 msgid "The game didn't confirm {skill}."

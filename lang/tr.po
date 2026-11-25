@@ -3615,6 +3615,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Gereken becerileri ve &eşyaları boş tuşlara koy (asla kullanılan tuşlara değil)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"Dövüş ayarları varsayılana dönsün mü? Saldırı tuşları arasındaki duraklama, bir dövüşten vazgeçme süreleri ve büyüleri, yeteneklere basma, saldırı menzili, kovalama, hedef tuşları, her yeteneğin kullanımı, dövüş okumaları ve karakter penceresinin dövüş kutuları. Tuşlar, çanta, malzemeler ve geri kalan her şey olduğu gibi kalır. Kaydedene kadar hiçbir şey saklanmaz."
+
 msgid "Put the pet &away when the run ends"
 msgstr "Ç&alışma bitince evcil hayvanı geri çağır"
 
@@ -3760,6 +3765,12 @@ msgstr "Yanıt satırları"
 
 msgid "Replying to {name}: {message}"
 msgstr "{name} yanıtlanıyor: {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "&Dövüş ayarlarını varsayılana döndür"
+
+msgid "Reset the fighting settings"
+msgstr "Dövüş ayarlarını sıfırla"
 
 msgid "Respawning in the city."
 msgstr ""
@@ -4662,6 +4673,9 @@ msgstr "En hızlısı"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr "Dövüş ayarları varsayılana döndü. Saklamak için kaydet."
 
 msgid "The game didn't confirm {skill}."
 msgstr "Oyun {skill} becerisini onaylamadı."

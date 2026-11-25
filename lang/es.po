@@ -3635,6 +3635,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Poner las habilidades y objetos necesarios &en teclas vacías (nunca en teclas en uso)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"¿Volver los ajustes de combate a sus valores por defecto? La pausa entre teclas de ataque, los tiempos y lanzamientos para abandonar un combate, la pulsación de habilidades, el alcance de ataque, la persecución, las teclas de objetivo, el uso de cada habilidad, las lecturas en combate y las casillas de combate de la ventana del personaje. Las teclas, la bolsa, los suministros y todo lo demás quedan igual. No se guarda nada hasta que guardes."
+
 msgid "Put the pet &away when the run ends"
 msgstr "Guardar &a la mascota cuando termine la ejecución"
 
@@ -3781,6 +3786,12 @@ msgstr "Líneas de respuesta"
 
 msgid "Replying to {name}: {message}"
 msgstr "Respondiendo a {name}: {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "Volver los ajustes de &combate a los valores por defecto"
+
+msgid "Reset the fighting settings"
+msgstr "Restablecer los ajustes de combate"
 
 msgid "Respawning in the city."
 msgstr ""
@@ -4697,6 +4708,10 @@ msgstr "La más rápida"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr ""
+"Los ajustes de combate han vuelto a sus valores por defecto. Guarda para conservarlos."
 
 msgid "The game didn't confirm {skill}."
 msgstr "El juego no confirmó {skill}."

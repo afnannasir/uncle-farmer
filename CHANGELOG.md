@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**Fighting settings can be put back to their defaults** (untested in game)
+
+- A character's settings file keeps every value it was saved with, the defaults of the version that
+  saved it included: a default changed since stays as it was, and a player whose fights had gone
+  slow deleted the whole profile (bag lists, supplies and triggers with it) to get the defaults
+  back. Advanced settings, Fighting, has "Reset the fighting settings to their defaults": the pause
+  between attack keys, the times and casts to give up a fight, the skill pressing, the attack range,
+  the chase, the target keys, each skill's use, the fight readings and the fighting boxes of the
+  character window. Keys, bag, supplies and the rest stay; nothing is kept until Save.
+- "When HP stays low" acts at 30% for 3 seconds since the hearthstone flee came in (it was 25% for
+  10 seconds); older profiles kept 25% / 10 s. They change once, both numbers together, when
+  neither is the player's own.
+
 **A shared plan can't slip in commands of its own**
 
 - A line break in an imported plan's name, its stop time, its stop item or a spot's only, skip or
