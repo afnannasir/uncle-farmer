@@ -267,3 +267,137 @@ def test_the_script_command_takes_a_publication_kind() -> None:
     assert len(script.parse("construction_scan\nconstruction_scan publish=broadcast\nconstruction_scan auto=system\n")[0]) == 3
     with pytest.raises(script.ScriptError):
         script.parse("construction_scan publish=everywhere\n")
+
+
+# ---------------------------------------------------------------- a line to each highland
+ROWS = [["highland 80 turret", 95.0], ["highland 58 wall", 98.0], ["highland 67 turret", 99.0],
+        ["highland 80 wall", 97.0], ["Level 5 Magic Cannon", 62.0], ["highland 67 wall", 100.0]]
+
+
+def test_each_highland_is_one_line_with_its_turret_and_wall_together() -> None:
+    lines = hr.message_lines({"rows": ROWS})
+    assert lines == [hr.TITLE + ":", "Level 5 Magic Cannon 62.0%", "highland 80: turret 95.0%, wall 97.0%",
+                     "highland 58: wall 98.0%", "highland 67: turret 99.0%"]
+    assert not any(line.endswith(" ") for line in lines)
+
+
+def test_a_finished_report_is_still_the_one_line_that_says_so() -> None:
+    assert hr.message_lines({"rows": [["highland 38 turret", 100.0], ["highland 38 wall", None]]}) == [hr.ALL_FINE]
+
+
+def test_a_long_report_by_lines_stays_short_and_counts_places_left_out() -> None:
+    lines = hr.message_lines({"rows": [["highland %d wall" % n, 50.0 + n / 10] for n in range(100, 140)]})
+    assert len("\n".join(lines)) <= hr.MOST_TEXT and lines[1].startswith("highland 100: wall")
+    assert re.fullmatch(r"and \d+ more", lines[-1])
+
+
+@pytest.fixture
+def pasted(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
+    got: list[list[str]] = []
+
+    def type_lines(b: Any, lines: list[str]) -> bool:
+        got.append(lines)
+        return True
+    monkeypatch.setattr(town, "type_lines", stand_in(town.type_lines, type_lines))
+    return got
+
+
+def elder(version: int = 80) -> tuple[Game, list[str]]:
+    g = Game()
+    g.agent_version = version  # type: ignore[attr-defined]
+    logged: list[str] = []
+    g.log = lambda line, speak=False: logged.append(line)  # type: ignore[attr-defined]
+    g.said = ["sent"]
+    return g, logged
+
+
+def test_an_announcement_by_lines_is_pasted_a_line_to_each_place(typed: list[str], pasted: list[list[str]]) -> None:
+    keep(ROWS)
+    g, _logged = elder()
+    hr.publish(as_bot(g), "announcement", True)
+    assert pasted == [hr.message_lines(hr.load() or {})] and typed == []
+
+
+def test_the_app_setting_decides_when_the_script_does_not_say(typed: list[str], pasted: list[list[str]]) -> None:
+    keep(ROWS)
+    hr.settings.update_app({"construction_lines": True})
+    g, _logged = elder()
+    hr.publish(as_bot(g), "announcement")
+    assert len(pasted) == 1 and typed == []
+    hr.publish(as_bot(g), "announcement", False)             # the script's word wins over the setting
+    assert len(pasted) == 1 and len(typed) == 1
+
+
+def test_by_default_an_announcement_stays_one_line(typed: list[str], pasted: list[list[str]]) -> None:
+    keep(ROWS)
+    g, _logged = elder()
+    hr.publish(as_bot(g), "announcement")
+    assert pasted == [] and typed == [hr.message(hr.load() or {})]
+
+
+@pytest.mark.parametrize("kind", ["broadcast", "system"])
+def test_a_broadcast_and_a_system_message_never_go_by_lines(typed: list[str], pasted: list[list[str]], kind: str) -> None:
+    keep(ROWS)
+    g, logged = elder()
+    hr.publish(as_bot(g), kind, True)
+    assert pasted == [] and typed == [hr.message(hr.load() or {})] and "one line" in logged[0]
+
+
+def test_an_older_agent_sends_one_line_and_says_why(typed: list[str], pasted: list[list[str]]) -> None:
+    keep(ROWS)
+    g, logged = elder(79)
+    hr.publish(as_bot(g), "announcement", True)
+    assert pasted == [] and typed == [hr.message(hr.load() or {})]
+    assert "too old" in logged[0] and "restart Mist World" in logged[0]
+
+
+def test_a_schedule_by_lines_tells_the_gang_again_only_when_the_layout_or_news_changes(
+        typed: list[str], pasted: list[list[str]], monkeypatch: pytest.MonkeyPatch) -> None:
+    g, logged = auto_game(monkeypatch, 62.0, ELDER)
+    g.agent_version = 80  # type: ignore[attr-defined]
+    g.said = ["sent"]
+    bot = as_bot(g)
+    hr.scan_and_publish(bot, "announcement", True)
+    hr.scan_and_publish(bot, "announcement", True)
+    assert len(pasted) == 1 and "nothing changed" in logged[-1]
+    hr.scan_and_publish(bot, "announcement", False)         # the same news in the other layout is sent again
+    assert len(pasted) == 1 and len(typed) == 1
+
+
+def test_the_script_command_takes_lines_yes_or_no_for_an_announcement() -> None:
+    nodes = script.parse("construction_scan publish=announcement lines=yes\nconstruction_scan auto=announcement lines=no\n")[0]
+    assert [n.opts.get("lines") for n in nodes] == [True, False]
+    assert script.parse("construction_scan publish=broadcast\n")[0][0].opts.get("lines") is None
+    for bad in ("construction_scan lines=yes", "construction_scan publish=announcement lines=maybe",
+                "construction_scan publish=announcement yes", "construction_scan publish=announcement lines=yes lines=no"):
+        with pytest.raises(script.ScriptError):
+            script.parse(bad + "\n")
+
+
+def test_the_lines_reach_the_agent_as_one_request_a_backslash_and_n_standing_for_each_break(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game()
+    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open=True, seconds=3.0: True))
+    sent: list[str] = []
+    g.a.send = lambda line: (sent.append(line), "pasted 9" if line.startswith("typepaste") else "ok")[1]  # type: ignore[method-assign]
+    assert town.type_lines(as_bot(g), ["Title:", "back\\slash\tand\ttab", "last"])
+    assert sent == ["typeclear", "typepaste Title:\\nback\\\\slash and tab\\nlast", "typeenter"]
+
+
+def test_a_refused_paste_is_not_submitted(monkeypatch: pytest.MonkeyPatch) -> None:
+    g = Game()
+    g.log = lambda line, speak=False: None  # type: ignore[attr-defined]
+    monkeypatch.setattr(town, "wait_input", stand_in(town.wait_input, lambda b, want_open=True, seconds=3.0: True))
+    sent: list[str] = []
+    g.a.send = lambda line: (sent.append(line), "refused: no input box is open")[1]  # type: ignore[method-assign]
+    assert not town.type_lines(as_bot(g), ["a", "b"])
+    assert "typeenter" not in sent
+
+
+def test_only_an_agent_with_typepaste_can_paste() -> None:
+    g = Game()
+    assert not town.can_paste(as_bot(g))
+    g.agent_version = town.PASTE_AGENT - 1  # type: ignore[attr-defined]
+    assert not town.can_paste(as_bot(g))
+    g.agent_version = town.PASTE_AGENT  # type: ignore[attr-defined]
+    assert town.can_paste(as_bot(g))

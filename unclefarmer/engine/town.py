@@ -30,6 +30,7 @@ from .transactions import InventoryTransaction
 
 
 NUMBER_AGENT = 56
+PASTE_AGENT = 80          # `typepaste`: text with line breaks into the open input box, as Ctrl+V does
 INPUT_POLL = 0.025
 
 
@@ -234,6 +235,33 @@ def type_text(b: Bot, text: str) -> bool:
     b.a.send("typeclear")
     r = b.a.send("type %s" % text)
     if not r.startswith("typed"):
+        b.log(_("couldn't type into the game: {why}", why=r), speak=True)
+        return False
+    b.sleep(0.2)
+    b.a.send("typeenter")
+    return wait_input(b, False)
+
+
+def can_paste(b: Bot) -> bool:
+    """Whether the game's agent can put a text with line breaks into an input box."""
+    return int(getattr(b, "agent_version", 0) or 0) >= PASTE_AGENT
+
+
+def _paste_form(lines: list[str]) -> str:
+    """The lines as one request word: a backslash and n between them, a backslash doubled, and no control
+    character (a real line end would split the request in two)."""
+    clean = (re.sub(r"[\x00-\x1f\x7f]", " ", line).replace("\\", "\\\\") for line in lines)
+    return "\\n".join(clean)
+
+
+def type_lines(b: Bot, lines: list[str]) -> bool:
+    """Answer a box that asks for text with one line per entry of `lines` (the game takes a pasted line
+    break, not a typed one). True once the game has taken it. Needs can_paste()."""
+    if not wait_input(b, True):
+        return False
+    b.a.send("typeclear")
+    r = b.a.send("typepaste %s" % _paste_form(lines))
+    if not r.startswith("pasted"):
         b.log(_("couldn't type into the game: {why}", why=r), speak=True)
         return False
     b.sleep(0.2)

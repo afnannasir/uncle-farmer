@@ -66,9 +66,9 @@ def _bounties(b: Bot, check: bool, _o: Mapping[str, Any]) -> object:
 def _construction_scan(b: Bot, _check: bool, o: Mapping[str, Any]) -> object:
     from . import constructionscan
     if o.get("auto"):
-        return constructionscan.scan_and_publish(b, o["auto"])
+        return constructionscan.scan_and_publish(b, o["auto"], o.get("lines"))
     if o.get("publish"):
-        return constructionscan.publish(b, o["publish"])
+        return constructionscan.publish(b, o["publish"], o.get("lines"))
     return constructionscan.scan(b)
 
 

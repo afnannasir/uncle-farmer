@@ -231,6 +231,22 @@ tests use a pretend craftsman, market and storehouse)
   Save and start now say "... isn't logged in on that game any more - nothing was started." The
   Market window keeps its character too: another character on that game gets a window of its own.
 
+**Construction scanner: a gang announcement with a line to each highland** (agent 80; tried in the game: an
+announcement keeps a pasted line break and was sent with a line to each place, a broadcast and a system
+message turn a line break into a space)
+
+- New checkbox in Tools, Construction scanner: "Put each highland on its own line". A gang announcement
+  then has the title first, then a line for each camp and for each highland, with its turret and wall
+  together ("highland 80: turret 95.0%, wall 98.0%"), the least complete first. Off by default; the
+  setting is kept for all characters and also applies to a scheduled announcement. Copy and the
+  question before publishing show the same layout.
+- A script can choose for one line: `construction_scan publish=announcement lines=yes` (or
+  `auto=announcement lines=no`). For a broadcast or a system message it is ignored: the game flattens
+  the lines, so they stay one line.
+- The game's text boxes drop a typed line break, so the agent (protocol 80) has a new `typepaste`
+  command that puts the text into the open box as the game's own Ctrl+V does, without touching the
+  clipboard. An older agent sends the announcement as one line and the log says to restart Mist World.
+
 **A run never goes on as another character** (seen in game)
 
 - One account holds several characters, switched between in the same game (Switch account). A run

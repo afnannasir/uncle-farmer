@@ -584,7 +584,7 @@ final class Memory {
         return false;
     }
 
-    /** Null when every requested discard still has a matching bag unit; otherwise why not.
+    /* Null when every requested discard still has a matching bag unit; otherwise why not.
      * Repeated uids mean several units from the same stack. */
     /** `memitem <uid>`: every field of that bag or equipment row (Describe), to find what the
      *  rows' known fields don't say (an equipment piece's bonus). Read-only. */

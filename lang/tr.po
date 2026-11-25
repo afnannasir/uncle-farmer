@@ -1252,6 +1252,9 @@ msgstr ""
 msgid "C&opy"
 msgstr "K&opyala"
 
+msgid "Call the team when there are more monsters than:"
+msgstr ""
+
 msgid "Cancel"
 msgstr "İptal"
 
@@ -1838,6 +1841,9 @@ msgstr "Programı düzenle"
 
 msgid "Elite"
 msgstr "Elit"
+
+msgid "Enable Team Monster Hunting"
+msgstr ""
 
 msgid "Enable/&disable"
 msgstr "Etkinleştir/&devre dışı bırak"
@@ -2993,6 +2999,9 @@ msgstr ""
 msgid "Monday"
 msgstr "Pazartesi"
 
+msgid "Monster encounter message:"
+msgstr ""
+
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
 msgstr ""
@@ -3678,6 +3687,9 @@ msgstr "Program sürümü: {v}"
 msgid "Publish &as:"
 msgstr ""
 
+msgid "Put each highland on its own &line (gang announcement only)"
+msgstr ""
+
 msgid "Put finished gems in the s&torehouse, so the bag keeps its room"
 msgstr ""
 
@@ -3905,6 +3917,9 @@ msgstr "{what} sonuçları"
 
 msgid ""
 "Results of {what}, its {n} parts added up (it was interrupted and carried on)"
+msgstr ""
+
+msgid "Return Leadership to Original Leader Between Encounters"
 msgstr ""
 
 msgid "Revive on the spot with &Resurrection Crystals"
@@ -4532,6 +4547,9 @@ msgstr "Eşyalar depolanıyor"
 msgid "Strangers"
 msgstr "Yabancılar"
 
+msgid "Subscribe to Team Hunting"
+msgstr ""
+
 msgid "Summary:"
 msgstr "Özet:"
 
@@ -4574,6 +4592,9 @@ msgstr "Takım"
 msgid "Team &name (letters and numbers):"
 msgstr ""
 
+msgid "Team Monster Hunting"
+msgstr ""
+
 msgid "Team mode"
 msgstr "Takım modu"
 
@@ -4582,6 +4603,10 @@ msgstr "Takım ayarları"
 
 msgid "Team settings: set as theirs"
 msgstr "Takım ayarları: onunki gibi ayarlandı"
+
+msgid ""
+"Team tab: enter a one-line monster encounter message to enable Team Monster Hunting."
+msgstr ""
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -6160,6 +6185,14 @@ msgstr ""
 
 msgid ""
 "construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+
+msgid ""
+"construction scanner: only a gang announcement keeps line breaks, so this goes out as one line"
+msgstr ""
+
+msgid ""
+"construction scanner: the game's agent is too old for line breaks, so this goes out as one line; restart Mist World so it loads the new one"
 msgstr ""
 
 msgid ""
@@ -9271,7 +9304,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "şöyle yaz: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
 msgstr ""
 
 msgid "write it as: hold key seconds"

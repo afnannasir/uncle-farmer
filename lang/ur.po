@@ -1263,6 +1263,9 @@ msgstr "C&ommon"
 msgid "C&opy"
 msgstr "C&opy"
 
+msgid "Call the team when there are more monsters than:"
+msgstr ""
+
 msgid "Cancel"
 msgstr "Mansookh"
 
@@ -1853,6 +1856,9 @@ msgstr "Schedule tabdeel karein"
 
 msgid "Elite"
 msgstr "Elite"
+
+msgid "Enable Team Monster Hunting"
+msgstr ""
 
 msgid "Enable/&disable"
 msgstr "Chalu/&band karein"
@@ -3020,6 +3026,9 @@ msgstr ""
 msgid "Monday"
 msgstr "Peer"
 
+msgid "Monster encounter message:"
+msgstr ""
+
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
 msgstr ""
@@ -3713,6 +3722,9 @@ msgstr "Program ka version: {v}"
 msgid "Publish &as:"
 msgstr "Publish &kis tarah:"
 
+msgid "Put each highland on its own &line (gang announcement only)"
+msgstr "Har highland ko apni &line par rakhein (sirf gang announcement)"
+
 msgid "Put finished gems in the s&torehouse, so the bag keeps its room"
 msgstr ""
 
@@ -3945,6 +3957,9 @@ msgid ""
 "Results of {what}, its {n} parts added up (it was interrupted and carried on)"
 msgstr ""
 "{what} ke nataij, is ke {n} hisse jama kiye gaye (yeh ruka aur phir jaari hua)"
+
+msgid "Return Leadership to Original Leader Between Encounters"
+msgstr ""
 
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Wahin par &Resurrection Crystals se zinda karein"
@@ -4583,6 +4598,9 @@ msgstr "Cheezein storehouse mein rakhi ja rahi hain"
 msgid "Strangers"
 msgstr "Ajnabi"
 
+msgid "Subscribe to Team Hunting"
+msgstr ""
+
 msgid "Summary:"
 msgstr "Khulasa:"
 
@@ -4625,6 +4643,9 @@ msgstr "Team"
 msgid "Team &name (letters and numbers):"
 msgstr "Team ka &naam (huroof aur numbers):"
 
+msgid "Team Monster Hunting"
+msgstr ""
+
 msgid "Team mode"
 msgstr "Team mode"
 
@@ -4633,6 +4654,10 @@ msgstr "Team settings"
 
 msgid "Team settings: set as theirs"
 msgstr "Team settings: unke jaisi set"
+
+msgid ""
+"Team tab: enter a one-line monster encounter message to enable Team Monster Hunting."
+msgstr ""
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -6244,6 +6269,16 @@ msgid ""
 "construction scanner: nothing changed since the last report, nothing published"
 msgstr ""
 "construction scanner: pichli report ke baad kuch nahi badla, kuch publish nahi hua"
+
+msgid ""
+"construction scanner: only a gang announcement keeps line breaks, so this goes out as one line"
+msgstr ""
+"construction scanner: line break sirf gang announcement mein rehta hai, is liye yeh ek line mein jayegi"
+
+msgid ""
+"construction scanner: the game's agent is too old for line breaks, so this goes out as one line; restart Mist World so it loads the new one"
+msgstr ""
+"construction scanner: game ka agent line break ke liye purana hai, is liye yeh ek line mein jayegi; Mist World dobara shuru karein taake naya load ho"
 
 msgid ""
 "construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
@@ -9420,9 +9455,9 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "aise likhein: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
 msgstr ""
-"aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
+"aise likhein: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system), aur announcement ke liye lines=yes ya lines=no jodein taake har highland ki apni line ho ya sirf ek line"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
@@ -10440,6 +10475,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the bag already has the potions asked for"
 #~ msgstr "baste mein maange gaye potions pehle se hain"
+
+#~ msgid ""
+#~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
 
 #~ msgid ""
 #~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
