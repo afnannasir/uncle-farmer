@@ -180,8 +180,8 @@
   read its character once, at its start: paused, then switched to another character by hand, a run
   went on as its own on that one, with its own restock (it took potions out of the Storehouse). The
   run now checks the game's character by its id at every reading and when a pause ends: another
-  one stops it at once, with nothing more done in the game, as the community script does ("rather
-  than farming as the wrong character"). Not carried on later.
+  one stops it at once, with nothing more done in the game, rather than farming as the wrong
+  character. Not carried on later.
 - A run paused when its game closes (the player had the game) is no longer opened again and carried
   on, which logged its character back in over the one the player wanted.
 

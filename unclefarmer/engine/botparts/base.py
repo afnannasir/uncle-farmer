@@ -103,9 +103,9 @@ class GameLost(Stopped):
 
 class WrongCharacter(Stopped):
     """Another character is in the run's game now (switched to by hand in the same game, an account
-    holding several characters): the run ends at once, as the community script does ("rather than
-    farming as the wrong character"), with nothing done in the game - no guarding, no walk to the end
-    place, no restock - since every rule it holds is the other character's. Live 2026-11-24: a run
+    holding several characters): the run ends at once, rather than farming as the wrong character,
+    with nothing done in the game - no guarding, no walk to the end place, no restock - since every
+    rule it holds is the other character's. Live 2026-11-24: a run
     paused, the player switched to another character, and the run went on with its own restock on
     that one. Not carried on later, and the game is not opened again."""
 

@@ -40,7 +40,7 @@ RARITIES = ("crude", "common", "sophisticated", "perfect", "rare", "legendary")
 LABELS = {"crude": N_("Crude"), "common": N_("Common"), "sophisticated": N_("Sophisticated"),
           "perfect": N_("Perfect"), "rare": N_("Rare"), "legendary": N_("Legendary")}
 DEFAULT_MINUTES = 30
-MOST = 30                 # pieces in one sweep, as the community script
+MOST = 30                 # pieces in one sweep
 DETAILS_WAIT = 3.0        # seconds for a piece's details to come back (live: the same second)
 BONUS = "plus:"           # in a piece's details: it has a bonus
 GEAR_DISCARD_AGENT = 79          # the agent that throws equipment away (`discardgear`)
