@@ -117,6 +117,20 @@ def test_the_third_flee_in_half_an_hour_stops_in_town(clock: Clock) -> None:
     assert any("fled 3 times in 30 minutes" in line for line in b.spoken)
 
 
+def test_a_hearthstone_a_hit_stopped_is_no_flee(clock: Clock) -> None:
+    # losing a fight, a hit stopping the hearthstone is the usual case: two of those and one real
+    # flee ended the night "fled 3 times in 30 minutes"
+    b = Fleer([95])
+    b.go_home_result = False
+    for _i in range(2):
+        b._flee(5281)                                # pyright: ignore[reportPrivateUsage]
+        clock.advance(b.FLEE_RETRY + 1)
+    b.go_home_result = True
+    b._flee(5281)                                    # pyright: ignore[reportPrivateUsage]
+    assert b.flees == [clock.time()] and b.travels == [(5281, None)]
+    assert not any("fled 3 times" in line for line in b.spoken)
+
+
 def test_flees_further_apart_never_stop(clock: Clock) -> None:
     b = Fleer([95])
     for _i in range(4):

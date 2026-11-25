@@ -10,6 +10,13 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A hearthstone a hit stopped is not a flee** (untested in game)
+
+- When HP stays low and the bot flees with the hearthstone, a hit that stops the cast was counted
+  as a flee all the same. Losing a fight, that is the usual case: two stopped hearthstones and one
+  real flee made "fled 3 times in 30 minutes" and ended the night in town. Only a hearthstone that
+  takes the character to town counts now.
+
 **A trusted player can be trusted on one server only** (untested in game)
 
 - A trusted name counted on every server, and a name can belong to another player on another

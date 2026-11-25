@@ -348,16 +348,20 @@ class FarmingMixin(Parts):
         that is interrupted every time (a hit stops its cast) leaves us fighting on. The FLEE_MOST-th
         flee within FLEE_WINDOW ends the run in town: the map is too hard for the character."""
         now = self.clock.time()
-        self.flees = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW] + [now]
+        recent = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW]
         self.log(_("HP stayed under {pct}% - leaving the fight: hearthstone to town", pct=self.p["panic_below"]),
                  speak=True)
         self.fleeing = True
         try:
             with self.timed("town"):
                 if not self.go_home():
+                    # a hit stopped the hearthstone: no flee - counted, two of them and one real
+                    # flee ended the night with "fled 3 times"
+                    self.flees = recent
                     self.flee_wait_until = self.clock.time() + self.FLEE_RETRY
                     self.log(_("couldn't get away - fighting on"), speak=True)
                     return
+                self.flees = recent + [now]
                 self._heal_in_town()
                 if len(self.flees) >= self.FLEE_MOST:
                     self.log(_("fled {n} times in {m} minutes - this map is too hard for now; stopping here",
