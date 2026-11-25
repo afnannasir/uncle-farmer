@@ -1144,7 +1144,7 @@ class FightingMixin(Parts):
         if f.look is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
             self._fight_look(f, now)
         elif f.sb is None or due <= 0:
-            self._fight_position(f, self.snap())
+            FightingMixin._fight_position(self, f, self.snap())
 
     def _fight_look(self, f: "_Fight", now: float) -> None:
         """A full look between presses: the world, our HP, pets, popups, kills, rage or marks, who
@@ -1152,7 +1152,7 @@ class FightingMixin(Parts):
         f.checked = now
         f.check_at = now + self.CHECK_EVERY
         snap = self.snap()
-        self._fight_position(f, snap)
+        FightingMixin._fight_position(self, f, snap)
         self.look_after(snap["self"])
         teamheal.look_after(as_bot(self), snap)       # only while following
         pets.look_after(as_bot(self), snap)
@@ -1260,7 +1260,7 @@ class FightingMixin(Parts):
                 if rec is not None:
                     rec["moved_to"] = other       # the record's kill may be this one now
                 f.mid, f.mob, f.seen = other, o, o
-                self._fight_position(f, f.snap)
+                FightingMixin._fight_position(self, f, f.snap)
                 f.last_hp, f.last_drop, f.casts_at_drop = float(o["hp"]), self.clock.time(), casts
                 f.hit_us = f.hit_us or f.mid in self.attackers()
         return False
@@ -1361,7 +1361,7 @@ class FightingMixin(Parts):
         """Validate the intended attack against the latest world and cast reports."""
         now = self.clock.time()
         if retry or now - f.position_at >= combat.SLOT_GAP:
-            self._fight_position(f, self.snap())
+            FightingMixin._fight_position(self, f, self.snap())
         if f.seen is None or f.seen["hp"] <= 0 or self.downed(f.mid, f.start):
             f.press_block = "again"   # the loop accounts for the finished target
             return False
