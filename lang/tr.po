@@ -9526,6 +9526,9 @@ msgstr "{name} oyundan okunur ve ayarlanamaz"
 msgid "{name} isn't in my team"
 msgstr "{name} takımımda değil"
 
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr "{name} artık o oyunda giriş yapmış değil - hiçbir şey başlatılmadı."
+
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name}, ajanı olan bir oyunda giriş yapmamış."
 

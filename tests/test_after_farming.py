@@ -212,7 +212,7 @@ def test_the_tools_menu_runs_both_by_hand_whatever_the_settings_say(monkeypatch:
     lines: list[str] = []
 
     class Window:
-        def run_errand(self, text: str, title: str, walk: bool = False) -> None:
+        def run_errand(self, text: str, title: str, walk: bool = False, **_kw: Any) -> None:
             errands.append((text, title))
 
         def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None:

@@ -54,7 +54,7 @@ def _host():  # type: ignore[no-untyped-def]
     host.on_game = []                        # type: ignore[attr-defined]
     host.refuse = False                      # type: ignore[attr-defined]  # as run_errand does at the login screen
 
-    def run_errand(text, title, pid=None):  # type: ignore[no-untyped-def]
+    def run_errand(text, title, pid=None, expect=None):  # type: ignore[no-untyped-def]
         if host.refuse:                      # type: ignore[attr-defined]
             return False
         host.started.append(text)            # type: ignore[attr-defined]

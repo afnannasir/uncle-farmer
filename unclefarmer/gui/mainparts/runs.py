@@ -15,7 +15,7 @@ from ...i18n import _
 from .. import agentfix
 from ..common import error, save_file
 from ..plan import plan_text
-from .base import FrameParts, Item, character_of, foreground_pid, saved_item
+from .base import FrameParts, Item, character_of, foreground_pid, profile_of, saved_item
 from collections.abc import Callable
 
 LOGIN_OPEN_RETRY = 90.0
@@ -336,12 +336,15 @@ class RunsMixin(FrameParts):
         self.poll()
         return _("Starting {what}.", what=item[1])
 
-    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None) -> bool:
+    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None,
+                   expect: str | None = None) -> bool:
         """A one-off job, run like a script: a tool from the Tools menu, the Market window's own
         game (pid), or the walking assistant (walk). pid is the selected game unless given.
         Nothing starts at the login screen: the job would log in whichever character the Games
         list last named there (or stop at once), so a character must be logged in first.
-        True when the job started."""
+        expect: the character the tool's window was opened for - the job starts only while that one
+        is logged in on the game (a game closed meanwhile, or Switch account, and Clean the bag
+        would have thrown away another character's list, unseen). True when the job started."""
         if pid is None:
             pid = self.selected_pid()
         if pid is None:
@@ -350,14 +353,19 @@ class RunsMixin(FrameParts):
         if pid in self.runs:
             self.say(_("Stop the bot first."))
             return False
-        if not character_of(self.snapshot(pid)):
+        snap = self.snapshot(pid)
+        if not character_of(snap):
             self.say(_("Log in to the character in the game first."))
+            return False
+        if expect and not settings.is_profile_of(profile_of(snap), expect):
+            self.say(_("{name} isn't logged in on that game any more - nothing was started.",
+                       name=settings.profile_display(expect)))
             return False
         run = Run(text, title, pid, self.on_log, self.on_done, walk=walk, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = "errand"
-        run.profile = self.character(pid)
+        run.profile = expect or self.character(pid)
         run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")

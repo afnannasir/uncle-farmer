@@ -9222,6 +9222,9 @@ msgstr ""
 msgid "{name} isn't in my team"
 msgstr ""
 
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr ""
+
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr ""
 

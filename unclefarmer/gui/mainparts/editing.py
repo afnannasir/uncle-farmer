@@ -218,14 +218,15 @@ class EditingMixin(FrameParts):
         if self.selected_pid() in self.runs:
             self.say(_("Stop the bot first."))
             return
-        if not active_profile(self):        # asked before the destination, not after it (run_errand)
+        pid, name = self.selected_pid(), active_profile(self)
+        if not name:                        # asked before the destination, not after it (run_errand)
             self.say(_("Log in to the character in the game first."))
             return
         with WalkDialog(self, self.snapshot) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             text, title = d.script, d.title
-        self.run_errand(text, title, walk=True)
+        self.run_errand(text, title, walk=True, pid=pid, expect=name)
 
     def open_tool(self, which: str) -> None:
         """Tools, Gem Maker / Equipment Enhancer / Daily chores / Gathering / Dungeons: set up for the
@@ -251,7 +252,8 @@ class EditingMixin(FrameParts):
             from ...engine import keyboard
             self.run_errand(keyboard.command(profile_name), _("Keyboard Manager"))
             return
-        if self.selected_pid() not in self.runs:
+        pid = self.selected_pid()       # the job goes to this game and character (run_errand expect)
+        if pid not in self.runs:
             self.scanned = getattr(self, "scanned", {})
             self.scanned.pop(name, None)
             with wx.BusyCursor():
@@ -275,24 +277,25 @@ class EditingMixin(FrameParts):
             code = d.ShowModal()
             cfg = getattr(d, "cfg", None)
         if code == CHECK:
-            self.run_errand(cmd + " check\n", _("{tool} check", tool=title))
+            self.run_errand(cmd + " check\n", _("{tool} check", tool=title), pid=pid, expect=name)
         elif code == START and which == "dungeon":
-            self.run_errand(dungeon.script(cfg or {}), title)     # its end place, then the caves
+            self.run_errand(dungeon.script(cfg or {}), title, pid=pid, expect=name)   # its end place, then the caves
         elif code == START:
-            self.run_errand(cmd + "\n", title)
+            self.run_errand(cmd + "\n", title, pid=pid, expect=name)
 
     def open_construction_scan(self) -> None:
         """Tools, Construction scanner: read the last report, or scan or publish on the selected game."""
         from ..chores import PUBLISH_REPORT, SCAN_CONSTRUCTIONS, ConstructionScanDialog
         pid = self.selected_pid()
-        can_act = pid is not None and pid not in self.runs and bool(active_profile(self))
+        name = active_profile(self) if pid is not None else None
+        can_act = pid is not None and pid not in self.runs and bool(name)
         with ConstructionScanDialog(self, can_act) as d:
             code = d.ShowModal()
             kind = d.kind
         if code == SCAN_CONSTRUCTIONS:
-            self.run_errand("construction_scan\n", _("Construction scanner"))
+            self.run_errand("construction_scan\n", _("Construction scanner"), pid=pid, expect=name)
         elif code == PUBLISH_REPORT:
-            self.run_errand("construction_scan publish=%s\n" % kind, _("Construction scanner"))
+            self.run_errand("construction_scan publish=%s\n" % kind, _("Construction scanner"), pid=pid, expect=name)
 
     def edit_bag(self) -> None:
         name = active_profile(self)
@@ -347,7 +350,8 @@ class EditingMixin(FrameParts):
         if not name:
             error(self, _("Log in to the character in the game first."))
             return
-        if self.selected_pid() in self.runs:
+        pid = self.selected_pid()
+        if pid in self.runs:
             self.say(_("Stop the bot first."))
             return
         listed = town.throw_list(settings.load_profile(name))
@@ -361,7 +365,9 @@ class EditingMixin(FrameParts):
                    _("Clean the bag")):
             return
         self.log(_("Clean the bag now: started by hand"))
-        self.run_errand("clean_bag\n", _("Cleaning the bag"))
+        # the list seen is this character's: thrown only from its bag (the game may have closed, or
+        # another character come in, while the question was open)
+        self.run_errand("clean_bag\n", _("Cleaning the bag"), pid=pid, expect=name)
 
     def edit_other_profile(self) -> None:
         profiles = settings.profiles()

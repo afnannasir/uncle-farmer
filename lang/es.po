@@ -9610,6 +9610,9 @@ msgstr "{name} se lee del juego y no se puede fijar"
 msgid "{name} isn't in my team"
 msgstr "{name} no está en mi equipo"
 
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr "{name} ya no ha iniciado sesión en ese juego: no se ha iniciado nada."
+
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name} no ha iniciado sesión en un juego que tenga el agente."
 

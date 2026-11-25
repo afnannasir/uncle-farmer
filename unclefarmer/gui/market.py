@@ -115,10 +115,11 @@ def remember_sellers(saved: dict[str, Any], ids: Sequence[int]) -> None:
 class MarketFrame(wx.Frame):
     """host: the main window (run_errand, stop, the selected game)."""
 
-    def __init__(self, host: FrameParts, pid: int, character: str | None) -> None:
+    def __init__(self, host: FrameParts, pid: int, character: str | None, profile: str | None = None) -> None:
         super().__init__(host, title=_("Market searcher and buyer - {name}", name=character or _("game")),
                          size=wx.Size(820, 640))
         self.host, self.pid = host, pid
+        self.profile = profile       # the character it was opened for: its jobs run only while it is logged in
         self.server = self._server()
         self.rows: list[ListRow] = []
         self.head: dict[str, Any] = {}
@@ -328,7 +329,7 @@ class MarketFrame(wx.Frame):
         if self.busy():
             return False
         # this window's game, not the selected one; refused (no character logged in): nothing waited on
-        if not self.host.run_errand(STAY + line + "\n", title, pid=self.pid):
+        if not self.host.run_errand(STAY + line + "\n", title, pid=self.pid, expect=self.profile):
             return False
         self.job = line.split()[1] if len(line.split()) > 1 else line
         self.status_seen = time.time()

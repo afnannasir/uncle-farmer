@@ -470,13 +470,16 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         if pid is None:
             error(self, _("No game found. Start Mist World first."))
             return
-        if not active_profile(self):
+        name = active_profile(self)
+        if not name:
             error(self, _("Log in to the character in the game first."))
             return
         window = self.market_windows.get(pid)
+        if window is not None and window.profile and not settings.is_profile_of(name, window.profile):
+            window.Close()              # another character came in on that game: its own window
+            window = None
         if window is None:
-            name = self.character(pid)
-            window = MarketFrame(self, pid, settings.profile_display(name) if name else None)
+            window = MarketFrame(self, pid, settings.profile_display(name), profile=name)
             self.market_windows[pid] = window
         window.Show()
         window.Raise()

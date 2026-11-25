@@ -35,6 +35,12 @@
 - The Market searcher and buyer opens only with a logged-in character, and its searches and
   purchases run on its own game: they went to the game selected in the Games list, another
   character when two games were open and the selection had moved.
+- A tool's job starts only for the character its window was opened for, on that game. Clean the
+  bag showed one character's throw-away list, and if the game closed or another character came in
+  while the question was open, the other character's list was thrown away, unseen. Gem Maker,
+  Daily chores, Dungeons and the other tools, Walk to, the Construction scanner and Autopilot's
+  Save and start now say "... isn't logged in on that game any more - nothing was started." The
+  Market window keeps its character too: another character on that game gets a window of its own.
 
 **A run never goes on as another character** (seen in game)
 

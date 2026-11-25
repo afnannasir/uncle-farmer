@@ -525,7 +525,7 @@ def tools_window(monkeypatch: pytest.MonkeyPatch, rules: dict[str, dict[str, Any
         def say(self, text: str) -> None:
             seen.said.append(text)
 
-        def run_errand(self, text: str, title: str, walk: bool = False) -> None:
+        def run_errand(self, text: str, title: str, walk: bool = False, **_kw: Any) -> None:
             seen.errands.append(text)
 
         def log(self, line: str, speak: bool = False, who: str | None = None, private: bool = False) -> None:

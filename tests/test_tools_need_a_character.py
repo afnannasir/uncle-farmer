@@ -10,12 +10,15 @@ import pytest
 
 wx = pytest.importorskip("wx")
 
+from unclefarmer import settings  # noqa: E402
 from unclefarmer.gui import chores as chores_gui, main  # noqa: E402
 from unclefarmer.gui.mainparts import editing, runs as runs_part  # noqa: E402
 
-from conftest import Clock  # noqa: E402
+from conftest import Clock, returning  # noqa: E402
 
 LOGGED_IN = {"self": {"name": "Hero", "id": 7}, "map": {"name": "tulip city"}}
+HERO = settings.character_profile("Hero", 7, "S1")
+BOBK = settings.character_profile("Bob", 9, "S1")
 LOGIN_SCREEN = None                       # what a game at the login screen reads as
 
 
@@ -76,43 +79,95 @@ def errand(frame: Frame, text: str = "restock\n", **kw: Any) -> bool:
 
 def test_a_tool_at_the_login_screen_starts_nothing() -> None:
     # the Games list still names the character that was logged in before Switch account
-    f = Frame(1, {1: LOGIN_SCREEN}, {1: "Hero--S1--7"})
+    f = Frame(1, {1: LOGIN_SCREEN}, {1: HERO})
     errand(f)
     assert FakeRun.made == [] and f.runs == {}
     assert f.said == ["Log in to the character in the game first."]
 
 
 def test_a_tool_with_a_logged_in_character_starts_its_job() -> None:
-    f = Frame(1, {1: LOGGED_IN}, {1: "Hero--S1--7"})
+    f = Frame(1, {1: LOGGED_IN}, {1: HERO})
     errand(f)
     [run] = FakeRun.made
-    assert run.started and run.pid == 1 and run.profile == "Hero--S1--7" and f.runs == {1: run}
+    assert run.started and run.pid == 1 and run.profile == HERO and f.runs == {1: run}
 
 
 def test_no_game_and_a_busy_game_still_say_so() -> None:
     f = Frame(None, {}, {})
     errand(f)
     assert f.said == ["No game with the agent is running."]
-    busy = Frame(1, {1: LOGGED_IN}, {1: "Hero--S1--7"})
+    busy = Frame(1, {1: LOGGED_IN}, {1: HERO})
     busy.runs[1] = object()
     errand(busy)
     assert busy.said == ["Stop the bot first."] and FakeRun.made == []
 
 
 def test_a_market_job_runs_on_its_window_s_game_not_the_selected_one() -> None:
-    f = Frame(1, {1: LOGGED_IN, 2: {"self": {"name": "Bob", "id": 9}}}, {1: "Hero--S1--7", 2: "Bob--S1--9"})
+    f = Frame(1, {1: LOGGED_IN, 2: {"self": {"name": "Bob", "id": 9}}}, {1: HERO, 2: BOBK})
     errand(f, "market search\n", pid=2)
     [run] = FakeRun.made
-    assert run.pid == 2 and run.profile == "Bob--S1--9"
+    assert run.pid == 2 and run.profile == BOBK
 
 
 def test_a_market_job_waits_for_its_own_game_s_character() -> None:
-    f = Frame(1, {1: LOGGED_IN, 2: LOGIN_SCREEN}, {1: "Hero--S1--7", 2: "Bob--S1--9"})
+    f = Frame(1, {1: LOGGED_IN, 2: LOGIN_SCREEN}, {1: HERO, 2: BOBK})
     errand(f, "market search\n", pid=2)
     assert FakeRun.made == [] and f.said == ["Log in to the character in the game first."]
 
 
-REPORT = {"at": "now", "by": "Hero", "rows": [["Magic Cannon", 40.0]]}
+BOB = {"self": {"name": "Bob", "id": 9}, "map": {"name": "tulip city"}}
+
+
+def test_a_tool_starts_for_the_character_its_window_was_opened_for() -> None:
+    f = Frame(1, {1: LOGGED_IN}, {1: HERO})
+    errand(f, "clean_bag\n", pid=1, expect=HERO)
+    [run] = FakeRun.made
+    assert run.pid == 1 and run.profile == HERO
+
+
+def test_another_character_in_the_game_meanwhile_starts_nothing() -> None:
+    # Clean the bag showed Hero's list; Switch account brought Bob in while the question was open
+    f = Frame(1, {1: BOB}, {1: HERO})
+    errand(f, "clean_bag\n", pid=1, expect=HERO)
+    assert FakeRun.made == []
+    assert f.said == ["Hero - S1 isn't logged in on that game any more - nothing was started."]
+
+
+def test_the_window_s_game_closed_meanwhile_starts_nothing_on_the_selected_one() -> None:
+    f = Frame(2, {2: LOGGED_IN}, {2: HERO})     # game 1 is gone: the list selected game 2
+    errand(f, "clean_bag\n", pid=1, expect=HERO)
+    assert FakeRun.made == []
+
+
+def test_clean_the_bag_sends_its_job_for_the_character_whose_list_was_shown(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.engine import town
+    monkeypatch.setattr(editing, "ask", returning(True))
+    monkeypatch.setattr(town, "throw_list", returning([("Wolf Fur", 0)]))
+    monkeypatch.setattr(editing.settings, "load_profile", returning(dict[str, Any]()))
+    sent: list[tuple[str, dict[str, Any]]] = []
+
+    class Win:
+        runs: dict[int, Any] = {}
+
+        def selected_pid(self) -> int:
+            return 3
+
+        def selected_profile(self) -> str:
+            return HERO
+
+        def snapshot(self, pid: int | None = None) -> Any:
+            return LOGGED_IN
+
+        def say(self, text: str) -> None: ...
+        def log(self, *_args: Any, **_kw: Any) -> None: ...
+
+        def run_errand(self, text: str, title: str, **kw: Any) -> None:
+            sent.append((text, kw))
+    editing.EditingMixin.clean_bag_now(Win())  # type: ignore[arg-type]
+    assert sent == [("clean_bag\n", {"pid": 3, "expect": HERO})]
+
+
+REPORT ={"at": "now", "by": "Hero", "rows": [["Magic Cannon", 40.0]]}
 
 
 @pytest.fixture
@@ -148,12 +203,12 @@ class ScanFrame:
         return self.selected
 
     def selected_profile(self) -> str | None:
-        return "Hero--S1--7" if self.read else None
+        return HERO if self.read else None
 
     def snapshot(self, pid: int | None = None) -> Any:
         return self.read
 
-    def run_errand(self, text: str, title: str) -> None:
+    def run_errand(self, text: str, title: str, **_kw: Any) -> None:
         self.errands.append(text)
 
 
@@ -193,18 +248,47 @@ def test_the_market_window_opens_only_with_a_logged_in_character(monkeypatch: py
     monkeypatch.setattr(main, "error", error)
     opened: list[int] = []
 
+    closed: list[str | None] = []
+
     class Market:
-        def __init__(self, _host: Any, pid: int, _name: Any) -> None:
+        def __init__(self, _host: Any, pid: int, _name: Any, profile: str | None = None) -> None:
             opened.append(pid)
+            self.profile = profile
 
         def Show(self) -> None: ...
         def Raise(self) -> None: ...
+
+        def Close(self) -> None:
+            closed.append(self.profile)
     monkeypatch.setattr(main, "MarketFrame", Market)
     f: Any = ScanFrame(1, LOGIN_SCREEN)
-    f.market_windows = {}
-    f.character = lambda _pid: "Hero--S1--7"  # pyright: ignore[reportUnknownLambdaType]
+    windows: dict[int, Any] = {}
+    f.market_windows = windows
     main.MainFrame.open_market(f)
     assert opened == [] and errors == ["Log in to the character in the game first."]
     f.read = LOGGED_IN
     main.MainFrame.open_market(f)
-    assert opened == [1]
+    assert opened == [1] and windows[1].profile == HERO
+    main.MainFrame.open_market(f)                      # the same character: the same window
+    assert opened == [1] and closed == []
+
+
+def test_the_market_window_of_another_character_is_closed_and_a_new_one_opened(monkeypatch: pytest.MonkeyPatch) -> None:
+    closed: list[str | None] = []
+
+    class Market:
+        def __init__(self, _host: Any, _pid: int, _name: Any, profile: str | None = None) -> None:
+            self.profile = profile
+
+        def Show(self) -> None: ...
+        def Raise(self) -> None: ...
+
+        def Close(self) -> None:
+            closed.append(self.profile)
+    monkeypatch.setattr(main, "MarketFrame", Market)
+    f: Any = ScanFrame(1, LOGGED_IN)
+    windows: dict[int, Any] = {1: Market(None, 1, "Hero", profile=HERO)}
+    f.market_windows = windows
+    f.selected_profile = returning(BOBK)      # Switch account on that game
+    main.MainFrame.open_market(f)
+    assert closed == [HERO] and windows[1].profile == BOBK

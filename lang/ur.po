@@ -9685,6 +9685,9 @@ msgstr "{name} game se parha jata hai aur set nahi ho sakta"
 msgid "{name} isn't in my team"
 msgstr "{name} meri team mein nahi hai"
 
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr "{name} ab us game mein login nahi hai - kuch shuru nahi kiya gaya."
+
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name} aise game mein login nahi hai jis mein agent ho."
 
