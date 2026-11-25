@@ -334,12 +334,11 @@ def withdraw(b: Bot, item: str, n: int, *, stock: int | None = None):
         pick(b, item_pattern(item), n)
     finally:
         b.close_dialogs()
-    if stock is not None:
-        transaction = InventoryTransaction({item.lower(): before})
-        transaction.expect(item, n)
-        after = transaction.settle(b)
-    else:
-        after = counts(b)
+    # the bag is given its moment, as for a deposit: counted at once, a withdrawal read "took 0"
+    # and the farm loop's restock bought again what the storehouse had just handed over
+    transaction = InventoryTransaction({item.lower(): before})
+    transaction.expect(item, n)
+    after = transaction.settle(b)
     got = max(0, after.get(item.lower(), 0) - before)
     if stock is not None and got > 0:
         getattr(b, "storehouse_lacks", set[str]()).discard(item.lower())
@@ -666,12 +665,9 @@ def buy(b: Bot, item: str, n: int, *, stock: int | None = None) -> int:
                 continue
         finally:
             b.close_dialogs()
-        if stock is not None:
-            transaction = InventoryTransaction({item.lower(): before})
-            transaction.expect(item, n)
-            after = transaction.settle(b)
-        else:
-            after = counts(b)
+        transaction = InventoryTransaction({item.lower(): before})     # the bag catches up a moment later
+        transaction.expect(item, n)
+        after = transaction.settle(b)
         got = after.get(item.lower(), 0) - before
         b.log(_("bought {n} {item}", n=got, item=item))
         stats.moved(b, "bought", item, got)
@@ -725,10 +721,14 @@ def sell(b: Bot, item: str, n: int | None=None):
         pick(b, item_pattern(item), n)
     finally:
         b.close_dialogs()
-    after = counts(b)
+    # the items leave the bag a moment after the menu closes: counted at once, a sale read "sold 0",
+    # its money went to the next job, and the bag trip stored what had been sold
+    transaction = InventoryTransaction(before)
+    transaction.expect(item, -n)
+    after = transaction.settle(b)
     sold = have - after.get(item.lower(), 0)
     if sold > 0:
-        InventoryTransaction(before).paid(b, after)     # the money comes in after the items go
+        transaction.paid(b, after)     # the money comes in after the items go
     b.log(_("sold {n} {item}", n=sold, item=item))
     stats.moved(b, "sold", item, sold)
     return sold

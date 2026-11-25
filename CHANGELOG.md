@@ -28,6 +28,15 @@
   NPC is now tried once more, as any failed ride is (with the keys when the Keys box is ticked); a
   second free ride of it that comes to nothing still means the VIP is gone.
 
+**Withdrawals, purchases and sales are counted once the bag has caught up** (untested in game)
+
+- The game shows a change in the bag a moment after the menu closes. The restock while farming
+  counted its storehouse withdrawals and purchases at once, and a withdrawal that worked could
+  read "took 0": the bot then bought in the shop what the storehouse had just handed over. A sale
+  counted at once could read "sold 0", its money went to the next job, and the bag trip took what
+  had been sold to the storehouse. All of them now wait for the bag (3 seconds at most), as the
+  deposits and Restock now already did.
+
 **What the bag held before the run stays the player's** (untested in game)
 
 - The bag was read once when farming began, and a reading the game didn't answer (a short drop, a
