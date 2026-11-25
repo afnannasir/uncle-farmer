@@ -3607,6 +3607,9 @@ msgstr ""
 msgid "Publish &as:"
 msgstr ""
 
+msgid "Put each highland on its own &line (gang announcement only)"
+msgstr ""
+
 msgid "Put finished gems in the s&torehouse, so the bag keeps its room"
 msgstr ""
 
@@ -5988,6 +5991,14 @@ msgstr ""
 
 msgid ""
 "construction scanner: nothing changed since the last report, nothing published"
+msgstr ""
+
+msgid ""
+"construction scanner: only a gang announcement keeps line breaks, so this goes out as one line"
+msgstr ""
+
+msgid ""
+"construction scanner: the game's agent is too old for line breaks, so this goes out as one line; restart Mist World so it loads the new one"
 msgstr ""
 
 msgid ""
@@ -8993,7 +9004,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr ""
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
 msgstr ""
 
 msgid "write it as: hold key seconds"

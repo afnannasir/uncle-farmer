@@ -28,7 +28,9 @@ One command per line; `#` starts a comment. Blocks end with `end`.
     bounties [check]                 ask the officers ticked in Tools, Hunting bounties for what they pay
     construction_scan [publish=<kind>]  read how far the gang's constructions are; or send the last report
                                      (announcement, broadcast or system: it takes a gang elder);
-                                     auto=<kind> scans and publishes if there is something new
+                                     auto=<kind> scans and publishes if there is something new;
+                                     add lines=yes or lines=no for an announcement: a line to each highland
+                                     or one line (without it, Tools, Construction scanner decides)
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
     lose_xp [check]                  die to guards until the next level needs the experience set
@@ -689,10 +691,16 @@ def _prep_construction_scan(node: Node, rest: str, n: int):
     if not words:
         return
     how, _sep, kind = words[0].lower().partition("=")
-    if len(words) > 1 or how not in ("publish", "auto") or kind not in kinds:
+    extra = words[1].lower().partition("=") if len(words) == 2 else None
+    if (len(words) > 2 or how not in ("publish", "auto") or kind not in kinds
+            or (extra is not None and (extra[0] != "lines" or extra[2] not in ("yes", "no")))):
         raise ScriptError(n, _("write it as: construction_scan, construction_scan publish=broadcast or "
-                               "construction_scan auto=broadcast (announcement, broadcast or system)"))
+                               "construction_scan auto=broadcast (announcement, broadcast or system), "
+                               "and for an announcement add lines=yes or lines=no to choose a line to each "
+                               "highland or one line"))
     node.opts[how] = kind
+    if extra is not None:
+        node.opts["lines"] = extra[2] == "yes"
 
 
 def _prep_sell_collection(node: Node, rest: str, n: int):

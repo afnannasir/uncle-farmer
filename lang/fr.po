@@ -1267,6 +1267,9 @@ msgstr "C&ommon"
 msgid "C&opy"
 msgstr "C&opier"
 
+msgid "Call the team when there are more monsters than:"
+msgstr ""
+
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -1862,6 +1865,9 @@ msgstr "Modifier la planification"
 
 msgid "Elite"
 msgstr "Elite"
+
+msgid "Enable Team Monster Hunting"
+msgstr ""
 
 msgid "Enable/&disable"
 msgstr "Activer/&désactiver"
@@ -3032,6 +3038,9 @@ msgstr ""
 msgid "Monday"
 msgstr "lundi"
 
+msgid "Monster encounter message:"
+msgstr ""
+
 msgid ""
 "Monster hits: {hits} hits ({crits} critical, {breaks} defence breaks, {normals} normal), {misses} misses"
 msgstr ""
@@ -3733,6 +3742,9 @@ msgstr "Version du programme : {v}"
 msgid "Publish &as:"
 msgstr "Publier &comme :"
 
+msgid "Put each highland on its own &line (gang announcement only)"
+msgstr ""
+
 msgid "Put finished gems in the s&torehouse, so the bag keeps its room"
 msgstr ""
 
@@ -3970,6 +3982,9 @@ msgid ""
 "Results of {what}, its {n} parts added up (it was interrupted and carried on)"
 msgstr ""
 "Résultats de {what}, ses {n} parties additionnées (elle a été interrompue puis reprise)"
+
+msgid "Return Leadership to Original Leader Between Encounters"
+msgstr ""
 
 msgid "Revive on the spot with &Resurrection Crystals"
 msgstr "Revivre sur place avec des &Resurrection Crystals"
@@ -4610,6 +4625,9 @@ msgstr "Rangement des objets"
 msgid "Strangers"
 msgstr "Inconnus"
 
+msgid "Subscribe to Team Hunting"
+msgstr ""
+
 msgid "Summary:"
 msgstr "Résumé :"
 
@@ -4653,6 +4671,9 @@ msgstr "Équipe"
 msgid "Team &name (letters and numbers):"
 msgstr "&Nom de l'équipe (lettres et chiffres) :"
 
+msgid "Team Monster Hunting"
+msgstr ""
+
 msgid "Team mode"
 msgstr "Mode équipe"
 
@@ -4661,6 +4682,10 @@ msgstr "Réglages d'équipe"
 
 msgid "Team settings: set as theirs"
 msgstr "Réglages d'équipe : réglés comme les siens"
+
+msgid ""
+"Team tab: enter a one-line monster encounter message to enable Team Monster Hunting."
+msgstr ""
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -6285,6 +6310,14 @@ msgid ""
 "construction scanner: nothing changed since the last report, nothing published"
 msgstr ""
 "Construction scanner : rien n'a changé depuis le dernier rapport, rien de publié"
+
+msgid ""
+"construction scanner: only a gang announcement keeps line breaks, so this goes out as one line"
+msgstr ""
+
+msgid ""
+"construction scanner: the game's agent is too old for line breaks, so this goes out as one line; restart Mist World so it loads the new one"
+msgstr ""
 
 msgid ""
 "construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner to read the report"
@@ -9469,9 +9502,8 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "écrivez : chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
 msgstr ""
-"écrivez : construction_scan, construction_scan publish=broadcast ou construction_scan auto=broadcast (announcement, broadcast ou system)"
 
 msgid "write it as: hold key seconds"
 msgstr "écrivez : hold key seconds"
@@ -10442,6 +10474,11 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol vaut random, full, quick ou short"
+
+#~ msgid ""
+#~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
+#~ msgstr ""
+#~ "écrivez : construction_scan, construction_scan publish=broadcast ou construction_scan auto=broadcast (announcement, broadcast ou system)"
 
 #~ msgid ""
 #~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."

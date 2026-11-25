@@ -15,6 +15,11 @@ The notices key (W_NOTICE) -> "gang announcement" lists the announcements: a tit
 "<author> issued at <date>" with "delete" beside it, then "Are you sure ...?" -> Confirm. An elder
 is offered "delete" on everyone's, so a new report replaces only this character's own old ones.
 
+An announcement can go a line to each camp and highland (setting construction_lines, or `lines=yes`):
+the announcement box keeps a pasted line break (agent 80's `typepaste`; typing one does nothing, and
+Shift+Enter is no line break there), while a broadcast and a system message turn it into a space (seen
+live 2026-11-25), so only an announcement is laid out that way.
+
 A schedule (or `construction_scan auto=<kind>`) scans and publishes at once. It stays quiet when
 everything is at 100% and when the line is the one this character last sent that way.
 """
@@ -78,6 +83,33 @@ def message(report: dict[str, Any]) -> str:
             return text + " and %d more" % (len(open_rows) - i)
         text += part
     return text
+
+
+def message_lines(report: dict[str, Any]) -> list[str]:
+    """The same report a line to a place, for an announcement (the game keeps a pasted line break there):
+    the title, then each camp, and each highland with its open turret and wall together, the least
+    complete first, within MOST_TEXT counting the line breaks. No line ends in a space."""
+    open_rows = [r for r in _least_first(report) if r[1] < 100]
+    if not open_rows:
+        return [ALL_FINE]
+    places: dict[str, list[tuple[str, float]]] = {}      # in order of the least complete part of each
+    for what, percent in open_rows:
+        m = re.match(r"^(highland \d+) (\w+)$", what)
+        places.setdefault(m.group(1) if m else what, []).append((m.group(2) if m else "", percent))
+    lines = [TITLE + ":"]
+    used = len(lines[0])
+    for i, (place, parts) in enumerate(places.items()):
+        if parts[0][0]:
+            ordered = sorted(parts, key=lambda p: list(SHORT.values()).index(p[0]) if p[0] in SHORT.values() else 99)
+            line = "%s: %s" % (place, ", ".join("%s %.1f%%" % (name, percent) for name, percent in ordered))
+        else:
+            line = "%s %.1f%%" % (place, parts[0][1])
+        if used + 1 + len(line) + len(" and %d more" % (len(places) - i)) > MOST_TEXT:
+            lines.append("and %d more" % (len(places) - i))
+            break
+        lines.append(line)
+        used += 1 + len(line)
+    return lines
 
 
 def details(report: dict[str, Any]) -> str:
@@ -212,12 +244,36 @@ def _note_sent(b: Bot, report: dict[str, Any], kind: str, text: str | None) -> N
     jsonio.save(_path(), report, indent=1)
 
 
-def scan_and_publish(b: Bot, kind: str) -> None:
+def _per_line(b: Bot, kind: str, lines: bool | None) -> bool:
+    """Whether this report goes out a line to a place. Only an announcement keeps a line break (a broadcast
+    and a system message turn it into a space), so `lines=yes` for those is left unheeded. `lines` None:
+    the app setting decides (Tools, Construction scanner)."""
+    wanted = settings.load_app().get("construction_lines", False) if lines is None else lines
+    if not wanted:
+        return False
+    if kind != "announcement":
+        b.log(_("construction scanner: only a gang announcement keeps line breaks, so this goes out as one line"))
+        return False
+    if not town.can_paste(b):
+        b.log(_("construction scanner: the game's agent is too old for line breaks, so this goes out as one line; "
+                "restart Mist World so it loads the new one"), speak=True)
+        return False
+    return True
+
+
+def _outgoing(b: Bot, report: dict[str, Any], kind: str, lines: bool | None) -> list[str]:
+    """What goes out, a line to each entry: one entry unless the report is to go a line to a place."""
+    if message(report) != ALL_FINE and _per_line(b, kind, lines):
+        return message_lines(report)
+    return [message(report)]
+
+
+def scan_and_publish(b: Bot, kind: str, lines: bool | None = None) -> None:
     """A schedule's run: scan, then publish, unless there is nothing new to tell the gang."""
     _open_action_menu(b, kind)          # no tour of the highlands for a character who can't send it
     b.close_dialogs()
     report = scan(b)
-    text = message(report)
+    text = "\n".join(_outgoing(b, report, kind, lines))
     sent: dict[str, str] = report.get("sent") or {}
     if text == ALL_FINE:
         _note_sent(b, report, kind, None)
@@ -225,20 +281,21 @@ def scan_and_publish(b: Bot, kind: str) -> None:
     elif sent.get(_sent_key(b, kind)) == text:
         b.log(_("construction scanner: nothing changed since the last report, nothing published"), speak=True)
     else:
-        publish(b, kind)
+        publish(b, kind, lines)
 
 
-def publish(b: Bot, kind: str) -> None:
+def publish(b: Bot, kind: str, lines: bool | None = None) -> None:
     """Send the kept report as an announcement, a broadcast or a system message."""
     report = load()
     if report is None:
         raise Stopped(_("no construction report yet: scan first"), final=True)
-    text = message(report)
+    parts = _outgoing(b, report, kind, lines)
+    text = "\n".join(parts)
     _open_action_menu(b, kind)
     said_from = chores.said_mark(b)
     chat_from = _chat_mark(b)
     b.choose(ENTRIES[kind])
-    if not town.type_text(b, text):
+    if not (town.type_lines(b, parts) if len(parts) > 1 else town.type_text(b, text)):
         b.a.send("typeesc")
         b.close_dialogs()
         raise Stopped(_("the game didn't take the construction report"), final=True)

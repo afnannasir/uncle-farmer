@@ -1027,6 +1027,8 @@ This is not a daily chore, so you can run it whenever you have something to coll
 
 **Copy** puts the short report on the clipboard. A gang elder can also **Publish** it as a gang announcement, a broadcast (which plays a sound) or a system message. The bot always asks first. A new announcement replaces only the older reports published by the same character, never another elder's.
 
+Tick **Put each highland on its own line** to publish a gang announcement as a list: the title first, then a line for each camp and each highland, with a highland's turret and wall together ("highland 80: turret 95.0%, wall 98.0%"). The setting is kept for all your characters and also applies to a scheduled announcement. A script can choose for one line with `lines=yes` or `lines=no` after `publish=announcement` or `auto=announcement`. A broadcast and a system message turn a line break into a space, so they are always one line. The game's agent must be up to date; if it is too old, the announcement goes out as one line and the log says so.
+
 To do this automatically, open **Run, Schedules**, go to the **Tools** tab and add one of the three "scanning the constructions" tasks for your elder. At the set time the bot scans and publishes without asking. It publishes nothing when everything is at 100%, or when the report is the same as the last one this character sent that way.
 
 In a script, use `construction_scan`, `construction_scan publish=broadcast` to send the last report, or `construction_scan auto=broadcast` to scan and send it if there is something new. The kinds are `announcement`, `broadcast` and `system`.

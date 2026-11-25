@@ -466,6 +466,7 @@ public final class AgentTests {
         eq(StateServer.handle("use 5", armed, mine, guarded), "refused: send 'arm' first", "use needs arm");
         eq(StateServer.handle("select 5", armed, mine, guarded), "refused: send 'arm' first", "select needs arm");
         eq(StateServer.handle("slot 1", armed, mine, guarded), "refused: send 'arm' first", "slot needs arm");
+        eq(StateServer.handle("typepaste a\\nb", armed, mine, guarded), "refused: send 'arm' first", "typepaste needs arm");
         eq(StateServer.handle("cast 21 -7", armed, mine, guarded), "refused: send 'arm' first", "cast needs arm");
         eq(StateServer.handle("shardsell 20385 1", armed, mine, guarded), "refused: send 'arm' first",
                 "shardsell needs arm");
@@ -476,6 +477,13 @@ public final class AgentTests {
         eq(StateServer.handle("discarddirectall 5", armed, mine, guarded), "refused: send 'arm' first",
                 "discarddirectall needs arm");
         eq(StateServer.handle("arm", armed, mine, guarded), "armed", "arm");
+        eq(TextInput.unescape("a\\nb"), "a\nb", "a backslash and n is a line feed");
+        eq(TextInput.unescape("a\\\\nb"), "a\\nb", "two backslashes are one, and the n after them is plain");
+        eq(TextInput.unescape("c:\\x \\"), "c:\\x \\", "any other backslash stays, even the last one");
+        eq(TextInput.unescape("one line"), "one line", "text without a backslash is unchanged");
+        eq(StateServer.handle("typepaste", armed, mine, guarded), "missing argument in: typepaste", "typepaste needs its text");
+        check(StateServer.handle("typepaste a\\nb", armed, mine, guarded).startsWith("refused: "),
+                "typepaste with no game window is refused");
         check(StateServer.handle("autologin account@example.com bad", armed, mine, guarded).contains("invalid character id"),
                 "automatic login validates the character id");
         check(StateServer.handle("autologin account@example.com 123 S3", armed, mine, guarded).contains("invalid saved server"),

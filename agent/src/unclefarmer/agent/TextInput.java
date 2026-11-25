@@ -97,6 +97,83 @@ final class TextInput {
         }, "entered");
     }
 
+    /**
+     * The text of a request line back as typed: a backslash and n is a line feed, two backslashes are one
+     * (a request is one line, so the app writes a line feed that way). Any other backslash stays as it is.
+     */
+    static String unescape(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < s.length()) {
+                char n = s.charAt(i + 1);
+                if (n == 'n') {
+                    out.append('\n');
+                    i++;
+                    continue;
+                }
+                if (n == '\\') {
+                    out.append('\\');
+                    i++;
+                    continue;
+                }
+            }
+            out.append(c);
+        }
+        return out.toString();
+    }
+
+    /**
+     * Pastes text, line feeds included, into the open input box as the game's own Ctrl+V does (Win.keyPressed,
+     * keyCode 86: the selection is replaced, the text goes in at the caret with no filtering, and the caret
+     * moves after it), but from the request instead of the clipboard, which stays the player's. Typing can't
+     * do it: keyTyped drops every character of 31 or less, and Enter submits (seen live 2026-11-25: a
+     * pasted line feed is stored as a plain line feed in the announcement, broadcast and system message boxes).
+     */
+    static String paste(final String escaped) {
+        final String text = unescape(escaped);
+        return run(new Job() {
+            public void on(Frame w, KeyListener l) {
+                Object z = field(w, WIN_TEXT);
+                Object caret = field(w, "A");
+                Object other = field(w, "B");
+                if (!(z instanceof StringBuilder) || !(caret instanceof Integer) || !(other instanceof Integer)) {
+                    throw new IllegalStateException("the input box's fields moved");
+                }
+                StringBuilder box = (StringBuilder) z;
+                int at = (Integer) caret;
+                int sel = (Integer) other;
+                if (at < sel) {
+                    box.delete(at, Math.min(sel, box.length()));
+                } else if (at > sel) {
+                    box.delete(sel, Math.min(at, box.length()));
+                    at = sel;
+                }
+                at = Math.max(0, Math.min(at, box.length()));
+                box.insert(at, text);
+                at += text.length();
+                setInt(w, "A", at);
+                setInt(w, "B", at);
+            }
+        }, "pasted " + text.length());
+    }
+
+    private static void setInt(Object o, String name, int value) {
+        for (Class<?> k = o.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+            try {
+                Field f = k.getDeclaredField(name);
+                f.setAccessible(true);
+                f.setInt(o, value);
+                return;
+            } catch (NoSuchFieldException e) {
+                // superclass
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("the input box's field " + name + " can't be set");
+            }
+        }
+        throw new IllegalStateException("the input box has no field " + name);
+    }
+
     /** Replaces a quantity and submits it in one event-queue turn. */
     static String number(final String number) {
         return run(new Job() {
