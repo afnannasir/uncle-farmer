@@ -7,7 +7,7 @@ through self whatever part they live in.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from ... import applog, atlas, jsonio
@@ -119,6 +119,7 @@ class FightingMixin(Parts):
     MOVE_SHOT_REACH = MOVE_SHOT_REACH   # shooting on the way only for a character that hits from this far
     move_shots: bool = False   # Tools, Dungeons' "shoot while walking", for the visit
     burst_target: tuple[int, float] | None = None   # the fight's monster while a burst presses at it
+    burst_check: Callable[[], bool] | None = None   # recheck the aim before retrying an unconfirmed press
     _speech: str
     select_refused: str = ""   # agent 41's reason the last `select` was refused ("" when it wasn't)
     _attackers: set[int]
@@ -826,6 +827,8 @@ class FightingMixin(Parts):
         start = self.clock.time()
         n = 0
         while self.clock.time() - start < longest:
+            if n and self.burst_check is not None and not self.burst_check():
+                return False
             slotted = self.press_slot(key)
             if not slotted:
                 r = self._game.send("key %s 30" % key)
@@ -1093,11 +1096,7 @@ class FightingMixin(Parts):
         f = _Fight(self, mob)
         while self.clock.time() - max(f.start, self.resumed_at) < p["fight_timeout"]:
             now = self.clock.time()
-            due = f.sb.ready_in(now) if f.sb is not None and f.look is not None else 1.0
-            # a check only starts when it will be done before the next press is due (it is timed),
-            # and never more than two seconds apart
-            if f.look is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
-                self._fight_look(f, now)
+            self._fight_refresh(f, now)
             if f.seen is None or f.seen["hp"] <= 0 or self.downed(f.mid, f.start):
                 # gone, at 0 HP, or reported dead by any cast or death report since the last look:
                 # no press at it now (its HP in the last look can be up to 2 s old)
@@ -1112,9 +1111,12 @@ class FightingMixin(Parts):
             if f.look is not None and f.checked == now and self._pet_needs_us(f):
                 return                # the farm loop takes the pet's attacker next (attackers first)
             casts = getattr(self.skillbook, "casts_done", 0) if self.skillbook is not None else 0
-            if self._fight_hits_elsewhere(f, casts) or self._fight_no_damage(f, casts) or self._fight_moved_off(f):
+            if self._fight_hits_elsewhere(f, casts) or self._fight_no_damage(f, casts):
                 return
-            step = self._fight_press(f)
+            extended = f.sb is not None and f.sb.extended_mark_shot(f.dist, self.clock.time())
+            if not extended and self._fight_moved_off(f):
+                return
+            step = self._fight_press(f, extended=extended)
             if step == "return":
                 return
             if self.downed(f.mid, f.start):
@@ -1136,27 +1138,39 @@ class FightingMixin(Parts):
         self.log(_("{name}: fight took too long, leaving it", name=f.mob["name"]))
         self.leave(f.mid, "timeout")
 
+    def _fight_refresh(self, f: "_Fight", now: float) -> None:
+        """Fit upkeep between casts and refresh positions when an attack is due."""
+        due = f.sb.ready_in(now) if f.sb is not None and f.look is not None else 1.0
+        if f.look is None or (now >= f.check_at and (due > f.check_cost + 0.05 or now - f.checked > 2.0)):
+            self._fight_look(f, now)
+        elif f.sb is None or due <= 0:
+            self._fight_position(f, self.snap())
+
     def _fight_look(self, f: "_Fight", now: float) -> None:
         """A full look between presses: the world, our HP, pets, popups, kills, rage or marks, who
         attacks us, and how far the monster is (reached: we have been within reach of it)."""
         f.checked = now
         f.check_at = now + self.CHECK_EVERY
-        snap = f.look = self.snap()
+        snap = self.snap()
+        self._fight_position(f, snap)
         self.look_after(snap["self"])
         teamheal.look_after(as_bot(self), snap)       # only while following
         pets.look_after(as_bot(self), snap)
         self.clear_popups()
-        f.seen = f.find(snap)
         self.count_kills(snap)
         self.read_points(snap["self"], now)
         f.hit_us = f.hit_us or f.mid in self.attackers()
+        f.check_cost = 0.7 * f.check_cost + 0.3 * (self.clock.time() - now)
+
+    def _fight_position(self, f: "_Fight", snap: dict[str, Any]) -> None:
+        """Refresh the aim without doing the full between-cast upkeep."""
+        f.look, f.seen, f.position_at = snap, f.find(snap), self.clock.time()
         if f.seen is not None:
             f.dist = math.hypot(f.seen["x"] - snap["self"]["x"], f.m["y"] - snap["self"]["y"])
             if f.dist <= f.rng + 0.5:
                 if f.follow and not f.reached:
                     self.follow_stalls = 0      # the follow attack got us there
                 f.reached = True
-        f.check_cost = 0.7 * f.check_cost + 0.3 * (self.clock.time() - now)
 
     PET_FINISH = 0.3      # a monster we fight this far down is finished before turning to the pet's attacker
 
@@ -1198,8 +1212,9 @@ class FightingMixin(Parts):
             self.count_kills(f.snap)
             if not self.counted_kill(f.mid):
                 self.ended("gone" if f.i else "taken")
-                self.log(_("{name} is gone, and none of our hits landed on it", name=mob["name"])
-                         if f.i else _("{name} was taken by someone else - next one", name=mob["name"]))
+                if not self.kill_tracker.tagged(f.mid):
+                    self.log(_("{name} is gone, and none of our hits landed on it", name=mob["name"])
+                             if f.i else _("{name} was taken by someone else - next one", name=mob["name"]))
             return
         if f.i == 0 and f.last_hp >= mob["hp"]:
             # gone before we pressed a thing: other players farm here too. Not ours to
@@ -1245,6 +1260,7 @@ class FightingMixin(Parts):
                 if rec is not None:
                     rec["moved_to"] = other       # the record's kill may be this one now
                 f.mid, f.mob, f.seen = other, o, o
+                self._fight_position(f, f.snap)
                 f.last_hp, f.last_drop, f.casts_at_drop = float(o["hp"]), self.clock.time(), casts
                 f.hit_us = f.hit_us or f.mid in self.attackers()
         return False
@@ -1318,7 +1334,7 @@ class FightingMixin(Parts):
             self.ended("leash")
             return True
         if not self.clear_shot(f.snap["self"], f.m, snap_map(f.snap)):
-            self.ended("no shot")
+            self.leave(f.mid, "no shot", self.UNSELECTED_SKIP)
             return True
         if f.closing is None or f.dist < f.closing[1] - 1.0:
             f.closing = (self.clock.time(), f.dist)
@@ -1340,31 +1356,81 @@ class FightingMixin(Parts):
         self.ended("not closing")
         return True
 
-    def _fight_press(self, f: "_Fight") -> str | None:
-        """The next press: the follow key while walking in, the picked skill (a burst until the
-        game casts it), or the profile's attack keys. "again" (go round now), "return" (the fight
-        ends), or None (pace the next press)."""
-        sb, p, m, mid = f.sb, self.p, f.m, f.mid
+    def _fight_can_press(self, f: "_Fight", skill: combat.Skill | None = None, *,
+                         follow: bool = False, retry: bool = False) -> bool:
+        """Validate the intended attack against the latest world and cast reports."""
+        now = self.clock.time()
+        if retry or now - f.position_at >= combat.SLOT_GAP:
+            self._fight_position(f, self.snap())
+        if f.seen is None or f.seen["hp"] <= 0 or self.downed(f.mid, f.start):
+            f.press_block = "again"   # the loop accounts for the finished target
+            return False
+        in_range = (f.sb.reaches(skill, f.dist) if f.sb is not None and skill is not None
+                    else f.dist <= f.rng)
+        if not in_range and not follow:
+            f.press_block = "wait" if skill is not None else "return"
+            if skill is None:
+                self.ended("out of reach")
+            return False
+        if retry and not self.clear_shot(f.snap["self"], f.m, snap_map(f.snap)):
+            self.leave(f.mid, "no shot", self.UNSELECTED_SKIP)
+            f.press_block = "return"
+            return False
+        if self.ui().get("target", f.mid) != f.mid:
+            if self.select_target(f.m) and self.ui().get("target", f.mid) == f.mid:
+                self._fight_position(f, self.snap())
+                f.press_block = "again"   # reselection can take time, so pick from the new view
+            else:
+                f.press_block = "return"
+                if f.dist >= self.SELECT_RANGE:
+                    self.ended("drifted")
+                else:
+                    self.leave(f.mid, "lost target")
+                    self.log(_("the game lost our target on {name} and won't take it back - next one",
+                               name=f.mob["name"]))
+            return False
+        if self._fight_foreign_finish(f, skill, now):
+            self.leave(f.mid, "doomed", self.FIRST_HIT)
+            f.press_block = "return"
+            return False
+        return True
+
+    def _fight_foreign_finish(self, f: "_Fight", skill: combat.Skill | None, now: float) -> bool:
+        """Recent foreign hits put it below our expected time to land a hit."""
+        tracker = self.kill_tracker
+        rows = tracker.struck.get(f.mid)
+        if not rows or tracker.tagged(f.mid) or getattr(self, "following", None):
+            return False
+        stamp, hp = rows[-1]
+        if now - stamp / 1000.0 > self.FIRST_HIT or f.m["hp"] > hp:
+            return False              # old damage, or the world already shows more HP
+        rate = tracker.struck_rate(f.mid)
+        cast = (skill or {}).get("cast") or 0.0
+        if skill is not None and f.sb is not None and combat.elf_combos.unpenalized(
+                skill, f.sb.available_to_channel_without_penalty):
+            cast = 0.0
+        return rate is not None and hp / rate < self.FIRST_HIT + cast
+
+    def _fight_press(self, f: "_Fight", *, extended: bool = False) -> str | None:
+        """Send a follow key, a picked skill, or a profile attack at a valid target."""
+        sb, p = f.sb, self.p
+        f.press_block = None
         unpenalized = sb is not None and getattr(sb, "available_to_channel_without_penalty", False)
-        if sb is not None and f.follow and f.dist > f.rng + 0.5 and not unpenalized:     # (the follow attack needs the skill book)
-            k = sb.follow_key()
-            if k:
-                # still walking in: no skill reaches yet, and the base attack's follow key keeps
-                # the game walking us after it (a plain fallback key may be the standing one)
-                self.key(k)
-                f.i += 1
-                self.sleep(0.3)
-                return "again"
+        walking_in = f.follow and f.dist > f.rng + 0.5 and not extended
+        follow_key = sb.follow_key() if sb is not None and walking_in else None
+        if follow_key and not unpenalized:
+            return self._fight_follow(f, follow_key)
         if sb is not None and (teamheal.look_after(as_bot(self), f.snap) or pets.heal_in_fight(as_bot(self), f.snap)):
             return None       # this press healed a teammate (while following) or the pet
-        picked = sb.pick(f.snap, m) if sb is not None else None
-        if not picked and sb is not None and f.follow and f.dist > f.rng + 0.5:
-            k = sb.follow_key()
-            if k:
-                self.key(k)
-                f.i += 1
-                self.sleep(0.3)
-                return "again"
+
+        def target_check(skill: combat.Skill) -> bool:
+            return self._fight_can_press(f, skill)
+
+        picked = sb.pick(f.snap, f.m, target_check=target_check) if sb is not None else None
+        if f.press_block is not None or (not isinstance(picked, tuple) and self.downed(f.mid, f.start)):
+            return f.press_block or "again"
+        if not picked and follow_key:
+            return self._fight_follow(f, follow_key)
         if sb is not None and picked == "wait":
             # sleep until the cooldown ends, or until the next check is due, whichever first
             now = self.clock.time()
@@ -1374,59 +1440,57 @@ class FightingMixin(Parts):
                 and not (sb.cls == "Elf" and picked[1] in ("Pyroblast", "Blazing Storm"))):
             if self._fight_burst(f, sb, picked):
                 return "return"
+            if f.press_block is not None:
+                return f.press_block
         elif picked:
             self.key(picked[0])
         elif sb is None or not sb.ok:
-            # No usable skill book (an old agent, keys the bot can't read, Smart skills off):
-            # press the profile's own attack keys. With a working book, pressing them would cast
-            # whatever sits on them - including a skill the player set to Never.
+            # An older agent or Smart skills off: use the profile's keys within its range.
+            if not self._fight_can_press(f):
+                return f.press_block
             self.key(p["attack_keys"][f.i % len(p["attack_keys"])])
         else:
-            # Nothing picked: an attack the player allows that is off its cooldown (sb.fallback),
-            # never the profile's keys; with none at all (every skill Never, or cooling down) wait
-            # instead of spinning on the agent.
-            spare = getattr(sb, "fallback", None)
-
-            def reached(s: dict[str, Any]) -> bool:
-                return sb.reaches(s, f.dist)
-            # At a monster past the skill's own range the server refuses the cast: leave that one
-            # for the farm loop to walk up to, never press at nothing.
-            press = spare(self.clock.time(), reached) if spare is not None else None
+            # A working book falls back only to skills that are allowed and within range.
+            press = sb.fallback(self.clock.time(), lambda skill: sb.reaches(skill, f.dist),
+                                target_check=target_check)
+            if f.press_block is not None:
+                return f.press_block
             if press:
                 self.key(press[0])
             else:
                 self.sleep(max(0.2, p.get("attack_gap", 0.35)))
         f.i += 1
-        if f.i % 3 == 0 and self.ui().get("target") != mid and not self.select_target(m):
-            if f.dist >= self.SELECT_RANGE:
-                # It drifted past the keys' reach (pull_range keeps the leash longer): end the
-                # fight here and let the farm loop walk us up to it again instead of writing
-                # the monster off for 30 s.
-                self.ended("drifted")
-                return "return"
-            self.leave(mid, "lost target")
-            self.log(_("the game lost our target on {name} and won't take it back - next one",
-                       name=f.mob["name"]))
-            return "return"
         return None
+
+    def _fight_follow(self, f: "_Fight", key: str) -> str | None:
+        if not self._fight_can_press(f, follow=True):
+            return f.press_block
+        self.key(key)
+        f.i += 1
+        self.sleep(0.3)
+        return "again"
 
     def _fight_burst(self, f: "_Fight", sb: combat.SkillBook, picked: combat.Press) -> bool:
         """Press the picked skill until the game casts it. True when the fight ends: refused again
         and again at a monster we never hurt."""
         self.burst_target = (f.mid, f.start)
+        skill = sb.skill(picked[1]) or {"name": picked[1]}
+        if skill.get("role") not in combat.CALM_ROLES:
+            self.burst_check = lambda: self._fight_can_press(f, skill, retry=True)
         try:
             cast = self.burst(picked[0], f.snap["self"].get("id"), sb.burst_time(picked[1]))
         finally:
             self.burst_target = None
+            self.burst_check = None
         if cast:
             f.refused_run = 0
             return False
-        if self.downed(f.mid, f.start):
+        if f.press_block is not None or self.downed(f.mid, f.start):
             return False          # it died mid-burst: no refusal of ours (_hit_until_down ends it)
         if f.dist > f.rng + 0.5:
             return False      # out of reach the follow attack is still walking us in
         sb.refuse(picked[1], self.clock.time())
-        if (sb.skill(picked[1]) or {}).get("role") in combat.CALM_ROLES:
+        if skill.get("role") in combat.CALM_ROLES:
             f.refused_run = 0     # a heal or buff the game wouldn't cast is not the monster's fault
             return False
         f.refused_run += 1
@@ -1462,6 +1526,7 @@ class _Fight:
         self.casts_at_drop = getattr(self.sb, "casts_done", 0)
         self.i = 0
         self.check_at = self.checked = 0.0
+        self.position_at = self.start
         self.check_cost = 0.2
         self.follow = bot.follows()
         engage = max(self.rng, bot.FOLLOW_LEASH) if self.follow else self.rng
@@ -1471,6 +1536,7 @@ class _Fight:
         self.refused_run = 0           # bursts in a row the game cast nothing for, within reach
         self.closing: tuple[float, float] | None = None   # (time, distance) while the follow attack walks us in
         self.dist = 0.0
+        self.press_block: str | None = None
 
 
     @property
