@@ -9,6 +9,10 @@
   page, ticked one by one, either added to this character's lists or replacing them. It says what
   changed ("Throw-away list: 23 put in, 4 already there"); nothing is kept until Save. Sorting the
   same list item by item for each character was a lot of work.
+- The character window has "Copy from another character" too: the Before farming or After farming
+  list (added to this character's or replacing it), the fighting settings (never the keys; each
+  skill's use only between two characters of the same class, the bot asks first otherwise) and
+  the team settings.
 
 **Fighting settings can be put back to their defaults** (untested in game)
 

@@ -990,6 +990,9 @@ msgstr "Süre sınırından sonra (&T)"
 msgid "After farming"
 msgstr "Farmdan sonra"
 
+msgid "After farming list"
+msgstr "Farm sonrası listesi"
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
 
@@ -1137,6 +1140,9 @@ msgstr "Savaş alanı liyakati"
 
 msgid "Before farming"
 msgstr "Farmdan önce"
+
+msgid "Before farming list"
+msgstr "Farm öncesi listesi"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Bir sonraki noktaya geçmeden önce (sadece birden fazla noktada)"
@@ -2020,6 +2026,15 @@ msgstr "Dövüşe devam et"
 
 msgid "Fighting"
 msgstr "Dövüş"
+
+msgid "Fighting settings (not the keys)"
+msgstr "Dövüş ayarları (tuşlar değil)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Dövüş ayarları: onunki gibi ayarlandı"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Dövüş ayarları: onunki gibi, her yeteneğin kullanımı hariç"
 
 msgid "Fighting:"
 msgstr "Dövüş:"
@@ -4541,6 +4556,12 @@ msgstr ""
 
 msgid "Team mode"
 msgstr "Takım modu"
+
+msgid "Team settings"
+msgstr "Takım ayarları"
+
+msgid "Team settings: set as theirs"
+msgstr "Takım ayarları: onunki gibi ayarlandı"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -9609,6 +9630,11 @@ msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
 msgstr ""
 "Satırdaki {name} oyuncunun adına dönüşür; bu işaretliyken onu içermeyen satır oyuncunun adıyla başlar."
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} bir {theirs}, bu karakter bir {mine}: her yeteneğin kullanımı kopyalanmaz (yetenekler farklı), yalnızca diğer dövüş ayarları. Devam edilsin mi?"
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} başkası tarafından öldürülmek üzere - sıradaki"

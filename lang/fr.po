@@ -999,6 +999,9 @@ msgstr "Après une limite de &temps"
 msgid "After farming"
 msgstr "Après le farming"
 
+msgid "After farming list"
+msgstr "Liste après le farming"
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr "Après la partie, rester en ville et &gérer l'équipe jusqu'à mon arrêt"
 
@@ -1152,6 +1155,9 @@ msgstr "Mérite de champ de bataille"
 
 msgid "Before farming"
 msgstr "Avant le farming"
+
+msgid "Before farming list"
+msgstr "Liste avant le farming"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Avant de passer au lieu suivant (seulement avec plusieurs lieux)"
@@ -2046,6 +2052,16 @@ msgstr "Continuer le combat"
 
 msgid "Fighting"
 msgstr "Combat"
+
+msgid "Fighting settings (not the keys)"
+msgstr "Réglages de combat (pas les touches)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Réglages de combat : réglés comme les siens"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr ""
+"Réglages de combat : réglés comme les siens, sauf l'usage de chaque sort"
 
 msgid "Fighting:"
 msgstr "Combat :"
@@ -4619,6 +4635,12 @@ msgstr "&Nom de l'équipe (lettres et chiffres) :"
 
 msgid "Team mode"
 msgstr "Mode équipe"
+
+msgid "Team settings"
+msgstr "Réglages d'équipe"
+
+msgid "Team settings: set as theirs"
+msgstr "Réglages d'équipe : réglés comme les siens"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -9813,6 +9835,11 @@ msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
 msgstr ""
 "{name} dans une phrase devient le nom du joueur ; une phrase qui ne le contient pas commence par son nom tant que cette case est cochée."
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} est un {theirs}, ce personnage un {mine} : l'usage de chaque sort n'est pas copié (les sorts diffèrent), seulement les autres réglages de combat. Continuer ?"
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} va être tué par quelqu'un d'autre - au suivant"

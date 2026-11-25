@@ -86,6 +86,25 @@ def team_page(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> TeamUI:
             "heal": heal, "heal_below": heal_below}
 
 
+def load_team(ui: TeamUI, p: dict[str, Any]) -> None:
+    """The tab's choices again, from the profile (after a copy from another character)."""
+    ui["accept"].SetValue(bool(p.get("team_accept", False)))
+    ui["who"].SetSelection(WHO.index(p.get("team_accept_who")) if p.get("team_accept_who") in WHO else 0)
+    ui["accept_list"].SetValue(names_text(p.get("team_accept_list")))
+    ui["remove_offline"].SetValue(bool(p.get("team_remove_offline", False)))
+    ui["offline_every"].SetValue(int(p.get("team_offline_every", 10)))
+    ui["town_only"].SetValue(bool(p.get("team_offline_town_only", False)))
+    ui["hand_over"].SetValue(bool(p.get("team_hand_over", False)))
+    ui["hand_to"].SetValue(names_text(p.get("team_hand_to")))
+    ui["create"].SetValue(bool(p.get("team_create", False)))
+    ui["name"].SetValue(str(p.get("team_name", "")))
+    ui["remake"].SetValue(bool(p.get("team_remake", False)))
+    ui["leave_others"].SetValue(bool(p.get("team_leave_others", False)))
+    ui["stay"].SetValue(bool(p.get("team_stay_in_town", False)))
+    ui["heal"].SetValue(bool(p.get("team_heal", True)))
+    ui["heal_below"].SetValue(_below(p.get("team_heal_below"), 70))
+
+
 def save_team(p: dict[str, Any], ui: TeamUI) -> None:
     """The tab's choices into the profile. ValueError (nothing changed) when a ticked choice lacks
     what it needs: a team name the game takes, someone to hand the team to, names to let in."""

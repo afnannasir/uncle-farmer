@@ -977,6 +977,9 @@ msgstr ""
 msgid "After farming"
 msgstr ""
 
+msgid "After farming list"
+msgstr ""
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
 
@@ -1119,6 +1122,9 @@ msgid "Battlefield merit"
 msgstr ""
 
 msgid "Before farming"
+msgstr ""
+
+msgid "Before farming list"
 msgstr ""
 
 msgid "Before moving on to the next spot (only with more than one spot)"
@@ -1989,6 +1995,15 @@ msgid "Fight on"
 msgstr ""
 
 msgid "Fighting"
+msgstr ""
+
+msgid "Fighting settings (not the keys)"
+msgstr ""
+
+msgid "Fighting settings: set as theirs"
+msgstr ""
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
 msgstr ""
 
 msgid "Fighting:"
@@ -4434,6 +4449,12 @@ msgid "Team &name (letters and numbers):"
 msgstr ""
 
 msgid "Team mode"
+msgstr ""
+
+msgid "Team settings"
+msgstr ""
+
+msgid "Team settings: set as theirs"
 msgstr ""
 
 msgid ""
@@ -9295,6 +9316,10 @@ msgstr ""
 
 msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
+msgstr ""
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
 msgstr ""
 
 msgid "{name} is about to be killed by someone else - next one"

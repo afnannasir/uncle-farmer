@@ -374,6 +374,12 @@ The other tabs under **Advanced** contain more detailed options, including:
 - How the character travels, including walking, cable cars, airships, teleport skills, travel items, and VIP travel.
 - Which keys are used for dialogs, discarding items, and the Action menu.
 
+**Reset the fighting settings to their defaults** (on Advanced's **Fighting** tab) puts the fighting settings back as a new character has them: the pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Your keys, bag, supplies and everything else stay as they are. A profile keeps the values older versions saved in it, so this helps when fights have become slow: there is no need to delete the whole profile. Nothing is kept until you save.
+
+### Copying settings from another character
+
+**Copy from another character** (at the bottom of the character window) takes a part of another character's settings: its **Before farming** or **After farming** list, its **fighting settings** (never its keys), or its **team settings**. For the lists, choose whether the other character's steps are added to this character's list (each one ticked here too, the ones only here staying) or replace it. Each skill's use is copied only between two characters of the same class: for another class the bot asks first and copies the rest of the fighting settings. Nothing is kept until you save. The bag's lists are copied in **Bag and supplies** (see "Copying from another character" there).
+
 ### How the bot chooses a route
 
 When travelling, Uncle Farmer combines walking with cable cars and airships whenever using a ride makes the journey shorter.

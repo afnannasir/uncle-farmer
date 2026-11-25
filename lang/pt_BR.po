@@ -999,6 +999,9 @@ msgstr "Após um &limite de tempo"
 msgid "After farming"
 msgstr "Depois da coleta"
 
+msgid "After farming list"
+msgstr "Lista depois de farmar"
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr "Depois da execução, ficar na cidade e &gerenciar a equipe até eu parar"
 
@@ -1150,6 +1153,9 @@ msgstr "Mérito no campo de batalha"
 
 msgid "Before farming"
 msgstr "Antes da coleta"
+
+msgid "Before farming list"
+msgstr "Lista antes de farmar"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Antes de ir ao próximo local (somente quando houver mais de um local)"
@@ -2041,6 +2047,15 @@ msgstr "Continuar lutando"
 
 msgid "Fighting"
 msgstr "Lutando"
+
+msgid "Fighting settings (not the keys)"
+msgstr "Configurações de luta (não as teclas)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Configurações de luta: iguais às dele"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Configurações de luta: iguais às dele, menos o uso de cada habilidade"
 
 msgid "Fighting:"
 msgstr "Lutando:"
@@ -4597,6 +4612,12 @@ msgstr "&Nome da equipe (letras e números):"
 
 msgid "Team mode"
 msgstr "Modo de equipe"
+
+msgid "Team settings"
+msgstr "Configurações de equipe"
+
+msgid "Team settings: set as theirs"
+msgstr "Configurações de equipe: iguais às dele"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -9748,6 +9769,11 @@ msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
 msgstr ""
 "{name} em uma linha é substituído pelo nome do jogador; quando esta opção está marcada, linhas sem o marcador começam com o nome dele."
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} é {theirs}, este personagem {mine}: o uso de cada habilidade não é copiado (as habilidades são outras), só as outras configurações de luta. Continuar?"
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} está prestes a ser morto por outra pessoa — tentando o próximo"

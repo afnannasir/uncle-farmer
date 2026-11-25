@@ -90,7 +90,7 @@ def test_copy_from_lists_the_other_characters_only(frame: Any, monkeypatch: pyte
     shown: list[list[str]] = []
 
     class Picker:
-        def __init__(self, _parent: Any, others: list[str]) -> None:
+        def __init__(self, _parent: Any, others: list[str], _parts: Any = ()) -> None:
             shown.append(others)
 
         def __enter__(self) -> "Picker":

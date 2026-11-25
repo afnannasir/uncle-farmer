@@ -995,6 +995,9 @@ msgstr "&Waqt ki hadd ke baad"
 msgid "After farming"
 msgstr "Farming ke baad"
 
+msgid "After farming list"
+msgstr "Farming ke baad ki list"
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
 "Run ke baad shehar mein &rukein aur team sambhalein jab tak main rok na doon"
@@ -1148,6 +1151,9 @@ msgstr "Battlefield merit"
 
 msgid "Before farming"
 msgstr "Farming se pehle"
+
+msgid "Before farming list"
+msgstr "Farming se pehle ki list"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Agli jagah par jane se pehle (sirf jab ek se zyada jagah ho)"
@@ -2036,6 +2042,15 @@ msgstr "Larte rahein"
 
 msgid "Fighting"
 msgstr "Ladai"
+
+msgid "Fighting settings (not the keys)"
+msgstr "Fighting settings (keys nahi)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Fighting settings: unke jaisi set"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Fighting settings: unke jaisi set, magar har skill ka use nahi"
 
 msgid "Fighting:"
 msgstr "Larai:"
@@ -4592,6 +4607,12 @@ msgstr "Team ka &naam (huroof aur numbers):"
 
 msgid "Team mode"
 msgstr "Team mode"
+
+msgid "Team settings"
+msgstr "Team settings"
+
+msgid "Team settings: set as theirs"
+msgstr "Team settings: unke jaisi set"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -9768,6 +9789,11 @@ msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
 msgstr ""
 "Line mein {name} khilari ka naam ban jata hai; jab yeh tick ho to jis line mein yeh na ho woh unke naam se shuru hoti hai."
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} ek {theirs} hai, yeh character ek {mine}: har skill ka use copy nahi hota (skills alag hain), sirf baaki fighting settings. Jaari rakhein?"
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} kisi aur se marne wala hai - agla"

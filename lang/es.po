@@ -993,6 +993,9 @@ msgstr "&Tras un límite de tiempo"
 msgid "After farming"
 msgstr "Después de farmear"
 
+msgid "After farming list"
+msgstr "Lista después de farmear"
+
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
 
@@ -1144,6 +1147,9 @@ msgstr "Mérito de campo de batalla"
 
 msgid "Before farming"
 msgstr "Antes de farmear"
+
+msgid "Before farming list"
+msgstr "Lista antes de farmear"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Antes de pasar al siguiente punto (solo con más de un punto)"
@@ -2030,6 +2036,15 @@ msgstr "Seguir peleando"
 
 msgid "Fighting"
 msgstr "Peleando"
+
+msgid "Fighting settings (not the keys)"
+msgstr "Ajustes de combate (no las teclas)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Ajustes de combate: como los suyos"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Ajustes de combate: como los suyos, salvo el uso de cada habilidad"
 
 msgid "Fighting:"
 msgstr "Peleando:"
@@ -4574,6 +4589,12 @@ msgstr ""
 
 msgid "Team mode"
 msgstr "Modo equipo"
+
+msgid "Team settings"
+msgstr "Ajustes de equipo"
+
+msgid "Team settings: set as theirs"
+msgstr "Ajustes de equipo: como los suyos"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -9694,6 +9715,11 @@ msgid ""
 "{name} in a line becomes the player's name; a line without it starts with their name while this is ticked."
 msgstr ""
 "{name} en una línea se convierte en el nombre del jugador; una línea sin él empieza con su nombre mientras esto esté marcado."
+
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} es {theirs}, este personaje {mine}: el uso de cada habilidad no se copia (las habilidades son otras), solo los demás ajustes de combate. ¿Seguir?"
 
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} está a punto de ser eliminado por otro: pasando al siguiente"

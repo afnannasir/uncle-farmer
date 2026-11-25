@@ -18,8 +18,9 @@ from .. import settings, speech, stats
 from ..engine import bagcopy, bagrules, gearthrow
 from ..engine.town import shard_catalog
 from ..i18n import N_, _
-from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, error, group, info, labeled, modal,
+from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, info, labeled, modal,
                      ok_cancel, opens, page, pick, popup_actions, save_file, tabs)
+from .copyfrom import CopyFromDialog, other_characters
 
 SOURCE_LABELS = (("both", N_("Storehouse, then the shop")), ("storage", N_("Storehouse only")),
                  ("buy", N_("Shop only")), ("tell", N_("Don't refill, just tell me")))
@@ -32,39 +33,6 @@ COPY_PARTS = (("throw", N_("Throw-away list (shards and items)")), ("sell", N_("
               ("full", N_("Full bag and equipment by rarity")))
 LIST_NAMES = {"throw": N_("Throw-away list"), "sell": N_("Sell list"), "store": N_("Storehouse list"),
               "keep": N_("Keep list")}
-
-
-class CopyFromDialog(Dialog):
-    """Which character, which parts of its bag settings, and whether they add to this one's or
-    replace them."""
-
-    def __init__(self, parent: wx.Window, others: Sequence[str]) -> None:
-        super().__init__(parent, title=_("Copy from another character"), style=wx.DEFAULT_DIALOG_STYLE)
-        self.others = list(others)
-        root = wx.BoxSizer(wx.VERTICAL)
-        f = Form(self)
-        self.who = f.choice(_("Copy &from:"), [settings.profile_display(k) for k in self.others], 0)
-        self.how = f.choice(_("&How:"), [_("Add to this character's lists (what is only here stays)"),
-                                          _("Replace this character's lists with theirs")], 0)
-        root.Add(f.grid, 0, wx.EXPAND | wx.ALL, 12)
-        self.parts = labeled(self, root, _("&What to copy:"),
-                             lambda w: wx.CheckListBox(w, choices=[_(label) for _k, label in COPY_PARTS],
-                                                       size=wx.Size(-1, 140)), 1)
-        self.parts.Check(0, True)
-        ok_cancel(self, root, _("Copy"))
-        self.SetSizerAndFit(root)
-        self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
-
-    def picked(self) -> tuple[str, list[str], bool]:
-        """(the character, the parts' keys, replace)."""
-        parts = [COPY_PARTS[i][0] for i in range(len(COPY_PARTS)) if self.parts.IsChecked(i)]
-        return self.others[max(0, self.who.GetSelection())], parts, self.how.GetSelection() == 1
-
-    def on_ok(self, _evt: wx.Event) -> None:
-        if not self.picked()[1]:
-            error(self, _("Tick at least one thing to copy."))
-            return
-        self.EndModal(wx.ID_OK)
 
 
 class SortLists:
@@ -218,12 +186,11 @@ class BagManagerDialog(Dialog):
     def on_copy(self) -> None:
         """Copy one character's throw-away list (or any part of the bag settings) to this one: each
         list sorted item by item for every character was a lot of work. Nothing is kept until Save."""
-        others = [k for k in settings.profiles()
-                  if k != self.character and not settings.same_character(k, self.character)]
+        others = other_characters(self.character)
         if not others:
             info(self, _("No other character has settings yet."))
             return
-        with CopyFromDialog(self, others) as d:
+        with CopyFromDialog(self, others, COPY_PARTS) as d:
             if d.ShowModal() != wx.ID_OK:
                 return
             source, parts, replace = d.picked()
