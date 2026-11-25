@@ -47,6 +47,12 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
+**Private message jobs without a run use the character's own settings** (untested in game)
+
+- With no run going, a private message's job (wait, come, a team invite...) built its character's
+  settings name without the server when the Games list named someone else: it found no saved
+  file, ran with the default settings, and "wait" answered it didn't know the character's account.
+
 **"Skip this list on the first farming map" knows the drop time shares** (untested in game)
 
 - With spots that share the day's drop time, the first spot's share may be used up when the run

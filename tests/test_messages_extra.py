@@ -980,3 +980,26 @@ def test_an_unexpected_messenger_error_leaves_a_traceback(monkeypatch: pytest.Mo
     m.run()                      # must not take the thread (or the test) down
     assert crashes and "7" in crashes[0][0]
     assert m.ready is False
+
+
+def test_idle_bot_loads_the_character_s_own_profile_with_its_server(monkeypatch: pytest.MonkeyPatch) -> None:
+    # without the server the key named no saved file: default settings, and "wait" knew no account
+    host = FakeHost()
+    host.character_ = messages.settings.character_profile("Other", 7, "S1")
+    m = make(host)                                  # the list still names who was there before
+    m.fake.mem = {"ok": True, "self": {"name": "Farmer", "id": 41}}
+    monkeypatch.setattr(messages, "server_name", stand_in(messages.server_name, lambda link: "S2"))
+    loaded: list[str] = []
+
+    class FakeBot:
+        pass
+    def made(*_a: object, **_k: object) -> Bot:
+        return as_kind(Bot, FakeBot())
+
+    def load(character: str) -> dict[str, Any]:
+        loaded.append(character)
+        return {}
+    monkeypatch.setattr(messages, "Bot", made)
+    monkeypatch.setattr(messages.settings, "load_profile", stand_in(messages.settings.load_profile, load))
+    m.idle_bot()
+    assert loaded == [messages.settings.character_profile("Farmer", 41, "S2")]
