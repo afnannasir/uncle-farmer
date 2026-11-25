@@ -18,7 +18,7 @@ import re
 import threading
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from typing import Any
+from typing import Any, cast
 
 from .. import atlas, gamelang, jsonio as json, knowledge, paths, stats, travel
 from ..clock import clock_for
@@ -103,8 +103,71 @@ Npc = tuple[int, str, float, float]      # (map, name, x, y)
 Place = tuple[int, tuple[float, float] | None]     # (map, optional cell)
 
 
+Planner = Callable[[int, tuple[float, float], int, tuple[float, float] | None], tuple[list[dict[str, Any]] | None, float | None]]
+
+
+def _planner(b: Bot) -> Planner:
+    """Plans as this character's trips are planned (rides, VIP, travel items, teleport spells):
+    (legs, cost), or (None, None) when there is no way."""
+    me = b.me()
+    rows = b.bag_rows()
+    purse = travel.arnebia_in(rows)
+    rides, off = travel.ride_rules(b.p, int(me.get("level") or 0))
+    spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
+
+    def plan(from_map: int, from_cell: tuple[float, float], to_map: int,
+             to_cell: tuple[float, float] | None) -> tuple[list[dict[str, Any]] | None, float | None]:
+        legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
+                                 transport=rides, vip=rides_free(b), avoid=off,
+                                 bag=rows if b.p.get("use_travel_items", False) else [],
+                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse, spells=spells)
+        return (None, None) if legs is None else (legs, cost)
+    return plan
+
+
+def _leaves_blind(legs: Sequence[object]) -> bool:
+    """A plan that starts by leaving a map whose way out isn't known: the Action menu's "leave",
+    or a gang base's own exit (no destination in the map data)."""
+    first = legs[0] if legs else None
+    if not isinstance(first, Mapping):
+        return False
+    leg = cast("Mapping[str, Any]", first)
+    return leg.get("do") == "leave" or (leg.get("do") == "exit" and leg.get("dest") is None)
+
+
+def _blind_choice(b: Bot, rows: Sequence[Npc], plan: Planner) -> bool:
+    """Choosing among these from here would be a guess: we stand in a map we can't plan our way out
+    of (a gang base, a secret room, a dungeon, an event map) and haven't seen where its way out puts
+    us, none of them is on this map, and every way to two or more of them starts with that unknown
+    way out - so they all cost the same, and the data's first used to win. A travel item or a
+    teleport spell that goes straight somewhere known makes it a real choice, made from here."""
+    here = b.map_id()
+    if not travel.is_instance(here) or here in ways_out(b) or any(r[0] == here for r in rows):
+        return False
+    me = b.me()
+    reached = 0
+    for mid, _name, x, y in rows:
+        legs, _cost = plan(here, (me["x"], me["y"]), mid, (x, y + 1))
+        if legs is None:
+            continue
+        if not _leaves_blind(legs):
+            return False
+        reached += 1
+    return reached >= 2
+
+
+def _step_out(b: Bot) -> bool:
+    """Out of the map we stand in, so a choice is made from where we come out. True when we left."""
+    here = b.map_id()
+    leave = getattr(b, "leave_here", None)
+    if leave is None:
+        return False
+    b.log(_("leaving {map} first, to find the nearest from outside", map=atlas.label(here)))
+    return bool(leave()) and b.map_id() != here
+
+
 def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
-            back_to: Place | None = None) -> Npc | None:
+            back_to: Place | None = None, *, step_out: bool = True) -> Npc | None:
     """The NPC (of that role, or from candidates) cheapest to reach from here: (map, name, x, y).
 
     back_to: where the trip goes on to afterwards (a farming errand goes back to its farm).
@@ -113,34 +176,28 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
 
     From inside a map we can't plan our way out of (a gang base, a dungeon) every other map costs
     the same unknown "leave", so the first NPC in the data's order used to win: a Gem Maker in the
-    gang base entered from central plains went on to Mario Basin's craftsman. There, an NPC on
-    another map is judged from where the way out puts us, when that is known (ways_out)."""
+    gang base entered from central plains went on to Mario Basin's craftsman, an XP loser started
+    in a gang base went to Mario Basin's village with Aria Village beside the base's way out. When
+    where the way out puts us is known (ways_out: we came in, or left, this run), an NPC on another
+    map is judged from there. When it isn't and the choice would be blind (_blind_choice), we get
+    out first and choose from where we come out (step_out=False: choose without moving)."""
+    rows = list(candidates if candidates is not None else knowledge.service_npcs(role or ""))
+    plan = _planner(b)
+    if step_out and _blind_choice(b, rows, plan) and _step_out(b):
+        return nearest(b, role, rows, back_to, step_out=False)
     here = b.map_id()
     me = b.me()
     out = ways_out(b).get(here) if travel.is_instance(here) else None
     best: tuple[float, Npc] | None = None
-    rows = b.bag_rows()
-    purse = travel.arnebia_in(rows)
-    rides, off = travel.ride_rules(b.p, int(me.get("level") or 0))
-    spells = teleskill.options(b)        # a Mage or an Elf teleports: a far city may be near
-
-    def cost_of(from_map: int, from_cell: tuple[float, float], to_map: int,
-                to_cell: tuple[float, float] | None) -> float | None:
-        legs, cost = travel.plan(from_map, from_cell, to_map, to_cell, with_cost=True,
-                                 transport=rides, vip=rides_free(b), avoid=off,
-                                 bag=rows if b.p.get("use_travel_items", False) else [],
-                                 hearth_home=b.p.get("hearth_home") or None, arnebia=purse, spells=spells)
-        return None if legs is None else cost
-
-    for mid, name, x, y in (candidates if candidates is not None else knowledge.service_npcs(role or "")):
+    for mid, name, x, y in rows:
         start_map, start_cell, extra = here, (me["x"], me["y"]), 0.0
         if out is not None and mid != here:
             start_map, start_cell, extra = out[0], out[1], travel.LEAVE_COST
-        cost = cost_of(start_map, start_cell, mid, (x, y + 1))
+        _legs, cost = plan(start_map, start_cell, mid, (x, y + 1))
         if cost is None:
             continue
         if back_to is not None:
-            back = cost_of(mid, (x, y + 1), back_to[0], back_to[1])
+            _back, back = plan(mid, (x, y + 1), back_to[0], back_to[1])
             if back is None:
                 continue          # no way on from there: a dead end for this trip
             cost += back
@@ -148,25 +205,6 @@ def nearest(b: Bot, role: str | None, candidates: Sequence[Npc] | None = None,
         if best is None or cost < best[0]:
             best = (cost, (mid, name, x, y))
     return best[1] if best else None
-
-
-def _step_out_first(b: Bot, target: Npc | None) -> bool:
-    """In a gang base or a secret room whose way out we haven't seen yet (the run started inside
-    it), with the chosen NPC on another map: get out first, so the nearest one is chosen from where
-    we come out rather than by the data's order. Both send us back to where we came in from, which
-    the map data can't say: from a secret room entered from Tulip City, every Shard Broker cost the
-    same "leave", and the one on central plains won - a cable car ride away from Tulip City's.
-    (Dungeons are left as travel plans it: a travel item may beat the Action menu there.) True
-    when we left (choose again)."""
-    here = b.map_id()
-    closed = travel.gang_exit(here) is not None or atlas.kind(here) == "secret_room"
-    if target is None or target[0] == here or not closed or here in ways_out(b):
-        return False
-    leave = getattr(b, "leave_here", None)
-    if leave is None:
-        return False
-    b.log(_("leaving {map} first, to find the nearest from outside", map=atlas.label(here)))
-    return bool(leave()) and b.map_id() != here
 
 
 def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequence[Npc] | None = None,
@@ -183,8 +221,6 @@ def visit(b: Bot, role: str | None, name: str | None = None, candidates: Sequenc
         target = (known["map"], known["name"], known["x"], known["y"]) if known else None
     else:
         target = find(None)
-    if not name and _step_out_first(b, target):
-        target = find(candidates or None)
     if target is None and candidates:
         raise Stopped(_("none of the {n} places that could do it can be reached from {map}",
                         n=len(candidates), map=atlas.label(b.map_id())))

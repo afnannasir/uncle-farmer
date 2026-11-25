@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
+
+- A run or a tool that started inside a gang base, a secret room or a dungeon, before the bot had seen
+  where its way out leads, saw every place outside at the same cost and took the first one in the data.
+  An XP loser started in a gang base went for the village on Mario Basin, a cable car and an airship
+  away, with Tuneful Wetland's villages right outside. The same guess picked the XP loser's guard or
+  town, the restock town, the shop to buy from and the order of the bounty officers.
+- Now, when the choice would be such a guess, the bot leaves first and chooses from where it comes out.
+  A way out already seen this run is used as before, without leaving. A travel item or a teleport
+  spell that goes somewhere known still makes the choice from inside, so it isn't wasted.
+
 **Gem Maker: stock shards, and keep finished gems in the storehouse** (not yet tried in the game: the
 tests use a pretend craftsman, market and storehouse)
 

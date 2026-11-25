@@ -255,11 +255,15 @@ def test_visit_from_a_gang_base_with_no_known_way_out_steps_out_first() -> None:
     assert npc == next(n[1] for n in knowledge.service_npcs("storehouse") if n[0] == CENTRAL)
 
 
-def test_visit_from_a_dungeon_leaves_it_to_travel() -> None:
-    b = PlaceBot(1503, (10, 10))                 # Spider cave: a travel item may beat its Action menu
+def test_visit_from_a_dungeon_with_no_travel_item_steps_out_first_too() -> None:
+    # Spider cave: with no travel item every storehouse costs the same "leave" - a blind choice.
+    # (With one that goes somewhere known it is a real choice, made from inside: test_choose_from_outside.)
+    b = PlaceBot(1503, (10, 10))
     b.leave_to = (CENTRAL, ENTRANCE_1041)
-    town.visit(as_bot(b), "storehouse")
-    assert b.left == 0 and len(b.travels) == 1
+    npc = town.visit(as_bot(b), "storehouse")
+    assert b.left == 1
+    assert b.travels == [CENTRAL]
+    assert npc == next(n[1] for n in knowledge.service_npcs("storehouse") if n[0] == CENTRAL)
 
 
 TULIP = 1081                                    # Tuneful Wetland, Tulip City's square
