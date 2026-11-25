@@ -4672,6 +4672,10 @@ msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
 msgid "The character hasn't learned {skill}."
 msgstr "Character ne {skill} nahi seekhi."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"character {here} par hai, {map} par nahi: pehle is spot ke map par jayein."
+
 msgid "The character's plan"
 msgstr "Character ka plan"
 
@@ -6771,6 +6775,9 @@ msgstr "hunting bounties: {list}"
 msgid "in a no-go circle of this farming spot"
 msgstr "is farming spot ke no-go circle mein"
 
+msgid "in a no-go circle of this spot"
+msgstr "is spot ke no-go circle mein"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "elite ya boss zone mein, jis se hum door rehte hain"
 
@@ -7224,6 +7231,10 @@ msgid ""
 msgstr ""
 "is character ke liye bahar jama karne ki koi jagah nahi - kisi jagah khare ho kar use Tools, Gathering mein shamil karein"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr ""
+"is spot ke kisi patrol point tak chal kar nahi ja sakte: random patrol ho raha hai"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "{pet} naam ka koi pet nahi (pets: {pets})"
 
@@ -7669,6 +7680,9 @@ msgstr "patloon"
 
 msgid "patrol is random, full, quick, short or points"
 msgstr "patrol random, full, quick, short ya points hai"
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr "patrol point {x},{y} tak {map} par chal kar nahi ja sakte - chhor diya"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr "patrol=points ke liye points=x,y;x,y;... chahiye"

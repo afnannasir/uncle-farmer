@@ -4509,6 +4509,9 @@ msgstr ""
 msgid "The character hasn't learned {skill}."
 msgstr ""
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+
 msgid "The character's plan"
 msgstr ""
 
@@ -6468,6 +6471,9 @@ msgstr ""
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
+msgid "in a no-go circle of this spot"
+msgstr ""
+
 msgid "in an elite or boss zone we keep out of"
 msgstr ""
 
@@ -6898,6 +6904,9 @@ msgid ""
 "no outside place to gather at for this character - stand on one and add it in Tools, Gathering"
 msgstr ""
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr ""
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr ""
 
@@ -7315,6 +7324,9 @@ msgid "pant legs"
 msgstr ""
 
 msgid "patrol is random, full, quick, short or points"
+msgstr ""
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
 msgstr ""
 
 msgid "patrol=points needs points=x,y;x,y;..."

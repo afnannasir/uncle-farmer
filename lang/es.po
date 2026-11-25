@@ -4650,6 +4650,10 @@ msgstr "La cueva (un personaje entra en una cueva por día de juego)"
 msgid "The character hasn't learned {skill}."
 msgstr "El personaje no ha aprendido {skill}."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"El personaje está en {here}, no en {map}: ve primero al mapa de este lugar."
+
 msgid "The character's plan"
 msgstr ""
 
@@ -6729,6 +6733,9 @@ msgstr ""
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
+msgid "in a no-go circle of this spot"
+msgstr "en un círculo prohibido de este lugar"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "en una zona de élite o jefe de la que nos mantenemos alejados"
 
@@ -7180,6 +7187,10 @@ msgid ""
 msgstr ""
 "no hay lugar fuera donde recolectar para este personaje: colócate en uno y añádelo en Herramientas, Recolección"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr ""
+"no se puede llegar a pie a ningún punto de patrulla de este lugar: patrulla al azar"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "no hay ninguna mascota llamada {pet} (mascotas: {pets})"
 
@@ -7620,6 +7631,10 @@ msgstr ""
 
 msgid "patrol is random, full, quick, short or points"
 msgstr ""
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr ""
+"no se puede llegar a pie al punto de patrulla {x},{y} en {map}: se deja fuera"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""

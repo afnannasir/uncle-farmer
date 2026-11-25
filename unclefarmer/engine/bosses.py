@@ -141,6 +141,13 @@ def clear_of(c: Sequence[float], circles: Sequence[tuple[float, float, float]]) 
     return all(math.hypot(c[0] - x, c[1] - y) >= r for x, y, r in circles)
 
 
+def player_no_go(bot: object) -> list[tuple[float, float, float]]:
+    """The farming spot's own no-go circles (x, y, radius), drawn by the player: never walked into,
+    whatever the walk is for - the patrol kept out of them, but the no-kill watchdog, walking off
+    from a boss, the chest hunt and the walks to a chest or a corpse went straight through."""
+    return list(getattr(bot, "spot_no_go", ()) or ())
+
+
 def keep_away(bot: Bot, snap: dict[str, Any], map_id: int, area: Sequence[float] | None) -> bool:
     """A boss within boss_distance of us, or a demonized elite within ELITE_KEEP (skip_demonized_elites,
     and not one attacking us): walk to the reachable spot furthest from them (the farm area first).
@@ -212,9 +219,10 @@ def _furthest(bot: Bot, map_id: int, area: Sequence[float] | None, me: dict[str,
     def spacing(c: Sequence[float]) -> float:
         return min(math.hypot(c[0] - x["x"], c[1] - x["y"]) for x in threats)
     radius = int(keep) + 20
-    cells = [c for c in (bot.random_cell(map_id, area, me, radius=radius) for _i in range(12)) if c]
+    mine = player_no_go(bot)
+    cells = [c for c in (bot.random_cell(map_id, area, me, radius=radius, clear_of=mine) for _i in range(12)) if c]
     if area:
-        cells += [c for c in (bot.random_cell(map_id, None, me, radius=radius) for _i in range(8)) if c]
+        cells += [c for c in (bot.random_cell(map_id, None, me, radius=radius, clear_of=mine) for _i in range(8)) if c]
     if not cells:
         return None
     best = max(cells, key=spacing)

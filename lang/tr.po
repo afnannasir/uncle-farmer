@@ -4615,6 +4615,10 @@ msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 msgid "The character hasn't learned {skill}."
 msgstr "Karakter {skill} becerisini öğrenmemiş."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"Karakter {map} üzerinde değil, {here} üzerinde: önce bu noktanın haritasına git."
+
 msgid "The character's plan"
 msgstr ""
 
@@ -6674,6 +6678,9 @@ msgstr ""
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
+msgid "in a no-go circle of this spot"
+msgstr "bu noktanın yasak dairesinde"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
 
@@ -7116,6 +7123,9 @@ msgid ""
 msgstr ""
 "bu karakter için dışarıda toplanacak yer yok - birinin üstünde dur ve Araçlar, Toplama'dan ekle"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr "bu noktanın hiçbir devriye noktasına yürünemiyor: rastgele devriye"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "{pet} adında evcil hayvan yok (evcil hayvanlar: {pets})"
 
@@ -7546,6 +7556,10 @@ msgstr ""
 
 msgid "patrol is random, full, quick, short or points"
 msgstr ""
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr ""
+"{map} üzerinde {x},{y} devriye noktasına yürünemiyor - dışarıda bırakıldı"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""

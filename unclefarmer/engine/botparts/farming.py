@@ -147,7 +147,7 @@ class FarmingMixin(Parts):
             avoid += [z["rect"] for z in atlas.zones(map_id, ("boss",))]
         loop = atlas.patrol_loop(map_id, patrol) if patrol in ("full", "quick", "short") else None
         if patrol == "points" and points:
-            loop = [(int(p[0]), int(p[1])) for p in points]
+            loop = self._patrol_points(map_id, points)
         self.spot_no_go = [(float(c[0]), float(c[1]), float(c[2])) for c in nogo]
         # On a patrol loop, only what is within chase_range walking steps is chased: the loop
         # passes near the rest (a short loop keeps nearly the whole map that close). Wandering at
@@ -727,6 +727,22 @@ class FarmingMixin(Parts):
         self.restock_looked = now
         self.restock_now()
 
+    POINT_NEAR = 20       # cells a patrol point may be moved to reach walkable ground
+
+    def _patrol_points(self, map_id: int, points: Sequence[Sequence[int]]) -> list[tuple[int, int]] | None:
+        """The player's patrol points that can be walked to from here: each on walkable ground (or
+        the nearest such cell within POINT_NEAR), never on a map exit, in our part of the map. They
+        were taken as typed: one in a wall or out of reach stopped the spot ("can't be reached"),
+        one on a door walked us off the map once a lap. The others are said once; none left: the
+        patrol goes at random. None for no points."""
+        good, bad = usable_points(map_id, points, self.me())
+        for p in bad:
+            self.log(_("patrol point {x},{y} can't be walked to on {map} - left out",
+                       x=p[0], y=p[1], map=atlas.label(map_id)), speak=True)
+        if bad and not good:
+            self.log(_("no patrol point of this spot can be walked to: patrolling at random"), speak=True)
+        return good or None
+
     def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40, *,
                     clear_of: Sequence[tuple[float, float, float]] = (),
                     keep_out: Sequence[tuple[float, float, float, float]] = ()) -> tuple[int, int] | None:
@@ -757,6 +773,25 @@ class FarmingMixin(Parts):
                 continue
             return c
         return None
+
+
+def usable_points(map_id: int, points: Sequence[Sequence[int]], me: dict[str, Any] | None,
+                  near: int = 20) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(the patrol points as walked to, the ones that can't be): each moved to the nearest walkable
+    cell within near when it is a wall, never a map exit, in our part of the map (me)."""
+    m = atlas.model(map_id)
+    mx, my = (int(me["x"]), int(me["y"])) if me else (0, 0)
+    ours = m.comp_of(mx, my) if me and m.ok(mx, my) else None
+    good: list[tuple[int, int]] = []
+    bad: list[tuple[int, int]] = []
+    for p in points:
+        c = (int(p[0]), int(p[1]))
+        at = c if m.ok(*c) else m.nearest_walkable(c[0], c[1], near, comp=ours)
+        if at is None or m.portal[at[1], at[0]] or (ours is not None and m.comp_of(*at) != ours):
+            bad.append(c)
+        else:
+            good.append((int(at[0]), int(at[1])))
+    return good, bad
 
 
 def _next_clear(loop: list[tuple[int, int]], i: int,

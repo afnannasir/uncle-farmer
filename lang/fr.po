@@ -4699,6 +4699,10 @@ msgstr "La grotte (un personnage entre dans une grotte par jour du jeu)"
 msgid "The character hasn't learned {skill}."
 msgstr "Le personnage n'a pas appris {skill}."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"Le personnage est sur {here}, pas sur {map} : aller d'abord sur la carte de ce spot."
+
 msgid "The character's plan"
 msgstr "Le plan du personnage"
 
@@ -6811,6 +6815,9 @@ msgstr "primes de chasse : {list}"
 msgid "in a no-go circle of this farming spot"
 msgstr "dans un cercle interdit de ce spot de farming"
 
+msgid "in a no-go circle of this spot"
+msgstr "dans un cercle interdit de ce spot"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "dans une zone d'élite ou de boss évitée"
 
@@ -7261,6 +7268,10 @@ msgid ""
 msgstr ""
 "aucun lieu de récolte extérieur pour ce personnage : placez-vous sur un lieu et ajoutez-le dans Outils, Récolte"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr ""
+"aucun point de patrouille de ce spot n'est accessible à pied : patrouille au hasard"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "aucun familier nommé {pet} (familiers : {pets})"
 
@@ -7704,6 +7715,10 @@ msgstr "pantalons"
 
 msgid "patrol is random, full, quick, short or points"
 msgstr "patrol vaut random, full, quick, short ou points"
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr ""
+"le point de patrouille {x},{y} n'est pas accessible à pied sur {map} : laissé de côté"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr "patrol=points demande points=x,y;x,y;..."

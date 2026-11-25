@@ -47,6 +47,18 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
+**Patrol points are checked, and no-go circles hold for every walk** (untested in game)
+
+- A spot's own patrol points were walked to as typed: one in a wall or out of reach stopped the
+  spot ("can't be reached"), one on a map exit walked the character off the map once a lap. Each
+  point is now checked when the spot begins - walkable ground (or the nearest such cell close by),
+  never an exit, in reach - and the others are said and left out; with none left the patrol goes
+  at random. "Add where I stand" (points and circles) refuses a place on another map than the
+  spot's: its cell was that other map's.
+- The no-go circles drawn for a spot kept only the patrol and the choice of targets out of them.
+  The no-kill watchdog, walking off from a boss, the chest hunt and the walks to a chest or a
+  corpse now keep out of them too.
+
 **Every row of the Games list follows its character** (untested in game)
 
 - Only the selected game's row was read again: after Switch account in another game, its row kept

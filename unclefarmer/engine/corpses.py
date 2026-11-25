@@ -144,6 +144,7 @@ def _to_walk_to(b: Bot, snap: dict[str, Any], st: Harvest, now: float,
     counted: dict[int, float] = getattr(b, "counted", {}) or {}
     keep = b.p.get("boss_distance", 40)
     boss_list = bosses.in_sight(snap) if walk and keep else []
+    mine = bosses.player_no_go(b)
     near: tuple[float, dict[str, Any]] | None = None
     for d, e in further:
         if not walk:
@@ -152,6 +153,8 @@ def _to_walk_to(b: Bot, snap: dict[str, Any], st: Harvest, now: float,
             why = _("further off than we walk for a corpse")
         elif boss_list and bosses.too_close(e, boss_list, keep):
             why = _("near a boss")
+        elif mine and not bosses.clear_of((e["x"], e["y"]), mine):
+            why = _("in a no-go circle of this spot")
         else:
             steps = b.walk_dist(snap, e, WALK_STEPS)
             if steps <= WALK_STEPS:
