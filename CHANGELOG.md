@@ -47,6 +47,14 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
+**Every row of the Games list follows its character** (untested in game)
+
+- Only the selected game's row was read again: after Switch account in another game, its row kept
+  the character that had left it until a game opened or closed. The pause key in that game then
+  ran that character's last plan (logging it back in at the login screen), and the "start" and
+  results private messages, Shift+Pause, come and follow went by the old name. Every game's
+  character is now read again every 20 seconds, the rows rewritten in place.
+
 **A hit no longer stops the wait for a stone or a way out** (untested in game)
 
 - The hearthstone and the teleport stones are items, not spells: nothing a monster does stops them

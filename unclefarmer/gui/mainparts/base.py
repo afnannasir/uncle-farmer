@@ -106,6 +106,8 @@ class FrameParts(wx.Frame):
     destroyed: bool
     snap: tuple[int, dict[str, Any] | None, float] | None     # (pid, reading, when): the last reading
     snap_busy: bool
+    names_busy: bool = False                # every game's character being read (keep_names)
+    names_read: float = -1e9                 # when that was last asked
     scanning: set[str]
     scanned: dict[str, float]               # character -> when it was last scanned
     pending_logins: dict[str, float]        # profile -> when automatic login opened its client
