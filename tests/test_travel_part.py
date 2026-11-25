@@ -1080,10 +1080,25 @@ def vip_leg() -> dict[str, Any]:
     return {**npc_leg(), "vip": True}
 
 
+def test_one_free_vip_ride_that_came_to_nothing_is_tried_again_not_called_a_lost_vip(clock: Clock) -> None:
+    # on one player's computer menu choices often did nothing: one such free ride used to end the
+    # VIP for the run (a fare on every ride, every airship dropped under 1000 arnebia)
+    b = Bot(clock)
+    b.p["vip"] = True
+    avoid: set[Any] = set()
+    failed: dict[Any, int] = {}
+    assert b._take_leg(vip_leg(), avoid, failed) is False
+    assert rides_free(b) and failed == {3: 1} and avoid == set()     # counted as a ride's failure: once more
+    assert any("trying the" in line and "once more" in line for line in b.lines)
+    assert not any("VIP" in line for line in b.lines)
+
+
 def test_a_refused_free_vip_ride_says_so_and_plans_fares_from_then_on(clock: Clock) -> None:
     b = Bot(clock)
     b.p["vip"] = True
     assert rides_free(b)
+    assert b.ride(vip_leg()) is False
+    assert rides_free(b)                             # once: the game may have ignored the choice
     assert b.ride(vip_leg()) is False
     assert any("didn't take me for free" in line and "VIP" in line for line in b.lines)
     assert not any("didn't take me anywhere" in line for line in b.lines)     # one line, not two
@@ -1096,12 +1111,15 @@ def test_a_refused_free_vip_ride_is_not_held_against_the_npc(clock: Clock) -> No
     b.p["vip"] = True
     avoid: set[Any] = set()
     failed: dict[Any, int] = {}
-    assert b._take_leg(vip_leg(), avoid, failed) is False
-    assert avoid == set() and failed == {}           # the next plan rides the same NPC, at its fare
+    assert b._take_leg(vip_leg(), avoid, failed) is False           # the first miss: once more
+    b.lines.clear()
+    assert b._take_leg(vip_leg(), avoid, failed) is False           # the second: the VIP is gone
+    assert not rides_free(b)
+    assert avoid == set() and failed == {3: 1}       # the next plan rides the same NPC, at its fare
     assert not any("once more" in line or "leaving out" in line for line in b.lines)
     # ... and the paid entry failing after that counts as any ride's failure does
     assert b._take_leg(npc_leg(), avoid, failed) is False
-    assert failed == {3: 1} and any("didn't take me anywhere" in line for line in b.lines)
+    assert failed == {3: 2} and any("didn't take me anywhere" in line for line in b.lines)
 
 
 def test_a_free_vip_ride_the_npc_never_offered_is_not_called_a_vip_refusal() -> None:
@@ -1122,6 +1140,7 @@ def test_a_free_vip_ride_answered_with_a_no_is_a_vip_refusal_too() -> None:
     b.wait_dialog_value = {"open": 1, "top": {}}
     b.dialog_value = {"open": 1, "top": {"rows": [[entry("no chance")]]}}
     b.find_entry = lambda top, pattern: None
+    assert b.ride(vip_leg()) is False and rides_free(b)
     assert b.ride(vip_leg()) is False
     assert any("said no" in line for line in b.lines) and any("for free" in line for line in b.lines)
     assert not rides_free(b)

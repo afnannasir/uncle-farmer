@@ -8984,6 +8984,9 @@ msgstr "le {kind} {name} n'existe plus"
 msgid "the {npc} didn't take me anywhere"
 msgstr "{npc} ne m'a emmené nulle part"
 
+msgid "the {npc} didn't take me for free"
+msgstr "{npc} ne m'a pas emmené gratuitement"
+
 msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""

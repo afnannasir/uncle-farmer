@@ -8794,6 +8794,9 @@ msgstr "{kind} {name} artık mevcut değil"
 msgid "the {npc} didn't take me anywhere"
 msgstr "{npc} beni hiçbir yere götürmedi"
 
+msgid "the {npc} didn't take me for free"
+msgstr "{npc} beni ücretsiz götürmedi"
+
 msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""

@@ -20,6 +20,14 @@
 - A town shop whose list really lacks the item is left out for a week, then tried again. Write-offs
   saved by an earlier version have no date and have run out already.
 
+**A VIP keeps riding free after one ride that didn't start** (untested in game)
+
+- A free VIP ride that came to nothing once made the bot decide the VIP had run out: it said
+  "check that your VIP is still active", took the fare on every ride and left out every airship under 1000
+  arnebia for the rest of the run. One such ride may be the game ignoring the menu choice, so the
+  NPC is now tried once more, as any failed ride is (with the keys when the Keys box is ticked); a
+  second free ride of it that comes to nothing still means the VIP is gone.
+
 **What the bag held before the run stays the player's** (untested in game)
 
 - The bag was read once when farming began, and a reading the game didn't answer (a short drop, a

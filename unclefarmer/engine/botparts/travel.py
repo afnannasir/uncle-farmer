@@ -835,7 +835,7 @@ class TravelMixin(Parts):
                 self.log(_("the {npc} said no - see logs\\dialogs.log", npc=leg["npc"]), speak=True)
                 self.close_dialogs()
                 if leg.get("vip"):
-                    self._vip_refused(leg)
+                    self._vip_missed(leg)
                 return False
             self.choose(CONFIRM)
         end = self.clock.time() + 15
@@ -855,7 +855,7 @@ class TravelMixin(Parts):
                 return True
             self.sleep(0.3)
         if leg.get("vip"):
-            self._vip_refused(leg)
+            self._vip_missed(leg)
         else:
             self.log(_("the {npc} didn't take me anywhere", npc=leg["npc"]), speak=True)
         self.close_dialogs()
@@ -871,6 +871,21 @@ class TravelMixin(Parts):
         rides_too_high(self)[leg["id"]] = need
         self.log(_("the {npc} on {map} takes only level {n} and above - going another way",
                    npc=leg["npc"], map=atlas.label(leg["map"]), n=need), speak=True)
+
+    VIP_MISSES = 2        # free rides of one NPC that came to nothing before the VIP is taken as gone
+
+    def _vip_missed(self, leg: dict[str, Any]) -> None:
+        """The free entry was chosen and no ride came of it. Once may be the game ignoring the
+        choice (on one player's computer menu choices often did nothing): that NPC is tried once
+        more, as any failed ride is (with the keys when menu_keys_retry is ticked). VIP_MISSES of
+        them and the VIP is taken as gone (_vip_refused) - it used to be at the first, and the run
+        then took the fare on every ride and dropped every airship under 1000 arnebia."""
+        misses: dict[Any, int] = self.__dict__.setdefault("vip_misses", {})
+        misses[leg["id"]] = misses.get(leg["id"], 0) + 1
+        if misses[leg["id"]] >= self.VIP_MISSES:
+            self._vip_refused(leg)
+        else:
+            self.log(_("the {npc} didn't take me for free", npc=leg["npc"]))
 
     def _vip_refused(self, leg: dict[str, Any]) -> None:
         """The menu's free entry for VIPs was chosen and no ride came of it: the profile says VIP
