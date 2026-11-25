@@ -231,3 +231,20 @@ def test_a_run_carried_on_reports_all_its_parts_added_up(tmp_path: Any, monkeypa
     whole, parts = stats.whole_run(third)
     assert parts == 3 and whole["kills"] == 200 and whole["minutes"] == 60.0 and whole["arnebia"] == 9000
     assert stats.whole_run(other) == (other, 1)
+
+
+def test_a_file_held_by_another_program_is_not_written_over(monkeypatch: pytest.MonkeyPatch) -> None:
+    # two games saving every 20 s: a read that failed a moment (an antivirus, a backup) used to
+    # write back only our row, and the other characters' places and restarts were gone
+    from unclefarmer import jsonio
+    resume.save("Hero--S1--1", {"item": "plan:Night", "text": "x"})
+    resume.note_restart("Hero--S1--1")
+    real = jsonio.read
+
+    def held(path: str, default: Any = None, **kw: Any) -> Any:
+        raise OSError("being used by another process")
+    monkeypatch.setattr(jsonio, "read", held)
+    resume.save("Bob--S1--2", {"item": "plan:Day", "text": "y"})
+    resume.note_restart("Bob--S1--2")
+    monkeypatch.setattr(jsonio, "read", real)
+    assert resume.get("Hero--S1--1") is not None and resume.restarts_today("Hero--S1--1") == 1

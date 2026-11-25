@@ -47,6 +47,13 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
+**Interrupted runs of other characters are no longer lost** (untested in game)
+
+- With several games running, each saves its place every 20 seconds in one file. When another
+  program held that file a moment (an antivirus, a backup), the read failed and the save wrote
+  back only its own row: the other characters' places to carry on from, and their restarts of the
+  day, were gone. Such a save is now skipped; the next one comes soon after.
+
 **Patrol points are checked, and no-go circles hold for every walk** (untested in game)
 
 - A spot's own patrol points were walked to as typed: one in a wall or out of reach stopped the
