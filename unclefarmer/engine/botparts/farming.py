@@ -345,8 +345,8 @@ class FarmingMixin(Parts):
     def _flee(self, map_id: int) -> None:
         """HP stayed low while farming (LosingFight): drop the fight, hearthstone to town, heal up
         there (FLEE_HEALED, potions as usual), look at the restock rules, and go back. A hearthstone
-        that is interrupted every time (a hit stops its cast) leaves us fighting on. The FLEE_MOST-th
-        flee within FLEE_WINDOW ends the run in town: the map is too hard for the character."""
+        that doesn't take us home leaves us fighting on for a while. The FLEE_MOST-th flee within
+        FLEE_WINDOW ends the run in town: the map is too hard for the character."""
         now = self.clock.time()
         recent = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW]
         self.log(_("HP stayed under {pct}% - leaving the fight: hearthstone to town", pct=self.p["panic_below"]),
@@ -355,7 +355,7 @@ class FarmingMixin(Parts):
         try:
             with self.timed("town"):
                 if not self.go_home():
-                    # a hit stopped the hearthstone: no flee - counted, two of them and one real
+                    # the hearthstone didn't take us: no flee - counted, two of them and one real
                     # flee ended the night with "fled 3 times"
                     self.flees = recent
                     self.flee_wait_until = self.clock.time() + self.FLEE_RETRY

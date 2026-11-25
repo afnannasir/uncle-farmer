@@ -1,6 +1,6 @@
 """Fleeing a lost fight (flee_on_panic, "When HP stays low: go to town with the hearthstone, heal
-and come back"). Only while farming on the farm's own map, with a hearthstone; a hit interrupts
-the hearthstone's cast, so one that doesn't take us home leaves us fighting on for a while. The
+and come back"). Only while farming on the farm's own map, with a hearthstone; one that doesn't
+take us home leaves us fighting on for a while. The
 FLEE_MOST-th flee within FLEE_WINDOW ends the run in town: the map is too hard."""
 
 from __future__ import annotations
@@ -117,9 +117,9 @@ def test_the_third_flee_in_half_an_hour_stops_in_town(clock: Clock) -> None:
     assert any("fled 3 times in 30 minutes" in line for line in b.spoken)
 
 
-def test_a_hearthstone_a_hit_stopped_is_no_flee(clock: Clock) -> None:
-    # losing a fight, a hit stopping the hearthstone is the usual case: two of those and one real
-    # flee ended the night "fled 3 times in 30 minutes"
+def test_a_hearthstone_that_didn_t_take_us_is_no_flee(clock: Clock) -> None:
+    # two hearthstones that didn't take us home and one real flee ended the night "fled 3 times
+    # in 30 minutes"
     b = Fleer([95])
     b.go_home_result = False
     for _i in range(2):
@@ -175,8 +175,8 @@ def test_off_the_farm_the_stop_choice_still_stops(clock: Clock) -> None:
 
 
 def test_no_second_flee_while_the_hearthstone_is_being_used(clock: Clock) -> None:
-    """go_home fights back when a hit stops the cast, and that fight's look_after must not flee
-    again: nothing would catch the second LosingFight."""
+    """go_home fights back when the hearthstone didn't take us, and that fight's look_after must not
+    flee again: nothing would catch the second LosingFight."""
     b = Fleer([40, 95])
     during: list[bool] = []
 

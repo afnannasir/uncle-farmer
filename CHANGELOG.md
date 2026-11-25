@@ -47,12 +47,19 @@
   which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
   another character in the game ends the run with nothing more done.
 
-**A hearthstone a hit stopped is not a flee** (untested in game)
+**A hit no longer stops the wait for a stone or a way out** (untested in game)
 
-- When HP stays low and the bot flees with the hearthstone, a hit that stops the cast was counted
-  as a flee all the same. Losing a fight, that is the usual case: two stopped hearthstones and one
-  real flee made "fled 3 times in 30 minutes" and ended the night in town. Only a hearthstone that
-  takes the character to town counts now.
+- The hearthstone and the teleport stones are items, not spells: nothing a monster does stops them
+  (only the Mage's and the Elf's teleport spells have a cast a hit can break). The bot treated a
+  hit as one all the same: using the hearthstone, it stopped waiting at the first hit, fought back
+  and used it again, three times, then said it "didn't take me home" - its own fighting back may
+  well be what kept it from leaving; a teleport stone, a dungeon's or a chest's way out, or a gang
+  NPC's teleport hit while it worked was taken as failed, and the stone left out of the trip. Now
+  only the teleport spells give up on a hit.
+- When HP stays low and the bot flees with the hearthstone, a hearthstone that didn't take the
+  character home was counted as a flee all the same: two of them and one real flee made "fled 3
+  times in 30 minutes" and ended the night in town. Only a hearthstone that takes the character
+  to town counts now.
 
 **A trusted player can be trusted on one server only** (untested in game)
 

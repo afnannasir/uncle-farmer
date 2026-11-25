@@ -102,7 +102,9 @@ class TravelMixin(Parts):
                 self.key(key)
             elif not self.use_item(item):
                 return False
-            self.last_hp = self.me().get("hp")   # a hit from now on interrupts the cast, not an older one
+            # the hearthstone is an item, not a spell: no cast for a hit to break (said by a player,
+            # 2026-11-25). Waiting stopped at the first hit, fought back and used it again - and the
+            # bot's own fighting back may well be what kept it from taking us home
             deadline = self.clock.time() + 25
             while self.clock.time() < deadline:
                 self.sleep(0.5)
@@ -114,9 +116,7 @@ class TravelMixin(Parts):
                     self.log(_("home: {map}", map=atlas.label(self.map_id())), speak=True)
                     self.learn_hearth_home()
                     return True
-                if self.hit(self.me()):
-                    break            # the cast was interrupted by an attack
-            self.fight_back()
+            self.fight_back()        # still here after all that time: whatever hits us first
         self.log(_("the hearthstone didn't take me home"), speak=True)
         return False
 
@@ -412,7 +412,11 @@ class TravelMixin(Parts):
                    n=int(self.RIDE_WAIT)), speak=True)
         raise Stopped(_("the ride from {map} never arrived", map=atlas.label(here)))
 
-    def wait_map_change(self, mid: int, seconds: float) -> bool:
+    def wait_map_change(self, mid: int, seconds: float, interruptible: bool = False) -> bool:
+        """Wait to leave map mid. interruptible: a spell with a cast (the Mage's and the Elf's
+        teleports), which a hit breaks - then False at once. Nothing else is: a stone, an NPC's
+        or a dungeon's way out is no spell (said by a player, 2026-11-25), and giving up at the
+        first hit left out a stone that did take us, or a way out the game was taking us through."""
         self.last_hp = self.me().get("hp")       # only a hit from now on counts as an interruption
         end = self.clock.time() + seconds
         while self.clock.time() < end:
@@ -424,7 +428,7 @@ class TravelMixin(Parts):
                     if self.map_id() != rem_map:
                         self.gang_base = None
                 return True
-            if self.hit(self.me()):
+            if interruptible and self.hit(self.me()):
                 return False      # attacked: the cast was interrupted
             self.sleep(0.3)
         return False
@@ -535,7 +539,7 @@ class TravelMixin(Parts):
                 return False
             if self.choose(leg["choose"][0]) is None:
                 return False
-            if self.wait_map_change(mid, teleskill.CAST + teleskill.LOAD):
+            if self.wait_map_change(mid, teleskill.CAST + teleskill.LOAD, interruptible=True):
                 me = self.me()
                 self.log(_("arrived on {map} at {x},{y}", map=atlas.label(self.map_id()),
                            x=int(me.get("x", 0)), y=int(me.get("y", 0))))
