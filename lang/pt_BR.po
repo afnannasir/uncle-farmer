@@ -1240,6 +1240,10 @@ msgstr "Ocupado, um comando por vez. Ainda em: {what}."
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr ""
 
+msgid ""
+"Buy {n} {shard} at the Shard Market, a bagful at a time, and put each bagful in the storehouse{cost}."
+msgstr ""
+
 msgid "By item"
 msgstr ""
 
@@ -2603,6 +2607,10 @@ msgstr "Resposta inválida de som recebida do agente do jogo."
 msgid "It also stops by itself:"
 msgstr "Também para automaticamente:"
 
+msgid ""
+"It stops at the number, the price limit, your arnebia reserve, or a full storehouse."
+msgstr ""
+
 msgid "Item"
 msgstr ""
 
@@ -3357,6 +3365,9 @@ msgstr "Não há de onde obtê-los: serão criados os que a mochila permitir."
 msgid "Nowhere, use what's in the bag"
 msgstr "Em nenhum lugar; usar o que estiver na mochila"
 
+msgid "Number of &shards to stock:"
+msgstr ""
+
 msgid ""
 "Officers to visit (each pays for his own bosses, after your killing blow)"
 msgstr ""
@@ -3704,6 +3715,9 @@ msgstr "Versão do programa: {v}"
 
 msgid "Publish &as:"
 msgstr "Publicar &como:"
+
+msgid "Put finished gems in the s&torehouse, so the bag keeps its room"
+msgstr ""
 
 msgid "Put into the storehouse:"
 msgstr "Colocado no depósito:"
@@ -4452,6 +4466,12 @@ msgstr "Distância a manter de um chefe (passos):"
 
 msgid "Still short &after that:"
 msgstr "Ainda faltarão &depois disso:"
+
+msgid "Stock shards (the gem and the price limit above)"
+msgstr ""
+
+msgid "Stock shards: buy Level 1 shards and keep them in the storehouse"
+msgstr ""
 
 msgid "Stop"
 msgstr "Parar"
@@ -6137,6 +6157,9 @@ msgstr "avançar para o combate"
 msgid "cheapest {what}"
 msgstr ""
 
+msgid "check only: nothing was bought or stored"
+msgstr ""
+
 msgid ""
 "check: the next level needs {xp} experience, goal {goal}; {n} guards in sight here, {k} remembered spots; PK mode {pk}{locked}"
 msgstr ""
@@ -7315,6 +7338,9 @@ msgstr ""
 msgid "no menu entry like \"{want}\""
 msgstr "nenhuma opção de menu semelhante a \"{want}\""
 
+msgid "no more {shard} came - stocking stops here"
+msgstr ""
+
 msgid "no more {shard} came into the bag - the Gem Maker stops here"
 msgstr ""
 "não entraram mais {shard} na bolsa — o Artesão de Gemas vai parar por aqui"
@@ -8152,6 +8178,12 @@ msgid "still short after restocking: {what}"
 msgstr "ainda faltando após o reabastecimento: {what}"
 
 msgid "still short of: {what}"
+msgstr ""
+
+msgid "stocked {n} of the {want} {shard} in the storehouse"
+msgstr ""
+
+msgid "stocking stopped after {n} rounds"
 msgstr ""
 
 msgid "stop rule: {cond}"
@@ -8993,6 +9025,13 @@ msgstr "o menu do depósito não tem opção de depósito"
 
 msgid "the storehouse menu has no item storage"
 msgstr "o menu do depósito não tem opção para guardar itens"
+
+msgid "the storehouse took {put} of the {got} {shard}: stocking stops here"
+msgstr ""
+
+msgid ""
+"the storehouse took {put} of the {n} {gem}: storing gems is off for the rest of this job"
+msgstr ""
 
 msgid "the storehouse, then the Shard Market"
 msgstr "o depósito e, em seguida, o Mercado de Fragmentos"
@@ -10052,6 +10091,9 @@ msgstr "{n} vezes, de {first} a {last}: {why}"
 
 msgid "{n} used up"
 msgstr "{n} usados"
+
+msgid "{n} {gem} went into the storehouse"
+msgstr ""
 
 msgid "{n} {item} still missing"
 msgstr ""

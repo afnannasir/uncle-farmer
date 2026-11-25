@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**Gem Maker: stock shards, and keep finished gems in the storehouse** (not yet tried in the game: the
+tests use a pretend craftsman, market and storehouse)
+
+- New job in Tools, Gem Maker: "Stock shards". It buys Level 1 shards of the chosen gem at the Shard
+  Broker, a bagful at a time, and puts each bagful in the storehouse, until your number, the price limit,
+  your arnebia reserve, or a full storehouse stops it. No gem fees are held back, since nothing is made.
+- New checkbox for "Make a gem": "Put finished gems in the storehouse". The gems of the
+  target level that the job made go to the storehouse just before it gets more shards, so the bag keeps
+  its room for them, and again when the job ends. They count
+  toward the number asked for. Gems of that level already in the bag go too. A full
+  storehouse switches it off for that job; the gems stay in the bag. Both are off by default.
+- Nothing in the agent changed, and old profiles load as before.
+
 **Bag settings copied from another character** (untested in game)
 
 - Bag and supplies has "Copy from another character": another character's throw-away, sell,
