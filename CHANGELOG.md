@@ -10,6 +10,18 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**Opening a lost game again leaves the player's own games alone** (untested in game)
+
+- A game closed in the middle of a run is opened again and the run carried on, and nothing could
+  keep it closed: the bot opened another one every minute and a half for five minutes. Stop every
+  bot (Ctrl+Shift+S) now also cancels the runs waiting to carry on (Stop on a game, that game's
+  character's), and the line that says the game is opened again says so.
+- A lost run carried on in any game at its login screen, the player's own included; if logging in
+  failed there (the player logging in another account by hand), that game was closed by force to
+  be opened again. It now carries on only in a game Uncle Farmer opened itself.
+- A game that came back on line by itself counted as one of the day's three openings: a few drops
+  of the internet used them up, and a real freeze later that day ended the run. It no longer counts.
+
 **A game lost while a run ends is a lost game, not a finished run** (untested in game)
 
 - When a run stopped on its own (a stop rule, stuck, a "wait" whose logging back in failed), the

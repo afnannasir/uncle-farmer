@@ -109,6 +109,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.scanning = set()    # characters being scanned on a worker thread
         self.pending_logins = {} # profile -> when automatic login opened its client
         self.opened_games = {}   # pid -> when this window opened that game
+        self.our_games: set[int] = set()   # every game this window opened (a lost run carries on only in one)
         self.updating = False
         self.preparing_update = False   # the update copier is being started on a worker (updates.py)
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
@@ -389,7 +390,9 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         running = pid in self.runs
         available = pid is not None
         selected = self.active_item()
-        enabled = action_menu_states(available=available, running=running, any_running=bool(self.runs),
+        # Stop every bot also cancels the runs waiting to carry on (a game closed by hand stays closed)
+        enabled = action_menu_states(available=available, running=running,
+                                     any_running=bool(self.runs) or bool(getattr(self, "carry_queue", [])),
                                      has_items=bool(self.items), has_messengers=bool(self.messengers), selected=selected)
         for key, value in enabled.items():
             if key in self.action_items:

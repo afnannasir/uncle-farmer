@@ -223,7 +223,7 @@ class RunsMixin(FrameParts):
         else:
             self.start(pid)
 
-    def automatic_login_window(self, profile: str) -> tuple[int | None, str]:
+    def automatic_login_window(self, profile: str, ours_only: bool = False) -> tuple[int | None, str]:
         """Find a window for *profile*, opening exactly one if no usable client exists.
 
         The eventual sign-in remains in :class:`Run`, after the game's agent is reachable.  This
@@ -231,6 +231,7 @@ class RunsMixin(FrameParts):
         the identical guarded sequence.
         """
         self.refresh_games()
+        ours: set[int] = getattr(self, "our_games", set())
         pending = getattr(self, "pending_logins", None)
         if pending is None:
             pending = self.pending_logins = {}
@@ -238,7 +239,10 @@ class RunsMixin(FrameParts):
         if pid is not None:
             pending.pop(profile, None)
             return pid, ""
-        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs]
+        # ours_only (a run carried on after its game was lost): never a game the player has at its
+        # login screen - a login that failed there had that game closed, by force, to open it again
+        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs
+                      and (not ours_only or g[0] in ours)]
         if len(signed_out) == 1:
             pending.pop(profile, None)
             return signed_out[0], ""
@@ -436,10 +440,16 @@ class RunsMixin(FrameParts):
         if run:
             self.say(_("Stopping"), run)
             run.stop()
+        elif which is not None and self.character(which):
+            self.cancel_carry_on(self.character(which))     # its lost run waiting to carry on
 
     def stop_all(self) -> None:
+        """Every bot, and every run waiting to carry on: a game the player closed by hand was
+        opened again every minute and a half for five minutes, with no way to keep it closed."""
+        cancelled = self.cancel_carry_on()
         if not self.runs:
-            self.say(_("No bot is running."))
+            if not cancelled:
+                self.say(_("No bot is running."))
             return
         self.say(_("Stopping every bot"))
         for run in list(self.runs.values()):

@@ -9596,8 +9596,9 @@ msgid ""
 msgstr ""
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
+"{name} oyunu kaybedildi: yeniden açılıyor ve oyun kaldığı yerden sürüyor (bugün {most} içinde {n}). Stop every bot (Ctrl+Shift+S) onu kapalı tutar."
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, son çalışma ({what}, başlangıç {when})"
@@ -9987,6 +9988,9 @@ msgstr ""
 
 msgid "{what} for {name}"
 msgstr ""
+
+msgid "{what} for {name} won't carry on."
+msgstr "{name} için {what} devam etmeyecek."
 
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} için {what} bekliyor: {why}"

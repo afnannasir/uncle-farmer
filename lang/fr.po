@@ -9800,9 +9800,9 @@ msgstr ""
 "Le jeu de {name} est perdu, et le bot ne peut pas s'y connecter tout seul : connectez-vous-y une fois à la main pour que son compte soit connu."
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
-"Le jeu de {name} est perdu : il est rouvert et la partie reprend où elle en était ({n} sur {most} aujourd'hui)."
+"Le jeu de {name} est perdu : il est rouvert et la partie reprend où elle en était ({n} sur {most} aujourd'hui). Stop every bot (Ctrl+Shift+S) le laisse fermé."
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, dernière partie ({what}, commencée le {when})"
@@ -10202,6 +10202,9 @@ msgstr "{what} a changé depuis l'interruption, donc la partie repart du début"
 msgid "{what} for {name}"
 msgstr "{what} pour {name}"
 
+msgid "{what} for {name} won't carry on."
+msgstr "{what} pour {name} ne reprendra pas."
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{what} pour {who} en attente : {why}"
 
@@ -10263,3 +10266,8 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol vaut random, full, quick ou short"
+
+#~ msgid ""
+#~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+#~ msgstr ""
+#~ "Le jeu de {name} est perdu : il est rouvert et la partie reprend où elle en était ({n} sur {most} aujourd'hui)."

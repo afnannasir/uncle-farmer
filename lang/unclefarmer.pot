@@ -9289,7 +9289,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
 
 msgid "{name}, last run ({what}, started {when})"
@@ -9669,6 +9669,9 @@ msgid ""
 msgstr ""
 
 msgid "{what} for {name}"
+msgstr ""
+
+msgid "{what} for {name} won't carry on."
 msgstr ""
 
 msgid "{what} for {who} is waiting: {why}"

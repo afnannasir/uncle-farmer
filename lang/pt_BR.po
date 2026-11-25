@@ -9735,9 +9735,9 @@ msgstr ""
 "O jogo de {name} foi perdido, e o bot não consegue entrar sozinho: entre nele uma vez manualmente para que a conta seja conhecida."
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
-"O jogo de {name} foi perdido: reabrindo e continuando de onde a execução parou ({n} de {most} hoje)."
+"O jogo de {name} foi perdido: reabrindo e continuando de onde a execução parou ({n} de {most} hoje). Stop every bot (Ctrl+Shift+S) o mantém fechado."
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, última execução ({what}, iniciada {when})"
@@ -10134,6 +10134,9 @@ msgstr "{what} mudou desde a interrupção, então começa do início"
 msgid "{what} for {name}"
 msgstr "{what} para {name}"
 
+msgid "{what} for {name} won't carry on."
+msgstr "{what} de {name} não vai continuar."
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{what} para {who} está aguardando: {why}"
 
@@ -10229,3 +10232,8 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "a patrulha pode ser aleatória, completa, rápida ou curta"
+
+#~ msgid ""
+#~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+#~ msgstr ""
+#~ "O jogo de {name} foi perdido: reabrindo e continuando de onde a execução parou ({n} de {most} hoje)."

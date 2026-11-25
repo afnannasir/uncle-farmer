@@ -73,6 +73,10 @@ class EditingMixin(FrameParts):
             return _("Couldn't start the game: {err}", err=e)
         # the game's agent writes this same pid (runs.starting_games waits for it)
         self.opened_games[game.pid] = self.clock.time()
+        ours: set[int] | None = getattr(self, "our_games", None)
+        if ours is None:
+            ours = self.our_games = set()
+        ours.add(game.pid)               # a lost run may carry on in it (automatic_login_window)
         return None
 
     def open_client(self) -> None:

@@ -9756,9 +9756,9 @@ msgstr ""
 "{name} ka game kho gaya, aur bot khud login nahi kar sakta: ek baar haath se login karein taake is ka account maloom ho."
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
-"{name} ka game kho gaya: dobara khol kar run wahin se jaari hai (aaj {most} mein se {n})."
+"{name} ka game kho gaya: dobara khol kar run wahin se jaari hai (aaj {most} mein se {n}). Stop every bot (Ctrl+Shift+S) se game band rehta hai."
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, pichla run ({what}, shuru {when})"
@@ -10156,6 +10156,9 @@ msgstr "{what} rukne ke baad badal gaya, is liye shuru se chalega"
 msgid "{what} for {name}"
 msgstr "{name} ke liye {what}"
 
+msgid "{what} for {name} won't carry on."
+msgstr "{name} ke liye {what} jaari nahi rahega."
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} ke liye {what} intezar mein hai: {why}"
 
@@ -10263,3 +10266,8 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the bag already has the potions asked for"
 #~ msgstr "baste mein maange gaye potions pehle se hain"
+
+#~ msgid ""
+#~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+#~ msgstr ""
+#~ "{name} ka game kho gaya: dobara khol kar run wahin se jaari hai (aaj {most} mein se {n})."
