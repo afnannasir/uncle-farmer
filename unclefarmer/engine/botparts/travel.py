@@ -69,6 +69,12 @@ def note_way_out(b: object, inside: int, to_map: int, cell: tuple[float, float])
 class TravelMixin(Parts):
     traveling: bool
     RIDE_TRIES = 2        # a transport NPC that fails this often in one trip is left out of it
+    # Seconds a stone (the hearthstone, a teleport stone) is given to change the map. Stones take us
+    # at once - only the Mage's and the Elf's teleport spells channel (said by a player,
+    # 2026-11-25) - so this only covers the new map loading. It was 25 s for the hearthstone (30 as
+    # a trip's leg) and 15 for the other stones: a stone the game didn't take kept the character
+    # standing that long, up to three times.
+    STONE_WAIT = 8.0
     SPELL_TRIES = 3       # a teleport skill broken off (a hit, no menu) this often in one trip is left out
     # Longest wait on a ride map (atlas.is_ride) for the game to move us on: flights took about
     # 25 s and cable cars 37 s in the logs; well past that the ride has gone wrong.
@@ -107,7 +113,7 @@ class TravelMixin(Parts):
             # bot's own fighting back may well be what kept it from taking us home. Hit while it
             # waits, it drinks (and notices a death) but presses no attack
             self.last_hp = self.me().get("hp")
-            deadline = self.clock.time() + 25
+            deadline = self.clock.time() + self.STONE_WAIT
             while self.clock.time() < deadline:
                 self.sleep(0.5)
                 if self.hit(self.me()):
@@ -450,7 +456,7 @@ class TravelMixin(Parts):
             for pick in choose:
                 if not self.wait_dialog(4.0) or self.choose(pick) is None:
                     return False
-            ok = self.wait_map_change(mid, 30 if leg["item"] == "Hearthstone" else 15)
+            ok = self.wait_map_change(mid, self.STONE_WAIT)
             if ok and leg["item"] == "Hearthstone":
                 self.learn_hearth_home()
             if not ok:

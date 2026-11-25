@@ -140,6 +140,9 @@
   NPC's teleport hit while it worked was taken as failed, and the stone left out of the trip. Now
   only the teleport spells give up on a hit; hit while it waits for the hearthstone, the bot drinks
   its potions but presses no attack.
+- Stones take the character at once (only the teleport spells channel): a stone is now given 8
+  seconds to change the map, not 25 (the hearthstone) or 15. One the game didn't take kept the
+  character standing that long, up to three times.
 - When HP stays low and the bot flees with the hearthstone, a hearthstone that didn't take the
   character home was counted as a flee all the same: two of them and one real flee made "fled 3
   times in 30 minutes" and ended the night in town. Only a hearthstone that takes the character

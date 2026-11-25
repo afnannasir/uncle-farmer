@@ -1382,3 +1382,12 @@ def test_hit_while_waiting_for_the_hearthstone_it_drinks_but_never_attacks(clock
     b.map_id = lambda: 1 if clock.time() < used + 2 else 1081
     assert b.go_home() is True
     assert "look_after" in b.lines and "fight_back" not in b.lines
+
+
+def test_a_hearthstone_the_game_didn_t_take_is_given_up_after_a_few_seconds(clock: Clock) -> None:
+    # stones take us at once: it waited 25 s a try, three tries, the character standing there
+    b = Bot(clock)
+    b.map_id = lambda: 1
+    began = clock.time()
+    assert b.go_home() is False
+    assert clock.time() - began <= 3 * (b.STONE_WAIT + 1)
