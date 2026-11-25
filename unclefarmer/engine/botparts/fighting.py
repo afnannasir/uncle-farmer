@@ -524,8 +524,9 @@ class FightingMixin(Parts):
         share of the kill needs - and leaves only those that will be dead before it lands. It
         used to leave none: one night, a Hunter walked 1,007 times to a monster that was gone
         when it got there. Without it, half a second's slack on top leaves the close calls too."""
-        if self.kill_tracker.tagged(e["id"]) or self.kill_tracker.pets_alone(e["id"]):
-            return False        # partly ours, or our pet's alone: its HP going down is our doing
+        if (self.kill_tracker.tagged(e["id"]) or self.kill_tracker.pets_alone(e["id"])
+                or (e["id"] in self.attackers() and not self.kill_tracker.claimed(e["id"]))):
+            return False        # partly ours, our pet's alone, or attacking us/our pet unclaimed
         if getattr(self, "following", None):
             return False        # following: the team's monster is ours to help with, however fast it dies
         rng = self.reach() if rng is None else rng
@@ -624,6 +625,7 @@ class FightingMixin(Parts):
                               elites=bosses.elites_in_sight(as_bot(self), snap))
         players = [(p["x"], p["y"]) for p in snap["entities"]
                    if p.get("kind") == "player" and p.get("id") != me.get("id")
+                   and p.get("id") not in self.kill_tracker.own
                    and " belongs to " not in str(p.get("name") or "") and picking.placed(p, {})]
         contested: set[int] = set()
 
@@ -1056,12 +1058,22 @@ class FightingMixin(Parts):
         if len(rows) > 500:
             self.walk_failed = {k: v for k, v in rows.items() if v > self.clock.time()}
 
+    def _pet_only(self, mid: int) -> bool:
+        """Our pet struck this monster or took its hits lately, with no other player on it."""
+        kt = getattr(self, "kill_tracker", None)
+        claimed = getattr(kt, "claimed", None)
+        if callable(claimed) and claimed(mid):
+            return False
+        pet_struck = getattr(kt, "pet_struck", None)
+        return (isinstance(pet_struck, dict) and mid in pet_struck) or mid in self.pet_attackers()
+
     def _taken(self, snap: dict[str, Any], mob: dict[str, Any]) -> None:
         """It is gone before our fight began: counted if a hit of ours killed it, else someone else's."""
         self.count_kills(snap)
         if not self.counted_kill(mob["id"]):
             self.ended("taken")
-            self.log(_("{name} was taken by someone else - next one", name=mob["name"]))
+            if not self.kill_tracker.tagged(mob["id"]) and not self._pet_only(mob["id"]):
+                self.log(_("{name} was taken by someone else - next one", name=mob["name"]))
 
     def _select_closer(self, mob: dict[str, Any]) -> tuple[dict[str, Any] | None, bool]:
         """The target keys wouldn't take it from here. pull_range can stop us farther than they
@@ -1222,7 +1234,7 @@ class FightingMixin(Parts):
             self.count_kills(f.snap)
             if not self.counted_kill(f.mid):
                 self.ended("gone" if f.i else "taken")
-                if not self.kill_tracker.tagged(f.mid):
+                if not self.kill_tracker.tagged(f.mid) and not self._pet_only(f.mid):
                     self.log(_("{name} is gone, and none of our hits landed on it", name=mob["name"])
                              if f.i else _("{name} was taken by someone else - next one", name=mob["name"]))
             return
@@ -1230,7 +1242,8 @@ class FightingMixin(Parts):
             # gone before we pressed a thing: other players farm here too. Not ours to
             # count; the farm loop takes the next one at once.
             self.ended("taken")
-            self.log(_("{name} was taken by someone else - next one", name=mob["name"]))
+            if not self._pet_only(f.mid):
+                self.log(_("{name} was taken by someone else - next one", name=mob["name"]))
             return
         self.kills += 1
         self.counted[f.mid] = self.clock.time()
@@ -1615,6 +1628,7 @@ class _Approach:
         dropped had the walk go on past it for a second (live: fewer kills, not more)."""
         b = self.b
         snap = b.snap()
+        b.count_kills(snap)
         m = self.find(snap)
         moving = b.shoots_moving()
         if moving:
