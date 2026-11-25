@@ -304,6 +304,9 @@ msgstr "&Tareekhcha"
 msgid "&How many:"
 msgstr "&Kitne:"
 
+msgid "&How:"
+msgstr "&Kaise:"
+
 msgid "&Import"
 msgstr "&Import karein"
 
@@ -689,6 +692,9 @@ msgstr "&Script ki tarah dekhein"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Jab bhi maps paidal jude hon to &chalna"
 
+msgid "&What to copy:"
+msgstr "Kya co&py karna hai:"
+
 msgid "&What to do:"
 msgstr "&Kya karna hai:"
 
@@ -962,6 +968,9 @@ msgstr "Muntakhib ko mahfooz shuda sounds mein shamil karein"
 
 msgid "Add to &filter list"
 msgstr "&Filter fehrist mein shaamil karein"
+
+msgid "Add to this character's lists (what is only here stays)"
+msgstr "Is character ki lists mein shamil karein (jo sirf yahan hai woh rahega)"
 
 msgid "Add where I &stand"
 msgstr "Jahan main khara hoon wahan &shamil karein"
@@ -1520,8 +1529,20 @@ msgstr "Copy ho gaya"
 msgid "Copied {email}."
 msgstr "{email} copy ho gaya."
 
+msgid "Copy"
+msgstr "Copy karein"
+
+msgid "Copy &from another character"
+msgstr "Kisi a&ur character se copy karein"
+
+msgid "Copy &from:"
+msgstr "Kis se &copy:"
+
 msgid "Copy &selection"
 msgstr "Chuna hua &copy karein"
+
+msgid "Copy from another character"
+msgstr "Kisi aur character se copy"
 
 msgid "Corpses"
 msgstr "Laashein"
@@ -2073,8 +2094,25 @@ msgstr "Pehle storehouse se, phir dukaan se"
 msgid "From trusted players"
 msgstr "Bharosemand khilariyon se"
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+"{name} se:\n"
+"{lines}\n"
+"\n"
+"Mahfooz karne tak kuch nahi rakha jata."
+
 msgid "Full bag"
 msgstr "Bhara basta"
+
+msgid "Full bag and equipment by rarity"
+msgstr "Bhara bag aur rarity ke hisaab se equipment"
+
+msgid "Full bag and equipment by rarity: set as theirs"
+msgstr "Bhara bag aur rarity ke hisaab se equipment: unke jaisa set"
 
 msgid "Full loop (every lane, a longer lap)"
 msgstr "Poora chakkar (har raasta, lamba chakkar)"
@@ -2593,6 +2631,9 @@ msgstr "Bosses se door rahein"
 
 msgid "Keep farming, just tell me"
 msgstr "Farming jaari rakhein, sirf batayein"
+
+msgid "Keep list"
+msgstr "Rakhne ki list"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Class ke b&uffs barqarar rakhein"
@@ -3162,6 +3203,9 @@ msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
 msgstr ""
 "Kisi material ki zyada se zyada qeemat set nahi, is liye market ke sab se saste lots kisi bhi qeemat par khareede jayenge. Jaari rakhein?"
+
+msgid "No other character has settings yet."
+msgstr "Abhi kisi aur character ki settings nahi hain."
 
 msgid "No pet"
 msgstr "Koi pet nahi"
@@ -3797,6 +3841,9 @@ msgstr ""
 msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr "Mehfooz mansooba {name} badal dein? Yes chunne tak kuch nahi badlega."
 
+msgid "Replace this character's lists with theirs"
+msgstr "Is character ki lists ko unki lists se badal dein"
+
 msgid "Reply lines"
 msgstr "Jawab ki lines"
 
@@ -4050,6 +4097,9 @@ msgstr "In lists ke mutabiq bechein aur store karein, phir wapas aayein"
 
 msgid "Sell it and come back"
 msgstr "Bech kar wapas aayein"
+
+msgid "Sell list"
+msgstr "Bechne ki list"
 
 msgid "Sell s&hards now"
 msgstr "S&hards abhi bechein"
@@ -4483,6 +4533,9 @@ msgid ""
 msgstr ""
 "Bag trip par jama ya becha jata hai: Full bag page par, bag bhar jane par bechna aur jama karna chunein"
 
+msgid "Storehouse list"
+msgstr "Storehouse ki list"
+
 msgid "Storehouse only"
 msgstr "Sirf storehouse"
 
@@ -4503,6 +4556,9 @@ msgstr "Itwaar"
 
 msgid "Supplies"
 msgstr "Supplies"
+
+msgid "Supplies: {added} put in, {same} already there"
+msgstr "Supplies: {added} daale, {same} pehle se the"
 
 msgid "System message"
 msgstr "System message"
@@ -5053,6 +5109,12 @@ msgstr ""
 "\n"
 "Kisi aur cheez ko haath nahi lagaya jayega. Phenki hui cheezein hamesha ke liye chali jati hain."
 
+msgid "Throw-away list"
+msgstr "Phenkne ki list"
+
+msgid "Throw-away list (shards and items)"
+msgstr "Phenkne ki list (shards aur items)"
+
 msgid "Thrown away:"
 msgstr "Phenke gaye:"
 
@@ -5064,6 +5126,9 @@ msgstr "Kam az kam aik din par nishan lagayein."
 
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr "Kam az kam ek gem ya crystal ki ek qism par tick karein."
+
+msgid "Tick at least one thing to copy."
+msgstr "Copy karne ke liye kam az kam ek cheez tick karein."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr "Pehle Nataij mein khareedne wale lots par nishan lagayein (Space)."
@@ -9582,6 +9647,9 @@ msgstr "{label}: {n} heals mein {hp} HP"
 
 msgid "{left} left"
 msgstr "{left} baqi"
+
+msgid "{list}: {added} put in, {same} already there"
+msgstr "{list}: {added} daale, {same} pehle se the"
 
 msgid "{map} at {x}, {y}"
 msgstr "{map} par {x}, {y}"

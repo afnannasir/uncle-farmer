@@ -304,6 +304,9 @@ msgstr "Geçmiş (&H)"
 msgid "&How many:"
 msgstr "Kaç tane: (&H)"
 
+msgid "&How:"
+msgstr "&Nasıl:"
+
 msgid "&Import"
 msgstr "İçe aktar (&I)"
 
@@ -686,6 +689,9 @@ msgstr "Betik olarak görüntüle (&V)"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Haritalar yürüyerek bağlanıyorsa her zaman yürü (&W)"
 
+msgid "&What to copy:"
+msgstr "Neler kop&yalansın:"
+
 msgid "&What to do:"
 msgstr "Ne yapılsın (&W):"
 
@@ -957,6 +963,9 @@ msgstr "Seçileni Kayıtlı seslere ekle"
 
 msgid "Add to &filter list"
 msgstr "&Filtre listesine ekle"
+
+msgid "Add to this character's lists (what is only here stays)"
+msgstr "Bu karakterin listelerine ekle (yalnızca burada olanlar kalır)"
 
 msgid "Add where I &stand"
 msgstr ""
@@ -1508,8 +1517,20 @@ msgstr "Kopyalandı"
 msgid "Copied {email}."
 msgstr "{email} kopyalandı."
 
+msgid "Copy"
+msgstr "Kopyala"
+
+msgid "Copy &from another character"
+msgstr "Başka bir karakt&erden kopyala"
+
+msgid "Copy &from:"
+msgstr "&Kimden kopyalansın:"
+
 msgid "Copy &selection"
 msgstr "&Seçimi kopyala"
+
+msgid "Copy from another character"
+msgstr "Başka bir karakterden kopyala"
 
 msgid "Corpses"
 msgstr "Cesetler"
@@ -2057,8 +2078,25 @@ msgstr "Önce depodan, sonra dükkandan"
 msgid "From trusted players"
 msgstr "Güvenilir oyunculardan"
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+"{name} karakterinden:\n"
+"{lines}\n"
+"\n"
+"Kaydedene kadar hiçbir şey saklanmaz."
+
 msgid "Full bag"
 msgstr "Dolu çanta"
+
+msgid "Full bag and equipment by rarity"
+msgstr "Dolu çanta ve nadirliğe göre ekipman"
+
+msgid "Full bag and equipment by rarity: set as theirs"
+msgstr "Dolu çanta ve nadirliğe göre ekipman: onunki gibi ayarlandı"
 
 msgid "Full loop (every lane, a longer lap)"
 msgstr "Tam döngü (her şerit, daha uzun bir tur)"
@@ -2570,6 +2608,9 @@ msgstr "Patronlardan uzak dur"
 
 msgid "Keep farming, just tell me"
 msgstr "Farma devam et, yalnızca bana söyle"
+
+msgid "Keep list"
+msgstr "Saklama listesi"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Sınıfın b&ufflarını açık tut"
@@ -3132,6 +3173,9 @@ msgstr "Şu anda yakınında canavar yok."
 msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
 msgstr ""
+
+msgid "No other character has settings yet."
+msgstr "Henüz başka hiçbir karakterin ayarı yok."
 
 msgid "No pet"
 msgstr "Evcil hayvan yok"
@@ -3760,6 +3804,9 @@ msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 "Kayıtlı {name} planı değiştirilsin mi? Evet'i seçene kadar hiçbir şey değişmez."
 
+msgid "Replace this character's lists with theirs"
+msgstr "Bu karakterin listelerini onunkilerle değiştir"
+
 msgid "Reply lines"
 msgstr "Yanıt satırları"
 
@@ -4009,6 +4056,9 @@ msgstr "Bu listelere göre sat ve depola, sonra geri gel"
 
 msgid "Sell it and come back"
 msgstr "Sat ve geri gel"
+
+msgid "Sell list"
+msgstr "Satış listesi"
 
 msgid "Sell s&hards now"
 msgstr "Parçaları şimdi sat (&H)"
@@ -4432,6 +4482,9 @@ msgid ""
 msgstr ""
 "Çanta yolculuğunda depolananlar ya da satılanlar: Dolu çanta sayfasında, çanta dolunca satıp depolamayı seç"
 
+msgid "Storehouse list"
+msgstr "Storehouse listesi"
+
 msgid "Storehouse only"
 msgstr "Yalnızca depo"
 
@@ -4452,6 +4505,9 @@ msgstr "Pazar"
 
 msgid "Supplies"
 msgstr "Sarf malzemeleri"
+
+msgid "Supplies: {added} put in, {same} already there"
+msgstr "Malzemeler: {added} eklendi, {same} zaten vardı"
 
 msgid "System message"
 msgstr ""
@@ -4984,6 +5040,12 @@ msgstr ""
 "\n"
 "Başka hiçbir şeye dokunulmaz. Atılan eşyalar kalıcı olarak gider."
 
+msgid "Throw-away list"
+msgstr "Atma listesi"
+
+msgid "Throw-away list (shards and items)"
+msgstr "Atma listesi (shard'lar ve eşyalar)"
+
 msgid "Thrown away:"
 msgstr "Atılanlar:"
 
@@ -4995,6 +5057,9 @@ msgstr "En az bir gün işaretle."
 
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
+
+msgid "Tick at least one thing to copy."
+msgstr "Kopyalamak için en az bir şey işaretle."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -9427,6 +9492,9 @@ msgstr "{label}: {n} iyileştirmede {hp} HP"
 
 msgid "{left} left"
 msgstr "{left} kaldı"
+
+msgid "{list}: {added} put in, {same} already there"
+msgstr "{list}: {added} eklendi, {same} zaten vardı"
 
 msgid "{map} at {x}, {y}"
 msgstr "{map}, {x}, {y}"

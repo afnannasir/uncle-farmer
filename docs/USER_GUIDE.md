@@ -535,6 +535,15 @@ Choose which potions and food Uncle Farmer should refill, and where it should ge
 
 Choose what Uncle Farmer should do when the bag becomes full. The option to stop when the day's drop time runs out is under **Character → Settings → Fighting**, with the other reasons to stop (see "Drop time and the next level").
 
+### Copying from another character
+
+**Copy from another character** (at the bottom of the window) takes a part of another character's bag settings: its throw-away list, its sell list, its storehouse list, its keep list (each with what it leaves in the bag), its supplies, or its Full bag page. Choose the character, tick what to copy, and how:
+
+- **Add to this character's lists:** the other character's items go into the same lists here; the ones only here stay.
+- **Replace this character's lists with theirs:** the lists you ticked become the other character's; an item only here goes back to the bot's own default for it.
+
+The window then says what changed, for example "Throw-away list: 23 put in, 4 already there". Nothing is kept until you choose **Save**.
+
 A full bag means the bag has reached its carrying limit. By default, the bot keeps farming until the load reaches that limit. It can also treat the bag as full if the load stops increasing just below the limit while monsters continue to die.
 
 You can set a lower limit if you want the bot to stop or handle the bag before it reaches full capacity.

@@ -304,6 +304,9 @@ msgstr "&Histórico"
 msgid "&How many:"
 msgstr "&Quantidade:"
 
+msgid "&How:"
+msgstr "&Como:"
+
 msgid "&Import"
 msgstr "&Importar"
 
@@ -691,6 +694,9 @@ msgstr "&Exibir como script"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "&Caminhar sempre que houver ligação a pé entre os mapas"
 
+msgid "&What to copy:"
+msgstr "&O que copiar:"
+
 msgid "&What to do:"
 msgstr "&O que fazer:"
 
@@ -966,6 +972,9 @@ msgstr "Adicionar seleção aos sons salvos"
 
 msgid "Add to &filter list"
 msgstr "Adicionar à lista de &filtros"
+
+msgid "Add to this character's lists (what is only here stays)"
+msgstr "Adicionar às listas deste personagem (o que só existe aqui fica)"
 
 msgid "Add where I &stand"
 msgstr "Adicionar onde e&stou"
@@ -1523,8 +1532,20 @@ msgstr "Copiado"
 msgid "Copied {email}."
 msgstr "{email} copiado."
 
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Copy &from another character"
+msgstr "Copiar de o&utro personagem"
+
+msgid "Copy &from:"
+msgstr "Copiar &de:"
+
 msgid "Copy &selection"
 msgstr "Copiar &seleção"
+
+msgid "Copy from another character"
+msgstr "Copiar de outro personagem"
 
 msgid "Corpses"
 msgstr "Cadáveres"
@@ -2078,8 +2099,25 @@ msgstr "Do depósito e depois da loja"
 msgid "From trusted players"
 msgstr "De jogadores confiáveis"
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+"De {name}:\n"
+"{lines}\n"
+"\n"
+"Nada é guardado até você salvar."
+
 msgid "Full bag"
 msgstr "Mochila cheia"
+
+msgid "Full bag and equipment by rarity"
+msgstr "Bolsa cheia e equipamento por raridade"
+
+msgid "Full bag and equipment by rarity: set as theirs"
+msgstr "Bolsa cheia e equipamento por raridade: iguais aos dele"
 
 msgid "Full loop (every lane, a longer lap)"
 msgstr "Circuito completo (todas as trilhas, percurso mais longo)"
@@ -2597,6 +2635,9 @@ msgstr "Manter distância dos chefes"
 
 msgid "Keep farming, just tell me"
 msgstr "Continuar coletando, apenas me avisar"
+
+msgid "Keep list"
+msgstr "Lista de guardar"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Manter os &bônus da classe ativos"
@@ -3162,6 +3203,9 @@ msgstr "Não há monstros por perto agora."
 msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
 msgstr ""
+
+msgid "No other character has settings yet."
+msgstr "Nenhum outro personagem tem configurações ainda."
 
 msgid "No pet"
 msgstr "Sem mascote"
@@ -3800,6 +3844,9 @@ msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 "Substituir o plano salvo {name}? Nada será alterado até você escolher Sim."
 
+msgid "Replace this character's lists with theirs"
+msgstr "Trocar as listas deste personagem pelas dele"
+
 msgid "Reply lines"
 msgstr "Linhas de resposta"
 
@@ -4052,6 +4099,9 @@ msgstr "Vender e guardar conforme estas listas e depois voltar"
 
 msgid "Sell it and come back"
 msgstr "Vender e voltar"
+
+msgid "Sell list"
+msgstr "Lista de venda"
 
 msgid "Sell s&hards now"
 msgstr "Vender &fragmentos agora"
@@ -4486,6 +4536,9 @@ msgid ""
 msgstr ""
 "Guardados ou vendidos durante a ida à mochila: na página Mochila cheia, escolha vender e guardar quando a mochila estiver cheia"
 
+msgid "Storehouse list"
+msgstr "Lista do Storehouse"
+
 msgid "Storehouse only"
 msgstr "Somente no depósito"
 
@@ -4506,6 +4559,9 @@ msgstr "Domingo"
 
 msgid "Supplies"
 msgstr "Suprimentos"
+
+msgid "Supplies: {added} put in, {same} already there"
+msgstr "Suprimentos: {added} colocados, {same} já estavam"
 
 msgid "System message"
 msgstr "Mensagem de sistema"
@@ -5058,6 +5114,12 @@ msgstr ""
 "\n"
 "Nada mais será alterado. Os itens descartados serão perdidos permanentemente."
 
+msgid "Throw-away list"
+msgstr "Lista de jogar fora"
+
+msgid "Throw-away list (shards and items)"
+msgstr "Lista de jogar fora (shards e itens)"
+
 msgid "Thrown away:"
 msgstr "Descartado:"
 
@@ -5069,6 +5131,9 @@ msgstr "Marque pelo menos um dia."
 
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr "Marque pelo menos uma gema ou um tipo de cristal."
+
+msgid "Tick at least one thing to copy."
+msgstr "Marque pelo menos uma coisa para copiar."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -9564,6 +9629,9 @@ msgstr "{label}: {hp} PV em {n} curas"
 
 msgid "{left} left"
 msgstr "restam {left}"
+
+msgid "{list}: {added} put in, {same} already there"
+msgstr "{list}: {added} colocados, {same} já estavam"
 
 msgid "{map} at {x}, {y}"
 msgstr "{map} em {x}, {y}"

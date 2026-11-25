@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Bag settings copied from another character** (untested in game)
+
+- Bag and supplies has "Copy from another character": another character's throw-away, sell,
+  storehouse or keep list (with what each item leaves in the bag), its supplies, or its Full bag
+  page, ticked one by one, either added to this character's lists or replacing them. It says what
+  changed ("Throw-away list: 23 put in, 4 already there"); nothing is kept until Save. Sorting the
+  same list item by item for each character was a lot of work.
+
 **Fighting settings can be put back to their defaults** (untested in game)
 
 - A character's settings file keeps every value it was saved with, the defaults of the version that

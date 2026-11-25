@@ -301,6 +301,9 @@ msgstr ""
 msgid "&How many:"
 msgstr ""
 
+msgid "&How:"
+msgstr ""
+
 msgid "&Import"
 msgstr ""
 
@@ -679,6 +682,9 @@ msgstr ""
 msgid "&Walk whenever the maps connect on foot"
 msgstr ""
 
+msgid "&What to copy:"
+msgstr ""
+
 msgid "&What to do:"
 msgstr ""
 
@@ -944,6 +950,9 @@ msgid "Add selected to Saved Sounds"
 msgstr ""
 
 msgid "Add to &filter list"
+msgstr ""
+
+msgid "Add to this character's lists (what is only here stays)"
 msgstr ""
 
 msgid "Add where I &stand"
@@ -1487,7 +1496,19 @@ msgstr ""
 msgid "Copied {email}."
 msgstr ""
 
+msgid "Copy"
+msgstr ""
+
+msgid "Copy &from another character"
+msgstr ""
+
+msgid "Copy &from:"
+msgstr ""
+
 msgid "Copy &selection"
+msgstr ""
+
+msgid "Copy from another character"
 msgstr ""
 
 msgid "Corpses"
@@ -2027,7 +2048,20 @@ msgstr ""
 msgid "From trusted players"
 msgstr ""
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+
 msgid "Full bag"
+msgstr ""
+
+msgid "Full bag and equipment by rarity"
+msgstr ""
+
+msgid "Full bag and equipment by rarity: set as theirs"
 msgstr ""
 
 msgid "Full loop (every lane, a longer lap)"
@@ -2523,6 +2557,9 @@ msgid "Keep away from bosses"
 msgstr ""
 
 msgid "Keep farming, just tell me"
+msgstr ""
+
+msgid "Keep list"
 msgstr ""
 
 msgid "Keep the class's b&uffs up"
@@ -3071,6 +3108,9 @@ msgstr ""
 
 msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
+msgstr ""
+
+msgid "No other character has settings yet."
 msgstr ""
 
 msgid "No pet"
@@ -3676,6 +3716,9 @@ msgstr ""
 msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 
+msgid "Replace this character's lists with theirs"
+msgstr ""
+
 msgid "Reply lines"
 msgstr ""
 
@@ -3920,6 +3963,9 @@ msgid "Sell and store by these lists, then come back"
 msgstr ""
 
 msgid "Sell it and come back"
+msgstr ""
+
+msgid "Sell list"
 msgstr ""
 
 msgid "Sell s&hards now"
@@ -4330,6 +4376,9 @@ msgid ""
 "Stored or sold on a bag trip: on the Full bag page, choose to sell and store when the bag is full"
 msgstr ""
 
+msgid "Storehouse list"
+msgstr ""
+
 msgid "Storehouse only"
 msgstr ""
 
@@ -4349,6 +4398,9 @@ msgid "Sunday"
 msgstr ""
 
 msgid "Supplies"
+msgstr ""
+
+msgid "Supplies: {added} put in, {same} already there"
 msgstr ""
 
 msgid "System message"
@@ -4848,6 +4900,12 @@ msgid ""
 "Nothing else is touched. Thrown items are gone for good."
 msgstr ""
 
+msgid "Throw-away list"
+msgstr ""
+
+msgid "Throw-away list (shards and items)"
+msgstr ""
+
 msgid "Thrown away:"
 msgstr ""
 
@@ -4858,6 +4916,9 @@ msgid "Tick at least one day."
 msgstr ""
 
 msgid "Tick at least one gem, or a kind of crystal."
+msgstr ""
+
+msgid "Tick at least one thing to copy."
 msgstr ""
 
 msgid "Tick the lots to buy in Results first (Space)."
@@ -9122,6 +9183,9 @@ msgid "{label}: {hp} HP in {n} heals"
 msgstr ""
 
 msgid "{left} left"
+msgstr ""
+
+msgid "{list}: {added} put in, {same} already there"
 msgstr ""
 
 msgid "{map} at {x}, {y}"
