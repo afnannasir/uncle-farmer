@@ -757,8 +757,12 @@ class Tally:
                 continue                 # nothing happened (a script that only ran the chores); don't clutter
             lines.append(json.dumps(r, ensure_ascii=False) + "\n")
         if lines:
-            path = file_of(self.profile or self.character)
-            with json.lock_for(path):
+            who = self.profile or self.character
+            adopt_old_file(who)        # (once; a file another program held is moved now, if it can be)
+            with json.lock_for(file_of(who)):
+                # the old file still there (it couldn't be moved): written to, so the history stays
+                # in one file - a new one beside it would have kept the old one from ever moving
+                path = _readable(who)
                 os.makedirs(RESULTS, exist_ok=True)
                 _append_whole(path, "".join(lines))
         with self.lock:
@@ -839,19 +843,44 @@ def _readable(who: str) -> str:
 def adopt_old_file(who: str) -> bool:
     """The character's name-only results file becomes its own (renamed, history and all) - once,
     when it is logged in or farms for the first time since. The first character of that name to come
-    takes it; another one of the same name, on another server, starts its own. True if it moved."""
+    takes it; another one of the same name, on another server, starts its own. A file another
+    program holds can't be moved: it stays the one the runs write to (save) and is moved the next
+    time. Both there (an older copy came back, or a move failed half way): the old records go in
+    first, those already there once, and the old file is removed. True if anything moved."""
     old = _old_file(who)
     if not old:
         return False
     own = file_of(who)
     with json.lock_for(own):
-        if os.path.exists(own) or not os.path.exists(old):
+        if not os.path.exists(old):
             return False
         try:
-            os.replace(old, own)
+            if not os.path.exists(own):
+                os.replace(old, own)
+                return True
+            return _merge(old, own)
         except OSError as e:           # held by another program a moment: the next time does it
             carry_on(e, "moving the results to the character's own file")
             return False
+
+
+def _merge(old: str, own: str) -> bool:
+    """The old file's records ahead of the own file's (they are older), none twice; then the old
+    file goes. A failure on the way leaves both whole (the own file is written to a copy first)."""
+    with open(old, encoding="utf-8-sig") as f:
+        before = [line.rstrip("\n") + "\n" for line in f if line.strip()]
+    with open(own, encoding="utf-8-sig") as f:
+        after = [line.rstrip("\n") + "\n" for line in f if line.strip()]
+    have = {line.strip() for line in after}
+    added = [line for line in before if line.strip() not in have]
+    if added:
+        copy_path = own + ".merging"
+        with open(copy_path, "w", encoding="utf-8") as f:
+            f.writelines(added + after)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(copy_path, own)
+    os.remove(old)
     return True
 
 

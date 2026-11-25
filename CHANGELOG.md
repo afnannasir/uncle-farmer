@@ -58,8 +58,10 @@
   character now has results/<name>--<server>--<id>.jsonl, named like its settings file. The file a
   character had under its name alone becomes its own the first time it is logged in or farms with
   this version, all of its history with it (the first character of that name to come takes it);
-  until then it is still read as the character's. The Results window says each character as
-  "name - server".
+  until then it is still read as the character's. While another program holds the old file and it
+  can't be moved, the runs go on writing to it, and it is moved the next time; found beside the new
+  one, it is merged into it (its records first, none twice). The Results window says each
+  character as "name - server".
 
 **Private message jobs without a run use the character's own settings** (untested in game)
 

@@ -74,3 +74,36 @@ def test_the_results_window_lists_the_characters_by_their_keys() -> None:
     assert stats.characters() == ["Hero"]                                   # not taken yet: the old name
     stats.adopt_old_file(HERO)
     assert stats.characters() == [HERO]
+
+
+def test_an_old_file_another_program_holds_stays_the_one_written_to(monkeypatch: pytest.MonkeyPatch,
+                                                                    allow_ignored_failures: None) -> None:
+    # the move failed (an antivirus, the file open elsewhere), the run's end made the own file,
+    # and the old one - all the history - was never moved nor read again
+    path = old_file(RUN)
+    real = os.replace
+
+    def held(src: str, dst: str) -> None:
+        raise PermissionError("being used by another process")
+    monkeypatch.setattr(os, "replace", held)
+    assert stats.adopt_old_file(HERO) is False
+    t = stats.Tally("Hero", "Day", clock=Clock(), profile=HERO)
+    t.parts[t.main].kills = 5
+    t.parts[t.main].seconds = 600.0
+    t.save()
+    assert not os.path.exists(stats.file_of(HERO)) and os.path.exists(path)   # still one file
+    assert [r["kills"] for r in stats.runs(HERO)] == [100, 5]
+    monkeypatch.setattr(os, "replace", real)
+    assert stats.adopt_old_file(HERO) is True and not os.path.exists(path)
+    assert [r["kills"] for r in stats.runs(HERO)] == [100, 5]
+
+
+def test_both_files_there_are_merged_oldest_first_and_once() -> None:
+    path = old_file(RUN, dict(RUN, start="2026-11-21 01:00:00", kills=50))
+    os.makedirs(stats.RESULTS, exist_ok=True)
+    with open(stats.file_of(HERO), "w", encoding="utf-8") as f:
+        f.write(json.dumps(dict(RUN, start="2026-11-21 01:00:00", kills=50)) + "\n")   # one in both
+        f.write(json.dumps(dict(RUN, start="2026-11-24 01:00:00", kills=7)) + "\n")
+    assert stats.adopt_old_file(HERO) is True and not os.path.exists(path)
+    with open(stats.file_of(HERO), encoding="utf-8") as f:
+        assert [json.loads(line)["kills"] for line in f] == [100, 50, 7]
