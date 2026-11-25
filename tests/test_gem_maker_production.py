@@ -390,13 +390,36 @@ def test_stocking_ends_when_the_arnebia_is_at_the_reserve(game: Any, monkeypatch
     assert stored(deposits, SHARD) == 10 and said(b, "stocked 10 of the 350")
 
 
-def test_stocking_keeps_the_shards_the_bag_held_and_stops_at_a_full_storehouse(
-        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_stocking_stores_the_shards_the_bag_held_and_counts_them(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({SHARD: 100}, coin(1), maxload=600)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 500})
+    assert stored(deposits, SHARD) == 500 and count(b, SHARD) == 0
+    assert sum(b.trades) == 400                                # the 100 it held were part of the 500
+    assert said(b, "stocked 500 of the 500 Level 1 Topaz Shard in the storehouse")
+
+
+def test_stocking_never_stores_more_than_the_number_asked_for(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({SHARD: 100}, coin(1), maxload=600)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 60})
+    assert stored(deposits, SHARD) == 60 and count(b, SHARD) == 40 and b.trades == []
+
+
+def test_stocking_stops_at_a_full_storehouse(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     deposits = storehouse(monkeypatch, takes=30)
     b, _c, _rounds = game({SHARD: 7}, coin(1), maxload=100)
     crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 60})
     assert stored(deposits, SHARD) == 30 and said(b, "the storehouse took")
-    assert count(b, SHARD) == 7 + 60 - 30                       # the 7 it held, and the 30 the storehouse refused
+    assert count(b, SHARD) == 7 + 53 - 30                       # the 7 went in; of the 53 bought, 23 did
+
+
+def test_stocking_stops_at_once_when_the_storehouse_takes_none_of_the_bag(
+        game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch, takes=0)
+    b, _c, _rounds = game({SHARD: 7}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 60})
+    assert deposits == [] and b.trades == [] and count(b, SHARD) == 7
 
 
 def test_stocking_check_only_buys_and_stores_nothing(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -413,3 +436,17 @@ def test_a_level_1_job_stores_the_level_1_gems_the_bag_already_held(
     crafting.gem_maker(as_bot(b), job(level=1, count=3, amount=3, store_gems=True))
     assert stored(deposits, "Level 1 Topaz") == 9 and count(b, "Level 1 Topaz") == 0
     assert said(b, "done: made 3 Level 1 Topaz")
+
+
+def test_stocking_does_not_buy_above_the_price_limit(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 50, "max_price": PRICE - 1})
+    assert deposits == [] and b.trades == [] and said(b, "more than your limit of %d" % (PRICE - 1))
+
+
+def test_stocking_buys_at_the_price_limit(game: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    deposits = storehouse(monkeypatch)
+    b, _c, _rounds = game({}, coin(1), maxload=100)
+    crafting.gem_maker(as_bot(b), {"mode": "stock", "colour": "Topaz", "stock_count": 50, "max_price": PRICE})
+    assert stored(deposits, SHARD) == 50

@@ -1042,9 +1042,10 @@ def _store_finished(b: Bot, job: _GemJob) -> int:
 def stock_shards(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
     """Buy cfg["stock_count"] Level 1 shards of cfg["colour"] at the Shard Market and put them in
     the storehouse, a bagful at a time (the bag's room and the market's batch limit set the size;
-    the arnebia reserve and cfg["max_price"] set the end). Only what was bought is stored: shards
-    the bag held already stay. Ends when the number is reached, or when no more shards come, the
-    spare arnebia is gone or the storehouse is full, and says which."""
+    the arnebia reserve and cfg["max_price"] set the end). The shards of that kind the bag holds
+    already go to the storehouse first and count toward the number, so only the rest is bought.
+    Ends when the number is reached, or when no more shards come, the spare arnebia is gone or
+    the storehouse is full, and says which."""
     colour = (cfg.get("colour") or "").strip()
     shard = "Level 1 %s Shard" % colour
     want = max(1, int(cfg.get("stock_count") or 1))
@@ -1054,11 +1055,18 @@ def stock_shards(b: Bot, cfg: dict[str, Any], check_only: bool=False) -> None:
         b.log(_("check only: nothing was bought or stored"))
         b.close_dialogs()
         return
-    stocked = 0
+    stocked, full = 0, False
+    held = min(want, town.counts(b).get(shard.lower(), 0))
+    if held > 0:
+        stocked = max(0, town.deposit(b, shard, held))
+        full = stocked < held
+        if full:
+            b.log(_("the storehouse took {put} of the {got} {shard}: stocking stops here",
+                    put=stocked, got=held, shard=shard), speak=True)
     for _round in range(MAX_ROUNDS):
         if b.stop_event.is_set():
             raise Stopped(_("stopped"))
-        if stocked >= want:
+        if full or stocked >= want:
             break
         before = town.load_now(b)
         got = buy_shards(b, shard, want - stocked, max_price, keep_fees=False)

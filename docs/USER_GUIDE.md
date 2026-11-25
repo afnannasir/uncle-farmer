@@ -955,7 +955,7 @@ This job uses every shard in your bag to make gems. It then upgrades each gem co
 
 **Stock shards**
 
-This job buys Level 1 shards of the chosen gem from the Shard Broker and puts them in the storehouse, so a later Gem Maker run can take them out instead of shopping. Set **Number of shards to stock**. The price limit works as in **Make a gem**. It buys a bagful at a time, in batches of at most 2,000, stores it, and repeats. It does not hold back arnebia for the craftsman's fees, because nothing is made. It stops when it has the number, when your arnebia reserve would be reached, when the price is over your limit, when no more shards are sold, or when the storehouse is full. Shards that were already in your bag stay in the bag. **Check only** reads the price and buys nothing.
+This job buys Level 1 shards of the chosen gem from the Shard Broker and puts them in the storehouse, so a later Gem Maker run can take them out instead of shopping. Set **Number of shards to stock**. The price limit works as in **Make a gem**. It buys a bagful at a time, in batches of at most 2,000, stores it, and repeats. It does not hold back arnebia for the craftsman's fees, because nothing is made. It stops when it has the number, when your arnebia reserve would be reached, when the price is over your limit, when no more shards are sold, or when the storehouse is full. Level 1 shards of that gem that are already in your bag go to the storehouse first and count toward the number, so only the rest is bought. **Check only** reads the price and buys nothing.
 
 **When the job stops**
 
