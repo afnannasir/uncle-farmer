@@ -6294,6 +6294,16 @@ msgstr "impossible d'atteindre {item} dans le sac"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "impossible d'atteindre {skill} dans le panneau des sorts"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"impossible de lire le sac avant le farming : seuls les objets pour lesquels une règle a été choisie sont vendus, déposés ou jetés pendant cette partie"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr ""
+"impossible de lire l'équipement du sac avant le farming : rien n'est jeté pour l'instant"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr "impossible de lire la liste du Storehouse : seul le sac compte"
 

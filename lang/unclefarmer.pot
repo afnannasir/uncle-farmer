@@ -5977,6 +5977,14 @@ msgstr ""
 msgid "couldn't reach {skill} in the skills panel"
 msgstr ""
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr ""
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr ""
 

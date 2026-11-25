@@ -41,6 +41,46 @@ def counts(b: Bot) -> dict[str, int]:
     return out
 
 
+START_TRIES = 5        # readings of the bag when farming starts, a second apart
+START_WAIT = 1.0
+
+
+def start_counts(b: Bot) -> dict[str, int] | None:
+    """The bag when farming starts (bag_start: what was ours before the run, never sold, stored or
+    thrown by a rule the player didn't choose), or None when the game sent no bag for START_TRIES
+    readings. An error reply used to read as an empty bag, and then everything in it counted as
+    picked up this run: a short drop or a login still loading at the start, and the rules sold,
+    stored or threw away what the player already had."""
+    for i in range(START_TRIES):
+        got = counts(b)
+        if not getattr(b, "bag_unread", False):
+            return got
+        if i + 1 < START_TRIES:
+            b.sleep(START_WAIT)
+    return None
+
+
+def note_bag_start(b: Bot) -> None:
+    """bag_start, once a run: the bag as it is, or - the game sent none - empty with
+    bag_start_unknown set, so that nothing in the bag counts as picked up (run_gains)."""
+    start = start_counts(b)
+    if start is None:
+        b.__dict__["bag_start_unknown"] = True
+        b.log(_("couldn't read the bag before farming: only the items you chose a rule for are sold, "
+                "stored or thrown away this run"), speak=True)
+    b.bag_start = start or {}
+
+
+def run_gains(b: Bot, bag: dict[str, int]) -> dict[str, int]:
+    """{item (lower): how many this run picked up} for bagrules.plan's only_this_run. Outside a run
+    (no bag_start: a tool such as Store items now) the whole bag counts, as before. A run whose
+    start couldn't be read (bag_start_unknown): nothing - only the rules the player chose apply."""
+    if getattr(b, "bag_start_unknown", False):
+        return {k.lower(): 0 for k in bag}
+    start: dict[str, Any] = getattr(b, "bag_start", None) or {}
+    return {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
+
+
 # The marks the client writes after an item's name in a list it builds itself, any of them
 # (gamelang.MARKS): the storehouse's "deposit item" list reads "78 Memory Butterfly (restricted) ".
 ITEM_MARKS = r"(\s*\((" + "|".join(re.escape(m.strip("()")) for m in gamelang.MARKS) + r")\))*"
@@ -1379,8 +1419,7 @@ def unload(b: Bot) -> int:
     for r in b.bag_rows():
         if r.get("name") and r.get("count"):
             bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
-    start: dict[str, Any] = getattr(b, "bag_start", None) or {}
-    gained = {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
+    gained = run_gains(b, bag)
     todo = bagrules.plan(b.p, bag, hot, gained)
     if not todo:
         b.log(_("the bag is heavy, but no rule says to store, sell or throw anything in it - "

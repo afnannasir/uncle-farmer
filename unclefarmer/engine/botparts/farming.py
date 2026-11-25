@@ -133,7 +133,7 @@ class FarmingMixin(Parts):
             self.restock_now()
         if getattr(self, "bag_start", None) is None:
             from .. import town
-            self.bag_start = town.counts(as_bot(self))   # what was ours before the run: never sold or stored
+            town.note_bag_start(as_bot(self))   # what was ours before the run: never sold or stored
         gearthrow.note_start(as_bot(self))       # and its equipment, piece by piece: never thrown
         if not instance:
             self.on_farm_run = True       # travel checks the restock rules on the way (restock_on_the_way)

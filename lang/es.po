@@ -6221,6 +6221,16 @@ msgstr "no se pudo llegar a {item} en la bolsa"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "no se pudo llegar a {skill} en el panel de habilidades"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"no pude leer la bolsa antes de farmear: en esta partida solo se venden, guardan o tiran los objetos para los que elegiste una regla"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr ""
+"no pude leer el equipo de la bolsa antes de farmear: por ahora no se tira nada"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr ""
 

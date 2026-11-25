@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+**A shared plan can't slip in commands of its own**
+
+- A line break in an imported plan's name, its stop time, its stop item or a spot's only, skip or
+  patrol became a script line of its own when the plan ran: a plan named "Wolves", a line break and
+  a market purchase bought on the market, and the plan editor showed nothing amiss. Every plan text
+  is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
+  isn't HH:MM, or an unknown patrol.
+
+**What the bag held before the run stays the player's** (untested in game)
+
+- The bag was read once when farming began, and a reading the game didn't answer (a short drop, a
+  login still loading) counted as an empty bag: everything in it then counted as picked up this
+  run, and the bag rules sold, stored or threw away what the player already had. The bag is now
+  read again for a few seconds; if the game still sends none, only the items the player chose a
+  rule for are sold, stored or thrown that run, and the log says so.
+- Equipment the same way: an unread start throws no piece away (the next spot reads it again);
+  it used to throw every piece of the ticked rarities already in the bag.
+- When a piece's details don't come in time, the pieces after it wait for the next sweep: a late
+  answer goes by the piece's name, and could have been read as another piece of the same name's.
+
 **The Tools wait for a logged-in character** (untested in game)
 
 - Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, Update

@@ -6167,6 +6167,15 @@ msgstr "çantada {item} eşyasına ulaşılamadı"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "beceri panelinde {skill} becerisine ulaşılamadı"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"farm öncesi çanta okunamadı: bu oyunda yalnızca kural seçtiğin eşyalar satılır, depolanır ya da atılır"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr "farm öncesi çantadaki ekipman okunamadı: şimdilik hiçbiri atılmıyor"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr ""
 

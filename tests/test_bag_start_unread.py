@@ -28,6 +28,7 @@ class Bot:
         self.clock = Clock()
         self.lines: list[str] = []
         self.bag_start: dict[str, int] | None = None
+        self.bag_unread = False
 
     bag_rows = BagMixin.bag_rows
 
@@ -65,7 +66,7 @@ def test_a_start_never_read_counts_nothing_as_picked_up() -> None:
     assert any("couldn't read the bag before farming" in line for line in b.lines)
     bag = {"Wolf Fur": 40, "Medium Red Potion": 200}
     assert town.run_gains(as_bot(b), bag) == {"wolf fur": 0, "medium red potion": 0}
-    p = {"only_this_run": True, "bag_rules": {}}
+    p: dict[str, Any] = {"only_this_run": True, "bag_rules": {}}
     assert bagrules.plan(p, bag, gained=town.run_gains(as_bot(b), bag)) == []      # nothing touched
 
 

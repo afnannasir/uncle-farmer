@@ -6255,6 +6255,16 @@ msgstr "baste mein {item} tak nahi pohanch sake"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "skills panel mein {skill} tak nahi pohanch sake"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"farming se pehle bag nahi parh saka: is run mein sirf woh items sell, store ya throw honge jin ke liye aap ne khud rule chuna hai"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr ""
+"farming se pehle bag ka equipment nahi parh saka: abhi us mein se kuch bhi throw nahi hoga"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr "storehouse ki fehrist nahi parh saka: sirf basta gina ja raha hai"
 

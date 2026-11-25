@@ -65,10 +65,17 @@ def rows(bot: Bot) -> list[dict[str, Any]]:
 
 
 def note_start(bot: Bot) -> None:
-    """When farming starts: the pieces already in the bag, by their own id - never thrown."""
+    """When farming starts: the pieces already in the bag, by their own id - never thrown. An error
+    reply notes nothing (gear_start stays None: nothing is thrown, picked_up) and the next spot's
+    start tries again; it used to read as an empty bag, and every piece already in it was thrown."""
     if not chosen(bot.p) or getattr(bot, "gear_start", None) is not None:
         return              # nothing chosen, or noted already this run (a plan's next spot)
-    bot.__dict__["gear_start"] = {int(r["uid"]) for r in rows(bot) if isinstance(r.get("uid"), int)}
+    got = bot.a.json("mem equipment")
+    if not jsonio.is_array(got):
+        bot.log(_("couldn't read the equipment in the bag before farming: none of it is thrown away "
+                  "for now"), speak=True)
+        return
+    bot.__dict__["gear_start"] = {int(r["uid"]) for r in got if not r.get("equipped") and isinstance(r.get("uid"), int)}
     bot.__dict__["gear_swept"] = bot.clock.time()
 
 
@@ -81,7 +88,16 @@ def picked_up(bot: Bot) -> list[dict[str, Any]]:
     out = [r for r in rows(bot) if isinstance(r.get("uid"), int) and r["uid"] not in start
            and rarity_of(r) in want]
     if bot.p.get("gear_keep_bonus", True):
-        out = [r for r in out[:MOST] if has_bonus(bot, r) is False]
+        plain: list[dict[str, Any]] = []
+        for r in out[:MOST]:
+            bonus = has_bonus(bot, r)
+            if bonus is None:
+                # no details in time: a late answer would be read as the next piece's (details goes
+                # by the name, and dropped pieces share names) - the rest wait for the next sweep
+                break
+            if not bonus:
+                plain.append(r)
+        out = plain
     return out[:MOST]
 
 
