@@ -13,7 +13,7 @@ import wx
 from .. import settings
 from ..engine import chores, constructionscan
 from ..i18n import _
-from .common import Dialog, copy_text, with_code, Form, group, page, save_file, tabs
+from .common import Dialog, copy_text, enable_label, with_code, Form, group, page, save_file, tabs
 from .crafting import CHECK, START
 
 DONATIONS = ("off", "10000", "20000", "diamonds")
@@ -208,6 +208,7 @@ class ConstructionScanDialog(Dialog):
         self.where = form.choice(_("Publish &as:"), [_("Gang announcement"), _("Broadcast (with a sound)"),
                                                      _("System message")], 0)
         self.where.Enable(can_act)
+        enable_label(self.where, can_act)
         root.Add(form.grid, 0, wx.LEFT | wx.RIGHT, 12)
         if not can_act:
             root.Add(wx.StaticText(self, label=_("To scan or publish, log in to the character in the game and stop "

@@ -104,10 +104,14 @@ class TravelMixin(Parts):
                 return False
             # the hearthstone is an item, not a spell: no cast for a hit to break (said by a player,
             # 2026-11-25). Waiting stopped at the first hit, fought back and used it again - and the
-            # bot's own fighting back may well be what kept it from taking us home
+            # bot's own fighting back may well be what kept it from taking us home. Hit while it
+            # waits, it drinks (and notices a death) but presses no attack
+            self.last_hp = self.me().get("hp")
             deadline = self.clock.time() + 25
             while self.clock.time() < deadline:
                 self.sleep(0.5)
+                if self.hit(self.me()):
+                    self.look_after()
                 if self.map_id() != start:
                     if self.settled_map() == start:
                         me = self.me()

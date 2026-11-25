@@ -9725,6 +9725,12 @@ msgid ""
 msgstr ""
 "{name} oyunu kaybedildi: yeniden açılıyor ve oyun kaldığı yerden sürüyor (bugün {most} içinde {n}). Stop every bot (Ctrl+Shift+S) onu kapalı tutar."
 
+msgid "{name}'s game won't be opened again."
+msgstr "{name} oyunu yeniden açılmayacak."
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr "{name} ayarları kopyalanamadı: {err}"
+
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, son çalışma ({what}, başlangıç {when})"
 

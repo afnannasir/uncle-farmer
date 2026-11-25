@@ -392,7 +392,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         selected = self.active_item()
         # Stop every bot also cancels the runs waiting to carry on (a game closed by hand stays closed)
         enabled = action_menu_states(available=available, running=running,
-                                     any_running=bool(self.runs) or bool(getattr(self, "carry_queue", [])),
+                                     any_running=bool(self.runs) or bool(getattr(self, "carry_queue", []))
+                                     or bool(getattr(self, "carry_closing", ())),
                                      has_items=bool(self.items), has_messengers=bool(self.messengers), selected=selected)
         for key, value in enabled.items():
             if key in self.action_items:

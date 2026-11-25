@@ -1219,7 +1219,12 @@ class Runner:
             self.watched.add(node)
             began: float | None = getattr(b, "started", None)
             start = began - self.minutes_before * 60.0 if began is not None else None   # carried on: the first part's
-            at = end_time(expr, start, start) if start is not None else None
+            # the stop time's next minute from when the line is reached - from the first part's
+            # start for a run carried on (it was reached then; a hand-written script's line reached
+            # later in a run waits for its own next minute)
+            at: float | None = None
+            if start is not None:
+                at = end_time(expr, start, start if self.minutes_before else clock_for(b).time())
             if at is not None and _clock_rule(expr):
                 # `clock == "04:30"` is true for one minute only: a run busy all through it (a wait,
                 # logging back in, a game opened again, a pause) farmed on until the daily stop.

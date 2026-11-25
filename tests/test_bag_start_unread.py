@@ -108,3 +108,15 @@ def test_no_details_in_time_leaves_the_rest_for_the_next_sweep(monkeypatch: Any)
     monkeypatch.setattr(gearthrow, "has_bonus", has_bonus)
     assert [r["uid"] for r in gearthrow.picked_up(as_bot(b))] == [1]
     assert asked == [1, 2]                            # piece 3 not asked: 2's late answer could be read as its
+
+
+def test_a_piece_whose_details_never_come_is_kept_and_holds_up_nothing_after(monkeypatch: Any) -> None:
+    b = Bot([[piece(1), piece(2)]], {"gear_throw": ["crude"], "gear_keep_bonus": True})
+    b.__dict__["gear_start"] = set()
+    answers = {1: None, 2: False}
+
+    def has_bonus(_bot: Any, row: dict[str, Any]) -> bool | None:
+        return answers[row["uid"]]
+    monkeypatch.setattr(gearthrow, "has_bonus", has_bonus)
+    assert gearthrow.picked_up(as_bot(b)) == []                   # this sweep: the rest wait
+    assert [r["uid"] for r in gearthrow.picked_up(as_bot(b))] == [2]   # the next: piece 1 kept, 2 goes

@@ -124,3 +124,45 @@ def test_another_class_asks_first(frame: Any, monkeypatch: pytest.MonkeyPatch) -
         assert asked and "Mage" in asked[0] and d.p.get("attack_gap") != 0.9          # said no: nothing copied
     finally:
         d.Destroy()
+
+
+def test_the_copy_never_offers_the_character_s_own_old_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui import copyfrom
+    hero = settings.character_profile("Hero", 7, "S1")
+    bob = settings.character_profile("Bob", 9, "S1")
+    monkeypatch.setattr(copyfrom.settings, "profiles", returning(["Hero", hero, bob]))
+    assert copyfrom.other_characters(hero) == [bob]
+
+
+def test_a_damaged_list_in_the_other_character_s_settings_is_said(frame: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui import profile as gui
+    hero = settings.character_profile("Hero", 7, "S1")
+    bob = settings.character_profile("Bob", 9, "S1")
+    settings.save_profile(bob, {"trigger_sequences": {"before": {"steps": "not a list"}}})
+    monkeypatch.setattr(gui, "other_characters", returning([bob]))
+    said: list[str] = []
+
+    class Picker:
+        def __init__(self, *_a: Any) -> None: ...
+
+        def __enter__(self) -> "Picker":
+            return self
+
+        def __exit__(self, *_a: Any) -> None: ...
+
+        def ShowModal(self) -> int:
+            return wx.ID_OK
+
+        def picked(self) -> tuple[str, list[str], bool]:
+            return bob, ["before"], False
+
+    def error(_parent: Any, text: str, _title: str = "") -> None:
+        said.append(text)
+    monkeypatch.setattr(gui, "CopyFromDialog", Picker)
+    monkeypatch.setattr(gui, "error", error)
+    d = gui.ProfileDialog(frame, hero)
+    try:
+        d.on_copy()
+    finally:
+        d.Destroy()
+    assert said and "couldn't be copied" in said[0]

@@ -54,8 +54,8 @@
 
 - A game closed in the middle of a run is opened again and the run carried on, and nothing could
   keep it closed: the bot opened another one every minute and a half for five minutes. Stop every
-  bot (Ctrl+Shift+S) now also cancels the runs waiting to carry on (Stop on a game, that game's
-  character's), and the line that says the game is opened again says so.
+  bot (Ctrl+Shift+S) now also cancels the runs waiting to carry on, the one whose game is still
+  being closed included, and the line that says the game is opened again says so.
 - A lost run carried on in any game at its login screen, the player's own included; if logging in
   failed there (the player logging in another account by hand), that game was closed by force to
   be opened again. It now carries on only in a game Uncle Farmer opened itself.
@@ -82,7 +82,8 @@
   one file, and the day's totals, the last run and the "today" private message mixed them up. Each
   character now has results/<name>--<server>--<id>.jsonl, named like its settings file. The file a
   character had under its name alone becomes its own the first time it is logged in or farms with
-  this version, all of its history with it (the first character of that name to come takes it);
+  this version, all of its history with it (the first character of that name to come takes it),
+  and so does one saved by a run whose server couldn't be read (<name>--<id>.jsonl);
   until then it is still read as the character's. While another program holds the old file and it
   can't be moved, the runs go on writing to it, and it is moved the next time; found beside the new
   one, it is merged into it (its records first, none twice). The Results window says each
@@ -137,11 +138,13 @@
   and used it again, three times, then said it "didn't take me home" - its own fighting back may
   well be what kept it from leaving; a teleport stone, a dungeon's or a chest's way out, or a gang
   NPC's teleport hit while it worked was taken as failed, and the stone left out of the trip. Now
-  only the teleport spells give up on a hit.
+  only the teleport spells give up on a hit; hit while it waits for the hearthstone, the bot drinks
+  its potions but presses no attack.
 - When HP stays low and the bot flees with the hearthstone, a hearthstone that didn't take the
   character home was counted as a flee all the same: two of them and one real flee made "fled 3
   times in 30 minutes" and ended the night in town. Only a hearthstone that takes the character
-  to town counts now.
+  to town counts now - or a death on the way, so that a map too hard for the character still ends
+  the run.
 
 **A trusted player can be trusted on one server only** (untested in game)
 
@@ -190,6 +193,7 @@
   it used to throw every piece of the ticked rarities already in the bag.
 - When a piece's details don't come in time, the pieces after it wait for the next sweep: a late
   answer goes by the piece's name, and could have been read as another piece of the same name's.
+  That piece is kept for the run, so it holds up no sweep after.
 
 **The Tools wait for a logged-in character** (untested in game)
 

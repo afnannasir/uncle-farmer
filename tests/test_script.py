@@ -1020,3 +1020,16 @@ def test_a_stop_time_passed_while_the_run_was_busy_still_stops_it(monkeypatch: p
     assert cond() is False
     clock.advance(55 * 60)                       # 04:55: the minute itself was missed
     assert cond() is True and message == "it is 04:30"
+
+
+def test_a_stop_time_reached_later_in_a_hand_written_script_waits_for_its_own_minute(monkeypatch: pytest.MonkeyPatch) -> None:
+    import time
+    from conftest import Clock
+    began = time.mktime((2026, 11, 25, 22, 40, 0, 0, 0, -1))
+    clock = Clock(began + 25 * 60)                   # the line is reached at 23:05
+    bot = FakeBot()
+    bot.started = began                              # type: ignore[attr-defined]
+    monkeypatch.setattr(S, "clock_for", returning(clock))
+    S.Runner(as_bot(bot), 'stop_when clock == "23:00" : it is 23:00').run()
+    cond, _message = bot.watches[0]
+    assert cond() is False                           # not at once: tomorrow's 23:00

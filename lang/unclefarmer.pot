@@ -9409,6 +9409,12 @@ msgid ""
 "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
 
+msgid "{name}'s game won't be opened again."
+msgstr ""
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr ""
+
 msgid "{name}, last run ({what}, started {when})"
 msgstr ""
 

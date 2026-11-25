@@ -118,6 +118,10 @@ class Bot(TravelMixin):
     def hit(self, me: dict[str, Any]) -> bool:
         return self.hit_value
 
+    def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]:
+        self.lines.append("look_after")
+        return me or {}
+
     def fight_back(self) -> None:
         self.lines.append("fight_back")
 
@@ -1369,3 +1373,12 @@ def test_landing_far_from_where_the_atlas_says_is_said_with_the_line_to_report()
     b._take_leg(door, set(), {})
     assert any("not at 83,300 as the atlas says" in line and '"point":[120,300]' in line for line in b.lines)
     assert not any("learned" in line for line in b.lines)
+
+
+def test_hit_while_waiting_for_the_hearthstone_it_drinks_but_never_attacks(clock: Clock) -> None:
+    b = Bot(clock)
+    b.hit_value = True
+    used = clock.time()
+    b.map_id = lambda: 1 if clock.time() < used + 2 else 1081
+    assert b.go_home() is True
+    assert "look_after" in b.lines and "fight_back" not in b.lines

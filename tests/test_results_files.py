@@ -107,3 +107,16 @@ def test_both_files_there_are_merged_oldest_first_and_once() -> None:
     assert stats.adopt_old_file(HERO) is True and not os.path.exists(path)
     with open(stats.file_of(HERO), encoding="utf-8") as f:
         assert [json.loads(line)["kills"] for line in f] == [100, 50, 7]
+
+
+def test_a_file_saved_without_the_server_is_taken_in_too() -> None:
+    # a run whose server couldn't be read saved under Name--7: the history split in two files
+    no_server = settings.character_profile("Hero", 7)
+    os.makedirs(stats.RESULTS, exist_ok=True)
+    with open(stats.file_of(no_server), "w", encoding="utf-8") as f:
+        f.write(json.dumps(dict(RUN, kills=8)) + "\n")
+    old_file(dict(RUN, start="2026-11-19 01:00:00", kills=1))
+    assert [r["kills"] for r in stats.runs(HERO)] == [8]                   # read before it moves
+    assert stats.adopt_old_file(HERO) is True
+    assert [r["kills"] for r in stats.runs(HERO)] == [1, 8]                # both, the oldest first
+    assert not os.path.exists(stats.file_of(no_server))

@@ -9809,6 +9809,12 @@ msgid ""
 msgstr ""
 "Se perdió el juego de {name}: se vuelve a abrir y la partida sigue donde estaba ({n} de {most} hoy). Stop every bot (Ctrl+Shift+S) lo deja cerrado."
 
+msgid "{name}'s game won't be opened again."
+msgstr "El juego de {name} no se volverá a abrir."
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr "No se pudieron copiar los ajustes de {name}: {err}"
+
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, última ejecución ({what}, iniciada {when})"
 

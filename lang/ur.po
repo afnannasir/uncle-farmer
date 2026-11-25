@@ -9886,6 +9886,12 @@ msgid ""
 msgstr ""
 "{name} ka game kho gaya: dobara khol kar run wahin se jaari hai (aaj {most} mein se {n}). Stop every bot (Ctrl+Shift+S) se game band rehta hai."
 
+msgid "{name}'s game won't be opened again."
+msgstr "{name} ka game dobara nahi khola jayega."
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr "{name} ki settings copy nahi ho sakin: {err}"
+
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, pichla run ({what}, shuru {when})"
 

@@ -13,8 +13,9 @@ from .common import Dialog, Form, error, labeled, ok_cancel
 
 
 def other_characters(character: str) -> list[str]:
-    """Every character with settings but this one."""
-    return [k for k in settings.profiles() if k != character and not settings.same_character(k, character)]
+    """Every character with settings but this one - nor its own old name-only file."""
+    return [k for k in settings.profiles() if k != character and not settings.same_character(k, character)
+            and not settings.is_profile_of(character, k)]
 
 
 class CopyFromDialog(Dialog):

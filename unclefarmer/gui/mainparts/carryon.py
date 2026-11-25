@@ -22,6 +22,16 @@ OFFER_AFTER_MS = 2_000     # the window settles (its game list read) before the 
 Waiting = tuple[str, dict[str, Any], Item, float]    # (character, saved place, plan or script, since)
 
 
+def _closing(frame: Any) -> set[str]:
+    """The characters whose lost game is being closed before it is opened again (_reopen): not in
+    carry_queue yet, and Stop every bot cancels them all the same."""
+    keys: set[str] | None = getattr(frame, "carry_closing", None)
+    if keys is None:
+        keys = set()
+        frame.carry_closing = keys
+    return keys
+
+
 def _ours(frame: Any) -> set[str]:
     """The characters whose lost run carries on only in a game this window opened (carry_ours)."""
     ours: set[str] | None = getattr(frame, "carry_ours", None)
@@ -41,7 +51,8 @@ class CarryOnMixin(FrameParts):
         queue: list[Waiting] = getattr(self, "carry_queue", [])
         gone = [w for w in queue if key is None or settings.same_character(w[0], key)
                 or settings.is_profile_of(key, w[0])]
-        if not gone:
+        closing = [k for k in _closing(self) if key is None or settings.same_character(k, key)]
+        if not gone and not closing:
             return False
         self.carry_queue = [w for w in queue if w not in gone]
         for who, _row, item, _since in gone:
@@ -49,6 +60,10 @@ class CarryOnMixin(FrameParts):
             _ours(self).discard(who)
             self.say(_("{what} for {name} won't carry on.", what=self.item_label(item),
                        name=settings.profile_display(who)))
+        for who in closing:                # still being closed: its game won't be opened again
+            _closing(self).discard(who)
+            resume.clear(who)
+            self.say(_("{name}'s game won't be opened again.", name=settings.profile_display(who)))
         return True
 
     def start_carry_on(self) -> None:
@@ -192,10 +207,14 @@ class CarryOnMixin(FrameParts):
     def _reopen(self, run: Run, key: str, row: dict[str, Any], item: Item) -> None:
         """The lost game closed first when it is still running (frozen, or showing a world it lost),
         then the run is carried on: its character's game is opened and logged in to."""
+        _closing(self).add(key)        # Stop every bot cancels it while the game is being closed
+
         def then(_left: list[int]) -> None:
-            if not self.destroyed:
-                self.refresh_games()
-                self.carry_on([(key, row, item)], ours_only=True)
+            if self.destroyed or key not in _closing(self):
+                return                  # cancelled meanwhile (Stop every bot)
+            _closing(self).discard(key)
+            self.refresh_games()
+            self.carry_on([(key, row, item)], ours_only=True)
         if run.pid in {pid for pid, _folder in gameinstall.running_games()}:
             agentfix.close_then([run.pid], then, force=True)
         else:

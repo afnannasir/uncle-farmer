@@ -202,3 +202,16 @@ def test_with_hp_fine_the_hearthstone_is_not_looked_for(clock: Clock) -> None:
     h.may_flee = may_flee                             # type: ignore[method-assign]
     h.look_after()
     assert asked == []                                # it can read the bag: only once HP is low
+
+
+def test_a_death_on_the_way_to_town_counts_as_a_flee(clock: Clock) -> None:
+    # not counted, a map too hard for the character killed it again and again and "fled too many"
+    # never came
+    from unclefarmer.engine.botparts.base import Respawned
+    b = Fleer([95])
+
+    def died(tries: int = 3) -> bool:
+        raise Respawned()
+    b.go_home = died                                  # type: ignore[method-assign]
+    b._flee(5281)                                    # pyright: ignore[reportPrivateUsage]
+    assert b.flees == [clock.time()]

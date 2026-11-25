@@ -456,8 +456,6 @@ class RunsMixin(FrameParts):
         if run:
             self.say(_("Stopping"), run)
             run.stop()
-        elif which is not None and self.character(which):
-            self.cancel_carry_on(self.character(which))     # its lost run waiting to carry on
 
     def stop_all(self) -> None:
         """Every bot, and every run waiting to carry on: a game the player closed by hand was

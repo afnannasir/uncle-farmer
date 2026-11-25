@@ -297,7 +297,10 @@ class Messenger(threading.Thread):
         count only there (trust)."""
         now = self.clock.time()
         if self._server is None or now - self._server[1] > self.SERVER_FOR:
-            self._server = (server_name(self.link) if self.link is not None else "", now)
+            got = server_name(self.link) if self.link is not None else ""
+            # a failed reading is asked again a few seconds on, not kept a minute: meanwhile every
+            # entry naming a server would be ignored
+            self._server = (got, now if got else now - self.SERVER_FOR + 5.0)
         return self._server[0]
 
     def trusted(self) -> trust.Trusted:

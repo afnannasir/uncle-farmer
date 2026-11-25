@@ -576,7 +576,11 @@ class ProfileDialog(Dialog):
                                name=settings.profile_display(source), theirs=profilecopy.class_of(theirs),
                                mine=profilecopy.class_of(self.p)), _("Copy from another character")):
                 return
-        lines = self.copy_parts(theirs, parts, replace, with_skills)
+        try:
+            lines = self.copy_parts(theirs, parts, replace, with_skills)
+        except ValueError as e:         # its Before or After list can't be read (an edited file)
+            error(self, _("{name}'s settings couldn't be copied: {err}", name=settings.profile_display(source), err=e))
+            return
         info(self, _("From {name}:\n{lines}\n\nNothing is kept until you save.",
                      name=settings.profile_display(source), lines="\n".join(lines)),
              _("Copy from another character"))

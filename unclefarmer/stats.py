@@ -763,8 +763,9 @@ class Tally:
                 # the old file still there (it couldn't be moved): written to, so the history stays
                 # in one file - a new one beside it would have kept the old one from ever moving
                 path = _readable(who)
-                os.makedirs(RESULTS, exist_ok=True)
-                _append_whole(path, "".join(lines))
+                with json.lock_for(path):
+                    os.makedirs(RESULTS, exist_ok=True)
+                    _append_whole(path, "".join(lines))
         with self.lock:
             self.saved = True
 
@@ -826,18 +827,26 @@ def file_of(who: str) -> str:
     return os.path.join(RESULTS, (_stem(who) or paths.safe_name(who)) + ".jsonl")
 
 
-def _old_file(who: str) -> str | None:
-    """The name-only file a character's results were in before (None for a name-only key)."""
+def _old_files(who: str) -> list[str]:
+    """The files a character's results were in before, the newest kind first: its key without the
+    server (a run whose server couldn't be read: Name--41.jsonl), then its name alone (Name.jsonl).
+    None for a name-only key. As a profile is found (settings._load_profile)."""
     from . import settings
     if not settings.is_character_profile(who):
-        return None
-    return os.path.join(RESULTS, paths.safe_name(settings.profile_name(who)) + ".jsonl")
+        return []
+    name, server, entity_id = settings.profile_name(who), settings.profile_server(who), settings.profile_id(who)
+    found = [file_of(settings.character_profile(name, entity_id))] if server and entity_id else []
+    found.append(os.path.join(RESULTS, paths.safe_name(name) + ".jsonl"))
+    own = file_of(who)
+    return [p for p in found if p != own]
 
 
 def _readable(who: str) -> str:
-    """The file to read a character's results from: its own, or the name-only one not taken yet."""
-    own, old = file_of(who), _old_file(who)
-    return old if old and not os.path.exists(own) and os.path.exists(old) else own
+    """The file to read a character's results from: its own, or an older one not taken yet."""
+    own = file_of(who)
+    if os.path.exists(own):
+        return own
+    return next((p for p in _old_files(who) if os.path.exists(p)), own)
 
 
 def adopt_old_file(who: str) -> bool:
@@ -847,21 +856,22 @@ def adopt_old_file(who: str) -> bool:
     program holds can't be moved: it stays the one the runs write to (save) and is moved the next
     time. Both there (an older copy came back, or a move failed half way): the old records go in
     first, those already there once, and the old file is removed. True if anything moved."""
-    old = _old_file(who)
-    if not old:
-        return False
     own = file_of(who)
-    with json.lock_for(own):
-        if not os.path.exists(old):
-            return False
-        try:
-            if not os.path.exists(own):
-                os.replace(old, own)
-                return True
-            return _merge(old, own)
-        except OSError as e:           # held by another program a moment: the next time does it
-            carry_on(e, "moving the results to the character's own file")
-            return False
+    moved = False
+    for old in _old_files(who):
+        # the old file is locked too: another character of the same name may be writing to it
+        with json.lock_for(own), json.lock_for(old):
+            if not os.path.exists(old):
+                continue
+            try:
+                if not os.path.exists(own):
+                    os.replace(old, own)
+                else:
+                    _merge(old, own)
+                moved = True
+            except OSError as e:       # held by another program a moment: the next time does it
+                carry_on(e, "moving the results to the character's own file")
+    return moved
 
 
 def _merge(old: str, own: str) -> bool:

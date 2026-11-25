@@ -85,15 +85,18 @@ def picked_up(bot: Bot) -> list[dict[str, Any]]:
     start: set[int] | None = getattr(bot, "gear_start", None)
     if not want or start is None:
         return []           # nothing chosen, or farming never noted the bag: nothing is the run's
+    unanswered: set[int] = bot.__dict__.setdefault("gear_unanswered", set())
     out = [r for r in rows(bot) if isinstance(r.get("uid"), int) and r["uid"] not in start
-           and rarity_of(r) in want]
+           and r["uid"] not in unanswered and rarity_of(r) in want]
     if bot.p.get("gear_keep_bonus", True):
         plain: list[dict[str, Any]] = []
         for r in out[:MOST]:
             bonus = has_bonus(bot, r)
             if bonus is None:
                 # no details in time: a late answer would be read as the next piece's (details goes
-                # by the name, and dropped pieces share names) - the rest wait for the next sweep
+                # by the name, and dropped pieces share names) - the rest wait for the next sweep.
+                # That piece is kept for the run: asked again, it held up every sweep after it
+                unanswered.add(int(r["uid"]))
                 break
             if not bonus:
                 plain.append(r)

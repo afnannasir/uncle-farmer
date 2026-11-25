@@ -373,7 +373,11 @@ class FarmingMixin(Parts):
                 self.log(_("back to {map} after fleeing a lost fight", map=atlas.label(map_id)))
                 self.travel(map_id)
         except Respawned:
-            return                # died after all: the farm loop's next round goes back
+            # died on the way: a flee all the same - not counted, a map too hard for the character
+            # killed it again and again and "fled too many" never came
+            if not getattr(self, "flees", None) or self.flees[-1] != now:
+                self.flees = recent + [now]
+            return                # the farm loop's next round goes back
         finally:
             self.fleeing = False
         self.set_modes()
