@@ -105,7 +105,7 @@ class KillTracker:
         old = newest - STRUCK_KEEP * 1000
         for mid in [m for m, rows in self.struck.items() if rows[-1][0] < old]:
             del self.struck[mid]
-        for mid in [m for m, t in self.pet_struck.items() if t < old]:
+        for mid in [m for m, t in self.pet_struck.items() if t < cutoff]:
             del self.pet_struck[mid]
         return out
 
@@ -114,6 +114,11 @@ class KillTracker:
         caster = c.get("caster")
         if not isinstance(caster, int) or caster < 0:
             return              # a monster's own cast
+        if caster in self.own:
+            hits: list[list[Any]] = c.get("hits") or []
+            for h in hits:
+                if len(h) >= 2 and isinstance(h[0], int) and h[0] < 0 and isinstance(h[1], int) and h[1] & 7 != DODGED:
+                    self.pet_struck[h[0]] = c["t"]
         targets: list[list[Any]] = c.get("targets") or []
         for row in targets:
             if len(row) < 2 or not isinstance(row[0], int) or row[0] >= 0:

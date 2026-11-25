@@ -119,7 +119,12 @@ def ours(b: Bot, snap: dict[str, Any]) -> set[int]:
         for e in entities:
             if e.get("kind") == "player" and isinstance(e.get("id"), int)                     and " ".join(str(e.get("name") or "").split()).endswith(tail):
                 found.add(e["id"])
-    return found
+    owner: Any = me_row.get("id") if isinstance(me_row.get("id"), int) else me
+    known: dict[Any, set[int]] = b.__dict__.setdefault("_known_pets", {})
+    saved: set[int] = known.get(owner) or set()
+    if found and owner:
+        known[owner] = saved | found
+    return found | saved
 
 
 def chosen(b: Bot) -> list[str]:
