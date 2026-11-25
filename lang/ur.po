@@ -409,8 +409,8 @@ msgstr "Is game ki awaaz &band karein"
 msgid "&Muted Sounds:"
 msgstr "&Khamosh sounds:"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "&Naam ya id (comma se alag):"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr "&Names ya ids, comma se alag (Kim@S1: sirf S1 par trusted):"
 
 msgid "&Never fight:"
 msgstr "&Kabhi nahi larein:"
@@ -842,6 +842,11 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Jo file upar di gayi size tak pahunch jaye woh name.1 ke tor par rakhi jaati hai, us se purani name.2 par chali jaati hai aur isi tarah aage, aur sab se purani hata di jaati hai. Din ka run log bhi apne din ke andar isi tarah rotate hota hai."
+
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Ek naam doosre server par kisi aur player ka ho sakta hai: jo naam aap add karte hain unhein selected character ka server milta hai (Kim@S1). Server ke baghair naam ya id har server par trusted hai."
 
 msgid "A name for this place:"
 msgstr "Is jagah ka naam:"
@@ -10203,6 +10208,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "&Naam ya id (comma se alag):"
 
 #~ msgid "(no notes)"
 #~ msgstr "(koi notes nahi)"

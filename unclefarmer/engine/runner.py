@@ -348,7 +348,7 @@ class Run(threading.Thread):
             settings.save_profile(name, data)
 
         bot.save_profile = save_profile
-        bot.trusted = trust.from_settings(app)
+        bot.trusted = trust.from_settings(app, settings.profile_server(self.profile or ""))   # entries naming another server don't count
         bot.locate = getattr(self, "locate", None)   # where another of our characters is (follow, come)
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
         bot.tell = getattr(self, "tell", None)       # answers the player who asked for this run

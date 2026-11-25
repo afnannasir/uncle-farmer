@@ -2184,6 +2184,8 @@ There is also a **Call them by their name** option. When enabled, Uncle Farmer a
 
 You can add trusted players using either their character name or game ID. Both types of entries can be mixed in the same list.
 
+A name can belong to another player on another server. An entry followed by `@` and a server, such as `Kim@S1` or `2001@S2`, is trusted on that server only. The names and IDs you add get the server of the character selected in the Games list. An entry without a server is trusted on every server, so add the server to the ones you listed before.
+
 Trusted players can use commands to check information or control your character. Their messages are handled according to your configured speech settings.
 
 Trusted players do not receive the automatic replies intended for strangers.

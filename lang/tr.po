@@ -408,8 +408,9 @@ msgstr "Bu oyunun sesini kapat (&M)"
 msgid "&Muted Sounds:"
 msgstr "Susturulan sesler (&M):"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr ""
+"&İsimler ya da id'ler, virgülle ayrılmış (Kim@S1: yalnızca S1'de güvenilir):"
 
 msgid "&Never fight:"
 msgstr "Asla dövüşme (&N):"
@@ -837,6 +838,11 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Yukarıdaki boyuta ulaşan dosya name.1 olarak saklanır, eskileri name.2'ye kayar ve böyle devam eder; en eskisi silinir. Günün çalışma günlüğü de kendi günü içinde aynı şekilde döndürülür."
+
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Bir isim başka bir sunucuda başka bir oyuncuya ait olabilir: eklediğin isimler seçili karakterin sunucusunu alır (Kim@S1). Sunucusu olmayan bir isim ya da id her sunucuda güvenilirdir."
 
 msgid "A name for this place:"
 msgstr "Bu yer için bir ad:"
@@ -10031,6 +10037,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"
 
 #~ msgid "(no notes)"
 #~ msgstr "(not yok)"

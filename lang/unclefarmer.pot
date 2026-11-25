@@ -404,7 +404,7 @@ msgstr ""
 msgid "&Muted Sounds:"
 msgstr ""
 
-msgid "&Names or ids (separated by commas):"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
 msgstr ""
 
 msgid "&Never fight:"
@@ -829,6 +829,10 @@ msgstr ""
 
 msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
+msgstr ""
+
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
 msgstr ""
 
 msgid "A name for this place:"

@@ -36,7 +36,7 @@ from .engine.bot import Bot, Stopped
 from .engine.botparts.parts import Where
 from .errors import carry_on
 from .i18n import _
-from .link import AgentError, AgentLink, OpenLink
+from .link import AgentError, AgentLink, OpenLink, server_name
 from collections.abc import Iterable
 
 if TYPE_CHECKING:
@@ -289,6 +289,20 @@ class Messenger(threading.Thread):
     def stop(self) -> None:
         self.halt.set()
 
+    SERVER_FOR = 60.0     # seconds a reading of this game's server is used (Switch account may change it)
+    _server: tuple[str, float] | None = None
+
+    def server(self) -> str:
+        """The server this game plays on ("S1"), "" when not known: trusted entries naming a server
+        count only there (trust)."""
+        now = self.clock.time()
+        if self._server is None or now - self._server[1] > self.SERVER_FOR:
+            self._server = (server_name(self.link) if self.link is not None else "", now)
+        return self._server[0]
+
+    def trusted(self) -> trust.Trusted:
+        return trust.Trusted(config()["pm_trusted"], self.server())
+
     # -------------------------------------------------- the loop
     def run(self):
         applog.thread("messages %d" % self.pid)
@@ -353,7 +367,7 @@ class Messenger(threading.Thread):
         s = self.snap()
         if not s:
             return
-        trusted = trust.Trusted(config()["pm_trusted"])
+        trusted = self.trusted()
         here: dict[str, Any] = s.get("map") or {}
         mid: int | None = here.get("id")
         now = self.clock.time()
@@ -371,7 +385,7 @@ class Messenger(threading.Thread):
     def received(self, pm: dict[str, Any]):
         cfg = config()
         name, text, pid_from = pm.get("name") or "?", pm.get("text") or "", pm.get("id", 0)
-        trusted = trust.Trusted(cfg["pm_trusted"]).has(name, pid_from)
+        trusted = trust.Trusted(cfg["pm_trusted"], self.server()).has(name, pid_from)
         # the player in the game's own window reads it there: shown in the log, not read out
         in_front = self.game_in_front()
         speak = not in_front and (cfg["pm_speak"] == "everyone" or (cfg["pm_speak"] == "trusted" and trusted))
@@ -811,7 +825,7 @@ class Messenger(threading.Thread):
         b = Bot(self.agent(), profile, self.bot_log, threading.Event(),
                 clock=self.clock)
         b.character, b.profile_key = name, key
-        b.trusted = trust.Trusted(config()["pm_trusted"])
+        b.trusted = self.trusted()
         b.locate = getattr(self.host, "locate", None)         # the window has these; test hosts may not
         b.last_seen = getattr(self.host, "last_seen", None)
         self.idle_bot_ref = b
@@ -835,7 +849,7 @@ class Messenger(threading.Thread):
         rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
         texts: list[str] = [e.get("text") or e.get("raw") or "" for row in rows for e in row if e]
         inv = team.invite_in(texts)
-        if inv and trust.Trusted(cfg["pm_trusted"]).has(inv[0], link=self.link):
+        if inv and trust.Trusted(cfg["pm_trusted"], self.server()).has(inv[0], link=self.link):
             bot = self.idle_bot()
             if bot and team.accept_invite(bot):
                 self.say(_("joined {who}'s team ({team}): {who} is trusted", who=inv[0], team=inv[1]), True)

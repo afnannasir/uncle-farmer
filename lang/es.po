@@ -410,8 +410,8 @@ msgstr "Silenciar este juego (&M)"
 msgid "&Muted Sounds:"
 msgstr "Sonidos silenciados (&M):"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "&Nombres o identificadores (separados por comas):"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr "&Nombres o ids, separados por comas (Kim@S1: de confianza solo en S1):"
 
 msgid "&Never fight:"
 msgstr "&Nunca pelear:"
@@ -841,6 +841,11 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Un archivo que alcanza el tamaño indicado arriba se conserva como nombre.1, los más antiguos pasan a nombre.2 y así sucesivamente, y el más antiguo se elimina. El registro de ejecución del día se rota de la misma forma dentro de su día."
+
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Un nombre puede ser de otro jugador en otro servidor: los nombres que añades reciben el servidor del personaje seleccionado (Kim@S1). Un nombre o id sin servidor es de confianza en todos los servidores."
 
 msgid "A name for this place:"
 msgstr "Un nombre para este lugar:"
@@ -10120,6 +10125,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casillas, {n} salidas."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "&Nombres o identificadores (separados por comas):"
 
 #~ msgid "(no notes)"
 #~ msgstr "(sin notas)"

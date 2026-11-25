@@ -10,6 +10,15 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A trusted player can be trusted on one server only** (untested in game)
+
+- A trusted name counted on every server, and a name can belong to another player on another
+  server: a stranger with the trusted player's name could send quit game, wait, start or follow,
+  and have their team invites taken. An entry of the trusted list may now name its server after an
+  @ ("Kim@S1", "2001@S2") and then counts on that server only. The names and ids added in Private
+  messages get the server of the character selected in the Games list; the ones listed before
+  stay as they were (every server) - add their server by hand.
+
 **A shop whose menu doesn't react is no longer written off** (untested in game)
 
 - When a shop's "Purchase" did nothing (on one player's computer it left every shop's menu as it

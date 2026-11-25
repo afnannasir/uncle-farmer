@@ -166,7 +166,8 @@ class TalkMixin(FrameParts):
         if mine or self.game_in_front(pid):
             return              # the player is in that game's window: no tones, nothing read out
         if line["channel"] == chat.PRIVATE:
-            trusted = trust.from_settings(self.s).has(line["name"], line.get("peer_id"))
+            server = settings.profile_server(self.character(pid) or "")
+            trusted = trust.from_settings(self.s, server).has(line["name"], line.get("peer_id"))
             tones.play(self.s.get("chat_tone_trusted", "chime") if trusted else self.s.get("chat_tone_others", "ding"))
             return              # read out (or not) by the private messages settings, as before
         when = self.s.get("chat_read", "open")
@@ -190,7 +191,8 @@ class TalkMixin(FrameParts):
 
     def edit_messages(self) -> None:
         from ..messages import MessagesDialog
-        with MessagesDialog(self, self.s) as d:
+        # new trusted names get the selected character's server (trust.with_server)
+        with MessagesDialog(self, self.s, settings.profile_server(self.selected_profile() or "")) as d:
             if d.ShowModal() == wx.ID_OK:
                 save_file(self, settings.save_app, self.s)
 

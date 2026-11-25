@@ -409,8 +409,9 @@ msgstr "&Couper le son de ce jeu"
 msgid "&Muted Sounds:"
 msgstr "Sons &muets :"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "&Noms ou ids (séparés par des virgules) :"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr ""
+"&Noms ou ids, séparés par des virgules (Kim@S1 : de confiance sur S1 seulement) :"
 
 msgid "&Never fight:"
 msgstr "Ne &jamais combattre :"
@@ -844,6 +845,11 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Un fichier qui atteint la taille ci-dessus est gardé sous le nom nom.1, les plus anciens passent à nom.2 et ainsi de suite, et le plus ancien est supprimé. Le journal des parties du jour tourne de la même façon au cours de la journée."
+
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Un nom peut appartenir à un autre joueur sur un autre serveur : les noms ajoutés reçoivent le serveur du personnage sélectionné (Kim@S1). Un nom ou un id sans serveur est de confiance sur tous les serveurs."
 
 msgid "A name for this place:"
 msgstr "Un nom pour ce lieu :"
@@ -10246,6 +10252,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} sur {h} cases, {n} sorties."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "&Noms ou ids (séparés par des virgules) :"
 
 #~ msgid ""
 #~ "When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"

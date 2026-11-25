@@ -6,7 +6,7 @@ from typing import Any
 
 import wx
 
-from .. import messages
+from .. import messages, trust
 from ..i18n import _
 from .common import Dialog, group, labeled, ok_cancel, page, save_file, tabs
 
@@ -15,11 +15,14 @@ SPEAK = ["trusted", "everyone", "never"]
 
 
 class MessagesDialog(Dialog):
-    def __init__(self, parent: wx.Window, app_settings: dict[str, Any]) -> None:
+    def __init__(self, parent: wx.Window, app_settings: dict[str, Any], server: str = "") -> None:
+        """server: the selected character's (S1, S2), given to the trusted names typed in."""
         super().__init__(parent, title=_("Private messages"), size=wx.Size(720, 640),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.s = app_settings
+        self.server = server
         c = messages.config()
+        self.trusted_before: list[str] = [str(n) for n in c["pm_trusted"]]
         root = wx.BoxSizer(wx.VERTICAL)
         nb = tabs(self)
 
@@ -33,7 +36,8 @@ class MessagesDialog(Dialog):
         self.lo = f.number(_("&Delay before replying, from (seconds):"), delay[0], 0, 120)
         self.hi = f.number(_("To (seconds):"), delay[1], 0, 300)
         f = group(panel, box, _("Trusted players"))
-        self.trusted = f.text(_("&Names or ids (separated by commas):"), ", ".join(str(n) for n in c["pm_trusted"]))
+        self.trusted = f.text(_("&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"),
+                              ", ".join(str(n) for n in c["pm_trusted"]))
         self.commands = f.check(_("Accept &commands from them"), c["pm_commands"])
         self.commands_in_front = f.check(_("Take their commands while the game &window is in front"),
                                          c["pm_commands_in_front"])
@@ -41,6 +45,10 @@ class MessagesDialog(Dialog):
         self.away = f.check(_("Tell them now and then that I'm a&way"), c["pm_away_note"])
         self.wait = f.check(_("They may &log me out for a while and back in (wait)"), c["pm_wait"])
         self.wait_minutes = f.number(_("Minutes to wait when they gi&ve no number:"), c["pm_wait_minutes"], 1, 999)
+        f.box.Add(wx.StaticText(f.parent, label=_(
+            "A name can belong to another player on another server: the names you add get the selected "
+            "character's server (Kim@S1). A name or id without a server is trusted on every server.")),
+            0, wx.TOP, 6)
         f = group(panel, box, _("Speech"))
         self.speak = f.choice(_("S&peak incoming messages:"), [_("From trusted players"), _("From everyone"),
                                                                _("Never")],
@@ -80,7 +88,8 @@ class MessagesDialog(Dialog):
     def on_ok(self, evt: wx.CommandEvent) -> None:
         s = self.s
         s["pm_replies"] = MODES[max(0, self.mode.GetSelection())]
-        s["pm_trusted"] = [n.strip() for n in self.trusted.GetValue().replace(";", ",").split(",") if n.strip()]
+        typed = [n.strip() for n in self.trusted.GetValue().replace(";", ",").split(",") if n.strip()]
+        s["pm_trusted"] = trust.with_server(typed, self.trusted_before, self.server)
         s["pm_commands"] = self.commands.GetValue()
         s["pm_commands_in_front"] = self.commands_in_front.GetValue()
         s["pm_accept_invites"] = self.invites.GetValue()
