@@ -116,7 +116,8 @@ class FakeBot:
 
 
 class FakeTally:
-    def __init__(self, character: str, title: str, clock: Clock | None=None, tool: None=None) -> None:
+    def __init__(self, character: str, title: str, clock: Clock | None=None, tool: None=None,
+                 profile: str | None=None) -> None:
         self.character, self.title, self.tool = character, title, tool
         self.updates: list[bool] = []
         self.finished_with = None
