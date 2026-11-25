@@ -363,7 +363,7 @@ final class Act {
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, 0, 0, 0, 0};
     }
 
-    /** op 18, bag panel 0, uid, then minus the count: what N.b(0, uid, -count) writes. */
+    /* op 18, bag panel 0, uid, then minus the count: what N.b(0, uid, -count) writes. */
     /** The bag's equipment tab: live (2026-11-24) the game threw a piece away as op 18, this panel,
      *  the piece's id, then GEAR_DISCARD. */
     static final int GEAR_PANEL = 1;
