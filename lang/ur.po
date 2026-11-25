@@ -9684,6 +9684,9 @@ msgstr "{name} gayab ho gaya, aur hamara koi hit us par nahi laga"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} raaste mein hai - is se lar rahe hain"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} kuch der ke liye logout hai aur khud dobara login karega"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} isi map par {x}, {y} par hai - wahan ja rahe hain"
 

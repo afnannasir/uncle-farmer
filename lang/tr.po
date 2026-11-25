@@ -9526,6 +9526,9 @@ msgstr "{name} gitti ve vuruşlarımızın hiçbiri ona isabet etmedi"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} yolu kesiyor - onunla dövüşülüyor"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} bir süreliğine çıkış yaptı ve kendi kendine tekrar girecek"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} bu haritada {x}, {y} konumunda - oraya gidiliyor"
 

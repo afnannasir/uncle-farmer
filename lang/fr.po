@@ -9728,6 +9728,9 @@ msgstr "{name} a disparu, et aucun de nos coups ne l'a touché"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} bloque le passage - combat"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} est déconnecté pour un moment et se reconnectera tout seul"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} est sur cette carte en {x}, {y} : direction ce point"
 

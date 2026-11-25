@@ -286,3 +286,23 @@ def test_stop_every_bot_cancels_the_runs_waiting_to_carry_on() -> None:
     runs_part.RunsMixin.stop_all(cast(Any, frame))
     assert frame.carry_queue == [] and resume.get(HERO) is None
     assert frame.said == ["Night for Hero - S1 won't carry on."]
+
+
+def test_a_game_waiting_out_an_mp_wait_is_left_to_its_own_character(monkeypatch: pytest.MonkeyPatch) -> None:
+    # an MP wait leaves the game at its login screen: a schedule took it for another character,
+    # and the same character in a second game made the two logins fight
+    monkeypatch.setattr(gameinstall, "running_games", returning([(51, "D:/Game")]))
+    frame = opening({}, [(51, None, None)], 200.0)
+    frame.runs, frame.pending_logins, frame.our_games = {}, {}, set()
+    frame.refresh_games = quiet
+    frame.open_client_for_login = lambda: pytest.fail("no game is opened for it")
+    waiting = SimpleNamespace(waiting_until=999.0, profile_key=HERO)
+    def waiting_bot(pid: int) -> Any:
+        return waiting if pid == 51 else None
+    frame.waiting_bot = waiting_bot
+    pid, why = runs_part.RunsMixin.automatic_login_window(frame, HERO)
+    assert pid is None and "logs back in by itself" in why
+    other = settings.character_profile("Bob", 9, "S1")
+    opened: list[str] = []
+    frame.open_client_for_login = lambda: opened.append("game") or None
+    assert runs_part.RunsMixin.automatic_login_window(frame, other)[0] is None and opened == ["game"]

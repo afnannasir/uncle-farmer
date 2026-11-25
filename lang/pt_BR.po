@@ -9664,6 +9664,9 @@ msgstr "{name} desapareceu, e nenhum dos nossos ataques o atingiu"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} está no caminho — lutando contra ele"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} saiu por um tempo e vai entrar de novo sozinho"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} está neste mapa em {x}, {y} — indo até lá"
 

@@ -9220,6 +9220,9 @@ msgstr ""
 msgid "{name} is in the way - fighting it"
 msgstr ""
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr ""
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr ""
 

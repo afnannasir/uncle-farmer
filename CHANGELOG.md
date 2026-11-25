@@ -10,6 +10,14 @@
   is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
   isn't HH:MM, or an unknown patrol.
 
+**A game logged out by "wait" is kept for its own character** (untested in game)
+
+- During a private message's wait, the game sits at its login screen and looked signed out: a
+  schedule or a run carried on for another character could log that character in there (taking
+  the account that someone needed, the reason for the wait), or open a second game for the same
+  character, and the two logins fought. That game is now left to its character, who logs back in
+  by itself when the wait ends.
+
 **A plan's stop time is never missed** (untested in game)
 
 - A plan's "Stop at" time was a rule true for that one minute only: a run busy all through it (an

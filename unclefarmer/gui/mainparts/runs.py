@@ -22,6 +22,16 @@ LOGIN_OPEN_RETRY = 90.0
 LOGIN_START_MOST = 240.0     # seconds a game we opened has to show its agent before it is closed
 
 
+def waiting_games(frame: FrameParts) -> dict[int, str]:
+    """{pid: character} of the games logged out for a while (an MP wait), whose character logs back
+    in there by itself."""
+    bot_of: Callable[[int], Any] | None = getattr(frame, "waiting_bot", None)
+    if bot_of is None:
+        return {}
+    return {g[0]: str(getattr(bot_of(g[0]), "profile_key", None) or "") for g in frame.games
+            if logout.waiting(bot_of(g[0])) is not None}
+
+
 def starting_games(frame: FrameParts) -> list[int]:
     """The games this window opened that haven't shown their agent yet: a slow one is waited for
     (opening another beside it left two signed-out games, and no login), and one that never shows
@@ -239,14 +249,20 @@ class RunsMixin(FrameParts):
         if pid is not None:
             pending.pop(profile, None)
             return pid, ""
+        # a game logged out for a while (an MP wait) reads as signed out, and is not: its character
+        # logs back in there when the wait ends - another character logged in to it took the account
+        # someone needed, and the same character in a second game made the two logins fight
+        waits = waiting_games(self)
+        label = settings.profile_display(profile)
+        if any(settings.is_profile_of(key, profile) for key in waits.values()):
+            return None, _("{name} is logged out for a while and logs back in by itself", name=label)
         # ours_only (a run carried on after its game was lost): never a game the player has at its
         # login screen - a login that failed there had that game closed, by force, to open it again
-        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs
+        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs and g[0] not in waits
                       and (not ours_only or g[0] in ours)]
         if len(signed_out) == 1:
             pending.pop(profile, None)
             return signed_out[0], ""
-        label = settings.profile_display(profile)
         if len(signed_out) > 1:
             return None, _("{name} has more than one signed-out game; close the extras or log in first", name=label)
         if starting_games(self):
