@@ -815,3 +815,17 @@ def test_a_game_that_was_slow_once_comes_back_to_the_list(monkeypatch: pytest.Mo
     window.clock.advance(games_part.UNAVAILABLE_RETRY)
     window.poll()
     assert pinged == [42] and window.games == [(42, "Ali", "Town")] and window.unavailable_agents == {}
+
+
+# ---------------------------------------------------------------- every row follows its character
+def test_a_row_not_selected_follows_switch_account() -> None:
+    bob = settings.character_profile("Bob", 9, "S1")
+    hero = settings.character_profile("Hero", 7, "S1")
+    w: Any = Win(games=[(1, hero, "Tulip City"), (2, hero, "Margit Rainforest")])
+    w.game_list.selection = 0
+    labelled: list[int] = []
+    w.label_games = lambda: labelled.append(1)
+    games_part.GamesMixin._got_names(w, [(1, hero, "Tulip City"), (2, bob, "Tulip City")])  # pyright: ignore[reportPrivateUsage]
+    assert w.games == [(1, hero, "Tulip City"), (2, bob, "Tulip City")] and labelled == [1]
+    games_part.GamesMixin._got_names(w, [(1, None, None)])     # game 2 didn't answer: its row stays
+    assert w.games[1] == (2, bob, "Tulip City")                # (and the selected row is render's)

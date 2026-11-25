@@ -374,6 +374,12 @@ The other tabs under **Advanced** contain more detailed options, including:
 - How the character travels, including walking, cable cars, airships, teleport skills, travel items, and VIP travel.
 - Which keys are used for dialogs, discarding items, and the Action menu.
 
+**Reset the fighting settings to their defaults** (on Advanced's **Fighting** tab) puts the fighting settings back as a new character has them: the pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Your keys, bag, supplies and everything else stay as they are. A profile keeps the values older versions saved in it, so this helps when fights have become slow: there is no need to delete the whole profile. Nothing is kept until you save.
+
+### Copying settings from another character
+
+**Copy from another character** (at the bottom of the character window) takes a part of another character's settings: its **Before farming** or **After farming** list, its **fighting settings** (never its keys), or its **team settings**. For the lists, choose whether the other character's steps are added to this character's list (each one ticked here too, the ones only here staying) or replace it. Each skill's use is copied only between two characters of the same class: for another class the bot asks first and copies the rest of the fighting settings. Nothing is kept until you save. The bag's lists are copied in **Bag and supplies** (see "Copying from another character" there).
+
 ### How the bot chooses a route
 
 When travelling, Uncle Farmer combines walking with cable cars and airships whenever using a ride makes the journey shorter.
@@ -534,6 +540,15 @@ Choose which potions and food Uncle Farmer should refill, and where it should ge
 ### Full bag
 
 Choose what Uncle Farmer should do when the bag becomes full. The option to stop when the day's drop time runs out is under **Character → Settings → Fighting**, with the other reasons to stop (see "Drop time and the next level").
+
+### Copying from another character
+
+**Copy from another character** (at the bottom of the window) takes a part of another character's bag settings: its throw-away list, its sell list, its storehouse list, its keep list (each with what it leaves in the bag), its supplies, or its Full bag page. Choose the character, tick what to copy, and how:
+
+- **Add to this character's lists:** the other character's items go into the same lists here; the ones only here stay.
+- **Replace this character's lists with theirs:** the lists you ticked become the other character's; an item only here goes back to the bot's own default for it.
+
+The window then says what changed, for example "Throw-away list: 23 put in, 4 already there". Nothing is kept until you choose **Save**.
 
 A full bag means the bag has reached its carrying limit. By default, the bot keeps farming until the load reaches that limit. It can also treat the bag as full if the load stops increasing just below the limit while monsters continue to die.
 
@@ -2183,6 +2198,8 @@ There is also a **Call them by their name** option. When enabled, Uncle Farmer a
 ### Trusted players
 
 You can add trusted players using either their character name or game ID. Both types of entries can be mixed in the same list.
+
+A name can belong to another player on another server. An entry followed by `@` and a server, such as `Kim@S1` or `2001@S2`, is trusted on that server only. The names and IDs you add get the server of the character selected in the Games list. An entry without a server is trusted on every server, so add the server to the ones you listed before.
 
 Trusted players can use commands to check information or control your character. Their messages are handled according to your configured speech settings.
 

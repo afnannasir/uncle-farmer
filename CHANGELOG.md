@@ -2,14 +2,230 @@
 
 ## Unreleased
 
+**Bag settings copied from another character** (untested in game)
+
+- Bag and supplies has "Copy from another character": another character's throw-away, sell,
+  storehouse or keep list (with what each item leaves in the bag), its supplies, or its Full bag
+  page, ticked one by one, either added to this character's lists or replacing them. It says what
+  changed ("Throw-away list: 23 put in, 4 already there"); nothing is kept until Save. Sorting the
+  same list item by item for each character was a lot of work.
+- The character window has "Copy from another character" too: the Before farming or After farming
+  list (added to this character's or replacing it), the fighting settings (never the keys; each
+  skill's use only between two characters of the same class, the bot asks first otherwise) and
+  the team settings.
+
+**Fighting settings can be put back to their defaults** (untested in game)
+
+- A character's settings file keeps every value it was saved with, the defaults of the version that
+  saved it included: a default changed since stays as it was, and a player whose fights had gone
+  slow deleted the whole profile (bag lists, supplies and triggers with it) to get the defaults
+  back. Advanced settings, Fighting, has "Reset the fighting settings to their defaults": the pause
+  between attack keys, the times and casts to give up a fight, the skill pressing, the attack range,
+  the chase, the target keys, each skill's use, the fight readings and the fighting boxes of the
+  character window. Keys, bag, supplies and the rest stay; nothing is kept until Save.
+- "When HP stays low" acts at 30% for 3 seconds since the hearthstone flee came in (it was 25% for
+  10 seconds); older profiles kept 25% / 10 s. They change once, both numbers together, when
+  neither is the player's own.
+
+**A shared plan can't slip in commands of its own**
+
+- A line break in an imported plan's name, its stop time, its stop item or a spot's only, skip or
+  patrol became a script line of its own when the plan ran: a plan named "Wolves", a line break and
+  a market purchase bought on the market, and the plan editor showed nothing amiss. Every plan text
+  is now kept on its own line, and Import refuses a plan with a line break in one, a stop time that
+  isn't HH:MM, or an unknown patrol.
+
+**A game logged out by "wait" is kept for its own character** (untested in game)
+
+- During a private message's wait, the game sits at its login screen and looked signed out: a
+  schedule or a run carried on for another character could log that character in there (taking
+  the account that someone needed, the reason for the wait), or open a second game for the same
+  character, and the two logins fought. That game is now left to its character, who logs back in
+  by itself when the wait ends.
+
+**A plan's stop time is never missed** (untested in game)
+
+- A plan's "Stop at" time was a rule true for that one minute only: a run busy all through it (an
+  MP wait, logging back in, a game opened again, a pause) farmed on until the daily stop. Once that
+  time has passed since the run began (the first part's start, for a run carried on), the run
+  stops at its next check.
+
+**Opening a lost game again leaves the player's own games alone** (untested in game)
+
+- A game closed in the middle of a run is opened again and the run carried on, and nothing could
+  keep it closed: the bot opened another one every minute and a half for five minutes. Stop every
+  bot (Ctrl+Shift+S) now also cancels the runs waiting to carry on, the one whose game is still
+  being closed included, and the line that says the game is opened again says so.
+- A lost run carried on in any game at its login screen, the player's own included; if logging in
+  failed there (the player logging in another account by hand), that game was closed by force to
+  be opened again. It now carries on only in a game Uncle Farmer opened itself.
+- A game that came back on line by itself counted as one of the day's three openings: a few drops
+  of the internet used them up, and a real freeze later that day ended the run. It no longer counts.
+
+**A game lost while a run ends is a lost game, not a finished run** (untested in game)
+
+- When a run stopped on its own (a stop rule, stuck, a "wait" whose logging back in failed), the
+  bot first guards the character; if the game turned out to be gone, or another character had
+  come in, that was taken for an ordinary error. The run then counted as one that ended by itself:
+  the After farming list ran on a game that was gone, the after-stop action closed the game
+  (perhaps with another player's character in it now) or shut the PC down, and the run's place,
+  which a lost game keeps to carry on from, was cleared. Now a lost game stays a lost game, and
+  another character in the game ends the run with nothing more done.
+- The same on three ways of ending a run: the walk to the end place, the way into the gang's base
+  ("couldn't get back into the gang's base - staying here") and the ways out of a stuck spot took a
+  lost game, or another character in the game, for a way that failed and went on - getting off the
+  beast, putting the pet away and handing the team over as that other character.
+
+**Each character's results in a file of its own** (untested in game)
+
+- Results were kept in results/<name>.jsonl: two characters of the same name on two servers shared
+  one file, and the day's totals, the last run and the "today" private message mixed them up. Each
+  character now has results/<name>--<server>--<id>.jsonl, named like its settings file. The file a
+  character had under its name alone becomes its own the first time it is logged in or farms with
+  this version, all of its history with it (the first character of that name to come takes it),
+  and so does one saved by a run whose server couldn't be read (<name>--<id>.jsonl);
+  until then it is still read as the character's. While another program holds the old file and it
+  can't be moved, the runs go on writing to it, and it is moved the next time; found beside the new
+  one, it is merged into it (its records first, none twice). The Results window says each
+  character as "name - server".
+
+**Private message jobs without a run use the character's own settings** (untested in game)
+
+- With no run going, a private message's job (wait, come, a team invite...) built its character's
+  settings name without the server when the Games list named someone else: it found no saved
+  file, ran with the default settings, and "wait" answered it didn't know the character's account.
+
+**"Skip this list on the first farming map" knows the drop time shares** (untested in game)
+
+- With spots that share the day's drop time, the first spot's share may be used up when the run
+  starts, and the run then begins with the second. The Before farming list was skipped by the
+  first spot's map all the same: started on the second spot's map, the list ran (often a trip to
+  town and back); started on the first's, it was skipped and the run went on to the second spot
+  without it. It now goes by the spot the run really farms first.
+
+**Interrupted runs of other characters are no longer lost** (untested in game)
+
+- With several games running, each saves its place every 20 seconds in one file. When another
+  program held that file a moment (an antivirus, a backup), the read failed and the save wrote
+  back only its own row: the other characters' places to carry on from, and their restarts of the
+  day, were gone. Such a save is now skipped; the next one comes soon after.
+
+**Patrol points are checked, and no-go circles hold for every walk** (untested in game)
+
+- A spot's own patrol points were walked to as typed: one in a wall or out of reach stopped the
+  spot ("can't be reached"), one on a map exit walked the character off the map once a lap. Each
+  point is now checked when the spot begins - walkable ground (or the nearest such cell close by),
+  never an exit, in reach - and the others are said and left out; with none left the patrol goes
+  at random. "Add where I stand" (points and circles) refuses a place on another map than the
+  spot's: its cell was that other map's.
+- The no-go circles drawn for a spot kept only the patrol and the choice of targets out of them.
+  The no-kill watchdog, walking off from a boss, the chest hunt and the walks to a chest or a
+  corpse now keep out of them too.
+
+**Every row of the Games list follows its character** (untested in game)
+
+- Only the selected game's row was read again: after Switch account in another game, its row kept
+  the character that had left it until a game opened or closed. The pause key in that game then
+  ran that character's last plan (logging it back in at the login screen), and the "start" and
+  results private messages, Shift+Pause, come and follow went by the old name. Every game's
+  character is now read again every 20 seconds, the rows rewritten in place.
+
+**A hit no longer stops the wait for a stone or a way out** (untested in game)
+
+- The hearthstone and the teleport stones are items, not spells: nothing a monster does stops them
+  (only the Mage's and the Elf's teleport spells have a cast a hit can break). The bot treated a
+  hit as one all the same: using the hearthstone, it stopped waiting at the first hit, fought back
+  and used it again, three times, then said it "didn't take me home" - its own fighting back may
+  well be what kept it from leaving; a teleport stone, a dungeon's or a chest's way out, or a gang
+  NPC's teleport hit while it worked was taken as failed, and the stone left out of the trip. Now
+  only the teleport spells give up on a hit; hit while it waits for the hearthstone, the bot drinks
+  its potions but presses no attack.
+- Stones take the character at once (only the teleport spells channel): a stone is now given 8
+  seconds to change the map, not 25 (the hearthstone) or 15. One the game didn't take kept the
+  character standing that long, up to three times.
+- When HP stays low and the bot flees with the hearthstone, a hearthstone that didn't take the
+  character home was counted as a flee all the same: two of them and one real flee made "fled 3
+  times in 30 minutes" and ended the night in town. Only a hearthstone that takes the character
+  to town counts now - or a death on the way, so that a map too hard for the character still ends
+  the run.
+
+**A trusted player can be trusted on one server only** (untested in game)
+
+- A trusted name counted on every server, and a name can belong to another player on another
+  server: a stranger with the trusted player's name could send quit game, wait, start or follow,
+  and have their team invites taken. An entry of the trusted list may now name its server after an
+  @ ("Kim@S1", "2001@S2") and then counts on that server only. The names and ids added in Private
+  messages get the server of the character selected in the Games list; the ones listed before
+  stay as they were (every server) - add their server by hand.
+
+**A shop whose menu doesn't react is no longer written off** (untested in game)
+
+- When a shop's "Purchase" did nothing (on one player's computer it left every shop's menu as it
+  was), the bot took it for a shop without the item: after two trips it wrote off the town's potion
+  seller for that item, for good, and in time every town's ("no shop sells ..."). A menu that
+  doesn't open its list now counts as a shop that didn't answer: the next nearest one is tried, and
+  nothing is noted against it.
+- A town shop whose list really lacks the item is left out for a week, then tried again. Write-offs
+  saved by an earlier version have no date and have run out already.
+
+**A VIP keeps riding free after one ride that didn't start** (untested in game)
+
+- A free VIP ride that came to nothing once made the bot decide the VIP had run out: it said
+  "check that your VIP is still active", took the fare on every ride and left out every airship under 1000
+  arnebia for the rest of the run. One such ride may be the game ignoring the menu choice, so the
+  NPC is now tried once more, as any failed ride is (with the keys when the Keys box is ticked); a
+  second free ride of it that comes to nothing still means the VIP is gone.
+
+**Withdrawals, purchases and sales are counted once the bag has caught up** (untested in game)
+
+- The game shows a change in the bag a moment after the menu closes. The restock while farming
+  counted its storehouse withdrawals and purchases at once, and a withdrawal that worked could
+  read "took 0": the bot then bought in the shop what the storehouse had just handed over. A sale
+  counted at once could read "sold 0", its money went to the next job, and the bag trip took what
+  had been sold to the storehouse. All of them now wait for the bag (3 seconds at most), as the
+  deposits and Restock now already did.
+
+**What the bag held before the run stays the player's** (untested in game)
+
+- The bag was read once when farming began, and a reading the game didn't answer (a short drop, a
+  login still loading) counted as an empty bag: everything in it then counted as picked up this
+  run, and the bag rules sold, stored or threw away what the player already had. The bag is now
+  read again for a few seconds; if the game still sends none, only the items the player chose a
+  rule for are sold, stored or thrown that run, and the log says so.
+- Equipment the same way: an unread start throws no piece away (the next spot reads it again);
+  it used to throw every piece of the ticked rarities already in the bag.
+- When a piece's details don't come in time, the pieces after it wait for the next sweep: a late
+  answer goes by the piece's name, and could have been read as another piece of the same name's.
+  That piece is kept for the run, so it holds up no sweep after.
+
+**The Tools wait for a logged-in character** (untested in game)
+
+- Sell the collection now, Sell shards now, Clean the bag now, Store items now, Restock now, Update
+  shard prices and the Construction scanner's Scan started a job at the game's login screen. It
+  logged in whichever character the Games list last named there (it keeps that name after Switch
+  account), or stopped at once. Every tool job now asks for a logged-in character first: "Log in to
+  the character in the game first." Walk to asks it before its destination is chosen.
+- The Construction scanner still opens without a game, to read and copy the last report; Scan and
+  Publish stay greyed until a character is logged in and its bot is stopped, so Publish no longer
+  asks its question for nothing.
+- The Market searcher and buyer opens only with a logged-in character, and its searches and
+  purchases run on its own game: they went to the game selected in the Games list, another
+  character when two games were open and the selection had moved.
+- A tool's job starts only for the character its window was opened for, on that game. Clean the
+  bag showed one character's throw-away list, and if the game closed or another character came in
+  while the question was open, the other character's list was thrown away, unseen. Gem Maker,
+  Daily chores, Dungeons and the other tools, Walk to, the Construction scanner and Autopilot's
+  Save and start now say "... isn't logged in on that game any more - nothing was started." The
+  Market window keeps its character too: another character on that game gets a window of its own.
+
 **A run never goes on as another character** (seen in game)
 
 - One account holds several characters, switched between in the same game (Switch account). A run
   read its character once, at its start: paused, then switched to another character by hand, a run
   went on as its own on that one, with its own restock (it took potions out of the Storehouse). The
   run now checks the game's character by its id at every reading and when a pause ends: another
-  one stops it at once, with nothing more done in the game, as the community script does ("rather
-  than farming as the wrong character"). Not carried on later.
+  one stops it at once, with nothing more done in the game, rather than farming as the wrong
+  character. Not carried on later.
 - A run paused when its game closes (the player had the game) is no longer opened again and carried
   on, which logged its character back in over the one the player wanted.
 

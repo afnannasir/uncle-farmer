@@ -98,9 +98,12 @@ def pick(bot: Bot, snap: dict[str, Any]) -> dict[str, Any] | None:
         return None
     keep = bot.p.get("boss_distance", 40)
     boss_list = bosses.in_sight(snap) if keep else []
+    mine = bosses.player_no_go(bot)          # a chest in a no-go circle the player drew stays there
     best: tuple[float, dict[str, Any]] | None = None
     for e in found:
         if bot.chests.skip.get(e["id"], 0) > now or (boss_list and bosses.too_close(e, boss_list, keep)):
+            continue
+        if mine and not bosses.clear_of((e["x"], e["y"]), mine):
             continue
         steps = bot.walk_dist(snap, e, REMEMBERED_STEPS if e.get("remembered") else MOST_STEPS)
         if steps != math.inf and (best is None or steps < best[0]):

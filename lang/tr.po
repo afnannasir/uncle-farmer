@@ -304,6 +304,9 @@ msgstr "Geçmiş (&H)"
 msgid "&How many:"
 msgstr "Kaç tane: (&H)"
 
+msgid "&How:"
+msgstr "&Nasıl:"
+
 msgid "&Import"
 msgstr "İçe aktar (&I)"
 
@@ -408,8 +411,9 @@ msgstr "Bu oyunun sesini kapat (&M)"
 msgid "&Muted Sounds:"
 msgstr "Susturulan sesler (&M):"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr ""
+"&İsimler ya da id'ler, virgülle ayrılmış (Kim@S1: yalnızca S1'de güvenilir):"
 
 msgid "&Never fight:"
 msgstr "Asla dövüşme (&N):"
@@ -685,6 +689,9 @@ msgstr "Betik olarak görüntüle (&V)"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Haritalar yürüyerek bağlanıyorsa her zaman yürü (&W)"
 
+msgid "&What to copy:"
+msgstr "Neler kop&yalansın:"
+
 msgid "&What to do:"
 msgstr "Ne yapılsın (&W):"
 
@@ -838,6 +845,11 @@ msgid ""
 msgstr ""
 "Yukarıdaki boyuta ulaşan dosya name.1 olarak saklanır, eskileri name.2'ye kayar ve böyle devam eder; en eskisi silinir. Günün çalışma günlüğü de kendi günü içinde aynı şekilde döndürülür."
 
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Bir isim başka bir sunucuda başka bir oyuncuya ait olabilir: eklediğin isimler seçili karakterin sunucusunu alır (Kim@S1). Sunucusu olmayan bir isim ya da id her sunucuda güvenilirdir."
+
 msgid "A name for this place:"
 msgstr "Bu yer için bir ad:"
 
@@ -952,6 +964,9 @@ msgstr "Seçileni Kayıtlı seslere ekle"
 msgid "Add to &filter list"
 msgstr "&Filtre listesine ekle"
 
+msgid "Add to this character's lists (what is only here stays)"
+msgstr "Bu karakterin listelerine ekle (yalnızca burada olanlar kalır)"
+
 msgid "Add where I &stand"
 msgstr ""
 
@@ -974,6 +989,9 @@ msgstr "Süre sınırından sonra (&T)"
 
 msgid "After farming"
 msgstr "Farmdan sonra"
+
+msgid "After farming list"
+msgstr "Farm sonrası listesi"
 
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
@@ -1122,6 +1140,9 @@ msgstr "Savaş alanı liyakati"
 
 msgid "Before farming"
 msgstr "Farmdan önce"
+
+msgid "Before farming list"
+msgstr "Farm öncesi listesi"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Bir sonraki noktaya geçmeden önce (sadece birden fazla noktada)"
@@ -1502,8 +1523,20 @@ msgstr "Kopyalandı"
 msgid "Copied {email}."
 msgstr "{email} kopyalandı."
 
+msgid "Copy"
+msgstr "Kopyala"
+
+msgid "Copy &from another character"
+msgstr "Başka bir karakt&erden kopyala"
+
+msgid "Copy &from:"
+msgstr "&Kimden kopyalansın:"
+
 msgid "Copy &selection"
 msgstr "&Seçimi kopyala"
+
+msgid "Copy from another character"
+msgstr "Başka bir karakterden kopyala"
 
 msgid "Corpses"
 msgstr "Cesetler"
@@ -1994,6 +2027,15 @@ msgstr "Dövüşe devam et"
 msgid "Fighting"
 msgstr "Dövüş"
 
+msgid "Fighting settings (not the keys)"
+msgstr "Dövüş ayarları (tuşlar değil)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Dövüş ayarları: onunki gibi ayarlandı"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Dövüş ayarları: onunki gibi, her yeteneğin kullanımı hariç"
+
 msgid "Fighting:"
 msgstr "Dövüş:"
 
@@ -2051,8 +2093,25 @@ msgstr "Önce depodan, sonra dükkandan"
 msgid "From trusted players"
 msgstr "Güvenilir oyunculardan"
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+"{name} karakterinden:\n"
+"{lines}\n"
+"\n"
+"Kaydedene kadar hiçbir şey saklanmaz."
+
 msgid "Full bag"
 msgstr "Dolu çanta"
+
+msgid "Full bag and equipment by rarity"
+msgstr "Dolu çanta ve nadirliğe göre ekipman"
+
+msgid "Full bag and equipment by rarity: set as theirs"
+msgstr "Dolu çanta ve nadirliğe göre ekipman: onunki gibi ayarlandı"
 
 msgid "Full loop (every lane, a longer lap)"
 msgstr "Tam döngü (her şerit, daha uzun bir tur)"
@@ -2564,6 +2623,9 @@ msgstr "Patronlardan uzak dur"
 
 msgid "Keep farming, just tell me"
 msgstr "Farma devam et, yalnızca bana söyle"
+
+msgid "Keep list"
+msgstr "Saklama listesi"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Sınıfın b&ufflarını açık tut"
@@ -3127,6 +3189,9 @@ msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
 msgstr ""
 
+msgid "No other character has settings yet."
+msgstr "Henüz başka hiçbir karakterin ayarı yok."
+
 msgid "No pet"
 msgstr "Evcil hayvan yok"
 
@@ -3609,6 +3674,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Gereken becerileri ve &eşyaları boş tuşlara koy (asla kullanılan tuşlara değil)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"Dövüş ayarları varsayılana dönsün mü? Saldırı tuşları arasındaki duraklama, bir dövüşten vazgeçme süreleri ve büyüleri, yeteneklere basma, saldırı menzili, kovalama, hedef tuşları, her yeteneğin kullanımı, dövüş okumaları ve karakter penceresinin dövüş kutuları. Tuşlar, çanta, malzemeler ve geri kalan her şey olduğu gibi kalır. Kaydedene kadar hiçbir şey saklanmaz."
+
 msgid "Put the pet &away when the run ends"
 msgstr "Ç&alışma bitince evcil hayvanı geri çağır"
 
@@ -3749,11 +3819,20 @@ msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 "Kayıtlı {name} planı değiştirilsin mi? Evet'i seçene kadar hiçbir şey değişmez."
 
+msgid "Replace this character's lists with theirs"
+msgstr "Bu karakterin listelerini onunkilerle değiştir"
+
 msgid "Reply lines"
 msgstr "Yanıt satırları"
 
 msgid "Replying to {name}: {message}"
 msgstr "{name} yanıtlanıyor: {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "&Dövüş ayarlarını varsayılana döndür"
+
+msgid "Reset the fighting settings"
+msgstr "Dövüş ayarlarını sıfırla"
 
 msgid "Respawning in the city."
 msgstr ""
@@ -3992,6 +4071,9 @@ msgstr "Bu listelere göre sat ve depola, sonra geri gel"
 
 msgid "Sell it and come back"
 msgstr "Sat ve geri gel"
+
+msgid "Sell list"
+msgstr "Satış listesi"
 
 msgid "Sell s&hards now"
 msgstr "Parçaları şimdi sat (&H)"
@@ -4415,6 +4497,9 @@ msgid ""
 msgstr ""
 "Çanta yolculuğunda depolananlar ya da satılanlar: Dolu çanta sayfasında, çanta dolunca satıp depolamayı seç"
 
+msgid "Storehouse list"
+msgstr "Storehouse listesi"
+
 msgid "Storehouse only"
 msgstr "Yalnızca depo"
 
@@ -4435,6 +4520,9 @@ msgstr "Pazar"
 
 msgid "Supplies"
 msgstr "Sarf malzemeleri"
+
+msgid "Supplies: {added} put in, {same} already there"
+msgstr "Malzemeler: {added} eklendi, {same} zaten vardı"
 
 msgid "System message"
 msgstr ""
@@ -4468,6 +4556,12 @@ msgstr ""
 
 msgid "Team mode"
 msgstr "Takım modu"
+
+msgid "Team settings"
+msgstr "Takım ayarları"
+
+msgid "Team settings: set as theirs"
+msgstr "Takım ayarları: onunki gibi ayarlandı"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -4609,6 +4703,10 @@ msgstr "Mağara (bir karakter her oyun gününde bir mağaraya girer)"
 msgid "The character hasn't learned {skill}."
 msgstr "Karakter {skill} becerisini öğrenmemiş."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"Karakter {map} üzerinde değil, {here} üzerinde: önce bu noktanın haritasına git."
+
 msgid "The character's plan"
 msgstr ""
 
@@ -4652,6 +4750,9 @@ msgstr "En hızlısı"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr "Dövüş ayarları varsayılana döndü. Saklamak için kaydet."
 
 msgid "The game didn't confirm {skill}."
 msgstr "Oyun {skill} becerisini onaylamadı."
@@ -4960,6 +5061,12 @@ msgstr ""
 "\n"
 "Başka hiçbir şeye dokunulmaz. Atılan eşyalar kalıcı olarak gider."
 
+msgid "Throw-away list"
+msgstr "Atma listesi"
+
+msgid "Throw-away list (shards and items)"
+msgstr "Atma listesi (shard'lar ve eşyalar)"
+
 msgid "Thrown away:"
 msgstr "Atılanlar:"
 
@@ -4971,6 +5078,9 @@ msgstr "En az bir gün işaretle."
 
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
+
+msgid "Tick at least one thing to copy."
+msgstr "Kopyalamak için en az bir şey işaretle."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -5009,6 +5119,11 @@ msgstr "Kez"
 
 msgid "To (seconds):"
 msgstr "En çok (saniye):"
+
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+"Taramak ya da yayımlamak için önce oyunda karakterle giriş yap ve botunu durdur."
 
 msgid "Today"
 msgstr "Bugün"
@@ -6162,6 +6277,15 @@ msgstr "çantada {item} eşyasına ulaşılamadı"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "beceri panelinde {skill} becerisine ulaşılamadı"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"farm öncesi çanta okunamadı: bu oyunda yalnızca kural seçtiğin eşyalar satılır, depolanır ya da atılır"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr "farm öncesi çantadaki ekipman okunamadı: şimdilik hiçbiri atılmıyor"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr ""
 
@@ -6654,6 +6778,9 @@ msgstr ""
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
+msgid "in a no-go circle of this spot"
+msgstr "bu noktanın yasak dairesinde"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "uzak durduğumuz bir elit ya da patron bölgesinde"
 
@@ -7096,6 +7223,9 @@ msgid ""
 msgstr ""
 "bu karakter için dışarıda toplanacak yer yok - birinin üstünde dur ve Araçlar, Toplama'dan ekle"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr "bu noktanın hiçbir devriye noktasına yürünemiyor: rastgele devriye"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "{pet} adında evcil hayvan yok (evcil hayvanlar: {pets})"
 
@@ -7526,6 +7656,10 @@ msgstr ""
 
 msgid "patrol is random, full, quick, short or points"
 msgstr ""
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr ""
+"{map} üzerinde {x},{y} devriye noktasına yürünemiyor - dışarıda bırakıldı"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""
@@ -8780,6 +8914,9 @@ msgstr "{kind} {name} artık mevcut değil"
 msgid "the {npc} didn't take me anywhere"
 msgstr "{npc} beni hiçbir yere götürmedi"
 
+msgid "the {npc} didn't take me for free"
+msgstr "{npc} beni ücretsiz götürmedi"
+
 msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""
@@ -9377,6 +9514,9 @@ msgstr "{label}: {n} iyileştirmede {hp} HP"
 msgid "{left} left"
 msgstr "{left} kaldı"
 
+msgid "{list}: {added} put in, {same} already there"
+msgstr "{list}: {added} eklendi, {same} zaten vardı"
+
 msgid "{map} at {x}, {y}"
 msgstr "{map}, {x}, {y}"
 
@@ -9491,6 +9631,11 @@ msgid ""
 msgstr ""
 "Satırdaki {name} oyuncunun adına dönüşür; bu işaretliyken onu içermeyen satır oyuncunun adıyla başlar."
 
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} bir {theirs}, bu karakter bir {mine}: her yeteneğin kullanımı kopyalanmaz (yetenekler farklı), yalnızca diğer dövüş ayarları. Devam edilsin mi?"
+
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} başkası tarafından öldürülmek üzere - sıradaki"
 
@@ -9503,6 +9648,9 @@ msgstr "{name} gitti ve vuruşlarımızın hiçbiri ona isabet etmedi"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} yolu kesiyor - onunla dövüşülüyor"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} bir süreliğine çıkış yaptı ve kendi kendine tekrar girecek"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} bu haritada {x}, {y} konumunda - oraya gidiliyor"
 
@@ -9511,6 +9659,9 @@ msgstr "{name} oyundan okunur ve ayarlanamaz"
 
 msgid "{name} isn't in my team"
 msgstr "{name} takımımda değil"
+
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr "{name} artık o oyunda giriş yapmış değil - hiçbir şey başlatılmadı."
 
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name}, ajanı olan bir oyunda giriş yapmamış."
@@ -9570,8 +9721,15 @@ msgid ""
 msgstr ""
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
+"{name} oyunu kaybedildi: yeniden açılıyor ve oyun kaldığı yerden sürüyor (bugün {most} içinde {n}). Stop every bot (Ctrl+Shift+S) onu kapalı tutar."
+
+msgid "{name}'s game won't be opened again."
+msgstr "{name} oyunu yeniden açılmayacak."
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr "{name} ayarları kopyalanamadı: {err}"
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, son çalışma ({what}, başlangıç {when})"
@@ -9628,6 +9786,9 @@ msgstr ""
 
 msgid "{npc} offers no hunting bounty"
 msgstr ""
+
+msgid "{npc}'s menu didn't open its list - trying the next nearest shop"
+msgstr "{npc} menüsü listesini açmadı - sonraki en yakın dükkan deneniyor"
 
 msgid ""
 "{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
@@ -9959,6 +10120,9 @@ msgstr ""
 msgid "{what} for {name}"
 msgstr ""
 
+msgid "{what} for {name} won't carry on."
+msgstr "{name} için {what} devam etmeyecek."
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{who} için {what} bekliyor: {why}"
 
@@ -10008,6 +10172,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"
 
 #~ msgid "(no notes)"
 #~ msgstr "(not yok)"

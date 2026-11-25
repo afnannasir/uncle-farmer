@@ -1,6 +1,6 @@
 """Fleeing a lost fight (flee_on_panic, "When HP stays low: go to town with the hearthstone, heal
-and come back"). Only while farming on the farm's own map, with a hearthstone; a hit interrupts
-the hearthstone's cast, so one that doesn't take us home leaves us fighting on for a while. The
+and come back"). Only while farming on the farm's own map, with a hearthstone; one that doesn't
+take us home leaves us fighting on for a while. The
 FLEE_MOST-th flee within FLEE_WINDOW ends the run in town: the map is too hard."""
 
 from __future__ import annotations
@@ -117,6 +117,20 @@ def test_the_third_flee_in_half_an_hour_stops_in_town(clock: Clock) -> None:
     assert any("fled 3 times in 30 minutes" in line for line in b.spoken)
 
 
+def test_a_hearthstone_that_didn_t_take_us_is_no_flee(clock: Clock) -> None:
+    # two hearthstones that didn't take us home and one real flee ended the night "fled 3 times
+    # in 30 minutes"
+    b = Fleer([95])
+    b.go_home_result = False
+    for _i in range(2):
+        b._flee(5281)                                # pyright: ignore[reportPrivateUsage]
+        clock.advance(b.FLEE_RETRY + 1)
+    b.go_home_result = True
+    b._flee(5281)                                    # pyright: ignore[reportPrivateUsage]
+    assert b.flees == [clock.time()] and b.travels == [(5281, None)]
+    assert not any("fled 3 times" in line for line in b.spoken)
+
+
 def test_flees_further_apart_never_stop(clock: Clock) -> None:
     b = Fleer([95])
     for _i in range(4):
@@ -161,8 +175,8 @@ def test_off_the_farm_the_stop_choice_still_stops(clock: Clock) -> None:
 
 
 def test_no_second_flee_while_the_hearthstone_is_being_used(clock: Clock) -> None:
-    """go_home fights back when a hit stops the cast, and that fight's look_after must not flee
-    again: nothing would catch the second LosingFight."""
+    """go_home fights back when the hearthstone didn't take us, and that fight's look_after must not
+    flee again: nothing would catch the second LosingFight."""
     b = Fleer([40, 95])
     during: list[bool] = []
 
@@ -188,3 +202,16 @@ def test_with_hp_fine_the_hearthstone_is_not_looked_for(clock: Clock) -> None:
     h.may_flee = may_flee                             # type: ignore[method-assign]
     h.look_after()
     assert asked == []                                # it can read the bag: only once HP is low
+
+
+def test_a_death_on_the_way_to_town_counts_as_a_flee(clock: Clock) -> None:
+    # not counted, a map too hard for the character killed it again and again and "fled too many"
+    # never came
+    from unclefarmer.engine.botparts.base import Respawned
+    b = Fleer([95])
+
+    def died(tries: int = 3) -> bool:
+        raise Respawned()
+    b.go_home = died                                  # type: ignore[method-assign]
+    b._flee(5281)                                    # pyright: ignore[reportPrivateUsage]
+    assert b.flees == [clock.time()]

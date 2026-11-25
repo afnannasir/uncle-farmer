@@ -41,7 +41,7 @@ def supplies(monkeypatch: pytest.MonkeyPatch) -> tuple[SupplyBot, list[int]]:
                                                 candidates[0] if candidates else None))
     monkeypatch.setattr(town, "visit", stand_in(town.visit, lambda b, role, name=None, candidates=None: "Apothecary"))
     monkeypatch.setattr(town.menus, "pick", stand_in(town.menus.pick, returning(None)))
-    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: True))
+    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: town.LISTED))
     monkeypatch.setattr(knowledge, "unit_price", stand_in(knowledge.unit_price, lambda name: 10))
 
     def purchase(b: Bot, pattern: str, quantity: int | None = None) -> bool:
@@ -217,7 +217,7 @@ def test_partial_currency_purchase_reports_remaining_shortfall(supplies: tuple[S
 def test_unavailable_shop_item_makes_no_purchase(
         monkeypatch: pytest.MonkeyPatch, supplies: tuple[SupplyBot, list[int]]) -> None:
     b, requested = supplies
-    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: False))
+    monkeypatch.setattr(town, "_buy_menu", stand_in(town._buy_menu, lambda b, item: town.MISSING))
     town.restock_now(as_bot(b))
     assert requested == []
     assert any("still short after restocking" in line for line in b.spoken)

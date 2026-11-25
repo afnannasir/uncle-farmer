@@ -118,6 +118,10 @@ class Bot(TravelMixin):
     def hit(self, me: dict[str, Any]) -> bool:
         return self.hit_value
 
+    def look_after(self, me: dict[str, Any] | None = None) -> dict[str, Any]:
+        self.lines.append("look_after")
+        return me or {}
+
     def fight_back(self) -> None:
         self.lines.append("fight_back")
 
@@ -509,11 +513,14 @@ def test_wait_map_change_true_when_the_map_changes(clock: Clock) -> None:
     assert 1.0 in b.sleeps
 
 
-def test_wait_map_change_false_when_attacked(clock: Clock) -> None:
+def test_wait_map_change_false_when_a_spell_is_broken_by_a_hit(clock: Clock) -> None:
     b = Bot(clock)
     b._map = 1
     b.hit_value = True
-    assert b.wait_map_change(1, 5.0) is False
+    assert b.wait_map_change(1, 5.0, interruptible=True) is False
+    began = clock.time()
+    assert b.wait_map_change(1, 5.0) is False                 # a stone or a way out: no cast to break
+    assert clock.time() - began >= 5.0                        # waited it out despite the hits
 
 
 def test_wait_map_change_times_out(clock: Clock) -> None:
@@ -528,7 +535,7 @@ def test_teleport_uses_the_item_and_lands(monkeypatch: pytest.MonkeyPatch) -> No
     b = Bot()
     b._map = 1001
 
-    def lands(mid: int, seconds: float):
+    def lands(mid: int, seconds: float, interruptible: bool = False):
         b._map = 1021
         return True
 
@@ -549,7 +556,7 @@ def test_teleport_feeds_the_pick_and_learns_home_on_a_hearthstone() -> None:
     learned: list[bool] = []
     b.learn_hearth_home = lambda: learned.append(True)
 
-    def lands(mid: int, seconds: float):
+    def lands(mid: int, seconds: float, interruptible: bool = False):
         b._map = 1021
         return True
 
@@ -564,7 +571,7 @@ def test_teleport_chooses_the_destination_from_a_menu() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {}}
 
-    def lands(mid: int, seconds: float):
+    def lands(mid: int, seconds: float, interruptible: bool = False):
         b._map = 1021
         return True
 
@@ -606,7 +613,7 @@ def test_teleport_gives_up_when_the_item_wont_use() -> None:
 
 def test_teleport_says_so_when_it_lands_nowhere() -> None:
     b = Bot()
-    b.wait_map_change = lambda mid, seconds: False
+    b.wait_map_change = lambda mid, seconds, interruptible=False: False
     leg = {"do": "item", "item": "Sunset City Teleportation stone", "choose": [],
            "dest": 1021, "lands": [73, 286]}
     assert b.teleport(leg) is False
@@ -620,7 +627,7 @@ def test_leave_instance_presses_the_action_menu_and_leaves() -> None:
     b._map = 201
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
     b.dialog_value = {"open": 0, "top": None}
-    b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1041) or True
+    b.wait_map_change = lambda mid, seconds, interruptible=False: setattr(b, "_map", 1041) or True
     assert b.leave_instance() is True
     assert b.keys == ["lctrl+enter"]
     assert b.closed == 1                        # once before opening the menu
@@ -636,7 +643,7 @@ def test_leave_instance_opens_our_own_treasure_chest_first() -> None:
     b.talk_value = True
     talked: list[tuple[str, Any]] = []
     b.talk = lambda name, at=None, stand=None: talked.append((name, at)) or True
-    b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1702) or True
+    b.wait_map_change = lambda mid, seconds, interruptible=False: setattr(b, "_map", 1702) or True
     assert b.leave_instance() is True
     assert talked == [("Treasure chest belongs to  Helper", (25.9, 21.0))]
     assert b.chosen == [b.CHEST_EXIT] and b.keys == []
@@ -649,7 +656,7 @@ def test_leave_instance_without_our_chest_uses_the_action_menu() -> None:
     b.entities = [{"kind": "npc", "id": -230, "name": "Treasure chest belongs to Leader", "x": 20.0, "y": 21.0}]
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
     b.dialog_value = {"open": 0, "top": None}
-    b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1041) or True
+    b.wait_map_change = lambda mid, seconds, interruptible=False: setattr(b, "_map", 1041) or True
     assert b.leave_instance() is True
     assert b.keys == ["lctrl+enter"]
 
@@ -675,7 +682,7 @@ def test_leave_instance_answers_the_are_you_sure_prompt() -> None:
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
     dialogs = iter([{"open": 1, "top": {"rows": [[entry("yes")]]}}, {"open": 0, "top": None}])
     b.dialog = lambda: next(dialogs)
-    b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1041) or True
+    b.wait_map_change = lambda mid, seconds, interruptible=False: setattr(b, "_map", 1041) or True
     assert b.leave_instance() is True
     assert CONFIRM in b.chosen
 
@@ -684,7 +691,7 @@ def test_leave_instance_closes_the_dialog_when_it_did_not_leave() -> None:
     b = Bot()
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave")]]}}
     b.dialog_value = {"open": 0, "top": None}
-    b.wait_map_change = lambda mid, seconds: False
+    b.wait_map_change = lambda mid, seconds, interruptible=False: False
     assert b.leave_instance() is False
     assert b.closed == 2                        # once before, once after the failure
 
@@ -695,7 +702,7 @@ def test_leave_instance_leaves_when_there_is_nothing_to_confirm() -> None:
     b.wait_dialog_value = {"open": 1, "top": {"rows": [[entry("leave the dungeon")]]}}
     b.dialog_value = {"open": 1, "top": {"rows": [[entry("share the loot?")]]}}
     b.find_entry = lambda top, pattern: None
-    b.wait_map_change = lambda mid, seconds: setattr(b, "_map", 1041) or True
+    b.wait_map_change = lambda mid, seconds, interruptible=False: setattr(b, "_map", 1041) or True
     assert b.leave_instance() is True
 
 
@@ -1080,10 +1087,25 @@ def vip_leg() -> dict[str, Any]:
     return {**npc_leg(), "vip": True}
 
 
+def test_one_free_vip_ride_that_came_to_nothing_is_tried_again_not_called_a_lost_vip(clock: Clock) -> None:
+    # on one player's computer menu choices often did nothing: one such free ride used to end the
+    # VIP for the run (a fare on every ride, every airship dropped under 1000 arnebia)
+    b = Bot(clock)
+    b.p["vip"] = True
+    avoid: set[Any] = set()
+    failed: dict[Any, int] = {}
+    assert b._take_leg(vip_leg(), avoid, failed) is False
+    assert rides_free(b) and failed == {3: 1} and avoid == set()     # counted as a ride's failure: once more
+    assert any("trying the" in line and "once more" in line for line in b.lines)
+    assert not any("VIP" in line for line in b.lines)
+
+
 def test_a_refused_free_vip_ride_says_so_and_plans_fares_from_then_on(clock: Clock) -> None:
     b = Bot(clock)
     b.p["vip"] = True
     assert rides_free(b)
+    assert b.ride(vip_leg()) is False
+    assert rides_free(b)                             # once: the game may have ignored the choice
     assert b.ride(vip_leg()) is False
     assert any("didn't take me for free" in line and "VIP" in line for line in b.lines)
     assert not any("didn't take me anywhere" in line for line in b.lines)     # one line, not two
@@ -1096,12 +1118,15 @@ def test_a_refused_free_vip_ride_is_not_held_against_the_npc(clock: Clock) -> No
     b.p["vip"] = True
     avoid: set[Any] = set()
     failed: dict[Any, int] = {}
-    assert b._take_leg(vip_leg(), avoid, failed) is False
-    assert avoid == set() and failed == {}           # the next plan rides the same NPC, at its fare
+    assert b._take_leg(vip_leg(), avoid, failed) is False           # the first miss: once more
+    b.lines.clear()
+    assert b._take_leg(vip_leg(), avoid, failed) is False           # the second: the VIP is gone
+    assert not rides_free(b)
+    assert avoid == set() and failed == {3: 1}       # the next plan rides the same NPC, at its fare
     assert not any("once more" in line or "leaving out" in line for line in b.lines)
     # ... and the paid entry failing after that counts as any ride's failure does
     assert b._take_leg(npc_leg(), avoid, failed) is False
-    assert failed == {3: 1} and any("didn't take me anywhere" in line for line in b.lines)
+    assert failed == {3: 2} and any("didn't take me anywhere" in line for line in b.lines)
 
 
 def test_a_free_vip_ride_the_npc_never_offered_is_not_called_a_vip_refusal() -> None:
@@ -1122,6 +1147,7 @@ def test_a_free_vip_ride_answered_with_a_no_is_a_vip_refusal_too() -> None:
     b.wait_dialog_value = {"open": 1, "top": {}}
     b.dialog_value = {"open": 1, "top": {"rows": [[entry("no chance")]]}}
     b.find_entry = lambda top, pattern: None
+    assert b.ride(vip_leg()) is False and rides_free(b)
     assert b.ride(vip_leg()) is False
     assert any("said no" in line for line in b.lines) and any("for free" in line for line in b.lines)
     assert not rides_free(b)
@@ -1251,13 +1277,24 @@ def test_go_home_gives_up_when_the_item_will_not_use(clock: Clock) -> None:
     assert b.keys == []
 
 
-def test_go_home_fights_back_when_hit_and_gives_up(clock: Clock) -> None:
+def test_go_home_that_never_takes_us_fights_back_and_gives_up(clock: Clock) -> None:
     b = Bot(clock)
     b.hit_value = True
     b.map_id = lambda: 1
     assert b.go_home() is False
     assert b.lines.count("fight_back") == 3
     assert any("didn't take me home" in line for line in b.lines)
+
+
+def test_a_hit_doesn_t_stop_the_wait_for_the_hearthstone(clock: Clock) -> None:
+    # the hearthstone is an item, no spell: a hit breaks nothing (said by a player, 2026-11-25).
+    # The wait stopped at the first hit, fought back and used it again
+    b = Bot(clock)
+    b.hit_value = True
+    used = clock.time()
+    b.map_id = lambda: 1 if clock.time() < used + 2 else 1081
+    assert b.go_home() is True
+    assert "fight_back" not in b.lines
 
 
 def test_go_home_ignores_a_reload_on_the_same_square(clock: Clock) -> None:
@@ -1336,3 +1373,21 @@ def test_landing_far_from_where_the_atlas_says_is_said_with_the_line_to_report()
     b._take_leg(door, set(), {})
     assert any("not at 83,300 as the atlas says" in line and '"point":[120,300]' in line for line in b.lines)
     assert not any("learned" in line for line in b.lines)
+
+
+def test_hit_while_waiting_for_the_hearthstone_it_drinks_but_never_attacks(clock: Clock) -> None:
+    b = Bot(clock)
+    b.hit_value = True
+    used = clock.time()
+    b.map_id = lambda: 1 if clock.time() < used + 2 else 1081
+    assert b.go_home() is True
+    assert "look_after" in b.lines and "fight_back" not in b.lines
+
+
+def test_a_hearthstone_the_game_didn_t_take_is_given_up_after_a_few_seconds(clock: Clock) -> None:
+    # stones take us at once: it waited 25 s a try, three tries, the character standing there
+    b = Bot(clock)
+    b.map_id = lambda: 1
+    began = clock.time()
+    assert b.go_home() is False
+    assert clock.time() - began <= 3 * (b.STONE_WAIT + 1)

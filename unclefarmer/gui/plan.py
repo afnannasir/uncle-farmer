@@ -210,9 +210,19 @@ class StepDialog(Dialog):
         info(self, _("The area is now 40 tiles around you."))
 
     def where_i_stand(self) -> tuple[int, int] | None:
-        me: dict[str, Any] = (self.game() or {}).get("self") or {}
+        """Where the character stands, for a point or a circle of this spot: only on the spot's own
+        map - on another, the cell is that map's, and the patrol walked to a place it never meant."""
+        snap = self.game() or {}
+        me: dict[str, Any] = snap.get("self") or {}
         if not me:
             error(self, NOT_SEEN)
+            return None
+        where: dict[str, Any] = snap.get("map") or {}
+        here = where.get("id")
+        mid = self.selected()
+        if mid is not None and isinstance(here, int) and here != mid:
+            error(self, _("The character is on {here}, not on {map}: go to this spot's map first.",
+                          here=atlas.label(here), map=atlas.label(mid)))
             return None
         return int(me["x"]), int(me["y"])
 

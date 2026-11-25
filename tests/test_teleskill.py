@@ -176,7 +176,7 @@ class Caster(TravelBot):
         self.menu: list[str] | None = ["Sunset Square", "Giant rock square", "holy blood square"]
         self.lands_on: int | None = 1121
 
-        def wait_map_change(mid: int, seconds: float) -> bool:
+        def wait_map_change(mid: int, seconds: float, interruptible: bool = False) -> bool:
             if self.lands_on is None:
                 return False
             self._map = self.lands_on

@@ -616,7 +616,7 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False) -> list[str]:
         return notes
     b.log(_("gathering with {skill} ({rank})", skill=_(skill), rank=rank_name(rank)), speak=True)
     if getattr(b, "bag_start", None) is None:
-        b.bag_start = town.counts(b)
+        town.note_bag_start(b)
     minutes = int(cfg.get("minutes") or 0)
     end_at = b.clock.time() + 60 * minutes if minutes else None
     notes: list[str] = []

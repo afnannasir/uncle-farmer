@@ -16,7 +16,7 @@ from ...engine import plan as plans, triggers
 from ...engine.runner import Run
 from ...i18n import _
 from ..schedules import SchedulesDialog
-from .base import FrameParts
+from .base import FrameParts, profile_of
 
 TICK_MS = 20_000          # how often the schedules are looked at
 
@@ -133,6 +133,11 @@ class SchedulingMixin(FrameParts):
             settings.save_profile(name, p)
         self.fill_runs()                 # a script the window wrote shows in the Plans tab
         if code == wx.ID_YES and item is not None:
+            if not settings.is_profile_of(profile_of(self.snapshot(pid)), name):
+                # the day set up is this character's: never started on whoever came in meanwhile
+                self.say(_("{name} isn't logged in on that game any more - nothing was started.",
+                           name=settings.profile_display(name)))
+                return
             self.start(pid, item)
 
     def open_schedules(self) -> None:

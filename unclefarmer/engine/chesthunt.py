@@ -182,7 +182,9 @@ def hunt(bot: Bot, snap: dict[str, Any], mid: int, area: Sequence[float] | None)
     now = bot.clock.time()
     me = snap["self"]
     if h.points is None:
-        h.points = sweep_points(mid, area, me)
+        from . import bosses
+        mine = bosses.player_no_go(bot)      # never swept through: the player's no-go circles
+        h.points = [p for p in sweep_points(mid, area, me) if bosses.clear_of(p, mine)]
         bot.log(_("a chest turned up on {map} - looking for it (up to {n} minutes)",
                   map=atlas.label(mid), n=int(minutes)), speak=True)
     h.seen.append((me["x"], me["y"]))

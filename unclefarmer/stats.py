@@ -416,10 +416,13 @@ class Tally:
     the tally what it moved itself (moved(): thrown away, sold, stored, bought, taken out of the
     storehouse); picked up = what the bag gained + what went out - what came in other ways."""
 
-    def __init__(self, character: str, title: str, clock: Clock = CLOCK, tool: str | None = None) -> None:
-        """tool: the TOOLS key of a run that is that job on its own (Tools menu), not farming."""
+    def __init__(self, character: str, title: str, clock: Clock = CLOCK, tool: str | None = None,
+                 profile: str | None = None) -> None:
+        """tool: the TOOLS key of a run that is that job on its own (Tools menu), not farming.
+        profile: the character's settings key (name, server, id): its own results file (file_of)."""
         self.lock = threading.RLock()
         self.character, self.title = character, title
+        self.profile = profile
         self.clock = clock
         self.started = self.clock.time()
         self.ended: float | None = None
@@ -679,6 +682,7 @@ class Tally:
         farming = key == FARMING
         rec: Record = {
             "character": self.character,
+            **({"profile": self.profile} if self.profile else {}),
             "run": self.title if key == self.main else tool_name(key),
             "kind": FARMING if farming else TOOL,
             "start": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(self.started)),
@@ -753,10 +757,15 @@ class Tally:
                 continue                 # nothing happened (a script that only ran the chores); don't clutter
             lines.append(json.dumps(r, ensure_ascii=False) + "\n")
         if lines:
-            path = os.path.join(RESULTS, paths.safe_name(self.character) + ".jsonl")
-            with json.lock_for(path):
-                os.makedirs(RESULTS, exist_ok=True)
-                _append_whole(path, "".join(lines))
+            who = self.profile or self.character
+            adopt_old_file(who)        # (once; a file another program held is moved now, if it can be)
+            with json.lock_for(file_of(who)):
+                # the old file still there (it couldn't be moved): written to, so the history stays
+                # in one file - a new one beside it would have kept the old one from ever moving
+                path = _readable(who)
+                with json.lock_for(path):
+                    os.makedirs(RESULTS, exist_ok=True)
+                    _append_whole(path, "".join(lines))
         with self.lock:
             self.saved = True
 
@@ -804,11 +813,97 @@ def reading(bot: Parts) -> None:
 
 
 # ---------------------------------------------------------------- history
+# A character's results are in results/<its settings file's name>.jsonl (Name--S1--41.jsonl): the
+# name alone put two characters of one name, on two servers, in one file. The file a character had
+# under its name alone (Name.jsonl) becomes its own the first time it is logged in or farms
+# (adopt_old_file), all of its history with it; until then it is read as the character's.
+def _stem(who: str) -> str:
+    from . import settings
+    return os.path.basename(settings.profile_path(who))[:-5] if who else ""
+
+
+def file_of(who: str) -> str:
+    """The results file of a character: its settings key's own, or a name's (an older key)."""
+    return os.path.join(RESULTS, (_stem(who) or paths.safe_name(who)) + ".jsonl")
+
+
+def _old_files(who: str) -> list[str]:
+    """The files a character's results were in before, the newest kind first: its key without the
+    server (a run whose server couldn't be read: Name--41.jsonl), then its name alone (Name.jsonl).
+    None for a name-only key. As a profile is found (settings._load_profile)."""
+    from . import settings
+    if not settings.is_character_profile(who):
+        return []
+    name, server, entity_id = settings.profile_name(who), settings.profile_server(who), settings.profile_id(who)
+    found = [file_of(settings.character_profile(name, entity_id))] if server and entity_id else []
+    found.append(os.path.join(RESULTS, paths.safe_name(name) + ".jsonl"))
+    own = file_of(who)
+    return [p for p in found if p != own]
+
+
+def _readable(who: str) -> str:
+    """The file to read a character's results from: its own, or an older one not taken yet."""
+    own = file_of(who)
+    if os.path.exists(own):
+        return own
+    return next((p for p in _old_files(who) if os.path.exists(p)), own)
+
+
+def adopt_old_file(who: str) -> bool:
+    """The character's name-only results file becomes its own (renamed, history and all) - once,
+    when it is logged in or farms for the first time since. The first character of that name to come
+    takes it; another one of the same name, on another server, starts its own. A file another
+    program holds can't be moved: it stays the one the runs write to (save) and is moved the next
+    time. Both there (an older copy came back, or a move failed half way): the old records go in
+    first, those already there once, and the old file is removed. True if anything moved."""
+    own = file_of(who)
+    moved = False
+    for old in _old_files(who):
+        # the old file is locked too: another character of the same name may be writing to it
+        with json.lock_for(own), json.lock_for(old):
+            if not os.path.exists(old):
+                continue
+            try:
+                if not os.path.exists(own):
+                    os.replace(old, own)
+                else:
+                    _merge(old, own)
+                moved = True
+            except OSError as e:       # held by another program a moment: the next time does it
+                carry_on(e, "moving the results to the character's own file")
+    return moved
+
+
+def _merge(old: str, own: str) -> bool:
+    """The old file's records ahead of the own file's (they are older), none twice; then the old
+    file goes. A failure on the way leaves both whole (the own file is written to a copy first)."""
+    with open(old, encoding="utf-8-sig") as f:
+        before = [line.rstrip("\n") + "\n" for line in f if line.strip()]
+    with open(own, encoding="utf-8-sig") as f:
+        after = [line.rstrip("\n") + "\n" for line in f if line.strip()]
+    have = {line.strip() for line in after}
+    added = [line for line in before if line.strip() not in have]
+    if added:
+        copy_path = own + ".merging"
+        with open(copy_path, "w", encoding="utf-8") as f:
+            f.writelines(added + after)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(copy_path, own)
+    os.remove(old)
+    return True
+
+
 def characters() -> list[str]:
+    """Every character with results: its settings key when its file is one of theirs, else the
+    name of an older file."""
+    from . import settings
     try:
-        return sorted(f[:-6] for f in os.listdir(RESULTS) if f.endswith(".jsonl"))
+        stems = sorted(f[:-6] for f in os.listdir(RESULTS) if f.endswith(".jsonl"))
     except OSError:
         return []
+    keys = {_stem(k): k for k in settings.profiles() if settings.is_character_profile(k)}
+    return [keys.get(s, s) for s in stems]
 
 
 def runs(character: str, since: float | None = None, kind: str | None = FARMING,
@@ -819,7 +914,7 @@ def runs(character: str, since: float | None = None, kind: str | None = FARMING,
     seen: set[str] = set()
     try:
         # utf-8-sig: a byte order mark at the start made the first record unreadable, and it was lost
-        with open(os.path.join(RESULTS, paths.safe_name(character) + ".jsonl"), encoding="utf-8-sig") as f:
+        with open(_readable(character), encoding="utf-8-sig") as f:
             for line in f:
                 r = _record(line)
                 if r is None or (kind is not None and r.get("kind") != kind):
@@ -992,7 +1087,8 @@ def whole_run(r: Record) -> tuple[Record, int]:
     chain = r.get("chain")
     if not chain or r.get("kind") != FARMING:
         return r, 1
-    parts = [x for x in runs(str(r.get("character") or "")) if (x.get("chain") == chain or x.get("start") == chain)
+    parts = [x for x in runs(str(r.get("profile") or r.get("character") or ""))
+             if (x.get("chain") == chain or x.get("start") == chain)
              and x.get("start") != r.get("start")]
     if not parts:
         return r, 1

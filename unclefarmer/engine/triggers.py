@@ -198,13 +198,18 @@ def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
 HERE = 0                 # first_farm_map: the first farm line names no map, so it farms where it stands
 
 
-def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> int | None:
+def first_farm_map(nodes: list[Any], subs: dict[str, list[Any]] | None = None,
+                   done: Callable[[Any], bool] | None = None) -> int | None:
     """The map a parsed script farms on first: its first farm line, in reading order and however
     deep in its blocks (a plan's spots sit inside a repeat), then its subs'. HERE when that line
-    names no map; None when the script first goes into a dungeon, or doesn't farm."""
+    names no map; None when the script first goes into a dungeon, or doesn't farm. done(node): a
+    farm line the run will skip at once (its until= already true - a spot whose share of the drop
+    time is used up), passed over as the run passes over it."""
     def walk(body: list[Any]) -> tuple[bool, int | None]:
         for node in body:
             kind = getattr(node, "kind", "")
+            if kind == "farm" and done is not None and done(node):
+                continue
             if kind == "farm":
                 mid = (getattr(node, "opts", {}) or {}).get("map")
                 if isinstance(mid, str):

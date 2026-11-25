@@ -22,9 +22,49 @@ OFFER_AFTER_MS = 2_000     # the window settles (its game list read) before the 
 Waiting = tuple[str, dict[str, Any], Item, float]    # (character, saved place, plan or script, since)
 
 
+def _closing(frame: Any) -> set[str]:
+    """The characters whose lost game is being closed before it is opened again (_reopen): not in
+    carry_queue yet, and Stop every bot cancels them all the same."""
+    keys: set[str] | None = getattr(frame, "carry_closing", None)
+    if keys is None:
+        keys = set()
+        frame.carry_closing = keys
+    return keys
+
+
+def _ours(frame: Any) -> set[str]:
+    """The characters whose lost run carries on only in a game this window opened (carry_ours)."""
+    ours: set[str] | None = getattr(frame, "carry_ours", None)
+    if ours is None:
+        ours = set()
+        frame.carry_ours = ours
+    return ours
+
+
 class CarryOnMixin(FrameParts):
     carry_queue: list[Waiting]
     carry_timer: wx.Timer | None = None
+    carry_ours: set[str]          # characters whose lost run carries on only in a game we opened
+
+    def cancel_carry_on(self, key: str | None = None) -> bool:
+        """Stop: the runs waiting to carry on (key: that character's only) won't. True if any was."""
+        queue: list[Waiting] = getattr(self, "carry_queue", [])
+        gone = [w for w in queue if key is None or settings.same_character(w[0], key)
+                or settings.is_profile_of(key, w[0])]
+        closing = [k for k in _closing(self) if key is None or settings.same_character(k, key)]
+        if not gone and not closing:
+            return False
+        self.carry_queue = [w for w in queue if w not in gone]
+        for who, _row, item, _since in gone:
+            resume.clear(who)
+            _ours(self).discard(who)
+            self.say(_("{what} for {name} won't carry on.", what=self.item_label(item),
+                       name=settings.profile_display(who)))
+        for who in closing:                # still being closed: its game won't be opened again
+            _closing(self).discard(who)
+            resume.clear(who)
+            self.say(_("{name}'s game won't be opened again.", name=settings.profile_display(who)))
+        return True
 
     def start_carry_on(self) -> None:
         self.carry_queue = []
@@ -59,10 +99,13 @@ class CarryOnMixin(FrameParts):
             return
         self.carry_on(rows)
 
-    def carry_on(self, rows: list[tuple[str, dict[str, Any], Item]]) -> None:
-        """Start these runs where they were, as soon as each one's game is there."""
+    def carry_on(self, rows: list[tuple[str, dict[str, Any], Item]], ours_only: bool = False) -> None:
+        """Start these runs where they were, as soon as each one's game is there (ours_only: one
+        this window opened, never a game the player has at its login screen)."""
         now = self.clock.time()
         self.carry_queue += [(key, row, item, now) for key, row, item in rows]
+        if ours_only:
+            _ours(self).update(key for key, _row, _item in rows)
         if self.carry_timer is None:
             self.carry_timer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, lambda e: self.carry_tick(), self.carry_timer)
@@ -78,11 +121,13 @@ class CarryOnMixin(FrameParts):
         for key, row, item, since in self.carry_queue:
             why = self.carry_one(key, row, item)
             if why is None:
+                _ours(self).discard(key)
                 continue
             if now - since >= CARRY_MOST:
                 self.say(_("Couldn't carry on {what} for {name}: {why}", what=self.item_label(item),
                            name=settings.profile_display(key), why=why))
                 resume.clear(key)
+                _ours(self).discard(key)
                 continue
             left.append((key, row, item, since))
         self.carry_queue = left
@@ -91,7 +136,7 @@ class CarryOnMixin(FrameParts):
 
     def carry_one(self, key: str, row: dict[str, Any], item: Item) -> str | None:
         """Start one where it was: None once it runs, else why it still waits."""
-        pid, waiting = self.automatic_login_window(key)
+        pid, waiting = self.automatic_login_window(key, ours_only=key in _ours(self))
         if pid is None:
             return waiting or _("{name} isn't logged in to one available game", name=settings.profile_display(key))
         busy = self.runs.get(pid)
@@ -128,6 +173,15 @@ class CarryOnMixin(FrameParts):
             self.say(_("{name}'s game was lost, and the bot can't log in to it by itself: log in to it once "
                        "by hand so its account is known.", name=name))
             return
+        if self.back_on_line(run, key):
+            # its connection came back while the run was ending (a few minutes without internet):
+            # closing it now would only throw that login away - and it is no restart (it was
+            # counted as one, and used up the day's RESTARTS_MOST)
+            self.say(_("{name}'s game is back on line by itself: carrying on in it",
+                       name=settings.profile_display(key)))
+            self.carry_on([(key, resume.get(key) or {"item": "%s:%s" % item, "text": resume.fingerprint(run.text)},
+                            item)])
+            return
         if resume.restarts_today(key) >= resume.RESTARTS_MOST:
             self.say(_("{name}'s game was lost again. It was opened again {n} times today already, so the "
                        "run ends here.", name=name, n=resume.RESTARTS_MOST))
@@ -136,7 +190,8 @@ class CarryOnMixin(FrameParts):
         n = resume.note_restart(key)
         row = resume.get(key) or {"item": "%s:%s" % item, "text": resume.fingerprint(run.text)}
         self.say(_("{name}'s game was lost: opening it again and carrying on where the run was "
-                   "({n} of {most} today).", name=name, n=n, most=resume.RESTARTS_MOST))
+                   "({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed.",
+                   name=name, n=n, most=resume.RESTARTS_MOST))
         self._reopen(run, key, row, item)
 
     def back_on_line(self, run: Run, key: str) -> bool:
@@ -152,18 +207,14 @@ class CarryOnMixin(FrameParts):
     def _reopen(self, run: Run, key: str, row: dict[str, Any], item: Item) -> None:
         """The lost game closed first when it is still running (frozen, or showing a world it lost),
         then the run is carried on: its character's game is opened and logged in to."""
+        _closing(self).add(key)        # Stop every bot cancels it while the game is being closed
+
         def then(_left: list[int]) -> None:
-            if not self.destroyed:
-                self.refresh_games()
-                self.carry_on([(key, row, item)])
-        if self.back_on_line(run, key):
-            # its connection came back while the run was ending (a few minutes without internet):
-            # closing it now would only throw that login away, and land the character among the
-            # monsters again a minute later
-            self.say(_("{name}'s game is back on line by itself: carrying on in it",
-                       name=settings.profile_display(key)))
-            then([])
-            return
+            if self.destroyed or key not in _closing(self):
+                return                  # cancelled meanwhile (Stop every bot)
+            _closing(self).discard(key)
+            self.refresh_games()
+            self.carry_on([(key, row, item)], ours_only=True)
         if run.pid in {pid for pid, _folder in gameinstall.running_games()}:
             agentfix.close_then([run.pid], then, force=True)
         else:

@@ -86,6 +86,7 @@ from ..clock import clock_for
 from ..i18n import _
 from . import crafting, town
 from .bot import CONFIRM, Bot, Stopped
+from .botparts.base import GameLost, WrongCharacter
 
 CHORES = ("bank", "pet_rebirth", "contribution_chests", "donation", "construction", "feed", "secret_room")
 DEFAULTS: dict[str, Any] = {
@@ -471,8 +472,8 @@ def back_to_gang_base(b: Bot, mid: int, cell: tuple[int, int], name: str | None)
         elif not crafting.enter_gang(b):
             raise Stopped(_("the Gang Entrance didn't let us in"))
     except Stopped as e:
-        if b.stop_event.is_set():
-            raise
+        if b.stop_event.is_set() or isinstance(e, (GameLost, WrongCharacter)):
+            raise           # Stop, the game gone, or another character in it: no "staying here"
         b.close_dialogs()
         b.log(_("couldn't get back into the gang's base ({why}) - staying here", why=e), speak=True)
         return True

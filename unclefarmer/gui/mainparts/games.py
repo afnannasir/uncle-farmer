@@ -6,7 +6,7 @@ import threading
 
 import wx
 
-from ... import applog, jsonio, nearby, scan, settings
+from ... import applog, jsonio, nearby, scan, settings, stats
 from ...engine import logout
 from ...engine.runner import Run
 from ...errors import carry_on
@@ -18,6 +18,7 @@ from .base import SNAP_FRESH, FrameParts, Game, duration_text, out_of, profile_o
 from typing import Any
 
 UNAVAILABLE_RETRY = 15.0   # seconds between quiet checks of an agent that didn't answer the last refresh
+NAMES_EVERY = 20.0         # seconds between readings of every game's character (keep_names)
 
 
 def _answers(pid: int) -> bool:
@@ -226,6 +227,49 @@ class GamesMixin(FrameParts):
         if pid == self.selected_pid():
             self.poll()
 
+    def keep_names(self) -> None:
+        """Every game's row follows its character, not only the selected one's (render): after
+        Switch account in a game that wasn't selected, its row named the character that had left it
+        until a game opened or closed, and the pause key in that game ran the other character's
+        last plan (logging it back in at the login screen), the results and the "start" private
+        message went to it, and come/follow didn't find ours. Read on a worker every NAMES_EVERY
+        seconds; the rows are rewritten in place, the selection never moves."""
+        if self.destroyed or self.names_busy or len(self.games) < 2:
+            return
+        if self.clock.time() - self.names_read < NAMES_EVERY:
+            return
+        self.names_busy, self.names_read = True, self.clock.time()
+
+        def work() -> None:
+            try:
+                found = games()
+            except Exception as e:        # a failed reading leaves the rows as they were
+                carry_on(e, "reading every game's character")
+                found = []
+            wx.CallAfter(self._got_names, found)
+        threading.Thread(target=work, daemon=True).start()
+
+    def _got_names(self, found: list[tuple[int, str | None, str | None]]) -> None:
+        self.names_busy = False
+        if self.destroyed:
+            return
+        now = {pid: (name, where) for pid, name, where in found}
+        selected = self.selected_pid()
+        changed = False
+        for i, (pid, name, where) in enumerate(self.games):
+            if pid == selected or pid not in now:
+                continue              # the selected row is render's; a game that didn't answer stays
+            new_name, new_where = now[pid]
+            if new_name and name and settings.same_character(name, new_name):
+                new_name = name       # the same character: keep the server label the row has
+            if (new_name, new_where) != (name, where):
+                self.games[i] = (pid, new_name, new_where)
+                changed = True
+                if new_name:
+                    stats.adopt_old_file(new_name)
+        if changed:
+            self.label_games()
+
     def show_status(self, **values: str) -> None:
         for key, ctrl in self.fields.items():
             text = values.get(key, "")
@@ -252,6 +296,7 @@ class GamesMixin(FrameParts):
         self.SetStatusText(_("{games} games, {bots} bots running", games=len(self.games), bots=running)
                            if len(self.games) != 1 else
                            (_("1 game, bot running") if running else _("1 game, bot stopped")))
+        self.keep_names()
         self.keep_messengers()
         self.keep_chats()
         if not self.games:
@@ -300,6 +345,8 @@ class GamesMixin(FrameParts):
         if not same or game[1] != profile or game[2] != s["map"]["name"]:     # logged in, changed map, switched character
             self.games[i] = (game[0], profile, s["map"]["name"])
             self.label_games()
+            if profile:
+                stats.adopt_old_file(profile)   # logged in: its name-only results become its own
         elif game[1]:
             profile = game[1]       # retain the server label gathered with this game's first reading
         account = s.get("_account")

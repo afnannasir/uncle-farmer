@@ -78,5 +78,7 @@ def check(bot: Bot, map_id: int, area: Sequence[float] | None, hunting: bool = F
 def elsewhere(bot: Bot, map_id: int, area: Sequence[float] | None) -> tuple[int, int] | None:
     """The reachable cell furthest from us, of a few drawn over the whole farm area."""
     me = bot.snap()["self"]
-    cells = [c for c in (bot.random_cell(map_id, area, me, radius=1000) for _i in range(CELLS)) if c]
+    from . import bosses
+    mine = bosses.player_no_go(bot)      # the player's no-go circles: never walked into
+    cells = [c for c in (bot.random_cell(map_id, area, me, radius=1000, clear_of=mine) for _i in range(CELLS)) if c]
     return max(cells, key=lambda c: math.hypot(c[0] - me["x"], c[1] - me["y"]), default=None)

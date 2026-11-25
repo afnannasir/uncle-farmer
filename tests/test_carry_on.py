@@ -10,7 +10,7 @@ import pytest
 from conftest import as_bot
 from test_script import FakeBot
 from unclefarmer.engine import resume, script as S
-from unclefarmer.engine.botparts.base import GameLost
+from unclefarmer.engine.botparts.base import GameLost, Stopped, WrongCharacter
 from unclefarmer.engine.runner import Run
 
 LOOP = """stop_when minutes >= 300 : time limit reached
@@ -185,6 +185,38 @@ def test_a_lost_game_is_not_guarded_and_keeps_its_place() -> None:
     assert "noworld" in reason
 
 
+class EndBot:
+    """A bot whose game goes while the run ends: guarding it finds that out."""
+
+    def __init__(self, gone: Exception) -> None:
+        self.gone = gone
+
+    def check_game(self, force: bool = False) -> None: ...
+
+    def defend(self) -> None:
+        raise self.gone
+
+    def finish(self) -> None:
+        raise self.gone
+
+
+def test_a_game_lost_while_the_run_ends_is_a_lost_game_not_a_finished_run() -> None:
+    # an MP "wait" whose logging back in failed: the run stopped, and guarding found the game gone.
+    # Swallowed, it made a run that ended by itself: the After list, the after-stop action (close
+    # the game, shut the PC down) and the place cleared
+    run = make_run()
+    run.bot = EndBot(GameLost("the game can't be read: noworld: gone", connection=True))  # type: ignore[assignment]
+    run._stopped(Stopped("Could not log back in after the wait"))   # pyright: ignore[reportPrivateUsage]
+    assert run.game_lost and run.lost_connection and run.failed and not run.ended_by_itself
+
+
+def test_another_character_come_in_while_the_run_ends_does_nothing_more() -> None:
+    run = make_run()
+    run.bot = EndBot(WrongCharacter("another character is in this game now"))  # type: ignore[assignment]
+    run._stopped(Stopped("stuck"))                                  # pyright: ignore[reportPrivateUsage]
+    assert run.other_character and run.failed and not run.ended_by_itself and not run.game_lost
+
+
 # ---------------------------------------------------------------- the results of a run carried on
 def test_a_run_carried_on_reports_all_its_parts_added_up(tmp_path: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     from unclefarmer import stats
@@ -199,3 +231,20 @@ def test_a_run_carried_on_reports_all_its_parts_added_up(tmp_path: Any, monkeypa
     whole, parts = stats.whole_run(third)
     assert parts == 3 and whole["kills"] == 200 and whole["minutes"] == 60.0 and whole["arnebia"] == 9000
     assert stats.whole_run(other) == (other, 1)
+
+
+def test_a_file_held_by_another_program_is_not_written_over(monkeypatch: pytest.MonkeyPatch) -> None:
+    # two games saving every 20 s: a read that failed a moment (an antivirus, a backup) used to
+    # write back only our row, and the other characters' places and restarts were gone
+    from unclefarmer import jsonio
+    resume.save("Hero--S1--1", {"item": "plan:Night", "text": "x"})
+    resume.note_restart("Hero--S1--1")
+    real = jsonio.read
+
+    def held(path: str, default: Any = None, **kw: Any) -> Any:
+        raise OSError("being used by another process")
+    monkeypatch.setattr(jsonio, "read", held)
+    resume.save("Bob--S1--2", {"item": "plan:Day", "text": "y"})
+    resume.note_restart("Bob--S1--2")
+    monkeypatch.setattr(jsonio, "read", real)
+    assert resume.get("Hero--S1--1") is not None and resume.restarts_today("Hero--S1--1") == 1

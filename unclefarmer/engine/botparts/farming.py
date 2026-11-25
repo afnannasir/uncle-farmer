@@ -15,7 +15,7 @@ from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
 from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamlead, watchdog, xpcard
-from .base import (MOVE_SHOT_REACH, LosingFight, Respawned, Stopped)
+from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
 
@@ -133,7 +133,7 @@ class FarmingMixin(Parts):
             self.restock_now()
         if getattr(self, "bag_start", None) is None:
             from .. import town
-            self.bag_start = town.counts(as_bot(self))   # what was ours before the run: never sold or stored
+            town.note_bag_start(as_bot(self))   # what was ours before the run: never sold or stored
         gearthrow.note_start(as_bot(self))       # and its equipment, piece by piece: never thrown
         if not instance:
             self.on_farm_run = True       # travel checks the restock rules on the way (restock_on_the_way)
@@ -147,7 +147,7 @@ class FarmingMixin(Parts):
             avoid += [z["rect"] for z in atlas.zones(map_id, ("boss",))]
         loop = atlas.patrol_loop(map_id, patrol) if patrol in ("full", "quick", "short") else None
         if patrol == "points" and points:
-            loop = [(int(p[0]), int(p[1])) for p in points]
+            loop = self._patrol_points(map_id, points)
         self.spot_no_go = [(float(c[0]), float(c[1]), float(c[2])) for c in nogo]
         # On a patrol loop, only what is within chase_range walking steps is chased: the loop
         # passes near the rest (a short loop keeps nearly the whole map that close). Wandering at
@@ -345,19 +345,23 @@ class FarmingMixin(Parts):
     def _flee(self, map_id: int) -> None:
         """HP stayed low while farming (LosingFight): drop the fight, hearthstone to town, heal up
         there (FLEE_HEALED, potions as usual), look at the restock rules, and go back. A hearthstone
-        that is interrupted every time (a hit stops its cast) leaves us fighting on. The FLEE_MOST-th
-        flee within FLEE_WINDOW ends the run in town: the map is too hard for the character."""
+        that doesn't take us home leaves us fighting on for a while. The FLEE_MOST-th flee within
+        FLEE_WINDOW ends the run in town: the map is too hard for the character."""
         now = self.clock.time()
-        self.flees = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW] + [now]
+        recent = [t for t in getattr(self, "flees", []) if now - t < self.FLEE_WINDOW]
         self.log(_("HP stayed under {pct}% - leaving the fight: hearthstone to town", pct=self.p["panic_below"]),
                  speak=True)
         self.fleeing = True
         try:
             with self.timed("town"):
                 if not self.go_home():
+                    # the hearthstone didn't take us: no flee - counted, two of them and one real
+                    # flee ended the night with "fled 3 times"
+                    self.flees = recent
                     self.flee_wait_until = self.clock.time() + self.FLEE_RETRY
                     self.log(_("couldn't get away - fighting on"), speak=True)
                     return
+                self.flees = recent + [now]
                 self._heal_in_town()
                 if len(self.flees) >= self.FLEE_MOST:
                     self.log(_("fled {n} times in {m} minutes - this map is too hard for now; stopping here",
@@ -369,7 +373,11 @@ class FarmingMixin(Parts):
                 self.log(_("back to {map} after fleeing a lost fight", map=atlas.label(map_id)))
                 self.travel(map_id)
         except Respawned:
-            return                # died after all: the farm loop's next round goes back
+            # died on the way: a flee all the same - not counted, a map too hard for the character
+            # killed it again and again and "fled too many" never came
+            if not getattr(self, "flees", None) or self.flees[-1] != now:
+                self.flees = recent + [now]
+            return                # the farm loop's next round goes back
         finally:
             self.fleeing = False
         self.set_modes()
@@ -648,8 +656,8 @@ class FarmingMixin(Parts):
                     self.travel(mid, cell)
             else:
                 return self._finish_safe()
-        except Respawned:
-            raise
+        except (Respawned, GameLost, WrongCharacter):
+            raise           # the game gone, or another character in it: no way, nothing more to do there
         except Stopped as why:
             if self.stop_event.is_set():
                 raise
@@ -723,6 +731,22 @@ class FarmingMixin(Parts):
         self.restock_looked = now
         self.restock_now()
 
+    POINT_NEAR = 20       # cells a patrol point may be moved to reach walkable ground
+
+    def _patrol_points(self, map_id: int, points: Sequence[Sequence[int]]) -> list[tuple[int, int]] | None:
+        """The player's patrol points that can be walked to from here: each on walkable ground (or
+        the nearest such cell within POINT_NEAR), never on a map exit, in our part of the map. They
+        were taken as typed: one in a wall or out of reach stopped the spot ("can't be reached"),
+        one on a door walked us off the map once a lap. The others are said once; none left: the
+        patrol goes at random. None for no points."""
+        good, bad = usable_points(map_id, points, self.me())
+        for p in bad:
+            self.log(_("patrol point {x},{y} can't be walked to on {map} - left out",
+                       x=p[0], y=p[1], map=atlas.label(map_id)), speak=True)
+        if bad and not good:
+            self.log(_("no patrol point of this spot can be walked to: patrolling at random"), speak=True)
+        return good or None
+
     def random_cell(self, map_id: int, area: Sequence[float] | None, me: dict[str, Any], radius: int = 40, *,
                     clear_of: Sequence[tuple[float, float, float]] = (),
                     keep_out: Sequence[tuple[float, float, float, float]] = ()) -> tuple[int, int] | None:
@@ -753,6 +777,25 @@ class FarmingMixin(Parts):
                 continue
             return c
         return None
+
+
+def usable_points(map_id: int, points: Sequence[Sequence[int]], me: dict[str, Any] | None,
+                  near: int = 20) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+    """(the patrol points as walked to, the ones that can't be): each moved to the nearest walkable
+    cell within near when it is a wall, never a map exit, in our part of the map (me)."""
+    m = atlas.model(map_id)
+    mx, my = (int(me["x"]), int(me["y"])) if me else (0, 0)
+    ours = m.comp_of(mx, my) if me and m.ok(mx, my) else None
+    good: list[tuple[int, int]] = []
+    bad: list[tuple[int, int]] = []
+    for p in points:
+        c = (int(p[0]), int(p[1]))
+        at = c if m.ok(*c) else m.nearest_walkable(c[0], c[1], near, comp=ours)
+        if at is None or m.portal[at[1], at[0]] or (ours is not None and m.comp_of(*at) != ours):
+            bad.append(c)
+        else:
+            good.append((int(at[0]), int(at[1])))
+    return good, bad
 
 
 def _next_clear(loop: list[tuple[int, int]], i: int,

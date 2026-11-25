@@ -305,6 +305,9 @@ msgstr "&Historial"
 msgid "&How many:"
 msgstr "Cuántos (&H):"
 
+msgid "&How:"
+msgstr "&Cómo:"
+
 msgid "&Import"
 msgstr "&Importar"
 
@@ -410,8 +413,8 @@ msgstr "Silenciar este juego (&M)"
 msgid "&Muted Sounds:"
 msgstr "Sonidos silenciados (&M):"
 
-msgid "&Names or ids (separated by commas):"
-msgstr "&Nombres o identificadores (separados por comas):"
+msgid "&Names or ids, separated by commas (Kim@S1: trusted on S1 only):"
+msgstr "&Nombres o ids, separados por comas (Kim@S1: de confianza solo en S1):"
 
 msgid "&Never fight:"
 msgstr "&Nunca pelear:"
@@ -688,6 +691,9 @@ msgstr "&Ver como script"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Caminar siempre que los mapas se conecten a pie (&W)"
 
+msgid "&What to copy:"
+msgstr "&Qué copiar:"
+
 msgid "&What to do:"
 msgstr "Qué hacer (&W):"
 
@@ -842,6 +848,11 @@ msgid ""
 msgstr ""
 "Un archivo que alcanza el tamaño indicado arriba se conserva como nombre.1, los más antiguos pasan a nombre.2 y así sucesivamente, y el más antiguo se elimina. El registro de ejecución del día se rota de la misma forma dentro de su día."
 
+msgid ""
+"A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
+msgstr ""
+"Un nombre puede ser de otro jugador en otro servidor: los nombres que añades reciben el servidor del personaje seleccionado (Kim@S1). Un nombre o id sin servidor es de confianza en todos los servidores."
+
 msgid "A name for this place:"
 msgstr "Un nombre para este lugar:"
 
@@ -956,6 +967,9 @@ msgstr "Añadir lo seleccionado a Sonidos guardados"
 msgid "Add to &filter list"
 msgstr "Añadir a la lista de &filtros"
 
+msgid "Add to this character's lists (what is only here stays)"
+msgstr "Añadir a las listas de este personaje (lo que solo está aquí se queda)"
+
 msgid "Add where I &stand"
 msgstr ""
 
@@ -978,6 +992,9 @@ msgstr "&Tras un límite de tiempo"
 
 msgid "After farming"
 msgstr "Después de farmear"
+
+msgid "After farming list"
+msgstr "Lista después de farmear"
 
 msgid "After the run, &stay in town and manage the team until I stop it"
 msgstr ""
@@ -1130,6 +1147,9 @@ msgstr "Mérito de campo de batalla"
 
 msgid "Before farming"
 msgstr "Antes de farmear"
+
+msgid "Before farming list"
+msgstr "Lista antes de farmear"
 
 msgid "Before moving on to the next spot (only with more than one spot)"
 msgstr "Antes de pasar al siguiente punto (solo con más de un punto)"
@@ -1509,8 +1529,20 @@ msgstr "Copiado"
 msgid "Copied {email}."
 msgstr "Se copió {email}."
 
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Copy &from another character"
+msgstr "Copiar &de otro personaje"
+
+msgid "Copy &from:"
+msgstr "Copiar &de:"
+
 msgid "Copy &selection"
 msgstr "Copiar la &selección"
+
+msgid "Copy from another character"
+msgstr "Copiar de otro personaje"
 
 msgid "Corpses"
 msgstr "Cadáveres"
@@ -2005,6 +2037,15 @@ msgstr "Seguir peleando"
 msgid "Fighting"
 msgstr "Peleando"
 
+msgid "Fighting settings (not the keys)"
+msgstr "Ajustes de combate (no las teclas)"
+
+msgid "Fighting settings: set as theirs"
+msgstr "Ajustes de combate: como los suyos"
+
+msgid "Fighting settings: set as theirs, but not each skill's use"
+msgstr "Ajustes de combate: como los suyos, salvo el uso de cada habilidad"
+
 msgid "Fighting:"
 msgstr "Peleando:"
 
@@ -2062,8 +2103,25 @@ msgstr "Del almacén y luego de la tienda"
 msgid "From trusted players"
 msgstr "De jugadores de confianza"
 
+msgid ""
+"From {name}:\n"
+"{lines}\n"
+"\n"
+"Nothing is kept until you save."
+msgstr ""
+"De {name}:\n"
+"{lines}\n"
+"\n"
+"No se guarda nada hasta que guardes."
+
 msgid "Full bag"
 msgstr "Bolsa llena"
+
+msgid "Full bag and equipment by rarity"
+msgstr "Bolsa llena y equipo por rareza"
+
+msgid "Full bag and equipment by rarity: set as theirs"
+msgstr "Bolsa llena y equipo por rareza: como los suyos"
 
 msgid "Full loop (every lane, a longer lap)"
 msgstr "Circuito completo (todos los carriles, una vuelta más larga)"
@@ -2580,6 +2638,9 @@ msgstr "Mantenerse lejos de los jefes"
 
 msgid "Keep farming, just tell me"
 msgstr "Seguir farmeando, solo avisarme"
+
+msgid "Keep list"
+msgstr "Lista de conservar"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Mantener activas las mejoras de la clase (&u)"
@@ -3147,6 +3208,9 @@ msgid ""
 "No most price is set for any material, so the market's cheapest lots are bought at any price. Go on?"
 msgstr ""
 
+msgid "No other character has settings yet."
+msgstr "Ningún otro personaje tiene ajustes todavía."
+
 msgid "No pet"
 msgstr "Sin mascota"
 
@@ -3630,6 +3694,11 @@ msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Poner las habilidades y objetos necesarios &en teclas vacías (nunca en teclas en uso)"
 
+msgid ""
+"Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
+msgstr ""
+"¿Volver los ajustes de combate a sus valores por defecto? La pausa entre teclas de ataque, los tiempos y lanzamientos para abandonar un combate, la pulsación de habilidades, el alcance de ataque, la persecución, las teclas de objetivo, el uso de cada habilidad, las lecturas en combate y las casillas de combate de la ventana del personaje. Las teclas, la bolsa, los suministros y todo lo demás quedan igual. No se guarda nada hasta que guardes."
+
 msgid "Put the pet &away when the run ends"
 msgstr "Guardar &a la mascota cuando termine la ejecución"
 
@@ -3771,11 +3840,20 @@ msgid "Replace the saved plan {name}? Nothing changes until you choose Yes."
 msgstr ""
 "¿Reemplazar el plan guardado {name}? No cambia nada hasta que elijas Sí."
 
+msgid "Replace this character's lists with theirs"
+msgstr "Reemplazar las listas de este personaje por las suyas"
+
 msgid "Reply lines"
 msgstr "Líneas de respuesta"
 
 msgid "Replying to {name}: {message}"
 msgstr "Respondiendo a {name}: {message}"
+
+msgid "Reset the &fighting settings to their defaults"
+msgstr "Volver los ajustes de &combate a los valores por defecto"
+
+msgid "Reset the fighting settings"
+msgstr "Restablecer los ajustes de combate"
 
 msgid "Respawning in the city."
 msgstr ""
@@ -4016,6 +4094,9 @@ msgstr "Vender y guardar según estas listas, y luego volver"
 
 msgid "Sell it and come back"
 msgstr "Venderlo y volver"
+
+msgid "Sell list"
+msgstr "Lista de venta"
 
 msgid "Sell s&hards now"
 msgstr "Vender fragmentos a&hora"
@@ -4448,6 +4529,9 @@ msgid ""
 msgstr ""
 "Guardado o vendido en un viaje de bolsa: en la página Bolsa llena, elige vender y guardar cuando la bolsa esté llena"
 
+msgid "Storehouse list"
+msgstr "Lista del Storehouse"
+
 msgid "Storehouse only"
 msgstr "Solo el almacén"
 
@@ -4468,6 +4552,9 @@ msgstr "Domingo"
 
 msgid "Supplies"
 msgstr "Suministros"
+
+msgid "Supplies: {added} put in, {same} already there"
+msgstr "Suministros: {added} añadidos, {same} ya estaban"
 
 msgid "System message"
 msgstr ""
@@ -4502,6 +4589,12 @@ msgstr ""
 
 msgid "Team mode"
 msgstr "Modo equipo"
+
+msgid "Team settings"
+msgstr "Ajustes de equipo"
+
+msgid "Team settings: set as theirs"
+msgstr "Ajustes de equipo: como los suyos"
 
 msgid ""
 "Team tab: the team name needs 1 to 20 letters and numbers, without spaces."
@@ -4645,6 +4738,10 @@ msgstr "La cueva (un personaje entra en una cueva por día de juego)"
 msgid "The character hasn't learned {skill}."
 msgstr "El personaje no ha aprendido {skill}."
 
+msgid "The character is on {here}, not on {map}: go to this spot's map first."
+msgstr ""
+"El personaje está en {here}, no en {map}: ve primero al mapa de este lugar."
+
 msgid "The character's plan"
 msgstr ""
 
@@ -4688,6 +4785,10 @@ msgstr "La más rápida"
 
 msgid "The fees are read off the Pharmacist's pages (Check only shows them)."
 msgstr ""
+
+msgid "The fighting settings are back to their defaults. Save to keep them."
+msgstr ""
+"Los ajustes de combate han vuelto a sus valores por defecto. Guarda para conservarlos."
 
 msgid "The game didn't confirm {skill}."
 msgstr "El juego no confirmó {skill}."
@@ -5007,6 +5108,12 @@ msgstr ""
 "\n"
 "No se toca nada más. Los objetos tirados se pierden para siempre."
 
+msgid "Throw-away list"
+msgstr "Lista de tirar"
+
+msgid "Throw-away list (shards and items)"
+msgstr "Lista de tirar (shards y objetos)"
+
 msgid "Thrown away:"
 msgstr "Tirado:"
 
@@ -5018,6 +5125,9 @@ msgstr "Marca al menos un día."
 
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
+
+msgid "Tick at least one thing to copy."
+msgstr "Marca al menos una cosa para copiar."
 
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
@@ -5056,6 +5166,11 @@ msgstr "Horas"
 
 msgid "To (seconds):"
 msgstr "Hasta (segundos):"
+
+msgid ""
+"To scan or publish, log in to the character in the game and stop its bot first."
+msgstr ""
+"Para escanear o publicar, inicia sesión primero con el personaje en el juego y detén su bot."
 
 msgid "Today"
 msgstr "Hoy"
@@ -6216,6 +6331,16 @@ msgstr "no se pudo llegar a {item} en la bolsa"
 msgid "couldn't reach {skill} in the skills panel"
 msgstr "no se pudo llegar a {skill} en el panel de habilidades"
 
+msgid ""
+"couldn't read the bag before farming: only the items you chose a rule for are sold, stored or thrown away this run"
+msgstr ""
+"no pude leer la bolsa antes de farmear: en esta partida solo se venden, guardan o tiran los objetos para los que elegiste una regla"
+
+msgid ""
+"couldn't read the equipment in the bag before farming: none of it is thrown away for now"
+msgstr ""
+"no pude leer el equipo de la bolsa antes de farmear: por ahora no se tira nada"
+
 msgid "couldn't read the storehouse's list: only the bag counts"
 msgstr ""
 
@@ -6709,6 +6834,9 @@ msgstr ""
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
+msgid "in a no-go circle of this spot"
+msgstr "en un círculo prohibido de este lugar"
+
 msgid "in an elite or boss zone we keep out of"
 msgstr "en una zona de élite o jefe de la que nos mantenemos alejados"
 
@@ -7160,6 +7288,10 @@ msgid ""
 msgstr ""
 "no hay lugar fuera donde recolectar para este personaje: colócate en uno y añádelo en Herramientas, Recolección"
 
+msgid "no patrol point of this spot can be walked to: patrolling at random"
+msgstr ""
+"no se puede llegar a pie a ningún punto de patrulla de este lugar: patrulla al azar"
+
 msgid "no pet called {pet} (pets: {pets})"
 msgstr "no hay ninguna mascota llamada {pet} (mascotas: {pets})"
 
@@ -7600,6 +7732,10 @@ msgstr ""
 
 msgid "patrol is random, full, quick, short or points"
 msgstr ""
+
+msgid "patrol point {x},{y} can't be walked to on {map} - left out"
+msgstr ""
+"no se puede llegar a pie al punto de patrulla {x},{y} en {map}: se deja fuera"
 
 msgid "patrol=points needs points=x,y;x,y;..."
 msgstr ""
@@ -8861,6 +8997,9 @@ msgstr "el {kind} {name} ya no existe"
 msgid "the {npc} didn't take me anywhere"
 msgstr "el {npc} no me llevó a ninguna parte"
 
+msgid "the {npc} didn't take me for free"
+msgstr "{npc} no me llevó gratis"
+
 msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""
@@ -9459,6 +9598,9 @@ msgstr "{label}: {hp} de salud en {n} curaciones"
 msgid "{left} left"
 msgstr "quedan {left}"
 
+msgid "{list}: {added} put in, {same} already there"
+msgstr "{list}: {added} añadidos, {same} ya estaban"
+
 msgid "{map} at {x}, {y}"
 msgstr "{map} en {x}, {y}"
 
@@ -9574,6 +9716,11 @@ msgid ""
 msgstr ""
 "{name} en una línea se convierte en el nombre del jugador; una línea sin él empieza con su nombre mientras esto esté marcado."
 
+msgid ""
+"{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the skills differ), only the other fighting settings. Go on?"
+msgstr ""
+"{name} es {theirs}, este personaje {mine}: el uso de cada habilidad no se copia (las habilidades son otras), solo los demás ajustes de combate. ¿Seguir?"
+
 msgid "{name} is about to be killed by someone else - next one"
 msgstr "{name} está a punto de ser eliminado por otro: pasando al siguiente"
 
@@ -9586,6 +9733,9 @@ msgstr "{name} ya no está, y ninguno de nuestros golpes le dio"
 msgid "{name} is in the way - fighting it"
 msgstr "{name} está en el camino: peleo contra él"
 
+msgid "{name} is logged out for a while and logs back in by itself"
+msgstr "{name} ha cerrado sesión un rato y volverá a entrar solo"
+
 msgid "{name} is on this map at {x}, {y} - going there"
 msgstr "{name} está en este mapa en {x}, {y}: voy hacia allí"
 
@@ -9594,6 +9744,9 @@ msgstr "{name} se lee del juego y no se puede fijar"
 
 msgid "{name} isn't in my team"
 msgstr "{name} no está en mi equipo"
+
+msgid "{name} isn't logged in on that game any more - nothing was started."
+msgstr "{name} ya no ha iniciado sesión en ese juego: no se ha iniciado nada."
 
 msgid "{name} isn't logged in to a game that has the agent."
 msgstr "{name} no ha iniciado sesión en un juego que tenga el agente."
@@ -9652,8 +9805,15 @@ msgid ""
 msgstr ""
 
 msgid ""
-"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."
+"{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today). Stop every bot (Ctrl+Shift+S) keeps it closed."
 msgstr ""
+"Se perdió el juego de {name}: se vuelve a abrir y la partida sigue donde estaba ({n} de {most} hoy). Stop every bot (Ctrl+Shift+S) lo deja cerrado."
+
+msgid "{name}'s game won't be opened again."
+msgstr "El juego de {name} no se volverá a abrir."
+
+msgid "{name}'s settings couldn't be copied: {err}"
+msgstr "No se pudieron copiar los ajustes de {name}: {err}"
 
 msgid "{name}, last run ({what}, started {when})"
 msgstr "{name}, última ejecución ({what}, iniciada {when})"
@@ -9710,6 +9870,10 @@ msgstr ""
 
 msgid "{npc} offers no hunting bounty"
 msgstr ""
+
+msgid "{npc}'s menu didn't open its list - trying the next nearest shop"
+msgstr ""
+"el menú de {npc} no abrió su lista: probando la siguiente tienda más cercana"
 
 msgid ""
 "{npc}'s menu didn't show {item} - see logs\\dialogs.log; trying the next nearest shop"
@@ -10044,6 +10208,9 @@ msgstr ""
 msgid "{what} for {name}"
 msgstr ""
 
+msgid "{what} for {name} won't carry on."
+msgstr "{what} de {name} no continuará."
+
 msgid "{what} for {who} is waiting: {why}"
 msgstr "{what} para {who} está en espera: {why}"
 
@@ -10095,6 +10262,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casillas, {n} salidas."
+
+#~ msgid "&Names or ids (separated by commas):"
+#~ msgstr "&Nombres o identificadores (separados por comas):"
 
 #~ msgid "(no notes)"
 #~ msgstr "(sin notas)"

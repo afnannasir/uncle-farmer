@@ -15,11 +15,21 @@ from ...i18n import _
 from .. import agentfix
 from ..common import error, save_file
 from ..plan import plan_text
-from .base import FrameParts, Item, foreground_pid, saved_item
+from .base import FrameParts, Item, character_of, foreground_pid, profile_of, saved_item
 from collections.abc import Callable
 
 LOGIN_OPEN_RETRY = 90.0
 LOGIN_START_MOST = 240.0     # seconds a game we opened has to show its agent before it is closed
+
+
+def waiting_games(frame: FrameParts) -> dict[int, str]:
+    """{pid: character} of the games logged out for a while (an MP wait), whose character logs back
+    in there by itself."""
+    bot_of: Callable[[int], Any] | None = getattr(frame, "waiting_bot", None)
+    if bot_of is None:
+        return {}
+    return {g[0]: str(getattr(bot_of(g[0]), "profile_key", None) or "") for g in frame.games
+            if logout.waiting(bot_of(g[0])) is not None}
 
 
 def starting_games(frame: FrameParts) -> list[int]:
@@ -223,7 +233,7 @@ class RunsMixin(FrameParts):
         else:
             self.start(pid)
 
-    def automatic_login_window(self, profile: str) -> tuple[int | None, str]:
+    def automatic_login_window(self, profile: str, ours_only: bool = False) -> tuple[int | None, str]:
         """Find a window for *profile*, opening exactly one if no usable client exists.
 
         The eventual sign-in remains in :class:`Run`, after the game's agent is reachable.  This
@@ -231,6 +241,7 @@ class RunsMixin(FrameParts):
         the identical guarded sequence.
         """
         self.refresh_games()
+        ours: set[int] = getattr(self, "our_games", set())
         pending = getattr(self, "pending_logins", None)
         if pending is None:
             pending = self.pending_logins = {}
@@ -238,11 +249,20 @@ class RunsMixin(FrameParts):
         if pid is not None:
             pending.pop(profile, None)
             return pid, ""
-        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs]
+        # a game logged out for a while (an MP wait) reads as signed out, and is not: its character
+        # logs back in there when the wait ends - another character logged in to it took the account
+        # someone needed, and the same character in a second game made the two logins fight
+        waits = waiting_games(self)
+        label = settings.profile_display(profile)
+        if any(settings.is_profile_of(key, profile) for key in waits.values()):
+            return None, _("{name} is logged out for a while and logs back in by itself", name=label)
+        # ours_only (a run carried on after its game was lost): never a game the player has at its
+        # login screen - a login that failed there had that game closed, by force, to open it again
+        signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs and g[0] not in waits
+                      and (not ours_only or g[0] in ours)]
         if len(signed_out) == 1:
             pending.pop(profile, None)
             return signed_out[0], ""
-        label = settings.profile_display(profile)
         if len(signed_out) > 1:
             return None, _("{name} has more than one signed-out game; close the extras or log in first", name=label)
         if starting_games(self):
@@ -336,27 +356,43 @@ class RunsMixin(FrameParts):
         self.poll()
         return _("Starting {what}.", what=item[1])
 
-    def run_errand(self, text: str, title: str, walk: bool = False) -> None:
-        """A one-off job for the selected game, run like a script: a tool from the Tools menu, or
-        the walking assistant (walk)."""
-        pid = self.selected_pid()
+    def run_errand(self, text: str, title: str, walk: bool = False, pid: int | None = None,
+                   expect: str | None = None) -> bool:
+        """A one-off job, run like a script: a tool from the Tools menu, the Market window's own
+        game (pid), or the walking assistant (walk). pid is the selected game unless given.
+        Nothing starts at the login screen: the job would log in whichever character the Games
+        list last named there (or stop at once), so a character must be logged in first.
+        expect: the character the tool's window was opened for - the job starts only while that one
+        is logged in on the game (a game closed meanwhile, or Switch account, and Clean the bag
+        would have thrown away another character's list, unseen). True when the job started."""
+        if pid is None:
+            pid = self.selected_pid()
         if pid is None:
             self.say(_("No game with the agent is running."))
-            return
+            return False
         if pid in self.runs:
             self.say(_("Stop the bot first."))
-            return
+            return False
+        snap = self.snapshot(pid)
+        if not character_of(snap):
+            self.say(_("Log in to the character in the game first."))
+            return False
+        if expect and not settings.is_profile_of(profile_of(snap), expect):
+            self.say(_("{name} isn't logged in on that game any more - nothing was started.",
+                       name=settings.profile_display(expect)))
+            return False
         run = Run(text, title, pid, self.on_log, self.on_done, walk=walk, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
         run.kind = "errand"
-        run.profile = self.selected_character()
+        run.profile = expect or self.character(pid)
         run.character = settings.profile_name(run.profile) or None
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
         self.update_buttons()
         run.start()
+        return True
 
     def errand_for(self, pid: int, text: str, title: str, tell: Callable[[str], None] | None = None,
                    follows: str | None = None) -> str | None:
@@ -422,8 +458,12 @@ class RunsMixin(FrameParts):
             run.stop()
 
     def stop_all(self) -> None:
+        """Every bot, and every run waiting to carry on: a game the player closed by hand was
+        opened again every minute and a half for five minutes, with no way to keep it closed."""
+        cancelled = self.cancel_carry_on()
         if not self.runs:
-            self.say(_("No bot is running."))
+            if not cancelled:
+                self.say(_("No bot is running."))
             return
         self.say(_("Stopping every bot"))
         for run in list(self.runs.values()):

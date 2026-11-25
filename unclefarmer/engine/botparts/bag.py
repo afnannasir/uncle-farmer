@@ -22,6 +22,7 @@ class BagMixin(Parts):
     agent_act: bool = False
     said_bag_full: bool = False
     bag_start: dict[str, int] | None = None
+    bag_unread: bool = False        # the last bag_rows was an error reply, not the bag
     load_seen: list[tuple[float, int, int]]
 
     def goto_panel(self, panel: int) -> dict[str, Any] | None:
@@ -245,7 +246,10 @@ class BagMixin(Parts):
         return rows[cur]["name"]
 
     def bag_rows(self) -> list[dict[str, Any]]:
+        """The bag's rows; an error reply (the game busy or its connection gone) reads as none, and
+        bag_unread says it was one - not an empty bag (town.start_counts)."""
         b = self.a.json("mem bag")
+        self.bag_unread = not jsonio.is_array(b)
         return b if jsonio.is_array(b) else []
 
     def bag_check(self) -> bool:
@@ -337,8 +341,8 @@ class BagMixin(Parts):
         for r in self.bag_rows():
             if r.get("name") and r.get("count"):
                 bag[r["name"]] = bag.get(r["name"], 0) + int(r["count"])
-        start: dict[str, Any] = self.bag_start or {}
-        gained = {k.lower(): v - start.get(k.lower(), 0) for k, v in bag.items()}
+        from .. import town
+        gained = town.run_gains(as_bot(self), bag)
         todo = [(name, n) for name, action, n in bagrules.plan(self.p, bag, hot, gained) if action == "throw"]
         moved = self.throw_items(todo)
         if moved is not None:

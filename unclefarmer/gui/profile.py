@@ -7,20 +7,30 @@ live behind Advanced, for the rare player who needs them.
 
 from __future__ import annotations
 
+import copy
+from collections.abc import Sequence
 from typing import Any, TypedDict
 
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, keyboard, potions, triggers, xpcard
+from ..engine import combat, keyboard, potions, profilecopy, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
-from .common import (Dialog, Form, Handler, KeyDialog, buttons, enable_label, error, first_selected, group, info, key_ok,
-                     labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
-from .teamtab import save_team, team_page
+from .common import (Dialog, Form, Handler, KeyDialog, ask, buttons, enable_label, error, first_selected, group, info,
+                     key_ok, labeled, ok_cancel, opens, page, pick, read_decimal, save_file, select_row, tabs)
+from .copyfrom import CopyFromDialog, other_characters
+from .teamtab import load_team, save_team, team_page
 from .triggers import SequenceEditor
 
 STYLES = ("auto", "follow", "stationary")
+# The fighting choices of the character window's own page, put back to their defaults by Advanced
+# settings' "Reset the fighting settings" (with its own pages' fine tuning and the skills' uses).
+MAIN_FIGHTING = ("attack_style", "fight_back", "nearest_monster", "fight_locked", "shoot_while_walking",
+                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys")
+# What the character window's "Copy from another character" can copy, in its list's order.
+COPY_PARTS = (("before", N_("Before farming list")), ("after", N_("After farming list")),
+              ("fighting", N_("Fighting settings (not the keys)")), ("team", N_("Team settings")))
 PK_MODE_LABELS = (N_("Pacifist mode"), N_("Pacifist mode with counterattack"), N_("Moral Mode"),
                   N_("Gang mode"), N_("Team mode"), N_("All mode"))
 TARGET_MODE_LABELS = (N_("All"), N_("Own side"), N_("Enemies"), N_("NPCs"))
@@ -217,7 +227,8 @@ class ProfileDialog(Dialog):
         self.team_ui = team_page(panel, box, self.p)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
-        ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced)])
+        ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced),
+                                               (opens(_("Copy from another character")), self.on_copy)])
         self.SetSizerAndFit(root)
         self.SetMinSize(wx.Size(640, 520))
         # Bound on the dialog, not the button: Enter in a text box sends OK to the dialog directly,
@@ -542,6 +553,73 @@ class ProfileDialog(Dialog):
                 for kind in ("hp", "mp"):
                     self.show_potion(kind)
                 load_pet_care(self.pet_care, self.p)
+                if d.fighting_reset:
+                    self.show_fighting()
+
+    # ------------------------------------------------------------ copy from another character
+    def on_copy(self, _evt: object = None) -> None:
+        """Copy one character's Before or After farming list, fighting or team settings to this one.
+        Nothing is kept until Save."""
+        others = other_characters(self.character)
+        if not others:
+            info(self, _("No other character has settings yet."))
+            return
+        with CopyFromDialog(self, others, COPY_PARTS) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            source, parts, replace = d.picked()
+        theirs = settings.load_profile(source)
+        with_skills = profilecopy.same_class(self.p, theirs)
+        if "fighting" in parts and not with_skills:
+            if not ask(self, _("{name} is a {theirs}, this character a {mine}: each skill's use isn't copied (the "
+                               "skills differ), only the other fighting settings. Go on?",
+                               name=settings.profile_display(source), theirs=profilecopy.class_of(theirs),
+                               mine=profilecopy.class_of(self.p)), _("Copy from another character")):
+                return
+        try:
+            lines = self.copy_parts(theirs, parts, replace, with_skills)
+        except ValueError as e:         # its Before or After list can't be read (an edited file)
+            error(self, _("{name}'s settings couldn't be copied: {err}", name=settings.profile_display(source), err=e))
+            return
+        info(self, _("From {name}:\n{lines}\n\nNothing is kept until you save.",
+                     name=settings.profile_display(source), lines="\n".join(lines)),
+             _("Copy from another character"))
+
+    def copy_parts(self, theirs: dict[str, Any], parts: Sequence[str], replace: bool, with_skills: bool) -> list[str]:
+        """Put the other character's parts into this window (not saved), and say what changed."""
+        lines: list[str] = []
+        for stage in triggers.STAGES:
+            if stage not in parts:
+                continue
+            editor = self.trigger_editors[stage]
+            mine = dict(self.p, trigger_sequences={s: e.value() for s, e in self.trigger_editors.items()})
+            editor.rows, added, same = profilecopy.steps(mine, theirs, stage, replace)
+            editor.fill()
+            if stage == "before":
+                self.skip_before.SetValue(bool(theirs.get("skip_before_on_farm", self.skip_before.GetValue())))
+            what = _("Before farming list") if stage == "before" else _("After farming list")
+            lines.append(_("{list}: {added} put in, {same} already there", list=what, added=added, same=same))
+        if "fighting" in parts:
+            self.p.update(profilecopy.fighting(theirs, with_skills))
+            self.show_fighting()
+            lines.append(_("Fighting settings: set as theirs") if with_skills
+                         else _("Fighting settings: set as theirs, but not each skill's use"))
+        if "team" in parts:
+            self.p.update(profilecopy.team(theirs))
+            load_team(self.team_ui, self.p)
+            lines.append(_("Team settings: set as theirs"))
+        return lines
+
+    def show_fighting(self) -> None:
+        """This page's fighting choices again, from the profile (after Advanced reset them)."""
+        p = self.p
+        self.attack_style.SetSelection(pick(STYLES, p.get("attack_style", "auto")))
+        for key, box in (("fight_back", self.fight_back), ("nearest_monster", self.nearest_monster),
+                         ("fight_locked", self.fight_locked), ("shoot_while_walking", self.shoot_while_walking),
+                         ("skills_by_slot", self.skills_by_slot), ("use_buffs", self.use_buffs),
+                         ("use_dispel", self.use_dispel), ("use_combos", self.use_combos),
+                         ("fill_empty_keys", self.fill_keys)):
+            box.SetValue(bool(p.get(key, settings.PROFILE_DEFAULTS[key])))
 
     def on_ok(self, _evt: wx.Event) -> None:
         p = self.p
@@ -611,6 +689,7 @@ class AdvancedDialog(Dialog):
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
         self.p = profile
         self.game_folder = game_folder
+        self.fighting_reset = False   # Reset the fighting settings was chosen (on_ok, ProfileDialog.show_fighting)
         self.keys = {k: get_key(profile, k) for k, _l in KEYS}
         root = wx.BoxSizer(wx.VERTICAL)
         nb = tabs(self)
@@ -800,6 +879,9 @@ class AdvancedDialog(Dialog):
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)
+        reset = wx.Button(panel, label=_("Reset the &fighting settings to their defaults"))
+        reset.Bind(wx.EVT_BUTTON, lambda e: self.on_reset_fighting())
+        box.Add(reset, 0, wx.TOP, 10)
 
     def health_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -858,6 +940,42 @@ class AdvancedDialog(Dialog):
                                      p.get("only_this_run", True))
         self.restock_every = f.number(_("Check the bag for restocking every (seconds):"),
                                       p.get("restock_check_every", 30), 5, 600)
+
+    def on_reset_fighting(self) -> None:
+        """A profile kept from older versions keeps the fighting values they saved, and a player
+        whose fights had gone slow deleted the whole profile to get them back. This puts the fighting
+        settings back to the defaults - the pause between keys, the times and casts to give up, the
+        skill pressing, range, chase and target keys, the skills' uses, the fight readings, and the
+        character window's fighting boxes - and nothing else: keys, bag, supplies, triggers, team.
+        Kept only on Save."""
+        if not ask(self, _("Put the fighting settings back to their defaults? The pause between attack keys, "
+                           "the times and casts to give up a fight, the skill pressing, the attack range, the "
+                           "chase, the target keys, each skill's use, the fight readings, and the fighting boxes "
+                           "of the character window. Keys, bag, supplies and everything else stay as they are. "
+                           "Nothing is kept until you save."), _("Reset the fighting settings")):
+            return
+        d = settings.PROFILE_DEFAULTS
+        self.range_on.SetValue(False)
+        self.attack_range.Enable(False)
+        enable_label(self.attack_range, False)
+        self.attack_gap.SetValue("%g" % d["attack_gap"])
+        self.pull.SetValue("%g" % d["pull_range"])
+        self.fight_timeout.SetValue(int(d["fight_timeout"]))
+        self.no_damage.SetValue(int(d["no_damage_timeout"]))
+        self.no_damage_casts.SetValue(int(d["no_damage_casts"]))
+        self.press_burst.SetValue(bool(d["press_burst"]))
+        self.chase.SetValue(int(d["chase_range"]))
+        self.target_mode.SetSelection(int(d["target_mode"]))
+        self.smart.SetValue(bool(d["smart_skills"]))
+        self.skill_others.SetSelection(0)
+        self.uses = {name: "auto" for name in self.skill_rows}
+        for i in range(len(self.skill_rows)):
+            self.skill_list.SetItem(i, 3, self.use_label("auto"))
+        self.show_skill()
+        self.points_every.SetValue("%g" % d["points_every"])
+        self.mp_every.SetValue(int(d["mp_check_every"]))
+        self.fighting_reset = True
+        info(self, _("The fighting settings are back to their defaults. Save to keep them."))
 
     def on_ok(self, _evt: wx.Event) -> None:
         for k, label in KEYS:
@@ -932,4 +1050,7 @@ class AdvancedDialog(Dialog):
         p["sheet_every"] = self.sheet_every.GetValue()
         p["drop_tail_seconds"] = self.drop_tail.GetValue()
         p["close_popups"] = self.close_popups.GetValue()
+        if self.fighting_reset:
+            for key in MAIN_FIGHTING:      # the character window's own boxes (it shows them again)
+                p[key] = copy.deepcopy(settings.PROFILE_DEFAULTS[key])
         self.EndModal(wx.ID_OK)

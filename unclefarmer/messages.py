@@ -36,7 +36,7 @@ from .engine.bot import Bot, Stopped
 from .engine.botparts.parts import Where
 from .errors import carry_on
 from .i18n import _
-from .link import AgentError, AgentLink, OpenLink
+from .link import AgentError, AgentLink, OpenLink, server_name
 from collections.abc import Iterable
 
 if TYPE_CHECKING:
@@ -289,6 +289,23 @@ class Messenger(threading.Thread):
     def stop(self) -> None:
         self.halt.set()
 
+    SERVER_FOR = 60.0     # seconds a reading of this game's server is used (Switch account may change it)
+    _server: tuple[str, float] | None = None
+
+    def server(self) -> str:
+        """The server this game plays on ("S1"), "" when not known: trusted entries naming a server
+        count only there (trust)."""
+        now = self.clock.time()
+        if self._server is None or now - self._server[1] > self.SERVER_FOR:
+            got = server_name(self.link) if self.link is not None else ""
+            # a failed reading is asked again a few seconds on, not kept a minute: meanwhile every
+            # entry naming a server would be ignored
+            self._server = (got, now if got else now - self.SERVER_FOR + 5.0)
+        return self._server[0]
+
+    def trusted(self) -> trust.Trusted:
+        return trust.Trusted(config()["pm_trusted"], self.server())
+
     # -------------------------------------------------- the loop
     def run(self):
         applog.thread("messages %d" % self.pid)
@@ -353,7 +370,7 @@ class Messenger(threading.Thread):
         s = self.snap()
         if not s:
             return
-        trusted = trust.Trusted(config()["pm_trusted"])
+        trusted = self.trusted()
         here: dict[str, Any] = s.get("map") or {}
         mid: int | None = here.get("id")
         now = self.clock.time()
@@ -371,7 +388,7 @@ class Messenger(threading.Thread):
     def received(self, pm: dict[str, Any]):
         cfg = config()
         name, text, pid_from = pm.get("name") or "?", pm.get("text") or "", pm.get("id", 0)
-        trusted = trust.Trusted(cfg["pm_trusted"]).has(name, pid_from)
+        trusted = trust.Trusted(cfg["pm_trusted"], self.server()).has(name, pid_from)
         # the player in the game's own window reads it there: shown in the log, not read out
         in_front = self.game_in_front()
         speak = not in_front and (cfg["pm_speak"] == "everyone" or (cfg["pm_speak"] == "trusted" and trusted))
@@ -522,11 +539,11 @@ class Messenger(threading.Thread):
         run = self.host.run_for(self.pid)
         if run and run.tally:
             return _("This run: {r}", r=stats.short(run.tally.result(), run.tally.drop_left))
-        past = stats.runs(settings.profile_name(self.host.character(self.pid)))
+        past = stats.runs(self.host.character(self.pid) or "")      # its own results file (its key)
         return _("Last run: {r}", r=stats.short(past[-1], self.drop_now())) if past else _("No results yet.")
 
     def cmd_today(self, to: int, name: str, rest: str) -> str | None:
-        who = settings.profile_name(self.host.character(self.pid))
+        who = self.host.character(self.pid) or ""
         since = stats.day_bounds(stats.game_day_of(time.time()))[0]    # the game's day: from 00:00 GMT
         rs = stats.runs(who, since)
         run = self.host.run_for(self.pid)
@@ -804,14 +821,17 @@ class Messenger(threading.Thread):
         # the character's own profile: the game list's key when it is this character, else one
         # from this reading (the name alone would load the old name-only file, which stops
         # changing once the character's own profile is saved)
+        # with the game's server: without it the key named no saved file (Name--S1--<id>.json), the
+        # default settings were used and "wait" didn't know the character's account
+        here = settings.character_profile(name, s["self"].get("id"), self.server())
         key = self.host.character(self.pid)
-        if not key or settings.profile_name(key) != name:
-            key = settings.character_profile(name, s["self"].get("id"))
+        if not key or not settings.is_profile_of(here, key):
+            key = here                  # the list's key named another character (or none)
         profile = settings.load_profile(key)
         b = Bot(self.agent(), profile, self.bot_log, threading.Event(),
                 clock=self.clock)
         b.character, b.profile_key = name, key
-        b.trusted = trust.Trusted(config()["pm_trusted"])
+        b.trusted = self.trusted()
         b.locate = getattr(self.host, "locate", None)         # the window has these; test hosts may not
         b.last_seen = getattr(self.host, "last_seen", None)
         self.idle_bot_ref = b
@@ -835,7 +855,7 @@ class Messenger(threading.Thread):
         rows: list[list[dict[str, Any] | None]] = top.get("rows", [])
         texts: list[str] = [e.get("text") or e.get("raw") or "" for row in rows for e in row if e]
         inv = team.invite_in(texts)
-        if inv and trust.Trusted(cfg["pm_trusted"]).has(inv[0], link=self.link):
+        if inv and trust.Trusted(cfg["pm_trusted"], self.server()).has(inv[0], link=self.link):
             bot = self.idle_bot()
             if bot and team.accept_invite(bot):
                 self.say(_("joined {who}'s team ({team}): {who} is trusted", who=inv[0], team=inv[1]), True)

@@ -211,3 +211,19 @@ def test_such_a_plan_is_not_imported(tmp_path: Any) -> None:
     src.write_text(json.dumps(endless_first()), encoding="utf-8")
     with pytest.raises(ValueError, match="spot 1 never ends"):
         plan.read_import(str(src))
+
+
+# ---------------------------------------------------------------- the Before list on the farm
+def test_the_before_list_is_skipped_on_the_map_the_run_really_farms_first() -> None:
+    # spot 1's share is used up: the run starts on spot 2's map. It went by spot 1 (the first
+    # farm line): on spot 2's map the Before list ran, on spot 1's it was skipped - and then the
+    # run went to spot 2 without its preparation
+    from unclefarmer.engine.runner import Run
+    bot = ScriptBot()
+    bot.mev["sheet"] = {"level": 10, "drop_seconds": 200 * 60, "age": 0}    # 200 minutes left
+    bot.p["skip_before_on_farm"] = True
+    script = S.Runner(as_bot(bot), plan.to_script(two_spots()))
+    bot.map_id = lambda: 5281                              # type: ignore[method-assign]
+    assert Run._on_the_farm(as_bot(bot), script) is True  # pyright: ignore[reportPrivateUsage]
+    bot.map_id = lambda: 5361                              # type: ignore[method-assign]
+    assert Run._on_the_farm(as_bot(bot), script) is False  # pyright: ignore[reportPrivateUsage]

@@ -811,6 +811,44 @@ def test_a_good_read_between_misses_starts_the_count_again(shops: dict[Npc, floa
     assert MAGNUS in town.shops_for("Large Red Potion")
 
 
+def test_a_purchase_choice_that_does_nothing_isn_t_held_against_the_shop(monkeypatch: pytest.MonkeyPatch,
+                                                                        shops: dict[Npc, float]) -> None:
+    # on one player's computer "Purchase" left every shop's menu as it was: two trips wrote off
+    # every town's potion seller, for good
+    went = shop_visits(monkeypatch)
+    tb = TownBot()
+    tb.dialog = lambda: ({"open": 1, "top": menu(opt("Large Red Potion"))} if went[-1] == PHILLIPS
+                         else {"open": 1, "top": menu(opt("Purchase"), opt("Leave"))})
+    monkeypatch.setattr(town, "open_section", stand_in(town.open_section, returning(False)))
+    monkeypatch.setattr(town, "pick", stand_in(town.pick, lambda b, pattern, quantity: tb.add("Large Red Potion", quantity or 0)))
+    for _trip in range(3):
+        went.clear()
+        assert town.buy(as_bot(tb), "Large Red Potion", 1) == 1
+        assert went == [MAGNUS, DANI, PHILLIPS]
+    assert MAGNUS in town.shops_for("Large Red Potion") and DANI in town.shops_for("Large Red Potion")
+    assert "1121|potion merchant magnus" not in town._shops_seen()           # nothing noted against it
+    assert any("Potion Merchant Magnus's menu didn't open its list" in line for line in tb.lines)
+
+
+def test_a_write_off_runs_out_and_an_old_one_has_already(monkeypatch: pytest.MonkeyPatch,
+                                                         shops: dict[Npc, float]) -> None:
+    now = [1_000_000.0]
+    monkeypatch.setattr(town.time, "time", lambda: now[0])
+    town.note_miss(MAGNUS, "Large Red Potion")
+    town.note_miss(MAGNUS, "Large Red Potion")
+    assert MAGNUS not in town.shops_for("Large Red Potion")
+    now[0] += town.MISS_FORGET + 1                                   # a week on: tried again
+    assert MAGNUS in town.shops_for("Large Red Potion")
+    assert town.note_miss(MAGNUS, "Large Red Potion") == town.MISSES_TO_LACK
+    assert MAGNUS not in town.shops_for("Large Red Potion")          # still without it: off again
+    seen = town._shops_seen()
+    del seen["1121|potion merchant magnus"]["missed_at"]             # as an older bot saved it
+    town._save_shops_seen(seen)
+    assert MAGNUS in town.shops_for("Large Red Potion")
+    town.note_shop(MAGNUS, "Large Red Potion", True)
+    assert town._shops_seen()["1121|potion merchant magnus"].get("missed_twice") == []
+
+
 def test_an_old_lacks_note_doesn_t_hide_a_listed_town_shop(shops: dict[Npc, float]) -> None:
     town.note_shop(MAGNUS, "Large Red Potion", False)               # what an older bot wrote
     assert MAGNUS in town.shops_for("Large Red Potion")

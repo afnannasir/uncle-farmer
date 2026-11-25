@@ -28,6 +28,7 @@ going round again would find every share used up.
 from __future__ import annotations
 
 import os
+import re
 import copy
 from typing import Any
 
@@ -132,9 +133,22 @@ def upgrade(p: dict[str, Any]) -> dict[str, Any]:
     return p
 
 
+# Every character the script reader splits lines on (str.splitlines), and the other controls: a plan
+# field holding one became a script line of its own - an imported plan named "Wolves" + a line break
+# + "market buy ..." bought on the market when it ran, and the editor showed nothing amiss.
+_BREAKS = re.compile(r"[\x00-\x1f\x7f\x85  ]")
+CLOCK = re.compile(r"([01]?\d|2[0-3]):[0-5]\d")
+PATROLS = ("random", "full", "quick", "short", "points")
+
+
+def one_line(text: str | float) -> str:
+    """A plan's text as it may go into one script line: no line break or other control in it."""
+    return _BREAKS.sub(" ", str(text))
+
+
 def _q(text: str | float) -> str:
     """Quote a value for a script line."""
-    return '"%s"' % str(text).replace('"', "'")
+    return '"%s"' % one_line(text).replace('"', "'")
 
 
 def end_line(end: dict[str, Any] | None) -> str:
@@ -158,19 +172,20 @@ def keep_lines(plan: dict[str, Any]) -> list[str]:
 
 
 def to_script(plan: dict[str, Any]) -> str:
-    lines = ["# %s" % (plan.get("name") or "plan"),
+    lines = ["# %s" % one_line(plan.get("name") or "plan"),
              "# Made with the plan editor. Saving it as a script lets you edit it by hand.", "",
              end_line(plan.get("end"))]
     lines += keep_lines(plan)
     if plan.get("stop_after_minutes"):
         lines.append("stop_when minutes >= %s : time limit reached" % plan["stop_after_minutes"])
-    if plan.get("stop_at_clock"):
-        lines.append('stop_when clock == "%s" : it is %s' % (plan["stop_at_clock"], plan["stop_at_clock"]))
+    clock = str(plan.get("stop_at_clock") or "").strip()
+    if CLOCK.fullmatch(clock):              # anything else was never a time (the editor writes HH:MM)
+        lines.append('stop_when clock == "%s" : it is %s' % (clock, clock))
     if plan.get("stop_after_kills"):
         lines.append("stop_when kills >= %s : kill limit reached" % plan["stop_after_kills"])
     if plan.get("stop_when_item"):
         lines.append("stop_when bag(%s) < %s : %s is running out" % (
-            _q(plan["stop_when_item"]), plan.get("stop_when_item_below", 0), plan["stop_when_item"]))
+            _q(plan["stop_when_item"]), plan.get("stop_when_item_below", 0), one_line(plan["stop_when_item"])))
     lines.append("")
     spots: list[dict[str, Any]] = plan.get("spots", [])
     several = len(spots) > 1
@@ -201,7 +216,7 @@ def farm_line(s: dict[str, Any], several: bool, until: str = "") -> str:
         opts.append("minutes=%s" % s["minutes"])
     if several and s.get("kills"):
         opts.append("kills=%s" % s["kills"])
-    if s.get("patrol", "random") != "random":
+    if s.get("patrol", "random") in PATROLS[1:]:     # written bare: only the script's own words
         opts.append("patrol=%s" % s["patrol"])
     if s.get("area"):
         opts.append("area=%s" % ",".join(str(int(v)) for v in s["area"]))
@@ -300,6 +315,16 @@ def read_import(source: str) -> dict[str, Any]:
     plan["spots"] = [dict(STEP_DEFAULTS, **spot) for spot in plan["spots"]]
     if not isinstance(plan["name"], str) or not plan["name"].strip():
         raise ValueError("the plan has no name")
+    broken = sorted({key for key in ("name", "stop_at_clock", "stop_when_item") if _BREAKS.search(plan[key])}
+                    | {key for spot in plan["spots"] for key in ("only", "skip", "patrol")
+                       if _BREAKS.search(str(spot.get(key) or ""))})
+    if broken:          # a line break where there is never one: a file made to slip in script lines
+        raise ValueError("the plan has a line break in: %s" % ", ".join(broken))
+    if plan["stop_at_clock"].strip() and not CLOCK.fullmatch(plan["stop_at_clock"].strip()):
+        raise ValueError("the plan's stop time isn't a time (HH:MM)")
+    bad = sorted({str(spot.get("patrol")) for spot in plan["spots"] if spot.get("patrol", "random") not in PATROLS})
+    if bad:
+        raise ValueError("the plan has an unknown patrol: %s" % ", ".join(bad))
     endless = endless_spot(plan)
     if endless is not None:
         raise ValueError("spot %d never ends, and the spots after it have a share of the drop time: give it "

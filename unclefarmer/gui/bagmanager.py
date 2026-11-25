@@ -15,17 +15,24 @@ from typing import Any
 import wx
 
 from .. import settings, speech, stats
-from ..engine import bagrules, gearthrow
+from ..engine import bagcopy, bagrules, gearthrow
 from ..engine.town import shard_catalog
 from ..i18n import N_, _
-from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, labeled, modal, ok_cancel,
-                     opens, page, pick, popup_actions, save_file, tabs)
+from .common import (ContextAction, Dialog, Form, Handler, buttons, enable_label, group, info, labeled, modal,
+                     ok_cancel, opens, page, pick, popup_actions, save_file, tabs)
+from .copyfrom import CopyFromDialog, other_characters
 
 SOURCE_LABELS = (("both", N_("Storehouse, then the shop")), ("storage", N_("Storehouse only")),
                  ("buy", N_("Shop only")), ("tell", N_("Don't refill, just tell me")))
 FULL_LABELS = (("stop", N_("Go somewhere safe and stop")),
                ("unload", N_("Sell and store by these lists, then come back")),
                ("nothing", N_("Keep farming, just tell me")))
+# What "Copy from another character" can copy, in its list's order.
+COPY_PARTS = (("throw", N_("Throw-away list (shards and items)")), ("sell", N_("Sell list")),
+              ("store", N_("Storehouse list")), ("keep", N_("Keep list")), ("supplies", N_("Supplies")),
+              ("full", N_("Full bag and equipment by rarity")))
+LIST_NAMES = {"throw": N_("Throw-away list"), "sell": N_("Sell list"), "store": N_("Storehouse list"),
+              "keep": N_("Keep list")}
 
 
 class SortLists:
@@ -169,10 +176,79 @@ class BagManagerDialog(Dialog):
         self.supplies_page(nb)
         self.full_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
-        ok_cancel(self, root, _("Save"))
+        ok_cancel(self, root, _("Save"),
+                  extra=[(opens(_("Copy &from another character")), lambda e: self.on_copy())])
         self.SetSizer(root)
         self.Bind(wx.EVT_BUTTON, self.on_ok, id=wx.ID_OK)
         self.show_supplies(0)
+
+    # ------------------------------------------------------------ copy from another character
+    def on_copy(self) -> None:
+        """Copy one character's throw-away list (or any part of the bag settings) to this one: each
+        list sorted item by item for every character was a lot of work. Nothing is kept until Save."""
+        others = other_characters(self.character)
+        if not others:
+            info(self, _("No other character has settings yet."))
+            return
+        with CopyFromDialog(self, others, COPY_PARTS) as d:
+            if d.ShowModal() != wx.ID_OK:
+                return
+            source, parts, replace = d.picked()
+        lines = self.copy_parts(settings.load_profile(source), parts, replace)
+        info(self, _("From {name}:\n{lines}\n\nNothing is kept until you save.",
+                     name=settings.profile_display(source), lines="\n".join(lines)),
+             _("Copy from another character"))
+
+    def copy_parts(self, theirs: dict[str, Any], parts: Sequence[str], replace: bool) -> list[str]:
+        """Put the other character's parts into this window (not saved), and say what changed."""
+        lines: list[str] = []
+        lists = [a for a in bagcopy.LISTS if a in parts]
+        if lists:
+            self.set_leave()              # what was being typed here counts first
+            self.rules, added, same = bagcopy.copy_rules(self.rules, theirs.get("bag_rules") or {}, lists, replace)
+            for a in lists:
+                lines.append(_("{list}: {added} put in, {same} already there", list=_(LIST_NAMES[a]),
+                               added=added[a], same=same[a]))
+            self._list_new_names(theirs)
+        if "supplies" in parts:
+            self.set_supply()
+            self.supplies, added_n, same_n = bagcopy.copy_supplies(self.supplies, theirs.get("restock") or [], replace)
+            lines.append(_("Supplies: {added} put in, {same} already there", added=added_n, same=same_n))
+            self.show_supplies(0)
+        if "full" in parts:
+            self._copy_full(bagcopy.full_settings(theirs))
+            lines.append(_("Full bag and equipment by rarity: set as theirs"))
+        self.shard_lists.fill()
+        self.item_lists.fill()
+        self.show_leave()
+        return lines
+
+    def _copy_full(self, got: dict[str, Any]) -> None:
+        self.full_at.SetValue(int(got.get("bag_full_at", self.full_at.GetValue())))
+        acts = [a for a, _l in FULL_LABELS]
+        self.when_full.SetSelection(pick(acts, got.get("when_bag_full", acts[max(0, self.when_full.GetSelection())])))
+        thrown = set(gearthrow.chosen(dict(got)))
+        for rarity, box in self.gear.items():
+            box.SetValue(rarity in thrown)
+        self.gear_minutes.SetValue(int(got.get("gear_throw_minutes", self.gear_minutes.GetValue())))
+        self.gear_bonus.SetValue(bool(got.get("gear_keep_bonus", self.gear_bonus.GetValue())))
+
+    def _list_new_names(self, theirs: dict[str, Any]) -> None:
+        """Items the copy brought in that this window doesn't list yet, by the game's spelling
+        where it is known (their bag, the shard list)."""
+        scan: dict[str, Any] = theirs.get("scan") or {}
+        bag: list[dict[str, Any]] = scan.get("bag", [])
+        spelled = {str(b.get("name", "")).lower(): str(b.get("name", "")) for b in bag if b.get("name")}
+        spelled.update({n.lower(): n for n in self.shard_info})
+        known = {n.lower() for n in self.shards + self.others}
+        for key in self.rules:
+            if key in known:
+                continue
+            name = spelled.get(key, key)
+            (self.shards if stats.is_shard(name) else self.others).append(name)
+            known.add(key)
+        self.shards.sort(key=str.lower)
+        self.others.sort(key=str.lower)
 
     # ------------------------------------------------------------ rules
     def action_of(self, name: str) -> str:

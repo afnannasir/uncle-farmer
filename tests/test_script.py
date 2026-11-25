@@ -1001,3 +1001,35 @@ def test_keep_level_sets_this_runs_goal() -> None:
     b = FakeBot()
     S.Runner(as_bot(b), "keep_level 250000").run()
     assert vars(b)["level_keep"] == 250000
+
+
+def test_a_stop_time_passed_while_the_run_was_busy_still_stops_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    # `clock == "04:30"` holds for one minute: a run busy all through it (an MP wait, logging back
+    # in, a game opened again) farmed on until the daily stop
+    import time
+    from conftest import Clock
+    began = time.mktime((2026, 11, 25, 23, 0, 0, 0, 0, -1))
+    clock = Clock(began)
+    bot = FakeBot()
+    bot.started = began                          # type: ignore[attr-defined]
+    bot.clock = clock                            # type: ignore[attr-defined]
+    monkeypatch.setattr(S, "clock_for", returning(clock))
+    S.Runner(as_bot(bot), 'stop_when clock == "04:30" : it is 04:30').run()
+    cond, message = bot.watches[0]
+    clock.advance(5 * 3600)                      # 04:00
+    assert cond() is False
+    clock.advance(55 * 60)                       # 04:55: the minute itself was missed
+    assert cond() is True and message == "it is 04:30"
+
+
+def test_a_stop_time_reached_later_in_a_hand_written_script_waits_for_its_own_minute(monkeypatch: pytest.MonkeyPatch) -> None:
+    import time
+    from conftest import Clock
+    began = time.mktime((2026, 11, 25, 22, 40, 0, 0, 0, -1))
+    clock = Clock(began + 25 * 60)                   # the line is reached at 23:05
+    bot = FakeBot()
+    bot.started = began                              # type: ignore[attr-defined]
+    monkeypatch.setattr(S, "clock_for", returning(clock))
+    S.Runner(as_bot(bot), 'stop_when clock == "23:00" : it is 23:00').run()
+    cond, _message = bot.watches[0]
+    assert cond() is False                           # not at once: tomorrow's 23:00

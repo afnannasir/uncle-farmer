@@ -56,10 +56,26 @@ def rows() -> dict[str, dict[str, Any]]:
     return {k: v for k, v in got.items() if jsonio.is_object(v)} if jsonio.is_object(got) else {}
 
 
+def _to_write(path: str) -> dict[str, Any] | None:
+    """A file's rows, to change and write back - None when it couldn't be read just now (another
+    program holding it a moment): written over then, it lost every other character's row (their
+    place to carry on from, their restarts of the day). A file that isn't JSON any more is {}."""
+    try:
+        got = jsonio.read(path, {})
+    except OSError:
+        return None
+    except ValueError:
+        return {}
+    return {k: v for k, v in got.items() if jsonio.is_object(v)} if jsonio.is_object(got) else {}
+
+
 def save(key: str, row: dict[str, Any]) -> None:
-    """This character's place now (best effort: a run never stops for it)."""
+    """This character's place now (best effort: a run never stops for it, and the next save
+    comes soon after one skipped)."""
     with _lock:
-        every = rows()
+        every = _to_write(_path())
+        if every is None:
+            return
         every[key] = dict(row, day=row.get("day") or daily.game_day())
         try:
             jsonio.save(_path(), every, indent=1)
@@ -72,8 +88,8 @@ def clear(key: str | None) -> None:
     if not key:
         return
     with _lock:
-        every = rows()
-        if every.pop(key, None) is None:
+        every = _to_write(_path())
+        if every is None or every.pop(key, None) is None:
             return
         try:
             jsonio.save(_path(), every, indent=1)
@@ -120,13 +136,10 @@ def note_restart(key: str, day: str | None = None) -> int:
     with _lock:
         count = restarts_today(key, today) + 1
         path = os.path.join(paths.PROFILES, RESTARTS)
-        got: Any
-        try:
-            got = jsonio.read(path, {})
-        except (OSError, ValueError):
-            got = {}
-        every: dict[str, Any] = got if jsonio.is_object(got) else {}
-        every = {k: v for k, v in every.items() if jsonio.is_object(v) and v.get("day") == today}
+        got = _to_write(path)
+        if got is None:
+            return count                 # not noted this time: the others' counts are kept
+        every = {k: v for k, v in got.items() if v.get("day") == today}
         every[key] = {"day": today, "count": count}
         try:
             jsonio.save(path, every, indent=1)

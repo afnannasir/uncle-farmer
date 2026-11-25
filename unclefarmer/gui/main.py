@@ -18,7 +18,7 @@ from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
 from .mainparts.carryon import CarryOnMixin
-from .mainparts.editing import EditingMixin
+from .mainparts.editing import EditingMixin, active_profile
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
 from .mainparts.results import ResultsMixin
@@ -109,6 +109,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.scanning = set()    # characters being scanned on a worker thread
         self.pending_logins = {} # profile -> when automatic login opened its client
         self.opened_games = {}   # pid -> when this window opened that game
+        self.our_games: set[int] = set()   # every game this window opened (a lost run carries on only in one)
         self.updating = False
         self.preparing_update = False   # the update copier is being started on a worker (updates.py)
         self.close_reason = ""   # why the window closes, when it isn't the player (teardown.log)
@@ -389,7 +390,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         running = pid in self.runs
         available = pid is not None
         selected = self.active_item()
-        enabled = action_menu_states(available=available, running=running, any_running=bool(self.runs),
+        # Stop every bot also cancels the runs waiting to carry on (a game closed by hand stays closed)
+        enabled = action_menu_states(available=available, running=running,
+                                     any_running=bool(self.runs) or bool(getattr(self, "carry_queue", []))
+                                     or bool(getattr(self, "carry_closing", ())),
                                      has_items=bool(self.items), has_messengers=bool(self.messengers), selected=selected)
         for key, value in enabled.items():
             if key in self.action_items:
@@ -470,10 +474,16 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         if pid is None:
             error(self, _("No game found. Start Mist World first."))
             return
+        name = active_profile(self)
+        if not name:
+            error(self, _("Log in to the character in the game first."))
+            return
         window = self.market_windows.get(pid)
+        if window is not None and window.profile and not settings.is_profile_of(name, window.profile):
+            window.Close()              # another character came in on that game: its own window
+            window = None
         if window is None:
-            name = self.character(pid)
-            window = MarketFrame(self, pid, settings.profile_display(name) if name else None)
+            window = MarketFrame(self, pid, settings.profile_display(name), profile=name)
             self.market_windows[pid] = window
         window.Show()
         window.Raise()

@@ -128,6 +128,14 @@ def test_the_nearest_reachable_chest_is_picked() -> None:
     assert picked is not None and picked["id"] == -6
 
 
+def test_a_chest_in_a_no_go_circle_of_the_spot_stays_there() -> None:
+    # the patrol kept out of the player's circles, the walk to a chest went straight in
+    b = Bot([chest(-6, 120, 100), chest(-5, 150, 100)])
+    b.spot_no_go = [(120.0, 100.0, 10.0)]          # type: ignore[attr-defined]
+    picked = chests.pick(as_bot(b), b.snap())
+    assert picked is not None and picked["id"] == -5
+
+
 def test_a_chest_too_far_to_walk_is_left() -> None:
     b = Bot([chest(x=100 + chests.MOST_STEPS + 5, y=100)])
     assert chests.pick(as_bot(b), b.snap()) is None

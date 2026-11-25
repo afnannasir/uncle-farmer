@@ -115,10 +115,11 @@ def remember_sellers(saved: dict[str, Any], ids: Sequence[int]) -> None:
 class MarketFrame(wx.Frame):
     """host: the main window (run_errand, stop, the selected game)."""
 
-    def __init__(self, host: FrameParts, pid: int, character: str | None) -> None:
+    def __init__(self, host: FrameParts, pid: int, character: str | None, profile: str | None = None) -> None:
         super().__init__(host, title=_("Market searcher and buyer - {name}", name=character or _("game")),
                          size=wx.Size(820, 640))
         self.host, self.pid = host, pid
+        self.profile = profile       # the character it was opened for: its jobs run only while it is logged in
         self.server = self._server()
         self.rows: list[ListRow] = []
         self.head: dict[str, Any] = {}
@@ -327,9 +328,11 @@ class MarketFrame(wx.Frame):
     def run(self, line: str, title: str) -> bool:
         if self.busy():
             return False
+        # this window's game, not the selected one; refused (no character logged in): nothing waited on
+        if not self.host.run_errand(STAY + line + "\n", title, pid=self.pid, expect=self.profile):
+            return False
         self.job = line.split()[1] if len(line.split()) > 1 else line
         self.status_seen = time.time()
-        self.host.run_errand(STAY + line + "\n", title)
         return True
 
     def start_scan(self) -> None:
@@ -381,10 +384,11 @@ class MarketFrame(wx.Frame):
             return
         market.write_file(market.SAVED_FILE, self.saved)
         market.write_file(market.job_file(market.REQUEST_FILE, self.pid), s.to_json())
+        if not self.run("market search", _("Market search")):
+            return                      # refused: the last results stay as they were
         self.lots, self.ticked, self.qty = [], set(), {}
         self.by_seller = kind == "seller"
         self.results.DeleteAllItems()
-        self.run("market search", _("Market search"))
         self.progress.SetValue(_("searching: {what}", what=s.describe()))
         self.nb.SetSelection(1)
         self.results.SetFocus()

@@ -51,6 +51,9 @@ class Window(SimpleNamespace):
     def _reopen(self, run: Run, key: str, row: dict[str, Any], item: tuple[str, str]) -> None:
         self.reopened.append((key, row, item))
 
+    def back_on_line(self, run: Run, key: str) -> bool:
+        return False
+
 
 def window(restart: bool = True) -> Window:
     return Window(destroyed=False, killing_games=set(), s={"restart_lost_games": restart}, items=[("plan", "Night")])
@@ -228,12 +231,14 @@ def reopen(frame: Window, run: Run) -> None:
     carry_part.CarryOnMixin._reopen(cast(Any, frame), run, HERO, {"item": "plan:Night"}, ("plan", "Night"))  # pyright: ignore[reportPrivateUsage]
 
 
-def test_a_game_that_logged_back_in_by_itself_is_carried_on_in(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_game_that_logged_back_in_by_itself_is_carried_on_in(monkeypatch: pytest.MonkeyPatch,
+                                                              can_log_in: None) -> None:
     # the connection came back as the run was ending: closing the game would throw that away
     frame, closed = reopening(monkeypatch, {7: HERO})
-    reopen(frame, lost_run(lost_connection=True))
-    assert closed == [] and len(frame.carried) == 1
+    revive(frame, lost_run(lost_connection=True))
+    assert closed == [] and len(frame.carried) == 1 and frame.reopened == []
     assert "back on line" in frame.said[0]
+    assert resume.restarts_today(HERO) == 0          # no restart: used up the day's three before
 
 
 def test_a_game_still_off_line_is_closed_and_opened_again(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -246,3 +251,86 @@ def test_a_frozen_game_is_opened_again_whatever_it_shows(monkeypatch: pytest.Mon
     frame, closed = reopening(monkeypatch, {7: HERO})
     reopen(frame, lost_run(lost_connection=False))
     assert closed == [[7]] and frame.carried == []
+
+
+# ---------------------------------------------------------------- the player's own games
+def test_a_lost_run_carries_on_only_in_a_game_the_bot_opened(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the player's game at its login screen was taken, the login failed there (another account
+    # being logged in by hand), and that game was closed by force to open it again
+    monkeypatch.setattr(gameinstall, "running_games", returning([(51, "D:/Game")]))
+    frame = opening({}, [(51, None, None)], 200.0)
+    frame.runs, frame.pending_logins, frame.our_games = {}, {}, set()
+    frame.refresh_games = quiet
+    opened: list[str] = []
+    frame.open_client_for_login = lambda: opened.append("game") or None
+    pid, _why = runs_part.RunsMixin.automatic_login_window(frame, HERO, ours_only=True)
+    assert pid is None and opened == ["game"]                  # a game of its own, not the player's
+    frame.our_games = {51}
+    assert runs_part.RunsMixin.automatic_login_window(frame, HERO, ours_only=True)[0] == 51
+    frame.our_games = set()
+    assert runs_part.RunsMixin.automatic_login_window(frame, HERO)[0] == 51   # a schedule: as before
+
+
+def test_stop_every_bot_cancels_the_runs_waiting_to_carry_on() -> None:
+    # a game the player closed by hand was opened again every minute and a half for five minutes
+    resume.save(HERO, {"item": "plan:Night", "text": "x"})
+    frame = window()
+    frame.runs = {}
+    frame.carry_queue = [(HERO, {"item": "plan:Night"}, ("plan", "Night"), 0.0)]
+    def item_label(item: tuple[str, str]) -> str:
+        return item[1]
+
+    def cancel_carry_on(key: str | None = None) -> bool:
+        return carry_part.CarryOnMixin.cancel_carry_on(cast(Any, frame), key)
+    frame.item_label, frame.cancel_carry_on = item_label, cancel_carry_on
+    runs_part.RunsMixin.stop_all(cast(Any, frame))
+    assert frame.carry_queue == [] and resume.get(HERO) is None
+    assert frame.said == ["Night for Hero - S1 won't carry on."]
+
+
+def test_a_game_waiting_out_an_mp_wait_is_left_to_its_own_character(monkeypatch: pytest.MonkeyPatch) -> None:
+    # an MP wait leaves the game at its login screen: a schedule took it for another character,
+    # and the same character in a second game made the two logins fight
+    monkeypatch.setattr(gameinstall, "running_games", returning([(51, "D:/Game")]))
+    frame = opening({}, [(51, None, None)], 200.0)
+    frame.runs, frame.pending_logins, frame.our_games = {}, {}, set()
+    frame.refresh_games = quiet
+    frame.open_client_for_login = lambda: pytest.fail("no game is opened for it")
+    waiting = SimpleNamespace(waiting_until=999.0, profile_key=HERO)
+    def waiting_bot(pid: int) -> Any:
+        return waiting if pid == 51 else None
+    frame.waiting_bot = waiting_bot
+    pid, why = runs_part.RunsMixin.automatic_login_window(frame, HERO)
+    assert pid is None and "logs back in by itself" in why
+    other = settings.character_profile("Bob", 9, "S1")
+    opened: list[str] = []
+    frame.open_client_for_login = lambda: opened.append("game") or None
+    assert runs_part.RunsMixin.automatic_login_window(frame, other)[0] is None and opened == ["game"]
+
+
+def test_stop_every_bot_while_the_lost_game_is_being_closed_keeps_it_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    # the game takes up to 30 s to close before it is opened again: the run wasn't waiting anywhere
+    # yet, and Stop every bot found nothing to cancel
+    resume.save(HERO, {"item": "plan:Night", "text": "x"})
+    then_later: list[Any] = []
+
+    def close_then(pids: list[int], then: Any, force: bool = False) -> None:
+        then_later.append(then)                  # the close still under way
+    monkeypatch.setattr(gameinstall, "running_games", returning([(7, "C:/Game")]))
+    monkeypatch.setattr(agentfix, "close_then", close_then)
+    frame = window()
+    frame.games, frame.runs, frame.carry_queue = [(7, None, None)], {}, []
+    frame.refresh_games = quiet
+    carried: list[Any] = []
+    def carry_on(rows: list[Any], ours_only: bool = False) -> None:
+        carried.extend(rows)
+    frame.carry_on = carry_on
+    reopen(frame, lost_run())
+
+    def cancel(key: str | None = None) -> bool:
+        return carry_part.CarryOnMixin.cancel_carry_on(cast(Any, frame), key)
+    frame.cancel_carry_on = cancel
+    runs_part.RunsMixin.stop_all(cast(Any, frame))
+    then_later[0]([])                             # the game is closed now
+    assert carried == [] and resume.get(HERO) is None
+    assert frame.said == ["Hero - S1's game won't be opened again."]

@@ -94,6 +94,7 @@ class Run(threading.Thread):
         self.resume_row: dict[str, Any] | None = None   # set by the window: carry on from this place
         self.game_lost = False       # the game closed, froze or lost our character for good
         self.lost_connection = False  # ... through its connection to the server (GameLost connection)
+        self.other_character = False  # another character came into the game (WrongCharacter): nothing more there
         self.app_closing = False     # Uncle Farmer is closing under the run: its place is kept
         self.script: Runner | None = None    # the plan or script whose place is kept
         self.place_lock = threading.Lock()
@@ -121,17 +122,36 @@ class Run(threading.Thread):
                 return
             except Respawned:
                 continue            # died while guarding and came back: guard again from there
-            except Exception as e:    # stuck again, the game gone, or the same bug once more
+            except (GameLost, WrongCharacter) as e:
+                self._lost_while_guarding(e)
+                return
+            except Exception as e:    # stuck again, or the same bug once more
                 carry_on(e, "finishing safely")
                 if self.stop_event.is_set():
                     return
                 self.log(_("couldn't finish safely: {err}", err=e))
                 try:
                     bot.defend()    # finishing failed (stuck again?): at least stay on guard
+                except (GameLost, WrongCharacter) as e2:
+                    self._lost_while_guarding(e2)
                 except Exception as e2:
                     carry_on(e2, "staying on guard")
                     self.log(_("couldn't stay on guard either: {err}", err=e2))
                 return
+
+    def _lost_while_guarding(self, e: Stopped) -> None:
+        """The game went, or another character came in, while the run ended: noted as if the run
+        had stopped on it. Swallowed as any other error, it made the run one that ended by itself:
+        the After farming list ran on a game that was gone, the after-stop action closed the game
+        (perhaps another player's character now) or shut the PC down, and the run's place, which a
+        lost game keeps to carry on from, was cleared."""
+        self.failed = True
+        if isinstance(e, GameLost):
+            self.game_lost = True
+            self.lost_connection = e.connection
+        else:
+            self.other_character = True
+        self.log(str(e), speak=True)
 
     def log(self, message: str, speak: bool=False) -> None:
         line = "%s  %s" % (time.strftime("%H:%M:%S"), message)
@@ -348,7 +368,7 @@ class Run(threading.Thread):
             settings.save_profile(name, data)
 
         bot.save_profile = save_profile
-        bot.trusted = trust.from_settings(app)
+        bot.trusted = trust.from_settings(app, settings.profile_server(self.profile or ""))   # entries naming another server don't count
         bot.locate = getattr(self, "locate", None)   # where another of our characters is (follow, come)
         bot.last_seen = getattr(self, "last_seen", None)   # where our games last saw a trusted player
         bot.tell = getattr(self, "tell", None)       # answers the player who asked for this run
@@ -405,8 +425,10 @@ class Run(threading.Thread):
                 # the results count contribution and experience from the first sheet they see: a
                 # fresh one now, or the first reading comes after the first kills and leaves them out
                 bot.ask_sheet(force=True)
+            if self.profile:
+                stats.adopt_old_file(self.profile)      # its name-only results become its own, once
             bot.tally = self.tally = stats.Tally(self.character or "", self.title, clock=clock_for(bot),
-                                                 tool=self._tool())
+                                                 tool=self._tool(), profile=self.profile)
             if getattr(bot, "daily_stop_at", 0.0):
                 bot.tally.deadline(bot.daily_stop_at)     # Time remaining counts down to it at the latest
             bot.tally.update(bot, force=True)
@@ -509,9 +531,10 @@ class Run(threading.Thread):
             if not broken:
                 self.guard(bot, finish=not getattr(e, "stay", False))
                 # called away by a player (come, follow, home): not the end of farming, so no
-                # closing the game or the PC
+                # closing the game or the PC; nor a game lost (or another character) meanwhile
                 self.ended_by_itself = (not self.stop_event.is_set() and not getattr(e, "stay", False)
-                                        and not getattr(e, "asked", False))
+                                        and not getattr(e, "asked", False)
+                                        and not self.game_lost and not self.other_character)
         return reason
 
     @staticmethod
@@ -535,7 +558,15 @@ class Run(threading.Thread):
         Before farming list - often a trip to town and back - is left out. True (and said) then."""
         if not bot.p.get("skip_before_on_farm", True):
             return False
-        first = triggers.first_farm_map(script.main, script.subs)
+        def done(node: Any) -> bool:
+            # a spot whose share of the drop time is used up is skipped by the run without a trip:
+            # it isn't the map the run farms first (the Before list ran, or was skipped, by it)
+            until = (getattr(node, "opts", {}) or {}).get("until")
+            try:
+                return until is not None and bool(script.value(until, node.line))
+            except Exception:           # not known yet: the line counts, as before
+                return False
+        first = triggers.first_farm_map(script.main, script.subs, done)
         here = bot.map_id()
         if first is None or first not in (triggers.HERE, here):
             return False

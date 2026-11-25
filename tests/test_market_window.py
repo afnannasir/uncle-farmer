@@ -51,7 +51,16 @@ def _host():  # type: ignore[no-untyped-def]
     host.runs = {}                           # type: ignore[attr-defined]
     host.market_windows = {}                 # type: ignore[attr-defined]
     host.started = []                        # type: ignore[attr-defined]
-    host.run_errand = lambda text, title: host.started.append(text)   # type: ignore[attr-defined]
+    host.on_game = []                        # type: ignore[attr-defined]
+    host.refuse = False                      # type: ignore[attr-defined]  # as run_errand does at the login screen
+
+    def run_errand(text, title, pid=None, expect=None):  # type: ignore[no-untyped-def]
+        if host.refuse:                      # type: ignore[attr-defined]
+            return False
+        host.started.append(text)            # type: ignore[attr-defined]
+        host.on_game.append(pid)             # type: ignore[attr-defined]
+        return True
+    host.run_errand = run_errand             # type: ignore[attr-defined]
     host.stop = lambda pid=None: None        # type: ignore[attr-defined]
     return host
 
@@ -73,7 +82,28 @@ def test_the_window_shows_only_the_boxes_a_search_kind_uses_and_stays_at_the_mar
         w.start_search()
         # the bot stays at the marketplace afterwards, ready for the next search
         assert host.started == ["end_at here\nmarket search\n"]   # type: ignore[attr-defined]
+        assert host.on_game == [0]           # type: ignore[attr-defined]  # this window's game, not the selected one
         assert w.nb.GetSelection() == 1
+        w.Destroy()
+    finally:
+        host.Destroy()
+        del app
+
+
+def test_a_refused_search_keeps_the_last_results_and_waits_on_nothing() -> None:
+    import wx
+    app = wx.GetApp() or wx.App(False)
+    host = _host()
+    try:
+        w = window.MarketFrame(host, 0, "someone")              # type: ignore[arg-type]
+        w.show_results([Lot(1, 100, "X", 5, 30)])
+        host.refuse = True                                      # type: ignore[attr-defined]
+        w.kind.SetSelection(2)
+        w.sync_kind()
+        w.seller_ids.SetValue("1234")
+        w.start_search()
+        assert [x.id for x in w.lots] == [1] and w.results.GetItemCount() == 1
+        assert w.job == "" and not w.progress.GetValue().startswith("searching")
         w.Destroy()
     finally:
         host.Destroy()
