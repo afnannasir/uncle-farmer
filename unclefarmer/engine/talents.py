@@ -19,7 +19,7 @@ from typing import Any, cast
 
 from .. import atlas, jsonio, knowledge, travel
 from ..i18n import _
-from . import combos, town
+from . import combos, menus, town
 from .bot import CONFIRM, Bot, Stopped
 
 MASTERS = ("Chancellor Bren", "Guard Captain Suke", "Priest Diraf", "Knight Commander George", "General Paul",
@@ -190,6 +190,15 @@ def _reset(b: Bot, want: Collection[str]) -> bool:
         b.log(_("the Reset Talents menu didn't open"), speak=True)
         return False
     target, missing, switch = plan(rows, want)
+    now = read(b)
+    learned = {n.lower() for n in now[0]} if now is not None else set[str]()
+    unseen = [w for w in missing if w.lower() in learned]
+    if unseen:
+        # learned, says the game, but no row of the menu by that name: switching the rest would turn
+        # it off, and every run after would pay to find it off again
+        b.log(_("the Reset Talents menu has no row for {names}, which the character has learned - nothing "
+                "changed", names=", ".join(unseen)), speak=True)
+        return False
     if not target:
         b.log(_("none of these talents is in the Reset Talents menu - nothing changed"), speak=True)
         return False
@@ -216,19 +225,57 @@ def _reset(b: Bot, want: Collection[str]) -> bool:
     return _submit(b, target, cost)
 
 
+SWITCH_WAIT = 3.0             # seconds a switched row gets to show its new state
+
+
+def _row_state(b: Bot, row: Row) -> bool | None:
+    """The state the menu shows now for that row (by its place: two rows may share a name)."""
+    rows, _points = menu_rows(b.dialog().get("top"))
+    now = next((r for r in rows if r.r == row.r), None)
+    return now.on if now is not None and now.name == row.name else None
+
+
+def _enter_on(b: Bot, row: Row, keys: bool) -> bool:
+    """Enter on that row of the open menu: chosen right there (by its place, not its name), or the
+    cursor walked to it with the keys and Enter pressed."""
+    top = b.dialog().get("top")
+    if not top:
+        return False
+    if not keys and menus.choose_at(b, top, row.r, 0):
+        return True
+    if b.cursor_to(top, row.r, 0) is None:
+        return False
+    b.key(b.p.get("enter_key", "enter"))
+    return True
+
+
 def _switch(b: Bot, row: Row) -> bool:
-    """Enter on one talent row; True once the menu shows it switched (the keys tried once more)."""
-    pattern = r"^\s*" + re.escape(row.name) + r";\s*takes\b"
+    """Enter on one talent row; True once the menu shows it switched (the keys tried once more, only
+    if it still shows the old state - a late redraw must not be switched back)."""
     for keys in (False, True):
-        if b.choose(pattern, keys=keys) is None:
+        if _row_state(b, row) != row.on:
+            return _row_state(b, row) is not None
+        if not _enter_on(b, row, keys):
             return False
-        end = b.clock.time() + 2.0
+        end = b.clock.time() + SWITCH_WAIT
         while b.clock.time() < end:
-            rows, _points = menu_rows(b.dialog().get("top"))
-            now = next((r for r in rows if r.name == row.name), None)
-            if now is not None and now.on != row.on:
+            state = _row_state(b, row)
+            if state is not None and state != row.on:
                 return True
             b.sleep(0.15)
+    return False
+
+
+CONFIRM_WAIT = 3.0            # seconds "Are you sure you want to reset?" gets to open after submit
+
+
+def _confirm_menu(b: Bot) -> bool:
+    end = b.clock.time() + CONFIRM_WAIT
+    while b.clock.time() < end:
+        d = b.dialog()
+        if d.get("open") and b.find_entry(d.get("top"), CONFIRM) is not None:
+            return True
+        b.sleep(0.15)
     return False
 
 
@@ -237,8 +284,7 @@ def _submit(b: Bot, target: set[str], cost: int) -> bool:
     mark = said_mark(b)
     if b.choose(SUBMIT) is None:
         return False
-    d = b.wait_dialog(3.0)
-    if d is None or b.find_entry(d.get("top"), CONFIRM) is None or b.choose(CONFIRM) is None:
+    if not _confirm_menu(b) or b.choose(CONFIRM) is None:
         b.log(_("the game didn't ask to confirm the talent reset - nothing changed"), speak=True)
         return False
     end = b.clock.time() + SETTLE

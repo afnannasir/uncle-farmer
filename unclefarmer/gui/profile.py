@@ -223,9 +223,9 @@ class ProfileDialog(Dialog):
         self.fighting_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
-        self.talents_page(nb)
         panel, box = page(nb, _("Team"))
         self.team_ui = team_page(panel, box, self.p)
+        self.talents_page(nb)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced),
@@ -398,11 +398,14 @@ class ProfileDialog(Dialog):
 
     def fill_talents(self) -> None:
         """The learned talents (the last scan, and any ticked before) in both lists, each one's tick
-        as saved; "(on now)" after those the last scan saw on."""
+        as saved; "(on now)" after those the last scan saw on, "(not learned)" after a ticked one the
+        last scan didn't see (the bot leaves it out)."""
         p = self.p
         s: dict[str, Any] = p.get("scan") or {}
-        learned: list[str] = list(s.get("talents") or [])
-        on: set[str] = set(s.get("active_talents") or [])
+        scanned: list[object] = list(s.get("talents") or [])
+        scanned_on: list[object] = list(s.get("active_talents") or [])
+        learned = [str(n) for n in scanned if n]           # (a nameless row: skipped)
+        on = {str(n) for n in scanned_on if n}
         if self.talent_names:            # Scan now again: the ticks made since the window opened stay
             farm, usual = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
         else:
@@ -410,7 +413,8 @@ class ProfileDialog(Dialog):
             usual = list(p.get("usual_talent_list") or [])
         names = list(dict.fromkeys(learned + farm + usual))
         self.talent_names = names
-        labels = [_("{talent} (on now)", talent=n) if n in on else n for n in names]
+        labels = [_("{talent} (on now)", talent=n) if n in on
+                  else _("{talent} (not learned)", talent=n) if learned and n not in learned else n for n in names]
         for box, ticked in ((self.farm_talent_list, farm), (self.usual_talent_list, usual)):
             box.Set(labels)
             for i, n in enumerate(names):
@@ -422,12 +426,15 @@ class ProfileDialog(Dialog):
         s: dict[str, Any] = self.p.get("scan") or {}
         on: set[str] = set(s.get("active_talents") or [])
         if not s.get("talents"):
-            error(self, _("The talents aren't known yet: log in to this character in the game and press Scan now "
-                          "on the Overview page."))
+            self.talents_unknown()
             return
         for box in (self.farm_talent_list, self.usual_talent_list):
             for i, n in enumerate(self.talent_names):
                 box.Check(i, n in on)
+
+    def talents_unknown(self) -> None:
+        error(self, _("The talents aren't known yet: log in to this character in the game and press Scan now "
+                      "on the Overview page."))
 
     def ticked_talents(self, box: wx.CheckListBox) -> list[str]:
         return [n for i, n in enumerate(self.talent_names) if box.IsChecked(i)]
@@ -744,6 +751,9 @@ class ProfileDialog(Dialog):
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()
         farm_talents, usual_talents = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
+        if self.farm_talents.GetValue() and not self.talent_names:
+            self.talents_unknown()          # nothing to tick yet: a scan first
+            return
         if self.farm_talents.GetValue() and not farm_talents:
             error(self, _("Tick the talents to farm with on the Talents page, or untick Change the talents for farming."))
             return

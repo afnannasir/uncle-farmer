@@ -204,10 +204,8 @@ class Run(threading.Thread):
         finally:
             self._paused_game_lost()
             try:
-                try:
-                    self._after_farming()
-                finally:
-                    self._talents_back()
+                self._after_farming()
+                self._talents_back()         # (not after a failed After step: that one is what counts)
             except triggers.TriggerFailed as e:
                 # an After step that had to work didn't: said and recorded, but farming did end by
                 # itself, so the after-stop action (close the game, shut the PC down) still runs
@@ -590,7 +588,12 @@ class Run(threading.Thread):
         first = triggers.first_farm_map(script.main, script.subs)
         here = bot.map_id()
         farm = here if first in (None, triggers.HERE) else first
-        talents.for_farming(bot, back_to=(farm, None) if farm != here else None)
+        try:
+            talents.for_farming(bot, back_to=(farm, None) if farm != here else None)
+        except Respawned:
+            # died on the way to the talent master: the run goes on from where it came back (its
+            # trip to the farm starts there), with the talents as they are
+            bot.log(_("died on the way to the talent master - farming with the talents as they are"), speak=True)
 
     def _talents_back(self) -> None:
         """Character settings, Talents: the usual talents back on when farming ended by itself in a
@@ -602,8 +605,20 @@ class Run(threading.Thread):
                 or not p.get("talents_back", False) or self._dead(bot)):
             return
         self.talents_back_done = True
+        # Best effort: talents left as they were are no reason to lose the end of farming (the
+        # after-stop action, the run counted as ended by itself). Only a game gone, or another
+        # character in it, is passed on: the end handles those as it always does.
         try:
             talents.put_back(bot)
+        except Stopped as e:
+            if getattr(e, "final", False):
+                raise
+            self.log(_("the usual talents weren't put back: {err}", err=e))
+        except Respawned:
+            self.log(_("the usual talents weren't put back: died on the way"))
+        except Exception as e:
+            carry_on(e, "putting the usual talents back")
+            self.log(_("the usual talents weren't put back: {err}", err=e))
         finally:
             self._off_again(bot)
 

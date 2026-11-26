@@ -5068,7 +5068,7 @@ msgstr "Sab se taqatwar"
 msgid ""
 "The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
 msgstr ""
-"Talents abhi maloom nahin: game mein is character se log in karein aur Overview page par Scan now dabayein."
+"Talents abhi maloom nahin: game mein is character se log in karein aur Jaiza page par « Abhi scan karein » dabayein."
 
 msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
@@ -6598,6 +6598,11 @@ msgstr ""
 
 msgid "died and came back outside {map}"
 msgstr "mar kar {map} se bahar wapas aaya"
+
+msgid ""
+"died on the way to the talent master - farming with the talents as they are"
+msgstr ""
+"talent master ke raste mein mar gaye - jaise talents hain unhi ke saath farming"
 
 msgid "died on {map} ({n} so far)"
 msgstr "{map} par mar gaye ({n} ab tak)"
@@ -8589,6 +8594,11 @@ msgstr ""
 msgid "the Reset Talents menu didn't open"
 msgstr "Reset Talents menu nahin khula"
 
+msgid ""
+"the Reset Talents menu has no row for {names}, which the character has learned - nothing changed"
+msgstr ""
+"Reset Talents menu mein {names} ki line nahin, jo character ne seekha hai - kuch nahin badla"
+
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Secret room Manager ne koi madadgar nahi bulaya"
 
@@ -9211,6 +9221,12 @@ msgid ""
 "the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
 msgstr ""
 "aam talents wapas nahin lage: run kisi talent master wale shehar mein khatam nahin hua (agla run jo wahan khatam ho unhein wapas lagayega)"
+
+msgid "the usual talents weren't put back: died on the way"
+msgstr "aam talents wapas nahin lage: raste mein mar gaye"
+
+msgid "the usual talents weren't put back: {err}"
+msgstr "aam talents wapas nahin lage: {err}"
 
 msgid "the village at {x},{y} on {map}"
 msgstr "{map} par {x},{y} wala gaon"
@@ -10452,6 +10468,9 @@ msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 "{state}. Faal khamosh IDs: {mute}. Dekhe gaye: {observed}; roke gaye: {dropped}; live khamosh: {live}; gair-mahfooz: {unsupported}."
+
+msgid "{talent} (not learned)"
+msgstr "{talent} (seekha nahin)"
 
 msgid "{talent} (on now)"
 msgstr "{talent} (abhi on)"

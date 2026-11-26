@@ -34,7 +34,7 @@ class Game:
     def json(self, line: str) -> dict[str, Any]:
         b = self.bot
         if line == "mem skills":
-            return {"talents": [{"id": i, "name": n, "b": int(n in b.on)} for i, (n, _p) in enumerate(LEARNED)]}
+            return {"talents": [{"id": i, "name": n, "b": int(n in b.on)} for i, n in enumerate(b.skill_names)]}
         if line.startswith("said"):
             since = int(line.split()[1])
             return {"now": len(b.heard), "said": [{"text": t} for t in b.heard[since:]]}
@@ -51,7 +51,11 @@ class MasterBot:
         self.arnebia, self.points = arnebia, points
         self.map, self.at = mid, at
         self.menu: str | None = None
-        self.picks: dict[str, bool] = {}
+        self.menu_talents: list[tuple[str, int]] = list(LEARNED)     # the Reset Talents rows, in order
+        self.skill_names: list[str] = [n for n, _p in LEARNED]       # the names `mem skills` gives
+        self.picks: list[bool] = []                                   # each row's state, by its place
+        self.cursor = 0
+        self.start_picks: list[bool] | None = None                   # the rows' states when the menu opens
         self.heard: list[str] = []
         self.lines: list[str] = []
         self.chosen: list[str] = []
@@ -84,7 +88,8 @@ class MasterBot:
                     ["Collect Hunting Bounty", [5]]]
         elif self.menu == "reset":
             rows = [["reset talent skills", [1]]]
-            rows += [["%s; takes %d talent points" % (n, pts), [i, int(self.picks[n])]] for i, (n, pts) in enumerate(LEARNED)]
+            rows += [["%s; takes %d talent points" % (n, pts), [i, int(self.picks[i])]]
+                     for i, (n, pts) in enumerate(self.menu_talents)]
             rows += [["You have %d talent points, now it will take {3,1} points, it costs 200 arnebia for every "
                       "point taking" % self.points, None], ["submit", [0]]]
         elif self.menu == "sure":
@@ -119,23 +124,34 @@ class MasterBot:
         text = top["rows"][where[0]][0]["options"][0]
         self.chosen.append(text)
         if self.menu == "master" and text == "Reset Talents":
-            self.menu, self.picks = "reset", {n: n in self.on for n, _p in LEARNED}
+            self.menu, self.picks = "reset", list(self.start_picks or [n in self.on for n, _p in self.menu_talents])
         elif self.menu == "reset" and text == "submit":
             self.menu = "sure"
         elif self.menu == "reset":
-            name = text.split(";")[0]
-            if name not in self.deaf_rows:
-                self.picks[name] = not self.picks[name]
+            raise AssertionError("a talent row is chosen by its place, not by its text: " + text)
         elif self.menu == "sure" and re.search(CONFIRM, text):
             self.menu = None
             if self.short:
                 self.heard.append("not enough talent points")
                 return top["rows"][where[0]][0]
-            need = sum(p for n, p in LEARNED if self.picks[n])
+            need = sum(p for (_n, p), on in zip(self.menu_talents, self.picks) if on)
             self.arnebia -= need * talents.COST_PER_POINT
-            self.on = {n for n, v in self.picks.items() if v}
+            self.on = {n for (n, _p), on in zip(self.menu_talents, self.picks) if on}
             self.heard.append("reset complete")
         return top["rows"][where[0]][0]
+
+    def cursor_to(self, top: dict[str, Any], r: int, c: int) -> dict[str, Any] | None:
+        self.cursor = r
+        return top
+
+    def key(self, k: str, ms: int = 60) -> None:
+        """Enter on the row under the cursor: a talent row switches (rows 1..n of Reset Talents)."""
+        assert k == "enter" and self.menu == "reset"
+        i = self.cursor - 1
+        name = self.menu_talents[i][0]
+        self.chosen.append("%s; takes %d talent points" % self.menu_talents[i])
+        if name not in self.deaf_rows:
+            self.picks[i] = not self.picks[i]
 
 
 @pytest.fixture
@@ -159,7 +175,7 @@ def farm_profile(farm: set[str], usual: set[str] | None = None, back: bool = Fal
 # ---------------------------------------------------------------- the menu as the game shows it
 def test_the_menu_rows_say_each_talent_its_points_and_whether_it_is_on() -> None:
     b = MasterBot(FIRE)
-    b.menu, b.picks = "reset", {n: n in FIRE for n, _p in LEARNED}
+    b.menu, b.picks = "reset", [n in FIRE for n, _p in LEARNED]
     rows, points = talents.menu_rows(b.top())
     assert points == 200
     assert [r.name for r in rows] == [n for n, _p in LEARNED]
@@ -288,6 +304,45 @@ def test_the_usual_talents_already_on_cost_nothing(visit: list[Any]) -> None:
     b = MasterBot(HELL, farm_profile(FIRE, HELL, back=True))
     assert talents.put_back(as_bot(b)) is True
     assert visit == [] and b.arnebia == 10_000_000
+
+
+# ---------------------------------------------------------------- found by review
+def test_two_rows_of_one_name_are_each_switched_by_their_place(visit: list[Any]) -> None:
+    b = MasterBot({"Brutal (Aggressive)"}, farm_profile({"Brutal (Aggressive)"} | FIRE))
+    b.menu_talents = [*LEARNED, ("Brutal (Aggressive)", 12), ("Brutal (Aggressive)", 12)]
+    b.skill_names = [n for n, _p in b.menu_talents]
+    b.start_picks = [False] * len(LEARNED) + [True, False]       # the first Brutal row on, the second off
+    b.menu = "master"
+    talents.reset(as_bot(b), sorted(FIRE | {"Brutal (Aggressive)"}))
+    # the second row (off) was switched on, never the first (on) switched off and back
+    assert b.on == FIRE | {"Brutal (Aggressive)"}
+    assert all(c.startswith(tuple(FIRE)) or c.startswith("Brutal") or ";" not in c for c in b.chosen)
+    assert sum(1 for c in b.chosen if c.startswith("Brutal")) == 1
+
+
+def test_a_learned_talent_missing_from_the_menu_changes_nothing(visit: list[Any]) -> None:
+    # the menu under another name than `mem skills`: switching the rest would turn it off, every run
+    b = MasterBot(HELL, farm_profile(FIRE | {"Mana Shield"}))
+    b.skill_names = [*b.skill_names, "Mana Shield"]
+    assert talents.for_farming(as_bot(b)) is False
+    assert b.on == HELL and b.arnebia == 10_000_000 and "submit" not in b.chosen
+    assert any("no row for Mana Shield" in line for line in b.lines)
+
+
+def test_a_confirmation_that_comes_late_is_waited_for(visit: list[Any]) -> None:
+    b = MasterBot(HELL, farm_profile(FIRE))
+    real = b.top
+    late = {"until": 0.0}
+
+    def slow() -> dict[str, Any] | None:
+        if b.menu == "sure" and not late["until"]:
+            late["until"] = b.clock.time() + 1.0
+        if b.menu == "sure" and b.clock.time() < late["until"]:
+            return None                                   # the menu closed, the question not up yet
+        return real()
+    b.top = slow                                          # type: ignore[method-assign]
+    assert talents.for_farming(as_bot(b)) is True
+    assert b.on == FIRE
 
 
 def test_a_gang_talent_is_one_more_row_switched_and_charged_for_like_the_others() -> None:
