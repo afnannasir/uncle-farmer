@@ -6205,6 +6205,12 @@ msgstr ""
 msgid "charge in"
 msgstr ""
 
+msgid "chat to which room? write: chat <room> <text>, the room one of: {rooms}"
+msgstr ""
+
+msgid "chat: write the text after the room"
+msgstr ""
+
 msgid "cheapest {what}"
 msgstr ""
 
@@ -7117,10 +7123,23 @@ msgstr ""
 msgid "line {n}: a condition or value is missing"
 msgstr ""
 
+msgid ""
+"line {n}: couldn't use {item} (not in the bag, or the game didn't take it)"
+msgstr ""
+
 msgid "line {n}: died every time I tried it"
 msgstr ""
 
+msgid "line {n}: not sent to {room}: the character is in no gang"
+msgstr ""
+
+msgid "line {n}: not sent to {room}: {why}"
+msgstr ""
+
 msgid "line {n}: subs are nested more than {max} calls deep"
+msgstr ""
+
+msgid "line {n}: the chat line is cut to {most} characters"
 msgstr ""
 
 msgid "line {n}: the number grew too large (over {bits} bits)"
@@ -9356,6 +9375,9 @@ msgstr ""
 msgid "usable items"
 msgstr ""
 
+msgid "use what? write: use <item name>"
+msgstr ""
+
 msgid ""
 "used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
@@ -9383,6 +9405,9 @@ msgstr ""
 
 msgid ""
 "wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
+msgstr ""
+
+msgid "wait_until: timeout= is from 1 to {most} seconds, not {value}"
 msgstr ""
 
 msgid "waiting for the game opened for {name} to start"
@@ -10222,6 +10247,9 @@ msgid "{role} while following"
 msgstr ""
 
 msgid "{room}: shared arnebia {n} of {all} times today"
+msgstr ""
+
+msgid "{room}: {line}"
 msgstr ""
 
 msgid "{row} (done today)"

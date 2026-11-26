@@ -6509,6 +6509,13 @@ msgstr ""
 msgid "charge in"
 msgstr "daur kar andar"
 
+msgid "chat to which room? write: chat <room> <text>, the room one of: {rooms}"
+msgstr ""
+"kis room mein chat? likhein: chat <room> <text>, room in mein se: {rooms}"
+
+msgid "chat: write the text after the room"
+msgstr "chat: room ke baad text likhein"
+
 msgid "cheapest {what}"
 msgstr "sab se sasta {what}"
 
@@ -7479,11 +7486,25 @@ msgstr "respawn ke baad dobara line {n}"
 msgid "line {n}: a condition or value is missing"
 msgstr "line {n}: koi condition ya value missing hai"
 
+msgid ""
+"line {n}: couldn't use {item} (not in the bag, or the game didn't take it)"
+msgstr ""
+"line {n}: {item} istemal nahin kar sake (bag mein nahin, ya game ne nahin liya)"
+
 msgid "line {n}: died every time I tried it"
 msgstr "line {n}: jitni baar koshish ki maut hui"
 
+msgid "line {n}: not sent to {room}: the character is in no gang"
+msgstr "line {n}: {room} ko nahin bheja: character kisi gang mein nahin"
+
+msgid "line {n}: not sent to {room}: {why}"
+msgstr "line {n}: {room} ko nahin bheja: {why}"
+
 msgid "line {n}: subs are nested more than {max} calls deep"
 msgstr "line {n}: subs {max} calls se zyada gehri nested hain"
+
+msgid "line {n}: the chat line is cut to {most} characters"
+msgstr "line {n}: chat line {most} haroof tak kaat di gayi"
 
 msgid "line {n}: the number grew too large (over {bits} bits)"
 msgstr "line {n}: number bohat bara ho gaya ({bits} bits se zyada)"
@@ -9850,6 +9871,9 @@ msgstr "shards ki qeematein update kar rahe hain"
 msgid "usable items"
 msgstr "istemal ki cheezein"
 
+msgid "use what? write: use <item name>"
+msgstr "kya istemal karein? likhein: use <item ka naam>"
+
 msgid ""
 "used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
@@ -9880,6 +9904,9 @@ msgid ""
 "wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
 msgstr ""
 "wait 45: main 45 minute ke liye logout hota hoon (sirf wait: Uncle Farmer mein set minute), phir login kar ke farming jaari. Uncle Farmer ki private messages settings mein on karein."
+
+msgid "wait_until: timeout= is from 1 to {most} seconds, not {value}"
+msgstr "wait_until: timeout= 1 se {most} seconds tak hai, {value} nahin"
 
 msgid "waiting for the game opened for {name} to start"
 msgstr "{name} ke liye khole gaye game ke shuru hone ka intezar"
@@ -10760,6 +10787,9 @@ msgstr "follow karte waqt {role}"
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: aaj {all} mein se {n} baar arnebia share kiya"
+
+msgid "{room}: {line}"
+msgstr "{room}: {line}"
 
 msgid "{row} (done today)"
 msgstr "{row} (aaj mukammal)"

@@ -236,14 +236,14 @@ def notice_text(boss: dict[str, Any], map_id: int) -> str:
     return "%s (a boss) on %s at %d, %d" % (boss["name"], where, int(boss["x"]), int(boss["y"]))
 
 
-def _gangless(bot: Bot, snap: dict[str, Any]) -> bool:
+def gangless(bot: Bot, snap: dict[str, Any]) -> bool:
     """The character is in no gang: the game keeps the gang's id in our own side, and its gang
     attack mode wants it positive (as crafting.is_gangless reads it)."""
     side = snap["self"].get("side")
     return isinstance(side, int) and side <= 0
 
 
-def _refused(answer: str) -> str:
+def refused_why(answer: str) -> str:
     """Why the agent didn't send a line, for the player (as chat.ChatSender.say says it)."""
     if "international" in answer:
         return _("Join an international room in the game first.")
@@ -276,7 +276,7 @@ def _tell_rooms(bot: Bot, snap: dict[str, Any], boss: dict[str, Any], text: str,
     sent: list[str] = []
     for room in rooms:
         name = _(chat.CHANNELS[room])
-        if room == 3 and _gangless(bot, snap):
+        if room == 3 and gangless(bot, snap):
             bot.log(_("not telling {room} of {boss}: the character is in no gang", room=name, boss=boss["name"]))
             continue
         try:
@@ -286,7 +286,7 @@ def _tell_rooms(bot: Bot, snap: dict[str, Any], boss: dict[str, Any], text: str,
         if answer == "sent":
             sent.append(name)
         else:
-            bot.log(_("couldn't tell {room} of {boss}: {why}", room=name, boss=boss["name"], why=_refused(answer)))
+            bot.log(_("couldn't tell {room} of {boss}: {why}", room=name, boss=boss["name"], why=refused_why(answer)))
     if sent:
         bot.log(_("told {rooms}: {line}", rooms=", ".join(sent), line=text))
 

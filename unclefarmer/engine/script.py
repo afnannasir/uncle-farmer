@@ -107,12 +107,13 @@ import shlex
 import time
 from typing import Any
 
-from .. import atlas, dungeons, jsonio, knowledge, sounds, stats
+from .. import atlas, chat, dungeons, jsonio, knowledge, sounds, stats
 from ..settings import LEVEL_KEEP_MOST
 from ..link import AgentError
 from ..clock import CLOCK, Clock, clock_for
 from ..i18n import N_, _
-from . import activities, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey, teamlead, town
+from . import (activities, bosses, chores, constructionscan, dungeon, follow, keyboard, market, resume, survey,
+               teamlead, town, xpcard)
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameLost, WrongCharacter
 from collections.abc import Callable, Mapping
@@ -130,13 +131,20 @@ BLOCKS = ("repeat", "while", "if", "sub", "on_stop")
 END_WORDS = ("start", "safe", "hearthstone", "here")
 COMMANDS = ("login", "end_at", "keep_drop", "keep_level", "travel", "go", "talk", "choose", "visit", "restock", "gem_maker", "gem_breaker", "potion_maker", "triggers", "enhance", "chores", "bounties", "construction_scan", "gather", "lose_xp", "dungeon", "sell_collection", "market", "sell_shards", "clean_bag", "update_shard_prices", "store_items", "survey", "follow", "come", "buy", "sell", "withdraw", "deposit", "walk", "farm", "key", "hold", "wait", "say", "set", "heal", "hearthstone", "manage_team",
             "stop_when", "stop", "break", "call", "elif", "else", "end",
-            "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND) + BLOCKS
+            "sound_watch", "sound_mute", "sound_wait", keyboard.COMMAND, "chat", "use", "wait_until") + BLOCKS
 FARM_OPTIONS = ("map", "minutes", "kills", "patrol", "area", "points", "nogo", "only", "skip", "elites", "until")
 MOST_POINTS = 10          # a farm's own patrol points (patrol=points)
 VARIABLES = ("hp", "maxhp", "hp_pct", "mp", "maxmp", "mp_pct", "level", "map", "map_name", "x", "y",
              "kills", "minutes", "clock", "monsters", "arnebia_gained", "contribution_gained", "xp_gained",
              "levels_gained", "shards_gained", "sound_received", "sound_id", "sound_x", "sound_y",
-             "sound_muted", "sound_positioned", "drop_left")
+             "sound_muted", "sound_positioned", "drop_left",
+             "boss", "boss_dist", "in_dungeon", "bag_pct", "deaths", "wait_met", "used")
+# chat <room> <text>: the chat channels a script may write to, by the names players use
+CHAT_ROOMS = {"global": 0, "map": 1, "nearby": 2, "gang": 3, "team": 4, "international": 5, "private": 6}
+CHAT_GAP = 3.0               # seconds between two chat lines to one room, at least
+CHAT_MOST = 300              # characters in one chat line, at most
+WAIT_UNTIL_MOST = 86400.0    # wait_until's timeout: at most a day
+WAIT_UNTIL_LOOK = 0.5        # ... and how often it looks
 
 
 SKIPPED_MOST = 10     # farms in a row skipped as already done: a repeat with nothing left to farm
@@ -163,7 +171,7 @@ _BIN: dict[type[ast.operator], Callable[[Any, Any], Any]] = {
     ast.Div: lambda a, b: a / b, ast.FloorDiv: lambda a, b: a // b, ast.Mod: operator.mod}
 _CMP: dict[type[ast.cmpop], Callable[[Any, Any], Any]] = {ast.Lt: operator.lt, ast.LtE: operator.le, ast.Gt: operator.gt, ast.GtE: operator.ge,
         ast.Eq: operator.eq, ast.NotEq: operator.ne}
-FUNCTIONS = ("bag", "random", "min", "max", "abs", "round", "int")
+FUNCTIONS = ("bag", "random", "min", "max", "abs", "round", "int", "near")
 
 # Scripts are player-written files: bound what one can make the app allocate. These are far above
 # any real script (a few dozen lines, a handful of nested blocks, short expressions) and keep a
@@ -278,7 +286,8 @@ def evaluate(node: ast.expr, names: Mapping[str, Any], funcs: Mapping[str, Calla
             return False
         if node.id not in names:
             raise KeyError(node.id)
-        return names[node.id]
+        found = names[node.id]
+        return found.get() if isinstance(found, _Later) else found    # (read from the game only now)
     if isinstance(node, ast.BoolOp):
         vals = (evaluate(v, names, funcs) for v in node.values)
         return all(vals) if isinstance(node.op, ast.And) else any(vals)
@@ -945,6 +954,38 @@ def _prep_say(node: Node, rest: str, n: int):
                           for i, m in enumerate(re.split(r"\{([^}]*)\}", rest))]
 
 
+def _prep_chat(node: Node, rest: str, n: int):
+    """chat <room> <text>: a line on a game chat channel (CHAT_ROOMS), {values} worked out as say's."""
+    room, _sp, text = rest.strip().partition(" ")
+    if room.lower() not in CHAT_ROOMS:
+        raise ScriptError(n, _("chat to which room? write: chat <room> <text>, the room one of: {rooms}",
+                               rooms=", ".join(CHAT_ROOMS)))
+    if not text.strip():
+        raise ScriptError(n, _("chat: write the text after the room"))
+    node.opts["room"] = CHAT_ROOMS[room.lower()]
+    _prep_say(node, text.strip(), n)
+
+
+def _prep_use(node: Node, rest: str, n: int):
+    """use <item>: an item from the bag (quotes for a name with spaces are welcome, not needed)."""
+    words = _split(rest, n)
+    if not words:
+        raise ScriptError(n, _("use what? write: use <item name>"))
+    node.opts["item"] = " ".join(words)
+
+
+def _prep_wait_until(node: Node, rest: str, n: int):
+    """wait_until <condition> [timeout=<seconds>]: 60 seconds unless said, a day at most."""
+    m = re.search(r"\s+timeout=(\S+)\s*$", rest)
+    cond = rest[:m.start()] if m else rest
+    secs = _number(m.group(1), n, "timeout") if m else 60.0
+    if not 1 <= secs <= WAIT_UNTIL_MOST:
+        raise ScriptError(n, _("wait_until: timeout= is from 1 to {most} seconds, not {value}",
+                               most=int(WAIT_UNTIL_MOST), value=m.group(1) if m else secs))
+    node.expr = compile_expr(cond, n)
+    node.opts["secs"] = secs
+
+
 def _prep_login(node: Node, rest: str, n: int):
     words = _split(rest, n)
     if len(words) > 1:
@@ -989,7 +1030,7 @@ PREPARE = {
     "market": _prep_market,
     "buy": _prep_count_item, "withdraw": _prep_count_item, "sell": _prep_item_count, "deposit": _prep_item_count,
     "choose": _prep_choose, "walk": _prep_walk, "key": _prep_key, "hold": _prep_hold, "wait": _prep_wait,
-    "farm": _prep_farm, "say": _prep_say,
+    "farm": _prep_farm, "say": _prep_say, "chat": _prep_chat, "use": _prep_use, "wait_until": _prep_wait_until,
     "sound_watch": _prep_sound, "sound_mute": _prep_sound, "sound_wait": _prep_sound,
 }     # call, sub and stop take nothing to check
 
@@ -1004,7 +1045,7 @@ class Runner:
         # `triggers off` anywhere at the top: the script carries its own Before/After steps
         self.own_lists = any(node.kind == "triggers" for node in self.main)
         self.vars: dict[str, Any] = dict(sound_received=False, sound_id=0, sound_x=0.0, sound_y=0.0,
-                                         sound_muted=False, sound_positioned=False)
+                                         sound_muted=False, sound_positioned=False, wait_met=False, used=False)
         self.call_depth = 0
         self.watched: set[Node] = set()
         self.skipped_farms = 0          # farms in a row skipped as already done (SKIPPED_MOST)
@@ -1035,6 +1076,20 @@ class Runner:
                      clock=time.strftime("%H:%M"))
         names["monsters"] = _Lazy(lambda: len(b.targets(b.snap())))
         names["drop_left"] = _Lazy(lambda: self.drop_left(sheet))
+        # boss and boss_dist from ONE read: "boss != "" and boss_dist < 20" must not see two moments
+        seen: list[tuple[str, float]] = []
+
+        def boss_now() -> tuple[str, float]:
+            if not seen:
+                seen.append(self.boss_seen())
+            return seen[0]
+        names["boss"] = _Later(lambda: boss_now()[0])
+        names["boss_dist"] = _Later(lambda: boss_now()[1])
+        names["in_dungeon"] = _Later(lambda: xpcard.in_dungeon(b))
+        load, most = sheet.get("load"), sheet.get("maxload")
+        names["bag_pct"] = (round(100.0 * load / most, 1) if isinstance(load, (int, float)) and
+                            isinstance(most, (int, float)) and most > 0 else -1)
+        names["deaths"] = int(getattr(b, "deaths", 0) or 0)
         r: dict[str, Any] = b.tally.result() if b.tally else {}
         picked: dict[str, int] = r.get("picked") or {}
         names.update(arnebia_gained=r.get("arnebia", 0), contribution_gained=r.get("contribution", 0),
@@ -1065,8 +1120,27 @@ class Runner:
             return sum(exact) if exact else sum(r["count"] for r in rows if want in (r.get("name") or "").lower())
         def rand(a: float, b: float) -> int:
             return random.randint(int(a), int(b))
+
+        def near(name: str) -> float:
+            """Tiles to the player of that name in view (the whole name, any case); -1 when not."""
+            snap = self.bot.snap()
+            them = follow.find_player(snap, str(name))
+            if them is None:
+                return -1
+            me = snap["self"]
+            return round(math.hypot(them["x"] - me["x"], them["y"] - me["y"]), 1)
         return {"bag": bag, "random": rand, "min": min, "max": max,
-                "abs": abs, "round": round, "int": int}
+                "abs": abs, "round": round, "int": int, "near": near}
+
+    def boss_seen(self) -> tuple[str, float]:
+        """(name, tiles) of the nearest field boss in view; ("", -1) with none."""
+        snap = self.bot.snap()
+        me = snap["self"]
+        seen = [(math.hypot(e["x"] - me["x"], e["y"] - me["y"]), str(e.get("name") or "")) for e in bosses.in_sight(snap)]
+        if not seen:
+            return "", -1
+        d, name = min(seen)
+        return name, round(d, 1)
 
     def value(self, expr: ast.expr | None, line: int) -> Any:
         """An expression's value now (Any: see evaluate)."""
@@ -1431,8 +1505,65 @@ class Runner:
         b.sleep(o["secs"])
 
     def _do_say(self, node: Node, b: Bot, o: dict[str, Any]):
-        b.log("".join(str(self.value(p, node.line)) if not isinstance(p, str) else p for p in o["parts"]),
-              speak=True)
+        b.log(self._text(node, o), speak=True)
+
+    def _text(self, node: Node, o: dict[str, Any]) -> str:
+        """say's and chat's text, its {values} worked out now."""
+        return "".join(str(self.value(p, node.line)) if not isinstance(p, str) else p for p in o["parts"])
+
+    def _do_chat(self, node: Node, b: Bot, o: dict[str, Any]):
+        """A line on a chat channel. One the game won't take is said in the log and the script goes
+        on: the game takes any line for the team or the gang - with none, it goes nowhere - so a
+        character in no gang (its side) sends none there, and says so."""
+        room = int(o["room"])
+        name = _(chat.CHANNELS[room])
+        text = " ".join(self._text(node, o).split())
+        if not text:
+            return
+        if len(text) > CHAT_MOST:
+            text = text[:CHAT_MOST]
+            b.log(_("line {n}: the chat line is cut to {most} characters", n=node.line, most=CHAT_MOST))
+        # A loop with no wait would send many lines a second (the game may mute a character for
+        # that): one line a room every CHAT_GAP seconds at most - the next waits its turn.
+        last: dict[int, float] = self.__dict__.setdefault("chat_sent_at", {})
+        wait = last.get(room, -CHAT_GAP) + CHAT_GAP - clock_for(b).time()
+        if wait > 0:
+            b.sleep(wait)
+        last[room] = clock_for(b).time()
+        if room == CHAT_ROOMS["gang"] and bosses.gangless(b, b.snap()):
+            b.log(_("line {n}: not sent to {room}: the character is in no gang", n=node.line, room=name))
+            return
+        try:
+            answer = b.a.send("say %d %s" % (room, text))
+        except (AgentError, OSError) as e:
+            answer = str(e)
+        if answer == "sent":
+            b.log(_("{room}: {line}", room=name, line=text))
+        else:
+            b.log(_("line {n}: not sent to {room}: {why}", n=node.line, room=name, why=bosses.refused_why(answer)))
+
+    def _do_use(self, node: Node, b: Bot, o: dict[str, Any]):
+        """An item from the bag; `used` says whether it went."""
+        ok = bool(b.use_item(o["item"]))
+        self.vars["used"] = ok
+        if not ok:
+            b.log(_("line {n}: couldn't use {item} (not in the bag, or the game didn't take it)",
+                    n=node.line, item=o["item"]))
+
+    def _do_wait_until(self, node: Node, b: Bot, o: dict[str, Any]):
+        """Wait until the condition holds, looking WAIT_UNTIL_LOOK seconds apart, at most secs;
+        `wait_met` says whether it came true. Stop and Pause work all along."""
+        end = clock_for(b).time() + o["secs"]
+        while True:
+            b.check()
+            if self.value(node.expr, node.line):
+                self.vars["wait_met"] = True
+                return
+            left = end - clock_for(b).time()
+            if left <= 0:
+                self.vars["wait_met"] = False
+                return
+            b.sleep(min(WAIT_UNTIL_LOOK, left))
 
     def _do_heal(self, node: Node, b: Bot, o: dict[str, Any]):
         key, name = b.potion("hp")
@@ -1499,6 +1630,17 @@ def best_map(b: Bot) -> int:
     mid, name = fits[0][0], fits[0][1]
     b.log(_("the best map for level {level}: {map}", level=level, map=name))
     return mid
+
+
+class _Later:
+    """A text or yes/no value only worked out if an expression reads it (boss, in_dungeon: each a
+    read of the game); evaluate takes its value when the name is read."""
+
+    def __init__(self, fn: Callable[[], Any]) -> None:
+        self.fn = fn
+
+    def get(self) -> Any:
+        return self.fn()
 
 
 class _Lazy:

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+**More for scripts** (untested in game: the tests use a pretend game)
+
+- `chat <room> <text>`: a line on a chat channel (team, gang, international, global, map, nearby,
+  private), with `{values}` as in `say`. A line the game refuses is said in the log; the script goes on.
+- `use <item>`: an item from the bag; `used` says whether it went.
+- `wait_until <condition> [timeout=<s>]`: waits until the condition is true (60 s unless said, a day at
+  most); `wait_met` says whether it came true. Stop and Pause work while it waits.
+- New values: `boss` and `boss_dist` (the nearest field boss in view), `in_dungeon`, `bag_pct` (the bag's
+  weight, %), `deaths` (this run's); and `near("name")`, the tiles to a player in view (-1 when not).
+- `chat` sends one line a room every 3 seconds at most, and cuts a line to 300 characters.
+- A script that `set` a value of its own named `boss`, `boss_dist`, `in_dungeon`, `bag_pct`, `deaths`,
+  `wait_met` or `used` must rename it: these are now the game's.
+
 **Following a player: heal only, the distance kept, and more** (untested in game: the tests use a pretend game)
 
 - A player soloing a dungeon with a tank and a healer saw the healer attack, then heal the tank too late

@@ -6454,6 +6454,12 @@ msgstr ""
 msgid "charge in"
 msgstr "cargar al ataque"
 
+msgid "chat to which room? write: chat <room> <text>, the room one of: {rooms}"
+msgstr "¿chat a qué sala? escribe: chat <sala> <texto>, la sala una de: {rooms}"
+
+msgid "chat: write the text after the room"
+msgstr "chat: escribe el texto después de la sala"
+
 msgid "cheapest {what}"
 msgstr ""
 
@@ -7407,12 +7413,26 @@ msgstr "línea {n} otra vez tras reaparecer"
 msgid "line {n}: a condition or value is missing"
 msgstr "línea {n}: falta una condición o un valor"
 
+msgid ""
+"line {n}: couldn't use {item} (not in the bag, or the game didn't take it)"
+msgstr ""
+"línea {n}: no se pudo usar {item} (no está en la bolsa, o el juego no lo aceptó)"
+
 msgid "line {n}: died every time I tried it"
 msgstr "línea {n}: murió cada vez que lo intenté"
+
+msgid "line {n}: not sent to {room}: the character is in no gang"
+msgstr "línea {n}: no enviado a {room}: el personaje no está en ningún gang"
+
+msgid "line {n}: not sent to {room}: {why}"
+msgstr "línea {n}: no enviado a {room}: {why}"
 
 msgid "line {n}: subs are nested more than {max} calls deep"
 msgstr ""
 "línea {n}: los subs están anidados a más de {max} llamadas de profundidad"
+
+msgid "line {n}: the chat line is cut to {most} characters"
+msgstr "línea {n}: la línea del chat se corta a {most} caracteres"
 
 msgid "line {n}: the number grew too large (over {bits} bits)"
 msgstr "línea {n}: el número creció demasiado (más de {bits} bits)"
@@ -9751,6 +9771,9 @@ msgstr "actualizando los precios de los fragmentos"
 msgid "usable items"
 msgstr ""
 
+msgid "use what? write: use <item name>"
+msgstr "¿usar qué? escribe: use <nombre del objeto>"
+
 msgid ""
 "used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
@@ -9779,6 +9802,9 @@ msgstr "mensaje de voz de {name}: reprodúcelo en Chat (Ctrl+T)"
 msgid ""
 "wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
 msgstr ""
+
+msgid "wait_until: timeout= is from 1 to {most} seconds, not {value}"
+msgstr "wait_until: timeout= va de 1 a {most} segundos, no {value}"
 
 msgid "waiting for the game opened for {name} to start"
 msgstr ""
@@ -10644,6 +10670,9 @@ msgstr "{role} al seguir"
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: arnebia compartida {n} de {all} veces hoy"
+
+msgid "{room}: {line}"
+msgstr "{room}: {line}"
 
 msgid "{row} (done today)"
 msgstr ""
