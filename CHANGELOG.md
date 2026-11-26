@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+**Following a player: heal only, the distance kept, and more** (untested in game: the tests use a pretend game)
+
+- A player soloing a dungeon with a tank and a healer saw the healer attack, then heal the tank too late
+  when it took a big hit (an attack holds the global cooldown). New choices in Character settings, Team,
+  **Following a leader**: the role while following - help the fights and heal (as before), **heal only**
+  (never attacks, not even what attacks it, and a hit no longer breaks its walk off), or **attack only**
+  (never heals the team); attack what comes near the player before anyone hits it, within the tiles you
+  choose (off by default); help with the team's fights (on; off: only what attacks us); the tiles kept from
+  the player (3; never past the heal's reach for a character that heals); monsters never attacked while
+  following, by name.
+- A script's `follow` line takes the same choices for one follow:
+  `follow Tank role=heal distance=6 pull=8 help=off skip="Bone Dragon, Lich"`. A wrong option is said when
+  the script is read.
+- Copy from another character carries them with the team settings.
+
 **Out of a cable car as soon as it arrives** (measured in game; the bot's side untested in game)
 
 - Measured live, both ways between Underground of Tulip City and Lifting Platform No. 2: about 12 s after

@@ -149,6 +149,7 @@ class Parts:
 
     # ---------------------------------------------------------------- run state
     following: str | None       # the player a follow run stays with (engine/follow.py)
+    follow_opts: dict[str, Any]  # that follow's script options (engine/followopts.py)
     team_ask_at: float          # when follow next asks the team phrase where its player is
     supply_told: set[str]       # supplies already said to be low (town.restock): said once a run
     restock_skipped: set[str]   # restock rules said to be impossible this run (town.restock): said once

@@ -343,6 +343,10 @@ msgid ""
 "&Keep this many crystals in the bag before starting (0: only as needed):"
 msgstr ""
 
+msgid ""
+"&Keep this many tiles from the player (no further than my heal reaches):"
+msgstr ""
+
 msgid "&Keep:"
 msgstr ""
 
@@ -561,6 +565,9 @@ msgid "&Results (Space ticks a lot to buy):"
 msgstr ""
 
 msgid "&Results:"
+msgstr ""
+
+msgid "&Role while following:"
 msgstr ""
 
 msgid "&Room (part of its name; empty: the highest level free room):"
@@ -1137,6 +1144,12 @@ msgid "At the shops' fixed prices:"
 msgstr ""
 
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
+msgstr ""
+
+msgid "Attack only: never heal the team"
+msgstr ""
+
+msgid "Attack th&e monsters that come near the player before anyone hits them"
 msgstr ""
 
 msgid "Automatic, by class"
@@ -2400,6 +2413,9 @@ msgstr ""
 msgid "Heal it when its HP is below (%):"
 msgstr ""
 
+msgid "Heal only: never attack, not even what attacks me"
+msgstr ""
+
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
 msgstr ""
 
@@ -2427,6 +2443,12 @@ msgid "Healing the pet"
 msgstr ""
 
 msgid "Hearthstone hotkey"
+msgstr ""
+
+msgid "Help the fights and heal"
+msgstr ""
+
+msgid "Help with the team's fi&ghts (off: only what attacks me)"
 msgstr ""
 
 msgid "Here, next to you."
@@ -3162,6 +3184,9 @@ msgid "Net earnings: {n} arnebia"
 msgstr ""
 
 msgid "Never"
+msgstr ""
+
+msgid "Never attack these monsters while following (names, by co&mmas):"
 msgstr ""
 
 msgid "Never spend arnebia belo&w:"
@@ -5708,6 +5733,9 @@ msgstr ""
 msgid "With your {top} max HP that is below {pct}%."
 msgstr ""
 
+msgid "Within this many tiles of the player:"
+msgstr ""
+
 msgid "Worst hit received: {hit}"
 msgstr ""
 
@@ -5946,6 +5974,9 @@ msgid ""
 msgstr ""
 
 msgid "attacking guards with the {key} key"
+msgstr ""
+
+msgid "attacking only"
 msgstr ""
 
 msgid "attacks {how}"
@@ -6700,6 +6731,19 @@ msgid ""
 "follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
 
+msgid "follow: help= is on or off, not {value}"
+msgstr ""
+
+msgid "follow: role= is heal, attack or both, not {value}"
+msgstr ""
+
+msgid ""
+"follow: unknown option {option} - write role=, distance=, pull=, help= or skip="
+msgstr ""
+
+msgid "follow: {option}= is from 1 to {most} tiles, not {value}"
+msgstr ""
+
 msgid "following {name}"
 msgstr ""
 
@@ -6875,6 +6919,13 @@ msgstr ""
 msgid "healed {n}"
 msgstr ""
 
+msgid "healing only"
+msgstr ""
+
+msgid ""
+"healing only while following, but this character has no team heal on a key (or healing teammates is off on the Team tab): it will only follow"
+msgstr ""
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr ""
 
@@ -6889,6 +6940,9 @@ msgstr ""
 
 msgid ""
 "help: lists the commands. help and a command's name says what that one does, for example: help follow"
+msgstr ""
+
+msgid "helping and healing"
 msgstr ""
 
 msgid "herbs"
@@ -10162,6 +10216,9 @@ msgid "{price} a unit is over the most you set ({most})"
 msgstr ""
 
 msgid "{query}: {pages} pages, {lots} lots read"
+msgstr ""
+
+msgid "{role} while following"
 msgstr ""
 
 msgid "{room}: shared arnebia {n} of {all} times today"

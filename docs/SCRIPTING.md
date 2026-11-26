@@ -1279,9 +1279,25 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Following players
 
-    follow <player>
+    follow <player> [role=heal|attack|both] [distance=N] [pull=N|off] [help=on|off] [skip="A, B"]
     come <player> [<map> [at x,y]]
     manage_team                     set the team up (Team tab), then manage it until the run is stopped
+
+The `follow` options are this follow's own choices; any left out comes from the character's Team tab
+(Following a leader):
+
+- `role=heal` heals only: the character never attacks, not even what attacks it. `role=attack` never
+  heals the team. `role=both` (the default) helps the fights and heals.
+- `distance=N` keeps N tiles (1 to 30) from the player; a character that heals never goes further than
+  its heal reaches.
+- `pull=N` also attacks what comes within N tiles (1 to 30) of the player, before anyone hits it;
+  `pull=off` waits until the team is fighting it.
+- `help=off` fights only what attacks the character, not the team's fights.
+- `skip="Bone Dragon, Lich"` never attacks these monsters, whatever they do.
+
+For example, a healer soloing a dungeon with its tank:
+
+    follow Tank role=heal distance=6 skip="Bone Dragon"
 
 ### Keys and healing
 

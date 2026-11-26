@@ -347,6 +347,11 @@ msgid ""
 msgstr ""
 "Başlamadan önce çantada bu &kadar kristal bulundur (0: yalnızca gerektiği kadar):"
 
+msgid ""
+"&Keep this many tiles from the player (no further than my heal reaches):"
+msgstr ""
+"Oyuncudan bu &kadar kare uzakta kal (iyileştirmemin menzilinden öteye değil):"
+
 msgid "&Keep:"
 msgstr "Sa&kla:"
 
@@ -568,6 +573,9 @@ msgstr ""
 
 msgid "&Results:"
 msgstr "Sonuçla&r:"
+
+msgid "&Role while following:"
+msgstr "Takip ederken &rolüm:"
 
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr "Oda (adının bi&r kısmı; boş: en yüksek seviyeli boş oda):"
@@ -1155,6 +1163,12 @@ msgstr "Dükkanların sabit fiyatlarıyla:"
 
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr "Saldırı tuşları: tuşları boşlukla ayırarak gir, örneğin: j y . h"
+
+msgid "Attack only: never heal the team"
+msgstr "Yalnızca saldır: takımı hiç iyileştirme"
+
+msgid "Attack th&e monsters that come near the player before anyone hits them"
+msgstr "O&yuncuya yaklaşan canavarlara kimse vurmadan önce saldır"
 
 msgid "Automatic, by class"
 msgstr "Otomatik, sınıfa göre"
@@ -2438,6 +2452,9 @@ msgstr "Takım arkadaşının HP'si şunun altına düşünce onu iyileştir (%)
 msgid "Heal it when its HP is below (%):"
 msgstr "HP'si şunun altına düşünce onu iyileştir (%):"
 
+msgid "Heal only: never attack, not even what attacks me"
+msgstr "Yalnızca iyileştir: hiç saldırma, bana saldırana bile"
+
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
 msgstr "Evcil hayvanı iyileştirme becerimle iyileştir (Rahip, &Sihirbaz)"
 
@@ -2468,6 +2485,12 @@ msgstr "Evcil hayvanı iyileştirme"
 
 msgid "Hearthstone hotkey"
 msgstr "Kalp taşı kısayol tuşu"
+
+msgid "Help the fights and heal"
+msgstr "Dövüşlere yardım et ve iyileştir"
+
+msgid "Help with the team's fi&ghts (off: only what attacks me)"
+msgstr "Takımın dövüşlerine yardım &et (kapalı: yalnızca bana saldıranlar)"
 
 msgid "Here, next to you."
 msgstr "Burada, yanında."
@@ -3225,6 +3248,9 @@ msgstr "Net kazanç: {n} arnebia"
 
 msgid "Never"
 msgstr "Asla"
+
+msgid "Never attack these monsters while following (names, by co&mmas):"
+msgstr "Takip ederken bu canavarlara asla saldır&ma (adlar, virgülle ayrılmış):"
 
 msgid "Never spend arnebia belo&w:"
 msgstr "Arnebia'yı asla şunun altına düşürme (&W):"
@@ -5882,6 +5908,9 @@ msgstr ""
 msgid "With your {top} max HP that is below {pct}%."
 msgstr "{top} en yüksek HP'nle bu, %{pct} altı demek."
 
+msgid "Within this many tiles of the player:"
+msgstr "Oyuncuya bu kadar kare yakınlıkta:"
+
 msgid "Worst hit received: {hit}"
 msgstr "Alınan en kötü vuruş: {hit}"
 
@@ -6129,6 +6158,9 @@ msgstr ""
 
 msgid "attacking guards with the {key} key"
 msgstr "muhafızlara {key} tuşuyla saldırılıyor"
+
+msgid "attacking only"
+msgstr "yalnızca saldırıyor"
 
 msgid "attacks {how}"
 msgstr "saldırısı: {how}"
@@ -6914,6 +6946,20 @@ msgid ""
 "follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
 
+msgid "follow: help= is on or off, not {value}"
+msgstr "follow: help= on ya da off olur, {value} değil"
+
+msgid "follow: role= is heal, attack or both, not {value}"
+msgstr "follow: role= heal, attack ya da both olur, {value} değil"
+
+msgid ""
+"follow: unknown option {option} - write role=, distance=, pull=, help= or skip="
+msgstr ""
+"follow: bilinmeyen seçenek {option} - role=, distance=, pull=, help= ya da skip= yaz"
+
+msgid "follow: {option}= is from 1 to {most} tiles, not {value}"
+msgstr "follow: {option}= 1 ile {most} kare arasıdır, {value} değil"
+
 msgid "following {name}"
 msgstr "{name} takip ediliyor"
 
@@ -7089,6 +7135,14 @@ msgstr "iyileştirme"
 msgid "healed {n}"
 msgstr "{n} iyileştirildi"
 
+msgid "healing only"
+msgstr "yalnızca iyileştiriyor"
+
+msgid ""
+"healing only while following, but this character has no team heal on a key (or healing teammates is off on the Team tab): it will only follow"
+msgstr ""
+"takip ederken yalnızca iyileştir, ama bu karakterin bir tuşta takım iyileştirmesi yok (ya da Team sekmesinde takım arkadaşlarını iyileştirme kapalı): yalnızca takip edecek"
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr "evcil hayvanı HP'si %{pct} altındayken {skill} ile iyileştirir"
 
@@ -7106,6 +7160,9 @@ msgid ""
 "help: lists the commands. help and a command's name says what that one does, for example: help follow"
 msgstr ""
 "help: Komutları listeler. help ve bir komutun adı, o komutun ne yaptığını söyler, örneğin: help follow"
+
+msgid "helping and healing"
+msgstr "yardım ediyor ve iyileştiriyor"
 
 msgid "herbs"
 msgstr "bitkiler"
@@ -10492,6 +10549,9 @@ msgstr ""
 
 msgid "{query}: {pages} pages, {lots} lots read"
 msgstr ""
+
+msgid "{role} while following"
+msgstr "takip ederken {role}"
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: bugün arnebia {all} seferin {n} tanesinde paylaşıldı"

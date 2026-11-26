@@ -20,7 +20,7 @@ from .. import gamekeys
 from .. import phrases as phrase_book
 from ..clock import clock_for
 from ..i18n import _
-from . import combat, potions
+from . import combat, followopts, potions
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -114,6 +114,15 @@ def learn(b: Bot) -> None:
     b.team_names = seen
 
 
+def heal_reach(b: Bot) -> float | None:
+    """The tiles our team heal reaches, when the class has one on a key and heals the team (the
+    follow distance stays inside it, followopts.distance); None otherwise."""
+    if not b.p.get("team_heal", True):
+        return None
+    h = _healer(b)
+    return (h.get("range") or REACH) if h else None
+
+
 def _healer(b: Bot) -> dict[str, Any] | None:
     sb = getattr(b, "skillbook", None)
     if sb is None or not getattr(sb, "ok", False):
@@ -165,6 +174,8 @@ def look_after(b: Bot, snap: dict[str, Any]) -> bool:
     off). True when a heal was pressed."""
     if not getattr(b, "following", None) or not b.p.get("team_heal", True) or getattr(b, "walk_only", False):
         return False
+    if followopts.attack_only(b):
+        return False                      # the player chose: this follower only attacks
     h = _healer(b)
     if not h:
         return False

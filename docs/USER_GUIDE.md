@@ -2403,7 +2403,17 @@ Your character will:
 
 For your own characters, Uncle Farmer can follow them anywhere. For other players, it uses the map exits to travel between maps.
 
-Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it stops following.
+Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it waits where it is and teleports to the team leader (Shift+P) as soon as the game allows; only you stop the follow.
+
+**How it follows** (Character settings, Team, group **Following a leader**):
+
+- **Role while following:** help the fights and heal (the default); **heal only**, never attacking, not even what attacks it, so its heals are never held up by an attack (for a healer with its tank in a dungeon); or **attack only**, never healing the team.
+- **Attack the monsters that come near the player before anyone hits them**, within the tiles you choose. Unticked, the character helps only with the fights already going on.
+- **Help with the team's fights.** Unticked, it fights only what attacks it (and, with the box above ticked, what comes near the player).
+- **Keep this many tiles from the player** (3). A character that heals never goes further than its heal reaches.
+- **Never attack these monsters while following**: names, separated by commas - a dungeon's bosses, for instance. Field bosses are already left alone.
+
+A script's `follow` line can set the same choices for one follow: `follow Tank role=heal distance=6 skip="Bone Dragon"` (see the scripting guide).
 
 **Buffs while following**
 

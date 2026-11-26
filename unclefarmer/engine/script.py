@@ -624,6 +624,45 @@ def _prep_player(node: Node, rest: str, n: int):
         node.opts["cell"] = cell
 
 
+FOLLOW_OPTS = ("role", "distance", "pull", "help", "skip")
+OFF_WORDS = ("off", "no", "false", "0")
+ON_WORDS = ("on", "yes", "true", "1")
+
+
+def _prep_follow(node: Node, rest: str, n: int):
+    """follow <player> [role=heal|attack|both] [distance=N] [pull=N|off] [help=on|off] [skip="A, B"]:
+    this follow's own choices (engine/followopts.py), before the character's Team settings."""
+    from . import followopts
+    _prep_player(node, rest, n)
+    chosen: dict[str, Any] = {}
+    for word in _split(rest, n)[1:]:
+        key, sep, value = word.partition("=")
+        key, value = key.strip().lower(), value.strip()
+        if not sep or key not in FOLLOW_OPTS:
+            raise ScriptError(n, _("follow: unknown option {option} - write role=, distance=, pull=, help= or skip=",
+                                   option=word))
+        if key == "role":
+            if value.lower() not in followopts.ROLES:
+                raise ScriptError(n, _("follow: role= is heal, attack or both, not {value}", value=value))
+            chosen[key] = value.lower()
+        elif key == "pull" and value.lower() in OFF_WORDS:
+            chosen[key] = 0
+        elif key in ("distance", "pull"):
+            most = followopts.DISTANCE_MOST if key == "distance" else followopts.PULL_MOST
+            num = _number(value, n, key)
+            if not 1 <= num <= most:
+                raise ScriptError(n, _("follow: {option}= is from 1 to {most} tiles, not {value}",
+                                       option=key, most=most, value=value))
+            chosen[key] = int(num)
+        elif key == "help":
+            if value.lower() not in OFF_WORDS + ON_WORDS:
+                raise ScriptError(n, _("follow: help= is on or off, not {value}", value=value))
+            chosen[key] = value.lower() in ON_WORDS
+        else:
+            chosen[key] = value
+    node.opts["follow"] = chosen
+
+
 def _prep_talk(node: Node, rest: str, n: int):
     rest, cell = _at(rest, n)
     if not rest.strip():
@@ -944,7 +983,7 @@ PREPARE = {
     keyboard.COMMAND: _prep_keyboard_profile,
     "while": _prep_condition, "if": _prep_condition, "repeat": _prep_repeat, "set": _prep_set,
     "stop_when": _prep_stop_when, "end_at": _prep_end_at, "keep_drop": _prep_keep_drop, "keep_level": _prep_keep_level, "travel": _prep_travel, "go": _prep_go,
-    "follow": _prep_player, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
+    "follow": _prep_follow, "come": _prep_player, "talk": _prep_talk, "survey": _prep_survey,
     "triggers": _prep_triggers, "gem_maker": _prep_check_only, "gem_breaker": _prep_check_only, "potion_maker": _prep_check_only, "enhance": _prep_check_only, "chores": _prep_chores, "bounties": _prep_check_only, "construction_scan": _prep_construction_scan, "visit": _prep_visit,
     "gather": _prep_check_only, "lose_xp": _prep_check_only, "dungeon": _prep_dungeon, "sell_collection": _prep_sell_collection,
     "market": _prep_market,
@@ -1320,7 +1359,7 @@ class Runner:
             raise Stopped(_("couldn't talk to {npc}", npc=o["npc"]))
 
     def _do_follow(self, node: Node, b: Bot, o: dict[str, Any]):
-        follow.follow(b, o["player"])
+        follow.follow(b, o["player"], o.get("follow"))
 
     def _do_come(self, node: Node, b: Bot, o: dict[str, Any]):
         answer = follow.come_to(b, o["player"], o.get("map"), o.get("cell"))

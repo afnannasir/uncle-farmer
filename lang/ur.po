@@ -349,6 +349,11 @@ msgid ""
 msgstr ""
 "&Shuru karne se pehle baste mein itne crystals rakhein (0: sirf zaroorat ke mutabiq):"
 
+msgid ""
+"&Keep this many tiles from the player (no further than my heal reaches):"
+msgstr ""
+"Player se itne khane door rahein (mere heal ki pohanch &se zyada nahin):"
+
 msgid "&Keep:"
 msgstr "&Rakhein:"
 
@@ -571,6 +576,9 @@ msgstr "&Nataij (Space khareedne ke liye lot par nishan lagata hai):"
 
 msgid "&Results:"
 msgstr "&Nataij:"
+
+msgid "&Role while following:"
+msgstr "Follow karte w&aqt mera kirdar:"
 
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr "&Kamra (naam ka hissa; khali: sab se oonche level ka khali kamra):"
@@ -1168,6 +1176,13 @@ msgstr "Dukaanon ki muqarrar qeematon par:"
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 "Attack keys: keys ko space se alag kar ke likhein, misal ke taur par: j y . h"
+
+msgid "Attack only: never heal the team"
+msgstr "Sirf hamla: team ko kabhi heal na karein"
+
+msgid "Attack th&e monsters that come near the player before anyone hits them"
+msgstr ""
+"Jo monsters player ke qareeb aayein, kisi ke hamla karne se pehle un par hamla kar&ein"
 
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
@@ -2460,6 +2475,10 @@ msgstr "Teammate ka HP is se neeche ho to shifa dein (%):"
 msgid "Heal it when its HP is below (%):"
 msgstr "Jab us ka HP is se neeche ho to shifa dein (%):"
 
+msgid "Heal only: never attack, not even what attacks me"
+msgstr ""
+"Sirf heal: kabhi hamla na karein, us par bhi nahin jo mujh par hamla kare"
+
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
 msgstr "Pet ko meri shifa wali &skill se shifa dein (Priest, Sorceress)"
 
@@ -2490,6 +2509,12 @@ msgstr "Pet ki shifa"
 
 msgid "Hearthstone hotkey"
 msgstr "Hearthstone hotkey"
+
+msgid "Help the fights and heal"
+msgstr "Laraiyon mein madad aur heal"
+
+msgid "Help with the team's fi&ghts (off: only what attacks me)"
+msgstr "Team ki &laraiyon mein madad karein (warna sirf jo mujh par hamla kare)"
 
 msgid "Here, next to you."
 msgstr "Yahan, tumhare paas."
@@ -3259,6 +3284,10 @@ msgstr "Khalis kamai: {n} arnebia"
 
 msgid "Never"
 msgstr "Kabhi nahi"
+
+msgid "Never attack these monsters while following (names, by co&mmas):"
+msgstr ""
+"Follow karte waqt in monsters par kabhi hamla na karein (naam, co&mma se alag):"
 
 msgid "Never spend arnebia belo&w:"
 msgstr "&Is se kam arnebia kabhi kharch na karein:"
@@ -5980,6 +6009,9 @@ msgstr ""
 msgid "With your {top} max HP that is below {pct}%."
 msgstr "Aap ki {top} max HP ke saath jo {pct}% se neeche hai."
 
+msgid "Within this many tiles of the player:"
+msgstr "Player se itne khane ke andar:"
+
 msgid "Worst hit received: {hit}"
 msgstr "Sab se bura mila hit: {hit}"
 
@@ -6231,6 +6263,9 @@ msgstr ""
 
 msgid "attacking guards with the {key} key"
 msgstr "guards par {key} key se hamla"
+
+msgid "attacking only"
+msgstr "sirf hamla"
 
 msgid "attacks {how}"
 msgstr "hamla {how}"
@@ -7040,6 +7075,20 @@ msgid ""
 msgstr ""
 "follow: main aap ke saath rehta hoon, team ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress team ko heal karta hai. buff bhejein to hi buffs. Gum hua to intezar karke leader ke paas teleport karta hoon."
 
+msgid "follow: help= is on or off, not {value}"
+msgstr "follow: help= on ya off hai, {value} nahin"
+
+msgid "follow: role= is heal, attack or both, not {value}"
+msgstr "follow: role= heal, attack ya both hai, {value} nahin"
+
+msgid ""
+"follow: unknown option {option} - write role=, distance=, pull=, help= or skip="
+msgstr ""
+"follow: anjaan option {option} - role=, distance=, pull=, help= ya skip= likhein"
+
+msgid "follow: {option}= is from 1 to {most} tiles, not {value}"
+msgstr "follow: {option}= 1 se {most} khane tak hai, {value} nahin"
+
 msgid "following {name}"
 msgstr "{name} ke saath chal raha hoon"
 
@@ -7219,6 +7268,14 @@ msgstr "shifa"
 msgid "healed {n}"
 msgstr "{n} heal kiya"
 
+msgid "healing only"
+msgstr "sirf heal"
+
+msgid ""
+"healing only while following, but this character has no team heal on a key (or healing teammates is off on the Team tab): it will only follow"
+msgstr ""
+"follow karte waqt sirf heal, lekin is character ke paas kisi key par team heal nahin (ya Team tab mein teammates ko heal karna band hai): yeh sirf follow karega"
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr "pet ka HP {pct}% se neeche ho to {skill} se shifa"
 
@@ -7235,6 +7292,9 @@ msgid ""
 "help: lists the commands. help and a command's name says what that one does, for example: help follow"
 msgstr ""
 "help: commands ki list deta hai. help aur command ka naam batata hai ke wo kya karta hai, misaal: help follow"
+
+msgid "helping and healing"
+msgstr "madad aur heal"
 
 msgid "herbs"
 msgstr "jari bootiyan"
@@ -10694,6 +10754,9 @@ msgstr "ek ki {price} qeemat aap ki rakhi hui had ({most}) se zyada hai"
 
 msgid "{query}: {pages} pages, {lots} lots read"
 msgstr "{query}: {pages} safhe, {lots} lots parhe"
+
+msgid "{role} while following"
+msgstr "follow karte waqt {role}"
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: aaj {all} mein se {n} baar arnebia share kiya"
