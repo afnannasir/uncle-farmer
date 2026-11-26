@@ -302,13 +302,17 @@ def _apply(b: Bot, profile: Profile) -> None:
     if not (changes.skills or changes.profession or changes.items or changes.phrases or profile.prepare):
         return
     # Refresh the running bot's lookup after assigning slots, including on partial failure.
+    # The profile may hold page-2 keys the player asked for: this book sees both pages whatever
+    # skill_page_one says (the farm's own book comes back after, _farm_book), and the page is left on
+    # page 1 when that box is ticked.
+    page_one = bool(b.p.get("skill_page_one"))
     book = b.skillbook
-    if book is None or book.game_folder != keys.folder:
-        book = combat.SkillBook(b, game_folder=keys.folder)
+    if book is None or book.game_folder != keys.folder or (page_one and not getattr(book, "both_pages", False)):
+        book = combat.SkillBook(b, game_folder=keys.folder, both_pages=True)
     if (changes.phrases and book.agent_version < phrases.SET_AGENT) or (profile.prepare and not book.confirm):
         raise ValueError(_("Restart the game with the current agent to apply these keyboard settings."))
     ui = b.ui()
-    page, panel = ui.get("attack_page", 0), ui.get("panel", 0)
+    page, panel = (0 if page_one else ui.get("attack_page", 0)), ui.get("panel", 0)
     skill_write = False
     item_write = False
     try:
@@ -334,13 +338,22 @@ def _apply(b: Bot, profile: Profile) -> None:
         moved_panel = skill_write or item_write or bool(changes.profession)
         _restore(b, book, page if skill_write else None, panel if moved_panel else None)
     if skill_write:
-        book = b.skillbook = combat.SkillBook(b, game_folder=keys.folder)
+        book = b.skillbook = combat.SkillBook(b, game_folder=keys.folder, both_pages=page_one)
     if profile.prepare:
         b.skillbook = book
         try:
             _prepare(b, book, keys, profile, char_id)
         finally:
             _restore(b, book, page, None)
+            _farm_book(b, page_one)
+    _farm_book(b, page_one)
+
+
+def _farm_book(b: Bot, page_one: bool) -> None:
+    """With skill_page_one, the bot's own book is read again without page 2 (the Keyboard Manager's
+    sees both): the farm must never pick a page-2 skill from it."""
+    if page_one and getattr(b.skillbook, "both_pages", False):
+        b.skillbook = None
 
 
 def _restore(b: Bot, book: combat.SkillBook, page: int | None, panel: int | None) -> None:

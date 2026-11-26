@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+**Use only the skills of page 1** (untested in game: the tests use a pretend game)
+
+- A player never uses skill page 2, but saw the bot turn to it, a loss of time while farming. New box in
+  Character settings, Fighting: **Use only the skills of page 1 (never turn to skill page 2)**, unticked by
+  default. Ticked, the skills on page 2 are left alone - no fight, trip or guard uses them, so the page is
+  never turned there; the log names them once - and the empty keys the bot fills are those of page 1 only
+  (a heal, shield, dispel or buff it needs, or the teleport skill, that is only on page 2 goes on an empty
+  key of page 1; attack skills are never moved). The Keyboard Manager still sets both pages of a keyboard
+  profile, and leaves page 1 shown. Reset the fighting settings and Copy from another character carry it
+  too.
+
+**A boss that keeps coming back: the bot farms the wait, and the player chooses** (untested in game: the
+tests use a pretend game)
+
+- Before, the bot walked to the door past every monster, then stood by it doing nothing for the whole
+  wait, again and again while the boss stayed. Now it fights the monsters it meets on the way to the door
+  (none close to a boss, ten fights or two minutes at most, then straight out), and farms the map it waits
+  on, within 40 steps of where it came onto it. A trip to town for the bag, the drop time and the farm's
+  own end (minutes, kills) work there as on the farm, and the results count that map's kills for it.
+- The map waited on is farmed only when its monsters are no stronger than the farm's: never a town; not a
+  map the map data says has monsters stronger than both the farm's and the character's level + 5; and no
+  monster with more max HP than half again the most of what the farm chose to fight (an elite that attacked
+  us doesn't count; one that attacks us is always fought). A boss of that map that comes close is walked
+  away from. With nothing fought yet, the bot waits as before. Between two doors to leave by, one to a map
+  it may farm is taken if hardly further.
+- New **Bosses** group in Advanced settings, Fighting: **Leave the map for a while when a boss keeps coming
+  back** (on), how many walk-offs within 5 minutes before leaving (3; 0 leaves at once), the first wait
+  away (60 seconds) and the longest it doubles up to (300 seconds), and **Fight on the way out and farm the
+  map waited on** (on). With leaving off, the bot keeps away from the boss on the map and farms on.
+- A long wait now doubles too: the wait starts over 15 minutes after coming back, not after leaving.
+- **Tell the chat of each boss seen**: four boxes in the same group, one a room - Team, Gang, International,
+  Global (none ticked by default). Each boss that comes into sight is told to every ticked room, in
+  English whatever the bot's language: "Death Worm (a boss) on Wolf Prairie at 105, 100". Once a boss, and
+  once every 10 minutes a map at most; the log says what was sent. A character in no gang sends nothing to
+  the Gang chat, and the log says so, as it does for an international room not joined. The game takes a
+  Team line even without a team, which then goes nowhere.
+
 **The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
 
 - When an attack key is pressed at a monster the game finds out of range, it plays a short sound, again

@@ -369,6 +369,9 @@ msgstr "Idioma (&L):"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Sa&lir del mapa un rato cuando un jefe sigue volviendo"
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1215,6 +1218,9 @@ msgstr "Entre combates"
 
 msgid "Binding for {key}"
 msgstr "Asignación para {key}"
+
+msgid "Bosses"
+msgstr "Jefes"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2136,6 +2142,11 @@ msgstr "Pele&ar con monstruos que otro jugador ya está matando"
 msgid "Fight on"
 msgstr "Seguir peleando"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Luchar en el camino de salida y farmear el mapa de espera, si sus &monstruos no son más fuertes que los del mapa de farmeo"
+
 msgid "Fighting"
 msgstr "Peleando"
 
@@ -2162,6 +2173,9 @@ msgstr "Ajustes del filtro"
 
 msgid "Filter text or &pattern:"
 msgstr "Texto o &patrón del filtro:"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Primera espera &fuera del mapa (segundos):"
 
 msgid "Fishing"
 msgstr "Pesca"
@@ -2742,8 +2756,8 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
-msgstr "Mantenerse lejos de los jefes"
+msgid "Keep away from &bosses"
+msgstr "Mantenerse lejos de los &jefes"
 
 msgid "Keep farming, just tell me"
 msgstr "Seguir farmeando, solo avisarme"
@@ -2918,6 +2932,10 @@ msgstr "Registros"
 
 msgid "Logging back in now."
 msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"Espera más larga: se duplica cada vez que el jefe sigue a&hí (segundos):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Buscar el cofre que el juego anuncia en el mapa"
@@ -4802,6 +4820,21 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr "Teletransportarse al líder del equipo"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Avisar en el chat Gang de cada jefe visto (en inglés)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Avisar en el chat Global de cada jefe visto (en inglés; lo lee todo el servidor)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Avisar en el chat International de cada jefe visto (en inglés)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+"Avisar en el chat Team de cada jefe visto (en inglés: nombre, mapa, dónde)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Decirles de vez en cuando que estoy ausente (&w)"
 
@@ -5661,6 +5694,9 @@ msgstr "Usar objeto"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "Usa keyboard_profile seguido de un nombre de perfil entre comillas."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr "Usar solo las habilidades de la página &1 (nunca pasar a la página 2)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Usar los &combos de los talentos activados"
 
@@ -5721,6 +5757,11 @@ msgstr "Caminar a una mazmorra o mapa (&l)"
 
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "Esperando {seconds} segundos tras {job}"
+
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Alejarse de él este número de veces en 5 minutos antes de salir (0: salir enseguida):"
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
@@ -6696,6 +6737,9 @@ msgstr "no se pudo hablar con el {npc}"
 msgid "couldn't talk to {npc}"
 msgstr "no se pudo hablar con {npc}"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "no se pudo avisar en {room} de {boss}: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "no se pudo tirar: {list}"
 
@@ -6873,6 +6917,9 @@ msgstr ""
 
 msgid "farming {map}"
 msgstr "farmeando {map}"
+
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "farmeando {map} mientras tanto, cerca de donde llegamos"
 
 msgid "fed {beast}"
 msgstr "se alimentó a {beast}"
@@ -7247,6 +7294,10 @@ msgstr "saliendo primero de {map}, para encontrar el más cercano desde fuera"
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "saliendo de {map} hacia {dest} para desatascarme"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"dejando en paz a {name} en {map}: más HP que los monstruos del mapa de farmeo"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "dejo {skill} fuera de este viaje y planifico de nuevo"
@@ -7822,6 +7873,16 @@ msgstr "no hay arnebia de sobra para subir {gem} (tarifa {fee})"
 msgid "not enough supplies for the dungeon"
 msgstr "no hay suministros suficientes para la mazmorra"
 
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"sin farmear {map} mientras tanto: es una ciudad, o los datos del mapa dicen que sus monstruos son demasiado fuertes"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"sin farmear {map} mientras tanto: aún no hubo combates en el mapa de farmeo para juzgar sus monstruos"
+
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
 
@@ -7870,6 +7931,9 @@ msgstr "no guardado (puede que el almacén esté lleno): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "no llevo {item} al almacén: está lleno y todavía no tiene ninguno"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "sin aviso en {room} de {boss}: el personaje no está en ningún gang"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -8371,6 +8435,10 @@ msgstr "circuito corto"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "faltan suministros para la mazmorra: {what}"
+
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"página 2 de habilidades sin usar (solo se usan las de la página 1): {skills}"
 
 msgid "skills go by keys again: {why}"
 msgstr "las habilidades vuelven a ir por teclas: {why}"
@@ -9544,6 +9612,9 @@ msgid ""
 msgstr ""
 "today: todo lo que consiguieron las ejecuciones de hoy, sumado, con cuántas ejecuciones y minutos."
 
+msgid "told {rooms}: {line}"
+msgstr "avisado en {rooms}: {line}"
+
 msgid "too close to a boss"
 msgstr "demasiado cerca de un jefe"
 
@@ -10557,6 +10628,11 @@ msgstr "{skill} no lista {place} para este personaje"
 msgid "{skill} for a long walk"
 msgstr ""
 
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} solo está en la página 2 de habilidades, que se deja sin usar, y ninguna tecla de la página 1 está libre - ponla en la página 1 para usarla"
+
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr ""
 "{skill} no está en una tecla de habilidad (poner habilidades en teclas vacías está desactivado)"
@@ -10724,6 +10800,9 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Curando a compañeros mientras sigo"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Mantenerse lejos de los jefes"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

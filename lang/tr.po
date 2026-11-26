@@ -368,6 +368,9 @@ msgstr "Di&l:"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Bir patron geri ge&lip durursa haritadan bir süre ayrıl"
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1208,6 +1211,9 @@ msgstr "Dövüşler arasında"
 
 msgid "Binding for {key}"
 msgstr "{key} için atama"
+
+msgid "Bosses"
+msgstr "Patronlar"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2126,6 +2132,11 @@ msgstr "B&aşka bir oyuncunun zaten öldürmekte olduğu canavarlarla dövüş"
 msgid "Fight on"
 msgstr "Dövüşe devam et"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Çıkış yolunda dövüş ve beklenen haritada &farm yap, oradaki canavarlar farm haritasındakilerden güçlü değilse"
+
 msgid "Fighting"
 msgstr "Dövüş"
 
@@ -2152,6 +2163,9 @@ msgstr "Filtre ayarları"
 
 msgid "Filter text or &pattern:"
 msgstr "Filtre metni ya da desen (&P):"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Harita dışında ilk &bekleme (saniye):"
 
 msgid "Fishing"
 msgstr "Balık tutma"
@@ -2727,8 +2741,8 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
-msgstr "Patronlardan uzak dur"
+msgid "Keep away from &bosses"
+msgstr "Patronlardan u&zak dur"
 
 msgid "Keep farming, just tell me"
 msgstr "Farma devam et, yalnızca bana söyle"
@@ -2901,6 +2915,10 @@ msgstr "Günlüğe kaydetme"
 
 msgid "Logging back in now."
 msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"En &uzun bekleme: patron hâlâ oradaysa her seferinde iki katına çıkar (saniye):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Oyunun haritada duyurduğu sandığı ara"
@@ -4769,6 +4787,20 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr "Takım liderine ışınlan"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Görülen her patronu Gang sohbetine bildir (İngilizce)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Görülen her patronu Global sohbetine bildir (İngilizce; tüm sunucu okur)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Görülen her patronu International sohbetine bildir (İngilizce)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr "Görülen her patronu Team sohbetine bildir (İngilizce: ad, harita, yer)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Arada bir bilgisayar başında olmadığımı söyle (&W)"
 
@@ -5612,6 +5644,10 @@ msgstr "Eşya kullan"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "keyboard_profile komutundan sonra tırnak içinde bir profil adı yaz."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+"Yalnızca &1. sayfadaki yetenekleri kullan (yetenek sayfası 2'ye hiç geçme)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Etkin yeteneklerin kombolarını kullan (&C)"
 
@@ -5671,6 +5707,11 @@ msgstr "Bir zindana ya da haritaya yürü (&L)"
 
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "{job} sonrasında {seconds} saniye bekleniyor"
+
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Ayrılmadan önce 5 dakika içinde ondan bu kadar kez uzaklaş (0: hemen ayrıl):"
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Açık arazide çapraz yürü (&iki yön tuşu aynı anda)"
@@ -6641,6 +6682,9 @@ msgstr "{npc} ile konuşulamadı"
 msgid "couldn't talk to {npc}"
 msgstr "{npc} ile konuşulamadı"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "{boss} için {room} bilgilendirilemedi: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "atılamadı: {list}"
 
@@ -6818,6 +6862,9 @@ msgstr ""
 
 msgid "farming {map}"
 msgstr "{map} farmlanıyor"
+
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "bu arada {map} farmlanıyor, girilen yerin yakınında"
 
 msgid "fed {beast}"
 msgstr "{beast} beslendi"
@@ -7190,6 +7237,10 @@ msgstr "en yakını dışarıdan bulmak için önce {map} haritasından çıkıl
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr ""
 "takılmaktan kurtulmak için {map} haritasından {dest} haritasına gidiliyor"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"{map} haritasında {name} rahat bırakılıyor: farm haritasındaki canavarlardan fazla HP"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "{skill} bu yolculuğun dışında bırakılıp yeniden planlanıyor"
@@ -7749,6 +7800,16 @@ msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
 msgid "not enough supplies for the dungeon"
 msgstr "zindan için yeterli sarf malzemesi yok"
 
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"bu arada {map} farmlanmıyor: bir şehir, ya da harita verilerine göre canavarları çok güçlü"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"bu arada {map} farmlanmıyor: canavarlarını değerlendirmek için farm haritasında henüz dövüş yok"
+
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
 
@@ -7797,6 +7858,9 @@ msgstr "depolanmadı (depo dolu olabilir): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "{item} depoya götürülmüyor: depo dolu ve içinde henüz bundan yok"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "{boss} için {room} bilgilendirilmiyor: karakter hiçbir gang'de değil"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -8295,6 +8359,10 @@ msgstr "kısa döngü"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "zindan için eksik sarf malzemesi: {what}"
+
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"yetenek sayfası 2 kullanılmıyor (yalnızca 1. sayfadakiler kullanılır): {skills}"
 
 msgid "skills go by keys again: {why}"
 msgstr "beceriler yine tuşlarla kullanılıyor: {why}"
@@ -9459,6 +9527,9 @@ msgid ""
 msgstr ""
 "today: Bugünkü tüm çalışmaların kazandıklarının toplamı, çalışma sayısı ve dakikasıyla."
 
+msgid "told {rooms}: {line}"
+msgstr "{rooms} bilgilendirildi: {line}"
+
 msgid "too close to a boss"
 msgstr "bir patrona çok yakın"
 
@@ -10472,6 +10543,11 @@ msgstr "{skill} bu karakter için {place} yerini listelemiyor"
 msgid "{skill} for a long walk"
 msgstr ""
 
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} yalnızca kullanılmayan yetenek sayfası 2'de ve 1. sayfada boş tuş yok - kullanmak için 1. sayfaya koy"
+
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr "{skill} bir beceri tuşunda değil (becerileri boş tuşlara koyma kapalı)"
 
@@ -10634,6 +10710,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Patronlardan uzak dur"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

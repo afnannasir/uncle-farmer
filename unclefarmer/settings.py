@@ -141,6 +141,12 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "boss_leave": True,       # a boss that keeps coming back: leave the map for a while (engine/bosses.py)
+    "boss_walk_offs": 3,      # ...after this many walk-offs from it within 5 minutes (0: at once)
+    "boss_away_first": 60,    # seconds away the first time, doubled while the boss is still there...
+    "boss_away_most": 300,    # ...up to this many seconds
+    "boss_away_farm": True,   # fight on the way out and farm the map waited on (when its monsters are no stronger)
+    "boss_notice_rooms": [],  # chat channels (4 team, 3 gang, 5 international, 0 global) told of each boss seen
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
@@ -230,6 +236,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "heal_with_skill": True,  # a class with its own quick heal (Healing Wave, Heal) heals with it
     "heal_below": 85,         # HP % under which that heal is cast, in fights and between them
     "heal_potion_below": 50,  # with that heal, red potions only under this HP %
+    "skill_page_one": False,  # use only the skill keys of page 1: never turn to page 2, nothing put there
     "fill_empty_keys": True,  # put the heals, shields, buffs, dispels and items the bot uses on EMPTY keys
     "fill_empty_phrases": True,  # put useful quick phrase codes (/6 /5 /4, /7 for healers) on EMPTY phrase slots
     "teleport_key": "shift+p",   # the game's "teleport to the team leader" key (W_AMOVE): same map, 50 s cooldown
@@ -395,6 +402,12 @@ class Profile(BaseModel):
     xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]
+    boss_leave: bool = PROFILE_DEFAULTS["boss_leave"]
+    boss_walk_offs: int = PROFILE_DEFAULTS["boss_walk_offs"]
+    boss_away_first: int = PROFILE_DEFAULTS["boss_away_first"]
+    boss_away_most: int = PROFILE_DEFAULTS["boss_away_most"]
+    boss_away_farm: bool = PROFILE_DEFAULTS["boss_away_farm"]
+    boss_notice_rooms: list[int] = PROFILE_DEFAULTS["boss_notice_rooms"]
     skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     menu_keys_retry: bool = PROFILE_DEFAULTS["menu_keys_retry"]
@@ -447,6 +460,7 @@ class Profile(BaseModel):
     heal_below: int = PROFILE_DEFAULTS["heal_below"]
     heal_potion_below: int = PROFILE_DEFAULTS["heal_potion_below"]
     fill_empty_keys: bool = PROFILE_DEFAULTS["fill_empty_keys"]
+    skill_page_one: bool = PROFILE_DEFAULTS["skill_page_one"]
     fill_empty_phrases: bool = PROFILE_DEFAULTS["fill_empty_phrases"]
     teleport_key: str = PROFILE_DEFAULTS["teleport_key"]
     emergency_below: int = PROFILE_DEFAULTS["emergency_below"]

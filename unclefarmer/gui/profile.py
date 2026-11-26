@@ -14,7 +14,7 @@ from typing import Any, TypedDict, cast
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, keyboard, medals, potions, profilecopy, triggers, xpcard
+from ..engine import bosses, combat, keyboard, medals, potions, profilecopy, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, ask, buttons, enable_label, error, first_selected, group, info,
@@ -27,7 +27,7 @@ STYLES = ("auto", "follow", "stationary")
 # The fighting choices of the character window's own page, put back to their defaults by Advanced
 # settings' "Reset the fighting settings" (with its own pages' fine tuning and the skills' uses).
 MAIN_FIGHTING = ("attack_style", "fight_back", "nearest_monster", "fight_locked", "shoot_while_walking",
-                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys")
+                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys", "skill_page_one")
 # What the character window's "Copy from another character" can copy, in its list's order.
 COPY_PARTS = (("before", N_("Before farming list")), ("after", N_("After farming list")),
               ("fighting", N_("Fighting settings (not the keys)")), ("team", N_("Team settings")))
@@ -282,6 +282,8 @@ class ProfileDialog(Dialog):
         self.use_combos = f.check(_("Use the &combos of the activated talents"), p.get("use_combos", True))
         self.fill_keys = f.check(_("Put needed skills and items on &empty keys (never on keys in use)"),
                                  p.get("fill_empty_keys", True))
+        self.page_one = f.check(_("Use only the skills of page &1 (never turn to skill page 2)"),
+                                p.get("skill_page_one", False))
         f = group(panel, box, _("Death"))
         self.crystals = f.check(_("Revive on the spot with &Resurrection Crystals"), p["use_resurrection_crystal"])
         self.death_stop, self.max_deaths = f.optional(
@@ -797,7 +799,7 @@ class ProfileDialog(Dialog):
                          ("fight_locked", self.fight_locked), ("shoot_while_walking", self.shoot_while_walking),
                          ("skills_by_slot", self.skills_by_slot), ("use_buffs", self.use_buffs),
                          ("use_dispel", self.use_dispel), ("use_combos", self.use_combos),
-                         ("fill_empty_keys", self.fill_keys)):
+                         ("fill_empty_keys", self.fill_keys), ("skill_page_one", self.page_one)):
             box.SetValue(bool(p.get(key, settings.PROFILE_DEFAULTS[key])))
 
     def on_ok(self, _evt: wx.Event) -> None:
@@ -818,6 +820,7 @@ class ProfileDialog(Dialog):
         p["use_dispel"] = self.use_dispel.GetValue()
         p["use_combos"] = self.use_combos.GetValue()
         p["fill_empty_keys"] = self.fill_keys.GetValue()
+        p["skill_page_one"] = self.page_one.GetValue()
         p["respawn"] = "city"
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()
@@ -1073,9 +1076,6 @@ class AdvancedDialog(Dialog):
                                    p.get("press_burst", True))
         self.chase = f.number(_("&Chase monsters up to this many steps away (patrol loops):"),
                               p.get("chase_range", 40), 5, 150)
-        keep = p.get("boss_distance", 40)
-        self.boss_on, self.boss_keep = f.optional(
-            _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         hunt = p.get("chest_hunt_minutes", 5)
         self.hunt_on, self.hunt_minutes = f.optional(
@@ -1089,11 +1089,53 @@ class AdvancedDialog(Dialog):
             _("Minutes without a kill:"), no_kill or 10, 3, 120)
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
+        self.boss_settings(panel, box)
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)
         reset = wx.Button(panel, label=_("Reset the &fighting settings to their defaults"))
         reset.Bind(wx.EVT_BUTTON, lambda e: self.on_reset_fighting())
         box.Add(reset, 0, wx.TOP, 10)
+
+    def boss_settings(self, panel: wx.Panel, box: wx.BoxSizer) -> None:
+        """The Fighting page's Bosses group: the steps kept from a boss, and what to do about one that
+        keeps coming back (engine/bosses.py). The leaving boxes are off while bosses aren't kept away
+        from, the wait's while the map isn't left."""
+        p = self.p
+        f = group(panel, box, _("Bosses"))
+        keep = p.get("boss_distance", 40)
+        self.boss_on, self.boss_keep = f.optional(
+            _("Keep away from &bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.boss_leave, self.boss_walk_offs = f.optional(
+            _("&Leave the map for a while when a boss keeps coming back"), bool(p.get("boss_leave", True)),
+            _("Walk away from it this many times within 5 minutes before leaving (0: leave at once):"),
+            p.get("boss_walk_offs", 3), 0, 20)
+        self.boss_away_first = f.number(_("First &wait away from the map (seconds):"),
+                                        p.get("boss_away_first", 60), 10, 3600)
+        self.boss_away_most = f.number(_("Longest wait: it doubles each time the boss is still t&here (seconds):"),
+                                       p.get("boss_away_most", 300), 10, 7200)
+        self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
+                                        "are no stronger than the farm's"), p.get("boss_away_farm", True))
+        # one box a chat room (bosses.NOTICE_ROOMS), no shortcut letters: few are left on this page
+        ticked = bosses.notice_rooms(p)
+        self.boss_rooms = [(room, f.check(label, room in ticked)) for room, label in (
+            (4, _("Tell the Team chat of each boss seen (in English: name, map, where)")),
+            (3, _("Tell the Gang chat of each boss seen (in English)")),
+            (5, _("Tell the International chat of each boss seen (in English)")),
+            (0, _("Tell the Global chat of each boss seen (in English; the whole server reads it)")))]
+
+        def sync(evt: wx.Event | None = None) -> None:
+            on = self.boss_on.GetValue()
+            leave = on and self.boss_leave.GetValue()
+            self.boss_leave.Enable(on)
+            for ctrl in (self.boss_walk_offs, self.boss_away_first, self.boss_away_most):
+                ctrl.Enable(leave)
+                enable_label(ctrl, leave)
+            self.boss_away_farm.Enable(leave)
+            if evt is not None:
+                evt.Skip()                # Form.optional's handler still runs: it enables the field beside the box
+        self.boss_on.Bind(wx.EVT_CHECKBOX, sync)
+        self.boss_leave.Bind(wx.EVT_CHECKBOX, sync)
+        sync()
 
     def health_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -1227,6 +1269,12 @@ class AdvancedDialog(Dialog):
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["boss_leave"] = self.boss_leave.GetValue()
+        p["boss_walk_offs"] = self.boss_walk_offs.GetValue()
+        p["boss_away_first"] = self.boss_away_first.GetValue()
+        p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
+        p["boss_away_farm"] = self.boss_away_farm.GetValue()
+        p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
         p["open_chests"] = self.open_chests.GetValue()
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0

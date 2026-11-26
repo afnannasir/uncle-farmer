@@ -364,6 +364,9 @@ msgstr ""
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr ""
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1189,6 +1192,9 @@ msgid "Between fights"
 msgstr ""
 
 msgid "Binding for {key}"
+msgstr ""
+
+msgid "Bosses"
 msgstr ""
 
 msgid "Bot"
@@ -2096,6 +2102,10 @@ msgstr ""
 msgid "Fight on"
 msgstr ""
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+
 msgid "Fighting"
 msgstr ""
 
@@ -2121,6 +2131,9 @@ msgid "Filter settings"
 msgstr ""
 
 msgid "Filter text or &pattern:"
+msgstr ""
+
+msgid "First &wait away from the map (seconds):"
 msgstr ""
 
 msgid "Fishing"
@@ -2677,7 +2690,7 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
+msgid "Keep away from &bosses"
 msgstr ""
 
 msgid "Keep farming, just tell me"
@@ -2847,6 +2860,9 @@ msgid "Logging"
 msgstr ""
 
 msgid "Logging back in now."
+msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
 msgstr ""
 
 msgid "Look for a chest the game announces on the map"
@@ -4663,6 +4679,19 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr ""
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr ""
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr ""
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+
 msgid "Tell them now and then that I'm a&way"
 msgstr ""
 
@@ -5454,6 +5483,9 @@ msgstr ""
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr ""
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+
 msgid "Use the &combos of the activated talents"
 msgstr ""
 
@@ -5510,6 +5542,10 @@ msgid "Wa&lk to a dungeon or map"
 msgstr ""
 
 msgid "Waiting {seconds} seconds after {job}"
+msgstr ""
+
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
 msgstr ""
 
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
@@ -6442,6 +6478,9 @@ msgstr ""
 msgid "couldn't talk to {npc}"
 msgstr ""
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr ""
+
 msgid "couldn't throw away: {list}"
 msgstr ""
 
@@ -6609,6 +6648,9 @@ msgid "farming stops at {time} at the latest (the drop time resets at {reset})"
 msgstr ""
 
 msgid "farming {map}"
+msgstr ""
+
+msgid "farming {map} meanwhile, near where we came in"
 msgstr ""
 
 msgid "fed {beast}"
@@ -6970,6 +7012,9 @@ msgid "leaving {map} first, to find the nearest from outside"
 msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
+msgstr ""
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
 msgstr ""
 
 msgid "leaving {skill} out of this trip and planning again"
@@ -7517,6 +7562,14 @@ msgstr ""
 msgid "not enough supplies for the dungeon"
 msgstr ""
 
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
 
@@ -7564,6 +7617,9 @@ msgid "not stored (the storehouse may be full): {list}"
 msgstr ""
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+
+msgid "not telling {room} of {boss}: the character is in no gang"
 msgstr ""
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
@@ -8049,6 +8105,9 @@ msgid "short loop"
 msgstr ""
 
 msgid "short of supplies for the dungeon: {what}"
+msgstr ""
+
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
 msgstr ""
 
 msgid "skills go by keys again: {why}"
@@ -9165,6 +9224,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 
+msgid "told {rooms}: {line}"
+msgstr ""
+
 msgid "too close to a boss"
 msgstr ""
 
@@ -10147,6 +10209,10 @@ msgid "{skill} doesn't list {place} for this character"
 msgstr ""
 
 msgid "{skill} for a long walk"
+msgstr ""
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
 msgstr ""
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"

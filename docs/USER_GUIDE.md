@@ -438,9 +438,24 @@ The bot avoids attacking these bosses. It also avoids attacking anything within 
 
 When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
 
-A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side (fighting back anything that attacks it), then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
-You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
+The bot doesn't stand idle meanwhile. On the way to the door it fights the monsters it meets, as long as none is close to a boss (ten fights or two minutes at most, then it walks straight out). On the other side it farms the map, within 40 steps of where it came onto it ("farming central plains (1041) meanwhile, near where we came in"). It only does that where it is safe:
+
+- never in a town;
+- not on a map whose monsters the map data says are stronger than both those of your farm and your level + 5 (the data knows the levels of few maps);
+- never a monster with more HP than half again the most of what it fought on your farm ("leaving Wolf King alone on ...: more HP than the monsters of the farm"). A monster that attacks it is always fought.
+
+A boss of that map that comes close is walked away from, as on the farm, but never left behind with another trip. Before anything was fought on the farm, it has nothing to judge by, and waits as before. When two doors are about as near, it takes the one to a map it may farm. A full bag, the drop time and the end of the farm (its minutes or kills) work there as on the farm, and in the results, map by map, the kills of the wait count for the map waited on.
+
+All of this can be set in **Advanced → Fighting**, group **Bosses**:
+
+- **Keep away from bosses** and the steps to keep (40). Unticked, the bot doesn't keep away from bosses at all.
+- **Leave the map for a while when a boss keeps coming back** (ticked). Unticked, the bot never leaves: it keeps away from the boss on the map and farms on.
+- How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
+- The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
+- **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
+- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100". It tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
@@ -887,6 +902,14 @@ If no empty hotkey is available, the bot uses items directly from the backpack b
 The game can only cast skills assigned to skill keys.
 
 If there is no empty skill key for a skill the bot needs, it cannot cast that skill. It tells you which skills are missing and identifies keys that repeat skills already assigned elsewhere, so you can decide what to change.
+
+**Skill page 2**
+
+The game has two pages of skill keys, and the bot uses both: it turns the page for a skill on page 2, and back. If you never use page 2, tick **Use only the skills of page 1 (never turn to skill page 2)** under **Character → Settings → Fighting** (unticked by default). Then:
+
+- the skills on page 2 are left alone: no fight, trip or guard uses them, so the bot never turns the page there. The log names them once: "skill page 2 left alone (only the skills of page 1 are used): ...";
+- the empty keys the bot fills are those of page 1 only. A heal, shield, dispel or buff it needs, or the teleport skill for a trip, that is only on page 2 is put on an empty key of page 1 if one is free; else it says what is missing, as above. Attack skills are never moved: put the ones you want on page 1;
+- the Keyboard Manager still applies a keyboard profile to both pages, as you asked it to, and leaves page 1 shown.
 
 You can turn off this automatic key assignment behavior on the **Fighting** page.
 
