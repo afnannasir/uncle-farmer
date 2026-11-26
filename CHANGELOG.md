@@ -15,7 +15,7 @@
   It sends nothing if everything is at 100%, or if nothing changed since the last report.
   Tested in the game.
 - After the last highland, the scanner no longer goes back to the highland list just to find
-  nothing left. It still checks if the list has more than one page. Not yet tested in the game.
+  nothing left. It still checks if the list has more than one page. Tested in the game.
 - Daily chores still repairs only your gang's own highlands.
 
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
