@@ -77,19 +77,21 @@ final class Ask {
         }
     }
 
-    /** The remote port of the game's own connection, read without sending a packet. */
+    /** The remote port of the game's own connection, read without sending a packet, and the
+     *  game's own server choice (AutomaticLogin.serverChoice: the same whatever the route). */
     static String server() {
+        String choice = AutomaticLogin.serverChoice();
         Object ch = gameChannel();
-        if (ch == null) return "{\"ok\":false,\"error\":\"the game's connection wasn't found\"}";
+        if (ch == null) return "{\"ok\":false,\"error\":\"the game's connection wasn't found\"" + choice + "}";
         try {
             Object address = ch.getClass().getMethod("remoteAddress").invoke(ch);
             if (address instanceof InetSocketAddress) {
-                return "{\"ok\":true,\"port\":" + ((InetSocketAddress) address).getPort() + "}";
+                return "{\"ok\":true,\"port\":" + ((InetSocketAddress) address).getPort() + choice + "}";
             }
         } catch (Throwable ignored) {
             // A different channel implementation can have no usable remote address.
         }
-        return "{\"ok\":false,\"error\":\"the game's server address wasn't found\"}";
+        return "{\"ok\":false,\"error\":\"the game's server address wasn't found\"" + choice + "}";
     }
 
     /** Our character sheet without the key: the server answers with the sheet (IN op=62) about a

@@ -19,7 +19,8 @@ HOST = "127.0.0.1"
 
 # Confirmed against the game client's live server routes.  The agent reports only the port; this
 # turns that stable route into the name players use in the UI.
-SERVER_NAMES = {8767: "S1", 8769: "S2"}
+SERVER_NAMES = {8767: "S1", 8769: "S2"}       # the connection's port (an agent before 82)
+CHOSEN_SERVERS = {1: "S1", 2: "S2"}           # the number a Server row's label starts with (agent 82)
 
 
 class JsonLink(Protocol):
@@ -157,13 +158,20 @@ class AgentLink:
 
 
 def server_name(link: JsonLink) -> str:
-    """The familiar server label for an agent's live game route, if this agent can report it."""
+    """The familiar server label (S1, S2) of the game an agent is in, if this agent can report it.
+
+    The game's own choice comes first (agent 82: the sign-in screen's Server row, "1 (Frankfurt
+    Relay)" or "2: Journey Of Landscapes (Direct Connection )"), the same whatever the route; the
+    connection's port only for an older agent or a row without a number."""
     try:
         data = link.json("server")
     except (AgentError, OSError, ValueError):
         return ""
     if not json.is_object(data):
         return ""
+    chosen = data.get("chosen_server")
+    if isinstance(chosen, int) and not isinstance(chosen, bool) and chosen in CHOSEN_SERVERS:
+        return CHOSEN_SERVERS[chosen]
     port = data.get("port")
     return SERVER_NAMES.get(port, "") if isinstance(port, int) else ""
 

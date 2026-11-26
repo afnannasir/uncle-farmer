@@ -4,6 +4,12 @@
 
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
+- The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever
+  the route: the direct connection or any relay (Tokyo, Frankfurt, São Paulo, Singapore...), new ones
+  too. Before, it came from the connection's port alone. Needs the new agent (82): restart Mist World
+  once after updating.
+- The automatic login keeps the player's route: a player on a relay was put back on the direct
+  connection each time.
 - A profiles folder copied to another PC holds `Name--S1--<id>.json`. When that PC's bot couldn't tell
   the server (a game route on a port it doesn't know, or no answer from the agent), it looked only for
   `Name--<id>.json`, made a new one from the defaults and the run lost the pet, the Before and After
