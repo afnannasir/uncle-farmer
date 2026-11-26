@@ -290,6 +290,15 @@ def test_the_usual_talents_already_on_cost_nothing(visit: list[Any]) -> None:
     assert visit == [] and b.arnebia == 10_000_000
 
 
+def test_a_gang_talent_is_one_more_row_switched_and_charged_for_like_the_others() -> None:
+    # live, 2026-11-26: Brutal (a gang talent, 12 points) is a row of Reset Talents and counts in the price
+    rows = [talents.Row(i + 1, n, p, n in FIRE | {"Brutal"}) for i, (n, p) in enumerate(LEARNED + [("Brutal", 12)])]
+    kept, _m, switch = talents.plan(rows, sorted(HELL | {"Brutal"}))
+    assert "Brutal" in kept and "Brutal" not in {r.name for r in switch}
+    dropped, _m, switch = talents.plan(rows, sorted(HELL))       # not ticked: switched off with the rest
+    assert "Brutal" not in dropped and "Brutal" in {r.name for r in switch}
+
+
 def test_every_talent_master_is_known_and_stands_in_a_town() -> None:
     from unclefarmer import atlas
     found = talents.masters()

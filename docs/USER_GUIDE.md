@@ -510,7 +510,8 @@ for a character that plays with another talent tree the rest of the time. Nothin
 **Change the talents for farming**.
 
 - **Talents to farm with:** the learned talents, from the last scan; "(on now)" marks the ones on. Tick the
-  ones to farm with.
+  ones to farm with. The gang's talents, such as Brutal, are in the list too: the talent master switches
+  them like the others, and they count in the price. One that isn't ticked is switched off.
 - **Put the usual talents back when the run ends in a town with a talent master:** and tick them in
   **Usual talents**.
 - **Tick the talents that are on now, in both lists** fills both lists from the last scan (press **Scan now**
