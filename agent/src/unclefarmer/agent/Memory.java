@@ -662,7 +662,6 @@ final class Memory {
         }
     }
 
-    /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
     /** Null when the piece is ours and in the state to be worn (on: in the bag) or taken off (worn). */
     static String gearWearable(int uid, boolean on) throws Unavailable {
         Object gear = get(world(), W_EQUIP, ArrayList.class);
@@ -677,6 +676,7 @@ final class Memory {
         return "error: no equipment " + uid;
     }
 
+    /** Each uid is an equipment piece in the bag (not worn), once: null, else why not. */
     static String gearDiscardable(int[] uids) throws Unavailable {
         Object gear = get(world(), W_EQUIP, ArrayList.class);
         if (gear == null) throw new Unavailable("noequipment");

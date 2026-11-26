@@ -520,8 +520,7 @@ class ProfileDialog(Dialog):
 
     def on_medals_now(self, _evt: object = None) -> None:
         """Both lists ticked as the medals worn now, from the last scan (Scan now first for a fresh one)."""
-        scan_now: dict[str, Any] = self.p.get("scan") or {}
-        if not scan_now.get("medals"):
+        if not self.medal_rows:
             self.medals_unknown()
             return
         for box in (self.farm_medal_list, self.usual_medal_list):
@@ -529,6 +528,10 @@ class ProfileDialog(Dialog):
                 box.Check(i, bool(r.get("worn")) and not r.get("missing"))
 
     def medals_unknown(self) -> None:
+        scan_now: dict[str, Any] = self.p.get("scan") or {}
+        if "medals" in scan_now:         # scanned since medals are read: there are none
+            error(self, _("The last scan found no medal on this character, worn or in the bag."))
+            return
         error(self, _("The medals aren't known yet: log in to this character in the game and press Scan now "
                       "on the Overview page."))
 
@@ -863,6 +866,11 @@ class ProfileDialog(Dialog):
             return
         if self.farm_medals.GetValue() and not farm_medals:
             error(self, _("Tick the medals to farm with on the Medals page, or untick Change the medals for farming."))
+            return
+        here = {int(r["uid"]) for r in self.medal_rows if not r.get("missing")}
+        if self.farm_medals.GetValue() and not any(int(r["uid"]) in here for r in farm_medals):
+            error(self, _("None of the medals ticked to farm with is in the bag any more: tick others on the Medals "
+                          "page."))
             return
         if self.farm_medals.GetValue() and self.medals_back.GetValue() and not usual_medals:
             error(self, _("Tick the usual medals on the Medals page, or untick Put the usual medals back on."))

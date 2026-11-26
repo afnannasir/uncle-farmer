@@ -58,6 +58,25 @@ def test_with_the_box_off_only_the_bonuses_are_read(calls: list[str]) -> None:
     assert calls == ["learn"]
 
 
+def test_a_stop_while_the_farming_medals_go_on_is_passed_on(monkeypatch: pytest.MonkeyPatch, calls: list[str]) -> None:
+    # the day's stop raised in a cooldown wait: swallowed, the run farmed on past the day's end
+    def day_over(b: Any) -> bool:
+        raise Stopped("it's 23:50 - the day's farming is over")
+    monkeypatch.setattr(medals, "for_farming", stand_in(medals.for_farming, day_over))
+    run, _lines = a_run(dict(ON))
+    with pytest.raises(Stopped):
+        R.Run._farming_medals(run.bot)                   # type: ignore[arg-type]
+
+
+def test_a_hand_edited_list_doesn_t_stop_the_run(monkeypatch: pytest.MonkeyPatch, calls: list[str]) -> None:
+    def bad(b: Any) -> bool:
+        raise ValueError("invalid literal for int() with base 10: 'x'")
+    monkeypatch.setattr(medals, "for_farming", stand_in(medals.for_farming, bad))
+    run, lines = a_run(dict(ON))
+    R.Run._farming_medals(run.bot)                       # type: ignore[arg-type]
+    assert any("weren't put on" in line for line in lines)
+
+
 def test_the_usual_medals_go_back_once(calls: list[str]) -> None:
     run, _lines = a_run(dict(ON))
     run._medals_back()

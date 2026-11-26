@@ -205,9 +205,11 @@ class Run(threading.Thread):
         finally:
             self._paused_game_lost()
             try:
-                self._after_farming()
-                self._talents_back()         # (not after a failed After step: that one is what counts)
-                self._medals_back()
+                try:
+                    self._after_farming()
+                    self._talents_back()     # (not after a failed After step: that one is what counts)
+                finally:
+                    self._medals_back()      # (wherever, at no cost: even after one - best effort)
             except triggers.TriggerFailed as e:
                 # an After step that had to work didn't: said and recorded, but farming did end by
                 # itself, so the after-stop action (close the game, shut the PC down) still runs
@@ -602,15 +604,14 @@ class Run(threading.Thread):
     def _farming_medals(bot: Bot) -> None:
         """Character settings, Medals: the medals for farming worn before the run sets out, wherever
         it starts (no NPC, no cost). First the bonus of medals that share a name is read, once each,
-        for the settings window. Best effort: medals as they were are no reason not to farm."""
+        for the settings window. Medals as they were are no reason not to farm (for_farming says what
+        it couldn't change); a stop - Stop, the day's stop while a medal cools down - is passed on."""
         try:
             medals.learn_bonuses(bot)
             p: dict[str, Any] = getattr(bot, "p", None) or {}
             if p.get("farm_medals", False):
                 medals.for_farming(bot)
-        except Stopped as e:
-            if getattr(e, "final", False):
-                raise
+        except (ValueError, TypeError, KeyError) as e:      # a saved list edited by hand
             bot.log(_("the medals for farming weren't put on: {err}", err=e))
 
     def _medals_back(self) -> None:

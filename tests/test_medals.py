@@ -31,8 +31,8 @@ class Game:
         if line == "mem equipment":
             return [{"uid": u, "name": n, "equipped": int(u in b.worn), "o": 9} for u, n in b.pieces.items()]
         if line.startswith("said"):
-            since = int(line.split()[1])
-            return {"now": len(b.heard), "said": [{"text": t} for t in b.heard[since:]]}
+            since = int(line.split()[1])            # the agent's clock never reads 0: one past each line
+            return {"now": len(b.heard) + 1, "said": [{"text": t} for t in b.heard[max(since - 1, 0):]]}
         raise AssertionError(line)
 
     def send(self, line: str) -> str:
@@ -172,6 +172,47 @@ def test_the_bonus_of_medals_that_share_a_name_is_read_once(monkeypatch: pytest.
     asked = len(b.heard)
     medals.learn_bonuses(as_bot(b))
     assert len(b.heard) == asked                          # known: not asked again
+
+
+# ---------------------------------------------------------------- found by review
+def test_a_bonus_answer_that_doesnt_come_ends_the_reading_for_the_run(monkeypatch: pytest.MonkeyPatch,
+                                                                       tmp_path: Path) -> None:
+    # a late answer for the first Contribution Medal would be read as the second one's, and kept
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    b = GearBot(USUAL)
+    real = b.a.send
+
+    def mute(line: str) -> str:
+        return "asked 1" if line.startswith("gearinfo") else real(line)
+    b.a.send = mute                                       # type: ignore[method-assign]
+    medals.learn_bonuses(as_bot(b))
+    assert medals.bonuses() == {}
+    b.a.send = real                                       # type: ignore[method-assign]
+    medals.learn_bonuses(as_bot(b))                       # not again this run
+    assert medals.bonuses() == {}
+
+
+def test_a_cooldown_said_in_another_language_waits_a_whole_cooldown() -> None:
+    b = GearBot(USUAL, farm(listed(CONTRIB_A, BENEVOLENT, SOLDIERS, FIVE)))
+    b.changed[FIVE] = b.clock.time() - 2.0
+    real = b.a.send
+
+    def spanish(line: str) -> str:
+        answer = real(line)
+        b.heard[:] = [h.replace("seconds, wear cooldown", "segundos, enfriamiento") for h in b.heard]
+        return answer
+    b.a.send = spanish                                    # type: ignore[method-assign]
+    assert medals.for_farming(as_bot(b)) is True
+    assert FIVE in b.worn
+
+
+def test_a_medal_already_in_the_state_wanted_isn_t_asked_again() -> None:
+    b = GearBot({FOUR}, farm(listed(FIVE)))
+    bot = as_bot(b)
+    assert medals._change(bot, FOUR, False) is True       # taken off
+    b.worn.discard(FIVE)
+    assert medals._change(bot, FOUR, False) is True       # already off: nothing sent
+    assert b.sent == [(FOUR, False)]
 
 
 def test_colour_marks_are_left_out_of_a_medal_s_name() -> None:

@@ -30,7 +30,7 @@ GEAR_WEAR_AGENT = 81          # `gearwear <uid> on|off`
 COOLDOWN = 10.5               # seconds a piece waits after its own last change
 CHANGE_WAIT = 2.0             # seconds `mem equipment` gets to show a change
 COOLDOWN_SAID = re.compile(r"(\d+)\s*seconds?,\s*wear cooldown", re.I)
-MEDAL = re.compile(r"\bmedal\b", re.I)
+MEDAL = re.compile(r"medal", re.I)     # as the scan reads them (scan.py): Medalla, Medalha in other languages
 CODES = re.compile(r"lzs\d+lzs\d*lzs\d+lzs")   # the game's colour marks in a name ("lzs0lzs2250lzs1lzs")
 PLUS = re.compile(r"plus:\s*([^>|;]+)", re.I)
 BONUS_FILE = "_learned_medal_bonus.json"
@@ -106,13 +106,15 @@ def details(b: Bot, uid: int, name: str) -> str | None:
     """A piece's details as the game says them for the details key, or None when none came."""
     from .chores import said_mark, said_since
     mark = said_mark(b)
+    if not mark:                     # no clock from the agent: every old line would count as the answer
+        return None
     if not b.a.send("gearinfo %d" % uid).startswith("asked"):
         return None
     end = b.clock.time() + DETAILS_WAIT
     start = name.strip().lower()
     while True:
         for text in said_since(b, mark):
-            if text.strip().lower().startswith(start) and "durability" in text.lower():
+            if text.strip().lower().startswith(start):
                 return text
         if b.clock.time() >= end:
             return None
@@ -121,19 +123,23 @@ def details(b: Bot, uid: int, name: str) -> str | None:
 
 def learn_bonuses(b: Bot) -> None:
     """The bonus of each medal whose name another of the character's medals has too (Contribution
-    Medals), once per medal: the settings window shows it, so the right one can be ticked."""
-    if int(getattr(b, "agent_version", 0) or 0) < GEAR_WEAR_AGENT:
+    Medals), once per medal: the settings window shows it, so the right one can be ticked. One that
+    gets no answer in time ends it for this run: the late answer would be read as the next one's
+    (they share the name), and kept for good."""
+    if int(getattr(b, "agent_version", 0) or 0) < GEAR_WEAR_AGENT or b.__dict__.get("medal_bonus_tried"):
         return
+    b.__dict__["medal_bonus_tried"] = True
     rows = medals(b) or []
-    names = [r["name"] for r in rows]
+    names = [display(r["name"]) for r in rows]
     known = bonuses()
     found: dict[str, str] = {}
     for r in rows:
-        if names.count(r["name"]) < 2 or str(r["uid"]) in known:
+        if names.count(display(r["name"])) < 2 or str(r["uid"]) in known:
             continue
         text = details(b, r["uid"], r["name"])
-        if text is not None:
-            found[str(r["uid"])] = bonus_of(text)
+        if text is None:
+            break
+        found[str(r["uid"])] = bonus_of(text)
     if found:
         _keep_bonuses(found)
 
@@ -207,10 +213,12 @@ def _change(b: Bot, uid: int, on: bool) -> bool:
     for _try in range(2):
         if b.stop_event.is_set():
             return False
-        ready = last.get(uid, 0.0) + COOLDOWN - b.clock.time()
+        ready = min(last.get(uid, 0.0) + COOLDOWN - b.clock.time(), COOLDOWN + 1.0)   # (a clock set back)
         if ready > 0:
             b.sleep(ready)
         before = {r["uid"]: r["worn"] for r in medals(b) or []}
+        if before.get(uid) == on:
+            return True               # already so: the swap of a medal of its kind showed late
         mark = said_mark(b)
         answer = b.a.send("gearwear %d %s" % (uid, "on" if on else "off"))
         if not answer.startswith(("wearing", "taking off")):
@@ -232,4 +240,8 @@ def _change(b: Bot, uid: int, on: bool) -> bool:
                 last[uid] = b.clock.time() - COOLDOWN + float(wait.group(1)) + 1.0
                 break
             b.sleep(0.2)
+        else:
+            # no change and no English cooldown line (a game in another language says it otherwise):
+            # the next try waits a whole cooldown
+            last[uid] = b.clock.time()
     return False

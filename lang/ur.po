@@ -3333,6 +3333,11 @@ msgstr "Koi nahi"
 msgid "None in the bag"
 msgstr "Baste mein koi nahi"
 
+msgid ""
+"None of the medals ticked to farm with is in the bag any more: tick others on the Medals page."
+msgstr ""
+"Farming ke liye tick kiye gaye medals mein se koi ab bag mein nahin: Medals page par doosre tick karein."
+
 msgid "Normal"
 msgstr "Aam"
 
@@ -4995,6 +5000,10 @@ msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
 msgstr ""
 "Pichhle scan mein jama karne ki koi skill nahi mili. Gang ke Guru Elder ya Master Pepper se Fishing, Mining ya Collect Herbs (in mein se ek) seekhein, phir dobara scan karein."
+
+msgid "The last scan found no medal on this character, worn or in the bag."
+msgstr ""
+"Pichhle scan ko is character par koi medal nahin mila, na pehna hua na bag mein."
 
 msgid "The listener is busy or disconnected. Try again."
 msgstr "Sunne wala masroof hai ya alag hai. Dobara koshish karein."

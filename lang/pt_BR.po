@@ -3334,6 +3334,11 @@ msgstr "Nenhum"
 msgid "None in the bag"
 msgstr "Nenhum na mochila"
 
+msgid ""
+"None of the medals ticked to farm with is in the bag any more: tick others on the Medals page."
+msgstr ""
+"Nenhuma das medalhas marcadas para farmar está mais na bolsa: marque outras na página Medalhas."
+
 msgid "Normal"
 msgstr "Normal"
 
@@ -4996,6 +5001,10 @@ msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
 msgstr ""
 "A última análise não encontrou uma habilidade de coleta. Aprenda Pesca, Mineração ou Coletar Ervas com o Ancião Guru ou Mestre Pepper da guilda e faça uma nova análise."
+
+msgid "The last scan found no medal on this character, worn or in the bag."
+msgstr ""
+"A última análise não achou nenhuma medalha neste personagem, nem usada nem na bolsa."
 
 msgid "The listener is busy or disconnected. Try again."
 msgstr "O ouvinte está ocupado ou desconectado. Tente novamente."
@@ -7639,7 +7648,8 @@ msgid "none of these talents is in the Reset Talents menu - nothing changed"
 msgstr "nenhum destes talentos está no menu Reset Talents - nada mudou"
 
 msgid "none of {what} is in the bag - the medals stay as they are"
-msgstr "nenhuma de {what} está na bolsa - as medalhas ficam como estão"
+msgstr ""
+"nenhuma medalha da lista ({what}) está na bolsa - as medalhas ficam como estão"
 
 msgid "normal"
 msgstr "normal"
