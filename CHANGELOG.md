@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+**Tools, Buy collection items** (untested in game: the tests use a pretend market)
+
+- New tool (Ctrl+Shift+L), also in the Before and After farming lists and as the script command
+  `buy_collection [check]`: at the player market, the collection lots of the items you choose (fish, ore,
+  herbs), cheapest first, never above the most a unit you set, up to your day's count (the game allows 500
+  a day, counted from 00:00 GMT and kept for each character). A whole name only ("Milkfish" never buys a
+  "Flying Fish"); lots in their first hour are passed over; what arrives is counted from the bag.
+- The game's daily cap and "not enough gold coins" end the run; a lot that can't be had is passed over.
+  It can sell the collection to the town's buyers when done, and when the bag is too heavy, then buy on.
+- **Fixed**: the bot's own files in the profiles folder (`_game_restarts`, `_interrupted_runs`...) no
+  longer show among the characters, as in Copy from another character.
+
 **More for scripts** (untested in game: the tests use a pretend game)
 
 - `chat <room> <text>`: a line on a chat channel (team, gang, international, global, map, nearby,
