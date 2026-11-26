@@ -179,7 +179,7 @@ def games() -> list[tuple[int, str | None, str | None]]:
                 s = a.json("mem")
                 if s.get("ok"):
                     me = s["self"]
-                    name = settings.character_profile(me["name"], me.get("id"), server_name(a))
+                    name = settings.live_profile(me["name"], me.get("id"), server_name(a))
                     where = s["map"]["name"]
         except (AgentError, OSError, ValueError):
             # A crashed game's port file can outlive it; later Windows PID reuse made those stale

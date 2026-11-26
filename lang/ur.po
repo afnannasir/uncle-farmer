@@ -9438,6 +9438,16 @@ msgstr "game ki report: {total} mein se {n} kills, {dmg} damage"
 msgid "the game's report: {total} kills"
 msgstr "game ki report: {total} kills"
 
+msgid ""
+"the game's server wasn't recognised (the agent said: {said}); the settings are kept by the character's id"
+msgstr ""
+"game ka server pehchana nahi gaya (agent ne kaha: {said}); settings character ki id se rakhi ja rahi hain"
+
+msgid ""
+"the game's server wasn't recognised (the agent said: {said}); using the settings saved for {server}"
+msgstr ""
+"game ka server pehchana nahi gaya (agent ne kaha: {said}); {server} ke liye save ki hui settings use ho rahi hain"
+
 msgid "the gang has no {npc}"
 msgstr "gang mein koi {npc} nahi"
 

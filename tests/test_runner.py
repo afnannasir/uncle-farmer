@@ -251,6 +251,20 @@ def test_start_keeps_the_games_list_server_when_the_agent_lookup_fails(monkeypat
     assert run.profile == settings.character_profile("Hero", 7, "S1")
 
 
+def test_an_unread_server_takes_the_one_saved_server_profile_and_says_why(monkeypatch: pytest.MonkeyPatch,
+                                                                         tmp_path: Path) -> None:
+    monkeypatch.setattr(R, "AGENT_SERVER", 42)
+    run, _, lines, done = make(monkeypatch, tmp_path, agent=42, reply={"server": '{"ok":true,"port":9001}'})
+    monkeypatch.setattr(R, "server_name", stand_in(R.server_name, returning("")))
+    saved = settings.character_profile("Hero", 7, "S1")
+    monkeypatch.setattr(settings, "live_profile", stand_in(settings.live_profile, returning(saved)))
+    run.run()
+    assert done == ["finished"]
+    assert run.profile == saved
+    said = [line for line, _speak in lines if "wasn't recognised" in line]
+    assert said and "9001" in said[0] and "S1" in said[0]
+
+
 def test_farmed_only_for_a_farming_run() -> None:
     run = R.Run("", "", 1, lambda line, speak, run: None, lambda reason, run: None)
     run.bot = as_kind(Bot, types.SimpleNamespace(farmed=True))

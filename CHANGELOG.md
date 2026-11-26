@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**Fixed: settings lost when the game's server can't be read** (untested in game)
+
+- A profiles folder copied to another PC holds `Name--S1--<id>.json`. When that PC's bot couldn't tell
+  the server (a game route on a port it doesn't know, or no answer from the agent), it looked only for
+  `Name--<id>.json`, made a new one from the defaults and the run lost the pet, the Before and After
+  lists and the drop time. Now, with the server unknown, the one profile with a server saved for that
+  name and id is the character's (with one per server, it still can't tell them apart).
+- The log says when the server wasn't recognised and what the agent answered, to find out why.
+
 **Tools, Buy collection items** (untested in game: the tests use a pretend market)
 
 - New tool (Ctrl+Shift+L), also in the Before and After farming lists and as the script command

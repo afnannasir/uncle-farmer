@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import glob
 import os
 import shutil
 import threading
@@ -686,6 +687,42 @@ def character_profile(name: str, entity_id: object, server: str = "") -> str:
         return name
     return name + _PROFILE_ID_SEPARATOR + server + _PROFILE_ID_SEPARATOR + str(entity_id) if server \
         else name + _PROFILE_ID_SEPARATOR + str(entity_id)
+
+
+def live_profile(name: str, entity_id: object, server: str = "") -> str:
+    """The profile key of a character read live from the game.
+
+    The server comes from the game's route (link.server_name); when it can't be read (a port the
+    bot doesn't know, an agent that doesn't answer), the key used to name only the character's id
+    and the bot started from the defaults beside a complete Name--S1--<id>.json (a profiles folder
+    copied to another PC).  So when exactly one profile with a server holds this name and id, it
+    is this character's; with none, or one per server, the id-only key stays (it can't tell them
+    apart).
+    """
+    key = character_profile(name, entity_id, server)
+    if server or not is_character_profile(key):
+        return key
+    labelled = _server_profiles(name, str(entity_id))
+    return labelled[0] if len(labelled) == 1 else key
+
+
+def _server_profiles(name: str, entity_id: str) -> list[str]:
+    """The profile keys with a server saved for this name and id (Name--<server>--<id>.json)."""
+    pattern = glob.escape(paths.safe_name(name)) + "--*--" + glob.escape(paths.safe_name(entity_id)) + ".json"
+    found: list[str] = []
+    for path in glob.glob(os.path.join(glob.escape(paths.PROFILES), pattern)):
+        try:
+            with open(path, encoding="utf-8") as f:
+                data: object = json.load(f)
+        except (OSError, ValueError):
+            continue
+        identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
+        if not isinstance(identity, str):
+            continue
+        got_name, got_server, got_id = _profile_parts(identity)
+        if got_server and got_name == name and got_id == entity_id and identity not in found:
+            found.append(identity)
+    return found
 
 
 def profile_display(character: str) -> str:
