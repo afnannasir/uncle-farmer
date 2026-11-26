@@ -176,6 +176,16 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "speed_beast": "auto",    # fusion beast to travel on: "auto" the fastest Swift one, "none", or its name
     "fight_beast": "none",    # fusion beast to fight as: "none" (most players, for long farms), "auto", or its name
     "pets": [],               # pets in order, [{"name", "use"}]: the first ticked one that is ready comes out
+    # Talents (engine/talents.py): off until the player ticks it - every reset costs 200 arnebia a point.
+    "farm_talents": False,    # put on farm_talent_list at a talent master before a run farms
+    "farm_talent_list": [],   # talent names to have on while farming
+    "talents_back": False,    # ... and usual_talent_list back when the run ends in a town with a talent master
+    "usual_talent_list": [],
+    # Medals (engine/medals.py): off until the player ticks it. Each medal by its id: [{"uid", "name"}].
+    "farm_medals": False,     # wear farm_medal_list (and nothing else) before a run farms
+    "farm_medal_list": [],
+    "medals_back": False,     # ... and usual_medal_list again when the run ends, wherever it ends
+    "usual_medal_list": [],
     "pet_hp_below": "auto",   # pet HP % under which a pet red potion is used ("auto": as soon as one potion's worth is missing)
     "pet_mp_below": "auto",   # the same for the pet's MP and a pet blue potion
     "pet_hp_cooldown": "auto",  # seconds between pet red potions at least ("auto": the potion's own cooldown)
@@ -400,6 +410,14 @@ class Profile(BaseModel):
     speed_beast: str | bool = PROFILE_DEFAULTS["speed_beast"]
     fight_beast: str | bool = PROFILE_DEFAULTS["fight_beast"]
     pets: list[Any] = PROFILE_DEFAULTS["pets"]
+    farm_talents: bool = PROFILE_DEFAULTS["farm_talents"]
+    farm_talent_list: list[str] = PROFILE_DEFAULTS["farm_talent_list"]
+    talents_back: bool = PROFILE_DEFAULTS["talents_back"]
+    usual_talent_list: list[str] = PROFILE_DEFAULTS["usual_talent_list"]
+    farm_medals: bool = PROFILE_DEFAULTS["farm_medals"]
+    farm_medal_list: list[dict[str, Any]] = PROFILE_DEFAULTS["farm_medal_list"]
+    medals_back: bool = PROFILE_DEFAULTS["medals_back"]
+    usual_medal_list: list[dict[str, Any]] = PROFILE_DEFAULTS["usual_medal_list"]
     pet_hp_below: Auto | None = PROFILE_DEFAULTS["pet_hp_below"]
     pet_hp_cooldown: Auto | None = PROFILE_DEFAULTS["pet_hp_cooldown"]
     pet_hp_key: str = PROFILE_DEFAULTS["pet_hp_key"]

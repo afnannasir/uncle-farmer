@@ -407,6 +407,30 @@ final class Act {
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid};
     }
 
+    /** The equipment tab's use key on a piece: live (2026-11-26) op 18, the equipment panel, the
+     *  piece's id, then 0 to wear it (one of the same kind comes off by itself) or 1 to take it off.
+     *  The game refuses a piece changed in the last ~10 s itself ("N seconds, wear cooldown"). */
+    static final int GEAR_WEAR = 0;
+    static final int GEAR_TAKE_OFF = 1;
+
+    /** `gearwear <uid> on|off`: wear an equipment piece from the bag, or take a worn one off. */
+    static String gearWear(int uid, boolean on) {
+        try {
+            String refused = Memory.gearWearable(uid, on);
+            if (refused != null) return refused;
+        } catch (Memory.Unavailable u) {
+            return "error: " + u.getMessage();
+        }
+        String failed = Ask.send(gearWearPacket(uid, on), (on ? "wear " : "take off ") + uid);
+        return failed != null ? failed : (on ? "wearing " : "taking off ") + uid;
+    }
+
+    static byte[] gearWearPacket(int uid, boolean on) {
+        return new byte[] {(byte) OP_USE, (byte) GEAR_PANEL,
+                (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid,
+                (byte) (on ? GEAR_WEAR : GEAR_TAKE_OFF)};
+    }
+
     static byte[] gearDiscardPacket(int uid) {
         return new byte[] {(byte) OP_USE, (byte) GEAR_PANEL,
                 (byte) (uid >>> 24), (byte) (uid >>> 16), (byte) (uid >>> 8), (byte) uid, (byte) GEAR_DISCARD};

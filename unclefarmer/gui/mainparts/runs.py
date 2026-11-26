@@ -87,6 +87,26 @@ def run_text_and_profile(item: Item, profile: str | None) -> tuple[str | None, s
     return text, profile or target, None
 
 
+def chain_hook(frame: object, name: str, *args: Any) -> Any:
+    """A Run, Character chain method of the window (gui/mainparts/chain.py), or None without one."""
+    fn = getattr(frame, name, None)
+    return fn(*args) if callable(fn) else None
+
+
+def chain_owns(frame: object, pid: int | None, profile: str | None = None) -> bool:
+    """The game is a going character chain's: no other run may start in it."""
+    return bool(chain_hook(frame, "chain_owns", pid, profile))
+
+
+def game_busy(frame: Any, pid: int, profile: str | None) -> str | None:
+    """Why no run can start in that game now (one runs there, or it is a character chain's), or None."""
+    if pid in frame.runs:
+        return _("Already running.")
+    if chain_owns(frame, pid, profile):
+        return _("That game is in a character chain: stop the chain first (Stop, Shift+F5).")
+    return None
+
+
 class RunsMixin(FrameParts):
     # ------------------------------------------------------------ what to run
     def item_label(self, item: Item) -> str:
@@ -259,7 +279,7 @@ class RunsMixin(FrameParts):
         # ours_only (a run carried on after its game was lost): never a game the player has at its
         # login screen - a login that failed there had that game closed, by force, to open it again
         signed_out = [g[0] for g in self.games if not g[1] and g[0] not in self.runs and g[0] not in waits
-                      and (not ours_only or g[0] in ours)]
+                      and (not ours_only or g[0] in ours) and not chain_owns(self, g[0], profile)]
         if len(signed_out) == 1:
             pending.pop(profile, None)
             return signed_out[0], ""
@@ -295,6 +315,14 @@ class RunsMixin(FrameParts):
         last = settings.last_run_of(self.s, name)
         return saved_item(last) if last and saved_item(last) in self.items else item
 
+    def _game_busy(self, pid: int, profile: str | None) -> str | None:
+        """Why no run can start in that game now (one runs there, or it is a character chain's), or None."""
+        if pid in self.runs:
+            return _("Already running.")
+        if self.chain_owns(pid, profile):
+            return _("That game is in a character chain: stop the chain first (Stop, Shift+F5).")
+        return None
+
     def start(self, pid: int | None = None, item: Item | None = None, remote: bool = False,
               profile: str | None = None, schedule_mark: tuple[str, str] | None = None,
               resume_row: dict[str, Any] | None = None) -> str | None:
@@ -322,8 +350,9 @@ class RunsMixin(FrameParts):
         if pid is None:
             self.say(_("No game with the agent is running."))
             return None
-        if pid in self.runs:
-            return _("Already running.")
+        busy = game_busy(self, pid, profile)
+        if busy is not None:
+            return busy if busy == _("Already running.") else fail(busy)
         chosen = item if given else self._item_for_game(pid, item)
         if chosen != item:
             item, text = chosen, None    # that item's own steps, never the selected one's
@@ -348,6 +377,7 @@ class RunsMixin(FrameParts):
         run.resume_row = resume_row
         run.character = settings.profile_name(name) or None   # for the log until the run reads it from the game itself
         run.profile = profile or name
+        chain_hook(self, "chain_adopt", run)   # Run, Character chain: its row's run (before it can end)
         self.runs[pid] = run
         self.last_line[pid] = _("Starting")
         self.label_games()
@@ -372,6 +402,9 @@ class RunsMixin(FrameParts):
             return False
         if pid in self.runs:
             self.say(_("Stop the bot first."))
+            return False
+        if chain_owns(self, pid):
+            self.say(_("That game is in a character chain: stop the chain first (Stop, Shift+F5)."))
             return False
         snap = self.snapshot(pid)
         if not character_of(snap):
@@ -400,6 +433,8 @@ class RunsMixin(FrameParts):
         tell(text) answers the player when it ends by itself."""
         if pid in self.runs:
             return _("Busy - send stop first.")
+        if chain_owns(self, pid):
+            return _("Busy - in a character chain. Send stop first.")
         run = Run(text, title, pid, self.on_log, self.on_done, walk=True, clock=self.clock)
         run.locate = self.locate
         run.last_seen = self.last_seen
@@ -456,11 +491,14 @@ class RunsMixin(FrameParts):
         if run:
             self.say(_("Stopping"), run)
             run.stop()
+        elif which is not None and chain_hook(self, "chain_active", which):
+            chain_hook(self, "cancel_chain")   # between two characters: no run to stop, the chain itself
 
     def stop_all(self) -> None:
         """Every bot, and every run waiting to carry on: a game the player closed by hand was
         opened again every minute and a half for five minutes, with no way to keep it closed."""
         cancelled = self.cancel_carry_on()
+        cancelled = bool(chain_hook(self, "cancel_chain")) or cancelled
         if not self.runs:
             if not cancelled:
                 self.say(_("No bot is running."))

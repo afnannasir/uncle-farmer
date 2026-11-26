@@ -303,6 +303,33 @@ The two lists are the same ones as **Character settings → Triggers**: change t
 
 **Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
+### Character chain: several characters in one game
+
+**Run → Character chain** (Ctrl+Shift+C) lists characters that farm one after the other in the same game,
+in order. For each one you choose what it does: one of your plans, or its Autopilot day (its Before
+farming list, its farming and its After farming list, as Run, Autopilot has it). Only characters whose
+account the bot knows can be added: log in to each one once by hand. Characters can be on the same account
+or on different ones.
+
+**Start the chain** works in the game selected in the Games list. The bot takes the first character not
+done today (the game's day, 00:00 GMT to 00:00 GMT). When another character is in the game, it logs that
+one out with the setting menu's Switch account, as a player does, and the chain's character is logged in
+by itself, as for a schedule. Then its plan or its day runs.
+
+- **A run that ends by itself** (the plan done, the drop time used up, the next level, the daily stop):
+  the character is done for today, and the next one comes.
+- **Stop**, **Stop every bot**, or `stop` or `quit game` by private message: the whole chain stops.
+- `next` by private message: this character is done for today, and the next one comes.
+- **A run that fails** (an error, an account the game doesn't have): the character isn't marked, and the
+  chain goes on. After two failures it is left out of this chain.
+- **A game lost** during a run is opened again and the run carried on, as always; the chain waits for it.
+- **A character done with more than 10 minutes of drop time left** (its plan ended early) is done again
+  once all the others are, at most twice a day.
+
+**At the end of the chain**: stay logged in on the last character, or close the game. The setting
+**After farming stops automatically** (close the game, shut down) doesn't apply between characters of
+a chain. **Let every character farm again today** clears the day's marks.
+
 ### A lost game, and runs that didn't finish
 
 While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 seconds: the line it is on, the turn of each loop, how many minutes and kills the current farm has done, the run's own minutes and kills, and the script's `set` values.
@@ -503,6 +530,57 @@ Every character has its own settings.
 
 When Uncle Farmer encounters a character for the first time, it creates that character's settings using information from its initial scan.
 
+### Talents for farming
+
+The **Talents** page of a character's settings lets the bot farm with other talents than the usual ones,
+for a character that plays with another talent tree the rest of the time. Nothing changes until you tick
+**Change the talents for farming**.
+
+- **Talents to farm with:** the learned talents, from the last scan; "(on now)" marks the ones on. Tick the
+  ones to farm with. The gang's talents, such as Brutal, are in the list too: the talent master switches
+  them like the others, and they count in the price. One that isn't ticked is switched off.
+- **Put the usual talents back when the run ends in a town with a talent master:** and tick them in
+  **Usual talents**.
+- **Tick the talents that are on now, in both lists** fills both lists from the last scan (press **Scan now**
+  on the Overview page first if the talents changed since).
+
+Before a run sets out, the bot reads the talents that are on, which costs nothing. When they aren't the
+ones ticked, it goes to the nearest talent master, there and back to the first farming map, even when the
+run starts on that map. The talent masters are the city officers, such as Chancellor Bren in Giant rock
+City or Guard Captain Suke in Tulip City. There it chooses **Reset Talents**, switches only the talents
+that differ, then **submit** and **Confirm**, and checks that the talents are on. It says what the reset cost.
+
+The game charges 200 arnebia for every talent point the talents put on take, at every reset, even one
+that changes nothing. A reset of 183 points costs 36,600 arnebia. So the bot never resets talents that are
+already right. Before submitting, it also checks that the character has the talent points and the
+arnebia for them, and changes nothing otherwise. A ticked talent the character hasn't learned is left
+out. If no talent master can be reached, the run farms with the talents as they are.
+
+When a farming run ends by itself in a town whose talent master is on that map, after the After farming
+list, the bot puts the usual talents back. It never makes a trip just for that: a run that ends elsewhere
+leaves them, and says so. The next run puts the farming talents on anyway.
+
+### Medals for farming
+
+The **Medals** page works the same way for medals, which cost nothing to change and need no NPC. Nothing
+changes until you tick **Change the medals for farming**.
+
+- **Medals to farm with:** every medal of the character, worn or in the bag, from the last scan. The ticked
+  ones are worn while farming, and the others come off.
+- **Put the usual medals back on when the run ends, wherever it ends:** and tick them in **Usual medals**.
+- **Tick the medals worn now, in both lists** fills both lists from the last scan.
+
+Before a run sets out, the bot puts on each ticked medal that isn't worn. A medal of a kind already worn
+takes that one's place, as the game does by hand: one Contribution Medal, one star medal, one medal of
+each other kind. Then it takes off the worn medals that aren't ticked. Each medal waits about 10 seconds
+after its own last change, so the bot changes the others meanwhile. Every change is checked. When a farming
+run ends by itself, after the After farming list, the usual medals go back on, wherever the run ended.
+
+All Contribution Medals have the same name. Only their bonus tells them apart, so a run reads each one's
+bonus once, with the details key, and the lists show it afterwards: "Contribution Medal (plus: When
+attacked critical hit resistance increase 3)". This needs the agent that comes with this version: restart
+the game once after updating.
+
 ## The bag
 
 Open **Character → Bag and supplies (Ctrl+B)** to manage the items your character collects and the supplies it needs.
@@ -642,6 +720,11 @@ For melee characters, the bot prefers attacking a monster with fewer other monst
 On a busy map, a monster another player stands nearer to than you do is often gone before you get there: measured over an hour on Underwater World, about one in four of those went to someone else, against one in ten of the others. So when two monsters are about as far, the bot takes the one nobody else is closer to; one that another player is nearer to counts as 15 steps further away. It never leaves such a monster out, since most of them still end up as your kills, and a monster that attacks you is fought first, whoever stands near it. Pets and summons don't count as players.
 
 If no monsters are attacking but your HP is low, the bot rests before starting another fight.
+
+When an attack is pressed at a monster the game finds too far away, the game answers with a short sound
+at each refused press (the "beep, beep, beep" you may hear). The bot listens for it while farming: at the
+first one, it stops pressing at that monster, leaves it alone for 3 seconds and goes to the nearest one.
+The log says so once for each monster.
 
 While travelling, the bot only fights monsters that attack it.
 
@@ -2251,7 +2334,8 @@ Available commands include:
 - `leave`, `quit`, or `quit team` — Leaves the team.
 - `mute` — Mutes the game.
 - `unmute` — Unmutes the game.
-- `quit game` — Closes the game.
+- `quit game` — Closes the game. In a character chain, the chain stops too.
+- `next` — In a character chain: this character counts as done today, and the next one logs in and farms.
 - `wait [minutes]` — Logs your character out for a while, then back in, and the run goes on (off unless ticked, see below).
 
 One action at a time: while one is under way (a wait, a walk home, `come`), another action is answered "Busy, one command at a time. Still on: ...". Questions (`status`, `where`, `results`...) and `stop`, `pause`, `resume` and `quit game` are always answered.

@@ -13,7 +13,7 @@ from typing import Any
 from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
-from .. import beasts, bosses, combat, pets, picking, teamheal
+from .. import beasts, bosses, combat, pets, picking, refusals, teamheal
 from .base import (MOVE_SHOT_REACH, STOPPING, LosingFight, Respawned, Stopped, agent_strike, note_failure,
                    skill_things, snap_map)
 from ...link import GameLink
@@ -62,6 +62,7 @@ NO_KILL = {
     "drifted": "it drifted past the target keys' range",
     "lost target": "the game lost our target and wouldn't take it back",
     "refused": "the game refused every cast at it from where we stood",
+    "too far": "the game refused an attack at it: out of range (its sound 1023)",
     "timeout": "the fight took too long",
     "died": "we died",
     "fled": "HP stayed low, so the fight was dropped to flee to town (flee_on_panic)",
@@ -276,6 +277,14 @@ class FightingMixin(Parts):
         sb = self.skillbook
         if sb is None:
             return None
+        if refusals.heard(as_bot(self)):
+            # the last shot was refused for the distance (sound 1023): the target it went at is
+            # left alone a moment, so the next shot isn't pressed at it again from here
+            refused = self.ui().get("target")
+            if isinstance(refused, int):
+                self.leave(refused, "too far", refusals.REFUSED_FOR, record=False)
+                name = next((str(e.get("name") or "?") for e in snap.get("entities", []) if e.get("id") == refused), "?")
+                refusals.note(as_bot(self), refused, name)
         rng = self.reach()
         here = snap_map(snap)
         area, only, skip, rects = self.farm_filter or (None, "", "", [])
@@ -773,14 +782,16 @@ class FightingMixin(Parts):
         if rec is not None and "why" not in rec:
             rec["why"] = why
 
-    def leave(self, mid: int, why: str, seconds: float | None = None) -> float:
+    def leave(self, mid: int, why: str, seconds: float | None = None, record: bool = True) -> float:
         """Leave this monster alone for a while and say why: the one way a fight holds anything
         against a monster's id. why is a key of NO_KILL; seconds is LEFT_FOR's for it unless
         given. Until when (the clock's time). targets() leaves it out till then ("skip") - unless
-        it attacks us, dies or we change maps (picking.left_out, _forget_the_dead, forget_the_map)."""
+        it attacks us, dies or we change maps (picking.left_out, _forget_the_dead, forget_the_map).
+        record=False: not the picked fight's monster (a shot on the way), so not its record's reason."""
         until = self.clock.time() + (LEFT_FOR[why] if seconds is None else seconds)
         self.skip[mid] = until
-        self.ended(why)
+        if record:
+            self.ended(why)
         return until
 
     def _write_fight(self, rec: dict[str, Any]) -> None:
@@ -1382,6 +1393,13 @@ class FightingMixin(Parts):
     def _fight_can_press(self, f: "_Fight", skill: combat.Skill | None = None, *,
                          follow: bool = False, retry: bool = False) -> bool:
         """Validate the intended attack against the latest world and cast reports."""
+        if refusals.heard(as_bot(self)):
+            # the server refused an attack at it for the distance (sound 1023): no more presses from
+            # here; the farm loop takes the nearest monster (this one again, walked up to, later)
+            refusals.note(as_bot(self), f.mid, str(f.mob.get("name") or "?"))
+            self.leave(f.mid, "too far", refusals.REFUSED_FOR)
+            f.press_block = "return"
+            return False
         now = self.clock.time()
         if retry or now - f.position_at >= combat.SLOT_GAP:
             FightingMixin._fight_position(self, f, self.snap())

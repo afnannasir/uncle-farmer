@@ -104,8 +104,21 @@ msgstr "&Ghaar:"
 msgid "&Change key"
 msgstr "&Key tabdeel karein"
 
+msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+"Farming ke liye medals &badlein, run shuru hone se pehle (jo tick nahin woh utar diye jayenge)"
+
+msgid ""
+"&Change the talents for farming, at the nearest talent master before the run sets out"
+msgstr ""
+"Farming ke liye talents &badlein, run shuru hone se pehle qareeb tareen talent master ke paas"
+
 msgid "&Character"
 msgstr "&Kirdaar"
+
+msgid "&Character chain"
+msgstr "&Kirdaaron ki chain"
 
 msgid "&Character:"
 msgstr "&Kirdaar:"
@@ -360,6 +373,9 @@ msgstr ""
 
 msgid "&Legendary"
 msgstr "&Legendary"
+
+msgid "&Let every character farm again today"
+msgstr "&Sab kirdaaron ko aaj dobara farm karne dein"
 
 msgid "&Let it shut down"
 msgstr "Shutdown &hone dein"
@@ -656,6 +672,12 @@ msgstr "&Phir:"
 msgid "&Throw away:"
 msgstr "&Phenkein:"
 
+msgid "&Tick the medals worn now, in both lists"
+msgstr "Abhi pehne hue medals dono lists mein &tick karein"
+
+msgid "&Tick the talents that are on now, in both lists"
+msgstr "Abhi on talents dono lists mein &tick karein"
+
 msgid "&Time (HH:MM, this computer's clock):"
 msgstr "&Waqt (HH:MM, is computer ki ghari):"
 
@@ -691,6 +713,9 @@ msgstr "&Script ki tarah dekhein"
 
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Jab bhi maps paidal jude hon to &chalna"
+
+msgid "&What it does:"
+msgstr "&Wo kya karta hai:"
 
 msgid "&What to copy:"
 msgstr "Kya co&py karna hai:"
@@ -838,6 +863,9 @@ msgstr "; in keys par wohi skill hai jo doosri key par bhi hai: {keys}"
 msgid "A bot is running. Stop it and quit?"
 msgstr "Ek bot chal raha hai. Rok kar bahar niklein?"
 
+msgid "A character chain is already going."
+msgstr "Kirdaaron ki ek chain pehle se chal rahi hai."
+
 msgid "A city s&quare"
 msgstr "Ek city s&quare"
 
@@ -880,8 +908,16 @@ msgstr "Sound ka khamosh intikhab on ya off hona chahiye."
 msgid "A spot has 10 patrol points at most."
 msgstr "Ek spot mein zyada se zyada 10 patrol points hote hain."
 
+msgid ""
+"A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing changes, so the bot only goes when the talents on aren't the ones ticked."
+msgstr ""
+"Talent master (shehar ka officer, jaise Chancellor Bren ya Guard Captain Suke) talents badal sakta hai. Har reset ki qeemat on kiye gaye talents ke har talent point par 200 arnebia hai, chahe kuch na badle, is liye bot sirf tab jata hai jab on talents tick kiye gaye talents nahin hote."
+
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Team dungeon: game 2 se 3 khilariyon ke group andar aane deta hai."
+
+msgid "A&dd..."
+msgstr "Sh&amil karein..."
 
 msgid "About the skill:"
 msgstr "Skill ke baare mein:"
@@ -924,6 +960,9 @@ msgstr "Sargarmi:"
 msgid "Ad&vanced"
 msgstr "Maz&eed"
 
+msgid "Add a character to the chain"
+msgstr "Chain mein kirdaar shamil karein"
+
 msgid "Add a circle aro&und me"
 msgstr "Mere gird circle shamil kar&ein"
 
@@ -953,6 +992,9 @@ msgstr "Supply shamil karein"
 
 msgid "Add an item"
 msgstr "Cheez shamil karein"
+
+msgid "Add at least one character to the chain."
+msgstr "Chain mein kam az kam ek kirdaar shamil karein."
 
 msgid "Add at least one farming spot."
 msgstr "Kam az kam ek kheti ki jagah shamil karein."
@@ -1114,6 +1156,9 @@ msgstr "&Ghadi ke waqt par"
 msgid "At a place I choose"
 msgstr "Meri chuni hui jagah par"
 
+msgid "At the &end of the chain:"
+msgstr "Chain ke aakhir &par:"
+
 msgid "At the shops' fixed prices:"
 msgstr "Dukaanon ki muqarrar qeematon par:"
 
@@ -1229,6 +1274,9 @@ msgstr "Zer-e-tameer Magic Ca&nnon build karo"
 msgid "Build the S&upply Camp under construction"
 msgstr "Zer-e-tameer S&upply Camp build karo"
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr "Masroof - kirdaaron ki chain mein. Pehle stop bhejein."
+
 msgid "Busy - send stop first."
 msgstr "Masroof hai - pehle stop bhejein."
 
@@ -1250,6 +1298,9 @@ msgstr "Bechne wale ki ID se"
 
 msgid "C&hannel:"
 msgstr "C&hannel:"
+
+msgid "C&haracter:"
+msgstr "Kir&daar:"
 
 msgid "C&hat"
 msgstr "C&hat"
@@ -1317,6 +1368,38 @@ msgstr "Channels"
 msgid "Character"
 msgstr "Kirdaar"
 
+msgid "Character chain"
+msgstr "Kirdaaron ki chain"
+
+msgid "Character chain: couldn't close the game ({err})"
+msgstr "Kirdaaron ki chain: game band nahin ho saka ({err})"
+
+msgid "Character chain: logging {old} out for {new}"
+msgstr "Kirdaaron ki chain: {new} ke liye {old} ko log out kiya ja raha hai"
+
+msgid "Character chain: the game is closed"
+msgstr "Kirdaaron ki chain: game band ho gaya"
+
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr "Kirdaaron ki chain: game khula rahega, us mein ek bot chal raha hai"
+
+msgid "Character chain: waiting for {name}'s game to come back"
+msgstr "Kirdaaron ki chain: {name} ke game ke wapas aane ka intezar"
+
+msgid "Character chain: {name} didn't start: {why}"
+msgstr "Kirdaaron ki chain: {name} shuru nahin hua: {why}"
+
+msgid ""
+"Character chain: {name} has nothing to run (its plan or its Autopilot day isn't there) - left out today"
+msgstr ""
+"Kirdaaron ki chain: {name} ke paas chalane ko kuch nahin (us ka plan ya Autopilot din maujood nahin) - aaj chhod diya"
+
+msgid "Character chain: {name}, {what}"
+msgstr "Kirdaaron ki chain: {name}, {what}"
+
+msgid "Character chain: {n} characters, one after the other"
+msgstr "Kirdaaron ki chain: {n} kirdaar, ek ke baad ek"
+
 msgid "Character settings - {name}"
 msgstr "Kirdaar ki tarteeb - {name}"
 
@@ -1330,6 +1413,9 @@ msgstr "Kirdaar ki sheet"
 
 msgid "Character:"
 msgstr "Kirdaar:"
+
+msgid "Characters, in &order:"
+msgstr "&Kirdaar, tarteeb se:"
 
 msgid "Chat - {name}"
 msgstr "Chat - {name}"
@@ -1387,6 +1473,11 @@ msgstr "Dekhne ke liye ek qism chunein."
 
 msgid "Choose a character."
 msgstr "Kirdar chunen."
+
+msgid ""
+"Choose a character. Only characters whose account the bot knows can be in the chain: log in to one once by hand."
+msgstr ""
+"Kirdaar chunein. Sirf wohi kirdaar chain mein ho sakte hain jin ka account bot jaanta hai: ek baar haath se log in karein."
 
 msgid "Choose a city square:"
 msgstr "City square chunein:"
@@ -1957,6 +2048,12 @@ msgstr "Sirf errors"
 
 msgid "Every (minutes):"
 msgstr "Har (minute):"
+
+msgid "Every character of the chain can farm again today."
+msgstr "Chain ka har kirdaar aaj dobara farm kar sakta hai."
+
+msgid "Every character the bot can log in is in the chain already."
+msgstr "Har woh kirdaar jise bot log in kar sakta hai pehle se chain mein hai."
 
 msgid "Every day"
 msgstr "Har roz"
@@ -2631,6 +2728,9 @@ msgstr "Items"
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Bila rule wali cheezein: sirf wohi &chhuein jo is run ne uthaya"
 
+msgid "Its Autopilot day"
+msgstr "Us ka Autopilot din"
+
 msgid "JSON files (*.json)|*.json"
 msgstr "JSON files (*.json)|*.json"
 
@@ -2955,6 +3055,17 @@ msgstr ""
 msgid "Materials"
 msgstr "Materials"
 
+msgid "Medals"
+msgstr "Medals"
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+"Medals bag se badle jate hain, character jahan bhi ho, bina kisi qeemat ke. Pehle se pehne hue type ka medal us ki jagah le leta hai, aur har medal apni pichhli tabdeeli ke baad taqreeban 10 second intezar karta hai. Sab Contribution Medals ka naam ek hai: har ek ka bonus tab dikhta hai jab koi run use parh le."
+
+msgid "Medals to &farm with:"
+msgstr "&Farming ke medals:"
+
 msgid "Medium"
 msgstr "Medium"
 
@@ -3098,6 +3209,9 @@ msgstr "Phen&kne mein le jayein"
 msgid "Move to throw a&way"
 msgstr "Phenkne mein le ja&yein"
 
+msgid "Moving on to the next character of the chain."
+msgstr "Chain ke agle kirdaar par ja rahe hain."
+
 msgid "Mute e&very game"
 msgstr "Har game ki awaaz &band karein"
 
@@ -3180,6 +3294,14 @@ msgstr ""
 msgid "No changelog entry for {v}. Showing the release notes."
 msgstr ""
 "Version {v} ki tabdeeliyan fehrist mein nahi milin. Release notes dikhaye ja rahe hain."
+
+msgid ""
+"No character can be logged in by the bot yet: log in to each one once by hand, so its account is known."
+msgstr ""
+"Bot abhi kisi kirdaar ko log in nahin kar sakta: har ek mein ek baar haath se log in karein, taake us ka account maloom ho."
+
+msgid "No character chain is going in this game."
+msgstr "Is game mein kirdaaron ki koi chain nahin chal rahi."
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3300,6 +3422,11 @@ msgstr "Koi nahi"
 
 msgid "None in the bag"
 msgstr "Baste mein koi nahi"
+
+msgid ""
+"None of the medals ticked to farm with is in the bag any more: tick others on the Medals page."
+msgstr ""
+"Farming ke liye tick kiye gaye medals mein se koi ab bag mein nahin: Medals page par doosre tick karein."
 
 msgid "Normal"
 msgstr "Aam"
@@ -3645,6 +3772,9 @@ msgstr ""
 msgid "Plan {name} was imported."
 msgstr "Mansooba {name} import ho gaya hai."
 
+msgid "Plan {plan}"
+msgstr "Plan {plan}"
+
 msgid "Plan, from the last scan of your bag:"
 msgstr "Mansooba, aapke baste ke aakhri scan se:"
 
@@ -3734,6 +3864,14 @@ msgstr "Storehouse mein daale gaye:"
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Zaroori skills aur cheezein &khali keys par rakhein (kabhi istemal wali keys par nahi)"
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr "Run khatam hone par &aam medals wapas pehnayein, jahan bhi khatam ho"
+
+msgid ""
+"Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
+msgstr ""
+"Jab run kisi talent master wale shehar mein khatam ho to &aam talents wapas lagayein (is ke liye safar nahin)"
 
 msgid ""
 "Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
@@ -4454,8 +4592,14 @@ msgstr "Khare rahein"
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Nayi file kab shuru karein (MB, 0 = kabhi nahi):"
 
+msgid "Start the c&hain"
+msgstr "Chain shuru ka&rein"
+
 msgid "Starting"
 msgstr "Shuru ho raha hai"
+
+msgid "Starting the character chain."
+msgstr "Kirdaaron ki chain shuru ho rahi hai."
 
 msgid "Starting {what}."
 msgstr "{what} shuru ho raha hai."
@@ -4468,6 +4612,9 @@ msgstr "Status:"
 
 msgid "Stay away from &elite zones"
 msgstr "&Elite zones se door rahein"
+
+msgid "Stay logged in on the last character"
+msgstr "Aakhri kirdaar par log in rahein"
 
 msgid "Stays where it is when it stops (monsters may still attack)."
 msgstr ""
@@ -4566,6 +4713,9 @@ msgstr "Rok raha hoon"
 msgid "Stopping every bot"
 msgstr "Har bot rok raha hoon"
 
+msgid "Stopping the character chain."
+msgstr "Kirdaaron ki chain rok rahe hain."
+
 msgid "Stopping {what}, then following you."
 msgstr "{what} rok kar aap ke saath chalta hoon."
 
@@ -4621,6 +4771,12 @@ msgstr "Game ki &window saamne ho tab bhi unke commands lein"
 
 msgid "Taken out of the storehouse:"
 msgstr "Storehouse se nikale gaye:"
+
+msgid "Talents"
+msgstr "Talents"
+
+msgid "Talents to &farm with:"
+msgstr "&Farming ke talents:"
 
 msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr "Doosre players aur developer se Telegram group mein baat karein: {link}"
@@ -4686,6 +4842,11 @@ msgstr "Yeh command is character par band hai."
 
 msgid "That filter already exists."
 msgstr "Yeh filter pehle se mojood hai."
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
+msgstr ""
+"Ye game kirdaaron ki chain mein hai: pehle chain rokein (Rok, Shift+F5)."
 
 msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
@@ -4802,6 +4963,45 @@ msgstr "Bot {cap} se zyada kharch hone se pehle khareedna rok deta hai."
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "Ghaar (har kirdaar game ke ek din mein ek hi ghaar mein jata hai)"
 
+msgid "The chain couldn't be saved: {err}"
+msgstr "Chain mahfooz nahin ho saki: {err}"
+
+msgid ""
+"The character chain is empty: add characters in Run, Character chain first."
+msgstr ""
+"Kirdaaron ki chain khaali hai: pehle Run, Kirdaaron ki chain mein kirdaar shamil karein."
+
+msgid ""
+"The character chain is over. These characters couldn't farm today: {names}"
+msgstr ""
+"Kirdaaron ki chain khatam ho gayi. Ye kirdaar aaj farm nahin kar sake: {names}"
+
+msgid "The character chain is over: every character has farmed today."
+msgstr "Kirdaaron ki chain khatam ho gayi: har kirdaar ne aaj farm kar liya."
+
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+"Kirdaaron ki chain khatam: aaj ki farming khatam ho gayi (drop time {reset} par dobara shuru hota hai)."
+
+msgid "The character chain is over: the day's farming is over."
+msgstr "Kirdaaron ki chain khatam: aaj ki farming khatam ho gayi."
+
+msgid "The character chain stopped."
+msgstr "Kirdaaron ki chain ruk gayi."
+
+msgid "The character chain stopped: another bot is running in its game."
+msgstr "Kirdaaron ki chain ruk gayi: us ke game mein koi aur bot chal raha hai."
+
+msgid "The character chain stopped: its game isn't running any more."
+msgstr "Kirdaaron ki chain ruk gayi: us ka game ab nahin chal raha."
+
+msgid "The character chain stopped: logging out didn't answer"
+msgstr "Kirdaaron ki chain ruk gayi: log out ka jawab nahin aaya"
+
+msgid "The character chain stopped: logging out didn't work ({why})"
+msgstr "Kirdaaron ki chain ruk gayi: log out nahin hua ({why})"
+
 msgid "The character hasn't learned {skill}."
 msgstr "Character ne {skill} nahi seekhi."
 
@@ -4811,6 +5011,11 @@ msgstr ""
 
 msgid "The character's plan"
 msgstr "Character ka plan"
+
+msgid ""
+"The characters farm one after the other in the game selected when the chain starts. Each one is logged in by itself (its saved account), does its plan or its Autopilot day, and is done for the game's day when its run ends by itself; then the next one comes. Stop ends the whole chain. A character done with more than 10 minutes of drop time left is done again once the others are."
+msgstr ""
+"Kirdaar ek ke baad ek us game mein farm karte hain jo chain shuru hote waqt chuna gaya ho. Har ek khud log in hota hai (us ka mahfooz account), apna plan ya Autopilot din karta hai, aur jab us ka run khud khatam ho to game ke din ke liye mukammal ginaa jata hai; phir agla aata hai. Stop poori chain rok deta hai. Jis kirdaar ke paas 10 minute se zyada drop time bacha ho, woh baaqi sab ke baad dobara kiya jata hai."
 
 msgid "The clipboard couldn't be opened."
 msgstr "Clipboard khul nahi saka."
@@ -4950,11 +5155,20 @@ msgid ""
 msgstr ""
 "Pichhle scan mein jama karne ki koi skill nahi mili. Gang ke Guru Elder ya Master Pepper se Fishing, Mining ya Collect Herbs (in mein se ek) seekhein, phir dobara scan karein."
 
+msgid "The last scan found no medal on this character, worn or in the bag."
+msgstr ""
+"Pichhle scan ko is character par koi medal nahin mila, na pehna hua na bag mein."
+
 msgid "The listener is busy or disconnected. Try again."
 msgstr "Sunne wala masroof hai ya alag hai. Dobara koshish karein."
 
 msgid "The market"
 msgstr "Market"
+
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"Medals abhi maloom nahin: game mein is character se log in karein aur Jaiza page par « Abhi scan karein » dabayein."
 
 msgid "The names or ids below"
 msgstr "Neeche diye gaye names ya ids"
@@ -5040,6 +5254,11 @@ msgstr ""
 
 msgid "The strongest one"
 msgstr "Sab se taqatwar"
+
+msgid ""
+"The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"Talents abhi maloom nahin: game mein is character se log in karein aur Jaiza page par « Abhi scan karein » dabayein."
 
 msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
@@ -5199,8 +5418,28 @@ msgstr "Copy karne ke liye kam az kam ek cheez tick karein."
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr "Pehle Nataij mein khareedne wale lots par nishan lagayein (Space)."
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+"Medals page par farming ke medals tick karein, ya Farming ke liye medals badlein ko untick karein."
+
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
+
+msgid ""
+"Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+"Talents page par farming ke talents tick karein, ya Farming ke liye talents badlein ko untick karein."
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
+msgstr ""
+"Medals page par aam medals tick karein, ya Aam medals wapas pehnayein ko untick karein."
+
+msgid ""
+"Tick the usual talents on the Talents page, or untick Put the usual talents back."
+msgstr ""
+"Talents page par aam talents tick karein, ya Aam talents wapas lagayein ko untick karein."
 
 msgid "Time (HH:MM):"
 msgstr "Waqt (HH:MM):"
@@ -5324,6 +5563,12 @@ msgstr "Bechne wale ki ek ya zyada IDs likhein."
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
+
+msgid "U&sual medals:"
+msgstr "Aam medal&s:"
+
+msgid "U&sual talents:"
+msgstr "Aam talent&s:"
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -5787,6 +6032,10 @@ msgstr "baghair naam ki skill"
 msgid "a sub needs a name"
 msgstr "sub ko naam chahiye"
 
+msgid "a talent reset costs {cost} arnebia, there is {have} - nothing changed"
+msgstr ""
+"talent reset ki qeemat {cost} arnebia hai, paas {have} hain - kuch nahin badla"
+
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
 msgstr ""
@@ -6174,6 +6423,11 @@ msgstr "{n} baar cast hui"
 msgid "casting {skill} to {place}"
 msgstr "{place} ke liye {skill} chala rahe hain"
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr ""
+"medals badalne ke liye is version ka agent chahiye: game ek baar restart karein"
+
 msgid "charge in"
 msgstr "daur kar andar"
 
@@ -6312,6 +6566,9 @@ msgstr "{shard} shamil nahi kar sake"
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr "{skill} cast nahi ho saki ({why}) - 5 minute baad dobara koshish"
 
+msgid "couldn't change these medals: {names}"
+msgstr "ye medals nahin badal sake: {names}"
+
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
 "{tool} se marammat ki tasdeeq nahi ho saki - marammat shuda nahi maana gaya"
@@ -6362,6 +6619,11 @@ msgid "couldn't get there - going to the nearest map without monsters"
 msgstr ""
 "wahan nahi pohanch sake - sab se qareeb monster-free map par ja rahe hain"
 
+msgid ""
+"couldn't get to a talent master ({why}) - farming with the talents as they are"
+msgstr ""
+"kisi talent master tak nahin pahunch sake ({why}) - jaise talents hain unhi ke saath farming"
+
 msgid "couldn't get to page {page} of {cat}"
 msgstr "{cat} ke safha {page} tak nahi pohanch saka"
 
@@ -6370,6 +6632,11 @@ msgstr "arrow keys se panel {n} tak nahi pohanch sake"
 
 msgid "couldn't get to the bag with the arrow keys"
 msgstr "arrow keys se basta tak nahi pohanch sake"
+
+msgid ""
+"couldn't get to the talent master ({why}) - the talents stay as they are"
+msgstr ""
+"talent master tak nahin pahunch sake ({why}) - talents jaise hain waise rahenge"
 
 msgid "couldn't get to {name} - next one"
 msgstr "{name} tak nahi pohanch sake - agla"
@@ -6475,6 +6742,9 @@ msgstr "{item} store nahi kar sake: {why}"
 msgid "couldn't switch the target key to NPCs"
 msgstr "target key ko NPCs par switch nahi kar sake"
 
+msgid "couldn't switch {talent} in the Reset Talents menu - nothing changed"
+msgstr "Reset Talents menu mein {talent} badal nahin saka - kuch nahin badla"
+
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "storehouse se {item} nahi nikal sake: {why}"
 
@@ -6539,6 +6809,11 @@ msgstr ""
 
 msgid "died and came back outside {map}"
 msgstr "mar kar {map} se bahar wapas aaya"
+
+msgid ""
+"died on the way to the talent master - farming with the talents as they are"
+msgstr ""
+"talent master ke raste mein mar gaye - jaise talents hain unhi ke saath farming"
 
 msgid "died on {map} ({n} so far)"
 msgstr "{map} par mar gaye ({n} ab tak)"
@@ -6966,6 +7241,9 @@ msgid ""
 msgstr ""
 "{time} ho gaya - aaj ki kheti khatam (drop time {reset} par reset hota hai)"
 
+msgid "its Autopilot day"
+msgstr "us ka Autopilot din"
+
 msgid "its game is busy with {what}"
 msgstr "is ka game {what} mein masroof hai"
 
@@ -7276,6 +7554,11 @@ msgstr "dobara kabhi nahi"
 msgid "new"
 msgstr "naya"
 
+msgid ""
+"next: in a character chain, I stop here, this character counts as done today, and the next one of the chain logs in and farms."
+msgstr ""
+"next: kirdaaron ki chain mein main yahin rukta hoon, ye kirdaar aaj ke liye mukammal ginaa jata hai, aur chain ka agla log in ho kar farm karta hai."
+
 msgid "no Gem Protection Rune left, and combining is set to use one"
 msgstr ""
 "koi Gem Protection Rune baqi nahi, aur jorne ke liye ek istemal karna tay hai"
@@ -7371,6 +7654,9 @@ msgstr "{n} minutes se koi kill nahin - map ka koi aur hissa try kar rahe hain"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
+
+msgid "no longer in the bag, left out: {names}"
+msgstr "ab bag mein nahin, chhod diye: {names}"
 
 msgid "no map without monsters near {map}"
 msgstr "{map} ke qareeb koi monster-free map nahi"
@@ -7523,6 +7809,11 @@ msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 msgid "none of the shops that sell {item} answered"
 msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
 
+msgid ""
+"none of the talents ticked for farming is learned by this character - they stay as they are"
+msgstr ""
+"farming ke liye tick kiya gaya koi talent is character ne nahin seekha - talents jaise hain waise rahenge"
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
@@ -7530,6 +7821,12 @@ msgstr ""
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "yeh kaam karne wali {n} jagahon mein se koi bhi {map} se nahi pohanch sakti"
+
+msgid "none of these talents is in the Reset Talents menu - nothing changed"
+msgstr "in mein se koi talent Reset Talents menu mein nahin - kuch nahin badla"
+
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr "{what} mein se koi bag mein nahin - medals jaise hain waise rahenge"
 
 msgid "normal"
 msgstr "normal"
@@ -7625,6 +7922,9 @@ msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
 
+msgid "not learned by this character, left out: {names}"
+msgstr "is character ne nahin seekhe, chhod diye: {names}"
+
 msgid "not reached on foot"
 msgstr "paidal nahi pohanch sake"
 
@@ -7649,6 +7949,9 @@ msgstr "storehouse mein nahi rakhe gaye (shayad bhar gaya hai): {list}"
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 "{item} storehouse nahi le ja rahe: woh bhara hua hai aur us mein abhi koi {item} nahi"
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
+msgstr "aakhir mein nahin pehne gaye, isi type ke medal ne jagah le li: {names}"
 
 msgid "nothing"
 msgstr "kuch nahi"
@@ -7884,6 +8187,9 @@ msgstr "phrase {line}"
 msgid "plan"
 msgstr "mansooba"
 
+msgid "plan {plan}"
+msgstr "plan {plan}"
+
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
 msgstr ""
@@ -7906,6 +8212,12 @@ msgstr "storehouse mein {n} {item} daalein"
 
 msgid "put {pet} away"
 msgstr "{pet} ko wapas bhej diya"
+
+msgid "putting on the talents for farming: {names}"
+msgstr "farming ke talents lagaye ja rahe hain: {names}"
+
+msgid "putting the usual talents back on: {names}"
+msgstr "aam talents wapas lagaye ja rahe hain: {names}"
 
 msgid "quick"
 msgstr "tez"
@@ -8318,6 +8630,9 @@ msgstr "{map} ka survey: {n} stops"
 msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr "{pet} ko dungeons mein le ja raha hai (Tools, Dungeons)"
 
+msgid "talents set: {names} ({cost} arnebia)"
+msgstr "talents lag gaye: {names} ({cost} arnebia)"
+
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr "kis se baat karein? likhein: talk Cable Car manager"
 
@@ -8506,6 +8821,14 @@ msgid ""
 "the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
 "Potion Maker mukammal: {made} batch banaye, {fused} potions fuse kiye, {put} storehouse mein"
+
+msgid "the Reset Talents menu didn't open"
+msgstr "Reset Talents menu nahin khula"
+
+msgid ""
+"the Reset Talents menu has no row for {names}, which the character has learned - nothing changed"
+msgstr ""
+"Reset Talents menu mein {names} ki line nahin, jo character ne seekha hai - kuch nahin badla"
 
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Secret room Manager ne koi madadgar nahi bulaya"
@@ -8715,6 +9038,9 @@ msgstr "game ne seedha discard request qubool nahin ki: {why}"
 msgid "the game didn't ask to confirm"
 msgstr "game ne confirm karne ko nahi kaha"
 
+msgid "the game didn't ask to confirm the talent reset - nothing changed"
+msgstr "game ne talent reset ki tasdeeq nahin maangi - kuch nahin badla"
+
 msgid "the game didn't offer to agree"
 msgstr "game ne agree karne ki peshkash nahi ki"
 
@@ -8789,11 +9115,19 @@ msgid ""
 msgstr ""
 "game ki memory khatam ho gayi aur woh ruk gaya ({where}) - Mist World restart karein"
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+"game ne {name} par hamla rad kar diya: range se bahar - qareeb tareen monster ki taraf"
+
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 
 msgid "the game said nothing - look in the bag"
 msgstr "game ne kuch nahi kaha - baste mein dekhein"
+
+msgid "the game said: not enough talent points - nothing changed"
+msgstr "game ne kaha: not enough talent points - kuch nahin badla"
 
 msgid "the game said: {lines}"
 msgstr "game ne kaha: {lines}"
@@ -8813,6 +9147,9 @@ msgstr "game dikha raha hai: {shown}"
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr "game se medal badalne ko nahin kaha gaya ({why})"
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -8828,6 +9165,9 @@ msgstr ""
 
 msgid "the game wouldn't select it ({why})"
 msgstr "game ne use select nahi kiya ({why})"
+
+msgid "the game wouldn't take orders"
+msgstr "game hukm nahin le raha"
 
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr "game abhi {beast} nahi le raha; baad mein dobara koshish karenge"
@@ -8944,6 +9284,15 @@ msgstr "market ki tarteeb badalne wala khana safhe par nahi"
 
 msgid "the marketplace didn't open its menu"
 msgstr "marketplace ne apna menu nahi khola"
+
+msgid "the medals can't be read - they stay as they are"
+msgstr "medals parhe nahin ja sakte - jaise hain waise rahenge"
+
+msgid "the medals for farming"
+msgstr "farming ke medals"
+
+msgid "the medals for farming weren't put on: {err}"
+msgstr "farming ke medals nahin pehnaye gaye: {err}"
 
 msgid "the menu has no entry like \"{want}\""
 msgstr "menu mein aisa koi entry nahi: \"{want}\""
@@ -9085,6 +9434,18 @@ msgstr ""
 msgid "the storehouse, then the Shard Market"
 msgstr "storehouse, phir Shard Market"
 
+msgid "the talent master's menu has no Reset Talents"
+msgstr "talent master ke menu mein Reset Talents nahin hai"
+
+msgid "the talents can't be read - they stay as they are"
+msgstr "talents parhe nahin ja sakte - jaise hain waise rahenge"
+
+msgid "the talents didn't change after the reset"
+msgstr "reset ke baad talents nahin badle"
+
+msgid "the talents for farming are already on"
+msgstr "farming ke talents pehle se lage hue hain"
+
 msgid "the target key was on {mode} - back to {want}"
 msgstr "target key {mode} par thi - {want} par wapas"
 
@@ -9106,6 +9467,23 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
+
+msgid "the usual medals"
+msgstr "aam medals"
+
+msgid "the usual medals weren't put back: {err}"
+msgstr "aam medals wapas nahin pehnaye gaye: {err}"
+
+msgid ""
+"the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
+msgstr ""
+"aam talents wapas nahin lage: run kisi talent master wale shehar mein khatam nahin hua (agla run jo wahan khatam ho unhein wapas lagayega)"
+
+msgid "the usual talents weren't put back: died on the way"
+msgstr "aam talents wapas nahin lage: raste mein mar gaye"
+
+msgid "the usual talents weren't put back: {err}"
+msgstr "aam talents wapas nahin lage: {err}"
 
 msgid "the village at {x},{y} on {map}"
 msgstr "{map} par {x},{y} wala gaon"
@@ -9186,6 +9564,11 @@ msgstr "team ki koi application muntazir nahi"
 
 msgid "there's no {item} in the bag"
 msgstr "baste mein {item} nahi hai"
+
+msgid ""
+"these talents take {need} talent points, the character has {have} - nothing changed"
+msgstr ""
+"in talents ko {need} talent points chahiye, character ke paas {have} hain - kuch nahin badla"
 
 msgid "this character can't publish that: it takes a gang elder's rights"
 msgstr "yeh character publish nahi kar sakta: gang elder ke rights chahiye"
@@ -9387,6 +9770,9 @@ msgstr "dushman ko kamzor karta hai"
 
 msgid "weapons"
 msgstr "hathiyar"
+
+msgid "wearing {what}: {names}"
+msgstr "{what} pehnaye ja rahe hain: {names}"
 
 msgid "wedding map"
 msgstr "shaadi ka map"
@@ -9791,6 +10177,12 @@ msgstr "{map}: exit se paidal nikalne par bhi bahar nahi gaye"
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
 
+msgid "{medal} (not in the bag)"
+msgstr "{medal} (bag mein nahin)"
+
+msgid "{medal} (worn now)"
+msgstr "{medal} (abhi pehna hua)"
+
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
 msgstr ""
@@ -9994,6 +10386,9 @@ msgstr ""
 
 msgid "{name}: {results}"
 msgstr "{name}: {results}"
+
+msgid "{name}: {what}"
+msgstr "{name}: {what}"
 
 msgid "{now} of {top} ({pct}%)"
 msgstr "{top} mein se {now} ({pct}%)"
@@ -10224,6 +10619,9 @@ msgstr "{query}: {pages} safhe, {lots} lots parhe"
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: aaj {all} mein se {n} baar arnebia share kiya"
 
+msgid "{row} (done today)"
+msgstr "{row} (aaj mukammal)"
+
 msgid "{row}: listed twice with different prices"
 msgstr "{row}: do baar mukhtalif qeematon ke saath"
 
@@ -10343,6 +10741,12 @@ msgid ""
 msgstr ""
 "{state}. Faal khamosh IDs: {mute}. Dekhe gaye: {observed}; roke gaye: {dropped}; live khamosh: {live}; gair-mahfooz: {unsupported}."
 
+msgid "{talent} (not learned)"
+msgstr "{talent} (seekha nahin)"
+
+msgid "{talent} (on now)"
+msgstr "{talent} (abhi on)"
+
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"
 
@@ -10357,6 +10761,12 @@ msgstr "{map} par {village}"
 
 msgid "{what} ({n} min left)"
 msgstr "{what} ({n} minute baqi)"
+
+msgid "{what} are already worn"
+msgstr "{what} pehle se pehne hue hain"
+
+msgid "{what} are worn"
+msgstr "{what} pehna diye gaye"
 
 msgid ""
 "{what} changed since it was interrupted, so it starts from the beginning"
@@ -10420,6 +10830,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
+
+#~ msgid "&Characters, in order:"
+#~ msgstr "&Kirdaar, tarteeb se:"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Naam ya id (comma se alag):"

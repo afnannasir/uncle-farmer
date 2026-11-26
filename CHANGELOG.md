@@ -2,6 +2,57 @@
 
 ## Unreleased
 
+**The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
+
+- When an attack key is pressed at a monster the game finds out of range, it plays a short sound, again
+  at every refused press: the "beep, beep, beep" a player hears, measured with the selected monster at 20.4
+  to 22.5 yards for a 20-yard skill, as it moved away after a fight broke off.
+- The farm now listens for that sound. Heard, the bot stops pressing at that monster, leaves it alone for
+  3 seconds and goes to the nearest one, during a fight and for the shots on the way alike. The log says
+  it once a monster. An older agent without sounds changes nothing.
+
+**Character chain: several characters farm one after the other in one game** (untested in game: the
+tests use a pretend window and games)
+
+- Run, Character chain (Ctrl+Shift+C): characters in order, each with one of your plans or its Autopilot
+  day, and what happens at the end (stay logged in, or close the game). No limit on the number.
+- Start the chain takes the first character not done today (the game's day). Another character in the
+  game is logged out first with Switch account; the chain's character is logged in by itself. A run that
+  ends by itself marks its character done and the next one comes; Stop ends the chain; a failed run goes
+  on to the next (twice at most per character); a lost game is opened again and the chain waits for it.
+  A character done with more than 10 minutes of drop time left is done again once the others are, at
+  most twice a day. The after-stop action doesn't apply between characters.
+- New private message command `next`: this character is done, the next one comes. `quit game` stops the
+  chain too.
+
+**Talents for farming** (untested in game: the tests use a pretend talent master; the menu was read live)
+
+- Character settings has a Talents page: **Change the talents for farming** (off by default), the talents
+  to farm with, and **Put the usual talents back when the run ends in a town with a talent master**,
+  with the usual ones. A button ticks the talents that are on now in both lists.
+- Before a run sets out, the talents on are read from the game. Only when they differ does the bot go to
+  the nearest talent master (a city officer, such as Chancellor Bren or Guard Captain Suke), there and
+  back to the first farming map. There it switches only the talents that differ in Reset Talents, submits,
+  confirms, and checks the result. A reset costs 200 arnebia for every talent point the talents put on
+  take, even when nothing changes, so talents that are already right are never reset. Too few talent
+  points or arnebia changes nothing, and so does a talent master that can't be reached.
+- When a farming run ends by itself in a town with a talent master, the usual talents go back on, after
+  the After farming list. There is no trip for that.
+
+**Medals for farming** (untested in game: the tests use a pretend game; the way medals are changed was
+read live)
+
+- Character settings has a Medals page: **Change the medals for farming** (off by default), the medals to
+  farm with, and **Put the usual medals back on when the run ends, wherever it ends**, with the usual
+  ones. Medals are kept by their id, and the Contribution Medals, which all share a name, show their bonus
+  once a run has read it with the details key.
+- Before a run sets out, each ticked medal not worn is put on (one of its kind comes off by itself, as by
+  hand), then the worn medals not ticked come off. Each medal waits for its own cooldown of about 10
+  seconds while the others are changed, and every change is checked. No NPC and no cost.
+- When a farming run ends by itself, the usual medals go back on, wherever it ended.
+- The agent can wear or take off an equipment piece (agent 81, `gearwear <uid> on|off`), as the bag's
+  equipment tab does. Restart the game once after updating.
+
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 
 - A run or a tool that started inside a gang base, a secret room or a dungeon, before the bot had seen

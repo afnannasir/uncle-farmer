@@ -104,7 +104,18 @@ msgstr ""
 msgid "&Change key"
 msgstr ""
 
+msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+
+msgid ""
+"&Change the talents for farming, at the nearest talent master before the run sets out"
+msgstr ""
+
 msgid "&Character"
+msgstr ""
+
+msgid "&Character chain"
 msgstr ""
 
 msgid "&Character:"
@@ -354,6 +365,9 @@ msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
 msgid "&Legendary"
+msgstr ""
+
+msgid "&Let every character farm again today"
 msgstr ""
 
 msgid "&Let it shut down"
@@ -646,6 +660,12 @@ msgstr ""
 msgid "&Throw away:"
 msgstr ""
 
+msgid "&Tick the medals worn now, in both lists"
+msgstr ""
+
+msgid "&Tick the talents that are on now, in both lists"
+msgstr ""
+
 msgid "&Time (HH:MM, this computer's clock):"
 msgstr ""
 
@@ -680,6 +700,9 @@ msgid "&View as script"
 msgstr ""
 
 msgid "&Walk whenever the maps connect on foot"
+msgstr ""
+
+msgid "&What it does:"
 msgstr ""
 
 msgid "&What to copy:"
@@ -827,6 +850,9 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr ""
 
+msgid "A character chain is already going."
+msgstr ""
+
 msgid "A city s&quare"
 msgstr ""
 
@@ -866,7 +892,14 @@ msgstr ""
 msgid "A spot has 10 patrol points at most."
 msgstr ""
 
+msgid ""
+"A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing changes, so the bot only goes when the talents on aren't the ones ticked."
+msgstr ""
+
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
+msgstr ""
+
+msgid "A&dd..."
 msgstr ""
 
 msgid "About the skill:"
@@ -909,6 +942,9 @@ msgstr ""
 msgid "Ad&vanced"
 msgstr ""
 
+msgid "Add a character to the chain"
+msgstr ""
+
 msgid "Add a circle aro&und me"
 msgstr ""
 
@@ -935,6 +971,9 @@ msgid "Add a supply"
 msgstr ""
 
 msgid "Add an item"
+msgstr ""
+
+msgid "Add at least one character to the chain."
 msgstr ""
 
 msgid "Add at least one farming spot."
@@ -1088,6 +1127,9 @@ msgstr ""
 msgid "At a place I choose"
 msgstr ""
 
+msgid "At the &end of the chain:"
+msgstr ""
+
 msgid "At the shops' fixed prices:"
 msgstr ""
 
@@ -1200,6 +1242,9 @@ msgstr ""
 msgid "Build the S&upply Camp under construction"
 msgstr ""
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr ""
+
 msgid "Busy - send stop first."
 msgstr ""
 
@@ -1220,6 +1265,9 @@ msgid "By seller ID"
 msgstr ""
 
 msgid "C&hannel:"
+msgstr ""
+
+msgid "C&haracter:"
 msgstr ""
 
 msgid "C&hat"
@@ -1288,6 +1336,37 @@ msgstr ""
 msgid "Character"
 msgstr ""
 
+msgid "Character chain"
+msgstr ""
+
+msgid "Character chain: couldn't close the game ({err})"
+msgstr ""
+
+msgid "Character chain: logging {old} out for {new}"
+msgstr ""
+
+msgid "Character chain: the game is closed"
+msgstr ""
+
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr ""
+
+msgid "Character chain: waiting for {name}'s game to come back"
+msgstr ""
+
+msgid "Character chain: {name} didn't start: {why}"
+msgstr ""
+
+msgid ""
+"Character chain: {name} has nothing to run (its plan or its Autopilot day isn't there) - left out today"
+msgstr ""
+
+msgid "Character chain: {name}, {what}"
+msgstr ""
+
+msgid "Character chain: {n} characters, one after the other"
+msgstr ""
+
 msgid "Character settings - {name}"
 msgstr ""
 
@@ -1299,6 +1378,9 @@ msgid "Character sheet"
 msgstr ""
 
 msgid "Character:"
+msgstr ""
+
+msgid "Characters, in &order:"
 msgstr ""
 
 msgid "Chat - {name}"
@@ -1354,6 +1436,10 @@ msgid "Choose a category to browse."
 msgstr ""
 
 msgid "Choose a character."
+msgstr ""
+
+msgid ""
+"Choose a character. Only characters whose account the bot knows can be in the chain: log in to one once by hand."
 msgstr ""
 
 msgid "Choose a city square:"
@@ -1915,6 +2001,12 @@ msgid "Errors only"
 msgstr ""
 
 msgid "Every (minutes):"
+msgstr ""
+
+msgid "Every character of the chain can farm again today."
+msgstr ""
+
+msgid "Every character the bot can log in is in the chain already."
 msgstr ""
 
 msgid "Every day"
@@ -2558,6 +2650,9 @@ msgstr ""
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr ""
 
+msgid "Its Autopilot day"
+msgstr ""
+
 msgid "JSON files (*.json)|*.json"
 msgstr ""
 
@@ -2875,6 +2970,16 @@ msgstr ""
 msgid "Materials"
 msgstr ""
 
+msgid "Medals"
+msgstr ""
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+
+msgid "Medals to &farm with:"
+msgstr ""
+
 msgid "Medium"
 msgstr ""
 
@@ -3010,6 +3115,9 @@ msgstr ""
 msgid "Move to throw a&way"
 msgstr ""
 
+msgid "Moving on to the next character of the chain."
+msgstr ""
+
 msgid "Mute e&very game"
 msgstr ""
 
@@ -3089,6 +3197,13 @@ msgid "No changelog entry for {v}. Showing the full changelog."
 msgstr ""
 
 msgid "No changelog entry for {v}. Showing the release notes."
+msgstr ""
+
+msgid ""
+"No character can be logged in by the bot yet: log in to each one once by hand, so its account is known."
+msgstr ""
+
+msgid "No character chain is going in this game."
 msgstr ""
 
 msgid ""
@@ -3201,6 +3316,10 @@ msgid "None"
 msgstr ""
 
 msgid "None in the bag"
+msgstr ""
+
+msgid ""
+"None of the medals ticked to farm with is in the bag any more: tick others on the Medals page."
 msgstr ""
 
 msgid "Normal"
@@ -3531,6 +3650,9 @@ msgstr ""
 msgid "Plan {name} was imported."
 msgstr ""
 
+msgid "Plan {plan}"
+msgstr ""
+
 msgid "Plan, from the last scan of your bag:"
 msgstr ""
 
@@ -3617,6 +3739,13 @@ msgid "Put into the storehouse:"
 msgstr ""
 
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
+msgstr ""
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr ""
+
+msgid ""
+"Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
 msgstr ""
 
 msgid ""
@@ -4301,7 +4430,13 @@ msgstr ""
 msgid "Start a new file after (MB, 0 = never):"
 msgstr ""
 
+msgid "Start the c&hain"
+msgstr ""
+
 msgid "Starting"
+msgstr ""
+
+msgid "Starting the character chain."
 msgstr ""
 
 msgid "Starting {what}."
@@ -4314,6 +4449,9 @@ msgid "Status:"
 msgstr ""
 
 msgid "Stay away from &elite zones"
+msgstr ""
+
+msgid "Stay logged in on the last character"
 msgstr ""
 
 msgid "Stays where it is when it stops (monsters may still attack)."
@@ -4410,6 +4548,9 @@ msgstr ""
 msgid "Stopping every bot"
 msgstr ""
 
+msgid "Stopping the character chain."
+msgstr ""
+
 msgid "Stopping {what}, then following you."
 msgstr ""
 
@@ -4463,6 +4604,12 @@ msgid "Take their commands while the game &window is in front"
 msgstr ""
 
 msgid "Taken out of the storehouse:"
+msgstr ""
+
+msgid "Talents"
+msgstr ""
+
+msgid "Talents to &farm with:"
 msgstr ""
 
 msgid "Talk with other players and the developer in the Telegram group: {link}"
@@ -4526,6 +4673,10 @@ msgid "That command is turned off on this character."
 msgstr ""
 
 msgid "That filter already exists."
+msgstr ""
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
 msgstr ""
 
 msgid ""
@@ -4634,6 +4785,42 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr ""
 
+msgid "The chain couldn't be saved: {err}"
+msgstr ""
+
+msgid ""
+"The character chain is empty: add characters in Run, Character chain first."
+msgstr ""
+
+msgid ""
+"The character chain is over. These characters couldn't farm today: {names}"
+msgstr ""
+
+msgid "The character chain is over: every character has farmed today."
+msgstr ""
+
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+
+msgid "The character chain is over: the day's farming is over."
+msgstr ""
+
+msgid "The character chain stopped."
+msgstr ""
+
+msgid "The character chain stopped: another bot is running in its game."
+msgstr ""
+
+msgid "The character chain stopped: its game isn't running any more."
+msgstr ""
+
+msgid "The character chain stopped: logging out didn't answer"
+msgstr ""
+
+msgid "The character chain stopped: logging out didn't work ({why})"
+msgstr ""
+
 msgid "The character hasn't learned {skill}."
 msgstr ""
 
@@ -4641,6 +4828,10 @@ msgid "The character is on {here}, not on {map}: go to this spot's map first."
 msgstr ""
 
 msgid "The character's plan"
+msgstr ""
+
+msgid ""
+"The characters farm one after the other in the game selected when the chain starts. Each one is logged in by itself (its saved account), does its plan or its Autopilot day, and is done for the game's day when its run ends by itself; then the next one comes. Stop ends the whole chain. A character done with more than 10 minutes of drop time left is done again once the others are."
 msgstr ""
 
 msgid "The clipboard couldn't be opened."
@@ -4768,10 +4959,17 @@ msgid ""
 "The last scan found no gathering skill. Learn Fishing, Mining or Collect Herbs (one of them) from the gang's Guru Elder or Master Pepper, then scan again."
 msgstr ""
 
+msgid "The last scan found no medal on this character, worn or in the bag."
+msgstr ""
+
 msgid "The listener is busy or disconnected. Try again."
 msgstr ""
 
 msgid "The market"
+msgstr ""
+
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
 msgstr ""
 
 msgid "The names or ids below"
@@ -4849,6 +5047,10 @@ msgid ""
 msgstr ""
 
 msgid "The strongest one"
+msgstr ""
+
+msgid ""
+"The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
 msgstr ""
 
 msgid ""
@@ -4990,7 +5192,23 @@ msgstr ""
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+
 msgid "Tick the monsters to fight:"
+msgstr ""
+
+msgid ""
+"Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
+msgstr ""
+
+msgid ""
+"Tick the usual talents on the Talents page, or untick Put the usual talents back."
 msgstr ""
 
 msgid "Time (HH:MM):"
@@ -5109,6 +5327,12 @@ msgid "Type one or more seller IDs."
 msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
+msgstr ""
+
+msgid "U&sual medals:"
+msgstr ""
+
+msgid "U&sual talents:"
 msgstr ""
 
 msgid "Uncle Farmer"
@@ -5538,6 +5762,9 @@ msgstr ""
 msgid "a sub needs a name"
 msgstr ""
 
+msgid "a talent reset costs {cost} arnebia, there is {have} - nothing changed"
+msgstr ""
+
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
 msgstr ""
@@ -5904,6 +6131,10 @@ msgstr ""
 msgid "casting {skill} to {place}"
 msgstr ""
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr ""
+
 msgid "charge in"
 msgstr ""
 
@@ -6029,6 +6260,9 @@ msgstr ""
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr ""
 
+msgid "couldn't change these medals: {names}"
+msgstr ""
+
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
 
@@ -6077,6 +6311,10 @@ msgstr ""
 msgid "couldn't get there - going to the nearest map without monsters"
 msgstr ""
 
+msgid ""
+"couldn't get to a talent master ({why}) - farming with the talents as they are"
+msgstr ""
+
 msgid "couldn't get to page {page} of {cat}"
 msgstr ""
 
@@ -6084,6 +6322,10 @@ msgid "couldn't get to panel {n} with the arrow keys"
 msgstr ""
 
 msgid "couldn't get to the bag with the arrow keys"
+msgstr ""
+
+msgid ""
+"couldn't get to the talent master ({why}) - the talents stay as they are"
 msgstr ""
 
 msgid "couldn't get to {name} - next one"
@@ -6185,6 +6427,9 @@ msgstr ""
 msgid "couldn't switch the target key to NPCs"
 msgstr ""
 
+msgid "couldn't switch {talent} in the Reset Talents menu - nothing changed"
+msgstr ""
+
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr ""
 
@@ -6244,6 +6489,10 @@ msgid ""
 msgstr ""
 
 msgid "died and came back outside {map}"
+msgstr ""
+
+msgid ""
+"died on the way to the talent master - farming with the talents as they are"
 msgstr ""
 
 msgid "died on {map} ({n} so far)"
@@ -6653,6 +6902,9 @@ msgid ""
 "it's {time} - the day's farming is over (the drop time resets at {reset})"
 msgstr ""
 
+msgid "its Autopilot day"
+msgstr ""
+
 msgid "its game is busy with {what}"
 msgstr ""
 
@@ -6953,6 +7205,10 @@ msgstr ""
 msgid "new"
 msgstr ""
 
+msgid ""
+"next: in a character chain, I stop here, this character counts as done today, and the next one of the chain logs in and farms."
+msgstr ""
+
 msgid "no Gem Protection Rune left, and combining is set to use one"
 msgstr ""
 
@@ -7037,6 +7293,9 @@ msgid "no kill for {n} minutes - trying another part of the map"
 msgstr ""
 
 msgid "no known entrance for the dungeon {name}"
+msgstr ""
+
+msgid "no longer in the bag, left out: {names}"
 msgstr ""
 
 msgid "no map without monsters near {map}"
@@ -7177,10 +7436,20 @@ msgstr ""
 msgid "none of the shops that sell {item} answered"
 msgstr ""
 
+msgid ""
+"none of the talents ticked for farming is learned by this character - they stay as they are"
+msgstr ""
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 
 msgid "none of the {n} places that could do it can be reached from {map}"
+msgstr ""
+
+msgid "none of these talents is in the Reset Talents menu - nothing changed"
+msgstr ""
+
+msgid "none of {what} is in the bag - the medals stay as they are"
 msgstr ""
 
 msgid "normal"
@@ -7270,6 +7539,9 @@ msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr ""
 
+msgid "not learned by this character, left out: {names}"
+msgstr ""
+
 msgid "not reached on foot"
 msgstr ""
 
@@ -7292,6 +7564,9 @@ msgid "not stored (the storehouse may be full): {list}"
 msgstr ""
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
 
 msgid "nothing"
@@ -7518,6 +7793,9 @@ msgstr ""
 msgid "plan"
 msgstr ""
 
+msgid "plan {plan}"
+msgstr ""
+
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
 msgstr ""
@@ -7538,6 +7816,12 @@ msgid "put {n} {item} into the storehouse"
 msgstr ""
 
 msgid "put {pet} away"
+msgstr ""
+
+msgid "putting on the talents for farming: {names}"
+msgstr ""
+
+msgid "putting the usual talents back on: {names}"
 msgstr ""
 
 msgid "quick"
@@ -7940,6 +8224,9 @@ msgstr ""
 msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr ""
 
+msgid "talents set: {names} ({cost} arnebia)"
+msgstr ""
+
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr ""
 
@@ -8120,6 +8407,13 @@ msgstr ""
 
 msgid ""
 "the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
+msgid "the Reset Talents menu didn't open"
+msgstr ""
+
+msgid ""
+"the Reset Talents menu has no row for {names}, which the character has learned - nothing changed"
 msgstr ""
 
 msgid "the Secret room Manager summoned no assistant"
@@ -8311,6 +8605,9 @@ msgstr ""
 msgid "the game didn't ask to confirm"
 msgstr ""
 
+msgid "the game didn't ask to confirm the talent reset - nothing changed"
+msgstr ""
+
 msgid "the game didn't offer to agree"
 msgstr ""
 
@@ -8379,10 +8676,17 @@ msgid ""
 "the game ran out of memory and stopped working ({where}) - restart Mist World"
 msgstr ""
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+
 msgid "the game refused the login request"
 msgstr ""
 
 msgid "the game said nothing - look in the bag"
+msgstr ""
+
+msgid "the game said: not enough talent points - nothing changed"
 msgstr ""
 
 msgid "the game said: {lines}"
@@ -8401,6 +8705,9 @@ msgstr ""
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr ""
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -8413,6 +8720,9 @@ msgid ""
 msgstr ""
 
 msgid "the game wouldn't select it ({why})"
+msgstr ""
+
+msgid "the game wouldn't take orders"
 msgstr ""
 
 msgid "the game wouldn't take {beast} now; trying again later"
@@ -8523,6 +8833,15 @@ msgid "the market's order switch isn't on the page"
 msgstr ""
 
 msgid "the marketplace didn't open its menu"
+msgstr ""
+
+msgid "the medals can't be read - they stay as they are"
+msgstr ""
+
+msgid "the medals for farming"
+msgstr ""
+
+msgid "the medals for farming weren't put on: {err}"
 msgstr ""
 
 msgid "the menu has no entry like \"{want}\""
@@ -8655,6 +8974,18 @@ msgstr ""
 msgid "the storehouse, then the Shard Market"
 msgstr ""
 
+msgid "the talent master's menu has no Reset Talents"
+msgstr ""
+
+msgid "the talents can't be read - they stay as they are"
+msgstr ""
+
+msgid "the talents didn't change after the reset"
+msgstr ""
+
+msgid "the talents for farming are already on"
+msgstr ""
+
 msgid "the target key was on {mode} - back to {want}"
 msgstr ""
 
@@ -8673,6 +9004,22 @@ msgid ""
 msgstr ""
 
 msgid "the top level - nothing to lose"
+msgstr ""
+
+msgid "the usual medals"
+msgstr ""
+
+msgid "the usual medals weren't put back: {err}"
+msgstr ""
+
+msgid ""
+"the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
+msgstr ""
+
+msgid "the usual talents weren't put back: died on the way"
+msgstr ""
+
+msgid "the usual talents weren't put back: {err}"
 msgstr ""
 
 msgid "the village at {x},{y} on {map}"
@@ -8748,6 +9095,10 @@ msgid "there are no team applications waiting"
 msgstr ""
 
 msgid "there's no {item} in the bag"
+msgstr ""
+
+msgid ""
+"these talents take {need} talent points, the character has {have} - nothing changed"
 msgstr ""
 
 msgid "this character can't publish that: it takes a gang elder's rights"
@@ -8938,6 +9289,9 @@ msgid "weakens the enemy"
 msgstr ""
 
 msgid "weapons"
+msgstr ""
+
+msgid "wearing {what}: {names}"
 msgstr ""
 
 msgid "wedding map"
@@ -9323,6 +9677,12 @@ msgstr ""
 msgid "{map}: {n} NPCs"
 msgstr ""
 
+msgid "{medal} (not in the bag)"
+msgstr ""
+
+msgid "{medal} (worn now)"
+msgstr ""
+
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
 msgstr ""
@@ -9513,6 +9873,9 @@ msgid ""
 msgstr ""
 
 msgid "{name}: {results}"
+msgstr ""
+
+msgid "{name}: {what}"
 msgstr ""
 
 msgid "{now} of {top} ({pct}%)"
@@ -9736,6 +10099,9 @@ msgstr ""
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr ""
 
+msgid "{row} (done today)"
+msgstr ""
+
 msgid "{row}: listed twice with different prices"
 msgstr ""
 
@@ -9847,6 +10213,12 @@ msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 
+msgid "{talent} (not learned)"
+msgstr ""
+
+msgid "{talent} (on now)"
+msgstr ""
+
 msgid "{tool} - {name}"
 msgstr ""
 
@@ -9860,6 +10232,12 @@ msgid "{village} on {map}"
 msgstr ""
 
 msgid "{what} ({n} min left)"
+msgstr ""
+
+msgid "{what} are already worn"
+msgstr ""
+
+msgid "{what} are worn"
 msgstr ""
 
 msgid ""

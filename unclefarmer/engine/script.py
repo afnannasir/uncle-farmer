@@ -1299,6 +1299,8 @@ class Runner:
                 except (AgentError, OSError):
                     # Closing a failed link also releases its subscription on the agent.
                     b.log(_("Could not release sound listening; it is released when the connection closes."))
+                from . import refusals
+                refusals.resume(b)       # the farm's own "out of range" sound, listened for again
 
     def _do_travel(self, node: Node, b: Bot, o: dict[str, Any]):
         b.travel(o["map"], o.get("cell"))

@@ -68,6 +68,7 @@ class Stopped(Exception):
 
     stay: bool      # a follow/come run ends beside the player, not at its end place
     asked: bool     # a player asked for it (home): not farming ending by itself, so no after-stop action
+    chain_end: str  # for a character chain (Run.end_kind): "done" (nothing more today), "day_over"
 
     def __init__(self, *args: object, final: bool = False) -> None:
         super().__init__(*args)

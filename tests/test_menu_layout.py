@@ -92,7 +92,7 @@ def test_only_three_context_groups_and_no_standalone_duplicates(frame: Any) -> N
     assert tool_labels.count("Keyboard Manager") == 1
     assert "Sound controls" not in tool_labels
     assert frame.action_menus["character"].GetMenuItemCount() == 6
-    assert frame.action_menus["run"].GetMenuItemCount() == 9
+    assert frame.action_menus["run"].GetMenuItemCount() == 10       # + Character chain
     for group in ("tools", "character", "run"):
         labels = [item.GetItemLabelText() for item in frame.action_menus[group].GetMenuItems()]
         assert len(labels) == len(set(labels))

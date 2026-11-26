@@ -104,8 +104,21 @@ msgstr "&Caverna:"
 msgid "&Change key"
 msgstr "&Alterar tecla"
 
+msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+"&Trocar as medalhas para farmar, antes de sair (as não marcadas são tiradas)"
+
+msgid ""
+"&Change the talents for farming, at the nearest talent master before the run sets out"
+msgstr ""
+"&Trocar os talentos para farmar, no mestre de talentos mais próximo antes de sair"
+
 msgid "&Character"
 msgstr "&Personagem"
+
+msgid "&Character chain"
+msgstr "C&orrente de personagens"
 
 msgid "&Character:"
 msgstr "&Personagem:"
@@ -360,6 +373,9 @@ msgstr ""
 
 msgid "&Legendary"
 msgstr "&Legendary"
+
+msgid "&Let every character farm again today"
+msgstr "Dei&xar todos os personagens farmarem de novo hoje"
 
 msgid "&Let it shut down"
 msgstr "&Permitir desligamento"
@@ -658,6 +674,12 @@ msgstr "&Depois:"
 msgid "&Throw away:"
 msgstr "&Descartar:"
 
+msgid "&Tick the medals worn now, in both lists"
+msgstr "&Marcar as medalhas usadas agora, nas duas listas"
+
+msgid "&Tick the talents that are on now, in both lists"
+msgstr "&Marcar os talentos ativos agora, nas duas listas"
+
 msgid "&Time (HH:MM, this computer's clock):"
 msgstr "&Hora (HH:MM, relógio deste computador):"
 
@@ -693,6 +715,9 @@ msgstr "&Exibir como script"
 
 msgid "&Walk whenever the maps connect on foot"
 msgstr "&Caminhar sempre que houver ligação a pé entre os mapas"
+
+msgid "&What it does:"
+msgstr "&O que faz:"
 
 msgid "&What to copy:"
 msgstr "&O que copiar:"
@@ -841,6 +866,9 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr "Há um bot em execução. Parar e sair?"
 
+msgid "A character chain is already going."
+msgstr "Uma corrente de personagens já está em andamento."
+
 msgid "A city s&quare"
 msgstr "Uma &praça da cidade"
 
@@ -883,8 +911,16 @@ msgstr "A opção de silenciar um som deve ser ativada ou desativada."
 msgid "A spot has 10 patrol points at most."
 msgstr "Um local tem no máximo 10 pontos de patrulha."
 
+msgid ""
+"A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing changes, so the bot only goes when the talents on aren't the ones ticked."
+msgstr ""
+"Um mestre de talentos (um oficial da cidade, como Chancellor Bren ou Guard Captain Suke) pode trocar os talentos. Cada reset custa 200 arnebia por ponto de talento que os talentos ativados usam, mesmo quando nada muda, então o bot só vai quando os talentos ativos não são os marcados."
+
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Masmorra em equipe: o jogo permite grupos de 2 a 3 jogadores."
+
+msgid "A&dd..."
+msgstr "A&dicionar..."
 
 msgid "About the skill:"
 msgstr "Sobre a habilidade:"
@@ -927,6 +963,9 @@ msgstr "Atividade:"
 msgid "Ad&vanced"
 msgstr "Avan&çado"
 
+msgid "Add a character to the chain"
+msgstr "Adicionar um personagem à corrente"
+
 msgid "Add a circle aro&und me"
 msgstr "Adicionar um círculo ao meu red&or"
 
@@ -957,6 +996,9 @@ msgstr "Adicionar suprimento"
 
 msgid "Add an item"
 msgstr "Adicionar item"
+
+msgid "Add at least one character to the chain."
+msgstr "Adicione pelo menos um personagem à corrente."
 
 msgid "Add at least one farming spot."
 msgstr "Adicione pelo menos um local de coleta."
@@ -1116,6 +1158,9 @@ msgstr "Em um &horário específico"
 msgid "At a place I choose"
 msgstr "Em um local que eu escolher"
 
+msgid "At the &end of the chain:"
+msgstr "No &fim da corrente:"
+
 msgid "At the shops' fixed prices:"
 msgstr "Aos preços fixos das lojas:"
 
@@ -1231,6 +1276,9 @@ msgstr "Construir o Magic Ca&nnon em construção"
 msgid "Build the S&upply Camp under construction"
 msgstr "Construir o S&upply Camp em construção"
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr "Ocupado - numa corrente de personagens. Mande stop primeiro."
+
 msgid "Busy - send stop first."
 msgstr "Ocupado - envie o comando de parada primeiro."
 
@@ -1252,6 +1300,9 @@ msgstr ""
 
 msgid "C&hannel:"
 msgstr "C&anal:"
+
+msgid "C&haracter:"
+msgstr "Pe&rsonagem:"
 
 msgid "C&hat"
 msgstr "Bate-&papo"
@@ -1319,6 +1370,38 @@ msgstr "Canais"
 msgid "Character"
 msgstr "Personagem"
 
+msgid "Character chain"
+msgstr "Corrente de personagens"
+
+msgid "Character chain: couldn't close the game ({err})"
+msgstr "Corrente de personagens: não deu para fechar o jogo ({err})"
+
+msgid "Character chain: logging {old} out for {new}"
+msgstr "Corrente de personagens: desconectando {old} para {new}"
+
+msgid "Character chain: the game is closed"
+msgstr "Corrente de personagens: o jogo foi fechado"
+
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr "Corrente de personagens: o jogo fica aberto, um bot está rodando nele"
+
+msgid "Character chain: waiting for {name}'s game to come back"
+msgstr "Corrente de personagens: esperando o jogo de {name} voltar"
+
+msgid "Character chain: {name} didn't start: {why}"
+msgstr "Corrente de personagens: {name} não começou: {why}"
+
+msgid ""
+"Character chain: {name} has nothing to run (its plan or its Autopilot day isn't there) - left out today"
+msgstr ""
+"Corrente de personagens: {name} não tem nada para rodar (o plano ou o dia do Autopilot não existe) - deixado de fora hoje"
+
+msgid "Character chain: {name}, {what}"
+msgstr "Corrente de personagens: {name}, {what}"
+
+msgid "Character chain: {n} characters, one after the other"
+msgstr "Corrente de personagens: {n} personagens, um depois do outro"
+
 msgid "Character settings - {name}"
 msgstr "Configurações do personagem - {name}"
 
@@ -1332,6 +1415,9 @@ msgstr "Ficha do personagem"
 
 msgid "Character:"
 msgstr "Personagem:"
+
+msgid "Characters, in &order:"
+msgstr "&Personagens, em ordem:"
 
 msgid "Chat - {name}"
 msgstr "Bate-papo - {name}"
@@ -1390,6 +1476,11 @@ msgstr ""
 
 msgid "Choose a character."
 msgstr "Escolha um personagem."
+
+msgid ""
+"Choose a character. Only characters whose account the bot knows can be in the chain: log in to one once by hand."
+msgstr ""
+"Escolha um personagem. Só personagens cuja conta o bot conhece podem estar na corrente: entre uma vez à mão."
 
 msgid "Choose a city square:"
 msgstr "Escolha uma praça da cidade:"
@@ -1963,6 +2054,13 @@ msgstr "Somente erros"
 
 msgid "Every (minutes):"
 msgstr "A cada (minutos):"
+
+msgid "Every character of the chain can farm again today."
+msgstr "Todos os personagens da corrente podem farmar de novo hoje."
+
+msgid "Every character the bot can log in is in the chain already."
+msgstr ""
+"Todos os personagens com que o bot consegue entrar já estão na corrente."
 
 msgid "Every day"
 msgstr "Todos os dias"
@@ -2635,6 +2733,9 @@ msgstr "Itens"
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Itens sem regra: afetar &somente o que foi coletado nesta execução"
 
+msgid "Its Autopilot day"
+msgstr "O dia do Autopilot dele"
+
 msgid "JSON files (*.json)|*.json"
 msgstr "Arquivos JSON (*.json)|*.json"
 
@@ -2959,6 +3060,17 @@ msgstr ""
 msgid "Materials"
 msgstr ""
 
+msgid "Medals"
+msgstr "Medalhas"
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+"As medalhas são trocadas pela bolsa, onde o personagem estiver, sem custo. Uma medalha de um tipo já usado toma o lugar dela, e cada medalha espera cerca de 10 segundos depois da própria última troca. As Contribution Medals têm todas o mesmo nome: cada uma mostra o bônus depois que uma sessão o leu."
+
+msgid "Medals to &farm with:"
+msgstr "Medalhas para &farmar:"
+
 msgid "Medium"
 msgstr ""
 
@@ -3099,6 +3211,9 @@ msgstr "&Mover para descartar"
 msgid "Move to throw a&way"
 msgstr "&Mover para descartar"
 
+msgid "Moving on to the next character of the chain."
+msgstr "Passando para o próximo personagem da corrente."
+
 msgid "Mute e&very game"
 msgstr "&Silenciar todos os jogos"
 
@@ -3180,6 +3295,14 @@ msgstr ""
 
 msgid "No changelog entry for {v}. Showing the release notes."
 msgstr ""
+
+msgid ""
+"No character can be logged in by the bot yet: log in to each one once by hand, so its account is known."
+msgstr ""
+"O bot ainda não consegue entrar com nenhum personagem: entre uma vez à mão com cada um, para a conta ficar conhecida."
+
+msgid "No character chain is going in this game."
+msgstr "Nenhuma corrente de personagens está em andamento neste jogo."
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3301,6 +3424,11 @@ msgstr "Nenhum"
 
 msgid "None in the bag"
 msgstr "Nenhum na mochila"
+
+msgid ""
+"None of the medals ticked to farm with is in the bag any more: tick others on the Medals page."
+msgstr ""
+"Nenhuma das medalhas marcadas para farmar está mais na bolsa: marque outras na página Medalhas."
 
 msgid "Normal"
 msgstr "Normal"
@@ -3647,6 +3775,9 @@ msgstr ""
 msgid "Plan {name} was imported."
 msgstr "O plano {name} foi importado."
 
+msgid "Plan {plan}"
+msgstr "Plano {plan}"
+
 msgid "Plan, from the last scan of your bag:"
 msgstr "Plano, com base na última análise da mochila:"
 
@@ -3737,6 +3868,14 @@ msgstr "Colocado no depósito:"
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Atribuir habilidades e itens necessários a teclas &livres (nunca às que já estão em uso)"
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr "Recolocar as medalhas &habituais quando a sessão termina, onde terminar"
+
+msgid ""
+"Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
+msgstr ""
+"Recolocar os talentos &habituais quando a sessão termina numa cidade com mestre de talentos (sem viagem para isso)"
 
 msgid ""
 "Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
@@ -4458,8 +4597,14 @@ msgstr "Ficar parado"
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Iniciar um novo arquivo após (MB; 0 = nunca):"
 
+msgid "Start the c&hain"
+msgstr "&Iniciar a corrente"
+
 msgid "Starting"
 msgstr "Iniciando"
+
+msgid "Starting the character chain."
+msgstr "Iniciando a corrente de personagens."
 
 msgid "Starting {what}."
 msgstr "Iniciando {what}."
@@ -4472,6 +4617,9 @@ msgstr "Estado:"
 
 msgid "Stay away from &elite zones"
 msgstr "Manter distância de áreas de &elite"
+
+msgid "Stay logged in on the last character"
+msgstr "Ficar conectado no último personagem"
 
 msgid "Stays where it is when it stops (monsters may still attack)."
 msgstr "Fica onde estiver ao parar (monstros ainda podem atacar)."
@@ -4569,6 +4717,9 @@ msgstr "Parando"
 msgid "Stopping every bot"
 msgstr "Parando todos os bots"
 
+msgid "Stopping the character chain."
+msgstr "Parando a corrente de personagens."
+
 msgid "Stopping {what}, then following you."
 msgstr "Parando {what} e depois seguindo você."
 
@@ -4625,6 +4776,12 @@ msgstr ""
 
 msgid "Taken out of the storehouse:"
 msgstr "Retirado do depósito:"
+
+msgid "Talents"
+msgstr "Talentos"
+
+msgid "Talents to &farm with:"
+msgstr "Talentos para &farmar:"
 
 msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr ""
@@ -4691,6 +4848,11 @@ msgstr "Esse comando está desligado neste personagem."
 
 msgid "That filter already exists."
 msgstr "Esse filtro já existe."
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
+msgstr ""
+"Esse jogo está numa corrente de personagens: pare a corrente primeiro (Parar, Shift+F5)."
 
 msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
@@ -4805,6 +4967,45 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "A caverna (o personagem entra em uma caverna por dia de jogo)"
 
+msgid "The chain couldn't be saved: {err}"
+msgstr "A corrente não pôde ser salva: {err}"
+
+msgid ""
+"The character chain is empty: add characters in Run, Character chain first."
+msgstr ""
+"A corrente de personagens está vazia: adicione personagens primeiro em Run, Corrente de personagens."
+
+msgid ""
+"The character chain is over. These characters couldn't farm today: {names}"
+msgstr ""
+"A corrente de personagens terminou. Estes personagens não puderam farmar hoje: {names}"
+
+msgid "The character chain is over: every character has farmed today."
+msgstr "A corrente de personagens terminou: todos os personagens farmaram hoje."
+
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+"A corrente de personagens terminou: o farm do dia acabou (o tempo de drop recomeça às {reset})."
+
+msgid "The character chain is over: the day's farming is over."
+msgstr "A corrente de personagens terminou: o farm do dia acabou."
+
+msgid "The character chain stopped."
+msgstr "A corrente de personagens parou."
+
+msgid "The character chain stopped: another bot is running in its game."
+msgstr "A corrente de personagens parou: outro bot está rodando no jogo dela."
+
+msgid "The character chain stopped: its game isn't running any more."
+msgstr "A corrente de personagens parou: o jogo dela não está mais rodando."
+
+msgid "The character chain stopped: logging out didn't answer"
+msgstr "A corrente de personagens parou: a desconexão não respondeu"
+
+msgid "The character chain stopped: logging out didn't work ({why})"
+msgstr "A corrente de personagens parou: a desconexão não funcionou ({why})"
+
 msgid "The character hasn't learned {skill}."
 msgstr "O personagem não aprendeu {skill}."
 
@@ -4814,6 +5015,11 @@ msgstr ""
 
 msgid "The character's plan"
 msgstr "O plano do personagem"
+
+msgid ""
+"The characters farm one after the other in the game selected when the chain starts. Each one is logged in by itself (its saved account), does its plan or its Autopilot day, and is done for the game's day when its run ends by itself; then the next one comes. Stop ends the whole chain. A character done with more than 10 minutes of drop time left is done again once the others are."
+msgstr ""
+"Os personagens farmam um depois do outro no jogo selecionado quando a corrente começa. Cada um entra sozinho (a conta salva), faz o plano ou o dia do Autopilot, e conta como feito no dia do jogo quando a sessão termina sozinha; depois vem o próximo. Stop para a corrente inteira. Um personagem feito com mais de 10 minutos de tempo de drop sobrando é feito de novo depois dos outros."
 
 msgid "The clipboard couldn't be opened."
 msgstr "Não foi possível abrir a área de transferência."
@@ -4951,11 +5157,20 @@ msgid ""
 msgstr ""
 "A última análise não encontrou uma habilidade de coleta. Aprenda Pesca, Mineração ou Coletar Ervas com o Ancião Guru ou Mestre Pepper da guilda e faça uma nova análise."
 
+msgid "The last scan found no medal on this character, worn or in the bag."
+msgstr ""
+"A última análise não achou nenhuma medalha neste personagem, nem usada nem na bolsa."
+
 msgid "The listener is busy or disconnected. Try again."
 msgstr "O ouvinte está ocupado ou desconectado. Tente novamente."
 
 msgid "The market"
 msgstr ""
+
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"As medalhas ainda não são conhecidas: entre com este personagem no jogo e aperte « Analisar agora » na página « Visão geral »."
 
 msgid "The names or ids below"
 msgstr "Os nomes ou ids abaixo"
@@ -5045,6 +5260,11 @@ msgstr ""
 
 msgid "The strongest one"
 msgstr "O mais forte"
+
+msgid ""
+"The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"Os talentos ainda não são conhecidos: entre com este personagem no jogo e aperte « Analisar agora » na página « Visão geral »."
 
 msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
@@ -5204,8 +5424,28 @@ msgstr "Marque pelo menos uma coisa para copiar."
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+"Marque as medalhas para farmar na página Medalhas, ou desmarque Trocar as medalhas para farmar."
+
 msgid "Tick the monsters to fight:"
 msgstr "Marque os monstros que devem ser atacados:"
+
+msgid ""
+"Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+"Marque os talentos para farmar na página Talentos, ou desmarque Trocar os talentos para farmar."
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
+msgstr ""
+"Marque as medalhas habituais na página Medalhas, ou desmarque Recolocar as medalhas habituais."
+
+msgid ""
+"Tick the usual talents on the Talents page, or untick Put the usual talents back."
+msgstr ""
+"Marque os talentos habituais na página Talentos, ou desmarque Recolocar os talentos habituais."
 
 msgid "Time (HH:MM):"
 msgstr "Horário (HH:MM):"
@@ -5329,6 +5569,12 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Digite o nome da guilda cujos artesãos serão usados."
+
+msgid "U&sual medals:"
+msgstr "Medalhas ha&bituais:"
+
+msgid "U&sual talents:"
+msgstr "Talentos ha&bituais:"
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -5789,6 +6035,9 @@ msgstr "uma habilidade sem nome"
 msgid "a sub needs a name"
 msgstr "é preciso dar um nome à inscrição"
 
+msgid "a talent reset costs {cost} arnebia, there is {have} - nothing changed"
+msgstr "um reset de talentos custa {cost} arnebia, há {have} - nada mudou"
+
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
 msgstr ""
@@ -6176,6 +6425,10 @@ msgstr "lançar {n} vezes"
 msgid "casting {skill} to {place}"
 msgstr "lançando {skill} em {place}"
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr "trocar medalhas precisa do agente desta versão: reinicie o jogo uma vez"
+
 msgid "charge in"
 msgstr "avançar para o combate"
 
@@ -6312,6 +6565,9 @@ msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr ""
 "não foi possível lançar {skill} ({why}) — tentando novamente em 5 minutos"
 
+msgid "couldn't change these medals: {names}"
+msgstr "não deu para trocar estas medalhas: {names}"
+
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
 "não foi possível confirmar o reparo com {tool} — não marcado como reparado"
@@ -6361,6 +6617,11 @@ msgstr "não foi possível entrar na sala secreta"
 msgid "couldn't get there - going to the nearest map without monsters"
 msgstr "não foi possível chegar lá — indo para o mapa mais próximo sem monstros"
 
+msgid ""
+"couldn't get to a talent master ({why}) - farming with the talents as they are"
+msgstr ""
+"não deu para chegar a um mestre de talentos ({why}) - farmando com os talentos como estão"
+
 msgid "couldn't get to page {page} of {cat}"
 msgstr ""
 
@@ -6369,6 +6630,11 @@ msgstr "não foi possível chegar ao painel {n} usando as setas"
 
 msgid "couldn't get to the bag with the arrow keys"
 msgstr "não foi possível chegar à bolsa usando as setas"
+
+msgid ""
+"couldn't get to the talent master ({why}) - the talents stay as they are"
+msgstr ""
+"não deu para chegar ao mestre de talentos ({why}) - os talentos ficam como estão"
 
 msgid "couldn't get to {name} - next one"
 msgstr "não foi possível chegar a {name} — tentando o próximo"
@@ -6473,6 +6739,9 @@ msgstr "não foi possível guardar {item}: {why}"
 msgid "couldn't switch the target key to NPCs"
 msgstr "não foi possível mudar a tecla de alvo para NPCs"
 
+msgid "couldn't switch {talent} in the Reset Talents menu - nothing changed"
+msgstr "não deu para trocar {talent} no menu Reset Talents - nada mudou"
+
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "não foi possível retirar {item} do armazém: {why}"
 
@@ -6537,6 +6806,11 @@ msgstr ""
 
 msgid "died and came back outside {map}"
 msgstr "morreu e voltou para fora de {map}"
+
+msgid ""
+"died on the way to the talent master - farming with the talents as they are"
+msgstr ""
+"morreu a caminho do mestre de talentos - farmando com os talentos como estão"
 
 msgid "died on {map} ({n} so far)"
 msgstr "morreu em {map} ({n} vezes até agora)"
@@ -6960,6 +7234,9 @@ msgid ""
 msgstr ""
 "são {time} — a coleta de hoje terminou (o tempo de coleta reinicia às {reset})"
 
+msgid "its Autopilot day"
+msgstr "o dia do Autopilot dele"
+
 msgid "its game is busy with {what}"
 msgstr "o jogo dele está ocupado com {what}"
 
@@ -7267,6 +7544,11 @@ msgstr "nunca mais"
 msgid "new"
 msgstr "novo"
 
+msgid ""
+"next: in a character chain, I stop here, this character counts as done today, and the next one of the chain logs in and farms."
+msgstr ""
+"next: numa corrente de personagens, eu paro aqui, este personagem conta como feito hoje, e o próximo da corrente entra e farma."
+
 msgid "no Gem Protection Rune left, and combining is set to use one"
 msgstr ""
 "não restam Runas de Proteção de Gemas, e a combinação está configurada para usar uma"
@@ -7361,6 +7643,9 @@ msgstr "nenhuma morte há {n} minutos — tentando outra parte do mapa"
 
 msgid "no known entrance for the dungeon {name}"
 msgstr "nenhuma entrada conhecida para a masmorra {name}"
+
+msgid "no longer in the bag, left out: {names}"
+msgstr "não estão mais na bolsa, deixadas de fora: {names}"
 
 msgid "no map without monsters near {map}"
 msgstr "não há mapa sem monstros perto de {map}"
@@ -7509,6 +7794,11 @@ msgstr "nenhuma das entradas marcadas em {map} é o círculo {name}"
 msgid "none of the shops that sell {item} answered"
 msgstr "nenhuma das lojas que vendem {item} respondeu"
 
+msgid ""
+"none of the talents ticked for farming is learned by this character - they stay as they are"
+msgstr ""
+"nenhum dos talentos marcados para farmar foi aprendido por este personagem - eles ficam como estão"
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "nenhum dos cartões de experiência marcados na bolsa - a coleta continua sem cartão"
@@ -7516,6 +7806,13 @@ msgstr ""
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "nenhum dos {n} locais capazes de fazer isso pode ser alcançado a partir de {map}"
+
+msgid "none of these talents is in the Reset Talents menu - nothing changed"
+msgstr "nenhum destes talentos está no menu Reset Talents - nada mudou"
+
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr ""
+"nenhuma medalha da lista ({what}) está na bolsa - as medalhas ficam como estão"
 
 msgid "normal"
 msgstr "normal"
@@ -7611,6 +7908,9 @@ msgid ""
 msgstr ""
 "ainda desconhecido (o bot lê essa informação na ficha do personagem ao iniciar)"
 
+msgid "not learned by this character, left out: {names}"
+msgstr "não aprendidos por este personagem, deixados de fora: {names}"
+
 msgid "not reached on foot"
 msgstr "não alcançado a pé"
 
@@ -7634,6 +7934,9 @@ msgstr "não guardado (o depósito pode estar cheio): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenhum"
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
+msgstr "não usadas no fim, uma medalha do mesmo tipo tomou o lugar: {names}"
 
 msgid "nothing"
 msgstr "nada"
@@ -7872,6 +8175,9 @@ msgstr "frase {line}"
 msgid "plan"
 msgstr "plano"
 
+msgid "plan {plan}"
+msgstr "plano {plan}"
+
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
 msgstr ""
@@ -7894,6 +8200,12 @@ msgstr "guardar {n} {item} no depósito"
 
 msgid "put {pet} away"
 msgstr "guardar {pet}"
+
+msgid "putting on the talents for farming: {names}"
+msgstr "colocando os talentos para farmar: {names}"
+
+msgid "putting the usual talents back on: {names}"
+msgstr "recolocando os talentos habituais: {names}"
 
 msgid "quick"
 msgstr "rápido"
@@ -8304,6 +8616,9 @@ msgstr "verificando {map}: {n} paradas"
 msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr "levando {pet} às masmorras (Ferramentas, Masmorras)"
 
+msgid "talents set: {names} ({cost} arnebia)"
+msgstr "talentos colocados: {names} ({cost} arnebia)"
+
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr "falar com quem? digite: talk Cable Car manager"
 
@@ -8491,6 +8806,14 @@ msgstr ""
 msgid ""
 "the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
+
+msgid "the Reset Talents menu didn't open"
+msgstr "o menu Reset Talents não abriu"
+
+msgid ""
+"the Reset Talents menu has no row for {names}, which the character has learned - nothing changed"
+msgstr ""
+"o menu Reset Talents não tem linha para {names}, que o personagem aprendeu - nada mudou"
 
 msgid "the Secret room Manager summoned no assistant"
 msgstr "o Gerente da Sala Secreta não invocou nenhum assistente"
@@ -8699,6 +9022,9 @@ msgstr "o jogo não aceitou o pedido de descarte direto: {why}"
 msgid "the game didn't ask to confirm"
 msgstr "o jogo não pediu confirmação"
 
+msgid "the game didn't ask to confirm the talent reset - nothing changed"
+msgstr "o jogo não pediu para confirmar o reset de talentos - nada mudou"
+
 msgid "the game didn't offer to agree"
 msgstr "o jogo não ofereceu a opção de aceitar"
 
@@ -8774,11 +9100,19 @@ msgid ""
 msgstr ""
 "o jogo ficou sem memória e parou de funcionar ({where}) — reinicie o Mist World"
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+"o jogo recusou o ataque em {name}: fora de alcance - indo para o monstro mais próximo"
+
 msgid "the game refused the login request"
 msgstr "o jogo recusou a solicitação de entrada"
 
 msgid "the game said nothing - look in the bag"
 msgstr ""
+
+msgid "the game said: not enough talent points - nothing changed"
+msgstr "o jogo disse: not enough talent points - nada mudou"
 
 msgid "the game said: {lines}"
 msgstr "o jogo disse: {lines}"
@@ -8797,6 +9131,9 @@ msgstr "o jogo mostra: {shown}"
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "o jogo ainda não muda o modo - a coleta continua no modo atual"
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr "a troca de medalha não foi pedida ao jogo ({why})"
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -8811,6 +9148,9 @@ msgstr ""
 
 msgid "the game wouldn't select it ({why})"
 msgstr "o jogo não conseguiu selecioná-lo ({why})"
+
+msgid "the game wouldn't take orders"
+msgstr "o jogo não aceita ordens"
 
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr "o jogo não permitiu usar {beast} agora; tentando novamente mais tarde"
@@ -8924,6 +9264,15 @@ msgstr ""
 
 msgid "the marketplace didn't open its menu"
 msgstr ""
+
+msgid "the medals can't be read - they stay as they are"
+msgstr "as medalhas não podem ser lidas - ficam como estão"
+
+msgid "the medals for farming"
+msgstr "as medalhas para farmar"
+
+msgid "the medals for farming weren't put on: {err}"
+msgstr "as medalhas para farmar não foram colocadas: {err}"
 
 msgid "the menu has no entry like \"{want}\""
 msgstr "o menu não tem uma opção semelhante a \"{want}\""
@@ -9069,6 +9418,18 @@ msgstr ""
 msgid "the storehouse, then the Shard Market"
 msgstr "o depósito e, em seguida, o Mercado de Fragmentos"
 
+msgid "the talent master's menu has no Reset Talents"
+msgstr "o menu do mestre de talentos não tem Reset Talents"
+
+msgid "the talents can't be read - they stay as they are"
+msgstr "os talentos não podem ser lidos - ficam como estão"
+
+msgid "the talents didn't change after the reset"
+msgstr "os talentos não mudaram depois do reset"
+
+msgid "the talents for farming are already on"
+msgstr "os talentos para farmar já estão ativos"
+
 msgid "the target key was on {mode} - back to {want}"
 msgstr "a tecla de alvo estava em {mode} — voltando para {want}"
 
@@ -9090,6 +9451,23 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "nível máximo — nada a perder"
+
+msgid "the usual medals"
+msgstr "as medalhas habituais"
+
+msgid "the usual medals weren't put back: {err}"
+msgstr "as medalhas habituais não foram recolocadas: {err}"
+
+msgid ""
+"the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
+msgstr ""
+"os talentos habituais não voltaram: a sessão não terminou numa cidade com mestre de talentos (a próxima que terminar numa os recoloca)"
+
+msgid "the usual talents weren't put back: died on the way"
+msgstr "os talentos habituais não foram recolocados: morreu no caminho"
+
+msgid "the usual talents weren't put back: {err}"
+msgstr "os talentos habituais não foram recolocados: {err}"
 
 msgid "the village at {x},{y} on {map}"
 msgstr "a vila em {x},{y} no mapa {map}"
@@ -9169,6 +9547,11 @@ msgstr "não há pedidos para entrar na equipe aguardando"
 
 msgid "there's no {item} in the bag"
 msgstr "não há {item} na bolsa"
+
+msgid ""
+"these talents take {need} talent points, the character has {have} - nothing changed"
+msgstr ""
+"estes talentos usam {need} pontos de talento, o personagem tem {have} - nada mudou"
 
 msgid "this character can't publish that: it takes a gang elder's rights"
 msgstr ""
@@ -9369,6 +9752,9 @@ msgstr "enfraquece o inimigo"
 
 msgid "weapons"
 msgstr ""
+
+msgid "wearing {what}: {names}"
+msgstr "colocando {what}: {names}"
 
 msgid "wedding map"
 msgstr "mapa do casamento"
@@ -9769,6 +10155,12 @@ msgstr "{map}: a saída a pé não me levou para fora"
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
 
+msgid "{medal} (not in the bag)"
+msgstr "{medal} (não está na bolsa)"
+
+msgid "{medal} (worn now)"
+msgstr "{medal} (usada agora)"
+
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
 msgstr ""
@@ -9970,6 +10362,9 @@ msgstr ""
 
 msgid "{name}: {results}"
 msgstr "{name}: {results}"
+
+msgid "{name}: {what}"
+msgstr "{name}: {what}"
 
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} de {top} ({pct}%)"
@@ -10200,6 +10595,9 @@ msgstr ""
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: compartilhou Arnebia {n} de {all} vezes hoje"
 
+msgid "{row} (done today)"
+msgstr "{row} (feito hoje)"
+
 msgid "{row}: listed twice with different prices"
 msgstr "{row}: listado duas vezes com preços diferentes"
 
@@ -10318,6 +10716,12 @@ msgid ""
 msgstr ""
 "{state}. IDs silenciados ativos: {mute}. Observados: {observed}; bloqueados: {dropped}; silenciados ao vivo: {live}; não compatíveis: {unsupported}."
 
+msgid "{talent} (not learned)"
+msgstr "{talent} (não aprendido)"
+
+msgid "{talent} (on now)"
+msgstr "{talent} (ativo agora)"
+
 msgid "{tool} - {name}"
 msgstr "{tool} — {name}"
 
@@ -10332,6 +10736,12 @@ msgstr "{village} em {map}"
 
 msgid "{what} ({n} min left)"
 msgstr "{what} (faltam {n} min)"
+
+msgid "{what} are already worn"
+msgstr "{what} já estão em uso"
+
+msgid "{what} are worn"
+msgstr "{what} estão em uso"
 
 msgid ""
 "{what} changed since it was interrupted, so it starts from the beginning"
@@ -10394,6 +10804,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid "&Characters, in order:"
+#~ msgstr "&Personagens, em ordem:"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Nomes ou IDs (separados por vírgulas):"

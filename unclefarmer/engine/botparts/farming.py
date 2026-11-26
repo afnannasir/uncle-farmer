@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamhunt, teamlead, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, refusals, teamhunt, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
@@ -168,6 +168,7 @@ class FarmingMixin(Parts):
                            "it stops for each monster"))
         self.set_modes()
         self.modes_done = True
+        refusals.start(as_bot(self))     # the game's "out of range" sound: stop pressing, take the nearest
 
         def done():
             if minutes and (self.clock.time() - start) / 60.0 >= minutes:
@@ -504,6 +505,7 @@ class FarmingMixin(Parts):
                    m=max(0, int(got[0] // 60))), speak=True)
         stop = Stopped(_("drop time used up"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def level_goal(self) -> int | None:
@@ -559,6 +561,7 @@ class FarmingMixin(Parts):
         self.log(_("the next level needs only {n} experience - not starting to farm", n=int(need)), speak=True)
         stop = Stopped(_("stopped before the next level"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def leave_monsters(self) -> None:
