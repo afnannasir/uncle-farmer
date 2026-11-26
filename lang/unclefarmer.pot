@@ -5483,6 +5483,9 @@ msgstr ""
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr ""
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+
 msgid "Use the &combos of the activated talents"
 msgstr ""
 
@@ -8104,6 +8107,9 @@ msgstr ""
 msgid "short of supplies for the dungeon: {what}"
 msgstr ""
 
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+
 msgid "skills go by keys again: {why}"
 msgstr ""
 
@@ -10203,6 +10209,10 @@ msgid "{skill} doesn't list {place} for this character"
 msgstr ""
 
 msgid "{skill} for a long walk"
+msgstr ""
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
 msgstr ""
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"

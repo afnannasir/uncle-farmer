@@ -5644,6 +5644,10 @@ msgstr "Eşya kullan"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "keyboard_profile komutundan sonra tırnak içinde bir profil adı yaz."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+"Yalnızca &1. sayfadaki yetenekleri kullan (yetenek sayfası 2'ye hiç geçme)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Etkin yeteneklerin kombolarını kullan (&C)"
 
@@ -8356,6 +8360,10 @@ msgstr "kısa döngü"
 msgid "short of supplies for the dungeon: {what}"
 msgstr "zindan için eksik sarf malzemesi: {what}"
 
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"yetenek sayfası 2 kullanılmıyor (yalnızca 1. sayfadakiler kullanılır): {skills}"
+
 msgid "skills go by keys again: {why}"
 msgstr "beceriler yine tuşlarla kullanılıyor: {why}"
 
@@ -10534,6 +10542,11 @@ msgstr "{skill} bu karakter için {place} yerini listelemiyor"
 
 msgid "{skill} for a long walk"
 msgstr ""
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} yalnızca kullanılmayan yetenek sayfası 2'de ve 1. sayfada boş tuş yok - kullanmak için 1. sayfaya koy"
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr "{skill} bir beceri tuşunda değil (becerileri boş tuşlara koyma kapalı)"

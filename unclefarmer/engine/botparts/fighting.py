@@ -1452,6 +1452,11 @@ class FightingMixin(Parts):
             cast = 0.0
         return rate is not None and hp / rate < self.FIRST_HIT + cast
 
+    def _on_page_one(self, sb: Any) -> bool:
+        """With skill_page_one, the profile's attack keys may be pressed only once page 1 is up: on
+        page 2 they would cast its skills, which the player left alone. True when they may."""
+        return sb is None or not self.p.get("skill_page_one") or sb.page() == 0 or sb.flip_to(0)
+
     def _fight_press(self, f: "_Fight", *, extended: bool = False) -> str | None:
         """Send a follow key, a picked skill, or a profile attack at a valid target."""
         sb, p = f.sb, self.p
@@ -1487,7 +1492,7 @@ class FightingMixin(Parts):
             self.key(picked[0])
         elif sb is None or not sb.ok:
             # An older agent or Smart skills off: use the profile's keys within its range.
-            if not self._fight_can_press(f):
+            if not self._fight_can_press(f) or not self._on_page_one(sb):
                 return f.press_block
             self.key(p["attack_keys"][f.i % len(p["attack_keys"])])
         else:

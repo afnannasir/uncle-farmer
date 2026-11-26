@@ -16,7 +16,7 @@ from . import triggers
 # each skill's use - the ones "Reset the fighting settings" puts back too. Never the keys: they are
 # the character's own bar.
 FIGHTING_KEYS = ("attack_style", "fight_back", "nearest_monster", "fight_locked", "shoot_while_walking",
-                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys",
+                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys", "skill_page_one",
                  "attack_range", "attack_gap", "pull_range", "fight_timeout", "no_damage_timeout",
                  "no_damage_casts", "press_burst", "chase_range", "target_mode", "smart_skills",
                  "points_every", "mp_check_every", "skill_use", "skill_use_others")

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**Use only the skills of page 1** (untested in game: the tests use a pretend game)
+
+- A player never uses skill page 2, but saw the bot turn to it, a loss of time while farming. New box in
+  Character settings, Fighting: **Use only the skills of page 1 (never turn to skill page 2)**, unticked by
+  default. Ticked, the skills on page 2 are left alone - no fight, trip or guard uses them, so the page is
+  never turned there; the log names them once - and the empty keys the bot fills are those of page 1 only
+  (a heal, shield, dispel or buff it needs, or the teleport skill, that is only on page 2 goes on an empty
+  key of page 1; attack skills are never moved). The Keyboard Manager still sets both pages of a keyboard
+  profile, and leaves page 1 shown. Reset the fighting settings and Copy from another character carry it
+  too.
+
 **A boss that keeps coming back: the bot farms the wait, and the player chooses** (untested in game: the
 tests use a pretend game)
 

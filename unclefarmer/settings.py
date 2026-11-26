@@ -236,6 +236,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "heal_with_skill": True,  # a class with its own quick heal (Healing Wave, Heal) heals with it
     "heal_below": 85,         # HP % under which that heal is cast, in fights and between them
     "heal_potion_below": 50,  # with that heal, red potions only under this HP %
+    "skill_page_one": False,  # use only the skill keys of page 1: never turn to page 2, nothing put there
     "fill_empty_keys": True,  # put the heals, shields, buffs, dispels and items the bot uses on EMPTY keys
     "fill_empty_phrases": True,  # put useful quick phrase codes (/6 /5 /4, /7 for healers) on EMPTY phrase slots
     "teleport_key": "shift+p",   # the game's "teleport to the team leader" key (W_AMOVE): same map, 50 s cooldown
@@ -459,6 +460,7 @@ class Profile(BaseModel):
     heal_below: int = PROFILE_DEFAULTS["heal_below"]
     heal_potion_below: int = PROFILE_DEFAULTS["heal_potion_below"]
     fill_empty_keys: bool = PROFILE_DEFAULTS["fill_empty_keys"]
+    skill_page_one: bool = PROFILE_DEFAULTS["skill_page_one"]
     fill_empty_phrases: bool = PROFILE_DEFAULTS["fill_empty_phrases"]
     teleport_key: str = PROFILE_DEFAULTS["teleport_key"]
     emergency_below: int = PROFILE_DEFAULTS["emergency_below"]

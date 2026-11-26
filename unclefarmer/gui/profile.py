@@ -27,7 +27,7 @@ STYLES = ("auto", "follow", "stationary")
 # The fighting choices of the character window's own page, put back to their defaults by Advanced
 # settings' "Reset the fighting settings" (with its own pages' fine tuning and the skills' uses).
 MAIN_FIGHTING = ("attack_style", "fight_back", "nearest_monster", "fight_locked", "shoot_while_walking",
-                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys")
+                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys", "skill_page_one")
 # What the character window's "Copy from another character" can copy, in its list's order.
 COPY_PARTS = (("before", N_("Before farming list")), ("after", N_("After farming list")),
               ("fighting", N_("Fighting settings (not the keys)")), ("team", N_("Team settings")))
@@ -282,6 +282,8 @@ class ProfileDialog(Dialog):
         self.use_combos = f.check(_("Use the &combos of the activated talents"), p.get("use_combos", True))
         self.fill_keys = f.check(_("Put needed skills and items on &empty keys (never on keys in use)"),
                                  p.get("fill_empty_keys", True))
+        self.page_one = f.check(_("Use only the skills of page &1 (never turn to skill page 2)"),
+                                p.get("skill_page_one", False))
         f = group(panel, box, _("Death"))
         self.crystals = f.check(_("Revive on the spot with &Resurrection Crystals"), p["use_resurrection_crystal"])
         self.death_stop, self.max_deaths = f.optional(
@@ -797,7 +799,7 @@ class ProfileDialog(Dialog):
                          ("fight_locked", self.fight_locked), ("shoot_while_walking", self.shoot_while_walking),
                          ("skills_by_slot", self.skills_by_slot), ("use_buffs", self.use_buffs),
                          ("use_dispel", self.use_dispel), ("use_combos", self.use_combos),
-                         ("fill_empty_keys", self.fill_keys)):
+                         ("fill_empty_keys", self.fill_keys), ("skill_page_one", self.page_one)):
             box.SetValue(bool(p.get(key, settings.PROFILE_DEFAULTS[key])))
 
     def on_ok(self, _evt: wx.Event) -> None:
@@ -818,6 +820,7 @@ class ProfileDialog(Dialog):
         p["use_dispel"] = self.use_dispel.GetValue()
         p["use_combos"] = self.use_combos.GetValue()
         p["fill_empty_keys"] = self.fill_keys.GetValue()
+        p["skill_page_one"] = self.page_one.GetValue()
         p["respawn"] = "city"
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()

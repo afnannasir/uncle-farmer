@@ -903,6 +903,14 @@ The game can only cast skills assigned to skill keys.
 
 If there is no empty skill key for a skill the bot needs, it cannot cast that skill. It tells you which skills are missing and identifies keys that repeat skills already assigned elsewhere, so you can decide what to change.
 
+**Skill page 2**
+
+The game has two pages of skill keys, and the bot uses both: it turns the page for a skill on page 2, and back. If you never use page 2, tick **Use only the skills of page 1 (never turn to skill page 2)** under **Character → Settings → Fighting** (unticked by default). Then:
+
+- the skills on page 2 are left alone: no fight, trip or guard uses them, so the bot never turns the page there. The log names them once: "skill page 2 left alone (only the skills of page 1 are used): ...";
+- the empty keys the bot fills are those of page 1 only. A heal, shield, dispel or buff it needs, or the teleport skill for a trip, that is only on page 2 is put on an empty key of page 1 if one is free; else it says what is missing, as above. Attack skills are never moved: put the ones you want on page 1;
+- the Keyboard Manager still applies a keyboard profile to both pages, as you asked it to, and leaves page 1 shown.
+
 You can turn off this automatic key assignment behavior on the **Fighting** page.
 
 ### Repairs

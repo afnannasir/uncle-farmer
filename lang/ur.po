@@ -5740,6 +5740,10 @@ msgstr "Cheez istemal karein"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "keyboard_profile ke baad quotes mein ek profile ka naam likhein."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+"Sirf page &1 ki skills istemal karein (skill page 2 par kabhi na jayein)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Chalu talents ke &combos istemal karein"
 
@@ -8513,6 +8517,10 @@ msgstr "mukhtasar loop"
 msgid "short of supplies for the dungeon: {what}"
 msgstr "dungeon ke liye saamaan kam hai: {what}"
 
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"skill page 2 chhor di (sirf page 1 ki skills istemal hoti hain): {skills}"
+
 msgid "skills go by keys again: {why}"
 msgstr "skills ab phir keys se: {why}"
 
@@ -10736,6 +10744,11 @@ msgstr "{skill} is character ke liye {place} nahi dikhati"
 
 msgid "{skill} for a long walk"
 msgstr "lambe safar ke liye {skill}"
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} sirf skill page 2 par hai, jo chhor di gayi hai, aur page 1 ki koi key khali nahin - istemal ke liye ise page 1 par rakhein"
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr "{skill} kisi skill key par nahi (khali keys par skills lagana band hai)"

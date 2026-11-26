@@ -5694,6 +5694,9 @@ msgstr "Usar objeto"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "Usa keyboard_profile seguido de un nombre de perfil entre comillas."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr "Usar solo las habilidades de la página &1 (nunca pasar a la página 2)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Usar los &combos de los talentos activados"
 
@@ -8433,6 +8436,10 @@ msgstr "circuito corto"
 msgid "short of supplies for the dungeon: {what}"
 msgstr "faltan suministros para la mazmorra: {what}"
 
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"página 2 de habilidades sin usar (solo se usan las de la página 1): {skills}"
+
 msgid "skills go by keys again: {why}"
 msgstr "las habilidades vuelven a ir por teclas: {why}"
 
@@ -10620,6 +10627,11 @@ msgstr "{skill} no lista {place} para este personaje"
 
 msgid "{skill} for a long walk"
 msgstr ""
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} solo está en la página 2 de habilidades, que se deja sin usar, y ninguna tecla de la página 1 está libre - ponla en la página 1 para usarla"
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr ""

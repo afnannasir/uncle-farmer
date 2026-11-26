@@ -5779,6 +5779,10 @@ msgstr "Utiliser l'objet"
 msgid "Use keyboard_profile followed by one quoted profile name."
 msgstr "Utiliser keyboard_profile suivi d'un nom de profil entre guillemets."
 
+msgid "Use only the skills of page &1 (never turn to skill page 2)"
+msgstr ""
+"N'utiliser que les sorts de la page &1 (ne jamais passer à la page 2 des sorts)"
+
 msgid "Use the &combos of the activated talents"
 msgstr "Utiliser les &combos des talents activés"
 
@@ -8556,6 +8560,10 @@ msgstr "boucle courte"
 msgid "short of supplies for the dungeon: {what}"
 msgstr "provisions insuffisantes pour le donjon : {what}"
 
+msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
+msgstr ""
+"page 2 des sorts laissée de côté (seuls les sorts de la page 1 servent) : {skills}"
+
 msgid "skills go by keys again: {why}"
 msgstr "sorts de nouveau par les touches : {why}"
 
@@ -10788,6 +10796,11 @@ msgstr "{skill} ne propose pas {place} pour ce personnage"
 
 msgid "{skill} for a long walk"
 msgstr "{skill} pour une longue marche"
+
+msgid ""
+"{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - put it on page 1 to use it"
+msgstr ""
+"{skill} n'est que sur la page 2 des sorts, laissée de côté, et aucune touche de la page 1 n'est libre - mettez-le en page 1 pour l'utiliser"
 
 msgid "{skill} isn't on a skill key (putting skills on empty keys is off)"
 msgstr ""

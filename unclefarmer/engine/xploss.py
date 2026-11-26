@@ -382,7 +382,7 @@ def attack_key(b: Bot) -> tuple[str, int | None, float | None]:
     keys: list[str] = list(b.p.get("attack_keys") or [])
     if not keys:
         raise Stopped(_("no attack key in Character settings - the guard can't be hit"), final=True)
-    return keys[0], None, None
+    return keys[0], (0 if b.p.get("skill_page_one") else None), None   # page 1 only: on page 1
 
 
 # ---------------------------------------------------------------------------------------- the game's numbers
