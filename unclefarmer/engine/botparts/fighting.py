@@ -13,7 +13,7 @@ from typing import Any
 from ... import applog, atlas, jsonio
 from ...settings import TARGET_MODES
 from ...i18n import N_, _
-from .. import beasts, bosses, combat, pets, picking, refusals, teamheal
+from .. import beasts, bosses, combat, followopts, pets, picking, refusals, teamheal
 from .base import (MOVE_SHOT_REACH, STOPPING, LosingFight, Respawned, Stopped, agent_strike, note_failure,
                    skill_things, snap_map)
 from ...link import GameLink
@@ -334,6 +334,9 @@ class FightingMixin(Parts):
         (travel's crossing_poison)."""
         if self.walk_only or getattr(self, "crossing_poison", False):
             return
+        if followopts.heal_only(as_bot(self)):
+            return            # a follower that only heals: a fight would hold the heals up (followopts)
+        never = followopts.skip(as_bot(self)) if getattr(self, "following", None) else None
         for _round in range(6):
             snap = self.snap()
             me = snap["self"]
@@ -342,7 +345,7 @@ class FightingMixin(Parts):
                     and self.clock.time() - getattr(self, "_attackers_at", 0) < 0.5):
                 hitting = self.fresh_attackers()
             blind = not getattr(self, "casts_seen", True)
-            close = [e for e in self.targets(snap)
+            close = [e for e in self.targets(snap, skip=never)
                      if e["id"] in hitting
                      or (blind and math.hypot(e["x"] - me["x"], e["y"] - me["y"]) <= self.reach() + 6)]
             if not close:

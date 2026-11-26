@@ -10,14 +10,28 @@ from typing import Any, TypedDict, cast
 import wx
 
 from ..engine import teamhunt
-from ..i18n import _
-from .common import group
+from ..i18n import N_, _
+from .common import enable_label, group
 
 WHO = ("trusted", "friends", "list")
 NAME = re.compile(r"^[A-Za-z0-9]{1,20}$")     # what the game took ("TestFarmer"); the script's rule too
 
 
+ROLE_LABELS = (N_("Help the fights and heal"), N_("Heal only: never attack, not even what attacks me"),
+               N_("Attack only: never heal the team"))       # followopts.ROLES, in order
+
+
+class FollowUI(TypedDict):
+    role: wx.Choice
+    pull: wx.CheckBox
+    pull_range: wx.SpinCtrl
+    help_team: wx.CheckBox
+    distance: wx.SpinCtrl
+    skip: wx.TextCtrl
+
+
 class TeamUI(TypedDict):
+    follow: FollowUI
     accept: wx.CheckBox
     who: wx.Choice
     accept_list: wx.TextCtrl
@@ -86,6 +100,7 @@ def team_page(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> TeamUI:
     heal = f.check(_("Heal the player I follow and our &teammates with my healing skill (Priest, Sorceress)"),
                    p.get("team_heal", True))
     heal_below = f.number(_("Heal a teammate when their HP is below (%):"), _below(p.get("team_heal_below"), 70), 1, 99)
+    follow = _follow_controls(f, p)
     f = group(panel, box, _("Team Monster Hunting"))
     hunt = f.check(_("Enable Team Monster Hunting"), p.get("team_hunt", False))
     hunt_subscribe = f.check(_("Subscribe to Team Hunting"), p.get("team_hunt_subscribe", False))
@@ -94,15 +109,61 @@ def team_page(panel: wx.Window, box: wx.Sizer, p: dict[str, Any]) -> TeamUI:
     hunt_message = f.text(_("Monster encounter message:"), p.get("team_hunt_message", ""))
     hunt_message.SetMaxLength(teamhunt.MAX_MESSAGE)
     hunt_return = f.check(_("Return Leadership to Original Leader Between Encounters"), p.get("team_hunt_return", False))
-    return {"accept": accept, "who": who, "accept_list": accept_list, "remove_offline": remove_offline,
+    return {"follow": follow, "accept": accept, "who": who, "accept_list": accept_list, "remove_offline": remove_offline,
             "offline_every": offline_every, "town_only": town_only, "hand_over": hand_over, "hand_to": hand_to,
             "create": create, "name": name, "remake": remake, "leave_others": leave_others, "stay": stay,
             "heal": heal, "heal_below": heal_below, "hunt": hunt, "hunt_subscribe": hunt_subscribe,
             "hunt_threshold": hunt_threshold, "hunt_message": hunt_message, "hunt_return": hunt_return}
 
 
+def _follow_controls(f: Any, p: dict[str, Any]) -> FollowUI:
+    """How the bot follows a player (engine/followopts.py): its role, attacking before anyone is hit,
+    helping the team's fights, the distance kept, the monsters never attacked."""
+    from ..engine import followopts
+    role = f.choice(_("&Role while following:"), [_(r) for r in ROLE_LABELS], _role_index(p))
+    pull, pull_range = f.optional(
+        _("Attack th&e monsters that come near the player before anyone hits them"),
+        bool(p.get("follow_pull", False)), _("Within this many tiles of the player:"),
+        int(p.get("follow_pull_range", 10) or 10), 1, followopts.PULL_MOST)
+    help_team = f.check(_("Help with the team's fi&ghts (off: only what attacks me)"),
+                        p.get("follow_help_team", True))
+    distance = f.number(_("&Keep this many tiles from the player (no further than my heal reaches):"),
+                        int(p.get("follow_distance", followopts.NEAR) or followopts.NEAR), 1, followopts.DISTANCE_MOST)
+    skip = f.text(_("Never attack these monsters while following (names, by co&mmas):"),
+                  str(p.get("follow_skip", "") or ""))
+    return {"role": role, "pull": pull, "pull_range": pull_range, "help_team": help_team,
+            "distance": distance, "skip": skip}
+
+
+def _role_index(p: dict[str, Any]) -> int:
+    from ..engine import followopts
+    r = p.get("follow_role", "both")
+    return followopts.ROLES.index(r) if r in followopts.ROLES else 0
+
+
+def _load_follow(ui: FollowUI, p: dict[str, Any]) -> None:
+    from ..engine import followopts
+    ui["role"].SetSelection(_role_index(p))
+    ui["pull"].SetValue(bool(p.get("follow_pull", False)))
+    ui["pull_range"].SetValue(int(p.get("follow_pull_range", 10) or 10))
+    ui["pull_range"].Enable(ui["pull"].GetValue())
+    enable_label(ui["pull_range"], ui["pull"].GetValue())
+    ui["help_team"].SetValue(bool(p.get("follow_help_team", True)))
+    ui["distance"].SetValue(int(p.get("follow_distance", followopts.NEAR) or followopts.NEAR))
+    ui["skip"].SetValue(str(p.get("follow_skip", "") or ""))
+
+
+def _save_follow(p: dict[str, Any], ui: FollowUI) -> None:
+    from ..engine import followopts
+    p.update(follow_role=followopts.ROLES[max(0, ui["role"].GetSelection())], follow_pull=ui["pull"].GetValue(),
+             follow_pull_range=ui["pull_range"].GetValue(), follow_help_team=ui["help_team"].GetValue(),
+             follow_distance=ui["distance"].GetValue(),
+             follow_skip=", ".join(followopts.names(ui["skip"].GetValue())))
+
+
 def load_team(ui: TeamUI, p: dict[str, Any]) -> None:
     """The tab's choices again, from the profile (after a copy from another character)."""
+    _load_follow(ui["follow"], p)
     ui["accept"].SetValue(bool(p.get("team_accept", False)))
     ui["who"].SetSelection(WHO.index(p.get("team_accept_who")) if p.get("team_accept_who") in WHO else 0)
     ui["accept_list"].SetValue(names_text(p.get("team_accept_list")))
@@ -145,3 +206,4 @@ def save_team(p: dict[str, Any], ui: TeamUI) -> None:
              team_remake=ui["remake"].GetValue(), team_leave_others=ui["leave_others"].GetValue(),
              team_stay_in_town=ui["stay"].GetValue(), team_heal=ui["heal"].GetValue(),
              team_heal_below=ui["heal_below"].GetValue(), **hunt)
+    _save_follow(p, ui["follow"])

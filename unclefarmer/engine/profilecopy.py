@@ -23,7 +23,8 @@ FIGHTING_KEYS = ("attack_style", "fight_back", "nearest_monster", "fight_locked"
 SKILL_KEYS = ("skill_use", "skill_use_others")      # named by skill: only for the same class
 TEAM_KEYS = ("team_accept", "team_accept_who", "team_accept_list", "team_remove_offline", "team_offline_every",
              "team_offline_town_only", "team_hand_over", "team_hand_to", "team_create", "team_name",
-             "team_remake", "team_leave_others", "team_stay_in_town", "team_heal", "team_heal_below")
+             "team_remake", "team_leave_others", "team_stay_in_town", "team_heal", "team_heal_below",
+             "follow_role", "follow_pull", "follow_pull_range", "follow_help_team", "follow_distance", "follow_skip")
 
 
 def class_of(p: dict[str, Any]) -> str:

@@ -13,7 +13,7 @@ from typing import Any
 
 from ... import atlas
 from ...i18n import _
-from .. import beasts, combat
+from .. import beasts, combat, followopts
 from ...nearby import OWNER
 from .base import (DIRECTIONS, NPC_HP, STOPPING, GameLost, NoWay, Respawned, Stopped, WrongCharacter, note_failure,
                    snap_map)
@@ -97,8 +97,11 @@ class WalkingMixin(Parts):
         return "attacked" if self._broken_off(me) else None
 
     def _broken_off(self, me: dict[str, Any]) -> bool:
-        """A walk stops for an attack: our HP dropped (hit), or on a trip something casts at us."""
-        return self.hit(me) or self.attacked_on_the_way()
+        """A walk stops for an attack: our HP dropped (hit), or on a trip something casts at us.
+        Never for a follower that only heals (followopts): it doesn't fight back, and a walk broken
+        off at every hit would end as stuck."""
+        broken = self.hit(me) or self.attacked_on_the_way()
+        return broken and not followopts.heal_only(as_bot(self))
 
     def attacked_on_the_way(self) -> bool:
         """While travelling: a monster has cast at us (or our pet) lately - the walk stops for the
@@ -652,9 +655,12 @@ class WalkingMixin(Parts):
                        cell=at), speak=True)
             mid, start = self.map_id(), self.me()
             m = atlas.model(mid)
+            # Never the hearthstone for a follower that only heals: it fights nothing, so a monster in
+            # the way stays there, and the stone would take it out of its player's dungeon.
+            home = not followopts.heal_only(as_bot(self))
             steps = (lambda: self._push_out(mid, start), lambda: self._walk_out(m, mid, start),
                      lambda: self.leave_by_exit(m, start) and self._away(mid, start),
-                     lambda: self.has_hearthstone() and self.go_home(tries=1))
+                     lambda: home and self.has_hearthstone() and self.go_home(tries=1))
             for step in steps:
                 self.fight_back()
                 try:

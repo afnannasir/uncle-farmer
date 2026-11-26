@@ -415,6 +415,8 @@ For example, a journey from Giant Rock City to Tulip City might go underground t
 
 The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, the character must have enough arnebia in the bag to pay the fare (VIP travel is free), and its level must be high enough for the ride: each airship out of a capital needs one (from 26 for Giant Rock City to Sunset City up to 86 for Holy Blood City to Dark Night City), and so do the cable cars from Giant Rock City to Tulip City (45) and to Holy Blood City (60). The rides back need none. When another ride turns the character away for its level, the bot says so and goes another way for the rest of the run.
 
+**Leaving a cable car.** Once aboard, the bot walks up to the cabin's door on the side the car is going, and steps out as soon as the game plays the car's arrival sound, about 12 seconds after boarding ("the cable car has arrived - out through its door"). Left alone, the game puts a player out about 10 seconds later. With an older game agent that can't hear sounds, the bot tries the door once, 15 seconds after boarding; a door that still refuses, or a walk that fails, leaves it to the game as before. Airships have no door: the bot waits for the flight to land.
+
 **Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
 
 When it teleports, the bot:
@@ -2401,7 +2403,17 @@ Your character will:
 
 For your own characters, Uncle Farmer can follow them anywhere. For other players, it uses the map exits to travel between maps.
 
-Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it stops following.
+Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it waits where it is and teleports to the team leader (Shift+P) as soon as the game allows; only you stop the follow.
+
+**How it follows** (Character settings, Team, group **Following a leader**):
+
+- **Role while following:** help the fights and heal (the default); **heal only**, never attacking, not even what attacks it, so its heals are never held up by an attack (for a healer with its tank in a dungeon); or **attack only**, never healing the team.
+- **Attack the monsters that come near the player before anyone hits them**, within the tiles you choose. Unticked, the character helps only with the fights already going on.
+- **Help with the team's fights.** Unticked, it fights only what attacks it (and, with the box above ticked, what comes near the player).
+- **Keep this many tiles from the player** (3). A character that heals never goes further than its heal reaches.
+- **Never attack these monsters while following**: names, separated by commas - a dungeon's bosses, for instance. Field bosses are already left alone.
+
+A script's `follow` line can set the same choices for one follow: `follow Tank role=heal distance=6 skip="Bone Dragon"` (see the scripting guide).
 
 **Buffs while following**
 

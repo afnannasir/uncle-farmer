@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from .. import atlas, gamekeys, sounds, trust
 from ..i18n import _
-from . import team
+from . import listening, team
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -146,7 +146,7 @@ def listen(b: Bot) -> None:
         lead.chat_from = chat_mark(b)
     try:
         lead.sound_from = sounds.events(b.a, 0)["now"]
-        sounds.listen(b.a, str(REQUEST_SOUND))
+        listening.want(b, "team requests", str(REQUEST_SOUND))   # with the run's other sounds
     except Exception as e:         # an agent without sounds: requests are still seen at each farm start
         lead.sound_from = None
         _once(b, "no sound", _("can't hear team requests ({err}): they are looked at when farming starts", err=e))

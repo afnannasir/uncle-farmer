@@ -349,6 +349,11 @@ msgid ""
 msgstr ""
 "&Manter esta quantidade de cristais na mochila antes de iniciar (0: somente conforme necessário):"
 
+msgid ""
+"&Keep this many tiles from the player (no further than my heal reaches):"
+msgstr ""
+"Manter esta dis&tância do jogador em quadros (não além do alcance da minha cura):"
+
 msgid "&Keep:"
 msgstr "&Manter:"
 
@@ -571,6 +576,9 @@ msgstr ""
 
 msgid "&Results:"
 msgstr "&Resultados:"
+
+msgid "&Role while following:"
+msgstr "&Função ao seguir:"
 
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr "&Sala (parte do nome; vazio: sala livre de nível mais alto):"
@@ -1170,6 +1178,13 @@ msgstr "Aos preços fixos das lojas:"
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 "Teclas de ataque: informe as teclas separadas por espaços, por exemplo: j y . h"
+
+msgid "Attack only: never heal the team"
+msgstr "Só atacar: nunca curar a equipe"
+
+msgid "Attack th&e monsters that come near the player before anyone hits them"
+msgstr ""
+"Atacar os monstros que se aproximam do jogador antes que alguém os &bata"
 
 msgid "Automatic, by class"
 msgstr "Automático, por classe"
@@ -2467,6 +2482,9 @@ msgstr "Curar um companheiro quando o HP estiver abaixo de (%):"
 msgid "Heal it when its HP is below (%):"
 msgstr "Curar quando o HP estiver abaixo de (%):"
 
+msgid "Heal only: never attack, not even what attacks me"
+msgstr "Só curar: nunca atacar, nem o que me ataca"
+
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
 msgstr "Curar o mascote com minha habilidade de cura (&Sacerdote, Feiticeira)"
 
@@ -2497,6 +2515,12 @@ msgstr "Curando o mascote"
 
 msgid "Hearthstone hotkey"
 msgstr "Atalho da pedra de retorno"
+
+msgid "Help the fights and heal"
+msgstr "Ajudar nas lutas e curar"
+
+msgid "Help with the team's fi&ghts (off: only what attacks me)"
+msgstr "Ajudar nas &lutas da equipe (senão: só o que me ataca)"
 
 msgid "Here, next to you."
 msgstr "Aqui, ao seu lado."
@@ -3261,6 +3285,9 @@ msgstr "Lucro líquido: {n} arnebia"
 
 msgid "Never"
 msgstr "Nunca"
+
+msgid "Never attack these monsters while following (names, by co&mmas):"
+msgstr "Nunca atacar estes &monstros ao seguir (nomes, separados por vírgulas):"
 
 msgid "Never spend arnebia belo&w:"
 msgstr "&Nunca gastar arnebia abaixo de:"
@@ -5979,6 +6006,9 @@ msgstr "Com um único local, o bot coleta ali até o plano parar (Quando parar).
 msgid "With your {top} max HP that is below {pct}%."
 msgstr "Com seus PV máximos de {top}, abaixo de {pct}%."
 
+msgid "Within this many tiles of the player:"
+msgstr "A até estes quadros do jogador:"
+
 msgid "Worst hit received: {hit}"
 msgstr "Maior dano recebido: {hit}"
 
@@ -6228,6 +6258,9 @@ msgstr ""
 msgid "attacking guards with the {key} key"
 msgstr "atacando guardas com a tecla {key}"
 
+msgid "attacking only"
+msgstr "só atacando"
+
 msgid "attacks {how}"
 msgstr "ataca {how}"
 
@@ -6471,6 +6504,13 @@ msgstr "trocar medalhas precisa do agente desta versão: reinicie o jogo uma vez
 
 msgid "charge in"
 msgstr "avançar para o combate"
+
+msgid "chat to which room? write: chat <room> <text>, the room one of: {rooms}"
+msgstr ""
+"chat para qual sala? escreva: chat <sala> <texto>, a sala uma de: {rooms}"
+
+msgid "chat: write the text after the room"
+msgstr "chat: escreva o texto depois da sala"
 
 msgid "cheapest {what}"
 msgstr ""
@@ -6817,6 +6857,10 @@ msgstr "não foi possível digitar no jogo: {why}"
 msgid "couldn't walk into {village} - trying another village"
 msgstr "não foi possível entrar em {village} — tentando outra vila"
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr ""
+"não foi possível andar até a porta do teleférico ({why}) - esperando ser posto para fora"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "não foi possível {what} o cartão de experiência: {why} — tentando novamente em um minuto"
@@ -7027,6 +7071,20 @@ msgid ""
 "follow: I stay with you, help the team fight and go where you go. A Priest or Sorceress heals the team. No buffs unless you send buff. Lost, I wait and teleport to the leader."
 msgstr ""
 
+msgid "follow: help= is on or off, not {value}"
+msgstr "follow: help= é on ou off, não {value}"
+
+msgid "follow: role= is heal, attack or both, not {value}"
+msgstr "follow: role= é heal, attack ou both, não {value}"
+
+msgid ""
+"follow: unknown option {option} - write role=, distance=, pull=, help= or skip="
+msgstr ""
+"follow: opção desconhecida {option} - escreva role=, distance=, pull=, help= ou skip="
+
+msgid "follow: {option}= is from 1 to {most} tiles, not {value}"
+msgstr "follow: {option}= vai de 1 a {most} quadros, não {value}"
+
 msgid "following {name}"
 msgstr "seguindo {name}"
 
@@ -7204,6 +7262,14 @@ msgstr "curar"
 msgid "healed {n}"
 msgstr "curou {n}"
 
+msgid "healing only"
+msgstr "só curando"
+
+msgid ""
+"healing only while following, but this character has no team heal on a key (or healing teammates is off on the Team tab): it will only follow"
+msgstr ""
+"só curar ao seguir, mas este personagem não tem cura de equipe numa tecla (ou curar os colegas está desligado na aba Team): ele só vai seguir"
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr "cura o mascote com {skill} abaixo de {pct}% dos PV"
 
@@ -7221,6 +7287,9 @@ msgid ""
 "help: lists the commands. help and a command's name says what that one does, for example: help follow"
 msgstr ""
 "help: lista os comandos. help seguido do nome de um comando explica sua função. Exemplo: help follow"
+
+msgid "helping and healing"
+msgstr "ajudando e curando"
 
 msgid "herbs"
 msgstr "ervas"
@@ -7404,11 +7473,26 @@ msgstr "repetir a linha {n} após renascer"
 msgid "line {n}: a condition or value is missing"
 msgstr "linha {n}: falta uma condição ou um valor"
 
+msgid ""
+"line {n}: couldn't use {item} (not in the bag, or the game didn't take it)"
+msgstr ""
+"linha {n}: não foi possível usar {item} (não está na bolsa, ou o jogo não aceitou)"
+
 msgid "line {n}: died every time I tried it"
 msgstr "linha {n}: morreu em todas as tentativas"
 
+msgid "line {n}: not sent to {room}: the character is in no gang"
+msgstr ""
+"linha {n}: não enviado para {room}: o personagem não está em nenhum gang"
+
+msgid "line {n}: not sent to {room}: {why}"
+msgstr "linha {n}: não enviado para {room}: {why}"
+
 msgid "line {n}: subs are nested more than {max} calls deep"
 msgstr "linha {n}: as inscrições excedem {max} níveis de chamadas aninhadas"
+
+msgid "line {n}: the chat line is cut to {most} characters"
+msgstr "linha {n}: a linha do chat foi cortada em {most} caracteres"
 
 msgid "line {n}: the number grew too large (over {bits} bits)"
 msgstr "linha {n}: o número ficou grande demais (mais de {bits} bits)"
@@ -9001,6 +9085,9 @@ msgstr "as gemas da bolsa já estão no nível máximo"
 msgid "the best map for level {level}: {map}"
 msgstr "o melhor mapa para o nível {level}: {map}"
 
+msgid "the cable car has arrived - out through its door"
+msgstr "o teleférico chegou - saindo pela porta"
+
 msgid "the character didn't leave the game"
 msgstr "o personagem não saiu do jogo"
 
@@ -9764,6 +9851,9 @@ msgstr "atualizando os preços dos fragmentos"
 msgid "usable items"
 msgstr ""
 
+msgid "use what? write: use <item name>"
+msgstr "usar o quê? escreva: use <nome do item>"
+
 msgid ""
 "used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
@@ -9793,6 +9883,9 @@ msgid ""
 "wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
 msgstr ""
 "wait 45: saio por 45 minutos (só wait: os minutos definidos no Uncle Farmer), depois entro de novo e continuo farmando. Ligado nas configurações de mensagens privadas do Uncle Farmer."
+
+msgid "wait_until: timeout= is from 1 to {most} seconds, not {value}"
+msgstr "wait_until: timeout= vai de 1 a {most} segundos, não {value}"
 
 msgid "waiting for the game opened for {name} to start"
 msgstr "esperando o jogo aberto para {name} iniciar"
@@ -10662,8 +10755,14 @@ msgstr ""
 msgid "{query}: {pages} pages, {lots} lots read"
 msgstr ""
 
+msgid "{role} while following"
+msgstr "{role} ao seguir"
+
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: compartilhou Arnebia {n} de {all} vezes hoje"
+
+msgid "{room}: {line}"
+msgstr "{room}: {line}"
 
 msgid "{row} (done today)"
 msgstr "{row} (feito hoje)"

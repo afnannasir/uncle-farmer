@@ -204,6 +204,13 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "pet_heal_with_skill": True,  # a class with a quick heal (Priest, Sorceress) heals the pet with it
     "pet_heal_below": 85,     # the pet's HP (%) under which it is healed with the skill
     "team_heal": True,        # while following, a class with a quick heal heals teammates with it
+    # following (engine/followopts.py; a script's follow line may override each for one follow)
+    "follow_role": "both",    # "both" help the fights and heal, "heal" heal only (never fight), "attack" never heal
+    "follow_pull": False,     # also attack what comes within follow_pull_range tiles of the player...
+    "follow_pull_range": 10,  # ...before anyone hits it
+    "follow_help_team": True, # help with the team's fights (off: only what attacks us)
+    "follow_distance": 3,     # tiles kept from the player (inside the heal's reach)
+    "follow_skip": "",        # monster names never attacked while following, by commas
     "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
     # Leading a team (Team tab; engine/teamlead.py). Everything off until the player ticks it.
     "team_hunt": False,
@@ -438,6 +445,12 @@ class Profile(BaseModel):
     pet_heal_with_skill: bool = PROFILE_DEFAULTS["pet_heal_with_skill"]
     pet_heal_below: Auto = PROFILE_DEFAULTS["pet_heal_below"]
     team_heal: bool = PROFILE_DEFAULTS["team_heal"]
+    follow_role: str = PROFILE_DEFAULTS["follow_role"]
+    follow_pull: bool = PROFILE_DEFAULTS["follow_pull"]
+    follow_pull_range: int = PROFILE_DEFAULTS["follow_pull_range"]
+    follow_help_team: bool = PROFILE_DEFAULTS["follow_help_team"]
+    follow_distance: int = PROFILE_DEFAULTS["follow_distance"]
+    follow_skip: str = PROFILE_DEFAULTS["follow_skip"]
     team_heal_below: Auto = PROFILE_DEFAULTS["team_heal_below"]
     team_accept: bool = PROFILE_DEFAULTS["team_accept"]
     team_accept_who: str = PROFILE_DEFAULTS["team_accept_who"]

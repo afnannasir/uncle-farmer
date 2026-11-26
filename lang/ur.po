@@ -349,6 +349,11 @@ msgid ""
 msgstr ""
 "&Shuru karne se pehle baste mein itne crystals rakhein (0: sirf zaroorat ke mutabiq):"
 
+msgid ""
+"&Keep this many tiles from the player (no further than my heal reaches):"
+msgstr ""
+"Player se itne khane door rahein (mere heal ki pohanch &se zyada nahin):"
+
 msgid "&Keep:"
 msgstr "&Rakhein:"
 
@@ -571,6 +576,9 @@ msgstr "&Nataij (Space khareedne ke liye lot par nishan lagata hai):"
 
 msgid "&Results:"
 msgstr "&Nataij:"
+
+msgid "&Role while following:"
+msgstr "Follow karte w&aqt mera kirdar:"
 
 msgid "&Room (part of its name; empty: the highest level free room):"
 msgstr "&Kamra (naam ka hissa; khali: sab se oonche level ka khali kamra):"
@@ -1168,6 +1176,13 @@ msgstr "Dukaanon ki muqarrar qeematon par:"
 msgid "Attack keys: enter keys separated by spaces, for example: j y . h"
 msgstr ""
 "Attack keys: keys ko space se alag kar ke likhein, misal ke taur par: j y . h"
+
+msgid "Attack only: never heal the team"
+msgstr "Sirf hamla: team ko kabhi heal na karein"
+
+msgid "Attack th&e monsters that come near the player before anyone hits them"
+msgstr ""
+"Jo monsters player ke qareeb aayein, kisi ke hamla karne se pehle un par hamla kar&ein"
 
 msgid "Automatic, by class"
 msgstr "Khud-bakhud, class ke mutabiq"
@@ -2460,6 +2475,10 @@ msgstr "Teammate ka HP is se neeche ho to shifa dein (%):"
 msgid "Heal it when its HP is below (%):"
 msgstr "Jab us ka HP is se neeche ho to shifa dein (%):"
 
+msgid "Heal only: never attack, not even what attacks me"
+msgstr ""
+"Sirf heal: kabhi hamla na karein, us par bhi nahin jo mujh par hamla kare"
+
 msgid "Heal the pet with my healing &skill (Priest, Sorceress)"
 msgstr "Pet ko meri shifa wali &skill se shifa dein (Priest, Sorceress)"
 
@@ -2490,6 +2509,12 @@ msgstr "Pet ki shifa"
 
 msgid "Hearthstone hotkey"
 msgstr "Hearthstone hotkey"
+
+msgid "Help the fights and heal"
+msgstr "Laraiyon mein madad aur heal"
+
+msgid "Help with the team's fi&ghts (off: only what attacks me)"
+msgstr "Team ki &laraiyon mein madad karein (warna sirf jo mujh par hamla kare)"
 
 msgid "Here, next to you."
 msgstr "Yahan, tumhare paas."
@@ -3259,6 +3284,10 @@ msgstr "Khalis kamai: {n} arnebia"
 
 msgid "Never"
 msgstr "Kabhi nahi"
+
+msgid "Never attack these monsters while following (names, by co&mmas):"
+msgstr ""
+"Follow karte waqt in monsters par kabhi hamla na karein (naam, co&mma se alag):"
 
 msgid "Never spend arnebia belo&w:"
 msgstr "&Is se kam arnebia kabhi kharch na karein:"
@@ -5980,6 +6009,9 @@ msgstr ""
 msgid "With your {top} max HP that is below {pct}%."
 msgstr "Aap ki {top} max HP ke saath jo {pct}% se neeche hai."
 
+msgid "Within this many tiles of the player:"
+msgstr "Player se itne khane ke andar:"
+
 msgid "Worst hit received: {hit}"
 msgstr "Sab se bura mila hit: {hit}"
 
@@ -6232,6 +6264,9 @@ msgstr ""
 msgid "attacking guards with the {key} key"
 msgstr "guards par {key} key se hamla"
 
+msgid "attacking only"
+msgstr "sirf hamla"
+
 msgid "attacks {how}"
 msgstr "hamla {how}"
 
@@ -6473,6 +6508,13 @@ msgstr ""
 
 msgid "charge in"
 msgstr "daur kar andar"
+
+msgid "chat to which room? write: chat <room> <text>, the room one of: {rooms}"
+msgstr ""
+"kis room mein chat? likhein: chat <room> <text>, room in mein se: {rooms}"
+
+msgid "chat: write the text after the room"
+msgstr "chat: room ke baad text likhein"
 
 msgid "cheapest {what}"
 msgstr "sab se sasta {what}"
@@ -6822,6 +6864,10 @@ msgstr "game mein type nahi kar sake: {why}"
 msgid "couldn't walk into {village} - trying another village"
 msgstr "{village} ke andar nahi ja saka - doosra gaon try kar raha hai"
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr ""
+"cable car ke darwaze tak nahin ja sake ({why}) - bahar nikale jane ka intezar"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "experience card {what} nahi ho saka: {why} - ek minute baad dobara koshish"
@@ -7036,6 +7082,20 @@ msgid ""
 msgstr ""
 "follow: main aap ke saath rehta hoon, team ki larai mein madad karta hoon aur jahan aap jayen wahan jata hoon. Priest ya Sorceress team ko heal karta hai. buff bhejein to hi buffs. Gum hua to intezar karke leader ke paas teleport karta hoon."
 
+msgid "follow: help= is on or off, not {value}"
+msgstr "follow: help= on ya off hai, {value} nahin"
+
+msgid "follow: role= is heal, attack or both, not {value}"
+msgstr "follow: role= heal, attack ya both hai, {value} nahin"
+
+msgid ""
+"follow: unknown option {option} - write role=, distance=, pull=, help= or skip="
+msgstr ""
+"follow: anjaan option {option} - role=, distance=, pull=, help= ya skip= likhein"
+
+msgid "follow: {option}= is from 1 to {most} tiles, not {value}"
+msgstr "follow: {option}= 1 se {most} khane tak hai, {value} nahin"
+
 msgid "following {name}"
 msgstr "{name} ke saath chal raha hoon"
 
@@ -7215,6 +7275,14 @@ msgstr "shifa"
 msgid "healed {n}"
 msgstr "{n} heal kiya"
 
+msgid "healing only"
+msgstr "sirf heal"
+
+msgid ""
+"healing only while following, but this character has no team heal on a key (or healing teammates is off on the Team tab): it will only follow"
+msgstr ""
+"follow karte waqt sirf heal, lekin is character ke paas kisi key par team heal nahin (ya Team tab mein teammates ko heal karna band hai): yeh sirf follow karega"
+
 msgid "heals the pet with {skill} below {pct}% of its HP"
 msgstr "pet ka HP {pct}% se neeche ho to {skill} se shifa"
 
@@ -7231,6 +7299,9 @@ msgid ""
 "help: lists the commands. help and a command's name says what that one does, for example: help follow"
 msgstr ""
 "help: commands ki list deta hai. help aur command ka naam batata hai ke wo kya karta hai, misaal: help follow"
+
+msgid "helping and healing"
+msgstr "madad aur heal"
 
 msgid "herbs"
 msgstr "jari bootiyan"
@@ -7415,11 +7486,25 @@ msgstr "respawn ke baad dobara line {n}"
 msgid "line {n}: a condition or value is missing"
 msgstr "line {n}: koi condition ya value missing hai"
 
+msgid ""
+"line {n}: couldn't use {item} (not in the bag, or the game didn't take it)"
+msgstr ""
+"line {n}: {item} istemal nahin kar sake (bag mein nahin, ya game ne nahin liya)"
+
 msgid "line {n}: died every time I tried it"
 msgstr "line {n}: jitni baar koshish ki maut hui"
 
+msgid "line {n}: not sent to {room}: the character is in no gang"
+msgstr "line {n}: {room} ko nahin bheja: character kisi gang mein nahin"
+
+msgid "line {n}: not sent to {room}: {why}"
+msgstr "line {n}: {room} ko nahin bheja: {why}"
+
 msgid "line {n}: subs are nested more than {max} calls deep"
 msgstr "line {n}: subs {max} calls se zyada gehri nested hain"
+
+msgid "line {n}: the chat line is cut to {most} characters"
+msgstr "line {n}: chat line {most} haroof tak kaat di gayi"
 
 msgid "line {n}: the number grew too large (over {bits} bits)"
 msgstr "line {n}: number bohat bara ho gaya ({bits} bits se zyada)"
@@ -9018,6 +9103,9 @@ msgstr "baste ke gems apni aakhri had tak hain"
 msgid "the best map for level {level}: {map}"
 msgstr "level {level} ke liye sab se achha map: {map}"
 
+msgid "the cable car has arrived - out through its door"
+msgstr "cable car pohanch gayi - us ke darwaze se bahar"
+
 msgid "the character didn't leave the game"
 msgstr "character ne game nahin chhora"
 
@@ -9783,6 +9871,9 @@ msgstr "shards ki qeematein update kar rahe hain"
 msgid "usable items"
 msgstr "istemal ki cheezein"
 
+msgid "use what? write: use <item name>"
+msgstr "kya istemal karein? likhein: use <item ka naam>"
+
 msgid ""
 "used a {card}, but the character sheet doesn't show it - no other experience card for {m} minutes"
 msgstr ""
@@ -9813,6 +9904,9 @@ msgid ""
 "wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back in and go on farming. Turned on in Uncle Farmer's private messages settings."
 msgstr ""
 "wait 45: main 45 minute ke liye logout hota hoon (sirf wait: Uncle Farmer mein set minute), phir login kar ke farming jaari. Uncle Farmer ki private messages settings mein on karein."
+
+msgid "wait_until: timeout= is from 1 to {most} seconds, not {value}"
+msgstr "wait_until: timeout= 1 se {most} seconds tak hai, {value} nahin"
 
 msgid "waiting for the game opened for {name} to start"
 msgstr "{name} ke liye khole gaye game ke shuru hone ka intezar"
@@ -10688,8 +10782,14 @@ msgstr "ek ki {price} qeemat aap ki rakhi hui had ({most}) se zyada hai"
 msgid "{query}: {pages} pages, {lots} lots read"
 msgstr "{query}: {pages} safhe, {lots} lots parhe"
 
+msgid "{role} while following"
+msgstr "follow karte waqt {role}"
+
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: aaj {all} mein se {n} baar arnebia share kiya"
+
+msgid "{room}: {line}"
+msgstr "{room}: {line}"
 
 msgid "{row} (done today)"
 msgstr "{row} (aaj mukammal)"

@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+**More for scripts** (untested in game: the tests use a pretend game)
+
+- `chat <room> <text>`: a line on a chat channel (team, gang, international, global, map, nearby,
+  private), with `{values}` as in `say`. A line the game refuses is said in the log; the script goes on.
+- `use <item>`: an item from the bag; `used` says whether it went.
+- `wait_until <condition> [timeout=<s>]`: waits until the condition is true (60 s unless said, a day at
+  most); `wait_met` says whether it came true. Stop and Pause work while it waits.
+- New values: `boss` and `boss_dist` (the nearest field boss in view), `in_dungeon`, `bag_pct` (the bag's
+  weight, %), `deaths` (this run's); and `near("name")`, the tiles to a player in view (-1 when not).
+- `chat` sends one line a room every 3 seconds at most, and cuts a line to 300 characters.
+- A script that `set` a value of its own named `boss`, `boss_dist`, `in_dungeon`, `bag_pct`, `deaths`,
+  `wait_met` or `used` must rename it: these are now the game's.
+
+**Following a player: heal only, the distance kept, and more** (untested in game: the tests use a pretend game)
+
+- A player soloing a dungeon with a tank and a healer saw the healer attack, then heal the tank too late
+  when it took a big hit (an attack holds the global cooldown). New choices in Character settings, Team,
+  **Following a leader**: the role while following - help the fights and heal (as before), **heal only**
+  (never attacks, not even what attacks it, and a hit no longer breaks its walk off), or **attack only**
+  (never heals the team); attack what comes near the player before anyone hits it, within the tiles you
+  choose (off by default); help with the team's fights (on; off: only what attacks us); the tiles kept from
+  the player (3; never past the heal's reach for a character that heals); monsters never attacked while
+  following, by name.
+- A script's `follow` line takes the same choices for one follow:
+  `follow Tank role=heal distance=6 pull=8 help=off skip="Bone Dragon, Lich"`. A wrong option is said when
+  the script is read.
+- Copy from another character carries them with the team settings.
+
+**Out of a cable car as soon as it arrives** (measured in game; the bot's side untested in game)
+
+- Measured live, both ways between Underground of Tulip City and Lifting Platform No. 2: about 12 s after
+  boarding the game plays the car's arrival sound (1152), and from then on the door lets us out; left
+  alone, the game puts us out about 10 s later. We can walk in the cabin; only the door refuses a step
+  until the arrival.
+- The bot now walks up to the cabin's door on the side the car is going (from the map data: every cable
+  car has one) and steps out at the arrival sound, about 10 s saved a ride. With no sound to hear (an older
+  agent), it tries the door once 15 s after boarding; a door that still refuses leaves it to the game, as
+  before. Airships have no door: unchanged.
+
+**Fixed**
+
+- The run's sound listeners no longer silence each other. The agent keeps one list of sounds a
+  connection listens for, and each part set its own: once the team we lead listened for requests, the
+  farm's "out of range" sound (1.2.3-dev) was never heard again. They now listen together
+  (`engine/listening.py`), and a script's `sound_wait` listens for its own on top of them and leaves them
+  in place after.
+
 **Use only the skills of page 1** (untested in game: the tests use a pretend game)
 
 - A player never uses skill page 2, but saw the bot turn to it, a loss of time while farming. New box in

@@ -1088,9 +1088,21 @@ def test_results_can_be_read_while_the_run_updates_them() -> None:
     bot = StatBot()
     stop = threading.Event()
     reads = [0]
+    # The run starts only once both readers have read: started at once, it sometimes ended its 400
+    # rounds before either reader thread had run at all, and the test failed with no read made
+    # (reads == 0: about 1 run in 6 on a PC, now and then in CI). Each wait gives up after 30 s,
+    # breaking the barrier for all, so a thread that never gets there can't hang the others.
+    ready = threading.Barrier(3, timeout=30.0)
+
+    def read_once() -> None:
+        for r in tally.results():
+            assert r["kills"] >= 0 and isinstance(r["items"], dict)
+        stats.short(tally.result(), tally.drop_left)
+        reads[0] += 1
 
     def run() -> None:
         try:
+            ready.wait()
             for i in range(400):
                 bot.kills += 1
                 tally.update(as_parts(bot), force=True)
@@ -1104,11 +1116,12 @@ def test_results_can_be_read_while_the_run_updates_them() -> None:
             stop.set()
 
     def read() -> None:
+        try:
+            read_once()
+        finally:
+            ready.wait()            # (in finally: a read that failed still lets the run start)
         while not stop.is_set():
-            for r in tally.results():
-                assert r["kills"] >= 0 and isinstance(r["items"], dict)
-            stats.short(tally.result(), tally.drop_left)
-            reads[0] += 1
+            read_once()
             time.sleep(0.002)       # let the run take the lock too: two readers in a tight loop starved it
 
     # A busy PC (a game open, the whole suite in parallel) made 20 s too short for 400 rounds.

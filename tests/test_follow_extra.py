@@ -158,7 +158,7 @@ class FollowBot:
         if self.on_sleep:
             self.on_sleep(seconds)
 
-    def targets(self, snap: dict[str, Any]) -> list[dict[str, Any]]:
+    def targets(self, snap: dict[str, Any], skip: str | None = None) -> list[dict[str, Any]]:
         return self._targets(snap)
 
     def attackers(self) -> set[int]:
@@ -460,9 +460,10 @@ class HelpBot:
         self._attackers = set(attackers)
         self.kill_tracker: Any = None
         self.following: str | None = None
+        self.p: dict[str, Any] = {}
         self.team_names: set[str] = set()
 
-    def targets(self, snap: dict[str, Any]) -> list[dict[str, Any]]:
+    def targets(self, snap: dict[str, Any], skip: str | None = None) -> list[dict[str, Any]]:
         return self._targets
 
     def attackers(self) -> set[int]:
