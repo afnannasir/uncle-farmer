@@ -364,6 +364,9 @@ msgstr ""
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr ""
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1189,6 +1192,9 @@ msgid "Between fights"
 msgstr ""
 
 msgid "Binding for {key}"
+msgstr ""
+
+msgid "Bosses"
 msgstr ""
 
 msgid "Bot"
@@ -2096,6 +2102,10 @@ msgstr ""
 msgid "Fight on"
 msgstr ""
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+
 msgid "Fighting"
 msgstr ""
 
@@ -2121,6 +2131,9 @@ msgid "Filter settings"
 msgstr ""
 
 msgid "Filter text or &pattern:"
+msgstr ""
+
+msgid "First &wait away from the map (seconds):"
 msgstr ""
 
 msgid "Fishing"
@@ -2677,7 +2690,7 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
+msgid "Keep away from &bosses"
 msgstr ""
 
 msgid "Keep farming, just tell me"
@@ -2847,6 +2860,9 @@ msgid "Logging"
 msgstr ""
 
 msgid "Logging back in now."
+msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
 msgstr ""
 
 msgid "Look for a chest the game announces on the map"
@@ -5512,6 +5528,10 @@ msgstr ""
 msgid "Waiting {seconds} seconds after {job}"
 msgstr ""
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 
@@ -6611,6 +6631,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr ""
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr ""
+
 msgid "fed {beast}"
 msgstr ""
 
@@ -6970,6 +6993,9 @@ msgid "leaving {map} first, to find the nearest from outside"
 msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
+msgstr ""
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
 msgstr ""
 
 msgid "leaving {skill} out of this trip and planning again"
@@ -7515,6 +7541,14 @@ msgid "not enough spare arnebia to raise {gem} (fee {fee})"
 msgstr ""
 
 msgid "not enough supplies for the dungeon"
+msgstr ""
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
 msgstr ""
 
 msgid "not farming {map}: the interrupted run had already done it"

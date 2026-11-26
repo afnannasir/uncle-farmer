@@ -438,9 +438,23 @@ The bot avoids attacking these bosses. It also avoids attacking anything within 
 
 When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
 
-A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side (fighting back anything that attacks it), then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
-You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
+The bot doesn't stand idle meanwhile. On the way to the door it fights the monsters it meets, as long as none is close to a boss (ten fights or two minutes at most, then it walks straight out). On the other side it farms the map, within 40 steps of where it came onto it ("farming central plains (1041) meanwhile, near where we came in"). It only does that where it is safe:
+
+- never in a town;
+- not on a map whose monsters the map data says are stronger than both those of your farm and your level + 5 (the data knows the levels of few maps);
+- never a monster with more HP than half again the most of what it fought on your farm ("leaving Wolf King alone on ...: more HP than the monsters of the farm"). A monster that attacks it is always fought.
+
+A boss of that map that comes close is walked away from, as on the farm, but never left behind with another trip. Before anything was fought on the farm, it has nothing to judge by, and waits as before. When two doors are about as near, it takes the one to a map it may farm. A full bag, the drop time and the end of the farm (its minutes or kills) work there as on the farm, and in the results, map by map, the kills of the wait count for the map waited on.
+
+All of this can be set in **Advanced → Fighting**, group **Bosses**:
+
+- **Keep away from bosses** and the steps to keep (40). Unticked, the bot doesn't keep away from bosses at all.
+- **Leave the map for a while when a boss keeps coming back** (ticked). Unticked, the bot never leaves: it keeps away from the boss on the map and farms on.
+- How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
+- The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
+- **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 

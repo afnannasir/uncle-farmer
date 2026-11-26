@@ -369,6 +369,9 @@ msgstr "Idioma (&L):"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Sa&lir del mapa un rato cuando un jefe sigue volviendo"
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1215,6 +1218,9 @@ msgstr "Entre combates"
 
 msgid "Binding for {key}"
 msgstr "Asignación para {key}"
+
+msgid "Bosses"
+msgstr "Jefes"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2136,6 +2142,11 @@ msgstr "Pele&ar con monstruos que otro jugador ya está matando"
 msgid "Fight on"
 msgstr "Seguir peleando"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Luchar en el camino de salida y farmear el mapa de espera, si sus &monstruos no son más fuertes que los del mapa de farmeo"
+
 msgid "Fighting"
 msgstr "Peleando"
 
@@ -2162,6 +2173,9 @@ msgstr "Ajustes del filtro"
 
 msgid "Filter text or &pattern:"
 msgstr "Texto o &patrón del filtro:"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Primera espera &fuera del mapa (segundos):"
 
 msgid "Fishing"
 msgstr "Pesca"
@@ -2742,8 +2756,8 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
-msgstr "Mantenerse lejos de los jefes"
+msgid "Keep away from &bosses"
+msgstr "Mantenerse lejos de los &jefes"
 
 msgid "Keep farming, just tell me"
 msgstr "Seguir farmeando, solo avisarme"
@@ -2918,6 +2932,10 @@ msgstr "Registros"
 
 msgid "Logging back in now."
 msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"Espera más larga: se duplica cada vez que el jefe sigue a&hí (segundos):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Buscar el cofre que el juego anuncia en el mapa"
@@ -5722,6 +5740,11 @@ msgstr "Caminar a una mazmorra o mapa (&l)"
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "Esperando {seconds} segundos tras {job}"
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Alejarse de él este número de veces en 5 minutos antes de salir (0: salir enseguida):"
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 "Cam&inar en diagonal por terreno abierto (ambas teclas de dirección a la vez)"
@@ -6874,6 +6897,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr "farmeando {map}"
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "farmeando {map} mientras tanto, cerca de donde llegamos"
+
 msgid "fed {beast}"
 msgstr "se alimentó a {beast}"
 
@@ -7247,6 +7273,10 @@ msgstr "saliendo primero de {map}, para encontrar el más cercano desde fuera"
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "saliendo de {map} hacia {dest} para desatascarme"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"dejando en paz a {name} en {map}: más HP que los monstruos del mapa de farmeo"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "dejo {skill} fuera de este viaje y planifico de nuevo"
@@ -7821,6 +7851,16 @@ msgstr "no hay arnebia de sobra para subir {gem} (tarifa {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "no hay suministros suficientes para la mazmorra"
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"sin farmear {map} mientras tanto: es una ciudad, o los datos del mapa dicen que sus monstruos son demasiado fuertes"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"sin farmear {map} mientras tanto: aún no hubo combates en el mapa de farmeo para juzgar sus monstruos"
 
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
@@ -10724,6 +10764,9 @@ msgstr "{w} por {h} casillas, {n} salidas."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Curando a compañeros mientras sigo"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Mantenerse lejos de los jefes"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

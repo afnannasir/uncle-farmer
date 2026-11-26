@@ -371,6 +371,9 @@ msgstr "&Langue :"
 msgid "&Leave a team another player leads when the run starts"
 msgstr "&Quitter une équipe menée par un autre joueur au début de la partie"
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "&Quitter la carte un moment quand un boss revient sans cesse"
+
 msgid "&Legendary"
 msgstr "&Legendary"
 
@@ -1226,6 +1229,9 @@ msgstr "Entre les combats"
 
 msgid "Binding for {key}"
 msgstr "Affectation de {key}"
+
+msgid "Bosses"
+msgstr "Boss"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2157,6 +2163,11 @@ msgstr ""
 msgid "Fight on"
 msgstr "Continuer le combat"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Combattre en chemin et farmer la carte d'attente, quand ses &monstres ne sont pas plus forts que ceux de la carte de farm"
+
 msgid "Fighting"
 msgstr "Combat"
 
@@ -2184,6 +2195,9 @@ msgstr "Réglages des filtres"
 
 msgid "Filter text or &pattern:"
 msgstr "Texte ou &modèle du filtre :"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Première attente &hors de la carte (secondes) :"
 
 msgid "Fishing"
 msgstr "Fishing"
@@ -2766,8 +2780,8 @@ msgstr "Garder au moins ce nombre de chaque potion M&edium :"
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr "Garder au moins ce nombre de chaque c&ristal et niveau :"
 
-msgid "Keep away from bosses"
-msgstr "Rester loin des boss"
+msgid "Keep away from &bosses"
+msgstr "Rester &loin des boss"
 
 msgid "Keep farming, just tell me"
 msgstr "Continuer le farming, seulement prévenir"
@@ -2942,6 +2956,10 @@ msgstr "Journalisation"
 
 msgid "Logging back in now."
 msgstr "Reconnexion maintenant."
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"Attente la plus lon&gue : elle double chaque fois que le boss est toujours là (secondes) :"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Chercher un coffre que le jeu annonce sur la carte"
@@ -5807,6 +5825,11 @@ msgstr "Aller à un donjon ou une &carte"
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "Attente de {seconds} secondes après {job}"
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Nombre de fois où s'en éloigner en 5 minutes avant de partir (0 : partir tout de suite) :"
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 "Marcher en d&iagonale sur terrain dégagé (deux touches de direction à la fois)"
@@ -6985,6 +7008,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr "farming sur {map}"
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "farming sur {map} en attendant, près de l'endroit où on est arrivé"
+
 msgid "fed {beast}"
 msgstr "{beast} nourri"
 
@@ -7359,6 +7385,10 @@ msgstr "sortie de {map} d'abord, pour trouver le plus proche depuis l'extérieur
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "départ de {map} vers {dest} pour se débloquer"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"{name} laissé tranquille sur {map} : plus de PV que les monstres de la carte de farm"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "{skill} écarté de ce trajet, nouveau calcul"
@@ -7937,6 +7967,16 @@ msgstr "pas assez d'arnebia disponible pour monter {gem} (frais {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "pas assez de provisions pour le donjon"
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"pas de farming sur {map} en attendant : c'est une ville, ou les données de la carte disent que ses monstres sont trop forts"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"pas de farming sur {map} en attendant : aucun combat encore sur la carte de farm pour juger ses monstres"
 
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr "pas de farming sur {map} : la partie interrompue l'avait déjà fait"
@@ -10887,6 +10927,9 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Noms ou ids (séparés par des virgules) :"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Rester loin des boss"
 
 #~ msgid ""
 #~ "When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"

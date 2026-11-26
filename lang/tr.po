@@ -368,6 +368,9 @@ msgstr "Di&l:"
 msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Bir patron geri ge&lip durursa haritadan bir süre ayrıl"
+
 msgid "&Legendary"
 msgstr ""
 
@@ -1208,6 +1211,9 @@ msgstr "Dövüşler arasında"
 
 msgid "Binding for {key}"
 msgstr "{key} için atama"
+
+msgid "Bosses"
+msgstr "Patronlar"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2126,6 +2132,11 @@ msgstr "B&aşka bir oyuncunun zaten öldürmekte olduğu canavarlarla dövüş"
 msgid "Fight on"
 msgstr "Dövüşe devam et"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Çıkış yolunda dövüş ve beklenen haritada &farm yap, oradaki canavarlar farm haritasındakilerden güçlü değilse"
+
 msgid "Fighting"
 msgstr "Dövüş"
 
@@ -2152,6 +2163,9 @@ msgstr "Filtre ayarları"
 
 msgid "Filter text or &pattern:"
 msgstr "Filtre metni ya da desen (&P):"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Harita dışında ilk &bekleme (saniye):"
 
 msgid "Fishing"
 msgstr "Balık tutma"
@@ -2727,8 +2741,8 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr ""
 
-msgid "Keep away from bosses"
-msgstr "Patronlardan uzak dur"
+msgid "Keep away from &bosses"
+msgstr "Patronlardan u&zak dur"
 
 msgid "Keep farming, just tell me"
 msgstr "Farma devam et, yalnızca bana söyle"
@@ -2901,6 +2915,10 @@ msgstr "Günlüğe kaydetme"
 
 msgid "Logging back in now."
 msgstr ""
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"En &uzun bekleme: patron hâlâ oradaysa her seferinde iki katına çıkar (saniye):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Oyunun haritada duyurduğu sandığı ara"
@@ -5672,6 +5690,11 @@ msgstr "Bir zindana ya da haritaya yürü (&L)"
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "{job} sonrasında {seconds} saniye bekleniyor"
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Ayrılmadan önce 5 dakika içinde ondan bu kadar kez uzaklaş (0: hemen ayrıl):"
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Açık arazide çapraz yürü (&iki yön tuşu aynı anda)"
 
@@ -6819,6 +6842,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr "{map} farmlanıyor"
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "bu arada {map} farmlanıyor, girilen yerin yakınında"
+
 msgid "fed {beast}"
 msgstr "{beast} beslendi"
 
@@ -7190,6 +7216,10 @@ msgstr "en yakını dışarıdan bulmak için önce {map} haritasından çıkıl
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr ""
 "takılmaktan kurtulmak için {map} haritasından {dest} haritasına gidiliyor"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"{map} haritasında {name} rahat bırakılıyor: farm haritasındaki canavarlardan fazla HP"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "{skill} bu yolculuğun dışında bırakılıp yeniden planlanıyor"
@@ -7748,6 +7778,16 @@ msgstr "{gem} yükseltmek için yeterli boşta arnebia yok (ücret {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "zindan için yeterli sarf malzemesi yok"
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"bu arada {map} farmlanmıyor: bir şehir, ya da harita verilerine göre canavarları çok güçlü"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"bu arada {map} farmlanmıyor: canavarlarını değerlendirmek için farm haritasında henüz dövüş yok"
 
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr ""
@@ -10634,6 +10674,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Patronlardan uzak dur"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

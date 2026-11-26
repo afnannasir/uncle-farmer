@@ -141,6 +141,11 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "boss_leave": True,       # a boss that keeps coming back: leave the map for a while (engine/bosses.py)
+    "boss_walk_offs": 3,      # ...after this many walk-offs from it within 5 minutes (0: at once)
+    "boss_away_first": 60,    # seconds away the first time, doubled while the boss is still there...
+    "boss_away_most": 300,    # ...up to this many seconds
+    "boss_away_farm": True,   # fight on the way out and farm the map waited on (when its monsters are no stronger)
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
@@ -395,6 +400,11 @@ class Profile(BaseModel):
     xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]
+    boss_leave: bool = PROFILE_DEFAULTS["boss_leave"]
+    boss_walk_offs: int = PROFILE_DEFAULTS["boss_walk_offs"]
+    boss_away_first: int = PROFILE_DEFAULTS["boss_away_first"]
+    boss_away_most: int = PROFILE_DEFAULTS["boss_away_most"]
+    boss_away_farm: bool = PROFILE_DEFAULTS["boss_away_farm"]
     skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     menu_keys_retry: bool = PROFILE_DEFAULTS["menu_keys_retry"]

@@ -371,6 +371,9 @@ msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 "&Sair de uma equipe liderada por outro jogador quando a execução começar"
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Sai&r do mapa por um tempo quando um chefe continua voltando"
+
 msgid "&Legendary"
 msgstr "&Legendary"
 
@@ -1224,6 +1227,9 @@ msgstr "Entre combates"
 
 msgid "Binding for {key}"
 msgstr "Atribuição para {key}"
+
+msgid "Bosses"
+msgstr "Chefes"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2153,6 +2159,11 @@ msgstr "Lutar contra monstros que outro jogador já está &atacando"
 msgid "Fight on"
 msgstr "Continuar lutando"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Lutar no caminho de saída e coletar no mapa da espera, quando os &monstros de lá não forem mais fortes que os do mapa de coleta"
+
 msgid "Fighting"
 msgstr "Lutando"
 
@@ -2179,6 +2190,9 @@ msgstr "Configurações dos filtros"
 
 msgid "Filter text or &pattern:"
 msgstr "Texto ou &padrão do filtro:"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Primeira espera &fora do mapa (segundos):"
 
 msgid "Fishing"
 msgstr "Pesca"
@@ -2760,8 +2774,8 @@ msgstr ""
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr "Manter pelo menos esta quantidade de cada cristal e ní&vel:"
 
-msgid "Keep away from bosses"
-msgstr "Manter distância dos chefes"
+msgid "Keep away from &bosses"
+msgstr "Manter distância dos &chefes"
 
 msgid "Keep farming, just tell me"
 msgstr "Continuar coletando, apenas me avisar"
@@ -2935,6 +2949,10 @@ msgstr "Registro"
 
 msgid "Logging back in now."
 msgstr "Entrando de novo agora."
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"Espera mais lon&ga: dobra cada vez que o chefe ainda está lá (segundos):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Procurar o baú que o jogo anuncia no mapa"
@@ -5769,6 +5787,11 @@ msgstr "C&aminhar até uma masmorra ou mapa"
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "Aguardando {seconds} segundos após {job}"
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Afastar-se dele este número de vezes em 5 minutos antes de sair (0: sair na hora):"
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr ""
 "Caminhar na d&iagonal em terreno aberto (pressione as duas teclas de direção ao mesmo tempo)"
@@ -6936,6 +6959,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr "coletando em {map}"
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "coletando em {map} enquanto isso, perto de onde chegamos"
+
 msgid "fed {beast}"
 msgstr "alimentou {beast}"
 
@@ -7308,6 +7334,10 @@ msgstr "saindo primeiro de {map} para localizar o mais próximo do lado de fora"
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "saindo de {map} e indo a {dest} para sair do bloqueio"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr ""
+"deixando {name} em paz em {map}: mais HP que os monstros do mapa de coleta"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "ignorando {skill} neste percurso e planejando novamente"
@@ -7884,6 +7914,16 @@ msgstr "Arnebia restante insuficiente para elevar {gem} (taxa {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "suprimentos insuficientes para a masmorra"
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"não coletando em {map} enquanto isso: é uma cidade, ou os dados do mapa dizem que os monstros de lá são fortes demais"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"não coletando em {map} enquanto isso: nenhuma luta no mapa de coleta ainda para avaliar os monstros de lá"
 
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr "não vou farmar {map}: a execução interrompida já tinha feito isso"
@@ -10816,6 +10856,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Curando companheiros de equipe enquanto segue alguém"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Manter distância dos chefes"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

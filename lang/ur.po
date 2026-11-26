@@ -371,6 +371,9 @@ msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 "Run shuru hone par woh team &chhor dein jise koi aur khilari chalata hai"
 
+msgid "&Leave the map for a while when a boss keeps coming back"
+msgstr "Jab boss baar baar wapas aaye to kuch der ke &liye map chhor dein"
+
 msgid "&Legendary"
 msgstr "&Legendary"
 
@@ -1222,6 +1225,9 @@ msgstr "Ladaiyon ke darmiyan"
 
 msgid "Binding for {key}"
 msgstr "{key} ki binding"
+
+msgid "Bosses"
+msgstr "Bosses"
 
 msgid "Bot"
 msgstr "Bot"
@@ -2147,6 +2153,11 @@ msgstr ""
 msgid "Fight on"
 msgstr "Larte rahein"
 
+msgid ""
+"Fight on the way out and farm the map waited on, when its &monsters are no stronger than the farm's"
+msgstr ""
+"Bahar jaate hue larein aur intezar wale map par farming karein, jab uske &monsters farm wale map se taqatwar na hon"
+
 msgid "Fighting"
 msgstr "Ladai"
 
@@ -2173,6 +2184,9 @@ msgstr "Filter ki tarteeb"
 
 msgid "Filter text or &pattern:"
 msgstr "Filter ka matn ya &pattern:"
+
+msgid "First &wait away from the map (seconds):"
+msgstr "Map se bahar pehla i&ntezar (seconds):"
 
 msgid "Fishing"
 msgstr "Fishing (machhli)"
@@ -2755,8 +2769,8 @@ msgstr "Har M&edium potion ke kam az kam itne rakhein:"
 msgid "Keep at least this many of each crystal and le&vel:"
 msgstr "Har crystal aur level ke kam az kam itne rakhein (&V):"
 
-msgid "Keep away from bosses"
-msgstr "Bosses se door rahein"
+msgid "Keep away from &bosses"
+msgstr "&Bosses se door rahein"
 
 msgid "Keep farming, just tell me"
 msgstr "Farming jaari rakhein, sirf batayein"
@@ -2930,6 +2944,10 @@ msgstr "Logging"
 
 msgid "Logging back in now."
 msgstr "Abhi dobara login ho raha hai."
+
+msgid "Longest wait: it doubles each time the boss is still t&here (seconds):"
+msgstr ""
+"&Sab se lamba intezar: har baar boss ab bhi wahan ho to dugna hota hai (seconds):"
 
 msgid "Look for a chest the game announces on the map"
 msgstr "Game map par jo chest announce kare, use dhoondo"
@@ -5768,6 +5786,11 @@ msgstr "Dungeon ya map tak &chalain"
 msgid "Waiting {seconds} seconds after {job}"
 msgstr "{job} ke baad {seconds} seconds ka intezar"
 
+msgid ""
+"Walk away from it this many times within 5 minutes before leaving (0: leave at once):"
+msgstr ""
+"Map chhorne se pehle 5 minute mein itni baar us se door jayein (0: foran chhor dein):"
+
 msgid "Walk d&iagonally across open ground (both direction keys at once)"
 msgstr "Khuli zameen par &tirchha chalein (dono direction keys ek saath)"
 
@@ -6940,6 +6963,9 @@ msgstr ""
 msgid "farming {map}"
 msgstr "{map} par kheti"
 
+msgid "farming {map} meanwhile, near where we came in"
+msgstr "is dauran {map} par farming, jahan se aaye the us ke qareeb"
+
 msgid "fed {beast}"
 msgstr "{beast} ko khilaya"
 
@@ -7317,6 +7343,9 @@ msgstr ""
 
 msgid "leaving {map} for {dest} to get unstuck"
 msgstr "atak se nikalne ke liye {map} chhod kar {dest} ja rahe hain"
+
+msgid "leaving {name} alone on {map}: more HP than the monsters of the farm"
+msgstr "{map} par {name} ko chhor rahe hain: farm wale monsters se zyada HP"
 
 msgid "leaving {skill} out of this trip and planning again"
 msgstr "is safar se {skill} ko chhor kar dobara mansooba bana rahe hain"
@@ -7899,6 +7928,16 @@ msgstr "{gem} barhane ke liye kaafi spare arnebia nahi (fee {fee})"
 
 msgid "not enough supplies for the dungeon"
 msgstr "dungeon ke liye saamaan kaafi nahi"
+
+msgid ""
+"not farming {map} meanwhile: it is a town, or the map data says its monsters are too strong"
+msgstr ""
+"is dauran {map} par farming nahin: yeh shehar hai, ya map ka data kehta hai ke is ke monsters bohat taqatwar hain"
+
+msgid ""
+"not farming {map} meanwhile: nothing fought on the farm yet to judge its monsters by"
+msgstr ""
+"is dauran {map} par farming nahin: farm par abhi tak koi larai nahin hui jis se is ke monsters ko parkha ja sake"
 
 msgid "not farming {map}: the interrupted run had already done it"
 msgstr "{map} par farming nahi: ruka hua run yeh pehle hi kar chuka tha"
@@ -10845,6 +10884,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Peeche chalte hue teammates ki shifa"
+
+#~ msgid "Keep away from bosses"
+#~ msgstr "Bosses se door rahein"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

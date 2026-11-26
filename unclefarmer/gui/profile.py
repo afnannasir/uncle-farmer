@@ -1073,9 +1073,6 @@ class AdvancedDialog(Dialog):
                                    p.get("press_burst", True))
         self.chase = f.number(_("&Chase monsters up to this many steps away (patrol loops):"),
                               p.get("chase_range", 40), 5, 150)
-        keep = p.get("boss_distance", 40)
-        self.boss_on, self.boss_keep = f.optional(
-            _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         hunt = p.get("chest_hunt_minutes", 5)
         self.hunt_on, self.hunt_minutes = f.optional(
@@ -1089,11 +1086,46 @@ class AdvancedDialog(Dialog):
             _("Minutes without a kill:"), no_kill or 10, 3, 120)
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
+        self.boss_settings(panel, box)
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)
         reset = wx.Button(panel, label=_("Reset the &fighting settings to their defaults"))
         reset.Bind(wx.EVT_BUTTON, lambda e: self.on_reset_fighting())
         box.Add(reset, 0, wx.TOP, 10)
+
+    def boss_settings(self, panel: wx.Panel, box: wx.BoxSizer) -> None:
+        """The Fighting page's Bosses group: the steps kept from a boss, and what to do about one that
+        keeps coming back (engine/bosses.py). The leaving boxes are off while bosses aren't kept away
+        from, the wait's while the map isn't left."""
+        p = self.p
+        f = group(panel, box, _("Bosses"))
+        keep = p.get("boss_distance", 40)
+        self.boss_on, self.boss_keep = f.optional(
+            _("Keep away from &bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.boss_leave, self.boss_walk_offs = f.optional(
+            _("&Leave the map for a while when a boss keeps coming back"), bool(p.get("boss_leave", True)),
+            _("Walk away from it this many times within 5 minutes before leaving (0: leave at once):"),
+            p.get("boss_walk_offs", 3), 0, 20)
+        self.boss_away_first = f.number(_("First &wait away from the map (seconds):"),
+                                        p.get("boss_away_first", 60), 10, 3600)
+        self.boss_away_most = f.number(_("Longest wait: it doubles each time the boss is still t&here (seconds):"),
+                                       p.get("boss_away_most", 300), 10, 7200)
+        self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
+                                        "are no stronger than the farm's"), p.get("boss_away_farm", True))
+
+        def sync(evt: wx.Event | None = None) -> None:
+            on = self.boss_on.GetValue()
+            leave = on and self.boss_leave.GetValue()
+            self.boss_leave.Enable(on)
+            for ctrl in (self.boss_walk_offs, self.boss_away_first, self.boss_away_most):
+                ctrl.Enable(leave)
+                enable_label(ctrl, leave)
+            self.boss_away_farm.Enable(leave)
+            if evt is not None:
+                evt.Skip()                # Form.optional's handler still runs: it enables the field beside the box
+        self.boss_on.Bind(wx.EVT_CHECKBOX, sync)
+        self.boss_leave.Bind(wx.EVT_CHECKBOX, sync)
+        sync()
 
     def health_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -1227,6 +1259,11 @@ class AdvancedDialog(Dialog):
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
         p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["boss_leave"] = self.boss_leave.GetValue()
+        p["boss_walk_offs"] = self.boss_walk_offs.GetValue()
+        p["boss_away_first"] = self.boss_away_first.GetValue()
+        p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
+        p["boss_away_farm"] = self.boss_away_farm.GetValue()
         p["open_chests"] = self.open_chests.GetValue()
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0

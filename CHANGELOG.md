@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+**A boss that keeps coming back: the bot farms the wait, and the player chooses** (untested in game: the
+tests use a pretend game)
+
+- Before, the bot walked to the door past every monster, then stood by it doing nothing for the whole
+  wait, again and again while the boss stayed. Now it fights the monsters it meets on the way to the door
+  (none close to a boss, ten fights or two minutes at most, then straight out), and farms the map it waits
+  on, within 40 steps of where it came onto it. A trip to town for the bag, the drop time and the farm's
+  own end (minutes, kills) work there as on the farm, and the results count that map's kills for it.
+- The map waited on is farmed only when its monsters are no stronger than the farm's: never a town; not a
+  map the map data says has monsters stronger than both the farm's and the character's level + 5; and no
+  monster with more max HP than half again the most of what the farm chose to fight (an elite that attacked
+  us doesn't count; one that attacks us is always fought). A boss of that map that comes close is walked
+  away from. With nothing fought yet, the bot waits as before. Between two doors to leave by, one to a map
+  it may farm is taken if hardly further.
+- New **Bosses** group in Advanced settings, Fighting: **Leave the map for a while when a boss keeps coming
+  back** (on), how many walk-offs within 5 minutes before leaving (3; 0 leaves at once), the first wait
+  away (60 seconds) and the longest it doubles up to (300 seconds), and **Fight on the way out and farm the
+  map waited on** (on). With leaving off, the bot keeps away from the boss on the map and farms on.
+- A long wait now doubles too: the wait starts over 15 minutes after coming back, not after leaving.
+
 **The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
 
 - When an attack key is pressed at a monster the game finds out of range, it plays a short sound, again
