@@ -7690,7 +7690,7 @@ msgstr "aucun de ces talents n'est dans le menu Reset Talents - rien n'a changé
 
 msgid "none of {what} is in the bag - the medals stay as they are"
 msgstr ""
-"aucune de {what} n'est dans le sac - les médailles restent telles quelles"
+"aucune médaille de la liste ({what}) n'est dans le sac - les médailles restent telles quelles"
 
 msgid "normal"
 msgstr "normal"
@@ -9642,7 +9642,7 @@ msgid "weapons"
 msgstr "armes"
 
 msgid "wearing {what}: {names}"
-msgstr "mise en place de {what} : {names}"
+msgstr "on met {what} : {names}"
 
 msgid "wedding map"
 msgstr "carte de mariage"
