@@ -67,6 +67,7 @@ class ChoresDialog(Dialog):
                                      min(int(c["construction"] or 0), 2), 0, 2)
         self.build_highlands = f.check(_("Repair our gang's &highlands (first what is under 100%, what is at 100% last)"),
                                        c["build_highlands"])
+        self.build_taken = f.check(_("Also repair highlands taken from other &gangs"), c["build_taken_highlands"])
         self.build_cannon = f.check(_("Build the Magic Ca&nnon under construction"), c["build_cannon"])
         self.build_supply = f.check(_("Build the S&upply Camp under construction"), c["build_supply"])
         self.build_posts = f.check(_("Build at the East and West &posts"), c["build_posts"])
@@ -129,7 +130,8 @@ class ChoresDialog(Dialog):
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
                         construction=self.construction.GetValue(),
-                        build_highlands=self.build_highlands.GetValue(), build_cannon=self.build_cannon.GetValue(),
+                        build_highlands=self.build_highlands.GetValue(),
+                        build_taken_highlands=self.build_taken.GetValue(), build_cannon=self.build_cannon.GetValue(),
                         build_supply=self.build_supply.GetValue(), build_posts=self.build_posts.GetValue(),
                         feed=self.feed.GetValue(), contribution_chests=self.chests.GetValue(),
                         chest_count=self.chest_count.GetValue(),

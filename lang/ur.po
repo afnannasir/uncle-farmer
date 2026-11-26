@@ -1032,6 +1032,9 @@ msgstr "Pehle se chal raha hai."
 msgid "Also count se&llers (slow the first time)"
 msgstr "Bechne walon ko bhi &ginein (pehli dafa dheema)"
 
+msgid "Also repair highlands taken from other &gangs"
+msgstr ""
+
 msgid "Also: {names}"
 msgstr "Yeh bhi: {names}"
 

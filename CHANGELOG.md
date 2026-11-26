@@ -16,7 +16,14 @@
   Tested in the game.
 - After the last highland, the scanner no longer goes back to the highland list just to find
   nothing left. It still checks if the list has more than one page. Tested in the game.
-- Daily chores still repairs only your gang's own highlands.
+
+**Daily chores: repairing highlands taken from other gangs, and one trip less**
+
+- New checkbox in Tools, Daily chores, on the Gang page: "Also repair highlands taken from other gangs".
+  It is off by default. It needs "Repair our gang's highlands" ticked too.
+- After the last highland, the bot no longer goes back to the highland list just to find nothing left.
+  This happened when a repair left a build unused, for example when only the wall needed fixing.
+- Not yet tested in the game.
 
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 

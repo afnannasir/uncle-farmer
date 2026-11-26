@@ -1081,11 +1081,13 @@ Construction does not cost anything. Each completed job gives gang contribution 
 
 Tick the places the bot may use. It goes through them in this order and stops once the day's builds are made:
 
-1. **Gang highlands, under 100%:** It goes through every highland listed under **Occupied Highlands**, so there is no number to type, and repairs a Crystal Turret or Wall barricade that is damaged. It returns through the Teleportation circle. Each of the two takes one repair a day, in whichever highland.
+1. **Gang highlands, under 100%:** It goes through every highland of your gang listed under **Occupied Highlands**, so there is no number to type, and repairs a Crystal Turret or Wall barricade that is damaged. It returns through the Teleportation circle. Each of the two takes one repair a day, in whichever highland.
 2. **Magic Cannon:** if your gang is building one.
 3. **Supply Camp:** if your gang is building one.
 4. **East and West posts:** Each Magic Cannon or Supply Camp under construction closes one of them. With none under way, both are open.
 5. **Gang highlands, at 100%:** The game accepts and rewards these repairs too, so they use whatever builds are left.
+
+The highlands are your gang's own. Tick **Also repair highlands taken from other gangs** to repair those too. It is off by default, and it needs the highlands ticked as well.
 
 On the day a character joins a gang, the game allows neither donating nor building, so the bot leaves both for the next day.
 

@@ -1111,3 +1111,41 @@ def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch:
     cfg = dict(chores.DEFAULTS, bank=True, feed=True, donation="off")
     chores.mark("Hero", "bank", "done")
     assert chores.due("Hero", cfg) == ["feed"]
+
+
+# ---------------------------------------------------------------- repairs: no last trip, taken highlands
+def taken_game(world: type[Game], levels: dict[int, dict[str, float]]) -> tuple[Game, list[tuple[int, str]]]:
+    """Highland 38 our own; 208 one the gang took from another gang (listed under that gang's name)."""
+    g, repairs = highland_game(world, levels)
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    return g, repairs
+
+
+def test_after_the_last_highland_the_list_is_not_opened_again(world: type[Game]) -> None:
+    """Only the wall of the last highland needs it: repaired, then on to the camps without another look."""
+    g, repairs = highland_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 41: {TURRET: 100.0, WALL: 80.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_cannon=False, build_supply=False, build_posts=False))
+    assert repairs == [(41, WALL), (38, TURRET)]        # the second build goes to a turret at 100%, last
+    # under 100%: the list for 38, then for 41, and no third look; at 100%: once more, for 38
+    assert g.chosen.count("Occupied Highlands") == 3
+
+
+@pytest.mark.parametrize("taken,want", [(False, [(38, TURRET), (38, WALL)]), (True, [(208, TURRET), (208, WALL)])])
+def test_highlands_taken_from_other_gangs_are_repaired_only_when_ticked(
+        world: type[Game], taken: bool, want: list[tuple[int, str]]) -> None:
+    g, repairs = taken_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_cannon=False, build_supply=False, build_posts=False,
+                              build_taken_highlands=taken))
+    assert repairs == want                 # unticked: 208 unseen, so the builds go to 38 at 100%
+
+
+def test_taken_highlands_need_the_highlands_ticked_too(world: type[Game]) -> None:
+    g, repairs = taken_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_highlands=False, build_taken_highlands=True))
+    assert repairs == [] and "Occupied Highlands" not in g.chosen
+
+
+def test_repairing_taken_highlands_is_off_by_default() -> None:
+    assert chores.DEFAULTS["build_taken_highlands"] is False

@@ -1035,6 +1035,9 @@ msgstr "Déjà en cours."
 msgid "Also count se&llers (slow the first time)"
 msgstr "Compter aussi les &vendeurs (lent la première fois)"
 
+msgid "Also repair highlands taken from other &gangs"
+msgstr ""
+
 msgid "Also: {names}"
 msgstr "Aussi : {names}"
 

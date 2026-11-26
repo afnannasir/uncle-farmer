@@ -99,6 +99,7 @@ DEFAULTS: dict[str, Any] = {
     "contribution_chests": False,     # exchange contribution for chests (5000 each; not gang contribution)
     "chest_count": 2,                 # ... this many a day (the game allows 2)
     "build_highlands": True,          # where builds may go: the gang's highlands,
+    "build_taken_highlands": False,   # ... those it took from other gangs too (with build_highlands)
     "build_cannon": True,             # ... the Magic Cannon under construction,
     "build_supply": True,             # ... the Supply Camp under construction,
     "build_posts": True,              # ... the East and West posts
@@ -904,13 +905,19 @@ def _build_posts(b: Bot, t: _Builds, check_only: bool) -> None:
     _try_places(b, t, [(name, cell, None) for name, cell in POSTS], check_only)
 
 
-def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False) -> None:
+def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False,
+                     taken: bool = False) -> None:
     """The gang's highlands, one after the other, until the day's builds are made. What stands at
     100% is left alone unless even_complete. Each kind of defence takes one repair a day, in
-    whichever highland ("You've repaired the crystal turret today")."""
+    whichever highland ("You've repaired the crystal turret today"). taken: the highlands the gang
+    took from other gangs too. Once every highland on the list has been visited, no last trip to the
+    Highland Entrance to find nothing left (only when the whole list was seen: see next_highland)."""
     seen: set[int] = set()
+    whole: set[int] = set()
     while not t.finished and any(name not in t.took for name, _stand in HIGHLAND_SITES):
-        number = next_highland(b, seen)
+        if whole and whole <= seen:
+            return
+        number = next_highland(b, seen, taken, whole)
         if number is None:
             return
         seen.add(number)
@@ -924,15 +931,16 @@ def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> l
     """In order: highland defences under 100%, what the gang is building, the posts, and last the
     highland defences at 100%, which the game repairs and pays for too."""
     highlands = bool(cfg.get("build_highlands", True))
+    taken = highlands and bool(cfg.get("build_taken_highlands", False))
     steps: list[Callable[[], None]] = []
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only))
+        steps.append(lambda: _build_highlands(b, t, check_only, taken=taken))
     if cfg.get("build_cannon", True) or cfg.get("build_supply", True):
         steps.append(lambda: _build_camps(b, t, cfg, check_only))
     if cfg.get("build_posts", True):
         steps.append(lambda: _build_posts(b, t, check_only))
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True))
+        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True, taken=taken))
     return steps
 
 
