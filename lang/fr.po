@@ -118,8 +118,14 @@ msgstr ""
 msgid "&Character"
 msgstr "&Personnage"
 
+msgid "&Character chain"
+msgstr "C&haîne de personnages"
+
 msgid "&Character:"
 msgstr "&Personnage :"
+
+msgid "&Characters, in order:"
+msgstr "&Personnages, dans l'ordre :"
 
 msgid "&Chase monsters up to this many steps away (patrol loops):"
 msgstr ""
@@ -370,6 +376,9 @@ msgstr "&Quitter une équipe menée par un autre joueur au début de la partie"
 
 msgid "&Legendary"
 msgstr "&Legendary"
+
+msgid "&Let every character farm again today"
+msgstr "&Laisser chaque personnage farmer de nouveau aujourd'hui"
 
 msgid "&Let it shut down"
 msgstr "&Laisser l'ordinateur s'éteindre"
@@ -710,6 +719,9 @@ msgstr "&Voir en script"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "&Marcher dès que les cartes sont reliées à pied"
 
+msgid "&What it does:"
+msgstr "&Ce qu'il fait :"
+
 msgid "&What to copy:"
 msgstr "&Quoi copier :"
 
@@ -857,6 +869,9 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr "Un bot est en cours. L'arrêter et quitter ?"
 
+msgid "A character chain is already going."
+msgstr "Une chaîne de personnages est déjà en cours."
+
 msgid "A city s&quare"
 msgstr "Une place &de ville"
 
@@ -908,6 +923,9 @@ msgstr ""
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Un donjon d'équipe : le jeu laisse entrer des groupes de 2 à 3 joueurs."
 
+msgid "A&dd..."
+msgstr "A&jouter..."
+
 msgid "About the skill:"
 msgstr "À propos du sort :"
 
@@ -949,6 +967,9 @@ msgstr "Activité :"
 msgid "Ad&vanced"
 msgstr "A&vancé"
 
+msgid "Add a character to the chain"
+msgstr "Ajouter un personnage à la chaîne"
+
 msgid "Add a circle aro&und me"
 msgstr "Ajouter un cercle a&utour de moi"
 
@@ -978,6 +999,9 @@ msgstr "Ajouter une provision"
 
 msgid "Add an item"
 msgstr "Ajouter un objet"
+
+msgid "Add at least one character to the chain."
+msgstr "Ajoutez au moins un personnage à la chaîne."
 
 msgid "Add at least one farming spot."
 msgstr "Ajoutez au moins un lieu de farm."
@@ -1138,6 +1162,9 @@ msgstr "À une &heure précise"
 
 msgid "At a place I choose"
 msgstr "À un endroit de mon choix"
+
+msgid "At the &end of the chain:"
+msgstr "À la &fin de la chaîne :"
 
 msgid "At the shops' fixed prices:"
 msgstr "Aux prix fixes des boutiques :"
@@ -1342,6 +1369,35 @@ msgstr "Canaux"
 msgid "Character"
 msgstr "Personnage"
 
+msgid "Character chain"
+msgstr "Chaîne de personnages"
+
+msgid "Character chain: couldn't close the game ({err})"
+msgstr "Chaîne de personnages : impossible de fermer le jeu ({err})"
+
+msgid "Character chain: logging {old} out for {new}"
+msgstr "Chaîne de personnages : déconnexion de {old} pour {new}"
+
+msgid "Character chain: the game is closed"
+msgstr "Chaîne de personnages : le jeu est fermé"
+
+msgid "Character chain: waiting for {name}'s game to come back"
+msgstr "Chaîne de personnages : en attente du retour du jeu de {name}"
+
+msgid "Character chain: {name} didn't start: {why}"
+msgstr "Chaîne de personnages : {name} n'a pas démarré : {why}"
+
+msgid ""
+"Character chain: {name} has nothing to run (its plan or its Autopilot day isn't there) - left out today"
+msgstr ""
+"Chaîne de personnages : {name} n'a rien à faire (son plan ou sa journée Autopilot n'existe pas) - laissé de côté aujourd'hui"
+
+msgid "Character chain: {name}, {what}"
+msgstr "Chaîne de personnages : {name}, {what}"
+
+msgid "Character chain: {n} characters, one after the other"
+msgstr "Chaîne de personnages : {n} personnages, l'un après l'autre"
+
 msgid "Character settings - {name}"
 msgstr "Réglages du personnage - {name}"
 
@@ -1413,6 +1469,11 @@ msgstr "Choisissez une catégorie à parcourir."
 
 msgid "Choose a character."
 msgstr "Choisir un personnage."
+
+msgid ""
+"Choose a character. Only characters whose account the bot knows can be in the chain: log in to one once by hand."
+msgstr ""
+"Choisissez un personnage. Seuls les personnages dont le bot connaît le compte peuvent être dans la chaîne : connectez-vous une fois à la main."
 
 msgid "Choose a city square:"
 msgstr "Choisir une place de ville :"
@@ -1988,6 +2049,9 @@ msgstr "Erreurs seulement"
 
 msgid "Every (minutes):"
 msgstr "Toutes les (minutes) :"
+
+msgid "Every character of the chain can farm again today."
+msgstr "Chaque personnage de la chaîne peut de nouveau farmer aujourd'hui."
 
 msgid "Every day"
 msgstr "Chaque jour"
@@ -2663,6 +2727,9 @@ msgstr "Objets"
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Objets sans règle : toucher &seulement à ce que cette partie a ramassé"
 
+msgid "Its Autopilot day"
+msgstr "Sa journée Autopilot"
+
 msgid "JSON files (*.json)|*.json"
 msgstr "Fichiers JSON (*.json)|*.json"
 
@@ -3143,6 +3210,9 @@ msgstr "Déplacer vers Jet&er"
 msgid "Move to throw a&way"
 msgstr "Déplacer vers Je&ter"
 
+msgid "Moving on to the next character of the chain."
+msgstr "Passage au personnage suivant de la chaîne."
+
 msgid "Mute e&very game"
 msgstr "Couper le son de &tous les jeux"
 
@@ -3226,6 +3296,14 @@ msgstr ""
 msgid "No changelog entry for {v}. Showing the release notes."
 msgstr ""
 "Aucune entrée du journal des modifications pour {v}. Affichage des notes de version."
+
+msgid ""
+"No character can be logged in by the bot yet: log in to each one once by hand, so its account is known."
+msgstr ""
+"Le bot ne peut encore connecter aucun personnage : connectez-vous une fois à la main à chacun, pour que son compte soit connu."
+
+msgid "No character chain is going in this game."
+msgstr "Aucune chaîne de personnages n'est en cours dans ce jeu."
 
 msgid ""
 "No character has settings to export yet. Log in to one and let the bot scan it first."
@@ -3700,6 +3778,9 @@ msgstr ""
 
 msgid "Plan {name} was imported."
 msgstr "Le plan {name} a été importé."
+
+msgid "Plan {plan}"
+msgstr "Plan {plan}"
 
 msgid "Plan, from the last scan of your bag:"
 msgstr "Plan, d'après le dernier scan de votre sac :"
@@ -4528,8 +4609,14 @@ msgstr "Rester immobile"
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Commencer un nouveau fichier après (Mo, 0 = jamais) :"
 
+msgid "Start the c&hain"
+msgstr "Démarrer la c&haîne"
+
 msgid "Starting"
 msgstr "Démarrage"
+
+msgid "Starting the character chain."
+msgstr "Démarrage de la chaîne de personnages."
 
 msgid "Starting {what}."
 msgstr "Démarrage : {what}."
@@ -4542,6 +4629,9 @@ msgstr "État :"
 
 msgid "Stay away from &elite zones"
 msgstr "Éviter les zones d'&élite"
+
+msgid "Stay logged in on the last character"
+msgstr "Rester connecté sur le dernier personnage"
 
 msgid "Stays where it is when it stops (monsters may still attack)."
 msgstr "Reste sur place à l'arrêt (les monstres peuvent encore attaquer)."
@@ -4882,6 +4972,33 @@ msgstr "Le bot arrête d'acheter avant de dépenser plus de {cap}."
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "La grotte (un personnage entre dans une grotte par jour du jeu)"
 
+msgid "The chain couldn't be saved: {err}"
+msgstr "La chaîne n'a pas pu être enregistrée : {err}"
+
+msgid ""
+"The character chain is empty: add characters in Run, Character chain first."
+msgstr ""
+"La chaîne de personnages est vide : ajoutez d'abord des personnages dans Run, Chaîne de personnages."
+
+msgid ""
+"The character chain is over. These characters couldn't farm today: {names}"
+msgstr ""
+"La chaîne de personnages est terminée. Ces personnages n'ont pas pu farmer aujourd'hui : {names}"
+
+msgid "The character chain is over: every character has farmed today."
+msgstr ""
+"La chaîne de personnages est terminée : chaque personnage a farmé aujourd'hui."
+
+msgid "The character chain stopped."
+msgstr "La chaîne de personnages s'est arrêtée."
+
+msgid "The character chain stopped: its game isn't running any more."
+msgstr "La chaîne de personnages s'est arrêtée : son jeu ne tourne plus."
+
+msgid "The character chain stopped: logging out didn't work ({why})"
+msgstr ""
+"La chaîne de personnages s'est arrêtée : la déconnexion n'a pas marché ({why})"
+
 msgid "The character hasn't learned {skill}."
 msgstr "Le personnage n'a pas appris {skill}."
 
@@ -4891,6 +5008,11 @@ msgstr ""
 
 msgid "The character's plan"
 msgstr "Le plan du personnage"
+
+msgid ""
+"The characters farm one after the other in the game selected when the chain starts. Each one is logged in by itself (its saved account), does its plan or its Autopilot day, and is done for the game's day when its run ends by itself; then the next one comes. Stop ends the whole chain. A character done with more than 10 minutes of drop time left is done again once the others are."
+msgstr ""
+"Les personnages farment l'un après l'autre dans le jeu sélectionné au démarrage de la chaîne. Chacun est connecté tout seul (son compte enregistré), fait son plan ou sa journée Autopilot, et compte comme fait pour la journée du jeu quand sa partie finit toute seule ; puis vient le suivant. Stop arrête toute la chaîne. Un personnage fait avec plus de 10 minutes de temps de drop restant est refait une fois les autres faits."
 
 msgid "The clipboard couldn't be opened."
 msgstr "Impossible d'ouvrir le presse-papiers."
@@ -7128,6 +7250,9 @@ msgid ""
 msgstr ""
 "il est {time} - le farming du jour est terminé (le temps de drop repart à {reset})"
 
+msgid "its Autopilot day"
+msgstr "sa journée Autopilot"
+
 msgid "its game is busy with {what}"
 msgstr "son jeu est occupé par {what}"
 
@@ -7436,6 +7561,11 @@ msgstr "plus jamais"
 
 msgid "new"
 msgstr "nouveau"
+
+msgid ""
+"next: in a character chain, I stop here, this character counts as done today, and the next one of the chain logs in and farms."
+msgstr ""
+"next : dans une chaîne de personnages, je m'arrête ici, ce personnage compte comme fait aujourd'hui, et le suivant de la chaîne se connecte et farme."
 
 msgid "no Gem Protection Rune left, and combining is set to use one"
 msgstr ""
@@ -8063,6 +8193,9 @@ msgstr "phrase {line}"
 
 msgid "plan"
 msgstr "plan"
+
+msgid "plan {plan}"
+msgstr "plan {plan}"
 
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
@@ -9040,6 +9173,9 @@ msgstr ""
 
 msgid "the game wouldn't select it ({why})"
 msgstr "le jeu n'a pas voulu le sélectionner ({why})"
+
+msgid "the game wouldn't take orders"
+msgstr "le jeu n'accepte pas d'ordres"
 
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr "le jeu refuse {beast} pour l'instant ; nouvel essai plus tard"
@@ -10262,6 +10398,9 @@ msgstr ""
 msgid "{name}: {results}"
 msgstr "{name} : {results}"
 
+msgid "{name}: {what}"
+msgstr "{name} : {what}"
+
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} sur {top} ({pct} %)"
 
@@ -10492,6 +10631,9 @@ msgstr "{query} : {pages} pages, {lots} lots lus"
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room} : arnebia partagé {n} fois sur {all} aujourd'hui"
+
+msgid "{row} (done today)"
+msgstr "{row} (fait aujourd'hui)"
 
 msgid "{row}: listed twice with different prices"
 msgstr "{row} : listé deux fois avec des prix différents"

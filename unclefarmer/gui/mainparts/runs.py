@@ -456,11 +456,14 @@ class RunsMixin(FrameParts):
         if run:
             self.say(_("Stopping"), run)
             run.stop()
+        elif self.chain_state is not None and self.chain_state.pid == which:
+            self.cancel_chain()          # between two characters: no run to stop, the chain itself
 
     def stop_all(self) -> None:
         """Every bot, and every run waiting to carry on: a game the player closed by hand was
         opened again every minute and a half for five minutes, with no way to keep it closed."""
         cancelled = self.cancel_carry_on()
+        cancelled = self.cancel_chain() or cancelled
         if not self.runs:
             if not cancelled:
                 self.say(_("No bot is running."))

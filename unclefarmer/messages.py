@@ -102,6 +102,7 @@ COMMANDS = collections.OrderedDict([
     ("leave", (True, "leave (or quit): leave the team")),
     ("mute", (False, "silence the game")),
     ("unmute", (False, "the game talks again")),
+    ("next", (False, "the character chain: this character is done, the next one comes")),
     ("quit", (True, "quit game: close the game")),
     ("wait", (True, "wait [minutes]: log out for a while, then back in and go on")),
 ])
@@ -143,6 +144,8 @@ def details():
         "leave": _("leave (or quit team): I leave the team I'm in."),
         "mute": _("mute: the game stops talking (only my game)."),
         "unmute": _("unmute: the game talks again."),
+        "next": _("next: in a character chain, I stop here, this character counts as done today, and the next "
+                  "one of the chain logs in and farms."),
         "quit": _("quit game: I close the game. Any run stops first. A plain quit means leave the team."),
         "wait": _("wait 45: I log out for 45 minutes (wait alone: the minutes set in Uncle Farmer), then log back "
                   "in and go on farming. Turned on in Uncle Farmer's private messages settings."),
@@ -586,6 +589,14 @@ class Messenger(threading.Thread):
             return _("The bot isn't running.")
         run.bot.paused.clear()
         return _("Going on.")
+
+    def cmd_next(self, to: int, name: str, rest: str) -> str | None:
+        """Run, Character chain: the running character is done for the day, the next one comes."""
+        chain_next: Callable[[int], str | None] | None = getattr(self.host, "chain_next", None)
+        if chain_next is None or not self.host.run_for(self.pid):
+            return _("No character chain is going in this game.")
+        answer = self.host.call(chain_next, self.pid)
+        return answer if isinstance(answer, str) else _("No character chain is going in this game.")
 
     def cmd_stop(self, to: int, name: str, rest: str) -> str | None:
         if not self.host.run_for(self.pid):

@@ -115,8 +115,14 @@ msgstr ""
 msgid "&Character"
 msgstr "Personaje (&C)"
 
+msgid "&Character chain"
+msgstr ""
+
 msgid "&Character:"
 msgstr "Personaje (&C):"
+
+msgid "&Characters, in order:"
+msgstr ""
 
 msgid "&Chase monsters up to this many steps away (patrol loops):"
 msgstr "Perseguir monstruos hasta esta &cantidad de pasos (rutas de patrulla):"
@@ -367,6 +373,9 @@ msgid "&Leave a team another player leads when the run starts"
 msgstr ""
 
 msgid "&Legendary"
+msgstr ""
+
+msgid "&Let every character farm again today"
 msgstr ""
 
 msgid "&Let it shut down"
@@ -705,6 +714,9 @@ msgstr "&Ver como script"
 msgid "&Walk whenever the maps connect on foot"
 msgstr "Caminar siempre que los mapas se conecten a pie (&W)"
 
+msgid "&What it does:"
+msgstr ""
+
 msgid "&What to copy:"
 msgstr "&Qué copiar:"
 
@@ -851,6 +863,9 @@ msgstr ""
 msgid "A bot is running. Stop it and quit?"
 msgstr "Hay un bot en marcha. ¿Detenerlo y salir?"
 
+msgid "A character chain is already going."
+msgstr ""
+
 msgid "A city s&quare"
 msgstr "Una plaza de ciudad (&q)"
 
@@ -900,6 +915,9 @@ msgstr ""
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Una mazmorra de equipo: el juego admite grupos de 2 a 3 jugadores."
 
+msgid "A&dd..."
+msgstr ""
+
 msgid "About the skill:"
 msgstr "Sobre la habilidad:"
 
@@ -941,6 +959,9 @@ msgstr "Actividad:"
 msgid "Ad&vanced"
 msgstr "A&vanzado"
 
+msgid "Add a character to the chain"
+msgstr ""
+
 msgid "Add a circle aro&und me"
 msgstr ""
 
@@ -969,6 +990,9 @@ msgstr "Añadir un suministro"
 
 msgid "Add an item"
 msgstr "Añadir un objeto"
+
+msgid "Add at least one character to the chain."
+msgstr ""
 
 msgid "Add at least one farming spot."
 msgstr "Añade al menos un punto de farmeo."
@@ -1127,6 +1151,9 @@ msgstr "A una hora del reloj (&c)"
 
 msgid "At a place I choose"
 msgstr "En un lugar que yo elija"
+
+msgid "At the &end of the chain:"
+msgstr ""
 
 msgid "At the shops' fixed prices:"
 msgstr "A los precios fijos de las tiendas:"
@@ -1331,6 +1358,34 @@ msgstr "Canales"
 msgid "Character"
 msgstr "Personaje"
 
+msgid "Character chain"
+msgstr ""
+
+msgid "Character chain: couldn't close the game ({err})"
+msgstr ""
+
+msgid "Character chain: logging {old} out for {new}"
+msgstr ""
+
+msgid "Character chain: the game is closed"
+msgstr ""
+
+msgid "Character chain: waiting for {name}'s game to come back"
+msgstr ""
+
+msgid "Character chain: {name} didn't start: {why}"
+msgstr ""
+
+msgid ""
+"Character chain: {name} has nothing to run (its plan or its Autopilot day isn't there) - left out today"
+msgstr ""
+
+msgid "Character chain: {name}, {what}"
+msgstr ""
+
+msgid "Character chain: {n} characters, one after the other"
+msgstr ""
+
 msgid "Character settings - {name}"
 msgstr "Ajustes del personaje - {name}"
 
@@ -1400,6 +1455,10 @@ msgstr ""
 
 msgid "Choose a character."
 msgstr "Elige un personaje."
+
+msgid ""
+"Choose a character. Only characters whose account the bot knows can be in the chain: log in to one once by hand."
+msgstr ""
 
 msgid "Choose a city square:"
 msgstr "Elige una plaza de ciudad:"
@@ -1970,6 +2029,9 @@ msgstr "Solo errores"
 
 msgid "Every (minutes):"
 msgstr "Cada (minutos):"
+
+msgid "Every character of the chain can farm again today."
+msgstr ""
 
 msgid "Every day"
 msgstr "Todos los días"
@@ -2641,6 +2703,9 @@ msgstr "Objetos"
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "&Objetos sin regla: tocar solo lo que recogió esta ejecución"
 
+msgid "Its Autopilot day"
+msgstr ""
+
 msgid "JSON files (*.json)|*.json"
 msgstr "Archivos JSON (*.json)|*.json"
 
@@ -3116,6 +3181,9 @@ msgstr "Mover a tirar (&w)"
 msgid "Move to throw a&way"
 msgstr "Mover a tirar (&w)"
 
+msgid "Moving on to the next character of the chain."
+msgstr ""
+
 msgid "Mute e&very game"
 msgstr "Silenciar todos los juegos (&v)"
 
@@ -3196,6 +3264,13 @@ msgid "No changelog entry for {v}. Showing the full changelog."
 msgstr ""
 
 msgid "No changelog entry for {v}. Showing the release notes."
+msgstr ""
+
+msgid ""
+"No character can be logged in by the bot yet: log in to each one once by hand, so its account is known."
+msgstr ""
+
+msgid "No character chain is going in this game."
 msgstr ""
 
 msgid ""
@@ -3661,6 +3736,9 @@ msgstr ""
 
 msgid "Plan {name} was imported."
 msgstr "Se importó el plan {name}."
+
+msgid "Plan {plan}"
+msgstr ""
 
 msgid "Plan, from the last scan of your bag:"
 msgstr "Plan, según el último análisis de tu bolsa:"
@@ -4474,8 +4552,14 @@ msgstr "Quedarse quieto"
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Empezar un archivo nuevo tras (MB, 0 = nunca):"
 
+msgid "Start the c&hain"
+msgstr ""
+
 msgid "Starting"
 msgstr "Iniciando"
+
+msgid "Starting the character chain."
+msgstr ""
 
 msgid "Starting {what}."
 msgstr "Iniciando {what}."
@@ -4488,6 +4572,9 @@ msgstr "Estado:"
 
 msgid "Stay away from &elite zones"
 msgstr "Mant&enerse lejos de las zonas de élite"
+
+msgid "Stay logged in on the last character"
+msgstr ""
 
 msgid "Stays where it is when it stops (monsters may still attack)."
 msgstr "Se queda donde está al detenerse (los monstruos aún pueden atacar)."
@@ -4825,6 +4912,29 @@ msgstr ""
 msgid "The cave (a character goes into one cave a game day)"
 msgstr "La cueva (un personaje entra en una cueva por día de juego)"
 
+msgid "The chain couldn't be saved: {err}"
+msgstr ""
+
+msgid ""
+"The character chain is empty: add characters in Run, Character chain first."
+msgstr ""
+
+msgid ""
+"The character chain is over. These characters couldn't farm today: {names}"
+msgstr ""
+
+msgid "The character chain is over: every character has farmed today."
+msgstr ""
+
+msgid "The character chain stopped."
+msgstr ""
+
+msgid "The character chain stopped: its game isn't running any more."
+msgstr ""
+
+msgid "The character chain stopped: logging out didn't work ({why})"
+msgstr ""
+
 msgid "The character hasn't learned {skill}."
 msgstr "El personaje no ha aprendido {skill}."
 
@@ -4833,6 +4943,10 @@ msgstr ""
 "El personaje está en {here}, no en {map}: ve primero al mapa de este lugar."
 
 msgid "The character's plan"
+msgstr ""
+
+msgid ""
+"The characters farm one after the other in the game selected when the chain starts. Each one is logged in by itself (its saved account), does its plan or its Autopilot day, and is done for the game's day when its run ends by itself; then the next one comes. Stop ends the whole chain. A character done with more than 10 minutes of drop time left is done again once the others are."
 msgstr ""
 
 msgid "The clipboard couldn't be opened."
@@ -7025,6 +7139,9 @@ msgid ""
 msgstr ""
 "son las {time}: el farmeo del día terminó (el tiempo de caída de recompensas se reinicia a las {reset})"
 
+msgid "its Autopilot day"
+msgstr ""
+
 msgid "its game is busy with {what}"
 msgstr ""
 
@@ -7334,6 +7451,10 @@ msgstr "nunca más"
 
 msgid "new"
 msgstr "nuevo"
+
+msgid ""
+"next: in a character chain, I stop here, this character counts as done today, and the next one of the chain logs in and farms."
+msgstr ""
 
 msgid "no Gem Protection Rune left, and combining is set to use one"
 msgstr ""
@@ -7955,6 +8076,9 @@ msgstr "frase {line}"
 
 msgid "plan"
 msgstr "plan"
+
+msgid "plan {plan}"
+msgstr ""
 
 msgid ""
 "players: how many other players I can see and who they are, nearest first, with how many steps away."
@@ -8913,6 +9037,9 @@ msgstr ""
 
 msgid "the game wouldn't select it ({why})"
 msgstr "el juego no lo seleccionó ({why})"
+
+msgid "the game wouldn't take orders"
+msgstr ""
 
 msgid "the game wouldn't take {beast} now; trying again later"
 msgstr "el juego no aceptó {beast} ahora; se reintentará más tarde"
@@ -10113,6 +10240,9 @@ msgstr ""
 msgid "{name}: {results}"
 msgstr "{name}: {results}"
 
+msgid "{name}: {what}"
+msgstr ""
+
 msgid "{now} of {top} ({pct}%)"
 msgstr "{now} de {top} ({pct} %)"
 
@@ -10338,6 +10468,9 @@ msgstr ""
 
 msgid "{room}: shared arnebia {n} of {all} times today"
 msgstr "{room}: arnebia compartida {n} de {all} veces hoy"
+
+msgid "{row} (done today)"
+msgstr ""
 
 msgid "{row}: listed twice with different prices"
 msgstr "{row}: aparece dos veces con precios distintos"

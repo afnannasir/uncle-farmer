@@ -101,6 +101,8 @@ class Run(threading.Thread):
         self.place_done = False      # the run's end has decided about its place: no more saves
         self.talents_back_done = False   # the usual talents were put back (or tried): once a run
         self.medals_back_done = False    # ... and the usual medals
+        self.in_chain = False            # a row of Run, Character chain (no after-stop action of its own)
+        self.drop_spare: float | None = None   # ... its drop time left past the kept time, at its end
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -224,7 +226,20 @@ class Run(threading.Thread):
                 reason = self._crashed(e)
                 self.failed = True
                 self.ended_by_itself = False
+            self.drop_spare = self._drop_spare()
             self._end(app, reason)
+
+    def _drop_spare(self) -> float | None:
+        """A character chain's row that ended by itself: the drop time it left past the time kept
+        (seconds), so a plan that ended early is done again later; None when not known or not asked."""
+        bot = self.bot
+        if not getattr(self, "in_chain", False) or bot is None or not self.ended_by_itself or not self.farmed():
+            return None
+        try:
+            got = bot.drop_to_farm(bot.refresh_sheet(force=True) or {})
+        except Exception:               # the game gone at the end: the row counts as done
+            return None
+        return None if got is None else float(got[1])
 
     def _paused_game_lost(self) -> None:
         """A run paused when its game went (closed, logged out): the player had the game, so it is
@@ -936,7 +951,8 @@ class Run(threading.Thread):
                 link.send("keysup")
             if self.muted and app.get("game_speech") != "always" and self.speech_choice != "off":
                 link.send("speech on")
-            self.after_stop = app.get("after_stop", "nothing")
+            # a row of a character chain: the chain's end decides (the next character comes in this game)
+            self.after_stop = "nothing" if getattr(self, "in_chain", False) else app.get("after_stop", "nothing")
             if self.ended_by_itself and self.farmed() and self.after_stop in ("close_game", "shutdown"):
                 # the game closes as its own close button does; a shutdown waits for every bot
                 self.log(_("farming is over - closing the game"), speak=True)

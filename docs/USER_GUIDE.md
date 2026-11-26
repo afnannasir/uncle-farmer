@@ -303,6 +303,33 @@ The two lists are the same ones as **Character settings → Triggers**: change t
 
 **Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
+### Character chain: several characters in one game
+
+**Run → Character chain** (Ctrl+Shift+C) lists characters that farm one after the other in the same game,
+in order. For each one you choose what it does: one of your plans, or its Autopilot day (its Before
+farming list, its farming and its After farming list, as Run, Autopilot has it). Only characters whose
+account the bot knows can be added: log in to each one once by hand. Characters can be on the same account
+or on different ones.
+
+**Start the chain** works in the game selected in the Games list. The bot takes the first character not
+done today (the game's day, 00:00 GMT to 00:00 GMT). When another character is in the game, it logs that
+one out with the setting menu's Switch account, as a player does, and the chain's character is logged in
+by itself, as for a schedule. Then its plan or its day runs.
+
+- **A run that ends by itself** (the plan done, the drop time used up, the next level, the daily stop):
+  the character is done for today, and the next one comes.
+- **Stop**, **Stop every bot**, or `stop` or `quit game` by private message: the whole chain stops.
+- `next` by private message: this character is done for today, and the next one comes.
+- **A run that fails** (an error, an account the game doesn't have): the character isn't marked, and the
+  chain goes on. After two failures it is left out of this chain.
+- **A game lost** during a run is opened again and the run carried on, as always; the chain waits for it.
+- **A character done with more than 10 minutes of drop time left** (its plan ended early) is done again
+  once all the others are, at most twice a day.
+
+**At the end of the chain**: stay logged in on the last character, or close the game. The setting
+**After farming stops automatically** (close the game, shut down) doesn't apply between characters of
+a chain. **Let every character farm again today** clears the day's marks.
+
 ### A lost game, and runs that didn't finish
 
 While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 seconds: the line it is on, the turn of each loop, how many minutes and kills the current farm has done, the run's own minutes and kills, and the script's `set` values.
@@ -2302,7 +2329,8 @@ Available commands include:
 - `leave`, `quit`, or `quit team` — Leaves the team.
 - `mute` — Mutes the game.
 - `unmute` — Unmutes the game.
-- `quit game` — Closes the game.
+- `quit game` — Closes the game. In a character chain, the chain stops too.
+- `next` — In a character chain: this character counts as done today, and the next one logs in and farms.
 - `wait [minutes]` — Logs your character out for a while, then back in, and the run goes on (off unless ticked, see below).
 
 One action at a time: while one is under way (a wait, a walk home, `come`), another action is answered "Busy, one command at a time. Still on: ...". Questions (`status`, `where`, `results`...) and `stop`, `pause`, `resume` and `quit game` are always answered.

@@ -18,6 +18,7 @@ from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
 from .mainparts.carryon import CarryOnMixin
+from .mainparts.chain import ChainMixin
 from .mainparts.editing import EditingMixin, active_profile
 from .mainparts.games import GamesMixin
 from .mainparts.logpane import LogMixin
@@ -52,7 +53,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
     return {
         "run_start": available and not running and has_items, "run_stop": running,
         "run_pause": running, "run_stop_all": any_running, "run_walk": available and not running,
-        "run_schedules": True, "run_autopilot": available and not running and has_items,
+        "run_schedules": True, "run_autopilot": available and not running and has_items, "run_chain": True,
         "run_results": True, "run_speak_results": True,
         "game_mute": available, "game_unmute": available, "game_mute_all": True, "game_unmute_all": True,
         "game_open": True, "messages_private": True, "messages_chat": available,
@@ -76,7 +77,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, SchedulingMixin, CarryOnMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, CarryOnMixin, ChainMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -323,10 +324,11 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                          command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
                          command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
                          command(_("&Autopilot: the whole day"), lambda e: self.open_autopilot(), "Ctrl+Shift+A"),
+                         command(_("&Character chain"), lambda e: self.open_chain(), "Ctrl+Shift+C"),
                          command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
                          command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
                         ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules", "run_autopilot",
-                         "run_results", "run_speak_results"), context=True)
+                         "run_chain", "run_results", "run_speak_results"), context=True)
         game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
                          command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
                          command(_("Mute e&very game"), lambda e: self.set_game_speech(False, every=True)),
@@ -496,7 +498,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         down = applog.teardown
         with down.step("stop the game list timer", must=False):
             self.timer.Stop()
-        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on")):
+        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on"), ("chain_timer", "character chain")):
             timer: wx.Timer | None = getattr(self, name, None)   # none if the window never got that far
             if timer is not None:
                 with down.step("stop the %s timer" % what, must=False):

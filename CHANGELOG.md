@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**Character chain: several characters farm one after the other in one game** (untested in game: the
+tests use a pretend window and games)
+
+- Run, Character chain (Ctrl+Shift+C): characters in order, each with one of your plans or its Autopilot
+  day, and what happens at the end (stay logged in, or close the game). No limit on the number.
+- Start the chain takes the first character not done today (the game's day). Another character in the
+  game is logged out first with Switch account; the chain's character is logged in by itself. A run that
+  ends by itself marks its character done and the next one comes; Stop ends the chain; a failed run goes
+  on to the next (twice at most per character); a lost game is opened again and the chain waits for it.
+  A character done with more than 10 minutes of drop time left is done again once the others are, at
+  most twice a day. The after-stop action doesn't apply between characters.
+- New private message command `next`: this character is done, the next one comes. `quit game` stops the
+  chain too.
+
 **Talents for farming** (untested in game: the tests use a pretend talent master; the menu was read live)
 
 - Character settings has a Talents page: **Change the talents for farming** (off by default), the talents
