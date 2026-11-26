@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**Construction scanner: highlands taken from other gangs, and publishing after a scan**
+
+- Before, the scanner skipped highlands your gang took from another gang. It only read your gang's own.
+- New checkbox: "Include highlands taken from other gangs". It is off by default.
+  In a script, add `taken=yes` or `taken=no` to `construction_scan`.
+  Tested in the game.
+- New checkbox: "Publish when the scan finishes, without asking".
+  It sends nothing if everything is at 100%, or if nothing changed since the last report.
+  Tested in the game.
+- Daily chores still repairs only your gang's own highlands.
+
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 
 - A run or a tool that started inside a gang base, a secret room or a dungeon, before the bot had seen

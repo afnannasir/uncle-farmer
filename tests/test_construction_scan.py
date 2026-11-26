@@ -152,7 +152,7 @@ def test_the_scan_reads_camps_and_highlands_and_repairs_nothing(typed: list[str]
     home: list[int] = []
     monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
     monkeypatch.setattr(chores, "gang_camps", stand_in(chores.gang_camps, lambda b, allowed=(): [camp]))
-    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen: left.pop(0) if left else None))
+    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen, taken=False: left.pop(0) if left else None))
     monkeypatch.setattr(chores, "leave_highland", stand_in(chores.leave_highland, lambda b: home.append(1)))
     g.log = lambda line, speak=False: None  # type: ignore[attr-defined]
     report = hr.scan(as_bot(g))
@@ -164,7 +164,7 @@ def test_the_scan_reads_camps_and_highlands_and_repairs_nothing(typed: list[str]
 def test_nothing_to_read_stops_the_scan(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
     monkeypatch.setattr(chores, "gang_camps", stand_in(chores.gang_camps, lambda b, allowed=(): []))
-    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen: None))
+    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen, taken=False: None))
     with pytest.raises(chores.Stopped, match="no construction"):
         hr.scan(as_bot(Game()))
 
@@ -230,7 +230,7 @@ def auto_game(monkeypatch: pytest.MonkeyPatch, percent: float, action: list[list
     g.levels = {"Level 5 Supply Camp Construction": "Level 5 supply camp construction; Completed %.1f%%" % percent}
     monkeypatch.setattr(chores, "inner_hall", stand_in(chores.inner_hall, lambda b: None))
     monkeypatch.setattr(chores, "gang_camps", stand_in(chores.gang_camps, lambda b, allowed=(): list(g.levels)))
-    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen: None))
+    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, lambda b, seen, taken=False: None))
     return g, logged
 
 
@@ -401,3 +401,62 @@ def test_only_an_agent_with_typepaste_can_paste() -> None:
     assert not town.can_paste(as_bot(g))
     g.agent_version = town.PASTE_AGENT  # type: ignore[attr-defined]
     assert town.can_paste(as_bot(g))
+
+
+# ---------------------------------------------------------------- highlands taken from other gangs
+@pytest.mark.parametrize("setting,asked,want", [(False, None, False), (True, None, True),
+                                                (True, False, False), (False, True, True)])
+def test_highlands_taken_from_other_gangs_are_scanned_as_set_or_asked(
+        typed: list[str], monkeypatch: pytest.MonkeyPatch, setting: bool, asked: bool | None, want: bool) -> None:
+    hr.settings.update_app({"construction_taken": setting})
+    g, _logged = auto_game(monkeypatch, 62.0)
+    asked_for: list[bool] = []
+
+    def tour(b: Any, seen: Any, taken: bool = False) -> None:
+        asked_for.append(taken)
+    monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, tour))
+    hr.scan(as_bot(g), asked)
+    assert asked_for == [want]
+
+
+def test_a_schedule_passes_taken_on_to_the_scan(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    g, _logged = auto_game(monkeypatch, 100.0)
+    got: list[bool | None] = []
+    real = hr.scan
+
+    def scan(b: Any, taken: bool | None = None) -> dict[str, Any]:
+        got.append(taken)
+        return real(b, taken)
+    monkeypatch.setattr(hr, "scan", stand_in(hr.scan, scan))
+    hr.scan_and_publish(as_bot(g), "system", None, True)
+    assert got == [True]
+
+
+def test_the_taken_setting_is_off_by_default() -> None:
+    assert hr.settings.APP_DEFAULTS["construction_taken"] is False
+    assert hr.settings.APP_DEFAULTS["construction_publish"] is False
+
+
+def test_the_script_command_takes_taken_yes_or_no_for_a_scan() -> None:
+    nodes = script.parse("construction_scan taken=yes\nconstruction_scan auto=system taken=no\n"
+                         "construction_scan taken=yes auto=announcement lines=yes\nconstruction_scan\n")[0]
+    assert [n.opts.get("taken") for n in nodes] == [True, False, True, None]
+    assert nodes[2].opts["auto"] == "announcement" and nodes[2].opts["lines"] is True
+    for bad in ("construction_scan taken=maybe", "construction_scan publish=system taken=yes",
+                "construction_scan taken=yes taken=no", "construction_scan auto=system publish=system",
+                "construction_scan taken", "construction_scan every=yes"):
+        with pytest.raises(script.ScriptError):
+            script.parse(bad + "\n")
+
+
+@pytest.mark.parametrize("opts,want", [({}, ("scan", None)), ({"taken": True}, ("scan", True)),
+                                       ({"auto": "system", "taken": False}, ("auto", False))])
+def test_the_script_step_hands_taken_to_the_scanner(
+        monkeypatch: pytest.MonkeyPatch, opts: dict[str, Any], want: tuple[str, bool | None]) -> None:
+    from unclefarmer.engine import activities
+    got: list[tuple[str, bool | None]] = []
+    monkeypatch.setattr(hr, "scan", stand_in(hr.scan, lambda b, taken=None: got.append(("scan", taken))))
+    monkeypatch.setattr(hr, "scan_and_publish", stand_in(
+        hr.scan_and_publish, lambda b, kind, lines=None, taken=None: got.append(("auto", taken))))
+    activities.run(as_bot(Game()), "construction_scan", False, opts)
+    assert got == [want]

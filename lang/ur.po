@@ -2562,6 +2562,9 @@ msgstr "Kul"
 msgid "In the bag: {n} {gem}."
 msgstr "Baste mein: {n} {gem}."
 
+msgid "Include highlands taken from other &gangs"
+msgstr ""
+
 msgid "Include maps &without monsters"
 msgstr "&Baghair monsters wale maps shamil karein"
 
@@ -3721,6 +3724,9 @@ msgstr "Program ka version: {v}"
 
 msgid "Publish &as:"
 msgstr "Publish &kis tarah:"
+
+msgid "Publish when the scan &finishes, without asking"
+msgstr ""
 
 msgid "Put each highland on its own &line (gang announcement only)"
 msgstr "Har highland ko apni &line par rakhein (sirf gang announcement)"
@@ -9455,9 +9461,8 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "aise likhein: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
 msgstr ""
-"aise likhein: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system), aur announcement ke liye lines=yes ya lines=no jodein taake har highland ki apni line ho ya sirf ek line"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
@@ -10480,6 +10485,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 #~ msgstr ""
 #~ "aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
+
+#~ msgid ""
+#~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+#~ msgstr ""
+#~ "aise likhein: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system), aur announcement ke liye lines=yes ya lines=no jodein taake har highland ki apni line ho ya sirf ek line"
 
 #~ msgid ""
 #~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."

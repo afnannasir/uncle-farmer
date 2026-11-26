@@ -33,6 +33,8 @@ APP_DEFAULTS: dict[str, Any] = {
     "restart_lost_games": True,  # a game lost mid-run (closed, frozen) is opened again and the run carries on
     "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
     "construction_lines": False,  # Construction scanner: a gang announcement puts each highland on its own line
+    "construction_taken": False,  # Construction scanner: highlands taken from other gangs are scanned too
+    "construction_publish": False,  # Construction scanner window: a scan publishes when it ends (as a schedule does)
     "check_updates": True,    # look for a new release on GitHub when the app starts
     "skip_version": "",       # a release the player said no to: not offered again at start
     "update_channel": "master",  # where updates come from: "master" (stable releases) or "dev" (development builds)
@@ -272,6 +274,8 @@ class AppSettings(BaseModel):
     restart_lost_games: bool = APP_DEFAULTS["restart_lost_games"]
     shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
     construction_lines: bool = APP_DEFAULTS["construction_lines"]
+    construction_taken: bool = APP_DEFAULTS["construction_taken"]
+    construction_publish: bool = APP_DEFAULTS["construction_publish"]
     check_updates: bool = APP_DEFAULTS["check_updates"]
     skip_version: str = APP_DEFAULTS["skip_version"]
     update_channel: Literal["master", "dev"] = APP_DEFAULTS["update_channel"]

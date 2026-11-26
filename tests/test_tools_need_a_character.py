@@ -235,10 +235,59 @@ def test_the_scanner_window_is_told_whether_it_may_scan(monkeypatch: pytest.Monk
 
         def ShowModal(self) -> int:
             return wx.ID_CANCEL
+
+        def scan_command(self) -> str:
+            return "construction_scan"
     monkeypatch.setattr(chores_gui, "ConstructionScanDialog", Dialog)
     f = ScanFrame(selected, read, runs)
     editing.EditingMixin.open_construction_scan(f)  # type: ignore[arg-type]
     assert told == [can_act] and f.errands == []
+
+
+@pytest.mark.parametrize("after,want", [(False, "construction_scan\n"), (True, "construction_scan auto=broadcast\n")])
+def test_a_scan_publishes_when_it_finishes_only_when_ticked(app: Any, monkeypatch: pytest.MonkeyPatch,
+                                                            after: bool, want: str) -> None:
+    monkeypatch.setattr(chores_gui.constructionscan, "load", lambda: None)
+    real = chores_gui.ConstructionScanDialog
+
+    parent = wx.Frame(None)
+
+    class Ticked(real):  # type: ignore[valid-type, misc]
+        def __init__(self, _owner: Any, can_act: bool = True) -> None:
+            super().__init__(parent, can_act)     # the stand-in frame isn't a window
+
+        def ShowModal(self) -> int:
+            self.publish_after.SetValue(after)
+            self.where.SetSelection(1)                    # Broadcast
+            self.on_scan(wx.CommandEvent())
+            return chores_gui.SCAN_CONSTRUCTIONS
+
+        def EndModal(self, retCode: int) -> None: ...
+    monkeypatch.setattr(chores_gui, "ConstructionScanDialog", Ticked)
+    f = ScanFrame(1, LOGGED_IN)
+    try:
+        editing.EditingMixin.open_construction_scan(f)  # type: ignore[arg-type]
+    finally:
+        parent.Destroy()
+    assert f.errands == [want]
+
+
+def test_the_scanner_window_keeps_its_two_new_ticks(app: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(chores_gui.constructionscan, "load", lambda: None)
+    parent = wx.Frame(None)
+    try:
+        d = chores_gui.ConstructionScanDialog(parent, True)
+        assert not d.taken.GetValue() and not d.publish_after.GetValue()
+        d.taken.SetValue(True)
+        d.on_taken(wx.CommandEvent())
+        d.publish_after.SetValue(True)
+        d.on_publish_after(wx.CommandEvent())
+        d.Destroy()
+        again = chores_gui.ConstructionScanDialog(parent, False)
+        assert again.taken.GetValue() and again.publish_after.GetValue() and not again.publish_after.IsEnabled()
+        again.Destroy()
+    finally:
+        parent.Destroy()
 
 
 def test_the_market_window_opens_only_with_a_logged_in_character(monkeypatch: pytest.MonkeyPatch) -> None:

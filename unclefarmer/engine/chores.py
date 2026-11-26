@@ -154,6 +154,9 @@ HIGHLAND_HOME_STAND = (29, 4)
 # from its south side only (hand runs stood at 31,57-59); from the north the game won't select it.
 HIGHLAND_SITES = (("Crystal Turret", (30, 26)), ("Wall barricade", (31, 58)))
 OWN_HIGHLAND = r"own Gang.s Highland\s+(\d+)"
+# Occupied Highlands lists a highland taken from another gang under that gang's name: "<gang> Gang's
+# Highland 208" beside "the own Gang's Highland 80" (read live 2026-11-26; Gang Highlands lists only our own).
+HELD_HIGHLAND = r"Gang.s Highland\s+(\d+)"
 NEXT_PAGE = r"^\s*next\s*page"
 MOST_PAGES = 20
 # A walk round a gang base (gathering looks for its area entrances this way): the game shows what is
@@ -829,9 +832,10 @@ def highland_entry(number: int) -> str:
     return r"\bHighland\s+%d(?!\d)" % number
 
 
-def next_highland(b: Bot, seen: Collection[int]) -> int | None:
+def next_highland(b: Bot, seen: Collection[int], taken: bool = False) -> int | None:
     """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
-    Occupied Highlands. Its number, or None when there is no other."""
+    Occupied Highlands. Its number, or None when there is no other. taken: those the gang took from
+    other gangs count too, not only its own."""
     inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
@@ -840,7 +844,8 @@ def next_highland(b: Bot, seen: Collection[int]) -> int | None:
         raise Stopped(_("the Highland Entrance offers no Occupied Highlands"))
     for _page in range(MOST_PAGES):
         b.wait_dialog(3.0)
-        numbers = [int(n) for t in _texts(b, OWN_HIGHLAND) for n in re.findall(OWN_HIGHLAND, t, re.I)]
+        which = HELD_HIGHLAND if taken else OWN_HIGHLAND
+        numbers = [int(n) for t in _texts(b, which) for n in re.findall(which, t, re.I)]
         number = next((n for n in numbers if n not in seen), None)
         if number is not None:
             b.choose(highland_entry(number))

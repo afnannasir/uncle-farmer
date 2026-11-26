@@ -491,6 +491,25 @@ def test_a_second_page_of_highlands_is_read(world: type[Game]) -> None:
     assert repairs == [(41, TURRET), (41, WALL)]
 
 
+def test_a_highland_taken_from_another_gang_counts_only_when_asked(world: type[Game]) -> None:
+    """Occupied Highlands names a taken highland after the gang it was taken from (read live)."""
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    assert chores.next_highland(as_bot(g), {38}) is None
+    assert chores.next_highland(as_bot(g), {38}, taken=True) == 208
+    assert g.chosen[-1] == "Simgang Gang's Highland 208"
+
+
+def test_repairs_leave_highlands_taken_from_other_gangs_alone(world: type[Game]) -> None:
+    g, repairs = highland_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    chores.run(as_bot(g), cfg(construction=2))
+    assert all(n != 208 for n, _name in repairs)
+
 def test_repairs_already_made_today_count_and_end_the_trip(world: type[Game]) -> None:
     extra: Pages = {TURRET: [("You've repaired the crystal turret today", None)],
                     WALL: [("You've repaired the Wall barricade today", None)]}

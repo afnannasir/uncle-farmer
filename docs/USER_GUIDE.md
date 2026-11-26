@@ -1023,7 +1023,11 @@ This is not a daily chore, so you can run it whenever you have something to coll
 
 ### Construction scanner
 
-**Tools, Construction scanner** shows how far your gang's constructions are: the Magic Cannon and Supply Camp being built, and the Crystal Turret and Wall barricade of every highland. **Scan the constructions** visits each one without repairing or building anything. Open the window again afterwards to read the result, the least complete first.
+**Tools, Construction scanner** shows how far your gang's constructions are: the Magic Cannon and Supply Camp being built, and the Crystal Turret and Wall barricade of each of your gang's own highlands. **Scan the constructions** visits each one without repairing or building anything. Open the window again afterwards to read the result, the least complete first. The window shows everything. What you publish shows only what is under 100%.
+
+**Include highlands taken from other gangs**: tick this to also scan the highlands your gang took from other gangs. It is off by default. Daily chores still repairs only your gang's own highlands.
+
+**Publish when the scan finishes, without asking**: tick this to publish the report as soon as the scan is done. It uses the **Publish as** choice. It sends nothing if everything is at 100%, or if nothing changed since the last report.
 
 **Copy** puts the short report on the clipboard. A gang elder can also **Publish** it as a gang announcement, a broadcast (which plays a sound) or a system message. The bot always asks first. A new announcement replaces only the older reports published by the same character, never another elder's.
 
@@ -1031,7 +1035,7 @@ Tick **Put each highland on its own line** to publish a gang announcement as a l
 
 To do this automatically, open **Run, Schedules**, go to the **Tools** tab and add one of the three "scanning the constructions" tasks for your elder. At the set time the bot scans and publishes without asking. It publishes nothing when everything is at 100%, or when the report is the same as the last one this character sent that way.
 
-In a script, use `construction_scan`, `construction_scan publish=broadcast` to send the last report, or `construction_scan auto=broadcast` to scan and send it if there is something new. The kinds are `announcement`, `broadcast` and `system`.
+In a script, use `construction_scan`, `construction_scan publish=broadcast` to send the last report, or `construction_scan auto=broadcast` to scan and send it if there is something new. The kinds are `announcement`, `broadcast` and `system`. Add `taken=yes` to also scan highlands taken from other gangs, or `taken=no` to skip them. Without it, the checkbox in the window decides. Schedules follow the checkbox too.
 
 ### Daily chores
 

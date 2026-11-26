@@ -2566,6 +2566,9 @@ msgstr ""
 msgid "In the bag: {n} {gem}."
 msgstr "Na mochila: {n} {gem}."
 
+msgid "Include highlands taken from other &gangs"
+msgstr ""
+
 msgid "Include maps &without monsters"
 msgstr "Incluir mapas &sem monstros"
 
@@ -3724,6 +3727,9 @@ msgstr "Versão do programa: {v}"
 
 msgid "Publish &as:"
 msgstr "Publicar &como:"
+
+msgid "Publish when the scan &finishes, without asking"
+msgstr ""
 
 msgid "Put each highland on its own &line (gang announcement only)"
 msgstr ""
@@ -9437,7 +9443,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escreva assim: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
 msgstr ""
 
 msgid "write it as: hold key seconds"

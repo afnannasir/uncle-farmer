@@ -2,7 +2,8 @@
 
 The bot reads, repairing and building nothing, the Magic Cannon and Supply Camp under construction
 in the inner hall ("Level 5 Magic Cannon Construction; Completed 62.0%") and every Crystal Turret and
-Wall barricade of every highland under Occupied Highlands ("the completeness is 97.5%"). The result
+Wall barricade of the gang's own highlands under Occupied Highlands ("the completeness is 97.5%"), and
+of those it took from other gangs too when asked (setting construction_taken, or `taken=yes`). The result
 is kept in profiles/_construction_scan.json, so it can be read, copied or published afterwards.
 
 Publishing takes an elder's rights. The Action menu's gang line has "send system message", "send
@@ -136,13 +137,20 @@ def _camp_label(name: str) -> str:
     return re.sub(r"(?i)\s+construction\s*$", "", name)
 
 
-def scan(b: Bot) -> dict[str, Any]:
-    """Read what the gang is building and every defence of its highlands, and keep the report."""
+def _taken(taken: bool | None) -> bool:
+    """Whether highlands taken from other gangs are scanned: `taken` None, the app setting decides."""
+    return bool(settings.load_app().get("construction_taken", False)) if taken is None else taken
+
+
+def scan(b: Bot, taken: bool | None = None) -> dict[str, Any]:
+    """Read what the gang is building and every defence of its highlands (taken: of those it took from
+    other gangs too; None: the app setting decides), and keep the report."""
+    held = _taken(taken)
     chores.inner_hall(b)
     rows: list[Row] = [(_camp_label(name), _read_place(b, name)) for name in chores.gang_camps(b)]
     seen: set[int] = set()
     while True:
-        number = chores.next_highland(b, seen)
+        number = chores.next_highland(b, seen, held)
         if number is None:
             break
         seen.add(number)
@@ -268,11 +276,11 @@ def _outgoing(b: Bot, report: dict[str, Any], kind: str, lines: bool | None) -> 
     return [message(report)]
 
 
-def scan_and_publish(b: Bot, kind: str, lines: bool | None = None) -> None:
+def scan_and_publish(b: Bot, kind: str, lines: bool | None = None, taken: bool | None = None) -> None:
     """A schedule's run: scan, then publish, unless there is nothing new to tell the gang."""
     _open_action_menu(b, kind)          # no tour of the highlands for a character who can't send it
     b.close_dialogs()
-    report = scan(b)
+    report = scan(b, taken)
     text = "\n".join(_outgoing(b, report, kind, lines))
     sent: dict[str, str] = report.get("sent") or {}
     if text == ALL_FINE:
