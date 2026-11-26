@@ -4855,6 +4855,20 @@ msgstr "Aba Equipe: digite quem recebe a equipe quando a execução terminar."
 msgid "Teleport to the team leader"
 msgstr "Teletransportar até o líder da equipe"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Avisar o chat Global de cada chefe visto (em inglês; o servidor inteiro lê)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Avisar o chat International de cada chefe visto (em inglês)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Avisá-los de vez em quando que estou &ausente"
 
@@ -6777,6 +6791,9 @@ msgstr "não foi possível falar com {npc}"
 msgid "couldn't talk to {npc}"
 msgstr "não foi possível falar com {npc}"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "não foi possível avisar {room} sobre {boss}: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "não foi possível descartar: {list}"
 
@@ -7974,6 +7991,9 @@ msgstr "não guardado (o depósito pode estar cheio): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenhum"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "sem aviso em {room} sobre {boss}: o personagem não está em nenhum gang"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr "não usadas no fim, uma medalha do mesmo tipo tomou o lugar: {names}"
@@ -9663,6 +9683,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "hoje: total de tudo que foi obtido nas execuções de hoje, com a quantidade de execuções e minutos."
+
+msgid "told {rooms}: {line}"
+msgstr "avisado em {rooms}: {line}"
 
 msgid "too close to a boss"
 msgstr "perto demais de um chefe"

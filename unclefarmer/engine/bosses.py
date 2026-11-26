@@ -21,6 +21,9 @@ whose monsters are no stronger than those of the farm: none with more HP than th
 again), and not the map at all when the map data says its monsters are stronger. A wait used to be
 a long stand by the door, doing nothing but fighting back.
 
+With boss_notice_rooms, each boss that comes into sight is told to the chat rooms the player ticked
+(team, gang, international, global), in English: its name, the map and where (announce).
+
 With skip_demonized_elites, a demonized elite is kept away from the same way, closer in: no target
 within ELITE_CLEAR steps of one, the patrol keeps clear of it, and a walk-off when it comes within
 ELITE_KEEP steps - but never a trip off the map, and one that attacks us is fought.
@@ -33,10 +36,11 @@ import math
 import os
 import re
 from collections.abc import Callable, Sequence
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, cast
 
-from .. import atlas, jsonio, paths
+from .. import atlas, chat, jsonio, paths
 from ..i18n import _
+from ..link import AgentError
 from .botparts.base import snap_map
 
 if TYPE_CHECKING:
@@ -208,6 +212,83 @@ def _tell(bot: Bot, e: dict[str, Any], keep: float, n: int) -> None:
     else:
         bot.log(_("{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it",
                   elite=e["name"], n=n, keep=int(keep)))
+
+
+# Telling other players of a boss seen (boss_notice_rooms): the chat channels it may go to, in the
+# order the character window shows them - the team, the gang, the international room, the whole
+# server. Never the map's channel: whoever is on the map sees the boss for themselves.
+NOTICE_ROOMS = (4, 3, 5, 0)
+NOTICE_EVERY = 600.0   # seconds: one notice a map at most this often (a boss that comes and goes)
+
+
+def notice_rooms(p: dict[str, Any]) -> list[int]:
+    """The chat channels the player ticked for boss notices, in NOTICE_ROOMS' order."""
+    chosen: object = p.get("boss_notice_rooms") or []
+    items: list[object] = list(cast("list[object]", chosen)) if isinstance(chosen, (list, tuple)) else []
+    picked = set(items)
+    return [c for c in NOTICE_ROOMS if c in picked]
+
+
+def notice_text(boss: dict[str, Any], map_id: int) -> str:
+    """The notice, in English whatever the bot's language: the rooms hold players of every language,
+    and the game's boss and map names are English anyway."""
+    where = str(atlas.maps().get(int(map_id), {}).get("name") or map_id).strip()
+    return "%s (a boss) on %s at %d, %d" % (boss["name"], where, int(boss["x"]), int(boss["y"]))
+
+
+def _gangless(bot: Bot, snap: dict[str, Any]) -> bool:
+    """The character is in no gang: the game keeps the gang's id in our own side, and its gang
+    attack mode wants it positive (as crafting.is_gangless reads it)."""
+    side = snap["self"].get("side")
+    return isinstance(side, int) and side <= 0
+
+
+def _refused(answer: str) -> str:
+    """Why the agent didn't send a line, for the player (as chat.ChatSender.say says it)."""
+    if "international" in answer:
+        return _("Join an international room in the game first.")
+    return _("The game didn't take it: {why}", why=answer)
+
+
+def announce(bot: Bot, snap: dict[str, Any], map_id: int) -> None:
+    """Tell the ticked chat rooms of each boss that comes into sight: once a boss on a map, and once
+    a map every NOTICE_EVERY at most (a second boss within that time isn't told). The game takes
+    any line for the team or the gang - one with no team goes nowhere, unsaid -; a character in
+    no gang isn't sent one, and a refused international line is said in the log. The farm goes on."""
+    rooms = notice_rooms(bot.p)
+    if not rooms:
+        return
+    told: set[tuple[int, int]] = bot.__dict__.setdefault("boss_noticed", set())
+    last: dict[int, float] = bot.__dict__.setdefault("boss_noticed_at", {})
+    for boss in in_sight(snap):
+        key = (int(map_id), boss["id"])        # (the game's monster ids are only the map's)
+        if key in told:
+            continue
+        told.add(key)
+        now = bot.clock.time()
+        if now - last.get(int(map_id), -NOTICE_EVERY) < NOTICE_EVERY:
+            continue
+        last[int(map_id)] = now
+        _tell_rooms(bot, snap, boss, notice_text(boss, map_id), rooms)
+
+
+def _tell_rooms(bot: Bot, snap: dict[str, Any], boss: dict[str, Any], text: str, rooms: list[int]) -> None:
+    sent: list[str] = []
+    for room in rooms:
+        name = _(chat.CHANNELS[room])
+        if room == 3 and _gangless(bot, snap):
+            bot.log(_("not telling {room} of {boss}: the character is in no gang", room=name, boss=boss["name"]))
+            continue
+        try:
+            answer = bot.a.send("say %d %s" % (room, text))
+        except (AgentError, OSError) as e:
+            answer = str(e)
+        if answer == "sent":
+            sent.append(name)
+        else:
+            bot.log(_("couldn't tell {room} of {boss}: {why}", room=name, boss=boss["name"], why=_refused(answer)))
+    if sent:
+        bot.log(_("told {rooms}: {line}", rooms=", ".join(sent), line=text))
 
 
 def _near(bot: Bot, snap: dict[str, Any], me: dict[str, Any], everyone: bool = False) -> list[tuple[dict[str, Any], float]]:

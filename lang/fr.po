@@ -4878,6 +4878,21 @@ msgstr "Onglet Équipe : saisissez à qui passer l'équipe à la fin de la parti
 msgid "Teleport to the team leader"
 msgstr "Se téléporter vers le chef d'équipe"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Prévenir le chat Gang de chaque boss vu (en anglais)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Prévenir le chat Global de chaque boss vu (en anglais ; tout le serveur le lit)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Prévenir le chat International de chaque boss vu (en anglais)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+"Prévenir le chat Team de chaque boss vu (en anglais : nom, carte, position)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Leur dire de temps en temps que je suis &absent"
 
@@ -6825,6 +6840,9 @@ msgstr "impossible de parler au {npc}"
 msgid "couldn't talk to {npc}"
 msgstr "impossible de parler à {npc}"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "impossible de prévenir {room} pour {boss} : {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "impossible de jeter : {list}"
 
@@ -8028,6 +8046,9 @@ msgstr "non stockés (le Storehouse est peut-être plein) : {list}"
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 "{item} n'est pas porté au Storehouse : il est plein et n'en contient pas encore"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "{room} pas prévenu pour {boss} : le personnage n'a pas de gang"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -9734,6 +9755,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "today : le total de toutes les parties du jour, avec leur nombre et leurs minutes."
+
+msgid "told {rooms}: {line}"
+msgstr "message envoyé à {rooms} : {line}"
 
 msgid "too close to a boss"
 msgstr "trop près d'un boss"

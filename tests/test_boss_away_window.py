@@ -48,8 +48,13 @@ def dialog(frame: Any, **values: Any) -> tuple[Any, dict[str, Any]]:
 
 def test_the_bosses_group_shows_and_saves_the_choices(frame: Any) -> None:
     d, p = dialog(frame, boss_distance=50, boss_leave=True, boss_walk_offs=1, boss_away_first=90,
-                  boss_away_most=600, boss_away_farm=False)
+                  boss_away_most=600, boss_away_farm=False, boss_notice_rooms=[3])
     try:
+        rooms = dict(d.boss_rooms)
+        assert list(rooms) == [4, 3, 5, 0]
+        assert [r for r, box in d.boss_rooms if box.GetValue()] == [3]
+        rooms[0].SetValue(True)
+        rooms[4].SetValue(True)
         assert d.boss_on.GetValue() and d.boss_keep.GetValue() == 50
         assert d.boss_leave.GetValue() and d.boss_walk_offs.GetValue() == 1
         assert d.boss_away_first.GetValue() == 90 and d.boss_away_most.GetValue() == 600
@@ -63,12 +68,13 @@ def test_the_bosses_group_shows_and_saves_the_choices(frame: Any) -> None:
         d.Destroy()
     assert (p["boss_walk_offs"], p["boss_away_first"], p["boss_away_most"], p["boss_away_farm"]) == (0, 120, 120, True)
     assert p["boss_leave"] is True and p["boss_distance"] == 50
+    assert p["boss_notice_rooms"] == [4, 3, 0]
 
 
 def test_new_profiles_keep_the_old_behaviour_and_farm_the_wait() -> None:
     d = settings.PROFILE_DEFAULTS
     assert (d["boss_leave"], d["boss_walk_offs"], d["boss_away_first"], d["boss_away_most"]) == (True, 3, 60, 300)
-    assert d["boss_away_farm"] is True
+    assert d["boss_away_farm"] is True and d["boss_notice_rooms"] == []
 
 
 def test_the_leaving_boxes_follow_the_ticks(frame: Any) -> None:

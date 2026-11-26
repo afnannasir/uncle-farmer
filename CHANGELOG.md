@@ -21,6 +21,12 @@ tests use a pretend game)
   away (60 seconds) and the longest it doubles up to (300 seconds), and **Fight on the way out and farm the
   map waited on** (on). With leaving off, the bot keeps away from the boss on the map and farms on.
 - A long wait now doubles too: the wait starts over 15 minutes after coming back, not after leaving.
+- **Tell the chat of each boss seen**: four boxes in the same group, one a room - Team, Gang, International,
+  Global (none ticked by default). Each boss that comes into sight is told to every ticked room, in
+  English whatever the bot's language: "Death Worm (a boss) on Wolf Prairie at 105, 100". Once a boss, and
+  once every 10 minutes a map at most; the log says what was sent. A character in no gang sends nothing to
+  the Gang chat, and the log says so, as it does for an international room not joined. The game takes a
+  Team line even without a team, which then goes nowhere.
 
 **The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
 

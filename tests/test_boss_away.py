@@ -479,6 +479,130 @@ def test_a_setback_in_the_farmed_wait_puts_the_farm_back(monkeypatch: pytest.Mon
     assert b.spot_no_go == [(50.0, 50.0, 5.0)] and b.tally.maps == [1041, 5121]   # type: ignore[attr-defined]
 
 
+# ------------------------------------------------------------------ telling the chat rooms
+class Sender:
+    def __init__(self, answers: dict[int, str] | None = None) -> None:
+        self.lines: list[str] = []
+        self.answers = answers or {}
+
+    def send(self, line: str) -> str:
+        self.lines.append(line)
+        return self.answers.get(int(line.split()[1]), "sent")
+
+
+def told_walker(rooms: list[int], answers: dict[int, str] | None = None) -> tuple[Walker, Sender]:
+    w = Walker(worm_snap(), [])
+    w.p["boss_notice_rooms"] = rooms
+    sender = Sender(answers)
+    w.a = sender   # type: ignore[attr-defined]
+    return w, sender
+
+
+def test_no_room_ticked_tells_nobody() -> None:
+    w, sender = told_walker([])
+    bosses.announce(as_bot(w), worm_snap(), 5121)
+    assert sender.lines == [] and w.lines == []
+
+
+def test_a_boss_seen_is_told_once_to_every_ticked_room_in_english() -> None:
+    w, sender = told_walker([0, 4, 7, 3])         # 7 isn't a room the bot writes to
+    snap = worm_snap()
+    bosses.announce(as_bot(w), snap, 5121)
+    bosses.announce(as_bot(w), snap, 5121)        # the same boss: once
+    text = "Death Worm (a boss) on Wolf Prairie at 105, 100"
+    assert sender.lines == ["say 4 " + text, "say 3 " + text, "say 0 " + text]
+    assert w.lines == ["told Team, Gang, Global: " + text]
+
+
+def test_one_notice_a_map_every_ten_minutes_at_most() -> None:
+    w, sender = told_walker([4])
+    snap = worm_snap()
+    bosses.announce(as_bot(w), snap, 5121)
+    other = {"self": snap["self"], "entities": [mob(-9, "Death Worm", 300.0, hp=900000)]}
+    w.clock.advance(60)
+    bosses.announce(as_bot(w), other, 5121)       # came back as a new one, a minute later: not again
+    assert len(sender.lines) == 1
+    third = {"self": snap["self"], "entities": [mob(-10, "Death Worm", 200.0, hp=900000)]}
+    w.clock.advance(bosses.NOTICE_EVERY)
+    bosses.announce(as_bot(w), third, 5121)
+    assert len(sender.lines) == 2
+    bosses.announce(as_bot(w), {"self": snap["self"], "entities": [mob(-11, "Death Worm", 1.0)]}, 1041)
+    assert len(sender.lines) == 3                 # another map has its own ten minutes
+
+
+def test_a_room_the_game_refuses_is_said_and_the_others_still_get_it() -> None:
+    w, sender = told_walker([4, 5], answers={5: "not in an international room"})
+    bosses.announce(as_bot(w), worm_snap(), 5121)
+    assert len(sender.lines) == 2
+    assert w.lines[0] == "couldn't tell International of Death Worm: Join an international room in the game first."
+    assert w.lines[1].startswith("told Team: ")
+
+
+def test_a_character_in_no_gang_tells_the_gang_nothing() -> None:
+    w, sender = told_walker([4, 3])
+    snap = worm_snap()
+    snap["self"]["side"] = 0                      # the game's own "no gang"
+    bosses.announce(as_bot(w), snap, 5121)
+    assert [line.split()[1] for line in sender.lines] == ["4"]
+    assert w.lines[0] == "not telling Gang of Death Worm: the character is in no gang"
+    w, sender = told_walker([3])
+    snap["self"]["side"] = 1234                   # a gang's id
+    bosses.announce(as_bot(w), snap, 5121)
+    assert [line.split()[1] for line in sender.lines] == ["3"]
+
+
+def test_the_same_monster_id_on_another_map_is_another_boss() -> None:
+    w, sender = told_walker([4])
+    snap = worm_snap()
+    bosses.announce(as_bot(w), snap, 5121)
+    bosses.announce(as_bot(w), snap, 1041)        # ids are the map's own
+    assert len(sender.lines) == 2
+
+
+def test_a_lost_link_is_said_not_raised() -> None:
+    from unclefarmer.link import AgentError
+    w, sender = told_walker([4])
+
+    def broken(line: str) -> str:
+        raise AgentError("no game")
+    sender.send = broken   # type: ignore[method-assign]
+    bosses.announce(as_bot(w), worm_snap(), 5121)
+    assert w.lines == ["couldn't tell Team of Death Worm: The game didn't take it: no game"]
+
+
+def test_the_room_choice_reads_safely() -> None:
+    assert bosses.notice_rooms({}) == []
+    assert bosses.notice_rooms({"boss_notice_rooms": "team"}) == []
+    assert bosses.notice_rooms({"boss_notice_rooms": [0, 5, 4, 1]}) == [4, 5, 0]
+
+
+def test_the_farm_and_the_wait_both_tell_of_the_bosses(monkeypatch: pytest.MonkeyPatch) -> None:
+    b = away_bot(monkeypatch)
+    seen: list[int] = []
+    monkeypatch.setattr(farming.bosses, "announce",
+                        stand_in(farming.bosses.announce, lambda bot, snap, map_id: seen.append(map_id)))
+    b.farm_away(5121, 6.0)
+    assert seen and set(seen) == {1041}
+
+
+def test_the_farm_loop_tells_of_the_bosses_before_keeping_away(monkeypatch: pytest.MonkeyPatch) -> None:
+    from test_farming import run_loop
+    quiet(monkeypatch)
+    order: list[str] = []
+    monkeypatch.setattr(farming.keyslots, "refill", stand_in(farming.keyslots.refill, lambda bot: False))
+    monkeypatch.setattr(farming.bosses, "announce",
+                        stand_in(farming.bosses.announce, lambda bot, snap, map_id: order.append("told %d" % map_id)))
+
+    def keep(bot: Any, snap: dict[str, Any], map_id: int, area: Any, done: Any = None, leave: bool = True) -> bool:
+        order.append("keep")
+        return True
+    monkeypatch.setattr(farming.bosses, "keep_away", keep)
+    b = AwayFarm()
+    b.sn = {"self": {"id": ME, "x": 10.0, "y": 10.0}, "entities": []}
+    run_loop(b, passes=1, map_id=1)
+    assert order == ["told 1", "keep"]
+
+
 def test_a_tick_is_not_a_number_of_seconds() -> None:
     assert bosses.walk_offs({"boss_walk_offs": True}) == 3
     assert bosses.away_times({"boss_away_first": True, "boss_away_most": False}) == (60.0, 300.0)

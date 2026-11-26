@@ -4849,6 +4849,22 @@ msgstr "Team tab: likhein ke run khatam hone par team kis ko mile."
 msgid "Teleport to the team leader"
 msgstr "Team leader ke paas teleport karein"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Har nazar aane wale boss ki khabar Gang chat mein dein (English mein)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Har nazar aane wale boss ki khabar Global chat mein dein (English mein; poora server parhta hai)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr ""
+"Har nazar aane wale boss ki khabar International chat mein dein (English mein)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+"Har nazar aane wale boss ki khabar Team chat mein dein (English mein: naam, map, jagah)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Unhein waqt be waqt batayein ke main &ghair hazir hoon"
 
@@ -6780,6 +6796,9 @@ msgstr "{npc} se baat nahi kar sake"
 msgid "couldn't talk to {npc}"
 msgstr "{npc} se baat nahi kar sake"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "{room} ko {boss} ki khabar nahin de sake: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "phenk nahi sake: {list}"
 
@@ -7988,6 +8007,9 @@ msgstr "storehouse mein nahi rakhe gaye (shayad bhar gaya hai): {list}"
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 "{item} storehouse nahi le ja rahe: woh bhara hua hai aur us mein abhi koi {item} nahi"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "{room} ko {boss} ki khabar nahin di: character kisi gang mein nahin"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr "aakhir mein nahin pehne gaye, isi type ke medal ne jagah le li: {names}"
@@ -9679,6 +9701,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "today: aaj ke tamam runs ne jo kuch kamaya us ka total, kitne runs aur minutes ke saath."
+
+msgid "told {rooms}: {line}"
+msgstr "{rooms} ko khabar di: {line}"
 
 msgid "too close to a boss"
 msgstr "boss ke bohat qareeb"

@@ -255,6 +255,7 @@ class FarmingMixin(Parts):
                     continue          # we went to town: the loop travels back first
                 if self._upkeep(map_id, area, only):
                     continue
+                bosses.announce(as_bot(self), snap, map_id)     # a boss seen: the rooms the player ticked
                 if bosses.keep_away(as_bot(self), snap, map_id, area, done):
                     continue
                 if self._side_jobs(snap, map_id, area):
@@ -389,6 +390,7 @@ class FarmingMixin(Parts):
         self.look_after(snap["self"])
         pets.keep_out(as_bot(self))
         pets.look_after(as_bot(self), snap)
+        bosses.announce(as_bot(self), snap, away.dest)
         if bosses.keep_away(as_bot(self), snap, away.dest, None, leave=False):
             return
         if chests.open_nearby(as_bot(self), snap) or corpses.harvest(as_bot(self), snap):

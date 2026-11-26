@@ -14,7 +14,7 @@ from typing import Any, TypedDict, cast
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, keyboard, medals, potions, profilecopy, triggers, xpcard
+from ..engine import bosses, combat, keyboard, medals, potions, profilecopy, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, ask, buttons, enable_label, error, first_selected, group, info,
@@ -1112,6 +1112,13 @@ class AdvancedDialog(Dialog):
                                        p.get("boss_away_most", 300), 10, 7200)
         self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
                                         "are no stronger than the farm's"), p.get("boss_away_farm", True))
+        # one box a chat room (bosses.NOTICE_ROOMS), no shortcut letters: few are left on this page
+        ticked = bosses.notice_rooms(p)
+        self.boss_rooms = [(room, f.check(label, room in ticked)) for room, label in (
+            (4, _("Tell the Team chat of each boss seen (in English: name, map, where)")),
+            (3, _("Tell the Gang chat of each boss seen (in English)")),
+            (5, _("Tell the International chat of each boss seen (in English)")),
+            (0, _("Tell the Global chat of each boss seen (in English; the whole server reads it)")))]
 
         def sync(evt: wx.Event | None = None) -> None:
             on = self.boss_on.GetValue()
@@ -1264,6 +1271,7 @@ class AdvancedDialog(Dialog):
         p["boss_away_first"] = self.boss_away_first.GetValue()
         p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
         p["boss_away_farm"] = self.boss_away_farm.GetValue()
+        p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
         p["open_chests"] = self.open_chests.GetValue()
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0

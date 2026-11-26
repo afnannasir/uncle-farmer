@@ -4787,6 +4787,20 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr "Takım liderine ışınlan"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Görülen her patronu Gang sohbetine bildir (İngilizce)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Görülen her patronu Global sohbetine bildir (İngilizce; tüm sunucu okur)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Görülen her patronu International sohbetine bildir (İngilizce)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr "Görülen her patronu Team sohbetine bildir (İngilizce: ad, harita, yer)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Arada bir bilgisayar başında olmadığımı söyle (&W)"
 
@@ -6664,6 +6678,9 @@ msgstr "{npc} ile konuşulamadı"
 msgid "couldn't talk to {npc}"
 msgstr "{npc} ile konuşulamadı"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "{boss} için {room} bilgilendirilemedi: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "atılamadı: {list}"
 
@@ -7837,6 +7854,9 @@ msgstr "depolanmadı (depo dolu olabilir): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "{item} depoya götürülmüyor: depo dolu ve içinde henüz bundan yok"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "{boss} için {room} bilgilendirilmiyor: karakter hiçbir gang'de değil"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -9498,6 +9518,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "today: Bugünkü tüm çalışmaların kazandıklarının toplamı, çalışma sayısı ve dakikasıyla."
+
+msgid "told {rooms}: {line}"
+msgstr "{rooms} bilgilendirildi: {line}"
 
 msgid "too close to a boss"
 msgstr "bir patrona çok yakın"

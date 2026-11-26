@@ -4679,6 +4679,19 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr ""
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr ""
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr ""
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+
 msgid "Tell them now and then that I'm a&way"
 msgstr ""
 
@@ -6462,6 +6475,9 @@ msgstr ""
 msgid "couldn't talk to {npc}"
 msgstr ""
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr ""
+
 msgid "couldn't throw away: {list}"
 msgstr ""
 
@@ -7598,6 +7614,9 @@ msgid "not stored (the storehouse may be full): {list}"
 msgstr ""
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+
+msgid "not telling {room} of {boss}: the character is in no gang"
 msgstr ""
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
@@ -9197,6 +9216,9 @@ msgstr ""
 
 msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
+msgstr ""
+
+msgid "told {rooms}: {line}"
 msgstr ""
 
 msgid "too close to a boss"

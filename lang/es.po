@@ -4820,6 +4820,21 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr "Teletransportarse al líder del equipo"
 
+msgid "Tell the Gang chat of each boss seen (in English)"
+msgstr "Avisar en el chat Gang de cada jefe visto (en inglés)"
+
+msgid ""
+"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgstr ""
+"Avisar en el chat Global de cada jefe visto (en inglés; lo lee todo el servidor)"
+
+msgid "Tell the International chat of each boss seen (in English)"
+msgstr "Avisar en el chat International de cada jefe visto (en inglés)"
+
+msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgstr ""
+"Avisar en el chat Team de cada jefe visto (en inglés: nombre, mapa, dónde)"
+
 msgid "Tell them now and then that I'm a&way"
 msgstr "Decirles de vez en cuando que estoy ausente (&w)"
 
@@ -6719,6 +6734,9 @@ msgstr "no se pudo hablar con el {npc}"
 msgid "couldn't talk to {npc}"
 msgstr "no se pudo hablar con {npc}"
 
+msgid "couldn't tell {room} of {boss}: {why}"
+msgstr "no se pudo avisar en {room} de {boss}: {why}"
+
 msgid "couldn't throw away: {list}"
 msgstr "no se pudo tirar: {list}"
 
@@ -7910,6 +7928,9 @@ msgstr "no guardado (puede que el almacén esté lleno): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "no llevo {item} al almacén: está lleno y todavía no tiene ninguno"
+
+msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr "sin aviso en {room} de {boss}: el personaje no está en ningún gang"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -9583,6 +9604,9 @@ msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
 "today: todo lo que consiguieron las ejecuciones de hoy, sumado, con cuántas ejecuciones y minutos."
+
+msgid "told {rooms}: {line}"
+msgstr "avisado en {rooms}: {line}"
 
 msgid "too close to a boss"
 msgstr "demasiado cerca de un jefe"

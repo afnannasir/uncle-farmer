@@ -455,6 +455,7 @@ All of this can be set in **Advanced → Fighting**, group **Bosses**:
 - How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
 - The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
 - **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
+- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100". It tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
