@@ -104,6 +104,10 @@ msgstr "&Cueva:"
 msgid "&Change key"
 msgstr "&Cambiar tecla"
 
+msgid ""
+"&Change the talents for farming, at the nearest talent master before the run sets out"
+msgstr ""
+
 msgid "&Character"
 msgstr "Personaje (&C)"
 
@@ -655,6 +659,9 @@ msgstr "Después (&T):"
 msgid "&Throw away:"
 msgstr "&Tirar:"
 
+msgid "&Tick the talents that are on now, in both lists"
+msgstr ""
+
 msgid "&Time (HH:MM, this computer's clock):"
 msgstr ""
 
@@ -877,6 +884,10 @@ msgid "A sound's mute setting must be on or off."
 msgstr "El ajuste de silencio de un sonido debe ser activado o desactivado."
 
 msgid "A spot has 10 patrol points at most."
+msgstr ""
+
+msgid ""
+"A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing changes, so the bot only goes when the talents on aren't the ones ticked."
 msgstr ""
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
@@ -3721,6 +3732,10 @@ msgstr ""
 "Poner las habilidades y objetos necesarios &en teclas vacías (nunca en teclas en uso)"
 
 msgid ""
+"Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
+msgstr ""
+
+msgid ""
 "Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
 msgstr ""
 "¿Volver los ajustes de combate a sus valores por defecto? La pausa entre teclas de ataque, los tiempos y lanzamientos para abandonar un combate, la pulsación de habilidades, el alcance de ataque, la persecución, las teclas de objetivo, el uso de cada habilidad, las lecturas en combate y las casillas de combate de la ventana del personaje. Las teclas, la bolsa, los suministros y todo lo demás quedan igual. No se guarda nada hasta que guardes."
@@ -4603,6 +4618,12 @@ msgstr "Aceptar sus comandos mientras la ventana del juego esté al frente (&w)"
 msgid "Taken out of the storehouse:"
 msgstr "Sacado del almacén:"
 
+msgid "Talents"
+msgstr ""
+
+msgid "Talents to &farm with:"
+msgstr ""
+
 msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr ""
 "Habla con otros jugadores y con el desarrollador en el grupo de Telegram: {link}"
@@ -5021,6 +5042,10 @@ msgid "The strongest one"
 msgstr "La más fuerte"
 
 msgid ""
+"The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+
+msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "La lista de objetos a tirar está vacía. Elige primero qué tirar en Personaje, Bolsa y suministros."
@@ -5180,6 +5205,14 @@ msgstr ""
 msgid "Tick the monsters to fight:"
 msgstr "Marca los monstruos con los que pelear:"
 
+msgid ""
+"Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+
+msgid ""
+"Tick the usual talents on the Talents page, or untick Put the usual talents back."
+msgstr ""
+
 msgid "Time (HH:MM):"
 msgstr "Hora (HH:MM):"
 
@@ -5303,6 +5336,9 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Escribe el nombre de la pandilla cuyos artesanos usar."
+
+msgid "U&sual talents:"
+msgstr ""
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -5760,6 +5796,9 @@ msgstr "una habilidad sin nombre"
 
 msgid "a sub needs a name"
 msgstr "un sub necesita un nombre"
+
+msgid "a talent reset costs {cost} arnebia, there is {have} - nothing changed"
+msgstr ""
 
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
@@ -6326,6 +6365,10 @@ msgstr "no se pudo entrar en la sala secreta"
 msgid "couldn't get there - going to the nearest map without monsters"
 msgstr "no se pudo llegar: voy al mapa sin monstruos más cercano"
 
+msgid ""
+"couldn't get to a talent master ({why}) - farming with the talents as they are"
+msgstr ""
+
 msgid "couldn't get to page {page} of {cat}"
 msgstr ""
 
@@ -6334,6 +6377,10 @@ msgstr "no se pudo llegar al panel {n} con las flechas"
 
 msgid "couldn't get to the bag with the arrow keys"
 msgstr "no se pudo llegar a la bolsa con las flechas"
+
+msgid ""
+"couldn't get to the talent master ({why}) - the talents stay as they are"
+msgstr ""
 
 msgid "couldn't get to {name} - next one"
 msgstr "no se pudo llegar a {name}: pasando al siguiente"
@@ -6438,6 +6485,9 @@ msgstr "no se pudo guardar {item}: {why}"
 
 msgid "couldn't switch the target key to NPCs"
 msgstr "no se pudo cambiar la tecla de objetivo a NPC"
+
+msgid "couldn't switch {talent} in the Reset Talents menu - nothing changed"
+msgstr ""
 
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "no se pudo sacar {item} del almacén: {why}"
@@ -7473,12 +7523,19 @@ msgstr "ninguna de las entradas marcadas en {map} es el círculo de {name}"
 msgid "none of the shops that sell {item} answered"
 msgstr "ninguna de las tiendas que venden {item} respondió"
 
+msgid ""
+"none of the talents ticked for farming is learned by this character - they stay as they are"
+msgstr ""
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "ninguna de las tarjetas de experiencia marcadas está en la bolsa: sigo farmeando sin ninguna"
 
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr "ninguno de los {n} lugares que podrían hacerlo es accesible desde {map}"
+
+msgid "none of these talents is in the Reset Talents menu - nothing changed"
+msgstr ""
 
 msgid "normal"
 msgstr "normal"
@@ -7574,6 +7631,9 @@ msgstr "todavía no estoy en {cave}: lo intento de nuevo ({n} de {all})"
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "aún no se conoce (el bot lo lee de la hoja del personaje al iniciar)"
+
+msgid "not learned by this character, left out: {names}"
+msgstr ""
 
 msgid "not reached on foot"
 msgstr "no se pudo llegar a pie"
@@ -7856,6 +7916,12 @@ msgstr "se guardaron {n} {item} en el almacén"
 
 msgid "put {pet} away"
 msgstr "guardar a {pet}"
+
+msgid "putting on the talents for farming: {names}"
+msgstr ""
+
+msgid "putting the usual talents back on: {names}"
+msgstr ""
 
 msgid "quick"
 msgstr "rápido"
@@ -8265,6 +8331,9 @@ msgstr "explorando {map}: {n} paradas"
 msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr "llevando a {pet} a las mazmorras (Herramientas, Mazmorras)"
 
+msgid "talents set: {names} ({cost} arnebia)"
+msgstr ""
+
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr "¿hablar con quién? escribe: talk Cable Car manager"
 
@@ -8450,6 +8519,9 @@ msgstr ""
 
 msgid ""
 "the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
+msgstr ""
+
+msgid "the Reset Talents menu didn't open"
 msgstr ""
 
 msgid "the Secret room Manager summoned no assistant"
@@ -8656,6 +8728,9 @@ msgstr "el juego no aceptó la petición directa de descartar: {why}"
 msgid "the game didn't ask to confirm"
 msgstr "el juego no pidió confirmación"
 
+msgid "the game didn't ask to confirm the talent reset - nothing changed"
+msgstr ""
+
 msgid "the game didn't offer to agree"
 msgstr "el juego no ofreció aceptar"
 
@@ -8734,6 +8809,9 @@ msgid "the game refused the login request"
 msgstr "el juego rechazó la petición de inicio de sesión"
 
 msgid "the game said nothing - look in the bag"
+msgstr ""
+
+msgid "the game said: not enough talent points - nothing changed"
 msgstr ""
 
 msgid "the game said: {lines}"
@@ -9023,6 +9101,18 @@ msgstr ""
 msgid "the storehouse, then the Shard Market"
 msgstr "el almacén y luego el Mercado de fragmentos"
 
+msgid "the talent master's menu has no Reset Talents"
+msgstr ""
+
+msgid "the talents can't be read - they stay as they are"
+msgstr ""
+
+msgid "the talents didn't change after the reset"
+msgstr ""
+
+msgid "the talents for farming are already on"
+msgstr ""
+
 msgid "the target key was on {mode} - back to {want}"
 msgstr "la tecla de objetivo estaba en {mode}: vuelvo a {want}"
 
@@ -9044,6 +9134,10 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "el nivel máximo: nada que perder"
+
+msgid ""
+"the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
+msgstr ""
 
 msgid "the village at {x},{y} on {map}"
 msgstr "la aldea en {x},{y} de {map}"
@@ -9123,6 +9217,10 @@ msgstr "no hay solicitudes de equipo en espera"
 
 msgid "there's no {item} in the bag"
 msgstr "no hay {item} en la bolsa"
+
+msgid ""
+"these talents take {need} talent points, the character has {have} - nothing changed"
+msgstr ""
 
 msgid "this character can't publish that: it takes a gang elder's rights"
 msgstr ""
@@ -10260,6 +10358,9 @@ msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 "{state}. IDs silenciados activos: {mute}. Observados: {observed}; bloqueados: {dropped}; silenciados en vivo: {live}; no admitidos: {unsupported}."
+
+msgid "{talent} (on now)"
+msgstr ""
 
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"

@@ -104,6 +104,11 @@ msgstr "&Ghaar:"
 msgid "&Change key"
 msgstr "&Key tabdeel karein"
 
+msgid ""
+"&Change the talents for farming, at the nearest talent master before the run sets out"
+msgstr ""
+"Farming ke liye talents &badlein, run shuru hone se pehle qareeb tareen talent master ke paas"
+
 msgid "&Character"
 msgstr "&Kirdaar"
 
@@ -656,6 +661,9 @@ msgstr "&Phir:"
 msgid "&Throw away:"
 msgstr "&Phenkein:"
 
+msgid "&Tick the talents that are on now, in both lists"
+msgstr "Abhi on talents dono lists mein &tick karein"
+
 msgid "&Time (HH:MM, this computer's clock):"
 msgstr "&Waqt (HH:MM, is computer ki ghari):"
 
@@ -879,6 +887,11 @@ msgstr "Sound ka khamosh intikhab on ya off hona chahiye."
 
 msgid "A spot has 10 patrol points at most."
 msgstr "Ek spot mein zyada se zyada 10 patrol points hote hain."
+
+msgid ""
+"A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing changes, so the bot only goes when the talents on aren't the ones ticked."
+msgstr ""
+"Talent master (shehar ka officer, jaise Chancellor Bren ya Guard Captain Suke) talents badal sakta hai. Har reset ki qeemat on kiye gaye talents ke har talent point par 200 arnebia hai, chahe kuch na badle, is liye bot sirf tab jata hai jab on talents tick kiye gaye talents nahin hote."
 
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Team dungeon: game 2 se 3 khilariyon ke group andar aane deta hai."
@@ -3736,6 +3749,11 @@ msgstr ""
 "Zaroori skills aur cheezein &khali keys par rakhein (kabhi istemal wali keys par nahi)"
 
 msgid ""
+"Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
+msgstr ""
+"Jab run kisi talent master wale shehar mein khatam ho to &aam talents wapas lagayein (is ke liye safar nahin)"
+
+msgid ""
 "Put the fighting settings back to their defaults? The pause between attack keys, the times and casts to give up a fight, the skill pressing, the attack range, the chase, the target keys, each skill's use, the fight readings, and the fighting boxes of the character window. Keys, bag, supplies and everything else stay as they are. Nothing is kept until you save."
 msgstr ""
 "Fighting settings ko default par wapas karein? Attack keys ke beech ka pause, fight chhorne ke waqt aur casts, skill dabana, attack range, chase, target keys, har skill ka use, fight readings, aur character window ke fighting boxes. Keys, bag, supplies aur baaki sab waise hi rahenge. Mahfooz karne tak kuch nahi rakha jata."
@@ -4622,6 +4640,12 @@ msgstr "Game ki &window saamne ho tab bhi unke commands lein"
 msgid "Taken out of the storehouse:"
 msgstr "Storehouse se nikale gaye:"
 
+msgid "Talents"
+msgstr "Talents"
+
+msgid "Talents to &farm with:"
+msgstr "&Farming ke talents:"
+
 msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr "Doosre players aur developer se Telegram group mein baat karein: {link}"
 
@@ -5042,6 +5066,11 @@ msgid "The strongest one"
 msgstr "Sab se taqatwar"
 
 msgid ""
+"The talents aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"Talents abhi maloom nahin: game mein is character se log in karein aur Overview page par Scan now dabayein."
+
+msgid ""
 "The throw-away list is empty. Choose what to throw away in Character, Bag and supplies first."
 msgstr ""
 "Phenkne wali list khaali hai. Pehle Kirdaar, Basta aur supplies mein chunein ke kya phenkna hai."
@@ -5202,6 +5231,16 @@ msgstr "Pehle Nataij mein khareedne wale lots par nishan lagayein (Space)."
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
 
+msgid ""
+"Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+"Talents page par farming ke talents tick karein, ya Farming ke liye talents badlein ko untick karein."
+
+msgid ""
+"Tick the usual talents on the Talents page, or untick Put the usual talents back."
+msgstr ""
+"Talents page par aam talents tick karein, ya Aam talents wapas lagayein ko untick karein."
+
 msgid "Time (HH:MM):"
 msgstr "Waqt (HH:MM):"
 
@@ -5324,6 +5363,9 @@ msgstr "Bechne wale ki ek ya zyada IDs likhein."
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
+
+msgid "U&sual talents:"
+msgstr "Aam talent&s:"
 
 msgid "Uncle Farmer"
 msgstr "Uncle Farmer"
@@ -5786,6 +5828,10 @@ msgstr "baghair naam ki skill"
 
 msgid "a sub needs a name"
 msgstr "sub ko naam chahiye"
+
+msgid "a talent reset costs {cost} arnebia, there is {have} - nothing changed"
+msgstr ""
+"talent reset ki qeemat {cost} arnebia hai, paas {have} hain - kuch nahin badla"
 
 msgid ""
 "a text box is open in the game (chat?) - the game ignores keys until you close it with Escape"
@@ -6362,6 +6408,11 @@ msgid "couldn't get there - going to the nearest map without monsters"
 msgstr ""
 "wahan nahi pohanch sake - sab se qareeb monster-free map par ja rahe hain"
 
+msgid ""
+"couldn't get to a talent master ({why}) - farming with the talents as they are"
+msgstr ""
+"kisi talent master tak nahin pahunch sake ({why}) - jaise talents hain unhi ke saath farming"
+
 msgid "couldn't get to page {page} of {cat}"
 msgstr "{cat} ke safha {page} tak nahi pohanch saka"
 
@@ -6370,6 +6421,11 @@ msgstr "arrow keys se panel {n} tak nahi pohanch sake"
 
 msgid "couldn't get to the bag with the arrow keys"
 msgstr "arrow keys se basta tak nahi pohanch sake"
+
+msgid ""
+"couldn't get to the talent master ({why}) - the talents stay as they are"
+msgstr ""
+"talent master tak nahin pahunch sake ({why}) - talents jaise hain waise rahenge"
 
 msgid "couldn't get to {name} - next one"
 msgstr "{name} tak nahi pohanch sake - agla"
@@ -6474,6 +6530,9 @@ msgstr "{item} store nahi kar sake: {why}"
 
 msgid "couldn't switch the target key to NPCs"
 msgstr "target key ko NPCs par switch nahi kar sake"
+
+msgid "couldn't switch {talent} in the Reset Talents menu - nothing changed"
+msgstr "Reset Talents menu mein {talent} badal nahin saka - kuch nahin badla"
 
 msgid "couldn't take {item} out of the storehouse: {why}"
 msgstr "storehouse se {item} nahi nikal sake: {why}"
@@ -7523,6 +7582,11 @@ msgstr "{map} par dikhaye gaye darwazon mein se koi bhi {name} circle nahi hai"
 msgid "none of the shops that sell {item} answered"
 msgstr "{item} bechne wali kisi dukaan ne jawab nahi diya"
 
+msgid ""
+"none of the talents ticked for farming is learned by this character - they stay as they are"
+msgstr ""
+"farming ke liye tick kiya gaya koi talent is character ne nahin seekha - talents jaise hain waise rahenge"
+
 msgid "none of the ticked experience cards in the bag - farming on without one"
 msgstr ""
 "tick kiye gaye experience cards mein se koi bag mein nahi - card ke baghair farming jaari"
@@ -7530,6 +7594,9 @@ msgstr ""
 msgid "none of the {n} places that could do it can be reached from {map}"
 msgstr ""
 "yeh kaam karne wali {n} jagahon mein se koi bhi {map} se nahi pohanch sakti"
+
+msgid "none of these talents is in the Reset Talents menu - nothing changed"
+msgstr "in mein se koi talent Reset Talents menu mein nahin - kuch nahin badla"
 
 msgid "normal"
 msgstr "normal"
@@ -7624,6 +7691,9 @@ msgstr "abhi {cave} mein nahi - dobara koshish ({n} / {all})"
 msgid ""
 "not known yet (the bot reads it from the character sheet when it starts)"
 msgstr "abhi maloom nahi (bot shuru hote waqt character sheet se parhta hai)"
+
+msgid "not learned by this character, left out: {names}"
+msgstr "is character ne nahin seekhe, chhod diye: {names}"
 
 msgid "not reached on foot"
 msgstr "paidal nahi pohanch sake"
@@ -7906,6 +7976,12 @@ msgstr "storehouse mein {n} {item} daalein"
 
 msgid "put {pet} away"
 msgstr "{pet} ko wapas bhej diya"
+
+msgid "putting on the talents for farming: {names}"
+msgstr "farming ke talents lagaye ja rahe hain: {names}"
+
+msgid "putting the usual talents back on: {names}"
+msgstr "aam talents wapas lagaye ja rahe hain: {names}"
 
 msgid "quick"
 msgstr "tez"
@@ -8318,6 +8394,9 @@ msgstr "{map} ka survey: {n} stops"
 msgid "taking {pet} into the dungeons (Tools, Dungeons)"
 msgstr "{pet} ko dungeons mein le ja raha hai (Tools, Dungeons)"
 
+msgid "talents set: {names} ({cost} arnebia)"
+msgstr "talents lag gaye: {names} ({cost} arnebia)"
+
 msgid "talk to whom? write: talk Cable Car manager"
 msgstr "kis se baat karein? likhein: talk Cable Car manager"
 
@@ -8506,6 +8585,9 @@ msgid ""
 "the Potion Maker is done: {made} batches made, {fused} potions fused, {put} into the storehouse"
 msgstr ""
 "Potion Maker mukammal: {made} batch banaye, {fused} potions fuse kiye, {put} storehouse mein"
+
+msgid "the Reset Talents menu didn't open"
+msgstr "Reset Talents menu nahin khula"
 
 msgid "the Secret room Manager summoned no assistant"
 msgstr "Secret room Manager ne koi madadgar nahi bulaya"
@@ -8715,6 +8797,9 @@ msgstr "game ne seedha discard request qubool nahin ki: {why}"
 msgid "the game didn't ask to confirm"
 msgstr "game ne confirm karne ko nahi kaha"
 
+msgid "the game didn't ask to confirm the talent reset - nothing changed"
+msgstr "game ne talent reset ki tasdeeq nahin maangi - kuch nahin badla"
+
 msgid "the game didn't offer to agree"
 msgstr "game ne agree karne ki peshkash nahi ki"
 
@@ -8794,6 +8879,9 @@ msgstr "game ne login darkhwast se inkar kiya"
 
 msgid "the game said nothing - look in the bag"
 msgstr "game ne kuch nahi kaha - baste mein dekhein"
+
+msgid "the game said: not enough talent points - nothing changed"
+msgstr "game ne kaha: not enough talent points - kuch nahin badla"
 
 msgid "the game said: {lines}"
 msgstr "game ne kaha: {lines}"
@@ -9085,6 +9173,18 @@ msgstr ""
 msgid "the storehouse, then the Shard Market"
 msgstr "storehouse, phir Shard Market"
 
+msgid "the talent master's menu has no Reset Talents"
+msgstr "talent master ke menu mein Reset Talents nahin hai"
+
+msgid "the talents can't be read - they stay as they are"
+msgstr "talents parhe nahin ja sakte - jaise hain waise rahenge"
+
+msgid "the talents didn't change after the reset"
+msgstr "reset ke baad talents nahin badle"
+
+msgid "the talents for farming are already on"
+msgstr "farming ke talents pehle se lage hue hain"
+
 msgid "the target key was on {mode} - back to {want}"
 msgstr "target key {mode} par thi - {want} par wapas"
 
@@ -9106,6 +9206,11 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
+
+msgid ""
+"the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
+msgstr ""
+"aam talents wapas nahin lage: run kisi talent master wale shehar mein khatam nahin hua (agla run jo wahan khatam ho unhein wapas lagayega)"
 
 msgid "the village at {x},{y} on {map}"
 msgstr "{map} par {x},{y} wala gaon"
@@ -9186,6 +9291,11 @@ msgstr "team ki koi application muntazir nahi"
 
 msgid "there's no {item} in the bag"
 msgstr "baste mein {item} nahi hai"
+
+msgid ""
+"these talents take {need} talent points, the character has {have} - nothing changed"
+msgstr ""
+"in talents ko {need} talent points chahiye, character ke paas {have} hain - kuch nahin badla"
 
 msgid "this character can't publish that: it takes a gang elder's rights"
 msgstr "yeh character publish nahi kar sakta: gang elder ke rights chahiye"
@@ -10342,6 +10452,9 @@ msgid ""
 "{state}. Active mute IDs: {mute}. Observed: {observed}; blocked: {dropped}; live muted: {live}; unsupported: {unsupported}."
 msgstr ""
 "{state}. Faal khamosh IDs: {mute}. Dekhe gaye: {observed}; roke gaye: {dropped}; live khamosh: {live}; gair-mahfooz: {unsupported}."
+
+msgid "{talent} (on now)"
+msgstr "{talent} (abhi on)"
 
 msgid "{tool} - {name}"
 msgstr "{tool} - {name}"

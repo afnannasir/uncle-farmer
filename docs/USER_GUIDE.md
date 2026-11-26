@@ -503,6 +503,35 @@ Every character has its own settings.
 
 When Uncle Farmer encounters a character for the first time, it creates that character's settings using information from its initial scan.
 
+### Talents for farming
+
+The **Talents** page of a character's settings lets the bot farm with other talents than the usual ones,
+for a character that plays with another talent tree the rest of the time. Nothing changes until you tick
+**Change the talents for farming**.
+
+- **Talents to farm with:** the learned talents, from the last scan; "(on now)" marks the ones on. Tick the
+  ones to farm with.
+- **Put the usual talents back when the run ends in a town with a talent master:** and tick them in
+  **Usual talents**.
+- **Tick the talents that are on now, in both lists** fills both lists from the last scan (press **Scan now**
+  on the Overview page first if the talents changed since).
+
+Before a run sets out, the bot reads the talents that are on, which costs nothing. When they aren't the
+ones ticked, it goes to the nearest talent master, there and back to the first farming map, even when the
+run starts on that map. The talent masters are the city officers, such as Chancellor Bren in Giant rock
+City or Guard Captain Suke in Tulip City. There it chooses **Reset Talents**, switches only the talents
+that differ, then **submit** and **Confirm**, and checks that the talents are on. It says what the reset cost.
+
+The game charges 200 arnebia for every talent point the talents put on take, at every reset, even one
+that changes nothing. A reset of 183 points costs 36,600 arnebia. So the bot never resets talents that are
+already right. Before submitting, it also checks that the character has the talent points and the
+arnebia for them, and changes nothing otherwise. A ticked talent the character hasn't learned is left
+out. If no talent master can be reached, the run farms with the talents as they are.
+
+When a farming run ends by itself in a town whose talent master is on that map, after the After farming
+list, the bot puts the usual talents back. It never makes a trip just for that: a run that ends elsewhere
+leaves them, and says so. The next run puts the farming talents on anyway.
+
 ## The bag
 
 Open **Character → Bag and supplies (Ctrl+B)** to manage the items your character collects and the supplies it needs.

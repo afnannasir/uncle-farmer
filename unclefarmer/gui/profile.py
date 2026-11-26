@@ -223,6 +223,7 @@ class ProfileDialog(Dialog):
         self.fighting_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
+        self.talents_page(nb)
         panel, box = page(nb, _("Team"))
         self.team_ui = team_page(panel, box, self.p)
         self.triggers_page(nb)
@@ -361,6 +362,76 @@ class ProfileDialog(Dialog):
         box.Add(f.grid, 0, wx.TOP, 10)
         self.pet_care = pet_care(panel, box, p)
 
+    def talents_page(self, nb: wx.Notebook) -> None:
+        """Other talents for farming, put on at a talent master, and the usual ones back at the end."""
+        p = self.p
+        panel, box = page(nb, _("Talents"))
+        note = wx.StaticText(panel, label=_(
+            "A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. "
+            "Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing "
+            "changes, so the bot only goes when the talents on aren't the ones ticked."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.BOTTOM, 8)
+        f = Form(panel)
+        self.farm_talents = f.check(_("&Change the talents for farming, at the nearest talent master before the "
+                                      "run sets out"), p.get("farm_talents", False))
+        box.Add(f.grid, 0, wx.BOTTOM, 6)
+        self.farm_talent_list = labeled(panel, box, _("Talents to &farm with:"),
+                                        lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        f = Form(panel)
+        self.talents_back = f.check(_("Put the &usual talents back when the run ends in a town with a talent "
+                                      "master (no trip for it)"), p.get("talents_back", False))
+        box.Add(f.grid, 0, wx.TOP | wx.BOTTOM, 6)
+        self.usual_talent_list = labeled(panel, box, _("U&sual talents:"),
+                                         lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        buttons(panel, box, (_("&Tick the talents that are on now, in both lists"), self.on_talents_now))
+        self.talent_names: list[str] = []
+
+        def enable(_e: object = None) -> None:
+            on = self.farm_talents.GetValue()
+            self.farm_talent_list.Enable(on)
+            self.talents_back.Enable(on)
+            self.usual_talent_list.Enable(on and self.talents_back.GetValue())
+        self.farm_talents.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.talents_back.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.enable_talents = enable
+
+    def fill_talents(self) -> None:
+        """The learned talents (the last scan, and any ticked before) in both lists, each one's tick
+        as saved; "(on now)" after those the last scan saw on."""
+        p = self.p
+        s: dict[str, Any] = p.get("scan") or {}
+        learned: list[str] = list(s.get("talents") or [])
+        on: set[str] = set(s.get("active_talents") or [])
+        if self.talent_names:            # Scan now again: the ticks made since the window opened stay
+            farm, usual = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
+        else:
+            farm = list(p.get("farm_talent_list") or [])
+            usual = list(p.get("usual_talent_list") or [])
+        names = list(dict.fromkeys(learned + farm + usual))
+        self.talent_names = names
+        labels = [_("{talent} (on now)", talent=n) if n in on else n for n in names]
+        for box, ticked in ((self.farm_talent_list, farm), (self.usual_talent_list, usual)):
+            box.Set(labels)
+            for i, n in enumerate(names):
+                box.Check(i, n in ticked)
+        self.enable_talents()
+
+    def on_talents_now(self, _evt: object = None) -> None:
+        """Both lists ticked as the talents on now, from the last scan (Scan now first for a fresh one)."""
+        s: dict[str, Any] = self.p.get("scan") or {}
+        on: set[str] = set(s.get("active_talents") or [])
+        if not s.get("talents"):
+            error(self, _("The talents aren't known yet: log in to this character in the game and press Scan now "
+                          "on the Overview page."))
+            return
+        for box in (self.farm_talent_list, self.usual_talent_list):
+            for i, n in enumerate(self.talent_names):
+                box.Check(i, n in on)
+
+    def ticked_talents(self, box: wx.CheckListBox) -> list[str]:
+        return [n for i, n in enumerate(self.talent_names) if box.IsChecked(i)]
+
     def triggers_page(self, nb: wx.Notebook) -> None:
         """Independent, ordered preparation and completion sequences."""
         panel, box = page(nb, _("Triggers"))
@@ -433,6 +504,7 @@ class ProfileDialog(Dialog):
         self.show_pets()
         self.fill_potions()
         self.fill_xp_cards()
+        self.fill_talents()
 
     def fill_xp_cards(self) -> None:
         """One tick per kind of experience card, weakest first, each with what the last scan saw of
@@ -671,6 +743,17 @@ class ProfileDialog(Dialog):
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()
+        farm_talents, usual_talents = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
+        if self.farm_talents.GetValue() and not farm_talents:
+            error(self, _("Tick the talents to farm with on the Talents page, or untick Change the talents for farming."))
+            return
+        if self.farm_talents.GetValue() and self.talents_back.GetValue() and not usual_talents:
+            error(self, _("Tick the usual talents on the Talents page, or untick Put the usual talents back."))
+            return
+        p["farm_talents"] = self.farm_talents.GetValue()
+        p["farm_talent_list"] = farm_talents
+        p["talents_back"] = self.talents_back.GetValue()
+        p["usual_talent_list"] = usual_talents
         try:
             save_pet_care(p, self.pet_care)
             save_team(p, self.team_ui)

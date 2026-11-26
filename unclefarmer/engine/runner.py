@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyboard, keyslots, resume, teamlead, triggers, xpcard
+from . import chores, keyboard, keyslots, resume, talents, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken, GameLost, WrongCharacter
 from .botparts.parts import Sighting, Where
@@ -99,6 +99,7 @@ class Run(threading.Thread):
         self.script: Runner | None = None    # the plan or script whose place is kept
         self.place_lock = threading.Lock()
         self.place_done = False      # the run's end has decided about its place: no more saves
+        self.talents_back_done = False   # the usual talents were put back (or tried): once a run
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -203,7 +204,10 @@ class Run(threading.Thread):
         finally:
             self._paused_game_lost()
             try:
-                self._after_farming()
+                try:
+                    self._after_farming()
+                finally:
+                    self._talents_back()
             except triggers.TriggerFailed as e:
                 # an After step that had to work didn't: said and recorded, but farming did end by
                 # itself, so the after-stop action (close the game, shut the PC down) still runs
@@ -492,6 +496,7 @@ class Run(threading.Thread):
                 teamlead.at_start(bot)         # out of another's team, into ours (the Team tab)
                 if not self._on_the_farm(bot, script) and not self._carried_on_past_before():
                     self._before_farming()
+                self._farming_talents(bot, script)
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
@@ -573,6 +578,34 @@ class Run(threading.Thread):
         bot.log(_("already on {map}, where this run farms first - the Before farming list is skipped",
                   map=atlas.label(here)))
         return True
+
+    @staticmethod
+    def _farming_talents(bot: Bot, script: Runner) -> None:
+        """Character settings, Talents: the talents for farming on before the run sets out - a trip to
+        the nearest talent master, there and back to the first farming map, even from that map (a run
+        that farmed with the wrong ones until its next town trip had them wrong all night)."""
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if not p.get("farm_talents", False):
+            return
+        first = triggers.first_farm_map(script.main, script.subs)
+        here = bot.map_id()
+        farm = here if first in (None, triggers.HERE) else first
+        talents.for_farming(bot, back_to=(farm, None) if farm != here else None)
+
+    def _talents_back(self) -> None:
+        """Character settings, Talents: the usual talents back on when farming ended by itself in a
+        town with a talent master (talents.put_back), after the After farming list. Once a run."""
+        bot = self.bot
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if (getattr(self, "talents_back_done", False) or bot is None or self.walk or not self.ended_by_itself
+                or not self.farmed() or self.stop_event.is_set() or not p.get("farm_talents", False)
+                or not p.get("talents_back", False) or self._dead(bot)):
+            return
+        self.talents_back_done = True
+        try:
+            talents.put_back(bot)
+        finally:
+            self._off_again(bot)
 
     def _before_farming(self) -> None:
         """Run the saved preparation sequence once. An ordinary unchecked failure is logged;

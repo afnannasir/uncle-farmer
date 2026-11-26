@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+**Talents for farming** (untested in game: the tests use a pretend talent master; the menu was read live)
+
+- Character settings has a Talents page: **Change the talents for farming** (off by default), the talents
+  to farm with, and **Put the usual talents back when the run ends in a town with a talent master**,
+  with the usual ones. A button ticks the talents that are on now in both lists.
+- Before a run sets out, the talents on are read from the game. Only when they differ does the bot go to
+  the nearest talent master (a city officer, such as Chancellor Bren or Guard Captain Suke), there and
+  back to the first farming map. There it switches only the talents that differ in Reset Talents, submits,
+  confirms, and checks the result. A reset costs 200 arnebia for every talent point the talents put on
+  take, even when nothing changes, so talents that are already right are never reset. Too few talent
+  points or arnebia changes nothing, and so does a talent master that can't be reached.
+- When a farming run ends by itself in a town with a talent master, the usual talents go back on, after
+  the After farming list. There is no trip for that.
+
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 
 - A run or a tool that started inside a gang base, a secret room or a dungeon, before the bot had seen
