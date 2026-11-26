@@ -344,3 +344,41 @@ def test_the_market_window_of_another_character_is_closed_and_a_new_one_opened(m
     f.selected_profile = returning(BOBK)      # Switch account on that game
     main.MainFrame.open_market(f)
     assert closed == [HERO] and windows[1].profile == BOBK
+
+
+def test_the_daily_chores_window_keeps_the_taken_highlands_tick(app: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    settings.save_profile(HERO, {"chores": {"construction": 2}})
+    parent = wx.Frame(None)
+    try:
+        d = chores_gui.ChoresDialog(parent, HERO)
+        assert d.build_highlands.GetValue() and not d.build_taken.GetValue()      # off by default
+        d.build_taken.SetValue(True)
+        ended: list[int] = []
+        monkeypatch.setattr(d, "EndModal", ended.append)
+        d.done(wx.ID_OK)
+        d.Destroy()
+        assert ended == [wx.ID_OK]
+        saved = settings.load_profile(HERO)["chores"]
+        assert saved["build_taken_highlands"] is True and saved["construction"] == 2
+        again = chores_gui.ChoresDialog(parent, HERO)
+        assert again.build_taken.GetValue()
+        again.Destroy()
+    finally:
+        parent.Destroy()
+
+
+def test_the_daily_chores_gang_page_has_no_repeated_alt_letter(app: Any) -> None:
+    """The Gang page's fields and the bottom buttons (Check only, Start) are all in view at once."""
+    parent = wx.Frame(None)
+    try:
+        d = chores_gui.ChoresDialog(parent, HERO)
+        gang = [d.donation, d.construction, d.build_highlands, d.build_taken, d.build_cannon, d.build_supply,
+                d.build_posts, d.feed, d.keep_arnebia]
+        labels = [w.GetLabel() for w in gang if isinstance(w, wx.CheckBox)]
+        labels += [w.GetLabel() for w in d.GetChildren() if isinstance(w, wx.Button)]
+        labels += [w.GetLabel() for w in gang[0].GetParent().GetChildren() if isinstance(w, wx.StaticText)]
+        letters = [label[label.index("&") + 1].lower() for label in labels if "&" in label]
+        assert len(letters) == len(set(letters)), letters
+        d.Destroy()
+    finally:
+        parent.Destroy()

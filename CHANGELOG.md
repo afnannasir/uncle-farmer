@@ -23,6 +23,8 @@
   It is off by default. It needs "Repair our gang's highlands" ticked too.
 - After the last highland, the bot no longer goes back to the highland list just to find nothing left.
   This happened when a repair left a build unused, for example when only the wall needed fixing.
+- The "Construction builds a day" field now uses Alt+B. Before, it shared Alt+C with the
+  "Check only" button, so Alt+C could not press the button.
 - Not yet tested in the game.
 
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)

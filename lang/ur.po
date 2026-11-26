@@ -134,11 +134,6 @@ msgstr "Game khud jo windows kholta hai unhein &band karein"
 msgid "&Commands for trusted players"
 msgstr "&Trusted players ke commands"
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-"&Construction builds roz (game 2 deta hai; muft, har aik contribution aur arnebia deti hai):"
-
 msgid "&Copy the address"
 msgstr "Pata &copy karein"
 
@@ -1511,6 +1506,10 @@ msgstr "Jura hua"
 
 msgid "Connecting..."
 msgstr "Jura ja raha hai..."
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
+msgstr ""
 
 msgid "Construction &scanner"
 msgstr "Construction &scanner"
@@ -10431,6 +10430,11 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
+
+#~ msgid ""
+#~ "&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
+#~ msgstr ""
+#~ "&Construction builds roz (game 2 deta hai; muft, har aik contribution aur arnebia deti hai):"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Naam ya id (comma se alag):"

@@ -135,11 +135,6 @@ msgstr "Oyunun kendi açtığı pen&cereleri kapat"
 msgid "&Commands for trusted players"
 msgstr "Güvenilir oyun&cular için komutlar"
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-"Günlük inşaat sayısı (oyun 2'ye izin verir; ü&cretsizdir, her biri katkı ve arnebia kazandırır):"
-
 msgid "&Copy the address"
 msgstr "Adresi kopyala (&C)"
 
@@ -1499,6 +1494,10 @@ msgstr "Bağlandı"
 
 msgid "Connecting..."
 msgstr "Bağlanıyor..."
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
+msgstr ""
 
 msgid "Construction &scanner"
 msgstr ""
@@ -10259,6 +10258,11 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
+
+#~ msgid ""
+#~ "&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
+#~ msgstr ""
+#~ "Günlük inşaat sayısı (oyun 2'ye izin verir; ü&cretsizdir, her biri katkı ve arnebia kazandırır):"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"

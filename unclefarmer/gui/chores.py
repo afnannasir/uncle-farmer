@@ -63,7 +63,7 @@ class ChoresDialog(Dialog):
         f = group(panel, box, _("Inner hall"))
         self.donation = f.choice(_("&Donation, once a day:"), donation_names(),
                                  DONATIONS.index(c["donation"]) if c["donation"] in DONATIONS else 0)
-        self.construction = f.number(_("&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"),
+        self.construction = f.number(_("Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"),
                                      min(int(c["construction"] or 0), 2), 0, 2)
         self.build_highlands = f.check(_("Repair our gang's &highlands (first what is under 100%, what is at 100% last)"),
                                        c["build_highlands"])

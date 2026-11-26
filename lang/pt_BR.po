@@ -134,11 +134,6 @@ msgstr "&Fechar janelas abertas automaticamente pelo jogo"
 msgid "&Commands for trusted players"
 msgstr "&Comandos para jogadores confiáveis"
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-"&Construções por dia (o jogo permite 2; gratuitas, cada uma rende contribuição e arnebia):"
-
 msgid "&Copy the address"
 msgstr "&Copiar o endereço"
 
@@ -1514,6 +1509,10 @@ msgstr "Conectado"
 
 msgid "Connecting..."
 msgstr "Conectando..."
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
+msgstr ""
 
 msgid "Construction &scanner"
 msgstr "&Scanner de construções"
@@ -10406,6 +10405,11 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} por {h} casas, {n} saídas."
+
+#~ msgid ""
+#~ "&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
+#~ msgstr ""
+#~ "&Construções por dia (o jogo permite 2; gratuitas, cada uma rende contribuição e arnebia):"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Nomes ou IDs (separados por vírgulas):"

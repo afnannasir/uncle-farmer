@@ -134,10 +134,6 @@ msgstr ""
 msgid "&Commands for trusted players"
 msgstr ""
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-
 msgid "&Copy the address"
 msgstr ""
 
@@ -1477,6 +1473,10 @@ msgid "Connected"
 msgstr ""
 
 msgid "Connecting..."
+msgstr ""
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
 msgstr ""
 
 msgid "Construction &scanner"
