@@ -502,6 +502,26 @@ def test_a_highland_taken_from_another_gang_counts_only_when_asked(world: type[G
     assert g.chosen[-1] == "Simgang Gang's Highland 208"
 
 
+def test_the_whole_list_is_told_only_when_its_last_page_was_read(world: type[Game]) -> None:
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 41: {TURRET: 90.0, WALL: 90.0}})
+    whole: set[int] = set()
+    assert chores.next_highland(as_bot(g), set(), whole=whole) == 38
+    assert whole == {38, 41}                               # one page: every highland is known
+
+
+def test_a_list_of_two_pages_is_whole_only_from_its_last_page(world: type[Game]) -> None:
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 41: {TURRET: 90.0, WALL: 90.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("next page: 2", "more")]
+    g.pages["more"] = [pages[1]]
+    whole: set[int] = {99}
+    assert chores.next_highland(as_bot(g), set(), whole=whole) == 38
+    assert whole == set()                                  # page 2 unread: not known yet
+    g.mid, g.view = INNER, list(g.hall_view)
+    assert chores.next_highland(as_bot(g), {38}, whole=whole) == 41
+    assert whole == {38, 41}
+
 def test_repairs_leave_highlands_taken_from_other_gangs_alone(world: type[Game]) -> None:
     g, repairs = highland_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 208: {TURRET: 50.0, WALL: 60.0}})
     pages = g.pages["occupied"]

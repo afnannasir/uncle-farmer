@@ -215,6 +215,8 @@ class ConstructionScanDialog(Dialog):
         app = settings.load_app()
         self.taken = form.check(_("Include highlands taken from other &gangs"), app.get("construction_taken", False))
         self.taken.Bind(wx.EVT_CHECKBOX, self.on_taken)
+        self.first = form.check(_("Scan and list &highlands first"), app.get("construction_highlands_first", False))
+        self.first.Bind(wx.EVT_CHECKBOX, self.on_first)
         self.publish_after = form.check(_("Publish when the scan &finishes, without asking"),
                                         app.get("construction_publish", False))
         self.publish_after.Bind(wx.EVT_CHECKBOX, self.on_publish_after)
@@ -251,6 +253,9 @@ class ConstructionScanDialog(Dialog):
 
     def on_taken(self, _event: wx.CommandEvent) -> None:
         save_file(self, settings.update_app, {"construction_taken": self.taken.GetValue()})
+
+    def on_first(self, _event: wx.CommandEvent) -> None:
+        save_file(self, settings.update_app, {"construction_highlands_first": self.first.GetValue()})
 
     def on_publish_after(self, _event: wx.CommandEvent) -> None:
         save_file(self, settings.update_app, {"construction_publish": self.publish_after.GetValue()})

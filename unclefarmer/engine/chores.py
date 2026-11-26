@@ -832,22 +832,31 @@ def highland_entry(number: int) -> str:
     return r"\bHighland\s+%d(?!\d)" % number
 
 
-def next_highland(b: Bot, seen: Collection[int], taken: bool = False) -> int | None:
+def next_highland(b: Bot, seen: Collection[int], taken: bool = False,
+                  whole: set[int] | None = None) -> int | None:
     """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
     Occupied Highlands. Its number, or None when there is no other. taken: those the gang took from
-    other gangs count too, not only its own."""
+    other gangs count too, not only its own. whole: filled with every highland listed when the one
+    chosen is on the list's last page (every page has then been read), else left empty, so a caller
+    that has been to them all needn't come back only to find nothing left."""
     inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
     if b.choose(r"^\s*Occupied Highlands") is None:
         b.close_dialogs()
         raise Stopped(_("the Highland Entrance offers no Occupied Highlands"))
+    listed: list[int] = []
+    if whole is not None:
+        whole.clear()
     for _page in range(MOST_PAGES):
         b.wait_dialog(3.0)
         which = HELD_HIGHLAND if taken else OWN_HIGHLAND
         numbers = [int(n) for t in _texts(b, which) for n in re.findall(which, t, re.I)]
+        listed += numbers
         number = next((n for n in numbers if n not in seen), None)
         if number is not None:
+            if whole is not None and not _has(b, NEXT_PAGE):
+                whole.update(listed)
             b.choose(highland_entry(number))
             confirm(b)
             if not b.wait_map_change(mid, 15):

@@ -4078,6 +4078,9 @@ msgstr "Salvando e aplicando configurações de som..."
 msgid "Say how many of at least one potion to have, or choose what to fuse."
 msgstr ""
 
+msgid "Scan and list &highlands first"
+msgstr ""
+
 msgid "Scan complete."
 msgstr "Análise concluída."
 
@@ -9443,7 +9446,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "escreva assim: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too, and highlands_first=yes or highlands_first=no to choose whether the highlands come before the camps"
 msgstr ""
 
 msgid "write it as: hold key seconds"

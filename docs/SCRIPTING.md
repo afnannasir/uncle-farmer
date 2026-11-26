@@ -1266,9 +1266,11 @@ Use this section when you need a quick reminder of a command or its syntax.
     enhance [check]
     chores [check] [only=...]
     bounties [check]
-    construction_scan [publish=<kind>|auto=<kind>] [lines=yes|no] [taken=yes|no]    kind: announcement, broadcast or system;
+    construction_scan [publish=<kind>|auto=<kind>] [lines=yes|no] [taken=yes|no] [highlands_first=yes|no]
+                                    kind: announcement, broadcast or system;
                                     lines: an announcement with a line to each highland (default: Tools, Construction scanner)
                                     taken: also scan highlands taken from other gangs (default: Tools, Construction scanner)
+                                    highlands_first: scan and list highlands before the camps (default: the same window)
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]
