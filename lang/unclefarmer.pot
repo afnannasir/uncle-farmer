@@ -6499,6 +6499,9 @@ msgstr ""
 msgid "couldn't walk into {village} - trying another village"
 msgstr ""
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr ""
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 
@@ -8582,6 +8585,9 @@ msgid "the bag's gems are as high as they go"
 msgstr ""
 
 msgid "the best map for level {level}: {map}"
+msgstr ""
+
+msgid "the cable car has arrived - out through its door"
 msgstr ""
 
 msgid "the character didn't leave the game"

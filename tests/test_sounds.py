@@ -169,6 +169,20 @@ def test_unavailable_observer_releases_listener_and_stops():
     assert link.commands[-1] == "soundlisten off"
 
 
+def test_a_wait_keeps_the_runs_own_sounds_and_puts_them_back():
+    """The agent keeps one list a connection: the wait listens for its own sound with the run's (the
+    farm's out-of-range sound here), and leaves the run's in place after - not "off"."""
+    from unclefarmer.engine import listening
+    link = SoundLink([dict(now=10, events=[], lost=False), dict(now=12, events=[event(11, 1023), event(12, 7)],
+                                                                 lost=False)])
+    bot = SoundBot(link)
+    listening.want(as_bot(bot), "out of range", "1023")
+    runner = script.Runner(as_bot(bot), "sound_wait 7 timeout=1")
+    runner.run()
+    assert runner.vars["sound_id"] == 7                  # the run's 1023 doesn't end the wait
+    assert "soundlisten 7,1023" in link.commands and link.commands[-1] == "soundlisten 1023"
+
+
 def test_global_script_commands_persist():
     link = SoundLink()
     script.Runner(as_bot(SoundBot(link)), "sound_watch 1-5\nsound_mute 7").run()

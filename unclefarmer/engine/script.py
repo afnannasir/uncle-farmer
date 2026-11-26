@@ -1267,7 +1267,9 @@ class Runner:
         try:
             # Establish the cursor before subscribing: historical requests never trigger a wait.
             cursor = sounds.events(b.a, 0)["now"]
-            status = sounds.listen(b.a, ids.text)
+            from . import listening as run_sounds
+            # its own ids with the run's (the farm's, the team's): only its own end the wait
+            status = sounds.listen(b.a, run_sounds.with_ours(b, ids.text))
             listening = True
             if not status["hooked"]:
                 raise Stopped(_("Sound observer is unavailable: {reason}", reason=status["reason"]))
@@ -1294,13 +1296,12 @@ class Runner:
             raise Stopped(str(error)) from error
         finally:
             if listening:
+                from . import listening as run_sounds
                 try:
-                    sounds.listen(b.a, "off")
+                    sounds.listen(b.a, run_sounds.wanted(b))    # the run's own sounds again, or "off"
                 except (AgentError, OSError):
                     # Closing a failed link also releases its subscription on the agent.
                     b.log(_("Could not release sound listening; it is released when the connection closes."))
-                from . import refusals
-                refusals.resume(b)       # the farm's own "out of range" sound, listened for again
 
     def _do_travel(self, node: Node, b: Bot, o: dict[str, Any]):
         b.travel(o["map"], o.get("cell"))

@@ -6703,6 +6703,9 @@ msgstr "oyuna yazılamadı: {why}"
 msgid "couldn't walk into {village} - trying another village"
 msgstr "{village} içine yürünemedi - başka bir köy deneniyor"
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr "teleferiğin kapısına yürünemedi ({why}) - dışarı çıkarılmayı bekleniyor"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "deneyim kartı için şu yapılamadı: {what}: {why} - bir dakika sonra yeniden denenecek"
@@ -8853,6 +8856,9 @@ msgstr "çantadaki mücevherler gidebilecekleri en yüksek seviyede"
 
 msgid "the best map for level {level}: {map}"
 msgstr ""
+
+msgid "the cable car has arrived - out through its door"
+msgstr "teleferik vardı - kapısından çıkılıyor"
 
 msgid "the character didn't leave the game"
 msgstr ""

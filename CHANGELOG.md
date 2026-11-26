@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+**Out of a cable car as soon as it arrives** (measured in game; the bot's side untested in game)
+
+- Measured live, both ways between Underground of Tulip City and Lifting Platform No. 2: about 12 s after
+  boarding the game plays the car's arrival sound (1152), and from then on the door lets us out; left
+  alone, the game puts us out about 10 s later. We can walk in the cabin; only the door refuses a step
+  until the arrival.
+- The bot now walks up to the cabin's door on the side the car is going (from the map data: every cable
+  car has one) and steps out at the arrival sound, about 10 s saved a ride. With no sound to hear (an older
+  agent), it tries the door once 15 s after boarding; a door that still refuses leaves it to the game, as
+  before. Airships have no door: unchanged.
+
+**Fixed**
+
+- The run's sound listeners no longer silence each other. The agent keeps one list of sounds a
+  connection listens for, and each part set its own: once the team we lead listened for requests, the
+  farm's "out of range" sound (1.2.3-dev) was never heard again. They now listen together
+  (`engine/listening.py`), and a script's `sound_wait` listens for its own on top of them and leaves them
+  in place after.
+
 **Use only the skills of page 1** (untested in game: the tests use a pretend game)
 
 - A player never uses skill page 2, but saw the bot turn to it, a loss of time while farming. New box in

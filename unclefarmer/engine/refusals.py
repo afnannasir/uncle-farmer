@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 from .. import sounds
 from ..i18n import _
 from ..link import AgentError
+from . import listening
 
 if TYPE_CHECKING:
     from .bot import Bot
@@ -34,20 +35,11 @@ def start(b: Bot) -> None:
         return
     try:
         b.__dict__["refusal_cursor"] = sounds.events(b.a, 0)["now"]   # the cursor first: older ones never count
-        status = sounds.listen(b.a, str(OUT_OF_RANGE))
+        status = listening.want(b, "out of range", str(OUT_OF_RANGE))
     except (AgentError, OSError, ValueError):
         b.__dict__["refusal_listening"] = False
         return
     b.__dict__["refusal_listening"] = bool(status.get("hooked"))
-
-
-def resume(b: Bot) -> None:
-    """After a script's own sound_wait released this connection's listening: listen again."""
-    if getattr(b, "refusal_listening", False):
-        try:
-            sounds.listen(b.a, str(OUT_OF_RANGE))
-        except (AgentError, OSError, ValueError):
-            b.__dict__["refusal_listening"] = False
 
 
 def heard(b: Bot) -> bool:

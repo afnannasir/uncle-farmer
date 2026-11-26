@@ -415,6 +415,8 @@ For example, a journey from Giant Rock City to Tulip City might go underground t
 
 The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, the character must have enough arnebia in the bag to pay the fare (VIP travel is free), and its level must be high enough for the ride: each airship out of a capital needs one (from 26 for Giant Rock City to Sunset City up to 86 for Holy Blood City to Dark Night City), and so do the cable cars from Giant Rock City to Tulip City (45) and to Holy Blood City (60). The rides back need none. When another ride turns the character away for its level, the bot says so and goes another way for the rest of the run.
 
+**Leaving a cable car.** Once aboard, the bot walks up to the cabin's door on the side the car is going, and steps out as soon as the game plays the car's arrival sound, about 12 seconds after boarding ("the cable car has arrived - out through its door"). Left alone, the game puts a player out about 10 seconds later. With an older game agent that can't hear sounds, the bot tries the door once, 15 seconds after boarding; a door that still refuses, or a walk that fails, leaves it to the game as before. Airships have no door: the bot waits for the flight to land.
+
 **Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
 
 When it teleports, the bot:

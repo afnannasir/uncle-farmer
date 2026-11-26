@@ -6822,6 +6822,10 @@ msgstr "game mein type nahi kar sake: {why}"
 msgid "couldn't walk into {village} - trying another village"
 msgstr "{village} ke andar nahi ja saka - doosra gaon try kar raha hai"
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr ""
+"cable car ke darwaze tak nahin ja sake ({why}) - bahar nikale jane ka intezar"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "experience card {what} nahi ho saka: {why} - ek minute baad dobara koshish"
@@ -9017,6 +9021,9 @@ msgstr "baste ke gems apni aakhri had tak hain"
 
 msgid "the best map for level {level}: {map}"
 msgstr "level {level} ke liye sab se achha map: {map}"
+
+msgid "the cable car has arrived - out through its door"
+msgstr "cable car pohanch gayi - us ke darwaze se bahar"
 
 msgid "the character didn't leave the game"
 msgstr "character ne game nahin chhora"

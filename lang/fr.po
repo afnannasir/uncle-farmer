@@ -6866,6 +6866,10 @@ msgstr "impossible d'écrire dans le jeu : {why}"
 msgid "couldn't walk into {village} - trying another village"
 msgstr "impossible d'entrer dans {village} - essai d'un autre village"
 
+msgid "couldn't walk to the cable car's door ({why}) - waiting to be put out"
+msgstr ""
+"impossible de marcher jusqu'à la porte du téléphérique ({why}) - attente de l'éjection"
+
 msgid "couldn't {what} the experience card: {why} - trying again in a minute"
 msgstr ""
 "impossible de {what} la carte d'expérience : {why} - nouvel essai dans une minute"
@@ -9064,6 +9068,9 @@ msgstr "les gemmes du sac sont au niveau maximal"
 
 msgid "the best map for level {level}: {map}"
 msgstr "la meilleure carte pour le niveau {level} : {map}"
+
+msgid "the cable car has arrived - out through its door"
+msgstr "le téléphérique est arrivé - sortie par sa porte"
 
 msgid "the character didn't leave the game"
 msgstr "le personnage n'a pas quitté le jeu"
