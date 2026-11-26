@@ -25,7 +25,8 @@
   This happened when a repair left a build unused, for example when only the wall needed fixing.
 - The "Construction builds a day" field now uses Alt+B. Before, it shared Alt+C with the
   "Check only" button, so Alt+C could not press the button.
-- Not yet tested in the game.
+- Tested in the game with check only, so nothing was repaired: the bot went into all the
+  highlands, taken ones too, and did not open the highland list again after the last one.
 
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 
