@@ -297,7 +297,9 @@ class Run(threading.Thread):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
         server = server_name(link) if agent >= AGENT_SERVER else ""
-        observed = settings.character_profile(character, snap["self"].get("id"), server)
+        observed = settings.live_profile(character, snap["self"].get("id"), server)
+        if not server and agent >= AGENT_SERVER:
+            self._note_unknown_server(link, observed)
         if self._keyboard_errand() and self.profile and not settings.is_profile_of(observed, self.profile):
             raise Stopped(_("Select the same character before applying the keyboard profile."))
         # The Games list may already know this client's server.  Keep that confirmed identity if
@@ -338,6 +340,21 @@ class Run(threading.Thread):
                 return
             raise Stopped(str(state.get("status") or _("automatic login stopped")))
         raise Stopped(_("stopped by you"))
+
+    def _note_unknown_server(self, link: AgentLink, observed: str) -> None:
+        """Say in the log that the game's server wasn't recognised, with what the agent answered (a
+        port the bot doesn't know, an error), and which settings the run takes instead."""
+        try:
+            said = link.send("server").strip()[:120]
+        except (AgentError, OSError) as e:
+            said = str(e)
+        labelled = settings.profile_server(observed)
+        if labelled:
+            self.log(_("the game's server wasn't recognised (the agent said: {said}); using the settings "
+                       "saved for {server}", said=said, server=labelled))
+        else:
+            self.log(_("the game's server wasn't recognised (the agent said: {said}); the settings are "
+                       "kept by the character's id", said=said))
 
     def _profile(self, link: AgentLink, character: str) -> tuple[dict[str, Any], dict[str, Any]]:
         """Every run starts with a fresh scan: skills, keys, potions, beasts, pets -> the profile (a

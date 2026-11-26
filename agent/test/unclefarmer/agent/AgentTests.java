@@ -70,11 +70,39 @@ public final class AgentTests {
         theVoicePlayerRateFixMatchesTheGamesCode();
         theSpeechSwitchStillSilences();
         keysFromOtherProgramsCountUntilSwitchedOff();
+        theSavedServerKeepsThePlayersRoute();
         SoundTests.run();
         LinkTests.run();
 
         System.out.println("agent tests: " + (run - failed) + " of " + run + " passed");
         if (failed > 0) System.exit(1);
+    }
+
+    /** A Server row entry as the game's list holds it (a = id, c = label). */
+    static final class ServerRow {
+        final Integer a;
+        final String c;
+
+        ServerRow(int a, String c) {
+            this.a = a;
+            this.c = c;
+        }
+    }
+
+    private static void theSavedServerKeepsThePlayersRoute() {
+        // the game's list as read live (2026-11-26): every route has a row per server
+        List<ServerRow> rows = java.util.Arrays.asList(
+                new ServerRow(3, "1 (Tokyo Relay-A)"), new ServerRow(4, "2: Journey Of Landscapes (Tokyo Relay-A)"),
+                new ServerRow(9, "1 (Frankfurt Relay)"), new ServerRow(10, "2: Journey Of Landscapes (Frankfurt Relay)"),
+                new ServerRow(13, " 1 (Singapore-A Relay)"), new ServerRow(14, " 2: Journey Of Landscapes (Singapore-A Relay)"),
+                new ServerRow(1, "1 (Direct Connection )"), new ServerRow(2, "2: Journey Of Landscapes (Direct Connection )"));
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 9, 1)).a == 9, "the relay up is kept for its server");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 9, 2)).a == 10, "the other server on the same relay");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 13, 2)).a == 14, "a label with a space first");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 2, 1)).a == 1, "the direct connection stays direct");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 99, 2)).a == 2, "no row up: the server's own id");
+        check(AutomaticLogin.serverNumber("2: Journey Of Landscapes (Tokyo Relay-A)") == 2, "the number of a label");
+        check(AutomaticLogin.serverNumber("Journey") == -1 && AutomaticLogin.serverNumber(null) == -1, "no number");
     }
 
     // ---------------------------------------------------------------- protocol

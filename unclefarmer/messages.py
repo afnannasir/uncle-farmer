@@ -838,7 +838,7 @@ class Messenger(threading.Thread):
         # changing once the character's own profile is saved)
         # with the game's server: without it the key named no saved file (Name--S1--<id>.json), the
         # default settings were used and "wait" didn't know the character's account
-        here = settings.character_profile(name, s["self"].get("id"), self.server())
+        here = settings.live_profile(name, s["self"].get("id"), self.server())
         key = self.host.character(self.pid)
         if not key or not settings.is_profile_of(here, key):
             key = here                  # the list's key named another character (or none)

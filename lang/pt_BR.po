@@ -9418,6 +9418,16 @@ msgstr "relatório do jogo: {n} de {total} abates, {dmg} de dano"
 msgid "the game's report: {total} kills"
 msgstr "relatório do jogo: {total} abates"
 
+msgid ""
+"the game's server wasn't recognised (the agent said: {said}); the settings are kept by the character's id"
+msgstr ""
+"o servidor do jogo não foi reconhecido (o agente disse: {said}); as configurações ficam pelo id do personagem"
+
+msgid ""
+"the game's server wasn't recognised (the agent said: {said}); using the settings saved for {server}"
+msgstr ""
+"o servidor do jogo não foi reconhecido (o agente disse: {said}); usando as configurações salvas para {server}"
+
 msgid "the gang has no {npc}"
 msgstr "a guilda não tem {npc}"
 
