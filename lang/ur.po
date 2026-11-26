@@ -9115,6 +9115,11 @@ msgid ""
 msgstr ""
 "game ki memory khatam ho gayi aur woh ruk gaya ({where}) - Mist World restart karein"
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+"game ne {name} par hamla rad kar diya: range se bahar - qareeb tareen monster ki taraf"
+
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 

@@ -8947,6 +8947,10 @@ msgid ""
 msgstr ""
 "oyunun belleği bitti ve çalışmayı durdurdu ({where}) - Mist World'ü yeniden başlat"
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+
 msgid "the game refused the login request"
 msgstr "oyun giriş isteğini reddetti"
 

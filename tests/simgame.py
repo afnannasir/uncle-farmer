@@ -895,6 +895,14 @@ class SimGame:
     def _cmd_said(self, arg: str, cid: int, w: World) -> str:
         return json.dumps({"now": self._ms(), "said": []})
 
+    # the farm's "out of range" sound (engine/refusals.py): the pretend game plays no sounds
+    def _cmd_soundlisten(self, arg: str, cid: int, w: World) -> str:
+        return json.dumps({"hooked": True, "watch": "off", "mute": "off", "reason": "", "observed": 0,
+                           "dropped": 0, "live_muted": 0, "unsupported": 0})
+
+    def _cmd_sounds(self, arg: str, cid: int, w: World) -> str:
+        return json.dumps({"now": 0, "events": [], "lost": False})
+
     def _cmd_chat(self, arg: str, cid: int, w: World) -> str:
         """The chat channels' lines: nobody talks in the pretend game, and no chest is announced."""
         return json.dumps({"ok": True, "last": 0, "room": "", "chat": []})

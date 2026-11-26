@@ -9100,6 +9100,11 @@ msgid ""
 msgstr ""
 "o jogo ficou sem memória e parou de funcionar ({where}) — reinicie o Mist World"
 
+msgid ""
+"the game refused the attack on {name}: out of range - going to the nearest monster"
+msgstr ""
+"o jogo recusou o ataque em {name}: fora de alcance - indo para o monstro mais próximo"
+
 msgid "the game refused the login request"
 msgstr "o jogo recusou a solicitação de entrada"
 

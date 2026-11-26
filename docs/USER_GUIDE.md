@@ -721,6 +721,11 @@ On a busy map, a monster another player stands nearer to than you do is often go
 
 If no monsters are attacking but your HP is low, the bot rests before starting another fight.
 
+When an attack is pressed at a monster the game finds too far away, the game answers with a short sound
+at each refused press (the "beep, beep, beep" you may hear). The bot listens for it while farming: at the
+first one, it stops pressing at that monster, leaves it alone for 3 seconds and goes to the nearest one.
+The log says so once for each monster.
+
 While travelling, the bot only fights monsters that attack it.
 
 ### What counts as a monster?

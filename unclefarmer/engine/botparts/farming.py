@@ -14,7 +14,7 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamhunt, teamlead, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, refusals, teamhunt, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
@@ -168,6 +168,7 @@ class FarmingMixin(Parts):
                            "it stops for each monster"))
         self.set_modes()
         self.modes_done = True
+        refusals.start(as_bot(self))     # the game's "out of range" sound: stop pressing, take the nearest
 
         def done():
             if minutes and (self.clock.time() - start) / 60.0 >= minutes:

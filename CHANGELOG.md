@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+**The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
+
+- When an attack key is pressed at a monster the game finds out of range, it plays a short sound, again
+  at every refused press: the "beep, beep, beep" a player hears, measured with the selected monster at 20.4
+  to 22.5 yards for a 20-yard skill, as it moved away after a fight broke off.
+- The farm now listens for that sound. Heard, the bot stops pressing at that monster, leaves it alone for
+  3 seconds and goes to the nearest one, during a fight and for the shots on the way alike. The log says
+  it once a monster. An older agent without sounds changes nothing.
+
 **Character chain: several characters farm one after the other in one game** (untested in game: the
 tests use a pretend window and games)
 
