@@ -112,6 +112,9 @@ def scan(link: JsonLink, game_folder: str="") -> dict[str, Any]:
     out["pets"] = [r["name"] for r in owned_pets]
     gear: list[Row] = _json(link, "mem equipment") or []
     out["gear"] = [r["name"] for r in gear if r.get("equipped") == 1]
+    # every medal, worn or in the bag (Character settings, Medals): by its id, as two may share a name
+    out["medals"] = [{"uid": int(r["uid"]), "name": str(r["name"]), "worn": r.get("equipped") == 1}
+                     for r in gear if r.get("name") and r.get("uid") is not None and "medal" in str(r["name"]).lower()]
     modes: dict[str, Any] = _json(link, "mem modes") or {}
     if "options" in modes:              # the F1 settings menu (agent v10)
         out["game_options"] = {k: modes[k] for k in ("swap_attack", "auto_lock_target", "skip_enemy_corpses")}

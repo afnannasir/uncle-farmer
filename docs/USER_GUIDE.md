@@ -533,6 +533,27 @@ When a farming run ends by itself in a town whose talent master is on that map, 
 list, the bot puts the usual talents back. It never makes a trip just for that: a run that ends elsewhere
 leaves them, and says so. The next run puts the farming talents on anyway.
 
+### Medals for farming
+
+The **Medals** page works the same way for medals, which cost nothing to change and need no NPC. Nothing
+changes until you tick **Change the medals for farming**.
+
+- **Medals to farm with:** every medal of the character, worn or in the bag, from the last scan. The ticked
+  ones are worn while farming, and the others come off.
+- **Put the usual medals back on when the run ends, wherever it ends:** and tick them in **Usual medals**.
+- **Tick the medals worn now, in both lists** fills both lists from the last scan.
+
+Before a run sets out, the bot puts on each ticked medal that isn't worn. A medal of a kind already worn
+takes that one's place, as the game does by hand: one Contribution Medal, one star medal, one medal of
+each other kind. Then it takes off the worn medals that aren't ticked. Each medal waits about 10 seconds
+after its own last change, so the bot changes the others meanwhile. Every change is checked. When a farming
+run ends by itself, after the After farming list, the usual medals go back on, wherever the run ended.
+
+All Contribution Medals have the same name. Only their bonus tells them apart, so a run reads each one's
+bonus once, with the details key, and the lists show it afterwards: "Contribution Medal (plus: When
+attacked critical hit resistance increase 3)". This needs the agent that comes with this version: restart
+the game once after updating.
+
 ## The bag
 
 Open **Character → Bag and supplies (Ctrl+B)** to manage the items your character collects and the supplies it needs.

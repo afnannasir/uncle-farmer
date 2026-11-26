@@ -105,6 +105,10 @@ msgid "&Change key"
 msgstr "Tuşu değiştir (&C)"
 
 msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+
+msgid ""
 "&Change the talents for farming, at the nearest talent master before the run sets out"
 msgstr ""
 
@@ -656,6 +660,9 @@ msgstr "Sonra: (&T)"
 
 msgid "&Throw away:"
 msgstr "A&tılacaklar:"
+
+msgid "&Tick the medals worn now, in both lists"
+msgstr ""
 
 msgid "&Tick the talents that are on now, in both lists"
 msgstr ""
@@ -2941,6 +2948,16 @@ msgstr ""
 msgid "Materials"
 msgstr ""
 
+msgid "Medals"
+msgstr ""
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+
+msgid "Medals to &farm with:"
+msgstr ""
+
 msgid "Medium"
 msgstr ""
 
@@ -3710,6 +3727,9 @@ msgstr "Depoya konanlar:"
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Gereken becerileri ve &eşyaları boş tuşlara koy (asla kullanılan tuşlara değil)"
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr ""
 
 msgid ""
 "Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
@@ -4913,6 +4933,10 @@ msgstr "Dinleyici meşgul ya da bağlantısı kesik. Yeniden dene."
 msgid "The market"
 msgstr ""
 
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+
 msgid "The names or ids below"
 msgstr ""
 
@@ -5155,11 +5179,19 @@ msgstr "Kopyalamak için en az bir şey işaretle."
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+
 msgid "Tick the monsters to fight:"
 msgstr "Dövüşülecek canavarları işaretle:"
 
 msgid ""
 "Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
 msgstr ""
 
 msgid ""
@@ -5287,6 +5319,9 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Ustaları kullanılacak çetenin adını yaz."
+
+msgid "U&sual medals:"
+msgstr ""
 
 msgid "U&sual talents:"
 msgstr ""
@@ -6133,6 +6168,10 @@ msgstr "{n} kez kullanıldı"
 msgid "casting {skill} to {place}"
 msgstr "{place} için {skill} kullanılıyor"
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr ""
+
 msgid "charge in"
 msgstr "hücum"
 
@@ -6264,6 +6303,9 @@ msgstr "{shard} eklenemedi"
 
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr "{skill} kullanılamadı ({why}) - 5 dakika sonra yeniden denenecek"
+
+msgid "couldn't change these medals: {names}"
+msgstr ""
 
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr "{tool} ile onarım doğrulanamadı - onarılmış sayılmadı"
@@ -7316,6 +7358,9 @@ msgstr "{n} dakikadır öldürme yok - haritanın başka bir yeri deneniyor"
 msgid "no known entrance for the dungeon {name}"
 msgstr "{name} zindanının bilinen girişi yok"
 
+msgid "no longer in the bag, left out: {names}"
+msgstr ""
+
 msgid "no map without monsters near {map}"
 msgstr "{map} yakınında canavarsız harita yok"
 
@@ -7474,6 +7519,9 @@ msgstr "bunu yapabilecek {n} yerin hiçbirine {map} haritasından ulaşılamıyo
 msgid "none of these talents is in the Reset Talents menu - nothing changed"
 msgstr ""
 
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr ""
+
 msgid "normal"
 msgstr "normal"
 
@@ -7589,6 +7637,9 @@ msgstr "depolanmadı (depo dolu olabilir): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "{item} depoya götürülmüyor: depo dolu ve içinde henüz bundan yok"
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
+msgstr ""
 
 msgid "nothing"
 msgstr "hiçbir şey"
@@ -8758,6 +8809,9 @@ msgstr ""
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr ""
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -8884,6 +8938,15 @@ msgid "the market's order switch isn't on the page"
 msgstr ""
 
 msgid "the marketplace didn't open its menu"
+msgstr ""
+
+msgid "the medals can't be read - they stay as they are"
+msgstr ""
+
+msgid "the medals for farming"
+msgstr ""
+
+msgid "the medals for farming weren't put on: {err}"
 msgstr ""
 
 msgid "the menu has no entry like \"{want}\""
@@ -9059,6 +9122,12 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "en üst seviye - kaybedilecek bir şey yok"
+
+msgid "the usual medals"
+msgstr ""
+
+msgid "the usual medals weren't put back: {err}"
+msgstr ""
 
 msgid ""
 "the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
@@ -9347,6 +9416,9 @@ msgid "weakens the enemy"
 msgstr "düşmanı zayıflatır"
 
 msgid "weapons"
+msgstr ""
+
+msgid "wearing {what}: {names}"
 msgstr ""
 
 msgid "wedding map"
@@ -9743,6 +9815,12 @@ msgstr "{map}: çıkışından yürümek beni dışarı çıkarmadı"
 
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPC"
+
+msgid "{medal} (not in the bag)"
+msgstr ""
+
+msgid "{medal} (worn now)"
+msgstr ""
 
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
@@ -10304,6 +10382,12 @@ msgid "{village} on {map}"
 msgstr "{village}, {map}"
 
 msgid "{what} ({n} min left)"
+msgstr ""
+
+msgid "{what} are already worn"
+msgstr ""
+
+msgid "{what} are worn"
 msgstr ""
 
 msgid ""

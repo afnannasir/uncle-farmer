@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyboard, keyslots, resume, talents, teamlead, triggers, xpcard
+from . import chores, keyboard, keyslots, medals, resume, talents, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken, GameLost, WrongCharacter
 from .botparts.parts import Sighting, Where
@@ -100,6 +100,7 @@ class Run(threading.Thread):
         self.place_lock = threading.Lock()
         self.place_done = False      # the run's end has decided about its place: no more saves
         self.talents_back_done = False   # the usual talents were put back (or tried): once a run
+        self.medals_back_done = False    # ... and the usual medals
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -206,6 +207,7 @@ class Run(threading.Thread):
             try:
                 self._after_farming()
                 self._talents_back()         # (not after a failed After step: that one is what counts)
+                self._medals_back()
             except triggers.TriggerFailed as e:
                 # an After step that had to work didn't: said and recorded, but farming did end by
                 # itself, so the after-stop action (close the game, shut the PC down) still runs
@@ -495,6 +497,7 @@ class Run(threading.Thread):
                 if not self._on_the_farm(bot, script) and not self._carried_on_past_before():
                     self._before_farming()
                 self._farming_talents(bot, script)
+                self._farming_medals(bot)
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
@@ -594,6 +597,41 @@ class Run(threading.Thread):
             # died on the way to the talent master: the run goes on from where it came back (its
             # trip to the farm starts there), with the talents as they are
             bot.log(_("died on the way to the talent master - farming with the talents as they are"), speak=True)
+
+    @staticmethod
+    def _farming_medals(bot: Bot) -> None:
+        """Character settings, Medals: the medals for farming worn before the run sets out, wherever
+        it starts (no NPC, no cost). First the bonus of medals that share a name is read, once each,
+        for the settings window. Best effort: medals as they were are no reason not to farm."""
+        try:
+            medals.learn_bonuses(bot)
+            p: dict[str, Any] = getattr(bot, "p", None) or {}
+            if p.get("farm_medals", False):
+                medals.for_farming(bot)
+        except Stopped as e:
+            if getattr(e, "final", False):
+                raise
+            bot.log(_("the medals for farming weren't put on: {err}", err=e))
+
+    def _medals_back(self) -> None:
+        """Character settings, Medals: the usual medals worn again when farming ended by itself,
+        wherever it ended, after the After farming list. Once a run, best effort as _talents_back."""
+        bot = self.bot
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if (getattr(self, "medals_back_done", False) or bot is None or self.walk or not self.ended_by_itself
+                or not self.farmed() or self.stop_event.is_set() or not p.get("farm_medals", False)
+                or not p.get("medals_back", False) or self._dead(bot)):
+            return
+        self.medals_back_done = True
+        try:
+            medals.put_back(bot)
+        except Stopped as e:
+            if getattr(e, "final", False):
+                raise
+            self.log(_("the usual medals weren't put back: {err}", err=e))
+        except Exception as e:
+            carry_on(e, "putting the usual medals back")
+            self.log(_("the usual medals weren't put back: {err}", err=e))
 
     def _talents_back(self) -> None:
         """Character settings, Talents: the usual talents back on when farming ended by itself in a

@@ -105,6 +105,11 @@ msgid "&Change key"
 msgstr "&Key tabdeel karein"
 
 msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+"Farming ke liye medals &badlein, run shuru hone se pehle (jo tick nahin woh utar diye jayenge)"
+
+msgid ""
 "&Change the talents for farming, at the nearest talent master before the run sets out"
 msgstr ""
 "Farming ke liye talents &badlein, run shuru hone se pehle qareeb tareen talent master ke paas"
@@ -660,6 +665,9 @@ msgstr "&Phir:"
 
 msgid "&Throw away:"
 msgstr "&Phenkein:"
+
+msgid "&Tick the medals worn now, in both lists"
+msgstr "Abhi pehne hue medals dono lists mein &tick karein"
 
 msgid "&Tick the talents that are on now, in both lists"
 msgstr "Abhi on talents dono lists mein &tick karein"
@@ -2968,6 +2976,17 @@ msgstr ""
 msgid "Materials"
 msgstr "Materials"
 
+msgid "Medals"
+msgstr "Medals"
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+"Medals bag se badle jate hain, character jahan bhi ho, bina kisi qeemat ke. Pehle se pehne hue type ka medal us ki jagah le leta hai, aur har medal apni pichhli tabdeeli ke baad taqreeban 10 second intezar karta hai. Sab Contribution Medals ka naam ek hai: har ek ka bonus tab dikhta hai jab koi run use parh le."
+
+msgid "Medals to &farm with:"
+msgstr "&Farming ke medals:"
+
 msgid "Medium"
 msgstr "Medium"
 
@@ -3747,6 +3766,9 @@ msgstr "Storehouse mein daale gaye:"
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Zaroori skills aur cheezein &khali keys par rakhein (kabhi istemal wali keys par nahi)"
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr "Run khatam hone par &aam medals wapas pehnayein, jahan bhi khatam ho"
 
 msgid ""
 "Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
@@ -4980,6 +5002,11 @@ msgstr "Sunne wala masroof hai ya alag hai. Dobara koshish karein."
 msgid "The market"
 msgstr "Market"
 
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"Medals abhi maloom nahin: game mein is character se log in karein aur Jaiza page par « Abhi scan karein » dabayein."
+
 msgid "The names or ids below"
 msgstr "Neeche diye gaye names ya ids"
 
@@ -5228,6 +5255,11 @@ msgstr "Copy karne ke liye kam az kam ek cheez tick karein."
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr "Pehle Nataij mein khareedne wale lots par nishan lagayein (Space)."
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+"Medals page par farming ke medals tick karein, ya Farming ke liye medals badlein ko untick karein."
+
 msgid "Tick the monsters to fight:"
 msgstr "Ladne ke liye monsters par tick karein:"
 
@@ -5235,6 +5267,11 @@ msgid ""
 "Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
 msgstr ""
 "Talents page par farming ke talents tick karein, ya Farming ke liye talents badlein ko untick karein."
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
+msgstr ""
+"Medals page par aam medals tick karein, ya Aam medals wapas pehnayein ko untick karein."
 
 msgid ""
 "Tick the usual talents on the Talents page, or untick Put the usual talents back."
@@ -5363,6 +5400,9 @@ msgstr "Bechne wale ki ek ya zyada IDs likhein."
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
+
+msgid "U&sual medals:"
+msgstr "Aam medal&s:"
 
 msgid "U&sual talents:"
 msgstr "Aam talent&s:"
@@ -6220,6 +6260,11 @@ msgstr "{n} baar cast hui"
 msgid "casting {skill} to {place}"
 msgstr "{place} ke liye {skill} chala rahe hain"
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr ""
+"medals badalne ke liye is version ka agent chahiye: game ek baar restart karein"
+
 msgid "charge in"
 msgstr "daur kar andar"
 
@@ -6357,6 +6402,9 @@ msgstr "{shard} shamil nahi kar sake"
 
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr "{skill} cast nahi ho saki ({why}) - 5 minute baad dobara koshish"
+
+msgid "couldn't change these medals: {names}"
+msgstr "ye medals nahin badal sake: {names}"
 
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
@@ -7436,6 +7484,9 @@ msgstr "{n} minutes se koi kill nahin - map ka koi aur hissa try kar rahe hain"
 msgid "no known entrance for the dungeon {name}"
 msgstr "dungeon {name} ka koi maloom entrance nahi"
 
+msgid "no longer in the bag, left out: {names}"
+msgstr "ab bag mein nahin, chhod diye: {names}"
+
 msgid "no map without monsters near {map}"
 msgstr "{map} ke qareeb koi monster-free map nahi"
 
@@ -7603,6 +7654,9 @@ msgstr ""
 msgid "none of these talents is in the Reset Talents menu - nothing changed"
 msgstr "in mein se koi talent Reset Talents menu mein nahin - kuch nahin badla"
 
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr "{what} mein se koi bag mein nahin - medals jaise hain waise rahenge"
+
 msgid "normal"
 msgstr "normal"
 
@@ -7724,6 +7778,9 @@ msgstr "storehouse mein nahi rakhe gaye (shayad bhar gaya hai): {list}"
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 "{item} storehouse nahi le ja rahe: woh bhara hua hai aur us mein abhi koi {item} nahi"
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
+msgstr "aakhir mein nahin pehne gaye, isi type ke medal ne jagah le li: {names}"
 
 msgid "nothing"
 msgstr "kuch nahi"
@@ -8911,6 +8968,9 @@ msgstr "game dikha raha hai: {shown}"
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "game ab bhi apna mode nahi badal raha - isi mode mein farming jaari"
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr "game se medal badalne ko nahin kaha gaya ({why})"
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -9042,6 +9102,15 @@ msgstr "market ki tarteeb badalne wala khana safhe par nahi"
 
 msgid "the marketplace didn't open its menu"
 msgstr "marketplace ne apna menu nahi khola"
+
+msgid "the medals can't be read - they stay as they are"
+msgstr "medals parhe nahin ja sakte - jaise hain waise rahenge"
+
+msgid "the medals for farming"
+msgstr "farming ke medals"
+
+msgid "the medals for farming weren't put on: {err}"
+msgstr "farming ke medals nahin pehnaye gaye: {err}"
 
 msgid "the menu has no entry like \"{want}\""
 msgstr "menu mein aisa koi entry nahi: \"{want}\""
@@ -9216,6 +9285,12 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
+
+msgid "the usual medals"
+msgstr "aam medals"
+
+msgid "the usual medals weren't put back: {err}"
+msgstr "aam medals wapas nahin pehnaye gaye: {err}"
 
 msgid ""
 "the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
@@ -9513,6 +9588,9 @@ msgstr "dushman ko kamzor karta hai"
 
 msgid "weapons"
 msgstr "hathiyar"
+
+msgid "wearing {what}: {names}"
+msgstr "{what} pehnaye ja rahe hain: {names}"
 
 msgid "wedding map"
 msgstr "shaadi ka map"
@@ -9916,6 +9994,12 @@ msgstr "{map}: exit se paidal nikalne par bhi bahar nahi gaye"
 
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
+
+msgid "{medal} (not in the bag)"
+msgstr "{medal} (bag mein nahin)"
+
+msgid "{medal} (worn now)"
+msgstr "{medal} (abhi pehna hua)"
 
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
@@ -10489,6 +10573,12 @@ msgstr "{map} par {village}"
 
 msgid "{what} ({n} min left)"
 msgstr "{what} ({n} minute baqi)"
+
+msgid "{what} are already worn"
+msgstr "{what} pehle se pehne hue hain"
+
+msgid "{what} are worn"
+msgstr "{what} pehna diye gaye"
 
 msgid ""
 "{what} changed since it was interrupted, so it starts from the beginning"

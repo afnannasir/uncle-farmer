@@ -105,6 +105,11 @@ msgid "&Change key"
 msgstr "&Alterar tecla"
 
 msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+"&Trocar as medalhas para farmar, antes de sair (as não marcadas são tiradas)"
+
+msgid ""
 "&Change the talents for farming, at the nearest talent master before the run sets out"
 msgstr ""
 "&Trocar os talentos para farmar, no mestre de talentos mais próximo antes de sair"
@@ -662,6 +667,9 @@ msgstr "&Depois:"
 
 msgid "&Throw away:"
 msgstr "&Descartar:"
+
+msgid "&Tick the medals worn now, in both lists"
+msgstr "&Marcar as medalhas usadas agora, nas duas listas"
 
 msgid "&Tick the talents that are on now, in both lists"
 msgstr "&Marcar os talentos ativos agora, nas duas listas"
@@ -2972,6 +2980,17 @@ msgstr ""
 msgid "Materials"
 msgstr ""
 
+msgid "Medals"
+msgstr "Medalhas"
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+"As medalhas são trocadas pela bolsa, onde o personagem estiver, sem custo. Uma medalha de um tipo já usado toma o lugar dela, e cada medalha espera cerca de 10 segundos depois da própria última troca. As Contribution Medals têm todas o mesmo nome: cada uma mostra o bônus depois que uma sessão o leu."
+
+msgid "Medals to &farm with:"
+msgstr "Medalhas para &farmar:"
+
 msgid "Medium"
 msgstr ""
 
@@ -3750,6 +3769,9 @@ msgstr "Colocado no depósito:"
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
 msgstr ""
 "Atribuir habilidades e itens necessários a teclas &livres (nunca às que já estão em uso)"
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
+msgstr "Recolocar as medalhas &habituais quando a sessão termina, onde terminar"
 
 msgid ""
 "Put the &usual talents back when the run ends in a town with a talent master (no trip for it)"
@@ -4981,6 +5003,11 @@ msgstr "O ouvinte está ocupado ou desconectado. Tente novamente."
 msgid "The market"
 msgstr ""
 
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+"As medalhas ainda não são conhecidas: entre com este personagem no jogo e aperte « Analisar agora » na página « Visão geral »."
+
 msgid "The names or ids below"
 msgstr "Os nomes ou ids abaixo"
 
@@ -5233,6 +5260,11 @@ msgstr "Marque pelo menos uma coisa para copiar."
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+"Marque as medalhas para farmar na página Medalhas, ou desmarque Trocar as medalhas para farmar."
+
 msgid "Tick the monsters to fight:"
 msgstr "Marque os monstros que devem ser atacados:"
 
@@ -5240,6 +5272,11 @@ msgid ""
 "Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
 msgstr ""
 "Marque os talentos para farmar na página Talentos, ou desmarque Trocar os talentos para farmar."
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
+msgstr ""
+"Marque as medalhas habituais na página Medalhas, ou desmarque Recolocar as medalhas habituais."
 
 msgid ""
 "Tick the usual talents on the Talents page, or untick Put the usual talents back."
@@ -5368,6 +5405,9 @@ msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Digite o nome da guilda cujos artesãos serão usados."
+
+msgid "U&sual medals:"
+msgstr "Medalhas ha&bituais:"
 
 msgid "U&sual talents:"
 msgstr "Talentos ha&bituais:"
@@ -6221,6 +6261,10 @@ msgstr "lançar {n} vezes"
 msgid "casting {skill} to {place}"
 msgstr "lançando {skill} em {place}"
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr "trocar medalhas precisa do agente desta versão: reinicie o jogo uma vez"
+
 msgid "charge in"
 msgstr "avançar para o combate"
 
@@ -6356,6 +6400,9 @@ msgstr "não foi possível adicionar {shard}"
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
 msgstr ""
 "não foi possível lançar {skill} ({why}) — tentando novamente em 5 minutos"
+
+msgid "couldn't change these medals: {names}"
+msgstr "não deu para trocar estas medalhas: {names}"
 
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
 msgstr ""
@@ -7425,6 +7472,9 @@ msgstr "nenhuma morte há {n} minutos — tentando outra parte do mapa"
 msgid "no known entrance for the dungeon {name}"
 msgstr "nenhuma entrada conhecida para a masmorra {name}"
 
+msgid "no longer in the bag, left out: {names}"
+msgstr "não estão mais na bolsa, deixadas de fora: {names}"
+
 msgid "no map without monsters near {map}"
 msgstr "não há mapa sem monstros perto de {map}"
 
@@ -7588,6 +7638,9 @@ msgstr ""
 msgid "none of these talents is in the Reset Talents menu - nothing changed"
 msgstr "nenhum destes talentos está no menu Reset Talents - nada mudou"
 
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr "nenhuma de {what} está na bolsa - as medalhas ficam como estão"
+
 msgid "normal"
 msgstr "normal"
 
@@ -7708,6 +7761,9 @@ msgstr "não guardado (o depósito pode estar cheio): {list}"
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr "não vou levar {item} ao armazém: ele está cheio e ainda não tem nenhum"
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
+msgstr "não usadas no fim, uma medalha do mesmo tipo tomou o lugar: {names}"
 
 msgid "nothing"
 msgstr "nada"
@@ -8894,6 +8950,9 @@ msgstr "o jogo mostra: {shown}"
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr "o jogo ainda não muda o modo - a coleta continua no modo atual"
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr "a troca de medalha não foi pedida ao jogo ({why})"
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -9021,6 +9080,15 @@ msgstr ""
 
 msgid "the marketplace didn't open its menu"
 msgstr ""
+
+msgid "the medals can't be read - they stay as they are"
+msgstr "as medalhas não podem ser lidas - ficam como estão"
+
+msgid "the medals for farming"
+msgstr "as medalhas para farmar"
+
+msgid "the medals for farming weren't put on: {err}"
+msgstr "as medalhas para farmar não foram colocadas: {err}"
 
 msgid "the menu has no entry like \"{want}\""
 msgstr "o menu não tem uma opção semelhante a \"{want}\""
@@ -9199,6 +9267,12 @@ msgstr ""
 
 msgid "the top level - nothing to lose"
 msgstr "nível máximo — nada a perder"
+
+msgid "the usual medals"
+msgstr "as medalhas habituais"
+
+msgid "the usual medals weren't put back: {err}"
+msgstr "as medalhas habituais não foram recolocadas: {err}"
 
 msgid ""
 "the usual talents aren't back on: the run didn't end in a town with a talent master (the next run that ends in one puts them back)"
@@ -9494,6 +9568,9 @@ msgstr "enfraquece o inimigo"
 
 msgid "weapons"
 msgstr ""
+
+msgid "wearing {what}: {names}"
+msgstr "colocando {what}: {names}"
 
 msgid "wedding map"
 msgstr "mapa do casamento"
@@ -9893,6 +9970,12 @@ msgstr "{map}: a saída a pé não me levou para fora"
 
 msgid "{map}: {n} NPCs"
 msgstr "{map}: {n} NPCs"
+
+msgid "{medal} (not in the bag)"
+msgstr "{medal} (não está na bolsa)"
+
+msgid "{medal} (worn now)"
+msgstr "{medal} (usada agora)"
 
 msgid ""
 "{menu}: not choosing by index ({why}) - choosing by the menu's text instead"
@@ -10463,6 +10546,12 @@ msgstr "{village} em {map}"
 
 msgid "{what} ({n} min left)"
 msgstr "{what} (faltam {n} min)"
+
+msgid "{what} are already worn"
+msgstr "{what} já estão em uso"
+
+msgid "{what} are worn"
+msgstr "{what} estão em uso"
 
 msgid ""
 "{what} changed since it was interrupted, so it starts from the beginning"

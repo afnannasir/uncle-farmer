@@ -105,6 +105,10 @@ msgid "&Change key"
 msgstr ""
 
 msgid ""
+"&Change the medals for farming, before the run sets out (the medals not ticked come off)"
+msgstr ""
+
+msgid ""
 "&Change the talents for farming, at the nearest talent master before the run sets out"
 msgstr ""
 
@@ -648,6 +652,9 @@ msgid "&Then:"
 msgstr ""
 
 msgid "&Throw away:"
+msgstr ""
+
+msgid "&Tick the medals worn now, in both lists"
 msgstr ""
 
 msgid "&Tick the talents that are on now, in both lists"
@@ -2886,6 +2893,16 @@ msgstr ""
 msgid "Materials"
 msgstr ""
 
+msgid "Medals"
+msgstr ""
+
+msgid ""
+"Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already worn takes its place, and each medal waits about 10 seconds after its own last change. The Contribution Medals all share a name: each one shows its bonus once a run has read it."
+msgstr ""
+
+msgid "Medals to &farm with:"
+msgstr ""
+
 msgid "Medium"
 msgstr ""
 
@@ -3628,6 +3645,9 @@ msgid "Put into the storehouse:"
 msgstr ""
 
 msgid "Put needed skills and items on &empty keys (never on keys in use)"
+msgstr ""
+
+msgid "Put the &usual medals back on when the run ends, wherever it ends"
 msgstr ""
 
 msgid ""
@@ -4795,6 +4815,10 @@ msgstr ""
 msgid "The market"
 msgstr ""
 
+msgid ""
+"The medals aren't known yet: log in to this character in the game and press Scan now on the Overview page."
+msgstr ""
+
 msgid "The names or ids below"
 msgstr ""
 
@@ -5015,11 +5039,19 @@ msgstr ""
 msgid "Tick the lots to buy in Results first (Space)."
 msgstr ""
 
+msgid ""
+"Tick the medals to farm with on the Medals page, or untick Change the medals for farming."
+msgstr ""
+
 msgid "Tick the monsters to fight:"
 msgstr ""
 
 msgid ""
 "Tick the talents to farm with on the Talents page, or untick Change the talents for farming."
+msgstr ""
+
+msgid ""
+"Tick the usual medals on the Medals page, or untick Put the usual medals back on."
 msgstr ""
 
 msgid ""
@@ -5142,6 +5174,9 @@ msgid "Type one or more seller IDs."
 msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
+msgstr ""
+
+msgid "U&sual medals:"
 msgstr ""
 
 msgid "U&sual talents:"
@@ -5943,6 +5978,10 @@ msgstr ""
 msgid "casting {skill} to {place}"
 msgstr ""
 
+msgid ""
+"changing medals needs the agent that comes with this version: restart the game once"
+msgstr ""
+
 msgid "charge in"
 msgstr ""
 
@@ -6066,6 +6105,9 @@ msgid "couldn't add the {shard}"
 msgstr ""
 
 msgid "couldn't cast {skill} ({why}) - trying again in 5 minutes"
+msgstr ""
+
+msgid "couldn't change these medals: {names}"
 msgstr ""
 
 msgid "couldn't confirm the repair with a {tool} - not marked repaired"
@@ -7093,6 +7135,9 @@ msgstr ""
 msgid "no known entrance for the dungeon {name}"
 msgstr ""
 
+msgid "no longer in the bag, left out: {names}"
+msgstr ""
+
 msgid "no map without monsters near {map}"
 msgstr ""
 
@@ -7244,6 +7289,9 @@ msgstr ""
 msgid "none of these talents is in the Reset Talents menu - nothing changed"
 msgstr ""
 
+msgid "none of {what} is in the bag - the medals stay as they are"
+msgstr ""
+
 msgid "normal"
 msgstr ""
 
@@ -7356,6 +7404,9 @@ msgid "not stored (the storehouse may be full): {list}"
 msgstr ""
 
 msgid "not taking {item} to the storehouse: it is full and holds none yet"
+msgstr ""
+
+msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
 
 msgid "nothing"
@@ -8487,6 +8538,9 @@ msgstr ""
 msgid "the game still won't change its mode - farming on in the mode it has"
 msgstr ""
 
+msgid "the game wasn't asked to change a medal ({why})"
+msgstr ""
+
 msgid ""
 "the game went while the run was paused: it isn't opened again or carried on"
 msgstr ""
@@ -8609,6 +8663,15 @@ msgid "the market's order switch isn't on the page"
 msgstr ""
 
 msgid "the marketplace didn't open its menu"
+msgstr ""
+
+msgid "the medals can't be read - they stay as they are"
+msgstr ""
+
+msgid "the medals for farming"
+msgstr ""
+
+msgid "the medals for farming weren't put on: {err}"
 msgstr ""
 
 msgid "the menu has no entry like \"{want}\""
@@ -8771,6 +8834,12 @@ msgid ""
 msgstr ""
 
 msgid "the top level - nothing to lose"
+msgstr ""
+
+msgid "the usual medals"
+msgstr ""
+
+msgid "the usual medals weren't put back: {err}"
 msgstr ""
 
 msgid ""
@@ -9050,6 +9119,9 @@ msgid "weakens the enemy"
 msgstr ""
 
 msgid "weapons"
+msgstr ""
+
+msgid "wearing {what}: {names}"
 msgstr ""
 
 msgid "wedding map"
@@ -9433,6 +9505,12 @@ msgid "{map}: walking out through its exit didn't take me out"
 msgstr ""
 
 msgid "{map}: {n} NPCs"
+msgstr ""
+
+msgid "{medal} (not in the bag)"
+msgstr ""
+
+msgid "{medal} (worn now)"
 msgstr ""
 
 msgid ""
@@ -9978,6 +10056,12 @@ msgid "{village} on {map}"
 msgstr ""
 
 msgid "{what} ({n} min left)"
+msgstr ""
+
+msgid "{what} are already worn"
+msgstr ""
+
+msgid "{what} are worn"
 msgstr ""
 
 msgid ""

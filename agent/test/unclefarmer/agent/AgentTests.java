@@ -409,6 +409,13 @@ public final class AgentTests {
         hex.setLength(0);
         for (byte b : Act.gearInfoPacket(16707907)) hex.append(String.format("%02x", b & 0xFF));
         eq(hex.toString(), "140100fef143", "the equipment details packet (G)");
+        // live (2026-11-26): Four Star Attack Medal (13428675) taken off as 12 01 00cce7c3 01, worn again as ... 00
+        hex.setLength(0);
+        for (byte b : Act.gearWearPacket(13428675, false)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100cce7c301", "the take-off packet");
+        hex.setLength(0);
+        for (byte b : Act.gearWearPacket(13428675, true)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100cce7c300", "the wear packet");
     }
 
     // ---------------------------------------------------------------- chat queue

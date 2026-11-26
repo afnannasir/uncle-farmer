@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Sequence
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, keyboard, potions, profilecopy, triggers, xpcard
+from ..engine import combat, keyboard, medals, potions, profilecopy, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, ask, buttons, enable_label, error, first_selected, group, info,
@@ -189,6 +189,13 @@ def _tiles(v: float) -> str:
     return ("%.1f" % v).rstrip("0").rstrip(".")
 
 
+def medal_list(p: dict[str, Any], key: str) -> list[dict[str, Any]]:
+    """A saved medal list ([{"uid", "name"}]), the rows that can't be read left out."""
+    got: object = p.get(key)
+    rows: list[object] = list(cast("list[object]", got)) if isinstance(got, list) else []
+    return [cast("dict[str, Any]", r) for r in rows if isinstance(r, dict) and cast("dict[str, Any]", r).get("uid") is not None]
+
+
 def pull_label(p: dict[str, Any]) -> str:
     """The early-fire setting says what it adds to: the bot already fights from the class's base
     attack range (Bot.reach: just inside the base attack's range, or the range set by hand), so 0
@@ -226,6 +233,7 @@ class ProfileDialog(Dialog):
         panel, box = page(nb, _("Team"))
         self.team_ui = team_page(panel, box, self.p)
         self.talents_page(nb)
+        self.medals_page(nb)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced),
@@ -439,6 +447,94 @@ class ProfileDialog(Dialog):
     def ticked_talents(self, box: wx.CheckListBox) -> list[str]:
         return [n for i, n in enumerate(self.talent_names) if box.IsChecked(i)]
 
+    def medals_page(self, nb: wx.Notebook) -> None:
+        """Other medals for farming, and the usual ones again at the end - no NPC, no cost."""
+        p = self.p
+        panel, box = page(nb, _("Medals"))
+        note = wx.StaticText(panel, label=_(
+            "Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already "
+            "worn takes its place, and each medal waits about 10 seconds after its own last change. The "
+            "Contribution Medals all share a name: each one shows its bonus once a run has read it."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.BOTTOM, 8)
+        f = Form(panel)
+        self.farm_medals = f.check(_("&Change the medals for farming, before the run sets out (the medals not "
+                                     "ticked come off)"), p.get("farm_medals", False))
+        box.Add(f.grid, 0, wx.BOTTOM, 6)
+        self.farm_medal_list = labeled(panel, box, _("Medals to &farm with:"),
+                                       lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        f = Form(panel)
+        self.medals_back = f.check(_("Put the &usual medals back on when the run ends, wherever it ends"),
+                                   p.get("medals_back", False))
+        box.Add(f.grid, 0, wx.TOP | wx.BOTTOM, 6)
+        self.usual_medal_list = labeled(panel, box, _("U&sual medals:"),
+                                        lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        buttons(panel, box, (_("&Tick the medals worn now, in both lists"), self.on_medals_now))
+        self.medal_rows: list[dict[str, Any]] = []
+
+        def enable(_e: object = None) -> None:
+            on = self.farm_medals.GetValue()
+            self.farm_medal_list.Enable(on)
+            self.medals_back.Enable(on)
+            self.usual_medal_list.Enable(on and self.medals_back.GetValue())
+        self.farm_medals.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.medals_back.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.enable_medals = enable
+
+    def fill_medals(self) -> None:
+        """The character's medals (the last scan, and any ticked before) in both lists, by their id,
+        each with its bonus when known, "(worn now)" or "(not in the bag)"."""
+        p = self.p
+        s: dict[str, Any] = p.get("scan") or {}
+        scanned: list[object] = list(s.get("medals") or [])
+        rows = [r for r in (cast("dict[str, Any]", x) for x in scanned if isinstance(x, dict)) if r.get("uid") is not None]
+        if self.medal_rows:             # Scan now again: the ticks made since the window opened stay
+            farm, usual = self.ticked_medals(self.farm_medal_list), self.ticked_medals(self.usual_medal_list)
+        else:
+            farm, usual = medal_list(p, "farm_medal_list"), medal_list(p, "usual_medal_list")
+        seen = {int(r["uid"]) for r in rows}
+        known = [dict(r, missing=False) for r in rows]
+        for r in farm + usual:
+            if int(r["uid"]) not in seen:
+                seen.add(int(r["uid"]))
+                known.append({"uid": int(r["uid"]), "name": str(r.get("name") or r["uid"]), "worn": False, "missing": True})
+        self.medal_rows = known
+        bonus = medals.bonuses()
+        labels: list[str] = []
+        for r in known:
+            text = medals.display(str(r["name"]))
+            if bonus.get(str(r["uid"])):
+                text = "%s (%s)" % (text, bonus[str(r["uid"])])
+            if r["missing"]:
+                text = _("{medal} (not in the bag)", medal=text)
+            elif r.get("worn"):
+                text = _("{medal} (worn now)", medal=text)
+            labels.append(text)
+        farm_ids = {int(r["uid"]) for r in farm}
+        usual_ids = {int(r["uid"]) for r in usual}
+        for box, ticked in ((self.farm_medal_list, farm_ids), (self.usual_medal_list, usual_ids)):
+            box.Set(labels)
+            for i, r in enumerate(known):
+                box.Check(i, int(r["uid"]) in ticked)
+        self.enable_medals()
+
+    def on_medals_now(self, _evt: object = None) -> None:
+        """Both lists ticked as the medals worn now, from the last scan (Scan now first for a fresh one)."""
+        scan_now: dict[str, Any] = self.p.get("scan") or {}
+        if not scan_now.get("medals"):
+            self.medals_unknown()
+            return
+        for box in (self.farm_medal_list, self.usual_medal_list):
+            for i, r in enumerate(self.medal_rows):
+                box.Check(i, bool(r.get("worn")) and not r.get("missing"))
+
+    def medals_unknown(self) -> None:
+        error(self, _("The medals aren't known yet: log in to this character in the game and press Scan now "
+                      "on the Overview page."))
+
+    def ticked_medals(self, box: wx.CheckListBox) -> list[dict[str, Any]]:
+        return [{"uid": int(r["uid"]), "name": str(r["name"])} for i, r in enumerate(self.medal_rows) if box.IsChecked(i)]
+
     def triggers_page(self, nb: wx.Notebook) -> None:
         """Independent, ordered preparation and completion sequences."""
         panel, box = page(nb, _("Triggers"))
@@ -512,6 +608,7 @@ class ProfileDialog(Dialog):
         self.fill_potions()
         self.fill_xp_cards()
         self.fill_talents()
+        self.fill_medals()
 
     def fill_xp_cards(self) -> None:
         """One tick per kind of experience card, weakest first, each with what the last scan saw of
@@ -760,6 +857,20 @@ class ProfileDialog(Dialog):
         if self.farm_talents.GetValue() and self.talents_back.GetValue() and not usual_talents:
             error(self, _("Tick the usual talents on the Talents page, or untick Put the usual talents back."))
             return
+        farm_medals, usual_medals = self.ticked_medals(self.farm_medal_list), self.ticked_medals(self.usual_medal_list)
+        if self.farm_medals.GetValue() and not self.medal_rows:
+            self.medals_unknown()
+            return
+        if self.farm_medals.GetValue() and not farm_medals:
+            error(self, _("Tick the medals to farm with on the Medals page, or untick Change the medals for farming."))
+            return
+        if self.farm_medals.GetValue() and self.medals_back.GetValue() and not usual_medals:
+            error(self, _("Tick the usual medals on the Medals page, or untick Put the usual medals back on."))
+            return
+        p["farm_medals"] = self.farm_medals.GetValue()
+        p["farm_medal_list"] = farm_medals
+        p["medals_back"] = self.medals_back.GetValue()
+        p["usual_medal_list"] = usual_medals
         p["farm_talents"] = self.farm_talents.GetValue()
         p["farm_talent_list"] = farm_talents
         p["talents_back"] = self.talents_back.GetValue()
