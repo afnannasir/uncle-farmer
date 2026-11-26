@@ -83,6 +83,9 @@ msgstr "&Basta aur supplies"
 msgid "&Bot"
 msgstr "&Bot"
 
+msgid "&Bought today (the game's day, from 00:00 GMT):"
+msgstr "&Aaj khareede gaye (game ka din, 00:00 GMT se):"
+
 msgid "&Browse"
 msgstr "&Dekhein"
 
@@ -335,6 +338,9 @@ msgstr "&Install"
 msgid "&Items for sale (Enter searches):"
 msgstr "&Bikne wali cheezein (Enter dhoondta hai):"
 
+msgid "&Items to buy (the market's collections):"
+msgstr "&Khareedne wale items (market ki collections):"
+
 msgid "&Keep at least this many of each gem and level:"
 msgstr "Har gem aur level ke kam az kam itne rakhein (&K):"
 
@@ -424,6 +430,9 @@ msgstr "&Paigham:"
 msgid "&Most a unit (0 = any):"
 msgstr "Ek ki &zyada se zyada qeemat (0 = koi bhi):"
 
+msgid "&Most gold coins a unit:"
+msgstr "Ek unit ke zyada se zyada &gold coins:"
+
 msgid "&Movement:"
 msgstr "&Harkat:"
 
@@ -473,6 +482,9 @@ msgstr ""
 
 msgid "&Open the log folder"
 msgstr "Log folder khol&ein"
+
+msgid "&Other names (by commas, as the game writes them):"
+msgstr "&Doosre naam (comma se alag, jaise game likhta hai):"
 
 msgid "&PK mode:"
 msgstr "&PK mode:"
@@ -617,6 +629,9 @@ msgstr "&Dhoondein"
 msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
 msgstr ""
 "Bag manager ke rules se shards bechein (&S) (aakhir mein, ya basta bhari ho to)"
+
+msgid "&Sell the collection to the town's buyers when done"
+msgstr "Kaam ke baad collection shehar ke buyers ko &bechein"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Jama kiya hua Aquaculture, Ore ya Herb Buyer ko &bechein"
@@ -1304,12 +1319,21 @@ msgstr "Masroof hai - pehle stop bhejein."
 msgid "Busy, one command at a time. Still on: {what}."
 msgstr "Masroof hoon, ek waqt mein ek command. Abhi chal raha hai: {what}."
 
+msgid "Buy co&llection items"
+msgstr "Co&llection items khareedein"
+
+msgid "Buy collection items"
+msgstr "Collection items khareedein"
+
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr "{lots} lots, {items} cheezein, kul {gold} gold coins mein khareedein?"
 
 msgid ""
 "Buy {n} {shard} at the Shard Market, a bagful at a time, and put each bagful in the storehouse{cost}."
 msgstr ""
+
+msgid "Buying collection items"
+msgstr "Collection items ki khareedari"
 
 msgid "By item"
 msgstr "Cheez se"
@@ -2763,6 +2787,9 @@ msgstr "Cheez:"
 
 msgid "Items"
 msgstr "Items"
+
+msgid "Items a &day, at most (the game allows {n}):"
+msgstr "Ek din mein zyada se zyada &items (game {n} ki ijazat deta hai):"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Bila rule wali cheezein: sirf wohi &chhuein jo is run ne uthaya"
@@ -4339,6 +4366,9 @@ msgstr "Sell shards now: haath se shuru kiya"
 msgid "Sell the &collection now"
 msgstr "Collection abhi &bechein"
 
+msgid "Sell the collection to the town's buyers, then buy on"
+msgstr "Collection shehar ke buyers ko bechein, phir khareedte rahein"
+
 msgid "Seller &IDs (several: 1234, 5678):"
 msgstr "Bechne wale ki &IDs (kai: 1234, 5678):"
 
@@ -4710,6 +4740,9 @@ msgstr ""
 
 msgid "Stop before the next &level (instead of the character's setting)"
 msgstr "Agle &level se pehle rukein (kirdaar ki setting ki jagah)"
+
+msgid "Stop buying"
+msgstr "Khareedna band karein"
 
 msgid "Stop every day"
 msgstr "Har roz rok"
@@ -5475,6 +5508,9 @@ msgstr "Kam az kam aik din par nishan lagayein."
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr "Kam az kam ek gem ya crystal ki ek qism par tick karein."
 
+msgid "Tick at least one item, or type its name."
+msgstr "Kam az kam ek item tick karein, ya us ka naam likhein."
+
 msgid "Tick at least one thing to copy."
 msgstr "Copy karne ke liye kam az kam ek cheez tick karein."
 
@@ -5948,6 +5984,9 @@ msgstr "Jab kuch der koi kill na ho, kahin aur try karo, phir ruk jao"
 msgid "When the bag is &full outside:"
 msgstr "Bahar basta &bhar jaye to:"
 
+msgid "When the bag is too &heavy:"
+msgstr "Jab bag bo&hat bhaari ho:"
+
 msgid "When the last cave is done"
 msgstr "Jab aakhri ghaar ho jaaye"
 
@@ -6342,6 +6381,10 @@ msgstr "{all} mein se {n} lots khareede, {spent} gold coins mein"
 msgid "bought {n} {item}"
 msgstr "{n} {item} kharide"
 
+msgid "bought {n} {item} for {cost} gold coins - {left} left to buy today"
+msgstr ""
+"{n} {item} {cost} gold coins mein khareede - aaj abhi {left} aur khareedne hain"
+
 msgid "bought {n} {shard}"
 msgstr "{n} {shard} kharide"
 
@@ -6388,6 +6431,14 @@ msgstr "{n} baar build kiya; {made} aaj pehle hi ho chuke"
 
 msgid "built {n} times; {why}"
 msgstr "{n} baar build kiya; {why}"
+
+msgid "buying collection items"
+msgstr "collection items ki khareedari"
+
+msgid ""
+"buying collection items: {items}, at most {most} gold coins a unit, {left} left today"
+msgstr ""
+"collection items ki khareedari: {items}, ek unit zyada se zyada {most} gold coins, aaj {left} baqi"
 
 msgid "buying the ticked lots..."
 msgstr "tick kiye hue lots khareed raha hai..."
@@ -6578,6 +6629,14 @@ msgstr "deposit ki aamdani le li"
 
 msgid "collected {n} Value Product incomes"
 msgstr "{n} Value Product ki aamdani le li"
+
+msgid ""
+"collection: bought {n} items for {spent} gold coins; {left} left to buy today. {why}"
+msgstr ""
+"collection: {n} items {spent} gold coins mein khareede; aaj abhi {left} aur. {why}"
+
+msgid "collection: would buy {n} items for {spent} gold coins. {why}"
+msgstr "collection: {n} items {spent} gold coins mein khareedta. {why}"
 
 msgid "collections"
 msgstr "collections"
@@ -7805,6 +7864,9 @@ msgstr ""
 msgid "no menu entry like \"{want}\""
 msgstr "aisa koi menu entry nahi: \"{want}\""
 
+msgid "no more lots on the list"
+msgstr "list mein aur koi lot nahin"
+
 msgid "no more {shard} came - stocking stops here"
 msgstr ""
 
@@ -7977,6 +8039,9 @@ msgstr "nahi khareeda: game ne kaha \"{words}\""
 msgid "not bought: the game's quantity box didn't take the number"
 msgstr "nahi khareeda: game ke tadaad wale khane ne number nahi liya"
 
+msgid "not bought: {item} ({why})"
+msgstr "nahin khareeda: {item} ({why})"
+
 msgid "not bought: {why}"
 msgstr "nahi khareeda: {why}"
 
@@ -8006,6 +8071,9 @@ msgstr ""
 
 msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
 msgstr "Contribution Chest ke liye contribution kam hai: {cost} mein se {have}"
+
+msgid "not enough gold coins for {cost}"
+msgstr "{cost} ke liye gold coins kaafi nahin"
 
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
@@ -8728,6 +8796,9 @@ msgstr "intezar ke dauran aap ne roka: character logout hi rahega"
 msgid "stopped with {n} Vitality left, as you set"
 msgstr "aap ki tarteeb ke mutabiq {n} Vitality baqi rehte ruk gaye"
 
+msgid "stopped: the market was looked at too many times in one run"
+msgstr "ruk gaye: ek run mein market bohat baar dekha gaya"
+
 msgid "stopped: {n} found so far"
 msgstr "ruk gaya: ab tak {n} mile"
 
@@ -9063,9 +9134,18 @@ msgstr "basta mazeed {potion} ke liye bohat bhara hai"
 msgid "the bag is too full for more {shard}"
 msgstr "basta mazeed {shard} ke liye bohat bhara hai"
 
+msgid "the bag is too heavy for more"
+msgstr "bag mein aur ke liye jagah nahin, bohat bhaari hai"
+
 msgid "the bag is too heavy to break any more: make room and start again"
 msgstr ""
 "basta itna bhari hai ke aur nahi toot sakta: jagah bana kar dobara shuru karein"
+
+msgid "the bag is too heavy, and the buyers took nothing"
+msgstr "bag bohat bhaari hai, aur buyers ne kuch nahin liya"
+
+msgid "the bag is too heavy: selling the collection to make room"
+msgstr "bag bohat bhaari hai: jagah banane ke liye collection bech rahe hain"
 
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "basta {pct}% bhara hai (load {load} / {max})"
@@ -9280,8 +9360,14 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "game ne login darkhwast se inkar kiya"
 
+msgid "the game said nothing"
+msgstr "game ne kuch nahin kaha"
+
 msgid "the game said nothing - look in the bag"
 msgstr "game ne kuch nahi kaha - baste mein dekhein"
+
+msgid "the game said nothing about {item} - look in the bag"
+msgstr "{item} ke baare mein game ne kuch nahin kaha - bag dekhein"
 
 msgid "the game said: not enough talent points - nothing changed"
 msgstr "game ne kaha: not enough talent points - kuch nahin badla"
@@ -9293,6 +9379,9 @@ msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
 "game kehta hai ke yeh kirdaar aaj pehle hi experience dungeon mein ja chuka hai"
+
+msgid "the game says today's collection items are all bought"
+msgstr "game kehta hai aaj ke collection items sab khareede ja chuke"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
@@ -9339,6 +9428,9 @@ msgstr "game ki keys istemal nahi ho sakti: {why}"
 
 msgid "the game's own speech is off while the bot runs"
 msgstr "bot chalne ke doran game ki apni speech band rehti hai"
+
+msgid "the game's quantity box didn't take the number"
+msgstr "game ke quantity box ne number nahin liya"
 
 msgid "the game's report: {n} of {total} kills, {dmg} damage"
 msgstr "game ki report: {total} mein se {n} kills, {dmg} damage"
@@ -9482,6 +9574,11 @@ msgstr "agle level ko {n} experience chahiye"
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "agle level ko {n} experience chahiye; {goal} se kam par farming ruk jayegi"
+
+msgid ""
+"the next lot costs {price} gold coins a unit, more than the most you set ({most})"
+msgstr ""
+"agla lot {price} gold coins ek unit ka hai, aap ki had ({most}) se zyada"
 
 msgid "the open menu is {what}"
 msgstr "khula menu {what} hai"
@@ -9793,6 +9890,14 @@ msgstr "{name} ko"
 msgid "today"
 msgstr "aaj"
 
+msgid "today's {n} are bought"
+msgstr "aaj ke {n} khareede ja chuke"
+
+msgid ""
+"today's {n} collection items are bought already - nothing to buy until the game's day turns"
+msgstr ""
+"aaj ke {n} collection items pehle hi khareede ja chuke - game ka din badalne tak kuch nahin"
+
 msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
@@ -9985,6 +10090,9 @@ msgstr "{n} {item} tootenge"
 
 msgid "would buy {n} for {cost} gold coins"
 msgstr "{n} khareedta {cost} gold coins mein"
+
+msgid "would buy {n} {item} for {cost} gold coins"
+msgstr "{n} {item} {cost} gold coins mein khareedta"
 
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
@@ -10654,6 +10762,9 @@ msgstr "{n} level up"
 
 msgid "{n} lots found"
 msgstr "{n} lots mile"
+
+msgid "{n} lots in a row couldn't be bought"
+msgstr "lagatar {n} lots nahin khareede ja sake"
 
 msgid "{n} made or received"
 msgstr "{n} banaye ya mile"

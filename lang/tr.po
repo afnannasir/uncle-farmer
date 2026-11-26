@@ -83,6 +83,9 @@ msgstr "Çanta ve sarf malzemeleri (&B)"
 msgid "&Bot"
 msgstr "&Bot"
 
+msgid "&Bought today (the game's day, from 00:00 GMT):"
+msgstr "Bugün a&lınan (oyun günü, 00:00 GMT'den beri):"
+
 msgid "&Browse"
 msgstr "Gözat (&B)"
 
@@ -333,6 +336,9 @@ msgstr "Yükle (&I)"
 msgid "&Items for sale (Enter searches):"
 msgstr ""
 
+msgid "&Items to buy (the market's collections):"
+msgstr "&Alınacak eşyalar (pazarın koleksiyonları):"
+
 msgid "&Keep at least this many of each gem and level:"
 msgstr ""
 
@@ -421,6 +427,9 @@ msgstr "&Mesajlar:"
 msgid "&Most a unit (0 = any):"
 msgstr ""
 
+msgid "&Most gold coins a unit:"
+msgstr "Birim başına en çok altın &sikke:"
+
 msgid "&Movement:"
 msgstr "Hareket: (&M)"
 
@@ -470,6 +479,9 @@ msgstr ""
 
 msgid "&Open the log folder"
 msgstr "Günlük klasörünü aç (&O)"
+
+msgid "&Other names (by commas, as the game writes them):"
+msgstr "&Diğer adlar (virgülle, oyunun yazdığı gibi):"
 
 msgid "&PK mode:"
 msgstr "&PK modu:"
@@ -612,6 +624,9 @@ msgstr ""
 
 msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
 msgstr ""
+
+msgid "&Sell the collection to the town's buyers when done"
+msgstr "Bitince koleksiyonu şehrin alıcılarına sa&t"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr "Toplananları &Su Ürünleri, Maden veya Bitki Alıcısına sat"
@@ -1289,12 +1304,21 @@ msgstr "Meşgulüm - önce stop gönder."
 msgid "Busy, one command at a time. Still on: {what}."
 msgstr ""
 
+msgid "Buy co&llection items"
+msgstr "Ko&leksiyon eşyası al"
+
+msgid "Buy collection items"
+msgstr "Koleksiyon eşyası al"
+
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr ""
 
 msgid ""
 "Buy {n} {shard} at the Shard Market, a bagful at a time, and put each bagful in the storehouse{cost}."
 msgstr ""
+
+msgid "Buying collection items"
+msgstr "Koleksiyon eşyası alınıyor"
 
 msgid "By item"
 msgstr ""
@@ -2733,6 +2757,9 @@ msgstr "Eşya:"
 
 msgid "Items"
 msgstr "Eşyalar"
+
+msgid "Items a &day, at most (the game allows {n}):"
+msgstr "Günde en çok &eşya (oyun {n} izin verir):"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Kuralı &olmayan eşyalar: yalnızca bu çalışmada toplananlara dokun"
@@ -4286,6 +4313,9 @@ msgstr "Parçaları şimdi sat: elle başlatıldı"
 msgid "Sell the &collection now"
 msgstr "Koleksiyonu şimdi sat (&C)"
 
+msgid "Sell the collection to the town's buyers, then buy on"
+msgstr "Koleksiyonu şehrin alıcılarına sat, sonra almaya devam et"
+
 msgid "Seller &IDs (several: 1234, 5678):"
 msgstr ""
 
@@ -4648,6 +4678,9 @@ msgstr "Sonraki seviyeden önce dur (zindan içinde asla: &orada yalnızca söyl
 
 msgid "Stop before the next &level (instead of the character's setting)"
 msgstr "Sonraki seviyeden önce dur (karakterin ayarı yerine) (&L)"
+
+msgid "Stop buying"
+msgstr "Almayı durdur"
 
 msgid "Stop every day"
 msgstr "Her gün dur"
@@ -5384,6 +5417,9 @@ msgstr "En az bir gün işaretle."
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr ""
 
+msgid "Tick at least one item, or type its name."
+msgstr "En az bir eşya işaretle ya da adını yaz."
+
 msgid "Tick at least one thing to copy."
 msgstr "Kopyalamak için en az bir şey işaretle."
 
@@ -5846,6 +5882,9 @@ msgstr "Bir süre hiçbir şey öldürülmezse başka yerde dene, sonra dur"
 msgid "When the bag is &full outside:"
 msgstr "Dışarıda çanta dolunca (&F):"
 
+msgid "When the bag is too &heavy:"
+msgstr "Çanta çok a&ğır olunca:"
+
 msgid "When the last cave is done"
 msgstr "Son mağara tamamlandığında"
 
@@ -6238,6 +6277,9 @@ msgstr ""
 msgid "bought {n} {item}"
 msgstr "{n} {item} satın alındı"
 
+msgid "bought {n} {item} for {cost} gold coins - {left} left to buy today"
+msgstr "{cost} altın sikkeye {n} {item} alındı - bugün alınacak {left} kaldı"
+
 msgid "bought {n} {shard}"
 msgstr "{n} {shard} satın alındı"
 
@@ -6284,6 +6326,14 @@ msgstr "{n} kez inşa edildi; {made} tanesi bugün zaten yapılmış"
 
 msgid "built {n} times; {why}"
 msgstr "{n} kez inşa edildi; {why}"
+
+msgid "buying collection items"
+msgstr "koleksiyon eşyası alınıyor"
+
+msgid ""
+"buying collection items: {items}, at most {most} gold coins a unit, {left} left today"
+msgstr ""
+"koleksiyon eşyası alınıyor: {items}, birim başına en çok {most} altın sikke, bugün {left} kaldı"
 
 msgid "buying the ticked lots..."
 msgstr ""
@@ -6469,6 +6519,14 @@ msgstr "mevduat geliri toplandı"
 
 msgid "collected {n} Value Product incomes"
 msgstr "{n} Değer Ürünü geliri toplandı"
+
+msgid ""
+"collection: bought {n} items for {spent} gold coins; {left} left to buy today. {why}"
+msgstr ""
+"koleksiyon: {spent} altın sikkeye {n} eşya alındı; bugün alınacak {left} kaldı. {why}"
+
+msgid "collection: would buy {n} items for {spent} gold coins. {why}"
+msgstr "koleksiyon: {spent} altın sikkeye {n} eşya alınırdı. {why}"
 
 msgid "collections"
 msgstr ""
@@ -7660,6 +7718,9 @@ msgstr ""
 msgid "no menu entry like \"{want}\""
 msgstr "\"{want}\" gibi bir menü girdisi yok"
 
+msgid "no more lots on the list"
+msgstr "listede başka parti yok"
+
 msgid "no more {shard} came - stocking stops here"
 msgstr ""
 
@@ -7824,6 +7885,9 @@ msgstr ""
 msgid "not bought: the game's quantity box didn't take the number"
 msgstr ""
 
+msgid "not bought: {item} ({why})"
+msgstr "alınmadı: {item} ({why})"
+
 msgid "not bought: {why}"
 msgstr ""
 
@@ -7849,6 +7913,9 @@ msgstr "{item} almak için yeterli arnebia yok: tanesi {price}, çantada {money}
 
 msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
 msgstr ""
+
+msgid "not enough gold coins for {cost}"
+msgstr "{cost} için yeterli altın sikke yok"
 
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr "{item} için yeterli koruma rünü yok - istendiği gibi duruluyor"
@@ -8564,6 +8631,9 @@ msgstr ""
 msgid "stopped with {n} Vitality left, as you set"
 msgstr "ayarladığın gibi {n} Canlılık kalınca duruldu"
 
+msgid "stopped: the market was looked at too many times in one run"
+msgstr "durdu: pazara bir çalıştırmada çok fazla bakıldı"
+
 msgid "stopped: {n} found so far"
 msgstr ""
 
@@ -8894,8 +8964,17 @@ msgstr ""
 msgid "the bag is too full for more {shard}"
 msgstr "çanta daha fazla {shard} için fazla dolu"
 
+msgid "the bag is too heavy for more"
+msgstr "çanta daha fazlası için çok ağır"
+
 msgid "the bag is too heavy to break any more: make room and start again"
 msgstr ""
+
+msgid "the bag is too heavy, and the buyers took nothing"
+msgstr "çanta çok ağır ve alıcılar hiçbir şey almadı"
+
+msgid "the bag is too heavy: selling the collection to make room"
+msgstr "çanta çok ağır: yer açmak için koleksiyon satılıyor"
 
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "çanta %{pct} dolu (yük {load}/{max})"
@@ -9104,8 +9183,14 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "oyun giriş isteğini reddetti"
 
+msgid "the game said nothing"
+msgstr "oyun hiçbir şey demedi"
+
 msgid "the game said nothing - look in the bag"
 msgstr ""
+
+msgid "the game said nothing about {item} - look in the bag"
+msgstr "oyun {item} için hiçbir şey demedi - çantaya bak"
 
 msgid "the game said: not enough talent points - nothing changed"
 msgstr ""
@@ -9116,6 +9201,9 @@ msgstr "oyun dedi ki: {lines}"
 msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
+
+msgid "the game says today's collection items are all bought"
+msgstr "oyun bugünün koleksiyon eşyalarının hepsinin alındığını söylüyor"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
@@ -9159,6 +9247,9 @@ msgstr "oyunun tuşları kullanılamıyor: {why}"
 
 msgid "the game's own speech is off while the bot runs"
 msgstr "bot çalışırken oyunun kendi konuşması kapalı"
+
+msgid "the game's quantity box didn't take the number"
+msgstr "oyunun miktar kutusu sayıyı almadı"
 
 msgid "the game's report: {n} of {total} kills, {dmg} damage"
 msgstr ""
@@ -9300,6 +9391,11 @@ msgstr "sonraki seviye için {n} deneyim gerekiyor"
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "sonraki seviye için {n} deneyim gerekiyor; {goal} altına inince farm durur"
+
+msgid ""
+"the next lot costs {price} gold coins a unit, more than the most you set ({most})"
+msgstr ""
+"sonraki parti birim başına {price} altın sikke, belirlediğin en çoktan ({most}) fazla"
 
 msgid "the open menu is {what}"
 msgstr "açık menü: {what}"
@@ -9604,6 +9700,14 @@ msgstr "{name} kişisine"
 msgid "today"
 msgstr "bugün"
 
+msgid "today's {n} are bought"
+msgstr "bugünün {n} eşyası alındı"
+
+msgid ""
+"today's {n} collection items are bought already - nothing to buy until the game's day turns"
+msgstr ""
+"bugünün {n} koleksiyon eşyası zaten alındı - oyun günü dönene kadar alınacak bir şey yok"
+
 msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
@@ -9795,6 +9899,9 @@ msgstr ""
 
 msgid "would buy {n} for {cost} gold coins"
 msgstr ""
+
+msgid "would buy {n} {item} for {cost} gold coins"
+msgstr "{cost} altın sikkeye {n} {item} alınırdı"
 
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
@@ -10451,6 +10558,9 @@ msgstr "{n} seviye atlama"
 
 msgid "{n} lots found"
 msgstr ""
+
+msgid "{n} lots in a row couldn't be bought"
+msgstr "üst üste {n} parti alınamadı"
 
 msgid "{n} made or received"
 msgstr "{n} yapıldı veya alındı"

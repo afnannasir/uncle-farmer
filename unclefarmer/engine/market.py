@@ -522,6 +522,11 @@ def _choose(b: Bot, top: dict[str, Any], at: Where) -> None:
                         n=DETAIL_AGENT))
 
 
+def choose_lot(b: Bot, pg: Page, lot: Lot) -> None:
+    """Choose a lot of the page by its listing id (the game asks how many, or yes or no, next)."""
+    _choose(b, pg.top, pg.lot_at[lot.id])
+
+
 def open_market(b: Bot) -> dict[str, Any]:
     """The marketplace's first menu, walking to the nearest one when it isn't open."""
     top = _top(b)

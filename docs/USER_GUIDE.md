@@ -1420,6 +1420,24 @@ not enough gold coins). **Save as CSV** writes the results to a file.
 
 The same work runs from a script: see "The player market" in docs/SCRIPTING.md.
 
+### Buying collection items
+
+**Tools, Buy collection items** (Ctrl+Shift+L) buys collection items at the player market by itself: the fish, ore and herbs gathering brings, which the town's fish, ore and herb buyers take for arnebia.
+
+Choose:
+
+- **Items to buy**: tick them in the list (what the buyers take), or type other names, separated by commas, as the game writes them. A name is a whole name: "Milkfish" never buys a "Flying Fish".
+- **Most gold coins a unit**: a lot that costs more is never bought.
+- **Items a day, at most**: the game allows 500 a day. The count starts again with the game's day, at 00:00 GMT, and is kept for each character. **Bought today** shows it, and you can correct it (after buying by hand, for instance).
+- **Sell the collection to the town's buyers when done**.
+- **When the bag is too heavy**: stop buying, or sell the collection to the buyers and buy on (five times at most).
+
+The bot walks to the nearest marketplace and reads the collections in price order, cheapest first. It buys every lot of your items, all of it or what is left of the day's count, until a lot of your items costs more than your most a unit (every later lot costs as much or more), the day's count is reached, or the list ends. Lots in their first hour on display can't be bought yet, and are passed over. What arrives is counted from the bag.
+
+It stops at once when the game says the day's collection items are all bought, or that there aren't enough gold coins; a lot that can't be had (gone, or new on display) is passed over, and ten in a row end the run. **Check only** buys nothing and says what it would buy.
+
+It is also in the Before and After farming lists, and a script runs it with `buy_collection` (`buy_collection check` to only look).
+
 ## Shard prices
 
 Uncle Farmer keeps track of shard prices so it can estimate how much your collected shards are worth.

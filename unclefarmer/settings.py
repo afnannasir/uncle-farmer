@@ -671,6 +671,7 @@ _PROFILE_ID_KEY = "_unclefarmer_character_identity"
 # What the bot learns lives next to the profiles (entrances, weights, teleports, landings, guards,
 # level tops): never a character, so never in the list of profiles.
 LEARNED_PREFIX = "_learned_"
+PRIVATE_PREFIX = "_"          # every file of the bot's own in the profiles folder (a character's never starts so)
 
 
 def character_profile(name: str, entity_id: object, server: str = "") -> str:
@@ -826,14 +827,25 @@ def profiles() -> list[str]:
         if not filename.endswith(".json") or filename.startswith(LEARNED_PREFIX):
             continue                  # (the _learned_*.json files are what the bot learned, not characters)
         path = os.path.join(paths.PROFILES, filename)
+        data: object = None
         try:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
         except (OSError, ValueError):
             identity = None
+        if filename.startswith(PRIVATE_PREFIX) and not _a_profile(data):
+            # the bot's own files beside the profiles (the interrupted runs, the game restarts, the
+            # day's chain and purchases): "_game_restarts" showed among the characters to copy from.
+            # A character's name with a sign first ("*Ace" -> "_Ace.json") is still a profile.
+            continue
         found.append(identity if isinstance(identity, str) and identity else filename[:-5])
     return sorted(found, key=lambda value: profile_display(value).casefold())
+
+
+def _a_profile(data: object) -> bool:
+    """A file's JSON is a character's profile: its identity, or the keys every saved profile holds."""
+    return json.is_object(data) and (_PROFILE_ID_KEY in data or "attack_keys" in data or "pk_mode" in data)
 
 
 def _load_profile(character: str) -> tuple[dict[str, Any], str]:

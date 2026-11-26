@@ -907,6 +907,13 @@ If you want to sell the gathered items separately, use:
 
 The available types are `fish`, `ore`, and `herb`. If the character has no gathering skill and no type is specified, the bot chooses buyers for the goods it recognizes in the bag.
 
+To buy collection items at the player market instead, as set in **Tools, Buy collection items** (the items, the most gold coins a unit, the day's count, and what to do afterwards), use:
+
+    buy_collection               buy, cheapest first, up to the day's count
+    buy_collection check         only say what it would buy
+
+It sells what it bought to the buyers of those items (not only the character's own gathering type) when the tool says so, and the day's count is kept for each character until 00:00 GMT.
+
 ### Managing shards and your bag
 
 Uncle Farmer also provides commands for handling shards and following your bag manager's settings.
@@ -1295,6 +1302,7 @@ Use this section when you need a quick reminder of a command or its syntax.
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]
+    buy_collection [check]
     sell_shards
     clean_bag
     update_shard_prices

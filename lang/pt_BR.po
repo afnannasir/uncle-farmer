@@ -83,6 +83,9 @@ msgstr "&Mochila e suprimentos"
 msgid "&Bot"
 msgstr "&Bot"
 
+msgid "&Bought today (the game's day, from 00:00 GMT):"
+msgstr "Comprados &hoje (dia do jogo, desde 00:00 GMT):"
+
 msgid "&Browse"
 msgstr "&Procurar"
 
@@ -335,6 +338,9 @@ msgstr "&Instalar"
 msgid "&Items for sale (Enter searches):"
 msgstr ""
 
+msgid "&Items to buy (the market's collections):"
+msgstr "Itens a &comprar (coleções do mercado):"
+
 msgid "&Keep at least this many of each gem and level:"
 msgstr "Manter pelo menos esta quantidade de cada gema e nível (&K):"
 
@@ -424,6 +430,9 @@ msgstr "&Mensagens:"
 msgid "&Most a unit (0 = any):"
 msgstr ""
 
+msgid "&Most gold coins a unit:"
+msgstr "&Máximo de moedas de ouro por unidade:"
+
 msgid "&Movement:"
 msgstr "&Movimento:"
 
@@ -473,6 +482,9 @@ msgstr ""
 
 msgid "&Open the log folder"
 msgstr "Abrir a pasta de &registros"
+
+msgid "&Other names (by commas, as the game writes them):"
+msgstr "&Outros nomes (separados por vírgulas, como o jogo escreve):"
 
 msgid "&PK mode:"
 msgstr "Modo &PK:"
@@ -617,6 +629,9 @@ msgstr ""
 msgid "&Sell shards by the bag manager's rules (when done, or when too heavy)"
 msgstr ""
 "Vender fragmentos pelas regras do gerenciador da mochila (&S) (no fim, ou se estiver pesado)"
+
+msgid "&Sell the collection to the town's buyers when done"
+msgstr "&Vender a coleção aos compradores da cidade ao terminar"
 
 msgid "&Sell what is gathered to the Aquaculture, Ore or Herb Buyer"
 msgstr ""
@@ -1306,12 +1321,21 @@ msgstr "Ocupado - envie o comando de parada primeiro."
 msgid "Busy, one command at a time. Still on: {what}."
 msgstr "Ocupado, um comando por vez. Ainda em: {what}."
 
+msgid "Buy co&llection items"
+msgstr "Comp&rar itens de coleção"
+
+msgid "Buy collection items"
+msgstr "Comprar itens de coleção"
+
 msgid "Buy {lots} lots, {items} items, {gold} gold coins in all?"
 msgstr ""
 
 msgid ""
 "Buy {n} {shard} at the Shard Market, a bagful at a time, and put each bagful in the storehouse{cost}."
 msgstr ""
+
+msgid "Buying collection items"
+msgstr "Comprando itens de coleção"
 
 msgid "By item"
 msgstr ""
@@ -2767,6 +2791,9 @@ msgstr "Item:"
 
 msgid "Items"
 msgstr "Itens"
+
+msgid "Items a &day, at most (the game allows {n}):"
+msgstr "Itens por &dia, no máximo (o jogo permite {n}):"
 
 msgid "Items with no rule: touch &only what this run picked up"
 msgstr "Itens sem regra: afetar &somente o que foi coletado nesta execução"
@@ -4340,6 +4367,9 @@ msgstr "Vender fragmentos agora: iniciado manualmente"
 msgid "Sell the &collection now"
 msgstr "Vender a &coleta agora"
 
+msgid "Sell the collection to the town's buyers, then buy on"
+msgstr "Vender a coleção aos compradores da cidade e continuar comprando"
+
 msgid "Seller &IDs (several: 1234, 5678):"
 msgstr ""
 
@@ -4712,6 +4742,9 @@ msgstr ""
 
 msgid "Stop before the next &level (instead of the character's setting)"
 msgstr "Parar antes do próximo &nível (em vez da configuração do personagem)"
+
+msgid "Stop buying"
+msgstr "Parar de comprar"
 
 msgid "Stop every day"
 msgstr "Parar todos os dias"
@@ -5477,6 +5510,9 @@ msgstr "Marque pelo menos um dia."
 msgid "Tick at least one gem, or a kind of crystal."
 msgstr "Marque pelo menos uma gema ou um tipo de cristal."
 
+msgid "Tick at least one item, or type its name."
+msgstr "Marque pelo menos um item, ou digite o nome dele."
+
 msgid "Tick at least one thing to copy."
 msgstr "Marque pelo menos uma coisa para copiar."
 
@@ -5945,6 +5981,9 @@ msgstr "Quando nada é morto por um tempo, tentar em outro lugar e depois parar"
 msgid "When the bag is &full outside:"
 msgstr "Quando a bolsa estiver &cheia fora da cidade:"
 
+msgid "When the bag is too &heavy:"
+msgstr "Quando a bolsa estiver &pesada demais:"
+
 msgid "When the last cave is done"
 msgstr "Quando a última caverna terminar"
 
@@ -6337,6 +6376,10 @@ msgstr ""
 msgid "bought {n} {item}"
 msgstr "{n} {item} comprado(s)"
 
+msgid "bought {n} {item} for {cost} gold coins - {left} left to buy today"
+msgstr ""
+"comprou {n} {item} por {cost} moedas de ouro - faltam {left} para comprar hoje"
+
 msgid "bought {n} {shard}"
 msgstr "{n} {shard} comprado(s)"
 
@@ -6383,6 +6426,14 @@ msgstr "construiu {n} vezes; {made} já feitas hoje"
 
 msgid "built {n} times; {why}"
 msgstr "construiu {n} vezes; {why}"
+
+msgid "buying collection items"
+msgstr "comprando itens de coleção"
+
+msgid ""
+"buying collection items: {items}, at most {most} gold coins a unit, {left} left today"
+msgstr ""
+"comprando itens de coleção: {items}, no máximo {most} moedas de ouro por unidade, {left} restantes hoje"
 
 msgid "buying the ticked lots..."
 msgstr ""
@@ -6575,6 +6626,14 @@ msgstr "coletou os rendimentos do depósito"
 
 msgid "collected {n} Value Product incomes"
 msgstr "coletou {n} rendimentos de produtos de valor"
+
+msgid ""
+"collection: bought {n} items for {spent} gold coins; {left} left to buy today. {why}"
+msgstr ""
+"coleção: comprou {n} itens por {spent} moedas de ouro; faltam {left} para comprar hoje. {why}"
+
+msgid "collection: would buy {n} items for {spent} gold coins. {why}"
+msgstr "coleção: compraria {n} itens por {spent} moedas de ouro. {why}"
 
 msgid "collections"
 msgstr ""
@@ -7790,6 +7849,9 @@ msgstr ""
 msgid "no menu entry like \"{want}\""
 msgstr "nenhuma opção de menu semelhante a \"{want}\""
 
+msgid "no more lots on the list"
+msgstr "não há mais lotes na lista"
+
 msgid "no more {shard} came - stocking stops here"
 msgstr ""
 
@@ -7960,6 +8022,9 @@ msgstr ""
 msgid "not bought: the game's quantity box didn't take the number"
 msgstr ""
 
+msgid "not bought: {item} ({why})"
+msgstr "não comprado: {item} ({why})"
+
 msgid "not bought: {why}"
 msgstr ""
 
@@ -7988,6 +8053,9 @@ msgstr ""
 
 msgid "not enough contribution for a Contribution Chest: {have} of {cost}"
 msgstr "contribuição insuficiente para um Contribution Chest: {have} de {cost}"
+
+msgid "not enough gold coins for {cost}"
+msgstr "moedas de ouro insuficientes para {cost}"
 
 msgid "not enough protection runes for {item} - stopping, as asked"
 msgstr ""
@@ -8711,6 +8779,9 @@ msgstr "parado por você durante a espera: o personagem continua desconectado"
 msgid "stopped with {n} Vitality left, as you set"
 msgstr "parou com {n} de vitalidade restante, conforme definido"
 
+msgid "stopped: the market was looked at too many times in one run"
+msgstr "parou: o mercado foi consultado vezes demais numa só partida"
+
 msgid "stopped: {n} found so far"
 msgstr ""
 
@@ -9046,9 +9117,18 @@ msgstr ""
 msgid "the bag is too full for more {shard}"
 msgstr "a bolsa está cheia demais para mais {shard}"
 
+msgid "the bag is too heavy for more"
+msgstr "a bolsa está pesada demais para mais"
+
 msgid "the bag is too heavy to break any more: make room and start again"
 msgstr ""
 "a mochila está pesada demais para quebrar mais: libere espaço e comece de novo"
+
+msgid "the bag is too heavy, and the buyers took nothing"
+msgstr "a bolsa está pesada demais, e os compradores não levaram nada"
+
+msgid "the bag is too heavy: selling the collection to make room"
+msgstr "a bolsa está pesada demais: vendendo a coleção para abrir espaço"
 
 msgid "the bag is {pct}% full (load {load} of {max})"
 msgstr "a bolsa está {pct}% cheia (carga {load} de {max})"
@@ -9262,8 +9342,14 @@ msgstr ""
 msgid "the game refused the login request"
 msgstr "o jogo recusou a solicitação de entrada"
 
+msgid "the game said nothing"
+msgstr "o jogo não disse nada"
+
 msgid "the game said nothing - look in the bag"
 msgstr ""
+
+msgid "the game said nothing about {item} - look in the bag"
+msgstr "o jogo não disse nada sobre {item} - veja na bolsa"
 
 msgid "the game said: not enough talent points - nothing changed"
 msgstr "o jogo disse: not enough talent points - nada mudou"
@@ -9275,6 +9361,9 @@ msgid ""
 "the game says this character has already been in an experience dungeon today"
 msgstr ""
 "o jogo informa que este personagem já entrou em uma masmorra de experiência hoje"
+
+msgid "the game says today's collection items are all bought"
+msgstr "o jogo diz que os itens de coleção de hoje já foram todos comprados"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr "o jogo parece travado: nada nele se moveu - ele será aberto de novo"
@@ -9319,6 +9408,9 @@ msgstr "não é possível usar as teclas do jogo: {why}"
 
 msgid "the game's own speech is off while the bot runs"
 msgstr "a fala do próprio jogo fica desativada enquanto o bot está em execução"
+
+msgid "the game's quantity box didn't take the number"
+msgstr "a caixa de quantidade do jogo não aceitou o número"
 
 msgid "the game's report: {n} of {total} kills, {dmg} damage"
 msgstr "relatório do jogo: {n} de {total} abates, {dmg} de dano"
@@ -9460,6 +9552,11 @@ msgstr "faltam {n} de experiência para o próximo nível"
 msgid "the next level needs {n} experience; farming stops under {goal}"
 msgstr ""
 "faltam {n} de experiência para o próximo nível; a coleta para abaixo de {goal}"
+
+msgid ""
+"the next lot costs {price} gold coins a unit, more than the most you set ({most})"
+msgstr ""
+"o próximo lote custa {price} moedas de ouro por unidade, mais que o máximo definido ({most})"
 
 msgid "the open menu is {what}"
 msgstr "o menu aberto é {what}"
@@ -9773,6 +9870,14 @@ msgstr "para {name}"
 msgid "today"
 msgstr "hoje"
 
+msgid "today's {n} are bought"
+msgstr "os {n} de hoje foram comprados"
+
+msgid ""
+"today's {n} collection items are bought already - nothing to buy until the game's day turns"
+msgstr ""
+"os {n} itens de coleção de hoje já foram comprados - nada a comprar até o dia do jogo virar"
+
 msgid ""
 "today: everything all of today's runs got, added up, with how many runs and minutes."
 msgstr ""
@@ -9964,6 +10069,9 @@ msgstr "quebraria {n} {item}"
 
 msgid "would buy {n} for {cost} gold coins"
 msgstr ""
+
+msgid "would buy {n} {item} for {cost} gold coins"
+msgstr "compraria {n} {item} por {cost} moedas de ouro"
 
 msgid ""
 "would combine {n} x 3 {gem} into {nxt}: fee {fee} each, 50% chance{boost}{protect}"
@@ -10627,6 +10735,9 @@ msgstr "{n} níveis acima"
 
 msgid "{n} lots found"
 msgstr ""
+
+msgid "{n} lots in a row couldn't be bought"
+msgstr "{n} lotes seguidos não puderam ser comprados"
 
 msgid "{n} made or received"
 msgstr "{n} criados ou recebidos"

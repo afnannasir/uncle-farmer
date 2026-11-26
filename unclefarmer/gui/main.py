@@ -66,6 +66,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
         "tools_keyboard": available and not running,
         "tools_chores": available and not running, "tools_gather": available and not running,
         "tools_dungeon": available and not running, "tools_xploss": available and not running,
+        "tools_buycoll": available and not running,
         "tools_silencer": available, "tools_market": available, "tools_bounties": available and not running,
         "tools_construction": True,
         **{key: available and not running for key in ("tools_collection", "tools_shards", "tools_clean",
@@ -288,6 +289,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
                            command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
                            command(_("&Market searcher and buyer"), lambda e: self.open_market(), "Ctrl+Shift+K"),
+                           command(_("Buy co&llection items"), lambda e: self.open_tool("buycoll"), "Ctrl+Shift+L"),
                            command(_("Hunting bount&ies"), lambda e: self.open_tool("bounties")),
                            command(_("Construction &scanner"), lambda e: self.open_construction_scan()),
                            command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
@@ -299,7 +301,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                            command(_("Sound Silencer"), lambda e: self.open_silencer()),
                            command(_("&Keyboard Manager"), lambda e: self.open_tool("keyboard"))],
                           ("tools_gem", "tools_breaker", "tools_potions", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
-                           "tools_market", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
+                           "tools_market", "tools_buycoll", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
                            "tools_silencer", "tools_keyboard"),
                           context=True)
         character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
@@ -595,6 +597,7 @@ Main window
   Ctrl+Shift+G        Dungeons: the experience caves, one a day
   Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
   Ctrl+Shift+K        Market searcher and buyer: find, compare and buy what players sell
+  Ctrl+Shift+L        Buy collection items: the market's cheapest fish, ore and herbs, up to 500 a day
   Ctrl+P              Character settings
   Ctrl+B              Bag and supplies
   Ctrl+N              New plan
@@ -664,6 +667,10 @@ Supplies: tick the potions and food to refill, and from where. Full bag: what ha
 is full, and stopping when the day's drop time runs out.
 
 TOOLS
+Tools, Buy collection items (Ctrl+Shift+L): at the market, the collection lots of the items you tick
+(fish, ore, herbs), cheapest first, never above the most a unit you set, up to your day's count (the
+game allows 500 a day, counted from 00:00 GMT). Check only says what it would buy. It can sell them
+to the town's buyers when done, and when the bag is too heavy.
 Tools, Gem Breaker (Ctrl+Shift+B): break the gem colours you tick, up to the level you allow, into
 shards, and if you want the Weapon or Equipment Enhance Crystals too (they cost arnebia). It can't be
 undone: the window shows what would go, and asks before it starts.

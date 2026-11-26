@@ -266,6 +266,7 @@ class EditingMixin(FrameParts):
         from ..dungeon import DungeonDialog
         from ..gathering import GatheringDialog
         from ..xploss import XpLoserDialog
+        from ..buycollection import BuyCollectionDialog
         cls, cmd, title = {"gem": (GemMakerDialog, "gem_maker", _("Gem Maker")),
                            "break": (GemBreakerDialog, "gem_breaker", _("Gem Breaker")),
                            "potions": (PotionMakerDialog, "potion_maker", _("Potion Maker")),
@@ -274,7 +275,8 @@ class EditingMixin(FrameParts):
                            "bounties": (BountiesDialog, "bounties", _("Hunting bounties")),
                            "gather": (GatheringDialog, "gather", _("Gathering")),
                            "dungeon": (DungeonDialog, "dungeon", _("Dungeons")),
-                           "xploss": (XpLoserDialog, "lose_xp", _("XP loser"))}[which]
+                           "xploss": (XpLoserDialog, "lose_xp", _("XP loser")),
+                           "buycoll": (BuyCollectionDialog, "buy_collection", _("Buy collection items"))}[which]
         # "Add where I stand" and "Use where I stand now" read the game
         extra = (self.snapshot,) if which in ("gather", "dungeon", "xploss") else ()
         with cls(self, name, *extra) as d:

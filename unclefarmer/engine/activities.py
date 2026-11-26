@@ -97,6 +97,11 @@ def _dungeon(b: Bot, check: bool, o: Mapping[str, Any]) -> object:
     return dungeon.run(b, dungeon.config(b.p), check, o.get("cave"))
 
 
+def _buy_collection(b: Bot, check: bool, _o: Mapping[str, Any]) -> object:
+    from . import buycollection     # (it says "set it up first" itself)
+    return buycollection.run(b, buycollection.config(b.p), check)
+
+
 def _sell_collection(b: Bot, _check: bool, o: Mapping[str, Any]) -> object:
     from . import town
     sold = town.sell_collection(b, o["kinds"])
@@ -123,6 +128,7 @@ ACTIVITIES: tuple[Activity, ...] = (
     # a dungeon farms: its loot is farming loot, so it has no results part of its own
     Activity("dungeon", N_("running a dungeon"), _dungeon, farms=True, checks=True),
     Activity("sell_collection", N_("selling the collection"), _sell_collection),
+    Activity("buy_collection", N_("buying collection items"), _buy_collection, checks=True),
     # on request only (Tools, Hunting bounties); the scanner is listed by how it publishes (triggers.TOOLS)
     Activity("bounties", N_("asking for hunting bounties"), _bounties, checks=True, listed=False),
     Activity("construction_scan", N_("scanning the constructions"), _construction_scan, listed=False),
