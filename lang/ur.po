@@ -123,9 +123,6 @@ msgstr "&Kirdaaron ki chain"
 msgid "&Character:"
 msgstr "&Kirdaar:"
 
-msgid "&Characters, in order:"
-msgstr "&Kirdaar, tarteeb se:"
-
 msgid "&Chase monsters up to this many steps away (patrol loops):"
 msgstr "Monsters ka itne qadam door tak &peecha karein (patrol loops):"
 
@@ -1277,6 +1274,9 @@ msgstr "Zer-e-tameer Magic Ca&nnon build karo"
 msgid "Build the S&upply Camp under construction"
 msgstr "Zer-e-tameer S&upply Camp build karo"
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr "Masroof - kirdaaron ki chain mein. Pehle stop bhejein."
+
 msgid "Busy - send stop first."
 msgstr "Masroof hai - pehle stop bhejein."
 
@@ -1298,6 +1298,9 @@ msgstr "Bechne wale ki ID se"
 
 msgid "C&hannel:"
 msgstr "C&hannel:"
+
+msgid "C&haracter:"
+msgstr "Kir&daar:"
 
 msgid "C&hat"
 msgstr "C&hat"
@@ -1377,6 +1380,9 @@ msgstr "Kirdaaron ki chain: {new} ke liye {old} ko log out kiya ja raha hai"
 msgid "Character chain: the game is closed"
 msgstr "Kirdaaron ki chain: game band ho gaya"
 
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr "Kirdaaron ki chain: game khula rahega, us mein ek bot chal raha hai"
+
 msgid "Character chain: waiting for {name}'s game to come back"
 msgstr "Kirdaaron ki chain: {name} ke game ke wapas aane ka intezar"
 
@@ -1407,6 +1413,9 @@ msgstr "Kirdaar ki sheet"
 
 msgid "Character:"
 msgstr "Kirdaar:"
+
+msgid "Characters, in &order:"
+msgstr "&Kirdaar, tarteeb se:"
 
 msgid "Chat - {name}"
 msgstr "Chat - {name}"
@@ -2042,6 +2051,9 @@ msgstr "Har (minute):"
 
 msgid "Every character of the chain can farm again today."
 msgstr "Chain ka har kirdaar aaj dobara farm kar sakta hai."
+
+msgid "Every character the bot can log in is in the chain already."
+msgstr "Har woh kirdaar jise bot log in kar sakta hai pehle se chain mein hai."
 
 msgid "Every day"
 msgstr "Har roz"
@@ -4701,6 +4713,9 @@ msgstr "Rok raha hoon"
 msgid "Stopping every bot"
 msgstr "Har bot rok raha hoon"
 
+msgid "Stopping the character chain."
+msgstr "Kirdaaron ki chain rok rahe hain."
+
 msgid "Stopping {what}, then following you."
 msgstr "{what} rok kar aap ke saath chalta hoon."
 
@@ -4827,6 +4842,11 @@ msgstr "Yeh command is character par band hai."
 
 msgid "That filter already exists."
 msgstr "Yeh filter pehle se mojood hai."
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
+msgstr ""
+"Ye game kirdaaron ki chain mein hai: pehle chain rokein (Rok, Shift+F5)."
 
 msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
@@ -4959,11 +4979,25 @@ msgstr ""
 msgid "The character chain is over: every character has farmed today."
 msgstr "Kirdaaron ki chain khatam ho gayi: har kirdaar ne aaj farm kar liya."
 
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+"Kirdaaron ki chain khatam: aaj ki farming khatam ho gayi (drop time {reset} par dobara shuru hota hai)."
+
+msgid "The character chain is over: the day's farming is over."
+msgstr "Kirdaaron ki chain khatam: aaj ki farming khatam ho gayi."
+
 msgid "The character chain stopped."
 msgstr "Kirdaaron ki chain ruk gayi."
 
+msgid "The character chain stopped: another bot is running in its game."
+msgstr "Kirdaaron ki chain ruk gayi: us ke game mein koi aur bot chal raha hai."
+
 msgid "The character chain stopped: its game isn't running any more."
 msgstr "Kirdaaron ki chain ruk gayi: us ka game ab nahin chal raha."
+
+msgid "The character chain stopped: logging out didn't answer"
+msgstr "Kirdaaron ki chain ruk gayi: log out ka jawab nahin aaya"
 
 msgid "The character chain stopped: logging out didn't work ({why})"
 msgstr "Kirdaaron ki chain ruk gayi: log out nahin hua ({why})"
@@ -10791,6 +10825,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
+
+#~ msgid "&Characters, in order:"
+#~ msgstr "&Kirdaar, tarteeb se:"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Naam ya id (comma se alag):"

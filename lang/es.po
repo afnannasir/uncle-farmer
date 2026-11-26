@@ -121,9 +121,6 @@ msgstr ""
 msgid "&Character:"
 msgstr "Personaje (&C):"
 
-msgid "&Characters, in order:"
-msgstr ""
-
 msgid "&Chase monsters up to this many steps away (patrol loops):"
 msgstr "Perseguir monstruos hasta esta &cantidad de pasos (rutas de patrulla):"
 
@@ -1270,6 +1267,9 @@ msgstr ""
 msgid "Build the S&upply Camp under construction"
 msgstr ""
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr ""
+
 msgid "Busy - send stop first."
 msgstr "Ocupado: envía primero la orden de detener."
 
@@ -1291,6 +1291,9 @@ msgstr ""
 
 msgid "C&hannel:"
 msgstr "Canal (&h):"
+
+msgid "C&haracter:"
+msgstr ""
 
 msgid "C&hat"
 msgstr "C&hat"
@@ -1370,6 +1373,9 @@ msgstr ""
 msgid "Character chain: the game is closed"
 msgstr ""
 
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr ""
+
 msgid "Character chain: waiting for {name}'s game to come back"
 msgstr ""
 
@@ -1399,6 +1405,9 @@ msgstr "Hoja del personaje"
 
 msgid "Character:"
 msgstr "Personaje:"
+
+msgid "Characters, in &order:"
+msgstr ""
 
 msgid "Chat - {name}"
 msgstr "Chat - {name}"
@@ -2031,6 +2040,9 @@ msgid "Every (minutes):"
 msgstr "Cada (minutos):"
 
 msgid "Every character of the chain can farm again today."
+msgstr ""
+
+msgid "Every character the bot can log in is in the chain already."
 msgstr ""
 
 msgid "Every day"
@@ -4673,6 +4685,9 @@ msgstr "Deteniendo"
 msgid "Stopping every bot"
 msgstr "Deteniendo todos los bots"
 
+msgid "Stopping the character chain."
+msgstr ""
+
 msgid "Stopping {what}, then following you."
 msgstr "Deteniendo {what} y luego siguiéndote."
 
@@ -4798,6 +4813,10 @@ msgstr ""
 
 msgid "That filter already exists."
 msgstr "Ese filtro ya existe."
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
+msgstr ""
 
 msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
@@ -4926,10 +4945,23 @@ msgstr ""
 msgid "The character chain is over: every character has farmed today."
 msgstr ""
 
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+
+msgid "The character chain is over: the day's farming is over."
+msgstr ""
+
 msgid "The character chain stopped."
 msgstr ""
 
+msgid "The character chain stopped: another bot is running in its game."
+msgstr ""
+
 msgid "The character chain stopped: its game isn't running any more."
+msgstr ""
+
+msgid "The character chain stopped: logging out didn't answer"
 msgstr ""
 
 msgid "The character chain stopped: logging out didn't work ({why})"

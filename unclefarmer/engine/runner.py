@@ -103,6 +103,10 @@ class Run(threading.Thread):
         self.medals_back_done = False    # ... and the usual medals
         self.in_chain = False            # a row of Run, Character chain (no after-stop action of its own)
         self.drop_spare: float | None = None   # ... its drop time left past the kept time, at its end
+        # how the run ended, for a character chain: "" (as the flags say), "done" (its drop time or level
+        # rule kept it from farming: nothing more today), "day_over" (the daily stop), "called_away"
+        # (come, home), "player" (another character came in, or the game went while paused)
+        self.end_kind = ""
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -185,8 +189,12 @@ class Run(threading.Thread):
             # carrying on later, no opening the game again)
             reason = str(e)
             self.failed = True
+            self.end_kind = "player"         # the player's own character came in: the game is theirs
             self.log(reason, speak=True)
         except Stopped as e:
+            self.end_kind = str(getattr(e, "chain_end", "") or "")
+            if not self.end_kind and (getattr(e, "stay", False) or getattr(e, "asked", False)):
+                self.end_kind = "called_away"          # come, home: a player wants the character
             if getattr(self, "kind", "") in ("tool", "trigger") and not self.stop_event.is_set():
                 self.failed = True
             reason = self._stopped(e)
@@ -235,6 +243,9 @@ class Run(threading.Thread):
         bot = self.bot
         if not getattr(self, "in_chain", False) or bot is None or not self.ended_by_itself or not self.farmed():
             return None
+        paused = getattr(bot, "paused", None)
+        if self.game_lost or (paused is not None and paused.is_set()):
+            return None                 # (a read now would wait out the pause, or a whole reconnect)
         try:
             got = bot.drop_to_farm(bot.refresh_sheet(force=True) or {})
         except Exception:               # the game gone at the end: the row counts as done
@@ -249,6 +260,7 @@ class Run(threading.Thread):
         if self.game_lost and paused is not None and paused.is_set():
             self.game_lost = False
             self.failed = True
+            self.end_kind = "player"
             self.log(_("the game went while the run was paused: it isn't opened again or carried on"))
 
     # ---------------------------------------------------------------- starting
@@ -261,8 +273,10 @@ class Run(threading.Thread):
         day_end, blocked = daily.plan(app) if not self.walk and not independent else (None, None)
         character: str
         if blocked:
-            raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
-                            "after that", reset=blocked))
+            over = Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
+                             "after that", reset=blocked))
+            over.chain_end = "day_over"          # a character chain ends there (Run, Character chain)
+            raise over
         link = self.link = AgentLink(pid=self.pid)
         version = link.send("version")
         agent = int(version.split()[1]) if version.startswith("mwagent ") else 0

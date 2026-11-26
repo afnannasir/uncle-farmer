@@ -124,9 +124,6 @@ msgstr "C&haîne de personnages"
 msgid "&Character:"
 msgstr "&Personnage :"
 
-msgid "&Characters, in order:"
-msgstr "&Personnages, dans l'ordre :"
-
 msgid "&Chase monsters up to this many steps away (patrol loops):"
 msgstr ""
 "&Chasser les monstres jusqu'à ce nombre de pas (boucles de patrouille) :"
@@ -1281,6 +1278,9 @@ msgstr "Construire le Ma&gic Cannon en construction"
 msgid "Build the S&upply Camp under construction"
 msgstr "Construire le S&upply Camp en construction"
 
+msgid "Busy - in a character chain. Send stop first."
+msgstr "Occupé - dans une chaîne de personnages. Envoyez d'abord stop."
+
 msgid "Busy - send stop first."
 msgstr "Occupé - envoyez d'abord stop."
 
@@ -1302,6 +1302,9 @@ msgstr "Par ID de vendeur"
 
 msgid "C&hannel:"
 msgstr "&Canal :"
+
+msgid "C&haracter:"
+msgstr "Pe&rsonnage :"
 
 msgid "C&hat"
 msgstr "C&hat"
@@ -1381,6 +1384,9 @@ msgstr "Chaîne de personnages : déconnexion de {old} pour {new}"
 msgid "Character chain: the game is closed"
 msgstr "Chaîne de personnages : le jeu est fermé"
 
+msgid "Character chain: the game stays open, a bot is running in it"
+msgstr "Chaîne de personnages : le jeu reste ouvert, un bot y tourne"
+
 msgid "Character chain: waiting for {name}'s game to come back"
 msgstr "Chaîne de personnages : en attente du retour du jeu de {name}"
 
@@ -1411,6 +1417,9 @@ msgstr "Fiche du personnage"
 
 msgid "Character:"
 msgstr "Personnage :"
+
+msgid "Characters, in &order:"
+msgstr "&Personnages, dans l'ordre :"
 
 msgid "Chat - {name}"
 msgstr "Chat - {name}"
@@ -2052,6 +2061,9 @@ msgstr "Toutes les (minutes) :"
 
 msgid "Every character of the chain can farm again today."
 msgstr "Chaque personnage de la chaîne peut de nouveau farmer aujourd'hui."
+
+msgid "Every character the bot can log in is in the chain already."
+msgstr "Chaque personnage que le bot sait connecter est déjà dans la chaîne."
 
 msgid "Every day"
 msgstr "Chaque jour"
@@ -4729,6 +4741,9 @@ msgstr "Arrêt en cours"
 msgid "Stopping every bot"
 msgstr "Arrêt de tous les bots"
 
+msgid "Stopping the character chain."
+msgstr "Arrêt de la chaîne de personnages."
+
 msgid "Stopping {what}, then following you."
 msgstr "Arrêt de {what}, puis je vous suis."
 
@@ -4856,6 +4871,11 @@ msgstr "Cette commande est désactivée sur ce personnage."
 
 msgid "That filter already exists."
 msgstr "Ce filtre existe déjà."
+
+msgid ""
+"That game is in a character chain: stop the chain first (Stop, Shift+F5)."
+msgstr ""
+"Ce jeu est dans une chaîne de personnages : arrêtez d'abord la chaîne (Arrêter, Maj+F5)."
 
 msgid ""
 "That is longer than the game's 200 characters: it goes in {n} parts, one every 2 seconds (3 on Global), as fast as the game allows."
@@ -4989,11 +5009,26 @@ msgid "The character chain is over: every character has farmed today."
 msgstr ""
 "La chaîne de personnages est terminée : chaque personnage a farmé aujourd'hui."
 
+msgid ""
+"The character chain is over: the day's farming is over (the drop time resets at {reset})."
+msgstr ""
+"La chaîne de personnages est terminée : le farming du jour est fini (le temps de drop repart à {reset})."
+
+msgid "The character chain is over: the day's farming is over."
+msgstr "La chaîne de personnages est terminée : le farming du jour est fini."
+
 msgid "The character chain stopped."
 msgstr "La chaîne de personnages s'est arrêtée."
 
+msgid "The character chain stopped: another bot is running in its game."
+msgstr ""
+"La chaîne de personnages s'est arrêtée : un autre bot tourne dans son jeu."
+
 msgid "The character chain stopped: its game isn't running any more."
 msgstr "La chaîne de personnages s'est arrêtée : son jeu ne tourne plus."
+
+msgid "The character chain stopped: logging out didn't answer"
+msgstr "La chaîne de personnages s'est arrêtée : la déconnexion n'a pas répondu"
 
 msgid "The character chain stopped: logging out didn't work ({why})"
 msgstr ""
@@ -10841,6 +10876,9 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} sur {h} cases, {n} sorties."
+
+#~ msgid "&Characters, in order:"
+#~ msgstr "&Personnages, dans l'ordre :"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Noms ou ids (séparés par des virgules) :"

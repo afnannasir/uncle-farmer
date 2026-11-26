@@ -600,6 +600,10 @@ class Messenger(threading.Thread):
 
     def cmd_stop(self, to: int, name: str, rest: str) -> str | None:
         if not self.host.run_for(self.pid):
+            chain_active: Callable[[int], bool] | None = getattr(self.host, "chain_active", None)
+            if chain_active is not None and self.host.call(chain_active, self.pid) is True:
+                self.host.call(self.host.stop_bot, self.pid)     # between two characters: the chain itself
+                return _("Stopping the character chain.")
             return _("The bot isn't running.")
         self.host.call(self.host.stop_bot, self.pid)
         return _("Stopping.")

@@ -25,13 +25,16 @@ def row_label(row: chain.Row, done: bool) -> str:
 class AddRowDialog(Dialog):
     """One more character for the chain, and what it does."""
 
-    def __init__(self, parent: wx.Window, characters: Sequence[str], plans: Sequence[str]) -> None:
+    def __init__(self, parent: wx.Window, characters: Sequence[str], plans: Sequence[str],
+                 taken: Sequence[str] = ()) -> None:
         super().__init__(parent, title=_("Add a character to the chain"))
-        self.characters, self.plans = list(characters), list(plans)
+        # one row per character: its done mark is by character, so a second row would never run
+        self.characters = [c for c in characters if not any(settings.same_character(c, t) for t in taken)]
+        self.plans = list(plans)
         self.row: chain.Row | None = None
         root = wx.BoxSizer(wx.VERTICAL)
         f = Form(self)
-        self.who = f.choice(_("&Character:"), [settings.profile_display(c) for c in self.characters])
+        self.who = f.choice(_("C&haracter:"), [settings.profile_display(c) for c in self.characters])
         self.what = f.choice(_("&What it does:"), [_("Its Autopilot day")] + [_("Plan {plan}", plan=p) for p in self.plans])
         root.Add(f.grid, 0, wx.EXPAND | wx.ALL, 12)
         ok_cancel(self, root, _("&Add"))
@@ -66,7 +69,7 @@ class ChainDialog(Dialog):
             "character done with more than 10 minutes of drop time left is done again once the others are."))
         note.Wrap(560)
         box.Add(note, 0, wx.BOTTOM, 8)
-        self.list = labeled(panel, box, _("&Characters, in order:"), lambda w: wx.ListBox(w, size=wx.Size(-1, 160)), 1)
+        self.list = labeled(panel, box, _("Characters, in &order:"), lambda w: wx.ListBox(w, size=wx.Size(-1, 160)), 1)
         buttons(panel, box, (_("A&dd..."), self.on_add), (_("&Remove"), self.on_remove),
                 (_("Move &up"), lambda e: self.move(-1)), (_("Move do&wn"), lambda e: self.move(1)))
         f = Form(panel)
@@ -93,7 +96,10 @@ class ChainDialog(Dialog):
             error(self, _("No character can be logged in by the bot yet: log in to each one once by hand, so its "
                           "account is known."))
             return
-        with AddRowDialog(self, self.characters, self.plans) as d:
+        if all(any(settings.same_character(c, r.profile) for r in self.rows) for c in self.characters):
+            error(self, _("Every character the bot can log in is in the chain already."))
+            return
+        with AddRowDialog(self, self.characters, self.plans, [r.profile for r in self.rows]) as d:
             if d.ShowModal() == wx.ID_OK and d.row is not None:
                 self.rows.append(d.row)
                 self.show(len(self.rows) - 1)

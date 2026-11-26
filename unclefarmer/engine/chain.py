@@ -146,21 +146,30 @@ class State:
     failed: dict[str, int] = field(default_factory=lambda: dict[str, int]())
     advance: bool = False              # `next` by private message: this row is done, go on
     waiting: float = 0.0               # a lost game being opened again since then (0: not waiting)
+    since: float = 0.0                 # when the phase began (the watch's clock)
+    missing: int = 0                   # game list readings in a row without the chain's game
 
 
-def after_run(state: State, stopped: bool, ended_by_itself: bool, game_lost: bool, spare: float | None) -> str:
+def after_run(state: State, stopped: bool, ended_by_itself: bool, game_lost: bool, spare: float | None,
+              end_kind: str = "") -> str:
     """What the chain does once the run of its current row has ended: "next" (go on), "wait" (its
-    lost game is being opened again: the carried-on run's end decides), or "stop" (the player
-    stopped it). The row's mark is made here."""
+    lost game is being opened again: the carried-on run's end decides), "stop" (the player stopped
+    it, called the character away, or took the game), or "over" (the day's farming is over). The
+    row's mark is made here."""
     row = state.current
+    advance, state.advance = state.advance, False
     if row is None:
         return "next"
-    if state.advance:
-        state.advance = False
+    if advance:
         mark(row.profile, 0.0)
         return "next"
-    if stopped:
+    if stopped or end_kind in ("player", "called_away"):
         return "stop"
+    if end_kind == "day_over":
+        return "over"
+    if end_kind == "done":                       # its drop time or level rule: nothing more today
+        mark(row.profile, 0.0)
+        return "next"
     if ended_by_itself:
         mark(row.profile, spare)
         return "next"

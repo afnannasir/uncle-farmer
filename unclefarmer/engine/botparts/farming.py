@@ -504,6 +504,7 @@ class FarmingMixin(Parts):
                    m=max(0, int(got[0] // 60))), speak=True)
         stop = Stopped(_("drop time used up"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def level_goal(self) -> int | None:
@@ -559,6 +560,7 @@ class FarmingMixin(Parts):
         self.log(_("the next level needs only {n} experience - not starting to farm", n=int(need)), speak=True)
         stop = Stopped(_("stopped before the next level"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def leave_monsters(self) -> None:
