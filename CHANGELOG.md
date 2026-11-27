@@ -19,6 +19,17 @@
 - Sunset City's pharmacist sells no Large potions (ours or the pet's): the bot no longer goes there
   for them, two wasted trips before it learned.
 
+**Character settings: a Bosses tab, and your own boss notice** (untested in game)
+
+- The boss settings were a group at the bottom of Advanced, Fighting, where players didn't think of
+  looking. They have a tab of their own in Character settings, after Fighting, with Leave demonized
+  elites alone: keeping away from bosses, leaving the map for a while, and the chat rooms told of each
+  boss seen. Every box has its shortcut letter now (the chat rooms' had none). Nothing changes in the
+  profiles.
+- **Your own line** for the boss notice, in any language: `%boss%`, `%map%` and `%pos%` are put in for
+  the boss's name, the map and where it stands. The tab shows what the chat gets as you type. Left
+  empty, the bot sends its own line in English, as before.
+
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
 - The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever

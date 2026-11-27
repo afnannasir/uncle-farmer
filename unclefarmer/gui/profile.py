@@ -217,6 +217,10 @@ def pull_label(p: dict[str, Any]) -> str:
              "at you (0: wait until it is in range):")
 
 
+EXAMPLE_BOSS: dict[str, Any] = {"name": "Death Worm", "x": 105, "y": 100}    # the Bosses tab's example
+EXAMPLE_BOSS_MAP = 5121                                                     # Wolf Prairie
+
+
 class ProfileDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game_folder: str = "") -> None:
         super().__init__(parent, title=_("Character settings - {name}", name=settings.profile_display(character)),
@@ -228,6 +232,7 @@ class ProfileDialog(Dialog):
         nb = tabs(self)
         self.overview_page(nb)
         self.fighting_page(nb)
+        self.bosses_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
         panel, box = page(nb, _("Team"))
@@ -336,6 +341,61 @@ class ProfileDialog(Dialog):
         f = group(panel, box, _("Gear"))
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
+
+    def bosses_page(self, nb: wx.Notebook) -> None:
+        """The Bosses tab (engine/bosses.py): the steps kept from a boss, what to do about one that
+        keeps coming back, the demonized elites, and the chat rooms told of each boss seen, in the
+        bot's words or the player's own. It was a group at the bottom of Advanced, Fighting, where
+        players didn't think of looking. The leaving boxes are off while bosses aren't kept away
+        from, the wait's while the map isn't left."""
+        p = self.p
+        panel, box = page(nb, _("Bosses"))
+        f = group(panel, box, _("Keeping away"))
+        keep = p.get("boss_distance", 40)
+        self.boss_on, self.boss_keep = f.optional(
+            _("Keep away from &bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.boss_leave, self.boss_walk_offs = f.optional(
+            _("&Leave the map for a while when a boss keeps coming back"), bool(p.get("boss_leave", True)),
+            _("Walk away from it this many times within 5 minutes before leaving (0: leave at once):"),
+            p.get("boss_walk_offs", 3), 0, 20)
+        self.boss_away_first = f.number(_("First &wait away from the map (seconds):"),
+                                        p.get("boss_away_first", 60), 10, 3600)
+        self.boss_away_most = f.number(_("Longest wait: it doubles each time the boss is still t&here (seconds):"),
+                                       p.get("boss_away_most", 300), 10, 7200)
+        self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
+                                        "are no stronger than the farm's"), p.get("boss_away_farm", True))
+        self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
+                                   p.get("skip_demonized_elites", False))
+        f = group(panel, box, _("Telling other players"))
+        ticked = bosses.notice_rooms(p)
+        self.boss_rooms = [(room, f.check(label, room in ticked)) for room, label in (     # bosses.NOTICE_ROOMS
+            (4, _("Tell the &Team chat of each boss seen")),
+            (3, _("Tell the &Gang chat of each boss seen")),
+            (5, _("Tell the I&nternational chat of each boss seen")),
+            (0, _("Tell the Gl&obal chat of each boss seen (the whole server reads it)")))]
+        self.boss_text = f.text(_("&Your own line, with %boss%, %map% and %pos% for the boss, the map and where "
+                                  "it stands (empty: the bot's line, in English):"), p.get("boss_notice_text", ""))
+        self.boss_example = f.readonly(_("What the chat gets, for example:"))
+        self.boss_text.Bind(wx.EVT_TEXT, lambda e: (e.Skip(), self.show_boss_example()))
+        self.show_boss_example()
+
+        def sync(evt: wx.Event | None = None) -> None:
+            on = self.boss_on.GetValue()
+            leave = on and self.boss_leave.GetValue()
+            self.boss_leave.Enable(on)
+            for ctrl in (self.boss_walk_offs, self.boss_away_first, self.boss_away_most):
+                ctrl.Enable(leave)
+                enable_label(ctrl, leave)
+            self.boss_away_farm.Enable(leave)
+            if evt is not None:
+                evt.Skip()                # Form.optional's handler still runs: it enables the field beside the box
+        self.boss_on.Bind(wx.EVT_CHECKBOX, sync)
+        self.boss_leave.Bind(wx.EVT_CHECKBOX, sync)
+        sync()
+
+    def show_boss_example(self) -> None:
+        """The line a boss seen would give, written as the player's own line is now."""
+        self.boss_example.SetValue(bosses.notice_text(EXAMPLE_BOSS, EXAMPLE_BOSS_MAP, self.boss_text.GetValue()))
 
     def potions_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -821,6 +881,15 @@ class ProfileDialog(Dialog):
         p["use_combos"] = self.use_combos.GetValue()
         p["fill_empty_keys"] = self.fill_keys.GetValue()
         p["skill_page_one"] = self.page_one.GetValue()
+        p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["boss_leave"] = self.boss_leave.GetValue()
+        p["boss_walk_offs"] = self.boss_walk_offs.GetValue()
+        p["boss_away_first"] = self.boss_away_first.GetValue()
+        p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
+        p["boss_away_farm"] = self.boss_away_farm.GetValue()
+        p["skip_demonized_elites"] = self.skip_elites.GetValue()
+        p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
+        p["boss_notice_text"] = " ".join(self.boss_text.GetValue().split())
         p["respawn"] = "city"
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()
@@ -1081,61 +1150,17 @@ class AdvancedDialog(Dialog):
         self.hunt_on, self.hunt_minutes = f.optional(
             _("Look for a chest the game announces on the map"), bool(hunt),
             _("Minutes to look for it:"), hunt or 5, 1, 30)
-        self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
-                                   p.get("skip_demonized_elites", False))
         no_kill = p.get("no_kill_minutes", 10)
         self.no_kill_on, self.no_kill = f.optional(
             _("When nothing is killed for a while, try elsewhere, then stop"), bool(no_kill),
             _("Minutes without a kill:"), no_kill or 10, 3, 120)
         self.target_mode = f.choice(_("&Target keys pick:"), [_(n) for n in TARGET_MODE_LABELS],
                                     pick(list(range(len(settings.TARGET_MODES))), p.get("target_mode"), 0))
-        self.boss_settings(panel, box)
         f = group(panel, box, _("Walking"))
         self.stuck = f.number(_("Stop after this many &stuck walks in a row:"), p["stuck_limit"], 1, 50)
         reset = wx.Button(panel, label=_("Reset the &fighting settings to their defaults"))
         reset.Bind(wx.EVT_BUTTON, lambda e: self.on_reset_fighting())
         box.Add(reset, 0, wx.TOP, 10)
-
-    def boss_settings(self, panel: wx.Panel, box: wx.BoxSizer) -> None:
-        """The Fighting page's Bosses group: the steps kept from a boss, and what to do about one that
-        keeps coming back (engine/bosses.py). The leaving boxes are off while bosses aren't kept away
-        from, the wait's while the map isn't left."""
-        p = self.p
-        f = group(panel, box, _("Bosses"))
-        keep = p.get("boss_distance", 40)
-        self.boss_on, self.boss_keep = f.optional(
-            _("Keep away from &bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
-        self.boss_leave, self.boss_walk_offs = f.optional(
-            _("&Leave the map for a while when a boss keeps coming back"), bool(p.get("boss_leave", True)),
-            _("Walk away from it this many times within 5 minutes before leaving (0: leave at once):"),
-            p.get("boss_walk_offs", 3), 0, 20)
-        self.boss_away_first = f.number(_("First &wait away from the map (seconds):"),
-                                        p.get("boss_away_first", 60), 10, 3600)
-        self.boss_away_most = f.number(_("Longest wait: it doubles each time the boss is still t&here (seconds):"),
-                                       p.get("boss_away_most", 300), 10, 7200)
-        self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
-                                        "are no stronger than the farm's"), p.get("boss_away_farm", True))
-        # one box a chat room (bosses.NOTICE_ROOMS), no shortcut letters: few are left on this page
-        ticked = bosses.notice_rooms(p)
-        self.boss_rooms = [(room, f.check(label, room in ticked)) for room, label in (
-            (4, _("Tell the Team chat of each boss seen (in English: name, map, where)")),
-            (3, _("Tell the Gang chat of each boss seen (in English)")),
-            (5, _("Tell the International chat of each boss seen (in English)")),
-            (0, _("Tell the Global chat of each boss seen (in English; the whole server reads it)")))]
-
-        def sync(evt: wx.Event | None = None) -> None:
-            on = self.boss_on.GetValue()
-            leave = on and self.boss_leave.GetValue()
-            self.boss_leave.Enable(on)
-            for ctrl in (self.boss_walk_offs, self.boss_away_first, self.boss_away_most):
-                ctrl.Enable(leave)
-                enable_label(ctrl, leave)
-            self.boss_away_farm.Enable(leave)
-            if evt is not None:
-                evt.Skip()                # Form.optional's handler still runs: it enables the field beside the box
-        self.boss_on.Bind(wx.EVT_CHECKBOX, sync)
-        self.boss_leave.Bind(wx.EVT_CHECKBOX, sync)
-        sync()
 
     def health_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -1268,15 +1293,7 @@ class AdvancedDialog(Dialog):
         p["no_damage_casts"] = self.no_damage_casts.GetValue()
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
-        p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
-        p["boss_leave"] = self.boss_leave.GetValue()
-        p["boss_walk_offs"] = self.boss_walk_offs.GetValue()
-        p["boss_away_first"] = self.boss_away_first.GetValue()
-        p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
-        p["boss_away_farm"] = self.boss_away_farm.GetValue()
-        p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
         p["open_chests"] = self.open_chests.GetValue()
-        p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0
         p["chest_hunt_minutes"] = self.hunt_minutes.GetValue() if self.hunt_on.GetValue() else 0
         p["smart_skills"] = self.smart.GetValue()

@@ -22,7 +22,8 @@ again), and not the map at all when the map data says its monsters are stronger.
 a long stand by the door, doing nothing but fighting back.
 
 With boss_notice_rooms, each boss that comes into sight is told to the chat rooms the player ticked
-(team, gang, international, global), in English: its name, the map and where (announce).
+(team, gang, international, global), in English: its name, the map and where (announce) - or in the
+player's own words (boss_notice_text, with %boss%, %map% and %pos%).
 
 With skip_demonized_elites, a demonized elite is kept away from the same way, closer in: no target
 within ELITE_CLEAR steps of one, the patrol keeps clear of it, and a walk-off when it comes within
@@ -229,11 +230,21 @@ def notice_rooms(p: dict[str, Any]) -> list[int]:
     return [c for c in NOTICE_ROOMS if c in picked]
 
 
-def notice_text(boss: dict[str, Any], map_id: int) -> str:
-    """The notice, in English whatever the bot's language: the rooms hold players of every language,
-    and the game's boss and map names are English anyway."""
+_FIELD = re.compile(r"%(boss|map|pos)%", re.I)     # what a player's own notice may name
+
+
+def notice_text(boss: dict[str, Any], map_id: int, own: str = "") -> str:
+    """The notice. Without the player's own line (boss_notice_text), in English whatever the bot's
+    language: the rooms hold players of every language, and the game's boss and map names are
+    English anyway. The player's own line is theirs, with %boss%, %map% and %pos% (any case) put in
+    for the boss's name, the map's name and where it stands ("105, 100"), on one line."""
     where = str(atlas.maps().get(int(map_id), {}).get("name") or map_id).strip()
-    return "%s (a boss) on %s at %d, %d" % (boss["name"], where, int(boss["x"]), int(boss["y"]))
+    pos = "%d, %d" % (int(boss["x"]), int(boss["y"]))
+    line = " ".join(str(own or "").split())
+    if not line:
+        return "%s (a boss) on %s at %s" % (boss["name"], where, pos)
+    fields = {"boss": str(boss["name"]), "map": where, "pos": pos}
+    return _FIELD.sub(lambda m: fields[m.group(1).lower()], line)
 
 
 def gangless(bot: Bot, snap: dict[str, Any]) -> bool:
@@ -269,7 +280,7 @@ def announce(bot: Bot, snap: dict[str, Any], map_id: int) -> None:
         if now - last.get(int(map_id), -NOTICE_EVERY) < NOTICE_EVERY:
             continue
         last[int(map_id)] = now
-        _tell_rooms(bot, snap, boss, notice_text(boss, map_id), rooms)
+        _tell_rooms(bot, snap, boss, notice_text(boss, map_id, str(bot.p.get("boss_notice_text") or "")), rooms)
 
 
 def _tell_rooms(bot: Bot, snap: dict[str, Any], boss: dict[str, Any], text: str, rooms: list[int]) -> None:

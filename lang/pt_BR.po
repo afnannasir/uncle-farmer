@@ -775,6 +775,11 @@ msgstr "Perdedor de &EXP"
 msgid "&Yes, switch language"
 msgstr "&Sim, mudar o idioma"
 
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+"&Sua própria linha, com %boss%, %map% e %pos% para o chefe, o mapa e onde ele está (vazia: a linha do bot, em inglês):"
+
 msgid "&Your places:"
 msgstr "&Seus locais:"
 
@@ -2836,6 +2841,9 @@ msgstr "Lista de guardar"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Manter os &bônus da classe ativos"
+
+msgid "Keeping away"
+msgstr "Manter distância"
 
 msgid "Key"
 msgstr "Tecla"
@@ -4915,22 +4923,23 @@ msgstr "Aba Equipe: digite quem recebe a equipe quando a execução terminar."
 msgid "Teleport to the team leader"
 msgstr "Teletransportar até o líder da equipe"
 
-msgid "Tell the Gang chat of each boss seen (in English)"
-msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
+msgid "Tell the &Gang chat of each boss seen"
+msgstr "Avisar o chat Ga&ng de cada chefe visto"
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
-msgstr ""
-"Avisar o chat Global de cada chefe visto (em inglês; o servidor inteiro lê)"
+msgid "Tell the &Team chat of each boss seen"
+msgstr "Avisar o chat &Team de cada chefe visto"
 
-msgid "Tell the International chat of each boss seen (in English)"
-msgstr "Avisar o chat International de cada chefe visto (em inglês)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
+msgstr "Avisar o chat Gl&obal de cada chefe visto (o servidor inteiro lê)"
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
-msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
+msgid "Tell the I&nternational chat of each boss seen"
+msgstr "Avisar o chat Internationa&l de cada chefe visto"
 
 msgid "Tell them now and then that I'm a&way"
 msgstr "Avisá-los de vez em quando que estou &ausente"
+
+msgid "Telling other players"
+msgstr "Avisar outros jogadores"
 
 msgid "Test &message:"
 msgstr "&Mensagem de teste:"
@@ -5940,6 +5949,9 @@ msgstr "O que falta"
 
 msgid "What the bot knows about this character:"
 msgstr "O que o bot sabe sobre este personagem:"
+
+msgid "What the chat gets, for example:"
+msgstr "O que o chat recebe, por exemplo:"
 
 msgid "What to break"
 msgstr "O que quebrar"
@@ -11114,6 +11126,20 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Manter distância dos chefes"
+
+#~ msgid "Tell the Gang chat of each boss seen (in English)"
+#~ msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
+
+#~ msgid ""
+#~ "Tell the Global chat of each boss seen (in English; the whole server reads it)"
+#~ msgstr ""
+#~ "Avisar o chat Global de cada chefe visto (em inglês; o servidor inteiro lê)"
+
+#~ msgid "Tell the International chat of each boss seen (in English)"
+#~ msgstr "Avisar o chat International de cada chefe visto (em inglês)"
+
+#~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+#~ msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

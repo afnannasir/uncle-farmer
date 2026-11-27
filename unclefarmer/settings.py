@@ -148,6 +148,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "boss_away_most": 300,    # ...up to this many seconds
     "boss_away_farm": True,   # fight on the way out and farm the map waited on (when its monsters are no stronger)
     "boss_notice_rooms": [],  # chat channels (4 team, 3 gang, 5 international, 0 global) told of each boss seen
+    "boss_notice_text": "",   # the player's own boss notice (%boss%, %map%, %pos%); "": the bot's line, in English
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
@@ -416,6 +417,7 @@ class Profile(BaseModel):
     boss_away_most: int = PROFILE_DEFAULTS["boss_away_most"]
     boss_away_farm: bool = PROFILE_DEFAULTS["boss_away_farm"]
     boss_notice_rooms: list[int] = PROFILE_DEFAULTS["boss_notice_rooms"]
+    boss_notice_text: str = PROFILE_DEFAULTS["boss_notice_text"]
     skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     menu_keys_retry: bool = PROFILE_DEFAULTS["menu_keys_retry"]

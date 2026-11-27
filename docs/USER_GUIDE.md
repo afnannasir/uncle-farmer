@@ -394,7 +394,6 @@ If you want the bot to use only the skills you have selected, set **Skills not i
 The other tabs under **Advanced** contain more detailed options, including:
 
 - How far the bot chases monsters while following a patrol loop.
-- How far the bot stays away from bosses.
 - When the character rests.
 - When defensive skills, shields, and the healing skill are used.
 - Which potions and Rice Rolls the pet uses.
@@ -450,14 +449,22 @@ The bot doesn't stand idle meanwhile. On the way to the door it fights the monst
 
 A boss of that map that comes close is walked away from, as on the farm, but never left behind with another trip. Before anything was fought on the farm, it has nothing to judge by, and waits as before. When two doors are about as near, it takes the one to a map it may farm. A full bag, the drop time and the end of the farm (its minutes or kills) work there as on the farm, and in the results, map by map, the kills of the wait count for the map waited on.
 
-All of this can be set in **Advanced → Fighting**, group **Bosses**:
+All of this can be set on the **Bosses** tab of **Character settings** (it used to be a group at the
+bottom of **Advanced → Fighting**). Its **Keeping away** group holds:
 
 - **Keep away from bosses** and the steps to keep (40). Unticked, the bot doesn't keep away from bosses at all.
 - **Leave the map for a while when a boss keeps coming back** (ticked). Unticked, the bot never leaves: it keeps away from the boss on the map and farms on.
 - How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
 - The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
 - **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
-- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100". It tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
+- **Leave demonized elites alone** (see "Demonized elites" below).
+
+Its **Telling other players** group holds:
+
+- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100".
+- **Your own line**, to send your own words instead, in any language. Write `%boss%` where the boss's name goes, `%map%` for the map's name and `%pos%` for where it stands ("105, 100"), in capitals or not: "%boss% is up on %map% at %pos%, come help!" sends "Death Worm is up on Wolf Prairie at 105, 100, come help!". The line below it shows what the chat gets as you type. Left empty, the bot sends its own line, in English.
+
+The bot tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
@@ -494,8 +501,8 @@ You can turn this off in **Advanced → Fighting**: untick **Open the chests tha
 Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
 stronger than the monsters around them; one the same level as your character can still kill it,
 depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
-Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
-**Advanced → Fighting**. Then it keeps away from them:
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** on
+the **Bosses** tab of **Character settings**. Then it keeps away from them:
 
 - It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
   the elite in. The log counts them among the monsters left alone.

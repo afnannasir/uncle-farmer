@@ -773,6 +773,11 @@ msgstr "&XP loser"
 msgid "&Yes, switch language"
 msgstr "&Haan, zaban badlein"
 
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+"&Apni line, %boss%, %map% aur %pos% ke saath: boss, map aur uski jagah (khali: bot ki apni line, English mein):"
+
 msgid "&Your places:"
 msgstr "&Aap ki jagahein:"
 
@@ -2832,6 +2837,9 @@ msgstr "Rakhne ki list"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Class ke b&uffs barqarar rakhein"
+
+msgid "Keeping away"
+msgstr "Door rehna"
 
 msgid "Key"
 msgstr "Key"
@@ -4911,24 +4919,24 @@ msgstr "Team tab: likhein ke run khatam hone par team kis ko mile."
 msgid "Teleport to the team leader"
 msgstr "Team leader ke paas teleport karein"
 
-msgid "Tell the Gang chat of each boss seen (in English)"
-msgstr "Har nazar aane wale boss ki khabar Gang chat mein dein (English mein)"
+msgid "Tell the &Gang chat of each boss seen"
+msgstr "Har nazar aane wale boss ki khabar &Gang chat mein dein"
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
-msgstr ""
-"Har nazar aane wale boss ki khabar Global chat mein dein (English mein; poora server parhta hai)"
+msgid "Tell the &Team chat of each boss seen"
+msgstr "Har nazar aane wale boss ki khabar &Team chat mein dein"
 
-msgid "Tell the International chat of each boss seen (in English)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
 msgstr ""
-"Har nazar aane wale boss ki khabar International chat mein dein (English mein)"
+"Har nazar aane wale boss ki khabar Gl&obal chat mein dein (poora server parhta hai)"
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
-msgstr ""
-"Har nazar aane wale boss ki khabar Team chat mein dein (English mein: naam, map, jagah)"
+msgid "Tell the I&nternational chat of each boss seen"
+msgstr "Har nazar aane wale boss ki khabar Inte&rnational chat mein dein"
 
 msgid "Tell them now and then that I'm a&way"
 msgstr "Unhein waqt be waqt batayein ke main &ghair hazir hoon"
+
+msgid "Telling other players"
+msgstr "Doosre players ko batana"
 
 msgid "Test &message:"
 msgstr "Aazmaaish ka &paighaam:"
@@ -5943,6 +5951,9 @@ msgstr "Jo kam hai"
 
 msgid "What the bot knows about this character:"
 msgstr "Bot is kirdaar ke baare mein kya jaanta hai:"
+
+msgid "What the chat gets, for example:"
+msgstr "Chat mein kya jaayega, misaal ke taur par:"
 
 msgid "What to break"
 msgstr "Kya torna hai"
@@ -11146,6 +11157,22 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Bosses se door rahein"
+
+#~ msgid "Tell the Gang chat of each boss seen (in English)"
+#~ msgstr "Har nazar aane wale boss ki khabar Gang chat mein dein (English mein)"
+
+#~ msgid ""
+#~ "Tell the Global chat of each boss seen (in English; the whole server reads it)"
+#~ msgstr ""
+#~ "Har nazar aane wale boss ki khabar Global chat mein dein (English mein; poora server parhta hai)"
+
+#~ msgid "Tell the International chat of each boss seen (in English)"
+#~ msgstr ""
+#~ "Har nazar aane wale boss ki khabar International chat mein dein (English mein)"
+
+#~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+#~ msgstr ""
+#~ "Har nazar aane wale boss ki khabar Team chat mein dein (English mein: naam, map, jagah)"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

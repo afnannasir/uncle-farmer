@@ -775,6 +775,11 @@ msgstr "&XP loser"
 msgid "&Yes, switch language"
 msgstr "&Oui, changer de langue"
 
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+"Votre &propre ligne, avec %boss%, %map% et %pos% pour le boss, la carte et sa position (vide : la ligne du bot, en anglais) :"
+
 msgid "&Your places:"
 msgstr "Vos lie&ux :"
 
@@ -2842,6 +2847,9 @@ msgstr "Liste à garder"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Garder les b&uffs de la classe actifs"
+
+msgid "Keeping away"
+msgstr "Se tenir à distance"
 
 msgid "Key"
 msgstr "Touche"
@@ -4940,23 +4948,23 @@ msgstr "Onglet Équipe : saisissez à qui passer l'équipe à la fin de la parti
 msgid "Teleport to the team leader"
 msgstr "Se téléporter vers le chef d'équipe"
 
-msgid "Tell the Gang chat of each boss seen (in English)"
-msgstr "Prévenir le chat Gang de chaque boss vu (en anglais)"
+msgid "Tell the &Gang chat of each boss seen"
+msgstr "Prévenir le chat Ga&ng de chaque boss vu"
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
-msgstr ""
-"Prévenir le chat Global de chaque boss vu (en anglais ; tout le serveur le lit)"
+msgid "Tell the &Team chat of each boss seen"
+msgstr "Prévenir le chat &Team de chaque boss vu"
 
-msgid "Tell the International chat of each boss seen (in English)"
-msgstr "Prévenir le chat International de chaque boss vu (en anglais)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
+msgstr "Prévenir le chat Gl&obal de chaque boss vu (tout le serveur le lit)"
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
-msgstr ""
-"Prévenir le chat Team de chaque boss vu (en anglais : nom, carte, position)"
+msgid "Tell the I&nternational chat of each boss seen"
+msgstr "Prévenir le chat Inte&rnational de chaque boss vu"
 
 msgid "Tell them now and then that I'm a&way"
 msgstr "Leur dire de temps en temps que je suis &absent"
+
+msgid "Telling other players"
+msgstr "Prévenir les autres joueurs"
 
 msgid "Test &message:"
 msgstr "Message d'&essai :"
@@ -5982,6 +5990,9 @@ msgstr "Ce qui manque"
 
 msgid "What the bot knows about this character:"
 msgstr "Ce que le bot sait de ce personnage :"
+
+msgid "What the chat gets, for example:"
+msgstr "Ce que reçoit le chat, par exemple :"
 
 msgid "What to break"
 msgstr "Que casser"
@@ -11188,6 +11199,21 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Rester loin des boss"
+
+#~ msgid "Tell the Gang chat of each boss seen (in English)"
+#~ msgstr "Prévenir le chat Gang de chaque boss vu (en anglais)"
+
+#~ msgid ""
+#~ "Tell the Global chat of each boss seen (in English; the whole server reads it)"
+#~ msgstr ""
+#~ "Prévenir le chat Global de chaque boss vu (en anglais ; tout le serveur le lit)"
+
+#~ msgid "Tell the International chat of each boss seen (in English)"
+#~ msgstr "Prévenir le chat International de chaque boss vu (en anglais)"
+
+#~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+#~ msgstr ""
+#~ "Prévenir le chat Team de chaque boss vu (en anglais : nom, carte, position)"
 
 #~ msgid ""
 #~ "When a chest, airship, cable car or dungeon menu does nothing, try once &more with the arrow keys and Enter"

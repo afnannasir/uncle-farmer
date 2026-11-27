@@ -768,6 +768,11 @@ msgstr "&XP kaybettirici"
 msgid "&Yes, switch language"
 msgstr "Evet, dili değiştir (&Y)"
 
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+"Kendi satı&rın, %boss%, %map% ve %pos% ile: patronun adı, harita ve yeri (boş: botun kendi satırı, İngilizce):"
+
 msgid "&Your places:"
 msgstr "&Yerlerin:"
 
@@ -2802,6 +2807,9 @@ msgstr "Saklama listesi"
 
 msgid "Keep the class's b&uffs up"
 msgstr "Sınıfın b&ufflarını açık tut"
+
+msgid "Keeping away"
+msgstr "Uzak durma"
 
 msgid "Key"
 msgstr "Tuş"
@@ -4846,22 +4854,23 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr "Takım liderine ışınlan"
 
-msgid "Tell the Gang chat of each boss seen (in English)"
-msgstr "Görülen her patronu Gang sohbetine bildir (İngilizce)"
+msgid "Tell the &Gang chat of each boss seen"
+msgstr "Görülen her patronu &Gang sohbetine bildir"
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
-msgstr ""
-"Görülen her patronu Global sohbetine bildir (İngilizce; tüm sunucu okur)"
+msgid "Tell the &Team chat of each boss seen"
+msgstr "Görülen her patronu &Team sohbetine bildir"
 
-msgid "Tell the International chat of each boss seen (in English)"
-msgstr "Görülen her patronu International sohbetine bildir (İngilizce)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
+msgstr "Görülen her patronu Gl&obal sohbetine bildir (tüm sunucu okur)"
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
-msgstr "Görülen her patronu Team sohbetine bildir (İngilizce: ad, harita, yer)"
+msgid "Tell the I&nternational chat of each boss seen"
+msgstr "Görülen her patronu I&nternational sohbetine bildir"
 
 msgid "Tell them now and then that I'm a&way"
 msgstr "Arada bir bilgisayar başında olmadığımı söyle (&W)"
+
+msgid "Telling other players"
+msgstr "Diğer oyunculara bildirme"
 
 msgid "Test &message:"
 msgstr "Deneme &mesajı:"
@@ -5842,6 +5851,9 @@ msgstr "Eksik olanlar"
 
 msgid "What the bot knows about this character:"
 msgstr "Botun bu karakter hakkında bildikleri:"
+
+msgid "What the chat gets, for example:"
+msgstr "Sohbete giden, örneğin:"
 
 msgid "What to break"
 msgstr ""
@@ -10927,6 +10939,20 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Patronlardan uzak dur"
+
+#~ msgid "Tell the Gang chat of each boss seen (in English)"
+#~ msgstr "Görülen her patronu Gang sohbetine bildir (İngilizce)"
+
+#~ msgid ""
+#~ "Tell the Global chat of each boss seen (in English; the whole server reads it)"
+#~ msgstr ""
+#~ "Görülen her patronu Global sohbetine bildir (İngilizce; tüm sunucu okur)"
+
+#~ msgid "Tell the International chat of each boss seen (in English)"
+#~ msgstr "Görülen her patronu International sohbetine bildir (İngilizce)"
+
+#~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+#~ msgstr "Görülen her patronu Team sohbetine bildir (İngilizce: ad, harita, yer)"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

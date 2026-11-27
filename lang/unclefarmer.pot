@@ -760,6 +760,10 @@ msgstr ""
 msgid "&Yes, switch language"
 msgstr ""
 
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+
 msgid "&Your places:"
 msgstr ""
 
@@ -2751,6 +2755,9 @@ msgstr ""
 msgid "Keep the class's b&uffs up"
 msgstr ""
 
+msgid "Keeping away"
+msgstr ""
+
 msgid "Key"
 msgstr ""
 
@@ -4737,20 +4744,22 @@ msgstr ""
 msgid "Teleport to the team leader"
 msgstr ""
 
-msgid "Tell the Gang chat of each boss seen (in English)"
+msgid "Tell the &Gang chat of each boss seen"
 msgstr ""
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
+msgid "Tell the &Team chat of each boss seen"
 msgstr ""
 
-msgid "Tell the International chat of each boss seen (in English)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
 msgstr ""
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+msgid "Tell the I&nternational chat of each boss seen"
 msgstr ""
 
 msgid "Tell them now and then that I'm a&way"
+msgstr ""
+
+msgid "Telling other players"
 msgstr ""
 
 msgid "Test &message:"
@@ -5671,6 +5680,9 @@ msgid "What is short"
 msgstr ""
 
 msgid "What the bot knows about this character:"
+msgstr ""
+
+msgid "What the chat gets, for example:"
 msgstr ""
 
 msgid "What to break"
