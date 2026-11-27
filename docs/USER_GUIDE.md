@@ -632,6 +632,27 @@ For items that are not shards, choose whether Uncle Farmer should:
 
 Choose which potions and food Uncle Farmer should refill, and where it should get them.
 
+The list offers one row for each thing your character uses, chosen as a dungeon run chooses them:
+the potion named in the character's settings, else the one on a hotkey, else the strongest in the
+bag. That is your red potions, your blue ones (only when the character uses MP), the pet's red and
+blue potions and its food (only with a pet ticked), and a toolbox; then any other supply sitting on
+a hotkey, such as pliers. Offered rows stay unticked until you tick them, and their amounts suit
+what they cost (refilled at / filled up to):
+
+- your potions: 30 / 200
+- the pet's potions: 20 / 100
+- the pet's food: 3 / 30
+- toolboxes: 1 / 5 (one mends everything you wear)
+- pliers: 10 / 50 (one mends a single piece)
+- anything else: 5 / 20
+
+An item no shop sells (the Super potions, which are crafted or come in gifts, or a dish from the
+Chef) is offered from the storehouse only: when the storehouse has none left, the bot tells you
+instead of buying something else. An item you add yourself gets the same amounts.
+
+Every town's pharmacist sells the Small, Medium and Large potions, yours and the pet's, except
+Sunset City's: it has no Large potions, and the bot doesn't go there for them.
+
 ### Full bag
 
 Choose what Uncle Farmer should do when the bag becomes full. The option to stop when the day's drop time runs out is under **Character → Settings → Fighting**, with the other reasons to stop (see "Drop time and the next level").

@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+**Bag and supplies: sensible supplies offered** (untested in game)
+
+- The Supplies list offered everything on a hotkey whose name held "potion", "rice roll", "food" or
+  "toolbox", each to be refilled at 30 and filled up to 200. Ticked by mistake with a shop as its
+  source, 200 Alloy Toolboxes cost 16 million arnebia. It now offers one row for each thing the
+  character uses, picked as a dungeon run picks them (the potion named in its settings, else the one
+  on a hotkey, else the strongest in the bag): its red and blue potions (the blues only with MP),
+  the pet's potions and food (only with a pet ticked), a toolbox, then any other supply on a hotkey
+  (pliers too, which were never offered).
+- The amounts suit the item: your potions 30 / 200, the pet's 20 / 100, the pet's food 3 / 30,
+  toolboxes 1 / 5, pliers 10 / 50, anything else 5 / 20; an item added by hand gets the same.
+- An item no shop sells (the Super potions, crafted or from gifts, the Chef's dishes) is offered
+  from the storehouse only, never to be bought.
+- Offered rows left unticked aren't saved, as before.
+- Sunset City's pharmacist sells no Large potions (ours or the pet's): the bot no longer goes there
+  for them, two wasted trips before it learned.
+
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
 - The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever

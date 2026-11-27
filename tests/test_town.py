@@ -684,7 +684,7 @@ def test_deposit_when_the_pick_fails(monkeypatch: pytest.MonkeyPatch, no_visit: 
 Npc = tuple[int, str, float, float]
 PHILLIPS: Npc = (1041, "Apothecary Phillips", 180, 220)      # the one shop the game data has a menu of
 MAGNUS: Npc = (1121, "Potion Merchant Magnus", 40, 50)        # next door to where we farm
-DANI: Npc = (1021, "Pharmacist Dani", 70, 80)
+DANI: Npc = (1081, "Pharmacist Evan", 70, 80)   # (Sunset City's Dani sells no Large potions)
 
 
 @pytest.fixture

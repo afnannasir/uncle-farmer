@@ -374,10 +374,18 @@ class ShardsFile(Strict):
     markets: dict[str, tuple[float, float]]
 
 
+class ShopLacks(Strict):
+    map: int = Field(ge=1)
+    npc: str = Field(min_length=1)
+    lacks: list[str] = Field(min_length=1)
+
+
 class ShopListsFile(Strict):
     note: str
     read: str
     lists: dict[Literal["potions", "grocer"], dict[str, int]]
+    # "except" is a Python keyword: the field takes it as its alias
+    lacks: list[ShopLacks] = Field(alias="except")
 
 
 class MarketRow(Strict):

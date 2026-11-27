@@ -577,7 +577,8 @@ def listed_shop(npc: Npc, item: str) -> bool:
     menu read without it doesn't make this shop one that lacks it (note_miss). The gang camps'
     sellers aren't town shops - their menus were never read."""
     role = knowledge.listed_role(item)
-    return bool(role) and atlas.kind(npc[0]) != "gang" and npc in knowledge.service_npcs(role or "")
+    return (bool(role) and atlas.kind(npc[0]) != "gang" and npc in knowledge.service_npcs(role or "")
+            and not knowledge.listed_lacks(npc[0], npc[1], item))
 
 
 def shops_for(item: str) -> list[Npc]:
@@ -586,15 +587,16 @@ def shops_for(item: str) -> list[Npc]:
     list has it stays one until its menu didn't show it MISSES_TO_LACK times in a row (a "lacks"
     note an older bot wrote from one reading doesn't count - a Tulip City Elf that once misread
     Pharmacist Evan's menu went to Violet City for its potions for good); any other is left out
-    once its menu turned out not to stock it. The nearest one is visited first (buy)."""
+    once its menu turned out not to stock it, and one the shop lists say lacks it (Sunset City's
+    Pharmacist Dani: no Large potions) never is. The nearest one is visited first (buy)."""
     name = item.strip().lower()
     seen = _shops_seen()
     out: list[Npc] = [t[:4] for t in knowledge.traders(item, "sell") if t[5] == "arnebia"]
     role = knowledge.shop_role(item)
     for npc in knowledge.service_npcs(role) if role else []:
         row = seen.get(_shop_key(npc), {})
-        gone = (_written_off(row, name) if listed_shop(npc, item)
-                else name in row.get("lacks", []))
+        gone = (knowledge.listed_lacks(npc[0], npc[1], item)
+                or (_written_off(row, name) if listed_shop(npc, item) else name in row.get("lacks", [])))
         if npc not in out and not gone:
             out.append(npc)
     return out

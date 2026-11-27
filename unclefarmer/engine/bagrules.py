@@ -207,14 +207,89 @@ def supply_rule(r: dict[str, Any]) -> str:
     return "tell"
 
 
-def suggest_supplies(scan: dict[str, Any] | None) -> list[dict[str, Any]]:
-    """Supplies worth watching, from what sits on the hotkeys: [{"item", "min", "stock", "source"}].
-    Off ("tell") until the player picks a source, so nothing is bought or taken unasked."""
+# What a supply is refilled from and up to, by the item's kind (knowledge.category): (min, stock).
+# Sized from the players' own runs (2026-11-27: 25-46 blue potions an hour, up to 20 of the pet's,
+# 4-5 Pet Rice Rolls, a toolbox every 3 hours or more) - a row ticked by mistake with a shop as its
+# source buys a night's worth, never 200 Alloy Toolboxes at 80 000 arnebia each.
+SUPPLY_SIZES: dict[str, tuple[int, int]] = {
+    "hp_potion": (30, 200), "mp_potion": (30, 200),
+    "pet_hp_potion": (20, 100), "pet_mp_potion": (20, 100),
+    "pet_food": (3, 30),
+    "repair_equipped": (1, 5),     # a toolbox mends everything worn
+    "repair_one": (10, 50),        # a plier mends one piece
+}
+OTHER_SIZE = (5, 20)               # anything else: a potion of another kind, a dish
+# The supplies a character is offered, in this order: the kind, and when it is offered.
+USES = ("hp_potion", "mp_potion", "pet_hp_potion", "pet_mp_potion", "pet_food", "repair_equipped")
+_RANK = ("small", "medium", "large", "super", "potent", "alloy")
+_OFFERED = (*SUPPLY_SIZES, "potion", "food")    # kinds a hotkey item is offered for
+
+
+def sold_in_shops(name: str) -> bool:
+    """Whether a shop sells it for arnebia (a town shop's list, or a menu the game has shown)."""
+    return bool(knowledge.shop_role(name)) or any(t[5] == "arnebia" for t in knowledge.traders(name, "sell"))
+
+
+def new_supply(name: str) -> dict[str, Any]:
+    """A supply row for the item, sized by its kind: off ("tell") while a shop sells it, so nothing
+    is bought until the player picks a source; from the storehouse only when no shop does (the
+    Super potions are crafted or come in gifts)."""
+    low, fill = SUPPLY_SIZES.get(knowledge.category(name), OTHER_SIZE)
+    return {"item": name, "min": low, "stock": fill,
+            "source": "tell" if sold_in_shops(name) else "storage", "on": True}
+
+
+def _strongest(names: Sequence[str]) -> str | None:
+    return max(names, key=lambda n: max([i for i, w in enumerate(_RANK) if w in n.lower()] or [-1]), default=None)
+
+
+def _wanted(kind: str, p: dict[str, Any]) -> bool:
+    """Whether the character needs this kind of supply: the blues only for one that uses MP, the
+    pet's only with a pet ticked."""
+    if kind == "mp_potion":
+        return bool(p.get("mp_use", True))
+    if kind.startswith("pet_"):
+        pets: object = p.get("pets")
+        return json.is_array(pets) and any(json.is_object(x) and x.get("use") for x in pets)
+    return True
+
+
+def _named(kind: str, p: dict[str, Any]) -> str | None:
+    """The item the profile names for this kind (a potion other than "auto", the pet's food)."""
+    key = {"hp_potion": "hp_potion", "mp_potion": "mp_potion", "pet_hp_potion": "pet_hp_potion",
+           "pet_mp_potion": "pet_mp_potion", "pet_food": "pet_food"}.get(kind)
+    got = str(p.get(key) or "").strip() if key else ""
+    return got if got and got.lower() != "auto" else None
+
+
+def suggest_supplies(scan: dict[str, Any] | None, p: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Supplies worth watching: [{"item", "min", "stock", "source", "on"}], one for each thing the
+    character uses (USES: its red and blue potions, the pet's, the pet's food, a toolbox), as a
+    dungeon run picks them: the item the profile names, else the one on a hotkey, else the
+    strongest in the bag; then any other supply on a hotkey (a plier, a Mist Potion). Sized by kind
+    (SUPPLY_SIZES); off until the player picks a source (new_supply)."""
+    p = p or {}
+    hotkeys = [str(h.get("item") or "").strip() for h in (scan or {}).get("hotkeys", []) if json.is_object(h)]
+    hotkeys = [h for h in hotkeys if h]
+    bag = [str(b.get("name") or "").strip() for b in (scan or {}).get("bag", [])
+           if json.is_object(b) and int(b.get("count") or 0) > 0]
     out: list[dict[str, Any]] = []
-    hotkeys: list[dict[str, Any]] = (scan or {}).get("hotkeys", [])
-    for h in hotkeys:
-        item = h.get("item")
-        if not item or not re.search(r"potion|rice roll|food|toolbox", item, re.I):
+    seen: set[str] = set()
+
+    def offer(name: str) -> None:
+        if name.lower() not in seen:
+            seen.add(name.lower())
+            out.append(new_supply(name))
+
+    for kind in USES:
+        if not _wanted(kind, p):
             continue
-        out.append({"item": item, "min": 30, "stock": 200, "source": "tell", "on": True})
+        item = (_named(kind, p)
+                or _strongest([h for h in hotkeys if knowledge.category(h) == kind])
+                or _strongest([b for b in bag if knowledge.category(b) == kind]))
+        if item:
+            offer(item)
+    for h in hotkeys:
+        if knowledge.category(h) in _OFFERED:
+            offer(h)
     return out

@@ -137,6 +137,12 @@ class SortLists:
         speech.speak(_("{name} moved to {list}", name=name, list=title), interrupt=True)
 
 
+def _as_offered(r: dict[str, Any]) -> tuple[str, Any, Any, str, bool]:
+    """What a supply row says, set apart from how it is written (old storage_first/buy flags)."""
+    return (str(r.get("item") or "").lower(), r.get("min"), r.get("stock"), bagrules.supply_rule(r),
+            bool(r.get("on", True)))
+
+
 class BagManagerDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, profile: dict[str, Any] | None = None) -> None:
         super().__init__(parent, title=_("Bag and supplies - {name}", name=settings.profile_display(character)),
@@ -164,9 +170,11 @@ class BagManagerDialog(Dialog):
         restock: list[dict[str, Any]] = p.get("restock") or []
         self.supplies = [dict(r) for r in restock]
         known = {r["item"].lower() for r in self.supplies}
-        for r in bagrules.suggest_supplies(scan):
+        self.offered: list[dict[str, Any]] = []       # the suggestions as offered, untouched
+        for r in bagrules.suggest_supplies(scan, p):
             if r["item"].lower() not in known:
                 r["on"] = False          # offered, not refilled until the player ticks it
+                self.offered.append(dict(r))
                 self.supplies.append(r)
 
         root = wx.BoxSizer(wx.VERTICAL)
@@ -412,7 +420,7 @@ class BagManagerDialog(Dialog):
             if d.ShowModal() != wx.ID_OK or not d.GetValue().strip():
                 return
             name = d.GetValue().strip()
-        self.supplies.append({"item": name, "min": 30, "stock": 200, "source": "tell", "on": True})
+        self.supplies.append(bagrules.new_supply(name))
         self.show_supplies(len(self.supplies) - 1)
         self.supply_list.SetFocus()
 
@@ -452,7 +460,10 @@ class BagManagerDialog(Dialog):
         # a rule that only says "keep" with nothing to leave is the default: don't store it
         p["bag_rules"] = {k: v for k, v in self.rules.items()
                           if v.get("action") != "keep" or bagrules.suggest(k, k in self.hot)[0] != "keep"}
-        p["restock"] = [r for r in self.supplies if r.get("on", True) or r.get("source") != "tell"]
+        # an offered row left unticked and as it was offered is only a suggestion: not stored
+        offered = {_as_offered(r) for r in self.offered}
+        p["restock"] = [r for r in self.supplies if r.get("on", True)
+                        or (r.get("source") != "tell" and _as_offered(r) not in offered)]
         p["bag_full_at"] = self.full_at.GetValue()
         p["when_bag_full"] = FULL_LABELS[max(0, self.when_full.GetSelection())][0]
         p["gear_throw"] = [r for r, c in self.gear.items() if c.GetValue()]
