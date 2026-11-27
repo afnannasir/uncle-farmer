@@ -266,6 +266,12 @@ def read_page(top: Mapping[str, Any] | None, now: float = 0.0) -> Page | None:
             continue
         lots.append(lot)
         lot_at[lot.id] = (r, c)
+    twice = {x.id for x in lots if sum(1 for y in lots if y.id == x.id) > 1}
+    if twice:                      # one listing id on two rows: neither can be told apart, so neither is read
+        unread += sum(1 for x in lots if x.id in twice)
+        lots = [x for x in lots if x.id not in twice]
+        for lot_id in twice:
+            del lot_at[lot_id]
     return Page(cat, order, page, last, lots, unread, dict(top), links, lot_at, jump, header)
 
 
@@ -522,9 +528,32 @@ def _choose(b: Bot, top: dict[str, Any], at: Where) -> None:
                         n=DETAIL_AGENT))
 
 
+def lot_command(lot: Lot) -> tuple[int, ...]:
+    """The command the lot's entry sends: (3, id, 0) for an item (a number box comes next), (3, id)
+    for equipment (a yes or no comes next)."""
+    return (3, lot.id) if lot.equip else (3, lot.id, 0)
+
+
+def lot_cell(pg: Page, lot: Lot) -> Where | None:
+    """Where the page's menu has the lot: the one entry whose command is exactly the lot's, read
+    from the menu itself. None when no entry has it, when more than one does (which lot would that
+    be?), or when it is there in the other shape (an item read as equipment, or the other way)."""
+    want = lot_command(lot)
+    cells = [(r, c) for r, c, e in _cells(pg.top) if _cmd(e) == want]
+    return cells[0] if len(cells) == 1 else None
+
+
+class NotOnPage(Exception):
+    """The lot's command isn't on the page exactly once: nothing was chosen."""
+
+
 def choose_lot(b: Bot, pg: Page, lot: Lot) -> None:
-    """Choose a lot of the page by its listing id (the game asks how many, or yes or no, next)."""
-    _choose(b, pg.top, pg.lot_at[lot.id])
+    """Choose a lot of the page by its listing command (the game asks how many, or yes or no,
+    next). NotOnPage, and nothing chosen, when the menu doesn't hold that command exactly once."""
+    at = lot_cell(pg, lot)
+    if at is None:
+        raise NotOnPage(lot.id)
+    _choose(b, pg.top, at)
 
 
 def open_market(b: Bot) -> dict[str, Any]:
@@ -636,7 +665,7 @@ def seller_of(b: Bot, pg: Page, lot: Lot) -> int | None:
     """Ask the game who sells the lot (its details), or None."""
     if int(getattr(b, "agent_version", 0) or 0) < DETAIL_AGENT:
         raise Stopped(_("finding sellers needs agent {n}: restart the game so it loads", n=DETAIL_AGENT))
-    at = pg.lot_at.get(lot.id)
+    at = lot_cell(pg, lot)
     sig = pg.top.get("sig")
     if at is None or not isinstance(sig, int):
         return None
@@ -868,8 +897,9 @@ class Order:
             return None
 
 
-BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED, NO_ANSWER, WOULD = (
-    "bought", "gone", "fewer", "opening", "over", "cap", "refused", "no answer", "would buy")
+BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED, UNKNOWN, NOT_TRIED, WOULD = (
+    "bought", "gone", "fewer", "opening", "over", "cap", "refused", "unknown", "not tried", "would buy")
+ARRIVE = 2.5                    # seconds for a purchase the game said nothing about to show in the bag
 
 
 def find_again(b: Bot, lot: Lot) -> tuple[Page, Lot] | None:
@@ -936,29 +966,63 @@ def _held_back(o: Order, lot: Lot, want: int, cost: int, spent: int, cap: int) -
     return None
 
 
-def _purchase(b: Bot, pg: Page, lot: Lot, want: int, cost: int) -> tuple[str, str]:
-    """Choose the lot on its page and answer the game's question: how many (an item), or yes or no
-    (equipment). Then the game's spoken answer says whether it was bought."""
+def in_bag(b: Bot, name: str) -> int | None:
+    """How many of name the bag holds, or None when the game sent no bag (an empty reading then
+    proves nothing)."""
+    have = town.counts(b).get(" ".join(name.split()).lower(), 0)
+    return None if getattr(b, "bag_unread", False) else have
+
+
+def _by_the_bag(b: Bot, lot: Lot, before: int | None, want: int, why: str) -> tuple[str, str, int]:
+    """The game didn't say how the purchase went: the bag says. (BOUGHT, words, how many came)
+    when some came within ARRIVE seconds, else (UNKNOWN, words, 0) - and then the batch stops."""
+    if before is None:
+        return UNKNOWN, _("{why}, and the bag couldn't be read before buying - look in the bag", why=why), 0
+    end = b.clock.time() + ARRIVE
+    while True:
+        now = in_bag(b, lot.name)
+        got = 0 if now is None else now - before
+        if got > 0:
+            got = min(got, want)
+            return BOUGHT, _("{why}, but {n} came into the bag: bought for {cost} gold coins",
+                             why=why, n=got, cost=got * lot.price), got
+        if b.clock.time() >= end:
+            return UNKNOWN, _("{why}, and nothing came into the bag - look in the bag", why=why), 0
+        b.sleep(0.1)
+
+
+def _purchase(b: Bot, pg: Page, lot: Lot, want: int, cost: int) -> tuple[str, str, int]:
+    """Choose the lot on its page by its listing command and answer the game's question: how many
+    (an item), or yes or no (equipment). Then the game's spoken answer says whether it was bought;
+    when the game doesn't answer as it should, the bag does. (outcome, words, how many bought)."""
+    before = in_bag(b, lot.name)
     mark = said_mark(b)
-    _choose(b, pg.top, pg.lot_at[lot.id])
+    try:
+        choose_lot(b, pg, lot)
+    except NotOnPage:
+        return REFUSED, _("not bought: its listing isn't on the page exactly once"), 0
     if lot.equip:
         why = _confirm_equipment(b, lot.price)
         if why is not None:
-            return REFUSED, _("not bought: {why}", why=why)
+            return REFUSED, _("not bought: {why}", why=why), 0
     elif not town.type_number(b, want):
+        # The number may have gone in, or the box may still come late and take the next lot's
+        # number: either way the batch can't go on blind.
         b.close_dialogs()
-        return REFUSED, _("not bought: the game's quantity box didn't take the number")
+        return _by_the_bag(b, lot, before, want, _("the game's quantity box didn't take the number"))
     heard = said_after(b, mark, lambda t: not SELLER_TEXT.search(t))
     if heard is None:
-        return NO_ANSWER, _("the game said nothing - look in the bag")
+        return _by_the_bag(b, lot, before, want, _("the game said nothing"))
     if BOUGHT_TEXT.search(heard):
-        return BOUGHT, _("bought {n} for {cost} gold coins", n=want, cost=cost)
-    return REFUSED, _("not bought: the game said \"{words}\"", words=heard)
+        return BOUGHT, _("bought {n} for {cost} gold coins", n=want, cost=cost), want
+    return REFUSED, _("not bought: the game said \"{words}\"", words=heard), 0
 
 
 def buy(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> list[tuple[Order, str, str]]:
     """Buy each order's lot, found again by its listing id. [(order, outcome, words)] - outcome one
-    of BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED, NO_ANSWER (WOULD with check)."""
+    of BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED (WOULD with check), or UNKNOWN: the game
+    didn't say and the bag didn't show it, so nothing more is bought and every order after it is
+    NOT_TRIED (a purchase is never made blind on top of one that may have gone through)."""
     status = Status("buy", _("buying {n} lots", n=len(orders)) if not check else _("checking {n} lots", n=len(orders)),
                     pid_of(b))
     out: list[tuple[Order, str, str]] = []
@@ -973,8 +1037,12 @@ def buy(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> l
         status.write(force=True)
         b.log(_("market: {lot}: {words}", lot=o.lot.label, words=words))
 
+    unsure: Order | None = None
     try:
         for o in orders:
+            if unsure is not None:
+                note(o, NOT_TRIED, _("not tried: the purchase of {lot} may have gone through", lot=unsure.lot.label))
+                continue
             if o.lot.opens_in:
                 note(o, OPENING, _("still on display - it can't be bought in its first hour"))
                 continue
@@ -992,16 +1060,21 @@ def buy(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> l
             if check:
                 note(o, WOULD, _("would buy {n} for {cost} gold coins", n=want, cost=cost))
                 continue
-            outcome, words = _purchase(b, pg, lot, want, cost)
+            outcome, words, got = _purchase(b, pg, lot, want, cost)
             if outcome == BOUGHT:
-                spent += cost
+                spent += got * lot.price
             note(o, outcome, words)
+            if outcome == UNKNOWN:
+                unsure = o
     except STOPPING:
         status.end("stopped", _("stopped: {spent} gold coins spent", spent=spent))
         raise
     bought = [x for x in out if x[1] == BOUGHT]
     summary = (_("checked {n} lots", n=len(out)) if check else
                _("bought {n} of {all} lots for {spent} gold coins", n=len(bought), all=len(out), spent=spent))
+    if unsure is not None:
+        summary += " " + _("- stopped after {lot}: the game didn't say whether it was bought; look in the bag",
+                           lot=unsure.lot.label)
     status.end("done", summary)
     b.log(_("market: {summary}", summary=summary), speak=True)
     return out

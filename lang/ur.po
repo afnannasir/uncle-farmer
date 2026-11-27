@@ -888,6 +888,11 @@ msgstr ", {heal} healing"
 msgid ", {n} threads"
 msgstr ", {n} threads"
 
+msgid ""
+"- stopped after {lot}: the game didn't say whether it was bought; look in the bag"
+msgstr ""
+"- {lot} ke baad ruk gaya: game ne nahin bataya ke khareeda gaya ya nahin; bag dekhein"
+
 msgid "1 chest opened"
 msgstr "1 chest khola"
 
@@ -7606,6 +7611,9 @@ msgstr "is ka game {what} mein masroof hai"
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr "is ki cheezein tasdeeq shuda nahi (shayad game ne ise badal diya hai)"
 
+msgid "its listing isn't on the page exactly once"
+msgstr "iski listing page par theek ek baar nahin hai"
+
 msgid "its price isn't the one read ({now} now)"
 msgstr "iski qeemat woh nahi jo parhi thi (ab {now})"
 
@@ -8213,11 +8221,11 @@ msgstr "normal"
 msgid "not allowed in an expression: {expr}"
 msgstr "expression mein ijazat nahi: {expr}"
 
+msgid "not bought: its listing isn't on the page exactly once"
+msgstr "nahin khareeda: iski listing page par theek ek baar nahin hai"
+
 msgid "not bought: the game said \"{words}\""
 msgstr "nahi khareeda: game ne kaha \"{words}\""
-
-msgid "not bought: the game's quantity box didn't take the number"
-msgstr "nahi khareeda: game ke tadaad wale khane ne number nahi liya"
 
 msgid "not bought: {item} ({why})"
 msgstr "nahin khareeda: {item} ({why})"
@@ -8347,6 +8355,9 @@ msgstr ""
 
 msgid "not telling {room} of {boss}: the character is in no gang"
 msgstr "{room} ko {boss} ki khabar nahin di: character kisi gang mein nahin"
+
+msgid "not tried: the purchase of {lot} may have gone through"
+msgstr "koshish nahin ki: {lot} ki khareed shayad ho chuki hai"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr "aakhir mein nahin pehne gaye, isi type ke medal ne jagah le li: {names}"
@@ -9569,12 +9580,6 @@ msgstr "game ne login darkhwast se inkar kiya"
 msgid "the game said nothing"
 msgstr "game ne kuch nahin kaha"
 
-msgid "the game said nothing - look in the bag"
-msgstr "game ne kuch nahi kaha - baste mein dekhein"
-
-msgid "the game said nothing about {item} - look in the bag"
-msgstr "{item} ke baare mein game ne kuch nahin kaha - bag dekhein"
-
 msgid "the game said: not enough talent points - nothing changed"
 msgstr "game ne kaha: not enough talent points - kuch nahin badla"
 
@@ -10615,6 +10620,9 @@ msgstr ""
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item}: {n} istemal x {price} = {cost} arnebia"
 
+msgid "{item}: {why}, and the bag didn't show it - look in the bag"
+msgstr "{item}: {why}, aur bag mein nazar nahin aaya - bag dekhein"
+
 msgid "{job} didn't finish: {why}"
 msgstr "{job} poora nahi hua: {why}"
 
@@ -11380,6 +11388,15 @@ msgid ""
 msgstr ""
 "{why} - yahin intezar, aur game ijazat de to team leader ke paas teleport (Shift+P)"
 
+msgid "{why}, and nothing came into the bag - look in the bag"
+msgstr "{why}, aur bag mein kuch nahin aaya - bag dekhein"
+
+msgid "{why}, and the bag couldn't be read before buying - look in the bag"
+msgstr "{why}, aur khareedne se pehle bag parha nahin ja saka - bag dekhein"
+
+msgid "{why}, but {n} came into the bag: bought for {cost} gold coins"
+msgstr "{why}, lekin {n} bag mein aa gaye: {cost} gold coins mein khareede"
+
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} bar {h} tiles, {n} exits."
 
@@ -11477,6 +11494,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "no way to walk there"
 #~ msgstr "wahan paidal jaane ka koi rasta nahi"
 
+#~ msgid "not bought: the game's quantity box didn't take the number"
+#~ msgstr "nahi khareeda: game ke tadaad wale khane ne number nahi liya"
+
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol random, full, quick ya short hai"
 
@@ -11485,6 +11505,12 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "the bag already has the potions asked for"
 #~ msgstr "baste mein maange gaye potions pehle se hain"
+
+#~ msgid "the game said nothing - look in the bag"
+#~ msgstr "game ne kuch nahi kaha - baste mein dekhein"
+
+#~ msgid "the game said nothing about {item} - look in the bag"
+#~ msgstr "{item} ke baare mein game ne kuch nahin kaha - bag dekhein"
 
 #~ msgid ""
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"

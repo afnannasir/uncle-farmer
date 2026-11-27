@@ -184,10 +184,15 @@ def _buy_lot(b: Bot, pg: market.Page, lot: market.Lot, want: int) -> tuple[str, 
     """Choose the lot by its listing id, type how many, and read the game's answer: (outcome, what
     the game said)."""
     mark = market.said_mark(b)
-    market.choose_lot(b, pg, lot)
+    try:
+        market.choose_lot(b, pg, lot)
+    except market.NotOnPage:
+        return SKIP, _("its listing isn't on the page exactly once")
     if not town.type_number(b, want):
+        # the number may have gone in, or a late box would take the next lot's: the bag decides,
+        # and nothing more is bought blind
         b.close_dialogs()
-        return SKIP, _("the game's quantity box didn't take the number")
+        return LOST, _("the game's quantity box didn't take the number")
     heard = market.said_after(b, mark, lambda t: not market.SELLER_TEXT.search(t))
     if heard is None:
         return LOST, _("the game said nothing")
@@ -245,16 +250,17 @@ class _Run:
             self.bought += want
             self.spent += cost
             return NEXT
-        before = town.counts(self.b).get(lot.name.lower(), 0)
+        before = market.in_bag(self.b, lot.name)   # None: no bag came, so it can't prove a purchase
         outcome, heard = _buy_lot(self.b, pg, lot, want)
-        if outcome == LOST and _gained(self.b, lot.name, before) > 0:
+        if outcome == LOST and before is not None and _gained(self.b, lot.name, before) > 0:
             outcome = BOUGHT                # the game said nothing, but the bag tells: it was bought
         if outcome == BOUGHT:
             return self.bought_it(lot, want, before)
         return self.refused(lot, cost, outcome, heard)
 
-    def bought_it(self, lot: market.Lot, want: int, before: int) -> str:
-        got = _arrived(self.b, lot.name, before, want)
+    def bought_it(self, lot: market.Lot, want: int, before: int | None) -> str:
+        # before None: the bag couldn't be read before buying, so the game's word counts, not the bag
+        got = want if before is None else _arrived(self.b, lot.name, before, want)
         self.left = max(0, self.left - got)
         self.bought += got
         self.spent += got * lot.price
@@ -277,7 +283,8 @@ class _Run:
         if outcome == TOO_HEAVY:
             return self.heavy()
         if outcome == LOST:
-            return self.over(_("the game said nothing about {item} - look in the bag", item=lot.name))
+            return self.over(_("{item}: {why}, and the bag didn't show it - look in the bag",
+                               why=heard, item=lot.name))
         self.passed.add(lot.id)
         self.fails += 1
         self.b.log(_("not bought: {item} ({why})", item=lot.name, why=heard))

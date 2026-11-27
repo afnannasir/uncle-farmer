@@ -275,7 +275,11 @@ each (up to the lot size; equipment is always 1). Buy shows one summary: "Buy 4 
 
 Each lot ends as one of: bought N, gone (sold or taken back), only N left, still on display
 (buyable at hh:mm), over your max, not bought (with the game's words: not enough gold, bag full,
-daily limit ...), or "no answer" with the log line. Only the final summary and problems are spoken; the rest goes to the window and the
+daily limit ...), or "unknown": the game said nothing (or its quantity box didn't take the number)
+and the bag shows nothing new. An unknown purchase stops the batch: every lot after it ends as
+"not tried", since buying on blind could pay twice. When the game says nothing but the bag shows
+the lot, it counts as bought. The lot is chosen by its listing command (`3,id,0` or `3,id`), found
+in the menu at the moment of choosing and only when exactly one row carries it. Only the final summary and problems are spoken; the rest goes to the window and the
 log. A lot that failed stays ticked so Buy can be pressed again.
 
 `New;` rows are shown (greyed, with the time they open) and can be ticked: the buyer waits for
