@@ -11,6 +11,8 @@ from typing import Any
 
 import pytest
 
+from conftest import returning
+
 from unclefarmer import paths, schedule, shortcuts
 from unclefarmer.shortcuts import EVERYWHERE, IN_APP, Shortcut
 
@@ -36,6 +38,13 @@ def window(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
         return held.pop(hid, None) is not None
     monkeypatch.setattr(main.MainFrame, "RegisterHotKey", register)
     monkeypatch.setattr(main.MainFrame, "UnregisterHotKey", unregister)
+    # the start-up checks ask about the game folder in a modal window, which nobody answers here
+    # (where no game is installed, as on the CI, the whole suite waited for it)
+    monkeypatch.setattr(main.MainFrame, "first_run", returning(None))
+
+    def no_modal(*_a: object, **_k: object) -> int:
+        raise AssertionError("a message window would wait for an answer here")
+    monkeypatch.setattr(wx, "MessageBox", no_modal)
     app = wx.GetApp() or wx.App(False)
     i18n.load("en")
     with open(shortcuts.file_path(), "w", encoding="utf-8") as f:
