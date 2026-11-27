@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+**The game's numbers: noted as the bot sees them, and one table to ask** (untested in game)
+
+- The game names every item, monster, skill and talent by a number, which doesn't change with the
+  game's language, and keeps no list of them (looked for in the game's memory): the server sends
+  each one with its name when it is needed. Uncle Farmer now notes the numbers it sees in
+  `profiles\_learned_ids.json`: items (bag, equipment, and a shop's price and description),
+  living monsters (name, maps, most HP), skills with their class, professions, talents by class.
+  Names are kept under the game's language. Nothing about players, pets, characters, positions or
+  chat is noted; nothing is sent anywhere.
+- `data/ids.json`: the table that comes with the bot (491 items, 98 skills, 7 professions and the
+  first monster types, checked against the game), and `unclefarmer/gameids.py` to ask it by number
+  (this PC's English names fill its gaps). Players' files are folded in with
+  `python -m unclefarmer --merge-ids <files>`: English names the game's texts know, conflicts listed,
+  talents only checked (one talent with several numbers would mean the numbers are each
+  character's own).
+- First use: the Keyboard Manager names an item on a number key that is no longer in the bag
+  instead of "Item type N". The rest of the bot moves to the numbers one part at a time.
+
 **Keyboard Manager: profiles shared with a class or every character, beasts and pets on the number keys** (untested in game)
 
 - **Shared with**: a profile can stay the character's own, or be shared with every character of its class

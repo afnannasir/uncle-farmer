@@ -13,7 +13,7 @@ import socket
 import threading
 from typing import Any, Protocol
 
-from . import gamelang, jsonio as json, paths, settings
+from . import gamelang, jsonio as json, learnids, paths, settings
 
 HOST = "127.0.0.1"
 
@@ -142,6 +142,7 @@ class AgentLink:
             raise AgentError("bad reply") from None
         if line.split(" ", 1)[0] in gamelang.COMMANDS:
             data = gamelang.english(data)      # the game's words back in English (another language pack)
+            learnids.note(line, data, id(self))     # the game's numbers seen, for the shared table
         return data
 
     def close(self) -> None:

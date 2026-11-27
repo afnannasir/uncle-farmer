@@ -1,0 +1,1928 @@
+{
+  "format": 1,
+  "about": "The game's own numbers, with the English name the server gives each one: item types (a bag row's \"type\"), monster types (an entity's \"facing\"), skill and profession ids (mem skills). Built from recorded game data and the numbers players' bots noted (profiles/_learned_ids.json, folded in with python -m unclefarmer --merge-ids).",
+  "items": {
+    "16385": {
+      "name": "Gold Coin"
+    },
+    "16386": {
+      "name": "Arnebia"
+    },
+    "16387": {
+      "name": "Resurrection Crystal"
+    },
+    "16388": {
+      "name": "Skill Protection Stone"
+    },
+    "16389": {
+      "name": "Hexagram Key"
+    },
+    "16396": {
+      "name": "1.5x experience acceleration card"
+    },
+    "16468": {
+      "name": "Yin-Yang Water"
+    },
+    "16470": {
+      "name": "Player Rename Card"
+    },
+    "16471": {
+      "name": "Pet rename card"
+    },
+    "16473": {
+      "name": "Gang Kill Order Token"
+    },
+    "16485": {
+      "name": "Worthless Blood"
+    },
+    "16486": {
+      "name": "Lesser Blood"
+    },
+    "16487": {
+      "name": "medium Blood"
+    },
+    "16488": {
+      "name": "Higher blood"
+    },
+    "16489": {
+      "name": "Excellent Blood"
+    },
+    "16490": {
+      "name": "Premium Blood"
+    },
+    "16496": {
+      "name": "Lesser Jerky"
+    },
+    "16497": {
+      "name": "Medium Jerky"
+    },
+    "16498": {
+      "name": "Higher Jerky"
+    },
+    "16499": {
+      "name": "Excellent Jerky"
+    },
+    "16505": {
+      "name": "Worthless Pelt"
+    },
+    "16506": {
+      "name": "Lesser Pelt"
+    },
+    "16507": {
+      "name": "Medium Pelt"
+    },
+    "16508": {
+      "name": "Higher Pelt"
+    },
+    "16509": {
+      "name": "Excellent Pelt"
+    },
+    "16510": {
+      "name": "Premium Pelt"
+    },
+    "16517": {
+      "name": "Insulating glue"
+    },
+    "16518": {
+      "name": "Ironclad crystal"
+    },
+    "16519": {
+      "name": "Glowstone"
+    },
+    "16520": {
+      "name": "Ebony Metal"
+    },
+    "16521": {
+      "name": "Suspicious Plating"
+    },
+    "16522": {
+      "name": "Green cotton yarn"
+    },
+    "16523": {
+      "name": "Red velvet"
+    },
+    "16524": {
+      "name": "Crystal Wolf Teeth"
+    },
+    "16525": {
+      "name": "Werewolf Soul Orb"
+    },
+    "16526": {
+      "name": "Crystal coral"
+    },
+    "16527": {
+      "name": "Sea Spirit Soul Orb"
+    },
+    "16528": {
+      "name": "Turquoise Metal"
+    },
+    "16529": {
+      "name": "White Bone Piece"
+    },
+    "16530": {
+      "name": "Nether Fire"
+    },
+    "16531": {
+      "name": "Lesser Demon Core"
+    },
+    "16532": {
+      "name": "Glazed Diamond"
+    },
+    "16537": {
+      "name": "Powerful magnet"
+    },
+    "16538": {
+      "name": "Liquid metal"
+    },
+    "16539": {
+      "name": "Silver white metal"
+    },
+    "16540": {
+      "name": "Gel essence"
+    },
+    "16545": {
+      "name": "Crystal ivory"
+    },
+    "16546": {
+      "name": "Mammoth Soul Orb"
+    },
+    "16547": {
+      "name": "Seed of Blaze"
+    },
+    "16548": {
+      "name": "Flame Spirit Soul Orb"
+    },
+    "16549": {
+      "name": "Bright Yellow Metal"
+    },
+    "16554": {
+      "name": "Eternal Star"
+    },
+    "16555": {
+      "name": "Higher Demon Core"
+    },
+    "16625": {
+      "name": "Gnome's pocket"
+    },
+    "16626": {
+      "name": "Goblin's Bamboo Bow"
+    },
+    "16627": {
+      "name": "Dwarf elf's staff"
+    },
+    "16629": {
+      "name": "Dwarf's Hammer"
+    },
+    "16644": {
+      "name": "Elven King's Phalanx"
+    },
+    "16645": {
+      "name": "Robot Fly's Antenna"
+    },
+    "16646": {
+      "name": "Robot Bird's Wings"
+    },
+    "16647": {
+      "name": "Robot Dog's Tail"
+    },
+    "16648": {
+      "name": "Robot Cat's Ears"
+    },
+    "16649": {
+      "name": "Robot Dinosaur's Tooth"
+    },
+    "16655": {
+      "name": "Robot Guard's Arm"
+    },
+    "16656": {
+      "name": "Robot Guard's Breastplate"
+    },
+    "16661": {
+      "name": "Flame Researcher's Nozzle"
+    },
+    "16662": {
+      "name": "Bomb Researcher's Detonator"
+    },
+    "16663": {
+      "name": "The Doctor's Brain-Computer Chip"
+    },
+    "16664": {
+      "name": "The Doctor's Motor Runner"
+    },
+    "16671": {
+      "name": "Lightning Spirit's Electric Orb"
+    },
+    "16673": {
+      "name": "Thunder Beast's Thunder Core"
+    },
+    "16674": {
+      "name": "Thunder Beast's Thunder Charm"
+    },
+    "16675": {
+      "name": "Two-Faced Demon's Man Face"
+    },
+    "16681": {
+      "name": "Succubus's Eyeball"
+    },
+    "16682": {
+      "name": "Succubus's Tongue"
+    },
+    "16683": {
+      "name": "Thunder Lord's Broken palm"
+    },
+    "16684": {
+      "name": "Thunder Lord's Patella"
+    },
+    "16706": {
+      "name": "Apostle's Nose"
+    },
+    "16707": {
+      "name": "Harpy's Wings"
+    },
+    "16721": {
+      "name": "Altar Guard's Heart"
+    },
+    "17385": {
+      "name": "Greenleaf Fish"
+    },
+    "17386": {
+      "name": "Bigmouth Fish"
+    },
+    "17387": {
+      "name": "Red Shrimp"
+    },
+    "17388": {
+      "name": "Crystal Fish"
+    },
+    "17389": {
+      "name": "Scallop"
+    },
+    "17390": {
+      "name": "Pink Fish"
+    },
+    "17391": {
+      "name": "Barracuda"
+    },
+    "17392": {
+      "name": "Rice Shrimp"
+    },
+    "17393": {
+      "name": "Ice Crab"
+    },
+    "17394": {
+      "name": "Milkfish"
+    },
+    "17395": {
+      "name": "Bullfrog"
+    },
+    "17397": {
+      "name": "Long-age Turtle"
+    },
+    "17398": {
+      "name": "Mitten Crab"
+    },
+    "17399": {
+      "name": "Flying Fish"
+    },
+    "17400": {
+      "name": "Lobster"
+    },
+    "17402": {
+      "name": "Puffer Fish"
+    },
+    "17403": {
+      "name": "Swallowtail Fish"
+    },
+    "17404": {
+      "name": "Butterfly shell"
+    },
+    "17405": {
+      "name": "Crystal shrimp"
+    },
+    "17406": {
+      "name": "Saw-Edged Blue Crab"
+    },
+    "17409": {
+      "name": "General Crab"
+    },
+    "17410": {
+      "name": "Long-snouted Alligator"
+    },
+    "17412": {
+      "name": "Silver Dragonfish"
+    },
+    "17415": {
+      "name": "Wine Glass Jellyfish"
+    },
+    "17416": {
+      "name": "Flame Starfish"
+    },
+    "17419": {
+      "name": "Blue pearl"
+    },
+    "17685": {
+      "name": "Black Shipwreck Chest"
+    },
+    "17686": {
+      "name": "Green Shipwreck Chest"
+    },
+    "17687": {
+      "name": "Red Shipwreck Chest"
+    },
+    "17688": {
+      "name": "blue Shipwreck Chest"
+    },
+    "17694": {
+      "name": "Gang Tournament Chest"
+    },
+    "17704": {
+      "name": "Contribution Chest"
+    },
+    "17716": {
+      "name": "Festive Silver-Silk Red Envelope"
+    },
+    "17718": {
+      "name": "Festive Diamond-Inlaid Red Envelope"
+    },
+    "17719": {
+      "name": "Wedding Gift Package"
+    },
+    "17721": {
+      "name": "Deluxe Wedding Gift Package"
+    },
+    "17725": {
+      "name": "Level 15 New Server Gift Pack"
+    },
+    "17728": {
+      "name": "Level 40 upgrade gift bag"
+    },
+    "17745": {
+      "name": "Firecracker"
+    },
+    "17746": {
+      "name": "Gift Balloon"
+    },
+    "17747": {
+      "name": "Fun Capsule Toy"
+    },
+    "17748": {
+      "name": "Birthday Music Box"
+    },
+    "17752": {
+      "name": "Church Fireworks"
+    },
+    "17865": {
+      "name": "Enhanced Lucky Chest"
+    },
+    "17867": {
+      "name": "Shard packet"
+    },
+    "20018": {
+      "name": "Marked Shot Skill Crystal Shard"
+    },
+    "20055": {
+      "name": "Shadow Arrow Skill Crystal Shard"
+    },
+    "20385": {
+      "name": "Level 1 Ruby Shard"
+    },
+    "20386": {
+      "name": "Level 1 Ruby"
+    },
+    "20387": {
+      "name": "Level 2 Ruby Shard"
+    },
+    "20388": {
+      "name": "Level 2 Ruby"
+    },
+    "20389": {
+      "name": "Level 3 Ruby Shard"
+    },
+    "20390": {
+      "name": "Level 3 Ruby"
+    },
+    "20391": {
+      "name": "Level 4 Ruby Shard"
+    },
+    "20392": {
+      "name": "Level 4 Ruby"
+    },
+    "20393": {
+      "name": "Level 5 Ruby Shard"
+    },
+    "20394": {
+      "name": "Level 5 Ruby"
+    },
+    "20395": {
+      "name": "Level 6 Ruby Shard"
+    },
+    "20396": {
+      "name": "Level 6 Ruby"
+    },
+    "20398": {
+      "name": "Level 7 Ruby"
+    },
+    "20405": {
+      "name": "Level 1 Sapphire Shard"
+    },
+    "20408": {
+      "name": "Level 2 Sapphire"
+    },
+    "20425": {
+      "name": "Level 1 Tiger Eye Stone Shard"
+    },
+    "20426": {
+      "name": "Level 1 Tiger Eye Stone"
+    },
+    "20427": {
+      "name": "Level 2 Tiger Eye Stone Shard"
+    },
+    "20428": {
+      "name": "Level 2 Tiger Eye Stone"
+    },
+    "20429": {
+      "name": "Level 3 Tiger Eye Stone Shard"
+    },
+    "20430": {
+      "name": "Level 3 Tiger Eye Stone"
+    },
+    "20431": {
+      "name": "Level 4 Tiger Eye Stone Shard"
+    },
+    "20432": {
+      "name": "Level 4 Tiger Eye Stone"
+    },
+    "20433": {
+      "name": "Level 5 Tiger Eye Stone Shard"
+    },
+    "20434": {
+      "name": "Level 5 Tiger Eye Stone"
+    },
+    "20436": {
+      "name": "Level 6 Tiger Eye Stone"
+    },
+    "20445": {
+      "name": "Level 1 Opal Shard"
+    },
+    "20446": {
+      "name": "Level 1 Opal"
+    },
+    "20447": {
+      "name": "Level 2 Opal Shard"
+    },
+    "20448": {
+      "name": "Level 2 Opal"
+    },
+    "20449": {
+      "name": "Level 3 Opal Shard"
+    },
+    "20450": {
+      "name": "Level 3 Opal"
+    },
+    "20451": {
+      "name": "Level 4 Opal Shard"
+    },
+    "20452": {
+      "name": "Level 4 Opal"
+    },
+    "20453": {
+      "name": "Level 5 Opal Shard"
+    },
+    "20454": {
+      "name": "Level 5 Opal"
+    },
+    "20456": {
+      "name": "Level 6 Opal"
+    },
+    "20465": {
+      "name": "Level 1 Spinel Shard"
+    },
+    "20468": {
+      "name": "Level 2 Spinel"
+    },
+    "20485": {
+      "name": "Level 1 Aquamarine Shard"
+    },
+    "20488": {
+      "name": "Level 2 Aquamarine"
+    },
+    "20505": {
+      "name": "Level 1 Garnet Shard"
+    },
+    "20506": {
+      "name": "Level 1 Garnet"
+    },
+    "20507": {
+      "name": "Level 2 Garnet Shard"
+    },
+    "20508": {
+      "name": "Level 2 Garnet"
+    },
+    "20509": {
+      "name": "Level 3 Garnet Shard"
+    },
+    "20510": {
+      "name": "Level 3 Garnet"
+    },
+    "20511": {
+      "name": "Level 4 Garnet Shard"
+    },
+    "20512": {
+      "name": "Level 4 Garnet"
+    },
+    "20513": {
+      "name": "Level 5 Garnet Shard"
+    },
+    "20514": {
+      "name": "Level 5 Garnet"
+    },
+    "20516": {
+      "name": "Level 6 Garnet"
+    },
+    "20525": {
+      "name": "Level 1 Blond Jade Shard"
+    },
+    "20526": {
+      "name": "Level 1 Blond Jade"
+    },
+    "20527": {
+      "name": "Level 2 Blond Jade Shard"
+    },
+    "20528": {
+      "name": "Level 2 Blond Jade"
+    },
+    "20529": {
+      "name": "Level 3 Blond Jade Shard"
+    },
+    "20530": {
+      "name": "Level 3 Blond Jade"
+    },
+    "20531": {
+      "name": "Level 4 Blond Jade Shard"
+    },
+    "20532": {
+      "name": "Level 4 Blond Jade"
+    },
+    "20533": {
+      "name": "Level 5 Blond Jade Shard"
+    },
+    "20534": {
+      "name": "Level 5 Blond Jade"
+    },
+    "20536": {
+      "name": "Level 6 Blond Jade"
+    },
+    "20545": {
+      "name": "Level 1 Grape Stone Shard"
+    },
+    "20546": {
+      "name": "Level 1 Grape Stone"
+    },
+    "20547": {
+      "name": "Level 2 Grape Stone Shard"
+    },
+    "20548": {
+      "name": "Level 2 Grape Stone"
+    },
+    "20550": {
+      "name": "Level 3 Grape Stone"
+    },
+    "20552": {
+      "name": "Level 4 Grape Stone"
+    },
+    "20553": {
+      "name": "Level 5 Grape Stone Shard"
+    },
+    "20554": {
+      "name": "Level 5 Grape Stone"
+    },
+    "20565": {
+      "name": "Level 1 Olivine Shard"
+    },
+    "20566": {
+      "name": "Level 1 Olivine"
+    },
+    "20568": {
+      "name": "Level 2 Olivine"
+    },
+    "20569": {
+      "name": "Level 3 Olivine Shard"
+    },
+    "20570": {
+      "name": "Level 3 Olivine"
+    },
+    "20571": {
+      "name": "Level 4 Olivine Shard"
+    },
+    "20572": {
+      "name": "Level 4 Olivine"
+    },
+    "20574": {
+      "name": "Level 5 Olivine"
+    },
+    "20576": {
+      "name": "Level 6 Olivine"
+    },
+    "20585": {
+      "name": "Level 1 Topaz Shard"
+    },
+    "20586": {
+      "name": "Level 1 Topaz"
+    },
+    "20587": {
+      "name": "Level 2 Topaz Shard"
+    },
+    "20588": {
+      "name": "Level 2 Topaz"
+    },
+    "20589": {
+      "name": "Level 3 Topaz Shard"
+    },
+    "20590": {
+      "name": "Level 3 Topaz"
+    },
+    "20591": {
+      "name": "Level 4 Topaz Shard"
+    },
+    "20592": {
+      "name": "Level 4 Topaz"
+    },
+    "20593": {
+      "name": "Level 5 Topaz Shard"
+    },
+    "20594": {
+      "name": "Level 5 Topaz"
+    },
+    "20596": {
+      "name": "Level 6 Topaz"
+    },
+    "20605": {
+      "name": "Level 1 Obsidian Shard"
+    },
+    "20606": {
+      "name": "Level 1 Obsidian"
+    },
+    "20607": {
+      "name": "Level 2 Obsidian Shard"
+    },
+    "20608": {
+      "name": "Level 2 Obsidian"
+    },
+    "20609": {
+      "name": "Level 3 Obsidian Shard"
+    },
+    "20610": {
+      "name": "Level 3 Obsidian"
+    },
+    "20611": {
+      "name": "Level 4 Obsidian Shard"
+    },
+    "20612": {
+      "name": "Level 4 Obsidian"
+    },
+    "20613": {
+      "name": "Level 5 Obsidian Shard"
+    },
+    "20614": {
+      "name": "Level 5 Obsidian"
+    },
+    "20616": {
+      "name": "Level 6 Obsidian"
+    },
+    "20625": {
+      "name": "Level 1 Sunlight Stone Shard"
+    },
+    "20626": {
+      "name": "Level 1 Sunlight Stone"
+    },
+    "20627": {
+      "name": "Level 2 Sunlight Stone Shard"
+    },
+    "20628": {
+      "name": "Level 2 Sunlight Stone"
+    },
+    "20630": {
+      "name": "Level 3 Sunlight Stone"
+    },
+    "20632": {
+      "name": "Level 4 Sunlight Stone"
+    },
+    "20634": {
+      "name": "Level 5 Sunlight Stone"
+    },
+    "20636": {
+      "name": "Level 6 Sunlight Stone"
+    },
+    "20645": {
+      "name": "Level 1 Moonstone Shard"
+    },
+    "20646": {
+      "name": "Level 1 Moonstone"
+    },
+    "20647": {
+      "name": "Level 2 Moonstone Shard"
+    },
+    "20648": {
+      "name": "Level 2 Moonstone"
+    },
+    "20649": {
+      "name": "Level 3 Moonstone Shard"
+    },
+    "20650": {
+      "name": "Level 3 Moonstone"
+    },
+    "20651": {
+      "name": "Level 4 Moonstone Shard"
+    },
+    "20652": {
+      "name": "Level 4 Moonstone"
+    },
+    "20653": {
+      "name": "Level 5 Moonstone Shard"
+    },
+    "20654": {
+      "name": "Level 5 Moonstone"
+    },
+    "20655": {
+      "name": "Level 6 Moonstone Shard"
+    },
+    "20656": {
+      "name": "Level 6 Moonstone"
+    },
+    "20658": {
+      "name": "Level 7 Moonstone"
+    },
+    "20665": {
+      "name": "Level 1 Turquoise Shard"
+    },
+    "20666": {
+      "name": "Level 1 Turquoise"
+    },
+    "20667": {
+      "name": "Level 2 Turquoise Shard"
+    },
+    "20668": {
+      "name": "Level 2 Turquoise"
+    },
+    "20669": {
+      "name": "Level 3 Turquoise Shard"
+    },
+    "20670": {
+      "name": "Level 3 Turquoise"
+    },
+    "20671": {
+      "name": "Level 4 Turquoise Shard"
+    },
+    "20672": {
+      "name": "Level 4 Turquoise"
+    },
+    "20674": {
+      "name": "Level 5 Turquoise"
+    },
+    "20676": {
+      "name": "Level 6 Turquoise"
+    },
+    "20985": {
+      "name": "Weapon Enhance Crystal Shard"
+    },
+    "20992": {
+      "name": "Level 4 Weapon Enhance Crystal"
+    },
+    "20994": {
+      "name": "Level 5 Weapon Enhance Crystal"
+    },
+    "20996": {
+      "name": "Level 6 Weapon Enhance Crystal"
+    },
+    "21015": {
+      "name": "Equipment Enhance Crystal Shard"
+    },
+    "21016": {
+      "name": "Level 1 Equipment Enhance Crystal"
+    },
+    "21018": {
+      "name": "Level 2 Equipment Enhance Crystal"
+    },
+    "21020": {
+      "name": "Level 3 Equipment Enhance Crystal"
+    },
+    "21022": {
+      "name": "Level 4 Equipment Enhance Crystal"
+    },
+    "21024": {
+      "name": "Level 5 Equipment Enhance Crystal"
+    },
+    "21026": {
+      "name": "Level 6 Equipment Enhance Crystal"
+    },
+    "21085": {
+      "name": "Gem Protection Rune"
+    },
+    "21090": {
+      "name": "Socket Protection Stone"
+    },
+    "21095": {
+      "name": "Weapon Enhance Boost Rune"
+    },
+    "21105": {
+      "name": "Equipment Enhance Boost Rune"
+    },
+    "21115": {
+      "name": "Weapon Enhance Protection Rune"
+    },
+    "21125": {
+      "name": "Equipment Enhance Protection Rune"
+    },
+    "21386": {
+      "name": "Key"
+    },
+    "21398": {
+      "name": "Fruit of the Wisdom Tree"
+    },
+    "21419": {
+      "name": "Blue key"
+    },
+    "21420": {
+      "name": "Yellow key"
+    },
+    "21421": {
+      "name": "White key"
+    },
+    "21422": {
+      "name": "Black key"
+    },
+    "21427": {
+      "name": "Reward order"
+    },
+    "21428": {
+      "name": "Punishment order"
+    },
+    "21454": {
+      "name": "Medical Supply"
+    },
+    "21459": {
+      "name": "Water Monster's Egg"
+    },
+    "21509": {
+      "name": "Hunting Gift Package"
+    },
+    "21516": {
+      "name": "Osmanthus wine"
+    },
+    "21517": {
+      "name": "Five-Nuts Mooncake"
+    },
+    "21518": {
+      "name": "Wind Chaser Soul Fragment"
+    },
+    "21549": {
+      "name": "Chocolate ice cream"
+    },
+    "21551": {
+      "name": "Candy"
+    },
+    "21558": {
+      "name": "Fortune Blessing"
+    },
+    "21559": {
+      "name": "Peace Blessing"
+    },
+    "21560": {
+      "name": "Luck Blessing"
+    },
+    "21561": {
+      "name": "Happiness Blessing"
+    },
+    "21563": {
+      "name": "sesame rice ball"
+    },
+    "21564": {
+      "name": "peanut rice ball"
+    },
+    "21579": {
+      "name": "Midnight Kiss"
+    },
+    "21580": {
+      "name": "Satisfied Morning"
+    },
+    "21643": {
+      "name": "rabbit"
+    },
+    "21653": {
+      "name": "hexagonal ice crystal"
+    },
+    "21655": {
+      "name": "gold star token"
+    },
+    "21656": {
+      "name": "Silver Star Token"
+    },
+    "21657": {
+      "name": "blue star token"
+    },
+    "21658": {
+      "name": "white star token"
+    },
+    "21659": {
+      "name": "lucky star token"
+    },
+    "21660": {
+      "name": "meteor token"
+    },
+    "21665": {
+      "name": "Golden Moon Token"
+    },
+    "21666": {
+      "name": "Silver Moon Token"
+    },
+    "21667": {
+      "name": "blue moon token"
+    },
+    "21668": {
+      "name": "White Moon Token"
+    },
+    "21669": {
+      "name": "Pine Moon Token"
+    },
+    "21670": {
+      "name": "crescent token"
+    },
+    "21710": {
+      "name": "Grimace Cookie"
+    },
+    "21711": {
+      "name": "turkey"
+    },
+    "21730": {
+      "name": "Broken hammer"
+    },
+    "21743": {
+      "name": "Water Monster's Egg"
+    },
+    "21751": {
+      "name": "Moonlight Shard"
+    },
+    "23385": {
+      "name": "Small Red Potion"
+    },
+    "23386": {
+      "name": "Medium Red Potion"
+    },
+    "23387": {
+      "name": "Large Red Potion"
+    },
+    "23388": {
+      "name": "Super Red Potion"
+    },
+    "23390": {
+      "name": "Plasma"
+    },
+    "23391": {
+      "name": "Potent Plasma"
+    },
+    "23392": {
+      "name": "Serum Protein"
+    },
+    "23395": {
+      "name": "Small Blue Potion"
+    },
+    "23396": {
+      "name": "Medium Blue Potion"
+    },
+    "23397": {
+      "name": "Large Blue Potion"
+    },
+    "23398": {
+      "name": "Super Blue Potion"
+    },
+    "23400": {
+      "name": "Magic Potion"
+    },
+    "23401": {
+      "name": "Potent Magic Potion"
+    },
+    "23405": {
+      "name": "Chicken Drumstick"
+    },
+    "23406": {
+      "name": "Steak"
+    },
+    "23407": {
+      "name": "Ham"
+    },
+    "23408": {
+      "name": "Pie"
+    },
+    "23409": {
+      "name": "Burrito"
+    },
+    "23411": {
+      "name": "Hot Dog"
+    },
+    "23412": {
+      "name": "Sandwich"
+    },
+    "23415": {
+      "name": "Coco"
+    },
+    "23425": {
+      "name": "Arena Power Pill"
+    },
+    "23426": {
+      "name": "Arena Iron Stone Pill"
+    },
+    "23429": {
+      "name": "Tactical Power Pill"
+    },
+    "23430": {
+      "name": "Tactical Iron Stone Pill"
+    },
+    "23436": {
+      "name": "Pet Medium Red Potion"
+    },
+    "23437": {
+      "name": "Pet Large Red Potion"
+    },
+    "23438": {
+      "name": "Pet Super Red Potion"
+    },
+    "23440": {
+      "name": "Pet Plasma"
+    },
+    "23441": {
+      "name": "Pet Potent Plasma"
+    },
+    "23442": {
+      "name": "Pet Albumin"
+    },
+    "23446": {
+      "name": "Pet Medium Blue Potion"
+    },
+    "23447": {
+      "name": "Pet Large Blue Potion"
+    },
+    "23448": {
+      "name": "Pet Super Blue Potion"
+    },
+    "23450": {
+      "name": "Pet Bone Cookie"
+    },
+    "23451": {
+      "name": "Pet Fine Bone Cookie"
+    },
+    "23455": {
+      "name": "Pet Meat Cube"
+    },
+    "23456": {
+      "name": "Pet Jerky"
+    },
+    "23457": {
+      "name": "Pet Sausage"
+    },
+    "23458": {
+      "name": "Pet Pie"
+    },
+    "23459": {
+      "name": "Pet Burrito"
+    },
+    "23461": {
+      "name": "Pet Hot Dog"
+    },
+    "23462": {
+      "name": "Pet Sandwich"
+    },
+    "23475": {
+      "name": "Pet Rice Roll"
+    },
+    "23500": {
+      "name": "Lesser Duck Soul Stone"
+    },
+    "23509": {
+      "name": "Brilliant Donkey Soul Stone"
+    },
+    "23533": {
+      "name": "Pure Hound Soul Stone"
+    },
+    "23538": {
+      "name": "Pure Curly Cat Soul Stone"
+    },
+    "23540": {
+      "name": "Lesser Shepard Dog Soul Stone"
+    },
+    "23546": {
+      "name": "Medium Parrot Soul Stone"
+    },
+    "23550": {
+      "name": "LesserLizard Soul Stone"
+    },
+    "23552": {
+      "name": "Higher Lizard Soul Stone"
+    },
+    "23553": {
+      "name": "Pure Lizard Soul Stone"
+    },
+    "23555": {
+      "name": "Lesser Monkey Soul Stone"
+    },
+    "23557": {
+      "name": "Higher Monkey Soul Stone"
+    },
+    "23562": {
+      "name": "Higher Eagle Soul Stone"
+    },
+    "23566": {
+      "name": "Medium Hippo Soul Stone"
+    },
+    "23572": {
+      "name": "Higher Boar Soul Stone"
+    },
+    "23573": {
+      "name": "Pure Boar Soul Stone"
+    },
+    "23581": {
+      "name": "Medium Brown Bear Soul Stone"
+    },
+    "23607": {
+      "name": "Wild Golden Rooster Soul Stone"
+    },
+    "23617": {
+      "name": "Wild Parrot Soul Stone"
+    },
+    "23619": {
+      "name": "Wild Monkey Soul Stone"
+    },
+    "23685": {
+      "name": "Primary Warpath"
+    },
+    "23686": {
+      "name": "Medium Warpath"
+    },
+    "23687": {
+      "name": "Advanced Warpath"
+    },
+    "23690": {
+      "name": "Primary Determination"
+    },
+    "23691": {
+      "name": "Medium Determination"
+    },
+    "23693": {
+      "name": "Super Determination"
+    },
+    "23695": {
+      "name": "Primary Focus"
+    },
+    "23696": {
+      "name": "Medium Focus"
+    },
+    "23697": {
+      "name": "Advanced Focus"
+    },
+    "23698": {
+      "name": "Super Focus"
+    },
+    "23700": {
+      "name": "Primary Spirit Lock"
+    },
+    "23701": {
+      "name": "Medium Spirit Lock"
+    },
+    "23702": {
+      "name": "Advanced Spirit Lock"
+    },
+    "23705": {
+      "name": "Primary Destruction"
+    },
+    "23706": {
+      "name": "Medium Destruction"
+    },
+    "23707": {
+      "name": "Advanced Destruction"
+    },
+    "23710": {
+      "name": "Primary Soul Turmoil"
+    },
+    "23711": {
+      "name": "Medium Soul Turmoil"
+    },
+    "23712": {
+      "name": "Advanced Soul Turmoil"
+    },
+    "23715": {
+      "name": "Primary Ferocious"
+    },
+    "23716": {
+      "name": "Medium Ferocious"
+    },
+    "23717": {
+      "name": "Advanced Ferocious"
+    },
+    "23720": {
+      "name": "Primary Demonize"
+    },
+    "23721": {
+      "name": "Medium Demonize"
+    },
+    "23725": {
+      "name": "Primary Fury"
+    },
+    "23726": {
+      "name": "Medium Fury"
+    },
+    "23730": {
+      "name": "Primary Magic Maniac"
+    },
+    "23731": {
+      "name": "Medium Magic Maniac"
+    },
+    "23732": {
+      "name": "Advanced Magic Maniac"
+    },
+    "23733": {
+      "name": "Super Magic Maniac"
+    },
+    "23735": {
+      "name": "Primary Fighter Form"
+    },
+    "23736": {
+      "name": "Medium Fighter Form"
+    },
+    "23737": {
+      "name": "Advanced Fighter Form"
+    },
+    "23740": {
+      "name": "Primary Energy Form"
+    },
+    "23741": {
+      "name": "Medium Energy Form"
+    },
+    "23742": {
+      "name": "Advanced Energy Form"
+    },
+    "23745": {
+      "name": "Primary Unbreakable Form"
+    },
+    "23746": {
+      "name": "Medium Unbreakable Form"
+    },
+    "23750": {
+      "name": "Primary Spiritual Form"
+    },
+    "23751": {
+      "name": "Medium Spiritual Form"
+    },
+    "23752": {
+      "name": "Advanced Spiritual Form"
+    },
+    "23755": {
+      "name": "Primary Steady Form"
+    },
+    "23756": {
+      "name": "Medium Steady Form"
+    },
+    "23760": {
+      "name": "Primary Concentration Form"
+    },
+    "23761": {
+      "name": "Medium Concentration Form"
+    },
+    "23762": {
+      "name": "Advanced Concentration Form"
+    },
+    "23765": {
+      "name": "Primary Hunt Form"
+    },
+    "23766": {
+      "name": "Medium Hunt Form"
+    },
+    "23767": {
+      "name": "Advanced Hunt Form"
+    },
+    "23770": {
+      "name": "Primary Soul Chaser Form"
+    },
+    "23771": {
+      "name": "Medium Soul Chaser Form"
+    },
+    "23772": {
+      "name": "Advanced Soul Chaser Form"
+    },
+    "23775": {
+      "name": "Primary Berserk Form"
+    },
+    "23776": {
+      "name": "Medium Berserk Form"
+    },
+    "23777": {
+      "name": "Advanced Berserk Form"
+    },
+    "23780": {
+      "name": "Primary Demon Form"
+    },
+    "23781": {
+      "name": "Medium Demon Form"
+    },
+    "23782": {
+      "name": "Advanced Demon Form"
+    },
+    "23785": {
+      "name": "Small Plier"
+    },
+    "23786": {
+      "name": "Large Plier"
+    },
+    "23787": {
+      "name": "Alloy Plier"
+    },
+    "23790": {
+      "name": "Small Toolbox"
+    },
+    "23791": {
+      "name": "Large Toolbox"
+    },
+    "23792": {
+      "name": "Alloy Toolbox"
+    },
+    "23795": {
+      "name": "Repair Scroll"
+    },
+    "23796": {
+      "name": "Advanced Repair Scroll"
+    },
+    "23800": {
+      "name": "Iron Crystal Water"
+    },
+    "23801": {
+      "name": "Iron Crystal Water (Condensed)"
+    },
+    "23805": {
+      "name": "World Broadcast Card"
+    },
+    "23806": {
+      "name": "Map Broadcast Card"
+    },
+    "23820": {
+      "name": "Wedding Blessing Card"
+    },
+    "23885": {
+      "name": "Hearthstone"
+    },
+    "23887": {
+      "name": "Memory Butterfly"
+    },
+    "23895": {
+      "name": "Sunset City Teleportation stone"
+    },
+    "23896": {
+      "name": "Giant rock City Teleportation stone"
+    },
+    "23897": {
+      "name": "White Sands City Teleportation stone"
+    },
+    "23898": {
+      "name": "Tulip City Teleportation stone"
+    },
+    "23899": {
+      "name": "Moon City Teleportation stone"
+    },
+    "23900": {
+      "name": "holy blood city Teleportation stone"
+    },
+    "23901": {
+      "name": "gouging knife City Teleportation stone"
+    },
+    "23902": {
+      "name": "Violet City Teleportation stone"
+    },
+    "23905": {
+      "name": "Soul Burial Village Teleportation stone"
+    },
+    "23906": {
+      "name": "Plague Abyss Teleportation stone"
+    },
+    "23907": {
+      "name": "Orchid woods Village Teleportation stone"
+    },
+    "23908": {
+      "name": "City of the Ancient tower Teleportation stone"
+    },
+    "23909": {
+      "name": "mist gods Ruins Teleportation stone"
+    },
+    "23910": {
+      "name": "West Sealing Tower Teleportation stone"
+    },
+    "23915": {
+      "name": "Central Kingdom Teleportation stone"
+    },
+    "23916": {
+      "name": "Loki Union Teleportation stone"
+    },
+    "23917": {
+      "name": "Garth Empire Teleportation stone"
+    },
+    "23918": {
+      "name": "Spirit Teleportation stone"
+    },
+    "23919": {
+      "name": "Ruins Teleportation stone"
+    },
+    "23920": {
+      "name": "seal Teleportation stone"
+    },
+    "23921": {
+      "name": "Platinum Teleportation stone"
+    },
+    "23922": {
+      "name": "Black Gold Teleportation stone"
+    },
+    "23945": {
+      "name": "Cherry Wedding Candy"
+    },
+    "23946": {
+      "name": "Strawberry Wedding Candy"
+    },
+    "23947": {
+      "name": "Pearl Wedding Candy"
+    },
+    "23948": {
+      "name": "Milk Wedding Candy"
+    },
+    "23949": {
+      "name": "White Chocolate Candy"
+    },
+    "23950": {
+      "name": "Chocolate Candy"
+    },
+    "23955": {
+      "name": "Gouging Knife Strike Force"
+    },
+    "23956": {
+      "name": "Innocent Moon"
+    },
+    "23957": {
+      "name": "Bloody Holy Blood"
+    },
+    "23959": {
+      "name": "Princess William"
+    },
+    "23960": {
+      "name": "White Tulip"
+    },
+    "23977": {
+      "name": "Skill Proficiency Pill (large)"
+    },
+    "24310": {
+      "name": "Sea Spirit Crystal"
+    }
+  },
+  "monsters": {
+    "534": {
+      "name": "black centipede"
+    },
+    "535": {
+      "name": "blood spider"
+    },
+    "536": {
+      "name": "Crimson Scorpion"
+    },
+    "537": {
+      "name": "red-faced monkey"
+    },
+    "538": {
+      "name": "Ghost Faced Monkey"
+    },
+    "609": {
+      "name": "ghost jellyfish"
+    },
+    "610": {
+      "name": "beak shark"
+    },
+    "611": {
+      "name": "Pineapple Sea Urchin"
+    },
+    "613": {
+      "name": "bubble fish"
+    },
+    "7203": {
+      "name": "Chest"
+    }
+  },
+  "skills": {
+    "101": {
+      "name": "Bash",
+      "class": "Warrior"
+    },
+    "111": {
+      "name": "Cleave",
+      "class": "Warrior"
+    },
+    "121": {
+      "name": "Execute",
+      "class": "Warrior"
+    },
+    "131": {
+      "name": "Sweep Attack",
+      "class": "Warrior"
+    },
+    "141": {
+      "name": "Whirlwind Slash",
+      "class": "Warrior"
+    },
+    "151": {
+      "name": "Wind Step",
+      "class": "Warrior"
+    },
+    "161": {
+      "name": "Formless",
+      "class": "Warrior"
+    },
+    "171": {
+      "name": "Leap Slash",
+      "class": "Warrior"
+    },
+    "181": {
+      "name": "Rip and Tear",
+      "class": "Warrior"
+    },
+    "191": {
+      "name": "Suppress",
+      "class": "Warrior"
+    },
+    "201": {
+      "name": "Hamstring",
+      "class": "Warrior"
+    },
+    "211": {
+      "name": "Armor Break",
+      "class": "Warrior"
+    },
+    "221": {
+      "name": "Rupture",
+      "class": "Warrior"
+    },
+    "231": {
+      "name": "Battle Cry",
+      "class": "Warrior"
+    },
+    "251": {
+      "name": "Taunt Attack",
+      "class": "Warrior"
+    },
+    "261": {
+      "name": "Challenge Cry",
+      "class": "Warrior"
+    },
+    "701": {
+      "name": "Arcane Shot",
+      "class": "Hunter"
+    },
+    "711": {
+      "name": "Aimed Shot",
+      "class": "Hunter"
+    },
+    "721": {
+      "name": "Multi Shot",
+      "class": "Hunter"
+    },
+    "731": {
+      "name": "Rapid Arrows",
+      "class": "Hunter"
+    },
+    "741": {
+      "name": "Marked Shot",
+      "class": "Hunter"
+    },
+    "761": {
+      "name": "Bull's Eye",
+      "class": "Hunter"
+    },
+    "771": {
+      "name": "Concussive Shot",
+      "class": "Hunter"
+    },
+    "781": {
+      "name": "Throw Hunting Net",
+      "class": "Hunter"
+    },
+    "791": {
+      "name": "Tar Trap",
+      "class": "Hunter"
+    },
+    "801": {
+      "name": "Vine Trap",
+      "class": "Hunter"
+    },
+    "811": {
+      "name": "Turtle Guardian",
+      "class": "Hunter"
+    },
+    "821": {
+      "name": "Strong-Arm Aura",
+      "class": "Hunter"
+    },
+    "841": {
+      "name": "Viper Sting",
+      "class": "Hunter"
+    },
+    "851": {
+      "name": "Adder Sting",
+      "class": "Hunter"
+    },
+    "861": {
+      "name": "Scorpion Sting",
+      "class": "Hunter"
+    },
+    "871": {
+      "name": "Escape",
+      "class": "Hunter"
+    },
+    "901": {
+      "name": "Magic Sphere",
+      "class": "Mage"
+    },
+    "911": {
+      "name": "Ice Lance",
+      "class": "Mage"
+    },
+    "921": {
+      "name": "Ice Storm",
+      "class": "Mage"
+    },
+    "931": {
+      "name": "Ice Orb",
+      "class": "Mage"
+    },
+    "941": {
+      "name": "Aqua Jet",
+      "class": "Mage"
+    },
+    "951": {
+      "name": "Blizzard",
+      "class": "Mage"
+    },
+    "961": {
+      "name": "Ice Arrow",
+      "class": "Mage"
+    },
+    "971": {
+      "name": "Icicle",
+      "class": "Mage"
+    },
+    "981": {
+      "name": "Frost Nova",
+      "class": "Mage"
+    },
+    "1001": {
+      "name": "Ice Barrier",
+      "class": "Mage"
+    },
+    "1011": {
+      "name": "Ice Shield",
+      "class": "Mage"
+    },
+    "1021": {
+      "name": "Winter Horn",
+      "class": "Mage"
+    },
+    "1031": {
+      "name": "Crushed Ice Fetters",
+      "class": "Mage"
+    },
+    "1051": {
+      "name": "Dispel Magic",
+      "class": "Mage"
+    },
+    "1061": {
+      "name": "Teleportation",
+      "class": "Mage"
+    },
+    "1071": {
+      "name": "Teleportation Portal",
+      "class": "Mage"
+    },
+    "1081": {
+      "name": "Retract the Barrier",
+      "class": "Mage"
+    },
+    "1101": {
+      "name": "Fireball",
+      "class": "Elf"
+    },
+    "1111": {
+      "name": "Fire Impact",
+      "class": "Elf"
+    },
+    "1121": {
+      "name": "Fire Surge",
+      "class": "Elf"
+    },
+    "1131": {
+      "name": "Sear",
+      "class": "Elf"
+    },
+    "1141": {
+      "name": "Pyroblast",
+      "class": "Elf"
+    },
+    "1151": {
+      "name": "Blazing Storm",
+      "class": "Elf"
+    },
+    "1161": {
+      "name": "Magma",
+      "class": "Elf"
+    },
+    "1171": {
+      "name": "Dragon's Breath",
+      "class": "Elf"
+    },
+    "1181": {
+      "name": "Elven Ascension",
+      "class": "Elf"
+    },
+    "1191": {
+      "name": "Lava Armor",
+      "class": "Elf"
+    },
+    "1201": {
+      "name": "Scorch",
+      "class": "Elf"
+    },
+    "1211": {
+      "name": "Purification",
+      "class": "Elf"
+    },
+    "1221": {
+      "name": "Ignition",
+      "class": "Elf"
+    },
+    "1231": {
+      "name": "Magic Shield",
+      "class": "Elf"
+    },
+    "1241": {
+      "name": "Invisibility",
+      "class": "Elf"
+    },
+    "1251": {
+      "name": "Critical Blaze",
+      "class": "Elf"
+    },
+    "1261": {
+      "name": "Elven Teleportation",
+      "class": "Elf"
+    },
+    "1271": {
+      "name": "Elven Teleportation Portal",
+      "class": "Elf"
+    },
+    "1301": {
+      "name": "Retribution",
+      "class": "Priest"
+    },
+    "1311": {
+      "name": "Holy Light Wave",
+      "class": "Priest"
+    },
+    "1321": {
+      "name": "Divine Nova",
+      "class": "Priest"
+    },
+    "1331": {
+      "name": "Concentrated Will",
+      "class": "Priest"
+    },
+    "1341": {
+      "name": "Divine Fire",
+      "class": "Priest"
+    },
+    "1351": {
+      "name": "Heal",
+      "class": "Priest"
+    },
+    "1361": {
+      "name": "Recover",
+      "class": "Priest"
+    },
+    "1371": {
+      "name": "Healing Prayers",
+      "class": "Priest"
+    },
+    "1381": {
+      "name": "Light of Miracles",
+      "class": "Priest"
+    },
+    "1411": {
+      "name": "Holy Light",
+      "class": "Priest"
+    },
+    "1431": {
+      "name": "Spiral Blast",
+      "class": "Priest"
+    },
+    "1441": {
+      "name": "Divine Protection",
+      "class": "Priest"
+    },
+    "1451": {
+      "name": "Soul of Redemption",
+      "class": "Priest"
+    },
+    "1461": {
+      "name": "Requiem",
+      "class": "Priest"
+    },
+    "1471": {
+      "name": "Mind Whip",
+      "class": "Priest"
+    },
+    "1501": {
+      "name": "Shadow Arrow",
+      "class": "Witcher"
+    },
+    "1511": {
+      "name": "Skeleton Explosion",
+      "class": "Witcher"
+    },
+    "1521": {
+      "name": "Dead Toxin",
+      "class": "Witcher"
+    },
+    "1531": {
+      "name": "Corrosion Spell",
+      "class": "Witcher"
+    },
+    "1541": {
+      "name": "Incessant Pain",
+      "class": "Witcher"
+    },
+    "1551": {
+      "name": "Healing Wave",
+      "class": "Witcher"
+    },
+    "1561": {
+      "name": "Healing Surge",
+      "class": "Witcher"
+    },
+    "1571": {
+      "name": "Healing Fountain Totem",
+      "class": "Witcher"
+    },
+    "1581": {
+      "name": "Healing Chain",
+      "class": "Witcher"
+    },
+    "1591": {
+      "name": "Healing Tide Totem",
+      "class": "Witcher"
+    },
+    "1611": {
+      "name": "Soul Purify",
+      "class": "Witcher"
+    },
+    "1621": {
+      "name": "Summon Spirit",
+      "class": "Witcher"
+    },
+    "1631": {
+      "name": "Undead Grip",
+      "class": "Witcher"
+    },
+    "1641": {
+      "name": "Break the Chain",
+      "class": "Witcher"
+    },
+    "1651": {
+      "name": "Undying Resolve",
+      "class": "Witcher"
+    },
+    "1671": {
+      "name": "Undead Ensnare",
+      "class": "Witcher"
+    }
+  },
+  "professions": {
+    "1": {
+      "name": "Snuggle"
+    },
+    "6": {
+      "name": "Blood Transfusion"
+    },
+    "11": {
+      "name": "Mining"
+    },
+    "12": {
+      "name": "Collect Herbs"
+    },
+    "13": {
+      "name": "Fishing"
+    },
+    "21": {
+      "name": "Draw Blood"
+    },
+    "23": {
+      "name": "Skinning"
+    }
+  }
+}
