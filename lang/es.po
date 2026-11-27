@@ -2931,6 +2931,9 @@ msgstr "Gestor de teclado"
 msgid "Keyboard profile information"
 msgstr ""
 
+msgid "Keyboard profile {name} stopped; it couldn't put on: {missed}."
+msgstr ""
+
 msgid "Keyboard profile {name} was not found."
 msgstr "No se encontró el perfil de teclado {name}."
 

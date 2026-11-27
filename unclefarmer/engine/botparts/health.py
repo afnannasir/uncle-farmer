@@ -123,7 +123,7 @@ class HealthMixin(Parts):
                 r: dict[str, Any] | None = None
                 if jsonio.is_array(v):
                     slot = v
-                    if len(slot) > 1:
+                    if len(slot) > 1 and slot[0] > 1:   # (a fusion beast is [0, id], a pet [1, id])
                         r = by_type.get(slot[0]) or by_uid.get(slot[1])
                 i = int(idx) - 1
                 if not r or not r.get("count") or not 0 <= i < len(keys):

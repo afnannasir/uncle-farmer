@@ -2946,6 +2946,9 @@ msgstr "Keyboard Manager"
 msgid "Keyboard profile information"
 msgstr "Keyboard profile ki maloomat"
 
+msgid "Keyboard profile {name} stopped; it couldn't put on: {missed}."
+msgstr "Keyboard profile {name} ruk gaya; yeh nahin lag sake: {missed}."
+
 msgid "Keyboard profile {name} was not found."
 msgstr "Keyboard profile {name} nahi mila."
 

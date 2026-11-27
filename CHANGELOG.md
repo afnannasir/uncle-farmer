@@ -17,6 +17,11 @@
   was 62203, another 64034), so on another character they are found by name, a pet by its exact name.
 - Skills are found by the game's skill number, the same for every character of a class whatever the
   skill's level (seen in game on three Elves), else by name.
+- Saving over a profile of the same name, even one hidden behind the character's own, asks first and
+  says who has it ("Farm (shared with every Hunter)"); deleting a shared one says so too.
+- A key that already holds the right item (a potion that ran out keeps its key) isn't named as
+  missing, and a preparation skill that couldn't be bound isn't cast.
+- A number key holding a fusion beast or a pet is never taken for a potion.
 
 **Bag and supplies: sensible supplies offered** (untested in game)
 

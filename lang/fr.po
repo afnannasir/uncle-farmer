@@ -2958,6 +2958,9 @@ msgstr "Keyboard Manager"
 msgid "Keyboard profile information"
 msgstr "Informations sur le profil clavier"
 
+msgid "Keyboard profile {name} stopped; it couldn't put on: {missed}."
+msgstr "Profil clavier {name} arrêté ; il n'a pas pu placer : {missed}."
+
 msgid "Keyboard profile {name} was not found."
 msgstr "Profil de clavier {name} introuvable."
 

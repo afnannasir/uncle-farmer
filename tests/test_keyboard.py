@@ -338,6 +338,44 @@ def test_an_unreadable_shared_file_is_never_saved_over(game: Game) -> None:
     assert path.read_text(encoding="utf-8") == "{not json"
 
 
+def test_a_skill_the_game_didnt_take_is_named_and_not_prepared(game: Game, monkeypatch: pytest.MonkeyPatch) -> None:
+    def refused(*_a: object, **_k: object) -> bool:
+        return False
+    monkeypatch.setattr(keyboard.keyslots, "bind_skill", refused)
+    game.save("First layout", skills={11: {"id": 12, "name": "Bull's Eye"}}, prepare=[11])
+    keyboard.apply(as_bot(game), "First layout")             # the run goes on
+    assert not game.events
+    assert game.lines[-1].endswith("Bull's Eye (Page 2, f2).")
+
+
+def test_a_key_already_holding_a_used_up_potion_is_not_named(game: Game) -> None:
+    game.items[0]["count"] = 0                               # none left, its key kept by the game
+    game.save("First layout", items={1: {"id": 90, "name": "Potion"}})
+    keyboard.apply(as_bot(game), "First layout")
+    assert game.lines[-1] == "Applied keyboard profile First layout."
+    assert not game.keys
+
+
+def test_what_was_missed_is_still_said_when_the_profile_stops(game: Game) -> None:
+    send = game.send
+
+    def fight_starts(line: str) -> str:
+        if line.startswith("phrase "):
+            game.in_fight = True                             # a fight starts after the first phrase
+        return send(line)
+    game.send = fight_starts                                 # type: ignore[method-assign]
+    game.save("First layout", skills={2: {"id": 98, "name": "Unknown Arrow"}}, phrases={1: "Ready", 2: "Go"})
+    with pytest.raises(Stopped, match="out of combat"):
+        keyboard.apply(as_bot(game), "First layout")
+    assert "couldn't put on: Unknown Arrow" in game.lines[-1]
+
+
+def test_no_class_is_guessed_from_skills_no_class_has() -> None:
+    from unclefarmer.engine import combat
+    assert combat.class_of_skills({"Not a real skill"}) is None
+    assert combat.class_of_skills({"Rapid Arrows"}) == "Hunter"
+
+
 @pytest.mark.parametrize("text", ["", "a b", "'  '"])
 def test_script_requires_one_profile_name(text: str) -> None:
     with pytest.raises(script.ScriptError):

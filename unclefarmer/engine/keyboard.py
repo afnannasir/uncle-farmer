@@ -146,6 +146,15 @@ def find(p: dict[str, Any], name: str, cls: str | None = None) -> tuple[str, dic
     return None
 
 
+def saved_in(p: dict[str, Any], scope: str, name: str, cls: str = "") -> bool:
+    """True when that scope's table holds the name (even one hidden by a closer profile)."""
+    if scope == "character":
+        return name in (p.get("keyboard_profiles") or {})
+    shared = _read_shared()
+    return name in (shared["class"].get(cls, {}) if scope == "class" and cls else {} if scope == "class"
+                    else shared["all"])
+
+
 def store(character: str, scope: str, name: str, layout: dict[str, Any] | None, cls: str = "") -> dict[str, Any]:
     """Save a layout (None deletes it) for the character, its class (cls) or everyone. Returns the
     character's profile as it now is."""
@@ -323,6 +332,7 @@ class _Work:
     """What a layout changes on this character, and what it can't put on."""
     profile: Profile
     missed: list[str] = field(default_factory=list[str])
+    unbound: set[int] = field(default_factory=set[int])     # skill slots the game didn't take
 
     def miss(self, name: str, key: str) -> None:
         self.missed.append(f"{name} ({key})")
@@ -375,9 +385,19 @@ def apply(b: Bot, name: str) -> None:
     if found is None:
         raise Stopped(_("Keyboard profile {name} was not found.", name=name))
     try:
-        missed = _apply(b, Profile.model_validate(found[1]))
-    except (ValueError, OSError) as error:
+        work = _Work(Profile.model_validate(found[1]))
+    except ValueError as error:
         raise Stopped(str(error)) from error
+    try:
+        _apply(b, work)
+    except (Stopped, ValueError, OSError) as error:
+        if work.missed:             # what it had already found it couldn't put on
+            b.log(_("Keyboard profile {name} stopped; it couldn't put on: {missed}.",
+                    name=name, missed=", ".join(work.missed)), speak=True)
+        if isinstance(error, Stopped):
+            raise
+        raise Stopped(str(error)) from error
+    missed = work.missed
     if missed:
         b.log(_("Applied keyboard profile {name}, except what couldn't be put on: {missed}.",
                 name=name, missed=", ".join(missed)), speak=True)
@@ -425,6 +445,8 @@ def _number_key_changes(b: Bot, work: _Work, keys: Keys) -> dict[int, Binding]:
     pet_rows = _list(b.a, "mem pets") if "pet" in kinds else []
     out: dict[int, Binding] = {}
     for slot, binding in sorted(work.profile.items.items()):
+        if current.get(slot) == (binding.kind, binding.id):
+            continue                # already on (a potion that ran out keeps its key)
         here = _held_here(binding, inventory, beast_rows, pet_rows)
         if here is None:
             work.miss(binding.name, keys.label("items", slot))
@@ -498,19 +520,19 @@ def _bind_phrases(b: Bot, work: _Work, keys: Keys, char_id: int, bindings: dict[
             work.miss(_("the quick phrase"), keys.label("phrases", slot))
 
 
-def _apply(b: Bot, profile: Profile) -> list[str]:
-    """Put the layout on; returns what couldn't be put on (each "name (key)")."""
+def _apply(b: Bot, work: _Work) -> None:
+    """Put the layout on; what couldn't be put on goes into work.missed (each "name (key)")."""
+    profile = work.profile
     _ensure_idle(b)
     char_id = _object(b.a, "mem self").get("id")
     if not char_id:
         raise Stopped(_("Log in to the character in the game first."))
     keys = Keys.read(client_folder(getattr(b.a, "pid", None)))
     snapshot = _object(b.a, "mem skills")
-    work = _Work(profile)
     changes = _changes(b, work, snapshot, keys, char_id)
     prepare = [slot for slot in profile.prepare if slot in profile.skills]
     if not (changes.skills or changes.profession or changes.items or changes.phrases or prepare):
-        return work.missed
+        return
     # Refresh the running bot's lookup after assigning slots, including on partial failure.
     # The profile may hold page-2 keys the player asked for: this book sees both pages whatever
     # skill_page_one says (the farm's own book comes back after, _farm_book), and the page is left on
@@ -535,6 +557,7 @@ def _apply(b: Bot, profile: Profile) -> list[str]:
             if not keyslots.bind_skill(b, book, snapshot["combat"], binding.id, binding.name,
                                        slot, hotkey, bind_key=bind_key):
                 work.miss(binding.name, keys.label("skills", slot))
+                work.unbound.add(slot)
         item_write = bool(changes.items)
         _bind_profession(b, work, keys, snapshot.get("profession", []), changes.profession)
         _bind_items(b, work, keys, changes.items)
@@ -548,6 +571,9 @@ def _apply(b: Bot, profile: Profile) -> list[str]:
         _restore(b, book, page if skill_write else None, panel if moved_panel else None)
     if skill_write:
         book = b.skillbook = combat.SkillBook(b, game_folder=keys.folder, both_pages=page_one)
+    for slot in work.unbound:                   # not on its key: nothing to cast it from
+        profile.skills.pop(slot, None)
+    prepare = [slot for slot in prepare if slot in profile.skills]
     if prepare:
         b.skillbook = book
         try:
@@ -556,7 +582,6 @@ def _apply(b: Bot, profile: Profile) -> list[str]:
             _restore(b, book, page, None)
             _farm_book(b, page_one)
     _farm_book(b, page_one)
-    return work.missed
 
 
 def _farm_book(b: Bot, page_one: bool) -> None:

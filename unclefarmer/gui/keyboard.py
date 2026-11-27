@@ -109,12 +109,16 @@ class KeyboardDialog(Dialog):
         except ValueError as e:
             error(self, str(e))
             self.draft = keyboard.Profile()
-        self.entries = keyboard.layouts(self.cfg, self.cls)
-        self.profiles.Set([_("New profile"), *(self._entry_label(*entry) for entry in self.entries)])
-        self.profiles.SetSelection(self.entries.index((scope, name)) + 1 if (scope, name) in self.entries else 0)
+        self._list_profiles()
         self.profile_name.SetValue(name)
         self.scope.SetSelection(keyboard.SCOPES.index(scope))
         self._fill()
+
+    def _list_profiles(self) -> None:
+        entry = (self.selected_scope, self.selected)
+        self.entries = keyboard.layouts(self.cfg, self.cls)
+        self.profiles.Set([_("New profile"), *(self._entry_label(*e) for e in self.entries)])
+        self.profiles.SetSelection(self.entries.index(entry) + 1 if entry in self.entries else 0)
 
     def _choose(self, _event: wx.Event) -> None:
         index = self.profiles.GetSelection()
@@ -139,6 +143,7 @@ class KeyboardDialog(Dialog):
             chosen = self.scope.GetSelection()
             self.scope.Set(self._scope_labels())
             self.scope.SetSelection(chosen)
+            self._list_profiles()           # that class's shared profiles show now
         self._fill()
         self.profile_name.SetFocus()
 
@@ -231,24 +236,36 @@ class KeyboardDialog(Dialog):
             name = keyboard.profile_name(self.profile_name.GetValue())
             if scope == "class" and not self.cls:
                 raise ValueError(_("The bot doesn't know this character's class yet. Capture its keys first."))
-            # one name, one profile for this character: another of that name (its own or shared) gives way
-            clash = [entry for entry in keyboard.layouts(settings.load_profile(self.character), self.cls)
-                     if entry[1] == name and entry != (self.selected_scope, self.selected)]
-            if clash and not ask(self, _("Replace keyboard profile {name}?", name=name)):
-                return
+            cfg = settings.load_profile(self.character)
+            here = keyboard.SCOPES.index(scope)
             moved = name == self.selected and scope != self.selected_scope
-            keyboard.store(self.character, scope, name, self.draft.model_dump(mode="json"), self.cls)
-            for old_scope, old_name in clash + ([(self.selected_scope, name)] if moved else []):
-                if (old_scope, old_name) != (scope, name):
-                    keyboard.store(self.character, old_scope, old_name, None, self.cls)
-            self.cfg = settings.load_profile(self.character)
+            # Asked first, naming who has it: a profile of that name in the scope saved to (hidden or
+            # not), and one closer to this character that would hide the new one (so it goes).
+            replaced = [(scope, name)] if keyboard.saved_in(cfg, scope, name, self.cls) \
+                and (scope, name) != (self.selected_scope, self.selected) else []
+            hiding = [(closer, name) for closer in keyboard.SCOPES[:here]
+                      if keyboard.saved_in(cfg, closer, name, self.cls)
+                      and not (moved and closer == self.selected_scope)]
+            asked = replaced + hiding
+            if asked and not ask(self, _("Replace keyboard profile {name}?",
+                                         name=", ".join(self._entry_label(*entry) for entry in asked))):
+                return
         except (OSError, ValueError) as e:
             error(self, str(e))
             return
-        self._load(scope, name)
+        try:
+            keyboard.store(self.character, scope, name, self.draft.model_dump(mode="json"), self.cls)
+            for old_scope, old_name in hiding + ([(self.selected_scope, name)] if moved else []):
+                keyboard.store(self.character, old_scope, old_name, None, self.cls)
+        except (OSError, ValueError) as e:
+            error(self, str(e))
+        finally:
+            self.cfg = settings.load_profile(self.character)
+            self._load(scope, name)
 
     def _delete(self, _event: wx.Event) -> None:
-        if not self.selected or not ask(self, _("Delete keyboard profile {name}?", name=self.selected)):
+        if not self.selected or not ask(self, _("Delete keyboard profile {name}?",
+                                                name=self._entry_label(self.selected_scope, self.selected))):
             return
         try:
             self.cfg = keyboard.store(self.character, self.selected_scope, self.selected, None, self.cls)
