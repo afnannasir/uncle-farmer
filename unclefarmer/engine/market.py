@@ -900,6 +900,10 @@ class Order:
 BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED, UNKNOWN, NOT_TRIED, WOULD = (
     "bought", "gone", "fewer", "opening", "over", "cap", "refused", "unknown", "not tried", "would buy")
 ARRIVE = 2.5                    # seconds for a purchase the game said nothing about to show in the bag
+TOO_FAST = "too fast"           # the game refused a purchase made too soon after the last (internal)
+TOO_FAST_TEXT = re.compile(r"(?i)act\w*\s+too\s+fast")     # "you act too fast" (seen 2026-11-27, 1 s apart)
+FAST_WAIT = 2.0                 # seconds before trying a lot again after it
+FAST_TRIES = 2                  # tries again after it, at most
 
 
 def find_again(b: Bot, lot: Lot) -> tuple[Page, Lot] | None:
@@ -1015,7 +1019,36 @@ def _purchase(b: Bot, pg: Page, lot: Lot, want: int, cost: int) -> tuple[str, st
         return _by_the_bag(b, lot, before, want, _("the game said nothing"))
     if BOUGHT_TEXT.search(heard):
         return BOUGHT, _("bought {n} for {cost} gold coins", n=want, cost=cost), want
+    if TOO_FAST_TEXT.search(heard):
+        return TOO_FAST, _("not bought: the game said \"{words}\"", words=heard), 0
     return REFUSED, _("not bought: the game said \"{words}\"", words=heard), 0
+
+
+def _try_order(b: Bot, o: Order, spent: int, cap: int, check: bool) -> tuple[str, str, int, int]:
+    """One order: its lot found again, held back or bought. (outcome, words, how many bought, the
+    unit price). The game's "you act too fast" bought nothing: the lot is tried again FAST_WAIT
+    seconds later (found again first: the page may have changed), FAST_TRIES times at most."""
+    words = ""
+    for tries in range(FAST_TRIES + 1):
+        again = find_again(b, o.lot)
+        if again is None:
+            return GONE, _("gone (sold or taken back)"), 0, 0
+        pg, lot = again
+        want = 1 if lot.equip else o.qty
+        cost = want * lot.price
+        held = _held_back(o, lot, want, cost, spent, cap)
+        if held is not None:
+            return held[0], held[1], 0, 0
+        if check:
+            return WOULD, _("would buy {n} for {cost} gold coins", n=want, cost=cost), 0, 0
+        outcome, words, got = _purchase(b, pg, lot, want, cost)
+        if outcome != TOO_FAST:
+            return outcome, words, got, lot.price
+        if tries < FAST_TRIES:
+            b.log(_("market: {lot}: the game says we act too fast - trying again in {s} seconds",
+                    lot=o.lot.label, s=int(FAST_WAIT)))
+            b.sleep(FAST_WAIT)
+    return REFUSED, words, 0, 0
 
 
 @dataclass
@@ -1061,23 +1094,9 @@ def buy_batch(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False
             if o.lot.opens_in:
                 note(o, OPENING, _("still on display - it can't be bought in its first hour"))
                 continue
-            again = find_again(b, o.lot)
-            if again is None:
-                note(o, GONE, _("gone (sold or taken back)"))
-                continue
-            pg, lot = again
-            want = 1 if lot.equip else o.qty
-            cost = want * lot.price
-            held = _held_back(o, lot, want, cost, spent, cap)
-            if held is not None:
-                note(o, *held)
-                continue
-            if check:
-                note(o, WOULD, _("would buy {n} for {cost} gold coins", n=want, cost=cost))
-                continue
-            outcome, words, got = _purchase(b, pg, lot, want, cost)
+            outcome, words, got, price = _try_order(b, o, spent, cap, check)
             if outcome == BOUGHT:
-                spent += got * lot.price
+                spent += got * price
             note(o, outcome, words)
             if outcome == UNKNOWN:
                 unsure = o

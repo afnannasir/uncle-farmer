@@ -14,6 +14,9 @@
   after it are listed as not tried, and the end says to look in the bag. A refusal the game says
   ("Not enough gold coins"...) is sure, and the batch goes on as before. This covers the Market
   window, the script's `market buy`, the Potion Maker's materials and Buy collection items.
+- "You act too fast": the game refuses a purchase made about a second after the last one (seen in
+  game). Nothing was bought, so the lot is tried again 2 seconds later, twice at most, before it
+  counts as refused (the Market window, scripts, the Potion Maker and Buy collection items).
 - The Potion Maker buys nothing more at the market for the rest of its run after an unsure purchase
   (the other materials, and the rounds after, are taken from the storehouse only), and counts what
   it spent from what really came.

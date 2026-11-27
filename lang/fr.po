@@ -7922,6 +7922,11 @@ msgstr "market quoi ? scan, search, seller ou buy"
 msgid "market: nothing to buy at that price"
 msgstr "marché : rien à acheter à ce prix"
 
+msgid ""
+"market: {lot}: the game says we act too fast - trying again in {s} seconds"
+msgstr ""
+"marché : {lot} : le jeu dit qu'on va trop vite - nouvel essai dans {s} secondes"
+
 msgid "market: {lot}: {words}"
 msgstr "marché : {lot} : {words}"
 

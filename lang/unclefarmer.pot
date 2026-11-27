@@ -7500,6 +7500,10 @@ msgstr ""
 msgid "market: nothing to buy at that price"
 msgstr ""
 
+msgid ""
+"market: {lot}: the game says we act too fast - trying again in {s} seconds"
+msgstr ""
+
 msgid "market: {lot}: {words}"
 msgstr ""
 

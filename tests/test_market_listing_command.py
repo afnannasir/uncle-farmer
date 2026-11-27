@@ -196,3 +196,58 @@ def test_buy_collection_counts_the_games_word_when_the_bag_before_was_unread(tmp
     b.bag["milkfish"] = 40                                   # already in the bag, and the bag before read as none
     b.__dict__["bag_unread"] = True
     assert bc.run(as_bot(b), cfg()) == 10 and bc.bought_today("Hero") == 10    # not 50
+
+
+# ---------------------------------------------------------------- "you act too fast"
+def test_too_fast_is_tried_again_and_bought() -> None:
+    b = shopper({100: lots_of("Lesser Blood", 5, 9000)})
+    lots = first(b, 100)
+    b.m.too_fast = 1
+    start = b.clock.now
+    done = market.buy(b, [Order(lots[0], 1), Order(lots[1], 2)])  # type: ignore[arg-type]
+    assert [outcome for _o, outcome, _w in done] == [market.BOUGHT, market.BOUGHT]
+    assert b.m.bought == [(lots[0].id, 1), (lots[1].id, 2)]
+    assert b.clock.now - start >= market.FAST_WAIT
+    assert any("act too fast - trying again" in line for line in b.logged)
+
+
+def test_too_fast_every_time_is_refused_and_the_batch_goes_on() -> None:
+    b = shopper({100: lots_of("Lesser Blood", 5, 9000)})
+    lots = first(b, 100)
+    b.m.too_fast = market.FAST_TRIES + 1
+    done = market.buy(b, [Order(lots[0], 1), Order(lots[1], 1)])  # type: ignore[arg-type]
+    assert [outcome for _o, outcome, _w in done] == [market.REFUSED, market.BOUGHT]
+    assert "act too fast" in done[0][2] and b.m.bought == [(lots[1].id, 1)]
+    assert sum("trying again" in line for line in b.logged) == market.FAST_TRIES
+
+
+def test_buy_collection_tries_a_too_fast_lot_again(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from test_buy_collection import Bot, Market, cfg, lot as clot
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    monkeypatch.setattr(bc.daily, "game_day", stand_in(bc.daily.game_day, lambda now=None: "2026-11-26"))
+    m = Market([[clot(1, "Milkfish", 10, 50)]], {1: [(bc.FAST, "you act too fast")]})
+    monkeypatch.setattr(bc.market, "goto", stand_in(market.goto, m.goto))
+    monkeypatch.setattr(bc, "_buy_lot", m.buy)
+    b = Bot()
+    assert bc.run(as_bot(b), cfg()) == 10 and m.bought == [(1, 10)]
+    assert any("trying again" in line for line in b.lines)
+
+
+def test_buy_collection_passes_a_lot_that_is_always_too_fast(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from test_buy_collection import Bot, Market, cfg, lot as clot
+    monkeypatch.setattr(paths, "PROFILES", str(tmp_path))
+    monkeypatch.setattr(bc.daily, "game_day", stand_in(bc.daily.game_day, lambda now=None: "2026-11-26"))
+    fast = [(bc.FAST, "you act too fast")] * (market.FAST_TRIES + 1)
+    m = Market([[clot(1, "Milkfish", 10, 50), clot(2, "Milkfish", 5, 60)]], {1: list(fast)})
+    monkeypatch.setattr(bc.market, "goto", stand_in(market.goto, m.goto))
+    monkeypatch.setattr(bc, "_buy_lot", m.buy)
+    b = Bot()
+    assert bc.run(as_bot(b), cfg()) == 5 and m.bought == [(2, 5)]
+
+
+def test_buy_collection_reads_too_fast_from_the_game() -> None:
+    b = shopper({102: lots_of("Milkfish", 3, 7000)})
+    pg, lot = collection_page(b)
+    b.m.too_fast = 1
+    outcome, words = bc._buy_lot(b, pg, lot, 1)  # type: ignore[arg-type]
+    assert outcome == bc.FAST and "too fast" in words and b.m.bought == []

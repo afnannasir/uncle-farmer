@@ -165,6 +165,7 @@ class PretendMarket:
         self.lost = False                   # the game says nothing and nothing is bought
         self.no_box = False                 # choosing an item lot opens no quantity box
         self.bag_gone = False               # the game sends no bag
+        self.too_fast = 0                   # purchases the game refuses next with "you act too fast"
 
     # -- what the menus hold
     def ordered(self, cat: int, order: int) -> list[dict[str, Any]]:
@@ -256,6 +257,10 @@ class PretendMarket:
             self.say(self.refuse)
             return
         if self.lost:
+            return
+        if self.too_fast:
+            self.too_fast -= 1
+            self.say("you act too fast")
             return
         lot["qty"] -= n
         self.bought.append((lot["id"], n))

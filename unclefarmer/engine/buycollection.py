@@ -60,6 +60,7 @@ NO_GOLD = re.compile(r"(?i)not enough gold coins")
 HEAVY = re.compile(r"(?i)\boverweight\b")
 CANT_HAVE = re.compile(r"(?i)new listing goods cannot be traded|item does not exist")
 BOUGHT, SKIP, CAP, GOLD, TOO_HEAVY, LOST = "bought", "skip", "cap", "gold", "heavy", "lost"
+FAST = "fast"               # the game's "you act too fast": nothing bought, the lot is tried again later
 
 _lock = threading.Lock()
 
@@ -198,6 +199,8 @@ def _buy_lot(b: Bot, pg: market.Page, lot: market.Lot, want: int) -> tuple[str, 
         return LOST, _("the game said nothing")
     if market.BOUGHT_TEXT.search(heard):
         return BOUGHT, heard
+    if market.TOO_FAST_TEXT.search(heard):
+        return FAST, heard
     for pattern, outcome in ((CAPPED, CAP), (NO_GOLD, GOLD), (HEAVY, TOO_HEAVY), (CANT_HAVE, SKIP)):
         if pattern.search(heard):
             return outcome, heard
@@ -219,6 +222,7 @@ class _Run:
         self.fails = 0
         self.heavy_trips = 0
         self.passed: set[int] = set()     # listing ids not bought (refused, or read with check)
+        self.too_fast: dict[int, int] = {}    # listing id -> times the game said "you act too fast"
         self.why = ""                     # why it ended, for the last line
 
     def take(self, pg: market.Page) -> str:
@@ -260,6 +264,14 @@ class _Run:
                 outcome = BOUGHT            # the game said nothing, but the bag tells: it was bought
         if outcome == BOUGHT:
             return self.bought_it(lot, want, before)
+        if outcome == FAST:
+            tries = self.too_fast[lot.id] = self.too_fast.get(lot.id, 0) + 1
+            if tries <= market.FAST_TRIES:
+                self.b.log(_("market: {lot}: the game says we act too fast - trying again in {s} seconds",
+                             lot=lot.name, s=int(market.FAST_WAIT)))
+                self.b.sleep(market.FAST_WAIT)
+                return AGAIN                # the page read afresh: the lot is tried again
+            outcome = SKIP
         return self.refused(lot, cost, outcome, heard)
 
     def bought_it(self, lot: market.Lot, want: int, before: int | None) -> str:

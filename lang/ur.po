@@ -7875,6 +7875,11 @@ msgstr "market kya? scan, search, seller ya buy"
 msgid "market: nothing to buy at that price"
 msgstr "market: us qeemat par khareedne ko kuch nahi"
 
+msgid ""
+"market: {lot}: the game says we act too fast - trying again in {s} seconds"
+msgstr ""
+"market: {lot}: game kehta hai hum bohat tez chal rahe hain - {s} seconds mein dobara koshish"
+
 msgid "market: {lot}: {words}"
 msgstr "market: {lot}: {words}"
 
