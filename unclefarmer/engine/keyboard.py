@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
-from .. import gameinstall, gamekeys, jsonio, paths, phrases, settings
+from .. import gameids, gameinstall, gamekeys, jsonio, paths, phrases, settings
 from ..clock import clock_for
 from ..i18n import _
 from ..link import JsonLink
@@ -282,7 +282,7 @@ def _owned(a: JsonLink) -> dict[tuple[str, int], Binding]:
 
 def _unknown(kind: str, ref: int) -> Binding:
     label = {"beast": _("Fusion beast {id}", id=ref), "pet": _("Pet {id}", id=ref)}.get(kind) \
-        or _("Item type {id}", id=ref)
+        or gameids.item_name(ref) or _("Item type {id}", id=ref)    # (beast and pet numbers: the character's own)
     return Binding(id=ref, name=label, kind="beast" if kind == "beast" else "pet" if kind == "pet" else "item")
 
 

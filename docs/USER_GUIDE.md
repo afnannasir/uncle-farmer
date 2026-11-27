@@ -199,6 +199,12 @@ These files can help identify why Uncle Farmer refuses to open or gets stuck whi
 
 The startup and shutdown logs are always written, regardless of the Logging settings. Like `errors.log`, they follow the same log rotation rules.
 
+### The game's numbers the bot has seen
+
+The game names everything by a number: each item, monster, skill and talent. Uncle Farmer is moving to these numbers, which don't change with the game's language, instead of the names. The game keeps no list of them, so the bot notes the ones it sees while it works in `profiles\_learned_ids.json`: an item's number and English name (a shop's also gives its price and description), a monster's number, name, maps and most HP, and skill, profession and talent numbers with their class.
+
+Nothing about you is in it: no character, no player, no pet's name, no chat, no position. It stays on your PC; nothing is sent. If you send it to the developers (in a GitHub issue or the players' group, for example), its numbers go into the table that comes with the bot, so every player's bot knows them.
+
 ## Plans
 
 A plan tells Uncle Farmer where to farm, when to stop, and where to go when the run ends. These three parts each have their own tab.

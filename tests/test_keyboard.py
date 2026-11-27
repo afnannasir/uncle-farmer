@@ -222,12 +222,13 @@ def test_refused_item_assignment_is_named_instead_of_reported_as_done(game: Game
 
 
 def test_capture_reads_fusion_beasts_and_pets_on_number_keys(game: Game) -> None:
-    game.slots = {"1": [90, 120], "2": [0, 502], "3": [1, 10000001], "4": [0, 777]}
+    game.slots = {"1": [90, 120], "2": [0, 502], "3": [1, 10000001], "4": [0, 777], "5": [23885, 9]}
     captured = keyboard.capture(game, str(game.folder), "Test character")
     items = captured.profile.items
     assert (items[2].kind, items[2].id, items[2].name) == ("beast", 502, "Iron Beetle")
     assert (items[3].kind, items[3].id, items[3].name) == ("pet", 10000001, "Hound friska")
     assert (items[4].kind, items[4].name) == ("beast", "Fusion beast 777")      # not in the list: said so
+    assert items[5].name == "Hearthstone"            # none left in the bag: named from the game's numbers
     assert {(b.kind, b.id) for b in captured.items} >= {("beast", 501), ("pet", 10000001), ("item", 91)}
     assert captured.cls == "Hunter"
 

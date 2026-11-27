@@ -328,6 +328,24 @@ def table() -> Table | None:
         return _state.table
 
 
+def english_texts(game: str) -> set[str]:
+    """Every English text of the game folder's english pack (its keys and values), case folded:
+    a name the server sends is one of them."""
+    texts = _folder(os.path.join(game, "language", "english"))
+    return {t.strip().casefold() for kv in texts.items() for t in kv if t.strip()}
+
+
+def language() -> str:
+    """The game's language folder as lang.txt names it, in lower case: "english" when none is set,
+    "unknown" when the game folder isn't known (nothing then says the names are English)."""
+    table()
+    with _lock:
+        game, lang = _state.key if _state.key else ("", "")
+    if not game or not os.path.isdir(game):
+        return "unknown"
+    return (lang or "english").strip().lower()
+
+
 def english(data: Any, t: Table | None = None) -> Any:
     """Every text in an agent answer (lists and dicts inside) back in English. Any: an agent
     answer is JSON of whatever shape its command gives, and comes back in the same shape."""
