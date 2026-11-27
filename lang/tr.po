@@ -32,6 +32,20 @@ msgstr " - tahmini: parçaları da içerir"
 msgid " - {n} used up with no stored price, not counted"
 msgstr " - kayıtlı fiyatı olmayan {n} tükenen, sayılmadı"
 
+msgid "\"{keys}\": a shortcut needs a key besides Ctrl, Alt and Shift."
+msgstr "\"{keys}\": bir kısayola Ctrl, Alt ve Shift dışında bir tuş gerekir."
+
+msgid ""
+"\"{keys}\": the bot doesn't know the key {part}. Use a letter, a digit, F1 to F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown or an arrow."
+msgstr ""
+"\"{keys}\": bot {part} tuşunu bilmiyor. Bir harf, rakam, F1-F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown veya ok tuşu kullanın."
+
+msgid "\"{keys}\": write the keys joined by +, for example Ctrl+Shift+R."
+msgstr "\"{keys}\": tuşları + ile birleştirerek yazın, örneğin Ctrl+Shift+R."
+
+msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
+msgstr "\"{keys}\": {part} Ctrl, Alt veya Shift değil."
+
 msgid "&About Uncle Farmer"
 msgstr "Uncle F&armer Hakkında"
 
@@ -55,6 +69,9 @@ msgstr "Yeni filtre ekle (&A)"
 
 msgid "&Add where I stand"
 msgstr "Bulunduğum yeri ekle (&A)"
+
+msgid "&All the defaults"
+msgstr "&Hepsi varsayılan"
 
 msgid "&Another character"
 msgstr "B&aşka bir karakter"
@@ -367,6 +384,9 @@ msgstr "Klavye yöneticisi (&K)"
 msgid "&Keyboard shortcuts"
 msgstr "&Klavye kısayolları"
 
+msgid "&Keys (for example Ctrl+Shift+R or F7; empty: none):"
+msgstr "&Tuşlar (örneğin Ctrl+Shift+R veya F7; boş: yok):"
+
 msgid "&Keys the bot presses:"
 msgstr "Botun bastığı tuşlar: (&K)"
 
@@ -473,6 +493,9 @@ msgstr "Yalnızca bunlarla dövüş (adlar, virgülle ayrılmış) (&O):"
 msgid "&Open the chests that turn up while farming"
 msgstr "Farm sırasında çıkan sandıkları aç (&O)"
 
+msgid "&Open the file"
+msgstr "Dosyayı &aç"
+
 msgid ""
 "&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
@@ -549,6 +572,9 @@ msgstr "Tuşla&rı oyundan oku"
 
 msgid "&Read new messages:"
 msgstr "Yeni mesajla&rı oku:"
+
+msgid "&Read the file again"
+msgstr "Dosyayı yeniden &oku"
 
 msgid "&Refresh the market list"
 msgstr ""
@@ -647,6 +673,9 @@ msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
 msgstr ""
 "&Sıradaki canavara yürürken menzildekilere ateş et (uzaktan dövüşen karakter)"
+
+msgid "&Shortcuts:"
+msgstr "&Kısayollar:"
 
 msgid "&Show the time after each message"
 msgstr "Her me&sajdan sonra saati göster"
@@ -752,6 +781,9 @@ msgstr "Nerede ölünsün (&W):"
 
 msgid "&Who may join:"
 msgstr ""
+
+msgid "&Works:"
+msgstr "&Çalıştığı yer:"
 
 msgid "&Write an email"
 msgstr "Bir e-posta yaz (&W)"
@@ -901,6 +933,16 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Yukarıdaki boyuta ulaşan dosya name.1 olarak saklanır, eskileri name.2'ye kayar ve böyle devam eder; en eskisi silinir. Günün çalışma günlüğü de kendi günü içinde aynı şekilde döndürülür."
+
+msgid ""
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+msgstr ""
+"Her yerde çalışan bir tuş, öndeki oyun sizinse o oyuna etki eder (Oyunlar listesi onu seçer), başka bir programdan ise listede seçili oyuna."
+
+msgid ""
+"A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
+msgstr ""
+"Kullanılamayan bir satır Uncle Farmer açılınca bildirilir ve o eylem varsayılanını korur."
 
 msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
@@ -1125,12 +1167,16 @@ msgstr "Başka bir karakter"
 msgid "Another gang's, by its name"
 msgstr "Başka bir çetenin, adıyla"
 
-msgid "Another program is using the Pause key; the Pause shortcut won't work."
+msgid ""
+"Another program is using {keys}, so {action} won't work from everywhere."
 msgstr ""
-"Başka bir program Duraklat tuşunu kullanıyor; Duraklat kısayolu çalışmaz."
+"Başka bir program {keys} tuşunu kullanıyor, bu yüzden {action} her yerde çalışmayacak."
 
 msgid "Answering"
 msgstr "Yanıtlanıyor"
+
+msgid "Anywhere, even inside the game"
+msgstr "Her yerde, oyunun içinde bile"
 
 msgid "Applied keyboard profile {name}."
 msgstr "{name} klavye profili uygulandı."
@@ -1276,6 +1322,9 @@ msgstr ""
 msgid "Breaks {n} {item}."
 msgstr ""
 
+msgid "Bring the selected game to the &front"
+msgstr "Seçili oyunu öne geti&r"
+
 msgid "Broadcast (with a sound)"
 msgstr ""
 
@@ -1384,6 +1433,10 @@ msgstr "Tuşu değiştir"
 
 msgid "Change target mode"
 msgstr "Hedef modunu değiştir"
+
+msgid "Change them in File, Keyboard shortcuts, or in {file}."
+msgstr ""
+"Bunları Dosya, Klavye kısayolları içinde ya da {file} dosyasında değiştirin."
 
 msgid "Change&log"
 msgstr ""
@@ -1581,6 +1634,9 @@ msgstr "İletişim kutusunu kapat"
 msgid "Close the game"
 msgstr "Oyunu kapat"
 
+msgid "Close the open Uncle Farmer window first."
+msgstr "Önce açık olan Uncle Farmer penceresini kapatın."
+
 msgid "Close without saving"
 msgstr "Kaydetmeden kapat"
 
@@ -1702,6 +1758,9 @@ msgstr "Ayarlar uygulanamadı: {err}"
 msgid "Couldn't assign {binding} to {key}."
 msgstr "{binding}, {key} tuşuna atanamadı."
 
+msgid "Couldn't bring {name} to the front."
+msgstr "{name} öne getirilemedi."
+
 msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr ""
 
@@ -1748,6 +1807,9 @@ msgstr "Açılamadı."
 msgid "Couldn't open it: {err}"
 msgstr "Açılamadı: {err}"
 
+msgid "Couldn't open {path}: {err}"
+msgstr "{path} açılamadı: {err}"
+
 msgid "Couldn't prepare {skill}."
 msgstr "{skill} hazırlanamadı."
 
@@ -1762,6 +1824,9 @@ msgstr "Oyun okunamadı: {err}"
 
 msgid "Couldn't save the schedules: {err}"
 msgstr "Programlar kaydedilemedi: {err}"
+
+msgid "Couldn't save {path}: {err}"
+msgstr "{path} kaydedilemedi: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Kaydedilemedi: {err}"
@@ -1816,6 +1881,9 @@ msgstr "Kristaller"
 msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 
+msgid "Ctrl+Tab moves between the main window's tabs."
+msgstr "Ctrl+Tab ana pencerenin sekmeleri arasında geçer."
+
 msgid "Cut Flesh"
 msgstr "Et Kesiciliği"
 
@@ -1845,6 +1913,9 @@ msgstr "Ölüm"
 
 msgid "Deaths before stopping:"
 msgstr "Durmadan önceki ölümler:"
+
+msgid "Default for &this one"
+msgstr "&Bunun için varsayılan"
 
 msgid "Delay after success (&seconds):"
 msgstr "Başarıdan &sonra bekleme (saniye):"
@@ -2460,6 +2531,9 @@ msgid ""
 msgstr ""
 "HP {secs} saniye boyunca %{pct} altında kaldı - kontrolü devralabilmen için duruyorum"
 
+msgid "HP {hp}"
+msgstr "HP {hp}"
+
 msgid "HP {hp}/{max} ({pct}%) - {item}"
 msgstr "HP {hp}/{max} (%{pct}) - {item}"
 
@@ -2693,6 +2767,9 @@ msgstr "Ayarları bu karaktere aktar:"
 msgid "Important events only"
 msgstr "Yalnızca önemli olaylar"
 
+msgid "In Uncle Farmer's main window"
+msgstr "Uncle Farmer'ın ana penceresinde"
+
 msgid "In all"
 msgstr ""
 
@@ -2784,6 +2861,9 @@ msgstr "Önce oyunda uluslararası bir odaya katıl."
 msgid "Join the &Telegram group"
 msgstr "&Telegram grubuna katıl"
 
+msgid "KEYBOARD SHORTCUTS"
+msgstr "KLAVYE KISAYOLLARI"
+
 msgid "Keep &old files:"
 msgstr "Eski d&osyaları sakla:"
 
@@ -2825,6 +2905,9 @@ msgstr ""
 
 msgid "Keyboard profile {name} was not found."
 msgstr "{name} klavye profili bulunamadı."
+
+msgid "Keyboard s&hortcuts"
+msgstr "Klavye kısa&yolları"
 
 msgid "Keyboard shortcuts"
 msgstr "Klavye kısayolları"
@@ -3390,6 +3473,9 @@ msgstr "Ajanı yüklü çalışan bir oyun yok."
 msgid "No gem kinds known yet."
 msgstr "Henüz bilinen mücevher türü yok."
 
+msgid "No key: use the menu."
+msgstr "Tuş yok: menüyü kullanın."
+
 msgid "No known buyer, so it will be stored instead"
 msgstr "Bilinen bir alıcı yok, bu yüzden depoya konacak"
 
@@ -3495,6 +3581,9 @@ msgid ""
 "Not scanned yet. Log in to this character in the game and press Scan now. The bot also scans when a run starts."
 msgstr ""
 "Henüz taranmadı. Oyunda bu karakterle giriş yap ve Şimdi tara'ya bas. Bot bir çalışma başlarken de tarar."
+
+msgid "Note:"
+msgstr "Not:"
 
 msgid "Nothing changed in the bag."
 msgstr "Çantada hiçbir değişiklik olmadı."
@@ -4300,6 +4389,12 @@ msgstr "Önce bir oyun seçin."
 msgid "Select a plan first."
 msgstr "Önce bir plan seçin."
 
+msgid "Select the &next game"
+msgstr "&Sonraki oyunu seç"
+
+msgid "Select the &previous game"
+msgstr "Ö&nceki oyunu seç"
+
 msgid "Select the same character before applying the keyboard profile."
 msgstr "Klavye profilini uygulamadan önce aynı karakteri seç."
 
@@ -4508,6 +4603,11 @@ msgstr "Kar tanesi prensesi"
 msgid "Sold:"
 msgstr "Satılanlar:"
 
+msgid ""
+"Some keyboard shortcuts couldn't be used: see the Log tab, or File, Keyboard shortcuts."
+msgstr ""
+"Bazı klavye kısayolları kullanılamadı: Günlük sekmesine ya da Dosya, Klavye kısayolları'na bakın."
+
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr "Olay arabelleği dolduğu için bazı ses istekleri kaçırıldı."
 
@@ -4580,6 +4680,12 @@ msgstr "Çalışırken ilerlemeyi seslendir (&P)"
 msgid "Speak the &results when a run ends"
 msgstr "Çalışma bitince sonuçla&rı seslendir"
 
+msgid "Speak the results of the game in front"
+msgstr "Öndeki oyunun sonuçlarını söyle"
+
+msgid "Speak the selected game's st&atus"
+msgstr "Seçili oyunun &durumunu söyle"
+
 msgid "Speech"
 msgstr "Konuşma"
 
@@ -4616,6 +4722,9 @@ msgstr "Hareketsiz dur"
 
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Şu boyuttan sonra yeni dosya başlat (MB, 0 = asla):"
+
+msgid "Start or stop the bot (in a game window: that game's bot)"
+msgstr "Botu başlat veya durdur (bir oyun penceresinde: o oyunun botu)"
 
 msgid "Start the c&hain"
 msgstr ""
@@ -5650,6 +5759,11 @@ msgid ""
 msgstr ""
 "Uncle Farmer ajanının yeniden yüklenmesi gerekiyor: {why}. Çalışan tüm botları durdur, sonra Dosya, Ayarlar, Yükle'yi kullan."
 
+msgid ""
+"Uncle Farmer's keyboard shortcuts. One line an action: action = keys = where."
+msgstr ""
+"Uncle Farmer'ın klavye kısayolları. Her eylem için bir satır: eylem = tuşlar = nerede."
+
 msgid "Unit price"
 msgstr ""
 
@@ -5961,6 +6075,17 @@ msgstr "{top} en yüksek HP'nle bu, %{pct} altı demek."
 
 msgid "Within this many tiles of the player:"
 msgstr "Oyuncuya bu kadar kare yakınlıkta:"
+
+msgid "Works"
+msgstr "Çalıştığı yer"
+
+msgid ""
+"Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any other program. A key no program uses is best, such as Pause or a key from F7 to F12 with Ctrl or Shift."
+msgstr ""
+"Her yerde çalışır: Uncle Farmer açıkken {keys} artık oyuna, NVDA'ya veya başka bir programa ulaşmaz. En iyisi hiçbir programın kullanmadığı bir tuştur; Pause ya da Ctrl veya Shift ile F7-F12 arası bir tuş gibi."
+
+msgid "Works while an Uncle Farmer window is in front."
+msgstr "Bir Uncle Farmer penceresi öndeyken çalışır."
 
 msgid "Worst hit received: {hit}"
 msgstr "Alınan en kötü vuruş: {hit}"
@@ -6938,6 +7063,9 @@ msgstr "betiğin bütün farm satırları zaten bitti - duruluyor"
 msgid "everything"
 msgstr "her şey"
 
+msgid "everywhere, even in the game"
+msgstr "her yerde, oyunda bile"
+
 msgid "experience card paused ({card}): {why}"
 msgstr "deneyim kartı duraklatıldı ({card}): {why}"
 
@@ -7333,6 +7461,9 @@ msgstr "tuş {key}"
 
 msgid "key {key} didn't work: {why}"
 msgstr "{key} tuşu çalışmadı: {why}"
+
+msgid "keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."
+msgstr "tuşlar: örneğin F5, Ctrl+Shift+R veya Shift+Pause; tuş yoksa none."
 
 msgid "landed in the gang's inner hall, which is walled off from the craftsmen"
 msgstr "çetenin ustalardan duvarla ayrılan iç salonuna düşüldü"
@@ -8150,6 +8281,9 @@ msgstr "bir kez, {date} saat {time}"
 msgid "one cave only: a character goes into one cave a day"
 msgstr "yalnızca bir mağara: bir karakter günde bir mağaraya girer"
 
+msgid "only in Uncle Farmer"
+msgstr "yalnızca Uncle Farmer'da"
+
 msgid "only {names}"
 msgstr "yalnızca {names}"
 
@@ -8517,6 +8651,23 @@ msgstr "kısa döngü"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "zindan için eksik sarf malzemesi: {what}"
+
+msgid "shortcuts.txt couldn't be read ({err}): the default shortcuts are used."
+msgstr "shortcuts.txt okunamadı ({err}): varsayılan kısayollar kullanılıyor."
+
+msgid "shortcuts.txt line {n}: there is no action called {name}."
+msgstr "shortcuts.txt satır {n}: {name} adında bir eylem yok."
+
+msgid ""
+"shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+"shortcuts.txt satır {n}: eylem = tuşlar = nerede yazın, örneğin run_start = F5 = inapp."
+
+msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
+
+msgid "shortcuts.txt line {n}: {why}"
+msgstr "shortcuts.txt satır {n}: {why}"
 
 msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
 msgstr ""
@@ -9901,6 +10052,11 @@ msgid ""
 msgstr ""
 "çalışmanın başladığı yer okunmadı - canavarsız en yakın haritada bitiriliyor"
 
+msgid ""
+"where: global works everywhere, even inside the game (the key no longer reaches the game or any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."
+msgstr ""
+"nerede: global her yerde çalışır, oyunun içinde bile (Uncle Farmer açıkken tuş artık oyuna veya başka bir programa ulaşmaz); inapp yalnızca Uncle Farmer'ın pencerelerinde."
+
 msgid "where: the map I'm on and my x, y on it."
 msgstr "where: Bulunduğum harita ve üzerindeki x, y konumum."
 
@@ -10001,8 +10157,17 @@ msgstr "çeteye bugün katıldın: oyun yarına kadar inşaata izin vermiyor"
 msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr "çeteye bugün katıldın: oyun yarına kadar bağışa izin vermiyor"
 
+msgid "{action} can't be used now."
+msgstr "{action} şu anda kullanılamaz."
+
+msgid "{action} has no key now: {keys} is {other}'s."
+msgstr "{action} artık tuşsuz: {keys} {other} eyleminin."
+
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' botun basabileceği bir tuş değil."
+
+msgid "{action}: {why}"
+msgstr "{action}: {why}"
 
 msgid "{at}: {outcome} (due {due})"
 msgstr "{at}: {outcome} (planlanan {due})"
@@ -10212,6 +10377,27 @@ msgstr "{item}: {n} kullanıldı x {price} = {cost} arnebia"
 
 msgid "{job} didn't finish: {why}"
 msgstr "{job} tamamlanmadı: {why}"
+
+msgid "{keys} is also {action}: one of them has to change."
+msgstr "{keys} aynı zamanda {action}: ikisinden biri değişmeli."
+
+msgid "{keys} is given to both {one} and {other}: {other} keeps its own key."
+msgstr "{keys} hem {one} hem {other} için verilmiş: {other} kendi tuşunu korur."
+
+msgid ""
+"{keys} is kept for every window (copy, paste, menus, tabs): choose another."
+msgstr ""
+"{keys} tüm pencereler için ayrılmış (kopyala, yapıştır, menüler, sekmeler): başka birini seçin."
+
+msgid ""
+"{keys}: Ctrl+Alt with a letter is AltGr on many keyboards, which types characters. Use Ctrl or Ctrl+Shift."
+msgstr ""
+"{keys}: harfle birlikte Ctrl+Alt birçok klavyede AltGr'dir ve karakter yazar. Ctrl veya Ctrl+Shift kullanın."
+
+msgid ""
+"{keys}: a letter, a digit, Space, an arrow or Insert, Delete, Home, End, PageUp or PageDown needs Ctrl, or it would be typed into the bot's own boxes."
+msgstr ""
+"{keys}: bir harf, rakam, Space, ok ya da Insert, Delete, Home, End, PageUp veya PageDown için Ctrl gerekir, yoksa botun kendi kutularına yazılır."
 
 msgid "{key} (page {page})"
 msgstr "{key} (sayfa {page})"
@@ -10933,6 +11119,10 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "(no notes)"
 #~ msgstr "(not yok)"
+
+#~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
+#~ msgstr ""
+#~ "Başka bir program Duraklat tuşunu kullanıyor; Duraklat kısayolu çalışmaz."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"

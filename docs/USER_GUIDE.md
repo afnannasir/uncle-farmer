@@ -131,9 +131,9 @@ The Log tab shows what the bot has been doing. You can choose to see everything 
 
 The menu bar has these menus:
 
-- **File:** Settings, the log and results folders, and Exit.
+- **File:** Settings, Keyboard shortcuts, the log and results folders, and Exit.
 - **View:** The three tabs.
-- **Game:** Mute and unmute this game or every game, and Open another game window.
+- **Game:** Mute and unmute this game or every game, select the next or the previous game, speak the selected game's status, bring it to the front, and Open another game window.
 - **Messages:** Private messages, Chat, and Let everyone get replies again.
 - **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
 - **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
@@ -151,7 +151,7 @@ The **Help** menu provides two useful options:
 
 ### Starting and stopping the bot
 
-The **Pause** key starts or stops the bot from anywhere, even while you are playing.
+The **Pause** key starts or stops the bot from anywhere, even while you are playing. Its key, like every other, can be changed (see "Keyboard shortcuts").
 
 If you want to temporarily take control without ending the current run, use the **Pause** button on the Bot tab or press **F6**.
 
@@ -2048,6 +2048,64 @@ The summary starts with how long the character has farmed and how much of today'
 You can also change the spoken results settings to hear an update every few minutes or turn these announcements off.
 
 All results are saved in the `results` folder, with a separate file for each character.
+
+## Keyboard shortcuts
+
+Every command of the menus can have its own keys, and each key works either **only in Uncle
+Farmer** or **everywhere, even in the game** (and in any other program). Out of the box the keys are
+the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause work everywhere, the others
+only in Uncle Farmer.
+
+Change them in **File, Keyboard shortcuts**. The list holds every action, with its keys and where
+they work. Select one, type its keys in **Keys** (for example `Ctrl+Shift+R`, `F7` or `Shift+Pause`;
+leave it empty for no key) and choose where they work in **Works**. The keys are typed as text, so
+NVDA's own keys never get in the way. The **Note** below says what to know: keys the bot can't use,
+another action that has them already, or what a key that works everywhere takes away. **Default for
+this one** and **All the defaults** put the bot's keys back. Nothing is kept until **Save**, and the
+new keys work at once.
+
+The same settings are in `shortcuts.txt`, beside `settings.json` in the Uncle Farmer folder, one line
+an action, for players who prefer a file:
+
+    run_toggle = Pause = global
+    game_mute = Ctrl+M = inapp
+    game_next = none = global
+
+`global` works everywhere, `inapp` only in Uncle Farmer, and `none` means no key. **Open the file**
+opens it in your editor; after editing it, **Read the file again** brings it into the window (or
+restart Uncle Farmer). A line that can't be used is said in the Log tab when Uncle Farmer starts, and
+that action keeps its default.
+
+A few rules keep the keys usable:
+
+- A letter, a digit, Space, an arrow, Insert, Delete, Home, End, PageUp or PageDown needs Ctrl (they
+  would be typed into the bot's own boxes otherwise). F1 to F24 and Pause can be used alone.
+- Ctrl+Alt with a letter is refused: on many keyboards it is AltGr, which types characters.
+- Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+Z, Ctrl+Y, Ctrl+Tab, F10, Shift+F10, Alt+F4 and Ctrl+F4 are kept
+  for every window.
+- Two actions can't share a key.
+
+**A key that works everywhere is taken away from every other program** while Uncle Farmer runs: the
+game, NVDA, your browser. Ctrl+M from everywhere means the game never gets Ctrl+M. Choose keys no
+program uses, such as Pause or a key from F7 to F12 with Ctrl or Shift. When another program holds a
+key already, Windows refuses it, and the Log tab says so.
+
+A key that works everywhere acts on the game in front when that is one of yours: the Games list
+selects it first, so the next key goes on with the same game. From any other program it acts on the
+game selected in the list. A command that opens a window, such as Bag and supplies, brings Uncle
+Farmer to the front first; while a window of Uncle Farmer is already open, it waits ("Close the open
+Uncle Farmer window first").
+
+These commands of the **Game** menu are made for keys that work everywhere, and have no key until you
+give them one:
+
+- **Select the next game** and **Select the previous game**: the next game in the list (round the
+  end), said with its character, map and what its bot does.
+- **Speak the selected game's status**: the same, then what its bot is doing and its HP.
+- **Bring the selected game to the front**: its window, out of the taskbar if needed.
+
+The keys of the lists and editors (Delete in the Games list, Enter on a plan, F5 and Ctrl+S in the
+script editor...) stay as they are.
 
 
 ## The game's own voice

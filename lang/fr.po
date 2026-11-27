@@ -32,6 +32,22 @@ msgstr " - estimation : comprend des shards"
 msgid " - {n} used up with no stored price, not counted"
 msgstr " - {n} utilisés sans prix enregistré, non comptés"
 
+msgid "\"{keys}\": a shortcut needs a key besides Ctrl, Alt and Shift."
+msgstr ""
+"« {keys} » : un raccourci a besoin d'une touche en plus de Ctrl, Alt et Shift."
+
+msgid ""
+"\"{keys}\": the bot doesn't know the key {part}. Use a letter, a digit, F1 to F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown or an arrow."
+msgstr ""
+"« {keys} » : le bot ne connaît pas la touche {part}. Utiliser une lettre, un chiffre, F1 à F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown ou une flèche."
+
+msgid "\"{keys}\": write the keys joined by +, for example Ctrl+Shift+R."
+msgstr ""
+"« {keys} » : écrire les touches reliées par +, par exemple Ctrl+Shift+R."
+
+msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
+msgstr "« {keys} » : {part} n'est ni Ctrl, ni Alt, ni Shift."
+
 msgid "&About Uncle Farmer"
 msgstr "À &propos d'Uncle Farmer"
 
@@ -55,6 +71,9 @@ msgstr "&Ajouter un filtre"
 
 msgid "&Add where I stand"
 msgstr "&Ajouter ma position"
+
+msgid "&All the defaults"
+msgstr "Tout par &défaut"
 
 msgid "&Another character"
 msgstr "&Autre personnage"
@@ -370,6 +389,9 @@ msgstr "&Keyboard Manager"
 msgid "&Keyboard shortcuts"
 msgstr "Raccourcis &clavier"
 
+msgid "&Keys (for example Ctrl+Shift+R or F7; empty: none):"
+msgstr "&Touches (par exemple Ctrl+Shift+R ou F7 ; vide : aucune) :"
+
 msgid "&Keys the bot presses:"
 msgstr "&Touches pressées par le bot :"
 
@@ -476,6 +498,9 @@ msgstr "Combattre &uniquement (noms, séparés par des virgules) :"
 msgid "&Open the chests that turn up while farming"
 msgstr "&Ouvrir les coffres qui apparaissent pendant le farming"
 
+msgid "&Open the file"
+msgstr "&Ouvrir le fichier"
+
 msgid ""
 "&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
@@ -553,6 +578,9 @@ msgstr "&Lire les touches du jeu"
 
 msgid "&Read new messages:"
 msgstr "&Lire les nouveaux messages :"
+
+msgid "&Read the file again"
+msgstr "Re&lire le fichier"
 
 msgid "&Refresh the market list"
 msgstr "&Actualiser la liste du marché"
@@ -654,6 +682,9 @@ msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
 msgstr ""
 "&Sur le chemin du monstre suivant, tirer sur ceux à portée (personnage qui combat à distance)"
+
+msgid "&Shortcuts:"
+msgstr "&Raccourcis :"
 
 msgid "&Show the time after each message"
 msgstr "&Afficher l'heure après chaque message"
@@ -759,6 +790,9 @@ msgstr "&Où mourir :"
 
 msgid "&Who may join:"
 msgstr "Qui peut re&joindre :"
+
+msgid "&Works:"
+msgstr "&Fonctionne :"
 
 msgid "&Write an email"
 msgstr "Écrire un e-&mail"
@@ -910,6 +944,16 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Un fichier qui atteint la taille ci-dessus est gardé sous le nom nom.1, les plus anciens passent à nom.2 et ainsi de suite, et le plus ancien est supprimé. Le journal des parties du jour tourne de la même façon au cours de la journée."
+
+msgid ""
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+msgstr ""
+"Une touche qui fonctionne partout agit sur le jeu au premier plan quand c'est l'un des vôtres (la liste des jeux le sélectionne), et depuis tout autre programme sur le jeu sélectionné dans la liste."
+
+msgid ""
+"A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
+msgstr ""
+"Une ligne inutilisable est signalée au démarrage d'Uncle Farmer, et cette action garde sa valeur par défaut."
 
 msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
@@ -1138,12 +1182,16 @@ msgstr "Autre personnage"
 msgid "Another gang's, by its name"
 msgstr "Celui d'un autre gang, par son nom"
 
-msgid "Another program is using the Pause key; the Pause shortcut won't work."
+msgid ""
+"Another program is using {keys}, so {action} won't work from everywhere."
 msgstr ""
-"Un autre programme utilise la touche Pause ; le raccourci Pause ne fonctionnera pas."
+"Un autre programme utilise {keys} : {action} ne fonctionnera pas partout."
 
 msgid "Answering"
 msgstr "Réponses"
+
+msgid "Anywhere, even inside the game"
+msgstr "Partout, même dans le jeu"
 
 msgid "Applied keyboard profile {name}."
 msgstr "Profil de clavier {name} appliqué."
@@ -1295,6 +1343,9 @@ msgstr "La casse ne peut pas être annulée."
 msgid "Breaks {n} {item}."
 msgstr "Casse {n} {item}."
 
+msgid "Bring the selected game to the &front"
+msgstr "Mettre le jeu sélectionné au premier pla&n"
+
 msgid "Broadcast (with a sound)"
 msgstr "Diffusion (avec un son)"
 
@@ -1403,6 +1454,9 @@ msgstr "Changer de touche"
 
 msgid "Change target mode"
 msgstr "Changer de mode de ciblage"
+
+msgid "Change them in File, Keyboard shortcuts, or in {file}."
+msgstr "À modifier dans Fichier, Raccourcis clavier, ou dans {file}."
 
 msgid "Change&log"
 msgstr "Historique des &versions"
@@ -1604,6 +1658,9 @@ msgstr "Fermer un dialogue"
 msgid "Close the game"
 msgstr "Fermer le jeu"
 
+msgid "Close the open Uncle Farmer window first."
+msgstr "Fermez d'abord la fenêtre d'Uncle Farmer ouverte."
+
 msgid "Close without saving"
 msgstr "Fermer sans enregistrer"
 
@@ -1727,6 +1784,9 @@ msgstr "Impossible d'appliquer les paramètres : {err}"
 msgid "Couldn't assign {binding} to {key}."
 msgstr "Impossible d'assigner {binding} à {key}."
 
+msgid "Couldn't bring {name} to the front."
+msgstr "Impossible de mettre {name} au premier plan."
+
 msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr "Impossible de reprendre {what} pour {name} : {why}"
 
@@ -1775,6 +1835,9 @@ msgstr "Impossible de l'ouvrir."
 msgid "Couldn't open it: {err}"
 msgstr "Impossible de l'ouvrir : {err}"
 
+msgid "Couldn't open {path}: {err}"
+msgstr "Impossible d'ouvrir {path} : {err}"
+
 msgid "Couldn't prepare {skill}."
 msgstr "Impossible de préparer {skill}."
 
@@ -1789,6 +1852,9 @@ msgstr "Impossible de lire le jeu : {err}"
 
 msgid "Couldn't save the schedules: {err}"
 msgstr "Impossible d'enregistrer les planifications : {err}"
+
+msgid "Couldn't save {path}: {err}"
+msgstr "Impossible d'enregistrer {path} : {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Enregistrement impossible : {err}"
@@ -1844,6 +1910,9 @@ msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 "Cristaux : ce qu'ils donnent et coûtent est lu sur la page de l'artisan."
 
+msgid "Ctrl+Tab moves between the main window's tabs."
+msgstr "Ctrl+Tab passe d'un onglet à l'autre de la fenêtre principale."
+
 msgid "Cut Flesh"
 msgstr "Cut Flesh"
 
@@ -1873,6 +1942,9 @@ msgstr "Mort"
 
 msgid "Deaths before stopping:"
 msgstr "Morts avant l'arrêt :"
+
+msgid "Default for &this one"
+msgstr "Par défaut pour &celle-ci"
 
 msgid "Delay after success (&seconds):"
 msgstr "Délai après réussite (&secondes) :"
@@ -2496,6 +2568,9 @@ msgid ""
 msgstr ""
 "HP restés sous {pct} % pendant {secs} secondes - arrêt pour vous laisser la main"
 
+msgid "HP {hp}"
+msgstr "PV {hp}"
+
 msgid "HP {hp}/{max} ({pct}%) - {item}"
 msgstr "HP {hp}/{max} ({pct} %) - {item}"
 
@@ -2732,6 +2807,9 @@ msgstr "Importer les réglages dans ce personnage :"
 msgid "Important events only"
 msgstr "Événements importants seulement"
 
+msgid "In Uncle Farmer's main window"
+msgstr "Dans la fenêtre principale d'Uncle Farmer"
+
 msgid "In all"
 msgstr "En tout"
 
@@ -2824,6 +2902,9 @@ msgstr "Rejoindre d'abord un salon international dans le jeu."
 msgid "Join the &Telegram group"
 msgstr "Rejoindre le groupe &Telegram"
 
+msgid "KEYBOARD SHORTCUTS"
+msgstr "RACCOURCIS CLAVIER"
+
 msgid "Keep &old files:"
 msgstr "&Garder les anciens fichiers :"
 
@@ -2865,6 +2946,9 @@ msgstr "Informations sur le profil clavier"
 
 msgid "Keyboard profile {name} was not found."
 msgstr "Profil de clavier {name} introuvable."
+
+msgid "Keyboard s&hortcuts"
+msgstr "Raccourcis c&lavier"
 
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
@@ -3444,6 +3528,9 @@ msgstr "Aucun jeu avec l'agent n'est en cours."
 msgid "No gem kinds known yet."
 msgstr "Aucun type de gemme connu pour l'instant."
 
+msgid "No key: use the menu."
+msgstr "Aucune touche : passer par le menu."
+
 msgid "No known buyer, so it will be stored instead"
 msgstr "Aucun acheteur connu, donc il sera stocké à la place"
 
@@ -3554,6 +3641,9 @@ msgid ""
 "Not scanned yet. Log in to this character in the game and press Scan now. The bot also scans when a run starts."
 msgstr ""
 "Pas encore scanné. Connecter ce personnage dans le jeu et appuyer sur « Scanner maintenant ». Le bot scanne aussi au début de chaque partie."
+
+msgid "Note:"
+msgstr "Remarque :"
 
 msgid "Nothing changed in the bag."
 msgstr "Rien n'a changé dans le sac."
@@ -4378,6 +4468,12 @@ msgstr "Sélectionnez d'abord un jeu."
 msgid "Select a plan first."
 msgstr "Sélectionner d'abord un plan."
 
+msgid "Select the &next game"
+msgstr "Sélectionner le jeu &suivant"
+
+msgid "Select the &previous game"
+msgstr "Sélectionner le jeu &précédent"
+
 msgid "Select the same character before applying the keyboard profile."
 msgstr "Sélectionner le même personnage avant d'appliquer le profil de clavier."
 
@@ -4592,6 +4688,11 @@ msgstr "Snowflake princess"
 msgid "Sold:"
 msgstr "Vendu :"
 
+msgid ""
+"Some keyboard shortcuts couldn't be used: see the Log tab, or File, Keyboard shortcuts."
+msgstr ""
+"Certains raccourcis clavier sont inutilisables : voir l'onglet Journal, ou Fichier, Raccourcis clavier."
+
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr ""
 "Des demandes de sons ont été manquées car la mémoire tampon des événements était pleine."
@@ -4668,6 +4769,12 @@ msgstr "Annoncer la &progression pendant la partie"
 msgid "Speak the &results when a run ends"
 msgstr "Annoncer les &résultats à la fin d'une partie"
 
+msgid "Speak the results of the game in front"
+msgstr "Annoncer les résultats du jeu au premier plan"
+
+msgid "Speak the selected game's st&atus"
+msgstr "Ann&oncer l'état du jeu sélectionné"
+
 msgid "Speech"
 msgstr "Parole"
 
@@ -4705,6 +4812,9 @@ msgstr "Rester immobile"
 
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Commencer un nouveau fichier après (Mo, 0 = jamais) :"
+
+msgid "Start or stop the bot (in a game window: that game's bot)"
+msgstr "Lancer ou arrêter le bot (dans une fenêtre de jeu : le bot de ce jeu)"
 
 msgid "Start the c&hain"
 msgstr "Démarrer la c&haîne"
@@ -5786,6 +5896,11 @@ msgid ""
 msgstr ""
 "L'agent d'Uncle Farmer doit être réinstallé : {why}. Arrêter tous les bots en cours, puis utiliser Fichier, Paramètres, Installer."
 
+msgid ""
+"Uncle Farmer's keyboard shortcuts. One line an action: action = keys = where."
+msgstr ""
+"Raccourcis clavier d'Uncle Farmer. Une ligne par action : action = touches = où."
+
 msgid "Unit price"
 msgstr "Prix unitaire"
 
@@ -6103,6 +6218,17 @@ msgstr "Avec vos {top} HP max, c'est sous {pct} %."
 
 msgid "Within this many tiles of the player:"
 msgstr "À ce nombre de cases du joueur :"
+
+msgid "Works"
+msgstr "Fonctionne"
+
+msgid ""
+"Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any other program. A key no program uses is best, such as Pause or a key from F7 to F12 with Ctrl or Shift."
+msgstr ""
+"Fonctionne partout : tant qu'Uncle Farmer tourne, {keys} n'atteint plus le jeu, NVDA ni aucun autre programme. Mieux vaut une touche qu'aucun programme n'utilise, comme Pause ou une touche de F7 à F12 avec Ctrl ou Shift."
+
+msgid "Works while an Uncle Farmer window is in front."
+msgstr "Fonctionne quand une fenêtre d'Uncle Farmer est au premier plan."
 
 msgid "Worst hit received: {hit}"
 msgstr "Pire coup reçu : {hit}"
@@ -7110,6 +7236,9 @@ msgstr "tous les farm du script sont déjà faits - arrêt"
 msgid "everything"
 msgstr "depuis toujours"
 
+msgid "everywhere, even in the game"
+msgstr "partout, même dans le jeu"
+
 msgid "experience card paused ({card}): {why}"
 msgstr "carte d'expérience en pause ({card}) : {why}"
 
@@ -7509,6 +7638,10 @@ msgstr "touche {key}"
 
 msgid "key {key} didn't work: {why}"
 msgstr "la touche {key} n'a pas marché : {why}"
+
+msgid "keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."
+msgstr ""
+"touches : par exemple F5, Ctrl+Shift+R ou Shift+Pause ; none pour aucune touche."
 
 msgid "landed in the gang's inner hall, which is walled off from the craftsmen"
 msgstr "arrivée dans l'inner hall du gang, séparé des artisans par un mur"
@@ -8352,6 +8485,9 @@ msgstr "une fois, le {date} à {time}"
 msgid "one cave only: a character goes into one cave a day"
 msgstr "une seule grotte : un personnage entre dans une grotte par jour"
 
+msgid "only in Uncle Farmer"
+msgstr "seulement dans Uncle Farmer"
+
 msgid "only {names}"
 msgstr "seulement {names}"
 
@@ -8723,6 +8859,24 @@ msgstr "boucle courte"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "provisions insuffisantes pour le donjon : {what}"
+
+msgid "shortcuts.txt couldn't be read ({err}): the default shortcuts are used."
+msgstr ""
+"shortcuts.txt illisible ({err}) : les raccourcis par défaut sont utilisés."
+
+msgid "shortcuts.txt line {n}: there is no action called {name}."
+msgstr "shortcuts.txt ligne {n} : aucune action ne s'appelle {name}."
+
+msgid ""
+"shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+"shortcuts.txt ligne {n} : écrire action = touches = où, par exemple run_start = F5 = inapp."
+
+msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgstr "shortcuts.txt ligne {n} : {where} n'est ni global ni inapp."
+
+msgid "shortcuts.txt line {n}: {why}"
+msgstr "shortcuts.txt ligne {n} : {why}"
 
 msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
 msgstr ""
@@ -10146,6 +10300,11 @@ msgid ""
 msgstr ""
 "le lieu de départ de la partie n'a pas été lu - fin sur la carte sans monstres la plus proche"
 
+msgid ""
+"where: global works everywhere, even inside the game (the key no longer reaches the game or any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."
+msgstr ""
+"où : global fonctionne partout, même dans le jeu (la touche n'atteint plus le jeu ni aucun autre programme tant qu'Uncle Farmer tourne) ; inapp seulement dans les fenêtres d'Uncle Farmer."
+
 msgid "where: the map I'm on and my x, y on it."
 msgstr "where : la carte où je suis et ma position x, y."
 
@@ -10250,8 +10409,17 @@ msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr ""
 "vous avez rejoint le gang aujourd'hui : le jeu n'autorise aucun don avant demain"
 
+msgid "{action} can't be used now."
+msgstr "{action} n'est pas disponible pour l'instant."
+
+msgid "{action} has no key now: {keys} is {other}'s."
+msgstr "{action} n'a plus de touche : {keys} est à {other}."
+
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action} : « {value} » n'est pas une touche que le bot peut presser."
+
+msgid "{action}: {why}"
+msgstr "{action} : {why}"
 
 msgid "{at}: {outcome} (due {due})"
 msgstr "{at} : {outcome} (prévu à {due})"
@@ -10460,6 +10628,28 @@ msgstr "{item} : {n} utilisés x {price} = {cost} arnebia"
 
 msgid "{job} didn't finish: {why}"
 msgstr "{job} n'a pas abouti : {why}"
+
+msgid "{keys} is also {action}: one of them has to change."
+msgstr "{keys} est aussi {action} : l'un des deux doit changer."
+
+msgid "{keys} is given to both {one} and {other}: {other} keeps its own key."
+msgstr ""
+"{keys} est donnée à {one} et à {other} : {other} garde sa propre touche."
+
+msgid ""
+"{keys} is kept for every window (copy, paste, menus, tabs): choose another."
+msgstr ""
+"{keys} est réservée à toutes les fenêtres (copier, coller, menus, onglets) : en choisir une autre."
+
+msgid ""
+"{keys}: Ctrl+Alt with a letter is AltGr on many keyboards, which types characters. Use Ctrl or Ctrl+Shift."
+msgstr ""
+"{keys} : Ctrl+Alt avec une lettre est AltGr sur beaucoup de claviers, qui tape des caractères. Utiliser Ctrl ou Ctrl+Shift."
+
+msgid ""
+"{keys}: a letter, a digit, Space, an arrow or Insert, Delete, Home, End, PageUp or PageDown needs Ctrl, or it would be typed into the bot's own boxes."
+msgstr ""
+"{keys} : une lettre, un chiffre, Espace, une flèche ou Insert, Suppr, Début, Fin, Page préc. ou Page suiv. a besoin de Ctrl, sinon elle serait tapée dans les champs du bot."
 
 msgid "{key} (page {page})"
 msgstr "{key} (page {page})"
@@ -11196,6 +11386,10 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Noms ou ids (séparés par des virgules) :"
+
+#~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
+#~ msgstr ""
+#~ "Un autre programme utilise la touche Pause ; le raccourci Pause ne fonctionnera pas."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Rester loin des boss"

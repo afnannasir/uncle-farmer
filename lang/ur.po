@@ -32,6 +32,20 @@ msgstr " - andaza: is mein shards shamil hain"
 msgid " - {n} used up with no stored price, not counted"
 msgstr " - {n} istemal hui jin ki koi qeemat mahfooz nahi, gini nahi gayin"
 
+msgid "\"{keys}\": a shortcut needs a key besides Ctrl, Alt and Shift."
+msgstr "\"{keys}\": shortcut ko Ctrl, Alt aur Shift ke ilawa ek key chahiye."
+
+msgid ""
+"\"{keys}\": the bot doesn't know the key {part}. Use a letter, a digit, F1 to F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown or an arrow."
+msgstr ""
+"\"{keys}\": bot {part} key nahin jaanta. Harf, number, F1 se F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown ya arrow istemal karein."
+
+msgid "\"{keys}\": write the keys joined by +, for example Ctrl+Shift+R."
+msgstr "\"{keys}\": keys + se jod kar likhein, misaal Ctrl+Shift+R."
+
+msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
+msgstr "\"{keys}\": {part} na Ctrl hai, na Alt, na Shift."
+
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
@@ -55,6 +69,9 @@ msgstr "Naya filter &shaamil karein"
 
 msgid "&Add where I stand"
 msgstr "Jahan khara hoon wahan &shamil karein"
+
+msgid "&All the defaults"
+msgstr "&Tamaam default"
 
 msgid "&Another character"
 msgstr "&Doosra kirdaar"
@@ -369,6 +386,9 @@ msgstr "&Keyboard Manager"
 msgid "&Keyboard shortcuts"
 msgstr "&Keyboard ke shortcuts"
 
+msgid "&Keys (for example Ctrl+Shift+R or F7; empty: none):"
+msgstr "&Keys (misaal: Ctrl+Shift+R ya F7; khali: koi nahin):"
+
 msgid "&Keys the bot presses:"
 msgstr "Bot jo &keys dabata hai:"
 
@@ -475,6 +495,9 @@ msgstr "&Sirf in se larein (naam, comma se alag):"
 msgid "&Open the chests that turn up while farming"
 msgstr "Farming ke dauran milne wale chests &kholein"
 
+msgid "&Open the file"
+msgstr "File kho&lein"
+
 msgid ""
 "&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
@@ -552,6 +575,9 @@ msgstr "Game se &keys parhein"
 
 msgid "&Read new messages:"
 msgstr "Naye paigham &padh kar sunayein:"
+
+msgid "&Read the file again"
+msgstr "File dobara &parhein"
 
 msgid "&Refresh the market list"
 msgstr "Market ki fehrist &taaza karein"
@@ -652,6 +678,9 @@ msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
 msgstr ""
 "Agle monster ki taraf chalte hue pohanch mein aane walon par &nishaana lagaayein (door se larne wala kirdaar)"
+
+msgid "&Shortcuts:"
+msgstr "&Shortcuts:"
 
 msgid "&Show the time after each message"
 msgstr "Har paigham ke baad &waqt dikhayein"
@@ -757,6 +786,9 @@ msgstr "&Kahan marna hai:"
 
 msgid "&Who may join:"
 msgstr "&Kaun shamil ho sakta hai:"
+
+msgid "&Works:"
+msgstr "Ka&han chalti hai:"
 
 msgid "&Write an email"
 msgstr "&Email likhein"
@@ -907,6 +939,16 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Jo file upar di gayi size tak pahunch jaye woh name.1 ke tor par rakhi jaati hai, us se purani name.2 par chali jaati hai aur isi tarah aage, aur sab se purani hata di jaati hai. Din ka run log bhi apne din ke andar isi tarah rotate hota hai."
+
+msgid ""
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+msgstr ""
+"Har jagah chalne wali key saamne wale game par kaam karti hai jab woh aap ka ho (Games list use select kar leti hai), aur kisi aur program se list mein select kiye gaye game par."
+
+msgid ""
+"A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
+msgstr ""
+"Jo line istemal na ho sake woh Uncle Farmer shuru hone par batayi jaati hai, aur woh action apna default rakhta hai."
 
 msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
@@ -1134,12 +1176,16 @@ msgstr "Doosra kirdaar"
 msgid "Another gang's, by its name"
 msgstr "Doosre gang ka, uske naam se"
 
-msgid "Another program is using the Pause key; the Pause shortcut won't work."
+msgid ""
+"Another program is using {keys}, so {action} won't work from everywhere."
 msgstr ""
-"Koi doosra program Pause key istemal kar raha hai; Pause shortcut kaam nahi karega."
+"Koi aur program {keys} istemal kar raha hai, is liye {action} har jagah se nahin chalega."
 
 msgid "Answering"
 msgstr "Jawab dena"
+
+msgid "Anywhere, even inside the game"
+msgstr "Har jagah, game ke andar bhi"
 
 msgid "Applied keyboard profile {name}."
 msgstr "Keyboard profile {name} laga diya."
@@ -1291,6 +1337,9 @@ msgstr "Torna wapas nahi ho sakta."
 msgid "Breaks {n} {item}."
 msgstr "{n} {item} tootenge."
 
+msgid "Bring the selected game to the &front"
+msgstr "Select kiye gaye game ko saamne &layein"
+
 msgid "Broadcast (with a sound)"
 msgstr "Broadcast (awaz ke saath)"
 
@@ -1399,6 +1448,9 @@ msgstr "Key badlein"
 
 msgid "Change target mode"
 msgstr "Target mode tabdeel karein"
+
+msgid "Change them in File, Keyboard shortcuts, or in {file}."
+msgstr "Inhein File, Keyboard shortcuts mein badlein, ya {file} mein."
 
 msgid "Change&log"
 msgstr "Tabdeeliyon ki &fehrist"
@@ -1598,6 +1650,9 @@ msgstr "Dialog band karein"
 msgid "Close the game"
 msgstr "Game band karein"
 
+msgid "Close the open Uncle Farmer window first."
+msgstr "Pehle Uncle Farmer ki khuli window band karein."
+
 msgid "Close without saving"
 msgstr "Mahfooz kiye baghair band karein"
 
@@ -1720,6 +1775,9 @@ msgstr "Tarteeb lagayi nahi ja saki: {err}"
 msgid "Couldn't assign {binding} to {key}."
 msgstr "{binding} ko {key} par nahi laga sake."
 
+msgid "Couldn't bring {name} to the front."
+msgstr "{name} ko saamne nahin la sake."
+
 msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr "{name} ke liye {what} jaari nahi rakh sake: {why}"
 
@@ -1767,6 +1825,9 @@ msgstr "Yeh khola nahi ja saka."
 msgid "Couldn't open it: {err}"
 msgstr "Khol nahi saka: {err}"
 
+msgid "Couldn't open {path}: {err}"
+msgstr "{path} khol nahin sake: {err}"
+
 msgid "Couldn't prepare {skill}."
 msgstr "{skill} ki tayari nahi ho saki."
 
@@ -1781,6 +1842,9 @@ msgstr "Game parhi nahi ja saki: {err}"
 
 msgid "Couldn't save the schedules: {err}"
 msgstr "Schedules mahfooz nahi ho sake: {err}"
+
+msgid "Couldn't save {path}: {err}"
+msgstr "{path} mahfooz nahin kar sake: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Mahfooz nahi ho saka: {err}"
@@ -1836,6 +1900,9 @@ msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 "Crystals: ye kya dete hain aur kitne ke hain, craftsman ke page se parha jata hai."
 
+msgid "Ctrl+Tab moves between the main window's tabs."
+msgstr "Ctrl+Tab main window ke tabs ke darmiyan jaata hai."
+
 msgid "Cut Flesh"
 msgstr "Cut Flesh (gosht)"
 
@@ -1865,6 +1932,9 @@ msgstr "Maut"
 
 msgid "Deaths before stopping:"
 msgstr "Rokne se pehle kitni maut:"
+
+msgid "Default for &this one"
+msgstr "Is ke liye &default"
 
 msgid "Delay after success (&seconds):"
 msgstr "Kaamyaabi ke baad waqfa (&seconds):"
@@ -1963,7 +2033,7 @@ msgstr ""
 "Contribution ke badle Contribution Chests &xchange karo (har ek 5,000, Guard Captain Suke ke paas)"
 
 msgid "E&xit"
-msgstr "Bahar &niklein"
+msgstr "&Bahar niklein"
 
 msgid "E&xport"
 msgstr "E&xport karein"
@@ -2483,6 +2553,9 @@ msgid ""
 msgstr ""
 "HP {secs} second tak {pct}% se neeche rahi - ruk rahe hain taake aap sambhal lein"
 
+msgid "HP {hp}"
+msgstr "HP {hp}"
+
 msgid "HP {hp}/{max} ({pct}%) - {item}"
 msgstr "HP {hp}/{max} ({pct}%) - {item}"
 
@@ -2721,6 +2794,9 @@ msgstr "Tarteeb is character mein import karein:"
 msgid "Important events only"
 msgstr "Sirf ahem waqiaat"
 
+msgid "In Uncle Farmer's main window"
+msgstr "Uncle Farmer ki main window mein"
+
 msgid "In all"
 msgstr "Kul"
 
@@ -2814,6 +2890,9 @@ msgstr "Pehle game mein koi international room join karein."
 msgid "Join the &Telegram group"
 msgstr "&Telegram group join karein"
 
+msgid "KEYBOARD SHORTCUTS"
+msgstr "KEYBOARD SHORTCUTS"
+
 msgid "Keep &old files:"
 msgstr "Purani files &rakhein:"
 
@@ -2855,6 +2934,9 @@ msgstr "Keyboard profile ki maloomat"
 
 msgid "Keyboard profile {name} was not found."
 msgstr "Keyboard profile {name} nahi mila."
+
+msgid "Keyboard s&hortcuts"
+msgstr "Keyboard s&hortcuts"
 
 msgid "Keyboard shortcuts"
 msgstr "Keyboard ke shortcuts"
@@ -3291,7 +3373,7 @@ msgid "Moving on to the next character of the chain."
 msgstr "Chain ke agle kirdaar par ja rahe hain."
 
 msgid "Mute e&very game"
-msgstr "Har game ki awaaz &band karein"
+msgstr "Har game ki awaaz band &karein"
 
 msgid "My friends in the game"
 msgstr "Game mein mere dost"
@@ -3429,6 +3511,9 @@ msgstr "Agent wala koi game nahi chal raha."
 msgid "No gem kinds known yet."
 msgstr "Abhi tak gems ki koi qism maloom nahi."
 
+msgid "No key: use the menu."
+msgstr "Koi key nahin: menu istemal karein."
+
 msgid "No known buyer, so it will be stored instead"
 msgstr "Koi maloom kharidaar nahi, is liye ise store kar diya jayega"
 
@@ -3538,6 +3623,9 @@ msgid ""
 "Not scanned yet. Log in to this character in the game and press Scan now. The bot also scans when a run starts."
 msgstr ""
 "Abhi scan nahi hua. Game mein is kirdaar se log in karein aur Scan now dabayein. Run shuru hone par bot khud bhi scan karta hai."
+
+msgid "Note:"
+msgstr "Note:"
 
 msgid "Nothing changed in the bag."
 msgstr "Bag mein kuch nahi badla."
@@ -4353,6 +4441,12 @@ msgstr "Pehle game chunein."
 msgid "Select a plan first."
 msgstr "Pehle plan chunein."
 
+msgid "Select the &next game"
+msgstr "&Agla game select karein"
+
+msgid "Select the &previous game"
+msgstr "&Pichhla game select karein"
+
 msgid "Select the same character before applying the keyboard profile."
 msgstr "Keyboard profile lagane se pehle wohi character chunen."
 
@@ -4566,6 +4660,11 @@ msgstr "Snowflake princess"
 msgid "Sold:"
 msgstr "Beche gaye:"
 
+msgid ""
+"Some keyboard shortcuts couldn't be used: see the Log tab, or File, Keyboard shortcuts."
+msgstr ""
+"Kuch keyboard shortcuts istemal nahin ho sake: Log tab dekhein, ya File, Keyboard shortcuts."
+
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr "Kuch sound darkhwastein reh gayin kyun ke event buffer bhar gaya."
 
@@ -4639,6 +4738,12 @@ msgstr "Chalte waqt &taraqqi sunayein"
 msgid "Speak the &results when a run ends"
 msgstr "Run khatam hone par &nateeja sunayein"
 
+msgid "Speak the results of the game in front"
+msgstr "Saamne wale game ke results bolein"
+
+msgid "Speak the selected game's st&atus"
+msgstr "Select kiye gaye game ka &haal bolein"
+
 msgid "Speech"
 msgstr "Awaaz"
 
@@ -4676,6 +4781,9 @@ msgstr "Khare rahein"
 
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Nayi file kab shuru karein (MB, 0 = kabhi nahi):"
+
+msgid "Start or stop the bot (in a game window: that game's bot)"
+msgstr "Bot shuru ya band karein (game window mein: us game ka bot)"
 
 msgid "Start the c&hain"
 msgstr "Chain shuru ka&rein"
@@ -5748,6 +5856,11 @@ msgid ""
 msgstr ""
 "Uncle Farmer ka agent dobara install karna hai: {why}. Har chalta bot rokein, phir File, Tarteeb, Install istemal karein."
 
+msgid ""
+"Uncle Farmer's keyboard shortcuts. One line an action: action = keys = where."
+msgstr ""
+"Uncle Farmer ke keyboard shortcuts. Har action ki ek line: action = keys = kahan."
+
 msgid "Unit price"
 msgstr "Ek ki qeemat"
 
@@ -6061,6 +6174,17 @@ msgstr "Aap ki {top} max HP ke saath jo {pct}% se neeche hai."
 
 msgid "Within this many tiles of the player:"
 msgstr "Player se itne khane ke andar:"
+
+msgid "Works"
+msgstr "Kahan chalti hai"
+
+msgid ""
+"Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any other program. A key no program uses is best, such as Pause or a key from F7 to F12 with Ctrl or Shift."
+msgstr ""
+"Har jagah chalti hai: jab tak Uncle Farmer chal raha hai, {keys} game, NVDA ya kisi aur program tak nahin pahunchti. Behtar hai aisi key jo koi program istemal na kare, jaise Pause ya Ctrl ya Shift ke saath F7 se F12 tak ki key."
+
+msgid "Works while an Uncle Farmer window is in front."
+msgstr "Jab Uncle Farmer ki koi window saamne ho tab chalti hai."
 
 msgid "Worst hit received: {hit}"
 msgstr "Sab se bura mila hit: {hit}"
@@ -7066,6 +7190,9 @@ msgstr "script ka har farm pehle hi poora ho chuka hai - ruk rahe hain"
 msgid "everything"
 msgstr "sab kuch"
 
+msgid "everywhere, even in the game"
+msgstr "har jagah, game mein bhi"
+
 msgid "experience card paused ({card}): {why}"
 msgstr "experience card roka gaya ({card}): {why}"
 
@@ -7466,6 +7593,9 @@ msgstr "key {key}"
 
 msgid "key {key} didn't work: {why}"
 msgstr "key {key} kaam nahi ki: {why}"
+
+msgid "keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."
+msgstr "keys: misaal F5, Ctrl+Shift+R ya Shift+Pause; koi key na ho to none."
 
 msgid "landed in the gang's inner hall, which is walled off from the craftsmen"
 msgstr ""
@@ -8311,6 +8441,9 @@ msgstr "aik baar, {date} ko {time} baje"
 msgid "one cave only: a character goes into one cave a day"
 msgstr "sirf ek ghaar: kirdaar din mein ek hi ghaar mein jata hai"
 
+msgid "only in Uncle Farmer"
+msgstr "sirf Uncle Farmer mein"
+
 msgid "only {names}"
 msgstr "sirf {names}"
 
@@ -8680,6 +8813,24 @@ msgstr "mukhtasar loop"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "dungeon ke liye saamaan kam hai: {what}"
+
+msgid "shortcuts.txt couldn't be read ({err}): the default shortcuts are used."
+msgstr ""
+"shortcuts.txt parhi nahin ja saki ({err}): default shortcuts istemal ho rahe hain."
+
+msgid "shortcuts.txt line {n}: there is no action called {name}."
+msgstr "shortcuts.txt line {n}: {name} naam ka koi action nahin."
+
+msgid ""
+"shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+"shortcuts.txt line {n}: action = keys = kahan likhein, misaal run_start = F5 = inapp."
+
+msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgstr "shortcuts.txt line {n}: {where} na global hai na inapp."
+
+msgid "shortcuts.txt line {n}: {why}"
+msgstr "shortcuts.txt line {n}: {why}"
 
 msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
 msgstr ""
@@ -10091,6 +10242,11 @@ msgid ""
 msgstr ""
 "run kahan shuru hua yeh parha nahi gaya - qareeb tareen baghair monsters wale map par khatam kar rahe hain"
 
+msgid ""
+"where: global works everywhere, even inside the game (the key no longer reaches the game or any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."
+msgstr ""
+"kahan: global har jagah chalta hai, game ke andar bhi (jab tak Uncle Farmer chal raha hai key game ya kisi aur program tak nahin pahunchti); inapp sirf Uncle Farmer ki windows mein."
+
 msgid "where: the map I'm on and my x, y on it."
 msgstr "where: main kis map par hoon aur us par mera x, y."
 
@@ -10195,8 +10351,17 @@ msgstr "aap aaj gang mein aaye: game kal tak build nahi karne deta"
 msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr "aap aaj gang mein aaye: game kal tak donation nahi karne deta"
 
+msgid "{action} can't be used now."
+msgstr "{action} abhi istemal nahin ho sakta."
+
+msgid "{action} has no key now: {keys} is {other}'s."
+msgstr "{action} ki ab koi key nahin: {keys} {other} ki hai."
+
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' aisi key nahi hai jo bot daba sakta ho."
+
+msgid "{action}: {why}"
+msgstr "{action}: {why}"
 
 msgid "{at}: {outcome} (due {due})"
 msgstr "{at}: {outcome} (waqt {due})"
@@ -10408,6 +10573,28 @@ msgstr "{item}: {n} istemal x {price} = {cost} arnebia"
 
 msgid "{job} didn't finish: {why}"
 msgstr "{job} poora nahi hua: {why}"
+
+msgid "{keys} is also {action}: one of them has to change."
+msgstr "{keys} {action} ki bhi hai: in mein se ek ko badalna hoga."
+
+msgid "{keys} is given to both {one} and {other}: {other} keeps its own key."
+msgstr ""
+"{keys} {one} aur {other} dono ko di gayi hai: {other} apni key rakhta hai."
+
+msgid ""
+"{keys} is kept for every window (copy, paste, menus, tabs): choose another."
+msgstr ""
+"{keys} har window ke liye rakhi gayi hai (copy, paste, menu, tabs): koi aur chunein."
+
+msgid ""
+"{keys}: Ctrl+Alt with a letter is AltGr on many keyboards, which types characters. Use Ctrl or Ctrl+Shift."
+msgstr ""
+"{keys}: bahut se keyboards par harf ke saath Ctrl+Alt AltGr hota hai, jo characters type karta hai. Ctrl ya Ctrl+Shift istemal karein."
+
+msgid ""
+"{keys}: a letter, a digit, Space, an arrow or Insert, Delete, Home, End, PageUp or PageDown needs Ctrl, or it would be typed into the bot's own boxes."
+msgstr ""
+"{keys}: harf, number, Space, arrow ya Insert, Delete, Home, End, PageUp ya PageDown ke saath Ctrl zaroori hai, warna woh bot ke apne boxes mein type ho jaayegi."
 
 msgid "{key} (page {page})"
 msgstr "{key} (safha {page})"
@@ -11151,6 +11338,10 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "({n} fused)"
 #~ msgstr "({n} fuse hue)"
+
+#~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
+#~ msgstr ""
+#~ "Koi doosra program Pause key istemal kar raha hai; Pause shortcut kaam nahi karega."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Peeche chalte hue teammates ki shifa"

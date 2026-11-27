@@ -13,14 +13,16 @@ import os
 
 import wx
 
-from .. import applog, messages, paths, settings
+from .. import applog, messages, paths, settings, shortcuts
 from ..clock import CLOCK, Clock
 from ..i18n import _
 from .common import Handler, ask, buttons, error, group, guide_text, info, labeled, opens, popup_actions, shortcut_label, show_text, tabs
+from .mainparts import keys
 from .mainparts.carryon import CarryOnMixin
 from .mainparts.chain import ChainMixin
 from .mainparts.editing import EditingMixin, active_profile
 from .mainparts.games import GamesMixin
+from .mainparts.keys import KeysMixin
 from .mainparts.logpane import LogMixin
 from .mainparts.results import ResultsMixin
 from .mainparts.runs import RunsMixin
@@ -32,11 +34,8 @@ from .silencer import SilencerDialog
 from .. import updater
 from ..soundrestore import SoundRestore
 
-HOTKEY_ID = 0xBF01
-RESULTS_HOTKEY_ID = 0xBF02
-VK_PAUSE = 0x13
-MOD_SHIFT = 0x0004
-MOD_NOREPEAT = 0x4000
+HOTKEY_ID = keys.HOTKEY_BASE          # Pause (shortcuts: run_toggle, the first action)
+RESULTS_HOTKEY_ID = keys.HOTKEY_BASE + 1   # Shift+Pause (run_speak_front, the second)
 BOT_STOP_WAIT = 5.0         # seconds each running bot gets to end when the app closes
 
 
@@ -78,7 +77,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, SchedulingMixin, CarryOnMixin, ChainMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, CarryOnMixin, ChainMixin, KeysMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -127,24 +126,14 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         panel.SetSizer(root)
         self.CreateStatusBar()
 
+        self.load_shortcuts()
         self.build_menu()
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, lambda e: self.poll(), self.timer)
         self.timer.Start(3000)
         applog.bootup.note("game list timer started (every 3 s)")
-        if self.RegisterHotKey(HOTKEY_ID, MOD_NOREPEAT, VK_PAUSE):
-            self.hotkeys.append(HOTKEY_ID)
-            self.Bind(wx.EVT_HOTKEY, lambda e: self.toggle(), id=HOTKEY_ID)
-        else:
-            applog.bootup.problem("the Pause key is taken by another program: the Pause shortcut won't work")
-            self._append(_("Another program is using the Pause key; the Pause shortcut won't work."), False)
-        if self.RegisterHotKey(RESULTS_HOTKEY_ID, MOD_SHIFT | MOD_NOREPEAT, VK_PAUSE):
-            self.hotkeys.append(RESULTS_HOTKEY_ID)
-            self.Bind(wx.EVT_HOTKEY, lambda e: self.speak_results(front=True), id=RESULTS_HOTKEY_ID)
-        else:
-            applog.bootup.problem("Shift+Pause is taken by another program: it won't speak the results")
-        applog.bootup.note("hotkeys held: %d of 2" % len(self.hotkeys))
+        self.register_hotkeys()
 
         self.fill_runs()
         self.refresh_games()
@@ -240,137 +229,138 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
 
     # ------------------------------------------------------------ menus
     def build_menu(self) -> None:
+        """The menus, every entry under its action's label (unclefarmer/shortcuts.py) with the keys
+        the player gave it, and the accelerators of those that work in Uncle Farmer only."""
         bar = wx.MenuBar()
-
-        def command(label: str, handler: Handler, shortcut: str = "") -> tuple[str, Handler]:
-            """Add an accelerator after translating its menu label, not inside the catalog key."""
-            return shortcut_label(label, shortcut), handler
-
+        if not hasattr(self, "shortcut_table"):
+            self.shortcut_table = shortcuts.defaults()
         self.action_items: dict[str, wx.MenuItem] = {}
-        accelerators: list[wx.AcceleratorEntry] = []
+        self.action_handlers: dict[str, Handler] = {}
+        self.action_ids: dict[str, int] = {}
+        self.menu_bases: dict[str, tuple[wx.MenuItem, str]] = {}
+        dialog_opens = {"help_changelog", "file_shortcuts"}
 
-        def add(menu: wx.Menu, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = (),
-                *, context: bool = False) -> None:
+        def command(action_id: str, handler: Handler) -> tuple[str, Handler]:
+            return action_id, handler
+
+        def add(menu: wx.Menu, entries: list[tuple[str, Handler]], *, context: bool = False) -> None:
             # No separator lines: a screen reader counts each one as an entry, so a menu of four
             # read "1 of 5".
-            for index, (label, handler) in enumerate(entries):
-                item = menu.Append(wx.ID_ANY, label)
-                if context:
-                    self.Bind(wx.EVT_MENU, self.context_handler(item, handler), item)
-                else:
-                    self.Bind(wx.EVT_MENU, handler, item)
-                shortcut = label.partition("\t")[2]
-                if shortcut:
-                    entry = wx.AcceleratorEntry()
-                    if entry.FromString(shortcut):
-                        entry.Set(entry.GetFlags(), entry.GetKeyCode(), item.GetId())
-                        accelerators.append(entry)
-                if keys:
-                    self.action_items[keys[index]] = item
+            for action_id, handler in entries:
+                base = _(shortcuts.BY_ID[action_id].label)
+                if action_id in dialog_opens:
+                    base = opens(base)
+                item = menu.Append(wx.ID_ANY, keys.menu_label(self, action_id, base))
+                bound = self.context_handler(item, handler) if context else handler
+                self.Bind(wx.EVT_MENU, bound, item)
+                self.action_items[action_id] = item
+                self.action_handlers[action_id] = bound
+                self.action_ids[action_id] = item.GetId()
+                self.menu_bases[action_id] = (item, base)
 
         self.context_menu = wx.Menu()
 
-        def menu(title: str, entries: list[tuple[str, Handler]], keys: tuple[str, ...] = (),
-                 *, context: bool = False) -> wx.Menu:
+        def menu(title: str, entries: list[tuple[str, Handler]], *, context: bool = False) -> wx.Menu:
             result = wx.Menu()
-            add(result, entries, keys, context=context)
+            add(result, entries, context=context)
             if context:
                 self.context_menu.AppendSubMenu(result, title)
             else:
                 bar.Append(result, title)
             return result
 
-        tools_menu = menu(_("&Tools"), [command(_("&Gem Maker"), lambda e: self.open_tool("gem"), "Ctrl+G"),
-                           command(_("Gem Brea&ker"), lambda e: self.open_tool("break"), "Ctrl+Shift+B"),
-                           command(_("P&otion Maker"), lambda e: self.open_tool("potions"), "Ctrl+Shift+O"),
-                           command(_("&Equipment Enhancer"), lambda e: self.open_tool("enhance"), "Ctrl+Shift+E"),
-                           command(_("&Daily chores"), lambda e: self.open_tool("chores"), "Ctrl+Shift+D"),
-                           command(_("Gathe&ring"), lambda e: self.open_tool("gather"), "Ctrl+Shift+F"),
-                           command(_("D&ungeons"), lambda e: self.open_tool("dungeon"), "Ctrl+Shift+G"),
-                           command(_("&XP loser"), lambda e: self.open_tool("xploss"), "Ctrl+Shift+X"),
-                           command(_("&Market searcher and buyer"), lambda e: self.open_market(), "Ctrl+Shift+K"),
-                           command(_("Buy co&llection items"), lambda e: self.open_tool("buycoll"), "Ctrl+Shift+L"),
-                           command(_("Hunting bount&ies"), lambda e: self.open_tool("bounties")),
-                           command(_("Construction &scanner"), lambda e: self.open_construction_scan()),
-                           command(_("Sell the &collection now"), lambda e: self.sell_collection_now()),
-                           command(_("Sell s&hards now"), lambda e: self.sell_shards_now()),
-                           command(_("Clean the &bag now"), lambda e: self.clean_bag_now()),
-                           command(_("S&tore items now"), lambda e: self.store_items_now()),
-                           command(_("Restock &now"), lambda e: self.restock_now()),
-                           command(_("Update shard &prices"), lambda e: self.update_shard_prices_now()),
-                           command(_("Sound Silencer"), lambda e: self.open_silencer()),
-                           command(_("&Keyboard Manager"), lambda e: self.open_tool("keyboard"))],
-                          ("tools_gem", "tools_breaker", "tools_potions", "tools_enhance", "tools_chores", "tools_gather", "tools_dungeon", "tools_xploss",
-                           "tools_market", "tools_buycoll", "tools_bounties", "tools_construction", "tools_collection", "tools_shards", "tools_clean", "tools_store", "tools_restock", "tools_prices",
-                           "tools_silencer", "tools_keyboard"),
+        tools_menu = menu(_("&Tools"), [command("tools_gem", lambda e: self.open_tool("gem")),
+                           command("tools_breaker", lambda e: self.open_tool("break")),
+                           command("tools_potions", lambda e: self.open_tool("potions")),
+                           command("tools_enhance", lambda e: self.open_tool("enhance")),
+                           command("tools_chores", lambda e: self.open_tool("chores")),
+                           command("tools_gather", lambda e: self.open_tool("gather")),
+                           command("tools_dungeon", lambda e: self.open_tool("dungeon")),
+                           command("tools_xploss", lambda e: self.open_tool("xploss")),
+                           command("tools_market", lambda e: self.open_market()),
+                           command("tools_buycoll", lambda e: self.open_tool("buycoll")),
+                           command("tools_bounties", lambda e: self.open_tool("bounties")),
+                           command("tools_construction", lambda e: self.open_construction_scan()),
+                           command("tools_collection", lambda e: self.sell_collection_now()),
+                           command("tools_shards", lambda e: self.sell_shards_now()),
+                           command("tools_clean", lambda e: self.clean_bag_now()),
+                           command("tools_store", lambda e: self.store_items_now()),
+                           command("tools_restock", lambda e: self.restock_now()),
+                           command("tools_prices", lambda e: self.update_shard_prices_now()),
+                           command("tools_silencer", lambda e: self.open_silencer()),
+                           command("tools_keyboard", lambda e: self.open_tool("keyboard"))],
                           context=True)
-        character = menu(_("&Character"), [command(_("&Settings"), lambda e: self.edit_profile(), "Ctrl+P"),
-                                             command(_("&Bag and supplies"), lambda e: self.edit_bag(), "Ctrl+B"),
-                                             command(_("S&can now"), lambda e: self.scan_now()),
-                                             command(_("&Another character"), lambda e: self.edit_other_profile()),
-                                             command(_("E&xport character settings"), lambda e: self.export_character_settings()),
-                                             command(_("&Import character settings"), lambda e: self.import_character_settings())],
-                         ("character_settings", "character_bag", "character_scan", "character_other",
-                          "character_export", "character_import"), context=True)
-        menu(_("&File"), [command(_("&Settings"), lambda e: self.open_setup()),
-                          command(_("Open the &log folder"), lambda e: os.startfile(_logs())),
-                          command(_("Open the &results folder"), lambda e: self.open_results_folder()),
-                          command(_("E&xit"), lambda e: self.Close())])
-        menu(_("&View"), [command(_("&Bot"), lambda e: self.go_tab(0), "Ctrl+1"),
-                          command(_("&Plans"), lambda e: self.go_tab(1), "Ctrl+2"),
-                          command(_("&Log"), lambda e: self.go_tab(2), "Ctrl+3")])
-        run_menu = menu(_("&Run"), [command(_("&Start"), lambda e: self.start(), "F5"),
-                         command(_("S&top"), lambda e: self.stop(), "Shift+F5"),
-                         command(_("P&ause or go on"), lambda e: self.toggle_pause(), "F6"),
-                         command(_("Stop &every bot"), lambda e: self.stop_all(), "Ctrl+Shift+S"),
-                         command(_("Wa&lk to a dungeon or map"), lambda e: self.walk(), "Ctrl+W"),
-                         command(_("Sche&dules"), lambda e: self.open_schedules(), "Ctrl+Shift+H"),
-                         command(_("&Autopilot: the whole day"), lambda e: self.open_autopilot(), "Ctrl+Shift+A"),
-                         command(_("&Character chain"), lambda e: self.open_chain(), "Ctrl+Shift+C"),
-                         command(_("&Results"), lambda e: self.show_results(), "Ctrl+R"),
-                         command(_("Spea&k the results"), lambda e: self.speak_results(), "Ctrl+Shift+R")],
-                        ("run_start", "run_stop", "run_pause", "run_stop_all", "run_walk", "run_schedules", "run_autopilot",
-                         "run_chain", "run_results", "run_speak_results"), context=True)
-        game_menu = menu(_("&Game"), [command(_("&Mute this game"), lambda e: self.set_game_speech(False), "Ctrl+M"),
-                         command(_("&Unmute this game"), lambda e: self.set_game_speech(True), "Ctrl+U"),
-                         command(_("Mute e&very game"), lambda e: self.set_game_speech(False, every=True)),
-                         command(_("Unmute every &game"), lambda e: self.set_game_speech(True, every=True)),
-                         command(_("Open another game &window"), lambda e: self.open_client(), "Ctrl+O")],
-                         ("game_mute", "game_unmute", "game_mute_all", "game_unmute_all", "game_open"))
-        messages_menu = menu(_("&Messages"), [command(_("&Private messages"), lambda e: self.edit_messages(), "Ctrl+Shift+M"),
-                         command(_("C&hat"), lambda e: self.open_chat(), "Ctrl+T"),
-                         command(_("Let everyone get replies &again"), lambda e: self.forget_answered())],
-                         ("messages_private", "messages_chat", "messages_reset"))
+        character = menu(_("&Character"), [command("character_settings", lambda e: self.edit_profile()),
+                                             command("character_bag", lambda e: self.edit_bag()),
+                                             command("character_scan", lambda e: self.scan_now()),
+                                             command("character_other", lambda e: self.edit_other_profile()),
+                                             command("character_export", lambda e: self.export_character_settings()),
+                                             command("character_import", lambda e: self.import_character_settings())],
+                         context=True)
+        menu(_("&File"), [command("file_settings", lambda e: self.open_setup()),
+                          command("file_shortcuts", lambda e: self.open_shortcuts()),
+                          command("file_logs", lambda e: os.startfile(_logs())),
+                          command("file_results", lambda e: self.open_results_folder()),
+                          command("file_exit", lambda e: self.Close())])
+        menu(_("&View"), [command("view_bot", lambda e: self.go_tab(0)),
+                          command("view_plans", lambda e: self.go_tab(1)),
+                          command("view_log", lambda e: self.go_tab(2))])
+        run_menu = menu(_("&Run"), [command("run_start", lambda e: self.start()),
+                         command("run_stop", lambda e: self.stop()),
+                         command("run_pause", lambda e: self.toggle_pause()),
+                         command("run_stop_all", lambda e: self.stop_all()),
+                         command("run_walk", lambda e: self.walk()),
+                         command("run_schedules", lambda e: self.open_schedules()),
+                         command("run_autopilot", lambda e: self.open_autopilot()),
+                         command("run_chain", lambda e: self.open_chain()),
+                         command("run_results", lambda e: self.show_results()),
+                         command("run_speak_results", lambda e: self.speak_results())],
+                        context=True)
+        game_menu = menu(_("&Game"), [command("game_mute", lambda e: self.set_game_speech(False)),
+                         command("game_unmute", lambda e: self.set_game_speech(True)),
+                         command("game_mute_all", lambda e: self.set_game_speech(False, every=True)),
+                         command("game_unmute_all", lambda e: self.set_game_speech(True, every=True)),
+                         command("game_next", lambda e: self.next_game()),
+                         command("game_previous", lambda e: self.next_game(-1)),
+                         command("game_status", lambda e: self.speak_status()),
+                         command("game_show", lambda e: self.show_game()),
+                         command("game_open", lambda e: self.open_client())])
+        messages_menu = menu(_("&Messages"), [command("messages_private", lambda e: self.edit_messages()),
+                         command("messages_chat", lambda e: self.open_chat()),
+                         command("messages_reset", lambda e: self.forget_answered())])
         self.action_menus = {"run": run_menu, "game": game_menu, "messages": messages_menu,
                              "character": character, "tools": tools_menu}
         for current in self.action_menus.values():
             current.Bind(wx.EVT_MENU_OPEN, self.sync_action_menus)
-        menu(_("&Help"), [command(_("&Quick guide"), lambda e: show_text(self, _("Quick guide"), GUIDE), "F1"),
-                          command(_("&User guide (opens in your browser)"), lambda e: self.open_user_guide()),
-                          command(_("&Keyboard shortcuts"), lambda e: show_text(self, _("Keyboard shortcuts"), SHORTCUTS)),
-                          command(_("Ho&w the game works"), lambda e: show_text(self, _("How the game works"),
-                                                                          guide_text("GAME_GUIDE.md"))),
-                          command(_("Script &guide"), lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
-                          command(_("&Script commands"), lambda e: self.script_help()),
-                          command(_("&Commands for trusted players"),
-                           lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
-                          command(opens(_("Change&log")), lambda e: self.show_changelog()),
-                          command(_("Check for &updates"), lambda e: self.check_updates()),
-                          command(_("Contact the &developer"), lambda e: self.contact_developer()),
-                          command(_("Join the &Telegram group"), lambda e: self.join_telegram()),
-                          command(_("&About Uncle Farmer"), lambda e: info(self, about_text()))])
+        menu(_("&Help"), [command("help_quick", lambda e: show_text(self, _("Quick guide"), GUIDE)),
+                          command("help_user_guide", lambda e: self.open_user_guide()),
+                          command("help_shortcuts", lambda e: show_text(self, _("Keyboard shortcuts"),
+                                                                         shortcuts_text(self.shortcut_table))),
+                          command("help_game", lambda e: show_text(self, _("How the game works"),
+                                                                   guide_text("GAME_GUIDE.md"))),
+                          command("help_scripting", lambda e: show_text(self, _("Script guide"), guide_text("SCRIPTING.md"))),
+                          command("help_commands", lambda e: self.script_help()),
+                          command("help_trusted",
+                                  lambda e: show_text(self, _("Commands for trusted players"), messages.__doc__ or "")),
+                          command("help_changelog", lambda e: self.show_changelog()),
+                          command("help_updates", lambda e: self.check_updates()),
+                          command("help_contact", lambda e: self.contact_developer()),
+                          command("help_telegram", lambda e: self.join_telegram()),
+                          command("help_about", lambda e: info(self, about_text()))])
         self.SetMenuBar(bar)
-        plan_shortcuts: list[tuple[int, int, Handler]] = [
-            (wx.ACCEL_CTRL, ord("E"), lambda e: self.edit_selected()),
-            (wx.ACCEL_CTRL, ord("D"), lambda e: self.copy_plan()),
-            (wx.ACCEL_CTRL, ord("N"), lambda e: self.new_plan()),
-            (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("N"), lambda e: self.new_script()),
-        ]
-        for flags, key, handler in plan_shortcuts:
+        # the actions without a menu entry: the Plans tab's keys, and Pause and Shift+Pause
+        unlisted: list[tuple[str, Handler]] = [("plans_edit", lambda e: self.edit_selected()),
+                                               ("plans_duplicate", lambda e: self.copy_plan()),
+                                               ("plans_new", lambda e: self.new_plan()),
+                                               ("plans_new_script", lambda e: self.new_script()),
+                                               ("run_toggle", lambda e: self.toggle()),
+                                               ("run_speak_front", lambda e: self.speak_results(front=True))]
+        for action_id, handler in unlisted:
             command_id = wx.Window.NewControlId()
             self.Bind(wx.EVT_MENU, handler, id=command_id)
-            accelerators.append(wx.AcceleratorEntry(flags, key, command_id))
-        self.SetAcceleratorTable(wx.AcceleratorTable(accelerators))
+            self.action_handlers[action_id] = handler
+            self.action_ids[action_id] = command_id
+        keys.install_accelerators(self)
         self.Bind(wx.EVT_WINDOW_DESTROY, self.destroy_context_menu)
         self.sync_action_menus()
 
@@ -430,12 +420,12 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         can_run = self.selected_pid() is not None and self.selected_pid() not in self.runs
         popup_actions(self.plan_list, [
             (_("&Run selected"), lambda e: self.start(item=self.listed_item()), bool(item) and can_run),
-            (shortcut_label(_("&Edit"), "Ctrl+E"), lambda e: self.edit_selected(), bool(item)),
-            (shortcut_label(_("D&uplicate"), "Ctrl+D"), lambda e: self.copy_plan(), plan),
+            (shortcut_label(_("&Edit"), self.shortcut_table["plans_edit"].keys), lambda e: self.edit_selected(), bool(item)),
+            (shortcut_label(_("D&uplicate"), self.shortcut_table["plans_duplicate"].keys), lambda e: self.copy_plan(), plan),
             (_("E&xport"), lambda e: self.export_plan(), plan),
             (_("&Delete"), lambda e: self.delete_selected(), bool(item)),
-            (shortcut_label(_("&New plan"), "Ctrl+N"), lambda e: self.new_plan(), True),
-            (shortcut_label(_("New &script"), "Ctrl+Shift+N"), lambda e: self.new_script(), True),
+            (shortcut_label(_("&New plan"), self.shortcut_table["plans_new"].keys), lambda e: self.new_plan(), True),
+            (shortcut_label(_("New &script"), self.shortcut_table["plans_new_script"].keys), lambda e: self.new_script(), True),
             (_("&Import"), lambda e: self.import_plan(), True),
         ])
 
@@ -567,48 +557,27 @@ def _logs() -> str:
     return paths.LOGS
 
 
-SHORTCUTS = """KEYBOARD SHORTCUTS
+def shortcuts_text(table: shortcuts.Table) -> str:
+    """Help, Keyboard shortcuts: the keys as the player has them (File, Keyboard shortcuts changes
+    them), then the keys of each list and editor, which stay as they are."""
+    lines = [_("KEYBOARD SHORTCUTS"), "", _("Change them in File, Keyboard shortcuts, or in {file}.",
+                                             file=shortcuts.file_path()), ""]
+    for where, title in ((shortcuts.EVERYWHERE, _("Anywhere, even inside the game")),
+                         (shortcuts.IN_APP, _("In Uncle Farmer's main window"))):
+        lines.append(title)
+        rows = [(table[a.id].keys, shortcuts.label(a)) for a in shortcuts.ACTIONS
+                if table[a.id].keys and table[a.id].where == where]
+        lines += ["  %-20s%s" % row for row in rows] or ["  " + _("none")]
+        lines.append("")
+    lines.append(_("A key that works from anywhere acts on the game in front when it is one of yours (the Games "
+                   "list selects it), and from any other program on the game selected in the list."))
+    lines.append(_("Ctrl+Tab moves between the main window's tabs."))
+    return "\n".join(lines) + "\n\n" + SHORTCUTS
 
-Anywhere, even inside the game
-  Pause               Start or stop the bot (in a game window: that game's bot)
-  Shift+Pause         Speak the results of the game in front
 
-Main window
-  Ctrl+1, 2, 3        Bot, Plans and Log tabs (Ctrl+Tab also moves between tabs)
-  F5                  Start the selected game's bot
-  Shift+F5            Stop it
-  F6                  Pause it where it is, or let a paused bot go on (you can play by hand meanwhile)
-  Ctrl+Shift+S       Stop every bot
-  Ctrl+W              Walk to a dungeon entrance or a map (Pause stops the walk)
-  Ctrl+Shift+H        Schedules: plans and scripts started at set times
-  Ctrl+Shift+A        Autopilot: the Before farming list, a plan and the After farming list, started together
-  Ctrl+R              Results
-  Ctrl+Shift+R        Speak the results
-  Ctrl+M              Mute the selected game (Ctrl+U lets it talk again; Game menu: every game)
-  Ctrl+O              Open another game window
-  Delete              Confirm killing the selected game (Games list only)
-  Shift+Delete        Kill the selected game immediately (Games list only)
-  Ctrl+G              Gem Maker
-  Ctrl+Shift+B        Gem Breaker: gems and Enhance Crystals into shards
-  Ctrl+Shift+O        Potion Maker: make potions at the gang's Pharmacist and fuse them up
-  Ctrl+Shift+E        Equipment Enhancer
-  Ctrl+Shift+D        Daily chores
-  Ctrl+Shift+F        Gathering: fishing, mining or collecting herbs
-  Ctrl+Shift+G        Dungeons: the experience caves, one a day
-  Ctrl+Shift+X        XP loser: die to guards so the next level stays far away
-  Ctrl+Shift+K        Market searcher and buyer: find, compare and buy what players sell
-  Ctrl+Shift+L        Buy collection items: the market's cheapest fish, ore and herbs, up to 500 a day
-  Ctrl+P              Character settings
-  Ctrl+B              Bag and supplies
-  Ctrl+N              New plan
-  Ctrl+Shift+N        New script
-  Ctrl+E              Edit the selected plan
-  Ctrl+D              Duplicate the selected plan
-  Ctrl+Shift+M        Private messages
-  Ctrl+T              Chat: read and write the game's chat while the bot farms
-  F1                  Quick guide
-
-Games list
+SHORTCUTS = """Games list
+  Delete              Confirm killing the selected game
+  Shift+Delete        Kill the selected game immediately
   Applications key    The game's menu: Tools, Character and Run submenus
   Shift+F10           The same context menu; arrows open submenus, Escape closes them
 

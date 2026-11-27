@@ -32,6 +32,19 @@ msgstr ""
 msgid " - {n} used up with no stored price, not counted"
 msgstr ""
 
+msgid "\"{keys}\": a shortcut needs a key besides Ctrl, Alt and Shift."
+msgstr ""
+
+msgid ""
+"\"{keys}\": the bot doesn't know the key {part}. Use a letter, a digit, F1 to F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown or an arrow."
+msgstr ""
+
+msgid "\"{keys}\": write the keys joined by +, for example Ctrl+Shift+R."
+msgstr ""
+
+msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
+msgstr ""
+
 msgid "&About Uncle Farmer"
 msgstr ""
 
@@ -54,6 +67,9 @@ msgid "&Add new filter"
 msgstr ""
 
 msgid "&Add where I stand"
+msgstr ""
+
+msgid "&All the defaults"
 msgstr ""
 
 msgid "&Another character"
@@ -362,6 +378,9 @@ msgstr ""
 msgid "&Keyboard shortcuts"
 msgstr ""
 
+msgid "&Keys (for example Ctrl+Shift+R or F7; empty: none):"
+msgstr ""
+
 msgid "&Keys the bot presses:"
 msgstr ""
 
@@ -467,6 +486,9 @@ msgstr ""
 msgid "&Open the chests that turn up while farming"
 msgstr ""
 
+msgid "&Open the file"
+msgstr ""
+
 msgid ""
 "&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
@@ -541,6 +563,9 @@ msgid "&Read keys from the game"
 msgstr ""
 
 msgid "&Read new messages:"
+msgstr ""
+
+msgid "&Read the file again"
 msgstr ""
 
 msgid "&Refresh the market list"
@@ -638,6 +663,9 @@ msgstr ""
 
 msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
+msgstr ""
+
+msgid "&Shortcuts:"
 msgstr ""
 
 msgid "&Show the time after each message"
@@ -743,6 +771,9 @@ msgid "&Where to die:"
 msgstr ""
 
 msgid "&Who may join:"
+msgstr ""
+
+msgid "&Works:"
 msgstr ""
 
 msgid "&Write an email"
@@ -890,6 +921,14 @@ msgstr ""
 
 msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
+msgstr ""
+
+msgid ""
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+msgstr ""
+
+msgid ""
+"A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
 msgstr ""
 
 msgid ""
@@ -1109,10 +1148,14 @@ msgstr ""
 msgid "Another gang's, by its name"
 msgstr ""
 
-msgid "Another program is using the Pause key; the Pause shortcut won't work."
+msgid ""
+"Another program is using {keys}, so {action} won't work from everywhere."
 msgstr ""
 
 msgid "Answering"
+msgstr ""
+
+msgid "Anywhere, even inside the game"
 msgstr ""
 
 msgid "Applied keyboard profile {name}."
@@ -1256,6 +1299,9 @@ msgstr ""
 msgid "Breaks {n} {item}."
 msgstr ""
 
+msgid "Bring the selected game to the &front"
+msgstr ""
+
 msgid "Broadcast (with a sound)"
 msgstr ""
 
@@ -1363,6 +1409,9 @@ msgid "Change key"
 msgstr ""
 
 msgid "Change target mode"
+msgstr ""
+
+msgid "Change them in File, Keyboard shortcuts, or in {file}."
 msgstr ""
 
 msgid "Change&log"
@@ -1558,6 +1607,9 @@ msgstr ""
 msgid "Close the game"
 msgstr ""
 
+msgid "Close the open Uncle Farmer window first."
+msgstr ""
+
 msgid "Close without saving"
 msgstr ""
 
@@ -1679,6 +1731,9 @@ msgstr ""
 msgid "Couldn't assign {binding} to {key}."
 msgstr ""
 
+msgid "Couldn't bring {name} to the front."
+msgstr ""
+
 msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr ""
 
@@ -1725,6 +1780,9 @@ msgstr ""
 msgid "Couldn't open it: {err}"
 msgstr ""
 
+msgid "Couldn't open {path}: {err}"
+msgstr ""
+
 msgid "Couldn't prepare {skill}."
 msgstr ""
 
@@ -1738,6 +1796,9 @@ msgid "Couldn't read the game: {err}"
 msgstr ""
 
 msgid "Couldn't save the schedules: {err}"
+msgstr ""
+
+msgid "Couldn't save {path}: {err}"
 msgstr ""
 
 msgid "Couldn't save: {err}"
@@ -1789,6 +1850,9 @@ msgstr ""
 msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr ""
 
+msgid "Ctrl+Tab moves between the main window's tabs."
+msgstr ""
+
 msgid "Cut Flesh"
 msgstr ""
 
@@ -1817,6 +1881,9 @@ msgid "Death"
 msgstr ""
 
 msgid "Deaths before stopping:"
+msgstr ""
+
+msgid "Default for &this one"
 msgstr ""
 
 msgid "Delay after success (&seconds):"
@@ -2420,6 +2487,9 @@ msgid ""
 "HP stayed under {pct}% for {secs} seconds - stopping so you can take over"
 msgstr ""
 
+msgid "HP {hp}"
+msgstr ""
+
 msgid "HP {hp}/{max} ({pct}%) - {item}"
 msgstr ""
 
@@ -2644,6 +2714,9 @@ msgstr ""
 msgid "Important events only"
 msgstr ""
 
+msgid "In Uncle Farmer's main window"
+msgstr ""
+
 msgid "In all"
 msgstr ""
 
@@ -2731,6 +2804,9 @@ msgstr ""
 msgid "Join the &Telegram group"
 msgstr ""
 
+msgid "KEYBOARD SHORTCUTS"
+msgstr ""
+
 msgid "Keep &old files:"
 msgstr ""
 
@@ -2771,6 +2847,9 @@ msgid "Keyboard profile information"
 msgstr ""
 
 msgid "Keyboard profile {name} was not found."
+msgstr ""
+
+msgid "Keyboard s&hortcuts"
 msgstr ""
 
 msgid "Keyboard shortcuts"
@@ -3322,6 +3401,9 @@ msgstr ""
 msgid "No gem kinds known yet."
 msgstr ""
 
+msgid "No key: use the menu."
+msgstr ""
+
 msgid "No known buyer, so it will be stored instead"
 msgstr ""
 
@@ -3423,6 +3505,9 @@ msgstr ""
 
 msgid ""
 "Not scanned yet. Log in to this character in the game and press Scan now. The bot also scans when a run starts."
+msgstr ""
+
+msgid "Note:"
 msgstr ""
 
 msgid "Nothing changed in the bag."
@@ -4204,6 +4289,12 @@ msgstr ""
 msgid "Select a plan first."
 msgstr ""
 
+msgid "Select the &next game"
+msgstr ""
+
+msgid "Select the &previous game"
+msgstr ""
+
 msgid "Select the same character before applying the keyboard profile."
 msgstr ""
 
@@ -4402,6 +4493,10 @@ msgstr ""
 msgid "Sold:"
 msgstr ""
 
+msgid ""
+"Some keyboard shortcuts couldn't be used: see the Log tab, or File, Keyboard shortcuts."
+msgstr ""
+
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr ""
 
@@ -4471,6 +4566,12 @@ msgstr ""
 msgid "Speak the &results when a run ends"
 msgstr ""
 
+msgid "Speak the results of the game in front"
+msgstr ""
+
+msgid "Speak the selected game's st&atus"
+msgstr ""
+
 msgid "Speech"
 msgstr ""
 
@@ -4506,6 +4607,9 @@ msgid "Stand still"
 msgstr ""
 
 msgid "Start a new file after (MB, 0 = never):"
+msgstr ""
+
+msgid "Start or stop the bot (in a game window: that game's bot)"
 msgstr ""
 
 msgid "Start the c&hain"
@@ -5489,6 +5593,10 @@ msgid ""
 "Uncle Farmer's agent needs to be reinstalled: {why}. Stop every running bot, then use File, Settings, Install."
 msgstr ""
 
+msgid ""
+"Uncle Farmer's keyboard shortcuts. One line an action: action = keys = where."
+msgstr ""
+
 msgid "Unit price"
 msgstr ""
 
@@ -5785,6 +5893,16 @@ msgid "With your {top} max HP that is below {pct}%."
 msgstr ""
 
 msgid "Within this many tiles of the player:"
+msgstr ""
+
+msgid "Works"
+msgstr ""
+
+msgid ""
+"Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any other program. A key no program uses is best, such as Pause or a key from F7 to F12 with Ctrl or Shift."
+msgstr ""
+
+msgid "Works while an Uncle Farmer window is in front."
 msgstr ""
 
 msgid "Worst hit received: {hit}"
@@ -6724,6 +6842,9 @@ msgstr ""
 msgid "everything"
 msgstr ""
 
+msgid "everywhere, even in the game"
+msgstr ""
+
 msgid "experience card paused ({card}): {why}"
 msgstr ""
 
@@ -7107,6 +7228,9 @@ msgid "key {key}"
 msgstr ""
 
 msgid "key {key} didn't work: {why}"
+msgstr ""
+
+msgid "keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."
 msgstr ""
 
 msgid "landed in the gang's inner hall, which is walled off from the craftsmen"
@@ -7901,6 +8025,9 @@ msgstr ""
 msgid "one cave only: a character goes into one cave a day"
 msgstr ""
 
+msgid "only in Uncle Farmer"
+msgstr ""
+
 msgid "only {names}"
 msgstr ""
 
@@ -8258,6 +8385,22 @@ msgid "short loop"
 msgstr ""
 
 msgid "short of supplies for the dungeon: {what}"
+msgstr ""
+
+msgid "shortcuts.txt couldn't be read ({err}): the default shortcuts are used."
+msgstr ""
+
+msgid "shortcuts.txt line {n}: there is no action called {name}."
+msgstr ""
+
+msgid ""
+"shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+
+msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgstr ""
+
+msgid "shortcuts.txt line {n}: {why}"
 msgstr ""
 
 msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
@@ -9584,6 +9727,10 @@ msgid ""
 "where the run started wasn't read - ending on the nearest map without monsters"
 msgstr ""
 
+msgid ""
+"where: global works everywhere, even inside the game (the key no longer reaches the game or any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."
+msgstr ""
+
 msgid "where: the map I'm on and my x, y on it."
 msgstr ""
 
@@ -9682,7 +9829,16 @@ msgstr ""
 msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr ""
 
+msgid "{action} can't be used now."
+msgstr ""
+
+msgid "{action} has no key now: {keys} is {other}'s."
+msgstr ""
+
 msgid "{action}: '{value}' isn't a key the bot can press."
+msgstr ""
+
+msgid "{action}: {why}"
 msgstr ""
 
 msgid "{at}: {outcome} (due {due})"
@@ -9885,6 +10041,24 @@ msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr ""
 
 msgid "{job} didn't finish: {why}"
+msgstr ""
+
+msgid "{keys} is also {action}: one of them has to change."
+msgstr ""
+
+msgid "{keys} is given to both {one} and {other}: {other} keeps its own key."
+msgstr ""
+
+msgid ""
+"{keys} is kept for every window (copy, paste, menus, tabs): choose another."
+msgstr ""
+
+msgid ""
+"{keys}: Ctrl+Alt with a letter is AltGr on many keyboards, which types characters. Use Ctrl or Ctrl+Shift."
+msgstr ""
+
+msgid ""
+"{keys}: a letter, a digit, Space, an arrow or Insert, Delete, Home, End, PageUp or PageDown needs Ctrl, or it would be typed into the bot's own boxes."
 msgstr ""
 
 msgid "{key} (page {page})"

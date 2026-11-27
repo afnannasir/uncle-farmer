@@ -30,6 +30,25 @@
   the boss's name, the map and where it stands. The tab shows what the chat gets as you type. Left
   empty, the bot sends its own line in English, as before.
 
+**Keyboard shortcuts you can change** (untested in game)
+
+- **File, Keyboard shortcuts**: every command of the menus (Run, Game, Tools, Character, Messages,
+  Plans, File, View, Help), Pause and Shift+Pause, each with its keys (or none) and where they work:
+  only in Uncle Farmer, or everywhere, even inside the game. The keys are typed as text, so NVDA's
+  keys never get in the way; the window says why keys can't be used, which action has them already,
+  and what a key that works everywhere takes away. The new keys work at once.
+- The same table is `shortcuts.txt`, beside `settings.json`, one line an action
+  (`game_mute = Ctrl+M = inapp`), for players who prefer a file. A line that can't be used is said in
+  the Log tab and that action keeps its default. No file: the keys stay exactly as they were.
+- A key that works everywhere acts on the game in front when it is one of yours (the Games list
+  selects it), else on the selected game; one that opens a window brings Uncle Farmer forward first.
+- New in the Game menu, for such keys: **Select the next game**, **Select the previous game** (said
+  with the character, map and bot), **Speak the selected game's status** (adds what its bot does and
+  its HP) and **Bring the selected game to the front**. They have no key until you give them one.
+- Help, Keyboard shortcuts lists the keys as they are now.
+- A few shortcut letters of the Game and File menus that two entries shared in Urdu, Portuguese,
+  French, Spanish and Turkish were set apart.
+
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
 - The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever
