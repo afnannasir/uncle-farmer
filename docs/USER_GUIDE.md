@@ -1030,7 +1030,11 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 Right-click a logged-in character and choose **Tools → Keyboard Manager**. Select **Capture current keys** to load the game's two combat skill pages, profession skills, number-row item slots, and quick phrases. Enter a name and choose **Save profile**. Use **New profile** to start with an empty draft, or enter a different name to save a copy.
 
-Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. An item needs to be in the bag when the profile assigns it to a new slot.
+Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. The **Number keys** tab holds items, fusion beasts and pets, as the game's number keys do.
+
+**Shared with** decides who has the profile: **This character only**, **Every Elf character** (every character of its class; Elf here) or **Every character**. A shared profile shows in the Keyboard Manager of each of those characters, so a new character gets its keys back in one go. When two have the same name, the character's own comes first, then its class's, then everyone's.
+
+Applying puts on what the character has and names the rest at the end: a skill it hasn't learned, an item missing from the bag, a fusion beast or pet it doesn't own, a key the game didn't take. Skills are found by the game's own number (the same for every character of a class, whatever the skill's level), else by name. Fusion beasts and pets are each character's own, so on another character they are found by name; a pet by its exact name, the name you gave it included.
 
 Choose **Apply profile** while out of combat and with game menus closed. For automation, add **Apply keyboard profile** under **Character settings → Triggers → Before farming** or **After farming**. The Before farming list can be skipped if you start on the farming map. Use that tab's checkbox to control when it runs. Schedules can run either trigger sequence or a saved script with a `keyboard_profile` command. Place that command at the point where your script needs a different layout.
 

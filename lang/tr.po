@@ -1178,6 +1178,10 @@ msgstr "Yanıtlanıyor"
 msgid "Anywhere, even inside the game"
 msgstr "Her yerde, oyunun içinde bile"
 
+msgid ""
+"Applied keyboard profile {name}, except what couldn't be put on: {missed}."
+msgstr ""
+
 msgid "Applied keyboard profile {name}."
 msgstr "{name} klavye profili uygulandı."
 
@@ -1758,9 +1762,6 @@ msgstr "Ses dinleme bırakılamadı; bağlantı kapanınca bırakılır."
 msgid "Couldn't apply the settings: {err}"
 msgstr "Ayarlar uygulanamadı: {err}"
 
-msgid "Couldn't assign {binding} to {key}."
-msgstr "{binding}, {key} tuşuna atanamadı."
-
 msgid "Couldn't bring {name} to the front."
 msgstr "{name} öne getirilemedi."
 
@@ -1825,6 +1826,9 @@ msgstr "Klavye ayarları oyundan okunamadı."
 msgid "Couldn't read the game: {err}"
 msgstr "Oyun okunamadı: {err}"
 
+msgid "Couldn't read the shared keyboard profiles ({file})."
+msgstr ""
+
 msgid "Couldn't save the schedules: {err}"
 msgstr "Programlar kaydedilemedi: {err}"
 
@@ -1833,9 +1837,6 @@ msgstr "{path} kaydedilemedi: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Kaydedilemedi: {err}"
-
-msgid "Couldn't set the quick phrase on {key}."
-msgstr "{key} tuşuna hızlı ifade konamadı."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Bilgisayar kapatılamadı: {err}"
@@ -2152,6 +2153,12 @@ msgstr "Yalnızca hatalar"
 msgid "Every (minutes):"
 msgstr "Her (dakika):"
 
+msgid "Every character"
+msgstr ""
+
+msgid "Every character of its class"
+msgstr ""
+
 msgid "Every character of the chain can farm again today."
 msgstr ""
 
@@ -2174,6 +2181,9 @@ msgstr ""
 "Her parça mücevhere, sonra her renk gidebildiği kadar yükseltilir (başarısızlık bir parçayı geri verir, o da yeniden kullanılır). Beklenen:"
 
 msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr ""
+
+msgid "Every {cls} character"
 msgstr ""
 
 msgid "Everyone can get replies again."
@@ -2351,6 +2361,9 @@ msgstr "Tam döngü (her şerit, daha uzun bir tur)"
 
 msgid "Full patrol loop"
 msgstr "Tam devriye döngüsü"
+
+msgid "Fusion beast {id}"
+msgstr ""
 
 msgid "Game"
 msgstr "Oyun"
@@ -2840,9 +2853,6 @@ msgstr "Eşya türü {id}"
 msgid "Item:"
 msgstr "Eşya:"
 
-msgid "Items"
-msgstr "Eşyalar"
-
 msgid "Items a &day, at most (the game allows {n}):"
 msgstr "Günde en çok &eşya (oyun {n} izin verir):"
 
@@ -2904,6 +2914,9 @@ msgid "Keyboard Manager"
 msgstr "Klavye yöneticisi"
 
 msgid "Keyboard profile information"
+msgstr ""
+
+msgid "Keyboard profile {name} stopped; it couldn't put on: {missed}."
 msgstr ""
 
 msgid "Keyboard profile {name} was not found."
@@ -3634,6 +3647,9 @@ msgstr "Alınacak bir yer yok: çantanın yettiği kadar yapar."
 msgid "Nowhere, use what's in the bag"
 msgstr "Hiçbir yerden, çantadakini kullan"
 
+msgid "Number keys"
+msgstr ""
+
 msgid "Number of &shards to stock:"
 msgstr ""
 
@@ -3862,6 +3878,9 @@ msgstr "Evcil hayvanın yeniden doğuşu"
 msgid "Pet rebirth (free ones only, never for diamonds)"
 msgstr ""
 "Evcil hayvan yeniden doğuşu (yalnızca ücretsiz olanlar, asla elmasla değil)"
+
+msgid "Pet {id}"
+msgstr ""
 
 msgid "Pet:"
 msgstr "Evcil hayvan:"
@@ -4258,6 +4277,9 @@ msgstr "Çalışmalar: {n}"
 msgid "S&can now"
 msgstr "Şimdi tara (&C)"
 
+msgid "S&hared with:"
+msgstr ""
+
 msgid "S&hoot while walking (a character that fights from afar)"
 msgstr "Yürürken ateş et (uzaktan dövüşen karakter) (&H)"
 
@@ -4316,9 +4338,8 @@ msgid "Saved account email:"
 msgstr "Kayıtlı hesap e-postası:"
 
 msgid ""
-"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings. A profile shared with the class or with every character is in each of their Keyboard Managers; applying it puts on what the character has and names what it couldn't."
 msgstr ""
-"Kaydedilen atamalar oyundaki yuvalarının yerine geçer. Değiştirme olarak işaretli yuvalar şu anki atamalarını korur."
 
 msgid "Saved keyboard &profiles:"
 msgstr "Kayıtlı klavye &profilleri:"
@@ -5085,6 +5106,10 @@ msgstr "Bot karar verir"
 msgid "The bot didn't stop in time, so it isn't following you."
 msgstr "Bot zamanında durmadı, bu yüzden seni takip etmiyor."
 
+msgid ""
+"The bot doesn't know this character's class yet. Capture its keys first."
+msgstr ""
+
 msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "Bot, bu kadar {what} eksildiği anda onu içer."
 
@@ -5146,9 +5171,6 @@ msgstr ""
 
 msgid "The character chain stopped: logging out didn't work ({why})"
 msgstr ""
-
-msgid "The character hasn't learned {skill}."
-msgstr "Karakter {skill} becerisini öğrenmemiş."
 
 msgid "The character is on {here}, not on {map}: go to this spot's map first."
 msgstr ""
@@ -5467,6 +5489,9 @@ msgstr ""
 
 msgid "This character has no gathering skill to add a place for."
 msgstr "Bu karakterin yer eklenecek bir toplama becerisi yok."
+
+msgid "This character only"
+msgstr ""
 
 msgid "This copy"
 msgstr "Bu kopya"
@@ -9607,6 +9632,9 @@ msgstr ""
 msgid "the potions asked for are already there"
 msgstr ""
 
+msgid "the quick phrase"
+msgstr ""
+
 msgid "the ride from {map} never arrived"
 msgstr "{map} haritasından binilen araç hiç varmadı"
 
@@ -10344,9 +10372,6 @@ msgstr "{item} kırılmak üzere"
 msgid "{item} is broken"
 msgstr "{item} bozuk"
 
-msgid "{item} is missing from the bag."
-msgstr "{item} çantada yok."
-
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} artık {key} tuşunda değil - oyun oraya başka bir şey koydu"
 
@@ -10497,11 +10522,23 @@ msgstr "{mode}: {pattern} ({state})"
 msgid "{m} min"
 msgstr "{m} dk"
 
+msgid "{name} (fusion beast)"
+msgstr ""
+
 msgid "{name} (level {level})"
 msgstr "{name} (seviye {level})"
 
+msgid "{name} (pet)"
+msgstr ""
+
 msgid "{name} (script)"
 msgstr "{name} (betik)"
+
+msgid "{name} (shared with every character)"
+msgstr ""
+
+msgid "{name} (shared with every {cls})"
+msgstr ""
 
 msgid "{name} (speed +{speed}, level {level})"
 msgstr "{name} (hız +{speed}, seviye {level})"
@@ -11146,11 +11183,25 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgstr ""
 #~ "Başka bir program {keys} tuşunu kullanıyor, bu yüzden {action} her yerde çalışmayacak."
 
+#~ msgid "Couldn't assign {binding} to {key}."
+#~ msgstr "{binding}, {key} tuşuna atanamadı."
+
+#~ msgid "Couldn't set the quick phrase on {key}."
+#~ msgstr "{key} tuşuna hızlı ifade konamadı."
+
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"
 
+#~ msgid "Items"
+#~ msgstr "Eşyalar"
+
 #~ msgid "Keep away from bosses"
 #~ msgstr "Patronlardan uzak dur"
+
+#~ msgid ""
+#~ "Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+#~ msgstr ""
+#~ "Kaydedilen atamalar oyundaki yuvalarının yerine geçer. Değiştirme olarak işaretli yuvalar şu anki atamalarını korur."
 
 #~ msgid "Tell the Gang chat of each boss seen (in English)"
 #~ msgstr "Görülen her patronu Gang sohbetine bildir (İngilizce)"
@@ -11165,6 +11216,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
 #~ msgstr "Görülen her patronu Team sohbetine bildir (İngilizce: ad, harita, yer)"
+
+#~ msgid "The character hasn't learned {skill}."
+#~ msgstr "Karakter {skill} becerisini öğrenmemiş."
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"
@@ -11194,3 +11248,6 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol için random, full, quick ya da short yaz"
+
+#~ msgid "{item} is missing from the bag."
+#~ msgstr "{item} çantada yok."

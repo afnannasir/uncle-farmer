@@ -1191,6 +1191,11 @@ msgstr "Respondendo"
 msgid "Anywhere, even inside the game"
 msgstr "Em qualquer lugar, até dentro do jogo"
 
+msgid ""
+"Applied keyboard profile {name}, except what couldn't be put on: {missed}."
+msgstr ""
+"Perfil de teclado {name} aplicado, exceto o que não pôde ser colocado: {missed}."
+
 msgid "Applied keyboard profile {name}."
 msgstr "Perfil de teclado {name} aplicado."
 
@@ -1780,9 +1785,6 @@ msgstr ""
 msgid "Couldn't apply the settings: {err}"
 msgstr "Não foi possível aplicar as configurações: {err}"
 
-msgid "Couldn't assign {binding} to {key}."
-msgstr "Não foi possível atribuir {binding} a {key}."
-
 msgid "Couldn't bring {name} to the front."
 msgstr "Não foi possível trazer {name} para a frente."
 
@@ -1848,6 +1850,9 @@ msgstr "Não foi possível ler as configurações de teclado do jogo."
 msgid "Couldn't read the game: {err}"
 msgstr "Não foi possível ler os dados do jogo: {err}"
 
+msgid "Couldn't read the shared keyboard profiles ({file})."
+msgstr "Não foi possível ler os perfis de teclado compartilhados ({file})."
+
 msgid "Couldn't save the schedules: {err}"
 msgstr "Não foi possível salvar os agendamentos: {err}"
 
@@ -1856,9 +1861,6 @@ msgstr "Não foi possível salvar {path}: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Não foi possível salvar: {err}"
-
-msgid "Couldn't set the quick phrase on {key}."
-msgstr "Não foi possível definir a frase rápida em {key}."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Não foi possível desligar o computador: {err}"
@@ -2178,6 +2180,12 @@ msgstr "Somente erros"
 msgid "Every (minutes):"
 msgstr "A cada (minutos):"
 
+msgid "Every character"
+msgstr "Todos os personagens"
+
+msgid "Every character of its class"
+msgstr "Todos os personagens da classe dele"
+
 msgid "Every character of the chain can farm again today."
 msgstr "Todos os personagens da corrente podem farmar de novo hoje."
 
@@ -2202,6 +2210,9 @@ msgstr ""
 
 msgid "Every this many minutes of farmin&g, and when the bag is full:"
 msgstr "A cada tantos minutos de farmin&g, e quando a bolsa enche:"
+
+msgid "Every {cls} character"
+msgstr "Todos os personagens {cls}"
 
 msgid "Everyone can get replies again."
 msgstr "Todos podem receber respostas novamente."
@@ -2378,6 +2389,9 @@ msgstr "Circuito completo (todas as trilhas, percurso mais longo)"
 
 msgid "Full patrol loop"
 msgstr "Ronda completa"
+
+msgid "Fusion beast {id}"
+msgstr "Besta de fusão {id}"
 
 msgid "Game"
 msgstr "Jogo"
@@ -2873,9 +2887,6 @@ msgstr "Tipo de item {id}"
 msgid "Item:"
 msgstr "Item:"
 
-msgid "Items"
-msgstr "Itens"
-
 msgid "Items a &day, at most (the game allows {n}):"
 msgstr "Itens por &dia, no máximo (o jogo permite {n}):"
 
@@ -2938,6 +2949,9 @@ msgstr "Gerenciador de teclado"
 
 msgid "Keyboard profile information"
 msgstr ""
+
+msgid "Keyboard profile {name} stopped; it couldn't put on: {missed}."
+msgstr "Perfil de teclado {name} interrompido; não pôde colocar: {missed}."
 
 msgid "Keyboard profile {name} was not found."
 msgstr "O perfil de teclado {name} não foi encontrado."
@@ -3676,6 +3690,9 @@ msgstr "Não há de onde obtê-los: serão criados os que a mochila permitir."
 msgid "Nowhere, use what's in the bag"
 msgstr "Em nenhum lugar; usar o que estiver na mochila"
 
+msgid "Number keys"
+msgstr "Teclas numéricas"
+
 msgid "Number of &shards to stock:"
 msgstr ""
 
@@ -3907,6 +3924,9 @@ msgstr "Renascimento do mascote"
 
 msgid "Pet rebirth (free ones only, never for diamonds)"
 msgstr "Renascimento do mascote (somente gratuitos, nunca por diamantes)"
+
+msgid "Pet {id}"
+msgstr "Mascote {id}"
 
 msgid "Pet:"
 msgstr "Mascote:"
@@ -4311,6 +4331,9 @@ msgstr "Execuções: {n}"
 msgid "S&can now"
 msgstr "A&nalisar agora"
 
+msgid "S&hared with:"
+msgstr "Compartil&hado com:"
+
 msgid "S&hoot while walking (a character that fights from afar)"
 msgstr "A&tirar enquanto caminha (personagem que luta à distância)"
 
@@ -4369,9 +4392,9 @@ msgid "Saved account email:"
 msgstr "E-mail da conta salvo:"
 
 msgid ""
-"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings. A profile shared with the class or with every character is in each of their Keyboard Managers; applying it puts on what the character has and names what it couldn't."
 msgstr ""
-"As atribuições salvas substituem seus espaços no jogo. Espaços marcados Manter sem alteração mantêm as atribuições atuais."
+"As atribuições salvas substituem as do jogo. Os espaços marcados Manter sem alteração mantêm a atribuição atual. Um perfil compartilhado com a classe ou com todos os personagens aparece no Keyboard Manager de cada um; aplicá-lo coloca o que o personagem tem e diz o que não pôde ser colocado."
 
 msgid "Saved keyboard &profiles:"
 msgstr "&Perfis de teclado salvos:"
@@ -5154,6 +5177,11 @@ msgstr "O bot decide"
 msgid "The bot didn't stop in time, so it isn't following you."
 msgstr "O bot não parou a tempo, então não está seguindo você."
 
+msgid ""
+"The bot doesn't know this character's class yet. Capture its keys first."
+msgstr ""
+"O bot ainda não sabe a classe deste personagem. Capture as teclas dele primeiro."
+
 msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "O bot bebe assim que faltar essa quantidade de {what}."
 
@@ -5220,9 +5248,6 @@ msgstr "A corrente de personagens parou: a desconexão não respondeu"
 
 msgid "The character chain stopped: logging out didn't work ({why})"
 msgstr "A corrente de personagens parou: a desconexão não funcionou ({why})"
-
-msgid "The character hasn't learned {skill}."
-msgstr "O personagem não aprendeu {skill}."
 
 msgid "The character is on {here}, not on {map}: go to this spot's map first."
 msgstr ""
@@ -5557,6 +5582,9 @@ msgstr "Eles podem me &desconectar por um tempo e me conectar de novo (wait)"
 msgid "This character has no gathering skill to add a place for."
 msgstr ""
 "Este personagem não tem uma habilidade de coleta para adicionar um local."
+
+msgid "This character only"
+msgstr "Só este personagem"
 
 msgid "This copy"
 msgstr "Esta cópia"
@@ -9768,6 +9796,9 @@ msgstr ""
 msgid "the potions asked for are already there"
 msgstr ""
 
+msgid "the quick phrase"
+msgstr "a frase rápida"
+
 msgid "the ride from {map} never arrived"
 msgstr "o transporte de {map} não chegou"
 
@@ -10517,9 +10548,6 @@ msgstr "{item} está prestes a quebrar"
 msgid "{item} is broken"
 msgstr "{item} está quebrado"
 
-msgid "{item} is missing from the bag."
-msgstr "{item} não está na mochila."
-
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} não está mais na tecla {key} — o jogo atribuiu outra coisa a ela"
 
@@ -10671,11 +10699,23 @@ msgstr "{mode}: {pattern} ({state})"
 msgid "{m} min"
 msgstr "{m} min"
 
+msgid "{name} (fusion beast)"
+msgstr "{name} (besta de fusão)"
+
 msgid "{name} (level {level})"
 msgstr "{name} (nível {level})"
 
+msgid "{name} (pet)"
+msgstr "{name} (mascote)"
+
 msgid "{name} (script)"
 msgstr "{name} (script)"
+
+msgid "{name} (shared with every character)"
+msgstr "{name} (compartilhado com todos os personagens)"
+
+msgid "{name} (shared with every {cls})"
+msgstr "{name} (compartilhado com todos os {cls})"
 
 msgid "{name} (speed +{speed}, level {level})"
 msgstr "{name} (velocidade +{speed}, nível {level})"
@@ -11333,11 +11373,25 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgstr ""
 #~ "Outro programa está usando {keys}, então {action} não vai funcionar em qualquer lugar."
 
+#~ msgid "Couldn't assign {binding} to {key}."
+#~ msgstr "Não foi possível atribuir {binding} a {key}."
+
+#~ msgid "Couldn't set the quick phrase on {key}."
+#~ msgstr "Não foi possível definir a frase rápida em {key}."
+
 #~ msgid "Healing teammates while following"
 #~ msgstr "Curando companheiros de equipe enquanto segue alguém"
 
+#~ msgid "Items"
+#~ msgstr "Itens"
+
 #~ msgid "Keep away from bosses"
 #~ msgstr "Manter distância dos chefes"
+
+#~ msgid ""
+#~ "Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+#~ msgstr ""
+#~ "As atribuições salvas substituem seus espaços no jogo. Espaços marcados Manter sem alteração mantêm as atribuições atuais."
 
 #~ msgid "Tell the Gang chat of each boss seen (in English)"
 #~ msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
@@ -11352,6 +11406,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
 #~ msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
+
+#~ msgid "The character hasn't learned {skill}."
+#~ msgstr "O personagem não aprendeu {skill}."
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"
@@ -11392,6 +11449,9 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 #~ msgstr ""
 #~ "escreva assim: construction_scan, construction_scan publish=broadcast ou construction_scan auto=broadcast (announcement, broadcast ou system)"
+
+#~ msgid "{item} is missing from the bag."
+#~ msgstr "{item} não está na mochila."
 
 #~ msgid ""
 #~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."

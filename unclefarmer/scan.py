@@ -49,9 +49,8 @@ def scan(link: JsonLink, game_folder: str="") -> dict[str, Any]:
     sk: dict[str, Any] = _json(link, "mem skills") or {}
     learned_rows: list[Row] = sk.get("combat", [])
     names: dict[int, str] = {r["id"]: r["name"] for r in learned_rows}
-    know = combat.knowledge()
     learned = set(names.values())
-    cls = max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None) if learned else None
+    cls = combat.class_of_skills(learned)
     out["class"] = cls
     out["skills"] = sorted(learned)
     on_keys: list[dict[str, Any]] = []
