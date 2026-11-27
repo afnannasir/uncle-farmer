@@ -22,6 +22,7 @@ from .mainparts.carryon import CarryOnMixin
 from .mainparts.chain import ChainMixin
 from .mainparts.editing import EditingMixin, active_profile
 from .mainparts.games import GamesMixin
+from .mainparts.gamespeech import GameSpeechMixin
 from .mainparts.keys import KeysMixin
 from .mainparts.logpane import LogMixin
 from .mainparts.results import ResultsMixin
@@ -77,7 +78,7 @@ def action_menu_states(*, available: bool, running: bool, any_running: bool, has
 
 
 class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, EditingMixin,
-                UpdatesMixin, SchedulingMixin, CarryOnMixin, ChainMixin, KeysMixin, wx.Frame):
+                UpdatesMixin, SchedulingMixin, CarryOnMixin, ChainMixin, KeysMixin, GameSpeechMixin, wx.Frame):
     """The window, its three tabs and its menus; what each part does is in gui/mainparts."""
     clock: Clock = CLOCK
 
@@ -133,6 +134,7 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         self.Bind(wx.EVT_TIMER, lambda e: self.poll(), self.timer)
         self.timer.Start(3000)
         applog.bootup.note("game list timer started (every 3 s)")
+        self.start_following_front()
         self.register_hotkeys()
 
         self.fill_runs()
@@ -490,7 +492,8 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
         down = applog.teardown
         with down.step("stop the game list timer", must=False):
             self.timer.Stop()
-        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on"), ("chain_timer", "character chain")):
+        for name, what in (("schedule_timer", "schedules"), ("carry_timer", "carry-on"), ("chain_timer", "character chain"),
+                           ("focus_timer", "game speech")):
             timer: wx.Timer | None = getattr(self, name, None)   # none if the window never got that far
             if timer is not None:
                 with down.step("stop the %s timer" % what, must=False):
@@ -544,6 +547,10 @@ class MainFrame(GamesMixin, RunsMixin, LogMixin, TalkMixin, ResultsMixin, Editin
                                         *getattr(self, "market_windows", {}).values()]
             for window in windows:
                 window.Close()
+        back = getattr(self, "speech_back", None)
+        if back is not None:
+            with down.step("let the games silenced while not in front talk again", must=False):
+                back()
         with down.step("release the hotkeys", must=False):
             for hotkey in self.hotkeys:
                 if not self.UnregisterHotKey(hotkey):

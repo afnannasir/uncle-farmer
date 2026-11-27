@@ -1214,6 +1214,9 @@ msgid ""
 msgstr ""
 "Arnebia gastada en objetos consumidos (según los precios guardados; los objetos comprados no se cuentan aquí):"
 
+msgid "As File, Settings, Speech and language says"
+msgstr "Como dice Archivo, Ajustes, Voz e idioma"
+
 msgid "As many as I can"
 msgstr "Tantos como pueda"
 
@@ -3358,6 +3361,9 @@ msgstr ""
 msgid "Mute e&very game"
 msgstr "Silenciar todos los juegos (&v)"
 
+msgid "Mute this character's game's own &speech:"
+msgstr "&Silenciar la voz del propio juego de este personaje:"
+
 msgid "My friends in the game"
 msgstr ""
 
@@ -5290,6 +5296,9 @@ msgstr ""
 msgid "The game's map says: {about}"
 msgstr "El mapa del juego dice: {about}"
 
+msgid "The game's own speech"
+msgstr "La voz del propio juego"
+
 msgid "The game's skill texts don't describe this one."
 msgstr "Los textos de habilidades del juego no describen esta."
 
@@ -6070,6 +6079,9 @@ msgstr "Cuándo detenerse"
 
 msgid "Whenever it's ready"
 msgstr "Siempre que esté lista"
+
+msgid "Whenever its window isn't in front"
+msgstr "Siempre que su ventana no esté en primer plano"
 
 msgid "Where"
 msgstr "Dónde"

@@ -62,26 +62,6 @@ class ResultsMixin(FrameParts):
                 t.spoken = self.clock.time()
                 speech.speak(_("{name}: {results}", name=run.character, results=stats.short(t.result(), t.drop_left)))
 
-    def keep_silent(self) -> None:
-        """game_speech "always": silence every game with the agent, each time one starts. On a
-        worker: a slow game must not hold the status fields up."""
-        if self.s.get("game_speech") != "always":
-            return
-        todo = [pid for pid, _n, _w in list(self.games) if pid not in self.silenced]
-        if not todo:
-            return
-        self.silenced.update(todo)          # once per game (an older agent can't, and isn't asked again)
-
-        def work() -> None:
-            for pid in todo:
-                try:
-                    with AgentLink(pid=pid, timeout=3) as a:
-                        if a.send("speech") == "on":
-                            a.send("speech off")
-                except (AgentError, OSError):
-                    pass
-        threading.Thread(target=work, daemon=True).start()
-
     def keep_voice_fix(self) -> None:
         """fix_voice: tell each game's agent whether to mend the game's voice message player. A game
         starts mended, so only a change is sent: to every game when the setting changes, and to each

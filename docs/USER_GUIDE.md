@@ -2122,11 +2122,25 @@ The **combat announcer** is another source of spoken information. It announces c
 
 **Choose when to mute the game**
 
-You can configure when Uncle Farmer mutes the game's speech:
+You can configure when Uncle Farmer mutes the game's speech, in **File, Settings, Speech and
+language**:
 
 - **While a bot runs:** Mutes the game only while your character is farming.
 - **Always:** Keeps the game's speech muted whenever Uncle Farmer is running.
 - **Never:** Leaves the game's speech alone.
+- **Whenever its window isn't in front:** Each game talks only while its window is in front. Switch
+  to a game and it talks; switch to another game, to Uncle Farmer or to any other program, and it goes
+  quiet. Made for playing with several games open: only the one you are in speaks. A bot running in a
+  game doesn't change it.
+
+Each character can have its own choice, which wins over that one: **Character settings, Overview,
+Mute this character's game's own speech** (the same choices, and **As File, Settings, Speech and
+language says**, the default). For example, one game always quiet while the others follow the window
+in front.
+
+With **Whenever its window isn't in front**, Ctrl+M and Ctrl+U still work, until you next switch
+windows. A game the bot silenced that way talks again when you choose another mode for it, and when
+Uncle Farmer closes.
 
 **Mute or unmute a game manually**
 

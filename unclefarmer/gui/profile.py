@@ -217,6 +217,7 @@ def pull_label(p: dict[str, Any]) -> str:
              "at you (0: wait until it is in range):")
 
 
+OWN_SPEECH = ("", *settings.GAME_SPEECH_MODES)    # Overview: as the app says, then the modes
 EXAMPLE_BOSS: dict[str, Any] = {"name": "Death Worm", "x": 105, "y": 100}    # the Bosses tab's example
 EXAMPLE_BOSS_MAP = 5121                                                     # Wolf Prairie
 
@@ -258,6 +259,12 @@ class ProfileDialog(Dialog):
         self.known = labeled(panel, box, _("What the bot knows about this character:"),
                              lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 200)), 1)
         buttons(panel, box, (_("S&can now"), self.on_scan))
+        f = group(panel, box, _("The game's own speech"))
+        own = self.p.get("game_speech") or ""
+        self.game_speech = f.choice(_("Mute this character's game's own &speech:"),
+                                    [_("As File, Settings, Speech and language says"), _("While a bot runs in it"),
+                                     _("Always"), _("Never"), _("Whenever its window isn't in front")],
+                                    OWN_SPEECH.index(own) if own in OWN_SPEECH else 0)
 
     def fighting_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -890,6 +897,7 @@ class ProfileDialog(Dialog):
         p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
         p["boss_notice_text"] = " ".join(self.boss_text.GetValue().split())
+        p["game_speech"] = OWN_SPEECH[max(0, self.game_speech.GetSelection())]
         p["respawn"] = "city"
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()

@@ -76,6 +76,7 @@ class Run(threading.Thread):
         self.bot: Bot | None = None         # the Bot once running (private message commands reach it here)
         self.link: AgentLink | None = None  # this run's connection to the game, while it runs
         self.muted = False        # this run turned the game's own speech off (the end turns it on again)
+        self.speech_mode = "running"  # settings.game_speech_mode for this run's character
         self.speech_choice: str | None = None  # "on"/"off" when the player muted or unmuted this game by hand
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
@@ -388,11 +389,17 @@ class Run(threading.Thread):
             settings.set_not_saved(profile, "points_key", "")     # an older agent can't read the T key's answer
         if agent < AGENT_SPEECH:
             settings.set_not_saved(profile, "vitals_key", "")     # an older agent can't read the own-HP key's answer
-        elif app.get("game_speech", "running") in ("running", "always") and link.send("speech") == "on":
+        elif self.speech_mode_for(app, profile) in ("running", "always") and link.send("speech") == "on":
             self.muted = link.send("speech off") == "off"
             if self.muted:
                 self.log(_("the game's own speech is off while the bot runs"))
         return guard
+
+    def speech_mode_for(self, app: dict[str, Any], profile: dict[str, Any]) -> str:
+        """When this character's game is muted (its own choice, else the app's), kept for the run's
+        end. "front": the main window follows the window in front, the run leaves the speech alone."""
+        self.speech_mode = settings.game_speech_mode(app, profile)
+        return self.speech_mode
 
     def _make_bot(self, link: AgentLink, profile: dict[str, Any], agent: int, guard: str | None,
                   day_end: dt.datetime | None, app: dict[str, Any]) -> Bot:
@@ -980,7 +987,7 @@ class Run(threading.Thread):
                 bot.let_go()      # only this run's keys; a `keysup` could drop another controller's
             else:
                 link.send("keysup")
-            if self.muted and app.get("game_speech") != "always" and self.speech_choice != "off":
+            if self.muted and self.speech_mode != "always" and self.speech_choice != "off":
                 link.send("speech on")
             # a row of a character chain: the chain's end decides (the next character comes in this game)
             self.after_stop = "nothing" if getattr(self, "in_chain", False) else app.get("after_stop", "nothing")

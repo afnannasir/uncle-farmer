@@ -1187,6 +1187,9 @@ msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
 msgstr ""
 
+msgid "As File, Settings, Speech and language says"
+msgstr ""
+
 msgid "As many as I can"
 msgstr ""
 
@@ -3272,6 +3275,9 @@ msgstr ""
 msgid "Mute e&very game"
 msgstr ""
 
+msgid "Mute this character's game's own &speech:"
+msgstr ""
+
 msgid "My friends in the game"
 msgstr ""
 
@@ -5124,6 +5130,9 @@ msgstr ""
 msgid "The game's map says: {about}"
 msgstr ""
 
+msgid "The game's own speech"
+msgstr ""
+
 msgid "The game's skill texts don't describe this one."
 msgstr ""
 
@@ -5841,6 +5850,9 @@ msgid "When to stop"
 msgstr ""
 
 msgid "Whenever it's ready"
+msgstr ""
+
+msgid "Whenever its window isn't in front"
 msgstr ""
 
 msgid "Where"

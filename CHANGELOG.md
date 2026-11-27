@@ -49,6 +49,16 @@
 - A few shortcut letters of the Game and File menus that two entries shared in Urdu, Portuguese,
   French, Spanish and Turkish were set apart.
 
+**The game's own speech: only the game in front talks** (untested in game)
+
+- A new choice in File, Settings, Speech and language, **Whenever its window isn't in front**: each
+  game talks only while its window is in front, for players with several games open. Switching to a
+  game lets it talk, switching away silences it; a bot running in it doesn't change that.
+- Each character can have its own choice (Character settings, Overview), which wins over the app's:
+  as the app says (the default), while a bot runs, always, never, or only in front.
+- Ctrl+M and Ctrl+U still hold until the next switch; a game silenced this way talks again when it
+  leaves that mode and when Uncle Farmer closes.
+
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
 - The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever

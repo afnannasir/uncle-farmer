@@ -1221,6 +1221,9 @@ msgid ""
 msgstr ""
 "Istemal shuda cheezon par kharch hua arnebia (mahfooz qeematon se; khareedi hui cheezein yahan nahi gini jaatin):"
 
+msgid "As File, Settings, Speech and language says"
+msgstr "Jaisa File, Tarteeb, Awaaz aur zaban mein hai"
+
 msgid "As many as I can"
 msgstr "Jitne ban sakein"
 
@@ -3375,6 +3378,9 @@ msgstr "Chain ke agle kirdaar par ja rahe hain."
 msgid "Mute e&very game"
 msgstr "Har game ki awaaz band &karein"
 
+msgid "Mute this character's game's own &speech:"
+msgstr "Is character ke game ki apni awaaz &band karein:"
+
 msgid "My friends in the game"
 msgstr "Game mein mere dost"
 
@@ -5329,6 +5335,9 @@ msgstr ""
 msgid "The game's map says: {about}"
 msgstr "Game ka map kehta hai: {about}"
 
+msgid "The game's own speech"
+msgstr "Game ki apni awaaz"
+
 msgid "The game's skill texts don't describe this one."
 msgstr "Game ke skill texts is ko bayan nahi karte."
 
@@ -6119,6 +6128,9 @@ msgstr "Kab rokna hai"
 
 msgid "Whenever it's ready"
 msgstr "Jab bhi tayyar ho"
+
+msgid "Whenever its window isn't in front"
+msgstr "Jab us ki window saamne na ho"
 
 msgid "Where"
 msgstr "Kahan"

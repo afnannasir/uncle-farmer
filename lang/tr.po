@@ -1209,6 +1209,9 @@ msgid ""
 msgstr ""
 "Tükenen eşyalara harcanan arnebia (kayıtlı fiyatlardan; satın alınan eşyalar burada sayılmaz):"
 
+msgid "As File, Settings, Speech and language says"
+msgstr "Dosya, Ayarlar, Konuşma ve dil'de olduğu gibi"
+
 msgid "As many as I can"
 msgstr "Yapabildiğim kadar"
 
@@ -3340,6 +3343,9 @@ msgstr ""
 msgid "Mute e&very game"
 msgstr "Tüm oyunları sessize al (&V)"
 
+msgid "Mute this character's game's own &speech:"
+msgstr "Bu karakterin oyun &sesini kapat:"
+
 msgid "My friends in the game"
 msgstr ""
 
@@ -5249,6 +5255,9 @@ msgstr "Oyunun tuş ayarları bulunamadı. Önce Ayarlar'da oyun klasörünü be
 msgid "The game's map says: {about}"
 msgstr "Oyunun haritasında şöyle yazıyor: {about}"
 
+msgid "The game's own speech"
+msgstr "Oyunun kendi sesi"
+
 msgid "The game's skill texts don't describe this one."
 msgstr "Oyunun beceri metinleri bunu açıklamıyor."
 
@@ -6019,6 +6028,9 @@ msgstr "Ne zaman durulsun"
 
 msgid "Whenever it's ready"
 msgstr "Ne zaman hazır olursa"
+
+msgid "Whenever its window isn't in front"
+msgstr "Penceresi önde olmadığı sürece"
 
 msgid "Where"
 msgstr "Nerede"
