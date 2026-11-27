@@ -14,6 +14,9 @@
   after it are listed as not tried, and the end says to look in the bag. A refusal the game says
   ("Not enough gold coins"...) is sure, and the batch goes on as before. This covers the Market
   window, the script's `market buy`, the Potion Maker's materials and Buy collection items.
+- The Potion Maker buys nothing more at the market for the rest of its run after an unsure purchase
+  (the other materials, and the rounds after, are taken from the storehouse only), and counts what
+  it spent from what really came.
 
 **The game's numbers: noted as the bot sees them, and one table to ask** (untested in game)
 

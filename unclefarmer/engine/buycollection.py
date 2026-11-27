@@ -252,8 +252,12 @@ class _Run:
             return NEXT
         before = market.in_bag(self.b, lot.name)   # None: no bag came, so it can't prove a purchase
         outcome, heard = _buy_lot(self.b, pg, lot, want)
-        if outcome == LOST and before is not None and _gained(self.b, lot.name, before) > 0:
-            outcome = BOUGHT                # the game said nothing, but the bag tells: it was bought
+        if outcome == LOST:
+            if before is None:
+                return self.over(_("{item}: {why}", item=lot.name, why=_(
+                    "{why}, and the bag couldn't be read before buying - look in the bag", why=heard)))
+            if _gained(self.b, lot.name, before) > 0:
+                outcome = BOUGHT            # the game said nothing, but the bag tells: it was bought
         if outcome == BOUGHT:
             return self.bought_it(lot, want, before)
         return self.refused(lot, cost, outcome, heard)

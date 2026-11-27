@@ -465,11 +465,12 @@ def fuse(b: Bot, where: str, name: str, n: int) -> int:
 
 
 # ---------------------------------------------------------------------------------------- materials
-def buy_material(b: Bot, name: str, n: int, most: int, cap: int) -> tuple[int, int]:
+def buy_material(b: Bot, name: str, n: int, most: int, cap: int) -> tuple[int, int, bool]:
     """Buy n of a material at the player market, the cheapest lots first, none above most gold coins a
-    piece (0: any price), spending at most cap (0: no limit). (how many came, gold coins spent)."""
+    piece (0: any price), spending at most cap (0: no limit). (how many came, gold coins spent, and
+    whether a purchase's outcome is unknown: then nothing more may be bought blind)."""
     if n <= 0:
-        return 0, 0
+        return 0, 0, False
     found: list[market.Lot] = []
 
     def on_page(pg: market.Page) -> bool:
@@ -484,12 +485,11 @@ def buy_material(b: Bot, name: str, n: int, most: int, cap: int) -> tuple[int, i
     if not orders:
         b.log(_("the market has no {item} at {most} gold coins or less", item=name, most=most) if most else
               _("the market has no {item} for sale", item=name), speak=True)
-        return 0, 0
+        return 0, 0, False
     had = town.counts(b).get(name.lower(), 0)
-    results = market.buy(b, orders, cap)
-    spent = sum(o.qty * o.lot.price for o, outcome, _w in results if outcome == market.BOUGHT)
+    done = market.buy_batch(b, orders, cap)
     b.close_dialogs()
-    return max(0, town.counts(b).get(name.lower(), 0) - had), spent
+    return max(0, town.counts(b).get(name.lower(), 0) - had), done.spent, done.unsure
 
 
 def _bring(b: Bot, mat: str, fetch: Callable[[], int]) -> int:
@@ -504,11 +504,14 @@ def _bring(b: Bot, mat: str, fetch: Callable[[], int]) -> int:
     return got
 
 
-def fetch_materials(b: Bot, missing: Mapping[str, int], cfg: Mapping[str, Any], spent: int = 0
-                    ) -> tuple[dict[str, int], int]:
+def fetch_materials(b: Bot, missing: Mapping[str, int], cfg: Mapping[str, Any], spent: int = 0,
+                    st: _Run | None = None) -> tuple[dict[str, int], int]:
     """Bring the missing materials into the bag, as cfg's supply says. (what is still missing, the
-    gold coins spent on materials this run: `spent` before this call, and this call's)."""
+    gold coins spent on materials this run: `spent` before this call, and this call's). st: the
+    run, whose market_unsure stops any more buying once a purchase's outcome was unknown."""
     supply = cfg.get("supply", "both")
+    if st is not None and st.market_unsure:
+        supply = "storage" if supply == "both" else ("none" if supply == "buy" else supply)
     left = {m: k for m, k in missing.items() if k > 0}
     if supply in ("storage", "both"):
         for mat in list(left):
@@ -525,12 +528,21 @@ def fetch_materials(b: Bot, missing: Mapping[str, int], cfg: Mapping[str, Any], 
             most = int(prices.get(mat) or prices.get(mat.lower()) or 0)
             costs: list[int] = []
 
+            unsure: list[bool] = []
+
             def buy(m: str = mat, n: int = left[mat], top: int = most, budget: int = cap - spent if cap else 0) -> int:
-                got, cost = buy_material(b, m, n, top, budget)
+                got, cost, lost = buy_material(b, m, n, top, budget)
                 costs.append(cost)
+                unsure.append(lost)
                 return got
             left[mat] -= _bring(b, mat, buy)
             spent += sum(costs)
+            if any(unsure):
+                if st is not None:
+                    st.market_unsure = True
+                b.log(_("the market didn't say whether {item} was bought: nothing more is bought this run - "
+                        "look in the bag", item=mat), speak=True)
+                break
         left = {m: k for m, k in left.items() if k > 0}
     return left, spent
 
@@ -693,6 +705,7 @@ class _Run:
     fused: int = 0
     put: int = 0
     told_cap: bool = False
+    market_unsure: bool = False           # a purchase's outcome was unknown: no more buying this run
 
 
 def _make_round(b: Bot, cfg: Mapping[str, Any], st: _Run, p: Plan) -> int:
@@ -714,7 +727,7 @@ def _make_round(b: Bot, cfg: Mapping[str, Any], st: _Run, p: Plan) -> int:
         return 0
     rp = plan(town.counts(b), round_cfg(cfg, st.stored), st.book, fit)
     if rp.missing:
-        still, st.spent = fetch_materials(b, rp.missing, cfg, st.spent)
+        still, st.spent = fetch_materials(b, rp.missing, cfg, st.spent, st)
         for mat, k in still.items():
             b.log(_("{n} {item} still missing", n=k, item=mat), speak=True)
     return _make_all(b, st.where, _shorten(rp.batches, st.book, town.counts(b)), st.book)

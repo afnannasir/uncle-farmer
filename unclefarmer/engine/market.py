@@ -1018,11 +1018,26 @@ def _purchase(b: Bot, pg: Page, lot: Lot, want: int, cost: int) -> tuple[str, st
     return REFUSED, _("not bought: the game said \"{words}\"", words=heard), 0
 
 
+@dataclass
+class Batch:
+    """What a batch of purchases did: [(order, outcome, words)], the gold coins it spent (only what
+    the game or the bag proved bought, at the price read), and whether it stopped on a purchase
+    whose outcome nobody gave (then the caller buys nothing more either)."""
+    out: list[tuple[Order, str, str]]
+    spent: int
+    unsure: bool
+
+
 def buy(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> list[tuple[Order, str, str]]:
     """Buy each order's lot, found again by its listing id. [(order, outcome, words)] - outcome one
     of BOUGHT, GONE, FEWER, OPENING, OVER, CAP, REFUSED (WOULD with check), or UNKNOWN: the game
     didn't say and the bag didn't show it, so nothing more is bought and every order after it is
     NOT_TRIED (a purchase is never made blind on top of one that may have gone through)."""
+    return buy_batch(b, orders, cap, check).out
+
+
+def buy_batch(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> Batch:
+    """buy, with what it spent and whether it stopped unsure."""
     status = Status("buy", _("buying {n} lots", n=len(orders)) if not check else _("checking {n} lots", n=len(orders)),
                     pid_of(b))
     out: list[tuple[Order, str, str]] = []
@@ -1077,7 +1092,7 @@ def buy(b: Bot, orders: Sequence[Order], cap: int = 0, check: bool = False) -> l
                            lot=unsure.lot.label)
     status.end("done", summary)
     b.log(_("market: {summary}", summary=summary), speak=True)
-    return out
+    return Batch(out, spent, unsure is not None)
 
 
 def cheapest_orders(found: Sequence[Lot], qty: int, max_price: int) -> list[Order]:

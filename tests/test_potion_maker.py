@@ -169,10 +169,14 @@ def _pretend_market(monkeypatch: pytest.MonkeyPatch, b: Bot, seen: dict[str, Any
         return 1
     monkeypatch.setattr(market, "read_pages", read_pages)
 
-    def buy(bot: Bot, orders: list[market.Order], cap: int = 0, check: bool = False) -> list[tuple[market.Order, str, str]]:
+    def buy(bot: Bot, orders: list[market.Order], cap: int = 0, check: bool = False) -> market.Batch:
         out: list[tuple[market.Order, str, str]] = []
         spent = 0
         for o in orders:
+            if o.lot.name in seen.get("unsure", ()):    # the game says nothing, the bag shows nothing
+                seen["bought"].append((o.lot.name, 0, o.lot.price))
+                out.append((o, market.UNKNOWN, "unknown"))
+                return market.Batch(out, spent, True)
             cost = o.qty * o.lot.price
             if cap and spent + cost > cap:
                 out.append((o, market.CAP, "cap"))
@@ -182,8 +186,8 @@ def _pretend_market(monkeypatch: pytest.MonkeyPatch, b: Bot, seen: dict[str, Any
             add(b, o.lot.name, o.qty)
             seen["bought"].append((o.lot.name, o.qty, o.lot.price))
             out.append((o, market.BOUGHT, "bought"))
-        return out
-    monkeypatch.setattr(market, "buy", buy)
+        return market.Batch(out, spent, False)
+    monkeypatch.setattr(market, "buy_batch", buy)
 
 
 def _pretend_storehouse(monkeypatch: pytest.MonkeyPatch, b: Bot, seen: dict[str, Any], weights: dict[str, float] | None,
@@ -416,6 +420,29 @@ def test_a_full_bag_with_nothing_to_use_says_so(game: Any) -> None:
     pm.run(b, job(targets={"Small Red Potion": 500}, supply="storage"))
     assert ph.made == []
     assert any("no room for more Bloods and Pelts" in line for line in b.lines)
+
+
+def test_an_unknown_purchase_stops_buying_the_other_materials_and_later_rounds(game: Any) -> None:
+    lots = [lot(1, "Lesser Pelt", 100, 10), lot(2, "Medium Pelt", 100, 10)]
+    b, _ph, seen = game({}, lots=lots, weights={"Lesser Pelt": 1.0, "Medium Pelt": 1.0})
+    seen["unsure"] = {"Lesser Pelt"}
+    st = pm._Run("", {}, {}, dict(pm.BY_NAME), {})  # pyright: ignore[reportPrivateUsage]
+    left, spent = pm.fetch_materials(b, {"Lesser Pelt": 10, "Medium Pelt": 5}, job(supply="buy"), 0, st)
+    assert [n for n, _q, _p in seen["bought"]] == ["Lesser Pelt"]       # Medium Pelt never tried
+    assert st.market_unsure and left == {"Lesser Pelt": 10, "Medium Pelt": 5} and spent == 0
+    assert any("nothing more is bought this run" in line for line in b.lines)
+    seen["unsure"] = set()                                    # a later round: still nothing bought
+    left, _spent = pm.fetch_materials(b, {"Medium Pelt": 5}, job(supply="buy"), 0, st)
+    assert [n for n, _q, _p in seen["bought"]] == ["Lesser Pelt"] and left == {"Medium Pelt": 5}
+
+
+def test_without_an_unknown_purchase_every_material_is_bought(game: Any) -> None:
+    lots = [lot(1, "Lesser Pelt", 100, 10), lot(2, "Medium Pelt", 100, 10)]
+    b, _ph, seen = game({}, lots=lots, weights={"Lesser Pelt": 1.0, "Medium Pelt": 1.0})
+    st = pm._Run("", {}, {}, dict(pm.BY_NAME), {})  # pyright: ignore[reportPrivateUsage]
+    left, spent = pm.fetch_materials(b, {"Lesser Pelt": 10, "Medium Pelt": 5}, job(supply="buy"), 0, st)
+    assert [n for n, _q, _p in seen["bought"]] == ["Lesser Pelt", "Medium Pelt"]
+    assert left == {} and spent == 150 and not st.market_unsure
 
 
 def test_the_gold_limit_counts_every_round(game: Any) -> None:

@@ -9784,6 +9784,11 @@ msgid ""
 msgstr ""
 "le marché est inutilisable avec cet agent : redémarrez le jeu pour charger l'agent {n}"
 
+msgid ""
+"the market didn't say whether {item} was bought: nothing more is bought this run - look in the bag"
+msgstr ""
+"le marché n'a pas dit si {item} a été acheté : plus aucun achat pour cette fois - regardez dans le sac"
+
 msgid "the market didn't take the page number"
 msgstr "le marché n'a pas pris le numéro de page"
 
@@ -10675,6 +10680,9 @@ msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item} : {n} utilisés x {price} = {cost} arnebia"
+
+msgid "{item}: {why}"
+msgstr "{item} : {why}"
 
 msgid "{item}: {why}, and the bag didn't show it - look in the bag"
 msgstr "{item} : {why}, et le sac ne l'a pas montré - regardez dans le sac"

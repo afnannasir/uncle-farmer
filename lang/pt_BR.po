@@ -9710,6 +9710,11 @@ msgid ""
 "the market can't be used with this agent: restart the game so agent {n} loads"
 msgstr ""
 
+msgid ""
+"the market didn't say whether {item} was bought: nothing more is bought this run - look in the bag"
+msgstr ""
+"o mercado não disse se {item} foi comprado: nada mais é comprado nesta execução - veja na bolsa"
+
 msgid "the market didn't take the page number"
 msgstr ""
 
@@ -10597,6 +10602,9 @@ msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item}: {n} usados × {price} = {cost} Arnebia"
+
+msgid "{item}: {why}"
+msgstr "{item}: {why}"
 
 msgid "{item}: {why}, and the bag didn't show it - look in the bag"
 msgstr "{item}: {why}, e a bolsa não mostrou - veja na bolsa"

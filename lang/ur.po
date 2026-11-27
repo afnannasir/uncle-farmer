@@ -9731,6 +9731,11 @@ msgid ""
 msgstr ""
 "is agent ke saath market istemal nahi ho sakti: game dobara shuru karein taake agent {n} load ho"
 
+msgid ""
+"the market didn't say whether {item} was bought: nothing more is bought this run - look in the bag"
+msgstr ""
+"market ne nahin bataya ke {item} khareeda gaya ya nahin: is run mein aur kuch nahin khareeda jayega - bag dekhein"
+
 msgid "the market didn't take the page number"
 msgstr "market ne safhe ka number nahi liya"
 
@@ -10619,6 +10624,9 @@ msgstr ""
 
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item}: {n} istemal x {price} = {cost} arnebia"
+
+msgid "{item}: {why}"
+msgstr "{item}: {why}"
 
 msgid "{item}: {why}, and the bag didn't show it - look in the bag"
 msgstr "{item}: {why}, aur bag mein nazar nahin aaya - bag dekhein"
