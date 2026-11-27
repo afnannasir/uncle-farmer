@@ -32,6 +32,20 @@ msgstr " - estimado: inclui fragmentos"
 msgid " - {n} used up with no stored price, not counted"
 msgstr " - {n} consumidos sem preço salvo, não contabilizados"
 
+msgid "\"{keys}\": a shortcut needs a key besides Ctrl, Alt and Shift."
+msgstr "\"{keys}\": um atalho precisa de uma tecla além de Ctrl, Alt e Shift."
+
+msgid ""
+"\"{keys}\": the bot doesn't know the key {part}. Use a letter, a digit, F1 to F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown or an arrow."
+msgstr ""
+"\"{keys}\": o bot não conhece a tecla {part}. Use uma letra, um número, F1 a F24, Pause, Space, Insert, Delete, Home, End, PageUp, PageDown ou uma seta."
+
+msgid "\"{keys}\": write the keys joined by +, for example Ctrl+Shift+R."
+msgstr "\"{keys}\": escreva as teclas unidas por +, por exemplo Ctrl+Shift+R."
+
+msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
+msgstr "\"{keys}\": {part} não é Ctrl, Alt nem Shift."
+
 msgid "&About Uncle Farmer"
 msgstr "&Sobre o Uncle Farmer"
 
@@ -55,6 +69,9 @@ msgstr "&Adicionar filtro"
 
 msgid "&Add where I stand"
 msgstr "&Adicionar onde estou"
+
+msgid "&All the defaults"
+msgstr "Tudo &padrão"
 
 msgid "&Another character"
 msgstr "&Outro personagem"
@@ -369,6 +386,9 @@ msgstr "Gerenciador de teclado (&K)"
 msgid "&Keyboard shortcuts"
 msgstr "&Atalhos de teclado"
 
+msgid "&Keys (for example Ctrl+Shift+R or F7; empty: none):"
+msgstr "&Teclas (por exemplo Ctrl+Shift+R ou F7; vazio: nenhuma):"
+
 msgid "&Keys the bot presses:"
 msgstr "&Teclas pressionadas pelo bot:"
 
@@ -475,6 +495,9 @@ msgstr "&Lutar somente contra (nomes separados por vírgulas):"
 msgid "&Open the chests that turn up while farming"
 msgstr "&Abrir os baús encontrados durante a coleta"
 
+msgid "&Open the file"
+msgstr "&Abrir o arquivo"
+
 msgid ""
 "&Open the game again, log in and carry on where the run was (at most {n} times a day)"
 msgstr ""
@@ -552,6 +575,9 @@ msgstr "&Ler as teclas do jogo"
 
 msgid "&Read new messages:"
 msgstr "&Ler novas mensagens:"
+
+msgid "&Read the file again"
+msgstr "Ler o arquivo de no&vo"
 
 msgid "&Refresh the market list"
 msgstr ""
@@ -653,6 +679,9 @@ msgid ""
 "&Shoot monsters in reach while walking to the next one (a character that fights from afar)"
 msgstr ""
 "&Atacar monstros ao alcance enquanto caminha até o próximo (para personagens que lutam à distância)"
+
+msgid "&Shortcuts:"
+msgstr "Ata&lhos:"
 
 msgid "&Show the time after each message"
 msgstr "&Mostrar o horário após cada mensagem"
@@ -760,6 +789,9 @@ msgstr "&Onde morrer:"
 msgid "&Who may join:"
 msgstr "&Quem pode entrar:"
 
+msgid "&Works:"
+msgstr "&Funciona:"
+
 msgid "&Write an email"
 msgstr "&Escrever um e-mail"
 
@@ -774,6 +806,11 @@ msgstr "Perdedor de &EXP"
 
 msgid "&Yes, switch language"
 msgstr "&Sim, mudar o idioma"
+
+msgid ""
+"&Your own line, with %boss%, %map% and %pos% for the boss, the map and where it stands (empty: the bot's line, in English):"
+msgstr ""
+"&Sua própria linha, com %boss%, %map% e %pos% para o chefe, o mapa e onde ele está (vazia: a linha do bot, em inglês):"
 
 msgid "&Your places:"
 msgstr "&Seus locais:"
@@ -905,6 +942,16 @@ msgid ""
 "A file that reaches the size above is kept as name.1, the older ones move to name.2 and so on, and the oldest is dropped. The day's run log is rotated the same way inside its day."
 msgstr ""
 "Um arquivo que atingir o tamanho acima será salvo como nome.1; os mais antigos serão renomeados para nome.2 e assim por diante, e o mais antigo será excluído. O registro diário das execuções é rotacionado da mesma forma dentro da pasta do dia."
+
+msgid ""
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+msgstr ""
+"Uma tecla que funciona em qualquer lugar age no jogo em primeiro plano quando ele é um dos seus (a lista de jogos o seleciona), e a partir de qualquer outro programa no jogo selecionado na lista."
+
+msgid ""
+"A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
+msgstr ""
+"Uma linha que não pode ser usada é avisada quando o Uncle Farmer inicia, e essa ação mantém o padrão."
 
 msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
@@ -1133,12 +1180,16 @@ msgstr "Outro personagem"
 msgid "Another gang's, by its name"
 msgstr "De outra guilda, pelo nome"
 
-msgid "Another program is using the Pause key; the Pause shortcut won't work."
+msgid ""
+"Another program is using {keys}, so {action} works only in Uncle Farmer."
 msgstr ""
-"Outro programa está usando a tecla Pause; o atalho Pause não funcionará."
+"Outro programa está usando {keys}, então {action} só funciona no Uncle Farmer."
 
 msgid "Answering"
 msgstr "Respondendo"
+
+msgid "Anywhere, even inside the game"
+msgstr "Em qualquer lugar, até dentro do jogo"
 
 msgid "Applied keyboard profile {name}."
 msgstr "Perfil de teclado {name} aplicado."
@@ -1171,6 +1222,9 @@ msgid ""
 "Arnebia spent on items used up (from the stored prices; bought items are not counted here):"
 msgstr ""
 "Arnebia gasta em itens consumidos (com base nos preços salvos; itens comprados não são contabilizados aqui):"
+
+msgid "As File, Settings, Speech and language says"
+msgstr "Como diz Arquivo, Configurações, Fala e idioma"
 
 msgid "As many as I can"
 msgstr "O máximo possível"
@@ -1288,6 +1342,9 @@ msgstr "Quebrar não pode ser desfeito."
 msgid "Breaks {n} {item}."
 msgstr "Quebra {n} {item}."
 
+msgid "Bring the selected game to the &front"
+msgstr "Trazer o jogo selecionado para a &frente"
+
 msgid "Broadcast (with a sound)"
 msgstr "Broadcast (com som)"
 
@@ -1396,6 +1453,9 @@ msgstr "Alterar tecla"
 
 msgid "Change target mode"
 msgstr "Alterar modo de seleção de alvo"
+
+msgid "Change them in File, Keyboard shortcuts, or in {file}."
+msgstr "Altere-os em Arquivo, Atalhos de teclado, ou em {file}."
 
 msgid "Change&log"
 msgstr ""
@@ -1597,6 +1657,9 @@ msgstr "Fechar uma janela"
 msgid "Close the game"
 msgstr "Fechar o jogo"
 
+msgid "Close the open Uncle Farmer window first."
+msgstr "Feche primeiro a janela aberta do Uncle Farmer."
+
 msgid "Close without saving"
 msgstr "Fechar sem salvar"
 
@@ -1720,6 +1783,9 @@ msgstr "Não foi possível aplicar as configurações: {err}"
 msgid "Couldn't assign {binding} to {key}."
 msgstr "Não foi possível atribuir {binding} a {key}."
 
+msgid "Couldn't bring {name} to the front."
+msgstr "Não foi possível trazer {name} para a frente."
+
 msgid "Couldn't carry on {what} for {name}: {why}"
 msgstr "Não foi possível continuar {what} para {name}: {why}"
 
@@ -1767,6 +1833,9 @@ msgstr "Não foi possível abrir."
 msgid "Couldn't open it: {err}"
 msgstr "Não foi possível abrir: {err}"
 
+msgid "Couldn't open {path}: {err}"
+msgstr "Não foi possível abrir {path}: {err}"
+
 msgid "Couldn't prepare {skill}."
 msgstr "Não foi possível preparar {skill}."
 
@@ -1781,6 +1850,9 @@ msgstr "Não foi possível ler os dados do jogo: {err}"
 
 msgid "Couldn't save the schedules: {err}"
 msgstr "Não foi possível salvar os agendamentos: {err}"
+
+msgid "Couldn't save {path}: {err}"
+msgstr "Não foi possível salvar {path}: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Não foi possível salvar: {err}"
@@ -1835,6 +1907,9 @@ msgstr "Cristais"
 msgid "Crystals: what they give and cost is read from the craftsman's page."
 msgstr "Cristais: o que dão e custam é lido na página do artesão."
 
+msgid "Ctrl+Tab moves between the main window's tabs."
+msgstr "Ctrl+Tab passa pelas abas da janela principal."
+
 msgid "Cut Flesh"
 msgstr "Cortar Carne"
 
@@ -1864,6 +1939,9 @@ msgstr "Morte"
 
 msgid "Deaths before stopping:"
 msgstr "Mortes antes de parar:"
+
+msgid "Default for &this one"
+msgstr "Padrão para &esta"
 
 msgid "Delay after success (&seconds):"
 msgstr "Atraso após &sucesso (segundos):"
@@ -2485,6 +2563,9 @@ msgid ""
 msgstr ""
 "O HP ficou abaixo de {pct}% por {secs} segundos - parando para você assumir"
 
+msgid "HP {hp}"
+msgstr "HP {hp}"
+
 msgid "HP {hp}/{max} ({pct}%) - {item}"
 msgstr "HP {hp}/{max} ({pct}%) - {item}"
 
@@ -2720,6 +2801,9 @@ msgstr "Importar configurações para este personagem:"
 msgid "Important events only"
 msgstr "Somente eventos importantes"
 
+msgid "In Uncle Farmer's main window"
+msgstr "Na janela principal do Uncle Farmer"
+
 msgid "In all"
 msgstr ""
 
@@ -2813,6 +2897,9 @@ msgstr "Entre primeiro em uma sala internacional no jogo."
 msgid "Join the &Telegram group"
 msgstr "Entrar no grupo do &Telegram"
 
+msgid "KEYBOARD SHORTCUTS"
+msgstr "ATALHOS DE TECLADO"
+
 msgid "Keep &old files:"
 msgstr "Manter arquivos &antigos:"
 
@@ -2837,6 +2924,9 @@ msgstr "Lista de guardar"
 msgid "Keep the class's b&uffs up"
 msgstr "Manter os &bônus da classe ativos"
 
+msgid "Keeping away"
+msgstr "Manter distância"
+
 msgid "Key"
 msgstr "Tecla"
 
@@ -2851,6 +2941,9 @@ msgstr ""
 
 msgid "Keyboard profile {name} was not found."
 msgstr "O perfil de teclado {name} não foi encontrado."
+
+msgid "Keyboard s&hortcuts"
+msgstr "Atal&hos de teclado"
 
 msgid "Keyboard shortcuts"
 msgstr "Atalhos de teclado"
@@ -3284,7 +3377,10 @@ msgid "Moving on to the next character of the chain."
 msgstr "Passando para o próximo personagem da corrente."
 
 msgid "Mute e&very game"
-msgstr "&Silenciar todos os jogos"
+msgstr "Silenciar &todos os jogos"
+
+msgid "Mute this character's game's own &speech:"
+msgstr "&Silenciar a fala do próprio jogo deste personagem:"
 
 msgid "My friends in the game"
 msgstr "Meus amigos no jogo"
@@ -3421,6 +3517,9 @@ msgstr "Nenhum jogo com o agente está em execução."
 msgid "No gem kinds known yet."
 msgstr "Ainda não são conhecidos tipos de gema."
 
+msgid "No key: use the menu."
+msgstr "Nenhuma tecla: use o menu."
+
 msgid "No known buyer, so it will be stored instead"
 msgstr "Nenhum comprador conhecido; o item será guardado"
 
@@ -3531,6 +3630,9 @@ msgid ""
 msgstr ""
 "Ainda não analisado. Entre com este personagem no jogo e pressione Analisar agora. O bot também faz uma análise ao iniciar uma execução."
 
+msgid "Note:"
+msgstr "Observação:"
+
 msgid "Nothing changed in the bag."
 msgstr "Nada mudou na mochila."
 
@@ -3638,7 +3740,7 @@ msgid "Only while the Chat window is open"
 msgstr "Somente enquanto a janela de bate-papo estiver aberta"
 
 msgid "Open another game &window"
-msgstr "Abrir outra &janela do jogo"
+msgstr "Abrir &outra janela do jogo"
 
 msgid ""
 "Open fire up to this many tiles &early, beyond the {reach} tiles set above, while a monster comes at you (0: wait until it is within {reach}):"
@@ -3665,7 +3767,7 @@ msgid "Open the &log folder"
 msgstr "Abrir a pasta de &registros"
 
 msgid "Open the &results folder"
-msgstr "Abrir a pasta de &resultados"
+msgstr "Abrir a pasta de resulta&dos"
 
 msgid "Open the character sheet every (seconds):"
 msgstr "Abrir a ficha do personagem a cada (segundos):"
@@ -4346,6 +4448,12 @@ msgstr "Selecione um jogo primeiro."
 msgid "Select a plan first."
 msgstr "Selecione um plano primeiro."
 
+msgid "Select the &next game"
+msgstr "Selecionar o pró&ximo jogo"
+
+msgid "Select the &previous game"
+msgstr "Selecionar o jogo ante&rior"
+
 msgid "Select the same character before applying the keyboard profile."
 msgstr "Selecione o mesmo personagem antes de aplicar o perfil de teclado."
 
@@ -4559,6 +4667,11 @@ msgstr "Princesa Floco de Neve"
 msgid "Sold:"
 msgstr "Vendido:"
 
+msgid ""
+"Some keyboard shortcuts couldn't be used: see the Log tab, or File, Keyboard shortcuts."
+msgstr ""
+"Alguns atalhos de teclado não puderam ser usados: veja a aba Registro, ou Arquivo, Atalhos de teclado."
+
 msgid "Some sound requests were missed because the event buffer filled."
 msgstr ""
 "Algumas solicitações de som foram perdidas porque o buffer de eventos ficou cheio."
@@ -4634,6 +4747,12 @@ msgstr "Anunciar o &progresso durante a execução"
 msgid "Speak the &results when a run ends"
 msgstr "Anunciar os &resultados ao término da execução"
 
+msgid "Speak the results of the game in front"
+msgstr "Falar os resultados do jogo em primeiro plano"
+
+msgid "Speak the selected game's st&atus"
+msgstr "Falar o &estado do jogo selecionado"
+
 msgid "Speech"
 msgstr "Fala"
 
@@ -4671,6 +4790,9 @@ msgstr "Ficar parado"
 
 msgid "Start a new file after (MB, 0 = never):"
 msgstr "Iniciar um novo arquivo após (MB; 0 = nunca):"
+
+msgid "Start or stop the bot (in a game window: that game's bot)"
+msgstr "Iniciar ou parar o bot (numa janela de jogo: o bot desse jogo)"
 
 msgid "Start the c&hain"
 msgstr "&Iniciar a corrente"
@@ -4915,22 +5037,23 @@ msgstr "Aba Equipe: digite quem recebe a equipe quando a execução terminar."
 msgid "Teleport to the team leader"
 msgstr "Teletransportar até o líder da equipe"
 
-msgid "Tell the Gang chat of each boss seen (in English)"
-msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
+msgid "Tell the &Gang chat of each boss seen"
+msgstr "Avisar o chat Ga&ng de cada chefe visto"
 
-msgid ""
-"Tell the Global chat of each boss seen (in English; the whole server reads it)"
-msgstr ""
-"Avisar o chat Global de cada chefe visto (em inglês; o servidor inteiro lê)"
+msgid "Tell the &Team chat of each boss seen"
+msgstr "Avisar o chat &Team de cada chefe visto"
 
-msgid "Tell the International chat of each boss seen (in English)"
-msgstr "Avisar o chat International de cada chefe visto (em inglês)"
+msgid "Tell the Gl&obal chat of each boss seen (the whole server reads it)"
+msgstr "Avisar o chat Gl&obal de cada chefe visto (o servidor inteiro lê)"
 
-msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
-msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
+msgid "Tell the I&nternational chat of each boss seen"
+msgstr "Avisar o chat Internationa&l de cada chefe visto"
 
 msgid "Tell them now and then that I'm a&way"
 msgstr "Avisá-los de vez em quando que estou &ausente"
+
+msgid "Telling other players"
+msgstr "Avisar outros jogadores"
 
 msgid "Test &message:"
 msgstr "&Mensagem de teste:"
@@ -5210,6 +5333,9 @@ msgstr ""
 
 msgid "The game's map says: {about}"
 msgstr "O mapa do jogo informa: {about}"
+
+msgid "The game's own speech"
+msgstr "A fala do próprio jogo"
 
 msgid "The game's skill texts don't describe this one."
 msgstr "Os textos de habilidades do jogo não descrevem esta habilidade."
@@ -5739,6 +5865,11 @@ msgid ""
 msgstr ""
 "É necessário reinstalar o agente do Uncle Farmer: {why}. Pare todos os bots em execução e use Arquivo, Configurações, Instalar."
 
+msgid ""
+"Uncle Farmer's keyboard shortcuts. One line an action: action = keys = where."
+msgstr ""
+"Atalhos de teclado do Uncle Farmer. Uma linha por ação: ação = teclas = onde."
+
 msgid "Unit price"
 msgstr ""
 
@@ -5941,6 +6072,9 @@ msgstr "O que falta"
 msgid "What the bot knows about this character:"
 msgstr "O que o bot sabe sobre este personagem:"
 
+msgid "What the chat gets, for example:"
+msgstr "O que o chat recebe, por exemplo:"
+
 msgid "What to break"
 msgstr "O que quebrar"
 
@@ -5992,6 +6126,9 @@ msgstr "Quando parar"
 
 msgid "Whenever it's ready"
 msgstr "Sempre que estiver pronto"
+
+msgid "Whenever its window isn't in front"
+msgstr "Sempre que a janela dele não estiver em primeiro plano"
 
 msgid "Where"
 msgstr "Onde"
@@ -6047,6 +6184,17 @@ msgstr "Com seus PV máximos de {top}, abaixo de {pct}%."
 
 msgid "Within this many tiles of the player:"
 msgstr "A até estes quadros do jogador:"
+
+msgid "Works"
+msgstr "Funciona"
+
+msgid ""
+"Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any other program. A key no program uses is best, such as Pause or a key from F7 to F12 with Ctrl or Shift."
+msgstr ""
+"Funciona em qualquer lugar: enquanto o Uncle Farmer roda, {keys} não chega mais ao jogo, ao NVDA nem a nenhum outro programa. O melhor é uma tecla que nenhum programa usa, como Pause ou uma tecla de F7 a F12 com Ctrl ou Shift."
+
+msgid "Works while an Uncle Farmer window is in front."
+msgstr "Funciona quando uma janela do Uncle Farmer está em primeiro plano."
 
 msgid "Worst hit received: {hit}"
 msgstr "Maior dano recebido: {hit}"
@@ -7046,6 +7194,9 @@ msgstr "todos os farms do script já estão feitos — parando"
 msgid "everything"
 msgstr "tudo"
 
+msgid "everywhere, even in the game"
+msgstr "em qualquer lugar, até no jogo"
+
 msgid "experience card paused ({card}): {why}"
 msgstr "cartão de experiência pausado ({card}): {why}"
 
@@ -7443,6 +7594,10 @@ msgstr "tecla {key}"
 
 msgid "key {key} didn't work: {why}"
 msgstr "a tecla {key} não funcionou: {why}"
+
+msgid "keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."
+msgstr ""
+"teclas: por exemplo F5, Ctrl+Shift+R ou Shift+Pause; none para nenhuma tecla."
 
 msgid "landed in the gang's inner hall, which is walled off from the craftsmen"
 msgstr "chegou ao salão interno da guilda, isolado dos artesãos"
@@ -8284,6 +8439,9 @@ msgstr "uma vez, em {date} às {time}"
 msgid "one cave only: a character goes into one cave a day"
 msgstr "somente uma caverna: cada personagem entra em uma caverna por dia"
 
+msgid "only in Uncle Farmer"
+msgstr "só no Uncle Farmer"
+
 msgid "only {names}"
 msgstr "somente {names}"
 
@@ -8652,6 +8810,28 @@ msgstr "ciclo curto"
 
 msgid "short of supplies for the dungeon: {what}"
 msgstr "faltam suprimentos para a masmorra: {what}"
+
+msgid "shortcuts.txt couldn't be read ({err}): the default shortcuts are used."
+msgstr "shortcuts.txt não pôde ser lido ({err}): os atalhos padrão são usados."
+
+msgid "shortcuts.txt line {n}: there is no action called {name}."
+msgstr "shortcuts.txt linha {n}: não existe nenhuma ação chamada {name}."
+
+msgid ""
+"shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+"shortcuts.txt linha {n}: escreva ação = teclas = onde, por exemplo run_start = F5 = inapp."
+
+msgid ""
+"shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
+msgstr ""
+"shortcuts.txt linha {n}: {name} também está na linha {first}; vale esta linha."
+
+msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgstr "shortcuts.txt linha {n}: {where} não é global nem inapp."
+
+msgid "shortcuts.txt line {n}: {why}"
+msgstr "shortcuts.txt linha {n}: {why}"
 
 msgid "skill page 2 left alone (only the skills of page 1 are used): {skills}"
 msgstr ""
@@ -10059,6 +10239,11 @@ msgid ""
 msgstr ""
 "não foi possível identificar onde a execução começou — encerrando no mapa mais próximo sem monstros"
 
+msgid ""
+"where: global works everywhere, even inside the game (the key no longer reaches the game or any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."
+msgstr ""
+"onde: global funciona em qualquer lugar, até dentro do jogo (a tecla não chega mais ao jogo nem a nenhum outro programa enquanto o Uncle Farmer roda); inapp só nas janelas do Uncle Farmer."
+
 msgid "where: the map I'm on and my x, y on it."
 msgstr "onde: o mapa em que estou e minhas coordenadas x, y."
 
@@ -10162,8 +10347,17 @@ msgstr ""
 msgid "you joined the gang today: the game allows no donation until tomorrow"
 msgstr "você entrou na gangue hoje: o jogo só permite doar a partir de amanhã"
 
+msgid "{action} can't be used now."
+msgstr "{action} não pode ser usado agora."
+
+msgid "{action} has no key now: {keys} is {other}'s."
+msgstr "{action} ficou sem tecla: {keys} é de {other}."
+
 msgid "{action}: '{value}' isn't a key the bot can press."
 msgstr "{action}: '{value}' não é uma tecla que o bot possa pressionar."
+
+msgid "{action}: {why}"
+msgstr "{action}: {why}"
 
 msgid "{at}: {outcome} (due {due})"
 msgstr "{at}: {outcome} (previsto para {due})"
@@ -10373,6 +10567,27 @@ msgstr "{item}: {n} usados × {price} = {cost} Arnebia"
 
 msgid "{job} didn't finish: {why}"
 msgstr "{job} não foi concluído: {why}"
+
+msgid "{keys} is also {action}: one of them has to change."
+msgstr "{keys} também é {action}: um dos dois precisa mudar."
+
+msgid "{keys} is given to both {one} and {other}: {other} keeps its own key."
+msgstr "{keys} foi dada a {one} e a {other}: {other} mantém a própria tecla."
+
+msgid ""
+"{keys} is kept for every window (copy, paste, menus, tabs): choose another."
+msgstr ""
+"{keys} é reservada para todas as janelas (copiar, colar, menus, abas): escolha outra."
+
+msgid ""
+"{keys}: Ctrl+Alt with a letter is AltGr on many keyboards, which types characters. Use Ctrl or Ctrl+Shift."
+msgstr ""
+"{keys}: Ctrl+Alt com uma letra é AltGr em muitos teclados, que digita caracteres. Use Ctrl ou Ctrl+Shift."
+
+msgid ""
+"{keys}: a letter, a digit, Space, an arrow or Insert, Delete, Home, End, PageUp or PageDown needs Ctrl, or it would be typed into the bot's own boxes."
+msgstr ""
+"{keys}: uma letra, um número, Espaço, uma seta ou Insert, Delete, Home, End, PageUp ou PageDown precisa de Ctrl, senão seria digitada nos campos do próprio bot."
 
 msgid "{key} (page {page})"
 msgstr "{key} (página {page})"
@@ -11109,11 +11324,34 @@ msgstr "{w} por {h} casas, {n} saídas."
 #~ msgid "(no notes)"
 #~ msgstr "(sem observações)"
 
+#~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
+#~ msgstr ""
+#~ "Outro programa está usando a tecla Pause; o atalho Pause não funcionará."
+
+#~ msgid ""
+#~ "Another program is using {keys}, so {action} won't work from everywhere."
+#~ msgstr ""
+#~ "Outro programa está usando {keys}, então {action} não vai funcionar em qualquer lugar."
+
 #~ msgid "Healing teammates while following"
 #~ msgstr "Curando companheiros de equipe enquanto segue alguém"
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Manter distância dos chefes"
+
+#~ msgid "Tell the Gang chat of each boss seen (in English)"
+#~ msgstr "Avisar o chat Gang de cada chefe visto (em inglês)"
+
+#~ msgid ""
+#~ "Tell the Global chat of each boss seen (in English; the whole server reads it)"
+#~ msgstr ""
+#~ "Avisar o chat Global de cada chefe visto (em inglês; o servidor inteiro lê)"
+
+#~ msgid "Tell the International chat of each boss seen (in English)"
+#~ msgstr "Avisar o chat International de cada chefe visto (em inglês)"
+
+#~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
+#~ msgstr "Avisar o chat Team de cada chefe visto (em inglês: nome, mapa, onde)"
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"

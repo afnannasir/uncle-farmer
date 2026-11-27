@@ -245,27 +245,3 @@ def test_supply_rule_reads_the_old_flags() -> None:
     assert bagrules.supply_rule({"storage_first": False, "buy": True}) == "buy"
     assert bagrules.supply_rule({"storage_first": False, "buy": False}) == "tell"
     assert bagrules.supply_rule({}) == "both"       # defaults are storage_first=True, buy=True
-
-
-def test_suggest_supplies_offers_only_matching_hotkey_items() -> None:
-    scan = {"hotkeys": [
-        {"item": "Large Red Potion"},
-        {"item": "Large Blue Potion"},
-        {"item": "Rice Roll"},
-        {"item": "Small Toolbox"},
-        {"item": "Wolf Pelt"},          # not a supply
-        {"item": ""},                    # no name
-        {},                              # no item key
-    ]}
-    assert bagrules.suggest_supplies(scan) == [
-        {"item": "Large Red Potion", "min": 30, "stock": 200, "source": "tell", "on": True},
-        {"item": "Large Blue Potion", "min": 30, "stock": 200, "source": "tell", "on": True},
-        {"item": "Rice Roll", "min": 30, "stock": 200, "source": "tell", "on": True},
-        {"item": "Small Toolbox", "min": 30, "stock": 200, "source": "tell", "on": True},
-    ]
-
-
-def test_suggest_supplies_empty_scan() -> None:
-    assert bagrules.suggest_supplies(None) == []
-    assert bagrules.suggest_supplies({}) == []
-    assert bagrules.suggest_supplies({"hotkeys": []}) == []

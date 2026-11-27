@@ -2,6 +2,63 @@
 
 ## Unreleased
 
+**Bag and supplies: sensible supplies offered** (untested in game)
+
+- The Supplies list offered everything on a hotkey whose name held "potion", "rice roll", "food" or
+  "toolbox", each to be refilled at 30 and filled up to 200. Ticked by mistake with a shop as its
+  source, 200 Alloy Toolboxes cost 16 million arnebia. It now offers one row for each thing the
+  character uses, picked as a dungeon run picks them (the potion named in its settings, else the one
+  on a hotkey, else the strongest in the bag): its red and blue potions (the blues only with MP),
+  the pet's potions and food (only with a pet ticked), a toolbox, then any other supply on a hotkey
+  (pliers too, which were never offered).
+- The amounts suit the item: your potions 30 / 200, the pet's 20 / 100, the pet's food 3 / 30,
+  toolboxes 1 / 5, pliers 10 / 50, anything else 5 / 20; an item added by hand gets the same.
+- An item no shop sells (the Super potions, crafted or from gifts, the Chef's dishes) is offered
+  from the storehouse only, never to be bought.
+- Offered rows left unticked aren't saved, as before.
+- Sunset City's pharmacist sells no Large potions (ours or the pet's): the bot no longer goes there
+  for them, two wasted trips before it learned.
+
+**Character settings: a Bosses tab, and your own boss notice** (untested in game)
+
+- The boss settings were a group at the bottom of Advanced, Fighting, where players didn't think of
+  looking. They have a tab of their own in Character settings, after Fighting, with Leave demonized
+  elites alone: keeping away from bosses, leaving the map for a while, and the chat rooms told of each
+  boss seen. Every box has its shortcut letter now (the chat rooms' had none). Nothing changes in the
+  profiles.
+- **Your own line** for the boss notice, in any language: `%boss%`, `%map%` and `%pos%` are put in for
+  the boss's name, the map and where it stands. The tab shows what the chat gets as you type. Left
+  empty, the bot sends its own line in English, as before.
+
+**Keyboard shortcuts you can change** (untested in game)
+
+- **File, Keyboard shortcuts**: every command of the menus (Run, Game, Tools, Character, Messages,
+  Plans, File, View, Help), Pause and Shift+Pause, each with its keys (or none) and where they work:
+  only in Uncle Farmer, or everywhere, even inside the game. The keys are typed as text, so NVDA's
+  keys never get in the way; the window says why keys can't be used, which action has them already,
+  and what a key that works everywhere takes away. The new keys work at once.
+- The same table is `shortcuts.txt`, beside `settings.json`, one line an action
+  (`game_mute = Ctrl+M = inapp`), for players who prefer a file. A line that can't be used is said in
+  the Log tab and that action keeps its default. No file: the keys stay exactly as they were.
+- A key that works everywhere acts on the game in front when it is one of yours (the Games list
+  selects it), else on the selected game; one that opens a window brings Uncle Farmer forward first.
+- New in the Game menu, for such keys: **Select the next game**, **Select the previous game** (said
+  with the character, map and bot), **Speak the selected game's status** (adds what its bot does and
+  its HP) and **Bring the selected game to the front**. They have no key until you give them one.
+- Help, Keyboard shortcuts lists the keys as they are now.
+- A few shortcut letters of the Game and File menus that two entries shared in Urdu, Portuguese,
+  French, Spanish and Turkish were set apart.
+
+**The game's own speech: only the game in front talks** (untested in game)
+
+- A new choice in File, Settings, Speech and language, **Whenever its window isn't in front**: each
+  game talks only while its window is in front, for players with several games open. Switching to a
+  game lets it talk, switching away silences it; a bot running in it doesn't change that.
+- Each character can have its own choice (Character settings, Overview), which wins over the app's:
+  as the app says (the default), while a bot runs, always, never, or only in front.
+- Ctrl+M and Ctrl+U still hold until the next switch; a game silenced this way talks again when it
+  leaves that mode and when Uncle Farmer closes.
+
 **Fixed: settings lost when the game's server can't be read** (untested in game)
 
 - The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever

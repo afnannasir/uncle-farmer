@@ -131,9 +131,9 @@ The Log tab shows what the bot has been doing. You can choose to see everything 
 
 The menu bar has these menus:
 
-- **File:** Settings, the log and results folders, and Exit.
+- **File:** Settings, Keyboard shortcuts, the log and results folders, and Exit.
 - **View:** The three tabs.
-- **Game:** Mute and unmute this game or every game, and Open another game window.
+- **Game:** Mute and unmute this game or every game, select the next or the previous game, speak the selected game's status, bring it to the front, and Open another game window.
 - **Messages:** Private messages, Chat, and Let everyone get replies again.
 - **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
 - **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
@@ -151,7 +151,7 @@ The **Help** menu provides two useful options:
 
 ### Starting and stopping the bot
 
-The **Pause** key starts or stops the bot from anywhere, even while you are playing.
+The **Pause** key starts or stops the bot from anywhere, even while you are playing. Its key, like every other, can be changed (see "Keyboard shortcuts").
 
 If you want to temporarily take control without ending the current run, use the **Pause** button on the Bot tab or press **F6**.
 
@@ -394,7 +394,6 @@ If you want the bot to use only the skills you have selected, set **Skills not i
 The other tabs under **Advanced** contain more detailed options, including:
 
 - How far the bot chases monsters while following a patrol loop.
-- How far the bot stays away from bosses.
 - When the character rests.
 - When defensive skills, shields, and the healing skill are used.
 - Which potions and Rice Rolls the pet uses.
@@ -450,14 +449,22 @@ The bot doesn't stand idle meanwhile. On the way to the door it fights the monst
 
 A boss of that map that comes close is walked away from, as on the farm, but never left behind with another trip. Before anything was fought on the farm, it has nothing to judge by, and waits as before. When two doors are about as near, it takes the one to a map it may farm. A full bag, the drop time and the end of the farm (its minutes or kills) work there as on the farm, and in the results, map by map, the kills of the wait count for the map waited on.
 
-All of this can be set in **Advanced → Fighting**, group **Bosses**:
+All of this can be set on the **Bosses** tab of **Character settings** (it used to be a group at the
+bottom of **Advanced → Fighting**). Its **Keeping away** group holds:
 
 - **Keep away from bosses** and the steps to keep (40). Unticked, the bot doesn't keep away from bosses at all.
 - **Leave the map for a while when a boss keeps coming back** (ticked). Unticked, the bot never leaves: it keeps away from the boss on the map and farms on.
 - How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
 - The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
 - **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
-- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100". It tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
+- **Leave demonized elites alone** (see "Demonized elites" below).
+
+Its **Telling other players** group holds:
+
+- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100".
+- **Your own line**, to send your own words instead, in any language. Write `%boss%` where the boss's name goes, `%map%` for the map's name and `%pos%` for where it stands ("105, 100"), in capitals or not: "%boss% is up on %map% at %pos%, come help!" sends "Death Worm is up on Wolf Prairie at 105, 100, come help!". The line below it shows what the chat gets as you type. Left empty, the bot sends its own line, in English.
+
+The bot tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
@@ -494,8 +501,8 @@ You can turn this off in **Advanced → Fighting**: untick **Open the chests tha
 Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
 stronger than the monsters around them; one the same level as your character can still kill it,
 depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
-Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
-**Advanced → Fighting**. Then it keeps away from them:
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** on
+the **Bosses** tab of **Character settings**. Then it keeps away from them:
 
 - It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
   the elite in. The log counts them among the monsters left alone.
@@ -631,6 +638,27 @@ For items that are not shards, choose whether Uncle Farmer should:
 ### Supplies
 
 Choose which potions and food Uncle Farmer should refill, and where it should get them.
+
+The list offers one row for each thing your character uses, chosen as a dungeon run chooses them:
+the potion named in the character's settings, else the one on a hotkey, else the strongest in the
+bag. That is your red potions, your blue ones (only when the character uses MP), the pet's red and
+blue potions and its food (only with a pet ticked), and a toolbox; then any other supply sitting on
+a hotkey, such as pliers. Offered rows stay unticked until you tick them, and their amounts suit
+what they cost (refilled at / filled up to):
+
+- your potions: 30 / 200
+- the pet's potions: 20 / 100
+- the pet's food: 3 / 30
+- toolboxes: 1 / 5 (one mends everything you wear)
+- pliers: 10 / 50 (one mends a single piece)
+- anything else: 5 / 20
+
+An item no shop sells (the Super potions, which are crafted or come in gifts, or a dish from the
+Chef) is offered from the storehouse only: when the storehouse has none left, the bot tells you
+instead of buying something else. An item you add yourself gets the same amounts (one the bot doesn't know, a mistyped name maybe, starts as "Don't refill, just tell me").
+
+Every town's pharmacist sells the Small, Medium and Large potions, yours and the pet's, except
+Sunset City's: it has no Large potions, and the bot doesn't go there for them.
 
 ### Full bag
 
@@ -2021,6 +2049,65 @@ You can also change the spoken results settings to hear an update every few minu
 
 All results are saved in the `results` folder, with a separate file for each character.
 
+## Keyboard shortcuts
+
+Every command of the menus can have its own keys, and each key works either **only in Uncle
+Farmer** or **everywhere, even in the game** (and in any other program). Out of the box the keys are
+the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause work everywhere, the others
+only in Uncle Farmer.
+
+Change them in **File, Keyboard shortcuts**. The list holds every action, with its keys and where
+they work. Select one, type its keys in **Keys** (for example `Ctrl+Shift+R`, `F7` or `Shift+Pause`;
+leave it empty for no key) and choose where they work in **Works**. The keys are typed as text, so
+NVDA's own keys never get in the way. The **Note** below says what to know: keys the bot can't use,
+another action that has them already, or what a key that works everywhere takes away. **Default for
+this one** and **All the defaults** put the bot's keys back. Nothing is kept until **Save**, and the
+new keys work at once.
+
+The same settings are in `shortcuts.txt`, beside `settings.json` in the Uncle Farmer folder, one line
+an action, for players who prefer a file:
+
+    run_toggle = Pause = global
+    game_mute = Ctrl+M = inapp
+    game_next = none = global
+
+`global` works everywhere, `inapp` only in Uncle Farmer, and `none` means no key. **Open the file**
+opens it in your editor; after editing it, **Read the file again** brings it into the window (or
+restart Uncle Farmer). A line that can't be used is said in the Log tab when Uncle Farmer starts, and
+that action keeps its default.
+
+A few rules keep the keys usable:
+
+- A letter, a digit, Space, an arrow, Insert, Delete, Home, End, PageUp or PageDown needs Ctrl (they
+  would be typed into the bot's own boxes otherwise). F1 to F24 and Pause can be used alone.
+- Ctrl+Alt with a letter is refused: on many keyboards it is AltGr, which types characters.
+- Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+Z, Ctrl+Y, Ctrl+Insert, Ctrl+Tab, Ctrl+PageUp, Ctrl+PageDown, F10,
+  Shift+F10, Alt+F4 and Ctrl+F4 are kept
+  for every window.
+- Two actions can't share a key.
+
+**A key that works everywhere is taken away from every other program** while Uncle Farmer runs: the
+game, NVDA, your browser. Ctrl+M from everywhere means the game never gets Ctrl+M. Choose keys no
+program uses, such as Pause or a key from F7 to F12 with Ctrl or Shift. When another program holds a
+key already, Windows refuses it: the Log tab says so, and the key then works in Uncle Farmer only.
+
+A key that works everywhere acts on the game in front when that is one of yours: the Games list
+selects it first, so the next key goes on with the same game. From any other program it acts on the
+game selected in the list. A command that opens a window, such as Bag and supplies, brings Uncle
+Farmer to the front first; while a window of Uncle Farmer is already open, it waits ("Close the open
+Uncle Farmer window first").
+
+These commands of the **Game** menu are made for keys that work everywhere, and have no key until you
+give them one:
+
+- **Select the next game** and **Select the previous game**: the next game in the list (round the
+  end), said with its character, map and what its bot does.
+- **Speak the selected game's status**: the same, then what its bot is doing and its HP.
+- **Bring the selected game to the front**: its window, out of the taskbar if needed.
+
+The keys of the lists and editors (Delete in the Games list, Enter on a plan, F5 and Ctrl+S in the
+script editor...) stay as they are.
+
 
 ## The game's own voice
 
@@ -2036,11 +2123,25 @@ The **combat announcer** is another source of spoken information. It announces c
 
 **Choose when to mute the game**
 
-You can configure when Uncle Farmer mutes the game's speech:
+You can configure when Uncle Farmer mutes the game's speech, in **File, Settings, Speech and
+language**:
 
 - **While a bot runs:** Mutes the game only while your character is farming.
 - **Always:** Keeps the game's speech muted whenever Uncle Farmer is running.
 - **Never:** Leaves the game's speech alone.
+- **Whenever its window isn't in front:** Each game talks only while its window is in front. Switch
+  to a game and it talks; switch to another game, to Uncle Farmer or to any other program, and it goes
+  quiet. Made for playing with several games open: only the one you are in speaks. A bot running in a
+  game doesn't change it.
+
+Each character can have its own choice, which wins over that one: **Character settings, Overview,
+Mute this character's game's own speech** (the same choices, and **As File, Settings, Speech and
+language says**, the default). For example, one game always quiet while the others follow the window
+in front.
+
+With **Whenever its window isn't in front**, Ctrl+M and Ctrl+U still work, until you next switch
+windows. A game the bot silenced that way talks again when you choose another mode for it, and when
+Uncle Farmer closes.
 
 **Mute or unmute a game manually**
 

@@ -85,6 +85,27 @@ def shop_lists() -> dict[str, dict[str, int]]:
         return _lists
 
 
+_lacks: dict[tuple[int, str], set[str]] | None = None
+
+
+def listed_lacks(npc_map: int, npc: str, item: str | None) -> bool:
+    """The shop lists name this one town shop as lacking the item although its kind's list has it
+    (data/shop_lists.json "except": Sunset City's Pharmacist Dani sells no Large potions)."""
+    global _lacks
+    with _lock:
+        if _lacks is None:
+            raw: object = json.read(os.path.join(paths.DATA, "shop_lists.json"), {}, encoding="utf-8")
+            rows: object = raw.get("except") if json.is_object(raw) else None
+            out: dict[tuple[int, str], set[str]] = {}
+            for r in rows if json.is_array(rows) else []:
+                if json.is_object(r) and isinstance(r.get("map"), int) and isinstance(r.get("npc"), str):
+                    goods: object = r.get("lacks")
+                    out[(r["map"], r["npc"].strip().lower())] = {
+                        str(g).strip().lower() for g in (goods if json.is_array(goods) else [])}
+            _lacks = out
+        return (item or "").strip().lower() in _lacks.get((npc_map, npc.strip().lower()), set())
+
+
 def listed_role(name: str | None) -> str | None:
     """The kind of town shop whose list has this item, or None."""
     want = (name or "").strip().lower()

@@ -606,3 +606,17 @@ def test_the_farm_loop_tells_of_the_bosses_before_keeping_away(monkeypatch: pyte
 def test_a_tick_is_not_a_number_of_seconds() -> None:
     assert bosses.walk_offs({"boss_walk_offs": True}) == 3
     assert bosses.away_times({"boss_away_first": True, "boss_away_most": False}) == (60.0, 300.0)
+
+
+def test_the_player_s_own_line_names_the_boss_the_map_and_where() -> None:
+    w, sender = told_walker([3])
+    w.p["boss_notice_text"] = "Boss alert: %Boss% on %MAP% at %pos%, %unknown% stays"
+    bosses.announce(as_bot(w), worm_snap(), 5121)
+    assert sender.lines == ["say 3 Boss alert: Death Worm on Wolf Prairie at 105, 100, %unknown% stays"]
+
+
+def test_an_own_line_of_blanks_is_the_bot_s_line_and_one_of_several_lines_is_one() -> None:
+    boss = {"name": "Death Worm", "x": 105.4, "y": 99.6}
+    assert bosses.notice_text(boss, 5121, " \n\t ") == "Death Worm (a boss) on Wolf Prairie at 105, 99"
+    assert bosses.notice_text(boss, 5121, "%boss%\nis\r\nhere") == "Death Worm is here"
+    assert bosses.notice_text(boss, 99999, "%map%") == "99999"         # a map the bot has no name for

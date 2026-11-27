@@ -1,5 +1,5 @@
 {
- "note": "What every town shop of a kind sells, item -> unit price in arnebia, read from their menus in the game (2026-11-19: Tulip City's Pharmacist Evan and Grocer Lana, Violet City's Pharmacist Mona Lisa and Grocer Luca; the game data's Apothecary Phillips, Giant Rock City, lists the same potions at the same prices). Villages have no shops. The gang camps' sellers are not covered: their menus were never read.",
+ "note": "What the town shops of a kind sell, item -> unit price in arnebia, read from their menus in the game (2026-11-19: Tulip City's Pharmacist Evan and Grocer Lana, Violet City's Pharmacist Mona Lisa and Grocer Luca; the game data's Apothecary Phillips, Giant Rock City, lists the same potions at the same prices). Villages have no shops. The gang camps' sellers are not covered: their menus were never read. Except: one shop that lacks part of its kind's list (Sunset City's Pharmacist Dani sells no Large potions, ours or the pet's - said by a player, 2026-11-27).",
  "read": "2026-11-19",
  "lists": {
   "potions": {
@@ -35,5 +35,17 @@
    "Advanced Repair Scroll": 100000,
    "Pet Rice Roll": 1000
   }
- }
+ },
+ "except": [
+  {
+   "map": 1021,
+   "npc": "Pharmacist Dani",
+   "lacks": [
+    "Large Red Potion",
+    "Large Blue Potion",
+    "Pet Large Red Potion",
+    "Pet Large Blue Potion"
+   ]
+  }
+ ]
 }

@@ -23,7 +23,8 @@ APP_DEFAULTS: dict[str, Any] = {
     "speak": True,            # announce important events through NVDA when it is running
     "last_run": "",           # what was selected to run last time
     "last_runs": {},          # character -> what it ran last ("plan:name"), for several games at once
-    "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never"
+    "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never",
+                               # or "front" (each game talks only while its window is in front)
     "fix_voice": True,        # mend the game's voice message player (off: deep, slow voices come back, as the game has it)
     "other_keys": True,       # keys other programs send (NVDA Remote, a controller mapper) count in the game (off: dropped, as the game has it)
     "results_speak": "end",   # speak a run's results: "end" (once, when it stops) or "never"
@@ -53,7 +54,21 @@ CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home", "login_email
 # One per character. Everything the bot needs to know about how YOU play.
 LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next level" and keep_level take
 
+GAME_SPEECH_MODES = ("running", "always", "never", "front")   # app "game_speech", and a profile's own
+
+
+def game_speech_mode(app: dict[str, Any], profile: dict[str, Any] | None) -> str:
+    """When the game's own speech is muted for this character: its own choice (Character settings,
+    Overview), else the app's (File, Settings, Speech and language)."""
+    own = (profile or {}).get("game_speech") or ""
+    if own in GAME_SPEECH_MODES:
+        return own
+    general = app.get("game_speech", "running")
+    return general if general in GAME_SPEECH_MODES else "running"
+
+
 PROFILE_DEFAULTS: dict[str, Any] = {
+    "game_speech": "",        # this character's own game_speech (GAME_SPEECH_MODES); "": as the app's
     "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
     "keyboard_profiles": {},
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
@@ -148,6 +163,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "boss_away_most": 300,    # ...up to this many seconds
     "boss_away_farm": True,   # fight on the way out and farm the map waited on (when its monsters are no stronger)
     "boss_notice_rooms": [],  # chat channels (4 team, 3 gang, 5 international, 0 global) told of each boss seen
+    "boss_notice_text": "",   # the player's own boss notice (%boss%, %map%, %pos%); "": the bot's line, in English
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
@@ -308,6 +324,7 @@ class AppSettings(BaseModel):
 class Profile(BaseModel):
     """profiles/<character>.json."""
     model_config = ConfigDict(extra="allow")
+    game_speech: str = PROFILE_DEFAULTS["game_speech"]
 
     trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
     keyboard_profiles: dict[str, Any] = PROFILE_DEFAULTS["keyboard_profiles"]
@@ -416,6 +433,7 @@ class Profile(BaseModel):
     boss_away_most: int = PROFILE_DEFAULTS["boss_away_most"]
     boss_away_farm: bool = PROFILE_DEFAULTS["boss_away_farm"]
     boss_notice_rooms: list[int] = PROFILE_DEFAULTS["boss_notice_rooms"]
+    boss_notice_text: str = PROFILE_DEFAULTS["boss_notice_text"]
     skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     menu_keys_retry: bool = PROFILE_DEFAULTS["menu_keys_retry"]
