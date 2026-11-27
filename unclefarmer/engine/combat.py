@@ -167,6 +167,12 @@ def knowledge() -> dict[str, list[Skill]]:
     return _know
 
 
+def class_of_skills(learned: set[str]) -> str | None:
+    """The class whose skills these learned skill names are (most in common), None without any."""
+    know = knowledge()
+    return max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None) if learned else None
+
+
 def talent_texts() -> dict[str, str]:
     """{talent name: its text} for every class, from data/skills.json."""
     global _talents

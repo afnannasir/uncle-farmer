@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+**Keyboard Manager: profiles shared with a class or every character, beasts and pets on the number keys** (untested in game)
+
+- **Shared with**: a profile can stay the character's own, or be shared with every character of its class
+  (Elf, Priest...) or with every character, so a new character gets its keys back in one go. Shared
+  profiles are kept in `profiles\_keyboard_layouts.json`; the class is read from the skills the
+  character has learned.
+- **Nothing missing stops the rest**: a skill the character hasn't learned, an item missing from the bag,
+  a fusion beast or pet it doesn't own, or a key the game didn't take is left alone, and the end says
+  which ones. Before, the first one stopped the whole profile, with nothing put on.
+- **Fusion beasts and pets** on the number keys (the tab is now Number keys). A number key holding one
+  was forgotten (a beast) or saved as "Item type 1" and then refused (a pet). They are put back from
+  their bag panels. Their numbers are each character's own (seen in game: one Wind Spirit Guardian
+  was 62203, another 64034), so on another character they are found by name, a pet by its exact name.
+- Skills are found by the game's skill number, the same for every character of a class whatever the
+  skill's level (seen in game on three Elves), else by name.
+
 **Bag and supplies: sensible supplies offered** (untested in game)
 
 - The Supplies list offered everything on a hotkey whose name held "potion", "rice roll", "food" or

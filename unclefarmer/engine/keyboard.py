@@ -1,18 +1,32 @@
-"""Save and apply character hotkeys through the game's existing binding controls."""
+"""Save and apply character hotkeys through the game's existing binding controls.
+
+A layout belongs to one character (its profile's keyboard_profiles), or is shared, in the profiles
+folder's SHARED_FILE, with every character of one class or with every character. Applying one puts
+on what it can and names what it couldn't: a skill the character hasn't learned, an item missing from
+the bag, a fusion beast or pet it doesn't own, or a key the game didn't take.
+
+Skill and profession ids are the game's own, one per skill whatever its level and the same for every
+character of the class (seen live on three Elves). A number key holds [item type, bag uid], or
+[0, beast id] for a fusion beast and [1, pet id] for a pet (seen live); beast and pet ids are each
+character's own (one Wind Spirit Guardian was 62203, another 64034), so those are matched by name
+on another character, a pet by its exact name (the player's own name for it is part of it).
+"""
 
 from __future__ import annotations
 
+import os
 import shlex
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+import threading
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
-from .. import gameinstall, gamekeys, jsonio, phrases, settings
+from .. import gameinstall, gamekeys, jsonio, paths, phrases, settings
 from ..clock import clock_for
 from ..i18n import _
 from ..link import JsonLink
-from . import combat, keyslots
+from . import beasts, combat, keyslots, pets
 from .botparts.base import Stopped
 
 if TYPE_CHECKING:
@@ -21,11 +35,18 @@ if TYPE_CHECKING:
 COMMAND = "keyboard_profile"
 ACTION_PREFIX = "keyboard:"
 SLOT_COUNTS = {"skills": 20, "profession": 3, "items": 12, "phrases": 12}
+BEAST_SLOT, PET_SLOT = 0, 1        # a number key's first number for a fusion beast / a pet
+BEAST_PANEL, PET_PANEL = 2, 3      # their bag panels
+SCOPES = ("character", "class", "all")
+SHARED_FILE = "_keyboard_layouts.json"   # in the profiles folder: {"class": {class: {name: layout}}, "all": {name: layout}}
+
+_shared_lock = threading.Lock()
 
 
 class Binding(BaseModel):
     id: int = Field(gt=0, strict=True)
     name: str
+    kind: Literal["item", "beast", "pet"] = "item"     # what a number key holds (skills are always "item")
 
 
 class Profile(BaseModel):
@@ -61,8 +82,94 @@ def phrase_text(value: str) -> str:
     return text
 
 
+# ---------------------------------------------------------------- where layouts are kept
+def class_of(p: dict[str, Any]) -> str:
+    """The character's class as its last scan read it ("" when never scanned)."""
+    scan: dict[str, Any] = p.get("scan") or {}
+    return str(scan.get("class") or "")
+
+
+def _shared_path() -> str:
+    return os.path.join(paths.PROFILES, SHARED_FILE)
+
+
+def _read_shared(strict: bool = False) -> dict[str, Any]:
+    """The shared layouts. Unreadable: empty, or with strict (before saving over it) the error."""
+    got: object
+    try:
+        got = jsonio.read(_shared_path(), None)
+    except (OSError, ValueError):
+        if strict:
+            raise ValueError(_("Couldn't read the shared keyboard profiles ({file}).", file=SHARED_FILE)) from None
+        got = {}
+    if not jsonio.is_object(got):
+        got = {}
+    classes, every = got.get("class"), got.get("all")
+    return {"class": {str(c): dict(t) for c, t in classes.items() if jsonio.is_object(t)}
+            if jsonio.is_object(classes) else {},
+            "all": dict(every) if jsonio.is_object(every) else {}}
+
+
+def layouts(p: dict[str, Any], cls: str | None = None) -> list[tuple[str, str]]:
+    """(scope, name) of every layout this character may use: its own, its class's, everyone's. A
+    name is listed once, the closest one winning (its own before its class's before everyone's)."""
+    cls = cls or class_of(p)
+    shared = _read_shared()
+    own: dict[str, Any] = p.get("keyboard_profiles") or {}
+    out: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for scope, table in (("character", own), ("class", shared["class"].get(cls, {}) if cls else {}),
+                         ("all", shared["all"])):
+        for name in sorted(table, key=str.casefold):
+            if name not in seen:
+                seen.add(name)
+                out.append((scope, name))
+    return out
+
+
 def names(p: dict[str, Any]) -> list[str]:
-    return sorted(p.get("keyboard_profiles", {}), key=str.casefold)
+    return sorted((name for _scope, name in layouts(p)), key=str.casefold)
+
+
+def find(p: dict[str, Any], name: str, cls: str | None = None) -> tuple[str, dict[str, Any]] | None:
+    """(scope, layout) of the layout this character uses under that name, or None."""
+    cls = cls or class_of(p)
+    for scope, found in layouts(p, cls):
+        if found != name:
+            continue
+        if scope == "character":
+            return scope, p["keyboard_profiles"][name]
+        shared = _read_shared()
+        table = shared["class"].get(cls, {}) if scope == "class" else shared["all"]
+        if name in table:
+            return scope, table[name]
+    return None
+
+
+def store(character: str, scope: str, name: str, layout: dict[str, Any] | None, cls: str = "") -> dict[str, Any]:
+    """Save a layout (None deletes it) for the character, its class (cls) or everyone. Returns the
+    character's profile as it now is."""
+    cfg = settings.load_profile(character)
+    if scope == "character":
+        own = cfg.setdefault("keyboard_profiles", {})
+        if layout is None:
+            own.pop(name, None)
+        else:
+            own[name] = layout
+        settings.save_profile(character, cfg)
+        return cfg
+    if scope == "class" and not cls:
+        raise ValueError(_("The bot doesn't know this character's class yet. Capture its keys first."))
+    with _shared_lock:
+        shared = _read_shared(strict=True)
+        table: dict[str, Any] = shared["class"].setdefault(cls, {}) if scope == "class" else shared["all"]
+        if layout is None:
+            table.pop(name, None)
+        else:
+            table[name] = layout
+        shared["class"] = {c: t for c, t in shared["class"].items() if t}
+        jsonio.save(_shared_path(), shared, indent=1)
+    return cfg
 
 
 def command(name: str) -> str:
@@ -123,15 +230,51 @@ def _skill_slots(sk: dict[str, Any], kind: str) -> tuple[list[dict[str, Any]], d
     return sk[rows_key], {int(i): sid for i, sid in sk[slots_key].items() if 1 <= int(i) <= SLOT_COUNTS[kind] and sid}
 
 
-def _items(a: JsonLink) -> tuple[dict[int, Binding], dict[int, int]]:
+# ---------------------------------------------------------------- the number keys
+def _number_keys(a: JsonLink) -> dict[int, tuple[str, int]]:
+    """What each number key holds: ("item", item type), ("beast", beast id) or ("pet", pet id)."""
+    out: dict[int, tuple[str, int]] = {}
+    for i, row in _object(a, "mem slots").items():
+        if not (1 <= int(i) <= SLOT_COUNTS["items"] and jsonio.is_array(row) and row):
+            continue
+        code, ref = int(row[0]), int(row[1]) if len(row) > 1 else 0
+        if code == BEAST_SLOT and ref > 0:
+            out[int(i)] = ("beast", ref)
+        elif code == PET_SLOT and ref > 0:
+            out[int(i)] = ("pet", ref)
+        elif code > PET_SLOT:
+            out[int(i)] = ("item", code)
+    return out
+
+
+def _inventory(a: JsonLink) -> dict[int, Binding]:
     rows = a.json("mem bagfull")
     if not jsonio.is_array(rows):
         raise ValueError(_("Couldn't read keyboard settings from the game."))
-    inventory = {row["type"]: Binding(id=row["type"], name=row["name"]) for row in rows
-                 if row.get("type", 0) > 0 and row.get("name") and row.get("count", 0) > 0}
-    slots = {int(i): row[0] for i, row in _object(a, "mem slots").items()
-             if 1 <= int(i) <= 12 and row and row[0] > 0}
-    return inventory, slots
+    return {row["type"]: Binding(id=row["type"], name=row["name"]) for row in rows
+            if row.get("type", 0) > 0 and row.get("name") and row.get("count", 0) > 0}
+
+
+def _list(a: JsonLink, request: str) -> list[dict[str, Any]]:
+    rows = a.json(request)
+    return [r for r in rows if jsonio.is_object(r) and isinstance(r.get("id"), int) and r["id"] > 0] \
+        if jsonio.is_array(rows) else []
+
+
+def _owned(a: JsonLink) -> dict[tuple[str, int], Binding]:
+    """Everything a number key can hold for this character, by (kind, id)."""
+    owned: dict[tuple[str, int], Binding] = {("item", t): b for t, b in _inventory(a).items()}
+    for kind, request in (("beast", "mem beasts"), ("pet", "mem pets")):
+        for r in _list(a, request):
+            owned[(kind, r["id"])] = Binding(id=r["id"], name=str(r.get("name") or "").strip() or str(r["id"]),
+                                             kind="beast" if kind == "beast" else "pet")
+    return owned
+
+
+def _unknown(kind: str, ref: int) -> Binding:
+    label = {"beast": _("Fusion beast {id}", id=ref), "pet": _("Pet {id}", id=ref)}.get(kind) \
+        or _("Item type {id}", id=ref)
+    return Binding(id=ref, name=label, kind="beast" if kind == "beast" else "pet" if kind == "pet" else "item")
 
 
 def _phrases(folder: str, char_id: int) -> dict[int, str]:
@@ -146,6 +289,7 @@ class Capture:
     skills: list[Binding]
     items: list[Binding]
     profession: list[Binding]
+    cls: str | None = None       # the class its learned skills say
 
 
 def capture(a: JsonLink, folder: str, character: str) -> Capture:
@@ -161,17 +305,27 @@ def capture(a: JsonLink, folder: str, character: str) -> Capture:
     profession_rows, profession = _skill_slots(snapshot, "profession")
     learned = {row["id"]: Binding(id=row["id"], name=row["name"]) for row in rows}
     learned_profession = {row["id"]: Binding(id=row["id"], name=row["name"]) for row in profession_rows}
-    inventory, slots = _items(a)
-    items = dict(inventory)
-    for tid in slots.values():
-        if tid not in items:
-            items[tid] = Binding(id=tid, name=_("Item type {id}", id=tid))
+    owned = _owned(a)
+    items: dict[int, Binding] = {}
+    for slot, held in _number_keys(a).items():
+        items[slot] = owned.setdefault(held, _unknown(*held))
     saved_skills = {slot: learned[sid] for slot, sid in skills.items() if sid in learned}
     profile = Profile(skills=saved_skills, profession={slot: learned_profession[sid] for slot, sid in profession.items()
                                                      if sid in learned_profession},
-                      items={slot: items[tid] for slot, tid in slots.items()},
-                      phrases=_phrases(folder, char_id))
-    return Capture(profile, list(learned.values()), list(items.values()), list(learned_profession.values()))
+                      items=items, phrases=_phrases(folder, char_id))
+    return Capture(profile, list(learned.values()), list(owned.values()), list(learned_profession.values()),
+                   combat.class_of_skills({b.name for b in learned.values()}))
+
+
+# ---------------------------------------------------------------- applying
+@dataclass
+class _Work:
+    """What a layout changes on this character, and what it can't put on."""
+    profile: Profile
+    missed: list[str] = field(default_factory=list[str])
+
+    def miss(self, name: str, key: str) -> None:
+        self.missed.append(f"{name} ({key})")
 
 
 def _ensure_idle(b: Bot) -> None:
@@ -182,9 +336,9 @@ def _ensure_idle(b: Bot) -> None:
 def _prepare(b: Bot, book: combat.SkillBook, keys: Keys, profile: Profile, char_id: int) -> None:
     done: set[int] = set()
     for slot in profile.prepare:
-        binding = profile.skills[slot]
-        if binding.id in done:
-            continue
+        binding = profile.skills.get(slot)
+        if binding is None or binding.id in done:
+            continue                    # (a skill this character hasn't learned: already named)
         done.add(binding.id)
         page, index = divmod(slot - 1, 10)
         skill = next((x for x in book.slots.get(page, []) if x["name"] == binding.name), None)
@@ -215,48 +369,91 @@ def _prepare(b: Bot, book: combat.SkillBook, keys: Keys, profile: Profile, char_
 
 
 def apply(b: Bot, name: str) -> None:
-    saved = b.p.get("keyboard_profiles", {}).get(name)
-    if saved is None:
+    sk = b.a.json("mem skills")
+    learned = {str(r.get("name")) for r in sk.get("combat", []) if jsonio.is_object(r)} if jsonio.is_object(sk) else set[str]()
+    found = find(b.p, name, combat.class_of_skills(learned) or class_of(b.p))
+    if found is None:
         raise Stopped(_("Keyboard profile {name} was not found.", name=name))
     try:
-        _apply(b, Profile.model_validate(saved))
+        missed = _apply(b, Profile.model_validate(found[1]))
     except (ValueError, OSError) as error:
         raise Stopped(str(error)) from error
-    b.log(_("Applied keyboard profile {name}.", name=name), speak=True)
+    if missed:
+        b.log(_("Applied keyboard profile {name}, except what couldn't be put on: {missed}.",
+                name=name, missed=", ".join(missed)), speak=True)
+    else:
+        b.log(_("Applied keyboard profile {name}.", name=name), speak=True)
 
 
-def _skill_changes(bindings: dict[int, Binding], rows: list[dict[str, Any]], skills: dict[int, int]) -> dict[int, Binding]:
-    learned = {row["id"]: row["name"] for row in rows}
-    for slot, binding in bindings.items():
-        if binding.id not in learned:
-            raise ValueError(_("The character hasn't learned {skill}.", skill=binding.name))
-        bindings[slot] = Binding(id=binding.id, name=learned[binding.id])
-    return {slot: binding for slot, binding in bindings.items() if skills.get(slot) != binding.id}
+def _skill_changes(work: _Work, kind: str, keys: Keys, rows: list[dict[str, Any]],
+                   skills: dict[int, int]) -> dict[int, Binding]:
+    """The layout's skills on this character (by id, else by name), the ones it lacks named."""
+    by_id = {row["id"]: row["name"] for row in rows}
+    by_name = {str(row["name"]).casefold(): row["id"] for row in rows}
+    bindings: dict[int, Binding] = getattr(work.profile, kind)
+    resolved: dict[int, Binding] = {}
+    for slot, binding in sorted(bindings.items()):
+        sid = binding.id if binding.id in by_id else by_name.get(binding.name.casefold())
+        if sid is None:
+            work.miss(binding.name, keys.label(kind, slot))
+            continue
+        resolved[slot] = Binding(id=sid, name=by_id[sid])
+    setattr(work.profile, kind, resolved)
+    return {slot: binding for slot, binding in resolved.items() if skills.get(slot) != binding.id}
 
 
-def _changes(b: Bot, profile: Profile, snapshot: dict[str, Any], keys: Keys, char_id: int) -> Profile:
+def _held_here(binding: Binding, inventory: dict[int, Binding], beast_rows: list[dict[str, Any]],
+               pet_rows: list[dict[str, Any]]) -> Binding | None:
+    """The thing on this character that a layout's number key means, or None when it has none."""
+    if binding.kind == "item":
+        return binding if binding.id in inventory else None
+    rows = beast_rows if binding.kind == "beast" else pet_rows
+    row = next((r for r in rows if r["id"] == binding.id), None)
+    if row is None and binding.kind == "beast":
+        row = next((r for r in rows if str(r.get("name") or "").strip() == binding.name.strip()), None)
+    elif row is None:
+        row = next((r for r in rows if pets.same_pet(r.get("name"), binding.name)), None)
+    return Binding(id=row["id"], name=binding.name, kind=binding.kind) if row else None
+
+
+def _number_key_changes(b: Bot, work: _Work, keys: Keys) -> dict[int, Binding]:
+    if not work.profile.items:
+        return {}
+    inventory, current = _inventory(b.a), _number_keys(b.a)
+    kinds = {binding.kind for binding in work.profile.items.values()}
+    beast_rows = _list(b.a, "mem beasts") if "beast" in kinds else []
+    pet_rows = _list(b.a, "mem pets") if "pet" in kinds else []
+    out: dict[int, Binding] = {}
+    for slot, binding in sorted(work.profile.items.items()):
+        here = _held_here(binding, inventory, beast_rows, pet_rows)
+        if here is None:
+            work.miss(binding.name, keys.label("items", slot))
+        elif current.get(slot) != (here.kind, here.id):
+            out[slot] = here
+    return out
+
+
+def _changes(b: Bot, work: _Work, snapshot: dict[str, Any], keys: Keys, char_id: int) -> Profile:
     """Preflight game state and only keep slots whose assignments would change."""
-    inventory, items = _items(b.a) if profile.items else ({}, {})
+    profile = work.profile
     current_phrases = _phrases(keys.folder, char_id) if profile.phrases else {}
     changes = Profile(
-        skills=_skill_changes(profile.skills, *_skill_slots(snapshot, "skills")),
-        profession=_skill_changes(profile.profession, *_skill_slots(snapshot, "profession")) if profile.profession else {},
-        items={slot: binding for slot, binding in profile.items.items() if items.get(slot) != binding.id},
+        skills=_skill_changes(work, "skills", keys, *_skill_slots(snapshot, "skills")),
+        profession=_skill_changes(work, "profession", keys, *_skill_slots(snapshot, "profession"))
+        if profile.profession else {},
+        items=_number_key_changes(b, work, keys),
         phrases={slot: value for slot, value in profile.phrases.items() if current_phrases.get(slot) != value},
     )
-    for binding in changes.items.values():
-        if binding.id not in inventory:
-            raise ValueError(_("{item} is missing from the bag.", item=binding.name))
     for slot in profile.prepare:
         binding = profile.skills.get(slot)
-        if binding is None or not can_prepare(binding.name):
+        if binding is not None and not can_prepare(binding.name):
             raise ValueError(_("Choose a bound self-buff or shield to prepare."))
     if profile.phrases:
         b.phrases = current_phrases
     return changes
 
 
-def _bind_profession(b: Bot, keys: Keys, rows: list[dict[str, Any]], bindings: dict[int, Binding]) -> None:
+def _bind_profession(b: Bot, work: _Work, keys: Keys, rows: list[dict[str, Any]], bindings: dict[int, Binding]) -> None:
     for slot, binding in sorted(bindings.items()):
         _ensure_idle(b)
         key = keys.profession[slot - 1]
@@ -267,40 +464,53 @@ def _bind_profession(b: Bot, keys: Keys, rows: list[dict[str, Any]], bindings: d
             _rows, assigned = _skill_slots(_object(b.a, "mem skills"), "profession")
             if assigned.get(slot) == binding.id:
                 continue
-        raise Stopped(_("Couldn't assign {binding} to {key}.", binding=binding.name, key=key))
+        work.miss(binding.name, key)
 
 
-def _bind_items(b: Bot, keys: Keys, bindings: dict[int, Binding]) -> None:
+def _put_on_number_key(b: Bot, keys: Keys, slot: int, binding: Binding) -> bool:
+    """An item from the bag panel, a fusion beast or a pet from theirs, onto the number key; True
+    once the game shows it there."""
+    if binding.kind == "item":
+        placed = b.bag_cursor(binding.name, item_type=binding.id) is not None
+    else:
+        panel, rows = (BEAST_PANEL, beasts.owned(b)) if binding.kind == "beast" else (PET_PANEL, pets.owned(b))
+        index = next((i for i, r in enumerate(rows) if r.get("id") == binding.id), None)
+        placed = index is not None and b.panel_cursor(panel, index, len(rows))
+    if placed:
+        b.tap_key(keys.binds.get(f"W_SET_USE{slot}") or "lctrl+" + keys.items[slot - 1])
+        b.sleep(0.5)
+    return _number_keys(b.a).get(slot) == (binding.kind, binding.id)
+
+
+def _bind_items(b: Bot, work: _Work, keys: Keys, bindings: dict[int, Binding]) -> None:
     for slot, binding in sorted(bindings.items()):
         _ensure_idle(b)
-        if b.bag_cursor(binding.name, item_type=binding.id) is not None:
-            b.tap_key(keys.binds.get(f"W_SET_USE{slot}") or "lctrl+" + keys.items[slot - 1])
-            b.sleep(0.5)
-        current = _object(b.a, "mem slots").get(str(slot), [])
-        if not current or current[0] != binding.id:
-            raise Stopped(_("Couldn't assign {binding} to {key}.", binding=binding.name,
-                            key=keys.label("items", slot)))
+        if not _put_on_number_key(b, keys, slot, binding):
+            work.miss(binding.name, keys.label("items", slot))
 
 
-def _bind_phrases(b: Bot, keys: Keys, char_id: int, bindings: dict[int, str]) -> None:
+def _bind_phrases(b: Bot, work: _Work, keys: Keys, char_id: int, bindings: dict[int, str]) -> None:
     for slot, value in sorted(bindings.items()):
         _ensure_idle(b)
         result = b.a.send("phrase %d %s" % (slot, value))
         b.phrases = _phrases(keys.folder, char_id)
         if result != "set" or b.phrases.get(slot) != value:
-            raise Stopped(_("Couldn't set the quick phrase on {key}.", key=keys.label("phrases", slot)))
+            work.miss(_("the quick phrase"), keys.label("phrases", slot))
 
 
-def _apply(b: Bot, profile: Profile) -> None:
+def _apply(b: Bot, profile: Profile) -> list[str]:
+    """Put the layout on; returns what couldn't be put on (each "name (key)")."""
     _ensure_idle(b)
     char_id = _object(b.a, "mem self").get("id")
     if not char_id:
         raise Stopped(_("Log in to the character in the game first."))
     keys = Keys.read(client_folder(getattr(b.a, "pid", None)))
     snapshot = _object(b.a, "mem skills")
-    changes = _changes(b, profile, snapshot, keys, char_id)
-    if not (changes.skills or changes.profession or changes.items or changes.phrases or profile.prepare):
-        return
+    work = _Work(profile)
+    changes = _changes(b, work, snapshot, keys, char_id)
+    prepare = [slot for slot in profile.prepare if slot in profile.skills]
+    if not (changes.skills or changes.profession or changes.items or changes.phrases or prepare):
+        return work.missed
     # Refresh the running bot's lookup after assigning slots, including on partial failure.
     # The profile may hold page-2 keys the player asked for: this book sees both pages whatever
     # skill_page_one says (the farm's own book comes back after, _farm_book), and the page is left on
@@ -309,7 +519,7 @@ def _apply(b: Bot, profile: Profile) -> None:
     book = b.skillbook
     if book is None or book.game_folder != keys.folder or (page_one and not getattr(book, "both_pages", False)):
         book = combat.SkillBook(b, game_folder=keys.folder, both_pages=True)
-    if (changes.phrases and book.agent_version < phrases.SET_AGENT) or (profile.prepare and not book.confirm):
+    if (changes.phrases and book.agent_version < phrases.SET_AGENT) or (prepare and not book.confirm):
         raise ValueError(_("Restart the game with the current agent to apply these keyboard settings."))
     ui = b.ui()
     page, panel = (0 if page_one else ui.get("attack_page", 0)), ui.get("panel", 0)
@@ -324,12 +534,11 @@ def _apply(b: Bot, profile: Profile) -> None:
             bind_key = keys.binds.get(f"W_SET_ATTACK{index + 1}") or "lctrl+alt+" + hotkey
             if not keyslots.bind_skill(b, book, snapshot["combat"], binding.id, binding.name,
                                        slot, hotkey, bind_key=bind_key):
-                raise Stopped(_("Couldn't assign {binding} to {key}.", binding=binding.name,
-                                key=keys.label("skills", slot)))
+                work.miss(binding.name, keys.label("skills", slot))
         item_write = bool(changes.items)
-        _bind_profession(b, keys, snapshot.get("profession", []), changes.profession)
-        _bind_items(b, keys, changes.items)
-        _bind_phrases(b, keys, char_id, changes.phrases)
+        _bind_profession(b, work, keys, snapshot.get("profession", []), changes.profession)
+        _bind_items(b, work, keys, changes.items)
+        _bind_phrases(b, work, keys, char_id, changes.phrases)
     finally:
         if item_write:
             b.potion_slots = None
@@ -339,7 +548,7 @@ def _apply(b: Bot, profile: Profile) -> None:
         _restore(b, book, page if skill_write else None, panel if moved_panel else None)
     if skill_write:
         book = b.skillbook = combat.SkillBook(b, game_folder=keys.folder, both_pages=page_one)
-    if profile.prepare:
+    if prepare:
         b.skillbook = book
         try:
             _prepare(b, book, keys, profile, char_id)
@@ -347,6 +556,7 @@ def _apply(b: Bot, profile: Profile) -> None:
             _restore(b, book, page, None)
             _farm_book(b, page_one)
     _farm_book(b, page_one)
+    return work.missed
 
 
 def _farm_book(b: Bot, page_one: bool) -> None:

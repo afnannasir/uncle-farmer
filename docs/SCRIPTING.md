@@ -1355,7 +1355,7 @@ time ran out. Stop and Pause work while it waits; `stop_when` rules are looked a
 `use` uses an item from the bag, by its name (a potion, a scroll, a card); then `used` is `true` if it
 went, `false` if the item isn't there or the game didn't take it, and the log says so.
 
-`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script. Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
+`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script: its own, its class's or everyone's (in that order when two have the same name). Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills; what the character can't have (a skill not learned, an item, beast or pet it hasn't got) is left alone and named in the log. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
 
 ### Messages and values
 

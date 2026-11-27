@@ -1158,6 +1158,10 @@ msgstr ""
 msgid "Anywhere, even inside the game"
 msgstr ""
 
+msgid ""
+"Applied keyboard profile {name}, except what couldn't be put on: {missed}."
+msgstr ""
+
 msgid "Applied keyboard profile {name}."
 msgstr ""
 
@@ -1731,9 +1735,6 @@ msgstr ""
 msgid "Couldn't apply the settings: {err}"
 msgstr ""
 
-msgid "Couldn't assign {binding} to {key}."
-msgstr ""
-
 msgid "Couldn't bring {name} to the front."
 msgstr ""
 
@@ -1798,6 +1799,9 @@ msgstr ""
 msgid "Couldn't read the game: {err}"
 msgstr ""
 
+msgid "Couldn't read the shared keyboard profiles ({file})."
+msgstr ""
+
 msgid "Couldn't save the schedules: {err}"
 msgstr ""
 
@@ -1805,9 +1809,6 @@ msgid "Couldn't save {path}: {err}"
 msgstr ""
 
 msgid "Couldn't save: {err}"
-msgstr ""
-
-msgid "Couldn't set the quick phrase on {key}."
 msgstr ""
 
 msgid "Couldn't shut the computer down: {err}"
@@ -2120,6 +2121,12 @@ msgstr ""
 msgid "Every (minutes):"
 msgstr ""
 
+msgid "Every character"
+msgstr ""
+
+msgid "Every character of its class"
+msgstr ""
+
 msgid "Every character of the chain can farm again today."
 msgstr ""
 
@@ -2140,6 +2147,9 @@ msgid ""
 msgstr ""
 
 msgid "Every this many minutes of farmin&g, and when the bag is full:"
+msgstr ""
+
+msgid "Every {cls} character"
 msgstr ""
 
 msgid "Everyone can get replies again."
@@ -2309,6 +2319,9 @@ msgid "Full loop (every lane, a longer lap)"
 msgstr ""
 
 msgid "Full patrol loop"
+msgstr ""
+
+msgid "Fusion beast {id}"
 msgstr ""
 
 msgid "Game"
@@ -2781,9 +2794,6 @@ msgid "Item type {id}"
 msgstr ""
 
 msgid "Item:"
-msgstr ""
-
-msgid "Items"
 msgstr ""
 
 msgid "Items a &day, at most (the game allows {n}):"
@@ -3559,6 +3569,9 @@ msgstr ""
 msgid "Nowhere, use what's in the bag"
 msgstr ""
 
+msgid "Number keys"
+msgstr ""
+
 msgid "Number of &shards to stock:"
 msgstr ""
 
@@ -3776,6 +3789,9 @@ msgid "Pet rebirth"
 msgstr ""
 
 msgid "Pet rebirth (free ones only, never for diamonds)"
+msgstr ""
+
+msgid "Pet {id}"
 msgstr ""
 
 msgid "Pet:"
@@ -4159,6 +4175,9 @@ msgstr ""
 msgid "S&can now"
 msgstr ""
 
+msgid "S&hared with:"
+msgstr ""
+
 msgid "S&hoot while walking (a character that fights from afar)"
 msgstr ""
 
@@ -4217,7 +4236,7 @@ msgid "Saved account email:"
 msgstr ""
 
 msgid ""
-"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings. A profile shared with the class or with every character is in each of their Keyboard Managers; applying it puts on what the character has and names what it couldn't."
 msgstr ""
 
 msgid "Saved keyboard &profiles:"
@@ -4965,6 +4984,10 @@ msgstr ""
 msgid "The bot didn't stop in time, so it isn't following you."
 msgstr ""
 
+msgid ""
+"The bot doesn't know this character's class yet. Capture its keys first."
+msgstr ""
+
 msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr ""
 
@@ -5025,9 +5048,6 @@ msgid "The character chain stopped: logging out didn't answer"
 msgstr ""
 
 msgid "The character chain stopped: logging out didn't work ({why})"
-msgstr ""
-
-msgid "The character hasn't learned {skill}."
 msgstr ""
 
 msgid "The character is on {here}, not on {map}: go to this spot's map first."
@@ -5325,6 +5345,9 @@ msgid "They may &log me out for a while and back in (wait)"
 msgstr ""
 
 msgid "This character has no gathering skill to add a place for."
+msgstr ""
+
+msgid "This character only"
 msgstr ""
 
 msgid "This copy"
@@ -9300,6 +9323,9 @@ msgstr ""
 msgid "the potions asked for are already there"
 msgstr ""
 
+msgid "the quick phrase"
+msgstr ""
+
 msgid "the ride from {map} never arrived"
 msgstr ""
 
@@ -10011,9 +10037,6 @@ msgstr ""
 msgid "{item} is broken"
 msgstr ""
 
-msgid "{item} is missing from the bag."
-msgstr ""
-
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr ""
 
@@ -10156,10 +10179,22 @@ msgstr ""
 msgid "{m} min"
 msgstr ""
 
+msgid "{name} (fusion beast)"
+msgstr ""
+
 msgid "{name} (level {level})"
 msgstr ""
 
+msgid "{name} (pet)"
+msgstr ""
+
 msgid "{name} (script)"
+msgstr ""
+
+msgid "{name} (shared with every character)"
+msgstr ""
+
+msgid "{name} (shared with every {cls})"
 msgstr ""
 
 msgid "{name} (speed +{speed}, level {level})"

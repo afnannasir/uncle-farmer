@@ -40,6 +40,9 @@ class Game:
             {"type": 90, "uid": 120, "name": "Potion", "count": 3},
             {"type": 91, "uid": 121, "name": "Potion", "count": 4},
         ]
+        # a number key holds [0, beast id] / [1, pet id]; those ids are each character's own
+        self.beasts: list[dict[str, Any]] = [{"id": 501, "name": "Firefly"}, {"id": 502, "name": "Iron Beetle"}]
+        self.pets: list[dict[str, Any]] = [{"id": 10000001, "name": "Hound friska"}]
         self.page, self.panel = 0, 0
         self.cursor, self.item_type = 0, 0
         self.events: list[dict[str, Any]] = []
@@ -64,6 +67,10 @@ class Game:
             return self.slots
         if line == "mem bagfull":
             return self.items
+        if line == "mem beasts":
+            return self.beasts
+        if line == "mem pets":
+            return self.pets
         if line == "mem modes":
             return {"swap_attack": True}
         if line.startswith("casts "):
@@ -118,8 +125,13 @@ class Game:
             self.skill_keys[str(slot)] = self.learned[self.cursor]["id"]
         elif key.startswith("lctrl+") and self.accept_item:
             slot = self.keys_config.items.index(key.removeprefix("lctrl+")) + 1
-            row = next(item for item in self.items if item["type"] == self.item_type)
-            self.slots[str(slot)] = [row["type"], row["uid"]]
+            if self.panel == 2:
+                self.slots[str(slot)] = [0, self.beasts[self.cursor]["id"]]
+            elif self.panel == 3:
+                self.slots[str(slot)] = [1, self.pets[self.cursor]["id"]]
+            else:
+                row = next(item for item in self.items if item["type"] == self.item_type)
+                self.slots[str(slot)] = [row["type"], row["uid"]]
         elif key.startswith("shift+") and self.accept_cast:
             now = int(self.clock.time() * 1000)
             if not self.events or now - self.events[-1]["t"] >= 1000:
@@ -161,6 +173,7 @@ def test_capture_and_persist_both_pages_items_and_phrases(game: Game) -> None:
     assert captured.profile.skills[20].id == 12
     assert captured.profile.profession[3].id == 31
     assert captured.profile.items[1].id == 90
+    assert captured.profile.items[1].kind == "item"
     assert captured.profile.phrases == {1: "Old phrase"}
     p = settings.load_profile(me)
     p["keyboard_profiles"]["First layout"] = captured.profile.model_dump(mode="json")
@@ -190,21 +203,64 @@ def test_apply_replaces_only_saved_slots_and_checks_exact_item_type(game: Game) 
     assert not game.keys
 
 
-def test_missing_item_prevents_other_writes(game: Game) -> None:
+def test_a_missing_item_is_named_and_the_rest_put_on(game: Game) -> None:
     game.save("First layout", skills={1: {"id": 12, "name": "Bull's Eye"}},
-              items={2: {"id": 999, "name": "Missing potion"}})
-    with pytest.raises(Stopped, match="Missing potion is missing from the bag"):
-        keyboard.apply(as_bot(game), "First layout")
-    assert not game.keys
+              items={1: {"id": 999, "name": "Missing potion"}})
+    keyboard.apply(as_bot(game), "First layout")
+    assert game.skill_keys["1"] == 12
+    assert game.slots == {"1": [90, 120]}
+    assert "except what couldn't be put on: Missing potion (f3)" in game.lines[-1]
 
 
-def test_refused_item_assignment_fails_instead_of_reporting_success(game: Game) -> None:
+def test_refused_item_assignment_is_named_instead_of_reported_as_done(game: Game) -> None:
     game.save("First layout", items={1: {"id": 91, "name": "Potion"}})
     game.accept_item = False
-    with pytest.raises(Stopped, match="Couldn't assign Potion"):
-        keyboard.apply(as_bot(game), "First layout")
+    keyboard.apply(as_bot(game), "First layout")
     assert game.slots["1"][0] == 90
     assert game.potion_slots is None
+    assert game.lines[-1].endswith("Potion (f3).")
+
+
+def test_capture_reads_fusion_beasts_and_pets_on_number_keys(game: Game) -> None:
+    game.slots = {"1": [90, 120], "2": [0, 502], "3": [1, 10000001], "4": [0, 777]}
+    captured = keyboard.capture(game, str(game.folder), "Test character")
+    items = captured.profile.items
+    assert (items[2].kind, items[2].id, items[2].name) == ("beast", 502, "Iron Beetle")
+    assert (items[3].kind, items[3].id, items[3].name) == ("pet", 10000001, "Hound friska")
+    assert (items[4].kind, items[4].name) == ("beast", "Fusion beast 777")      # not in the list: said so
+    assert {(b.kind, b.id) for b in captured.items} >= {("beast", 501), ("pet", 10000001), ("item", 91)}
+    assert captured.cls == "Hunter"
+
+
+def test_beasts_and_pets_go_back_on_by_name_on_another_character(game: Game) -> None:
+    # saved on another character: its own beast and pet ids, the same names
+    game.save("Mounts", items={2: {"id": 40, "name": "Iron Beetle", "kind": "beast"},
+                               3: {"id": 7, "name": "Hound friska", "kind": "pet"}})
+    keyboard.apply(as_bot(game), "Mounts")
+    assert game.slots["2"] == [0, 502] and game.slots["3"] == [1, 10000001]
+    assert game.lines[-1] == "Applied keyboard profile Mounts."
+    game.keys.clear()
+    keyboard.apply(as_bot(game), "Mounts")
+    assert not game.keys                                    # already on: nothing pressed
+
+
+def test_a_pet_needs_its_exact_name_and_a_missing_beast_is_named(game: Game) -> None:
+    game.save("Mounts", items={2: {"id": 40, "name": "Shadow Wolf", "kind": "beast"},
+                               3: {"id": 7, "name": "Hound", "kind": "pet"}})
+    keyboard.apply(as_bot(game), "Mounts")
+    assert "2" not in game.slots and "3" not in game.slots
+    keys = game.keys_config.items
+    assert game.lines[-1].endswith(f"Shadow Wolf ({keys[1]}), Hound ({keys[2]}).")
+
+
+def test_skills_match_by_name_and_an_unlearned_one_is_named(game: Game) -> None:
+    game.save("Hunter layout", skills={1: {"id": 99, "name": "Bull's Eye"},
+                                       2: {"id": 98, "name": "Strong-Arm Aura"}}, prepare=[2])
+    keyboard.apply(as_bot(game), "Hunter layout")
+    assert game.skill_keys["1"] == 12
+    assert game.skill_keys["2"] == 12                       # left as it was
+    assert "Strong-Arm Aura (Page 1, f5)" in game.lines[-1]
+    assert not game.events                                  # its preparation skipped too
 
 
 def test_preparation_casts_bound_buff_on_self_and_requires_confirmation(game: Game) -> None:
@@ -247,6 +303,39 @@ def test_trigger_runs_the_same_command_with_a_quoted_profile_name(game: Game) ->
     del game.p["keyboard_profiles"][name]
     with pytest.raises(triggers.TriggerFailed):
         triggers.run_stage(as_bot(game), "before", lambda *_a: None, lambda: False)
+
+
+def test_layouts_shared_with_the_class_or_everyone(game: Game) -> None:
+    me = "Test character"
+    layout = keyboard.Profile(skills={1: keyboard.Binding(id=12, name="Bull's Eye")}).model_dump(mode="json")
+    keyboard.store(me, "class", "Hunter layout", layout, "Hunter")
+    keyboard.store(me, "all", "Everyone", keyboard.Profile(phrases={2: "Hello"}).model_dump(mode="json"))
+    keyboard.store(me, "class", "Elf layout", layout, "Elf")
+    p = {"keyboard_profiles": {"Everyone": layout}, "scan": {"class": "Hunter"}}
+    assert keyboard.layouts(p) == [("character", "Everyone"), ("class", "Hunter layout")]   # its own wins
+    assert keyboard.names({"scan": {"class": "Elf"}}) == ["Elf layout", "Everyone"]
+    assert keyboard.find({}, "Hunter layout") is None                # class unknown: not its class's
+    # applying: the class comes from the skills the character has learned (no scan needed)
+    keyboard.apply(as_bot(game), "Hunter layout")
+    assert game.skill_keys["1"] == 12
+    keyboard.apply(as_bot(game), "Everyone")
+    assert game.phrases[2] == "Hello"
+    keyboard.store(me, "all", "Everyone", None)
+    with pytest.raises(Stopped, match="was not found"):
+        keyboard.apply(as_bot(game), "Everyone")
+    with pytest.raises(ValueError, match="class"):
+        keyboard.store(me, "class", "No class", layout, "")
+
+
+def test_an_unreadable_shared_file_is_never_saved_over(game: Game) -> None:
+    from unclefarmer import paths
+    path = Path(paths.PROFILES) / keyboard.SHARED_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{not json", encoding="utf-8")
+    assert keyboard.layouts({"keyboard_profiles": {"Mine": {}}}) == [("character", "Mine")]
+    with pytest.raises(ValueError, match="Couldn't read the shared"):
+        keyboard.store("Test character", "all", "Everyone", {})
+    assert path.read_text(encoding="utf-8") == "{not json"
 
 
 @pytest.mark.parametrize("text", ["", "a b", "'  '"])

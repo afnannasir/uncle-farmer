@@ -18,7 +18,7 @@ def test_keyboard_manager_has_tabs_above_profile_controls_and_one_footer() -> No
     with KeyboardDialog(None, "Test character", 42) as dialog:
         notebook = next(child for child in dialog.GetChildren() if isinstance(child, wx.Notebook))
         assert [notebook.GetPageText(index) for index in range(notebook.GetPageCount())] == [
-            "Skills", "Profession skills", "Items", "Quick phrases",
+            "Skills", "Profession skills", "Number keys", "Quick phrases",
         ]
         note = dialog.FindWindowByName("Keyboard profile information", dialog)
         assert isinstance(note, wx.TextCtrl) and note.IsMultiLine() and not note.IsEditable()
@@ -58,4 +58,29 @@ def test_capture_save_edit_and_reload_from_keyboard_manager(monkeypatch: pytest.
         job = keyboard.ACTION_PREFIX + "Late session"
         editor.action.SetSelection(editor.actions.index(job))
         assert editor.read() == triggers.step(job)
+    app.ProcessPendingEvents()
+
+
+def test_a_profile_shared_with_the_class_moves_out_of_the_character_and_back(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = wx.GetApp() or wx.App(False)
+    beetle = keyboard.Binding(id=502, name="Iron Beetle", kind="beast")
+    saved = keyboard.Profile(items={2: beetle})
+    monkeypatch.setattr(KeyboardDialog, "_game", returning(keyboard.Capture(saved, [], [beetle], [], "Hunter")))
+    with KeyboardDialog(None, "Test character", 42) as dialog:
+        assert dialog.scope.GetString(1) == "Every character of its class"       # class not known yet
+        dialog._capture(wx.CommandEvent())
+        assert dialog.scope.GetString(1) == "Every Hunter character"
+        assert "Iron Beetle (fusion beast)" in dialog.controls["items"].GetString(1)
+        dialog.profile_name.SetValue("Mounts")
+        dialog.scope.SetSelection(1)
+        dialog._save(wx.CommandEvent())
+        assert dialog.profiles.GetString(1) == "Mounts (shared with every Hunter)"
+        assert not settings.load_profile("Test character")["keyboard_profiles"]
+        assert keyboard.find({"scan": {"class": "Hunter"}}, "Mounts") == ("class", saved.model_dump(mode="json"))
+        dialog.scope.SetSelection(0)
+        dialog._save(wx.CommandEvent())                  # the same name back to this character: moved
+        assert keyboard.find({"scan": {"class": "Hunter"}}, "Mounts") is None
+        assert keyboard.names(settings.load_profile("Test character")) == ["Mounts"]
+        dialog._apply(wx.CommandEvent())
+        assert dialog.apply_name == "Mounts"
     app.ProcessPendingEvents()

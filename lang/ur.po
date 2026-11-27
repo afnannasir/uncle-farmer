@@ -1187,6 +1187,11 @@ msgstr "Jawab dena"
 msgid "Anywhere, even inside the game"
 msgstr "Har jagah, game ke andar bhi"
 
+msgid ""
+"Applied keyboard profile {name}, except what couldn't be put on: {missed}."
+msgstr ""
+"Keyboard profile {name} laga diya, siwaye un ke jo nahin lag sake: {missed}."
+
 msgid "Applied keyboard profile {name}."
 msgstr "Keyboard profile {name} laga diya."
 
@@ -1775,9 +1780,6 @@ msgstr "Sound sunna band nahi ho saka; connection band hone par band hoga."
 msgid "Couldn't apply the settings: {err}"
 msgstr "Tarteeb lagayi nahi ja saki: {err}"
 
-msgid "Couldn't assign {binding} to {key}."
-msgstr "{binding} ko {key} par nahi laga sake."
-
 msgid "Couldn't bring {name} to the front."
 msgstr "{name} ko saamne nahin la sake."
 
@@ -1843,6 +1845,9 @@ msgstr "Game se keyboard settings nahi parh sake."
 msgid "Couldn't read the game: {err}"
 msgstr "Game parhi nahi ja saki: {err}"
 
+msgid "Couldn't read the shared keyboard profiles ({file})."
+msgstr "Share kiye gaye keyboard profiles nahin parhe ja sake ({file})."
+
 msgid "Couldn't save the schedules: {err}"
 msgstr "Schedules mahfooz nahi ho sake: {err}"
 
@@ -1851,9 +1856,6 @@ msgstr "{path} mahfooz nahin kar sake: {err}"
 
 msgid "Couldn't save: {err}"
 msgstr "Mahfooz nahi ho saka: {err}"
-
-msgid "Couldn't set the quick phrase on {key}."
-msgstr "{key} par quick phrase nahi laga sake."
 
 msgid "Couldn't shut the computer down: {err}"
 msgstr "Computer band nahi kar saka: {err}"
@@ -2172,6 +2174,12 @@ msgstr "Sirf errors"
 msgid "Every (minutes):"
 msgstr "Har (minute):"
 
+msgid "Every character"
+msgstr "Har character"
+
+msgid "Every character of its class"
+msgstr "Is class ka har character"
+
 msgid "Every character of the chain can farm again today."
 msgstr "Chain ka har kirdaar aaj dobara farm kar sakta hai."
 
@@ -2195,6 +2203,9 @@ msgstr ""
 
 msgid "Every this many minutes of farmin&g, and when the bag is full:"
 msgstr "Har itne minute farmin&g ke baad, aur jab bag bhar jaye:"
+
+msgid "Every {cls} character"
+msgstr "Har {cls} character"
 
 msgid "Everyone can get replies again."
 msgstr "Ab sab ko jawab mil sakta hai."
@@ -2372,6 +2383,9 @@ msgstr "Poora chakkar (har raasta, lamba chakkar)"
 
 msgid "Full patrol loop"
 msgstr "Poora patrol loop"
+
+msgid "Fusion beast {id}"
+msgstr "Fusion beast {id}"
 
 msgid "Game"
 msgstr "Game"
@@ -2868,9 +2882,6 @@ msgstr "Item type {id}"
 
 msgid "Item:"
 msgstr "Cheez:"
-
-msgid "Items"
-msgstr "Items"
 
 msgid "Items a &day, at most (the game allows {n}):"
 msgstr "Ek din mein zyada se zyada &items (game {n} ki ijazat deta hai):"
@@ -3677,6 +3688,9 @@ msgstr "Kahan se laayein koi jagah nahi: jo basta ijazat de wohi banata hai."
 msgid "Nowhere, use what's in the bag"
 msgstr "Kahin se nahi, baste mein jo hai wo istemal karein"
 
+msgid "Number keys"
+msgstr "Number keys"
+
 msgid "Number of &shards to stock:"
 msgstr ""
 
@@ -3906,6 +3920,9 @@ msgstr "Pet rebirth"
 
 msgid "Pet rebirth (free ones only, never for diamonds)"
 msgstr "Pet rebirth (sirf muft wale, diamonds se kabhi nahi)"
+
+msgid "Pet {id}"
+msgstr "Pet {id}"
 
 msgid "Pet:"
 msgstr "Pet:"
@@ -4309,6 +4326,9 @@ msgstr "Runs: {n}"
 msgid "S&can now"
 msgstr "Abhi sc&an karein"
 
+msgid "S&hared with:"
+msgstr "Kin ke sat&h share:"
+
 msgid "S&hoot while walking (a character that fights from afar)"
 msgstr "Chalte hue &nishaana lagaayein (door se larne wala kirdaar)"
 
@@ -4367,9 +4387,9 @@ msgid "Saved account email:"
 msgstr "Mahfooz account email:"
 
 msgid ""
-"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+"Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings. A profile shared with the class or with every character is in each of their Keyboard Managers; applying it puts on what the character has and names what it couldn't."
 msgstr ""
-"Mahfooz bindings game ke un slots par lagti hain. Jaisa hai rehne dein wale slots ki bindings waisi hi rehti hain."
+"Mahfooz bindings game ke slots ki jagah le leti hain. Jin slots par Jaisa hai rehne dein likha hai woh apni maujooda binding rakhte hain. Class ya har character ke saath share kiya gaya profile un sab ke Keyboard Manager mein hota hai; usay lagane se woh lag jata hai jo character ke paas hai, aur jo nahin lag saka us ka naam bata diya jata hai."
 
 msgid "Saved keyboard &profiles:"
 msgstr "Mahfooz keyboard &profiles:"
@@ -5152,6 +5172,10 @@ msgstr "Bot faisla karta hai"
 msgid "The bot didn't stop in time, so it isn't following you."
 msgstr "Bot waqt par nahi ruka, is liye aap ke saath nahi chal raha."
 
+msgid ""
+"The bot doesn't know this character's class yet. Capture its keys first."
+msgstr "Bot abhi is character ki class nahin janta. Pehle is ki keys parhein."
+
 msgid "The bot drinks it as soon as that much {what} is missing."
 msgstr "jaise hi itna {what} kam hota hai, bot ise pee leta hai."
 
@@ -5219,9 +5243,6 @@ msgstr "Kirdaaron ki chain ruk gayi: log out ka jawab nahin aaya"
 
 msgid "The character chain stopped: logging out didn't work ({why})"
 msgstr "Kirdaaron ki chain ruk gayi: log out nahin hua ({why})"
-
-msgid "The character hasn't learned {skill}."
-msgstr "Character ne {skill} nahi seekhi."
 
 msgid "The character is on {here}, not on {map}: go to this spot's map first."
 msgstr ""
@@ -5555,6 +5576,9 @@ msgstr ""
 msgid "This character has no gathering skill to add a place for."
 msgstr ""
 "Is character ke paas jama karne ki koi skill nahi jis ke liye jagah shamil ho."
+
+msgid "This character only"
+msgstr "Sirf yeh character"
 
 msgid "This copy"
 msgstr "Yeh copy"
@@ -9789,6 +9813,9 @@ msgstr ""
 msgid "the potions asked for are already there"
 msgstr "maange gaye potions pehle se maujood hain"
 
+msgid "the quick phrase"
+msgstr "quick phrase"
+
 msgid "the ride from {map} never arrived"
 msgstr "{map} se sawari kabhi nahi pohanchi"
 
@@ -10540,9 +10567,6 @@ msgstr "{item} tootne wala hai"
 msgid "{item} is broken"
 msgstr "{item} toot gaya hai"
 
-msgid "{item} is missing from the bag."
-msgstr "{item} bag mein nahi hai."
-
 msgid "{item} is no longer on key {key} - the game put something else there"
 msgstr "{item} ab key {key} par nahi hai - game ne wahan kuch aur rakh diya"
 
@@ -10696,11 +10720,23 @@ msgstr "{mode}: {pattern} ({state})"
 msgid "{m} min"
 msgstr "{m} min"
 
+msgid "{name} (fusion beast)"
+msgstr "{name} (fusion beast)"
+
 msgid "{name} (level {level})"
 msgstr "{name} (level {level})"
 
+msgid "{name} (pet)"
+msgstr "{name} (pet)"
+
 msgid "{name} (script)"
 msgstr "{name} (script)"
+
+msgid "{name} (shared with every character)"
+msgstr "{name} (har character ke saath share)"
+
+msgid "{name} (shared with every {cls})"
+msgstr "{name} (har {cls} ke saath share)"
 
 msgid "{name} (speed +{speed}, level {level})"
 msgstr "{name} (speed +{speed}, level {level})"
@@ -11365,11 +11401,25 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgstr ""
 #~ "Koi aur program {keys} istemal kar raha hai, is liye {action} har jagah se nahin chalega."
 
+#~ msgid "Couldn't assign {binding} to {key}."
+#~ msgstr "{binding} ko {key} par nahi laga sake."
+
+#~ msgid "Couldn't set the quick phrase on {key}."
+#~ msgstr "{key} par quick phrase nahi laga sake."
+
 #~ msgid "Healing teammates while following"
 #~ msgstr "Peeche chalte hue teammates ki shifa"
 
+#~ msgid "Items"
+#~ msgstr "Items"
+
 #~ msgid "Keep away from bosses"
 #~ msgstr "Bosses se door rahein"
+
+#~ msgid ""
+#~ "Saved bindings replace their game slots. Slots marked Leave unchanged keep their current bindings."
+#~ msgstr ""
+#~ "Mahfooz bindings game ke un slots par lagti hain. Jaisa hai rehne dein wale slots ki bindings waisi hi rehti hain."
 
 #~ msgid "Tell the Gang chat of each boss seen (in English)"
 #~ msgstr "Har nazar aane wale boss ki khabar Gang chat mein dein (English mein)"
@@ -11386,6 +11436,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Tell the Team chat of each boss seen (in English: name, map, where)"
 #~ msgstr ""
 #~ "Har nazar aane wale boss ki khabar Team chat mein dein (English mein: naam, map, jagah)"
+
+#~ msgid "The character hasn't learned {skill}."
+#~ msgstr "Character ne {skill} nahi seekhi."
 
 #~ msgid ""
 #~ "Uncle Farmer {v} is out (you have {cur}).\n"
@@ -11434,6 +11487,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 #~ msgstr ""
 #~ "aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
+
+#~ msgid "{item} is missing from the bag."
+#~ msgstr "{item} bag mein nahi hai."
 
 #~ msgid ""
 #~ "{name}'s game was lost: opening it again and carrying on where the run was ({n} of {most} today)."

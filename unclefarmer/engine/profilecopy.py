@@ -11,6 +11,7 @@ import copy
 from typing import Any
 
 from . import triggers
+from .keyboard import class_of as class_of    # (the character's class as its last scan read it)
 
 # The fighting settings: the character window's fighting boxes, Advanced settings' fine tuning and
 # each skill's use - the ones "Reset the fighting settings" puts back too. Never the keys: they are
@@ -25,12 +26,6 @@ TEAM_KEYS = ("team_accept", "team_accept_who", "team_accept_list", "team_remove_
              "team_offline_town_only", "team_hand_over", "team_hand_to", "team_create", "team_name",
              "team_remake", "team_leave_others", "team_stay_in_town", "team_heal", "team_heal_below",
              "follow_role", "follow_pull", "follow_pull_range", "follow_help_team", "follow_distance", "follow_skip")
-
-
-def class_of(p: dict[str, Any]) -> str:
-    """The character's class as its last scan read it ("" when never scanned)."""
-    scan: dict[str, Any] = p.get("scan") or {}
-    return str(scan.get("class") or "")
 
 
 def same_class(mine: dict[str, Any], theirs: dict[str, Any]) -> bool:
