@@ -233,10 +233,12 @@ def sold_in_shops(name: str) -> bool:
 def new_supply(name: str) -> dict[str, Any]:
     """A supply row for the item, sized by its kind: off ("tell") while a shop sells it, so nothing
     is bought until the player picks a source; from the storehouse only when no shop does (the
-    Super potions are crafted or come in gifts)."""
+    Super potions are crafted or come in gifts). A name the game data doesn't know (mistyped, say)
+    stays "tell" too: no trip to the storehouse for an item that may not exist."""
     low, fill = SUPPLY_SIZES.get(knowledge.category(name), OTHER_SIZE)
+    known = knowledge.item(name) is not None
     return {"item": name, "min": low, "stock": fill,
-            "source": "tell" if sold_in_shops(name) else "storage", "on": True}
+            "source": "storage" if known and not sold_in_shops(name) else "tell", "on": True}
 
 
 def _strongest(names: Sequence[str]) -> str | None:

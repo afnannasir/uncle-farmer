@@ -87,6 +87,7 @@ def test_a_supply_added_by_hand_is_sized_by_its_kind() -> None:
         "item": "Large Toolbox", "min": 1, "stock": 5, "source": "tell", "on": True}
     assert bagrules.new_supply("Steak")["source"] == "storage"        # the Chef makes it
     assert (bagrules.new_supply("Something New")["min"], bagrules.new_supply("Something New")["stock"]) == (5, 20)
+    assert bagrules.new_supply("Something New")["source"] == "tell"      # unknown (mistyped?): no trip
 
 
 def test_sunset_city_s_pharmacist_is_never_sent_to_for_large_potions() -> None:

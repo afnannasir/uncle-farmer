@@ -63,6 +63,7 @@ class Frame:
         self.action_handlers: dict[str, Any] = {a.id: self.handler(a.id) for a in shortcuts.ACTIONS}
         self.shortcut_table = shortcuts.defaults()
         self.hotkeys: list[int] = []
+        self.hotkeys_refused: set[str] = set()
         self.registered: list[tuple[int, int, int]] = []
         self.refuse: set[int] = set()
         self.logged: list[str] = []
@@ -157,6 +158,14 @@ def test_a_key_that_opens_a_window_brings_the_bot_forward_and_waits_for_an_open_
     assert f.done == ["character_bag", "run_stop"]
 
 
+def test_a_quiet_key_while_a_window_of_ours_is_open_leaves_the_selection(
+        monkeypatch: pytest.MonkeyPatch, said: list[str]) -> None:
+    f = Frame(GAMES, selected=0)
+    f.enabled = False                       # the Keyboard Manager is open for the selected game
+    press(f, "run_pause", 22, monkeypatch)
+    assert f.selected == 0 and f.done == ["run_pause"]
+
+
 def test_a_key_is_refused_while_its_menu_entry_is_greyed_out(monkeypatch: pytest.MonkeyPatch, said: list[str]) -> None:
     f = Frame(GAMES)
     f.action_items["run_stop"] = Item(False)
@@ -208,7 +217,12 @@ def test_a_game_window_that_can_t_be_found_is_said(monkeypatch: pytest.MonkeyPat
     assert said == ["Couldn't bring Hero, Tulip City, Stopped to the front."]
 
 
-def test_hotkeys_are_held_for_the_keys_that_work_everywhere_and_a_taken_one_is_said() -> None:
+def test_hotkeys_are_held_for_the_keys_that_work_everywhere_and_a_taken_one_is_said(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    installed: list[set[str]] = []
+    def install(frame: Frame) -> None:
+        installed.append(set(frame.hotkeys_refused))
+    monkeypatch.setattr(keys, "install_accelerators", install)
     f = Frame(GAMES)
     keys.KeysMixin.register_hotkeys(cast(Any, f))
     assert [(m & ~keys.MOD_NOREPEAT, v) for _h, m, v in f.registered] == [(0, 0x13), (shortcuts.MOD_SHIFT, 0x13)]   # Pause, Shift+Pause
@@ -218,7 +232,11 @@ def test_hotkeys_are_held_for_the_keys_that_work_everywhere_and_a_taken_one_is_s
     f.refuse = {0x71}                                     # another program holds F2's key
     keys.KeysMixin.register_hotkeys(cast(Any, f))
     assert [(m & ~keys.MOD_NOREPEAT, v) for _h, m, v in f.registered] == [(shortcuts.MOD_SHIFT, 0x13)]
-    assert f.logged == ["Another program is using Ctrl+F2, so Game, Select the next game won't work from everywhere."]
+    assert f.logged == ["Another program is using Ctrl+F2, so Game, Select the next game works only in Uncle Farmer."]
+    assert installed == [{"game_next"}]                 # so it works in the bot at least
+    f.refuse = set()
+    keys.KeysMixin.register_hotkeys(cast(Any, f))
+    assert installed == [{"game_next"}, set()]
 
 
 @pytest.fixture

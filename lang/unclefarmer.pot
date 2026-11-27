@@ -1149,7 +1149,7 @@ msgid "Another gang's, by its name"
 msgstr ""
 
 msgid ""
-"Another program is using {keys}, so {action} won't work from everywhere."
+"Another program is using {keys}, so {action} works only in Uncle Farmer."
 msgstr ""
 
 msgid "Answering"
@@ -8407,6 +8407,10 @@ msgstr ""
 
 msgid ""
 "shortcuts.txt line {n}: write action = keys = where, for example run_start = F5 = inapp."
+msgstr ""
+
+msgid ""
+"shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
 msgstr ""
 
 msgid "shortcuts.txt line {n}: {where} isn't global or inapp."

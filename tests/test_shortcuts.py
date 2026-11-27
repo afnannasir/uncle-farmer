@@ -44,7 +44,7 @@ def test_the_new_actions_have_no_key_until_the_player_gives_one() -> None:
 @pytest.mark.parametrize("typed,keys", [
     ("ctrl+shift+r", "Ctrl+Shift+R"), ("Shift + Ctrl + r", "Ctrl+Shift+R"), ("shift+pause", "Shift+Pause"),
     ("PAUSE", "Pause"), ("break", "Pause"), ("f12", "F12"), ("alt+shift+f7", "Alt+Shift+F7"),
-    ("control+pgdn", "Ctrl+PageDown"), ("ctrl+del", "Ctrl+Delete"), ("ctrl+1", "Ctrl+1"), ("none", ""), ("  ", ""),
+    ("control+shift+pgdn", "Ctrl+Shift+PageDown"), ("ctrl+del", "Ctrl+Delete"), ("ctrl+1", "Ctrl+1"), ("none", ""), ("  ", ""),
 ])
 def test_keys_are_read_in_any_spelling(typed: str, keys: str) -> None:
     assert shortcuts.canonical(typed) == keys
@@ -134,3 +134,38 @@ def test_no_file_is_every_default_and_an_unreadable_one_is_said(tmp_path: Path) 
 
 def test_the_file_is_beside_settings_json() -> None:
     assert shortcuts.file_path() == os.path.join(os.path.dirname(paths.SETTINGS), "shortcuts.txt")
+
+
+def test_three_actions_on_one_key_end_with_one_on_it() -> None:
+    # Ctrl+R is Run, Results' default: the file gives it to two more actions
+    table, problems = shortcuts.parse("game_mute = Ctrl+R = inapp\ntools_gem = ctrl+r = inapp\n")
+    assert table["run_results"].keys == "" and table["game_mute"].keys == "Ctrl+R"
+    assert table["tools_gem"].keys == "Ctrl+G"                     # back to its own
+    assert shortcuts.clashes(table) == []
+    assert problems == ["Run, Results has no key now: Ctrl+R is Game, Mute this game's.",
+                        "Ctrl+R is given to both Game, Mute this game and Tools, Gem Maker: "
+                        "Tools, Gem Maker keeps its own key."]
+
+
+def test_no_file_leaves_two_actions_on_one_key() -> None:
+    import random
+    ids = [a.id for a in shortcuts.ACTIONS]
+    keys = ["Ctrl+M", "Ctrl+R", "F5", "Ctrl+G", "Pause", "Ctrl+Shift+R", "F9"]
+    rng = random.Random(7)
+    for _ in range(3000):
+        text = "".join("%s = %s = %s\n" % (rng.choice(ids), rng.choice(keys), rng.choice(["inapp", "global"]))
+                       for _line in range(rng.randint(1, 6)))
+        table, _problems = shortcuts.parse(text)
+        assert shortcuts.clashes(table) == [], text
+
+
+def test_an_action_named_twice_takes_its_last_line_and_says_so() -> None:
+    table, problems = shortcuts.parse("run_start = F7 = inapp\nrun_start = F8 = inapp\n")
+    assert table["run_start"].keys == "F8"
+    assert problems == ["shortcuts.txt line 2: run_start is on line 1 too; this line counts."]
+
+
+@pytest.mark.parametrize("typed", ["ctrl+pageup", "ctrl+pgdn", "ctrl+insert"])
+def test_the_tab_and_copy_keys_of_boxes_are_kept(typed: str) -> None:
+    with pytest.raises(shortcuts.BadKeys, match="kept for every window"):
+        shortcuts.canonical(typed)

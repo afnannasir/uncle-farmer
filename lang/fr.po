@@ -1183,9 +1183,9 @@ msgid "Another gang's, by its name"
 msgstr "Celui d'un autre gang, par son nom"
 
 msgid ""
-"Another program is using {keys}, so {action} won't work from everywhere."
+"Another program is using {keys}, so {action} works only in Uncle Farmer."
 msgstr ""
-"Un autre programme utilise {keys} : {action} ne fonctionnera pas partout."
+"Un autre programme utilise {keys} : {action} ne fonctionne que dans Uncle Farmer."
 
 msgid "Answering"
 msgstr "Réponses"
@@ -8884,6 +8884,11 @@ msgid ""
 msgstr ""
 "shortcuts.txt ligne {n} : écrire action = touches = où, par exemple run_start = F5 = inapp."
 
+msgid ""
+"shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
+msgstr ""
+"shortcuts.txt ligne {n} : {name} est aussi à la ligne {first} ; c'est cette ligne qui compte."
+
 msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
 msgstr "shortcuts.txt ligne {n} : {where} n'est ni global ni inapp."
 
@@ -11402,6 +11407,11 @@ msgstr "{w} sur {h} cases, {n} sorties."
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""
 #~ "Un autre programme utilise la touche Pause ; le raccourci Pause ne fonctionnera pas."
+
+#~ msgid ""
+#~ "Another program is using {keys}, so {action} won't work from everywhere."
+#~ msgstr ""
+#~ "Un autre programme utilise {keys} : {action} ne fonctionnera pas partout."
 
 #~ msgid "Keep away from bosses"
 #~ msgstr "Rester loin des boss"

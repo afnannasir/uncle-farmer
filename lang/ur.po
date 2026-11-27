@@ -1177,9 +1177,9 @@ msgid "Another gang's, by its name"
 msgstr "Doosre gang ka, uske naam se"
 
 msgid ""
-"Another program is using {keys}, so {action} won't work from everywhere."
+"Another program is using {keys}, so {action} works only in Uncle Farmer."
 msgstr ""
-"Koi aur program {keys} istemal kar raha hai, is liye {action} har jagah se nahin chalega."
+"Koi aur program {keys} istemal kar raha hai, is liye {action} sirf Uncle Farmer mein chalta hai."
 
 msgid "Answering"
 msgstr "Jawab dena"
@@ -8838,6 +8838,11 @@ msgid ""
 msgstr ""
 "shortcuts.txt line {n}: action = keys = kahan likhein, misaal run_start = F5 = inapp."
 
+msgid ""
+"shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
+msgstr ""
+"shortcuts.txt line {n}: {name} line {first} par bhi hai; yeh line maani jaati hai."
+
 msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
 msgstr "shortcuts.txt line {n}: {where} na global hai na inapp."
 
@@ -11354,6 +11359,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""
 #~ "Koi doosra program Pause key istemal kar raha hai; Pause shortcut kaam nahi karega."
+
+#~ msgid ""
+#~ "Another program is using {keys}, so {action} won't work from everywhere."
+#~ msgstr ""
+#~ "Koi aur program {keys} istemal kar raha hai, is liye {action} har jagah se nahin chalega."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Peeche chalte hue teammates ki shifa"

@@ -53,6 +53,9 @@ class Now:
     def start(self) -> None:
         self.target(*self.args)
 
+    def join(self, _timeout: float | None = None) -> None:
+        pass
+
 
 class Frame:
     def __init__(self, games: list[tuple[int, str | None]], app: str = "running") -> None:
@@ -135,12 +138,29 @@ def test_an_older_agent_is_left_alone(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_closing_lets_the_games_silenced_for_front_talk(monkeypatch: pytest.MonkeyPatch) -> None:
-    f = Frame([(1, "Hero"), (2, "Bob")], app="front")
+    f = Frame([(1, "Hero"), (2, "Bob"), (3, "Ann")], app="front")
     f.keep_silent()
     front(monkeypatch, f, 1)
+    f.front_busy.add(1)                      # a worker is telling it something just now
     Link.sent = []
     f.speech_back()
-    assert Link.sent == [(2, "speech on")]
+    assert sorted(Link.sent) == [(1, "speech on"), (2, "speech on"), (3, "speech on")]
+    assert front(monkeypatch, f, 2) == []    # closing: nothing more is sent
+
+
+def test_a_game_that_didn_t_answer_is_told_again(monkeypatch: pytest.MonkeyPatch) -> None:
+    f = Frame([(1, "Hero"), (2, "Bob")], app="front")
+    f.keep_silent()
+
+    class Busy(Link):
+        def __enter__(self) -> "Link":
+            if self.pid == 2:
+                raise OSError("timed out")
+            return self
+    monkeypatch.setattr(gamespeech, "AgentLink", Busy)
+    assert front(monkeypatch, f, 1) == [(1, "speech on")]
+    monkeypatch.setattr(gamespeech, "AgentLink", Link)
+    assert front(monkeypatch, f, 1) == [(2, "speech off")]   # told again at the next look
 
 
 def test_a_run_leaves_a_front_game_s_speech_to_the_window(tmp_path: Path) -> None:

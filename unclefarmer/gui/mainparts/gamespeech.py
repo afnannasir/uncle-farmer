@@ -57,7 +57,8 @@ class GameSpeechMixin(FrameParts):
         self.speech_state()
         known = self.speech_profiles.get(profile)
         if known is None or known[0] != when:
-            own = str(settings.load_profile(profile).get("game_speech") or "") if when >= 0 else ""
+            # read even without its own file yet: load_profile also takes an older file of the character
+            own = str(settings.load_profile(profile).get("game_speech") or "")
             known = self.speech_profiles[profile] = (when, own)
         return settings.game_speech_mode(self.s, {"game_speech": known[1]})
 
@@ -85,8 +86,9 @@ class GameSpeechMixin(FrameParts):
 
     def follow_front(self) -> None:
         """A game in "front" mode talks while its window is in front and is silent otherwise: what
-        changed since the last look is sent, on a worker."""
-        if self.destroyed or not getattr(self, "speech_modes", None):
+        changed since the last look is sent, on a worker. What a game was told is noted once it
+        answered: one busy or gone for a moment is told again at the next look after its worker."""
+        if self.destroyed or getattr(self, "speech_closing", False) or not getattr(self, "speech_modes", None):
             return
         front = foreground_pid()
         todo: list[tuple[int, str]] = []
@@ -95,7 +97,6 @@ class GameSpeechMixin(FrameParts):
                 continue
             want = "on" if pid == front else "off"
             if self.front_said.get(pid) != want:
-                self.front_said[pid] = want
                 self.front_busy.add(pid)
                 todo.append((pid, want))
         if todo:
@@ -103,18 +104,44 @@ class GameSpeechMixin(FrameParts):
 
     def _tell_speech(self, todo: list[tuple[int, str]], following: bool = False) -> None:
         for pid, want in todo:
-            try:
-                with AgentLink(pid=pid, timeout=3) as a:
-                    if a.send("speech") in ("on", "off"):       # an older agent can't: left alone
-                        a.send("speech " + want)
-            except (AgentError, OSError):
-                pass
-            finally:
-                if following:
-                    wx.CallAfter(self.front_busy.discard, pid)
+            if following and getattr(self, "speech_closing", False):
+                wx.CallAfter(self._front_told, pid, want, False)
+                continue                    # closing: speech_back gives every game its speech back
+            told = self._send_speech(pid, want)
+            if following:
+                wx.CallAfter(self._front_told, pid, want, told)
+
+    def _send_speech(self, pid: int, want: str) -> bool:
+        """Tell one game; True once it answered (an older agent, which can't, counts: left alone)."""
+        try:
+            with AgentLink(pid=pid, timeout=3) as a:
+                if a.send("speech") in ("on", "off"):
+                    a.send("speech " + want)
+            return True
+        except (AgentError, OSError):
+            return False
+
+    def _front_told(self, pid: int, want: str, told: bool) -> None:
+        self.front_busy.discard(pid)
+        if told:
+            self.front_said[pid] = want
 
     def speech_back(self) -> None:
-        """Uncle Farmer closes: the games "front" silenced talk again (at once, not on a worker)."""
-        said: dict[int, str] = getattr(self, "front_said", {})
-        self._tell_speech([(pid, "on") for pid, now in said.items() if now == "off"])
+        """Uncle Farmer closes: every game in "front" mode that may be silent talks again - also one a
+        worker is telling something just now. Each game on its own thread, a few seconds at most in
+        all, so a game that doesn't answer doesn't hold the close up."""
+        self.speech_closing = True
+        timer: wx.Timer | None = getattr(self, "focus_timer", None)
+        if timer is not None:
+            timer.Stop()
+        modes: dict[int, str] = getattr(self, "speech_modes", None) or {}
+        said: dict[int, str] = getattr(self, "front_said", None) or {}
+        busy: set[int] = getattr(self, "front_busy", None) or set()
+        pids = [pid for pid, mode in modes.items() if mode == FRONT and (said.get(pid) != "on" or pid in busy)]
+        pids += [pid for pid, now in said.items() if now == "off" and pid not in pids]
+        workers = [threading.Thread(target=self._send_speech, args=(pid, "on"), daemon=True) for pid in pids]
+        for w in workers:
+            w.start()
+        for w in workers:
+            w.join(3.5)
         said.clear()

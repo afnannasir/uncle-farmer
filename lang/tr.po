@@ -1168,9 +1168,9 @@ msgid "Another gang's, by its name"
 msgstr "Başka bir çetenin, adıyla"
 
 msgid ""
-"Another program is using {keys}, so {action} won't work from everywhere."
+"Another program is using {keys}, so {action} works only in Uncle Farmer."
 msgstr ""
-"Başka bir program {keys} tuşunu kullanıyor, bu yüzden {action} her yerde çalışmayacak."
+"Başka bir program {keys} tuşunu kullanıyor, bu yüzden {action} yalnızca Uncle Farmer'da çalışır."
 
 msgid "Answering"
 msgstr "Yanıtlanıyor"
@@ -8675,6 +8675,11 @@ msgid ""
 msgstr ""
 "shortcuts.txt satır {n}: eylem = tuşlar = nerede yazın, örneğin run_start = F5 = inapp."
 
+msgid ""
+"shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
+msgstr ""
+"shortcuts.txt satır {n}: {name} {first}. satırda da var; bu satır geçerli."
+
 msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
 msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
 
@@ -11135,6 +11140,11 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""
 #~ "Başka bir program Duraklat tuşunu kullanıyor; Duraklat kısayolu çalışmaz."
+
+#~ msgid ""
+#~ "Another program is using {keys}, so {action} won't work from everywhere."
+#~ msgstr ""
+#~ "Başka bir program {keys} tuşunu kullanıyor, bu yüzden {action} her yerde çalışmayacak."
 
 #~ msgid "Healing teammates while following"
 #~ msgstr "Takip ederken takım arkadaşlarını iyileştirme"

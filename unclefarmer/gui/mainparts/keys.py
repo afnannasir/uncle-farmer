@@ -32,12 +32,15 @@ SW_RESTORE = 9
 
 def install_accelerators(frame: Any) -> None:
     """The window's accelerators for the actions whose keys work in Uncle Farmer only. A key that
-    works from anywhere is a hotkey instead, which reaches this window too."""
+    works from anywhere is a hotkey instead, which reaches this window too - unless another program
+    holds it (hotkeys_refused): then it works at least here."""
     table: shortcuts.Table = frame.shortcut_table
+    refused: set[str] = getattr(frame, "hotkeys_refused", set())
     entries: list[wx.AcceleratorEntry] = []
     for a in shortcuts.ACTIONS:
         s = table[a.id]
-        if not s.keys or s.where != shortcuts.IN_APP or a.id not in frame.action_handlers:
+        here = s.where == shortcuts.IN_APP or a.id in refused
+        if not s.keys or not here or a.id not in frame.action_handlers:
             continue
         entry = wx.AcceleratorEntry()
         if entry.FromString(s.keys):
@@ -89,6 +92,7 @@ class KeysMixin(FrameParts):
     action_handlers: dict[str, Handler]      # action id -> what it does (the menus' own handlers)
     action_ids: dict[str, int]               # action id -> its command id (a menu item's, or its own)
     menu_bases: dict[str, tuple[wx.MenuItem, str]]   # action id -> its menu item and label without keys
+    hotkeys_refused: set[str]                # actions whose everywhere keys another program holds
 
     def load_shortcuts(self) -> None:
         """The player's shortcuts. What their file holds that can't be used goes into the log, said
@@ -113,6 +117,8 @@ class KeysMixin(FrameParts):
             self.UnregisterHotKey(hotkey)
             self.Unbind(wx.EVT_HOTKEY, id=hotkey)
         self.hotkeys = []
+        before: set[str] = getattr(self, "hotkeys_refused", set())
+        self.hotkeys_refused = set()
         wanted = 0
         for i, a in enumerate(shortcuts.ACTIONS):
             s = self.shortcut_table[a.id]
@@ -125,10 +131,13 @@ class KeysMixin(FrameParts):
                 self.hotkeys.append(hid)
                 self.Bind(wx.EVT_HOTKEY, lambda e, act=a.id: self.on_hotkey(act), id=hid)
             else:
-                applog.bootup.problem("%s is taken by another program: %s won't work from everywhere" % (s.keys, a.id))
-                self._append(_("Another program is using {keys}, so {action} won't work from everywhere.",
+                applog.bootup.problem("%s is taken by another program: %s works only in the bot" % (s.keys, a.id))
+                self.hotkeys_refused.add(a.id)
+                self._append(_("Another program is using {keys}, so {action} works only in Uncle Farmer.",
                                keys=s.keys, action=shortcuts.label(a)), False)
         applog.bootup.note("hotkeys held: %d of %d" % (len(self.hotkeys), wanted))
+        if self.hotkeys_refused != before:
+            install_accelerators(self)          # a refused key works in the bot at least
 
     def apply_shortcuts(self, table: shortcuts.Table) -> None:
         """New shortcuts, at once: the menus' labels, the accelerators and the hotkeys."""
@@ -150,14 +159,16 @@ class KeysMixin(FrameParts):
         that opens a window brings Uncle Farmer forward, and waits while one of its windows is open."""
         if self.destroyed:
             return
-        front = foreground_pid()
-        if front is not None and front != self.selected_pid() and any(g[0] == front for g in self.games):
-            self.select_game(front)
         action = shortcuts.BY_ID[action_id]
+        modal = not self.IsEnabled()            # a window of ours is open over this one
+        if modal and not action.quiet:
+            speech.speak(_("Close the open Uncle Farmer window first."))
+            return
+        front = foreground_pid()
+        # not while a window of ours is open: it may be about the selected game (Keyboard Manager)
+        if not modal and front is not None and front != self.selected_pid() and any(g[0] == front for g in self.games):
+            self.select_game(front)
         if not action.quiet:
-            if not self.IsEnabled():
-                speech.speak(_("Close the open Uncle Farmer window first."))
-                return
             if self.IsIconized():
                 self.Iconize(False)
             self.Raise()

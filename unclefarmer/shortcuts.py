@@ -138,8 +138,8 @@ BY_ID = {a.id: a for a in ACTIONS}
 
 # Keys a shortcut can't take: the ones every window needs (copy, paste, the menu bar, the context
 # menu, moving between tabs, closing a window).
-RESERVED = {"Ctrl+C", "Ctrl+V", "Ctrl+X", "Ctrl+A", "Ctrl+Z", "Ctrl+Y", "Ctrl+Tab", "Ctrl+Shift+Tab", "F10",
-            "Shift+F10", "Alt+F4", "Ctrl+F4"}
+RESERVED = {"Ctrl+C", "Ctrl+V", "Ctrl+X", "Ctrl+A", "Ctrl+Z", "Ctrl+Y", "Ctrl+Insert", "Ctrl+Tab", "Ctrl+Shift+Tab",
+            "Ctrl+PageUp", "Ctrl+PageDown", "F10", "Shift+F10", "Alt+F4", "Ctrl+F4"}
 _NAMED = {"pause": "Pause", "break": "Pause", "space": "Space", "insert": "Insert", "ins": "Insert",
           "delete": "Delete", "del": "Delete", "home": "Home", "end": "End", "pageup": "PageUp", "pgup": "PageUp",
           "pagedown": "PageDown", "pgdn": "PageDown", "up": "Up", "down": "Down", "left": "Left", "right": "Right"}
@@ -258,12 +258,12 @@ def clashes(table: Table) -> list[tuple[str, str]]:
 def parse(text: str) -> tuple[Table, list[str]]:
     """The table a shortcuts file gives, and what in it couldn't be used (one line each, for the
     player). Every action the file doesn't name keeps its default; a line that can't be used is left
-    out; two actions on one key: the second keeps its default, or no key when that clashes too."""
+    out; an action named twice takes its last line. Two actions on one key: see _settle."""
     table = defaults()
     problems: list[str] = []
-    named: set[str] = set()
+    named: dict[str, int] = {}          # action -> the line that set it
     for n, line in enumerate(text.splitlines(), 1):
-        line = line.strip().lstrip("﻿")
+        line = line.strip().lstrip("\ufeff")
         if not line or line.startswith("#"):
             continue
         parts = [p.strip() for p in line.split("=")]
@@ -283,26 +283,35 @@ def parse(text: str) -> tuple[Table, list[str]]:
         except BadKeys as e:
             problems.append(_("shortcuts.txt line {n}: {why}", n=n, why=e))
             continue
-        named.add(name)
-    restored: set[str] = set()
-    for first, second in clashes(table):
-        if first in named and second in named:      # the file gives one key twice: the first line in
-            keys = table[second].keys              # the menus' order keeps it, the other its default
+        if name in named:
+            problems.append(_("shortcuts.txt line {n}: {name} is on line {first} too; this line counts.",
+                              n=n, name=name, first=named[name]))
+        named[name] = n
+    problems += _settle(table, set(named))
+    return table, problems
+
+
+def _settle(table: Table, named: set[str]) -> list[str]:
+    """No two actions left on one key, one clash at a time until none is left: a key the file gave
+    wins over a default (the default's action has no key then); two the file gave, the first in the
+    menus' order keeps it and the other goes back to its own default, which may clash in turn."""
+    problems: list[str] = []
+    while True:
+        pairs = clashes(table)
+        if not pairs:
+            return problems
+        first, second = pairs[0]
+        if first in named and second in named:
+            keys = table[second].keys
             table[second] = Shortcut(BY_ID[second].keys, table[second].where)
-            restored.add(second)
+            named.discard(second)                   # it holds its default now
             problems.append(_("{keys} is given to both {one} and {other}: {other} keeps its own key.",
                               keys=keys, one=label(BY_ID[first]), other=label(BY_ID[second])))
-        else:                                       # the player gave an action another one's default
-            keep, drop = (first, second) if first in named else (second, first)
+        else:
+            keep, drop = (first, second) if first in named or second not in named else (second, first)
             problems.append(_("{action} has no key now: {keys} is {other}'s.", action=label(BY_ID[drop]),
                               keys=table[drop].keys, other=label(BY_ID[keep])))
             table[drop] = Shortcut("", table[drop].where)
-    for first, second in clashes(table):            # a default given back that another action has
-        drop = second if second in restored else first
-        problems.append(_("{action} has no key now: {keys} is {other}'s.", action=label(BY_ID[drop]),
-                          keys=table[drop].keys, other=label(BY_ID[first if drop == second else second])))
-        table[drop] = Shortcut("", table[drop].where)
-    return table, problems
 
 
 def render(table: Table) -> str:

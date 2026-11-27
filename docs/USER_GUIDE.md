@@ -655,7 +655,7 @@ what they cost (refilled at / filled up to):
 
 An item no shop sells (the Super potions, which are crafted or come in gifts, or a dish from the
 Chef) is offered from the storehouse only: when the storehouse has none left, the bot tells you
-instead of buying something else. An item you add yourself gets the same amounts.
+instead of buying something else. An item you add yourself gets the same amounts (one the bot doesn't know, a mistyped name maybe, starts as "Don't refill, just tell me").
 
 Every town's pharmacist sells the Small, Medium and Large potions, yours and the pet's, except
 Sunset City's: it has no Large potions, and the bot doesn't go there for them.
@@ -2081,14 +2081,15 @@ A few rules keep the keys usable:
 - A letter, a digit, Space, an arrow, Insert, Delete, Home, End, PageUp or PageDown needs Ctrl (they
   would be typed into the bot's own boxes otherwise). F1 to F24 and Pause can be used alone.
 - Ctrl+Alt with a letter is refused: on many keyboards it is AltGr, which types characters.
-- Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+Z, Ctrl+Y, Ctrl+Tab, F10, Shift+F10, Alt+F4 and Ctrl+F4 are kept
+- Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+Z, Ctrl+Y, Ctrl+Insert, Ctrl+Tab, Ctrl+PageUp, Ctrl+PageDown, F10,
+  Shift+F10, Alt+F4 and Ctrl+F4 are kept
   for every window.
 - Two actions can't share a key.
 
 **A key that works everywhere is taken away from every other program** while Uncle Farmer runs: the
 game, NVDA, your browser. Ctrl+M from everywhere means the game never gets Ctrl+M. Choose keys no
 program uses, such as Pause or a key from F7 to F12 with Ctrl or Shift. When another program holds a
-key already, Windows refuses it, and the Log tab says so.
+key already, Windows refuses it: the Log tab says so, and the key then works in Uncle Farmer only.
 
 A key that works everywhere acts on the game in front when that is one of yours: the Games list
 selects it first, so the next key goes on with the same game. From any other program it acts on the
