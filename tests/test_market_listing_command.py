@@ -251,3 +251,23 @@ def test_buy_collection_reads_too_fast_from_the_game() -> None:
     b.m.too_fast = 1
     outcome, words = bc._buy_lot(b, pg, lot, 1)  # type: ignore[arg-type]
     assert outcome == bc.FAST and "too fast" in words and b.m.bought == []
+
+
+# ---------------------------------------------------------------- the quantity the game keeps in a lot's command
+def test_a_lot_whose_command_keeps_the_last_quantity_typed_is_still_found() -> None:
+    kept = {"flags": 73, "cmd": [3, 2953894, 52], "f": "Please enter the purchase quantity", "raw": None,
+            "text": None, "options": ["52 Medium Pelt;Unit price 200 gold coins;Sale time Nov 26, 11:46, 2026"]}
+    pg = market.read_page(page_with([kept]))                 # as read in game on 2026-11-28
+    assert pg is not None and [x.id for x in pg.lots] == [2953894]
+    assert market.lot_cell(pg, pg.lots[0]) == (2, 0)
+    as_equipment = market.Lot(id=2953894, cat=100, name="Medium Pelt", qty=1, price=200, equip=True)
+    assert market.lot_cell(pg, as_equipment) is None
+
+
+def test_too_fast_then_found_again_with_the_kept_quantity_is_bought() -> None:
+    b = shopper({100: lots_of("Lesser Blood", 5, 9000)})
+    lots = first(b, 100)
+    b.m.too_fast = 1                                         # the refused try leaves 3 in the lot's command
+    done = market.buy(b, [Order(lots[0], 3)])  # type: ignore[arg-type]
+    assert done[0][1] == market.BOUGHT and b.m.bought == [(lots[0].id, 3)]
+    assert b.m.kept[lots[0].id] == 3

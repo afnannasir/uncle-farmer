@@ -166,6 +166,7 @@ class PretendMarket:
         self.no_box = False                 # choosing an item lot opens no quantity box
         self.bag_gone = False               # the game sends no bag
         self.too_fast = 0                   # purchases the game refuses next with "you act too fast"
+        self.kept: dict[int, int] = {}      # listing id -> the last quantity typed for it (in its command)
 
     # -- what the menus hold
     def ordered(self, cat: int, order: int) -> list[dict[str, Any]]:
@@ -199,6 +200,10 @@ class PretendMarket:
             chunk = self.ordered(cat, order)[(page - 1) * 20:page * 20]
             rows += [row(x["name"], x["qty"], x["price"], x["id"], x.get("new", False), x.get("equip", ""))
                      for x in chunk]
+            for e in rows[3:]:                  # the game keeps the last quantity typed for a lot in its command
+                cmd = cast(list[int], e["cmd"])
+                if len(cmd) == 3:
+                    cmd[2] = self.kept.get(cmd[1], 0)
             last = self.last(cat, order)
             if page > 1:
                 rows.append({"flags": 12, "cmd": [2, cat, order, 1], "text": "page 1"})
@@ -279,6 +284,7 @@ class PretendMarket:
             self.screen = ("page", what[1], what[2], n)
             self.pages_shown += 1
         else:
+            self.kept[what[1]["id"]] = n
             self.purchase(what[1], n)
         return "entered %d" % len(str(n))
 

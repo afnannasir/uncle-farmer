@@ -529,17 +529,23 @@ def _choose(b: Bot, top: dict[str, Any], at: Where) -> None:
 
 
 def lot_command(lot: Lot) -> tuple[int, ...]:
-    """The command the lot's entry sends: (3, id, 0) for an item (a number box comes next), (3, id)
-    for equipment (a yes or no comes next)."""
+    """The command the lot's entry sends: (3, id, n) for an item (a number box comes next; n is 0
+    until a quantity was typed for it - the game keeps the last one typed there, 52 after a refused
+    purchase of 52, seen 2026-11-28), (3, id) for equipment (a yes or no comes next)."""
     return (3, lot.id) if lot.equip else (3, lot.id, 0)
 
 
+def _is_lot_command(cmd: tuple[int, ...] | None, lot: Lot) -> bool:
+    """The entry's command is this lot's: 3, its listing id, and its shape (three numbers for an
+    item, whatever the quantity kept in the last; two for equipment)."""
+    return cmd is not None and len(cmd) == len(lot_command(lot)) and cmd[0] == 3 and cmd[1] == lot.id
+
+
 def lot_cell(pg: Page, lot: Lot) -> Where | None:
-    """Where the page's menu has the lot: the one entry whose command is exactly the lot's, read
-    from the menu itself. None when no entry has it, when more than one does (which lot would that
-    be?), or when it is there in the other shape (an item read as equipment, or the other way)."""
-    want = lot_command(lot)
-    cells = [(r, c) for r, c, e in _cells(pg.top) if _cmd(e) == want]
+    """Where the page's menu has the lot: the one entry whose command is the lot's, read from the
+    menu itself. None when no entry has it, when more than one does (which lot would that be?), or
+    when it is there in the other shape (an item read as equipment, or the other way)."""
+    cells = [(r, c) for r, c, e in _cells(pg.top) if _is_lot_command(_cmd(e), lot)]
     return cells[0] if len(cells) == 1 else None
 
 
