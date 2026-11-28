@@ -4103,9 +4103,6 @@ msgid "Say how many of at least one potion to have, or choose what to fuse."
 msgstr ""
 "Indiquer combien avoir d'au moins une potion, ou choisir quoi fusionner."
 
-msgid "Scan and list &highlands first"
-msgstr ""
-
 msgid "Scan complete."
 msgstr "Scan terminé."
 
@@ -9513,7 +9510,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "écrivez : chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too, and highlands_first=yes or highlands_first=no to choose whether the highlands come before the camps"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
 msgstr ""
 
 msgid "write it as: hold key seconds"

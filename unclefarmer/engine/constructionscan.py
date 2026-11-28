@@ -4,8 +4,7 @@ The bot reads, repairing and building nothing, the Magic Cannon and Supply Camp 
 in the inner hall ("Level 5 Magic Cannon Construction; Completed 62.0%") and every Crystal Turret and
 Wall barricade of the gang's own highlands under Occupied Highlands ("the completeness is 97.5%"), and
 of those it took from other gangs too when asked (setting construction_taken, or `taken=yes`). The
-highlands can come first, in the walk and in the report (construction_highlands_first, `highlands_first=yes`). The result
-is kept in profiles/_construction_scan.json, so it can be read, copied or published afterwards.
+result is kept in profiles/_construction_scan.json, so it can be read, copied or published afterwards.
 
 Publishing takes an elder's rights. The Action menu's gang line has "send system message", "send
 broadcast" (the same with a sound) and "send an announcement", next to "transfer the gang" and
@@ -68,16 +67,8 @@ def load() -> dict[str, Any] | None:
     return got if jsonio.is_object(got) and got.get("rows") is not None else None
 
 
-def _is_highland(what: str) -> bool:
-    return re.match(r"^highland \d+ ", what) is not None
-
-
 def _least_first(report: dict[str, Any]) -> list[tuple[str, float]]:
-    """The rows read, the least complete first; the highlands before the camps when the report was
-    scanned that way (highlands_first)."""
     rows = [(str(r[0]), float(r[1])) for r in report["rows"] if r[1] is not None]
-    if report.get("highlands_first"):
-        return sorted(rows, key=lambda r: (not _is_highland(r[0]), r[1], r[0]))
     return sorted(rows, key=lambda r: (r[1], r[0]))
 
 
@@ -151,11 +142,6 @@ def _taken(taken: bool | None) -> bool:
     return bool(settings.load_app().get("construction_taken", False)) if taken is None else taken
 
 
-def _highlands_first(first: bool | None) -> bool:
-    """Whether highlands are scanned and listed before the camps: `first` None, the app setting decides."""
-    return bool(settings.load_app().get("construction_highlands_first", False)) if first is None else first
-
-
 def _read_camps(b: Bot) -> list[Row]:
     """The Magic Cannon and Supply Camp under construction, read in the inner hall."""
     chores.inner_hall(b)
@@ -183,24 +169,16 @@ def _read_highlands(b: Bot, held: bool) -> list[Row]:
             return rows
 
 
-def scan(b: Bot, taken: bool | None = None, first: bool | None = None) -> dict[str, Any]:
+def scan(b: Bot, taken: bool | None = None) -> dict[str, Any]:
     """Read what the gang is building and every defence of its highlands, and keep the report.
-    taken: highlands taken from other gangs too. first: the highlands before the camps, both in the
-    walk and in the report. None: the app setting decides."""
-    held, highlands_first = _taken(taken), _highlands_first(first)
-    if highlands_first:
-        rows = _read_highlands(b, held)          # next_highland goes into the inner hall itself
-        rows += _read_camps(b)
-    else:
-        rows = _read_camps(b)
-        rows += _read_highlands(b, held)
+    taken: highlands taken from other gangs too (None: the app setting decides)."""
+    rows = _read_camps(b)
+    rows += _read_highlands(b, _taken(taken))
     if not rows:
         raise Stopped(_("no construction of the gang was found to read"), final=True)
     before = load() or {}
     report: dict[str, Any] = {"at": time.strftime("%Y-%m-%d %H:%M"), "by": _name(b), "rows": rows,
                               "sent": before.get("sent") or {}}
-    if highlands_first:
-        report["highlands_first"] = True
     jsonio.save(_path(), report, indent=1)
     unfinished = sum(1 for _what, percent in rows if percent is not None and percent < 100)
     b.log(_("construction scanner: {n} places read, {open} under 100%; open Tools, Construction scanner "
@@ -313,12 +291,11 @@ def _outgoing(b: Bot, report: dict[str, Any], kind: str, lines: bool | None) -> 
     return [message(report)]
 
 
-def scan_and_publish(b: Bot, kind: str, lines: bool | None = None, taken: bool | None = None,
-                     first: bool | None = None) -> None:
+def scan_and_publish(b: Bot, kind: str, lines: bool | None = None, taken: bool | None = None) -> None:
     """A schedule's run: scan, then publish, unless there is nothing new to tell the gang."""
     _open_action_menu(b, kind)          # no tour of the highlands for a character who can't send it
     b.close_dialogs()
-    report = scan(b, taken, first)
+    report = scan(b, taken)
     text = "\n".join(_outgoing(b, report, kind, lines))
     sent: dict[str, str] = report.get("sent") or {}
     if text == ALL_FINE:

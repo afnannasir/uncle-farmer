@@ -277,9 +277,7 @@ def test_the_scanner_window_keeps_its_new_ticks(app: Any, monkeypatch: pytest.Mo
     parent = wx.Frame(None)
     try:
         d = chores_gui.ConstructionScanDialog(parent, True)
-        assert not d.taken.GetValue() and not d.publish_after.GetValue() and not d.first.GetValue()
-        d.first.SetValue(True)
-        d.on_first(wx.CommandEvent())
+        assert not d.taken.GetValue() and not d.publish_after.GetValue()
         d.taken.SetValue(True)
         d.on_taken(wx.CommandEvent())
         d.publish_after.SetValue(True)
@@ -287,7 +285,6 @@ def test_the_scanner_window_keeps_its_new_ticks(app: Any, monkeypatch: pytest.Mo
         d.Destroy()
         again = chores_gui.ConstructionScanDialog(parent, False)
         assert again.taken.GetValue() and again.publish_after.GetValue() and not again.publish_after.IsEnabled()
-        assert again.first.GetValue()
         again.Destroy()
     finally:
         parent.Destroy()

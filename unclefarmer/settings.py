@@ -34,7 +34,6 @@ APP_DEFAULTS: dict[str, Any] = {
     "shutdown_delay": 60,     # seconds of warning before the computer shuts down (shutdown /s /f /t N)
     "construction_lines": False,  # Construction scanner: a gang announcement puts each highland on its own line
     "construction_taken": False,  # Construction scanner: highlands taken from other gangs are scanned too
-    "construction_highlands_first": False,  # Construction scanner: highlands scanned and listed before the camps
     "construction_publish": False,  # Construction scanner window: a scan publishes when it ends (as a schedule does)
     "check_updates": True,    # look for a new release on GitHub when the app starts
     "skip_version": "",       # a release the player said no to: not offered again at start
@@ -276,7 +275,6 @@ class AppSettings(BaseModel):
     shutdown_delay: int = APP_DEFAULTS["shutdown_delay"]
     construction_lines: bool = APP_DEFAULTS["construction_lines"]
     construction_taken: bool = APP_DEFAULTS["construction_taken"]
-    construction_highlands_first: bool = APP_DEFAULTS["construction_highlands_first"]
     construction_publish: bool = APP_DEFAULTS["construction_publish"]
     check_updates: bool = APP_DEFAULTS["check_updates"]
     skip_version: str = APP_DEFAULTS["skip_version"]

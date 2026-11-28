@@ -419,22 +419,21 @@ def test_highlands_taken_from_other_gangs_are_scanned_as_set_or_asked(
     assert asked_for == [want]
 
 
-def test_a_schedule_passes_taken_and_highlands_first_on_to_the_scan(
-        typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_schedule_passes_taken_on_to_the_scan(typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
     g, _logged = auto_game(monkeypatch, 100.0)
-    got: list[tuple[bool | None, bool | None]] = []
+    got: list[bool | None] = []
     real = hr.scan
 
-    def scan(b: Any, taken: bool | None = None, first: bool | None = None) -> dict[str, Any]:
-        got.append((taken, first))
-        return real(b, taken, first)
+    def scan(b: Any, taken: bool | None = None) -> dict[str, Any]:
+        got.append(taken)
+        return real(b, taken)
     monkeypatch.setattr(hr, "scan", stand_in(hr.scan, scan))
-    hr.scan_and_publish(as_bot(g), "system", None, True, True)
-    assert got == [(True, True)]
+    hr.scan_and_publish(as_bot(g), "system", None, True)
+    assert got == [True]
 
 
 def test_the_new_settings_are_off_by_default() -> None:
-    for key in ("construction_taken", "construction_publish", "construction_highlands_first"):
+    for key in ("construction_taken", "construction_publish"):
         assert hr.settings.APP_DEFAULTS[key] is False
 
 
@@ -450,33 +449,20 @@ def test_the_script_command_takes_taken_yes_or_no_for_a_scan() -> None:
             script.parse(bad + "\n")
 
 
-def test_the_script_command_takes_highlands_first_yes_or_no_for_a_scan() -> None:
-    nodes = script.parse("construction_scan highlands_first=yes\n"
-                         "construction_scan auto=system highlands_first=no taken=yes\nconstruction_scan\n")[0]
-    assert [n.opts.get("highlands_first") for n in nodes] == [True, False, None]
-    for bad in ("construction_scan highlands_first=maybe", "construction_scan publish=system highlands_first=yes",
-                "construction_scan highlands_first=yes highlands_first=no"):
-        with pytest.raises(script.ScriptError):
-            script.parse(bad + "\n")
-
-
-@pytest.mark.parametrize("opts,want", [
-    ({}, ("scan", None, None)),
-    ({"taken": True, "highlands_first": True}, ("scan", True, True)),
-    ({"auto": "system", "taken": False, "highlands_first": False}, ("auto", False, False))])
-def test_the_script_step_hands_its_options_to_the_scanner(
-        monkeypatch: pytest.MonkeyPatch, opts: dict[str, Any], want: tuple[str, bool | None, bool | None]) -> None:
+@pytest.mark.parametrize("opts,want", [({}, ("scan", None)), ({"taken": True}, ("scan", True)),
+                                       ({"auto": "system", "taken": False}, ("auto", False))])
+def test_the_script_step_hands_taken_to_the_scanner(
+        monkeypatch: pytest.MonkeyPatch, opts: dict[str, Any], want: tuple[str, bool | None]) -> None:
     from unclefarmer.engine import activities
-    got: list[tuple[str, bool | None, bool | None]] = []
-    monkeypatch.setattr(hr, "scan", stand_in(
-        hr.scan, lambda b, taken=None, first=None: got.append(("scan", taken, first))))
+    got: list[tuple[str, bool | None]] = []
+    monkeypatch.setattr(hr, "scan", stand_in(hr.scan, lambda b, taken=None: got.append(("scan", taken))))
     monkeypatch.setattr(hr, "scan_and_publish", stand_in(
-        hr.scan_and_publish, lambda b, kind, lines=None, taken=None, first=None: got.append(("auto", taken, first))))
+        hr.scan_and_publish, lambda b, kind, lines=None, taken=None: got.append(("auto", taken))))
     activities.run(as_bot(Game()), "construction_scan", False, opts)
     assert got == [want]
 
 
-# ---------------------------------------------------------------- highlands first
+# ---------------------------------------------------------------- no last trip to find nothing left
 def walk_game(monkeypatch: pytest.MonkeyPatch) -> tuple[Game, list[str]]:
     """A camp at 62% and highland 38 (turret 97.5%, wall 99%), noting where the bot goes."""
     g = Game()
@@ -502,35 +488,6 @@ def walk_game(monkeypatch: pytest.MonkeyPatch) -> tuple[Game, list[str]]:
     return g, walk
 
 
-@pytest.mark.parametrize("setting,asked,first", [(False, None, False), (True, None, True),
-                                                 (True, False, False), (False, True, True)])
-def test_highlands_are_scanned_first_only_when_set_or_asked(
-        typed: list[str], monkeypatch: pytest.MonkeyPatch, setting: bool, asked: bool | None, first: bool) -> None:
-    hr.settings.update_app({"construction_highlands_first": setting})
-    g, walk = walk_game(monkeypatch)
-    report = hr.scan(as_bot(g), None, asked)
-    assert walk == (["highland", "camps"] if first else ["camps", "highland"])
-    assert report.get("highlands_first", False) is first
-
-
-def test_a_report_scanned_highlands_first_lists_them_first_everywhere(
-        typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
-    g, _walk = walk_game(monkeypatch)
-    report = hr.scan(as_bot(g), None, True)
-    assert hr.details(report).splitlines()[-1].startswith("Level 5 Magic Cannon")
-    assert hr.message(report) == hr.TITLE + ": highland 38 turret 97.5%; highland 38 wall 99.0%; Level 5 Magic Cannon 62.0%"
-    assert hr.message_lines(report)[1:] == ["highland 38: turret 97.5%, wall 99.0%", "Level 5 Magic Cannon 62.0%"]
-
-
-def test_a_report_without_highlands_first_keeps_the_least_complete_first(
-        typed: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
-    g, _walk = walk_game(monkeypatch)
-    report = hr.scan(as_bot(g), None, False)
-    assert "highlands_first" not in report
-    assert hr.message(report).startswith(hr.TITLE + ": Level 5 Magic Cannon 62.0%")
-
-
-# ---------------------------------------------------------------- no last trip to find nothing left
 @pytest.mark.parametrize("whole_list,trips", [(True, 2), (False, 3)])
 def test_the_scan_goes_back_to_the_list_only_when_it_hasnt_seen_it_whole(
         typed: list[str], monkeypatch: pytest.MonkeyPatch, whole_list: bool, trips: int) -> None:
@@ -546,7 +503,7 @@ def test_the_scan_goes_back_to_the_list_only_when_it_hasnt_seen_it_whole(
                 whole.update((38, 41))
         return left.pop(0) if left else None
     monkeypatch.setattr(chores, "next_highland", stand_in(chores.next_highland, tour))
-    report = hr.scan(as_bot(g), None, False)
+    report = hr.scan(as_bot(g), False)
     assert len(calls) == trips
     assert [r[0] for r in report["rows"] if r[0].startswith("highland")] == [
         "highland 38 turret", "highland 38 wall", "highland 41 turret", "highland 41 wall"]

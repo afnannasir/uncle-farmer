@@ -2,15 +2,12 @@
 
 ## Unreleased
 
-**Construction scanner: highlands taken from other gangs, highlands first, and publishing after a scan**
+**Construction scanner: highlands taken from other gangs, and publishing after a scan**
 
 - Before, the scanner skipped highlands your gang took from another gang. It only read your gang's own.
 - New checkbox: "Include highlands taken from other gangs". It is off by default.
   In a script, add `taken=yes` or `taken=no` to `construction_scan`.
   Tested in the game.
-- New checkbox: "Scan and list highlands first". It is off by default.
-  The bot scans the highlands before the camps, and the report lists them first.
-  In a script, add `highlands_first=yes` or `highlands_first=no`.
 - New checkbox: "Publish when the scan finishes, without asking".
   It sends nothing if everything is at 100%, or if nothing changed since the last report.
   Tested in the game.

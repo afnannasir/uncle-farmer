@@ -30,9 +30,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      (announcement, broadcast or system: it takes a gang elder);
                                      auto=<kind> scans and publishes if there is something new;
                                      add lines=yes or lines=no for an announcement: a line to each highland
+                                     or one line (without it, Tools, Construction scanner decides);
                                      add taken=yes or taken=no: the highlands taken from other gangs too
-                                     add highlands_first=yes or no: highlands scanned and listed before the camps
-                                     or one line (without it, Tools, Construction scanner decides)
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
     lose_xp [check]                  die to guards until the next level needs the experience set
@@ -689,8 +688,7 @@ def _prep_chores(node: Node, rest: str, n: int):
 
 def _construction_scan_words(words: list[str]) -> dict[str, str] | None:
     """construction_scan's words as {word: value}, or None when they don't make sense: at most one of
-    publish= / auto= (a kind), lines= (publishing only), taken= and highlands_first= (scanning only),
-    each once."""
+    publish= / auto= (a kind), lines= (publishing only) and taken= (scanning only), each once."""
     got: dict[str, str] = {}
     for word in words:
         key, sep, value = word.lower().partition("=")
@@ -699,12 +697,11 @@ def _construction_scan_words(words: list[str]) -> dict[str, str] | None:
         got[key] = value
     hows = [h for h in ("publish", "auto") if h in got]
     kinds = tuple(constructionscan.ENTRIES)
-    scanning = ("taken", "highlands_first")
-    if set(got) - {"publish", "auto", "lines", *scanning} or len(hows) > 1 or any(got[h] not in kinds for h in hows):
+    if set(got) - {"publish", "auto", "lines", "taken"} or len(hows) > 1 or any(got[h] not in kinds for h in hows):
         return None
-    if any(got[w] not in ("yes", "no") for w in ("lines", *scanning) if w in got):
+    if any(got[w] not in ("yes", "no") for w in ("lines", "taken") if w in got):
         return None
-    if ("lines" in got and not hows) or ("publish" in got and any(w in got for w in scanning)):
+    if ("lines" in got and not hows) or ("taken" in got and "publish" in got):
         return None
     return got
 
@@ -716,12 +713,11 @@ def _prep_construction_scan(node: Node, rest: str, n: int):
                                "construction_scan auto=broadcast (announcement, broadcast or system), "
                                "and for an announcement add lines=yes or lines=no to choose a line to each "
                                "highland or one line; add taken=yes or taken=no to a scan to choose whether "
-                               "the highlands taken from other gangs are read too, and highlands_first=yes or "
-                               "highlands_first=no to choose whether the highlands come before the camps"))
+                               "the highlands taken from other gangs are read too"))
     for how in ("publish", "auto"):
         if how in got:
             node.opts[how] = got[how]
-    for word in ("lines", "taken", "highlands_first"):
+    for word in ("lines", "taken"):
         if word in got:
             node.opts[word] = got[word] == "yes"
 
