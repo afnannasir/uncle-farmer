@@ -306,7 +306,7 @@ def choose(d: Any, action_id: str, typed: str, where: str | None = None) -> None
     d.show()
     d.keys.SetValue(typed)                    # its text event fills the row
     if where is not None:
-        d.where.SetSelection((EVERYWHERE, IN_APP).index(where))
+        d.where.SetSelection(shortcuts.WHERE.index(where))
         d.chose_where()
 
 

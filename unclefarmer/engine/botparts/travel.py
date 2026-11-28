@@ -12,7 +12,7 @@ from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
-from .. import beasts, combat, combos, keyslots, ridedoor, teleskill, xpcard
+from .. import beasts, combat, combos, dungeonhold, keyslots, ridedoor, teleskill, xpcard
 from .base import (CONFIRM, STOPPING, NoWay, Stopped, note_failure)
 from .parts import as_bot, Parts
 
@@ -207,6 +207,11 @@ class TravelMixin(Parts):
                 continue
             if mid == dst and cell is None:
                 return
+            if mid != dst and dungeonhold.kept(mid) and dungeonhold.applies(as_bot(self)):
+                # never out of a dungeon (or a wedding hall) by our own doing: the game moves us out
+                dungeonhold.hold(as_bot(self), mid, dst)
+                said = None
+                continue
             self.restock_on_the_way()
             if self.map_id() != mid:
                 continue          # the restock walked us elsewhere: plan from there

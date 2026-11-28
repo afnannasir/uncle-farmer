@@ -86,6 +86,8 @@ class Bot(ReadingMixin, KeysMixin, HealthMixin, WalkingMixin, BagMixin, TravelMi
         self.hp_seen = None           # our HP at the last look_after, to notice it falling
         self.pets_refused = {}        # pet id -> don't try to summon before (time)
         self.following: str | None = None   # the player a follow run stays with
+        self.coming = False               # walking up to a player who called (follow.come_to)
+        self.held_inside = False          # the run stopped inside a dungeon or a wedding hall (dungeonhold)
         self.follow_opts: dict[str, Any] = {}   # a script line's options for that follow (engine/followopts.py)
         self.team_ask_at = 0.0            # when follow next asks the team phrase where its player is
         self.deaths = 0

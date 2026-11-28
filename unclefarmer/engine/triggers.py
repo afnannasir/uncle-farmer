@@ -144,17 +144,17 @@ def action_text(b: Bot, action: str) -> str:
 
 
 def step_farms(b: Bot, action: str) -> bool:
-    """Does the step farm (a dungeon, or a saved script with a farm or dungeon line)? Such a step
-    is held to the day's farming window like any farming run. A script that can't be read or
-    parsed farms nothing: running it fails on its own."""
-    if action in dict(JOBS):
+    """Does the step farm on public maps (a saved script with a farm line)? Such a step is held to the
+    day's farming window like any farming run; a dungeon isn't (it spends no drop time). A script that
+    can't be read or parsed farms nothing: running it fails on its own."""
+    if action in dict(JOBS) or action == "dungeon":
         return False
     from .script import ScriptError, parse
     try:
         main, subs, _on_stop = parse(action_text(b, action))
     except (Stopped, ScriptError, ValueError):
         return False
-    return farms(main, subs)
+    return farms_public(main, subs)
 
 
 def run_action(b: Bot, action: str) -> None:
@@ -188,6 +188,21 @@ def farms(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
     while todo:
         node = todo.pop()
         if getattr(node, "kind", "") in FARMING_COMMANDS:
+            return True
+        todo.extend(getattr(node, "body", []) or [])
+        for _cond, body in getattr(node, "branches", []) or []:
+            todo.extend(body)
+    return False
+
+
+def farms_public(nodes: list[Any], subs: dict[str, list[Any]] | None = None) -> bool:
+    """Does a parsed script have a farm or follow line, however deep? Only killing monsters on public
+    maps spends the day's drop time (a dungeon, gathering or a tool doesn't; following a leader does),
+    so only such a script is held to the daily stop and to the drop time left."""
+    todo: list[Any] = list(nodes) + [n for body in (subs or {}).values() for n in body]
+    while todo:
+        node = todo.pop()
+        if getattr(node, "kind", "") in ("farm", "follow"):
             return True
         todo.extend(getattr(node, "body", []) or [])
         for _cond, body in getattr(node, "branches", []) or []:

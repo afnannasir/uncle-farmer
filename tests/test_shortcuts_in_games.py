@@ -206,6 +206,122 @@ def test_the_file_takes_games_and_says_the_three_words(app: Any) -> None:
     assert shortcuts.where_label(IN_GAMES) == "in Uncle Farmer and in the games only"
 
 
+def test_the_help_lists_the_games_keys_in_their_own_part() -> None:
+    from unclefarmer.gui.main import shortcuts_text
+    table = shortcuts.defaults()
+    table["game_next"] = Shortcut("F11", IN_GAMES)
+    text = shortcuts_text(table)
+    anywhere, _sep, rest = text.partition("In Uncle Farmer and in the games only")
+    games, _sep, app_only = rest.partition("In Uncle Farmer's main window")
+    assert "F11" not in anywhere and "F11" in games and "F11" not in app_only
+    assert "Pause" in anywhere and "F5" in app_only
+
+
+# ------------------------------------------------------------------ catching the keys pressed
+def test_the_keys_pressed_are_written_as_the_box_takes_them(app: Any) -> None:
+    from unclefarmer.gui.shortcutkeys import pressed
+    assert pressed(ord("R"), True, False, True) == "Ctrl+Shift+R"
+    assert pressed(wx.WXK_F7, False, False, False) == "F7"
+    assert pressed(wx.WXK_F24, False, False, True) == "Shift+F24"
+    assert pressed(wx.WXK_PAUSE, False, False, True) == "Shift+Pause"
+    assert pressed(ord("5"), True, False, False) == "Ctrl+5"
+    assert pressed(wx.WXK_PAGEDOWN, True, True, False) == "Ctrl+Alt+PageDown"
+    for only in (wx.WXK_CONTROL, wx.WXK_SHIFT, wx.WXK_ALT, wx.WXK_WINDOWS_LEFT):
+        assert pressed(only, True, False, False) is None             # the key comes next
+    for reading in (wx.WXK_DOWN, wx.WXK_UP, wx.WXK_HOME, wx.WXK_TAB, wx.WXK_PAGEDOWN):
+        assert pressed(reading, False, False, False) is None         # reading the window with NVDA
+        assert pressed(reading, False, False, True) is None
+    assert pressed(wx.WXK_DOWN, True, False, False) == "Ctrl+Down"   # with Ctrl it may be a shortcut
+    for code, name in ((wx.WXK_RETURN, "Enter"), (wx.WXK_NUMPAD5, "Numpad5"), (ord(";"), ";")):
+        got = pressed(code, True, False, False) or ""
+        assert got == "Ctrl+" + name
+        with pytest.raises(shortcuts.BadKeys):                        # named, so the box says why
+            shortcuts.canonical(got)
+    for code in (ord("R"), wx.WXK_F7, wx.WXK_PAUSE, wx.WXK_HOME):     # what it writes, canonical reads back
+        got = pressed(code, True, False, True)
+        assert got is not None and shortcuts.canonical(got) == got
+
+
+class Caught:
+    """KeyCatcher's stand-in: the keys a player pressed, or Escape."""
+    keys_pressed: str | None = "Ctrl+Shift+F7"
+
+    def __init__(self, _parent: Any, action: str) -> None:
+        self.action = action
+        self.keys = ""
+
+    def __enter__(self) -> "Caught":
+        return self
+
+    def __exit__(self, *_a: Any) -> None:
+        pass
+
+    def ShowModal(self) -> int:  # noqa: N802 (wx's name)
+        if self.keys_pressed is None:
+            return wx.ID_CANCEL
+        self.keys = self.keys_pressed
+        return wx.ID_OK
+
+
+def test_press_the_keys_fills_the_keys_box_and_escape_leaves_it(app: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    from unclefarmer.gui import shortcutkeys
+    from unclefarmer.gui.common import select_row
+    monkeypatch.setattr(shortcutkeys, "KeyCatcher", Caught)
+    frame = wx.Frame(None)
+    d: Any = shortcutkeys.ShortcutsDialog(frame, shortcuts.defaults())
+    try:
+        i = next(n for n, a in enumerate(shortcuts.ACTIONS) if a.id == "game_next")
+        select_row(d.rows, i)
+        d.show()
+        d.catch_keys()
+        assert d.keys.GetValue() == "Ctrl+Shift+F7" and d.rows.GetItemText(i, 1) == "Ctrl+Shift+F7"
+        Caught.keys_pressed = None                    # Escape: the box keeps what it had
+        d.catch_keys()
+        assert d.keys.GetValue() == "Ctrl+Shift+F7"
+        Caught.keys_pressed = "Ctrl+C"                # a key every window keeps: the note says so
+        d.catch_keys()
+        assert "kept for every window" in d.note.GetValue()
+    finally:
+        Caught.keys_pressed = "Ctrl+Shift+F7"
+        d.Destroy()
+        frame.Destroy()
+
+
+def test_the_catcher_takes_the_keys_and_escape_leaves(app: Any) -> None:
+    from unclefarmer.gui.shortcutkeys import KeyCatcher
+    frame = wx.Frame(None)
+    d: Any = KeyCatcher(frame, "Game, Select the next game")
+    ended: list[int] = []
+    d.EndModal = ended.append
+
+    class Key:
+        def __init__(self, code: int, ctrl: bool = False, alt: bool = False, shift: bool = False) -> None:
+            self.code, self.ctrl, self.alt, self.shift = code, ctrl, alt, shift
+
+        def GetKeyCode(self) -> int:  # noqa: N802
+            return self.code
+
+        def ControlDown(self) -> bool:  # noqa: N802
+            return self.ctrl
+
+        def AltDown(self) -> bool:  # noqa: N802
+            return self.alt
+
+        def ShiftDown(self) -> bool:  # noqa: N802
+            return self.shift
+    try:
+        assert "Game, Select the next game" in d.say.GetValue()
+        d.on_key(Key(wx.WXK_CONTROL, ctrl=True))       # Ctrl alone: waits
+        assert ended == [] and d.keys == ""
+        d.on_key(Key(ord("K"), ctrl=True, shift=True))
+        assert ended == [wx.ID_OK] and d.keys == "Ctrl+Shift+K"
+        d.on_key(Key(wx.WXK_ESCAPE))
+        assert ended[-1] == wx.ID_CANCEL
+    finally:
+        d.Destroy()
+        frame.Destroy()
+
+
 @pytest.fixture
 def app() -> Any:
     a = wx.GetApp() or wx.App(False)

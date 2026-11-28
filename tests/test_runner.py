@@ -415,10 +415,26 @@ def test_run_asks_you_to_log_in(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
 
 
 def test_run_blocked_by_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    run, links, _, done = make(monkeypatch, tmp_path, plan=(None, "05:00"))
+    run, links, _, done = make(monkeypatch, tmp_path, text="farm map=5121", plan=(None, "05:00"))
     run.run()
     assert "farming is over" in done[0]
     assert links == []
+
+
+def test_a_run_with_no_farm_line_isn_t_held_to_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Only killing monsters on public maps spends the drop time: a tool, gathering or a dungeon may
+    run past the daily stop and right before the reset."""
+    for text in ("wait 1", "gem_maker", "gather"):
+        run, links, _, done = make(monkeypatch, tmp_path, text=text, plan=(None, "05:00"))
+        run.run()
+        assert "farming is over" not in done[0] and links, text
+
+
+def test_the_dungeons_tool_isn_t_held_to_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    run, links, _, done = make(monkeypatch, tmp_path, text="dungeon", plan=(None, "05:00"))
+    run.kind = "tool"
+    run.run()
+    assert "farming is over" not in done[0] and links
 
 
 def test_run_refuses_when_the_keys_are_unusable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

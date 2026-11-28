@@ -232,6 +232,18 @@ def test_check_daily_stop_fires_once(clock: Clock) -> None:
     assert b.check() is None                    # once, then the ending runs
 
 
+def test_check_daily_stop_waits_while_in_a_dungeon(clock: Clock) -> None:
+    """Inside a dungeon no drop time is spent, and stopping there would end the visit: the stop comes
+    once the game moves us out."""
+    b = Read()
+    b.daily_stop_at = clock.now - 1
+    b.in_instance = True  # type: ignore[attr-defined]
+    assert b.check() is None and b.daily_done is False
+    b.in_instance = False  # type: ignore[attr-defined]
+    with pytest.raises(Stopped):
+        b.check()
+
+
 def test_check_daily_stop_before_the_time_does_nothing(clock: Clock) -> None:
     b = Read()
     b.daily_stop_at = clock.now + 100

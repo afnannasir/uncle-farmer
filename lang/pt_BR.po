@@ -555,6 +555,9 @@ msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 "&Treinar por (minutos; 0: entrar, compartilhar e sair; tempo dentro conta no tempo de coleta):"
 
+msgid "&Press the keys..."
+msgstr "P&ressionar as teclas..."
+
 msgid "&Private messages"
 msgstr "&Mensagens privadas"
 
@@ -949,9 +952,9 @@ msgstr ""
 "Um arquivo que atingir o tamanho acima será salvo como nome.1; os mais antigos serão renomeados para nome.2 e assim por diante, e o mais antigo será excluído. O registro diário das execuções é rotacionado da mesma forma dentro da pasta do dia."
 
 msgid ""
-"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list. The keys about the selected game (the next or previous one, its status, its window) keep the selection, so the next game, then the next, goes round the list even from inside a game."
 msgstr ""
-"Uma tecla que funciona em qualquer lugar age no jogo em primeiro plano quando ele é um dos seus (a lista de jogos o seleciona), e a partir de qualquer outro programa no jogo selecionado na lista."
+"Uma tecla que funciona em qualquer lugar age no jogo em primeiro plano quando ele é um dos seus (a lista de jogos o seleciona), e a partir de qualquer outro programa no jogo selecionado na lista. As teclas do jogo selecionado (o próximo ou o anterior, o status, a janela) mantêm a seleção: próximo jogo, e de novo próximo, dá a volta na lista mesmo de dentro de um jogo."
 
 msgid ""
 "A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
@@ -2820,6 +2823,9 @@ msgstr "Importar configurações para este personagem:"
 msgid "Important events only"
 msgstr "Somente eventos importantes"
 
+msgid "In Uncle Farmer and in the games only"
+msgstr "Só no Uncle Farmer e nos jogos"
+
 msgid "In Uncle Farmer's main window"
 msgstr "Na janela principal do Uncle Farmer"
 
@@ -4018,6 +4024,17 @@ msgstr "Pressione &a habilidade repetidamente até o jogo conjurá-la"
 
 msgid "Press s&kills through the game, not the keyboard"
 msgstr "&Pressionar habilidades pelo jogo, não pelo teclado"
+
+msgid "Press the keys"
+msgstr "Pressionar as teclas"
+
+msgid ""
+"Press the keys for {action} now, with Ctrl, Alt or Shift if you want them. Escape: leave without changing them."
+msgstr ""
+"Pressione agora as teclas para {action}, com Ctrl, Alt ou Shift se quiser. Escape: sair sem mudá-las."
+
+msgid "Press the keys:"
+msgstr "Pressione as teclas:"
 
 msgid "Press the new key for {action}:"
 msgstr "Pressione a nova tecla para {action}:"
@@ -7588,6 +7605,21 @@ msgstr "na cidade"
 msgid "in {cave}: {n} minutes to kill all we can"
 msgstr "em {cave}: {n} minutos para derrotar o máximo possível"
 
+msgid ""
+"in {map}: not leaving it - the wedding's gift would be lost. Take the gift from its NPC, then start again"
+msgstr ""
+"em {map}: não vou sair - o presente do casamento seria perdido. Pegue o presente com o NPC dele e comece de novo"
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then ending the run"
+msgstr ""
+"em {map}: não saio da dungeon por conta própria (a visita do dia seria perdida) - farmando nela até o jogo nos tirar, depois encerrando a partida"
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then on to {dest}"
+msgstr ""
+"em {map}: não saio da dungeon por conta própria (a visita do dia seria perdida) - farmando nela até o jogo nos tirar, depois para {dest}"
+
 msgid "in {room}; practice time left: {m} minutes"
 msgstr "em {room}; restam {m} minutos de treino"
 
@@ -8965,6 +8997,11 @@ msgstr "ainda quebrado após o reparo: {items}"
 
 msgid "still dead - the after-farming list is left out"
 msgstr "ainda morto - a lista de depois da coleta foi pulada"
+
+msgid ""
+"still in {map} after {h} hours - the game hasn't moved us out; leave it yourself"
+msgstr ""
+"ainda em {map} depois de {h} horas - o jogo não nos tirou; saia você mesmo"
 
 msgid "still on display - it can't be bought in its first hour"
 msgstr ""
@@ -11410,6 +11447,11 @@ msgstr "{w} por {h} casas, {n} saídas."
 
 #~ msgid "(no notes)"
 #~ msgstr "(sem observações)"
+
+#~ msgid ""
+#~ "A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+#~ msgstr ""
+#~ "Uma tecla que funciona em qualquer lugar age no jogo em primeiro plano quando ele é um dos seus (a lista de jogos o seleciona), e a partir de qualquer outro programa no jogo selecionado na lista."
 
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""

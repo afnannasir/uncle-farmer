@@ -90,9 +90,11 @@ class ReadingMixin(Parts):
         if self._stop.is_set():
             raise Stopped(_("stopped by you"), final=True)
         self.check_game()
-        if self.daily_stop_at and not self.daily_done and self.clock.time() >= self.daily_stop_at:
+        if (self.daily_stop_at and not self.daily_done and self.clock.time() >= self.daily_stop_at
+                and not getattr(self, "in_instance", False)):
             # The farming day is over, whatever we are doing: once, then the ending runs
-            # (defend, then the plan's end place) without this firing again.
+            # (defend, then the plan's end place) without this firing again. Not inside a
+            # dungeon: it spends no drop time, and the stop comes once the game moves us out.
             self.daily_done = True
             raise Stopped(_("it's {time} - the day's farming is over (the drop time resets at {reset})",
                             time=time.strftime("%H:%M"), reset=self.daily_reset))

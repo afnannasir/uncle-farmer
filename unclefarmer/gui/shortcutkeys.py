@@ -1,7 +1,9 @@
 """File, Keyboard shortcuts: every action of the bot with its keys and where they work, the same
 table as shortcuts.txt (unclefarmer/shortcuts.py). The keys are typed as text ("Ctrl+Shift+R"), which
-a screen reader reads back as it is: no key is caught, so NVDA's own keys never get in the way.
-Nothing is kept until Save, which writes the file and puts the keys to work at once."""
+a screen reader reads back as it is. Press the keys catches them instead, for players who would rather
+press them (a player asked for it): a small window takes the next keys pressed, Escape leaves it, and
+they go into the Keys box, checked as typed ones are. NVDA's own keys (with Insert or Caps Lock) never
+reach it. Nothing is kept until Save, which writes the file and puts the keys to work at once."""
 
 from __future__ import annotations
 
@@ -15,6 +17,66 @@ from ..i18n import _
 from .common import Dialog, Form, buttons, error, first_selected, labeled, ok_cancel, select_row
 
 WHERE = shortcuts.WHERE
+_MODIFIER_KEYS = {wx.WXK_CONTROL, wx.WXK_SHIFT, wx.WXK_ALT, wx.WXK_WINDOWS_LEFT, wx.WXK_WINDOWS_RIGHT,
+                  wx.WXK_WINDOWS_MENU, wx.WXK_CAPITAL, wx.WXK_NUMLOCK, wx.WXK_SCROLL, wx.WXK_RAW_CONTROL}
+_KEY_NAMES: dict[int, str] = {wx.WXK_PAUSE: "Pause", wx.WXK_SPACE: "Space", wx.WXK_INSERT: "Insert", wx.WXK_DELETE: "Delete",
+              wx.WXK_HOME: "Home", wx.WXK_END: "End", wx.WXK_PAGEUP: "PageUp", wx.WXK_PAGEDOWN: "PageDown",
+              wx.WXK_UP: "Up", wx.WXK_DOWN: "Down", wx.WXK_LEFT: "Left", wx.WXK_RIGHT: "Right",
+              wx.WXK_TAB: "Tab", wx.WXK_RETURN: "Enter", wx.WXK_BACK: "Backspace",
+              wx.WXK_NUMPAD_ENTER: "Enter"}
+
+
+# keys a screen reader user moves with to read the window's text: never caught alone (with Ctrl they are)
+_READING_KEYS = {wx.WXK_UP, wx.WXK_DOWN, wx.WXK_LEFT, wx.WXK_RIGHT, wx.WXK_HOME, wx.WXK_END, wx.WXK_PAGEUP,
+                 wx.WXK_PAGEDOWN, wx.WXK_TAB}
+
+
+def pressed(code: int, ctrl: bool, alt: bool, shift: bool) -> str | None:
+    """The keys pressed as the Keys box takes them ("Ctrl+Shift+R"), or None while only Ctrl, Alt or
+    Shift is down (the key to come with them is waited for) and for the keys that read the window
+    (an arrow, Home, End, PageUp, PageDown or Tab without Ctrl: no shortcut can be one of those). A key
+    the bot can't use is named all the same, so the box says why (shortcuts.canonical)."""
+    if code in _MODIFIER_KEYS or (code in _READING_KEYS and not ctrl):
+        return None
+    if wx.WXK_F1 <= code <= wx.WXK_F24:
+        key = "F%d" % (code - wx.WXK_F1 + 1)
+    elif code in _KEY_NAMES:
+        key = _KEY_NAMES[code]
+    elif wx.WXK_NUMPAD0 <= code <= wx.WXK_NUMPAD9:
+        key = "Numpad%d" % (code - wx.WXK_NUMPAD0)
+    elif 32 < code < 127:
+        key = chr(code).upper()
+    else:
+        key = "key %d" % code
+    return "+".join([m for m, down in (("Ctrl", ctrl), ("Alt", alt), ("Shift", shift)) if down] + [key])
+
+
+class KeyCatcher(Dialog):
+    """Takes the next keys pressed (with Ctrl, Alt or Shift); Escape leaves without any."""
+
+    def __init__(self, parent: wx.Window, action: str) -> None:
+        super().__init__(parent, title=_("Press the keys"))
+        self.keys = ""
+        root = wx.BoxSizer(wx.VERTICAL)
+        f = Form(self)
+        self.say = f.readonly(_("Press the keys:"))        # one line: NVDA reads all of it on focus
+        self.say.SetValue(_("Press the keys for {action} now, with Ctrl, Alt or Shift if you want them. "
+                            "Escape: leave without changing them.", action=action))
+        root.Add(f.grid, 0, wx.EXPAND | wx.ALL, 12)
+        self.SetSizerAndFit(root)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key)
+        self.say.SetFocus()
+
+    def on_key(self, evt: wx.KeyEvent) -> None:
+        code = evt.GetKeyCode()
+        if code == wx.WXK_ESCAPE and not (evt.ControlDown() or evt.AltDown() or evt.ShiftDown()):
+            self.EndModal(wx.ID_CANCEL)
+            return
+        got = pressed(code, evt.ControlDown(), evt.AltDown(), evt.ShiftDown())
+        if got is None:
+            return                    # Ctrl, Alt or Shift alone (the key comes next), or a key that reads
+        self.keys = got
+        self.EndModal(wx.ID_OK)
 
 
 class ShortcutsDialog(Dialog):
@@ -33,7 +95,8 @@ class ShortcutsDialog(Dialog):
         self.where = f.choice(_("&Works:"), [shortcuts.where_label(w) for w in WHERE])
         self.note = f.readonly(_("Note:"), lines=3)
         box.Add(f.grid, 0, wx.EXPAND | wx.TOP, 10)
-        buttons(self, box, (_("Default for &this one"), lambda e: self.default_one()),
+        buttons(self, box, (_("&Press the keys..."), lambda e: self.catch_keys()),
+                (_("Default for &this one"), lambda e: self.default_one()),
                 (_("&All the defaults"), lambda e: self.all_defaults()),
                 (_("&Open the file"), lambda e: self.open_file()),
                 (_("&Read the file again"), lambda e: self.read_file()))
@@ -133,6 +196,17 @@ class ShortcutsDialog(Dialog):
             return ""
 
     # ---------------------------------------------------------------- the buttons
+    def catch_keys(self) -> None:
+        """The keys pressed in a small window, into the Keys box (checked as typed ones are)."""
+        i = self.current()
+        if i is None:
+            return
+        with KeyCatcher(self, shortcuts.label(shortcuts.ACTIONS[i])) as d:
+            got = d.keys if d.ShowModal() == wx.ID_OK else ""
+        if got:
+            self.keys.SetValue(got)       # (its text event checks it and fills the row)
+        self.keys.SetFocus()
+
     def default_one(self) -> None:
         i = self.current()
         if i is None:

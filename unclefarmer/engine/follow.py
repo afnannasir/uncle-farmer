@@ -246,6 +246,15 @@ def parse_location(text: str):
 def come_to(bot: Bot, name: str, map_id: int | None = None, cell: tuple[int, int] | None = None) -> str:
     """Walk up to the player. map_id / cell: where they said they are (`come <map>`, or the
     location key E's text). Returns a short answer for them."""
+    was = getattr(bot, "coming", False)
+    bot.coming = True            # they called: a dungeon we stand in may be left (dungeonhold.applies)
+    try:
+        return _come_to(bot, name, map_id, cell)
+    finally:
+        bot.coming = was
+
+
+def _come_to(bot: Bot, name: str, map_id: int | None, cell: tuple[int, int] | None) -> str:
     looked: Sighting | None = None
     went_to_cell = False
 

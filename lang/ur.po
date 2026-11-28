@@ -555,6 +555,9 @@ msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 "&Mashq kitni der (minute; 0: andar, share, bahar; andar ka waqt drop time leta hai):"
 
+msgid "&Press the keys..."
+msgstr "Keys da&bayein..."
+
 msgid "&Private messages"
 msgstr "&Zaati paigham"
 
@@ -946,9 +949,9 @@ msgstr ""
 "Jo file upar di gayi size tak pahunch jaye woh name.1 ke tor par rakhi jaati hai, us se purani name.2 par chali jaati hai aur isi tarah aage, aur sab se purani hata di jaati hai. Din ka run log bhi apne din ke andar isi tarah rotate hota hai."
 
 msgid ""
-"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list. The keys about the selected game (the next or previous one, its status, its window) keep the selection, so the next game, then the next, goes round the list even from inside a game."
 msgstr ""
-"Har jagah chalne wali key saamne wale game par kaam karti hai jab woh aap ka ho (Games list use select kar leti hai), aur kisi aur program se list mein select kiye gaye game par."
+"Har jagah chalne wali key saamne wale game par kaam karti hai jab woh aap ka ho (Games list use select kar leti hai), aur kisi aur program se list mein select kiye gaye game par. Selected game ki keys (agla ya pichhla, us ka status, us ki window) selection ko rehne deti hain: agla game, phir agla, game ke andar se bhi poori list ka chakkar lagata hai."
 
 msgid ""
 "A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
@@ -2816,6 +2819,9 @@ msgstr "Tarteeb is character mein import karein:"
 msgid "Important events only"
 msgstr "Sirf ahem waqiaat"
 
+msgid "In Uncle Farmer and in the games only"
+msgstr "Sirf Uncle Farmer aur games mein"
+
 msgid "In Uncle Farmer's main window"
 msgstr "Uncle Farmer ki main window mein"
 
@@ -4016,6 +4022,17 @@ msgstr "Skill ko dobara dabayein aur &dobara, jab tak game usay cast na kare"
 
 msgid "Press s&kills through the game, not the keyboard"
 msgstr "S&kills keyboard se nahi, game ke zariye dabayein"
+
+msgid "Press the keys"
+msgstr "Keys dabayein"
+
+msgid ""
+"Press the keys for {action} now, with Ctrl, Alt or Shift if you want them. Escape: leave without changing them."
+msgstr ""
+"{action} ke liye ab keys dabayein, chahein to Ctrl, Alt ya Shift ke saath. Escape: badle baghair band karein."
+
+msgid "Press the keys:"
+msgstr "Keys dabayein:"
 
 msgid "Press the new key for {action}:"
 msgstr "{action} ke liye nayi key dabayein:"
@@ -7598,6 +7615,21 @@ msgstr "shehar mein"
 msgid "in {cave}: {n} minutes to kill all we can"
 msgstr "{cave} mein: jitne maar sakein, {n} minute"
 
+msgid ""
+"in {map}: not leaving it - the wedding's gift would be lost. Take the gift from its NPC, then start again"
+msgstr ""
+"{map} mein: bahar nahin ja rahe - shaadi ka tohfa zaya ho jayega. Tohfa us ke NPC se lein, phir dobara shuru karein"
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then ending the run"
+msgstr ""
+"{map} mein: dungeon se khud bahar nahin ja rahe (aaj ki visit zaya ho jayegi) - jab tak game bahar na nikale us mein farm karte hain, phir run khatam"
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then on to {dest}"
+msgstr ""
+"{map} mein: dungeon se khud bahar nahin ja rahe (aaj ki visit zaya ho jayegi) - jab tak game bahar na nikale us mein farm karte hain, phir {dest} ki taraf"
+
 msgid "in {room}; practice time left: {m} minutes"
 msgstr "{room} mein; mashq ka baqi waqt: {m} minute"
 
@@ -8980,6 +9012,11 @@ msgstr "repair ke baad bhi toota hua: {items}"
 
 msgid "still dead - the after-farming list is left out"
 msgstr "abhi tak mara hua hai - farming ke baad ki list chhor di gayi"
+
+msgid ""
+"still in {map} after {h} hours - the game hasn't moved us out; leave it yourself"
+msgstr ""
+"{h} ghante baad bhi {map} mein - game ne bahar nahin nikala; khud bahar niklein"
 
 msgid "still on display - it can't be bought in its first hour"
 msgstr "abhi numaish par hai - pehle ghante mein khareeda nahi ja sakta"
@@ -11442,6 +11479,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "({n} fused)"
 #~ msgstr "({n} fuse hue)"
+
+#~ msgid ""
+#~ "A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+#~ msgstr ""
+#~ "Har jagah chalne wali key saamne wale game par kaam karti hai jab woh aap ka ho (Games list use select kar leti hai), aur kisi aur program se list mein select kiye gaye game par."
 
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""

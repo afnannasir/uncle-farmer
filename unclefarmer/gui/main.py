@@ -570,6 +570,7 @@ def shortcuts_text(table: shortcuts.Table) -> str:
     lines = [_("KEYBOARD SHORTCUTS"), "", _("Change them in File, Keyboard shortcuts, or in {file}.",
                                              file=shortcuts.file_path()), ""]
     for where, title in ((shortcuts.EVERYWHERE, _("Anywhere, even inside the game")),
+                         (shortcuts.IN_GAMES, _("In Uncle Farmer and in the games only")),
                          (shortcuts.IN_APP, _("In Uncle Farmer's main window"))):
         lines.append(title)
         rows = [(table[a.id].keys, shortcuts.label(a)) for a in shortcuts.ACTIONS
@@ -577,7 +578,9 @@ def shortcuts_text(table: shortcuts.Table) -> str:
         lines += ["  %-20s%s" % row for row in rows] or ["  " + _("none")]
         lines.append("")
     lines.append(_("A key that works from anywhere acts on the game in front when it is one of yours (the Games "
-                   "list selects it), and from any other program on the game selected in the list."))
+                   "list selects it), and from any other program on the game selected in the list. The keys "
+                   "about the selected game (the next or previous one, its status, its window) keep the "
+                   "selection, so the next game, then the next, goes round the list even from inside a game."))
     lines.append(_("Ctrl+Tab moves between the main window's tabs."))
     return "\n".join(lines) + "\n\n" + SHORTCUTS
 

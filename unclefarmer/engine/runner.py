@@ -24,7 +24,7 @@ from . import chores, keyboard, keyslots, medals, resume, talents, teamlead, tri
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken, GameLost, WrongCharacter
 from .botparts.parts import Sighting, Where
-from .script import Runner, ScriptError
+from .script import Runner, ScriptError, parse
 
 AGENT_VERSION = 5   # the agent's StateServer.VERSION this app needs (4: dialog, target; 5: typing quantities)
 AGENT_SPEECH = 14   # from here the agent can silence the game and reads the own-HP key's answer
@@ -194,7 +194,8 @@ class Run(threading.Thread):
             self.log(reason, speak=True)
         except Stopped as e:
             self.end_kind = str(getattr(e, "chain_end", "") or "")
-            if not self.end_kind and (getattr(e, "stay", False) or getattr(e, "asked", False)):
+            held = bool(getattr(self.bot, "held_inside", False))     # waiting in a dungeon (dungeonhold)
+            if not self.end_kind and (getattr(e, "stay", False) or getattr(e, "asked", False) or held):
                 self.end_kind = "called_away"          # come, home: a player wants the character
             if getattr(self, "kind", "") in ("tool", "trigger") and not self.stop_event.is_set():
                 self.failed = True
@@ -267,11 +268,10 @@ class Run(threading.Thread):
     # ---------------------------------------------------------------- starting
     def _start(self, app: dict[str, Any]) -> Bot:
         """The game connected and checked, the character scanned, the keys armed: the Bot, set up."""
-        # a tool or a trigger list farms nothing by itself (a step that farms is held to the window
-        # by farming_window); Dungeons is farming, so it keeps the daily stop as a plan does
-        kind = getattr(self, "kind", "")
-        independent = kind == "trigger" or (kind == "tool" and self.text.strip() != "dungeon")
-        day_end, blocked = daily.plan(app) if not self.walk and not independent else (None, None)
+        # only killing monsters on public maps spends the drop time: a run with no farm line (a tool,
+        # Dungeons, gathering) isn't held to the daily stop; a trigger list's steps are, each one that
+        # farms (farming_window)
+        day_end, blocked = daily.plan(app) if not self.walk and self._farms_in_public() else (None, None)
         character: str
         if blocked:
             over = Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
@@ -315,6 +315,19 @@ class Run(threading.Thread):
         bot = self._make_bot(link, profile, agent, guard, day_end, app)
         self._set_up(bot, snap, profile, found, agent, app)
         return bot
+
+    def _farms_in_public(self) -> bool:
+        """Does this run farm public maps (a farm line), the only thing that spends drop time? A trigger
+        list doesn't by itself, nor Dungeons; a script that can't be read is taken as farming (it fails
+        on its own, as before)."""
+        kind = getattr(self, "kind", "")
+        if kind == "trigger" or (kind == "tool" and self.text.strip() == "dungeon"):
+            return False
+        try:
+            main, subs, on_stop = parse(self.text)
+        except (ScriptError, ValueError):
+            return True
+        return triggers.farms_public(main + on_stop, subs)
 
     def _login_saved_character(self, link: AgentLink, agent: int) -> None:
         """Use this plan's saved account, then wait for the requested character to be selected."""
@@ -547,7 +560,7 @@ class Run(threading.Thread):
             self.before_farming_done = self.after_farming_done = True
         if kind not in ("errand", "tool") and not self.walk:
             if triggers.farms(script.main, script.subs):
-                self._level_first(bot, script.main)
+                self._level_first(bot, script.main, triggers.farms_public(script.main, script.subs))
                 teamlead.at_start(bot)         # out of another's team, into ours (the Team tab)
                 if not self._on_the_farm(bot, script) and not self._carried_on_past_before():
                     self._before_farming()
@@ -595,22 +608,25 @@ class Run(threading.Thread):
                 # closing the game or the PC; nor a game lost (or another character) meanwhile
                 self.ended_by_itself = (not self.stop_event.is_set() and not getattr(e, "stay", False)
                                         and not getattr(e, "asked", False)
-                                        and not self.game_lost and not self.other_character)
+                                        and not self.game_lost and not self.other_character
+                                        and not getattr(bot, "held_inside", False))
         return reason
 
     @staticmethod
-    def _level_first(bot: Bot, main: list[Any]) -> None:
+    def _level_first(bot: Bot, main: list[Any], public: bool = True) -> None:
         """Before anything else in a run that farms: the plan's own keep_level (its script's
         top-level line, which only runs after the Before farming list), then "Stop before the
         next level" checked from where we stand - a run that would stop on its first sheet at
-        the farm doesn't set out."""
+        the farm doesn't set out. The drop time left only for a run that farms public maps
+        (public): a dungeon spends none."""
         for node in main:
             if getattr(node, "kind", "") == "keep_level":
                 bot.level_keep = node.opts["xp"]
             if getattr(node, "kind", "") == "keep_drop":
                 bot.drop_keep = node.opts["minutes"]
         bot.level_before_start()
-        bot.drop_before_start()          # nor with the day's drop time already used up
+        if public:
+            bot.drop_before_start()      # nor with the day's drop time already used up
 
     @staticmethod
     def _on_the_farm(bot: Bot, script: Runner) -> bool:

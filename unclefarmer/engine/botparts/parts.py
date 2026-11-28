@@ -149,6 +149,8 @@ class Parts:
 
     # ---------------------------------------------------------------- run state
     following: str | None       # the player a follow run stays with (engine/follow.py)
+    coming: bool                # walking up to a player who called (follow.come_to)
+    held_inside: bool           # the run stopped inside a dungeon or a wedding hall (dungeonhold)
     follow_opts: dict[str, Any]  # that follow's script options (engine/followopts.py)
     team_ask_at: float          # when follow next asks the team phrase where its player is
     supply_told: set[str]       # supplies already said to be low (town.restock): said once a run
