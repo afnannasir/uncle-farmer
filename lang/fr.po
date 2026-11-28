@@ -892,6 +892,11 @@ msgstr ", {heal} de soin"
 msgid ", {n} threads"
 msgstr ", {n} threads"
 
+msgid ""
+"- stopped after {lot}: the game didn't say whether it was bought; look in the bag"
+msgstr ""
+"- arrêt après {lot} : le jeu n'a pas dit si l'achat a eu lieu ; regardez dans le sac"
+
 msgid "1 chest opened"
 msgstr "1 coffre ouvert"
 
@@ -7652,6 +7657,9 @@ msgstr "son jeu est occupé par {what}"
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr "ses lignes ne sont pas celles vérifiées (le jeu l'a peut-être changé)"
 
+msgid "its listing isn't on the page exactly once"
+msgstr "son annonce n'est pas une seule fois sur la page"
+
 msgid "its price isn't the one read ({now} now)"
 msgstr "son prix n'est plus celui lu ({now} maintenant)"
 
@@ -7913,6 +7921,11 @@ msgstr "market quoi ? scan, search, seller ou buy"
 
 msgid "market: nothing to buy at that price"
 msgstr "marché : rien à acheter à ce prix"
+
+msgid ""
+"market: {lot}: the game says we act too fast - trying again in {s} seconds"
+msgstr ""
+"marché : {lot} : le jeu dit qu'on va trop vite - nouvel essai dans {s} secondes"
 
 msgid "market: {lot}: {words}"
 msgstr "marché : {lot} : {words}"
@@ -8255,11 +8268,11 @@ msgstr "normal"
 msgid "not allowed in an expression: {expr}"
 msgstr "interdit dans une expression : {expr}"
 
+msgid "not bought: its listing isn't on the page exactly once"
+msgstr "pas acheté : son annonce n'est pas une seule fois sur la page"
+
 msgid "not bought: the game said \"{words}\""
 msgstr "pas acheté : le jeu a dit « {words} »"
-
-msgid "not bought: the game's quantity box didn't take the number"
-msgstr "pas acheté : la zone de quantité du jeu n'a pas pris le nombre"
 
 msgid "not bought: {item} ({why})"
 msgstr "pas acheté : {item} ({why})"
@@ -8390,6 +8403,9 @@ msgstr ""
 
 msgid "not telling {room} of {boss}: the character is in no gang"
 msgstr "{room} pas prévenu pour {boss} : le personnage n'a pas de gang"
+
+msgid "not tried: the purchase of {lot} may have gone through"
+msgstr "pas essayé : l'achat de {lot} a peut-être eu lieu"
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
 msgstr ""
@@ -9621,12 +9637,6 @@ msgstr "le jeu a refusé la demande de connexion"
 msgid "the game said nothing"
 msgstr "le jeu n'a rien dit"
 
-msgid "the game said nothing - look in the bag"
-msgstr "le jeu n'a rien dit - vérifiez le sac"
-
-msgid "the game said nothing about {item} - look in the bag"
-msgstr "le jeu n'a rien dit pour {item} - regardez dans le sac"
-
 msgid "the game said: not enough talent points - nothing changed"
 msgstr "le jeu a dit : not enough talent points - rien n'a changé"
 
@@ -9778,6 +9788,11 @@ msgid ""
 "the market can't be used with this agent: restart the game so agent {n} loads"
 msgstr ""
 "le marché est inutilisable avec cet agent : redémarrez le jeu pour charger l'agent {n}"
+
+msgid ""
+"the market didn't say whether {item} was bought: nothing more is bought this run - look in the bag"
+msgstr ""
+"le marché n'a pas dit si {item} a été acheté : plus aucun achat pour cette fois - regardez dans le sac"
 
 msgid "the market didn't take the page number"
 msgstr "le marché n'a pas pris le numéro de page"
@@ -10671,6 +10686,12 @@ msgstr ""
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr "{item} : {n} utilisés x {price} = {cost} arnebia"
 
+msgid "{item}: {why}"
+msgstr "{item} : {why}"
+
+msgid "{item}: {why}, and the bag didn't show it - look in the bag"
+msgstr "{item} : {why}, et le sac ne l'a pas montré - regardez dans le sac"
+
 msgid "{job} didn't finish: {why}"
 msgstr "{job} n'a pas abouti : {why}"
 
@@ -11435,6 +11456,17 @@ msgid ""
 msgstr ""
 "{why} : attente ici, puis téléportation vers le chef d'équipe (Shift+P) dès que le jeu le permet"
 
+msgid "{why}, and nothing came into the bag - look in the bag"
+msgstr "{why}, et rien n'est arrivé dans le sac - regardez dans le sac"
+
+msgid "{why}, and the bag couldn't be read before buying - look in the bag"
+msgstr ""
+"{why}, et le sac n'a pas pu être lu avant l'achat - regardez dans le sac"
+
+msgid "{why}, but {n} came into the bag: bought for {cost} gold coins"
+msgstr ""
+"{why}, mais {n} sont arrivés dans le sac : achetés pour {cost} gold coins"
+
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} sur {h} cases, {n} sorties."
 
@@ -11493,8 +11525,17 @@ msgstr "{w} sur {h} cases, {n} sorties."
 #~ msgstr ""
 #~ "Quand le menu d'un coffre, d'un aéronef, d'un téléphérique ou d'un donjon ne fait rien, réessayer une fois avec les flèches et &Entrée"
 
+#~ msgid "not bought: the game's quantity box didn't take the number"
+#~ msgstr "pas acheté : la zone de quantité du jeu n'a pas pris le nombre"
+
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol vaut random, full, quick ou short"
+
+#~ msgid "the game said nothing - look in the bag"
+#~ msgstr "le jeu n'a rien dit - vérifiez le sac"
+
+#~ msgid "the game said nothing about {item} - look in the bag"
+#~ msgstr "le jeu n'a rien dit pour {item} - regardez dans le sac"
 
 #~ msgid ""
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"

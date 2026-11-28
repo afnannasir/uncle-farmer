@@ -873,6 +873,10 @@ msgstr ""
 msgid ", {n} threads"
 msgstr ""
 
+msgid ""
+"- stopped after {lot}: the game didn't say whether it was bought; look in the bag"
+msgstr ""
+
 msgid "1 chest opened"
 msgstr ""
 
@@ -7243,6 +7247,9 @@ msgstr ""
 msgid "its items aren't the verified ones (the game may have changed it)"
 msgstr ""
 
+msgid "its listing isn't on the page exactly once"
+msgstr ""
+
 msgid "its price isn't the one read ({now} now)"
 msgstr ""
 
@@ -7491,6 +7498,10 @@ msgid "market what? scan, search, seller or buy"
 msgstr ""
 
 msgid "market: nothing to buy at that price"
+msgstr ""
+
+msgid ""
+"market: {lot}: the game says we act too fast - trying again in {s} seconds"
 msgstr ""
 
 msgid "market: {lot}: {words}"
@@ -7812,10 +7823,10 @@ msgstr ""
 msgid "not allowed in an expression: {expr}"
 msgstr ""
 
-msgid "not bought: the game said \"{words}\""
+msgid "not bought: its listing isn't on the page exactly once"
 msgstr ""
 
-msgid "not bought: the game's quantity box didn't take the number"
+msgid "not bought: the game said \"{words}\""
 msgstr ""
 
 msgid "not bought: {item} ({why})"
@@ -7935,6 +7946,9 @@ msgid "not taking {item} to the storehouse: it is full and holds none yet"
 msgstr ""
 
 msgid "not telling {room} of {boss}: the character is in no gang"
+msgstr ""
+
+msgid "not tried: the purchase of {lot} may have gone through"
 msgstr ""
 
 msgid "not worn in the end, a medal of the same kind took its place: {names}"
@@ -9098,12 +9112,6 @@ msgstr ""
 msgid "the game said nothing"
 msgstr ""
 
-msgid "the game said nothing - look in the bag"
-msgstr ""
-
-msgid "the game said nothing about {item} - look in the bag"
-msgstr ""
-
 msgid "the game said: not enough talent points - nothing changed"
 msgstr ""
 
@@ -9241,6 +9249,10 @@ msgstr ""
 
 msgid ""
 "the market can't be used with this agent: restart the game so agent {n} loads"
+msgstr ""
+
+msgid ""
+"the market didn't say whether {item} was bought: nothing more is bought this run - look in the bag"
 msgstr ""
 
 msgid "the market didn't take the page number"
@@ -10082,6 +10094,12 @@ msgstr ""
 msgid "{item}: {n} used x {price} = {cost} arnebia"
 msgstr ""
 
+msgid "{item}: {why}"
+msgstr ""
+
+msgid "{item}: {why}, and the bag didn't show it - look in the bag"
+msgstr ""
+
 msgid "{job} didn't finish: {why}"
 msgstr ""
 
@@ -10806,6 +10824,15 @@ msgstr ""
 
 msgid ""
 "{why} - waiting here, and teleporting to the team leader (Shift+P) as soon as the game allows"
+msgstr ""
+
+msgid "{why}, and nothing came into the bag - look in the bag"
+msgstr ""
+
+msgid "{why}, and the bag couldn't be read before buying - look in the bag"
+msgstr ""
+
+msgid "{why}, but {n} came into the bag: bought for {cost} gold coins"
 msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."

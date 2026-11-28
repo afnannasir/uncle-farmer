@@ -60,6 +60,7 @@ NO_GOLD = re.compile(r"(?i)not enough gold coins")
 HEAVY = re.compile(r"(?i)\boverweight\b")
 CANT_HAVE = re.compile(r"(?i)new listing goods cannot be traded|item does not exist")
 BOUGHT, SKIP, CAP, GOLD, TOO_HEAVY, LOST = "bought", "skip", "cap", "gold", "heavy", "lost"
+FAST = "fast"               # the game's "you act too fast": nothing bought, the lot is tried again later
 
 _lock = threading.Lock()
 
@@ -184,15 +185,22 @@ def _buy_lot(b: Bot, pg: market.Page, lot: market.Lot, want: int) -> tuple[str, 
     """Choose the lot by its listing id, type how many, and read the game's answer: (outcome, what
     the game said)."""
     mark = market.said_mark(b)
-    market.choose_lot(b, pg, lot)
+    try:
+        market.choose_lot(b, pg, lot)
+    except market.NotOnPage:
+        return SKIP, _("its listing isn't on the page exactly once")
     if not town.type_number(b, want):
+        # the number may have gone in, or a late box would take the next lot's: the bag decides,
+        # and nothing more is bought blind
         b.close_dialogs()
-        return SKIP, _("the game's quantity box didn't take the number")
+        return LOST, _("the game's quantity box didn't take the number")
     heard = market.said_after(b, mark, lambda t: not market.SELLER_TEXT.search(t))
     if heard is None:
         return LOST, _("the game said nothing")
     if market.BOUGHT_TEXT.search(heard):
         return BOUGHT, heard
+    if market.TOO_FAST_TEXT.search(heard):
+        return FAST, heard
     for pattern, outcome in ((CAPPED, CAP), (NO_GOLD, GOLD), (HEAVY, TOO_HEAVY), (CANT_HAVE, SKIP)):
         if pattern.search(heard):
             return outcome, heard
@@ -214,6 +222,7 @@ class _Run:
         self.fails = 0
         self.heavy_trips = 0
         self.passed: set[int] = set()     # listing ids not bought (refused, or read with check)
+        self.too_fast: dict[int, int] = {}    # listing id -> times the game said "you act too fast"
         self.why = ""                     # why it ended, for the last line
 
     def take(self, pg: market.Page) -> str:
@@ -245,16 +254,29 @@ class _Run:
             self.bought += want
             self.spent += cost
             return NEXT
-        before = town.counts(self.b).get(lot.name.lower(), 0)
+        before = market.in_bag(self.b, lot.name)   # None: no bag came, so it can't prove a purchase
         outcome, heard = _buy_lot(self.b, pg, lot, want)
-        if outcome == LOST and _gained(self.b, lot.name, before) > 0:
-            outcome = BOUGHT                # the game said nothing, but the bag tells: it was bought
+        if outcome == LOST:
+            if before is None:
+                return self.over(_("{item}: {why}", item=lot.name, why=_(
+                    "{why}, and the bag couldn't be read before buying - look in the bag", why=heard)))
+            if _gained(self.b, lot.name, before) > 0:
+                outcome = BOUGHT            # the game said nothing, but the bag tells: it was bought
         if outcome == BOUGHT:
             return self.bought_it(lot, want, before)
+        if outcome == FAST:
+            tries = self.too_fast[lot.id] = self.too_fast.get(lot.id, 0) + 1
+            if tries <= market.FAST_TRIES:
+                self.b.log(_("market: {lot}: the game says we act too fast - trying again in {s} seconds",
+                             lot=lot.name, s=int(market.FAST_WAIT)))
+                self.b.sleep(market.FAST_WAIT)
+                return AGAIN                # the page read afresh: the lot is tried again
+            outcome = SKIP
         return self.refused(lot, cost, outcome, heard)
 
-    def bought_it(self, lot: market.Lot, want: int, before: int) -> str:
-        got = _arrived(self.b, lot.name, before, want)
+    def bought_it(self, lot: market.Lot, want: int, before: int | None) -> str:
+        # before None: the bag couldn't be read before buying, so the game's word counts, not the bag
+        got = want if before is None else _arrived(self.b, lot.name, before, want)
         self.left = max(0, self.left - got)
         self.bought += got
         self.spent += got * lot.price
@@ -277,7 +299,8 @@ class _Run:
         if outcome == TOO_HEAVY:
             return self.heavy()
         if outcome == LOST:
-            return self.over(_("the game said nothing about {item} - look in the bag", item=lot.name))
+            return self.over(_("{item}: {why}, and the bag didn't show it - look in the bag",
+                               why=heard, item=lot.name))
         self.passed.add(lot.id)
         self.fails += 1
         self.b.log(_("not bought: {item} ({why})", item=lot.name, why=heard))

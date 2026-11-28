@@ -160,6 +160,13 @@ class PretendMarket:
         self.refuse: str | None = None      # the game's words instead of a purchase
         self.ask_price: int | None = None   # an equipment question naming another price
         self.bought: list[tuple[int, int]] = []
+        self.bag: dict[str, int] = {}       # item name -> count: a purchase lands here
+        self.silent = False                 # the purchase goes through, but the game says nothing
+        self.lost = False                   # the game says nothing and nothing is bought
+        self.no_box = False                 # choosing an item lot opens no quantity box
+        self.bag_gone = False               # the game sends no bag
+        self.too_fast = 0                   # purchases the game refuses next with "you act too fast"
+        self.kept: dict[int, int] = {}      # listing id -> the last quantity typed for it (in its command)
 
     # -- what the menus hold
     def ordered(self, cat: int, order: int) -> list[dict[str, Any]]:
@@ -193,6 +200,10 @@ class PretendMarket:
             chunk = self.ordered(cat, order)[(page - 1) * 20:page * 20]
             rows += [row(x["name"], x["qty"], x["price"], x["id"], x.get("new", False), x.get("equip", ""))
                      for x in chunk]
+            for e in rows[3:]:                  # the game keeps the last quantity typed for a lot in its command
+                cmd = cast(list[int], e["cmd"])
+                if len(cmd) == 3:
+                    cmd[2] = self.kept.get(cmd[1], 0)
             last = self.last(cat, order)
             if page > 1:
                 rows.append({"flags": 12, "cmd": [2, cat, order, 1], "text": "page 1"})
@@ -236,7 +247,8 @@ class PretendMarket:
             lot = self.find(cmd[1])
             assert lot is not None
             if len(cmd) == 3:
-                self.input = ("lot", lot)
+                if not self.no_box:
+                    self.input = ("lot", lot)
             else:
                 self.screen = ("confirm", lot, self.screen)
         elif self.screen[0] == "confirm" and e.get("text") == "yes":
@@ -249,13 +261,21 @@ class PretendMarket:
         if self.refuse:
             self.say(self.refuse)
             return
+        if self.lost:
+            return
+        if self.too_fast:
+            self.too_fast -= 1
+            self.say("you act too fast")
+            return
         lot["qty"] -= n
         self.bought.append((lot["id"], n))
+        self.bag[lot["name"]] = self.bag.get(lot["name"], 0) + n
         if lot["qty"] <= 0:
             for xs in self.lots.values():
                 if lot in xs:
                     xs.remove(lot)
-        self.say("successfully purchased")
+        if not self.silent:
+            self.say("successfully purchased")
 
     def number(self, n: int) -> str:
         assert self.input is not None
@@ -264,6 +284,7 @@ class PretendMarket:
             self.screen = ("page", what[1], what[2], n)
             self.pages_shown += 1
         else:
+            self.kept[what[1]["id"]] = n
             self.purchase(what[1], n)
         return "entered %d" % len(str(n))
 
@@ -314,10 +335,15 @@ class Shopper:
         self.clock = Clock()
         self.logged: list[str] = []
         self.p: dict[str, Any] = {}
+        self.bag_unread = False
 
     def dialog(self) -> dict[str, Any]:
         top = self.m.top()
         return {"ok": True, "open": 1 if top else 0, "top": top}
+
+    def bag_rows(self) -> list[dict[str, Any]]:
+        self.bag_unread = self.m.bag_gone
+        return [] if self.m.bag_gone else [{"name": n, "count": k} for n, k in self.m.bag.items()]
 
     def sleep(self, seconds: float) -> None:
         self.clock.now += seconds
