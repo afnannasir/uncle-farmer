@@ -183,31 +183,139 @@ final class AutomaticLogin {
             final Object serverList = staticField(Class.forName("game.aJ"), "b");
             final Object servers = field(serverList, "b");
             if (!(servers instanceof List)) return "server selector is unavailable";
-            Object selectedServer = null;
-            for (Object server : (List<?>) servers) {
-                Object id = field(server, "a");
-                if (id instanceof Integer && ((Integer) id).intValue() == wanted) {
-                    selectedServer = server;
-                    break;
-                }
-            }
+            final Object selectedServer = routeFor((List<?>) servers, field(serverList, "d"), wanted);
             if (selectedServer == null) return "saved server is unavailable";
-            final Object chosen = selectedServer;
-            final Object label = field(chosen, "c");
-            if (!(label instanceof String)) return "saved server is unavailable";
+            final Object label = field(selectedServer, "c");
+            final Object rowId = field(selectedServer, "a");
+            if (!(label instanceof String) || !(rowId instanceof Integer)) return "saved server is unavailable";
+            final int row = ((Integer) rowId).intValue();
             synchronized (serverList) {
-                setField(serverList, "d", Integer.valueOf(wanted));
-                setField(serverEntry, "d", Integer.valueOf(wanted));
+                setField(serverList, "d", Integer.valueOf(row));
+                setField(serverEntry, "d", Integer.valueOf(row));
                 setField(serverEntry, "c", label);
             }
             Object selected = field(serverEntry, "d");
             Object active = field(serverList, "d");
-            return selected instanceof Integer && ((Integer) selected).intValue() == wanted
-                    && active instanceof Integer && ((Integer) active).intValue() == wanted ? null
+            return selected instanceof Integer && ((Integer) selected).intValue() == row
+                    && active instanceof Integer && ((Integer) active).intValue() == row ? null
                     : "could not select the saved server";
         } catch (Throwable ignored) {
             return "could not select the saved server";
         }
+    }
+
+    /**
+     * The Server row's entry for the wanted server (1 or 2) by the player's own route: each route
+     * (Direct Connection, Tokyo Relay-A, Frankfurt Relay...) has a row per server, the label
+     * starting with the server's number ("1 (Frankfurt Relay)", "2: Journey Of Landscapes
+     * (Frankfurt Relay)"; read live 2026-11-26). The row already up when it is that server; else
+     * that server on the same route; else the row whose id is the server's (the direct connection).
+     */
+    static Object routeFor(List<?> servers, Object chosenId, int wanted) {
+        Object current = null;
+        Object byId = null;
+        for (Object server : servers) {
+            Object id = field(server, "a");
+            if (id != null && id.equals(chosenId)) current = server;
+            if (id instanceof Integer && ((Integer) id).intValue() == wanted) byId = server;
+        }
+        if (current != null && serverNumber(field(current, "c")) == wanted) return current;
+        String route = current == null ? null : route(field(current, "c"));
+        if (route != null) {
+            for (Object server : servers) {
+                Object label = field(server, "c");
+                if (serverNumber(label) == wanted && route.equals(route(label))) return server;
+            }
+        }
+        return byId;
+    }
+
+    /** The server a Server row's label names: its first number ("1 (Tokyo Relay-A)" -> 1), or -1. */
+    static int serverNumber(Object label) {
+        if (!(label instanceof String)) return -1;
+        String s = ((String) label).trim();
+        int n = 0;
+        while (n < s.length() && Character.isDigit(s.charAt(n))) n++;
+        if (n == 0 || n > 3) return -1;
+        return Integer.parseInt(s.substring(0, n));
+    }
+
+    /** The route in a Server row's label: the text in its last parentheses, trimmed, or null. */
+    static String route(Object label) {
+        if (!(label instanceof String)) return null;
+        String s = (String) label;
+        int open = s.lastIndexOf('(');
+        int close = s.lastIndexOf(')');
+        return open >= 0 && close > open ? s.substring(open + 1, close).trim() : null;
+    }
+
+    /**
+     * The game's own server choice, read only: the id the sign-in screen's Server row has chosen
+     * (game.aJ.b.d, what selectSavedServer writes) and every server of its list with its simple
+     * fields (a = id, c = the label the row shows). It names the server whatever the route to it,
+     * where the connection's port changes with each relay. A JSON fragment for `server`, starting
+     * with a comma; empty when the list can't be read.
+     */
+    static String serverChoice() {
+        try {
+            final Object serverList = staticField(Class.forName("game.aJ"), "b");
+            if (serverList == null) return "";
+            StringBuilder sb = new StringBuilder();
+            Object chosen = field(serverList, "d");
+            if (chosen instanceof Integer) sb.append(",\"chosen\":").append(chosen);
+            Object servers = field(serverList, "b");
+            if (servers instanceof List) {
+                for (Object server : new java.util.ArrayList<Object>((List<?>) servers)) {
+                    Object id = field(server, "a");
+                    if (id != null && id.equals(chosen)) {
+                        int number = serverNumber(field(server, "c"));
+                        if (number > 0) sb.append(",\"chosen_server\":").append(number);
+                        break;
+                    }
+                }
+                sb.append(",\"servers\":[");
+                boolean first = true;
+                for (Object server : new java.util.ArrayList<Object>((List<?>) servers)) {
+                    if (!first) sb.append(',');
+                    first = false;
+                    simpleFields(server, sb);
+                }
+                sb.append(']');
+            }
+            return sb.toString();
+        } catch (Throwable ignored) {
+            return "";
+        }
+    }
+
+    /** One object's numbers, booleans and short texts as a JSON object (its game class's own fields). */
+    private static void simpleFields(Object o, StringBuilder sb) {
+        sb.append('{');
+        boolean first = true;
+        if (o != null) {
+            for (Class<?> k = o.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+                for (Field f : k.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                    Object v;
+                    try {
+                        f.setAccessible(true);
+                        v = f.get(o);
+                    } catch (Throwable t) {
+                        continue;
+                    }
+                    String shown;
+                    if (v instanceof Number || v instanceof Boolean) shown = String.valueOf(v);
+                    else if (v instanceof String) {
+                        String s = (String) v;
+                        shown = "\"" + Protocol.jsonEscape(s.length() > 80 ? s.substring(0, 80) : s) + "\"";
+                    } else continue;
+                    if (!first) sb.append(',');
+                    first = false;
+                    sb.append('"').append(Protocol.jsonEscape(f.getName())).append("\":").append(shown);
+                }
+            }
+        }
+        sb.append('}');
     }
 
     /** Kind of the sign-in screen's Log in entry (game.an.a). */

@@ -2,6 +2,8 @@
 
     python -m unclefarmer            the app
     python -m unclefarmer --strings  refresh lang/unclefarmer.pot, merge the .po files, compile them
+    python -m unclefarmer --merge-ids <files>
+                                     fold players' profiles/_learned_ids.json into data/ids.json
     UncleFarmer.exe --apply-update <app folder> <pid> <version> [<token>] [--bootstrap]
                                      (the updater's own step, run by bootstrap.exe: see updater.py)
     UncleFarmer.exe --self-test <report.json>
@@ -17,6 +19,16 @@ if TYPE_CHECKING:
     import wx
 
     from .applog import Lifecycle
+
+
+def _merge_ids(files: list[str]) -> None:
+    """Players' profiles/_learned_ids.json folded into data/ids.json (see idsmerge)."""
+    from . import idsmerge, settings
+    if not files:
+        print("usage: python -m unclefarmer --merge-ids <_learned_ids.json> [...]")
+        return
+    for line in idsmerge.merge(files, settings.load_app().get("game_folder", "")):
+        print(line)
 
 
 def main() -> None:
@@ -68,6 +80,9 @@ def main() -> None:
     if "--strings" in sys.argv:
         path, n = i18n.write_template()
         print("%d strings written to %s" % (n, path))
+        return
+    if "--merge-ids" in sys.argv:
+        _merge_ids(sys.argv[sys.argv.index("--merge-ids") + 1:])
         return
     from . import applog
     boot = applog.bootup

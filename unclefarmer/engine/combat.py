@@ -167,6 +167,13 @@ def knowledge() -> dict[str, list[Skill]]:
     return _know
 
 
+def class_of_skills(learned: set[str]) -> str | None:
+    """The class whose skills these learned skill names are (most in common), None when none match."""
+    know = knowledge()
+    best = max(know, key=lambda c: len(learned & {s["name"] for s in know[c]}), default=None) if learned else None
+    return best if best and learned & {s["name"] for s in know[best]} else None
+
+
 def talent_texts() -> dict[str, str]:
     """{talent name: its text} for every class, from data/skills.json."""
     global _talents
@@ -299,10 +306,12 @@ class SkillBook:
     _available_to_channel_without_penalty = False
     _saving_pyroblast_for_next = False
     _last_pack_size = 1
+    page_two: list[str]          # skill_page_one: the page-2 skills left alone (_read_slots)
 
-    def __init__(self, bot: Parts, *, game_folder: str | None = None) -> None:
+    def __init__(self, bot: Parts, *, game_folder: str | None = None, both_pages: bool = False) -> None:
         self.b = bot
         self.game_folder = game_folder
+        self.both_pages = both_pages   # skill_page_one doesn't apply: the Keyboard Manager's own book
         self.ok = False
         self.used: dict[str, float] = {}          # skill name -> last press time
         self.can_flip = True    # the page key reaches the game (agent v8 knows Caps Lock)
@@ -391,6 +400,33 @@ class SkillBook:
             return not self.available_to_channel_without_penalty
         return self.combos is not None and self.combos.channeling_restricted(s)
 
+    def _read_slots(self, attack_keys: dict[str, int], names: dict[int, str], info: dict[str, Skill],
+                    keys: list[str]) -> None:
+        """self.slots, page -> [skill dict with "key"], from the game's skill keys 1-20.
+        skill_page_one: the player's page 2 is left alone - its skills are on no key for the bot, so
+        nothing ever turns the page there (a player saw it turn for skills they never use). They are
+        kept by name in page_two, so they aren't called "on no skill key" (tell_missing)."""
+        page_one = bool(self.b.p.get("skill_page_one")) and not getattr(self, "both_pages", False)
+        self.slots = {}
+        self.page_two = []
+        for idx, sid in attack_keys.items():
+            i = int(idx)
+            name = names.get(sid)
+            if not name or not 1 <= i <= 20:
+                continue
+            page, n = divmod(i - 1, 10)
+            if page and page_one:
+                if name not in self.page_two:
+                    self.page_two.append(name)
+                continue
+            s = dict(info.get(name, {"name": name, "role": "single_target"}))
+            s["key"] = keys[n]
+            s["slot"] = i
+            s["use"] = self.use_of(name)
+            have = [x for x in self.slots.setdefault(page, []) if x["name"] == name]
+            if not have:
+                self.slots[page].append(s)
+
     def load(self) -> None:
         try:
             self.agent_version = int(self.b.a.send("version").split()[1])
@@ -415,21 +451,7 @@ class SkillBook:
             binds = gamekeys.read(self.game_folder)
             keys = gamekeys.attack_keys_with_defaults(binds)
             self.page_key = binds.get("W_ATTACK_PAGETURN") or gamekeys.PAGE_TURN_DEFAULT
-        self.slots = {}          # page -> [skill dict with "key"]
-        attack_keys: dict[str, int] = sk["attack_keys"]
-        for idx, sid in attack_keys.items():
-            i = int(idx)
-            name = names.get(sid)
-            if not name or not 1 <= i <= 20:
-                continue
-            page, n = divmod(i - 1, 10)
-            s = dict(info.get(name, {"name": name, "role": "single_target"}))
-            s["key"] = keys[n]
-            s["slot"] = i
-            s["use"] = self.use_of(name)
-            have = [x for x in self.slots.setdefault(page, []) if x["name"] == name]
-            if not have:
-                self.slots[page].append(s)
+        self._read_slots(sk["attack_keys"], names, info, keys)
         self.ok = bool(self.slots)
         # Follow attack (walks to the target) or stationary attack: the plain attack key does one,
         # Alt + key the other, and the F1 option "swap hot keys for follow enemy attack and
@@ -449,6 +471,10 @@ class SkillBook:
                 if self.alt:
                     x["key"] = "alt+" + x["key"]
         self.tell_missing(learned)
+        if self.page_two:
+            # (said with nothing on page 1 too: that player's bot has no skill to press)
+            self.b.log(_("skill page 2 left alone (only the skills of page 1 are used): {skills}",
+                         skills=", ".join(sorted(self.page_two))), speak=not self.ok)
         if self.ok:
             on = ", ".join("%s=%s" % (s["key"], s["name"]) for s in self.slots.get(0, []))
             self.b.log(_("{cls} skills on keys: {keys}", cls=self.cls or "?", keys=on))
@@ -977,7 +1003,7 @@ class SkillBook:
         """Name, once, the class's own heal, dispel, long buffs and free buffs (Cold Winter) we have
         learned but put on no key: the bot can only press what is on a key (either page, any key the
         player chose)."""
-        on = {x["name"] for row in self.slots.values() for x in row}
+        on = {x["name"] for row in self.slots.values() for x in row} | set(getattr(self, "page_two", ()))
         info = {x["name"]: x for x in knowledge().get(self.cls or "", [])}
         want: list[str] = []
         for name in sorted(learned - on):

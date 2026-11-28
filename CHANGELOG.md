@@ -25,6 +25,283 @@
 - Tested in the game with check only, so nothing was repaired: the bot went into all the
   highlands, taken ones too, and did not open the highland list again after the last one.
 
+**Market: a lot chosen by its listing command, and no purchase made blind after an unsure one** (untested in game)
+
+- A lot is chosen by its listing command, looked up in the menu at the moment of choosing: the
+  entry must carry exactly that listing, in the right shape (an item's number box or equipment's
+  yes or no), on one row only. Otherwise nothing is chosen and the lot isn't bought. A listing id on
+  two rows of a page is read as neither.
+- When the game doesn't say how a purchase went (no answer, or a quantity box that didn't take the
+  number or never opened), the bag decides: what came in counts as bought, at the price read.
+  When nothing came in, or the bag couldn't be read before buying, the batch stops there: the lots
+  after it are listed as not tried, and the end says to look in the bag. A refusal the game says
+  ("Not enough gold coins"...) is sure, and the batch goes on as before. This covers the Market
+  window, the script's `market buy`, the Potion Maker's materials and Buy collection items.
+- "You act too fast": the game refuses a purchase made about a second after the last one (seen in
+  game). Nothing was bought, so the lot is tried again 2 seconds later, twice at most, before it
+  counts as refused (the Market window, scripts, the Potion Maker and Buy collection items).
+- The Potion Maker buys nothing more at the market for the rest of its run after an unsure purchase
+  (the other materials, and the rounds after, are taken from the storehouse only), and counts what
+  it spent from what really came.
+
+**The game's numbers: noted as the bot sees them, and one table to ask** (untested in game)
+
+- The game names every item, monster, skill and talent by a number, which doesn't change with the
+  game's language, and keeps no list of them (looked for in the game's memory): the server sends
+  each one with its name when it is needed. Uncle Farmer now notes the numbers it sees in
+  `profiles\_learned_ids.json`: items (bag, equipment, and a shop's price and description),
+  living monsters (name, maps, most HP), skills with their class, professions, talents by class.
+  Names are kept under the game's language. Nothing about players, pets, characters, positions or
+  chat is noted; nothing is sent anywhere.
+- `data/ids.json`: the table that comes with the bot (491 items, 98 skills, 7 professions and the
+  first monster types, checked against the game), and `unclefarmer/gameids.py` to ask it by number
+  (this PC's English names fill its gaps). Players' files are folded in with
+  `python -m unclefarmer --merge-ids <files>`: English names the game's texts know, conflicts listed,
+  talents only checked (one talent with several numbers would mean the numbers are each
+  character's own).
+- First use: the Keyboard Manager names an item on a number key that is no longer in the bag
+  instead of "Item type N". The rest of the bot moves to the numbers one part at a time.
+
+**Keyboard Manager: profiles shared with a class or every character, beasts and pets on the number keys** (untested in game)
+
+- **Shared with**: a profile can stay the character's own, or be shared with every character of its class
+  (Elf, Priest...) or with every character, so a new character gets its keys back in one go. Shared
+  profiles are kept in `profiles\_keyboard_layouts.json`; the class is read from the skills the
+  character has learned.
+- **Nothing missing stops the rest**: a skill the character hasn't learned, an item missing from the bag,
+  a fusion beast or pet it doesn't own, or a key the game didn't take is left alone, and the end says
+  which ones. Before, the first one stopped the whole profile, with nothing put on.
+- **Fusion beasts and pets** on the number keys (the tab is now Number keys). A number key holding one
+  was forgotten (a beast) or saved as "Item type 1" and then refused (a pet). They are put back from
+  their bag panels. Their numbers are each character's own (seen in game: one Wind Spirit Guardian
+  was 62203, another 64034), so on another character they are found by name, a pet by its exact name.
+- Skills are found by the game's skill number, the same for every character of a class whatever the
+  skill's level (seen in game on three Elves), else by name.
+- Saving over a profile of the same name, even one hidden behind the character's own, asks first and
+  says who has it ("Farm (shared with every Hunter)"); deleting a shared one says so too.
+- A key that already holds the right item (a potion that ran out keeps its key) isn't named as
+  missing, and a preparation skill that couldn't be bound isn't cast.
+- A number key holding a fusion beast or a pet is never taken for a potion.
+
+**Bag and supplies: sensible supplies offered** (untested in game)
+
+- The Supplies list offered everything on a hotkey whose name held "potion", "rice roll", "food" or
+  "toolbox", each to be refilled at 30 and filled up to 200. Ticked by mistake with a shop as its
+  source, 200 Alloy Toolboxes cost 16 million arnebia. It now offers one row for each thing the
+  character uses, picked as a dungeon run picks them (the potion named in its settings, else the one
+  on a hotkey, else the strongest in the bag): its red and blue potions (the blues only with MP),
+  the pet's potions and food (only with a pet ticked), a toolbox, then any other supply on a hotkey
+  (pliers too, which were never offered).
+- The amounts suit the item: your potions 30 / 200, the pet's 20 / 100, the pet's food 3 / 30,
+  toolboxes 1 / 5, pliers 10 / 50, anything else 5 / 20; an item added by hand gets the same.
+- An item no shop sells (the Super potions, crafted or from gifts, the Chef's dishes) is offered
+  from the storehouse only, never to be bought.
+- Offered rows left unticked aren't saved, as before.
+- Sunset City's pharmacist sells no Large potions (ours or the pet's): the bot no longer goes there
+  for them, two wasted trips before it learned.
+
+**Character settings: a Bosses tab, and your own boss notice** (untested in game)
+
+- The boss settings were a group at the bottom of Advanced, Fighting, where players didn't think of
+  looking. They have a tab of their own in Character settings, after Fighting, with Leave demonized
+  elites alone: keeping away from bosses, leaving the map for a while, and the chat rooms told of each
+  boss seen. Every box has its shortcut letter now (the chat rooms' had none). Nothing changes in the
+  profiles.
+- **Your own line** for the boss notice, in any language: `%boss%`, `%map%` and `%pos%` are put in for
+  the boss's name, the map and where it stands. The tab shows what the chat gets as you type. Left
+  empty, the bot sends its own line in English, as before.
+
+**Keyboard shortcuts you can change** (untested in game)
+
+- **File, Keyboard shortcuts**: every command of the menus (Run, Game, Tools, Character, Messages,
+  Plans, File, View, Help), Pause and Shift+Pause, each with its keys (or none) and where they work:
+  only in Uncle Farmer, or everywhere, even inside the game. The keys are typed as text, so NVDA's
+  keys never get in the way; the window says why keys can't be used, which action has them already,
+  and what a key that works everywhere takes away. The new keys work at once.
+- The same table is `shortcuts.txt`, beside `settings.json`, one line an action
+  (`game_mute = Ctrl+M = inapp`), for players who prefer a file. A line that can't be used is said in
+  the Log tab and that action keeps its default. No file: the keys stay exactly as they were.
+- A key that works everywhere acts on the game in front when it is one of yours (the Games list
+  selects it), else on the selected game; one that opens a window brings Uncle Farmer forward first.
+- New in the Game menu, for such keys: **Select the next game**, **Select the previous game** (said
+  with the character, map and bot), **Speak the selected game's status** (adds what its bot does and
+  its HP) and **Bring the selected game to the front**. They have no key until you give them one.
+- Help, Keyboard shortcuts lists the keys as they are now.
+- A few shortcut letters of the Game and File menus that two entries shared in Urdu, Portuguese,
+  French, Spanish and Turkish were set apart.
+
+**The game's own speech: only the game in front talks** (untested in game)
+
+- A new choice in File, Settings, Speech and language, **Whenever its window isn't in front**: each
+  game talks only while its window is in front, for players with several games open. Switching to a
+  game lets it talk, switching away silences it; a bot running in it doesn't change that.
+- Each character can have its own choice (Character settings, Overview), which wins over the app's:
+  as the app says (the default), while a bot runs, always, never, or only in front.
+- Ctrl+M and Ctrl+U still hold until the next switch; a game silenced this way talks again when it
+  leaves that mode and when Uncle Farmer closes.
+
+**Fixed: settings lost when the game's server can't be read** (untested in game)
+
+- The server (S1, S2) now comes from the game's own choice, the sign-in screen's Server row, whatever
+  the route: the direct connection or any relay (Tokyo, Frankfurt, São Paulo, Singapore...), new ones
+  too. Before, it came from the connection's port alone. Needs the new agent (82): restart Mist World
+  once after updating.
+- The automatic login keeps the player's route: a player on a relay was put back on the direct
+  connection each time.
+- A profiles folder copied to another PC holds `Name--S1--<id>.json`. When that PC's bot couldn't tell
+  the server (a game route on a port it doesn't know, or no answer from the agent), it looked only for
+  `Name--<id>.json`, made a new one from the defaults and the run lost the pet, the Before and After
+  lists and the drop time. Now, with the server unknown, the one profile with a server saved for that
+  name and id is the character's (with one per server, it still can't tell them apart).
+- The log says when the server wasn't recognised and what the agent answered, to find out why.
+
+**Tools, Buy collection items** (untested in game: the tests use a pretend market)
+
+- New tool (Ctrl+Shift+L), also in the Before and After farming lists and as the script command
+  `buy_collection [check]`: at the player market, the collection lots of the items you choose (fish, ore,
+  herbs), cheapest first, never above the most a unit you set, up to your day's count (the game allows 500
+  a day, counted from 00:00 GMT and kept for each character). A whole name only ("Milkfish" never buys a
+  "Flying Fish"); lots in their first hour are passed over; what arrives is counted from the bag.
+- The game's daily cap and "not enough gold coins" end the run; a lot that can't be had is passed over.
+  It can sell the collection to the town's buyers when done, and when the bag is too heavy, then buy on.
+- **Fixed**: the bot's own files in the profiles folder (`_game_restarts`, `_interrupted_runs`...) no
+  longer show among the characters, as in Copy from another character.
+
+**More for scripts** (untested in game: the tests use a pretend game)
+
+- `chat <room> <text>`: a line on a chat channel (team, gang, international, global, map, nearby,
+  private), with `{values}` as in `say`. A line the game refuses is said in the log; the script goes on.
+- `use <item>`: an item from the bag; `used` says whether it went.
+- `wait_until <condition> [timeout=<s>]`: waits until the condition is true (60 s unless said, a day at
+  most); `wait_met` says whether it came true. Stop and Pause work while it waits.
+- New values: `boss` and `boss_dist` (the nearest field boss in view), `in_dungeon`, `bag_pct` (the bag's
+  weight, %), `deaths` (this run's); and `near("name")`, the tiles to a player in view (-1 when not).
+- `chat` sends one line a room every 3 seconds at most, and cuts a line to 300 characters.
+- A script that `set` a value of its own named `boss`, `boss_dist`, `in_dungeon`, `bag_pct`, `deaths`,
+  `wait_met` or `used` must rename it: these are now the game's.
+
+**Following a player: heal only, the distance kept, and more** (untested in game: the tests use a pretend game)
+
+- A player soloing a dungeon with a tank and a healer saw the healer attack, then heal the tank too late
+  when it took a big hit (an attack holds the global cooldown). New choices in Character settings, Team,
+  **Following a leader**: the role while following - help the fights and heal (as before), **heal only**
+  (never attacks, not even what attacks it, and a hit no longer breaks its walk off), or **attack only**
+  (never heals the team); attack what comes near the player before anyone hits it, within the tiles you
+  choose (off by default); help with the team's fights (on; off: only what attacks us); the tiles kept from
+  the player (3; never past the heal's reach for a character that heals); monsters never attacked while
+  following, by name.
+- A script's `follow` line takes the same choices for one follow:
+  `follow Tank role=heal distance=6 pull=8 help=off skip="Bone Dragon, Lich"`. A wrong option is said when
+  the script is read.
+- Copy from another character carries them with the team settings.
+
+**Out of a cable car as soon as it arrives** (measured in game; the bot's side untested in game)
+
+- Measured live, both ways between Underground of Tulip City and Lifting Platform No. 2: about 12 s after
+  boarding the game plays the car's arrival sound (1152), and from then on the door lets us out; left
+  alone, the game puts us out about 10 s later. We can walk in the cabin; only the door refuses a step
+  until the arrival.
+- The bot now walks up to the cabin's door on the side the car is going (from the map data: every cable
+  car has one) and steps out at the arrival sound, about 10 s saved a ride. With no sound to hear (an older
+  agent), it tries the door once 15 s after boarding; a door that still refuses leaves it to the game, as
+  before. Airships have no door: unchanged.
+
+**Fixed**
+
+- The run's sound listeners no longer silence each other. The agent keeps one list of sounds a
+  connection listens for, and each part set its own: once the team we lead listened for requests, the
+  farm's "out of range" sound (1.2.3-dev) was never heard again. They now listen together
+  (`engine/listening.py`), and a script's `sound_wait` listens for its own on top of them and leaves them
+  in place after.
+
+**Use only the skills of page 1** (untested in game: the tests use a pretend game)
+
+- A player never uses skill page 2, but saw the bot turn to it, a loss of time while farming. New box in
+  Character settings, Fighting: **Use only the skills of page 1 (never turn to skill page 2)**, unticked by
+  default. Ticked, the skills on page 2 are left alone - no fight, trip or guard uses them, so the page is
+  never turned there; the log names them once - and the empty keys the bot fills are those of page 1 only
+  (a heal, shield, dispel or buff it needs, or the teleport skill, that is only on page 2 goes on an empty
+  key of page 1; attack skills are never moved). The Keyboard Manager still sets both pages of a keyboard
+  profile, and leaves page 1 shown. Reset the fighting settings and Copy from another character carry it
+  too.
+
+**A boss that keeps coming back: the bot farms the wait, and the player chooses** (untested in game: the
+tests use a pretend game)
+
+- Before, the bot walked to the door past every monster, then stood by it doing nothing for the whole
+  wait, again and again while the boss stayed. Now it fights the monsters it meets on the way to the door
+  (none close to a boss, ten fights or two minutes at most, then straight out), and farms the map it waits
+  on, within 40 steps of where it came onto it. A trip to town for the bag, the drop time and the farm's
+  own end (minutes, kills) work there as on the farm, and the results count that map's kills for it.
+- The map waited on is farmed only when its monsters are no stronger than the farm's: never a town; not a
+  map the map data says has monsters stronger than both the farm's and the character's level + 5; and no
+  monster with more max HP than half again the most of what the farm chose to fight (an elite that attacked
+  us doesn't count; one that attacks us is always fought). A boss of that map that comes close is walked
+  away from. With nothing fought yet, the bot waits as before. Between two doors to leave by, one to a map
+  it may farm is taken if hardly further.
+- New **Bosses** group in Advanced settings, Fighting: **Leave the map for a while when a boss keeps coming
+  back** (on), how many walk-offs within 5 minutes before leaving (3; 0 leaves at once), the first wait
+  away (60 seconds) and the longest it doubles up to (300 seconds), and **Fight on the way out and farm the
+  map waited on** (on). With leaving off, the bot keeps away from the boss on the map and farms on.
+- A long wait now doubles too: the wait starts over 15 minutes after coming back, not after leaving.
+- **Tell the chat of each boss seen**: four boxes in the same group, one a room - Team, Gang, International,
+  Global (none ticked by default). Each boss that comes into sight is told to every ticked room, in
+  English whatever the bot's language: "Death Worm (a boss) on Wolf Prairie at 105, 100". Once a boss, and
+  once every 10 minutes a map at most; the log says what was sent. A character in no gang sends nothing to
+  the Gang chat, and the log says so, as it does for an international room not joined. The game takes a
+  Team line even without a team, which then goes nowhere.
+
+**The game's "out of range" sound stops the attack** (untested in game: the sound was measured live)
+
+- When an attack key is pressed at a monster the game finds out of range, it plays a short sound, again
+  at every refused press: the "beep, beep, beep" a player hears, measured with the selected monster at 20.4
+  to 22.5 yards for a 20-yard skill, as it moved away after a fight broke off.
+- The farm now listens for that sound. Heard, the bot stops pressing at that monster, leaves it alone for
+  3 seconds and goes to the nearest one, during a fight and for the shots on the way alike. The log says
+  it once a monster. An older agent without sounds changes nothing.
+
+**Character chain: several characters farm one after the other in one game** (untested in game: the
+tests use a pretend window and games)
+
+- Run, Character chain (Ctrl+Shift+C): characters in order, each with one of your plans or its Autopilot
+  day, and what happens at the end (stay logged in, or close the game). No limit on the number.
+- Start the chain takes the first character not done today (the game's day). Another character in the
+  game is logged out first with Switch account; the chain's character is logged in by itself. A run that
+  ends by itself marks its character done and the next one comes; Stop ends the chain; a failed run goes
+  on to the next (twice at most per character); a lost game is opened again and the chain waits for it.
+  A character done with more than 10 minutes of drop time left is done again once the others are, at
+  most twice a day. The after-stop action doesn't apply between characters.
+- New private message command `next`: this character is done, the next one comes. `quit game` stops the
+  chain too.
+
+**Talents for farming** (untested in game: the tests use a pretend talent master; the menu was read live)
+
+- Character settings has a Talents page: **Change the talents for farming** (off by default), the talents
+  to farm with, and **Put the usual talents back when the run ends in a town with a talent master**,
+  with the usual ones. A button ticks the talents that are on now in both lists.
+- Before a run sets out, the talents on are read from the game. Only when they differ does the bot go to
+  the nearest talent master (a city officer, such as Chancellor Bren or Guard Captain Suke), there and
+  back to the first farming map. There it switches only the talents that differ in Reset Talents, submits,
+  confirms, and checks the result. A reset costs 200 arnebia for every talent point the talents put on
+  take, even when nothing changes, so talents that are already right are never reset. Too few talent
+  points or arnebia changes nothing, and so does a talent master that can't be reached.
+- When a farming run ends by itself in a town with a talent master, the usual talents go back on, after
+  the After farming list. There is no trip for that.
+
+**Medals for farming** (untested in game: the tests use a pretend game; the way medals are changed was
+read live)
+
+- Character settings has a Medals page: **Change the medals for farming** (off by default), the medals to
+  farm with, and **Put the usual medals back on when the run ends, wherever it ends**, with the usual
+  ones. Medals are kept by their id, and the Contribution Medals, which all share a name, show their bonus
+  once a run has read it with the details key.
+- Before a run sets out, each ticked medal not worn is put on (one of its kind comes off by itself, as by
+  hand), then the worn medals not ticked come off. Each medal waits for its own cooldown of about 10
+  seconds while the others are changed, and every change is checked. No NPC and no cost.
+- When a farming run ends by itself, the usual medals go back on, wherever it ended.
+- The agent can wear or take off an equipment piece (agent 81, `gearwear <uid> on|off`), as the bag's
+  equipment tab does. Restart the game once after updating.
+
 **The nearest place is chosen from outside a gang base, secret room or dungeon** (untested in game)
 
 - A run or a tool that started inside a gang base, a secret room or a dungeon, before the bot had seen

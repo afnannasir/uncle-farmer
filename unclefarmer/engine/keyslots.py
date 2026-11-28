@@ -9,6 +9,9 @@ A key counts as empty only when the game has nothing on it at all (`mem skills` 
 missing or 0; `mem slots` missing). A slot kept for a potion that ran out is the player's, not
 empty. Every placement is checked against the game afterwards.
 
+With skill_page_one, only the keys of skill page 1 (1-10) count: a skill the bot needs that is only
+on page 2 goes on an empty key of page 1, and nothing is put on page 2.
+
 With no empty key: items are used from the backpack as before (between fights). Skills can only be
 cast from a skill key - the game's use key does nothing in the skills panel - so the bot names what
 is missing and which keys hold a skill that is also on another key, for the player to decide.
@@ -109,19 +112,20 @@ def skills(bot: Bot):
     ids: dict[str, int] = {r["name"]: r["id"] for r in rows}
     attack_keys: dict[str, int] = sk.get("attack_keys", {})
     keyed = {int(i): sid for i, sid in attack_keys.items() if sid}
-    on = {sid for sid in keyed.values()}
+    top = last_slot(bot)
+    on = {sid for i, sid in keyed.items() if i <= top}
     # a skill the player set to "never" stays off the keys
     want = [n for n in wanted_skills(sb.cls) if n in ids and ids[n] not in on and sb.use_of(n) != "never"]
     if not want:
         return False
-    empty = [i for i in range(1, 21) if i not in keyed]
+    empty = [i for i in range(1, top + 1) if i not in keyed]
     if not empty:
-        tell_no_room(bot, want, keyed, rows)
+        tell_no_room(bot, want, {i: s for i, s in keyed.items() if i <= top}, rows)
         return False
     placed = False
     for name in want:
         if not empty:
-            tell_no_room(bot, want[want.index(name):], keyed, rows)
+            tell_no_room(bot, want[want.index(name):], {i: s for i, s in keyed.items() if i <= top}, rows)
             break
         slot = empty[0]
         if not _place(bot, sb, rows, ids[name], name, slot):
@@ -170,6 +174,12 @@ def bind_skill(bot: Bot, sb: combat.SkillBook, rows: list[dict[str, Any]], sid: 
     return True
 
 
+def last_slot(bot: Bot) -> int:
+    """The last skill key the bot may use: 10 with skill_page_one (the player's skill page 1 only,
+    the page never turned), else 20 (both pages)."""
+    return 10 if bot.p.get("skill_page_one") else 20
+
+
 def put_skill(bot: Bot, name: str) -> bool:
     """One learned skill on a skill key, for something the bot needs now (a teleport skill for
     travel): True when it is on a key already or was put on an empty one. Never onto a key in use;
@@ -183,9 +193,14 @@ def put_skill(bot: Bot, name: str) -> bool:
         return False
     attack_keys: dict[str, int] = sk.get("attack_keys", {})
     keyed = {int(i): sid for i, sid in attack_keys.items() if sid}
-    if ids[name] in keyed.values():
+    top = last_slot(bot)
+    if ids[name] in {sid for i, sid in keyed.items() if i <= top}:
         return True
-    empty = [i for i in range(1, 21) if i not in keyed]
+    empty = [i for i in range(1, top + 1) if i not in keyed]
+    if not empty and ids[name] in keyed.values():
+        bot.log(_("{skill} is only on skill page 2, which is left alone, and no key of page 1 is empty - "
+                  "put it on page 1 to use it", skill=name), speak=True)
+        return False
     if not empty:
         bot.log(_("{skill} isn't on a skill key and no skill key is empty - put it on one to use it",
                   skill=name), speak=True)

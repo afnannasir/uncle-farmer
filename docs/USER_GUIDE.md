@@ -131,9 +131,9 @@ The Log tab shows what the bot has been doing. You can choose to see everything 
 
 The menu bar has these menus:
 
-- **File:** Settings, the log and results folders, and Exit.
+- **File:** Settings, Keyboard shortcuts, the log and results folders, and Exit.
 - **View:** The three tabs.
-- **Game:** Mute and unmute this game or every game, and Open another game window.
+- **Game:** Mute and unmute this game or every game, select the next or the previous game, speak the selected game's status, bring it to the front, and Open another game window.
 - **Messages:** Private messages, Chat, and Let everyone get replies again.
 - **Plans:** New plan, New script, Edit, Duplicate, Delete, and the **Import or export plans** submenu.
 - **Help:** The quick guide, this user guide, keyboard shortcuts, the game and script guides, script commands, commands for trusted players, Check for updates, contact, the Telegram group, and About.
@@ -151,7 +151,7 @@ The **Help** menu provides two useful options:
 
 ### Starting and stopping the bot
 
-The **Pause** key starts or stops the bot from anywhere, even while you are playing.
+The **Pause** key starts or stops the bot from anywhere, even while you are playing. Its key, like every other, can be changed (see "Keyboard shortcuts").
 
 If you want to temporarily take control without ending the current run, use the **Pause** button on the Bot tab or press **F6**.
 
@@ -198,6 +198,12 @@ Uncle Farmer also keeps two additional files to help diagnose startup and shutdo
 These files can help identify why Uncle Farmer refuses to open or gets stuck while closing.
 
 The startup and shutdown logs are always written, regardless of the Logging settings. Like `errors.log`, they follow the same log rotation rules.
+
+### The game's numbers the bot has seen
+
+The game names everything by a number: each item, monster, skill and talent. Uncle Farmer is moving to these numbers, which don't change with the game's language, instead of the names. The game keeps no list of them, so the bot notes the ones it sees while it works in `profiles\_learned_ids.json`: an item's number and English name (a shop's also gives its price and description), a monster's number, name, maps and most HP, and skill, profession and talent numbers with their class.
+
+Nothing about you is in it: no character, no player, no pet's name, no chat, no position. It stays on your PC; nothing is sent. If you send it to the developers (in a GitHub issue or the players' group, for example), its numbers go into the table that comes with the bot, so every player's bot knows them.
 
 ## Plans
 
@@ -303,6 +309,33 @@ The two lists are the same ones as **Character settings → Triggers**: change t
 
 **Save** keeps the choices; **Start the day** saves them and starts the day on that character's game now.
 
+### Character chain: several characters in one game
+
+**Run → Character chain** (Ctrl+Shift+C) lists characters that farm one after the other in the same game,
+in order. For each one you choose what it does: one of your plans, or its Autopilot day (its Before
+farming list, its farming and its After farming list, as Run, Autopilot has it). Only characters whose
+account the bot knows can be added: log in to each one once by hand. Characters can be on the same account
+or on different ones.
+
+**Start the chain** works in the game selected in the Games list. The bot takes the first character not
+done today (the game's day, 00:00 GMT to 00:00 GMT). When another character is in the game, it logs that
+one out with the setting menu's Switch account, as a player does, and the chain's character is logged in
+by itself, as for a schedule. Then its plan or its day runs.
+
+- **A run that ends by itself** (the plan done, the drop time used up, the next level, the daily stop):
+  the character is done for today, and the next one comes.
+- **Stop**, **Stop every bot**, or `stop` or `quit game` by private message: the whole chain stops.
+- `next` by private message: this character is done for today, and the next one comes.
+- **A run that fails** (an error, an account the game doesn't have): the character isn't marked, and the
+  chain goes on. After two failures it is left out of this chain.
+- **A game lost** during a run is opened again and the run carried on, as always; the chain waits for it.
+- **A character done with more than 10 minutes of drop time left** (its plan ended early) is done again
+  once all the others are, at most twice a day.
+
+**At the end of the chain**: stay logged in on the last character, or close the game. The setting
+**After farming stops automatically** (close the game, shut down) doesn't apply between characters of
+a chain. **Let every character farm again today** clears the day's marks.
+
 ### A lost game, and runs that didn't finish
 
 While a plan or a script runs, Uncle Farmer keeps note of where it is, every 20 seconds: the line it is on, the turn of each loop, how many minutes and kills the current farm has done, the run's own minutes and kills, and the script's `set` values.
@@ -367,7 +400,6 @@ If you want the bot to use only the skills you have selected, set **Skills not i
 The other tabs under **Advanced** contain more detailed options, including:
 
 - How far the bot chases monsters while following a patrol loop.
-- How far the bot stays away from bosses.
 - When the character rests.
 - When defensive skills, shields, and the healing skill are used.
 - Which potions and Rice Rolls the pet uses.
@@ -387,6 +419,8 @@ When travelling, Uncle Farmer combines walking with cable cars and airships when
 For example, a journey from Giant Rock City to Tulip City might go underground to reach a cable car, then continue on foot after arriving.
 
 The bot only plans to use a transport or airship when it can actually take it. Transports and airships must be enabled, the character must have enough arnebia in the bag to pay the fare (VIP travel is free), and its level must be high enough for the ride: each airship out of a capital needs one (from 26 for Giant Rock City to Sunset City up to 86 for Holy Blood City to Dark Night City), and so do the cable cars from Giant Rock City to Tulip City (45) and to Holy Blood City (60). The rides back need none. When another ride turns the character away for its level, the bot says so and goes another way for the rest of the run.
+
+**Leaving a cable car.** Once aboard, the bot walks up to the cabin's door on the side the car is going, and steps out as soon as the game plays the car's arrival sound, about 12 seconds after boarding ("the cable car has arrived - out through its door"). Left alone, the game puts a player out about 10 seconds later. With an older game agent that can't hear sounds, the bot tries the door once, 15 seconds after boarding; a door that still refuses, or a walk that fails, leaves it to the game as before. Airships have no door: the bot waits for the flight to land.
 
 **Teleport skills.** A Mage's *Teleportation* takes the character to a city square, and an Elf's *Elven Teleportation* to the high-level lands such as Soul Burial Village or mist gods Ruins. When the character has one of these skills, the bot uses it whenever it makes the journey shorter. It costs only mana, never an item. You can switch it off in the profile: **Travel**, **Use the class's teleport skill (Mage, Elf)**.
 
@@ -411,9 +445,32 @@ The bot avoids attacking these bosses. It also avoids attacking anything within 
 
 When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
 
-A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side (fighting back anything that attacks it), then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
-You can change the 40-step distance or turn boss avoidance off in **Advanced → Fighting**.
+The bot doesn't stand idle meanwhile. On the way to the door it fights the monsters it meets, as long as none is close to a boss (ten fights or two minutes at most, then it walks straight out). On the other side it farms the map, within 40 steps of where it came onto it ("farming central plains (1041) meanwhile, near where we came in"). It only does that where it is safe:
+
+- never in a town;
+- not on a map whose monsters the map data says are stronger than both those of your farm and your level + 5 (the data knows the levels of few maps);
+- never a monster with more HP than half again the most of what it fought on your farm ("leaving Wolf King alone on ...: more HP than the monsters of the farm"). A monster that attacks it is always fought.
+
+A boss of that map that comes close is walked away from, as on the farm, but never left behind with another trip. Before anything was fought on the farm, it has nothing to judge by, and waits as before. When two doors are about as near, it takes the one to a map it may farm. A full bag, the drop time and the end of the farm (its minutes or kills) work there as on the farm, and in the results, map by map, the kills of the wait count for the map waited on.
+
+All of this can be set on the **Bosses** tab of **Character settings** (it used to be a group at the
+bottom of **Advanced → Fighting**). Its **Keeping away** group holds:
+
+- **Keep away from bosses** and the steps to keep (40). Unticked, the bot doesn't keep away from bosses at all.
+- **Leave the map for a while when a boss keeps coming back** (ticked). Unticked, the bot never leaves: it keeps away from the boss on the map and farms on.
+- How many times to walk away from it within 5 minutes before leaving (3). 0 leaves the map the first time a boss comes close.
+- The first wait away (60 seconds), and the longest wait it doubles up to (300 seconds).
+- **Fight on the way out and farm the map waited on** (ticked). Unticked, the bot only fights back what attacks it while it waits.
+- **Leave demonized elites alone** (see "Demonized elites" below).
+
+Its **Telling other players** group holds:
+
+- **Tell the Team chat of each boss seen**, and the same for the **Gang**, **International** and **Global** chats (none ticked). The bot knows a boss by its name as soon as it comes into sight (about 60 steps), so nothing has to be set for each map. Each ticked room gets one line in English, whatever the bot's language, for example "Death Worm (a boss) on Wolf Prairie at 105, 100".
+- **Your own line**, to send your own words instead, in any language. Write `%boss%` where the boss's name goes, `%map%` for the map's name and `%pos%` for where it stands ("105, 100"), in capitals or not: "%boss% is up on %map% at %pos%, come help!" sends "Death Worm is up on Wolf Prairie at 105, 100, come help!". The line below it shows what the chat gets as you type. Left empty, the bot sends its own line, in English.
+
+The bot tells of each boss once, and of one map at most every 10 minutes (a second boss on the same map within those 10 minutes isn't told). The log says what was sent. A character in no gang sends nothing to the Gang chat, and the log says so, as it does when the game refuses the International chat (no international room joined). The game takes any line for the Team chat, though: without a team it goes nowhere, and nothing says so. Global is read by the whole server, other farmers included.
 
 The game files do not tell the bot when a boss will appear. Instead, it reacts when it detects a boss nearby.
 
@@ -450,8 +507,8 @@ You can turn this off in **Advanced → Fighting**: untick **Open the chests tha
 Some maps have "demonized" elites (demonized Boar, demonized black bear, demonized Water Elf...), much
 stronger than the monsters around them; one the same level as your character can still kill it,
 depending on its gear. They aren't bosses (the demonized field bosses are kept away from as bosses).
-Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** in
-**Advanced → Fighting**. Then it keeps away from them:
+Uncle Farmer fights them like any other monster unless you tick **Leave demonized elites alone** on
+the **Bosses** tab of **Character settings**. Then it keeps away from them:
 
 - It never picks one as a target, nor any monster within 40 steps of one: a fight there would pull
   the elite in. The log counts them among the monsters left alone.
@@ -503,6 +560,57 @@ Every character has its own settings.
 
 When Uncle Farmer encounters a character for the first time, it creates that character's settings using information from its initial scan.
 
+### Talents for farming
+
+The **Talents** page of a character's settings lets the bot farm with other talents than the usual ones,
+for a character that plays with another talent tree the rest of the time. Nothing changes until you tick
+**Change the talents for farming**.
+
+- **Talents to farm with:** the learned talents, from the last scan; "(on now)" marks the ones on. Tick the
+  ones to farm with. The gang's talents, such as Brutal, are in the list too: the talent master switches
+  them like the others, and they count in the price. One that isn't ticked is switched off.
+- **Put the usual talents back when the run ends in a town with a talent master:** and tick them in
+  **Usual talents**.
+- **Tick the talents that are on now, in both lists** fills both lists from the last scan (press **Scan now**
+  on the Overview page first if the talents changed since).
+
+Before a run sets out, the bot reads the talents that are on, which costs nothing. When they aren't the
+ones ticked, it goes to the nearest talent master, there and back to the first farming map, even when the
+run starts on that map. The talent masters are the city officers, such as Chancellor Bren in Giant rock
+City or Guard Captain Suke in Tulip City. There it chooses **Reset Talents**, switches only the talents
+that differ, then **submit** and **Confirm**, and checks that the talents are on. It says what the reset cost.
+
+The game charges 200 arnebia for every talent point the talents put on take, at every reset, even one
+that changes nothing. A reset of 183 points costs 36,600 arnebia. So the bot never resets talents that are
+already right. Before submitting, it also checks that the character has the talent points and the
+arnebia for them, and changes nothing otherwise. A ticked talent the character hasn't learned is left
+out. If no talent master can be reached, the run farms with the talents as they are.
+
+When a farming run ends by itself in a town whose talent master is on that map, after the After farming
+list, the bot puts the usual talents back. It never makes a trip just for that: a run that ends elsewhere
+leaves them, and says so. The next run puts the farming talents on anyway.
+
+### Medals for farming
+
+The **Medals** page works the same way for medals, which cost nothing to change and need no NPC. Nothing
+changes until you tick **Change the medals for farming**.
+
+- **Medals to farm with:** every medal of the character, worn or in the bag, from the last scan. The ticked
+  ones are worn while farming, and the others come off.
+- **Put the usual medals back on when the run ends, wherever it ends:** and tick them in **Usual medals**.
+- **Tick the medals worn now, in both lists** fills both lists from the last scan.
+
+Before a run sets out, the bot puts on each ticked medal that isn't worn. A medal of a kind already worn
+takes that one's place, as the game does by hand: one Contribution Medal, one star medal, one medal of
+each other kind. Then it takes off the worn medals that aren't ticked. Each medal waits about 10 seconds
+after its own last change, so the bot changes the others meanwhile. Every change is checked. When a farming
+run ends by itself, after the After farming list, the usual medals go back on, wherever the run ended.
+
+All Contribution Medals have the same name. Only their bonus tells them apart, so a run reads each one's
+bonus once, with the details key, and the lists show it afterwards: "Contribution Medal (plus: When
+attacked critical hit resistance increase 3)". This needs the agent that comes with this version: restart
+the game once after updating.
+
 ## The bag
 
 Open **Character → Bag and supplies (Ctrl+B)** to manage the items your character collects and the supplies it needs.
@@ -536,6 +644,27 @@ For items that are not shards, choose whether Uncle Farmer should:
 ### Supplies
 
 Choose which potions and food Uncle Farmer should refill, and where it should get them.
+
+The list offers one row for each thing your character uses, chosen as a dungeon run chooses them:
+the potion named in the character's settings, else the one on a hotkey, else the strongest in the
+bag. That is your red potions, your blue ones (only when the character uses MP), the pet's red and
+blue potions and its food (only with a pet ticked), and a toolbox; then any other supply sitting on
+a hotkey, such as pliers. Offered rows stay unticked until you tick them, and their amounts suit
+what they cost (refilled at / filled up to):
+
+- your potions: 30 / 200
+- the pet's potions: 20 / 100
+- the pet's food: 3 / 30
+- toolboxes: 1 / 5 (one mends everything you wear)
+- pliers: 10 / 50 (one mends a single piece)
+- anything else: 5 / 20
+
+An item no shop sells (the Super potions, which are crafted or come in gifts, or a dish from the
+Chef) is offered from the storehouse only: when the storehouse has none left, the bot tells you
+instead of buying something else. An item you add yourself gets the same amounts (one the bot doesn't know, a mistyped name maybe, starts as "Don't refill, just tell me").
+
+Every town's pharmacist sells the Small, Medium and Large potions, yours and the pet's, except
+Sunset City's: it has no Large potions, and the bot doesn't go there for them.
 
 ### Full bag
 
@@ -642,6 +771,11 @@ For melee characters, the bot prefers attacking a monster with fewer other monst
 On a busy map, a monster another player stands nearer to than you do is often gone before you get there: measured over an hour on Underwater World, about one in four of those went to someone else, against one in ten of the others. So when two monsters are about as far, the bot takes the one nobody else is closer to; one that another player is nearer to counts as 15 steps further away. It never leaves such a monster out, since most of them still end up as your kills, and a monster that attacks you is fought first, whoever stands near it. Pets and summons don't count as players.
 
 If no monsters are attacking but your HP is low, the bot rests before starting another fight.
+
+When an attack is pressed at a monster the game finds too far away, the game answers with a short sound
+at each refused press (the "beep, beep, beep" you may hear). The bot listens for it while farming: at the
+first one, it stops pressing at that monster, leaves it alone for 3 seconds and goes to the nearest one.
+The log says so once for each monster.
 
 While travelling, the bot only fights monsters that attack it.
 
@@ -805,6 +939,14 @@ The game can only cast skills assigned to skill keys.
 
 If there is no empty skill key for a skill the bot needs, it cannot cast that skill. It tells you which skills are missing and identifies keys that repeat skills already assigned elsewhere, so you can decide what to change.
 
+**Skill page 2**
+
+The game has two pages of skill keys, and the bot uses both: it turns the page for a skill on page 2, and back. If you never use page 2, tick **Use only the skills of page 1 (never turn to skill page 2)** under **Character → Settings → Fighting** (unticked by default). Then:
+
+- the skills on page 2 are left alone: no fight, trip or guard uses them, so the bot never turns the page there. The log names them once: "skill page 2 left alone (only the skills of page 1 are used): ...";
+- the empty keys the bot fills are those of page 1 only. A heal, shield, dispel or buff it needs, or the teleport skill for a trip, that is only on page 2 is put on an empty key of page 1 if one is free; else it says what is missing, as above. Attack skills are never moved: put the ones you want on page 1;
+- the Keyboard Manager still applies a keyboard profile to both pages, as you asked it to, and leaves page 1 shown.
+
 You can turn off this automatic key assignment behavior on the **Fighting** page.
 
 ### Repairs
@@ -894,7 +1036,11 @@ If the pet is out of sight or its HP cannot be read, the bot does not make assum
 
 Right-click a logged-in character and choose **Tools → Keyboard Manager**. Select **Capture current keys** to load the game's two combat skill pages, profession skills, number-row item slots, and quick phrases. Enter a name and choose **Save profile**. Use **New profile** to start with an empty draft, or enter a different name to save a copy.
 
-Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. An item needs to be in the bag when the profile assigns it to a new slot.
+Use **Edit binding** on each tab to change a slot. **Toggle preparation** on a bound self-buff or shield to cast it on yourself when the profile is applied. A slot marked **Leave unchanged** keeps its current game binding. The **Number keys** tab holds items, fusion beasts and pets, as the game's number keys do.
+
+**Shared with** decides who has the profile: **This character only**, **Every Elf character** (every character of its class; Elf here) or **Every character**. A shared profile shows in the Keyboard Manager of each of those characters, so a new character gets its keys back in one go. When two have the same name, the character's own comes first, then its class's, then everyone's.
+
+Applying puts on what the character has and names the rest at the end: a skill it hasn't learned, an item missing from the bag, a fusion beast or pet it doesn't own, a key the game didn't take. Skills are found by the game's own number (the same for every character of a class, whatever the skill's level), else by name. Fusion beasts and pets are each character's own, so on another character they are found by name; a pet by its exact name, the name you gave it included.
 
 Choose **Apply profile** while out of combat and with game menus closed. For automation, add **Apply keyboard profile** under **Character settings → Triggers → Before farming** or **After farming**. The Before farming list can be skipped if you start on the farming map. Use that tab's checkbox to control when it runs. Schedules can run either trigger sequence or a saved script with a `keyboard_profile` command. Place that command at the point where your script needs a different layout.
 
@@ -1317,6 +1463,24 @@ your most a unit, over the spending limit, or not bought with the game's own wor
 not enough gold coins). **Save as CSV** writes the results to a file.
 
 The same work runs from a script: see "The player market" in docs/SCRIPTING.md.
+
+### Buying collection items
+
+**Tools, Buy collection items** (Ctrl+Shift+L) buys collection items at the player market by itself: the fish, ore and herbs gathering brings, which the town's fish, ore and herb buyers take for arnebia.
+
+Choose:
+
+- **Items to buy**: tick them in the list (what the buyers take), or type other names, separated by commas, as the game writes them. A name is a whole name: "Milkfish" never buys a "Flying Fish".
+- **Most gold coins a unit**: a lot that costs more is never bought.
+- **Items a day, at most**: the game allows 500 a day. The count starts again with the game's day, at 00:00 GMT, and is kept for each character. **Bought today** shows it, and you can correct it (after buying by hand, for instance).
+- **Sell the collection to the town's buyers when done**.
+- **When the bag is too heavy**: stop buying, or sell the collection to the buyers and buy on (five times at most).
+
+The bot walks to the nearest marketplace and reads the collections in price order, cheapest first. It buys every lot of your items, all of it or what is left of the day's count, until a lot of your items costs more than your most a unit (every later lot costs as much or more), the day's count is reached, or the list ends. Lots in their first hour on display can't be bought yet, and are passed over. What arrives is counted from the bag.
+
+It stops at once when the game says the day's collection items are all bought, or that there aren't enough gold coins; a lot that can't be had (gone, or new on display) is passed over, and ten in a row end the run. **Check only** buys nothing and says what it would buy.
+
+It is also in the Before and After farming lists, and a script runs it with `buy_collection` (`buy_collection check` to only look).
 
 ## Shard prices
 
@@ -1901,6 +2065,65 @@ You can also change the spoken results settings to hear an update every few minu
 
 All results are saved in the `results` folder, with a separate file for each character.
 
+## Keyboard shortcuts
+
+Every command of the menus can have its own keys, and each key works either **only in Uncle
+Farmer** or **everywhere, even in the game** (and in any other program). Out of the box the keys are
+the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause work everywhere, the others
+only in Uncle Farmer.
+
+Change them in **File, Keyboard shortcuts**. The list holds every action, with its keys and where
+they work. Select one, type its keys in **Keys** (for example `Ctrl+Shift+R`, `F7` or `Shift+Pause`;
+leave it empty for no key) and choose where they work in **Works**. The keys are typed as text, so
+NVDA's own keys never get in the way. The **Note** below says what to know: keys the bot can't use,
+another action that has them already, or what a key that works everywhere takes away. **Default for
+this one** and **All the defaults** put the bot's keys back. Nothing is kept until **Save**, and the
+new keys work at once.
+
+The same settings are in `shortcuts.txt`, beside `settings.json` in the Uncle Farmer folder, one line
+an action, for players who prefer a file:
+
+    run_toggle = Pause = global
+    game_mute = Ctrl+M = inapp
+    game_next = none = global
+
+`global` works everywhere, `inapp` only in Uncle Farmer, and `none` means no key. **Open the file**
+opens it in your editor; after editing it, **Read the file again** brings it into the window (or
+restart Uncle Farmer). A line that can't be used is said in the Log tab when Uncle Farmer starts, and
+that action keeps its default.
+
+A few rules keep the keys usable:
+
+- A letter, a digit, Space, an arrow, Insert, Delete, Home, End, PageUp or PageDown needs Ctrl (they
+  would be typed into the bot's own boxes otherwise). F1 to F24 and Pause can be used alone.
+- Ctrl+Alt with a letter is refused: on many keyboards it is AltGr, which types characters.
+- Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, Ctrl+Z, Ctrl+Y, Ctrl+Insert, Ctrl+Tab, Ctrl+PageUp, Ctrl+PageDown, F10,
+  Shift+F10, Alt+F4 and Ctrl+F4 are kept
+  for every window.
+- Two actions can't share a key.
+
+**A key that works everywhere is taken away from every other program** while Uncle Farmer runs: the
+game, NVDA, your browser. Ctrl+M from everywhere means the game never gets Ctrl+M. Choose keys no
+program uses, such as Pause or a key from F7 to F12 with Ctrl or Shift. When another program holds a
+key already, Windows refuses it: the Log tab says so, and the key then works in Uncle Farmer only.
+
+A key that works everywhere acts on the game in front when that is one of yours: the Games list
+selects it first, so the next key goes on with the same game. From any other program it acts on the
+game selected in the list. A command that opens a window, such as Bag and supplies, brings Uncle
+Farmer to the front first; while a window of Uncle Farmer is already open, it waits ("Close the open
+Uncle Farmer window first").
+
+These commands of the **Game** menu are made for keys that work everywhere, and have no key until you
+give them one:
+
+- **Select the next game** and **Select the previous game**: the next game in the list (round the
+  end), said with its character, map and what its bot does.
+- **Speak the selected game's status**: the same, then what its bot is doing and its HP.
+- **Bring the selected game to the front**: its window, out of the taskbar if needed.
+
+The keys of the lists and editors (Delete in the Games list, Enter on a plan, F5 and Ctrl+S in the
+script editor...) stay as they are.
+
 
 ## The game's own voice
 
@@ -1916,11 +2139,25 @@ The **combat announcer** is another source of spoken information. It announces c
 
 **Choose when to mute the game**
 
-You can configure when Uncle Farmer mutes the game's speech:
+You can configure when Uncle Farmer mutes the game's speech, in **File, Settings, Speech and
+language**:
 
 - **While a bot runs:** Mutes the game only while your character is farming.
 - **Always:** Keeps the game's speech muted whenever Uncle Farmer is running.
 - **Never:** Leaves the game's speech alone.
+- **Whenever its window isn't in front:** Each game talks only while its window is in front. Switch
+  to a game and it talks; switch to another game, to Uncle Farmer or to any other program, and it goes
+  quiet. Made for playing with several games open: only the one you are in speaks. A bot running in a
+  game doesn't change it.
+
+Each character can have its own choice, which wins over that one: **Character settings, Overview,
+Mute this character's game's own speech** (the same choices, and **As File, Settings, Speech and
+language says**, the default). For example, one game always quiet while the others follow the window
+in front.
+
+With **Whenever its window isn't in front**, Ctrl+M and Ctrl+U still work, until you next switch
+windows. A game the bot silenced that way talks again when you choose another mode for it, and when
+Uncle Farmer closes.
 
 **Mute or unmute a game manually**
 
@@ -2257,7 +2494,8 @@ Available commands include:
 - `leave`, `quit`, or `quit team` — Leaves the team.
 - `mute` — Mutes the game.
 - `unmute` — Unmutes the game.
-- `quit game` — Closes the game.
+- `quit game` — Closes the game. In a character chain, the chain stops too.
+- `next` — In a character chain: this character counts as done today, and the next one logs in and farms.
 - `wait [minutes]` — Logs your character out for a while, then back in, and the run goes on (off unless ticked, see below).
 
 One action at a time: while one is under way (a wait, a walk home, `come`), another action is answered "Busy, one command at a time. Still on: ...". Questions (`status`, `where`, `results`...) and `stop`, `pause`, `resume` and `quit game` are always answered.
@@ -2300,7 +2538,17 @@ Your character will:
 
 For your own characters, Uncle Farmer can follow them anywhere. For other players, it uses the map exits to travel between maps.
 
-Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it stops following.
+Starting `follow` stops the current farming run. If Uncle Farmer cannot find any sign of the target for one minute, it waits where it is and teleports to the team leader (Shift+P) as soon as the game allows; only you stop the follow.
+
+**How it follows** (Character settings, Team, group **Following a leader**):
+
+- **Role while following:** help the fights and heal (the default); **heal only**, never attacking, not even what attacks it, so its heals are never held up by an attack (for a healer with its tank in a dungeon); or **attack only**, never healing the team.
+- **Attack the monsters that come near the player before anyone hits them**, within the tiles you choose. Unticked, the character helps only with the fights already going on.
+- **Help with the team's fights.** Unticked, it fights only what attacks it (and, with the box above ticked, what comes near the player).
+- **Keep this many tiles from the player** (3). A character that heals never goes further than its heal reaches.
+- **Never attack these monsters while following**: names, separated by commas - a dungeon's bosses, for instance. Field bosses are already left alone.
+
+A script's `follow` line can set the same choices for one follow: `follow Tank role=heal distance=6 skip="Bone Dragon"` (see the scripting guide).
 
 **Buffs while following**
 

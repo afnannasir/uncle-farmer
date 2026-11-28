@@ -70,11 +70,39 @@ public final class AgentTests {
         theVoicePlayerRateFixMatchesTheGamesCode();
         theSpeechSwitchStillSilences();
         keysFromOtherProgramsCountUntilSwitchedOff();
+        theSavedServerKeepsThePlayersRoute();
         SoundTests.run();
         LinkTests.run();
 
         System.out.println("agent tests: " + (run - failed) + " of " + run + " passed");
         if (failed > 0) System.exit(1);
+    }
+
+    /** A Server row entry as the game's list holds it (a = id, c = label). */
+    static final class ServerRow {
+        final Integer a;
+        final String c;
+
+        ServerRow(int a, String c) {
+            this.a = a;
+            this.c = c;
+        }
+    }
+
+    private static void theSavedServerKeepsThePlayersRoute() {
+        // the game's list as read live (2026-11-26): every route has a row per server
+        List<ServerRow> rows = java.util.Arrays.asList(
+                new ServerRow(3, "1 (Tokyo Relay-A)"), new ServerRow(4, "2: Journey Of Landscapes (Tokyo Relay-A)"),
+                new ServerRow(9, "1 (Frankfurt Relay)"), new ServerRow(10, "2: Journey Of Landscapes (Frankfurt Relay)"),
+                new ServerRow(13, " 1 (Singapore-A Relay)"), new ServerRow(14, " 2: Journey Of Landscapes (Singapore-A Relay)"),
+                new ServerRow(1, "1 (Direct Connection )"), new ServerRow(2, "2: Journey Of Landscapes (Direct Connection )"));
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 9, 1)).a == 9, "the relay up is kept for its server");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 9, 2)).a == 10, "the other server on the same relay");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 13, 2)).a == 14, "a label with a space first");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 2, 1)).a == 1, "the direct connection stays direct");
+        check(((ServerRow) AutomaticLogin.routeFor(rows, 99, 2)).a == 2, "no row up: the server's own id");
+        check(AutomaticLogin.serverNumber("2: Journey Of Landscapes (Tokyo Relay-A)") == 2, "the number of a label");
+        check(AutomaticLogin.serverNumber("Journey") == -1 && AutomaticLogin.serverNumber(null) == -1, "no number");
     }
 
     // ---------------------------------------------------------------- protocol
@@ -409,6 +437,13 @@ public final class AgentTests {
         hex.setLength(0);
         for (byte b : Act.gearInfoPacket(16707907)) hex.append(String.format("%02x", b & 0xFF));
         eq(hex.toString(), "140100fef143", "the equipment details packet (G)");
+        // live (2026-11-26): Four Star Attack Medal (13428675) taken off as 12 01 00cce7c3 01, worn again as ... 00
+        hex.setLength(0);
+        for (byte b : Act.gearWearPacket(13428675, false)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100cce7c301", "the take-off packet");
+        hex.setLength(0);
+        for (byte b : Act.gearWearPacket(13428675, true)) hex.append(String.format("%02x", b & 0xFF));
+        eq(hex.toString(), "120100cce7c300", "the wear packet");
     }
 
     // ---------------------------------------------------------------- chat queue

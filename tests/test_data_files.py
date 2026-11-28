@@ -10,10 +10,10 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
-from pydantic import BaseModel, ConfigDict, Field, RootModel, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, RootModel, ValidationError, field_validator, model_validator
 
 DATA = Path(__file__).resolve().parents[1] / "data"
 OPTIONAL_DATA = {"game_texts.json"}
@@ -374,10 +374,18 @@ class ShardsFile(Strict):
     markets: dict[str, tuple[float, float]]
 
 
+class ShopLacks(Strict):
+    map: int = Field(ge=1)
+    npc: str = Field(min_length=1)
+    lacks: list[str] = Field(min_length=1)
+
+
 class ShopListsFile(Strict):
     note: str
     read: str
     lists: dict[Literal["potions", "grocer"], dict[str, int]]
+    # "except" is a Python keyword: the field takes it as its alias
+    lacks: list[ShopLacks] = Field(alias="except")
 
 
 class MarketRow(Strict):
@@ -505,8 +513,37 @@ class BossesFile(Strict):
     bosses: dict[str, int]
 
 
+class IdName(Strict):
+    name: str = Field(min_length=1)
+    about: str | None = None
+
+
+class IdSkill(Strict):
+    name: str = Field(min_length=1)
+    # every class data/skills.json knows
+    class_: Literal["Warrior", "Orc", "Assassin", "Hunter", "Mage", "Elf", "Priest", "Witcher"] | None = Field(
+        default=None, alias="class")
+
+
+class IdsFile(Strict):
+    """data/ids.json: the game's numbers (string keys of digits) with their English names."""
+    format: Literal[1]
+    about: str
+    items: dict[str, IdName]
+    monsters: dict[str, IdName]
+    skills: dict[str, IdSkill]
+    professions: dict[str, IdName]
+
+    @field_validator("items", "monsters", "skills", "professions")
+    @classmethod
+    def numbers(cls, value: dict[str, Any]) -> dict[str, Any]:
+        assert all(k.isdigit() and int(k) > 0 for k in value), "every key is a game number"
+        return value
+
+
 MODELS: dict[str, type[BaseModel]] = {
     "atlas.json": AtlasFile,
+    "ids.json": IdsFile,
     "bosses.json": BossesFile,
     "beasts.json": BeastsFile,
     "dungeons.json": DungeonsFile,

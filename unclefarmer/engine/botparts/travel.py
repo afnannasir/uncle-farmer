@@ -12,9 +12,21 @@ from typing import Any, cast
 
 from ... import atlas, dungeons, jsonio, knowledge, travel
 from ...i18n import _
-from .. import beasts, combat, combos, keyslots, teleskill, xpcard
+from .. import beasts, combat, combos, keyslots, ridedoor, teleskill, xpcard
 from .base import (CONFIRM, STOPPING, NoWay, Stopped, note_failure)
 from .parts import as_bot, Parts
+
+
+class _Cab:
+    """A cable car being ridden (TravelMixin.wait_ride): its door and the cabin cell short of it
+    (ridedoor.door), whether we walked up there yet, and the sound cursor (None: no sound to hear)."""
+
+    def __init__(self, mid: int, found: tuple[tuple[int, int], tuple[int, int] | None] | None) -> None:
+        self.mid = mid
+        self.door: tuple[int, int] | None = found[0] if found else None
+        self.wait_at: tuple[int, int] | None = found[1] if found else None
+        self.near = False
+        self.cursor: int | None = None
 
 
 WaysOut = dict[int, tuple[int, tuple[float, float]]]
@@ -402,24 +414,75 @@ class TravelMixin(Parts):
         game's own move to another map - not for a time, which only says the ride is due. Nothing
         is pressed and nothing is planned meanwhile. The map we land on, once its reads agree
         (settled_map); a ride that never moves us on in RIDE_WAIT seconds stops the run as it
-        stands, rather than guess that it arrived or walk about in the hall."""
+        stands, rather than guess that it arrived or walk about in the hall.
+        A cable car is left through its door as soon as it arrives (ridedoor): walked up to while
+        riding, stepped through at the arrival sound - about 10 s before the game would put us out."""
         self.let_go()                 # no walking key stays held across the ride
         self.log(_("on {map}: riding - waiting to arrive", map=atlas.label(here)))
-        end = self.clock.time() + self.RIDE_WAIT
-        while self.clock.time() < end:
-            self.sleep(0.5)
-            if self.map_id() == here:
-                continue
-            landed = self.settled_map()
-            if landed == here:
-                continue              # a read taken mid-change: still riding
-            me = self.me()            # fresh: the position before the ride means nothing here
-            self.log(_("arrived on {map} at {x},{y} - planning the way on from here", map=atlas.label(landed),
-                       x=int(me.get("x", 0)), y=int(me.get("y", 0))))
-            return landed
+        start = self.clock.time()
+        end = start + self.RIDE_WAIT
+        cab = _Cab(here, ridedoor.door(here))
+        listened = cab.door is not None
+        if listened:
+            cab.cursor = ridedoor.listen(as_bot(self))
+        try:
+            while self.clock.time() < end:
+                self.sleep(0.5)
+                if self.map_id() == here:
+                    self._cab_step(cab, start)
+                    continue
+                landed = self.settled_map()
+                if landed == here:
+                    continue              # a read taken mid-change: still riding
+                me = self.me()            # fresh: the position before the ride means nothing here
+                self.log(_("arrived on {map} at {x},{y} - planning the way on from here", map=atlas.label(landed),
+                           x=int(me.get("x", 0)), y=int(me.get("y", 0))))
+                return landed
+        finally:
+            if listened:                  # (the door itself is given up after its one try)
+                ridedoor.done(as_bot(self))
         self.log(_("still on {map} after {n} seconds - the ride didn't move us on", map=atlas.label(here),
                    n=int(self.RIDE_WAIT)), speak=True)
         raise Stopped(_("the ride from {map} never arrived", map=atlas.label(here)))
+
+    def _cab_step(self, cab: _Cab, start: float) -> None:
+        """Still riding a cable car: walk up to its door once, then through it when the arrival
+        sound is heard - or once DOOR_AFTER seconds after boarding when no sound can be heard. A walk
+        that fails gives the door up: the game puts us out as before."""
+        if cab.door is None:
+            return
+        try:
+            if not cab.near:
+                cab.near = True
+                if cab.wait_at is not None:
+                    self._cab_walk((float(cab.wait_at[0]), float(cab.wait_at[1])), False)
+                return
+            if cab.cursor is not None:
+                arrived, cab.cursor = ridedoor.heard(as_bot(self), cab.cursor)
+            else:
+                arrived = self.clock.time() - start >= ridedoor.DOOR_AFTER
+            if not arrived:
+                return
+            self.log(_("the cable car has arrived - out through its door"))
+            door, cab.door = cab.door, None       # one try: a refusal leaves us to the game
+            self._cab_walk((float(door[0]), float(door[1])), True)
+        except Stopped as e:
+            if self.stop_event.is_set() or getattr(e, "final", False):
+                raise
+            cab.door = None
+            self.log(_("couldn't walk to the cable car's door ({why}) - waiting to be put out", why=e))
+
+    def _cab_walk(self, cell: tuple[float, float], door: bool) -> str:
+        """A walk in the cabin: a door that refuses is no place to be stuck at - the stuck count never
+        reaches the ways out (get_unstuck: another door back where we came from, the hearthstone),
+        and it starts over after."""
+        was = getattr(self, "_unsticking", False)
+        self._unsticking = True
+        try:
+            return self.walk_to(cell, map_change=door)
+        finally:
+            self._unsticking = was
+            self.stuck_in_a_row = 0
 
     def wait_map_change(self, mid: int, seconds: float, interruptible: bool = False) -> bool:
         """Wait to leave map mid. interruptible: a spell with a cast (the Mage's and the Elf's
@@ -859,9 +922,9 @@ class TravelMixin(Parts):
                     continue
                 self.log(_("now on {map}", map=atlas.label(here)))
                 if atlas.is_ride(here):
-                    # The vehicle carries us itself (cable car 1055 moved us to Tulip City's
-                    # underground 37 s after boarding, every step in it refused; an airship's
-                    # flight hall the same after about 25 s). Wait for that instead of walking.
+                    # The vehicle carries us itself (a cable car puts us out about 22 s after
+                    # boarding - its door lets us out at its arrival sound, 10 s sooner: wait_ride;
+                    # an airship's flight hall after about 25 s). No walking plan there.
                     self.wait_ride(here)
                 else:
                     self.sleep(1.0)

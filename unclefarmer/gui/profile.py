@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Sequence
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 import wx
 
 from .. import gamekeys, scan, settings
-from ..engine import combat, keyboard, potions, profilecopy, triggers, xpcard
+from ..engine import bosses, combat, keyboard, medals, potions, profilecopy, triggers, xpcard
 from ..i18n import N_, _
 from ..link import AgentError, AgentLink, games
 from .common import (Dialog, Form, Handler, KeyDialog, ask, buttons, enable_label, error, first_selected, group, info,
@@ -27,7 +27,7 @@ STYLES = ("auto", "follow", "stationary")
 # The fighting choices of the character window's own page, put back to their defaults by Advanced
 # settings' "Reset the fighting settings" (with its own pages' fine tuning and the skills' uses).
 MAIN_FIGHTING = ("attack_style", "fight_back", "nearest_monster", "fight_locked", "shoot_while_walking",
-                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys")
+                 "skills_by_slot", "use_buffs", "use_dispel", "use_combos", "fill_empty_keys", "skill_page_one")
 # What the character window's "Copy from another character" can copy, in its list's order.
 COPY_PARTS = (("before", N_("Before farming list")), ("after", N_("After farming list")),
               ("fighting", N_("Fighting settings (not the keys)")), ("team", N_("Team settings")))
@@ -189,6 +189,13 @@ def _tiles(v: float) -> str:
     return ("%.1f" % v).rstrip("0").rstrip(".")
 
 
+def medal_list(p: dict[str, Any], key: str) -> list[dict[str, Any]]:
+    """A saved medal list ([{"uid", "name"}]), the rows that can't be read left out."""
+    got: object = p.get(key)
+    rows: list[object] = list(cast("list[object]", got)) if isinstance(got, list) else []
+    return [cast("dict[str, Any]", r) for r in rows if isinstance(r, dict) and cast("dict[str, Any]", r).get("uid") is not None]
+
+
 def pull_label(p: dict[str, Any]) -> str:
     """The early-fire setting says what it adds to: the bot already fights from the class's base
     attack range (Bot.reach: just inside the base attack's range, or the range set by hand), so 0
@@ -210,6 +217,11 @@ def pull_label(p: dict[str, Any]) -> str:
              "at you (0: wait until it is in range):")
 
 
+OWN_SPEECH = ("", *settings.GAME_SPEECH_MODES)    # Overview: as the app says, then the modes
+EXAMPLE_BOSS: dict[str, Any] = {"name": "Death Worm", "x": 105, "y": 100}    # the Bosses tab's example
+EXAMPLE_BOSS_MAP = 5121                                                     # Wolf Prairie
+
+
 class ProfileDialog(Dialog):
     def __init__(self, parent: wx.Window, character: str, game_folder: str = "") -> None:
         super().__init__(parent, title=_("Character settings - {name}", name=settings.profile_display(character)),
@@ -221,10 +233,13 @@ class ProfileDialog(Dialog):
         nb = tabs(self)
         self.overview_page(nb)
         self.fighting_page(nb)
+        self.bosses_page(nb)
         self.potions_page(nb)
         self.travel_page(nb)
         panel, box = page(nb, _("Team"))
         self.team_ui = team_page(panel, box, self.p)
+        self.talents_page(nb)
+        self.medals_page(nb)
         self.triggers_page(nb)
         root.Add(nb, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 12)
         ok_cancel(self, root, _("Save"), extra=[(opens(_("Ad&vanced")), self.on_advanced),
@@ -244,6 +259,12 @@ class ProfileDialog(Dialog):
         self.known = labeled(panel, box, _("What the bot knows about this character:"),
                              lambda w: wx.TextCtrl(w, style=wx.TE_MULTILINE | wx.TE_READONLY, size=wx.Size(-1, 200)), 1)
         buttons(panel, box, (_("S&can now"), self.on_scan))
+        f = group(panel, box, _("The game's own speech"))
+        own = self.p.get("game_speech") or ""
+        self.game_speech = f.choice(_("Mute this character's game's own &speech:"),
+                                    [_("As File, Settings, Speech and language says"), _("While a bot runs in it"),
+                                     _("Always"), _("Never"), _("Whenever its window isn't in front")],
+                                    OWN_SPEECH.index(own) if own in OWN_SPEECH else 0)
 
     def fighting_page(self, nb: wx.Notebook) -> None:
         p = self.p
@@ -273,6 +294,8 @@ class ProfileDialog(Dialog):
         self.use_combos = f.check(_("Use the &combos of the activated talents"), p.get("use_combos", True))
         self.fill_keys = f.check(_("Put needed skills and items on &empty keys (never on keys in use)"),
                                  p.get("fill_empty_keys", True))
+        self.page_one = f.check(_("Use only the skills of page &1 (never turn to skill page 2)"),
+                                p.get("skill_page_one", False))
         f = group(panel, box, _("Death"))
         self.crystals = f.check(_("Revive on the spot with &Resurrection Crystals"), p["use_resurrection_crystal"])
         self.death_stop, self.max_deaths = f.optional(
@@ -326,6 +349,61 @@ class ProfileDialog(Dialog):
         self.repair = f.check(_("Repair &gear with toolboxes from the bag"), p.get("repair_with", "toolbox") != "off")
         self.gear_stop = f.check(_("Stop if broken gear ca&n't be repaired"), p.get("stop_when_gear_broken", True))
 
+    def bosses_page(self, nb: wx.Notebook) -> None:
+        """The Bosses tab (engine/bosses.py): the steps kept from a boss, what to do about one that
+        keeps coming back, the demonized elites, and the chat rooms told of each boss seen, in the
+        bot's words or the player's own. It was a group at the bottom of Advanced, Fighting, where
+        players didn't think of looking. The leaving boxes are off while bosses aren't kept away
+        from, the wait's while the map isn't left."""
+        p = self.p
+        panel, box = page(nb, _("Bosses"))
+        f = group(panel, box, _("Keeping away"))
+        keep = p.get("boss_distance", 40)
+        self.boss_on, self.boss_keep = f.optional(
+            _("Keep away from &bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
+        self.boss_leave, self.boss_walk_offs = f.optional(
+            _("&Leave the map for a while when a boss keeps coming back"), bool(p.get("boss_leave", True)),
+            _("Walk away from it this many times within 5 minutes before leaving (0: leave at once):"),
+            p.get("boss_walk_offs", 3), 0, 20)
+        self.boss_away_first = f.number(_("First &wait away from the map (seconds):"),
+                                        p.get("boss_away_first", 60), 10, 3600)
+        self.boss_away_most = f.number(_("Longest wait: it doubles each time the boss is still t&here (seconds):"),
+                                       p.get("boss_away_most", 300), 10, 7200)
+        self.boss_away_farm = f.check(_("Fight on the way out and farm the map waited on, when its &monsters "
+                                        "are no stronger than the farm's"), p.get("boss_away_farm", True))
+        self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
+                                   p.get("skip_demonized_elites", False))
+        f = group(panel, box, _("Telling other players"))
+        ticked = bosses.notice_rooms(p)
+        self.boss_rooms = [(room, f.check(label, room in ticked)) for room, label in (     # bosses.NOTICE_ROOMS
+            (4, _("Tell the &Team chat of each boss seen")),
+            (3, _("Tell the &Gang chat of each boss seen")),
+            (5, _("Tell the I&nternational chat of each boss seen")),
+            (0, _("Tell the Gl&obal chat of each boss seen (the whole server reads it)")))]
+        self.boss_text = f.text(_("&Your own line, with %boss%, %map% and %pos% for the boss, the map and where "
+                                  "it stands (empty: the bot's line, in English):"), p.get("boss_notice_text", ""))
+        self.boss_example = f.readonly(_("What the chat gets, for example:"))
+        self.boss_text.Bind(wx.EVT_TEXT, lambda e: (e.Skip(), self.show_boss_example()))
+        self.show_boss_example()
+
+        def sync(evt: wx.Event | None = None) -> None:
+            on = self.boss_on.GetValue()
+            leave = on and self.boss_leave.GetValue()
+            self.boss_leave.Enable(on)
+            for ctrl in (self.boss_walk_offs, self.boss_away_first, self.boss_away_most):
+                ctrl.Enable(leave)
+                enable_label(ctrl, leave)
+            self.boss_away_farm.Enable(leave)
+            if evt is not None:
+                evt.Skip()                # Form.optional's handler still runs: it enables the field beside the box
+        self.boss_on.Bind(wx.EVT_CHECKBOX, sync)
+        self.boss_leave.Bind(wx.EVT_CHECKBOX, sync)
+        sync()
+
+    def show_boss_example(self) -> None:
+        """The line a boss seen would give, written as the player's own line is now."""
+        self.boss_example.SetValue(bosses.notice_text(EXAMPLE_BOSS, EXAMPLE_BOSS_MAP, self.boss_text.GetValue()))
+
     def potions_page(self, nb: wx.Notebook) -> None:
         p = self.p
         panel, box = page(nb, _("Potions"))
@@ -360,6 +438,174 @@ class ProfileDialog(Dialog):
         self.pet_recall = f.check(_("Put the pet &away when the run ends"), p["pet_recall_at_end"])
         box.Add(f.grid, 0, wx.TOP, 10)
         self.pet_care = pet_care(panel, box, p)
+
+    def talents_page(self, nb: wx.Notebook) -> None:
+        """Other talents for farming, put on at a talent master, and the usual ones back at the end."""
+        p = self.p
+        panel, box = page(nb, _("Talents"))
+        note = wx.StaticText(panel, label=_(
+            "A talent master (a city officer, such as Chancellor Bren or Guard Captain Suke) can switch talents. "
+            "Each reset costs 200 arnebia for every talent point the talents put on take, even when nothing "
+            "changes, so the bot only goes when the talents on aren't the ones ticked."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.BOTTOM, 8)
+        f = Form(panel)
+        self.farm_talents = f.check(_("&Change the talents for farming, at the nearest talent master before the "
+                                      "run sets out"), p.get("farm_talents", False))
+        box.Add(f.grid, 0, wx.BOTTOM, 6)
+        self.farm_talent_list = labeled(panel, box, _("Talents to &farm with:"),
+                                        lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        f = Form(panel)
+        self.talents_back = f.check(_("Put the &usual talents back when the run ends in a town with a talent "
+                                      "master (no trip for it)"), p.get("talents_back", False))
+        box.Add(f.grid, 0, wx.TOP | wx.BOTTOM, 6)
+        self.usual_talent_list = labeled(panel, box, _("U&sual talents:"),
+                                         lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        buttons(panel, box, (_("&Tick the talents that are on now, in both lists"), self.on_talents_now))
+        self.talent_names: list[str] = []
+
+        def enable(_e: object = None) -> None:
+            on = self.farm_talents.GetValue()
+            self.farm_talent_list.Enable(on)
+            self.talents_back.Enable(on)
+            self.usual_talent_list.Enable(on and self.talents_back.GetValue())
+        self.farm_talents.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.talents_back.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.enable_talents = enable
+
+    def fill_talents(self) -> None:
+        """The learned talents (the last scan, and any ticked before) in both lists, each one's tick
+        as saved; "(on now)" after those the last scan saw on, "(not learned)" after a ticked one the
+        last scan didn't see (the bot leaves it out)."""
+        p = self.p
+        s: dict[str, Any] = p.get("scan") or {}
+        scanned: list[object] = list(s.get("talents") or [])
+        scanned_on: list[object] = list(s.get("active_talents") or [])
+        learned = [str(n) for n in scanned if n]           # (a nameless row: skipped)
+        on = {str(n) for n in scanned_on if n}
+        if self.talent_names:            # Scan now again: the ticks made since the window opened stay
+            farm, usual = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
+        else:
+            farm = list(p.get("farm_talent_list") or [])
+            usual = list(p.get("usual_talent_list") or [])
+        names = list(dict.fromkeys(learned + farm + usual))
+        self.talent_names = names
+        labels = [_("{talent} (on now)", talent=n) if n in on
+                  else _("{talent} (not learned)", talent=n) if learned and n not in learned else n for n in names]
+        for box, ticked in ((self.farm_talent_list, farm), (self.usual_talent_list, usual)):
+            box.Set(labels)
+            for i, n in enumerate(names):
+                box.Check(i, n in ticked)
+        self.enable_talents()
+
+    def on_talents_now(self, _evt: object = None) -> None:
+        """Both lists ticked as the talents on now, from the last scan (Scan now first for a fresh one)."""
+        s: dict[str, Any] = self.p.get("scan") or {}
+        on: set[str] = set(s.get("active_talents") or [])
+        if not s.get("talents"):
+            self.talents_unknown()
+            return
+        for box in (self.farm_talent_list, self.usual_talent_list):
+            for i, n in enumerate(self.talent_names):
+                box.Check(i, n in on)
+
+    def talents_unknown(self) -> None:
+        error(self, _("The talents aren't known yet: log in to this character in the game and press Scan now "
+                      "on the Overview page."))
+
+    def ticked_talents(self, box: wx.CheckListBox) -> list[str]:
+        return [n for i, n in enumerate(self.talent_names) if box.IsChecked(i)]
+
+    def medals_page(self, nb: wx.Notebook) -> None:
+        """Other medals for farming, and the usual ones again at the end - no NPC, no cost."""
+        p = self.p
+        panel, box = page(nb, _("Medals"))
+        note = wx.StaticText(panel, label=_(
+            "Medals are changed from the bag wherever the character is, at no cost. A medal of a kind already "
+            "worn takes its place, and each medal waits about 10 seconds after its own last change. The "
+            "Contribution Medals all share a name: each one shows its bonus once a run has read it."))
+        note.Wrap(600)
+        box.Add(note, 0, wx.BOTTOM, 8)
+        f = Form(panel)
+        self.farm_medals = f.check(_("&Change the medals for farming, before the run sets out (the medals not "
+                                     "ticked come off)"), p.get("farm_medals", False))
+        box.Add(f.grid, 0, wx.BOTTOM, 6)
+        self.farm_medal_list = labeled(panel, box, _("Medals to &farm with:"),
+                                       lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        f = Form(panel)
+        self.medals_back = f.check(_("Put the &usual medals back on when the run ends, wherever it ends"),
+                                   p.get("medals_back", False))
+        box.Add(f.grid, 0, wx.TOP | wx.BOTTOM, 6)
+        self.usual_medal_list = labeled(panel, box, _("U&sual medals:"),
+                                        lambda w: wx.CheckListBox(w, size=wx.Size(-1, 120)), 1)
+        buttons(panel, box, (_("&Tick the medals worn now, in both lists"), self.on_medals_now))
+        self.medal_rows: list[dict[str, Any]] = []
+
+        def enable(_e: object = None) -> None:
+            on = self.farm_medals.GetValue()
+            self.farm_medal_list.Enable(on)
+            self.medals_back.Enable(on)
+            self.usual_medal_list.Enable(on and self.medals_back.GetValue())
+        self.farm_medals.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.medals_back.Bind(wx.EVT_CHECKBOX, lambda e: (e.Skip(), enable()))
+        self.enable_medals = enable
+
+    def fill_medals(self) -> None:
+        """The character's medals (the last scan, and any ticked before) in both lists, by their id,
+        each with its bonus when known, "(worn now)" or "(not in the bag)"."""
+        p = self.p
+        s: dict[str, Any] = p.get("scan") or {}
+        scanned: list[object] = list(s.get("medals") or [])
+        rows = [r for r in (cast("dict[str, Any]", x) for x in scanned if isinstance(x, dict)) if r.get("uid") is not None]
+        if self.medal_rows:             # Scan now again: the ticks made since the window opened stay
+            farm, usual = self.ticked_medals(self.farm_medal_list), self.ticked_medals(self.usual_medal_list)
+        else:
+            farm, usual = medal_list(p, "farm_medal_list"), medal_list(p, "usual_medal_list")
+        seen = {int(r["uid"]) for r in rows}
+        known = [dict(r, missing=False) for r in rows]
+        for r in farm + usual:
+            if int(r["uid"]) not in seen:
+                seen.add(int(r["uid"]))
+                known.append({"uid": int(r["uid"]), "name": str(r.get("name") or r["uid"]), "worn": False, "missing": True})
+        self.medal_rows = known
+        bonus = medals.bonuses()
+        labels: list[str] = []
+        for r in known:
+            text = medals.display(str(r["name"]))
+            if bonus.get(str(r["uid"])):
+                text = "%s (%s)" % (text, bonus[str(r["uid"])])
+            if r["missing"]:
+                text = _("{medal} (not in the bag)", medal=text)
+            elif r.get("worn"):
+                text = _("{medal} (worn now)", medal=text)
+            labels.append(text)
+        farm_ids = {int(r["uid"]) for r in farm}
+        usual_ids = {int(r["uid"]) for r in usual}
+        for box, ticked in ((self.farm_medal_list, farm_ids), (self.usual_medal_list, usual_ids)):
+            box.Set(labels)
+            for i, r in enumerate(known):
+                box.Check(i, int(r["uid"]) in ticked)
+        self.enable_medals()
+
+    def on_medals_now(self, _evt: object = None) -> None:
+        """Both lists ticked as the medals worn now, from the last scan (Scan now first for a fresh one)."""
+        if not self.medal_rows:
+            self.medals_unknown()
+            return
+        for box in (self.farm_medal_list, self.usual_medal_list):
+            for i, r in enumerate(self.medal_rows):
+                box.Check(i, bool(r.get("worn")) and not r.get("missing"))
+
+    def medals_unknown(self) -> None:
+        scan_now: dict[str, Any] = self.p.get("scan") or {}
+        if "medals" in scan_now:         # scanned since medals are read: there are none
+            error(self, _("The last scan found no medal on this character, worn or in the bag."))
+            return
+        error(self, _("The medals aren't known yet: log in to this character in the game and press Scan now "
+                      "on the Overview page."))
+
+    def ticked_medals(self, box: wx.CheckListBox) -> list[dict[str, Any]]:
+        return [{"uid": int(r["uid"]), "name": str(r["name"])} for i, r in enumerate(self.medal_rows) if box.IsChecked(i)]
 
     def triggers_page(self, nb: wx.Notebook) -> None:
         """Independent, ordered preparation and completion sequences."""
@@ -433,6 +679,8 @@ class ProfileDialog(Dialog):
         self.show_pets()
         self.fill_potions()
         self.fill_xp_cards()
+        self.fill_talents()
+        self.fill_medals()
 
     def fill_xp_cards(self) -> None:
         """One tick per kind of experience card, weakest first, each with what the last scan saw of
@@ -618,7 +866,7 @@ class ProfileDialog(Dialog):
                          ("fight_locked", self.fight_locked), ("shoot_while_walking", self.shoot_while_walking),
                          ("skills_by_slot", self.skills_by_slot), ("use_buffs", self.use_buffs),
                          ("use_dispel", self.use_dispel), ("use_combos", self.use_combos),
-                         ("fill_empty_keys", self.fill_keys)):
+                         ("fill_empty_keys", self.fill_keys), ("skill_page_one", self.page_one)):
             box.SetValue(bool(p.get(key, settings.PROFILE_DEFAULTS[key])))
 
     def on_ok(self, _evt: wx.Event) -> None:
@@ -639,6 +887,17 @@ class ProfileDialog(Dialog):
         p["use_dispel"] = self.use_dispel.GetValue()
         p["use_combos"] = self.use_combos.GetValue()
         p["fill_empty_keys"] = self.fill_keys.GetValue()
+        p["skill_page_one"] = self.page_one.GetValue()
+        p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
+        p["boss_leave"] = self.boss_leave.GetValue()
+        p["boss_walk_offs"] = self.boss_walk_offs.GetValue()
+        p["boss_away_first"] = self.boss_away_first.GetValue()
+        p["boss_away_most"] = max(self.boss_away_first.GetValue(), self.boss_away_most.GetValue())
+        p["boss_away_farm"] = self.boss_away_farm.GetValue()
+        p["skip_demonized_elites"] = self.skip_elites.GetValue()
+        p["boss_notice_rooms"] = [room for room, box in self.boss_rooms if box.GetValue()]
+        p["boss_notice_text"] = " ".join(self.boss_text.GetValue().split())
+        p["game_speech"] = OWN_SPEECH[max(0, self.game_speech.GetSelection())]
         p["respawn"] = "city"
         p["use_resurrection_crystal"] = self.crystals.GetValue()
         p["stop_on_deaths"] = self.death_stop.GetValue()
@@ -671,6 +930,39 @@ class ProfileDialog(Dialog):
         self.read_pets()
         p["pets"] = self.pets
         p["pet_recall_at_end"] = self.pet_recall.GetValue()
+        farm_talents, usual_talents = self.ticked_talents(self.farm_talent_list), self.ticked_talents(self.usual_talent_list)
+        if self.farm_talents.GetValue() and not self.talent_names:
+            self.talents_unknown()          # nothing to tick yet: a scan first
+            return
+        if self.farm_talents.GetValue() and not farm_talents:
+            error(self, _("Tick the talents to farm with on the Talents page, or untick Change the talents for farming."))
+            return
+        if self.farm_talents.GetValue() and self.talents_back.GetValue() and not usual_talents:
+            error(self, _("Tick the usual talents on the Talents page, or untick Put the usual talents back."))
+            return
+        farm_medals, usual_medals = self.ticked_medals(self.farm_medal_list), self.ticked_medals(self.usual_medal_list)
+        if self.farm_medals.GetValue() and not self.medal_rows:
+            self.medals_unknown()
+            return
+        if self.farm_medals.GetValue() and not farm_medals:
+            error(self, _("Tick the medals to farm with on the Medals page, or untick Change the medals for farming."))
+            return
+        here = {int(r["uid"]) for r in self.medal_rows if not r.get("missing")}
+        if self.farm_medals.GetValue() and not any(int(r["uid"]) in here for r in farm_medals):
+            error(self, _("None of the medals ticked to farm with is in the bag any more: tick others on the Medals "
+                          "page."))
+            return
+        if self.farm_medals.GetValue() and self.medals_back.GetValue() and not usual_medals:
+            error(self, _("Tick the usual medals on the Medals page, or untick Put the usual medals back on."))
+            return
+        p["farm_medals"] = self.farm_medals.GetValue()
+        p["farm_medal_list"] = farm_medals
+        p["medals_back"] = self.medals_back.GetValue()
+        p["usual_medal_list"] = usual_medals
+        p["farm_talents"] = self.farm_talents.GetValue()
+        p["farm_talent_list"] = farm_talents
+        p["talents_back"] = self.talents_back.GetValue()
+        p["usual_talent_list"] = usual_talents
         try:
             save_pet_care(p, self.pet_care)
             save_team(p, self.team_ui)
@@ -861,16 +1153,11 @@ class AdvancedDialog(Dialog):
                                    p.get("press_burst", True))
         self.chase = f.number(_("&Chase monsters up to this many steps away (patrol loops):"),
                               p.get("chase_range", 40), 5, 150)
-        keep = p.get("boss_distance", 40)
-        self.boss_on, self.boss_keep = f.optional(
-            _("Keep away from bosses"), bool(keep), _("Steps to keep from a boss:"), keep or 40, 5, 150)
         self.open_chests = f.check(_("&Open the chests that turn up while farming"), p.get("open_chests", True))
         hunt = p.get("chest_hunt_minutes", 5)
         self.hunt_on, self.hunt_minutes = f.optional(
             _("Look for a chest the game announces on the map"), bool(hunt),
             _("Minutes to look for it:"), hunt or 5, 1, 30)
-        self.skip_elites = f.check(_("Leave demon&ized elites alone (they still get fought when they attack)"),
-                                   p.get("skip_demonized_elites", False))
         no_kill = p.get("no_kill_minutes", 10)
         self.no_kill_on, self.no_kill = f.optional(
             _("When nothing is killed for a while, try elsewhere, then stop"), bool(no_kill),
@@ -1014,9 +1301,7 @@ class AdvancedDialog(Dialog):
         p["no_damage_casts"] = self.no_damage_casts.GetValue()
         p["press_burst"] = self.press_burst.GetValue()
         p["chase_range"] = self.chase.GetValue()
-        p["boss_distance"] = self.boss_keep.GetValue() if self.boss_on.GetValue() else 0
         p["open_chests"] = self.open_chests.GetValue()
-        p["skip_demonized_elites"] = self.skip_elites.GetValue()
         p["no_kill_minutes"] = self.no_kill.GetValue() if self.no_kill_on.GetValue() else 0
         p["chest_hunt_minutes"] = self.hunt_minutes.GetValue() if self.hunt_on.GetValue() else 0
         p["smart_skills"] = self.smart.GetValue()

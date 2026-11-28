@@ -20,7 +20,7 @@ wx = pytest.importorskip("wx")
 
 from unclefarmer import chat, messages, settings, speech, stats, tones  # noqa: E402
 from unclefarmer.gui import main  # noqa: E402
-from unclefarmer.gui.mainparts import games as games_part, results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
+from unclefarmer.gui.mainparts import gamespeech, games as games_part, results as results_part, runs as runs_part, talk as talk_part  # noqa: E402
 from unclefarmer.gui.mainparts.base import LOG_LIMIT, SNAP_FRESH  # noqa: E402
 
 from conftest import returning, stand_in, Clock  # noqa: E402
@@ -608,9 +608,9 @@ def test_results_are_spoken_every_so_often_while_farming(monkeypatch: pytest.Mon
 def test_every_game_is_muted_once_when_its_speech_is_always_off(monkeypatch: pytest.MonkeyPatch) -> None:
     started: list[Callable[[], object]] = []
 
-    def thread(target: Callable[[], object], daemon: bool | None = None) -> SimpleNamespace:
+    def thread(target: Callable[..., object], args: tuple[object, ...] = (), daemon: bool | None = None) -> SimpleNamespace:
         return SimpleNamespace(start=lambda: started.append(target))
-    monkeypatch.setattr(results_part.threading, "Thread", thread)
+    monkeypatch.setattr(gamespeech.threading, "Thread", thread)
     w = Win(games=[(1, "Ali", ""), (2, "Sara", "")], s={"game_speech": "always"})
     w.keep_silent()
     w.keep_silent()

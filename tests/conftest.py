@@ -194,6 +194,10 @@ def user_dirs(_user_base: str, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(messages, "MESSAGES_DIR", os.path.join(app, "messages"))
     monkeypatch.setattr(messages, "REPLIES_FILE", os.path.join(app, "messages", "replies.txt"))
     monkeypatch.setattr(messages, "GOODBYES_FILE", os.path.join(app, "messages", "goodbyes.txt"))
+    from unclefarmer import gameids, learnids
+    gameids.forget()            # no table read for another test's folders
+    # each test notes the game's numbers apart: nothing a test noted is saved when Python exits
+    monkeypatch.setattr(learnids, "_notes", learnids.Notes())
 
 
 @pytest.fixture

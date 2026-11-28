@@ -81,6 +81,8 @@ class LogMixin(FrameParts):
         self.poll()
         if run is not None:
             self.revive(run)                     # a lost game opened again, the run carried on
+            if callable(getattr(self, "chain_run_ended", None)):
+                self.chain_run_ended(run)        # Run, Character chain: the next character, or the end
         if run is not None and run.ended_by_itself and run.farmed() and run.after_stop == "shutdown":
             self.shutdown_wanted = True
         if getattr(self, "shutdown_wanted", False):

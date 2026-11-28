@@ -1295,7 +1295,7 @@ def test_in_a_dungeon_no_trip_out_and_no_resting(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(farming.pets, "keep_out", stand_in(farming.pets.keep_out, lambda b: None))
     monkeypatch.setattr(farming.pets, "look_after", stand_in(farming.pets.look_after, lambda b, snap: None))
     monkeypatch.setattr(farming.keyslots, "refill", stand_in(farming.keyslots.refill, lambda bot: False))
-    monkeypatch.setattr(farming.bosses, "keep_away", stand_in(farming.bosses.keep_away, lambda bot, snap, map_id, area: False))
+    monkeypatch.setattr(farming.bosses, "keep_away", stand_in(farming.bosses.keep_away, lambda bot, snap, map_id, area, done=None: False))
     instance_loop(b, passes=1, last_supply_check=clock.now - 100)    # a restock check is due
     assert b.restock_calls == []
     assert reads == [True]

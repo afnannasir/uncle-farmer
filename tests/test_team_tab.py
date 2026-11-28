@@ -163,3 +163,35 @@ def test_a_ticked_choice_missing_what_it_needs_is_not_saved(frame: Any, change: 
         assert p == {"team_create": False}           # nothing changed
     finally:
         d.Destroy()
+
+
+def test_the_following_choices_show_and_save(frame: Any) -> None:
+    from unclefarmer.gui.profile import ProfileDialog
+    from unclefarmer.gui.teamtab import load_team
+    p = settings.load_profile("Hero")
+    p.update(follow_role="heal", follow_pull=True, follow_pull_range=7, follow_help_team=False,
+             follow_distance=9, follow_skip="Bone Dragon")
+    settings.save_profile("Hero", p)
+    d = ProfileDialog(frame, "Hero")
+    try:
+        ui = d.team_ui["follow"]
+        assert ui["role"].GetSelection() == 1 and ui["pull"].GetValue() and ui["pull_range"].GetValue() == 7
+        assert not ui["help_team"].GetValue() and ui["distance"].GetValue() == 9
+        assert ui["skip"].GetValue() == "Bone Dragon"
+        ui["role"].SetSelection(2)
+        ui["pull"].SetValue(False)
+        ui["skip"].SetValue(" Lich ,, Bone  Dragon ")
+        d.on_ok(wx.CommandEvent())
+    finally:
+        d.Destroy()
+    saved = settings.load_profile("Hero")
+    assert (saved["follow_role"], saved["follow_pull"], saved["follow_skip"]) == ("attack", False, "Lich, Bone Dragon")
+    assert saved["follow_distance"] == 9 and saved["follow_help_team"] is False
+    d = ProfileDialog(frame, "Hero")
+    try:
+        saved.update(follow_role="both", follow_distance=4)
+        load_team(d.team_ui, saved)                  # a copy from another character shows at once
+        assert d.team_ui["follow"]["role"].GetSelection() == 0
+        assert d.team_ui["follow"]["distance"].GetValue() == 4
+    finally:
+        d.Destroy()

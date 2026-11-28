@@ -494,6 +494,29 @@ These values help you keep track of what your character has accomplished during 
 
 For `shards_gained`, every shard picked up counts, even if it was later thrown away.
 
+### Checking what is around you
+
+| Name | What it tells you |
+|---|---|
+| `boss` | The name of the nearest field boss in view, or `""` when there is none |
+| `boss_dist` | How many tiles away that boss is, `-1` when there is none |
+| `in_dungeon` | `true` inside a dungeon, `false` elsewhere |
+| `bag_pct` | How full the bag is, by weight, as a percentage; `-1` until the character sheet has said |
+| `deaths` | How many times the character died during this run |
+
+The `near()` function tells you how far another player is:
+
+    near("<player name>")
+
+It gives the tiles to that player when they are in view (the whole name, in any case), and `-1` when they aren't. Mind the `-1`: `near("Tank") < 10` is also true when the tank is out of sight, and `boss_dist < 20` when there is no boss - write `near("Tank") >= 0 and near("Tank") < 10`, or `boss != "" and boss_dist < 20`. Each of these reads the game when it is used, so a `stop_when` rule with them reads it at every look. For example:
+
+    if boss != ""
+      chat team {boss} is here, at {boss_dist} tiles
+    end
+    if near("Tank") < 0
+      say my tank is out of sight
+    end
+
 ### Checking items in your bag
 
 The `bag()` function tells you how many of a particular item you currently have.
@@ -518,6 +541,7 @@ Uncle Farmer also provides a few useful mathematical functions.
 | `abs(x)` | Returns the absolute value of a number |
 | `round(x)` | Rounds a number |
 | `int(x)` | Converts a value to an integer |
+| `near("name")` | The tiles to that player in view, `-1` when not in view |
 
 For example, `random(1, 10)` gives you a random whole number from 1 to 10.
 
@@ -882,6 +906,13 @@ If you want to sell the gathered items separately, use:
     sell_collection all          visit all three types of buyer
 
 The available types are `fish`, `ore`, and `herb`. If the character has no gathering skill and no type is specified, the bot chooses buyers for the goods it recognizes in the bag.
+
+To buy collection items at the player market instead, as set in **Tools, Buy collection items** (the items, the most gold coins a unit, the day's count, and what to do afterwards), use:
+
+    buy_collection               buy, cheapest first, up to the day's count
+    buy_collection check         only say what it would buy
+
+It sells what it bought to the buyers of those items (not only the character's own gathering type) when the tool says so, and the day's count is kept for each character until 00:00 GMT.
 
 ### Managing shards and your bag
 
@@ -1273,6 +1304,7 @@ Use this section when you need a quick reminder of a command or its syntax.
     gather [check]
     lose_xp [check]
     sell_collection [fish|ore|herb|all]
+    buy_collection [check]
     sell_shards
     clean_bag
     update_shard_prices
@@ -1281,9 +1313,25 @@ Use this section when you need a quick reminder of a command or its syntax.
 
 ### Following players
 
-    follow <player>
+    follow <player> [role=heal|attack|both] [distance=N] [pull=N|off] [help=on|off] [skip="A, B"]
     come <player> [<map> [at x,y]]
     manage_team                     set the team up (Team tab), then manage it until the run is stopped
+
+The `follow` options are this follow's own choices; any left out comes from the character's Team tab
+(Following a leader):
+
+- `role=heal` heals only: the character never attacks, not even what attacks it. `role=attack` never
+  heals the team. `role=both` (the default) helps the fights and heals.
+- `distance=N` keeps N tiles (1 to 30) from the player; a character that heals never goes further than
+  its heal reaches.
+- `pull=N` also attacks what comes within N tiles (1 to 30) of the player, before anyone hits it;
+  `pull=off` waits until the team is fighting it.
+- `help=off` fights only what attacks the character, not the team's fights.
+- `skip="Bone Dragon, Lich"` never attacks these monsters, whatever they do.
+
+For example, a healer soloing a dungeon with its tank:
+
+    follow Tank role=heal distance=6 skip="Bone Dragon"
 
 ### Keys and healing
 
@@ -1291,15 +1339,41 @@ Use this section when you need a quick reminder of a command or its syntax.
     key <key> [ms]
     hold <key> <s>
     wait <s>
+    wait_until <condition> [timeout=<s>]
     heal
     hearthstone
+    use <item>
 
-`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script. Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
+`wait_until` waits until the condition is true, looking twice a second, for at most the timeout (60
+seconds unless you give one, a day at most); then `wait_met` is `true` if it came true, `false` if the
+time ran out. Stop and Pause work while it waits; `stop_when` rules are looked at after it, as after
+`wait`.
+
+    wait_until hp_pct >= 90 timeout=120
+    if not wait_met
+      say still hurt after two minutes
+    end
+
+`use` uses an item from the bag, by its name (a potion, a scroll, a card); then `used` is `true` if it
+went, `false` if the item isn't there or the game didn't take it, and the log says so.
+
+`keyboard_profile` applies a named layout saved in **Tools → Keyboard Manager** for the character running the script: its own, its class's or everyone's (in that order when two have the same name). Quote names with spaces. The command applies saved slots, leaves omitted slots alone, and casts any selected preparation skills; what the character can't have (a skill not learned, an item, beast or pet it hasn't got) is left alone and named in the log. Place the command before the activity that needs the layout. Run it out of combat with game menus closed.
 
 ### Messages and values
 
     say <text>
+    chat <room> <text>
     set <name> = <value>
+
+`chat` writes a line on a chat channel of the game, with `{values}` worked out as in `say`. The room is
+one of `team`, `gang`, `international`, `global`, `map`, `nearby` or `private` (the private channel you
+joined). A line the game won't take (no international room joined, for instance) is said in the log
+and the script goes on. The game takes any line for the team or the gang: with no team it goes nowhere,
+and a character in no gang sends nothing to the gang. One room gets one line every 3 seconds at most (a
+loop with no `wait` would send many a second, and the game may mute a character for that: the next line
+waits its turn), and a line is cut to 300 characters.
+
+    chat team {boss} on {map_name} at {x}, {y}
 
 ### Stopping and ending a run
 

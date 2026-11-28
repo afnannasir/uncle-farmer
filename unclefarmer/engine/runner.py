@@ -20,7 +20,7 @@ from ..clock import CLOCK, Clock, clock_for
 from ..errors import carry_on
 from ..i18n import _
 from ..link import AgentError, AgentLink, server_name
-from . import chores, keyboard, keyslots, resume, teamlead, triggers, xpcard
+from . import chores, keyboard, keyslots, medals, resume, talents, teamlead, triggers, xpcard
 from .bot import Bot, Respawned, Stopped
 from .botparts.base import GameBroken, GameLost, WrongCharacter
 from .botparts.parts import Sighting, Where
@@ -76,6 +76,7 @@ class Run(threading.Thread):
         self.bot: Bot | None = None         # the Bot once running (private message commands reach it here)
         self.link: AgentLink | None = None  # this run's connection to the game, while it runs
         self.muted = False        # this run turned the game's own speech off (the end turns it on again)
+        self.speech_mode = "running"  # settings.game_speech_mode for this run's character
         self.speech_choice: str | None = None  # "on"/"off" when the player muted or unmuted this game by hand
         self.ended_by_itself = False  # the run ended on its own (plan done, a stop rule, the daily stop...),
                                       # not by the player's Stop or a lost game: the after-stop action applies
@@ -99,6 +100,14 @@ class Run(threading.Thread):
         self.script: Runner | None = None    # the plan or script whose place is kept
         self.place_lock = threading.Lock()
         self.place_done = False      # the run's end has decided about its place: no more saves
+        self.talents_back_done = False   # the usual talents were put back (or tried): once a run
+        self.medals_back_done = False    # ... and the usual medals
+        self.in_chain = False            # a row of Run, Character chain (no after-stop action of its own)
+        self.drop_spare: float | None = None   # ... its drop time left past the kept time, at its end
+        # how the run ended, for a character chain: "" (as the flags say), "done" (its drop time or level
+        # rule kept it from farming: nothing more today), "day_over" (the daily stop), "called_away"
+        # (come, home), "player" (another character came in, or the game went while paused)
+        self.end_kind = ""
 
     def farmed(self) -> bool:
         """The after-stop action (close the game, shut the PC down) is for the end of farming: a
@@ -181,8 +190,12 @@ class Run(threading.Thread):
             # carrying on later, no opening the game again)
             reason = str(e)
             self.failed = True
+            self.end_kind = "player"         # the player's own character came in: the game is theirs
             self.log(reason, speak=True)
         except Stopped as e:
+            self.end_kind = str(getattr(e, "chain_end", "") or "")
+            if not self.end_kind and (getattr(e, "stay", False) or getattr(e, "asked", False)):
+                self.end_kind = "called_away"          # come, home: a player wants the character
             if getattr(self, "kind", "") in ("tool", "trigger") and not self.stop_event.is_set():
                 self.failed = True
             reason = self._stopped(e)
@@ -203,7 +216,11 @@ class Run(threading.Thread):
         finally:
             self._paused_game_lost()
             try:
-                self._after_farming()
+                try:
+                    self._after_farming()
+                    self._talents_back()     # (not after a failed After step: that one is what counts)
+                finally:
+                    self._medals_back()      # (wherever, at no cost: even after one - best effort)
             except triggers.TriggerFailed as e:
                 # an After step that had to work didn't: said and recorded, but farming did end by
                 # itself, so the after-stop action (close the game, shut the PC down) still runs
@@ -218,7 +235,23 @@ class Run(threading.Thread):
                 reason = self._crashed(e)
                 self.failed = True
                 self.ended_by_itself = False
+            self.drop_spare = self._drop_spare()
             self._end(app, reason)
+
+    def _drop_spare(self) -> float | None:
+        """A character chain's row that ended by itself: the drop time it left past the time kept
+        (seconds), so a plan that ended early is done again later; None when not known or not asked."""
+        bot = self.bot
+        if not getattr(self, "in_chain", False) or bot is None or not self.ended_by_itself or not self.farmed():
+            return None
+        paused = getattr(bot, "paused", None)
+        if self.game_lost or (paused is not None and paused.is_set()):
+            return None                 # (a read now would wait out the pause, or a whole reconnect)
+        try:
+            got = bot.drop_to_farm(bot.refresh_sheet(force=True) or {})
+        except Exception:               # the game gone at the end: the row counts as done
+            return None
+        return None if got is None else float(got[1])
 
     def _paused_game_lost(self) -> None:
         """A run paused when its game went (closed, logged out): the player had the game, so it is
@@ -228,6 +261,7 @@ class Run(threading.Thread):
         if self.game_lost and paused is not None and paused.is_set():
             self.game_lost = False
             self.failed = True
+            self.end_kind = "player"
             self.log(_("the game went while the run was paused: it isn't opened again or carried on"))
 
     # ---------------------------------------------------------------- starting
@@ -240,8 +274,10 @@ class Run(threading.Thread):
         day_end, blocked = daily.plan(app) if not self.walk and not independent else (None, None)
         character: str
         if blocked:
-            raise Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
-                            "after that", reset=blocked))
+            over = Stopped(_("the day's farming is over - the drop time resets at {reset}; start again "
+                             "after that", reset=blocked))
+            over.chain_end = "day_over"          # a character chain ends there (Run, Character chain)
+            raise over
         link = self.link = AgentLink(pid=self.pid)
         version = link.send("version")
         agent = int(version.split()[1]) if version.startswith("mwagent ") else 0
@@ -262,7 +298,9 @@ class Run(threading.Thread):
             raise Stopped(snap.get("error") or _("log in to a character first"))
         character = self.character = snap["self"]["name"]
         server = server_name(link) if agent >= AGENT_SERVER else ""
-        observed = settings.character_profile(character, snap["self"].get("id"), server)
+        observed = settings.live_profile(character, snap["self"].get("id"), server)
+        if not server and agent >= AGENT_SERVER:
+            self._note_unknown_server(link, observed)
         if self._keyboard_errand() and self.profile and not settings.is_profile_of(observed, self.profile):
             raise Stopped(_("Select the same character before applying the keyboard profile."))
         # The Games list may already know this client's server.  Keep that confirmed identity if
@@ -304,6 +342,21 @@ class Run(threading.Thread):
             raise Stopped(str(state.get("status") or _("automatic login stopped")))
         raise Stopped(_("stopped by you"))
 
+    def _note_unknown_server(self, link: AgentLink, observed: str) -> None:
+        """Say in the log that the game's server wasn't recognised, with what the agent answered (a
+        port the bot doesn't know, an error), and which settings the run takes instead."""
+        try:
+            said = link.send("server").strip()[:120]
+        except (AgentError, OSError) as e:
+            said = str(e)
+        labelled = settings.profile_server(observed)
+        if labelled:
+            self.log(_("the game's server wasn't recognised (the agent said: {said}); using the settings "
+                       "saved for {server}", said=said, server=labelled))
+        else:
+            self.log(_("the game's server wasn't recognised (the agent said: {said}); the settings are "
+                       "kept by the character's id", said=said))
+
     def _profile(self, link: AgentLink, character: str) -> tuple[dict[str, Any], dict[str, Any]]:
         """Every run starts with a fresh scan: skills, keys, potions, beasts, pets -> the profile (a
         character without a profile gets one here). (profile, what the scan found)."""
@@ -336,11 +389,17 @@ class Run(threading.Thread):
             settings.set_not_saved(profile, "points_key", "")     # an older agent can't read the T key's answer
         if agent < AGENT_SPEECH:
             settings.set_not_saved(profile, "vitals_key", "")     # an older agent can't read the own-HP key's answer
-        elif app.get("game_speech", "running") in ("running", "always") and link.send("speech") == "on":
+        elif self.speech_mode_for(app, profile) in ("running", "always") and link.send("speech") == "on":
             self.muted = link.send("speech off") == "off"
             if self.muted:
                 self.log(_("the game's own speech is off while the bot runs"))
         return guard
+
+    def speech_mode_for(self, app: dict[str, Any], profile: dict[str, Any]) -> str:
+        """When this character's game is muted (its own choice, else the app's), kept for the run's
+        end. "front": the main window follows the window in front, the run leaves the speech alone."""
+        self.speech_mode = settings.game_speech_mode(app, profile)
+        return self.speech_mode
 
     def _make_bot(self, link: AgentLink, profile: dict[str, Any], agent: int, guard: str | None,
                   day_end: dt.datetime | None, app: dict[str, Any]) -> Bot:
@@ -492,6 +551,8 @@ class Run(threading.Thread):
                 teamlead.at_start(bot)         # out of another's team, into ours (the Team tab)
                 if not self._on_the_farm(bot, script) and not self._carried_on_past_before():
                     self._before_farming()
+                self._farming_talents(bot, script)
+                self._farming_medals(bot)
             cfg = chores.config(bot.p)
             if cfg.get("before_farming") and chores.due(self.profile or self.character, cfg):
                 bot.log(_("the day's chores first"))
@@ -573,6 +634,85 @@ class Run(threading.Thread):
         bot.log(_("already on {map}, where this run farms first - the Before farming list is skipped",
                   map=atlas.label(here)))
         return True
+
+    @staticmethod
+    def _farming_talents(bot: Bot, script: Runner) -> None:
+        """Character settings, Talents: the talents for farming on before the run sets out - a trip to
+        the nearest talent master, there and back to the first farming map, even from that map (a run
+        that farmed with the wrong ones until its next town trip had them wrong all night)."""
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if not p.get("farm_talents", False):
+            return
+        first = triggers.first_farm_map(script.main, script.subs)
+        here = bot.map_id()
+        farm = here if first in (None, triggers.HERE) else first
+        try:
+            talents.for_farming(bot, back_to=(farm, None) if farm != here else None)
+        except Respawned:
+            # died on the way to the talent master: the run goes on from where it came back (its
+            # trip to the farm starts there), with the talents as they are
+            bot.log(_("died on the way to the talent master - farming with the talents as they are"), speak=True)
+
+    @staticmethod
+    def _farming_medals(bot: Bot) -> None:
+        """Character settings, Medals: the medals for farming worn before the run sets out, wherever
+        it starts (no NPC, no cost). First the bonus of medals that share a name is read, once each,
+        for the settings window. Medals as they were are no reason not to farm (for_farming says what
+        it couldn't change); a stop - Stop, the day's stop while a medal cools down - is passed on."""
+        try:
+            medals.learn_bonuses(bot)
+            p: dict[str, Any] = getattr(bot, "p", None) or {}
+            if p.get("farm_medals", False):
+                medals.for_farming(bot)
+        except (ValueError, TypeError, KeyError) as e:      # a saved list edited by hand
+            bot.log(_("the medals for farming weren't put on: {err}", err=e))
+
+    def _medals_back(self) -> None:
+        """Character settings, Medals: the usual medals worn again when farming ended by itself,
+        wherever it ended, after the After farming list. Once a run, best effort as _talents_back."""
+        bot = self.bot
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if (getattr(self, "medals_back_done", False) or bot is None or self.walk or not self.ended_by_itself
+                or not self.farmed() or self.stop_event.is_set() or not p.get("farm_medals", False)
+                or not p.get("medals_back", False) or self._dead(bot)):
+            return
+        self.medals_back_done = True
+        try:
+            medals.put_back(bot)
+        except Stopped as e:
+            if getattr(e, "final", False):
+                raise
+            self.log(_("the usual medals weren't put back: {err}", err=e))
+        except Exception as e:
+            carry_on(e, "putting the usual medals back")
+            self.log(_("the usual medals weren't put back: {err}", err=e))
+
+    def _talents_back(self) -> None:
+        """Character settings, Talents: the usual talents back on when farming ended by itself in a
+        town with a talent master (talents.put_back), after the After farming list. Once a run."""
+        bot = self.bot
+        p: dict[str, Any] = getattr(bot, "p", None) or {}
+        if (getattr(self, "talents_back_done", False) or bot is None or self.walk or not self.ended_by_itself
+                or not self.farmed() or self.stop_event.is_set() or not p.get("farm_talents", False)
+                or not p.get("talents_back", False) or self._dead(bot)):
+            return
+        self.talents_back_done = True
+        # Best effort: talents left as they were are no reason to lose the end of farming (the
+        # after-stop action, the run counted as ended by itself). Only a game gone, or another
+        # character in it, is passed on: the end handles those as it always does.
+        try:
+            talents.put_back(bot)
+        except Stopped as e:
+            if getattr(e, "final", False):
+                raise
+            self.log(_("the usual talents weren't put back: {err}", err=e))
+        except Respawned:
+            self.log(_("the usual talents weren't put back: died on the way"))
+        except Exception as e:
+            carry_on(e, "putting the usual talents back")
+            self.log(_("the usual talents weren't put back: {err}", err=e))
+        finally:
+            self._off_again(bot)
 
     def _before_farming(self) -> None:
         """Run the saved preparation sequence once. An ordinary unchecked failure is logged;
@@ -847,9 +987,10 @@ class Run(threading.Thread):
                 bot.let_go()      # only this run's keys; a `keysup` could drop another controller's
             else:
                 link.send("keysup")
-            if self.muted and app.get("game_speech") != "always" and self.speech_choice != "off":
+            if self.muted and self.speech_mode != "always" and self.speech_choice != "off":
                 link.send("speech on")
-            self.after_stop = app.get("after_stop", "nothing")
+            # a row of a character chain: the chain's end decides (the next character comes in this game)
+            self.after_stop = "nothing" if getattr(self, "in_chain", False) else app.get("after_stop", "nothing")
             if self.ended_by_itself and self.farmed() and self.after_stop in ("close_game", "shutdown"):
                 # the game closes as its own close button does; a shutdown waits for every bot
                 self.log(_("farming is over - closing the game"), speak=True)

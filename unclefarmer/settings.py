@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import glob
 import os
 import shutil
 import threading
@@ -22,7 +23,8 @@ APP_DEFAULTS: dict[str, Any] = {
     "speak": True,            # announce important events through NVDA when it is running
     "last_run": "",           # what was selected to run last time
     "last_runs": {},          # character -> what it ran last ("plan:name"), for several games at once
-    "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never"
+    "game_speech": "running",  # silence the game's own speech: "running" (while a bot runs), "always", "never",
+                               # or "front" (each game talks only while its window is in front)
     "fix_voice": True,        # mend the game's voice message player (off: deep, slow voices come back, as the game has it)
     "other_keys": True,       # keys other programs send (NVDA Remote, a controller mapper) count in the game (off: dropped, as the game has it)
     "results_speak": "end",   # speak a run's results: "end" (once, when it stops) or "never"
@@ -54,7 +56,21 @@ CHARACTER_SPECIFIC_PROFILE_KEYS = frozenset(("scan", "hearth_home", "login_email
 # One per character. Everything the bot needs to know about how YOU play.
 LEVEL_KEEP_MOST = 2_000_000_000   # experience: the most "Stop before the next level" and keep_level take
 
+GAME_SPEECH_MODES = ("running", "always", "never", "front")   # app "game_speech", and a profile's own
+
+
+def game_speech_mode(app: dict[str, Any], profile: dict[str, Any] | None) -> str:
+    """When the game's own speech is muted for this character: its own choice (Character settings,
+    Overview), else the app's (File, Settings, Speech and language)."""
+    own = (profile or {}).get("game_speech") or ""
+    if own in GAME_SPEECH_MODES:
+        return own
+    general = app.get("game_speech", "running")
+    return general if general in GAME_SPEECH_MODES else "running"
+
+
 PROFILE_DEFAULTS: dict[str, Any] = {
+    "game_speech": "",        # this character's own game_speech (GAME_SPEECH_MODES); "": as the app's
     "trigger_sequences": {},   # before/after ordered steps; absent stages keep legacy trigger ticks
     "keyboard_profiles": {},
     "move_keys": {"up": "w", "down": "s", "left": "a", "right": "d"},
@@ -143,6 +159,13 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "walk_diagonal": True,    # walk on the slant across open ground (both direction keys held at once)
     "chase_range": 40,        # on a patrol loop: chase monsters at most this many walking steps away
     "boss_distance": 40,      # steps kept from a boss in sight (engine/bosses.py); 0: no keeping away
+    "boss_leave": True,       # a boss that keeps coming back: leave the map for a while (engine/bosses.py)
+    "boss_walk_offs": 3,      # ...after this many walk-offs from it within 5 minutes (0: at once)
+    "boss_away_first": 60,    # seconds away the first time, doubled while the boss is still there...
+    "boss_away_most": 300,    # ...up to this many seconds
+    "boss_away_farm": True,   # fight on the way out and farm the map waited on (when its monsters are no stronger)
+    "boss_notice_rooms": [],  # chat channels (4 team, 3 gang, 5 international, 0 global) told of each boss seen
+    "boss_notice_text": "",   # the player's own boss notice (%boss%, %map%, %pos%); "": the bot's line, in English
     "open_chests": True,      # farming: walk to a treasure chest that comes into sight and open it (engine/chests.py)
     "skip_demonized_elites": False,   # farming: never pick a "demonized" elite (not a boss) as a target
     "chest_hunt_minutes": 5,  # farming: our map's chest announced -> look for it this long (engine/chesthunt.py); 0: off
@@ -178,6 +201,16 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "speed_beast": "auto",    # fusion beast to travel on: "auto" the fastest Swift one, "none", or its name
     "fight_beast": "none",    # fusion beast to fight as: "none" (most players, for long farms), "auto", or its name
     "pets": [],               # pets in order, [{"name", "use"}]: the first ticked one that is ready comes out
+    # Talents (engine/talents.py): off until the player ticks it - every reset costs 200 arnebia a point.
+    "farm_talents": False,    # put on farm_talent_list at a talent master before a run farms
+    "farm_talent_list": [],   # talent names to have on while farming
+    "talents_back": False,    # ... and usual_talent_list back when the run ends in a town with a talent master
+    "usual_talent_list": [],
+    # Medals (engine/medals.py): off until the player ticks it. Each medal by its id: [{"uid", "name"}].
+    "farm_medals": False,     # wear farm_medal_list (and nothing else) before a run farms
+    "farm_medal_list": [],
+    "medals_back": False,     # ... and usual_medal_list again when the run ends, wherever it ends
+    "usual_medal_list": [],
     "pet_hp_below": "auto",   # pet HP % under which a pet red potion is used ("auto": as soon as one potion's worth is missing)
     "pet_mp_below": "auto",   # the same for the pet's MP and a pet blue potion
     "pet_hp_cooldown": "auto",  # seconds between pet red potions at least ("auto": the potion's own cooldown)
@@ -190,6 +223,13 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "pet_heal_with_skill": True,  # a class with a quick heal (Priest, Sorceress) heals the pet with it
     "pet_heal_below": 85,     # the pet's HP (%) under which it is healed with the skill
     "team_heal": True,        # while following, a class with a quick heal heals teammates with it
+    # following (engine/followopts.py; a script's follow line may override each for one follow)
+    "follow_role": "both",    # "both" help the fights and heal, "heal" heal only (never fight), "attack" never heal
+    "follow_pull": False,     # also attack what comes within follow_pull_range tiles of the player...
+    "follow_pull_range": 10,  # ...before anyone hits it
+    "follow_help_team": True, # help with the team's fights (off: only what attacks us)
+    "follow_distance": 3,     # tiles kept from the player (inside the heal's reach)
+    "follow_skip": "",        # monster names never attacked while following, by commas
     "team_heal_below": 70,    # a teammate's HP (%) under which they are healed
     # Leading a team (Team tab; engine/teamlead.py). Everything off until the player ticks it.
     "team_hunt": False,
@@ -222,6 +262,7 @@ PROFILE_DEFAULTS: dict[str, Any] = {
     "heal_with_skill": True,  # a class with its own quick heal (Healing Wave, Heal) heals with it
     "heal_below": 85,         # HP % under which that heal is cast, in fights and between them
     "heal_potion_below": 50,  # with that heal, red potions only under this HP %
+    "skill_page_one": False,  # use only the skill keys of page 1: never turn to page 2, nothing put there
     "fill_empty_keys": True,  # put the heals, shields, buffs, dispels and items the bot uses on EMPTY keys
     "fill_empty_phrases": True,  # put useful quick phrase codes (/6 /5 /4, /7 for healers) on EMPTY phrase slots
     "teleport_key": "shift+p",   # the game's "teleport to the team leader" key (W_AMOVE): same map, 50 s cooldown
@@ -287,6 +328,7 @@ class AppSettings(BaseModel):
 class Profile(BaseModel):
     """profiles/<character>.json."""
     model_config = ConfigDict(extra="allow")
+    game_speech: str = PROFILE_DEFAULTS["game_speech"]
 
     trigger_sequences: dict[str, Any] = PROFILE_DEFAULTS["trigger_sequences"]
     keyboard_profiles: dict[str, Any] = PROFILE_DEFAULTS["keyboard_profiles"]
@@ -389,6 +431,13 @@ class Profile(BaseModel):
     xp_cards: list[float] | None = PROFILE_DEFAULTS["xp_cards"]
     xp_card_pause: bool = PROFILE_DEFAULTS["xp_card_pause"]
     open_chests: bool = PROFILE_DEFAULTS["open_chests"]
+    boss_leave: bool = PROFILE_DEFAULTS["boss_leave"]
+    boss_walk_offs: int = PROFILE_DEFAULTS["boss_walk_offs"]
+    boss_away_first: int = PROFILE_DEFAULTS["boss_away_first"]
+    boss_away_most: int = PROFILE_DEFAULTS["boss_away_most"]
+    boss_away_farm: bool = PROFILE_DEFAULTS["boss_away_farm"]
+    boss_notice_rooms: list[int] = PROFILE_DEFAULTS["boss_notice_rooms"]
+    boss_notice_text: str = PROFILE_DEFAULTS["boss_notice_text"]
     skip_demonized_elites: bool = PROFILE_DEFAULTS["skip_demonized_elites"]
     skills_by_slot: bool = PROFILE_DEFAULTS["skills_by_slot"]
     menu_keys_retry: bool = PROFILE_DEFAULTS["menu_keys_retry"]
@@ -404,6 +453,14 @@ class Profile(BaseModel):
     speed_beast: str | bool = PROFILE_DEFAULTS["speed_beast"]
     fight_beast: str | bool = PROFILE_DEFAULTS["fight_beast"]
     pets: list[Any] = PROFILE_DEFAULTS["pets"]
+    farm_talents: bool = PROFILE_DEFAULTS["farm_talents"]
+    farm_talent_list: list[str] = PROFILE_DEFAULTS["farm_talent_list"]
+    talents_back: bool = PROFILE_DEFAULTS["talents_back"]
+    usual_talent_list: list[str] = PROFILE_DEFAULTS["usual_talent_list"]
+    farm_medals: bool = PROFILE_DEFAULTS["farm_medals"]
+    farm_medal_list: list[dict[str, Any]] = PROFILE_DEFAULTS["farm_medal_list"]
+    medals_back: bool = PROFILE_DEFAULTS["medals_back"]
+    usual_medal_list: list[dict[str, Any]] = PROFILE_DEFAULTS["usual_medal_list"]
     pet_hp_below: Auto | None = PROFILE_DEFAULTS["pet_hp_below"]
     pet_hp_cooldown: Auto | None = PROFILE_DEFAULTS["pet_hp_cooldown"]
     pet_hp_key: str = PROFILE_DEFAULTS["pet_hp_key"]
@@ -411,6 +468,12 @@ class Profile(BaseModel):
     pet_heal_with_skill: bool = PROFILE_DEFAULTS["pet_heal_with_skill"]
     pet_heal_below: Auto = PROFILE_DEFAULTS["pet_heal_below"]
     team_heal: bool = PROFILE_DEFAULTS["team_heal"]
+    follow_role: str = PROFILE_DEFAULTS["follow_role"]
+    follow_pull: bool = PROFILE_DEFAULTS["follow_pull"]
+    follow_pull_range: int = PROFILE_DEFAULTS["follow_pull_range"]
+    follow_help_team: bool = PROFILE_DEFAULTS["follow_help_team"]
+    follow_distance: int = PROFILE_DEFAULTS["follow_distance"]
+    follow_skip: str = PROFILE_DEFAULTS["follow_skip"]
     team_heal_below: Auto = PROFILE_DEFAULTS["team_heal_below"]
     team_accept: bool = PROFILE_DEFAULTS["team_accept"]
     team_accept_who: str = PROFILE_DEFAULTS["team_accept_who"]
@@ -433,6 +496,7 @@ class Profile(BaseModel):
     heal_below: int = PROFILE_DEFAULTS["heal_below"]
     heal_potion_below: int = PROFILE_DEFAULTS["heal_potion_below"]
     fill_empty_keys: bool = PROFILE_DEFAULTS["fill_empty_keys"]
+    skill_page_one: bool = PROFILE_DEFAULTS["skill_page_one"]
     fill_empty_phrases: bool = PROFILE_DEFAULTS["fill_empty_phrases"]
     teleport_key: str = PROFILE_DEFAULTS["teleport_key"]
     emergency_below: int = PROFILE_DEFAULTS["emergency_below"]
@@ -630,6 +694,7 @@ _PROFILE_ID_KEY = "_unclefarmer_character_identity"
 # What the bot learns lives next to the profiles (entrances, weights, teleports, landings, guards,
 # level tops): never a character, so never in the list of profiles.
 LEARNED_PREFIX = "_learned_"
+PRIVATE_PREFIX = "_"          # every file of the bot's own in the profiles folder (a character's never starts so)
 
 
 def character_profile(name: str, entity_id: object, server: str = "") -> str:
@@ -644,6 +709,42 @@ def character_profile(name: str, entity_id: object, server: str = "") -> str:
         return name
     return name + _PROFILE_ID_SEPARATOR + server + _PROFILE_ID_SEPARATOR + str(entity_id) if server \
         else name + _PROFILE_ID_SEPARATOR + str(entity_id)
+
+
+def live_profile(name: str, entity_id: object, server: str = "") -> str:
+    """The profile key of a character read live from the game.
+
+    The server comes from the game's route (link.server_name); when it can't be read (a port the
+    bot doesn't know, an agent that doesn't answer), the key used to name only the character's id
+    and the bot started from the defaults beside a complete Name--S1--<id>.json (a profiles folder
+    copied to another PC).  So when exactly one profile with a server holds this name and id, it
+    is this character's; with none, or one per server, the id-only key stays (it can't tell them
+    apart).
+    """
+    key = character_profile(name, entity_id, server)
+    if server or not is_character_profile(key):
+        return key
+    labelled = _server_profiles(name, str(entity_id))
+    return labelled[0] if len(labelled) == 1 else key
+
+
+def _server_profiles(name: str, entity_id: str) -> list[str]:
+    """The profile keys with a server saved for this name and id (Name--<server>--<id>.json)."""
+    pattern = glob.escape(paths.safe_name(name)) + "--*--" + glob.escape(paths.safe_name(entity_id)) + ".json"
+    found: list[str] = []
+    for path in glob.glob(os.path.join(glob.escape(paths.PROFILES), pattern)):
+        try:
+            with open(path, encoding="utf-8") as f:
+                data: object = json.load(f)
+        except (OSError, ValueError):
+            continue
+        identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
+        if not isinstance(identity, str):
+            continue
+        got_name, got_server, got_id = _profile_parts(identity)
+        if got_server and got_name == name and got_id == entity_id and identity not in found:
+            found.append(identity)
+    return found
 
 
 def profile_display(character: str) -> str:
@@ -785,14 +886,25 @@ def profiles() -> list[str]:
         if not filename.endswith(".json") or filename.startswith(LEARNED_PREFIX):
             continue                  # (the _learned_*.json files are what the bot learned, not characters)
         path = os.path.join(paths.PROFILES, filename)
+        data: object = None
         try:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             identity: object = data.get(_PROFILE_ID_KEY) if json.is_object(data) else None
         except (OSError, ValueError):
             identity = None
+        if filename.startswith(PRIVATE_PREFIX) and not _a_profile(data):
+            # the bot's own files beside the profiles (the interrupted runs, the game restarts, the
+            # day's chain and purchases): "_game_restarts" showed among the characters to copy from.
+            # A character's name with a sign first ("*Ace" -> "_Ace.json") is still a profile.
+            continue
         found.append(identity if isinstance(identity, str) and identity else filename[:-5])
     return sorted(found, key=lambda value: profile_display(value).casefold())
+
+
+def _a_profile(data: object) -> bool:
+    """A file's JSON is a character's profile: its identity, or the keys every saved profile holds."""
+    return json.is_object(data) and (_PROFILE_ID_KEY in data or "attack_keys" in data or "pk_mode" in data)
 
 
 def _load_profile(character: str) -> tuple[dict[str, Any], str]:

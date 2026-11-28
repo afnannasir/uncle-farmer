@@ -50,7 +50,8 @@ def test_no_boss_and_nothing_near_one_is_a_target() -> None:
 
 class Walker:
     def __init__(self, snap: dict[str, Any], cells: list[tuple[int, int]], map_id: int = 5121) -> None:
-        self.p: dict[str, Any] = {"boss_distance": 40}
+        # (the wait here is the plain one, fighting back only: tests/test_boss_away.py has the farming one)
+        self.p: dict[str, Any] = {"boss_distance": 40, "boss_away_farm": False}
         self.s, self.cells = snap, list(cells)
         self.lines: list[str] = []
         self.walked: list[tuple[float, float]] = []

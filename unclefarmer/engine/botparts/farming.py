@@ -9,12 +9,13 @@ from __future__ import annotations
 import math
 import random
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field as dc_field
 from typing import Any
 
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, teamhunt, teamlead, watchdog, xpcard
+from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, refusals, teamhunt, teamlead, watchdog, xpcard
 from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
@@ -26,6 +27,19 @@ def _near(lo: int, hi: int, at: int, radius: int) -> tuple[int, int]:
     is no reason to stop a run."""
     low, high = max(lo, at - radius), min(hi, at + radius)
     return (lo, hi) if low > high else (low, high)
+
+
+@dataclass
+class _Away:
+    """A wait away from a boss, farming (FarmingMixin.farm_away): the map, where we came onto it, the
+    farm's only and skip names, the map's boss zones, and the most max HP a monster may have."""
+    dest: int
+    came_in: dict[str, Any]
+    only: str | None
+    skip: str | None
+    most_hp: float
+    avoid: list[tuple[float, float, float, float]] = dc_field(default_factory=lambda: [])
+    too_strong: set[str] = dc_field(default_factory=lambda: set[str]())
 
 
 class FarmingMixin(Parts):
@@ -155,6 +169,7 @@ class FarmingMixin(Parts):
         steps = chase or self.p.get("chase_range", 40)
         chase = steps if loop else None
         self.farm_filter = (area, only, skip, avoid)
+        self.farm_top_hp = 0          # what this farm fights, for a wait away from a boss (farm_away)
         if self.timing is None:
             self.timing = {"_since": self.clock.time(), "_kills": self.kills, "_contribution": self.contribution_now()}
         start, start_kills = self.clock.time(), self.kills
@@ -168,6 +183,7 @@ class FarmingMixin(Parts):
                            "it stops for each monster"))
         self.set_modes()
         self.modes_done = True
+        refusals.start(as_bot(self))     # the game's "out of range" sound: stop pressing, take the nearest
 
         def done():
             if minutes and (self.clock.time() - start) / 60.0 >= minutes:
@@ -239,7 +255,8 @@ class FarmingMixin(Parts):
                     continue          # we went to town: the loop travels back first
                 if self._upkeep(map_id, area, only):
                     continue
-                if bosses.keep_away(as_bot(self), snap, map_id, area):
+                bosses.announce(as_bot(self), snap, map_id)     # a boss seen: the rooms the player ticked
+                if bosses.keep_away(as_bot(self), snap, map_id, area, done):
                     continue
                 if self._side_jobs(snap, map_id, area):
                     continue          # a chest opened or looked for, or a request to join our team taken
@@ -283,8 +300,136 @@ class FarmingMixin(Parts):
         if not self.in_instance and mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
             return True
         self.note_pick(snap, mob, mobs)
+        # for farm_away (AWAY_HP): what the farm chose to take on - an elite that attacked us is no
+        # measure of what the wait may pick a fight with
+        if (isinstance(mob.get("maxhp"), (int, float)) and mob["id"] not in self.attackers()
+                and not bosses.is_demonized_elite(mob)):
+            self.farm_top_hp = max(self.farm_top_hp, int(mob["maxhp"]))
         self.fight(mob)
         return True
+
+    # Away from a boss that keeps coming back (bosses.leave_for_a_while, with boss_away_farm): a
+    # player saw the bot walk to the door past every monster, then stand by it doing nothing for
+    # the whole wait, again and again while the boss stayed. It fights on the way and farms the wait.
+    WAY_CHASE = 15          # walking steps: a monster this close to the way to the door is fought
+    WAY_FIGHT_FOR = 120.0   # seconds of fights on the way at most...
+    WAY_FIGHTS = 10         # ...and this many: then straight to the door, the point is to get away
+    AWAY_LEASH = 40         # steps from where we came onto the map waited on: the wait farms within
+    # The map data gives monster levels for few maps, and the game's texts none ("level {d}"): the
+    # wait goes by HP instead - nothing with more max HP than this many times the most of what the
+    # farm fought (farm_top_hp), unless it attacks us. Nothing fought yet: only what attacks us.
+    AWAY_HP = 1.5
+    farm_top_hp: int = 0    # the most max HP among the monsters this farm took on
+
+    def leave_fighting(self, cell: tuple[float, float]) -> str:
+        """The walk to the door away from a boss, stopped for each monster within WAY_CHASE walking
+        steps - the farm's only and skip names kept, none close to a boss (targets) and none while a
+        boss is closer to us than the steps kept from it (bosses.threatened) - and on to the door
+        after each fight. Returns the walk's last result, as walk_to (map_change)."""
+        _area, only, skip, avoid = self.farm_filter or (None, "", "", [])
+        end = self.clock.time() + self.WAY_FIGHT_FOR
+        fights = 0
+
+        def on_the_way(snap: dict[str, Any]) -> list[dict[str, Any]]:
+            if fights >= self.WAY_FIGHTS or self.clock.time() >= end or bosses.threatened(as_bot(self), snap):
+                return []
+            return self.targets(snap, None, only, skip, avoid, limit=self.WAY_CHASE)
+
+        while True:
+            result = self.walk_to(cell, map_change=True, near=lambda _me: bool(on_the_way(self.snap())))
+            if result != "near":
+                return result
+            snap = self.snap()
+            mobs = on_the_way(snap)
+            if not mobs:
+                continue                  # gone already: on to the door
+            mob = self.next_target(snap, mobs)
+            self.note_pick(snap, mob, mobs)
+            fights += 1
+            self.fight(mob)
+
+    def farm_away(self, home: int, seconds: float, done: Callable[[], bool] | None = None) -> None:
+        """The wait away from a boss, farming the map we came onto (bosses.may_farm said it may):
+        within AWAY_LEASH steps of where we came in, so the way back stays short; the farm's only and
+        skip names kept, its boss zones and the bosses in sight kept clear of. As on the farm: kills
+        counted, HP, MP and pets looked after, chests opened, the bag and the sheet read (a trip to
+        town ends the wait - and comes back to the farm from town). Until seconds are up or done()
+        (the farm's own end). In the results, map by map, what it gains counts for this map."""
+        here = self.snap()["self"]
+        _area, only, skip, _avoid = self.farm_filter or (None, "", "", [])
+        away = _Away(dest=self.map_id(), came_in={"x": here["x"], "y": here["y"]}, only=only, skip=skip,
+                     most_hp=self.farm_top_hp * self.AWAY_HP)    # (bosses.leave_for_a_while: never 0 here)
+        away.avoid = [z["rect"] for z in atlas.zones(away.dest, ("boss",))]
+        hers: list[tuple[float, float, float]] = list(getattr(self, "spot_no_go", ()))
+        self.spot_no_go = []          # the farm's own circles are on its own map
+        self.log(_("farming {map} meanwhile, near where we came in", map=atlas.label(away.dest)))
+        tally = getattr(self, "tally", None)
+        if tally is not None:
+            tally.on_map(away.dest)
+        end = self.clock.time() + seconds
+        try:
+            while self.clock.time() < end and not (done is not None and done()):
+                if self.map_id() != away.dest:
+                    return                # died, or moved: the farm loop deals with it
+                if self.bag_check():
+                    self._off_map(home)   # a trip to town: back to the farm from there
+                    return
+                self._away_step(away)
+            self.count_kills()            # the last fight's kill, for this map
+        finally:
+            self.spot_no_go = hers
+            if tally is not None:
+                tally.on_map(home)
+
+    def _away_step(self, away: _Away) -> None:
+        """One look round on the map waited on (farm_away): upkeep, a walk off from a boss of this map
+        that comes close (never another trip: this is one), a chest or a corpse, the next monster near
+        where we came in, else a walk round there."""
+        snap = self.snap()
+        self.count_kills(snap)
+        self.look_after(snap["self"])
+        pets.keep_out(as_bot(self))
+        pets.look_after(as_bot(self), snap)
+        bosses.announce(as_bot(self), snap, away.dest)
+        if bosses.keep_away(as_bot(self), snap, away.dest, None, leave=False):
+            return
+        if chests.open_nearby(as_bot(self), snap) or corpses.harvest(as_bot(self), snap):
+            return
+        mobs = self._away_targets(snap, away)
+        if mobs:
+            mob = self.next_target(snap, mobs)
+            if mob["id"] not in self.attackers() and self.rest_up(snap["self"]):
+                return
+            self.note_pick(snap, mob, mobs)
+            self.fight(mob)
+            return
+        cell = self.random_cell(away.dest, None, away.came_in, radius=self.AWAY_LEASH,
+                                clear_of=bosses.no_go(as_bot(self), snap), keep_out=away.avoid)
+        if cell is None:
+            self.sleep(1.0)
+            return
+        with self.timed("search"):
+            self.walk_to(cell, near=lambda _me: bool(self._away_targets(self.snap(), away)))
+
+    def _away_targets(self, snap: dict[str, Any], away: _Away) -> list[dict[str, Any]]:
+        """What the wait may fight: whatever attacks us; else what is within AWAY_LEASH steps of
+        where we came in and has no more max HP than away.most_hp (each one left alone said once)."""
+        hitting = self.attackers()
+        out: list[dict[str, Any]] = []
+        for m in self.targets(snap, None, away.only, away.skip, away.avoid, limit=self.AWAY_LEASH):
+            if m["id"] in hitting:
+                out.append(m)
+            elif math.hypot(m["x"] - away.came_in["x"], m["y"] - away.came_in["y"]) > self.AWAY_LEASH:
+                continue
+            elif (m.get("maxhp") or 0) > away.most_hp:
+                name = str(m.get("name") or "")
+                if name not in away.too_strong:
+                    away.too_strong.add(name)
+                    self.log(_("leaving {name} alone on {map}: more HP than the monsters of the farm",
+                               name=name, map=atlas.label(away.dest)))
+            else:
+                out.append(m)
+        return out
 
     def _upkeep(self, map_id: int, area: Sequence[float] | None, only: str) -> bool:
         """Between fights: an empty potion key filled, the experience card, the no-kill watchdog.
@@ -504,6 +649,7 @@ class FarmingMixin(Parts):
                    m=max(0, int(got[0] // 60))), speak=True)
         stop = Stopped(_("drop time used up"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def level_goal(self) -> int | None:
@@ -559,6 +705,7 @@ class FarmingMixin(Parts):
         self.log(_("the next level needs only {n} experience - not starting to farm", n=int(need)), speak=True)
         stop = Stopped(_("stopped before the next level"))
         stop.stay = True
+        stop.chain_end = "done"            # nothing more today (Run, Character chain)
         raise stop
 
     def leave_monsters(self) -> None:

@@ -8,13 +8,13 @@ from typing import Any
 
 import wx
 
-from .. import __version__, applog, daily, gameinstall, i18n, paths, updater
+from .. import __version__, applog, daily, gameinstall, i18n, paths, settings, updater
 from ..engine import resume
 from ..i18n import _
 from . import agentfix
 from .common import Dialog, ask, ask_ok, buttons, enable_label, error, group, info, modal, ok_cancel, opens, page, tabs
 
-SPEECH_MODES = ("running", "always", "never")
+SPEECH_MODES = settings.GAME_SPEECH_MODES
 AFTER = ("nothing", "close_game", "shutdown")
 CHECK_UPDATES = wx.ID_HIGHEST + 41      # Updater tab, "Save and check for updates now": the window checks
 
@@ -61,7 +61,8 @@ class SetupDialog(Dialog):
         self.speak = f.check(_("&Speak important events with NVDA"), self.s.get("speak", True))
         mode = self.s.get("game_speech", "running")
         self.game_speech = f.choice(_("&Mute the game's own speech:"),
-                                    [_("While a bot runs in it"), _("Always"), _("Never")],
+                                    [_("While a bot runs in it"), _("Always"), _("Never"),
+                                     _("Whenever its window isn't in front")],
                                     SPEECH_MODES.index(mode) if mode in SPEECH_MODES else 0)
         self.speak_end = f.check(_("Speak the &results when a run ends"), self.s.get("results_speak", "end") == "end")
         self.fix_voice = f.check(_("&Fix the speed of voice messages the game plays by itself"),

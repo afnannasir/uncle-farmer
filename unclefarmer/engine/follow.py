@@ -33,8 +33,8 @@ from typing import TYPE_CHECKING, Any
 from .. import atlas, gamekeys
 from .. import phrases as phrase_book
 from ..clock import clock_for
-from ..i18n import _
-from . import teamheal
+from ..i18n import N_, _
+from . import followopts, teamheal
 from .botparts.base import STOPPING, NoWay, note_failure, snap_map
 from .botparts.parts import Sighting
 
@@ -53,6 +53,7 @@ ASK_EVERY = 3.0       # seconds between two "/6" rounds when they are out of sig
 ASK_PRESSES = 5       # "/6" presses per round: each names the next teammate on the map
 WAIT_LOOK = 2.0       # seconds between two looks while waiting for a way to the player
 WAIT_SAY_AGAIN = 60.0 # seconds: the "waiting here" line is said aloud at most this often
+ROLE_SAID = {"heal": N_("healing only"), "attack": N_("attacking only"), "both": N_("helping and healing")}
 
 
 def find_player(snap: dict[str, Any], name: str):
@@ -100,15 +101,15 @@ def _beside(bot: Bot, p: dict[str, Any]):
     return m.nearest_walkable(x, y, 4) or (x, y)
 
 
-def _walk_up(bot: Bot, name: str, cell: tuple[int, int]) -> str:
-    """Walk towards cell, stopping as soon as the player is within NEAR, or has moved on more than
-    GAP from the cell (walking on to where they were left us trailing behind; the caller aims
-    again at where they are now)."""
+def _walk_up(bot: Bot, name: str, cell: tuple[int, int], near: int = NEAR) -> str:
+    """Walk towards cell, stopping as soon as the player is within near (NEAR, or the distance the
+    player chose), or has moved on more than GAP from the cell (walking on to where they were left
+    us trailing behind; the caller aims again at where they are now)."""
     def close(me: dict[str, Any]):
         p = find_player(bot.snap(), name)
         if p is None:
             return False
-        return _dist(me, p) <= NEAR or math.hypot(p["x"] - cell[0], p["y"] - cell[1]) > GAP
+        return _dist(me, p) <= near or math.hypot(p["x"] - cell[0], p["y"] - cell[1]) > GAP
     return bot.walk_to(cell, near=close)
 
 
@@ -345,11 +346,26 @@ def help_target(bot: Bot, snap: dict[str, Any], p: dict[str, Any]):
     """A monster the team is fighting: within HELP of the player or of a teammate in view, and
     struck by a player, wounded, or attacking us; nearest to the player first. It used to be only
     the player's own wounded monsters, so a follower stood by while the rest of the team fought
-    (players asked why it was so slow)."""
+    (players asked why it was so slow).
+    The player's choices (followopts): a follower that only heals never fights; with help off only
+    what attacks us is fought; with pull, also anything within that many tiles of the player,
+    before anyone hits it; the skip names never."""
+    if followopts.heal_only(bot):
+        return None
     hitting = bot.attackers()
     team = [p] + [m for m in teamheal.mates(bot, snap) if m.get("id") != p.get("id")]
-    mobs = [e for e in bot.targets(snap) if any(_dist(e, t) <= HELP for t in team)
-            and (e["id"] in hitting or e.get("hp", 0) < e.get("maxhp", 0) or _struck(bot, e["id"]))]
+    helps, pull = followopts.helps_team(bot), followopts.pull(bot)
+
+    def theirs(e: dict[str, Any]) -> bool:
+        if e["id"] in hitting:
+            return True
+        if pull is not None and _dist(e, p) <= pull:
+            return True               # (a choice of its own: with the team's fights left alone too)
+        if not helps:
+            return False
+        return (any(_dist(e, t) <= HELP for t in team)
+                and (e.get("hp", 0) < e.get("maxhp", 0) or _struck(bot, e["id"])))
+    mobs = [e for e in bot.targets(snap, skip=followopts.skip(bot)) if theirs(e)]
     return min(mobs, key=lambda e: _dist(e, p)) if mobs else None
 
 
@@ -365,18 +381,26 @@ def _exit_taken(mid: int, seen: tuple[float, float]) -> dict[str, Any] | None:
     return best[1] if best else None
 
 
-def follow(bot: Bot, name: str):
+def follow(bot: Bot, name: str, opts: dict[str, Any] | None = None):
     """Stay with the player until stopped: catch up when they move off, help with their fights,
     and go along when they change map. After LOST seconds without any sign of them, or with no way
-    to them, it waits and teleports to the team leader (_wait_for_leader): only the user stops it."""
+    to them, it waits and teleports to the team leader (_wait_for_leader): only the user stops it.
+    opts: a script line's options for this follow (followopts), before the character's settings."""
     bot.log(_("following {name}", name=name), speak=True)
     # Buffs are held back while following (the leader may not want them, and each one costs a
     # global cooldown and mana); the `buff` message turns them on for this follow.
-    bot.following = name
     try:
+        bot.following = name
+        bot.follow_opts = dict(opts or {})
+        if followopts.role(bot) != "both":
+            bot.log(_("{role} while following", role=_(ROLE_SAID[followopts.role(bot)])))
+        if followopts.heal_only(bot) and teamheal.heal_reach(bot) is None:
+            bot.log(_("healing only while following, but this character has no team heal on a key (or healing "
+                      "teammates is off on the Team tab): it will only follow"), speak=True)
         _follow(bot, name)
     finally:
         bot.following = None
+        bot.follow_opts = {}
 
 
 def _follow(bot: Bot, name: str):
@@ -449,9 +473,10 @@ def _wait_for_leader(bot: Bot, name: str, why: str) -> None:
     told_off = False
     while True:
         bot.check()
-        if bot.attackers():
+        if bot.attackers() and not followopts.heal_only(bot):    # (a healer only: no fight, it waits on)
+            # then on to the teleport and the sleep: one it won't fight (a boss, a skip name) still
+            # hitting us would otherwise make this a loop that never rests
             bot.fight_back()
-            continue
         if bot.map_id() != start_map:
             return
         them = find_player(bot.snap(), name)
@@ -469,6 +494,11 @@ def _wait_for_leader(bot: Bot, name: str, why: str) -> None:
         bot.sleep(WAIT_LOOK)
 
 
+def keep(bot: Bot) -> int:
+    """Tiles kept from the player (followopts.distance: the player's choice, inside the heal's reach)."""
+    return followopts.distance(bot, teamheal.heal_reach(bot))
+
+
 def _keep_up(bot: Bot, name: str, snap: dict[str, Any], me: dict[str, Any], p: dict[str, Any]):
     """The player is in view: help with their fight, else catch up (by the teleport phrase when
     far), else wait a moment."""
@@ -476,10 +506,12 @@ def _keep_up(bot: Bot, name: str, snap: dict[str, Any], me: dict[str, Any], p: d
     if mob:
         bot.fight(mob)
         return
-    if _dist(me, p) > TELEPORT_FROM and teleport(bot, name, p):
+    near = keep(bot)
+    # (never inside the distance the player chose: Shift+P lands us right beside them)
+    if _dist(me, p) > max(TELEPORT_FROM, near + GAP) and teleport(bot, name, p):
         return
-    if _dist(me, p) > GAP:
-        _walk_up(bot, name, _beside(bot, p))
+    if _dist(me, p) > near + (GAP - NEAR):
+        _walk_up(bot, name, _beside(bot, p), near)
         return
     bot.sleep(0.3)
 
