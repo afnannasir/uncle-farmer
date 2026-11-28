@@ -445,7 +445,7 @@ The bot avoids attacking these bosses. It also avoids attacking anything within 
 
 When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
 
-A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. When the game tells the whole server that the boss died (its last words on the news, such as "Fire Lord: Damn... I want to vaporize the person named ..."), the bot says so and goes back at once. The game's line names no map, so a boss of the same name killed elsewhere brings it back early too; if the boss is still there, it leaves again as before. Not every boss may have such a line: for one without, the wait lasts as long as it was. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
 The bot doesn't stand idle meanwhile. On the way to the door it fights the monsters it meets, as long as none is close to a boss (ten fights or two minutes at most, then it walks straight out). On the other side it farms the map, within 40 steps of where it came onto it ("farming central plains (1041) meanwhile, near where we came in"). It only does that where it is safe:
 
@@ -2061,10 +2061,14 @@ All results are saved in the `results` folder, with a separate file for each cha
 
 ## Keyboard shortcuts
 
-Every command of the menus can have its own keys, and each key works either **only in Uncle
-Farmer** or **everywhere, even in the game** (and in any other program). Out of the box the keys are
-the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause work everywhere, the others
-only in Uncle Farmer.
+Every command of the menus can have its own keys, and each key works **only in Uncle Farmer**, **in
+Uncle Farmer and in the games only**, or **everywhere, even in the game** (and in any other program).
+Out of the box the keys are the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause
+work everywhere, the others only in Uncle Farmer.
+
+**In Uncle Farmer and in the games only** works in the bot's windows and in the windows of the games
+in its Games list, and nowhere else: in your browser or any other program the key does what it
+always did. In a game, the key no longer reaches the game, as with a key that works everywhere.
 
 Change them in **File, Keyboard shortcuts**. The list holds every action, with its keys and where
 they work. Select one, type its keys in **Keys** (for example `Ctrl+Shift+R`, `F7` or `Shift+Pause`;
@@ -2079,9 +2083,11 @@ an action, for players who prefer a file:
 
     run_toggle = Pause = global
     game_mute = Ctrl+M = inapp
-    game_next = none = global
+    game_next = F11 = games
+    game_show = none = global
 
-`global` works everywhere, `inapp` only in Uncle Farmer, and `none` means no key. **Open the file**
+`global` works everywhere, `games` in Uncle Farmer and in the games only, `inapp` only in Uncle
+Farmer, and `none` means no key. **Open the file**
 opens it in your editor; after editing it, **Read the file again** brings it into the window (or
 restart Uncle Farmer). A line that can't be used is said in the Log tab when Uncle Farmer starts, and
 that action keeps its default.

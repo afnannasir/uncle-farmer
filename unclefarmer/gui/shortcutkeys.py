@@ -14,7 +14,7 @@ from .. import shortcuts
 from ..i18n import _
 from .common import Dialog, Form, buttons, error, first_selected, labeled, ok_cancel, select_row
 
-WHERE = (shortcuts.EVERYWHERE, shortcuts.IN_APP)
+WHERE = shortcuts.WHERE
 
 
 class ShortcutsDialog(Dialog):
@@ -120,6 +120,9 @@ class ShortcutsDialog(Dialog):
             return _("Works everywhere: while Uncle Farmer runs, {keys} no longer reaches the game, NVDA or any "
                      "other program. A key no program uses is best, such as Pause or a key from F7 to F12 with "
                      "Ctrl or Shift.", keys=keys)
+        if self.table[action_id].where == shortcuts.IN_GAMES:
+            return _("Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no "
+                     "longer reaches the game. In any other program, {keys} does what it always did.", keys=keys)
         return _("Works while an Uncle Farmer window is in front.")
 
     def keys_of(self, action_id: str) -> str:

@@ -15,11 +15,17 @@ walks off when one comes within boss_distance steps (0: off). A boss that keeps 
 (boss_walk_offs walk-offs in five minutes, 3 unless the player chose otherwise, or nowhere further
 off to go) is left behind for a while, unless boss_leave is off: out through a door far from it, a
 wait on the other side (boss_away_first seconds, doubled each time it is still there on the way
-back, up to boss_away_most), and back to farming. With boss_away_farm the bot fights what it meets
-on the way to the door and farms the map it waits on, near where it came onto it - a field or a road
+back, up to boss_away_most), and back to farming - at once when the game says the boss is dead.
+With boss_away_farm the bot fights what it meets on the way to the door and farms the map it waits on, near where it came onto it - a field or a road
 whose monsters are no stronger than those of the farm: none with more HP than the farm's (by half
 again), and not the map at all when the map data says its monsters are stronger. A wait used to be
 a long stand by the door, doing nothing but fighting back.
+
+A boss's death is said to the whole server, on the game's news channel, in the boss's own last words:
+"Whale Monster Bigger: Damn <player> doesn't even let go of rare and protected animals!", "Fire Lord:
+Damn... I want to vaporize the person named <player>!" (seen in game; the game's language files have a few). The
+line names no map, so it is taken for the boss we left by its name alone; one of the same name dead
+elsewhere only brings us back early, where the boss still there is left again as before.
 
 With boss_notice_rooms, each boss that comes into sight is told to the chat rooms the player ticked
 (team, gang, international, global), in English: its name, the map and where (announce) - or in the
@@ -62,6 +68,8 @@ AWAY_RESET = 900.0     # back from a wait longer ago than this: the next wait st
 LEAVE_KINDS = ("field", "transit", "town")   # maps a door may take us to for the wait
 FARM_KINDS = ("field", "transit")            # ...and those of them the wait may farm
 DOOR_DETOUR = 60.0     # steps further a door to a map we may farm may be than the nearest door
+DEATH_CHANNEL = 34     # the game's news channel, which says a boss's death (death_news)
+NEWS_EVERY = 3.0       # seconds between looks at the news during a wait away
 
 
 def _from_texts(path: str) -> dict[str, int]:
@@ -450,10 +458,14 @@ def leave_for_a_while(bot: Bot, map_id: int, boss: dict[str, Any], keep: float,
         return False
     bot.__dict__["boss_wait"] = wait
     bot.__dict__["boss_flees"] = []
+    dead = death_news(bot, str(boss.get("name") or ""))
+
+    def over() -> bool:
+        return (done is not None and done()) or dead()
     try:
         # (on the map the door leads to: a travel that ended elsewhere waits there, unfarmed)
         if farm and bot.map_id() == dest and may_farm(bot, dest, map_id) and getattr(bot, "farm_top_hp", 0):
-            bot.farm_away(map_id, wait, done)
+            bot.farm_away(map_id, wait, over)
         else:
             if farm and not may_farm(bot, dest, map_id):
                 bot.log(_("not farming {map} meanwhile: it is a town, or the map data says its monsters are "
@@ -461,17 +473,62 @@ def leave_for_a_while(bot: Bot, map_id: int, boss: dict[str, Any], keep: float,
             elif farm and bot.map_id() == dest:
                 bot.log(_("not farming {map} meanwhile: nothing fought on the farm yet to judge its "
                           "monsters by", map=atlas.label(dest)))
-            _stand_by(bot, wait, done)
+            _stand_by(bot, wait, over)
     finally:
         bot.__dict__["boss_back_at"] = bot.clock.time()
     if done is not None and done():
         return True                   # the farm is over: its own end takes it from here
+    if dead.heard:
+        bot.log(_("the game says {boss} is dead: back to the farm without waiting any longer", boss=boss["name"]),
+                speak=True)
     if bot.map_id() != map_id:        # (a trip to town during the wait came back already)
         bot.log(_("back to {map}", map=atlas.label(map_id)))
         with bot.timed("search"):
             bot.travel(map_id)
     bot.set_modes()
     return True
+
+
+class _DeathNews:
+    """Called during a wait away: True once the game's news has said this boss died, since the wait
+    began. The chat is read every NEWS_EVERY seconds at most; an agent without the chat, or one that
+    doesn't answer for a moment, only leaves the wait as long as it was."""
+
+    def __init__(self, bot: Bot, boss: str) -> None:
+        self.bot, self.heard = bot, False
+        name = boss.strip()
+        self.said = re.compile(r"^\s*%s\s*:\s*damn\b" % re.escape(name), re.I) if name else None
+        self.mark: int | None = None
+        self.looked = bot.clock.time()
+        if self.said is not None:
+            self._read()              # only what is said from now on
+
+    def _read(self) -> list[dict[str, Any]]:
+        """The news since the last read; none the first time (it only sets where to read from)."""
+        try:
+            got = self.bot.a.json("chat %d" % (self.mark or 0))
+        except Exception:             # no chat in this agent, a game busy for a moment: never a crash
+            return []
+        first = self.mark is None
+        self.mark = int(got.get("last") or self.mark or 0)
+        return [] if first else list(got.get("chat") or [])
+
+    def __call__(self) -> bool:
+        if self.heard or self.said is None:
+            return self.heard
+        now = self.bot.clock.time()
+        if now - self.looked < NEWS_EVERY:
+            return False
+        self.looked = now
+        for line in self._read():
+            if (line.get("channel") == DEATH_CHANNEL and not line.get("name")
+                    and self.said.search(str(line.get("text") or ""))):
+                self.heard = True
+        return self.heard
+
+
+def death_news(bot: Bot, boss: str) -> _DeathNews:
+    return _DeathNews(bot, boss)
 
 
 def _stand_by(bot: Bot, wait: float, done: Callable[[], bool] | None) -> None:

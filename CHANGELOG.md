@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+**Keyboard shortcuts: the next game goes round from inside a game, and keys for the games only**
+(untested in game)
+
+- From inside a game, Select the next game (or the previous one) now goes round the list as it does
+  in the bot's window. It used to start again from the game in front each time, so it always gave
+  the same other game. Speak the selected game's status and Bring the selected game to the front
+  now keep the game just selected too. Start or stop the bot still acts on the game in front.
+- A third choice for where a key works: in Uncle Farmer and in the games only (`games` in
+  `shortcuts.txt`). The key is held only while one of the games of the Games list is in front, so in
+  any other program it does what it always did.
+
+**Bosses: back to the farm as soon as the game says the boss died** (untested in game)
+
+- During the wait away from a boss that keeps coming back, the bot reads the game's news. When the
+  boss's last words come (the game tells the whole server, for example "Fire Lord: Damn... I want to
+  vaporize the person named ..."), it says so and goes back to the farm at once instead of waiting
+  out the minutes. The line names no map, so it goes by the boss's name: one of the same name dead
+  elsewhere brings it back early, and it leaves again if the boss is still there.
+
 **Market: a lot chosen by its listing command, and no purchase made blind after an unsure one** (untested in game)
 
 - A lot is chosen by its listing command, looked up in the menu at the moment of choosing: the

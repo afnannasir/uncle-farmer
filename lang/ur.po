@@ -6230,6 +6230,11 @@ msgstr ""
 msgid "Works while an Uncle Farmer window is in front."
 msgstr "Jab Uncle Farmer ki koi window saamne ho tab chalti hai."
 
+msgid ""
+"Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no longer reaches the game. In any other program, {keys} does what it always did."
+msgstr ""
+"Jab Uncle Farmer ki koi window ya koi game saamne ho tab chalta hai: game mein {keys} game tak nahin pahunchti. Kisi aur program mein {keys} wahi karti hai jo hamesha karti thi."
+
 msgid "Worst hit received: {hit}"
 msgstr "Sab se bura mila hit: {hit}"
 
@@ -7383,6 +7388,11 @@ msgstr "game ki memory: {limit} MB mein se {used} MB istemal mein"
 msgid "game {pid}"
 msgstr "game {pid}"
 
+msgid ""
+"games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any other program the key does what it always did."
+msgstr ""
+"games Uncle Farmer ki windows aur games ki windows mein chalta hai, aur kahin nahin: kisi aur program mein key wahi karti hai jo hamesha karti thi."
+
 msgid "gang construction"
 msgstr "gang ki tameer"
 
@@ -7566,6 +7576,9 @@ msgstr "kitne? count=<n> likhein"
 
 msgid "hunting bounties: {list}"
 msgstr "hunting bounties: {list}"
+
+msgid "in Uncle Farmer and in the games only"
+msgstr "sirf Uncle Farmer aur games mein"
 
 msgid "in a no-go circle of this farming spot"
 msgstr "is farming spot ke no-go circle mein"
@@ -8886,8 +8899,8 @@ msgid ""
 msgstr ""
 "shortcuts.txt line {n}: {name} line {first} par bhi hai; yeh line maani jaati hai."
 
-msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
-msgstr "shortcuts.txt line {n}: {where} na global hai na inapp."
+msgid "shortcuts.txt line {n}: {where} isn't global, games or inapp."
+msgstr "shortcuts.txt line {n}: {where} na global hai, na games, na inapp."
 
 msgid "shortcuts.txt line {n}: {why}"
 msgstr "shortcuts.txt line {n}: {why}"
@@ -9598,6 +9611,11 @@ msgstr ""
 
 msgid "the game says today's collection items are all bought"
 msgstr "game kehta hai aaj ke collection items sab khareede ja chuke"
+
+msgid ""
+"the game says {boss} is dead: back to the farm without waiting any longer"
+msgstr ""
+"game keh raha hai {boss} mar gaya: mazeed intezar ke baghair farm par wapas"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
@@ -11512,6 +11530,9 @@ msgstr "{w} bar {h} tiles, {n} exits."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol random, full, quick ya short hai"
+
+#~ msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+#~ msgstr "shortcuts.txt line {n}: {where} na global hai na inapp."
 
 #~ msgid "the Potion Maker is done{fused}"
 #~ msgstr "Potion Maker mukammal{fused}"

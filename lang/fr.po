@@ -6275,6 +6275,11 @@ msgstr ""
 msgid "Works while an Uncle Farmer window is in front."
 msgstr "Fonctionne quand une fenêtre d'Uncle Farmer est au premier plan."
 
+msgid ""
+"Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no longer reaches the game. In any other program, {keys} does what it always did."
+msgstr ""
+"Fonctionne quand une fenêtre d'Uncle Farmer ou l'un des jeux est au premier plan : dans un jeu, {keys} n'atteint plus le jeu. Dans tout autre programme, {keys} fait ce qu'elle a toujours fait."
+
 msgid "Worst hit received: {hit}"
 msgstr "Pire coup reçu : {hit}"
 
@@ -7430,6 +7435,11 @@ msgstr "mémoire du jeu : {used} Mo utilisés sur {limit}"
 msgid "game {pid}"
 msgstr "jeu {pid}"
 
+msgid ""
+"games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any other program the key does what it always did."
+msgstr ""
+"games fonctionne dans les fenêtres d'Uncle Farmer et dans celles des jeux, et nulle part ailleurs : dans tout autre programme, la touche fait ce qu'elle a toujours fait."
+
 msgid "gang construction"
 msgstr "construction du gang"
 
@@ -7612,6 +7622,9 @@ msgstr "combien ? écrivez count=<n>"
 
 msgid "hunting bounties: {list}"
 msgstr "primes de chasse : {list}"
+
+msgid "in Uncle Farmer and in the games only"
+msgstr "dans Uncle Farmer et dans les jeux seulement"
 
 msgid "in a no-go circle of this farming spot"
 msgstr "dans un cercle interdit de ce spot de farming"
@@ -8933,8 +8946,8 @@ msgid ""
 msgstr ""
 "shortcuts.txt ligne {n} : {name} est aussi à la ligne {first} ; c'est cette ligne qui compte."
 
-msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
-msgstr "shortcuts.txt ligne {n} : {where} n'est ni global ni inapp."
+msgid "shortcuts.txt line {n}: {where} isn't global, games or inapp."
+msgstr "shortcuts.txt ligne {n} : {where} n'est ni global, ni games, ni inapp."
 
 msgid "shortcuts.txt line {n}: {why}"
 msgstr "shortcuts.txt ligne {n} : {why}"
@@ -9650,6 +9663,10 @@ msgstr ""
 
 msgid "the game says today's collection items are all bought"
 msgstr "le jeu dit que les objets de collection du jour sont tous achetés"
+
+msgid ""
+"the game says {boss} is dead: back to the farm without waiting any longer"
+msgstr "le jeu dit que {boss} est mort : retour au farm sans attendre davantage"
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr "le jeu semble figé : rien n'y bouge plus - il est rouvert"
@@ -11530,6 +11547,9 @@ msgstr "{w} sur {h} cases, {n} sorties."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol vaut random, full, quick ou short"
+
+#~ msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+#~ msgstr "shortcuts.txt ligne {n} : {where} n'est ni global ni inapp."
 
 #~ msgid "the game said nothing - look in the bag"
 #~ msgstr "le jeu n'a rien dit - vérifiez le sac"

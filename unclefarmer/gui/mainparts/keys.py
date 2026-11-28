@@ -4,7 +4,14 @@ previous game, its status, its window.
 
 A key that works from anywhere acts on the game in front when that is one of ours: the Games list
 selects it first, so the next key (and the bot's own window) go on with the same game. From any other
-program it acts on the game selected in the list. A command that opens a window brings Uncle Farmer
+program it acts on the game selected in the list. The commands about the selected game (the next or
+the previous one, its status, its window) leave the selection alone: from inside a game, the next
+game, then the next again, goes round the list as it does in the bot's window (a player found the
+next one always came back to the game in front).
+
+A key that works in the games only (IN_GAMES) is an accelerator in the bot's window and a hotkey held
+only while one of our games is in front (follow_front_keys, four times a second): in any other
+program the key does what it always did. A command that opens a window brings Uncle Farmer
 to the front first, and waits while one of its windows is open (a hotkey still reaches the main
 window behind a modal one).
 """
@@ -26,6 +33,7 @@ from .base import FrameParts, foreground_pid
 
 Handler = Callable[[Any], object]
 HOTKEY_BASE = 0xBF01            # Pause and Shift+Pause kept their old ids (the first two actions)
+SELECTED_GAME = ("game_next", "game_previous", "game_status", "game_show")   # about the selected game
 MOD_NOREPEAT = 0x4000
 SW_RESTORE = 9
 
@@ -39,7 +47,7 @@ def install_accelerators(frame: Any) -> None:
     entries: list[wx.AcceleratorEntry] = []
     for a in shortcuts.ACTIONS:
         s = table[a.id]
-        here = s.where == shortcuts.IN_APP or a.id in refused
+        here = s.where in (shortcuts.IN_APP, shortcuts.IN_GAMES) or a.id in refused
         if not s.keys or not here or a.id not in frame.action_handlers:
             continue
         entry = wx.AcceleratorEntry()
@@ -93,6 +101,9 @@ class KeysMixin(FrameParts):
     action_ids: dict[str, int]               # action id -> its command id (a menu item's, or its own)
     menu_bases: dict[str, tuple[wx.MenuItem, str]]   # action id -> its menu item and label without keys
     hotkeys_refused: set[str]                # actions whose everywhere keys another program holds
+    game_hotkeys: list[int]                  # the hotkeys held while a game is in front (IN_GAMES)
+    game_keys_on: bool
+    game_keys_refused: set[tuple[str, str]]  # (action, keys) another program held: said once
 
     def load_shortcuts(self) -> None:
         """The player's shortcuts. What their file holds that can't be used goes into the log, said
@@ -117,6 +128,7 @@ class KeysMixin(FrameParts):
             self.UnregisterHotKey(hotkey)
             self.Unbind(wx.EVT_HOTKEY, id=hotkey)
         self.hotkeys = []
+        self.game_hotkeys, self.game_keys_on = [], False    # held again at the next look at the front
         before: set[str] = getattr(self, "hotkeys_refused", set())
         self.hotkeys_refused = set()
         wanted = 0
@@ -138,6 +150,54 @@ class KeysMixin(FrameParts):
         applog.bootup.note("hotkeys held: %d of %d" % (len(self.hotkeys), wanted))
         if self.hotkeys_refused != before:
             install_accelerators(self)          # a refused key works in the bot at least
+
+    def follow_front_keys(self, front: int | None) -> None:
+        """The keys that work in the games only: held as hotkeys while one of our games is in front,
+        let go otherwise (in the bot's own window they are its accelerators). Called with the window
+        in front four times a second; only a change is acted on."""
+        if self.destroyed:
+            return
+        want = front is not None and any(g[0] == front for g in self.games)
+        if want == getattr(self, "game_keys_on", False):
+            return
+        self.game_keys_on = want
+        if want:
+            self.hold_game_keys()
+        else:
+            self.drop_game_keys()
+
+    def hold_game_keys(self) -> None:
+        """A hotkey for each action that works in the games only. A key another program holds is said
+        once in the log (it still works in the bot's window)."""
+        from ... import applog
+        held: list[int] = getattr(self, "game_hotkeys", None) or []
+        refused: set[tuple[str, str]] = getattr(self, "game_keys_refused", None) or set()
+        self.game_keys_refused = refused
+        for i, a in enumerate(shortcuts.ACTIONS):
+            s = self.shortcut_table[a.id]
+            if not s.keys or s.where != shortcuts.IN_GAMES:
+                continue
+            hid = HOTKEY_BASE + i
+            mods, vk = shortcuts.hotkey(s.keys)
+            if self.RegisterHotKey(hid, mods | MOD_NOREPEAT, vk):
+                held.append(hid)
+                self.hotkeys.append(hid)
+                self.Bind(wx.EVT_HOTKEY, lambda e, act=a.id: self.on_hotkey(act), id=hid)
+            elif (a.id, s.keys) not in refused:
+                refused.add((a.id, s.keys))
+                applog.bootup.problem("%s is taken by another program: %s works only in the bot" % (s.keys, a.id))
+                self._append(_("Another program is using {keys}, so {action} works only in Uncle Farmer.",
+                               keys=s.keys, action=shortcuts.label(a)), False)
+        self.game_hotkeys = held
+
+    def drop_game_keys(self) -> None:
+        held: list[int] = getattr(self, "game_hotkeys", None) or []
+        for hotkey in held:
+            self.UnregisterHotKey(hotkey)
+            self.Unbind(wx.EVT_HOTKEY, id=hotkey)
+            if hotkey in self.hotkeys:
+                self.hotkeys.remove(hotkey)
+        self.game_hotkeys = []
 
     def apply_shortcuts(self, table: shortcuts.Table) -> None:
         """New shortcuts, at once: the menus' labels, the accelerators and the hotkeys."""
@@ -165,8 +225,10 @@ class KeysMixin(FrameParts):
             speech.speak(_("Close the open Uncle Farmer window first."))
             return
         front = foreground_pid()
-        # not while a window of ours is open: it may be about the selected game (Keyboard Manager)
-        if not modal and front is not None and front != self.selected_pid() and any(g[0] == front for g in self.games):
+        # not while a window of ours is open: it may be about the selected game (Keyboard Manager); not
+        # for the commands about the selected game, so that the next game, then the next, goes round
+        if (not modal and action_id not in SELECTED_GAME and front is not None and front != self.selected_pid()
+                and any(g[0] == front for g in self.games)):
             self.select_game(front)
         if not action.quiet:
             if self.IsIconized():

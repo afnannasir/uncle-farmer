@@ -105,7 +105,7 @@ def test_lines_that_can_t_be_used_are_said_and_the_rest_still_counts() -> None:
     assert table["run_stop"].keys == "Shift+F5" and table["run_pause"].keys == "F6" and table["run_walk"].keys == "Ctrl+W"
     assert [p.split(":")[0] for p in problems] == ["shortcuts.txt line 3", "shortcuts.txt line 4",
                                                    "shortcuts.txt line 5", "shortcuts.txt line 6"]
-    assert "no action called bogus" in problems[0] and "sideways isn't global or inapp" in problems[1]
+    assert "no action called bogus" in problems[0] and "sideways isn't global, games or inapp" in problems[1]
 
 
 def test_none_takes_a_key_away() -> None:

@@ -6128,6 +6128,10 @@ msgstr ""
 msgid "Works while an Uncle Farmer window is in front."
 msgstr "Bir Uncle Farmer penceresi öndeyken çalışır."
 
+msgid ""
+"Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no longer reaches the game. In any other program, {keys} does what it always did."
+msgstr ""
+
 msgid "Worst hit received: {hit}"
 msgstr "Alınan en kötü vuruş: {hit}"
 
@@ -7250,6 +7254,10 @@ msgstr "oyun belleği: {limit} MB'nin {used} MB'si kullanımda"
 msgid "game {pid}"
 msgstr "oyun {pid}"
 
+msgid ""
+"games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any other program the key does what it always did."
+msgstr ""
+
 msgid "gang construction"
 msgstr "çete inşaatı"
 
@@ -7430,6 +7438,9 @@ msgid "how many? write count=<n>"
 msgstr ""
 
 msgid "hunting bounties: {list}"
+msgstr ""
+
+msgid "in Uncle Farmer and in the games only"
 msgstr ""
 
 msgid "in a no-go circle of this farming spot"
@@ -8719,8 +8730,8 @@ msgid ""
 msgstr ""
 "shortcuts.txt satır {n}: {name} {first}. satırda da var; bu satır geçerli."
 
-msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
-msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
+msgid "shortcuts.txt line {n}: {where} isn't global, games or inapp."
+msgstr ""
 
 msgid "shortcuts.txt line {n}: {why}"
 msgstr "shortcuts.txt satır {n}: {why}"
@@ -9417,6 +9428,10 @@ msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
 
 msgid "the game says today's collection items are all bought"
 msgstr "oyun bugünün koleksiyon eşyalarının hepsinin alındığını söylüyor"
+
+msgid ""
+"the game says {boss} is dead: back to the farm without waiting any longer"
+msgstr ""
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
@@ -11275,6 +11290,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol için random, full, quick ya da short yaz"
+
+#~ msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+#~ msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
 
 #~ msgid "the game said nothing about {item} - look in the bag"
 #~ msgstr "oyun {item} için hiçbir şey demedi - çantaya bak"
