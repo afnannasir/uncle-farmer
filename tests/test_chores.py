@@ -491,6 +491,45 @@ def test_a_second_page_of_highlands_is_read(world: type[Game]) -> None:
     assert repairs == [(41, TURRET), (41, WALL)]
 
 
+def test_a_highland_taken_from_another_gang_counts_only_when_asked(world: type[Game]) -> None:
+    """Occupied Highlands names a taken highland after the gang it was taken from (read live)."""
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    assert chores.next_highland(as_bot(g), {38}) is None
+    assert chores.next_highland(as_bot(g), {38}, taken=True) == 208
+    assert g.chosen[-1] == "Simgang Gang's Highland 208"
+
+
+def test_the_whole_list_is_told_only_when_its_last_page_was_read(world: type[Game]) -> None:
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 41: {TURRET: 90.0, WALL: 90.0}})
+    whole: set[int] = set()
+    assert chores.next_highland(as_bot(g), set(), whole=whole) == 38
+    assert whole == {38, 41}                               # one page: every highland is known
+
+
+def test_a_list_of_two_pages_is_whole_only_from_its_last_page(world: type[Game]) -> None:
+    g, _repairs = highland_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 41: {TURRET: 90.0, WALL: 90.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("next page: 2", "more")]
+    g.pages["more"] = [pages[1]]
+    whole: set[int] = {99}
+    assert chores.next_highland(as_bot(g), set(), whole=whole) == 38
+    assert whole == set()                                  # page 2 unread: not known yet
+    g.mid, g.view = INNER, list(g.hall_view)
+    assert chores.next_highland(as_bot(g), {38}, whole=whole) == 41
+    assert whole == {38, 41}
+
+def test_repairs_leave_highlands_taken_from_other_gangs_alone(world: type[Game]) -> None:
+    g, repairs = highland_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    chores.run(as_bot(g), cfg(construction=2))
+    assert all(n != 208 for n, _name in repairs)
+
 def test_repairs_already_made_today_count_and_end_the_trip(world: type[Game]) -> None:
     extra: Pages = {TURRET: [("You've repaired the crystal turret today", None)],
                     WALL: [("You've repaired the Wall barricade today", None)]}
@@ -1072,3 +1111,41 @@ def test_due_lists_only_switched_on_chores_not_done(tmp_path: Path, monkeypatch:
     cfg = dict(chores.DEFAULTS, bank=True, feed=True, donation="off")
     chores.mark("Hero", "bank", "done")
     assert chores.due("Hero", cfg) == ["feed"]
+
+
+# ---------------------------------------------------------------- repairs: no last trip, taken highlands
+def taken_game(world: type[Game], levels: dict[int, dict[str, float]]) -> tuple[Game, list[tuple[int, str]]]:
+    """Highland 38 our own; 208 one the gang took from another gang (listed under that gang's name)."""
+    g, repairs = highland_game(world, levels)
+    pages = g.pages["occupied"]
+    assert isinstance(pages, list)
+    g.pages["occupied"] = [pages[0], ("Simgang Gang's Highland 208", pages[1][1])]
+    return g, repairs
+
+
+def test_after_the_last_highland_the_list_is_not_opened_again(world: type[Game]) -> None:
+    """Only the wall of the last highland needs it: repaired, then on to the camps without another look."""
+    g, repairs = highland_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 41: {TURRET: 100.0, WALL: 80.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_cannon=False, build_supply=False, build_posts=False))
+    assert repairs == [(41, WALL), (38, TURRET)]        # the second build goes to a turret at 100%, last
+    # under 100%: the list for 38, then for 41, and no third look; at 100%: once more, for 38
+    assert g.chosen.count("Occupied Highlands") == 3
+
+
+@pytest.mark.parametrize("taken,want", [(False, [(38, TURRET), (38, WALL)]), (True, [(208, TURRET), (208, WALL)])])
+def test_highlands_taken_from_other_gangs_are_repaired_only_when_ticked(
+        world: type[Game], taken: bool, want: list[tuple[int, str]]) -> None:
+    g, repairs = taken_game(world, {38: {TURRET: 100.0, WALL: 100.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_cannon=False, build_supply=False, build_posts=False,
+                              build_taken_highlands=taken))
+    assert repairs == want                 # unticked: 208 unseen, so the builds go to 38 at 100%
+
+
+def test_taken_highlands_need_the_highlands_ticked_too(world: type[Game]) -> None:
+    g, repairs = taken_game(world, {38: {TURRET: 90.0, WALL: 90.0}, 208: {TURRET: 50.0, WALL: 60.0}})
+    chores.run(as_bot(g), cfg(construction=2, build_highlands=False, build_taken_highlands=True))
+    assert repairs == [] and "Occupied Highlands" not in g.chosen
+
+
+def test_repairing_taken_highlands_is_off_by_default() -> None:
+    assert chores.DEFAULTS["build_taken_highlands"] is False

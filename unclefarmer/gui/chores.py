@@ -63,10 +63,11 @@ class ChoresDialog(Dialog):
         f = group(panel, box, _("Inner hall"))
         self.donation = f.choice(_("&Donation, once a day:"), donation_names(),
                                  DONATIONS.index(c["donation"]) if c["donation"] in DONATIONS else 0)
-        self.construction = f.number(_("&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"),
+        self.construction = f.number(_("Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"),
                                      min(int(c["construction"] or 0), 2), 0, 2)
         self.build_highlands = f.check(_("Repair our gang's &highlands (first what is under 100%, what is at 100% last)"),
                                        c["build_highlands"])
+        self.build_taken = f.check(_("Also repair highlands taken from other &gangs"), c["build_taken_highlands"])
         self.build_cannon = f.check(_("Build the Magic Ca&nnon under construction"), c["build_cannon"])
         self.build_supply = f.check(_("Build the S&upply Camp under construction"), c["build_supply"])
         self.build_posts = f.check(_("Build at the East and West &posts"), c["build_posts"])
@@ -129,7 +130,8 @@ class ChoresDialog(Dialog):
                         pet_rebirth=self.rebirth.GetValue(), pet=pet, rebirths=self.rebirths.GetValue(),
                         donation=DONATIONS[self.donation.GetSelection()],
                         construction=self.construction.GetValue(),
-                        build_highlands=self.build_highlands.GetValue(), build_cannon=self.build_cannon.GetValue(),
+                        build_highlands=self.build_highlands.GetValue(),
+                        build_taken_highlands=self.build_taken.GetValue(), build_cannon=self.build_cannon.GetValue(),
                         build_supply=self.build_supply.GetValue(), build_posts=self.build_posts.GetValue(),
                         feed=self.feed.GetValue(), contribution_chests=self.chests.GetValue(),
                         chest_count=self.chest_count.GetValue(),
@@ -212,6 +214,13 @@ class ConstructionScanDialog(Dialog):
         self.per_line = form.check(_("Put each highland on its own &line (gang announcement only)"),
                                    settings.load_app().get("construction_lines", False))
         self.per_line.Bind(wx.EVT_CHECKBOX, self.on_per_line)
+        app = settings.load_app()
+        self.taken = form.check(_("Include highlands taken from other &gangs"), app.get("construction_taken", False))
+        self.taken.Bind(wx.EVT_CHECKBOX, self.on_taken)
+        self.publish_after = form.check(_("Publish when the scan &finishes, without asking"),
+                                        app.get("construction_publish", False))
+        self.publish_after.Bind(wx.EVT_CHECKBOX, self.on_publish_after)
+        self.publish_after.Enable(can_act)
         root.Add(form.grid, 0, wx.LEFT | wx.RIGHT, 12)
         if not can_act:
             root.Add(wx.StaticText(self, label=_("To scan or publish, log in to the character in the game and stop "
@@ -231,10 +240,22 @@ class ConstructionScanDialog(Dialog):
         self.SetSizerAndFit(root)
 
     def on_scan(self, _event: wx.CommandEvent) -> None:
+        self.kind = PUBLISH_KINDS[self.where.GetSelection()]
         self.EndModal(SCAN_CONSTRUCTIONS)
+
+    def scan_command(self) -> str:
+        """The script line a scan runs: it publishes as chosen when it ends, if ticked (as a schedule does:
+        not when everything is at 100% or nothing changed)."""
+        return "construction_scan auto=%s" % self.kind if self.publish_after.GetValue() else "construction_scan"
 
     def on_per_line(self, _event: wx.CommandEvent) -> None:
         save_file(self, settings.update_app, {"construction_lines": self.per_line.GetValue()})
+
+    def on_taken(self, _event: wx.CommandEvent) -> None:
+        save_file(self, settings.update_app, {"construction_taken": self.taken.GetValue()})
+
+    def on_publish_after(self, _event: wx.CommandEvent) -> None:
+        save_file(self, settings.update_app, {"construction_publish": self.publish_after.GetValue()})
 
     def report_text(self, announcement: bool = True) -> str:
         """The report as it would go out: a line to a place when ticked (and it is an announcement)."""

@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+**Construction scanner: highlands taken from other gangs, and publishing after a scan**
+
+- Before, the scanner skipped highlands your gang took from another gang. It only read your gang's own.
+- New checkbox: "Include highlands taken from other gangs". It is off by default.
+  In a script, add `taken=yes` or `taken=no` to `construction_scan`.
+  Tested in the game.
+- New checkbox: "Publish when the scan finishes, without asking".
+  It sends nothing if everything is at 100%, or if nothing changed since the last report.
+  Tested in the game.
+- After the last highland, the scanner no longer goes back to the highland list just to find
+  nothing left. It still checks if the list has more than one page. Tested in the game.
+
+**Daily chores: repairing highlands taken from other gangs, and one trip less**
+
+- New checkbox in Tools, Daily chores, on the Gang page: "Also repair highlands taken from other gangs".
+  It is off by default. It needs "Repair our gang's highlands" ticked too.
+- After the last highland, the bot no longer goes back to the highland list just to find nothing left.
+  This happened when a repair left a build unused, for example when only the wall needed fixing.
+- The "Construction builds a day" field now uses Alt+B. Before, it shared Alt+C with the
+  "Check only" button, so Alt+C could not press the button.
+- Tested in the game with check only, so nothing was repaired: the bot went into all the
+  highlands, taken ones too, and did not open the highland list again after the last one.
+
 **Market: a lot chosen by its listing command, and no purchase made blind after an unsure one** (untested in game)
 
 - A lot is chosen by its listing command, looked up in the menu at the moment of choosing: the

@@ -99,6 +99,7 @@ DEFAULTS: dict[str, Any] = {
     "contribution_chests": False,     # exchange contribution for chests (5000 each; not gang contribution)
     "chest_count": 2,                 # ... this many a day (the game allows 2)
     "build_highlands": True,          # where builds may go: the gang's highlands,
+    "build_taken_highlands": False,   # ... those it took from other gangs too (with build_highlands)
     "build_cannon": True,             # ... the Magic Cannon under construction,
     "build_supply": True,             # ... the Supply Camp under construction,
     "build_posts": True,              # ... the East and West posts
@@ -154,6 +155,9 @@ HIGHLAND_HOME_STAND = (29, 4)
 # from its south side only (hand runs stood at 31,57-59); from the north the game won't select it.
 HIGHLAND_SITES = (("Crystal Turret", (30, 26)), ("Wall barricade", (31, 58)))
 OWN_HIGHLAND = r"own Gang.s Highland\s+(\d+)"
+# Occupied Highlands lists a highland taken from another gang under that gang's name: "<gang> Gang's
+# Highland 208" beside "the own Gang's Highland 80" (read live 2026-11-26; Gang Highlands lists only our own).
+HELD_HIGHLAND = r"Gang.s Highland\s+(\d+)"
 NEXT_PAGE = r"^\s*next\s*page"
 MOST_PAGES = 20
 # A walk round a gang base (gathering looks for its area entrances this way): the game shows what is
@@ -829,20 +833,31 @@ def highland_entry(number: int) -> str:
     return r"\bHighland\s+%d(?!\d)" % number
 
 
-def next_highland(b: Bot, seen: Collection[int]) -> int | None:
+def next_highland(b: Bot, seen: Collection[int], taken: bool = False,
+                  whole: set[int] | None = None) -> int | None:
     """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
-    Occupied Highlands. Its number, or None when there is no other."""
+    Occupied Highlands. Its number, or None when there is no other. taken: those the gang took from
+    other gangs count too, not only its own. whole: filled with every highland listed when the one
+    chosen is on the list's last page (every page has then been read), else left empty, so a caller
+    that has been to them all needn't come back only to find nothing left."""
     inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
     if b.choose(r"^\s*Occupied Highlands") is None:
         b.close_dialogs()
         raise Stopped(_("the Highland Entrance offers no Occupied Highlands"))
+    listed: list[int] = []
+    if whole is not None:
+        whole.clear()
     for _page in range(MOST_PAGES):
         b.wait_dialog(3.0)
-        numbers = [int(n) for t in _texts(b, OWN_HIGHLAND) for n in re.findall(OWN_HIGHLAND, t, re.I)]
+        which = HELD_HIGHLAND if taken else OWN_HIGHLAND
+        numbers = [int(n) for t in _texts(b, which) for n in re.findall(which, t, re.I)]
+        listed += numbers
         number = next((n for n in numbers if n not in seen), None)
         if number is not None:
+            if whole is not None and not _has(b, NEXT_PAGE):
+                whole.update(listed)
             b.choose(highland_entry(number))
             confirm(b)
             if not b.wait_map_change(mid, 15):
@@ -890,13 +905,19 @@ def _build_posts(b: Bot, t: _Builds, check_only: bool) -> None:
     _try_places(b, t, [(name, cell, None) for name, cell in POSTS], check_only)
 
 
-def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False) -> None:
+def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False,
+                     taken: bool = False) -> None:
     """The gang's highlands, one after the other, until the day's builds are made. What stands at
     100% is left alone unless even_complete. Each kind of defence takes one repair a day, in
-    whichever highland ("You've repaired the crystal turret today")."""
+    whichever highland ("You've repaired the crystal turret today"). taken: the highlands the gang
+    took from other gangs too. Once every highland on the list has been visited, no last trip to the
+    Highland Entrance to find nothing left (only when the whole list was seen: see next_highland)."""
     seen: set[int] = set()
+    whole: set[int] = set()
     while not t.finished and any(name not in t.took for name, _stand in HIGHLAND_SITES):
-        number = next_highland(b, seen)
+        if whole and whole <= seen:
+            return
+        number = next_highland(b, seen, taken, whole)
         if number is None:
             return
         seen.add(number)
@@ -910,15 +931,16 @@ def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> l
     """In order: highland defences under 100%, what the gang is building, the posts, and last the
     highland defences at 100%, which the game repairs and pays for too."""
     highlands = bool(cfg.get("build_highlands", True))
+    taken = highlands and bool(cfg.get("build_taken_highlands", False))
     steps: list[Callable[[], None]] = []
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only))
+        steps.append(lambda: _build_highlands(b, t, check_only, taken=taken))
     if cfg.get("build_cannon", True) or cfg.get("build_supply", True):
         steps.append(lambda: _build_camps(b, t, cfg, check_only))
     if cfg.get("build_posts", True):
         steps.append(lambda: _build_posts(b, t, check_only))
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True))
+        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True, taken=taken))
     return steps
 
 

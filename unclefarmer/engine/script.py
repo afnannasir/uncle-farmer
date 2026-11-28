@@ -31,7 +31,8 @@ One command per line; `#` starts a comment. Blocks end with `end`.
                                      (announcement, broadcast or system: it takes a gang elder);
                                      auto=<kind> scans and publishes if there is something new;
                                      add lines=yes or lines=no for an announcement: a line to each highland
-                                     or one line (without it, Tools, Construction scanner decides)
+                                     or one line (without it, Tools, Construction scanner decides);
+                                     add taken=yes or taken=no: the highlands taken from other gangs too
     gather [check]                   fish, mine or collect herbs as set in Tools, Gathering: the
                                      gang's area once a day, then outside; sells the collection
     lose_xp [check]                  die to guards until the next level needs the experience set
@@ -734,22 +735,40 @@ def _prep_chores(node: Node, rest: str, n: int):
     node.opts["only"] = only
 
 
-def _prep_construction_scan(node: Node, rest: str, n: int):
-    words = rest.split()
+def _construction_scan_words(words: list[str]) -> dict[str, str] | None:
+    """construction_scan's words as {word: value}, or None when they don't make sense: at most one of
+    publish= / auto= (a kind), lines= (publishing only) and taken= (scanning only), each once."""
+    got: dict[str, str] = {}
+    for word in words:
+        key, sep, value = word.lower().partition("=")
+        if not sep or key in got:
+            return None
+        got[key] = value
+    hows = [h for h in ("publish", "auto") if h in got]
     kinds = tuple(constructionscan.ENTRIES)
-    if not words:
-        return
-    how, _sep, kind = words[0].lower().partition("=")
-    extra = words[1].lower().partition("=") if len(words) == 2 else None
-    if (len(words) > 2 or how not in ("publish", "auto") or kind not in kinds
-            or (extra is not None and (extra[0] != "lines" or extra[2] not in ("yes", "no")))):
+    if set(got) - {"publish", "auto", "lines", "taken"} or len(hows) > 1 or any(got[h] not in kinds for h in hows):
+        return None
+    if any(got[w] not in ("yes", "no") for w in ("lines", "taken") if w in got):
+        return None
+    if ("lines" in got and not hows) or ("taken" in got and "publish" in got):
+        return None
+    return got
+
+
+def _prep_construction_scan(node: Node, rest: str, n: int):
+    got = _construction_scan_words(rest.split())
+    if got is None:
         raise ScriptError(n, _("write it as: construction_scan, construction_scan publish=broadcast or "
                                "construction_scan auto=broadcast (announcement, broadcast or system), "
                                "and for an announcement add lines=yes or lines=no to choose a line to each "
-                               "highland or one line"))
-    node.opts[how] = kind
-    if extra is not None:
-        node.opts["lines"] = extra[2] == "yes"
+                               "highland or one line; add taken=yes or taken=no to a scan to choose whether "
+                               "the highlands taken from other gangs are read too"))
+    for how in ("publish", "auto"):
+        if how in got:
+            node.opts[how] = got[how]
+    for word in ("lines", "taken"):
+        if word in got:
+            node.opts[word] = got[word] == "yes"
 
 
 def _prep_sell_collection(node: Node, rest: str, n: int):

@@ -166,11 +166,6 @@ msgstr "Oyunun kendi açtığı pen&cereleri kapat"
 msgid "&Commands for trusted players"
 msgstr "Güvenilir oyun&cular için komutlar"
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-"Günlük inşaat sayısı (oyun 2'ye izin verir; ü&cretsizdir, her biri katkı ve arnebia kazandırır):"
-
 msgid "&Copy the address"
 msgstr "Adresi kopyala (&C)"
 
@@ -1142,6 +1137,9 @@ msgstr "Zaten çalışıyorum."
 msgid "Also count se&llers (slow the first time)"
 msgstr ""
 
+msgid "Also repair highlands taken from other &gangs"
+msgstr ""
+
 msgid "Also: {names}"
 msgstr "Ayrıca: {names}"
 
@@ -1698,6 +1696,10 @@ msgstr "Bağlandı"
 
 msgid "Connecting..."
 msgstr "Bağlanıyor..."
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
+msgstr ""
 
 msgid "Construction &scanner"
 msgstr ""
@@ -2795,6 +2797,9 @@ msgstr ""
 
 msgid "In the bag: {n} {gem}."
 msgstr "Çantada: {n} {gem}."
+
+msgid "Include highlands taken from other &gangs"
+msgstr ""
 
 msgid "Include maps &without monsters"
 msgstr "Canavarsız haritaları da dahil et (&W)"
@@ -4004,6 +4009,9 @@ msgid "Program version: {v}"
 msgstr "Program sürümü: {v}"
 
 msgid "Publish &as:"
+msgstr ""
+
+msgid "Publish when the scan &finishes, without asking"
 msgstr ""
 
 msgid "Put each highland on its own &line (gang announcement only)"
@@ -10159,7 +10167,7 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "şöyle yaz: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
 msgstr ""
 
 msgid "write it as: hold key seconds"
@@ -11194,6 +11202,11 @@ msgstr ""
 
 msgid "{w} by {h} tiles, {n} exits."
 msgstr "{w} x {h} kare, {n} çıkış."
+
+#~ msgid ""
+#~ "&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
+#~ msgstr ""
+#~ "Günlük inşaat sayısı (oyun 2'ye izin verir; ü&cretsizdir, her biri katkı ve arnebia kazandırır):"
 
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "Adlar veya kimlikler (virgülle ayrılmış): (&N)"

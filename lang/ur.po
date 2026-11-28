@@ -167,11 +167,6 @@ msgstr "Game khud jo windows kholta hai unhein &band karein"
 msgid "&Commands for trusted players"
 msgstr "&Trusted players ke commands"
 
-msgid ""
-"&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
-msgstr ""
-"&Construction builds roz (game 2 deta hai; muft, har aik contribution aur arnebia deti hai):"
-
 msgid "&Copy the address"
 msgstr "Pata &copy karein"
 
@@ -1152,6 +1147,9 @@ msgstr "Pehle se chal raha hai."
 msgid "Also count se&llers (slow the first time)"
 msgstr "Bechne walon ko bhi &ginein (pehli dafa dheema)"
 
+msgid "Also repair highlands taken from other &gangs"
+msgstr ""
+
 msgid "Also: {names}"
 msgstr "Yeh bhi: {names}"
 
@@ -1717,6 +1715,10 @@ msgstr "Jura hua"
 
 msgid "Connecting..."
 msgstr "Jura ja raha hai..."
+
+msgid ""
+"Construction &builds a day (the game allows 2; free, each pays contribution and arnebia):"
+msgstr ""
 
 msgid "Construction &scanner"
 msgstr "Construction &scanner"
@@ -2824,6 +2826,9 @@ msgstr "Kul"
 
 msgid "In the bag: {n} {gem}."
 msgstr "Baste mein: {n} {gem}."
+
+msgid "Include highlands taken from other &gangs"
+msgstr ""
 
 msgid "Include maps &without monsters"
 msgstr "&Baghair monsters wale maps shamil karein"
@@ -4052,6 +4057,9 @@ msgstr "Program ka version: {v}"
 
 msgid "Publish &as:"
 msgstr "Publish &kis tarah:"
+
+msgid "Publish when the scan &finishes, without asking"
+msgstr ""
 
 msgid "Put each highland on its own &line (gang announcement only)"
 msgstr "Har highland ko apni &line par rakhein (sirf gang announcement)"
@@ -10354,9 +10362,8 @@ msgid "write it as: chores [check] [only=bank,donation]"
 msgstr "aise likhein: chores [check] [only=bank,donation]"
 
 msgid ""
-"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+"write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line; add taken=yes or taken=no to a scan to choose whether the highlands taken from other gangs are read too"
 msgstr ""
-"aise likhein: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system), aur announcement ke liye lines=yes ya lines=no jodein taake har highland ki apni line ho ya sirf ek line"
 
 msgid "write it as: hold key seconds"
 msgstr "aise likhein: hold key seconds"
@@ -11416,6 +11423,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ msgid "&Characters, in order:"
 #~ msgstr "&Kirdaar, tarteeb se:"
 
+#~ msgid ""
+#~ "&Construction builds a day (the game allows 2; free, each pays contribution and arnebia):"
+#~ msgstr ""
+#~ "&Construction builds roz (game 2 deta hai; muft, har aik contribution aur arnebia deti hai):"
+
 #~ msgid "&Names or ids (separated by commas):"
 #~ msgstr "&Naam ya id (comma se alag):"
 
@@ -11529,6 +11541,11 @@ msgstr "{w} bar {h} tiles, {n} exits."
 #~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system)"
 #~ msgstr ""
 #~ "aise likho: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system)"
+
+#~ msgid ""
+#~ "write it as: construction_scan, construction_scan publish=broadcast or construction_scan auto=broadcast (announcement, broadcast or system), and for an announcement add lines=yes or lines=no to choose a line to each highland or one line"
+#~ msgstr ""
+#~ "aise likhein: construction_scan, construction_scan publish=broadcast ya construction_scan auto=broadcast (announcement, broadcast ya system), aur announcement ke liye lines=yes ya lines=no jodein taake har highland ki apni line ho ya sirf ek line"
 
 #~ msgid "{item} is missing from the bag."
 #~ msgstr "{item} bag mein nahi hai."

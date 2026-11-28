@@ -298,8 +298,9 @@ class EditingMixin(FrameParts):
         with ConstructionScanDialog(self, can_act) as d:
             code = d.ShowModal()
             kind = d.kind
+            scan_line = d.scan_command()
         if code == SCAN_CONSTRUCTIONS:
-            self.run_errand("construction_scan\n", _("Construction scanner"), pid=pid, expect=name)
+            self.run_errand(scan_line + "\n", _("Construction scanner"), pid=pid, expect=name)
         elif code == PUBLISH_REPORT:
             self.run_errand("construction_scan publish=%s\n" % kind, _("Construction scanner"), pid=pid, expect=name)
 
