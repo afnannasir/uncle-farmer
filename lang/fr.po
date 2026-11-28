@@ -48,6 +48,9 @@ msgstr ""
 msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
 msgstr "« {keys} » : {part} n'est ni Ctrl, ni Alt, ni Shift."
 
+msgid "\"{typed}\" isn't a highland number."
+msgstr ""
+
 msgid "&About Uncle Farmer"
 msgstr "À &propos d'Uncle Farmer"
 
@@ -62,6 +65,9 @@ msgstr "&Ajouter"
 
 msgid "&Add a supply"
 msgstr "&Ajouter une provision"
+
+msgid "&Add a turret"
+msgstr ""
 
 msgid "&Add an item"
 msgstr "&Ajouter un objet"
@@ -266,6 +272,12 @@ msgstr "Rechercher le jeu &ouvert"
 msgid "&Find:"
 msgstr "&Rechercher :"
 
+msgid "&Fire at it even when another gang occupies it"
+msgstr ""
+
+msgid "&Fire each turret once a game day"
+msgstr ""
+
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "&Corriger la vitesse des messages vocaux que le jeu lit de lui-même"
 
@@ -283,6 +295,10 @@ msgstr "&Jeux :"
 
 msgid "&Gang name (another gang's):"
 msgstr "Nom du &gang (celui d'un autre gang) :"
+
+msgid ""
+"&Gang's name, exactly as the turret's list of gangs shows it, capitals too:"
+msgstr ""
 
 msgid "&Gem Maker"
 msgstr "&Gem Maker"
@@ -333,6 +349,9 @@ msgstr "&Aide"
 
 msgid "&Highest gem level to break:"
 msgstr "Niveau de gemme le plus &haut à casser :"
+
+msgid "&Highland number:"
+msgstr ""
 
 msgid "&History"
 msgstr "&Historique"
@@ -517,6 +536,9 @@ msgstr "Mode &PK :"
 
 msgid "&Pages at most (0 = all):"
 msgstr "&Pages au maximum (0 = toutes) :"
+
+msgid "&Part to hit:"
+msgstr ""
 
 msgid "&Patrol points (x,y; x,y; ... up to 10):"
 msgstr "&Points de patrouille (x,y ; x,y ; ... 10 au plus) :"
@@ -964,6 +986,10 @@ msgstr ""
 "Une ligne inutilisable est signalée au démarrage d'Uncle Farmer, et cette action garde sa valeur par défaut."
 
 msgid ""
+"A list's context menu moves the selected entry up or down, or removes it; Delete removes it too. A turret fires at the targets paired with it, then at the targets with no pair, then at the random gangs. A highland another gang occupies is left alone, unless its entry says to fire even when occupied (the context menu turns that on or off)."
+msgstr ""
+
+msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
 msgstr ""
 "Un nom peut appartenir à un autre joueur sur un autre serveur : les noms ajoutés reçoivent le serveur du personnage sélectionné (Kim@S1). Un nom ou un id sans serveur est de confiance sur tous les serveurs."
@@ -1003,8 +1029,14 @@ msgstr ""
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Un donjon d'équipe : le jeu laisse entrer des groupes de 2 à 3 joueurs."
 
+msgid "A&dd a target"
+msgstr ""
+
 msgid "A&dd..."
 msgstr "A&jouter..."
+
+msgid "A&im at:"
+msgstr ""
 
 msgid "About the skill:"
 msgstr "À propos du sort :"
@@ -1063,6 +1095,12 @@ msgid "Add a gang to gather in, or untick gathering in gangs' areas."
 msgstr ""
 "Ajouter un gang où récolter, ou décocher la récolte dans les zones des gangs."
 
+msgid "Add a highland"
+msgstr ""
+
+msgid "Add a highland to fire at, or aim at our gang's area."
+msgstr ""
+
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
 msgstr "Ajouter un shard restant assorti pour +20 % (niveau 2 et plus)"
 
@@ -1071,11 +1109,26 @@ msgid ""
 msgstr ""
 "Ajoutez d'abord un point de patrouille (Ajouter là où je suis), ou choisissez un autre déplacement."
 
+msgid "Add a pla&yer"
+msgstr ""
+
 msgid "Add a place"
 msgstr "Ajouter un lieu"
 
+msgid "Add a random gang's &highland"
+msgstr ""
+
 msgid "Add a supply"
 msgstr "Ajouter une provision"
+
+msgid "Add a turret"
+msgstr ""
+
+msgid "Add a turret first."
+msgstr ""
+
+msgid "Add a turret this character keeps, or untick firing."
+msgstr ""
 
 msgid "Add an item"
 msgstr "Ajouter un objet"
@@ -1214,6 +1267,9 @@ msgstr "Appliquer un profil de clavier hors combat, menus du jeu fermés."
 
 msgid "Apply keyboard profile {name}"
 msgstr "Appliquer le profil de clavier {name}"
+
+msgid "Ar&ea:"
+msgstr ""
 
 msgid ""
 "Are you sure you want to kill this game?\n"
@@ -2000,6 +2056,9 @@ msgstr "Ne correspond pas"
 msgid "Don't donate"
 msgstr "Ne pas faire de don"
 
+msgid "Don't fire at a highland at or be&low this percent:"
+msgstr ""
+
 msgid "Don't fuse"
 msgstr "Ne pas fusionner"
 
@@ -2333,6 +2392,15 @@ msgstr "Réglages des filtres"
 
 msgid "Filter text or &pattern:"
 msgstr "Texte ou &modèle du filtre :"
+
+msgid "Fire even when &occupied (on or off)"
+msgstr ""
+
+msgid "Firing at other gangs' highlands"
+msgstr ""
+
+msgid "Firing at our gang's area (a shot kills the player it hits)"
+msgstr ""
 
 msgid "First &wait away from the map (seconds):"
 msgstr "Première attente &hors de la carte (secondes) :"
@@ -2675,8 +2743,26 @@ msgstr "Niveau de &cristal le plus haut à casser :"
 msgid "Highest l&evel to make:"
 msgstr "Niv&eau le plus haut à fabriquer :"
 
+msgid "Highland {n}"
+msgstr ""
+
+msgid "Highland {n} - paired with: {targets}"
+msgstr ""
+
+msgid "Highlands where this character is the &turret administrator:"
+msgstr ""
+
 msgid "History of {what} for {who}"
 msgstr "Historique de {what} pour {who}"
+
+msgid "Hit the highest"
+msgstr ""
+
+msgid "Hit the turret"
+msgstr ""
+
+msgid "Hit the wall"
+msgstr ""
 
 msgid "Ho&w the game works"
 msgstr "Fonctionnement du &jeu"
@@ -2999,6 +3085,9 @@ msgstr "Type"
 msgid "Kind: {what}"
 msgstr "Type : {what}"
 
+msgid "Lake"
+msgstr ""
+
 msgid "Language"
 msgstr "Langue"
 
@@ -3177,6 +3266,9 @@ msgstr "MP :"
 msgid "Made or received:"
 msgstr "Fabriqué ou reçu :"
 
+msgid "Main mansion"
+msgstr ""
+
 msgid "Make a gem"
 msgstr "Fabriquer une gemme"
 
@@ -3284,6 +3376,9 @@ msgstr "Message ajouté à la liste des filtres."
 
 msgid "Mining"
 msgstr "Mining"
+
+msgid "Mining area"
+msgstr ""
 
 msgid "Minutes of drop time on this spot:"
 msgstr "Minutes de temps de drop sur ce lieu :"
@@ -3411,6 +3506,9 @@ msgstr "Déplacer vers Jet&er"
 msgid "Move to throw a&way"
 msgstr "Déplacer vers Je&ter"
 
+msgid "Move u&p"
+msgstr ""
+
 msgid "Moving on to the next character of the chain."
 msgstr "Passage au personnage suivant de la chaîne."
 
@@ -3450,6 +3548,9 @@ msgstr "Jamais"
 msgid "Never attack these monsters while following (names, by co&mmas):"
 msgstr ""
 "Ne jamais attaquer ces monstres pendant le suivi (noms, séparés par des virg&ules) :"
+
+msgid "Never shoot"
+msgstr ""
 
 msgid "Never spend arnebia belo&w:"
 msgstr "Ne &jamais dépenser d'arnebia en dessous de :"
@@ -3615,6 +3716,9 @@ msgstr ""
 
 msgid "No tone"
 msgstr "Aucun son"
+
+msgid "No turret"
+msgstr ""
 
 msgid "No way found from {map} - travel part of the way yourself first."
 msgstr ""
@@ -3835,6 +3939,9 @@ msgstr "Ou tapez son &nom :"
 msgid "Other"
 msgstr "Autre"
 
+msgid "Other gangs' highlands"
+msgstr ""
+
 msgid "Other items"
 msgstr "Autres objets"
 
@@ -3843,6 +3950,9 @@ msgstr "Autres objets ramassés :"
 
 msgid "Our blue potions"
 msgstr "Nos potions bleues"
+
+msgid "Our gang's area"
+msgstr ""
 
 msgid "Our own gang"
 msgstr "Notre gang"
@@ -3894,6 +4004,12 @@ msgstr "Page"
 
 msgid "Page {page}, {key}"
 msgstr "Page {page}, {key}"
+
+msgid "Pair with a t&urret"
+msgstr ""
+
+msgid "Pair with a turret"
+msgstr ""
 
 msgid "Patrol loops: {loops}"
 msgstr "Boucles de patrouille : {loops}"
@@ -4019,6 +4135,9 @@ msgstr "Plans et scripts"
 
 msgid "Players near:"
 msgstr "Joueurs proches :"
+
+msgid "Players never to &shoot (allies):"
+msgstr ""
 
 msgid "Point {n} added at {x}, {y}. Movement is now My own points."
 msgstr ""
@@ -4148,6 +4267,9 @@ msgstr "Phrase rapide pour {key} (vide pour la laisser inchangée)"
 
 msgid "Quick phrases"
 msgstr "Phrases rapides"
+
+msgid "Ra&ndom gangs, when every target is at the limit (no limit):"
+msgstr ""
 
 msgid "Radius of a new c&ircle:"
 msgstr "Rayon d'un nouveau cerc&le :"
@@ -5059,6 +5181,9 @@ msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr ""
 "Discutez avec les autres joueurs et le développeur dans le groupe Telegram : {link}"
 
+msgid "Tar&gets, tried in order:"
+msgstr ""
+
 msgid "Target east"
 msgstr "Cibler à l'est"
 
@@ -5480,6 +5605,9 @@ msgstr "Celui de la ville la plus proche"
 msgid "The nearest map where no monsters spawn."
 msgstr "La carte la plus proche où aucun monstre n'apparaît."
 
+msgid "The number of a highland whose turret this character keeps:"
+msgstr ""
+
 msgid ""
 "The pet's rows count only with a pet ticked in Character, Settings, and the blue potions only for a character that uses MP. Between two caves the bot tops up again."
 msgstr ""
@@ -5495,6 +5623,9 @@ msgstr "Le plan en script"
 msgid "The plan was saved, but the old file couldn't be removed: {err}"
 msgstr ""
 "Le plan a été enregistré, mais l'ancien fichier n'a pas pu être supprimé : {err}"
+
+msgid "The player's name, as the game writes it:"
+msgstr ""
 
 msgid "The room"
 msgstr "La salle"
@@ -5864,6 +5995,12 @@ msgstr "Activer ou &désactiver"
 msgid "Turned &on"
 msgstr "Acti&vée"
 
+msgid "Turret firing"
+msgstr ""
+
+msgid "Turret {n}"
+msgstr ""
+
 msgid "Type a message first."
 msgstr "Saisir d'abord un message."
 
@@ -5874,6 +6011,9 @@ msgstr ""
 
 msgid "Type one or more seller IDs."
 msgstr "Saisissez un ou plusieurs IDs de vendeur."
+
+msgid "Type the gang's name."
+msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Tapez le nom du gang dont utiliser les artisans."
@@ -6171,6 +6311,9 @@ msgstr "Ce que reçoit le chat, par exemple :"
 msgid "What to break"
 msgstr "Que casser"
 
+msgid "What to fire at"
+msgstr ""
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -6242,6 +6385,9 @@ msgstr "Niveau de cristal que prend un objet :"
 
 msgid "Which plan? Send: start <plan name>"
 msgstr "Quel plan ? Envoyez : start <nom du plan>"
+
+msgid "Which turret fires first at {entry}?"
+msgstr ""
 
 msgid "While a bot runs"
 msgstr "Pendant qu'un bot tourne"
@@ -6365,6 +6511,9 @@ msgid ""
 "Your system language is supported. Would you like to use {language} in Uncle Farmer?"
 msgstr ""
 "La langue de votre système est disponible. Utiliser {language} dans Uncle Farmer ?"
+
+msgid "Your turrets"
+msgstr ""
 
 msgid "a chat line"
 msgstr "une ligne de chat"
@@ -7300,6 +7449,9 @@ msgstr "tous les jours à {time}"
 msgid "every farm of the script is already done - stopping"
 msgstr "tous les farm du script sont déjà faits - arrêt"
 
+msgid "every turret has fired today"
+msgstr ""
+
 msgid "everything"
 msgstr "depuis toujours"
 
@@ -7622,6 +7774,13 @@ msgstr "les herbes"
 
 msgid "here, with Resurrection Crystals"
 msgstr "ici, avec des Resurrection Crystals"
+
+msgid ""
+"highland {n} is occupied by the {occupier} gang: its owner has changed - skipped"
+msgstr ""
+
+msgid "highland {n} isn't {gang}'s any more: its owner has changed - skipped"
+msgstr ""
 
 msgid "hit {n} times on the way - giving up this walk"
 msgstr "touché {n} fois en chemin - abandon de cette marche"
@@ -8105,6 +8264,9 @@ msgstr "aucune carte de farming ne convient au niveau {level}"
 
 msgid "no free rebirth left today"
 msgstr "plus de renaissance gratuite aujourd'hui"
+
+msgid "no gang named {gang} in the turret's list - {entry} skipped"
+msgstr ""
 
 msgid ""
 "no guard found here, at the spots where guards were seen, or in the nearest town"
@@ -9246,6 +9408,12 @@ msgstr "il resterait {n} {item}"
 msgid "the Animal Shed has nothing to feed now"
 msgstr "l'Animal Shed n'a rien à nourrir pour l'instant"
 
+msgid "the Fire menu has no \"Aim at other highlands\""
+msgstr ""
+
+msgid "the Fire menu has no \"Aim at the {area}\""
+msgstr ""
+
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
 msgstr "le Forger n'a pas listé {item} (est-il équipé ou dans le sac ?)"
 
@@ -9542,6 +9710,9 @@ msgstr "le coffre a disparu : quelqu'un d'autre l'a ouvert"
 msgid "the chest was opened by someone else - back to farming"
 msgstr "le coffre a été ouvert par quelqu'un d'autre - retour au farming"
 
+msgid "the choice of turret or wall didn't open for {entry}"
+msgstr ""
+
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"
 msgstr ""
@@ -9597,6 +9768,9 @@ msgstr "le jeu n'a pas accepté la demande directe de jeter : {why}"
 
 msgid "the game didn't ask to confirm"
 msgstr "le jeu n'a pas demandé de confirmation"
+
+msgid "the game didn't ask to confirm the shot"
+msgstr ""
 
 msgid "the game didn't ask to confirm the talent reset - nothing changed"
 msgstr ""
@@ -10069,6 +10243,10 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr "le niveau maximum - rien à perdre"
 
+msgid ""
+"the turret's menu didn't show what was expected and the game said nothing"
+msgstr ""
+
 msgid "the usual medals"
 msgstr "les médailles habituelles"
 
@@ -10118,6 +10296,9 @@ msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""
 "{npc} ne m'a pas emmené gratuitement - vérifier que votre VIP est toujours actif. Trajets payants pour le reste de cette partie"
+
+msgid "the {npc} has no Fire entry"
+msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
 msgstr "le {npc} ne propose aucune entrée ({about})"
@@ -10276,6 +10457,40 @@ msgstr "nouvel essai avec {npc}"
 
 msgid "trying the {tool} instead"
 msgstr "essai du {tool} à la place"
+
+msgid "turret firing"
+msgstr ""
+
+msgid "turret {n}: already fired today"
+msgstr ""
+
+msgid "turret {n}: fired at {what}"
+msgstr ""
+
+msgid "turret {n}: highland {n} isn't in our gang's list"
+msgstr ""
+
+msgid "turret {n}: no highland in the lists can be hit today"
+msgstr ""
+
+msgid "turret {n}: nobody at the {area} can be shot now"
+msgstr ""
+
+msgid ""
+"turret {n}: shot at {what}, but the game didn't confirm it - tried again next time"
+msgstr ""
+
+msgid "turret {n}: this character isn't its keeper"
+msgstr ""
+
+msgid "turret {n}: would hit {what}"
+msgstr ""
+
+msgid "turret {n}: would shoot {what}"
+msgstr ""
+
+msgid "turret {n}: {why}"
+msgstr ""
 
 msgid "unavailable"
 msgstr "indisponible"
@@ -10634,6 +10849,21 @@ msgid ""
 "{elite} (a demonized elite) is {n} steps away - keeping {keep} steps from it"
 msgstr "{elite} (une élite démoniaque) est à {n} pas - maintien à {keep} pas"
 
+msgid "{entry} ({part})"
+msgstr ""
+
+msgid "{entry} - fires even if occupied"
+msgstr ""
+
+msgid "{entry} - paired with our turret in highland {turret}"
+msgstr ""
+
+msgid "{entry} is at or below {limit}% - not fired at"
+msgstr ""
+
+msgid "{entry} is in the list already."
+msgstr ""
+
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field} : entrez un nombre de {lo} à {hi}"
 
@@ -10652,8 +10882,14 @@ msgstr "{file} : le prix de {shard} n'est pas là où il devrait être"
 msgid "{games} games, {bots} bots running"
 msgstr "{games} jeux, {bots} bots en cours"
 
+msgid "{gang} highland {n}"
+msgstr ""
+
 msgid "{gang} is in the list already."
 msgstr "{gang} est déjà dans la liste."
+
+msgid "{gang}, highland {n}"
+msgstr ""
 
 msgid "{gang}: already today ({note})"
 msgstr "{gang} : déjà fait aujourd'hui ({note})"
@@ -11276,6 +11512,9 @@ msgstr "{pet} : plus de renaissance gratuite aujourd'hui"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet} : {n} renaissances gratuites, atouts {before} -> {after}"
+
+msgid "{player} at the {area}"
+msgstr ""
 
 msgid "{potion} (you have {n}):"
 msgstr "{potion} (vous en avez {n}) :"

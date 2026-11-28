@@ -46,6 +46,9 @@ msgstr "\"{keys}\": keys + se jod kar likhein, misaal Ctrl+Shift+R."
 msgid "\"{keys}\": {part} isn't Ctrl, Alt or Shift."
 msgstr "\"{keys}\": {part} na Ctrl hai, na Alt, na Shift."
 
+msgid "\"{typed}\" isn't a highland number."
+msgstr ""
+
 msgid "&About Uncle Farmer"
 msgstr "Uncle Farmer ke &baare mein"
 
@@ -60,6 +63,9 @@ msgstr "&Shamil karein"
 
 msgid "&Add a supply"
 msgstr "&Supply shamil karein"
+
+msgid "&Add a turret"
+msgstr ""
 
 msgid "&Add an item"
 msgstr "&Cheez shamil karein"
@@ -263,6 +269,12 @@ msgstr "Chalti hui game &dhoondein"
 msgid "&Find:"
 msgstr "&Dhoondna:"
 
+msgid "&Fire at it even when another gang occupies it"
+msgstr ""
+
+msgid "&Fire each turret once a game day"
+msgstr ""
+
 msgid "&Fix the speed of voice messages the game plays by itself"
 msgstr "Game ke khud bajaaye voice messages ki &raftaar theek karein"
 
@@ -280,6 +292,10 @@ msgstr "&Games:"
 
 msgid "&Gang name (another gang's):"
 msgstr "&Gang ka naam (kisi doosre gang ka):"
+
+msgid ""
+"&Gang's name, exactly as the turret's list of gangs shows it, capitals too:"
+msgstr ""
 
 msgid "&Gem Maker"
 msgstr "&Gem Maker"
@@ -330,6 +346,9 @@ msgstr "&Madad"
 
 msgid "&Highest gem level to break:"
 msgstr "Torne ka sab se ooncha gem level (&H):"
+
+msgid "&Highland number:"
+msgstr ""
 
 msgid "&History"
 msgstr "&Tareekhcha"
@@ -514,6 +533,9 @@ msgstr "&PK mode:"
 
 msgid "&Pages at most (0 = all):"
 msgstr "Zyada se zyada &safhe (0 = sab):"
+
+msgid "&Part to hit:"
+msgstr ""
 
 msgid "&Patrol points (x,y; x,y; ... up to 10):"
 msgstr "&Patrol points (x,y; x,y; ... zyada se zyada 10):"
@@ -959,6 +981,10 @@ msgstr ""
 "Jo line istemal na ho sake woh Uncle Farmer shuru hone par batayi jaati hai, aur woh action apna default rakhta hai."
 
 msgid ""
+"A list's context menu moves the selected entry up or down, or removes it; Delete removes it too. A turret fires at the targets paired with it, then at the targets with no pair, then at the random gangs. A highland another gang occupies is left alone, unless its entry says to fire even when occupied (the context menu turns that on or off)."
+msgstr ""
+
+msgid ""
 "A name can belong to another player on another server: the names you add get the selected character's server (Kim@S1). A name or id without a server is trusted on every server."
 msgstr ""
 "Ek naam doosre server par kisi aur player ka ho sakta hai: jo naam aap add karte hain unhein selected character ka server milta hai (Kim@S1). Server ke baghair naam ya id har server par trusted hai."
@@ -997,8 +1023,14 @@ msgstr ""
 msgid "A team dungeon: the game lets in groups of 2 to 3 players."
 msgstr "Team dungeon: game 2 se 3 khilariyon ke group andar aane deta hai."
 
+msgid "A&dd a target"
+msgstr ""
+
 msgid "A&dd..."
 msgstr "Sh&amil karein..."
+
+msgid "A&im at:"
+msgstr ""
 
 msgid "About the skill:"
 msgstr "Skill ke baare mein:"
@@ -1057,6 +1089,12 @@ msgid "Add a gang to gather in, or untick gathering in gangs' areas."
 msgstr ""
 "Jama karne ke liye koi gang shamil karein, ya gangs ke ilaqon mein jama karne ka tick hata dein."
 
+msgid "Add a highland"
+msgstr ""
+
+msgid "Add a highland to fire at, or aim at our gang's area."
+msgstr ""
+
 msgid "Add a leftover matching shard for +20% (level 2 and up)"
 msgstr "+20% ke liye milta hua bacha hua shard shamil karein (level 2 aur upar)"
 
@@ -1065,11 +1103,26 @@ msgid ""
 msgstr ""
 "Pehle ek patrol point shamil karein (Jahan main khara hoon), ya koi aur movement chunein."
 
+msgid "Add a pla&yer"
+msgstr ""
+
 msgid "Add a place"
 msgstr "Jagah shamil karein"
 
+msgid "Add a random gang's &highland"
+msgstr ""
+
 msgid "Add a supply"
 msgstr "Supply shamil karein"
+
+msgid "Add a turret"
+msgstr ""
+
+msgid "Add a turret first."
+msgstr ""
+
+msgid "Add a turret this character keeps, or untick firing."
+msgstr ""
 
 msgid "Add an item"
 msgstr "Cheez shamil karein"
@@ -1208,6 +1261,9 @@ msgstr "Larrai ke bahar aur game ke menu band karke keyboard profile lagayen."
 
 msgid "Apply keyboard profile {name}"
 msgstr "Keyboard profile {name} lagayen"
+
+msgid "Ar&ea:"
+msgstr ""
 
 msgid ""
 "Are you sure you want to kill this game?\n"
@@ -1989,6 +2045,9 @@ msgstr "Nahin milta"
 msgid "Don't donate"
 msgstr "Chanda na dein"
 
+msgid "Don't fire at a highland at or be&low this percent:"
+msgstr ""
+
 msgid "Don't fuse"
 msgstr "Fuse na karein"
 
@@ -2320,6 +2379,15 @@ msgstr "Filter ki tarteeb"
 
 msgid "Filter text or &pattern:"
 msgstr "Filter ka matn ya &pattern:"
+
+msgid "Fire even when &occupied (on or off)"
+msgstr ""
+
+msgid "Firing at other gangs' highlands"
+msgstr ""
+
+msgid "Firing at our gang's area (a shot kills the player it hits)"
+msgstr ""
 
 msgid "First &wait away from the map (seconds):"
 msgstr "Map se bahar pehla i&ntezar (seconds):"
@@ -2660,8 +2728,26 @@ msgstr "Torne ka sab se ooncha &crystal level:"
 msgid "Highest l&evel to make:"
 msgstr "Banane ka sab se &ooncha level:"
 
+msgid "Highland {n}"
+msgstr ""
+
+msgid "Highland {n} - paired with: {targets}"
+msgstr ""
+
+msgid "Highlands where this character is the &turret administrator:"
+msgstr ""
+
 msgid "History of {what} for {who}"
 msgstr "{who} ke liye {what} ka tareekhcha"
+
+msgid "Hit the highest"
+msgstr ""
+
+msgid "Hit the turret"
+msgstr ""
+
+msgid "Hit the wall"
+msgstr ""
 
 msgid "Ho&w the game works"
 msgstr "Game kaise &kaam karti hai"
@@ -2987,6 +3073,9 @@ msgstr "Qism"
 msgid "Kind: {what}"
 msgstr "Qism: {what}"
 
+msgid "Lake"
+msgstr ""
+
 msgid "Language"
 msgstr "Zaban"
 
@@ -3164,6 +3253,9 @@ msgstr "MP:"
 msgid "Made or received:"
 msgstr "Banaya ya mila:"
 
+msgid "Main mansion"
+msgstr ""
+
 msgid "Make a gem"
 msgstr "Gem banayein"
 
@@ -3271,6 +3363,9 @@ msgstr "Paighaam filter fehrist mein shaamil ho gaya."
 
 msgid "Mining"
 msgstr "Mining (kaan kani)"
+
+msgid "Mining area"
+msgstr ""
 
 msgid "Minutes of drop time on this spot:"
 msgstr "Is spot par drop time ke minutes:"
@@ -3397,6 +3492,9 @@ msgstr "Phen&kne mein le jayein"
 msgid "Move to throw a&way"
 msgstr "Phenkne mein le ja&yein"
 
+msgid "Move u&p"
+msgstr ""
+
 msgid "Moving on to the next character of the chain."
 msgstr "Chain ke agle kirdaar par ja rahe hain."
 
@@ -3436,6 +3534,9 @@ msgstr "Kabhi nahi"
 msgid "Never attack these monsters while following (names, by co&mmas):"
 msgstr ""
 "Follow karte waqt in monsters par kabhi hamla na karein (naam, co&mma se alag):"
+
+msgid "Never shoot"
+msgstr ""
 
 msgid "Never spend arnebia belo&w:"
 msgstr "&Is se kam arnebia kabhi kharch na karein:"
@@ -3598,6 +3699,9 @@ msgstr ""
 
 msgid "No tone"
 msgstr "Koi awaaz nahi"
+
+msgid "No turret"
+msgstr ""
 
 msgid "No way found from {map} - travel part of the way yourself first."
 msgstr "{map} se koi raasta nahi mila - pehle thoda safar khud karein."
@@ -3817,6 +3921,9 @@ msgstr "Ya iska &naam likhein:"
 msgid "Other"
 msgstr "Deegar"
 
+msgid "Other gangs' highlands"
+msgstr ""
+
 msgid "Other items"
 msgstr "Doosri cheezein"
 
@@ -3825,6 +3932,9 @@ msgstr "Doosri cheezein mili:"
 
 msgid "Our blue potions"
 msgstr "Hamare neele potions"
+
+msgid "Our gang's area"
+msgstr ""
 
 msgid "Our own gang"
 msgstr "Hamara apna gang"
@@ -3875,6 +3985,12 @@ msgstr "Safha"
 
 msgid "Page {page}, {key}"
 msgstr "Page {page}, {key}"
+
+msgid "Pair with a t&urret"
+msgstr ""
+
+msgid "Pair with a turret"
+msgstr ""
 
 msgid "Patrol loops: {loops}"
 msgstr "Patrol loops: {loops}"
@@ -3999,6 +4115,9 @@ msgstr "Plans aur scripts"
 
 msgid "Players near:"
 msgstr "Qareeb ke khilari:"
+
+msgid "Players never to &shoot (allies):"
+msgstr ""
 
 msgid "Point {n} added at {x}, {y}. Movement is now My own points."
 msgstr "Point {n} {x}, {y} par shamil. Movement ab Mere apne points hai."
@@ -4126,6 +4245,9 @@ msgstr "{key} ka quick phrase (khaali chhorne se jaisa hai waisa rahega)"
 
 msgid "Quick phrases"
 msgstr "Quick phrases"
+
+msgid "Ra&ndom gangs, when every target is at the limit (no limit):"
+msgstr ""
 
 msgid "Radius of a new c&ircle:"
 msgstr "Naye c&ircle ka radius:"
@@ -5028,6 +5150,9 @@ msgstr "&Farming ke talents:"
 msgid "Talk with other players and the developer in the Telegram group: {link}"
 msgstr "Doosre players aur developer se Telegram group mein baat karein: {link}"
 
+msgid "Tar&gets, tried in order:"
+msgstr ""
+
 msgid "Target east"
 msgstr "Mashriq ko target karein"
 
@@ -5446,6 +5571,9 @@ msgstr "Sab se qareebi shehar ka"
 msgid "The nearest map where no monsters spawn."
 msgstr "Sab se qareebi map jahan koi monster paida nahi hota."
 
+msgid "The number of a highland whose turret this character keeps:"
+msgstr ""
+
 msgid ""
 "The pet's rows count only with a pet ticked in Character, Settings, and the blue potions only for a character that uses MP. Between two caves the bot tops up again."
 msgstr ""
@@ -5459,6 +5587,9 @@ msgstr "Mansooba bator Script"
 
 msgid "The plan was saved, but the old file couldn't be removed: {err}"
 msgstr "Mansooba mahfooz ho gaya, lekin purani file hataayi nahi ja saki: {err}"
+
+msgid "The player's name, as the game writes it:"
+msgstr ""
 
 msgid "The room"
 msgstr "Kamra"
@@ -5823,6 +5954,12 @@ msgstr "On ya o&ff karein"
 msgid "Turned &on"
 msgstr "&On hai"
 
+msgid "Turret firing"
+msgstr ""
+
+msgid "Turret {n}"
+msgstr ""
+
 msgid "Type a message first."
 msgstr "Pehle paigham likhein."
 
@@ -5833,6 +5970,9 @@ msgstr ""
 
 msgid "Type one or more seller IDs."
 msgstr "Bechne wale ki ek ya zyada IDs likhein."
+
+msgid "Type the gang's name."
+msgstr ""
 
 msgid "Type the name of the gang whose craftsmen to use."
 msgstr "Us gang ka naam likhein jiske karigar istemal karne hain."
@@ -6129,6 +6269,9 @@ msgstr "Chat mein kya jaayega, misaal ke taur par:"
 msgid "What to break"
 msgstr "Kya torna hai"
 
+msgid "What to fire at"
+msgstr ""
+
 msgid ""
 "What's in the bag should be enough (a combine works half the time, so maybe not)."
 msgstr ""
@@ -6198,6 +6341,9 @@ msgstr "Cheez kis crystal level ki leti hai:"
 
 msgid "Which plan? Send: start <plan name>"
 msgstr "Kaunsa plan? Bhejein: start <plan name>"
+
+msgid "Which turret fires first at {entry}?"
+msgstr ""
 
 msgid "While a bot runs"
 msgstr "Jab bot chal raha ho"
@@ -6319,6 +6465,9 @@ msgid ""
 "Your system language is supported. Would you like to use {language} in Uncle Farmer?"
 msgstr ""
 "Aap ke system ki zaban dastiyab hai. Kya aap Uncle Farmer mein {language} istemal karna chahein ge?"
+
+msgid "Your turrets"
+msgstr ""
 
 msgid "a chat line"
 msgstr "ek chat line"
@@ -7253,6 +7402,9 @@ msgstr "har roz {time} baje"
 msgid "every farm of the script is already done - stopping"
 msgstr "script ka har farm pehle hi poora ho chuka hai - ruk rahe hain"
 
+msgid "every turret has fired today"
+msgstr ""
+
 msgid "everything"
 msgstr "sab kuch"
 
@@ -7576,6 +7728,13 @@ msgstr "jari bootiyan"
 
 msgid "here, with Resurrection Crystals"
 msgstr "yahin, Resurrection Crystals ke sath"
+
+msgid ""
+"highland {n} is occupied by the {occupier} gang: its owner has changed - skipped"
+msgstr ""
+
+msgid "highland {n} isn't {gang}'s any more: its owner has changed - skipped"
+msgstr ""
 
 msgid "hit {n} times on the way - giving up this walk"
 msgstr "raste mein {n} dafa hit hua - yeh chal chhod rahe hain"
@@ -8059,6 +8218,9 @@ msgstr "level {level} ke liye koi farming map nahi"
 
 msgid "no free rebirth left today"
 msgstr "aaj koi muft rebirth baqi nahi"
+
+msgid "no gang named {gang} in the turret's list - {entry} skipped"
+msgstr ""
 
 msgid ""
 "no guard found here, at the spots where guards were seen, or in the nearest town"
@@ -9198,6 +9360,12 @@ msgstr "is se {n} {item} bachenge"
 msgid "the Animal Shed has nothing to feed now"
 msgstr "Animal Shed par abhi khilane ko kuch nahi"
 
+msgid "the Fire menu has no \"Aim at other highlands\""
+msgstr ""
+
+msgid "the Fire menu has no \"Aim at the {area}\""
+msgstr ""
+
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"
 msgstr "Forger ne {item} list nahi kiya (kya yeh equipped hai ya basta mein?)"
 
@@ -9491,6 +9659,9 @@ msgstr "chest ja chuka hai: kisi aur ne khol liya"
 msgid "the chest was opened by someone else - back to farming"
 msgstr "chest kisi aur ne khol diya - wapas farming"
 
+msgid "the choice of turret or wall didn't open for {entry}"
+msgstr ""
+
 msgid ""
 "the construction report was typed, but the game didn't confirm it - check before sending it again"
 msgstr ""
@@ -9546,6 +9717,9 @@ msgstr "game ne seedha discard request qubool nahin ki: {why}"
 
 msgid "the game didn't ask to confirm"
 msgstr "game ne confirm karne ko nahi kaha"
+
+msgid "the game didn't ask to confirm the shot"
+msgstr ""
 
 msgid "the game didn't ask to confirm the talent reset - nothing changed"
 msgstr "game ne talent reset ki tasdeeq nahin maangi - kuch nahin badla"
@@ -10011,6 +10185,10 @@ msgstr ""
 msgid "the top level - nothing to lose"
 msgstr "sab se ooncha level - kam karne ko kuch nahi"
 
+msgid ""
+"the turret's menu didn't show what was expected and the game said nothing"
+msgstr ""
+
 msgid "the usual medals"
 msgstr "aam medals"
 
@@ -10060,6 +10238,9 @@ msgid ""
 "the {npc} didn't take me for free - check that your VIP is still active. Paying the fares for the rest of this run"
 msgstr ""
 "{npc} mujhe muft nahi le gaya - check karein ke aap ka VIP abhi active hai. Is run ke baqi safar ka kiraya diya jayega"
+
+msgid "the {npc} has no Fire entry"
+msgstr ""
 
 msgid "the {npc} offers no way in ({about})"
 msgstr "{npc} andar jaane ka koi rasta nahi deta ({about})"
@@ -10218,6 +10399,40 @@ msgstr "{npc} ko ek dafa aur try kar raha hoon"
 
 msgid "trying the {tool} instead"
 msgstr "us ke bajaye {tool} aazma rahe hain"
+
+msgid "turret firing"
+msgstr ""
+
+msgid "turret {n}: already fired today"
+msgstr ""
+
+msgid "turret {n}: fired at {what}"
+msgstr ""
+
+msgid "turret {n}: highland {n} isn't in our gang's list"
+msgstr ""
+
+msgid "turret {n}: no highland in the lists can be hit today"
+msgstr ""
+
+msgid "turret {n}: nobody at the {area} can be shot now"
+msgstr ""
+
+msgid ""
+"turret {n}: shot at {what}, but the game didn't confirm it - tried again next time"
+msgstr ""
+
+msgid "turret {n}: this character isn't its keeper"
+msgstr ""
+
+msgid "turret {n}: would hit {what}"
+msgstr ""
+
+msgid "turret {n}: would shoot {what}"
+msgstr ""
+
+msgid "turret {n}: {why}"
+msgstr ""
 
 msgid "unavailable"
 msgstr "dastiyab nahi"
@@ -10578,6 +10793,21 @@ msgid ""
 msgstr ""
 "{elite} (demonized elite) {n} qadam door hai - us se {keep} qadam door reh rahe hain"
 
+msgid "{entry} ({part})"
+msgstr ""
+
+msgid "{entry} - fires even if occupied"
+msgstr ""
+
+msgid "{entry} - paired with our turret in highland {turret}"
+msgstr ""
+
+msgid "{entry} is at or below {limit}% - not fired at"
+msgstr ""
+
+msgid "{entry} is in the list already."
+msgstr ""
+
 msgid "{field}: enter a number from {lo} to {hi}"
 msgstr "{field}: {lo} se {hi} tak number likhein"
 
@@ -10596,8 +10826,14 @@ msgstr "{file}: {shard} ki qeemat apni jagah par nahi hai"
 msgid "{games} games, {bots} bots running"
 msgstr "{games} games, {bots} bots chal rahe hain"
 
+msgid "{gang} highland {n}"
+msgstr ""
+
 msgid "{gang} is in the list already."
 msgstr "{gang} pehle se list mein hai."
+
+msgid "{gang}, highland {n}"
+msgstr ""
 
 msgid "{gang}: already today ({note})"
 msgstr "{gang}: aaj pehle hi ({note})"
@@ -11220,6 +11456,9 @@ msgstr "{pet}: aaj koi muft rebirth baqi nahi"
 
 msgid "{pet}: {n} free rebirths, assets {before} -> {after}"
 msgstr "{pet}: {n} muft rebirth, assets {before} -> {after}"
+
+msgid "{player} at the {area}"
+msgstr ""
 
 msgid "{potion} (you have {n}):"
 msgstr "{potion} (aapke paas {n}):"

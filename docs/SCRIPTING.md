@@ -867,6 +867,7 @@ You can use `only=` to choose which chores to run. The available names are:
 - `pet_rebirth`
 - `donation`
 - `construction`
+- `firing` (the daily shot of each turret the character keeps)
 - `feed`
 - `contribution_chests`
 - `secret_room`

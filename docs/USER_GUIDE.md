@@ -1244,6 +1244,60 @@ This gives:
 
 Feeding the beast is separate from the two daily construction jobs.
 
+**Turret firing: the daily shot**
+
+A character can be the keeper of a highland's Crystal Turret. The game also calls this the turret administrator. Each turret can fire once a game day. One character can keep several turrets, and each one fires once.
+
+Set this up on the **Turret firing** tab:
+
+- Tick **Fire each turret once a game day**.
+- In **Highlands where this character is the turret administrator**, add the highlands' numbers. For example, add 80 for highland 80. This can be one of our gang's own highlands, or one our gang occupies from another gang.
+- Choose what to aim at: **Our gang's area**, or **Other gangs' highlands**.
+
+**Our gang's area**
+
+Choose the main mansion, the mining area or the lake. The game lists the players who are there.
+
+A shot at our gang's area kills the player it hits.
+
+The bot only shoots a player the game marks as a **Foreign player** who **can be bombarded**. It never shoots a player of our own gang, or one the game protects. It shoots the first such player in the list.
+
+Add the names of players you never want shot, such as players from an allied gang, to **Players never to shoot**.
+
+If nobody can be shot, the bot doesn't fire. It tries again on the next chores run that day.
+
+**Other gangs' highlands**
+
+Each entry is a gang's name and one of its highlands, such as "Northwind, highland 7". Type the gang's name exactly as the turret's list of gangs shows it, with the same capital letters: "northwind" doesn't find "Northwind". A shot takes 5% off the part it hits.
+
+- **Part to hit:** the turret, the wall, or whichever of the two is higher. When both are the same, 0% included, it hits the wall.
+- **Targets:** the highlands to fire at, in order.
+- **Pair with a turret:** a target can be paired with one of your turrets. A turret can have several paired targets, and each target has one turret at most. The target then shows "paired with our turret in highland 80", and the turret shows all its pairs, for example "Highland 80 - paired with: Northwind highland 7, Riverfolk highland 12".
+- **Don't fire at a highland at or below this percent:** the bot leaves a target alone once it is at or below this percent. With **Hit the highest**, the limit is checked on the higher part.
+- **Random gangs:** used when no target can be hit. The limit doesn't apply here.
+
+Each turret fires at the first of these it can hit:
+
+1. The targets paired with it, in list order.
+2. The targets with no pair, in list order.
+3. The random gangs, in list order.
+
+A turret never fires at a target paired with another turret.
+
+In each list, the context menu (Applications key or Shift+F10) has **Move up**, **Move down** and **Remove**. **Delete** also removes the selected entry.
+
+If a highland isn't under the gang you named any more, the bot skips it and says in the log that its owner has changed.
+
+When another gang takes a highland, the game still lists it under the old gang, but adds "Occupied by" and the new gang's name. The bot leaves such a highland alone and says in the log that its owner has changed. To fire at it anyway, tick **Fire at it even when another gang occupies it** when you add it. To change this later, use **Fire even when occupied (on or off)** in the list's context menu. The list then shows "fires even if occupied" after the entry.
+
+**When the shots are made**
+
+If construction is on and visits one of your turrets' highlands to repair, the bot fires there during the same visit. After construction, the bot goes to each listed turret that hasn't fired yet that day.
+
+A turret is written down for the day when the shot is made, when the game says it already fired today, or when the game says this character isn't its keeper. When the game doesn't confirm a shot, the bot tries again on the next run. A second try costs nothing, because the game refuses a second shot.
+
+**Check only** opens each turret's Fire menu and says what it would hit, but never fires.
+
 **Secret room: sharing arnebia**
 
 The secret room allows players to share arnebia. Sharing is available once during each half-hour period, at :00 and :30. You can do this five times per day, and both players receive arnebia.
