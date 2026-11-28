@@ -289,6 +289,8 @@ Every farming run stops at that time, regardless of the plan's settings or what 
 
 Uncle Farmer will not start another farming run between the daily stopping time and the game's drop-time reset.
 
+Only killing monsters on public maps spends the drop time: dungeons, gathering and the tools don't. So the daily stopping time is only for runs that farm public maps (a plan, or a script with a `farm` line). The Dungeons tool, a script that only runs dungeons or gathers, and the Tools menu run at any hour, also right before the reset. Inside a dungeon, the daily stop waits until the game moves your character out.
+
 You can change this time in **File → Settings → Farming day**.
 
 By default, the daily stopping time is set to 10 minutes before the drop-time reset. In Pakistan, that means **04:50**. This gives your character some time to leave the farming area before the reset.
@@ -445,7 +447,7 @@ The bot avoids attacking these bosses. It also avoids attacking anything within 
 
 When a boss comes within that distance, the bot moves to the spot furthest away from it and then continues farming. Its patrol also keeps clear of the bosses it has seen in the last minute, and of the boss zones the map data marks.
 
-A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
+A boss that keeps coming back is left behind for a while. After three walk-offs in five minutes, or when there is nowhere further from it to go, the bot says "Death Worm (a boss) keeps coming back - leaving for central plains (1041) for 60 s". It goes out through the nearest door that is far from the boss, waits on the other side, then comes back to farm. If the boss is still there and it has to leave again, the wait doubles: 1 minute, then 2, 4, and at most 5. When the game tells the whole server that the boss died (its last words on the news, such as "Fire Lord: Damn... I want to vaporize the person named ..."), the bot says so and goes back at once. The game's line names no map, so a boss of the same name killed elsewhere brings it back early too; if the boss is still there, it leaves again as before. Not every boss may have such a line: for one without, the wait lasts as long as it was. It never leaves a dungeon this way, and it only goes through doors to ordinary maps, roads or towns.
 
 The bot doesn't stand idle meanwhile. On the way to the door it fights the monsters it meets, as long as none is close to a boss (ten fights or two minutes at most, then it walks straight out). On the other side it farms the map, within 40 steps of where it came onto it ("farming central plains (1041) meanwhile, near where we came in"). It only does that where it is safe:
 
@@ -526,7 +528,8 @@ Under **Character → Settings → Fighting**, the group **Drop time and experie
 
 It also checks before a run sets out, before the **Before farming** list: when the next level already needs less than your number, it says "the next level needs only ... experience - not starting to farm" and does nothing else, so it doesn't make the whole trip to the farm only to come back. The drop time is checked the same
 way: when what is left is already down to what you save, it says "the drop time is nearly used up
-(... min left) - not starting to farm" and stays where it is.
+(... min left) - not starting to farm" and stays where it is. Only a run that farms public maps is checked
+for the drop time: a script that only runs dungeons starts all the same, since a dungeon spends none.
 
 A run that ends this way is one that ended by itself, so the **After farming** list in Character, Settings, Triggers runs next. Put **Lose experience** (the XP loser, Tools menu) there to win some experience back before the next run.
 
@@ -1698,7 +1701,27 @@ Uncle Farmer includes your pet's kills in your character's kill count, just as t
 
 You don't have to watch the clock. After 15 minutes, the game normally moves your character out of the dungeon automatically.
 
-If that doesn't happen for some reason, Uncle Farmer leaves through the game's **Action** menu.
+If that doesn't happen for some reason, Uncle Farmer leaves through the game's **Action** menu: the visit is over by then.
+
+### Never out of a dungeon by the bot's own doing
+
+Every dungeon puts you out by itself: its timer, the chest at its end, or the time it allows running
+out. Leaving it yourself loses the day's visit. So when Uncle Farmer finds your character in a dungeon
+and has somewhere else to go - a run started inside it, a tool, the Before or After farming list, the
+end of a run - it doesn't leave. It says "in Nether Cave: not leaving the dungeon by ourselves (the
+day's visit would be lost) - farming it until the game moves us out", farms the dungeon (that spends
+no drop time, and no trip to town is made for the bag or supplies), and goes on from wherever the game
+puts your character. When the dungeon is done and your own treasure chest ("Treasure chest belongs to
+...") is there, it opens it to go out, as the game means it.
+
+If the game still hasn't moved your character out after 2 hours, the run stops there, inside, and says
+so: leave it yourself.
+
+A wedding hall is never left by the bot either: leaving it through the Action menu loses the gift its
+NPC gives at the end of the wedding. The run stops there and says so: take the gift, then start again.
+
+This doesn't apply to **Walk to** (you asked to go), to following a team leader, or to coming to a
+player who called. Secret rooms, the gang's areas and events are left as before.
 
 After leaving, it follows your **Where to end** setting. You can choose to:
 
@@ -2061,14 +2084,20 @@ All results are saved in the `results` folder, with a separate file for each cha
 
 ## Keyboard shortcuts
 
-Every command of the menus can have its own keys, and each key works either **only in Uncle
-Farmer** or **everywhere, even in the game** (and in any other program). Out of the box the keys are
-the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause work everywhere, the others
-only in Uncle Farmer.
+Every command of the menus can have its own keys, and each key works **only in Uncle Farmer**, **in
+Uncle Farmer and in the games only**, or **everywhere, even in the game** (and in any other program).
+Out of the box the keys are the ones listed in **Help, Keyboard shortcuts**: Pause and Shift+Pause
+work everywhere, the others only in Uncle Farmer.
+
+**In Uncle Farmer and in the games only** works in the bot's windows and in the windows of the games
+in its Games list, and nowhere else: in your browser or any other program the key does what it
+always did. In a game, the key no longer reaches the game, as with a key that works everywhere.
 
 Change them in **File, Keyboard shortcuts**. The list holds every action, with its keys and where
 they work. Select one, type its keys in **Keys** (for example `Ctrl+Shift+R`, `F7` or `Shift+Pause`;
-leave it empty for no key) and choose where they work in **Works**. The keys are typed as text, so
+leave it empty for no key) and choose where they work in **Works**. Or press **Press the keys...** and
+press them: a small window takes the next keys you press (with Ctrl, Alt or Shift), and Escape leaves it
+without changing anything. NVDA's own keys never reach it. The keys are typed as text, so
 NVDA's own keys never get in the way. The **Note** below says what to know: keys the bot can't use,
 another action that has them already, or what a key that works everywhere takes away. **Default for
 this one** and **All the defaults** put the bot's keys back. Nothing is kept until **Save**, and the
@@ -2079,9 +2108,11 @@ an action, for players who prefer a file:
 
     run_toggle = Pause = global
     game_mute = Ctrl+M = inapp
-    game_next = none = global
+    game_next = F11 = games
+    game_show = none = global
 
-`global` works everywhere, `inapp` only in Uncle Farmer, and `none` means no key. **Open the file**
+`global` works everywhere, `games` in Uncle Farmer and in the games only, `inapp` only in Uncle
+Farmer, and `none` means no key. **Open the file**
 opens it in your editor; after editing it, **Read the file again** brings it into the window (or
 restart Uncle Farmer). A line that can't be used is said in the Log tab when Uncle Farmer starts, and
 that action keeps its default.

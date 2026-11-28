@@ -544,6 +544,9 @@ msgstr ""
 msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 
+msgid "&Press the keys..."
+msgstr ""
+
 msgid "&Private messages"
 msgstr ""
 
@@ -928,7 +931,7 @@ msgid ""
 msgstr ""
 
 msgid ""
-"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list. The keys about the selected game (the next or previous one, its status, its window) keep the selection, so the next game, then the next, goes round the list even from inside a game."
 msgstr ""
 
 msgid ""
@@ -2734,6 +2737,9 @@ msgstr ""
 msgid "Important events only"
 msgstr ""
 
+msgid "In Uncle Farmer and in the games only"
+msgstr ""
+
 msgid "In Uncle Farmer's main window"
 msgstr ""
 
@@ -3880,6 +3886,16 @@ msgid "Press a skill again and &again until the game casts it"
 msgstr ""
 
 msgid "Press s&kills through the game, not the keyboard"
+msgstr ""
+
+msgid "Press the keys"
+msgstr ""
+
+msgid ""
+"Press the keys for {action} now, with Ctrl, Alt or Shift if you want them. Escape: leave without changing them."
+msgstr ""
+
+msgid "Press the keys:"
 msgstr ""
 
 msgid "Press the new key for {action}:"
@@ -5947,6 +5963,10 @@ msgstr ""
 msgid "Works while an Uncle Farmer window is in front."
 msgstr ""
 
+msgid ""
+"Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no longer reaches the game. In any other program, {keys} does what it always did."
+msgstr ""
+
 msgid "Worst hit received: {hit}"
 msgstr ""
 
@@ -7026,6 +7046,10 @@ msgstr ""
 msgid "game {pid}"
 msgstr ""
 
+msgid ""
+"games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any other program the key does what it always did."
+msgstr ""
+
 msgid "gang construction"
 msgstr ""
 
@@ -7204,6 +7228,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in Uncle Farmer and in the games only"
+msgstr ""
+
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
@@ -7220,6 +7247,18 @@ msgid "in the city"
 msgstr ""
 
 msgid "in {cave}: {n} minutes to kill all we can"
+msgstr ""
+
+msgid ""
+"in {map}: not leaving it - the wedding's gift would be lost. Take the gift from its NPC, then start again"
+msgstr ""
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then ending the run"
+msgstr ""
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then on to {dest}"
 msgstr ""
 
 msgid "in {room}; practice time left: {m} minutes"
@@ -8453,7 +8492,7 @@ msgid ""
 "shortcuts.txt line {n}: {name} is on line {first} too; this line counts."
 msgstr ""
 
-msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+msgid "shortcuts.txt line {n}: {where} isn't global, games or inapp."
 msgstr ""
 
 msgid "shortcuts.txt line {n}: {why}"
@@ -8529,6 +8568,10 @@ msgid "still broken after the repair: {items}"
 msgstr ""
 
 msgid "still dead - the after-farming list is left out"
+msgstr ""
+
+msgid ""
+"still in {map} after {h} hours - the game hasn't moved us out; leave it yourself"
 msgstr ""
 
 msgid "still on display - it can't be bought in its first hour"
@@ -9123,6 +9166,10 @@ msgid ""
 msgstr ""
 
 msgid "the game says today's collection items are all bought"
+msgstr ""
+
+msgid ""
+"the game says {boss} is dead: back to the farm without waiting any longer"
 msgstr ""
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"

@@ -4,13 +4,16 @@ next game, its status, its window).
 
 Each action has its keys (or none) and where they work: EVERYWHERE, even inside the game or another
 program (a Windows hotkey, which takes the key away from every other program while Uncle Farmer
-runs), or IN_APP, only while an Uncle Farmer window is in front (the menus' accelerators).
+runs); IN_GAMES, in Uncle Farmer and in the games only (the accelerator in Uncle Farmer, and a hotkey
+held only while one of our games is in front, so the key still reaches every other program - a
+player asked for it); or IN_APP, only while an Uncle Farmer window is in front (the menus'
+accelerators).
 
 They live in shortcuts.txt beside settings.json, one line an action, as a player asked for it:
 
     run_start = F5 = inapp
     run_toggle = Pause = global
-    game_next = none = global
+    game_next = F11 = games
 
 File, Keyboard shortcuts edits the same file. A line that can't be used (an unknown action, a key the
 bot doesn't take, two actions on one key) is reported and left out: that action keeps its default,
@@ -27,8 +30,8 @@ from dataclasses import dataclass
 from . import jsonio, paths
 from .i18n import N_, _
 
-EVERYWHERE, IN_APP = "global", "inapp"
-WHERE = (EVERYWHERE, IN_APP)
+EVERYWHERE, IN_GAMES, IN_APP = "global", "games", "inapp"
+WHERE = (EVERYWHERE, IN_GAMES, IN_APP)
 NONE = "none"                   # the file's word for no key
 NAME = "shortcuts.txt"
 
@@ -236,7 +239,11 @@ def label(action: Action) -> str:
 
 
 def where_label(where: str) -> str:
-    return _("everywhere, even in the game") if where == EVERYWHERE else _("only in Uncle Farmer")
+    if where == EVERYWHERE:
+        return _("everywhere, even in the game")
+    if where == IN_GAMES:
+        return _("in Uncle Farmer and in the games only")
+    return _("only in Uncle Farmer")
 
 
 def clashes(table: Table) -> list[tuple[str, str]]:
@@ -276,7 +283,7 @@ def parse(text: str) -> tuple[Table, list[str]]:
             problems.append(_("shortcuts.txt line {n}: there is no action called {name}.", n=n, name=parts[0]))
             continue
         if where not in WHERE:
-            problems.append(_("shortcuts.txt line {n}: {where} isn't global or inapp.", n=n, where=parts[2]))
+            problems.append(_("shortcuts.txt line {n}: {where} isn't global, games or inapp.", n=n, where=parts[2]))
             continue
         try:
             table[name] = Shortcut(canonical(keys), where)
@@ -320,6 +327,8 @@ def render(table: Table) -> str:
              "# " + _("keys: for example F5, Ctrl+Shift+R or Shift+Pause; none for no key."),
              "# " + _("where: global works everywhere, even inside the game (the key no longer reaches the game or "
                       "any other program while Uncle Farmer runs); inapp only in Uncle Farmer's windows."),
+             "# " + _("games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any "
+                      "other program the key does what it always did."),
              "# " + _("A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."),
              ""]
     group = ""

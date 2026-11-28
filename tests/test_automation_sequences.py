@@ -169,8 +169,11 @@ def test_the_after_list_keeps_the_daily_stop(monkeypatch: pytest.MonkeyPatch, tm
 
 @pytest.mark.parametrize("deterministic", [False, True])
 def test_a_step_that_farms_waits_for_the_days_window(deterministic: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A step with a farm line asks for the day's window; a dungeon doesn't (it spends no drop time)."""
     bot = FakeBot()
-    bot.p = profile(triggers.step("dungeon", deterministic=deterministic), triggers.step("restock"), stage="after")
+    (Path(paths.SCRIPTS) / "farms.mwf").write_text("farm minutes=30\n", encoding="utf-8")
+    bot.p = profile(triggers.step("script:farms", deterministic=deterministic), triggers.step("dungeon"),
+                    triggers.step("restock"), stage="after")
     ran: list[str] = []
     def action(_b: Any, name: str) -> None:
         ran.append(name)
@@ -185,8 +188,9 @@ def test_a_step_that_farms_waits_for_the_days_window(deterministic: bool, monkey
         assert ran == []
     else:
         done = triggers.run_stage(as_bot(bot), "after", bot.log, bot.stop_event.is_set, window)
-        assert done == [("dungeon", False), ("restock", True)] and ran == ["restock"]
-    assert asked == ["window"]                 # asked for the farming step only, not for restock
+        assert done == [("script:farms", False), ("dungeon", True), ("restock", True)]
+        assert ran == ["dungeon", "restock"]
+    assert asked == ["window"]                 # asked for the farming step only, not for the dungeon or restock
 
 
 def test_which_steps_farm(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -196,7 +200,8 @@ def test_which_steps_farm(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> No
     (Path(paths.SCRIPTS) / "farms.mwf").write_text("restock\nif kills < 5\n  farm minutes=30\nend\n", encoding="utf-8")
     (Path(paths.SCRIPTS) / "town.mwf").write_text("restock\nsell_shards\n", encoding="utf-8")
     b = as_bot(bot)
-    assert triggers.step_farms(b, "dungeon") and triggers.step_farms(b, "script:farms")
+    # a dungeon spends no drop time: it isn't held to the day's farming window
+    assert not triggers.step_farms(b, "dungeon") and triggers.step_farms(b, "script:farms")
     assert not triggers.step_farms(b, "script:town") and not triggers.step_farms(b, "restock")
     assert not triggers.step_farms(b, "chores") and not triggers.step_farms(b, "script:gone")
 
@@ -226,10 +231,14 @@ def test_a_failed_after_step_still_lets_the_after_stop_run(monkeypatch: pytest.M
     assert any("restock" in line or "restocking" in line for line, _speak in logs)
 
 
-@pytest.mark.parametrize("text, checked", [("dungeon\n", True), ("restock\n", False)])
-def test_a_scheduled_dungeon_keeps_the_daily_stop(text: str, checked: bool, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("text, kind, checked", [("dungeon\n", "tool", False), ("restock\n", "tool", False),
+                                                   ("farm map=5121\n", "script", True)])
+def test_only_a_run_that_farms_public_maps_keeps_the_daily_stop(text: str, kind: str, checked: bool,
+                                                                monkeypatch: pytest.MonkeyPatch) -> None:
+    """Only killing monsters on public maps spends the drop time: a scheduled dungeon may run right
+    before the reset (its entry is the day's), a farm line may not."""
     run = runner.Run(text, text.strip(), 77, returning(None), returning(None))
-    run.kind = "tool"
+    run.kind = kind
     monkeypatch.setattr(runner.daily, "plan", returning((None, "05:00")))
     class Reached(Exception):
         pass

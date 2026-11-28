@@ -2,6 +2,52 @@
 
 ## Unreleased
 
+**Keyboard shortcuts: the next game goes round from inside a game, and keys for the games only**
+(untested in game)
+
+- From inside a game, Select the next game (or the previous one) now goes round the list as it does
+  in the bot's window. It used to start again from the game in front each time, so it always gave
+  the same other game. Speak the selected game's status and Bring the selected game to the front
+  now keep the game just selected too. Start or stop the bot still acts on the game in front.
+- A third choice for where a key works: in Uncle Farmer and in the games only (`games` in
+  `shortcuts.txt`). The key is held only while one of the games of the Games list is in front, so in
+  any other program it does what it always did.
+
+- File, Keyboard shortcuts has a **Press the keys...** button: a small window takes the next keys
+  pressed and puts them in the Keys box, checked as typed keys are. Escape leaves it. A player asked
+  for it. Help, Keyboard shortcuts lists the keys that work in the games only in their own part.
+
+**Dungeons: never left by the bot's own doing** (untested in game)
+
+- Every dungeon puts the player out by itself (its timer, its end chest, the time it allows), and
+  leaving it loses the day's visit; players lost theirs to a run started inside one, a tool, a Before
+  or After farming list, or the end of a run going to its end place. A trip that starts in a dungeon
+  now farms it until the game moves the character out, then goes on from there. Its own end chest is
+  still opened to go out. After 2 hours still inside, the run stops there, inside.
+- A farm on the dungeon the character stands in is a dungeon's farm: no trip out for the bag, the
+  supplies or the drop time.
+- A wedding hall isn't left by the bot either (leaving through the Action menu loses the wedding's
+  gift): the run stops there and says so.
+- Walk to, following a team leader and coming to a player who called leave as before; so do secret
+  rooms, the gang's areas and events.
+
+**The drop time: only farm lines are held to it** (untested in game)
+
+- Only killing monsters on public maps spends the day's drop time. The daily stop, and the refusal to
+  start near the reset, now only hold runs with a `farm` line: the Dungeons tool, a dungeon step of
+  the Before or After farming list, the Tools menu (Gem Maker and the others) and scripts that only
+  run dungeons or gather run at any hour.
+- A script that only runs dungeons starts even with the day's drop time used up.
+- Inside a dungeon the daily stop waits until the game moves the character out.
+
+**Bosses: back to the farm as soon as the game says the boss died** (untested in game)
+
+- During the wait away from a boss that keeps coming back, the bot reads the game's news. When the
+  boss's last words come (the game tells the whole server, for example "Fire Lord: Damn... I want to
+  vaporize the person named ..."), it says so and goes back to the farm at once instead of waiting
+  out the minutes. The line names no map, so it goes by the boss's name: one of the same name dead
+  elsewhere brings it back early, and it leaves again if the boss is still there.
+
 **Market: a lot chosen by its listing command, and no purchase made blind after an unsure one** (untested in game)
 
 - A lot is chosen by its listing command, looked up in the menu at the moment of choosing: the

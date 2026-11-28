@@ -552,6 +552,9 @@ msgid "&Practise for (minutes; 0: in, share, out; time inside uses drop time):"
 msgstr ""
 "Alıştırma süresi (dakika; 0: gir, &paylaş, çık; içeride geçen süre ganimet süresinden düşer):"
 
+msgid "&Press the keys..."
+msgstr ""
+
 msgid "&Private messages"
 msgstr "Özel mesajlar (&P)"
 
@@ -939,9 +942,8 @@ msgstr ""
 "Yukarıdaki boyuta ulaşan dosya name.1 olarak saklanır, eskileri name.2'ye kayar ve böyle devam eder; en eskisi silinir. Günün çalışma günlüğü de kendi günü içinde aynı şekilde döndürülür."
 
 msgid ""
-"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+"A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list. The keys about the selected game (the next or previous one, its status, its window) keep the selection, so the next game, then the next, goes round the list even from inside a game."
 msgstr ""
-"Her yerde çalışan bir tuş, öndeki oyun sizinse o oyuna etki eder (Oyunlar listesi onu seçer), başka bir programdan ise listede seçili oyuna."
 
 msgid ""
 "A line that can't be used is said when Uncle Farmer starts, and that action keeps its default."
@@ -2787,6 +2789,9 @@ msgstr "Ayarları bu karaktere aktar:"
 msgid "Important events only"
 msgstr "Yalnızca önemli olaylar"
 
+msgid "In Uncle Farmer and in the games only"
+msgstr ""
+
 msgid "In Uncle Farmer's main window"
 msgstr "Uncle Farmer'ın ana penceresinde"
 
@@ -3969,6 +3974,16 @@ msgstr "Oyun kull&anana kadar beceriye tekrar tekrar bas"
 
 msgid "Press s&kills through the game, not the keyboard"
 msgstr "Becerilere &klavyeyle değil, oyunun içinden bas"
+
+msgid "Press the keys"
+msgstr ""
+
+msgid ""
+"Press the keys for {action} now, with Ctrl, Alt or Shift if you want them. Escape: leave without changing them."
+msgstr ""
+
+msgid "Press the keys:"
+msgstr ""
 
 msgid "Press the new key for {action}:"
 msgstr "{action} için yeni tuşa bas:"
@@ -6128,6 +6143,10 @@ msgstr ""
 msgid "Works while an Uncle Farmer window is in front."
 msgstr "Bir Uncle Farmer penceresi öndeyken çalışır."
 
+msgid ""
+"Works while an Uncle Farmer window or one of the games is in front: in a game, {keys} no longer reaches the game. In any other program, {keys} does what it always did."
+msgstr ""
+
 msgid "Worst hit received: {hit}"
 msgstr "Alınan en kötü vuruş: {hit}"
 
@@ -7250,6 +7269,10 @@ msgstr "oyun belleği: {limit} MB'nin {used} MB'si kullanımda"
 msgid "game {pid}"
 msgstr "oyun {pid}"
 
+msgid ""
+"games works in Uncle Farmer's windows and in the games' windows, and nowhere else: in any other program the key does what it always did."
+msgstr ""
+
 msgid "gang construction"
 msgstr "çete inşaatı"
 
@@ -7432,6 +7455,9 @@ msgstr ""
 msgid "hunting bounties: {list}"
 msgstr ""
 
+msgid "in Uncle Farmer and in the games only"
+msgstr ""
+
 msgid "in a no-go circle of this farming spot"
 msgstr ""
 
@@ -7449,6 +7475,18 @@ msgstr "şehirde"
 
 msgid "in {cave}: {n} minutes to kill all we can"
 msgstr "{cave} içinde: öldürebildiğimiz kadarını öldürmek için {n} dakika"
+
+msgid ""
+"in {map}: not leaving it - the wedding's gift would be lost. Take the gift from its NPC, then start again"
+msgstr ""
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then ending the run"
+msgstr ""
+
+msgid ""
+"in {map}: not leaving the dungeon by ourselves (the day's visit would be lost) - farming it until the game moves us out, then on to {dest}"
+msgstr ""
 
 msgid "in {room}; practice time left: {m} minutes"
 msgstr "{room} içinde; kalan alıştırma süresi: {m} dakika"
@@ -8719,8 +8757,8 @@ msgid ""
 msgstr ""
 "shortcuts.txt satır {n}: {name} {first}. satırda da var; bu satır geçerli."
 
-msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
-msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
+msgid "shortcuts.txt line {n}: {where} isn't global, games or inapp."
+msgstr ""
 
 msgid "shortcuts.txt line {n}: {why}"
 msgstr "shortcuts.txt satır {n}: {why}"
@@ -8798,6 +8836,10 @@ msgid "still broken after the repair: {items}"
 msgstr "onarımdan sonra hâlâ bozuk: {items}"
 
 msgid "still dead - the after-farming list is left out"
+msgstr ""
+
+msgid ""
+"still in {map} after {h} hours - the game hasn't moved us out; leave it yourself"
 msgstr ""
 
 msgid "still on display - it can't be bought in its first hour"
@@ -9417,6 +9459,10 @@ msgstr "oyuna göre bu karakter bugün zaten bir deneyim zindanına girdi"
 
 msgid "the game says today's collection items are all bought"
 msgstr "oyun bugünün koleksiyon eşyalarının hepsinin alındığını söylüyor"
+
+msgid ""
+"the game says {boss} is dead: back to the farm without waiting any longer"
+msgstr ""
 
 msgid "the game seems frozen: nothing in it has moved - it is opened again"
 msgstr ""
@@ -11201,6 +11247,11 @@ msgstr "{w} x {h} kare, {n} çıkış."
 #~ msgid "(no notes)"
 #~ msgstr "(not yok)"
 
+#~ msgid ""
+#~ "A key that works from anywhere acts on the game in front when it is one of yours (the Games list selects it), and from any other program on the game selected in the list."
+#~ msgstr ""
+#~ "Her yerde çalışan bir tuş, öndeki oyun sizinse o oyuna etki eder (Oyunlar listesi onu seçer), başka bir programdan ise listede seçili oyuna."
+
 #~ msgid "Another program is using the Pause key; the Pause shortcut won't work."
 #~ msgstr ""
 #~ "Başka bir program Duraklat tuşunu kullanıyor; Duraklat kısayolu çalışmaz."
@@ -11275,6 +11326,9 @@ msgstr "{w} x {h} kare, {n} çıkış."
 
 #~ msgid "patrol is random, full, quick or short"
 #~ msgstr "patrol için random, full, quick ya da short yaz"
+
+#~ msgid "shortcuts.txt line {n}: {where} isn't global or inapp."
+#~ msgstr "shortcuts.txt satır {n}: {where} global veya inapp değil."
 
 #~ msgid "the game said nothing about {item} - look in the bag"
 #~ msgstr "oyun {item} için hiçbir şey demedi - çantaya bak"

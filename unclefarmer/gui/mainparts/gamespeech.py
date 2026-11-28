@@ -88,9 +88,14 @@ class GameSpeechMixin(FrameParts):
         """A game in "front" mode talks while its window is in front and is silent otherwise: what
         changed since the last look is sent, on a worker. What a game was told is noted once it
         answered: one busy or gone for a moment is told again at the next look after its worker."""
-        if self.destroyed or getattr(self, "speech_closing", False) or not getattr(self, "speech_modes", None):
+        if self.destroyed:
             return
         front = foreground_pid()
+        follow_keys = getattr(self, "follow_front_keys", None)
+        if follow_keys is not None:
+            follow_keys(front)              # the keys that work in the games only (KeysMixin)
+        if getattr(self, "speech_closing", False) or not getattr(self, "speech_modes", None):
+            return
         todo: list[tuple[int, str]] = []
         for pid, mode in self.speech_modes.items():
             if mode != FRONT or pid in self.front_busy:

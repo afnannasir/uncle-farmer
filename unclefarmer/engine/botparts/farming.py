@@ -15,7 +15,8 @@ from typing import Any
 from ... import atlas, travel
 from ...settings import PK_MODES, TARGET_MODES
 from ...i18n import _
-from .. import beasts, bosses, chesthunt, chests, corpses, gearthrow, keyslots, pets, refusals, teamhunt, teamlead, watchdog, xpcard
+from .. import (beasts, bosses, chesthunt, chests, corpses, dungeonhold, gearthrow, keyslots, pets, refusals, teamhunt,
+               teamlead, watchdog, xpcard)
 from .base import (MOVE_SHOT_REACH, GameLost, LosingFight, Respawned, Stopped, WrongCharacter)
 from .parts import as_bot, EndPlace, Parts
 
@@ -140,6 +141,8 @@ class FarmingMixin(Parts):
         from this many monsters close together (else 3). chase: on a patrol loop, chase what is
         within this many walking steps (else the profile's chase_range)."""
         map_id = int(map_id)
+        if not instance and self.map_id() == map_id and dungeonhold.kept(map_id) == "dungeon":
+            instance = True       # standing in a dungeon: no trip out for the bag, supplies or drop time
         if not self.restocked_once and not instance:
             # Before setting out: only what is down to its min (a full top-up of everything under
             # its stock made a trip to town for 199 potions of 200).
@@ -774,6 +777,7 @@ class FarmingMixin(Parts):
     def _finish_at(self) -> None:
         how: EndPlace = self.end_place or ("start",)
         kind = how[0]
+        self._out_of_the_dungeon_first()
         try:
             if kind == "here":
                 pass
@@ -819,6 +823,14 @@ class FarmingMixin(Parts):
                 raise
             self._way_failed(why)
         self._finish_off()
+
+    def _out_of_the_dungeon_first(self) -> None:
+        """Never out of a dungeon by our own doing, the end's hearthstone included: farmed till the game
+        moves us out, then the end place from there. Its Stopped (a wedding hall, two hours inside) is
+        passed on: the run waits inside for its player, it didn't end by itself."""
+        here = self.map_id()
+        if dungeonhold.kept(here) and dungeonhold.applies(as_bot(self)):
+            dungeonhold.hold(as_bot(self), here, None)
 
     def _way_failed(self, why: Stopped) -> None:
         """The way to the end place failed: why (already in the player's language), then the

@@ -212,9 +212,19 @@ def sim_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Generator[Callab
     monkeypatch.setattr(stats, "RESULTS", str(tmp_path / "results"))
     jsonio.save(paths.SETTINGS, {"daily_stop": False})
     games: list[simgame.SimGame] = []
+    # The pretend game's map is a walled cave from the game's data (Spider cave, 1503 by default) that
+    # stands in for a farming map: it isn't a dungeon the bot must wait in (engine/dungeonhold.py).
+    from unclefarmer.engine import dungeonhold
+    real_kept = dungeonhold.kept
+    sim_maps: set[int] = set()
+
+    def kept(mid: int) -> str | None:
+        return None if int(mid) in sim_maps else real_kept(mid)
+    monkeypatch.setattr(dungeonhold, "kept", kept)
 
     def new_game(seed: int = 7, map_id: int = 1503, monsters: int = 12) -> simgame.SimGame:
         g = simgame.SimGame(paths.AGENT_RUN, map_id=map_id, seed=seed, monsters=monsters)
+        sim_maps.add(int(map_id))
         games.append(g)
         return g
     yield new_game
