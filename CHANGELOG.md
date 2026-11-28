@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+**Daily chores: the daily shot of each gang turret this character keeps** (untested in game as a chore)
+
+- New tab in Tools, Daily chores: "Turret firing". List the highlands whose Crystal Turret the
+  character keeps. Each one fires once a game day. A turret can be in one of our gang's own
+  highlands or in one our gang occupies from another gang.
+- Aim at our gang's area (main mansion, mining area, lake or herbal garden; the herbal garden's
+  entry is untested, as our gang has none): the bot shoots the first foreign
+  player there that the game lets be shot. The shot kills that player. It never shoots our own
+  gang's players, nor the names in "Players never to shoot". With nobody to shoot, it tries
+  again later that day.
+- Or aim at other gangs' highlands: a list of targets (gang name and highland number) with a
+  percentage limit, then a list of random gangs used without the limit. Hit the turret, the wall,
+  or the higher of the two. The gang's name must match the game's list exactly, capitals too.
+- A highland that changed owner is skipped and said. So is one the game shows as "Occupied by"
+  another gang, unless its entry is set to fire even when occupied (a checkbox when adding it,
+  and an on or off item in the list's context menu).
+- A target can be paired with one turret, and a turret can have several. Each turret fires at its
+  pairs first, then at the targets with no pair, then at the random gangs, each in list order. It
+  never fires at another turret's pair.
+  The lists have Move up and Move down.
+- When construction repairs in one of these highlands, the turret fires in the same visit. The
+  firing chore does the rest.
+- The menus and the game's answers were read in the game by hand: "already fired today", "You are
+  not the turret administer", and the chat lines that tell of a shot. The bot running the whole
+  chore has not been tried in the game yet.
+- Script: `chores only=firing`.
+
 **Keyboard shortcuts: the next game goes round from inside a game, and keys for the games only**
 (untested in game)
 

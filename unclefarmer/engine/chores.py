@@ -84,11 +84,11 @@ from typing import Any
 from .. import atlas, daily, jsonio, knowledge, paths, settings
 from ..clock import clock_for
 from ..i18n import _
-from . import crafting, town
+from . import crafting, town, turretfire
 from .bot import CONFIRM, Bot, Stopped
 from .botparts.base import GameLost, WrongCharacter
 
-CHORES = ("bank", "pet_rebirth", "contribution_chests", "donation", "construction", "feed", "secret_room")
+CHORES = ("bank", "pet_rebirth", "contribution_chests", "donation", "construction", "firing", "feed", "secret_room")
 DEFAULTS: dict[str, Any] = {
     "bank": True,
     "bounty_officers": [],            # Tools, Hunting bounties: the officers to visit (not a daily chore)
@@ -102,6 +102,15 @@ DEFAULTS: dict[str, Any] = {
     "build_cannon": True,             # ... the Magic Cannon under construction,
     "build_supply": True,             # ... the Supply Camp under construction,
     "build_posts": True,              # ... the East and West posts
+    "fire": False,                    # fire each listed turret once a day (engine/turretfire.py)
+    "fire_turrets": [],               # ... the highlands whose turret this character keeps
+    "fire_aim": "other",              # ... "own": our gang's area, "other": other gangs' highlands
+    "fire_area": "lake",              # ... our area: main mansion, mining area or lake
+    "fire_part": "turret",            # ... turret, wall or highest
+    "fire_limit": 50,                 # ... a target at or below this percent isn't fired at
+    "fire_targets": [],               # ... [{"gang", "highland"}], with the limit
+    "fire_fallback": [],              # ... the same, when no target can be hit, without the limit
+    "fire_spare": [],                 # ... players never shot in our area
     "secret_room": False, "room": "", "assistant": 1,
     "share_with": "", "share_anyone": True,
     "practice_minutes": 0,            # stay this long to practise (0: in, share, out)
@@ -154,6 +163,8 @@ HIGHLAND_HOME_STAND = (29, 4)
 # from its south side only (hand runs stood at 31,57-59); from the north the game won't select it.
 HIGHLAND_SITES = (("Crystal Turret", (30, 26)), ("Wall barricade", (31, 58)))
 OWN_HIGHLAND = r"own Gang.s Highland\s+(\d+)"
+# Occupied Highlands also lists the highlands our gang occupies, under their own gang: "Sunfield Gang's Highland 95"
+ANY_HIGHLAND = r"Gang.s Highland\s+(\d+)"
 NEXT_PAGE = r"^\s*next\s*page"
 MOST_PAGES = 20
 # A walk round a gang base (gathering looks for its area entrances this way): the game shows what is
@@ -174,6 +185,7 @@ FREE_REBIRTH = r"free Pet Rebirth times today"
 def label(chore: str) -> str:
     return {"bank": _("bank income"), "pet_rebirth": _("pet rebirth"),
             "donation": _("gang donation"), "construction": _("gang construction"),
+            "firing": _("turret firing"),
             "feed": _("Animal Shed feeding"),
             "contribution_chests": _("Contribution Chests"),
             "secret_room": _("secret room")}[chore]
@@ -192,6 +204,8 @@ def wanted(cfg: dict[str, Any], chore: str) -> bool:
         return int(cfg.get("construction") or 0) > 0 and any(cfg.get(k, True) for k in BUILD_PLACES)
     if chore == "pet_rebirth":
         return bool(cfg.get("pet_rebirth")) and bool((cfg.get("pet") or "").strip())
+    if chore == "firing":
+        return turretfire.wanted(cfg)
     return bool(cfg.get(chore))
 
 
@@ -311,14 +325,22 @@ def run(b: Bot, cfg: dict[str, Any], check_only: bool = False, only: Collection[
 def _run(b: Bot, cfg: dict[str, Any], check_only: bool, only: Collection[str] | None,
          done: dict[str, Any], out: list[tuple[str, str]]) -> None:
     name = who(b)
+    day = turretfire.Day()            # the turrets fired this run, on construction's visits or by the chore
+    fire_along = wanted(cfg, "firing") and (not only or "firing" in only)
     for chore in CHORES:
         if (only and chore not in only) or not wanted(cfg, chore):
             continue
-        if chore in done and not check_only:
+        # firing keeps its own list of turrets fired today: one added later that day still fires
+        if chore in done and not check_only and chore != "firing":
             out.append((chore, _("already done today")))
             continue
         try:
-            note, finished = DO[chore](b, cfg, check_only)
+            if chore == "construction":
+                note, finished = construction(b, cfg, check_only, day.along(b, cfg, check_only) if fire_along else None)
+            elif chore == "firing":
+                note, finished = turretfire.firing(b, cfg, check_only, day)
+            else:
+                note, finished = DO[chore](b, cfg, check_only)
         except Stopped as e:
             if b.stop_event.is_set() or getattr(e, "final", False):
                 raise
@@ -832,6 +854,18 @@ def highland_entry(number: int) -> str:
 def next_highland(b: Bot, seen: Collection[int]) -> int | None:
     """From the inner hall into the first of the gang's highlands not seen yet, turning the pages of
     Occupied Highlands. Its number, or None when there is no other."""
+    return _into_highland(b, lambda numbers: next((n for n in numbers if n not in seen), None))
+
+
+def enter_highland(b: Bot, number: int) -> bool:
+    """From the inner hall into highland number: one of the gang's own, or one it occupies (a turret's
+    keeper can be in either). False when Occupied Highlands doesn't list it."""
+    return _into_highland(b, lambda numbers: number if number in numbers else None, ANY_HIGHLAND) is not None
+
+
+def _into_highland(b: Bot, pick: Callable[[list[int]], int | None], listed: str = OWN_HIGHLAND) -> int | None:
+    """Into the highland pick() takes from a page of the highlands like listed (the gang's own ones by
+    default), turning the pages."""
     inner_hall(b)
     _talk(b, *HIGHLAND_GATE)
     mid = b.map_id()
@@ -840,8 +874,8 @@ def next_highland(b: Bot, seen: Collection[int]) -> int | None:
         raise Stopped(_("the Highland Entrance offers no Occupied Highlands"))
     for _page in range(MOST_PAGES):
         b.wait_dialog(3.0)
-        numbers = [int(n) for t in _texts(b, OWN_HIGHLAND) for n in re.findall(OWN_HIGHLAND, t, re.I)]
-        number = next((n for n in numbers if n not in seen), None)
+        numbers = [int(n) for t in _texts(b, listed) for n in re.findall(listed, t, re.I)]
+        number = pick(numbers)
         if number is not None:
             b.choose(highland_entry(number))
             confirm(b)
@@ -890,10 +924,12 @@ def _build_posts(b: Bot, t: _Builds, check_only: bool) -> None:
     _try_places(b, t, [(name, cell, None) for name, cell in POSTS], check_only)
 
 
-def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False) -> None:
+def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool = False,
+                     fire: Callable[[int], None] | None = None) -> None:
     """The gang's highlands, one after the other, until the day's builds are made. What stands at
     100% is left alone unless even_complete. Each kind of defence takes one repair a day, in
-    whichever highland ("You've repaired the crystal turret today")."""
+    whichever highland ("You've repaired the crystal turret today"). fire(number): turret firing's
+    turn in each highland visited, after the repairs."""
     seen: set[int] = set()
     while not t.finished and any(name not in t.took for name, _stand in HIGHLAND_SITES):
         number = next_highland(b, seen)
@@ -902,23 +938,26 @@ def _build_highlands(b: Bot, t: _Builds, check_only: bool, even_complete: bool =
         seen.add(number)
         try:
             _try_places(b, t, [(name, None, stand) for name, stand in HIGHLAND_SITES], check_only, even_complete)
+            if fire is not None:
+                fire(number)
         finally:
             leave_highland(b)
 
 
-def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool) -> list[Callable[[], None]]:
+def _build_steps(b: Bot, t: _Builds, cfg: dict[str, Any], check_only: bool,
+                 fire: Callable[[int], None] | None = None) -> list[Callable[[], None]]:
     """In order: highland defences under 100%, what the gang is building, the posts, and last the
     highland defences at 100%, which the game repairs and pays for too."""
     highlands = bool(cfg.get("build_highlands", True))
     steps: list[Callable[[], None]] = []
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only))
+        steps.append(lambda: _build_highlands(b, t, check_only, fire=fire))
     if cfg.get("build_cannon", True) or cfg.get("build_supply", True):
         steps.append(lambda: _build_camps(b, t, cfg, check_only))
     if cfg.get("build_posts", True):
         steps.append(lambda: _build_posts(b, t, check_only))
     if highlands:
-        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True))
+        steps.append(lambda: _build_highlands(b, t, check_only, even_complete=True, fire=fire))
     return steps
 
 
@@ -943,12 +982,14 @@ def _construction_note(t: _Builds, trouble: list[str], check_only: bool) -> tupl
     return _("built {n} times; no place took more today (places: {places})", n=t.built, places=places), True
 
 
-def construction(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
+def construction(b: Bot, cfg: dict[str, Any], check_only: bool,
+                 fire: Callable[[int], None] | None = None) -> tuple[str, bool]:
     """The day's builds (the game allows two, builds and repairs together) at the places the player
-    ticked, in the order of _build_steps. Each pays gang contribution, gang points and arnebia."""
+    ticked, in the order of _build_steps. Each pays gang contribution, gang points and arnebia.
+    fire: turret firing's turn in each highland visited (turretfire.Day.along)."""
     t = _Builds(max(0, min(int(cfg.get("construction") or 0), DAILY_BUILDS)))
     trouble: list[str] = []
-    for step in _build_steps(b, t, cfg, check_only):
+    for step in _build_steps(b, t, cfg, check_only, fire):
         if t.finished:
             break
         try:
@@ -1319,5 +1360,10 @@ def secret_room(b: Bot, cfg: dict[str, Any], check_only: bool):
         made >= SHARES_A_DAY
 
 
-DO = {"bank": bank, "pet_rebirth": pet_rebirth, "donation": donation,
-      "construction": construction, "feed": feed, "contribution_chests": contribution_chests, "secret_room": secret_room}
+def firing(b: Bot, cfg: dict[str, Any], check_only: bool) -> tuple[str, bool]:
+    """Each listed turret fires once a day (turretfire.py)."""
+    return turretfire.firing(b, cfg, check_only)
+
+
+DO = {"bank": bank, "pet_rebirth": pet_rebirth, "donation": donation, "construction": construction,
+      "firing": firing, "feed": feed, "contribution_chests": contribution_chests, "secret_room": secret_room}
