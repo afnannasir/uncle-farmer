@@ -43,6 +43,10 @@ MORE_DUNGEONS = frozenset({
     1568, 1067, 1766, 1767, 1768, 1664,      # Beast Mountain, Tiger Mountain, dark monastery (3), ghost hotel
     1789, 1786, 4531,                        # Dark Demon Tower, Soul Realm, Demon Barracks
 })
+# maps data/map_kinds.json takes for a dungeon that aren't one (a player said so, 2026-11-28)
+NOT_DUNGEONS = frozenset({
+    1538,                                    # thousand miles of rivers: an ordinary map, with dungeon circles on it
+})
 WEDDING = "wedding"
 # what a farm sets for itself and clears when it ends: the farm inside is held within a trip, which may
 # itself be the way to another farm (its travel comes before it sets them) - put back as they were
@@ -52,6 +56,8 @@ FARM_STATE = ("farm_filter", "spot_no_go", "on_farm_run", "farm_top_hp", "farmin
 def kept(mid: int) -> str | None:
     """"dungeon" or "wedding" for a map the bot never leaves by itself, else None."""
     kind = atlas.kind(mid)
+    if int(mid) in NOT_DUNGEONS:
+        return None
     if kind in DUNGEON_KINDS or int(mid) in MORE_DUNGEONS:
         return "dungeon"
     if kind == WEDDING:

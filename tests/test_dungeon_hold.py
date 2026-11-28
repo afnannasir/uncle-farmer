@@ -72,6 +72,7 @@ def test_the_maps_kept_are_the_dungeons_and_the_wedding_halls() -> None:
     assert dungeonhold.kept(BONE) == "dungeon"
     assert dungeonhold.kept(WORMHOLE) == "dungeon"
     assert dungeonhold.kept(1568) == "dungeon"          # Beast Mountain, recognised by a player
+    assert dungeonhold.kept(1538) is None                # thousand miles of rivers: a map, not a dungeon
     assert dungeonhold.kept(CHURCH) == "wedding"
     assert dungeonhold.kept(SECRET) is None              # a secret room: left as before
     assert dungeonhold.kept(4201) is None                # the gang's mine valley: gathering leaves it
