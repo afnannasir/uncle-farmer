@@ -1256,7 +1256,7 @@ Set this up on the **Turret firing** tab:
 
 **Our gang's area**
 
-Choose the main mansion, the mining area or the lake. The game lists the players who are there.
+Choose the main mansion, the mining area, the lake or the herbal garden. A gang has only two of the three production areas (lake, mining area, herbal garden), so choose one your gang has. The game lists the players who are there.
 
 A shot at our gang's area kills the player it hits.
 

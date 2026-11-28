@@ -7,7 +7,8 @@
 - New tab in Tools, Daily chores: "Turret firing". List the highlands whose Crystal Turret the
   character keeps. Each one fires once a game day. A turret can be in one of our gang's own
   highlands or in one our gang occupies from another gang.
-- Aim at our gang's area (main mansion, mining area or lake): the bot shoots the first foreign
+- Aim at our gang's area (main mansion, mining area, lake or herbal garden; the herbal garden's
+  entry is untested, as our gang has none): the bot shoots the first foreign
   player there that the game lets be shot. The shot kills that player. It never shoots our own
   gang's players, nor the names in "Players never to shoot". With nobody to shoot, it tries
   again later that day.

@@ -2726,6 +2726,9 @@ msgstr "Aider aux combats et soigner"
 msgid "Help with the team's fi&ghts (off: only what attacks me)"
 msgstr "Aider aux com&bats de l'équipe (sinon : seulement ce qui m'attaque)"
 
+msgid "Herbal garden"
+msgstr ""
+
 msgid "Here, next to you."
 msgstr "Ici, à côté de vous."
 
@@ -9411,7 +9414,8 @@ msgstr "l'Animal Shed n'a rien à nourrir pour l'instant"
 msgid "the Fire menu has no \"Aim at other highlands\""
 msgstr ""
 
-msgid "the Fire menu has no \"Aim at the {area}\""
+msgid ""
+"the Fire menu has no \"Aim at the {area}\": our gang may not have that area"
 msgstr ""
 
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"

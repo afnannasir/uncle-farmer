@@ -50,7 +50,7 @@ class Turrets:
         pages: Pages = {TURRET: self.turret, "aim": [("Aim at %s gang area" % OWN_GANG, "own"),
                                                     ("Aim at other highlands", "gangs1")],
                         "own": [("Aim at the main mansion", "area"), ("Aim at the mining area", "area"),
-                                ("Aim at the lake", "area")],
+                                ("Aim at the lake", "area"), ("Aim at the herb garden", "area")],
                         "area": self.area_page,
                         "Highland Entrance": [("Occupied Highlands", "occupied"), ("Gang Highlands", None)],
                         "occupied": [("the own Gang's Highland %d" % n, self.into(n)) for n in ours]
@@ -301,6 +301,19 @@ def test_our_area_shoots_the_foreign_player_who_can_be_shot(world: type[Game]) -
     out = chores.run(as_bot(t.g), cfg(fire=True, fire_turrets=[67], fire_aim="own", fire_area="lake"))
     assert t.fired == {67: "Visitor"} and "Aim at the lake" in t.g.chosen
     assert out[0][1] == "turret 67: fired at Visitor at the lake"
+
+
+def test_the_herbal_garden_is_aimed_at_as_the_game_words_it(world: type[Game]) -> None:
+    t = Turrets(world, ours=[67], keeps=[67], area=[FOREIGN])
+    out = chores.run(as_bot(t.g), cfg(fire=True, fire_turrets=[67], fire_aim="own", fire_area="herbal garden"))
+    assert t.fired == {67: "Visitor"} and "Aim at the herb garden" in t.g.chosen, out
+
+
+def test_an_area_our_gang_doesnt_have_is_said(world: type[Game]) -> None:
+    t = Turrets(world, ours=[67], keeps=[67], area=[FOREIGN])
+    t.g.pages["own"] = [("Aim at the main mansion", "area"), ("Aim at the lake", "area")]
+    out = chores.run(as_bot(t.g), cfg(fire=True, fire_turrets=[67], fire_aim="own", fire_area="mining area"))
+    assert t.fired == {} and "our gang may not have that area" in out[0][1], out
 
 
 def test_nobody_to_shoot_fires_nothing_and_tries_again_later(world: type[Game]) -> None:

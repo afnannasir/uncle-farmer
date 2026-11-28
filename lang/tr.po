@@ -2685,6 +2685,9 @@ msgstr "Dövüşlere yardım et ve iyileştir"
 msgid "Help with the team's fi&ghts (off: only what attacks me)"
 msgstr "Takımın dövüşlerine yardım &et (kapalı: yalnızca bana saldıranlar)"
 
+msgid "Herbal garden"
+msgstr ""
+
 msgid "Here, next to you."
 msgstr "Burada, yanında."
 
@@ -9187,7 +9190,8 @@ msgstr "Hayvan Kulübesi'nde şu an beslenecek bir şey yok"
 msgid "the Fire menu has no \"Aim at other highlands\""
 msgstr ""
 
-msgid "the Fire menu has no \"Aim at the {area}\""
+msgid ""
+"the Fire menu has no \"Aim at the {area}\": our gang may not have that area"
 msgstr ""
 
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"

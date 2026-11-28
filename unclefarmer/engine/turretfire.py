@@ -44,7 +44,10 @@ from . import chores, town
 from .bot import Bot, Stopped
 
 AIMS = ("own", "other")
-AREAS = ("main mansion", "mining area", "lake")
+AREAS = ("main mansion", "mining area", "lake", "herbal garden")
+# a gang has two of the three production areas (lake, mining area, herbal garden); ours has no herbal
+# garden, so its "Aim at" wording wasn't seen: "herb garden" or "herbal garden" are both taken
+AREA_ENTRIES = {"herbal garden": r"herb\w*\s+garden"}
 PARTS = ("turret", "wall", "highest")
 PART_NAMES = {"turret": "Crystal Turret", "wall": "Wall barricade"}
 DEFAULT_LIMIT = 50
@@ -483,9 +486,11 @@ def _shoot_area(b: Bot, s: Settings, number: int, check_only: bool) -> tuple[str
     refused = open_fire(b)
     if refused is not None:
         return refused, _note(refused, number)
-    if not _pick(b, AIM_OWN) or not _pick(b, r"^\s*Aim at the %s\s*$" % s.area):
+    entry = AREA_ENTRIES.get(s.area, re.escape(s.area))
+    if not _pick(b, AIM_OWN) or not _pick(b, r"^\s*Aim at the %s\s*$" % entry):
         b.close_dialogs()
-        raise Stopped(_("the Fire menu has no \"Aim at the {area}\"", area=s.area))
+        raise Stopped(_("the Fire menu has no \"Aim at the {area}\": our gang may not have that area",
+                        area=s.area))
     _wait_shown(b, PEOPLE_ONLINE, PAGE_WAIT)
     who = pick_player(parse_players(_texts(b)), s.spare)
     if who is None:

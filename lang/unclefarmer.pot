@@ -2640,6 +2640,9 @@ msgstr ""
 msgid "Help with the team's fi&ghts (off: only what attacks me)"
 msgstr ""
 
+msgid "Herbal garden"
+msgstr ""
+
 msgid "Here, next to you."
 msgstr ""
 
@@ -8916,7 +8919,8 @@ msgstr ""
 msgid "the Fire menu has no \"Aim at other highlands\""
 msgstr ""
 
-msgid "the Fire menu has no \"Aim at the {area}\""
+msgid ""
+"the Fire menu has no \"Aim at the {area}\": our gang may not have that area"
 msgstr ""
 
 msgid "the Forger didn't list {item} (is it equipped or in the bag?)"

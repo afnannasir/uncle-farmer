@@ -36,7 +36,7 @@ def aim_names() -> list[str]:
 
 
 def area_names() -> list[str]:
-    return [_("Main mansion"), _("Mining area"), _("Lake")]
+    return [_("Main mansion"), _("Mining area"), _("Lake"), _("Herbal garden")]
 
 
 def part_names() -> list[str]:
